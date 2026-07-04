@@ -30,6 +30,47 @@ for (const file of requiredFiles) {
   if (!ok) failed = true;
 }
 
+const skillMd = fs.readFileSync(path.join(repoRoot, "skill/SKILL.md"), "utf8");
+const frontmatter = skillMd.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+if (!frontmatter) {
+  console.log("FAIL skill/SKILL.md frontmatter");
+  failed = true;
+} else {
+  const hasName = /^name:\s*design-pipeline\s*$/m.test(frontmatter[1]);
+  const hasDescription = /^description:\s*\S+/m.test(frontmatter[1]);
+  console.log(`${hasName ? "OK" : "FAIL"} skill/SKILL.md frontmatter name`);
+  console.log(`${hasDescription ? "OK" : "FAIL"} skill/SKILL.md frontmatter description`);
+  if (!hasName || !hasDescription) failed = true;
+}
+
+const referenceSources = [
+  "skill/SKILL.md",
+  "skill/references/companion-skills.md",
+  "skill/references/curation-policy.md",
+  "skill/references/development-compatibility.md",
+  "skill/references/open-source-readiness.md",
+  "skill/references/qa-checklist.md",
+  "skill/references/self-check.md",
+  "README.md",
+  "CONTRIBUTING.md",
+];
+
+for (const sourceFile of referenceSources) {
+  const fullPath = path.join(repoRoot, sourceFile);
+  if (!fs.existsSync(fullPath)) continue;
+  const text = fs.readFileSync(fullPath, "utf8");
+  const matches = text.matchAll(/(?:`)?((?:references|scripts)\/[A-Za-z0-9._/-]+)(?:`)?/g);
+  for (const match of matches) {
+    const rel = match[1];
+    const base = sourceFile.startsWith("skill/") ? path.join(repoRoot, "skill") : repoRoot;
+    const candidate = path.join(base, rel);
+    const skillCandidate = path.join(repoRoot, "skill", rel);
+    const ok = fs.existsSync(candidate) || fs.existsSync(skillCandidate);
+    console.log(`${ok ? "OK" : "FAIL"} reference ${sourceFile} -> ${rel}`);
+    if (!ok) failed = true;
+  }
+}
+
 const check = spawnSync(process.execPath, [path.join(repoRoot, "skill/scripts/check-deps.cjs"), "--json"], {
   cwd: repoRoot,
   encoding: "utf8",
