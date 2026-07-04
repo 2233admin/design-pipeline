@@ -1,0 +1,170 @@
+# Agent Interface
+
+`design-pipeline` must support unattended execution. A human should not need to watch the UI or read the conversation transcript to understand the current state.
+
+Every pipeline change folder should expose these files:
+
+```text
+state.json
+events.jsonl
+handoff.md
+```
+
+These files are the AI-facing interface. Another agent can inspect, resume, verify, or archive a run by reading them first.
+
+## `state.json`
+
+Machine-readable current state. Keep it compact and update it at every phase transition.
+
+```json
+{
+  "schema": "design-pipeline.state.v1",
+  "changeId": "",
+  "status": "planned",
+  "phase": "stage-0-repo-read",
+  "updatedAt": "",
+  "artifactRoot": "",
+  "projectRoot": "",
+  "surfaces": [],
+  "capabilities": {
+    "missing": [],
+    "fallbacks": []
+  },
+  "openSpec": {
+    "detected": false,
+    "changeId": "",
+    "paths": []
+  },
+  "gbrain": {
+    "detected": false,
+    "syncPlanned": false,
+    "paths": []
+  },
+  "motion": {
+    "required": false,
+    "motionSpec": "",
+    "implementationLibrary": "",
+    "reducedMotion": "unknown"
+  },
+  "qa": {
+    "status": "not-run",
+    "evidenceRoot": "",
+    "scores": {}
+  },
+  "decisions": [],
+  "blockers": [],
+  "nextActions": []
+}
+```
+
+Allowed `status` values:
+
+- `planned`
+- `in-progress`
+- `blocked`
+- `needs-review`
+- `complete`
+- `archived`
+
+Allowed `phase` values:
+
+- `stage-0-repo-read`
+- `stage-1-brief`
+- `stage-2-directions`
+- `stage-3-design-spec`
+- `stage-3-motion-spec`
+- `stage-4-tasks`
+- `stage-5-implementation`
+- `stage-6-gate-review`
+- `stage-7-archive`
+
+## `events.jsonl`
+
+Append-only event log. Each line is JSON.
+
+```json
+{"ts":"","phase":"","type":"decision","summary":"","files":[],"evidence":[],"nextActions":[]}
+```
+
+Common event types:
+
+- `self-check`
+- `artifact-created`
+- `decision`
+- `fallback-selected`
+- `implementation-step`
+- `qa-evidence`
+- `blocker`
+- `state-repair`
+- `handoff`
+- `archive`
+
+Rules:
+
+- Append; do not rewrite history unless removing secrets.
+- Keep event summaries short.
+- Reference files by repo-relative path.
+- Include evidence paths whenever verification happened.
+
+## `handoff.md`
+
+Human- and agent-readable resume note. Keep it current enough that another agent can continue without conversation history.
+
+```md
+# Handoff
+
+## Current State
+
+- Change id:
+- Status:
+- Phase:
+- Last updated:
+
+## Goal
+
+## Artifacts
+
+- Brief:
+- Directions:
+- Design:
+- Motion:
+- Tasks:
+- QA:
+- State:
+- Events:
+
+## Decisions
+
+## Missing Capabilities / Fallbacks
+
+## Evidence
+
+## Blockers
+
+## Next Actions
+```
+
+## Resume Protocol
+
+When another agent resumes:
+
+1. Read `state.json`.
+2. Read the last 20 lines of `events.jsonl`.
+3. Read `handoff.md`.
+4. Read only the artifact files referenced by current `phase` and `nextActions`.
+5. Continue from `nextActions`; do not restart discovery unless state is stale or contradictory.
+
+## Staleness
+
+State is stale when:
+
+- `state.json.updatedAt` predates modified implementation files.
+- `handoff.md` disagrees with `state.json`.
+- `events.jsonl` has no event for the current phase.
+- QA evidence paths no longer exist.
+
+If stale, append a `blocker` or `state-repair` event before continuing.
+
+## Secret Handling
+
+Never write secrets, tokens, cookies, private credentials, or raw proprietary data into these files. Reference secure locations indirectly when necessary.
