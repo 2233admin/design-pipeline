@@ -2,6 +2,17 @@
 
 Create `motion.md` from this template when a change includes non-trivial animation or interaction motion.
 
+## Companion skills
+
+For design-engineering motion judgment and animation language, use the Emil skill set from [`emilkowalski/skills`](https://github.com/emilkowalski/skills):
+
+- `emil-design-eng` — motion, easing, feedback, interaction polish
+- `animation-vocabulary` — precise timing, easing, and choreography language
+- `review-animations` — post-implementation animation quality review
+- `apple-design` — Apple HIG-inspired interface principles and fluid motion for web
+
+Also see `references/companion-skills.md` (Motion / Animation Set).
+
 ## Summary
 
 - Change id:
@@ -57,6 +68,12 @@ Rules:
 | Scroll-linked motion |  |  |
 
 Use concrete easing names or cubic-bezier values when implementation needs them.
+
+Recommended defaults from Emil design-engineering practice (adjust per product):
+
+- Enter / UI feedback: ease-out custom curves (fast start, soft settle), e.g. `cubic-bezier(0.23, 1, 0.32, 1)` or `cubic-bezier(0.16, 1, 0.3, 1)`.
+- Exit / dismiss: slightly snappier ease-in or ease-in-out so elements leave without lagging.
+- Prefer ease-out for user-initiated feedback; avoid linear for interactive UI motion.
 
 ## Spatial Behavior
 

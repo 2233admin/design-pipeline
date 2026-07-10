@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  qa-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: QA + package
+        run: node scripts/qa.cjs
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-pipeline-skill
+          path: |
+            dist/design-pipeline-skill.tgz
+            dist/design-pipeline-skill.zip
+            dist/checksums.txt
+          if-no-files-found: error

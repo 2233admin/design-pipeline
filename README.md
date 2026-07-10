@@ -47,6 +47,27 @@ cp -R skill/* /c/Users/Administrator/.codex/skills/design-pipeline/
 node /c/Users/Administrator/.codex/skills/design-pipeline/scripts/check-deps.cjs
 ```
 
+Or install from a GitHub Release package:
+
+```bash
+# download design-pipeline-skill.tgz from Releases, then:
+mkdir -p ~/.codex/skills
+tar -xzf design-pipeline-skill.tgz -C ~/.codex/skills
+node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
+```
+
+## Package / CI
+
+```bash
+node scripts/qa.cjs        # structure + self-check + package
+node scripts/package.cjs   # writes dist/design-pipeline-skill.tgz (+ zip)
+```
+
+GitHub Actions:
+
+- `CI` — runs QA and uploads package artifacts on every PR/push
+- `Release` — on `v*` tags (or manual dispatch) publishes release assets
+
 ## OpenSpec Alignment
 
 Long-lived behavior lives under `openspec/specs/`.

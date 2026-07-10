@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 
@@ -20,6 +21,7 @@ const requiredFiles = [
   "openspec/changes/bootstrap-design-pipeline/design.md",
   "openspec/changes/bootstrap-design-pipeline/tasks.md",
   "openspec/changes/bootstrap-design-pipeline/specs/design-pipeline/spec.md",
+  "scripts/package.cjs",
 ];
 
 let failed = false;
@@ -71,20 +73,67 @@ for (const sourceFile of referenceSources) {
   }
 }
 
-const check = spawnSync(process.execPath, [path.join(repoRoot, "skill/scripts/check-deps.cjs"), "--json"], {
-  cwd: repoRoot,
-  encoding: "utf8",
-});
+// Deterministic self-check: only ship skill in a temp root (CI-safe).
+const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-qa-"));
+const tempSkill = path.join(tempRoot, "design-pipeline");
+fs.cpSync(path.join(repoRoot, "skill"), tempSkill, { recursive: true });
+
+const check = spawnSync(
+  process.execPath,
+  [path.join(repoRoot, "skill/scripts/check-deps.cjs"), "--json"],
+  {
+    cwd: repoRoot,
+    encoding: "utf8",
+    env: { ...process.env, CODEX_SKILLS_DIR: tempRoot },
+  },
+);
+
+fs.rmSync(tempRoot, { recursive: true, force: true });
 
 if (check.status !== 0) {
   console.log("FAIL self-check exited non-zero");
-  process.stdout.write(check.stdout);
-  process.stderr.write(check.stderr);
+  process.stdout.write(check.stdout || "");
+  process.stderr.write(check.stderr || "");
   failed = true;
 } else {
-  const parsed = JSON.parse(check.stdout);
-  console.log(`OK self-check result=${parsed.result}`);
-  if (parsed.result !== "OK") failed = true;
+  try {
+    const parsed = JSON.parse(check.stdout);
+    console.log(`OK self-check result=${parsed.result}`);
+    if (parsed.result !== "OK") failed = true;
+  } catch (err) {
+    console.log("FAIL self-check JSON parse");
+    process.stdout.write(check.stdout || "");
+    failed = true;
+  }
+}
+
+// Packaging must work for GitHub Releases.
+const pack = spawnSync(process.execPath, [path.join(repoRoot, "scripts/package.cjs")], {
+  cwd: repoRoot,
+  encoding: "utf8",
+  env: { ...process.env, PACKAGE_VERSION: process.env.PACKAGE_VERSION || "0.0.0-qa" },
+});
+process.stdout.write(pack.stdout || "");
+process.stderr.write(pack.stderr || "");
+if (pack.status !== 0) {
+  console.log("FAIL package.cjs");
+  failed = true;
+} else {
+  const tgz = path.join(repoRoot, "dist", "design-pipeline-skill.tgz");
+  console.log(`${fs.existsSync(tgz) ? "OK" : "FAIL"} dist/design-pipeline-skill.tgz`);
+  if (!fs.existsSync(tgz)) failed = true;
+}
+
+// Source URL sanity for Emil pack
+const companion = fs.readFileSync(
+  path.join(repoRoot, "skill/references/companion-skills.md"),
+  "utf8",
+);
+if (companion.includes("emilkowalski/skill`") || companion.includes("emilkowalski/skill |")) {
+  console.log("FAIL companion-skills still references singular emilkowalski/skill");
+  failed = true;
+} else {
+  console.log("OK companion-skills uses emilkowalski/skills");
 }
 
 process.exitCode = failed ? 1 : 0;

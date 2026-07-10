@@ -42,12 +42,13 @@ const groups = [
       "design-motion-principles",
       "animation-vocabulary",
       "review-animations",
+      "apple-design",
       "vercel-react-view-transitions",
     ],
     fallback: "Document trigger, purpose, duration, easing, interruption behavior, and reduced-motion fallback in design.md.",
     install: [
-      "Install Emil motion skills from: https://github.com/emilkowalski/skill",
-      "Install motion principles from: https://github.com/kylezantos/design-engineer-auditor-package",
+      "Install Emil motion skills from: https://github.com/emilkowalski/skills",
+      "Install motion principles from: https://github.com/kylezantos/design-motion-principles",
     ],
   },
   {

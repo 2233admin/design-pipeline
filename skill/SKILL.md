@@ -61,6 +61,7 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `emil-design-eng`: design-engineering judgment for animation and interaction polish.
 - `animation-vocabulary`: translate vague motion intent into precise timing, easing, choreography, and behavior language.
 - `review-animations`: strict post-implementation animation review.
+- `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).
 - `vercel-react-view-transitions`: React and Next.js view-transition implementation patterns.
 
 For animation implementation, choose library skills by job:

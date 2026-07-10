@@ -6,11 +6,11 @@ This pipeline is designed to coordinate the following frontend design skills.
 
 | Skill | Source | Pipeline role | Current local status |
 | --- | --- | --- | --- |
-| `frontend-design` | `anthropics/skills` | Strong visual direction, composition, non-generic first impression | Missing |
-| `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility | Missing |
+| `frontend-design` | `anthropics/skills` | Strong visual direction, composition, non-generic first impression | Installed |
+| `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility | Installed |
 | `ui-ux-pro-max` | `nextlevelbuilder/ui-ux-pro-max-skill` | UX heuristics, searchable style/color/type system, repeatable choices | Installed |
 | `design-taste-frontend` | `Leonxlnx/taste-skill` | Anti-template design discipline, typography and copy taste | Installed |
-| `emil-design-eng` | `emilkowalski/skill` | Motion, easing, feedback, interaction polish | Installed |
+| `emil-design-eng` | `emilkowalski/skills` | Motion, easing, feedback, interaction polish | Installed |
 
 ## Motion / Animation Set
 
@@ -18,10 +18,11 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 
 | Skill | Source | Pipeline role | Current local status |
 | --- | --- | --- | --- |
-| `design-motion-principles` | `kylezantos/design-engineer-auditor-package` | Dedicated motion create/audit workflow for UI animation, micro-interactions, Framer Motion, CSS, and app transitions | Installed |
-| `emil-design-eng` | `emilkowalski/skill` | Design-engineering motion judgment, UI polish, component feel | Installed |
-| `animation-vocabulary` | `emilkowalski/skill` | Converts vague motion direction into precise animation language | Installed |
-| `review-animations` | `emilkowalski/skill` | Strict animation quality review with production standards | Installed |
+| `design-motion-principles` | `kylezantos/design-motion-principles` (was design-engineer-auditor-package) | Dedicated motion create/audit workflow for UI animation, micro-interactions, Framer Motion, CSS, and app transitions | Installed |
+| `emil-design-eng` | `emilkowalski/skills` | Design-engineering motion judgment, UI polish, component feel | Installed |
+| `animation-vocabulary` | `emilkowalski/skills` | Converts vague motion direction into precise animation language | Installed |
+| `review-animations` | `emilkowalski/skills` | Strict animation quality review with production standards | Installed |
+| `apple-design` | `emilkowalski/skills` | Apple HIG-inspired interface principles and fluid motion for web, from WWDC talks | Installed |
 | `vercel-react-view-transitions` | `vercel-labs/agent-skills` | React and Next.js view transition patterns | Installed |
 
 ## Animation Library Implementation Set
@@ -59,6 +60,7 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 3. `design-taste-frontend`
 4. `ui-ux-pro-max`
 5. `emil-design-eng`
+6. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
 
 ## Taste-Skill Extension Set
 
