@@ -12,7 +12,9 @@
     "artifactRoot",
     "targets",
     "fidelity",
+    "referenceMappings",
     "ports",
+    "verification",
     "protocol"
   ],
   "properties": {
@@ -110,6 +112,10 @@
         }
       }
     },
+    "referenceMappings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/referenceMapping" }
+    },
     "ports": {
       "type": "object",
       "additionalProperties": false,
@@ -120,23 +126,140 @@
         "evidence": { "$ref": "#/$defs/port" }
       }
     },
+    "verification": { "$ref": "#/$defs/verification" },
     "protocol": {
       "type": "array",
       "minItems": 1,
       "items": { "type": "string", "minLength": 1 }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "complete" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "ports": {
+            "properties": {
+              "browser": { "properties": { "status": { "const": "ready" } } },
+              "builder": { "properties": { "status": { "const": "ready" } } },
+              "evidence": { "properties": { "status": { "const": "ready" } } }
+            }
+          },
+          "targets": {
+            "items": {
+              "properties": {
+                "status": { "const": "complete" },
+                "phase": { "const": "complete" }
+              }
+            }
+          },
+          "verification": {
+            "properties": {
+              "status": { "const": "passed" },
+              "reportPath": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
+    "referenceMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "designRecord",
+        "sourceTargetId",
+        "destinationTargetId",
+        "sourceRegion",
+        "destinationRegion",
+        "adoptedProperties",
+        "rejectedProperties",
+        "requiredStates"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "kind": { "enum": ["supporting", "replacement"] },
+        "designRecord": { "type": "string", "minLength": 1 },
+        "sourceTargetId": { "type": "string", "minLength": 1 },
+        "destinationTargetId": { "type": "string", "minLength": 1 },
+        "sourceRegion": { "type": "string", "minLength": 1 },
+        "destinationRegion": { "type": "string", "minLength": 1 },
+        "adoptedProperties": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "rejectedProperties": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "requiredStates": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
     "port": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "requiredCapabilities"],
+      "required": [
+        "status",
+        "adapter",
+        "requiredCapabilities",
+        "availableCapabilities",
+        "lastProbe"
+      ],
       "properties": {
         "status": { "enum": ["unresolved", "ready", "blocked", "degraded"] },
         "adapter": { "type": ["string", "null"] },
         "requiredCapabilities": {
           "type": "array",
           "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "availableCapabilities": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "lastProbe": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["at", "ok", "message"],
+              "properties": {
+                "at": { "type": "string", "format": "date-time" },
+                "ok": { "type": "boolean" },
+                "message": { "type": "string" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evaluatedAt", "reportPath", "reasons"],
+      "properties": {
+        "status": { "enum": ["not-run", "passed", "failed", "blocked"] },
+        "evaluatedAt": { "type": ["string", "null"], "format": "date-time" },
+        "reportPath": { "type": ["string", "null"] },
+        "reasons": {
+          "type": "array",
           "items": { "type": "string", "minLength": 1 },
           "uniqueItems": true
         }

@@ -65,3 +65,13 @@ The pipeline SHALL expose machine-readable Browser, Builder, and Evidence port c
 
 - **WHEN** no adapter can provide a required exact-mode capability
 - **THEN** the run SHALL be blocked or explicitly marked fidelity-limited and SHALL NOT claim pixel-perfect or 1:1 output.
+
+#### Scenario: Completion is evaluated
+
+- **WHEN** the EvidencePort report is submitted to the bundled evaluator
+- **THEN** the evaluator SHALL require successful probes and all required capabilities for every port, SHALL distinguish missing measurements from measured mismatches, and SHALL be the only bundled command that marks the run complete.
+
+#### Scenario: A reference replaces primary behavior
+
+- **WHEN** a reference target intentionally supplies an interaction that differs from the primary target
+- **THEN** the run SHALL use an adaptive mixed contract, record the mapping in machine-readable form, verify every required mapped state, and SHALL NOT claim global 1:1 fidelity.

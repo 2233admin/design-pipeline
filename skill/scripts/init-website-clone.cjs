@@ -9,7 +9,8 @@ const OPEN_SPEC_ROOTS = [
   ["openspec", "changes"],
   [".openspec", "changes"],
   ["spec", "changes"],
-  ["changes"],
+  ["docs", "design"],
+  ["design", "changes"],
 ];
 
 function fail(message) {
@@ -120,11 +121,16 @@ function slugify(value) {
     .slice(0, 72);
 }
 
-function targetIdFor(urlText, usedIds) {
+function targetIdBase(urlText) {
   const url = new URL(urlText);
   const pathPart = url.pathname === "/" ? "" : url.pathname;
-  let id = slugify(`${url.hostname}${pathPart}`) || "target";
-  if (usedIds.has(id)) {
+  return slugify(`${url.hostname}${pathPart}`) || "target";
+}
+
+function targetIdFor(urlText, collidingBases, usedIds) {
+  const base = targetIdBase(urlText);
+  let id = base;
+  if (collidingBases.has(base) || usedIds.has(id)) {
     const suffix = crypto.createHash("sha256").update(urlText).digest("hex").slice(0, 8);
     id = `${id.slice(0, 63)}-${suffix}`;
   }
@@ -158,9 +164,17 @@ function validateOptions(options) {
     seen.add(target.url);
   }
 
+  const baseCounts = new Map();
+  for (const target of normalizedTargets) {
+    const base = targetIdBase(target.url);
+    baseCounts.set(base, (baseCounts.get(base) || 0) + 1);
+  }
+  const collidingBases = new Set(
+    [...baseCounts.entries()].filter(([, count]) => count > 1).map(([base]) => base),
+  );
   const usedIds = new Set();
   const targets = normalizedTargets.map(({ url, role }) => {
-    const id = targetIdFor(url, usedIds);
+    const id = targetIdFor(url, collidingBases, usedIds);
     return {
       id,
       url,
@@ -244,10 +258,10 @@ function buildState(changeId, artifactRoot, targets, now) {
     },
     gbrain: { detected: false, syncPlanned: false, paths: [] },
     motion: {
-      required: "unknown",
+      required: false,
       motionSpec: `${artifactRoot}/motion.md`,
       implementationLibrary: "unknown",
-      reducedMotion: "unknown",
+      reducedMotion: "pending",
     },
     qa: { status: "not-run", evidenceRoot: `${artifactRoot}/qa.md`, scores: {} },
     decisions: ["Use isolated evidence and research artifacts for every normalized target URL"],
@@ -364,34 +378,67 @@ function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets
               maxLayoutDeltaPx: null,
             },
     },
+    referenceMappings: [],
     ports: {
       browser: {
         status: "unresolved",
+        adapter: null,
+        availableCapabilities: [],
+        lastProbe: null,
         requiredCapabilities: [
           "navigate",
+          "report-final-url-status",
           "set-viewport",
+          "set-device-scale",
           "screenshot",
           "evaluate",
           "scroll",
           "click",
           "hover",
+          "focus",
+          "type",
+          "resize",
+          "wait-for-fonts",
+          "wait-for-page-ready",
+          "record-environment",
+          "record-provenance",
         ],
       },
       builder: {
         status: "unresolved",
-        requiredCapabilities: ["read-spec", "write-files", "run-project-checks"],
+        adapter: null,
+        availableCapabilities: [],
+        lastProbe: null,
+        requiredCapabilities: [
+          "read-spec",
+          "read-evidence",
+          "write-files",
+          "run-project-checks",
+        ],
       },
       evidence: {
         status: "unresolved",
+        adapter: null,
+        availableCapabilities: [],
+        lastProbe: null,
         requiredCapabilities: [
           "render-reference",
           "render-implementation",
-          "pixel-diff",
-          "layout-diff",
+          ...(fidelityMode === "exact" ? ["pixel-diff", "layout-diff"] : []),
           "content-diff",
+          "responsive-diff",
+          "state-diff",
           "interaction-replay",
+          "mapped-interaction-replay",
+          "record-evidence-provenance",
         ],
       },
+    },
+    verification: {
+      status: "not-run",
+      evaluatedAt: null,
+      reportPath: null,
+      reasons: [],
     },
     protocol: [
       "preflight",
@@ -418,16 +465,20 @@ function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets
   for (const target of targets) {
     const targetRoot = path.join(changeRoot, "targets", target.id);
     for (const [relative, content] of Object.entries(targetResearchFiles(target))) {
-      writeFile(path.join(targetRoot, relative), content);
+      writeIfMissing(path.join(targetRoot, relative), content);
     }
-    writeJson(path.join(targetRoot, "assets", "manifest.json"), {
-      schema: "design-pipeline.website-cloning.assets.v1",
-      targetId: target.id,
-      assets: [],
-    });
+    const assetManifestPath = path.join(targetRoot, "assets", "manifest.json");
+    if (!fs.existsSync(assetManifestPath)) {
+      writeJson(assetManifestPath, {
+        schema: "design-pipeline.website-cloning.assets.v1",
+        targetId: target.id,
+        assets: [],
+      });
+    }
     fs.mkdirSync(path.join(targetRoot, "research", "components"), { recursive: true });
     fs.mkdirSync(path.join(targetRoot, "evidence", "screenshots"), { recursive: true });
     fs.mkdirSync(path.join(targetRoot, "evidence", "visual-diff"), { recursive: true });
+    fs.mkdirSync(path.join(targetRoot, "evidence", "interactions"), { recursive: true });
   }
 }
 
@@ -439,9 +490,14 @@ function existingRunMatches(manifestPath, changeId, targets, fidelityMode) {
     fail(`existing website-cloning manifest is invalid: ${manifestPath}`);
   }
 
-  const expected = targets.map((target) => ({ url: target.url, role: target.role }));
+  const compareKey = (target) => `${target.role}\u0000${target.url}`;
+  const expected = targets
+    .map((target) => ({ url: target.url, role: target.role }))
+    .sort((left, right) => compareKey(left).localeCompare(compareKey(right)));
   const actual = Array.isArray(manifest.targets)
-    ? manifest.targets.map((target) => ({ url: target.url, role: target.role }))
+    ? manifest.targets
+        .map((target) => ({ url: target.url, role: target.role }))
+        .sort((left, right) => compareKey(left).localeCompare(compareKey(right)))
     : [];
   return (
     manifest.changeId === changeId &&

@@ -79,6 +79,16 @@ The URL-first interface SHALL hide Browser, Builder, and Evidence ports with mac
 - **WHEN** no adapter can provide a required exact-mode capability
 - **THEN** the run SHALL become blocked or fidelity-limited and SHALL NOT claim pixel-perfect or 1:1 output.
 
+#### Scenario: Exact completion is evaluated
+
+- **WHEN** measured verification evidence is submitted
+- **THEN** the bundled evaluator SHALL require successful port probes and all required capabilities, distinguish unavailable measurements from measured mismatches, and be the only bundled command that marks the website-cloning manifest complete.
+
+#### Scenario: Reference behavior intentionally differs
+
+- **WHEN** a reference mapping replaces primary behavior
+- **THEN** the run SHALL use an adaptive mixed contract, record and replay the mapping, and SHALL NOT describe the whole result as 1:1.
+
 ### Requirement: Primary and reference targets are distinct
 
 The pipeline SHALL compare a primary target against its own normalized capture and SHALL use reference targets only through explicit design mappings.

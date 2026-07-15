@@ -22,6 +22,7 @@ const groups = [
       "design-pipeline/references/website-clone-component-spec.md",
       "design-pipeline/references/website-cloning-manifest.schema.json",
       "design-pipeline/scripts/init-website-clone.cjs",
+      "design-pipeline/scripts/evaluate-website-clone.cjs",
     ],
   },
   {

@@ -19,6 +19,7 @@ const requiredFiles = [
   "skill/references/website-clone-component-spec.md",
   "skill/references/website-cloning-manifest.schema.json",
   "skill/scripts/init-website-clone.cjs",
+  "skill/scripts/evaluate-website-clone.cjs",
   "THIRD_PARTY_NOTICES.md",
   "openspec/project.md",
   "openspec/specs/design-pipeline/spec.md",

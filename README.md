@@ -25,12 +25,21 @@ node skill/scripts/init-website-clone.cjs \
   --url https://example.com \
   --reference-url https://reference.example \
   --fidelity exact
+
+# After the three adapters have reported capabilities and EvidencePort has
+# produced verification-input.json:
+node skill/scripts/evaluate-website-clone.cjs \
+  --change-root openspec/changes/clone-example \
+  --evidence openspec/changes/clone-example/verification-input.json
 ```
 
 - `--url` identifies a primary surface that the implementation must match.
 - `--reference-url` supplies mapped design or interaction references without becoming an automatic pixel baseline.
-- Exact runs require negotiated Browser, Builder, and Evidence ports. Missing measurements block the exact claim; agents must not guess.
-- The generated `website-cloning.json` records adapters, capabilities, viewports, thresholds, targets, and run status.
+- If a reference intentionally replaces primary behavior, use `adaptive` and record the mapping; the result is fidelity to a mixed contract, not global 1:1.
+- Exact runs require negotiated Browser, Builder, and Evidence ports. Each port records the selected adapter, actual capabilities, and its latest probe result.
+- Missing ports or measurements produce `blocked`; complete evidence that misses a threshold produces `fidelity-limited`.
+- Only the evaluator can mark `website-cloning.json` complete, and only after all required capabilities and measurements pass. The overall change remains `needs-review` until the normal accessibility, motion, responsive, engineering, and headless gates also pass.
+- Verification is per declared viewport and per reference mapping, so an aggregate score cannot hide one broken breakpoint or interaction state.
 
 See `skill/references/website-cloning.md` for the workflow and fidelity contract.
 

@@ -35,7 +35,7 @@ Options:
 - `--change-id`: lowercase hyphen-case id for the active change.
 - `--project-root`: target repository; defaults to the current directory.
 
-The initializer creates or augments one OpenSpec/design change. Re-running the identical request resumes without rewriting state history.
+The initializer creates or augments one OpenSpec/design change. Re-running the identical request resumes without rewriting state history. It never marks a run complete.
 
 ## 2. Target Roles
 
@@ -44,13 +44,13 @@ Every target has one role:
 - `primary`: capture, implement, and compare the clone against this target.
 - `reference`: extract only the mapped patterns needed by the primary implementation.
 
-For every reference target, write an explicit mapping in `design.md`:
+For every reference target, write an explicit mapping in `design.md` and the manifest's `referenceMappings` array:
 
 ```text
-reference target -> source region/state -> target component -> adopted properties -> rejected properties
+mapping id -> supporting|replacement -> reference target/source region -> primary target/component -> adopted properties -> rejected properties
 ```
 
-Do not pixel-match a primary implementation against a reference target unless the mapping explicitly makes that region a baseline.
+Each manifest mapping names its `designRecord` (for example `design.md#linear-nav`). The source must be a reference target, the destination must be a primary target, and the design artifact must contain the mapping id. Do not pixel-match a primary implementation against a reference target unless the mapping explicitly makes that region a baseline.
 
 ## 3. Port Contracts
 
@@ -144,9 +144,9 @@ The EvidencePort must be independent of the builder result. A passing build is n
 
 ## 4. Capability Negotiation
 
-Before capture, write the selected adapter id and capabilities into `website-cloning.json`.
+Before capture, write the selected adapter id, `availableCapabilities`, and a successful `lastProbe` into `website-cloning.json`. The required and observed capabilities are separate so the gate can detect partial adapters.
 
-Exact mode requires all three ports and their required capabilities. If a capability is absent:
+Exact mode requires all three ports and the exact capability set. Adaptive mode still requires reproducible capture, content/state comparison, responsive coverage, and mapped interaction replay, but pixel/layout comparison is optional unless its gate is configured. If a required capability is absent:
 
 1. Try another available adapter.
 2. If the missing capability is measurable by a safe manual procedure, record that procedure and evidence path.
@@ -157,9 +157,65 @@ Examples of BrowserPort adapters include Chrome/DevTools, Playwright, Browserbas
 
 Do not hard-code an adapter into the module contract.
 
+After EvidencePort writes a verification report, evaluate it through the bundled gate:
+
+```bash
+node <design-pipeline>/scripts/evaluate-website-clone.cjs \
+  --change-root <project>/openspec/changes/clone-example \
+  --evidence <project>/openspec/changes/clone-example/verification-input.json
+```
+
+The report uses `design-pipeline.website-cloning.verification.v1`. It contains aggregate content/interaction coverage, one measured result for every declared viewport, and one replay result for every reference mapping:
+
+```json
+{
+  "schema": "design-pipeline.website-cloning.verification.v1",
+  "targets": [
+    {
+      "targetId": "example-com",
+      "textCoverage": 1,
+      "assetCoverage": 1,
+      "interactionCoverage": 1,
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 900,
+          "pixelDifferenceRatio": 0.0004,
+          "maxLayoutDeltaPx": 1,
+          "unresolvedDifferences": []
+        }
+      ],
+      "unresolvedDifferences": []
+    }
+  ],
+  "mappings": [
+    {
+      "mappingId": "linear-nav",
+      "interactionCoverage": 1,
+      "replayPassed": true,
+      "verifiedAdoptedProperties": ["open-close interaction"],
+      "verifiedRejectedProperties": ["brand and copy"],
+      "states": [
+        {
+          "name": "keyboard-focus",
+          "replayPassed": true,
+          "evidencePaths": ["targets/example-com/evidence/interactions/linear-nav.json"],
+          "unresolvedDifferences": []
+        }
+      ],
+      "unresolvedDifferences": []
+    }
+  ]
+}
+```
+
+The evaluator writes the fidelity verdict to the manifest, state, event log, and handoff. Its exit codes are `0` for pass, `2` for unavailable capability/measurement, and `3` for measured fidelity mismatch. A fidelity pass completes the website-cloning manifest but leaves the overall change at `needs-review` until the normal design-pipeline gates pass.
+
 ## 5. Fidelity Contract
 
-`exact` means evidence-backed convergence under recorded rendering conditions, not an unsupported promise that every GPU, font rasterizer, personalized response, or clock tick produces identical bytes.
+`exact` means evidence-backed convergence against the primary target under recorded rendering conditions, not an unsupported promise that every GPU, font rasterizer, personalized response, or clock tick produces identical bytes. Do not use exact mode when a reference mapping intentionally replaces primary behavior.
+
+`adaptive` means fidelity to an explicitly mixed contract. It permits named reference mappings or target-project adaptations and cannot be reported as global 1:1. Text, assets, interaction coverage, responsive states, and mapped replays still require evidence. Pixel/layout measurements may be omitted only while their gates are `null`; configure non-null thresholds when an adaptive run must prove unchanged regions outside approved mappings.
 
 Default exact gates:
 
@@ -309,4 +365,4 @@ Report:
 - exact, adaptive, blocked, or fidelity-limited verdict;
 - remaining discrepancies with evidence paths.
 
-Never report “pixel-perfect” or “1:1” without a passing EvidencePort report under the recorded fidelity contract.
+Never report “pixel-perfect” or “1:1” without a passing EvidencePort report and a zero-exit evaluator result under the recorded fidelity contract.

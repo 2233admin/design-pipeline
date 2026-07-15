@@ -8,6 +8,6 @@
 - [x] Define Browser, Builder, and Evidence ports plus exact/adaptive fidelity gates.
 - [x] Route the main skill and update QA/self-check references.
 - [x] Add upstream attribution and user-facing README documentation.
-- [ ] Run targeted tests, repository QA, temporary-install validation, and open-source readiness checks.
-- [ ] Forward-test the revised skill with an independent agent.
-- [ ] Update QA, state, events, handoff, and stable specification.
+- [x] Run targeted tests, repository QA, temporary-install validation, and open-source readiness checks.
+- [x] Forward-test the revised skill with an independent agent.
+- [x] Update QA, state, events, handoff, and stable specification.
