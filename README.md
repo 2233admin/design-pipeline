@@ -13,6 +13,26 @@ It is not a general-purpose agent marketplace. Engineering integrations exist on
 - Supports headless AI handoff through machine-readable state files.
 - Self-checks optional companion skills and falls back when they are missing.
 - Aligns with OpenSpec's proposal -> apply -> archive lifecycle.
+- Reconstructs authorized live websites through Browser, Builder, and Evidence ports with measurable fidelity gates.
+
+## Website Cloning
+
+`design-pipeline` is a superset of a website-cloning prompt: it captures reference evidence, builds from complete component contracts, and independently compares the result before claiming fidelity.
+
+```bash
+node skill/scripts/init-website-clone.cjs \
+  --change-id clone-example \
+  --url https://example.com \
+  --reference-url https://reference.example \
+  --fidelity exact
+```
+
+- `--url` identifies a primary surface that the implementation must match.
+- `--reference-url` supplies mapped design or interaction references without becoming an automatic pixel baseline.
+- Exact runs require negotiated Browser, Builder, and Evidence ports. Missing measurements block the exact claim; agents must not guess.
+- The generated `website-cloning.json` records adapters, capabilities, viewports, thresholds, targets, and run status.
+
+See `skill/references/website-cloning.md` for the workflow and fidelity contract.
 
 ## Repository Layout
 

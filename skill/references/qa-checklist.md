@@ -36,6 +36,29 @@ Check:
 - Palette is not one-note.
 - Typography fits the surface and density.
 
+## Website-Cloning Fidelity Checks
+
+Complete this section when live primary/reference targets are involved.
+
+- Primary targets and captured final URLs:
+- Reference targets and explicit mappings:
+- BrowserPort adapter/capabilities:
+- BuilderPort adapter/capabilities:
+- EvidencePort adapter/capabilities:
+- Rendering environment matched:
+- Fonts/page readiness recorded:
+- Text coverage:
+- Asset coverage:
+- Interaction coverage:
+- Pixel-difference ratio by viewport:
+- Maximum layout delta by viewport:
+- Missing/extra sections:
+- Approved dynamic masks and reasons:
+- Repair loop iterations and evidence:
+- Verdict: exact / adaptive / blocked / fidelity-limited
+
+Never mark this gate exact when a required port is unresolved, comparison evidence is missing, or a builder guessed absent measurements.
+
 ## Motion Checks
 
 - `motion.md` required? yes/no:

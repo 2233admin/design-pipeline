@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/design-pipeline/website-cloning-manifest.schema.json",
+  "title": "design-pipeline website-cloning manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "changeId",
+    "status",
+    "initializedAt",
+    "artifactRoot",
+    "targets",
+    "fidelity",
+    "ports",
+    "protocol"
+  ],
+  "properties": {
+    "schema": { "const": "design-pipeline.website-cloning.v1" },
+    "changeId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "status": {
+      "enum": [
+        "planned",
+        "in-progress",
+        "blocked",
+        "fidelity-limited",
+        "needs-review",
+        "complete"
+      ]
+    },
+    "initializedAt": { "type": "string", "format": "date-time" },
+    "artifactRoot": { "type": "string", "minLength": 1 },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "url", "role", "status", "phase", "artifactRoot"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "url": { "type": "string", "format": "uri" },
+          "role": { "enum": ["primary", "reference"] },
+          "status": {
+            "enum": [
+              "planned",
+              "in-progress",
+              "blocked",
+              "fidelity-limited",
+              "needs-review",
+              "complete"
+            ]
+          },
+          "phase": {
+            "enum": [
+              "preflight",
+              "reconnaissance",
+              "foundation",
+              "component-spec-and-build",
+              "assembly",
+              "visual-and-interaction-qa",
+              "complete"
+            ]
+          },
+          "artifactRoot": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "fidelity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "comparisonPolicy", "viewports", "gates"],
+      "properties": {
+        "mode": { "enum": ["exact", "adaptive"] },
+        "comparisonPolicy": { "type": "string", "minLength": 1 },
+        "viewports": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["width", "height"],
+            "properties": {
+              "width": { "type": "integer", "minimum": 1 },
+              "height": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "gates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "textCoverage",
+            "assetCoverage",
+            "interactionCoverage",
+            "maxPixelDifferenceRatio",
+            "maxLayoutDeltaPx"
+          ],
+          "properties": {
+            "textCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "assetCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "interactionCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "maxPixelDifferenceRatio": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "maxLayoutDeltaPx": { "type": ["number", "null"], "minimum": 0 }
+          }
+        }
+      }
+    },
+    "ports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["browser", "builder", "evidence"],
+      "properties": {
+        "browser": { "$ref": "#/$defs/port" },
+        "builder": { "$ref": "#/$defs/port" },
+        "evidence": { "$ref": "#/$defs/port" }
+      }
+    },
+    "protocol": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "port": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "requiredCapabilities"],
+      "properties": {
+        "status": { "enum": ["unresolved", "ready", "blocked", "degraded"] },
+        "adapter": { "type": ["string", "null"] },
+        "requiredCapabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

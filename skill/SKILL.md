@@ -1,6 +1,6 @@
 ---
 name: design-pipeline
-description: OpenSpec-style design development pipeline that combines visual taste, web design rules, UX research, interaction polish, implementation, and QA artifacts before shipping UI work.
+description: OpenSpec-style design development pipeline for visual direction, UX research, website cloning and reverse-engineering, interaction polish, frontend implementation, and evidence-backed QA. Use for product UI, marketing pages, dashboards, live-page references, pixel-accurate rebuilds, design reviews, and frontend work that must avoid generic AI-looking output.
 ---
 
 # Frontend Design Pipeline
@@ -37,6 +37,18 @@ design/changes/<change-id>/
 ```
 
 Use an existing project convention instead if the repo already has `openspec/`, `spec/changes/`, `docs/design/`, `.omx/`, or another active planning directory.
+
+## Website Cloning Module
+
+When the user asks to clone, reproduce, rebuild, reverse-engineer, or use one or more live pages as implementation references:
+
+1. Read `references/website-cloning.md` and `references/website-clone-component-spec.md` completely.
+2. Initialize the run with `scripts/init-website-clone.cjs`; pass direct clone targets with `--url` and supporting inspiration/comparison pages with `--reference-url`.
+3. Treat `references/website-cloning-manifest.schema.json` as the machine-readable Browser/Builder/Evidence port and fidelity contract.
+4. Keep the URL-first user experience, but negotiate all three internal ports before claiming exact fidelity.
+5. If capture or comparison evidence is incomplete, record `blocked` or `fidelity-limited`; never fill missing measurements by visual guesswork.
+
+The website-cloning module is a design-pipeline superset capability. It adds live evidence capture and convergence gates while preserving all existing accessibility, motion, responsive, engineering, and headless-state requirements.
 
 ## Companion Skills
 

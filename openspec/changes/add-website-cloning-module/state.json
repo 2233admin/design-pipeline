@@ -1,0 +1,44 @@
+{
+  "schema": "design-pipeline.state.v1",
+  "changeId": "add-website-cloning-module",
+  "status": "in-progress",
+  "phase": "stage-4-tasks",
+  "updatedAt": "2026-07-15T22:19:53.9035175+08:00",
+  "artifactRoot": "openspec/changes/add-website-cloning-module",
+  "projectRoot": ".",
+  "surfaces": ["skill routing", "website-cloning reference", "initializer CLI", "repository QA"],
+  "capabilities": {
+    "missing": [],
+    "fallbacks": ["GBrain is absent; keep decisions in OpenSpec"]
+  },
+  "openSpec": {
+    "detected": true,
+    "changeId": "add-website-cloning-module",
+    "paths": ["openspec/changes/add-website-cloning-module"]
+  },
+  "gbrain": {
+    "detected": false,
+    "syncPlanned": false,
+    "paths": []
+  },
+  "motion": {
+    "required": false,
+    "motionSpec": "openspec/changes/add-website-cloning-module/motion.md",
+    "implementationLibrary": "none",
+    "reducedMotion": "not-applicable"
+  },
+  "qa": {
+    "status": "not-run",
+    "evidenceRoot": "openspec/changes/add-website-cloning-module/qa.md",
+    "scores": {}
+  },
+  "decisions": [
+    "Use a URL-first routed reference module with one Node initializer seam",
+    "Do not import the upstream Next.js or cache runtime"
+  ],
+  "blockers": [],
+  "nextActions": [
+    "Write failing initializer CLI tests",
+    "Implement the module and update routing"
+  ]
+}
