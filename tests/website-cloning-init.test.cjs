@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -8,12 +9,25 @@ const test = require("node:test");
 const repoRoot = path.resolve(__dirname, "..");
 const initializer = path.join(repoRoot, "skill", "scripts", "init-website-clone.cjs");
 const evaluator = path.join(repoRoot, "skill", "scripts", "evaluate-website-clone.cjs");
+const createdProjects = new Set();
+
+function makeTempRoot() {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-clone-"));
+  createdProjects.add(projectRoot);
+  return projectRoot;
+}
 
 function makeProject() {
-  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-clone-"));
+  const projectRoot = makeTempRoot();
   fs.mkdirSync(path.join(projectRoot, "openspec", "changes"), { recursive: true });
   return projectRoot;
 }
+
+test.after(() => {
+  for (const projectRoot of createdProjects) {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
 
 function run(projectRoot, ...args) {
   return spawnSync(
@@ -301,7 +315,7 @@ test("augments an existing OpenSpec change without discarding headless history",
 });
 
 test("does not treat an unrelated root changes directory as an OpenSpec surface", () => {
-  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-clone-"));
+  const projectRoot = makeTempRoot();
   fs.mkdirSync(path.join(projectRoot, "changes"), { recursive: true });
 
   const result = run(
@@ -318,7 +332,7 @@ test("does not treat an unrelated root changes directory as an OpenSpec surface"
 });
 
 test("uses an established docs design surface", () => {
-  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-clone-"));
+  const projectRoot = makeTempRoot();
   fs.mkdirSync(path.join(projectRoot, "docs", "design"), { recursive: true });
 
   const result = run(
@@ -381,6 +395,31 @@ test("assigns collision-safe target ids independently of URL order", () => {
   );
   assert.equal(resumed.status, 0, resumed.stderr);
   assert.match(resumed.stdout, /already initialized/i);
+});
+
+test("keeps target ids unique when a generated suffix matches a natural id", () => {
+  const projectRoot = makeProject();
+  const collidingUrl = "https://example.com/a+b";
+  const suffix = crypto.createHash("sha256").update(collidingUrl).digest("hex").slice(0, 8);
+  const naturalCollision = `https://example.com/a-b-${suffix}`;
+
+  const result = run(
+    projectRoot,
+    "--change-id",
+    "suffix-collision",
+    "--url",
+    naturalCollision,
+    "--url",
+    collidingUrl,
+    "--url",
+    "https://example.com/a/b",
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  const targets = readJson(
+    path.join(projectRoot, "openspec", "changes", "suffix-collision", "website-cloning.json"),
+  ).targets;
+  assert.equal(new Set(targets.map((target) => target.id)).size, targets.length);
 });
 
 function markPortsReady(manifest) {

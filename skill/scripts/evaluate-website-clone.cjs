@@ -93,8 +93,21 @@ function writeJson(file, value) {
   fs.renameSync(temp, file);
 }
 
+function needsEventSeparator(file) {
+  const { size } = fs.statSync(file);
+  if (size === 0) return false;
+  const descriptor = fs.openSync(file, "r");
+  try {
+    const lastByte = Buffer.alloc(1);
+    fs.readSync(descriptor, lastByte, 0, 1, size - 1);
+    return lastByte[0] !== 0x0a;
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
 function appendEvent(file, event) {
-  const separator = fs.statSync(file).size > 0 && !fs.readFileSync(file, "utf8").endsWith("\n") ? "\n" : "";
+  const separator = needsEventSeparator(file) ? "\n" : "";
   fs.appendFileSync(file, `${separator}${JSON.stringify(event)}\n`, "utf8");
 }
 
@@ -485,7 +498,7 @@ function updateHandoff(changeRoot, verdict, reasons, now, reportPath) {
   const end = "<!-- DESIGN-PIPELINE:WEBSITE-CLONING-EVALUATION:END -->";
   const section = `${start}\n\n## Website Cloning Evaluation\n\n- Evaluated: ${now}\n- Verdict: \`${verdict}\`\n- Evidence: \`${reportPath}\`\n\n### Reasons\n\n${detail}\n\n### Next Action\n\n${next}\n\n${end}`;
   const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, "g");
-  const updated = pattern.test(existing)
+  const updated = existing.includes(start)
     ? existing.replace(pattern, section)
     : `${existing.trimEnd()}\n\n${section}\n`;
   fs.writeFileSync(handoffPath, updated, "utf8");

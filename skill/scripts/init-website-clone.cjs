@@ -134,6 +134,12 @@ function targetIdFor(urlText, collidingBases, usedIds) {
     const suffix = crypto.createHash("sha256").update(urlText).digest("hex").slice(0, 8);
     id = `${id.slice(0, 63)}-${suffix}`;
   }
+  const suffixedId = id;
+  let counter = 1;
+  while (usedIds.has(id)) {
+    id = `${suffixedId.slice(0, 63)}-${counter}`;
+    counter += 1;
+  }
   usedIds.add(id);
   return id;
 }
