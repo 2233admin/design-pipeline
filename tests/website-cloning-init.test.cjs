@@ -92,6 +92,9 @@ test("initializes a resumable website-cloning change from one URL", () => {
       assert.ok(Object.hasOwn(port, property), `port misses schema property ${property}`);
     }
   }
+  const readyPortProperties = schema.$defs.port.allOf[0].then.properties;
+  assert.equal(readyPortProperties.adapter.minLength, 1);
+  assert.equal(readyPortProperties.lastProbe.properties.ok.const, true);
   assert.equal(state.schema, "design-pipeline.state.v1");
   assert.equal(state.changeId, "clone-example");
   assert.equal(state.status, "planned");
@@ -226,6 +229,47 @@ test("rerunning the same command resumes without rewriting state history", () =>
   assert.equal(fs.readFileSync(eventsPath, "utf8"), before.events);
 });
 
+test("rejects a damaged manifest instead of treating it as resumable", () => {
+  const args = [
+    "--change-id",
+    "damaged-resume",
+    "--url",
+    "https://example.com/a",
+    "--url",
+    "https://example.com/b",
+  ];
+  const corruptions = [
+    (manifest) => {
+      manifest.targets[1].id = manifest.targets[0].id;
+    },
+    (manifest) => {
+      manifest.targets[0].artifactRoot = "targets/tampered";
+    },
+    (manifest) => {
+      delete manifest.ports;
+    },
+  ];
+
+  for (const corrupt of corruptions) {
+    const projectRoot = makeProject();
+    assert.equal(run(projectRoot, ...args).status, 0);
+    const manifestPath = path.join(
+      projectRoot,
+      "openspec",
+      "changes",
+      "damaged-resume",
+      "website-cloning.json",
+    );
+    const manifest = readJson(manifestPath);
+    corrupt(manifest);
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const resumed = run(projectRoot, ...args);
+    assert.notEqual(resumed.status, 0);
+    assert.doesNotMatch(resumed.stdout, /already initialized/i);
+  }
+});
+
 test("augments an existing OpenSpec change without discarding headless history", () => {
   const projectRoot = makeProject();
   const changeRoot = path.join(projectRoot, "openspec", "changes", "existing-change");
@@ -312,6 +356,29 @@ test("augments an existing OpenSpec change without discarding headless history",
   assert.match(handoff, /Website Cloning/);
   assert.equal(fs.readFileSync(preservedResearch, "utf8"), "preserve this research\n");
   assert.deepEqual(readJson(preservedAssets).assets, ["keep-me"]);
+});
+
+test("rejects extending a completed OpenSpec change before writing artifacts", () => {
+  const projectRoot = makeProject();
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "terminal-change");
+  fs.mkdirSync(changeRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(changeRoot, "state.json"),
+    `${JSON.stringify({ changeId: "terminal-change", status: "complete" }, null, 2)}\n`,
+  );
+
+  const result = run(
+    projectRoot,
+    "--change-id",
+    "terminal-change",
+    "--url",
+    "https://example.com",
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /complete and cannot be extended/i);
+  assert.equal(fs.existsSync(path.join(changeRoot, "website-cloning.json")), false);
+  assert.equal(fs.existsSync(path.join(changeRoot, "proposal.md")), false);
 });
 
 test("does not treat an unrelated root changes directory as an OpenSpec surface", () => {
@@ -492,6 +559,10 @@ test("marks an exact run complete only when ports and evidence pass", () => {
   const manifest = readJson(manifestPath);
   markPortsReady(manifest);
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const statePath = path.join(changeRoot, "state.json");
+  const initialState = readJson(statePath);
+  initialState.nextActions = ["keep-this-action"];
+  fs.writeFileSync(statePath, `${JSON.stringify(initialState, null, 2)}\n`);
   const evidencePath = path.join(changeRoot, "verification-input.json");
   fs.writeFileSync(
     evidencePath,
@@ -502,13 +573,35 @@ test("marks an exact run complete only when ports and evidence pass", () => {
 
   assert.equal(result.status, 0, result.stderr);
   const evaluated = readJson(manifestPath);
-  const state = readJson(path.join(changeRoot, "state.json"));
+  const state = readJson(statePath);
   assert.equal(evaluated.status, "complete");
   assert.equal(evaluated.targets[0].status, "complete");
   assert.equal(evaluated.targets[0].phase, "complete");
   assert.equal(evaluated.verification.status, "passed");
   assert.equal(state.status, "needs-review");
   assert.equal(state.qa.websiteCloning.verdict, "complete");
+  assert.ok(state.nextActions.includes("keep-this-action"));
+
+  evaluated.ports.browser.status = "unresolved";
+  fs.writeFileSync(manifestPath, `${JSON.stringify(evaluated, null, 2)}\n`);
+  const reevaluated = evaluate(changeRoot, evidencePath);
+  assert.equal(reevaluated.status, 2, reevaluated.stderr);
+  const downgraded = readJson(manifestPath);
+  const downgradedState = readJson(statePath);
+  assert.equal(downgraded.status, "blocked");
+  assert.equal(downgraded.targets[0].status, "blocked");
+  assert.equal(downgraded.targets[0].phase, "visual-and-interaction-qa");
+  assert.ok(downgradedState.nextActions.includes("keep-this-action"));
+  assert.ok(
+    downgradedState.nextActions.includes(
+      "Resolve the missing port capabilities or measurements, then rerun the fidelity gate",
+    ),
+  );
+  assert.ok(
+    !downgradedState.nextActions.includes(
+      "Run the remaining design-pipeline gates before archiving or claiming delivery complete",
+    ),
+  );
 });
 
 test("marks a measurable exact mismatch as fidelity-limited", () => {
@@ -713,6 +806,13 @@ test("rejects evidence outside the change and requires headless state", () => {
   assert.match(outside.stderr, /inside the change root/i);
   assert.equal(fs.readFileSync(manifestPath, "utf8"), before);
 
+  const linkedEvidence = path.join(changeRoot, "linked-verification.json");
+  fs.symlinkSync(outsideEvidence, linkedEvidence, "file");
+  const linked = evaluate(changeRoot, linkedEvidence);
+  assert.equal(linked.status, 1);
+  assert.match(linked.stderr, /inside the change root/i);
+  assert.equal(fs.readFileSync(manifestPath, "utf8"), before);
+
   const insideEvidence = path.join(changeRoot, "verification-input.json");
   fs.copyFileSync(outsideEvidence, insideEvidence);
   const statePath = path.join(changeRoot, "state.json");
@@ -728,6 +828,33 @@ test("rejects evidence outside the change and requires headless state", () => {
   const missingState = evaluate(changeRoot, insideEvidence);
   assert.equal(missingState.status, 1);
   assert.match(missingState.stderr, /state\.json/i);
+  assert.equal(fs.readFileSync(manifestPath, "utf8"), before);
+});
+
+test("commits the manifest only after lifecycle artifacts persist", () => {
+  const projectRoot = makeProject();
+  assert.equal(
+    run(projectRoot, "--change-id", "atomic-verdict", "--url", "https://example.com").status,
+    0,
+  );
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "atomic-verdict");
+  const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const manifest = readJson(manifestPath);
+  markPortsReady(manifest);
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const before = fs.readFileSync(manifestPath, "utf8");
+  const evidencePath = path.join(changeRoot, "verification-input.json");
+  fs.writeFileSync(
+    evidencePath,
+    `${JSON.stringify(passingEvidence("example-com"), null, 2)}\n`,
+  );
+  const handoffPath = path.join(changeRoot, "handoff.md");
+  fs.rmSync(handoffPath);
+  fs.mkdirSync(handoffPath);
+
+  const result = evaluate(changeRoot, evidencePath);
+
+  assert.equal(result.status, 1);
   assert.equal(fs.readFileSync(manifestPath, "utf8"), before);
 });
 

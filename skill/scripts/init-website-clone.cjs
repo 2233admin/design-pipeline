@@ -5,6 +5,23 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const CHANGE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const MANIFEST_STATUSES = [
+  "planned",
+  "in-progress",
+  "blocked",
+  "fidelity-limited",
+  "needs-review",
+  "complete",
+];
+const TARGET_PHASES = [
+  "preflight",
+  "reconnaissance",
+  "foundation",
+  "component-spec-and-build",
+  "assembly",
+  "visual-and-interaction-qa",
+  "complete",
+];
 const OPEN_SPEC_ROOTS = [
   ["openspec", "changes"],
   [".openspec", "changes"],
@@ -346,6 +363,9 @@ function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets
   const relativeRoot = relativeFromProject(projectRoot, artifactRoot, changeId);
   const statePath = path.join(changeRoot, "state.json");
   const existingState = readExistingState(statePath, changeId);
+  if (existingState?.status === "complete") {
+    fail(`existing change ${changeId} is complete and cannot be extended`);
+  }
 
   for (const [relative, content] of Object.entries(planningFiles(changeId, targets))) {
     writeIfMissing(path.join(changeRoot, relative), content);
@@ -488,7 +508,169 @@ function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets
   }
 }
 
-function existingRunMatches(manifestPath, changeId, targets, fidelityMode) {
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.length > 0;
+}
+
+function isObject(value) {
+  return value !== null && typeof value === "object";
+}
+
+function isStringArray(value, allowEmpty = true) {
+  return (
+    Array.isArray(value) &&
+    (allowEmpty || value.length > 0) &&
+    value.every((item) => isNonEmptyString(item))
+  );
+}
+
+function validProbe(probe) {
+  if (probe === null) return true;
+  if (!isObject(probe)) return false;
+  return [
+    isNonEmptyString(probe.at),
+    typeof probe.ok === "boolean",
+    typeof probe.message === "string",
+  ].every(Boolean);
+}
+
+function validReadyPort(port) {
+  if (port.status !== "ready") return true;
+  return [isNonEmptyString(port.adapter), port.lastProbe?.ok === true].every(Boolean);
+}
+
+function validPort(port) {
+  if (!isObject(port)) return false;
+  if (!["unresolved", "ready", "blocked", "degraded"].includes(port.status)) return false;
+  if (port.adapter !== null && !isNonEmptyString(port.adapter)) return false;
+  if (!isStringArray(port.requiredCapabilities, false)) return false;
+  if (!isStringArray(port.availableCapabilities)) return false;
+  return validProbe(port.lastProbe) && validReadyPort(port);
+}
+
+function validTarget(target) {
+  return (
+    target &&
+    typeof target === "object" &&
+    CHANGE_ID_PATTERN.test(target.id) &&
+    isNonEmptyString(target.url) &&
+    ["primary", "reference"].includes(target.role) &&
+    MANIFEST_STATUSES.includes(target.status) &&
+    TARGET_PHASES.includes(target.phase) &&
+    target.artifactRoot === `targets/${target.id}`
+  );
+}
+
+function validFidelity(fidelity, fidelityMode) {
+  if (!isObject(fidelity)) return false;
+  if (!Array.isArray(fidelity.viewports)) return false;
+  if (!isObject(fidelity.gates)) return false;
+  return [
+    fidelity.mode === fidelityMode,
+    isNonEmptyString(fidelity.comparisonPolicy),
+    fidelity.viewports.length > 0,
+    fidelity.viewports.every(validViewport),
+    validCoverageGates(fidelity.gates),
+    validOptionalRatio(fidelity.gates.maxPixelDifferenceRatio),
+    validOptionalNonnegative(fidelity.gates.maxLayoutDeltaPx),
+  ].every(Boolean);
+}
+
+function validViewport(viewport) {
+  return [
+    Number.isInteger(viewport?.width),
+    viewport?.width > 0,
+    Number.isInteger(viewport?.height),
+    viewport?.height > 0,
+  ].every(Boolean);
+}
+
+function validCoverageGates(gates) {
+  return ["textCoverage", "assetCoverage", "interactionCoverage"].every((name) =>
+    validRatio(gates[name]),
+  );
+}
+
+function validRatio(value) {
+  return [typeof value === "number", value >= 0, value <= 1].every(Boolean);
+}
+
+function validOptionalRatio(value) {
+  return value === null || validRatio(value);
+}
+
+function validOptionalNonnegative(value) {
+  return value === null || [typeof value === "number", value >= 0].every(Boolean);
+}
+
+function validVerification(verification) {
+  return (
+    verification &&
+    typeof verification === "object" &&
+    ["not-run", "passed", "failed", "blocked"].includes(verification.status) &&
+    (verification.evaluatedAt === null || isNonEmptyString(verification.evaluatedAt)) &&
+    (verification.reportPath === null || isNonEmptyString(verification.reportPath)) &&
+    isStringArray(verification.reasons)
+  );
+}
+
+function validManifestHeader(manifest, changeId, artifactRoot, fidelityMode) {
+  if (!isObject(manifest)) return false;
+  return [
+    manifest.schema === "design-pipeline.website-cloning.v1",
+    manifest.changeId === changeId,
+    manifest.artifactRoot === artifactRoot,
+    isNonEmptyString(manifest.initializedAt),
+    MANIFEST_STATUSES.includes(manifest.status),
+    validFidelity(manifest.fidelity, fidelityMode),
+    Array.isArray(manifest.referenceMappings),
+    validVerification(manifest.verification),
+    isStringArray(manifest.protocol, false),
+  ].every(Boolean);
+}
+
+function validManifestPorts(ports) {
+  return ["browser", "builder", "evidence"].every((name) => validPort(ports?.[name]));
+}
+
+function validManifestTargets(manifestTargets, targets) {
+  if (!Array.isArray(manifestTargets)) return false;
+  if (manifestTargets.length !== targets.length) return false;
+  const ids = new Set(manifestTargets.map((target) => target?.id));
+  if (ids.size !== manifestTargets.length) return false;
+  if (!manifestTargets.every(validTarget)) return false;
+
+  const actualBySource = new Map(
+    manifestTargets.map((target) => [`${target.role}\u0000${target.url}`, target]),
+  );
+  return targets.every((expected) => {
+    const actual = actualBySource.get(`${expected.role}\u0000${expected.url}`);
+    return actual?.id === expected.id && actual.artifactRoot === expected.artifactRoot;
+  });
+}
+
+function validCompletedManifest(manifest) {
+  if (manifest.status !== "complete") return true;
+  return [
+    ["browser", "builder", "evidence"].every(
+      (name) => manifest.ports[name].status === "ready",
+    ),
+    manifest.targets.every(
+      (target) => target.status === "complete" && target.phase === "complete",
+    ),
+    manifest.verification.status === "passed",
+    isNonEmptyString(manifest.verification.reportPath),
+  ].every(Boolean);
+}
+
+function manifestContractMatches(manifest, changeId, artifactRoot, targets, fidelityMode) {
+  if (!validManifestHeader(manifest, changeId, artifactRoot, fidelityMode)) return false;
+  if (!validManifestPorts(manifest.ports)) return false;
+  if (!validManifestTargets(manifest.targets, targets)) return false;
+  return validCompletedManifest(manifest);
+}
+
+function existingRunMatches(manifestPath, changeId, artifactRoot, targets, fidelityMode) {
   let manifest;
   try {
     manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
@@ -496,20 +678,7 @@ function existingRunMatches(manifestPath, changeId, targets, fidelityMode) {
     fail(`existing website-cloning manifest is invalid: ${manifestPath}`);
   }
 
-  const compareKey = (target) => `${target.role}\u0000${target.url}`;
-  const expected = targets
-    .map((target) => ({ url: target.url, role: target.role }))
-    .sort((left, right) => compareKey(left).localeCompare(compareKey(right)));
-  const actual = Array.isArray(manifest.targets)
-    ? manifest.targets
-        .map((target) => ({ url: target.url, role: target.role }))
-        .sort((left, right) => compareKey(left).localeCompare(compareKey(right)))
-    : [];
-  return (
-    manifest.changeId === changeId &&
-    manifest.fidelity?.mode === fidelityMode &&
-    JSON.stringify(actual) === JSON.stringify(expected)
-  );
+  return manifestContractMatches(manifest, changeId, artifactRoot, targets, fidelityMode);
 }
 
 function initialize(validated) {
@@ -517,9 +686,10 @@ function initialize(validated) {
   const artifactRoot = findArtifactRoot(projectRoot);
   const changeRoot = path.join(artifactRoot, changeId);
   const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const relativeRoot = relativeFromProject(projectRoot, artifactRoot, changeId);
 
   if (fs.existsSync(manifestPath)) {
-    if (!existingRunMatches(manifestPath, changeId, targets, fidelity)) {
+    if (!existingRunMatches(manifestPath, changeId, relativeRoot, targets, fidelity)) {
       fail(`change ${changeId} is already initialized with a different target set`);
     }
     console.log(`Website-cloning change ${changeId} is already initialized; resume from state.json.`);

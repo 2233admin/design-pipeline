@@ -5,7 +5,7 @@
 The parent `skill/SKILL.md` routes clone, replica, rebuild, and reverse-engineering requests to `references/website-cloning.md`. The module exposes two deterministic code seams:
 
 ```text
-node <skill-root>/scripts/init-website-clone.cjs --change-id <id> --url <url> [--url <url> ...] [--project-root <path>]
+node <skill-root>/scripts/init-website-clone.cjs --change-id <id> --url <url> [--url <url> ...] [--reference-url <url> ...] [--fidelity exact|adaptive] [--project-root <path>]
 node <skill-root>/scripts/evaluate-website-clone.cjs --change-root <path> [--evidence <verification.json>]
 ```
 

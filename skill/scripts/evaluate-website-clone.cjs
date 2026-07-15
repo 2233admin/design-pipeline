@@ -276,9 +276,18 @@ function inspectDifferenceList(label, differences, blockers, mismatches) {
 }
 
 function pathIsPortable(changeRoot, evidencePath) {
-  const resolved = path.resolve(changeRoot, evidencePath);
-  const relative = path.relative(changeRoot, resolved);
-  return !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative) && fs.existsSync(resolved);
+  try {
+    const realRoot = fs.realpathSync(changeRoot);
+    const realEvidence = fs.realpathSync(path.resolve(changeRoot, evidencePath));
+    const relative = path.relative(realRoot, realEvidence);
+    return (
+      !relative.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relative) &&
+      fs.statSync(realEvidence).isFile()
+    );
+  } catch {
+    return false;
+  }
 }
 
 function inspectMappingDefinition(manifest, mapping, targetsById, blockers) {
@@ -443,9 +452,11 @@ function relativePath(changeRoot, file) {
 
 function nextTargetState(target, verdict, targetFailures) {
   if (verdict === "complete") return { status: "complete", phase: "complete" };
-  if (target.status === "complete") return null;
-  if (verdict === "blocked") return { status: "blocked" };
-  return { status: targetFailures.has(target.id) ? "fidelity-limited" : "needs-review" };
+  if (verdict === "blocked") return { status: "blocked", phase: "visual-and-interaction-qa" };
+  return {
+    status: targetFailures.has(target.id) ? "fidelity-limited" : "needs-review",
+    phase: "visual-and-interaction-qa",
+  };
 }
 
 function updateTargetStates(manifest, verdict, targetFailures) {
@@ -466,12 +477,21 @@ function updateState(changeRoot, state, verdict, reasons, now, reportPath) {
   state.phase = "stage-6-gate-review";
   state.updatedAt = now;
   state.blockers = verdict === "complete" ? priorBlockers : [...priorBlockers, ...prefixedReasons];
-  state.nextActions =
+  const evaluationActions = [
+    "Run the remaining design-pipeline gates before archiving or claiming delivery complete",
+    "Resolve the missing port capabilities or measurements, then rerun the fidelity gate",
+    "Repair the recorded differences or accept an adaptive fidelity claim",
+  ];
+  const priorActions = Array.isArray(state.nextActions)
+    ? state.nextActions.filter((action) => !evaluationActions.includes(action))
+    : [];
+  const nextAction =
     verdict === "complete"
-      ? ["Run the remaining design-pipeline gates before archiving or claiming delivery complete"]
+      ? evaluationActions[0]
       : verdict === "blocked"
-        ? ["Resolve the missing port capabilities or measurements, then rerun the fidelity gate"]
-        : ["Repair the recorded differences or accept an adaptive fidelity claim"];
+        ? evaluationActions[1]
+        : evaluationActions[2];
+  state.nextActions = unique([...priorActions, nextAction]);
   state.qa = {
     ...(state.qa || {}),
     websiteCloning: {
@@ -533,12 +553,7 @@ function loadChangeContext(options) {
 function loadEvidence(changeRoot, evidenceOption) {
   if (!evidenceOption) return { evidence: null, reportPath: null };
   const evidencePath = path.resolve(evidenceOption);
-  const relativeEvidence = path.relative(changeRoot, evidencePath);
-  if (
-    !relativeEvidence ||
-    relativeEvidence.startsWith(`..${path.sep}`) ||
-    path.isAbsolute(relativeEvidence)
-  ) {
+  if (!pathIsPortable(changeRoot, evidencePath)) {
     fail("verification evidence must be a file inside the change root");
   }
   return {
@@ -591,7 +606,6 @@ function persistEvaluation(context, evaluation, reportPath) {
     reasons,
   };
   updateTargetStates(manifest, verdict, targetFailures);
-  writeJson(manifestPath, manifest);
 
   const phase = updateState(changeRoot, state, verdict, reasons, now, reportPath);
   appendEvent(path.join(changeRoot, "events.jsonl"), {
@@ -604,6 +618,7 @@ function persistEvaluation(context, evaluation, reportPath) {
     nextActions: evaluationNextActions(verdict),
   });
   updateHandoff(changeRoot, verdict, reasons, now, reportPath || "not-provided");
+  writeJson(manifestPath, manifest);
 
   console.log(`Website-cloning verdict: ${verdict}`);
   for (const reason of reasons) console.log(`- ${reason}`);

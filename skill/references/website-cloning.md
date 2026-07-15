@@ -348,7 +348,7 @@ Use these statuses:
 - `needs-review`: gates ran and require a decision;
 - `complete`: all required gates pass.
 
-On failure, update `state.json.blockers`, append an event, refresh `handoff.md`, and keep completed target phases unchanged. Resume by reading state, the last 20 events, handoff, the manifest, and only the artifacts named by current next actions.
+On failure, update `state.json.blockers`, append an event, refresh `handoff.md`, and reopen any target whose latest evaluation no longer passes. Resume by reading state, the last 20 events, handoff, the manifest, and only the artifacts named by current next actions.
 
 ## 10. Completion Contract
 
@@ -362,7 +362,7 @@ Report:
 - fidelity metrics for every viewport;
 - interaction coverage and mismatches;
 - approved dynamic masks;
-- exact, adaptive, blocked, or fidelity-limited verdict;
+- fidelity mode (`exact` or `adaptive`) and website-cloning outcome (`complete`, `blocked`, or `fidelity-limited`), plus the overall change status;
 - remaining discrepancies with evidence paths.
 
 Never report “pixel-perfect” or “1:1” without a passing EvidencePort report and a zero-exit evaluator result under the recorded fidelity contract.

@@ -64,7 +64,7 @@ The pipeline SHALL expose machine-readable Browser, Builder, and Evidence port c
 #### Scenario: A required port capability is missing
 
 - **WHEN** no adapter can provide a required exact-mode capability
-- **THEN** the run SHALL be blocked or explicitly marked fidelity-limited and SHALL NOT claim pixel-perfect or 1:1 output.
+- **THEN** the run SHALL be blocked and SHALL NOT claim pixel-perfect or 1:1 output; `fidelity-limited` is reserved for measured mismatches.
 
 #### Scenario: Completion is evaluated
 

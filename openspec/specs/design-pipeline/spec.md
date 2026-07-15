@@ -77,7 +77,7 @@ The URL-first interface SHALL hide Browser, Builder, and Evidence ports with mac
 #### Scenario: Required evidence capability is missing
 
 - **WHEN** no adapter can provide a required exact-mode capability
-- **THEN** the run SHALL become blocked or fidelity-limited and SHALL NOT claim pixel-perfect or 1:1 output.
+- **THEN** the run SHALL become blocked and SHALL NOT claim pixel-perfect or 1:1 output; `fidelity-limited` is reserved for measured mismatches.
 
 #### Scenario: Exact completion is evaluated
 
