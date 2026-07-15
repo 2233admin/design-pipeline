@@ -11,6 +11,7 @@ MUST:
 - `SKILL.md` exists at the skill root.
 - The skill has valid frontmatter `name` and `description`.
 - All referenced files exist.
+- The website-cloning workflow, component contract, manifest schema, and initializer are bundled.
 - Scripts use only standard runtime dependencies unless documented.
 - The skill can run from a default Codex skill root and from `CODEX_SKILLS_DIR`.
 
@@ -34,11 +35,11 @@ MUST:
 - Missing optional/enhancement skills produce `WARN`, not `FAIL`.
 - The report includes fallback guidance.
 - The report includes install hints for missing companion groups.
-- A user with only `design-pipeline` installed can still run the pipeline with documented fallbacks.
+- A user with only the complete `design-pipeline` skill bundle installed can still run the pipeline with documented fallbacks.
 
 Pass:
 
-- Simulated empty skill root with only `design-pipeline/SKILL.md` returns `OK`.
+- A simulated skill root containing only the distributable `design-pipeline` folder returns `OK`.
 - At least one optional group reports `WARN`.
 - No optional group reports `FAIL`.
 
@@ -158,7 +159,24 @@ Pass:
 - `curation-policy.md` includes conflict policy.
 - `companion-skills.md` lists sources and install status.
 
-## 10. Release Verdict
+## 10. Website-Cloning Superset Gate
+
+MUST:
+
+- Primary and reference target roles are distinct.
+- Browser, Builder, and Evidence port contracts are documented and machine-readable.
+- Exact fidelity requires independent comparison evidence.
+- Missing measurements produce blocked or fidelity-limited state, not guessed values.
+- Existing accessibility, motion, responsive, engineering, and headless gates remain mandatory.
+- Adapted upstream workflow retains its license notice.
+
+Pass:
+
+- `node --test tests/website-cloning-init.test.cjs` passes.
+- `website-cloning-manifest.schema.json` parses.
+- Repository QA resolves all module references.
+
+## 11. Release Verdict
 
 Use this final table before publishing:
 
@@ -173,6 +191,7 @@ Use this final table before publishing:
 | QA evidence |  |  |
 | Cross-platform behavior |  |  |
 | Repository hygiene |  |  |
+| Website-cloning superset |  |  |
 
 Release statuses:
 

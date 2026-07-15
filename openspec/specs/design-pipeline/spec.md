@@ -56,3 +56,63 @@ The pipeline SHALL define release criteria for open-source publication.
 - **WHEN** a maintainer prepares to publish
 - **THEN** all MUST checks in the open-source readiness reference SHALL pass or the release SHALL be marked not ready.
 
+### Requirement: Website-cloning requests use a focused superset module
+
+The pipeline SHALL route authorized live-page clone, rebuild, reproduction, and reverse-engineering requests to a progressively disclosed module that preserves all existing design-pipeline gates.
+
+#### Scenario: User supplies a primary live URL
+
+- **WHEN** the user asks for a high-fidelity implementation of a live page
+- **THEN** the pipeline SHALL initialize an isolated, resumable target and SHALL preserve the target project's established framework and conventions.
+
+### Requirement: Website-cloning uses three internal ports
+
+The URL-first interface SHALL hide Browser, Builder, and Evidence ports with machine-readable capability contracts.
+
+#### Scenario: Exact fidelity is requested
+
+- **WHEN** the run uses exact fidelity
+- **THEN** BrowserPort SHALL capture measured evidence, BuilderPort SHALL build from complete component contracts, and EvidencePort SHALL independently compare the implementation.
+
+#### Scenario: Required evidence capability is missing
+
+- **WHEN** no adapter can provide a required exact-mode capability
+- **THEN** the run SHALL become blocked and SHALL NOT claim pixel-perfect or 1:1 output; `fidelity-limited` is reserved for measured mismatches.
+
+#### Scenario: Exact completion is evaluated
+
+- **WHEN** measured verification evidence is submitted
+- **THEN** the bundled evaluator SHALL require successful port probes and all required capabilities, distinguish unavailable measurements from measured mismatches, and be the only bundled command that marks the website-cloning manifest complete.
+
+#### Scenario: Reference behavior intentionally differs
+
+- **WHEN** a reference mapping replaces primary behavior
+- **THEN** the run SHALL use an adaptive mixed contract, record and replay the mapping, and SHALL NOT describe the whole result as 1:1.
+
+### Requirement: Primary and reference targets are distinct
+
+The pipeline SHALL compare a primary target against its own normalized capture and SHALL use reference targets only through explicit design mappings.
+
+#### Scenario: A reference page inspires one component
+
+- **WHEN** a reference target contributes design or interaction properties
+- **THEN** `design.md` SHALL map the source region and state to the destination component and SHALL record adopted and rejected properties.
+
+### Requirement: Exact cloning is a convergence gate
+
+The pipeline SHALL measure text, asset, interaction, pixel, layout, responsive, and state fidelity under recorded rendering conditions.
+
+#### Scenario: Static pixels match but interaction differs
+
+- **WHEN** screenshot comparison passes but a discovered interaction model or state differs
+- **THEN** the run SHALL remain incomplete and SHALL create an evidence-linked repair task.
+
+### Requirement: Website-cloning runs preserve headless history
+
+The initializer SHALL validate input atomically, isolate targets, resume identical requests idempotently, and augment existing OpenSpec state without discarding prior decisions, events, or handoff notes.
+
+#### Scenario: Existing OpenSpec change adopts website cloning
+
+- **WHEN** the initializer targets an existing change without a website-cloning manifest
+- **THEN** it SHALL preserve current state/history and add the module surfaces, manifest, event, and resume guidance.
+

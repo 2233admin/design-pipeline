@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/design-pipeline/website-cloning-manifest.schema.json",
+  "title": "design-pipeline website-cloning manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "changeId",
+    "status",
+    "initializedAt",
+    "artifactRoot",
+    "targets",
+    "fidelity",
+    "referenceMappings",
+    "ports",
+    "verification",
+    "protocol"
+  ],
+  "properties": {
+    "schema": { "const": "design-pipeline.website-cloning.v1" },
+    "changeId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "status": {
+      "enum": [
+        "planned",
+        "in-progress",
+        "blocked",
+        "fidelity-limited",
+        "needs-review",
+        "complete"
+      ]
+    },
+    "initializedAt": { "type": "string", "format": "date-time" },
+    "artifactRoot": { "type": "string", "minLength": 1 },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "url", "role", "status", "phase", "artifactRoot"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "url": { "type": "string", "format": "uri" },
+          "role": { "enum": ["primary", "reference"] },
+          "status": {
+            "enum": [
+              "planned",
+              "in-progress",
+              "blocked",
+              "fidelity-limited",
+              "needs-review",
+              "complete"
+            ]
+          },
+          "phase": {
+            "enum": [
+              "preflight",
+              "reconnaissance",
+              "foundation",
+              "component-spec-and-build",
+              "assembly",
+              "visual-and-interaction-qa",
+              "complete"
+            ]
+          },
+          "artifactRoot": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "fidelity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "comparisonPolicy", "viewports", "gates"],
+      "properties": {
+        "mode": { "enum": ["exact", "adaptive"] },
+        "comparisonPolicy": { "type": "string", "minLength": 1 },
+        "viewports": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["width", "height"],
+            "properties": {
+              "width": { "type": "integer", "minimum": 1 },
+              "height": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "gates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "textCoverage",
+            "assetCoverage",
+            "interactionCoverage",
+            "maxPixelDifferenceRatio",
+            "maxLayoutDeltaPx"
+          ],
+          "properties": {
+            "textCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "assetCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "interactionCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "maxPixelDifferenceRatio": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "maxLayoutDeltaPx": { "type": ["number", "null"], "minimum": 0 }
+          }
+        }
+      }
+    },
+    "referenceMappings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/referenceMapping" }
+    },
+    "ports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["browser", "builder", "evidence"],
+      "properties": {
+        "browser": { "$ref": "#/$defs/port" },
+        "builder": { "$ref": "#/$defs/port" },
+        "evidence": { "$ref": "#/$defs/port" }
+      }
+    },
+    "verification": { "$ref": "#/$defs/verification" },
+    "protocol": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "complete" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "ports": {
+            "properties": {
+              "browser": { "properties": { "status": { "const": "ready" } } },
+              "builder": { "properties": { "status": { "const": "ready" } } },
+              "evidence": { "properties": { "status": { "const": "ready" } } }
+            }
+          },
+          "targets": {
+            "items": {
+              "properties": {
+                "status": { "const": "complete" },
+                "phase": { "const": "complete" }
+              }
+            }
+          },
+          "verification": {
+            "properties": {
+              "status": { "const": "passed" },
+              "reportPath": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "referenceMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "designRecord",
+        "sourceTargetId",
+        "destinationTargetId",
+        "sourceRegion",
+        "destinationRegion",
+        "adoptedProperties",
+        "rejectedProperties",
+        "requiredStates"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "kind": { "enum": ["supporting", "replacement"] },
+        "designRecord": { "type": "string", "minLength": 1 },
+        "sourceTargetId": { "type": "string", "minLength": 1 },
+        "destinationTargetId": { "type": "string", "minLength": 1 },
+        "sourceRegion": { "type": "string", "minLength": 1 },
+        "destinationRegion": { "type": "string", "minLength": 1 },
+        "adoptedProperties": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "rejectedProperties": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "requiredStates": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "port": {
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "ready" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "adapter": { "type": "string", "minLength": 1 },
+              "lastProbe": {
+                "type": "object",
+                "required": ["ok"],
+                "properties": { "ok": { "const": true } }
+              }
+            }
+          }
+        }
+      ],
+      "required": [
+        "status",
+        "adapter",
+        "requiredCapabilities",
+        "availableCapabilities",
+        "lastProbe"
+      ],
+      "properties": {
+        "status": { "enum": ["unresolved", "ready", "blocked", "degraded"] },
+        "adapter": { "type": ["string", "null"] },
+        "requiredCapabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "availableCapabilities": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "lastProbe": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["at", "ok", "message"],
+              "properties": {
+                "at": { "type": "string", "format": "date-time" },
+                "ok": { "type": "boolean" },
+                "message": { "type": "string" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evaluatedAt", "reportPath", "reasons"],
+      "properties": {
+        "status": { "enum": ["not-run", "passed", "failed", "blocked"] },
+        "evaluatedAt": { "type": ["string", "null"], "format": "date-time" },
+        "reportPath": { "type": ["string", "null"] },
+        "reasons": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
