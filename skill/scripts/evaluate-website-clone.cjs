@@ -102,37 +102,43 @@ function unique(values) {
   return [...new Set(values)];
 }
 
-function inspectPorts(ports, fidelity) {
-  const blockers = [];
-  for (const name of ["browser", "builder", "evidence"]) {
-    const port = ports?.[name];
-    if (!port || typeof port !== "object") {
-      blockers.push(`${name} port is missing`);
-      continue;
-    }
-    if (port.status !== "ready") blockers.push(`${name} port status is ${port.status || "missing"}`);
-    if (typeof port.adapter !== "string" || !port.adapter.trim()) {
-      blockers.push(`${name} port has no adapter`);
-    }
-    const required = [
-      ...CANONICAL_CAPABILITIES[name],
-      ...(Array.isArray(port.requiredCapabilities) ? port.requiredCapabilities : []),
-    ];
-    if (name === "evidence" && fidelity?.gates?.maxPixelDifferenceRatio !== null) {
-      required.push("pixel-diff");
-    }
-    if (name === "evidence" && fidelity?.gates?.maxLayoutDeltaPx !== null) {
-      required.push("layout-diff");
-    }
-    const available = new Set(
-      Array.isArray(port.availableCapabilities) ? port.availableCapabilities : [],
-    );
-    for (const capability of required) {
-      if (!available.has(capability)) blockers.push(`${name} port lacks ${capability}`);
-    }
-    if (port.lastProbe?.ok !== true) blockers.push(`${name} port has no successful capability probe`);
+function requiredPortCapabilities(name, port, fidelity) {
+  const required = [
+    ...CANONICAL_CAPABILITIES[name],
+    ...(Array.isArray(port.requiredCapabilities) ? port.requiredCapabilities : []),
+  ];
+  if (name === "evidence" && fidelity?.gates?.maxPixelDifferenceRatio !== null) {
+    required.push("pixel-diff");
   }
-  return unique(blockers);
+  if (name === "evidence" && fidelity?.gates?.maxLayoutDeltaPx !== null) {
+    required.push("layout-diff");
+  }
+  return required;
+}
+
+function inspectPort(name, port, fidelity) {
+  const blockers = [];
+  if (!port || typeof port !== "object") return [`${name} port is missing`];
+  if (port.status !== "ready") blockers.push(`${name} port status is ${port.status || "missing"}`);
+  if (typeof port.adapter !== "string" || !port.adapter.trim()) {
+    blockers.push(`${name} port has no adapter`);
+  }
+  const available = new Set(
+    Array.isArray(port.availableCapabilities) ? port.availableCapabilities : [],
+  );
+  for (const capability of requiredPortCapabilities(name, port, fidelity)) {
+    if (!available.has(capability)) blockers.push(`${name} port lacks ${capability}`);
+  }
+  if (port.lastProbe?.ok !== true) blockers.push(`${name} port has no successful capability probe`);
+  return blockers;
+}
+
+function inspectPorts(ports, fidelity) {
+  return unique(
+    ["browser", "builder", "evidence"].flatMap((name) =>
+      inspectPort(name, ports?.[name], fidelity),
+    ),
+  );
 }
 
 function metric(result, name, blockers, minimum, maximum, required = true) {
@@ -153,15 +159,7 @@ function viewportKey(viewport) {
   return `${viewport.width}x${viewport.height}`;
 }
 
-function inspectTarget(target, result, fidelity) {
-  const blockers = [];
-  const mismatches = [];
-  const gates = fidelity.gates;
-  if (!result) {
-    blockers.push(`${target.id}: verification result is missing`);
-    return { blockers, mismatches };
-  }
-
+function inspectCoverage(target, result, gates, blockers, mismatches) {
   const text = metric(result, "textCoverage", blockers, 0, 1);
   const assets = metric(result, "assetCoverage", blockers, 0, 1);
   const interactions = metric(result, "interactionCoverage", blockers, 0, 1);
@@ -176,69 +174,83 @@ function inspectTarget(target, result, fidelity) {
       `${target.id}: interaction coverage ${interactions} < ${gates.interactionCoverage}`,
     );
   }
+}
+
+function indexViewports(target, result, blockers) {
   if (!Array.isArray(result.viewports)) {
     blockers.push(`${target.id}: per-viewport verification is missing`);
-  } else {
-    const observed = new Map();
-    for (const viewport of result.viewports) {
-      const key = viewportKey(viewport || {});
-      if (observed.has(key)) blockers.push(`${target.id}: duplicate viewport ${key}`);
-      observed.set(key, viewport);
-    }
-    for (const declared of fidelity.viewports) {
-      const key = viewportKey(declared);
-      const viewport = observed.get(key);
-      if (!viewport) {
-        blockers.push(`${target.id}: viewport ${key} is missing`);
-        continue;
-      }
-      const pixels = metric(
-        { ...viewport, targetId: `${target.id} viewport ${key}` },
-        "pixelDifferenceRatio",
-        blockers,
-        0,
-        1,
-        gates.maxPixelDifferenceRatio !== null,
-      );
-      const layout = metric(
-        { ...viewport, targetId: `${target.id} viewport ${key}` },
-        "maxLayoutDeltaPx",
-        blockers,
-        0,
-        undefined,
-        gates.maxLayoutDeltaPx !== null,
-      );
-      if (
-        pixels !== null &&
-        gates.maxPixelDifferenceRatio !== null &&
-        pixels > gates.maxPixelDifferenceRatio
-      ) {
-        mismatches.push(
-          `${target.id} viewport ${key}: pixel difference ${pixels} > ${gates.maxPixelDifferenceRatio}`,
-        );
-      }
-      if (layout !== null && gates.maxLayoutDeltaPx !== null && layout > gates.maxLayoutDeltaPx) {
-        mismatches.push(
-          `${target.id} viewport ${key}: layout delta ${layout}px > ${gates.maxLayoutDeltaPx}px`,
-        );
-      }
-      if (!Array.isArray(viewport.unresolvedDifferences)) {
-        blockers.push(`${target.id} viewport ${key}: unresolvedDifferences is not recorded`);
-      } else {
-        for (const difference of viewport.unresolvedDifferences) {
-          mismatches.push(`${target.id} viewport ${key}: ${difference}`);
-        }
-      }
-    }
+    return null;
   }
+  const observed = new Map();
+  for (const viewport of result.viewports) {
+    const key = viewportKey(viewport || {});
+    if (observed.has(key)) blockers.push(`${target.id}: duplicate viewport ${key}`);
+    observed.set(key, viewport);
+  }
+  return observed;
+}
 
-  if (!Array.isArray(result.unresolvedDifferences)) {
-    blockers.push(`${target.id}: unresolvedDifferences is not recorded`);
-  } else {
-    for (const difference of result.unresolvedDifferences) {
-      mismatches.push(`${target.id}: ${difference}`);
-    }
+function inspectViewport(target, declared, viewport, gates, blockers, mismatches) {
+  const key = viewportKey(declared);
+  const label = `${target.id} viewport ${key}`;
+  if (!viewport) {
+    blockers.push(`${target.id}: viewport ${key} is missing`);
+    return;
   }
+  const measured = { ...viewport, targetId: label };
+  const pixels = metric(
+    measured,
+    "pixelDifferenceRatio",
+    blockers,
+    0,
+    1,
+    gates.maxPixelDifferenceRatio !== null,
+  );
+  const layout = metric(
+    measured,
+    "maxLayoutDeltaPx",
+    blockers,
+    0,
+    undefined,
+    gates.maxLayoutDeltaPx !== null,
+  );
+  if (
+    pixels !== null &&
+    gates.maxPixelDifferenceRatio !== null &&
+    pixels > gates.maxPixelDifferenceRatio
+  ) {
+    mismatches.push(`${label}: pixel difference ${pixels} > ${gates.maxPixelDifferenceRatio}`);
+  }
+  if (layout !== null && gates.maxLayoutDeltaPx !== null && layout > gates.maxLayoutDeltaPx) {
+    mismatches.push(`${label}: layout delta ${layout}px > ${gates.maxLayoutDeltaPx}px`);
+  }
+  inspectDifferenceList(label, viewport.unresolvedDifferences, blockers, mismatches);
+}
+
+function inspectViewports(target, result, fidelity, blockers, mismatches) {
+  const observed = indexViewports(target, result, blockers);
+  if (!observed) return;
+  for (const declared of fidelity.viewports) {
+    inspectViewport(
+      target,
+      declared,
+      observed.get(viewportKey(declared)),
+      fidelity.gates,
+      blockers,
+      mismatches,
+    );
+  }
+}
+
+function inspectTarget(target, result, fidelity) {
+  const blockers = [];
+  const mismatches = [];
+  if (!result) return { blockers: [`${target.id}: verification result is missing`], mismatches };
+
+  inspectCoverage(target, result, fidelity.gates, blockers, mismatches);
+  inspectViewports(target, result, fidelity, blockers, mismatches);
+
+  inspectDifferenceList(target.id, result.unresolvedDifferences, blockers, mismatches);
   return { blockers, mismatches };
 }
 
@@ -416,18 +428,17 @@ function relativePath(changeRoot, file) {
   return relative || path.basename(file);
 }
 
+function nextTargetState(target, verdict, targetFailures) {
+  if (verdict === "complete") return { status: "complete", phase: "complete" };
+  if (target.status === "complete") return null;
+  if (verdict === "blocked") return { status: "blocked" };
+  return { status: targetFailures.has(target.id) ? "fidelity-limited" : "needs-review" };
+}
+
 function updateTargetStates(manifest, verdict, targetFailures) {
   for (const target of manifest.targets) {
-    if (verdict === "complete") {
-      target.status = "complete";
-      target.phase = "complete";
-    } else if (target.status === "complete") {
-      continue;
-    } else if (verdict === "blocked") {
-      target.status = "blocked";
-    } else {
-      target.status = targetFailures.has(target.id) ? "fidelity-limited" : "needs-review";
-    }
+    const next = nextTargetState(target, verdict, targetFailures);
+    if (next) Object.assign(target, next);
   }
 }
 
@@ -480,7 +491,7 @@ function updateHandoff(changeRoot, verdict, reasons, now, reportPath) {
   fs.writeFileSync(handoffPath, updated, "utf8");
 }
 
-function evaluate(options) {
+function loadChangeContext(options) {
   if (!options.changeRoot) fail("--change-root is required");
   const changeRoot = path.resolve(options.changeRoot);
   if (!fs.existsSync(changeRoot) || !fs.statSync(changeRoot).isDirectory()) {
@@ -503,41 +514,65 @@ function evaluate(options) {
   ) {
     fail("state.json, website-cloning manifest, and change-root ids must match");
   }
+  return { changeRoot, manifestPath, manifest, state };
+}
 
-  let evidence = null;
-  let reportPath = null;
-  if (options.evidencePath) {
-    const evidencePath = path.resolve(options.evidencePath);
-    const relativeEvidence = path.relative(changeRoot, evidencePath);
-    if (
-      !relativeEvidence ||
-      relativeEvidence.startsWith(`..${path.sep}`) ||
-      path.isAbsolute(relativeEvidence)
-    ) {
-      fail("verification evidence must be a file inside the change root");
-    }
-    evidence = readJson(evidencePath, "verification evidence");
-    reportPath = relativePath(changeRoot, evidencePath);
+function loadEvidence(changeRoot, evidenceOption) {
+  if (!evidenceOption) return { evidence: null, reportPath: null };
+  const evidencePath = path.resolve(evidenceOption);
+  const relativeEvidence = path.relative(changeRoot, evidencePath);
+  if (
+    !relativeEvidence ||
+    relativeEvidence.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativeEvidence)
+  ) {
+    fail("verification evidence must be a file inside the change root");
   }
+  return {
+    evidence: readJson(evidencePath, "verification evidence"),
+    reportPath: relativePath(changeRoot, evidencePath),
+  };
+}
 
+function decideVerdict(blockers, mismatches) {
+  if (blockers.length) return "blocked";
+  if (mismatches.length) return "fidelity-limited";
+  return "complete";
+}
+
+function inspectClone(manifest, evidence) {
   const portBlockers = inspectPorts(manifest.ports, manifest.fidelity);
   const evidenceResult = inspectEvidence(manifest, evidence);
   const blockers = unique([...portBlockers, ...evidenceResult.blockers]);
   const mismatches = evidenceResult.mismatches;
-  const verdict = blockers.length
-    ? "blocked"
-    : mismatches.length
-      ? "fidelity-limited"
-      : "complete";
+  const verdict = decideVerdict(blockers, mismatches);
   const reasons = verdict === "blocked" ? blockers : mismatches;
-  const now = new Date().toISOString();
   const targetFailures = new Set(
     reasons.map((reason) => String(reason).split(":", 1)[0]).filter(Boolean),
   );
+  return { verdict, reasons, targetFailures };
+}
+
+function verificationStatus(verdict) {
+  if (verdict === "complete") return "passed";
+  if (verdict === "blocked") return "blocked";
+  return "failed";
+}
+
+function evaluationNextActions(verdict) {
+  if (verdict === "complete") return ["Run the remaining design-pipeline gates"];
+  if (verdict === "blocked") return ["Resolve missing capabilities or measurements"];
+  return ["Repair differences or accept adaptive fidelity"];
+}
+
+function persistEvaluation(context, evaluation, reportPath) {
+  const { changeRoot, manifestPath, manifest, state } = context;
+  const { verdict, reasons, targetFailures } = evaluation;
+  const now = new Date().toISOString();
 
   manifest.status = verdict;
   manifest.verification = {
-    status: verdict === "complete" ? "passed" : verdict === "blocked" ? "blocked" : "failed",
+    status: verificationStatus(verdict),
     evaluatedAt: now,
     reportPath,
     reasons,
@@ -553,18 +588,19 @@ function evaluate(options) {
     summary: `Website-cloning fidelity gate verdict: ${verdict}.`,
     files: [MANIFEST_FILE],
     evidence: reportPath ? [reportPath] : [],
-    nextActions:
-      verdict === "complete"
-        ? ["Run the remaining design-pipeline gates"]
-        : verdict === "blocked"
-          ? ["Resolve missing capabilities or measurements"]
-          : ["Repair differences or accept adaptive fidelity"],
+    nextActions: evaluationNextActions(verdict),
   });
   updateHandoff(changeRoot, verdict, reasons, now, reportPath || "not-provided");
 
   console.log(`Website-cloning verdict: ${verdict}`);
   for (const reason of reasons) console.log(`- ${reason}`);
   process.exitCode = verdict === "complete" ? 0 : verdict === "blocked" ? 2 : 3;
+}
+
+function evaluate(options) {
+  const context = loadChangeContext(options);
+  const { evidence, reportPath } = loadEvidence(context.changeRoot, options.evidencePath);
+  persistEvaluation(context, inspectClone(context.manifest, evidence), reportPath);
 }
 
 try {
