@@ -9,5 +9,5 @@
 - [x] Add multi-root discovery and Anime.js v4.5 capability profile.
 - [x] Add deterministic self-check tests.
 - [x] Update stable specification and package QA assertions.
-- [ ] Run QA, package, tests, self-check, and Sentrux post-op verification.
+- [x] Run QA, package, tests, self-check, and Sentrux post-op verification.
 - [x] Install the refreshed skill locally.
