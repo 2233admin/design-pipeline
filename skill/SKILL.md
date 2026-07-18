@@ -54,6 +54,7 @@ The website-cloning module is a design-pipeline superset capability. It adds liv
 ## Companion Skills
 
 Reference file: `references/companion-skills.md`.
+Capability routing reference: `references/capability-routing.md`.
 Development compatibility reference: `references/development-compatibility.md`.
 Self-check reference: `references/self-check.md`.
 QA checklist reference: `references/qa-checklist.md`.
@@ -77,11 +78,15 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).
 - `vercel-react-view-transitions`: React and Next.js view-transition implementation patterns.
 
+Choose companions by capability, not by the presence of a familiar skill name. Read `references/capability-routing.md` when the change crosses evidence capture, design systems, assets, motion runtimes, editable design handoff, or hosted delivery.
+
 For animation implementation, choose library skills by job:
 
 - Use `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-react`, `gsap-plugins`, `gsap-utils`, `gsap-performance`, and `gsap-frameworks` for advanced choreography, scroll-driven animation, timeline control, React integration, SVG/plugin-heavy work, or when GSAP is already in the project.
-- Use `animejs` for lighter DOM/SVG animation, small interactive pieces, simpler timelines, or when the project should avoid GSAP's larger ecosystem.
-- If no animation library is already present, prefer CSS transitions/keyframes for simple state changes, Anime.js for lightweight scripted motion, and GSAP for complex timelines or scroll/sequence-heavy experiences.
+- Use `animejs` v4.5 for modular timelines, layout transitions, accessible text splitting, SVG, draggable interactions, scroll observers, WAAPI, deterministic stagger, or adapter-driven targets such as Three.js.
+- If no animation library is already present, prefer CSS transitions/keyframes for simple state changes; choose Anime.js or GSAP only when the required capability justifies a runtime.
+- Do not add Anime.js and GSAP together unless `design.md` assigns them distinct, non-overlapping responsibilities.
+- Treat an installed but stale `animejs` companion as a warning. Use official v4.5 documentation for missing markers and record the fallback in `qa.md`.
 
 For React and Next.js work, also apply the installed Vercel / Next.js engineering skills listed in `references/companion-skills.md`:
 
@@ -99,6 +104,7 @@ If a companion skill is missing, continue with the same gate manually and note t
 Before writing design artifacts or code:
 
 - Run `node <design-pipeline>/scripts/check-deps.cjs` from the target repo root, or manually perform the same checks from `references/self-check.md` if Node is unavailable.
+- Read capability-profile warnings separately from install status. `installed` means discoverable; `WARN` means the companion surface does not advertise the current capability baseline.
 - Treat missing optional/enhancement companion skills as a fallback path, not a blocker. Record missing capabilities in `qa.md`.
 - Initialize or update `state.json`, `events.jsonl`, and `handoff.md` using `references/agent-interface.md`.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.

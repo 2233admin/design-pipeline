@@ -11,7 +11,8 @@ It is not a general-purpose agent marketplace. Engineering integrations exist on
 - Creates durable design artifacts before implementation.
 - Adds first-class motion design documentation.
 - Supports headless AI handoff through machine-readable state files.
-- Self-checks optional companion skills and falls back when they are missing.
+- Self-checks optional companion skills, version-sensitive capability profiles, and multi-root installs.
+- Routes Anime.js v4.5 across layout, text, SVG, draggable, scroll, WAAPI, adapters, and Three.js work.
 - Aligns with OpenSpec's proposal -> apply -> archive lifecycle.
 - Reconstructs authorized live websites through Browser, Builder, and Evidence ports with measurable fidelity gates.
 

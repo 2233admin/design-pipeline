@@ -1,6 +1,6 @@
 # Companion Design Skills
 
-This pipeline is designed to coordinate the following frontend design skills.
+This pipeline is designed to coordinate the following frontend design skills. Use `capability-routing.md` for cross-group selection and version-sensitive runtime routing.
 
 ## Primary Set
 
@@ -37,7 +37,9 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 | `gsap-utils` | `greensock/gsap-skills` | Utility helpers, mapping, interpolation, randomization, selectors | Installed |
 | `gsap-performance` | `greensock/gsap-skills` | GSAP animation performance and production safety | Installed |
 | `gsap-frameworks` | `greensock/gsap-skills` | Framework-specific GSAP usage beyond plain JS | Installed |
-| `animejs` | `BowTiedSwan/animejs-skills` | Anime.js lightweight DOM/SVG animations and timelines | Installed |
+| `animejs` | `BowTiedSwan/animejs-skills` + official Anime.js docs | Anime.js v4.5 modules: timelines, layout, text, SVG, draggable, scroll, WAAPI, adapters/Three.js, deterministic 3D stagger | Installed; capability profile may warn when stale |
+
+Anime.js is version-sensitive. A present skill directory is not enough to prove v4.5 coverage; run `check-deps.cjs` and follow `capability-routing.md` when the profile reports missing markers.
 
 ## Vercel / Next.js Engineering Set
 

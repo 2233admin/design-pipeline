@@ -12,6 +12,7 @@ For design-engineering motion judgment and animation language, use the Emil skil
 - `apple-design` — Apple HIG-inspired interface principles and fluid motion for web
 
 Also see `references/companion-skills.md` (Motion / Animation Set).
+Use `references/capability-routing.md` before choosing CSS, Anime.js, GSAP, React View Transitions, or an existing runtime.
 
 ## Summary
 
@@ -102,6 +103,9 @@ Recommended defaults from Emil design-engineering practice (adjust per product):
 - Properties allowed:
 - Properties avoided:
 - ScrollTrigger / scroll observer refresh behavior:
+- Layout/text/draggable cleanup behavior:
+- Adapter or render-loop owner:
+- Deterministic stagger seed (when evidence depends on ordering):
 - Heavy asset strategy:
 - Mobile fallback:
 
@@ -116,7 +120,7 @@ Default posture:
 | Candidate | Use when | Rejected because |
 | --- | --- | --- |
 | CSS transitions/keyframes | Simple state changes |  |
-| Anime.js | Lightweight scripted DOM/SVG motion |  |
+| Anime.js v4.5 | Modular timelines, layout/text/SVG, draggable, scroll, WAAPI, adapters/Three.js, deterministic stagger |  |
 | GSAP | Complex choreography, scroll, timelines, plugins, React integration |  |
 | React View Transitions | Route/navigation continuity |  |
 | Existing project library | Project already standardizes on it |  |
@@ -135,6 +139,9 @@ Selected:
 - Tokens/classes:
 - Hooks/utilities:
 - Cleanup/unmount behavior:
+- Anime.js scope/revert behavior:
+- Layout/text accessibility restoration:
+- Adapter registration and render-loop cleanup:
 - Server/client boundary:
 - Testing hooks:
 

@@ -13,6 +13,7 @@ const requiredFiles = [
   "skill/scripts/check-deps.cjs",
   "skill/references/open-source-readiness.md",
   "skill/references/agent-interface.md",
+  "skill/references/capability-routing.md",
   "skill/references/motion-spec.md",
   "skill/references/qa-checklist.md",
   "skill/references/website-cloning.md",
@@ -54,6 +55,7 @@ if (!frontmatter) {
 const referenceSources = [
   "skill/SKILL.md",
   "skill/references/companion-skills.md",
+  "skill/references/capability-routing.md",
   "skill/references/curation-policy.md",
   "skill/references/development-compatibility.md",
   "skill/references/open-source-readiness.md",
@@ -143,6 +145,29 @@ if (companion.includes("emilkowalski/skill`") || companion.includes("emilkowalsk
   console.log("OK companion-skills uses emilkowalski/skills");
 }
 
+const routing = fs.readFileSync(
+  path.join(repoRoot, "skill/references/capability-routing.md"),
+  "utf8",
+);
+const animeRoutingMarkers = [
+  "Anime.js v4.5",
+  "createLayout",
+  "splitText",
+  "createDraggable",
+  "onScroll",
+  "registerAdapter()",
+  "Three.js",
+  "jitter",
+  "seed",
+];
+const missingAnimeRouting = animeRoutingMarkers.filter((marker) => !routing.includes(marker));
+if (missingAnimeRouting.length) {
+  console.log(`FAIL Anime.js capability routing missing: ${missingAnimeRouting.join(", ")}`);
+  failed = true;
+} else {
+  console.log("OK Anime.js v4.5 capability routing");
+}
+
 try {
   const schema = JSON.parse(
     fs.readFileSync(
@@ -158,17 +183,21 @@ try {
   failed = true;
 }
 
-const tests = spawnSync(process.execPath, ["--test", "tests/website-cloning-init.test.cjs"], {
-  cwd: repoRoot,
-  encoding: "utf8",
-});
+const tests = spawnSync(
+  process.execPath,
+  ["--test", "tests/website-cloning-init.test.cjs", "tests/check-deps.test.cjs"],
+  {
+    cwd: repoRoot,
+    encoding: "utf8",
+  },
+);
 process.stdout.write(tests.stdout);
 process.stderr.write(tests.stderr);
 if (tests.status !== 0) {
-  console.log("FAIL website-cloning initializer tests");
+  console.log("FAIL repository tests");
   failed = true;
 } else {
-  console.log("OK website-cloning initializer tests");
+  console.log("OK repository tests");
 }
 
 process.exitCode = failed ? 1 : 0;

@@ -24,9 +24,10 @@ node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs --json
 
 The script checks skills under:
 
-1. `CODEX_SKILLS_DIR`, if set.
-2. `$CODEX_HOME/skills`, if set.
-3. `~/.codex/skills`.
+1. `DESIGN_PIPELINE_SKILL_ROOTS`, if set. Use the platform path delimiter for multiple roots (`;` on Windows, `:` on POSIX).
+2. `CODEX_SKILLS_DIR`, if set. It also accepts multiple roots using the platform path delimiter.
+3. `$CODEX_HOME/skills`, if set.
+4. `~/.codex/skills`.
 
 Override the skill root for tests or non-standard installs:
 
@@ -34,10 +35,17 @@ Override the skill root for tests or non-standard installs:
 CODEX_SKILLS_DIR=/path/to/skills node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
 ```
 
+Multiple roots on Windows:
+
+```powershell
+$env:DESIGN_PIPELINE_SKILL_ROOTS="$HOME\.codex\skills;$HOME\.agents\skills"
+node "$HOME\.codex\skills\design-pipeline\scripts\check-deps.cjs" --json
+```
+
 ## Result Meaning
 
 - `FAIL`: a required item is missing. The pipeline itself is not installed correctly.
-- `WARN`: an enhancement skill is missing. Continue with the documented fallback.
+- `WARN`: an enhancement skill is missing, or an installed capability profile is stale. Continue with the documented fallback.
 - `INFO`: a repo surface such as OpenSpec or GBrain was not detected. Continue with `design/changes/<change-id>/`.
 - `OK`: installed or detected.
 
@@ -61,6 +69,18 @@ Optional:
 - OpenSpec / GBrain repo surfaces
 
 Missing optional skills should not block a pipeline run. Record the fallback in `qa.md`.
+
+## Capability Profiles
+
+Install status and capability compatibility are separate checks.
+
+The first versioned profile is Anime.js v4.5. When `animejs` is installed, the self-check looks for markers covering the v4 API, layout, text, scroll, draggable, scope, WAAPI, adapters, Three.js/3D stagger, and deterministic jitter/seed.
+
+- `OK`: the installed skill advertises the current profile.
+- `WARN`: the skill exists but one or more capability markers are missing.
+- `INFO`: the optional skill is not installed, so the profile was not evaluated.
+
+A profile warning does not fail the pipeline. Read `references/capability-routing.md`, use the official upstream documentation for the missing surface, and record the fallback in `qa.md`.
 
 Browser, Builder, and Evidence adapters are runtime capabilities, not installation-time companion skills. Missing adapter capability does not fail the package self-check, but it must block an `exact` website-cloning run or downgrade it to `fidelity-limited` with user acceptance.
 

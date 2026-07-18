@@ -6,9 +6,12 @@ const os = require("node:os");
 
 const args = new Set(process.argv.slice(2));
 const jsonMode = args.has("--json");
-const skillRoot =
-  process.env.CODEX_SKILLS_DIR ||
-  path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills");
+const configuredSkillRoots =
+  process.env.DESIGN_PIPELINE_SKILL_ROOTS || process.env.CODEX_SKILLS_DIR;
+const skillRoots = configuredSkillRoots
+  ? configuredSkillRoots.split(path.delimiter).filter(Boolean).map((root) => path.resolve(root))
+  : [path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills")];
+const skillRoot = skillRoots[0];
 
 const cwd = process.cwd();
 
@@ -103,6 +106,39 @@ const groups = [
   },
 ];
 
+const capabilityProfiles = [
+  {
+    name: "Anime.js v4.5 orchestration",
+    skill: "animejs",
+    level: "optional",
+    source: "https://animejs.com/documentation/",
+    markers: [
+      { id: "v4-api", patterns: [/Anime\.js v4/i] },
+      { id: "layout", patterns: [/createLayout/] },
+      { id: "text", patterns: [/splitText/] },
+      { id: "scroll", patterns: [/onScroll/] },
+      { id: "draggable", patterns: [/createDraggable/] },
+      { id: "scope", patterns: [/createScope/] },
+      { id: "waapi", patterns: [/\bWAAPI\b/i] },
+      {
+        id: "adapters",
+        patterns: [/registerAdapter/, /adapters\/three/, /Three\.js adapter/i],
+      },
+      {
+        id: "3d-stagger",
+        patterns: [/3D layouts/i, /grid:\s*\[columns,\s*rows,\s*depth\]/i, /axis.+['"]z['"]/i],
+      },
+      {
+        id: "deterministic-stagger",
+        match: "all",
+        patterns: [/\bjitter\b/i, /\bseed\b/i],
+      },
+    ],
+    fallback:
+      "Use official Anime.js v4.5 documentation for missing capabilities and record the stale companion surface in qa.md.",
+  },
+];
+
 const surfaces = [
   {
     name: "OpenSpec-style artifacts",
@@ -125,8 +161,20 @@ function exists(p) {
   return fs.existsSync(p);
 }
 
+function findSkill(name) {
+  for (const root of skillRoots) {
+    const skillPath = path.join(root, name, "SKILL.md");
+    if (exists(skillPath)) return { root, path: skillPath };
+  }
+  return null;
+}
+
 function skillExists(name) {
-  return exists(path.join(skillRoot, name, "SKILL.md"));
+  return Boolean(findSkill(name));
+}
+
+function resourceExists(name) {
+  return skillRoots.some((root) => exists(path.join(root, name)));
 }
 
 function findSurface(surface) {
@@ -140,8 +188,10 @@ function line(status, text) {
 let requiredMissing = 0;
 const report = {
   skillRoot,
+  skillRoots,
   projectRoot: cwd,
   groups: [],
+  capabilityProfiles: [],
   surfaces: [],
   result: "OK",
 };
@@ -152,7 +202,7 @@ function print(text = "") {
 
 print("# design-pipeline self-check");
 print("");
-print(`Skill root: ${skillRoot}`);
+print(`Skill roots: ${skillRoots.join(", ")}`);
 print(`Project root: ${cwd}`);
 print("");
 
@@ -162,8 +212,8 @@ for (const group of groups) {
   const resources = group.resources || [];
   const installed = skills.filter(skillExists);
   const missingSkills = skills.filter((name) => !skillExists(name));
-  const installedResources = resources.filter((name) => exists(path.join(skillRoot, name)));
-  const missingResources = resources.filter((name) => !exists(path.join(skillRoot, name)));
+  const installedResources = resources.filter(resourceExists);
+  const missingResources = resources.filter((name) => !resourceExists(name));
   const missing = [...missingSkills, ...missingResources];
   const status = group.level === "required" && missing.length ? "FAIL" : missing.length ? "WARN" : "OK";
   if (group.level === "required") requiredMissing += missing.length;
@@ -192,6 +242,57 @@ for (const group of groups) {
   if (missing.length && group.install) {
     print("Install hints:");
     for (const hint of group.install) print(`- ${hint}`);
+  }
+}
+
+print("");
+print("## Capability profiles");
+for (const profile of capabilityProfiles) {
+  const located = findSkill(profile.skill);
+  if (!located) {
+    const result = {
+      name: profile.name,
+      skill: profile.skill,
+      level: profile.level,
+      status: "INFO",
+      installed: false,
+      source: profile.source,
+      fallback: profile.fallback,
+    };
+    report.capabilityProfiles.push(result);
+    print("");
+    print(`### ${profile.name} (${profile.level})`);
+    print(line("INFO", `${profile.skill} is not installed; capability markers were not evaluated.`));
+    print(`Fallback: ${profile.fallback}`);
+    continue;
+  }
+
+  const text = fs.readFileSync(located.path, "utf8");
+  const missingMarkers = profile.markers
+    .filter((marker) => {
+      const matches = marker.patterns.map((pattern) => pattern.test(text));
+      return marker.match === "all" ? !matches.every(Boolean) : !matches.some(Boolean);
+    })
+    .map((marker) => marker.id);
+  const status = missingMarkers.length ? "WARN" : "OK";
+  report.capabilityProfiles.push({
+    name: profile.name,
+    skill: profile.skill,
+    level: profile.level,
+    status,
+    installed: true,
+    skillPath: located.path,
+    missingMarkers,
+    source: profile.source,
+    fallback: missingMarkers.length ? profile.fallback : undefined,
+  });
+
+  print("");
+  print(`### ${profile.name} (${profile.level})`);
+  print(line(status, `${profile.skill} capability markers checked at ${located.path}`));
+  if (missingMarkers.length) {
+    print(`Missing capability markers: ${missingMarkers.join(", ")}`);
+    print(`Fallback: ${profile.fallback}`);
   }
 }
 
