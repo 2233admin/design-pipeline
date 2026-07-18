@@ -17,6 +17,13 @@ const groups = [
     name: "Core pipeline",
     level: "required",
     skills: ["design-pipeline"],
+    resources: [
+      "design-pipeline/references/website-cloning.md",
+      "design-pipeline/references/website-clone-component-spec.md",
+      "design-pipeline/references/website-cloning-manifest.schema.json",
+      "design-pipeline/scripts/init-website-clone.cjs",
+      "design-pipeline/scripts/evaluate-website-clone.cjs",
+    ],
   },
   {
     name: "Visual taste",
@@ -151,8 +158,13 @@ print("");
 
 print("## Skill groups");
 for (const group of groups) {
-  const installed = group.skills.filter(skillExists);
-  const missing = group.skills.filter((name) => !skillExists(name));
+  const skills = group.skills || [];
+  const resources = group.resources || [];
+  const installed = skills.filter(skillExists);
+  const missingSkills = skills.filter((name) => !skillExists(name));
+  const installedResources = resources.filter((name) => exists(path.join(skillRoot, name)));
+  const missingResources = resources.filter((name) => !exists(path.join(skillRoot, name)));
+  const missing = [...missingSkills, ...missingResources];
   const status = group.level === "required" && missing.length ? "FAIL" : missing.length ? "WARN" : "OK";
   if (group.level === "required") requiredMissing += missing.length;
 
@@ -162,14 +174,19 @@ for (const group of groups) {
     status,
     installed,
     missing,
+    installedResources,
+    missingResources,
     fallback: missing.length ? group.fallback : undefined,
     install: missing.length ? group.install : undefined,
   });
 
   print("");
   print(`### ${group.name} (${group.level})`);
-  print(line(status, `${installed.length}/${group.skills.length} installed`));
+  print(line(status, `${installed.length}/${skills.length} skills installed`));
   if (installed.length) print(`Installed: ${installed.join(", ")}`);
+  if (resources.length) {
+    print(`Bundled resources: ${installedResources.length}/${resources.length} installed`);
+  }
   if (missing.length) print(`Missing: ${missing.join(", ")}`);
   if (missing.length && group.fallback) print(`Fallback: ${group.fallback}`);
   if (missing.length && group.install) {

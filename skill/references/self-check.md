@@ -46,6 +46,7 @@ CODEX_SKILLS_DIR=/path/to/skills node ~/.codex/skills/design-pipeline/scripts/ch
 Required:
 
 - `design-pipeline`
+- Website-cloning workflow, component contract, manifest schema, and initializer bundled with the skill
 
 Enhancement:
 
@@ -60,6 +61,19 @@ Optional:
 - OpenSpec / GBrain repo surfaces
 
 Missing optional skills should not block a pipeline run. Record the fallback in `qa.md`.
+
+Browser, Builder, and Evidence adapters are runtime capabilities, not installation-time companion skills. Missing adapter capability does not fail the package self-check, but it must block an `exact` website-cloning run or downgrade it to `fidelity-limited` with user acceptance.
+
+## Website-Cloning Port Rule
+
+Before an exact website-cloning run:
+
+- Resolve BrowserPort capabilities for deterministic capture and interaction discovery.
+- Resolve BuilderPort capabilities for bounded edits and project checks.
+- Resolve EvidencePort capabilities for independent visual, content, layout, responsive, and interaction comparison.
+- Record adapter ids and capabilities in `website-cloning.json`.
+
+Do not claim pixel-perfect or 1:1 fidelity when any required port remains unresolved or degraded.
 
 ## Motion Documentation Rule
 

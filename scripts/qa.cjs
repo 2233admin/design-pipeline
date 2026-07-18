@@ -15,6 +15,12 @@ const requiredFiles = [
   "skill/references/agent-interface.md",
   "skill/references/motion-spec.md",
   "skill/references/qa-checklist.md",
+  "skill/references/website-cloning.md",
+  "skill/references/website-clone-component-spec.md",
+  "skill/references/website-cloning-manifest.schema.json",
+  "skill/scripts/init-website-clone.cjs",
+  "skill/scripts/evaluate-website-clone.cjs",
+  "THIRD_PARTY_NOTICES.md",
   "openspec/project.md",
   "openspec/specs/design-pipeline/spec.md",
   "openspec/changes/bootstrap-design-pipeline/proposal.md",
@@ -53,6 +59,7 @@ const referenceSources = [
   "skill/references/open-source-readiness.md",
   "skill/references/qa-checklist.md",
   "skill/references/self-check.md",
+  "skill/references/website-cloning.md",
   "README.md",
   "CONTRIBUTING.md",
 ];
@@ -134,6 +141,34 @@ if (companion.includes("emilkowalski/skill`") || companion.includes("emilkowalsk
   failed = true;
 } else {
   console.log("OK companion-skills uses emilkowalski/skills");
+}
+
+try {
+  const schema = JSON.parse(
+    fs.readFileSync(
+      path.join(repoRoot, "skill/references/website-cloning-manifest.schema.json"),
+      "utf8",
+    ),
+  );
+  const ok = schema.$schema === "https://json-schema.org/draft/2020-12/schema";
+  console.log(`${ok ? "OK" : "FAIL"} website-cloning manifest schema`);
+  if (!ok) failed = true;
+} catch (error) {
+  console.log(`FAIL website-cloning manifest schema: ${error.message}`);
+  failed = true;
+}
+
+const tests = spawnSync(process.execPath, ["--test", "tests/website-cloning-init.test.cjs"], {
+  cwd: repoRoot,
+  encoding: "utf8",
+});
+process.stdout.write(tests.stdout);
+process.stderr.write(tests.stderr);
+if (tests.status !== 0) {
+  console.log("FAIL website-cloning initializer tests");
+  failed = true;
+} else {
+  console.log("OK website-cloning initializer tests");
 }
 
 process.exitCode = failed ? 1 : 0;

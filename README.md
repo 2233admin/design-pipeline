@@ -13,6 +13,35 @@ It is not a general-purpose agent marketplace. Engineering integrations exist on
 - Supports headless AI handoff through machine-readable state files.
 - Self-checks optional companion skills and falls back when they are missing.
 - Aligns with OpenSpec's proposal -> apply -> archive lifecycle.
+- Reconstructs authorized live websites through Browser, Builder, and Evidence ports with measurable fidelity gates.
+
+## Website Cloning
+
+`design-pipeline` is a superset of a website-cloning prompt: it captures reference evidence, builds from complete component contracts, and independently compares the result before claiming fidelity.
+
+```bash
+node skill/scripts/init-website-clone.cjs \
+  --change-id clone-example \
+  --url https://example.com \
+  --reference-url https://reference.example \
+  --fidelity exact
+
+# After the three adapters have reported capabilities and EvidencePort has
+# produced verification-input.json:
+node skill/scripts/evaluate-website-clone.cjs \
+  --change-root openspec/changes/clone-example \
+  --evidence openspec/changes/clone-example/verification-input.json
+```
+
+- `--url` identifies a primary surface that the implementation must match.
+- `--reference-url` supplies mapped design or interaction references without becoming an automatic pixel baseline.
+- If a reference intentionally replaces primary behavior, use `adaptive` and record the mapping; the result is fidelity to a mixed contract, not global 1:1.
+- Exact runs require negotiated Browser, Builder, and Evidence ports. Each port records the selected adapter, actual capabilities, and its latest probe result.
+- Missing ports or measurements produce `blocked`; complete evidence that misses a threshold produces `fidelity-limited`.
+- Only the evaluator can mark `website-cloning.json` complete, and only after all required capabilities and measurements pass. The overall change remains `needs-review` until the normal accessibility, motion, responsive, engineering, and headless gates also pass.
+- Verification is per declared viewport and per reference mapping, so an aggregate score cannot hide one broken breakpoint or interaction state.
+
+See `skill/references/website-cloning.md` for the workflow and fidelity contract.
 
 ## Repository Layout
 

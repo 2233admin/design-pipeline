@@ -1,0 +1,55 @@
+{
+  "schema": "design-pipeline.state.v1",
+  "changeId": "add-website-cloning-module",
+  "status": "complete",
+  "phase": "stage-6-gate-review",
+  "updatedAt": "2026-07-15T23:01:29.1534577+08:00",
+  "artifactRoot": "openspec/changes/add-website-cloning-module",
+  "projectRoot": ".",
+  "surfaces": [
+    "skill routing",
+    "website-cloning reference",
+    "initializer CLI",
+    "fidelity evaluator CLI",
+    "manifest schema",
+    "repository QA"
+  ],
+  "capabilities": {
+    "missing": [],
+    "fallbacks": ["GBrain is absent; keep decisions in OpenSpec"]
+  },
+  "openSpec": {
+    "detected": true,
+    "changeId": "add-website-cloning-module",
+    "paths": ["openspec/changes/add-website-cloning-module"]
+  },
+  "gbrain": {
+    "detected": false,
+    "syncPlanned": false,
+    "paths": []
+  },
+  "motion": {
+    "required": false,
+    "motionSpec": "openspec/changes/add-website-cloning-module/motion.md",
+    "implementationLibrary": "none",
+    "reducedMotion": "not-applicable"
+  },
+  "qa": {
+    "status": "passed",
+    "evidenceRoot": "openspec/changes/add-website-cloning-module/qa.md",
+    "scores": {
+      "testsPassed": 16,
+      "testsFailed": 0,
+      "reviewAxesPassed": 2,
+      "forwardTestsPassed": 1
+    }
+  },
+  "decisions": [
+    "Use a URL-first routed module with initializer and evidence-gate seams",
+    "Hide provider-neutral Browser, Builder, and Evidence ports behind the facade",
+    "Treat replacement reference mappings as adaptive mixed contracts, never global 1:1",
+    "Do not import the upstream Next.js or cache runtime"
+  ],
+  "blockers": [],
+  "nextActions": ["Review and publish the local branch only when explicitly authorized"]
+}
