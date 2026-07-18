@@ -143,3 +143,39 @@ The initializer SHALL validate input atomically, isolate targets, resume identic
 - **WHEN** the initializer targets an existing change without a website-cloning manifest
 - **THEN** it SHALL preserve current state/history and add the module surfaces, manifest, event, and resume guidance.
 
+### Requirement: Data-driven companion compatibility
+
+The pipeline SHALL keep companion install groups and capability profiles in a machine-readable registry and SHALL evaluate both single-skill and multi-skill suites.
+
+#### Scenario: A suite is only partially installed
+
+- **WHEN** at least one skill in a capability suite is installed but another required skill or marker is missing
+- **THEN** self-check SHALL report `WARN`, identify the missing skill or marker, and preserve the documented fallback.
+
+### Requirement: Synchronous local feedback
+
+The pipeline SHALL be able to record a finding during the command that detects it without requiring a daemon or remote service.
+
+#### Scenario: A stale installed companion is recorded
+
+- **WHEN** self-check runs with explicit feedback recording enabled
+- **THEN** it SHALL write a redacted, deduplicated observation and local contribution draft.
+
+### Requirement: Safe contribution boundary
+
+Normal self-check and feedback recording SHALL NOT publish remote Issues, PRs, comments, pushes, or releases.
+
+#### Scenario: A draft is ready for upstream contribution
+
+- **WHEN** a user wants to publish the draft
+- **THEN** an authorized GitHub or ship workflow SHALL review the remote, evidence, privacy boundary, and verification before creating the remote artifact.
+
+### Requirement: Self-hosted improvement loop
+
+Pipeline maintainers SHALL use the pipeline's own artifact, feedback, review, QA, and contribution gates when changing the pipeline.
+
+#### Scenario: A downstream observation is accepted
+
+- **WHEN** the accepted fix changes durable companion compatibility
+- **THEN** the maintainer SHALL update the companion registry, preserve a regression test, verify the package, and resolve or supersede the observation.
+

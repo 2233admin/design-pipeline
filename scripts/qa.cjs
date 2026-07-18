@@ -11,9 +11,13 @@ const requiredFiles = [
   "LICENSE",
   "skill/SKILL.md",
   "skill/scripts/check-deps.cjs",
+  "skill/scripts/record-feedback.cjs",
   "skill/references/open-source-readiness.md",
   "skill/references/agent-interface.md",
   "skill/references/capability-routing.md",
+  "skill/references/companion-capabilities.json",
+  "skill/references/feedback-loop.md",
+  "skill/references/feedback-observation.schema.json",
   "skill/references/motion-spec.md",
   "skill/references/qa-checklist.md",
   "skill/references/website-cloning.md",
@@ -58,6 +62,7 @@ const referenceSources = [
   "skill/references/capability-routing.md",
   "skill/references/curation-policy.md",
   "skill/references/development-compatibility.md",
+  "skill/references/feedback-loop.md",
   "skill/references/open-source-readiness.md",
   "skill/references/qa-checklist.md",
   "skill/references/self-check.md",
@@ -169,6 +174,42 @@ if (missingAnimeRouting.length) {
 }
 
 try {
+  const companionRegistry = JSON.parse(
+    fs.readFileSync(
+      path.join(repoRoot, "skill/references/companion-capabilities.json"),
+      "utf8",
+    ),
+  );
+  const ok =
+    companionRegistry.schema === "design-pipeline-companions.v1" &&
+    Array.isArray(companionRegistry.groups) &&
+    Array.isArray(companionRegistry.profiles) &&
+    companionRegistry.profiles.length > 1;
+  console.log(`${ok ? "OK" : "FAIL"} companion capability registry`);
+  if (!ok) failed = true;
+} catch (error) {
+  console.log(`FAIL companion capability registry: ${error.message}`);
+  failed = true;
+}
+
+try {
+  const feedbackSchema = JSON.parse(
+    fs.readFileSync(
+      path.join(repoRoot, "skill/references/feedback-observation.schema.json"),
+      "utf8",
+    ),
+  );
+  const ok =
+    feedbackSchema.$schema === "https://json-schema.org/draft/2020-12/schema" &&
+    feedbackSchema.properties?.privacy?.properties?.remotePublished?.const === false;
+  console.log(`${ok ? "OK" : "FAIL"} feedback observation schema`);
+  if (!ok) failed = true;
+} catch (error) {
+  console.log(`FAIL feedback observation schema: ${error.message}`);
+  failed = true;
+}
+
+try {
   const schema = JSON.parse(
     fs.readFileSync(
       path.join(repoRoot, "skill/references/website-cloning-manifest.schema.json"),
@@ -185,7 +226,12 @@ try {
 
 const tests = spawnSync(
   process.execPath,
-  ["--test", "tests/website-cloning-init.test.cjs", "tests/check-deps.test.cjs"],
+  [
+    "--test",
+    "tests/website-cloning-init.test.cjs",
+    "tests/check-deps.test.cjs",
+    "tests/record-feedback.test.cjs",
+  ],
   {
     cwd: repoRoot,
     encoding: "utf8",

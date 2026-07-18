@@ -59,6 +59,7 @@ Check:
 - Maps to a known design capability.
 - Has a fallback when missing.
 - Can be checked by `scripts/check-deps.cjs`.
+- Has a source-backed entry in `companion-capabilities.json` when compatibility affects routing.
 - Comes from an official or high-trust source when possible.
 - Does not require private credentials or a private runtime.
 - Adds meaningfully new capability rather than another wording of the same taste prompt.
@@ -88,5 +89,10 @@ Accepted skills should map to one capability group:
 - `qa`
 - `artifact-lifecycle`
 - `compatibility`
+- `feedback-contribution`
 
 If a skill maps to more than two groups, split its usage in documentation or mark it as broad/supporting instead of making it a default route.
+
+`companion-capabilities.json` is the only install-group and marker registry. Marker changes require a source reference, fallback, and deterministic test. Do not infer compatibility from folder presence alone when the capability is version-sensitive.
+
+Downstream observations are input evidence, not automatic acceptance. Record them through `feedback-loop.md`, review the design boundary, then accept, reject, or supersede them with rationale.

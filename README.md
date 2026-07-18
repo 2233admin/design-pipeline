@@ -11,7 +11,8 @@ It is not a general-purpose agent marketplace. Engineering integrations exist on
 - Creates durable design artifacts before implementation.
 - Adds first-class motion design documentation.
 - Supports headless AI handoff through machine-readable state files.
-- Self-checks optional companion skills, version-sensitive capability profiles, and multi-root installs.
+- Self-checks optional companion skills, data-driven capability profiles, suites, and multi-root installs.
+- Captures reusable pipeline gaps as redacted, deduplicated local Issue or PR drafts.
 - Routes Anime.js v4.5 across layout, text, SVG, draggable, scroll, WAAPI, adapters, and Three.js work.
 - Aligns with OpenSpec's proposal -> apply -> archive lifecycle.
 - Reconstructs authorized live websites through Browser, Builder, and Evidence ports with measurable fidelity gates.
@@ -50,7 +51,12 @@ See `skill/references/website-cloning.md` for the workflow and fidelity contract
 skill/
   SKILL.md
   references/
+    companion-capabilities.json
+    feedback-loop.md
+    feedback-observation.schema.json
   scripts/
+    check-deps.cjs
+    record-feedback.cjs
 openspec/
   project.md
   specs/
@@ -69,6 +75,14 @@ cp -R skill/* ~/.codex/skills/design-pipeline/
 node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
 ```
 
+To capture stale installed capabilities immediately as local contribution drafts:
+
+```bash
+node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs --json --record-feedback
+```
+
+The command writes under `.design-pipeline/feedback/` and never creates a remote Issue or PR.
+
 Windows Git Bash example:
 
 ```bash
@@ -85,6 +99,22 @@ mkdir -p ~/.codex/skills
 tar -xzf design-pipeline-skill.tgz -C ~/.codex/skills
 node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
 ```
+
+## Feedback And Contributions
+
+Record a pipeline or companion finding:
+
+```powershell
+node ~/.codex/skills/design-pipeline/scripts/record-feedback.cjs `
+  --kind capability-gap `
+  --source runtime `
+  --skill animejs `
+  --title "Anime.js companion lacks adapter guidance" `
+  --summary "The requested Three.js target is supported upstream but missing from the installed companion." `
+  --evidence "Self-check missing marker: adapters"
+```
+
+Repeated findings share one deterministic observation and increment its occurrence count. Machine-specific paths and common credential patterns are redacted before files are written. Review the draft before handing it to an authorized GitHub or ship workflow.
 
 ## Package / CI
 

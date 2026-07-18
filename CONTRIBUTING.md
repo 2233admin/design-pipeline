@@ -9,11 +9,28 @@ It is not a general-purpose agent skill marketplace.
 1. Read `openspec/project.md`.
 2. Read `skill/references/curation-policy.md`.
 3. For behavior changes, create an OpenSpec-style change under `openspec/changes/<change-id>/`.
-4. Run:
+4. If the change came from a downstream observation, link its `dpf-*` id and remove private evidence before publication.
+5. Run:
 
 ```bash
 node scripts/qa.cjs
 ```
+
+## Reporting A Pipeline Or Companion Gap
+
+Use the bundled recorder to create a local, redacted, deduplicated draft:
+
+```powershell
+node skill/scripts/record-feedback.cjs `
+  --kind companion-gap `
+  --source user `
+  --skill <skill-name> `
+  --title "<short title>" `
+  --summary "<what happened and why it matters>" `
+  --evidence "<reproducible evidence>"
+```
+
+Review the generated `.design-pipeline/feedback/drafts/` file before opening an Issue. The script does not publish remotely.
 
 ## Change Types
 
@@ -48,6 +65,8 @@ Every external skill source must be classified as:
 
 Use `skill/references/curation-policy.md` for the full criteria.
 
+Add accepted compatibility knowledge to `skill/references/companion-capabilities.json`. Keep marker changes source-backed and add a deterministic checker test. Avoid adding new hard-coded companion arrays to `check-deps.cjs`.
+
 ## Quality Bar
 
 Pull requests must preserve:
@@ -72,6 +91,8 @@ When touching dependency detection:
 node skill/scripts/check-deps.cjs --json
 ```
 
+Feedback changes must also prove redaction, deduplication, draft routing, and the no-remote-publication boundary.
+
 When touching release criteria, review:
 
 ```text
@@ -86,4 +107,3 @@ Examples:
 
 - `code-review` -> `matt-code-review`
 - `tdd` -> `matt-tdd`
-

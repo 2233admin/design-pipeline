@@ -72,7 +72,7 @@ Missing optional skills should not block a pipeline run. Record the fallback in 
 
 ## Capability Profiles
 
-Install status and capability compatibility are separate checks.
+Install status and capability compatibility are separate checks. The machine-readable source is `references/companion-capabilities.json`, which can describe a single skill or a suite of related skills.
 
 The first versioned profile is Anime.js v4.5. When `animejs` is installed, the self-check looks for markers covering the v4 API, layout, text, scroll, draggable, scope, WAAPI, adapters, Three.js/3D stagger, and deterministic jitter/seed.
 
@@ -81,6 +81,18 @@ The first versioned profile is Anime.js v4.5. When `animejs` is installed, the s
 - `INFO`: the optional skill is not installed, so the profile was not evaluated.
 
 A profile warning does not fail the pipeline. Read `references/capability-routing.md`, use the official upstream documentation for the missing surface, and record the fallback in `qa.md`.
+
+## Synchronous Feedback Capture
+
+To write each installed stale profile as a local observation and Issue draft:
+
+```powershell
+node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs --json --record-feedback
+```
+
+Use `--feedback-root <path>` when the feedback queue should belong to a different target root.
+
+This is an explicit local side effect. It writes `.design-pipeline/feedback/`, redacts common secrets and machine-specific paths, and deduplicates repeated findings. It never creates a remote Issue or PR. Read `references/feedback-loop.md` before publication.
 
 Browser, Builder, and Evidence adapters are runtime capabilities, not installation-time companion skills. Missing adapter capability does not fail the package self-check, but it must block an `exact` website-cloning run or downgrade it to `fidelity-limited` with user acceptance.
 

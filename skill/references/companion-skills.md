@@ -1,6 +1,6 @@
 # Companion Design Skills
 
-This pipeline is designed to coordinate the following frontend design skills. Use `capability-routing.md` for cross-group selection and version-sensitive runtime routing.
+This pipeline is designed to coordinate the following frontend design skills. Use `capability-routing.md` for cross-group selection and version-sensitive runtime routing. The machine-readable source of truth for install groups and capability checks is `companion-capabilities.json`.
 
 ## Primary Set
 
@@ -40,6 +40,8 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 | `animejs` | `BowTiedSwan/animejs-skills` + official Anime.js docs | Anime.js v4.5 modules: timelines, layout, text, SVG, draggable, scroll, WAAPI, adapters/Three.js, deterministic 3D stagger | Installed; capability profile may warn when stale |
 
 Anime.js is version-sensitive. A present skill directory is not enough to prove v4.5 coverage; run `check-deps.cjs` and follow `capability-routing.md` when the profile reports missing markers.
+
+GSAP, Next.js, visual-direction, motion-review, and gstack-style feedback suites also have bounded capability profiles. A suite can report `WARN` when only part of it is installed or when an installed skill no longer advertises a required capability.
 
 ## Vercel / Next.js Engineering Set
 
@@ -109,6 +111,17 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 | `domain-modeling` | `mattpocock/skills` | Domain language and workflow model clarity | Installed |
 | `to-prd` | `mattpocock/skills` | Convert intent into PRD artifacts | Installed |
 | `to-issues` | `mattpocock/skills` | Convert intent into issue artifacts | Installed |
+
+## Feedback And Contribution Set
+
+| Skill | Source | Pipeline role | Current local status |
+| --- | --- | --- | --- |
+| `gstack-learn` | gstack | Durable cross-session learnings | Optional |
+| `gstack-spec` | gstack | Backlog-ready Issue/spec shaping | Optional |
+| `gstack-review` | gstack | Independent diff and risk review | Optional |
+| `gstack-ship` | gstack | Explicitly authorized PR/ship workflow | Optional |
+
+The pipeline does not require gstack. When it is absent, use `record-feedback.cjs`, OpenSpec artifacts, repository review, and the host's authorized GitHub surface.
 
 ## Optional Later
 

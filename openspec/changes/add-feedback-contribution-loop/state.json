@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline-state.v1",
+  "changeId": "add-feedback-contribution-loop",
+  "status": "complete",
+  "stage": "verified",
+  "updatedAt": "2026-07-19T05:49:00+08:00",
+  "verification": {
+    "qa": "passed",
+    "testsPassed": 30,
+    "testsFailed": 0,
+    "selfCheck": "passed-with-animejs-warning",
+    "sentrux": "passed"
+  },
+  "nextAction": "Publish the prepared Issue or PR only after explicit user authorization."
+}

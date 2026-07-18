@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/blob/main/skill/references/feedback-observation.schema.json",
+  "title": "Design Pipeline Feedback Observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "fingerprint",
+    "status",
+    "kind",
+    "severity",
+    "source",
+    "title",
+    "summary",
+    "route",
+    "firstSeenAt",
+    "lastSeenAt",
+    "occurrences",
+    "evidence",
+    "privacy"
+  ],
+  "properties": {
+    "schema": {"const": "design-pipeline-feedback.v1"},
+    "id": {"type": "string", "pattern": "^dpf-[a-f0-9]{16}$"},
+    "fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "status": {"enum": ["open", "accepted", "resolved", "superseded", "rejected"]},
+    "kind": {
+      "enum": [
+        "pipeline-bug",
+        "companion-gap",
+        "capability-gap",
+        "quality-gap",
+        "documentation-gap",
+        "feature-request"
+      ]
+    },
+    "severity": {"enum": ["low", "medium", "high", "critical"]},
+    "source": {"enum": ["self-check", "qa", "runtime", "user", "maintainer"]},
+    "title": {"type": "string", "minLength": 3, "maxLength": 180},
+    "summary": {"type": "string", "minLength": 3, "maxLength": 4000},
+    "skill": {"type": "string", "minLength": 1, "maxLength": 120},
+    "route": {"enum": ["issue", "pr"]},
+    "firstSeenAt": {"type": "string", "format": "date-time"},
+    "lastSeenAt": {"type": "string", "format": "date-time"},
+    "occurrences": {"type": "integer", "minimum": 1},
+    "evidence": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {"type": "string", "minLength": 1, "maxLength": 2000}
+    },
+    "changedFiles": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {"type": "string", "minLength": 1, "maxLength": 500}
+    },
+    "validation": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {"type": "string", "minLength": 1, "maxLength": 2000}
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["redacted", "remotePublished"],
+      "properties": {
+        "redacted": {"const": true},
+        "remotePublished": {"const": false}
+      }
+    },
+    "draftPath": {"type": "string", "minLength": 1}
+  }
+}
