@@ -19,6 +19,16 @@ const BUDGET_THRESHOLDS = {
 };
 const HANDOFF_START = "<!-- DESIGN-PIPELINE:DESIGN-SYNTHESIS:START -->";
 const HANDOFF_END = "<!-- DESIGN-PIPELINE:DESIGN-SYNTHESIS:END -->";
+const DESIGN_FOUNDATION_SECTIONS = [
+  ["product context"],
+  ["overview", "brand & style"],
+  ["colors"],
+  ["typography"],
+  ["layout", "layout & spacing"],
+  ["components"],
+  ["do's and don'ts", "dos and don'ts"],
+  ["source decisions", "evidence and adaptation"],
+];
 
 function fail(message) {
   throw new Error(message);
@@ -290,9 +300,62 @@ function sha256Text(text) {
   return crypto.createHash("sha256").update(text).digest("hex");
 }
 
+function normalizedHeading(value) {
+  return value
+    .toLowerCase()
+    .replace(/[’]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function validateDesignFrontmatter(text) {
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  if (!match) fail("DESIGN.md must start with YAML frontmatter");
+  if (!/^name:\s*(?:"[^"]+"|'[^']+'|[^#\r\n][^\r\n]*)$/m.test(match[1])) {
+    fail("DESIGN.md frontmatter must contain a non-empty name");
+  }
+}
+
+function validateDesignSections(text) {
+  const headings = [...text.matchAll(/^##\s+(.+?)\s*$/gm)].map((match) =>
+    normalizedHeading(match[1]),
+  );
+  const missing = DESIGN_FOUNDATION_SECTIONS
+    .filter((aliases) => !aliases.some((heading) => headings.includes(heading)))
+    .map((aliases) => aliases[0]);
+  if (missing.length) fail(`DESIGN.md is missing required sections: ${missing.join(", ")}`);
+}
+
+function validateSourceDecisions(text) {
+  if (!/(?:\badopted\b|采纳|采用)/i.test(text) || !/(?:\brejected\b|拒绝|未采用)/i.test(text)) {
+    fail("DESIGN.md Source Decisions must identify adopted and rejected source properties");
+  }
+}
+
+function validateActiveChange(text, activeChangeId) {
+  if (!activeChangeId) return;
+  const escaped = activeChangeId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!new RegExp(escaped, "i").test(text)) {
+    fail("DESIGN.md must link or name the active synthesis change");
+  }
+}
+
+function validateDesignFoundationText(text, options = {}) {
+  if (!isNonEmptyString(text)) fail("DESIGN.md must not be empty");
+  validateDesignFrontmatter(text);
+  validateDesignSections(text);
+  validateSourceDecisions(text);
+  validateActiveChange(text, options.activeChangeId);
+  return {
+    name: text.match(/^name:\s*(.+?)\s*$/m)[1].replace(/^["']|["']$/g, ""),
+    sha256: sha256Text(text),
+  };
+}
+
 module.exports = {
   BUDGET_THRESHOLDS,
   CHANGE_ID_PATTERN,
+  DESIGN_FOUNDATION_SECTIONS,
   HANDOFF_END,
   HANDOFF_START,
   appendEvent,
@@ -316,6 +379,7 @@ module.exports = {
   stableId,
   updateHandoff,
   validateChangeId,
+  validateDesignFoundationText,
   validateManifest,
   validateProblem,
   writeFile,

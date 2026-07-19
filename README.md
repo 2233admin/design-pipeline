@@ -9,6 +9,7 @@ It is not a general-purpose agent marketplace. Engineering integrations exist on
 ## What It Does
 
 - Creates durable design artifacts before implementation.
+- Requires a validated project `DESIGN.md` as the foundation for every implementation run.
 - Synthesizes a project-specific `DESIGN.md` from requirements, repository constraints, and
   attributed website/template evidence.
 - Adds first-class motion design documentation.
@@ -55,6 +56,15 @@ Template collections such as `awesome-design-md` are useful evidence libraries, 
 infer a target product's users, workflows, constraints, or component architecture. This pipeline
 uses them as inspiration inputs while generating a new project design contract.
 
+The file is mandatory, but its contents are never a mandatory template copy:
+
+```powershell
+node skill/scripts/check-design-foundation.cjs --project-root . --json
+```
+
+`ready` unlocks implementation. `synthesis-required` routes into the initializer below. `invalid`
+requires repair or resynthesis.
+
 ```powershell
 node skill/scripts/init-design-synthesis.cjs `
   --change-id create-product-design-system `
@@ -94,6 +104,7 @@ skill/
     publication-request.schema.json
     publication-receipt.schema.json
   scripts/
+    check-design-foundation.cjs
     init-design-synthesis.cjs
     advance-design-synthesis.cjs
     check-deps.cjs

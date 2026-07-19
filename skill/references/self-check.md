@@ -20,6 +20,16 @@ For CI or machine-readable output:
 node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs --json
 ```
 
+Dependency self-check and project foundation validation are separate. Before implementation, also
+run:
+
+```bash
+node ~/.codex/skills/design-pipeline/scripts/check-design-foundation.cjs --project-root . --json
+```
+
+Only foundation status `ready` unlocks implementation. `synthesis-required` exits with code 2 so a
+host can route into requirements-driven synthesis without confusing it with an invalid file.
+
 ## Environment
 
 The script checks skills under:
@@ -47,6 +57,7 @@ node "$HOME\.codex\skills\design-pipeline\scripts\check-deps.cjs" --json
 - `FAIL`: a required item is missing. The pipeline itself is not installed correctly.
 - `WARN`: an enhancement skill is missing, or an installed capability profile is stale. Continue with the documented fallback.
 - `INFO`: a repo surface such as OpenSpec or GBrain was not detected. Continue with `design/changes/<change-id>/`.
+- `synthesis-required`: project `DESIGN.md` is missing; run design synthesis before implementation.
 - `OK`: installed or detected.
 
 ## Dependency Levels

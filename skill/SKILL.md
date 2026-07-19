@@ -11,6 +11,19 @@ This skill does not replace individual design skills. It orchestrates them into 
 
 Design is the product boundary. Engineering, OpenSpec, GBrain, Matt Pocock, Vercel, GSAP, and Anime.js integrations are support systems for producing, implementing, and validating better design outcomes. Do not let this pipeline drift into a general-purpose development framework.
 
+## Project DESIGN.md Invariant
+
+Every target project must have one reusable project `DESIGN.md` before implementation begins.
+This is a system invariant, not an optional input:
+
+- if it exists, validate it with `scripts/check-design-foundation.cjs`;
+- if it is missing, route through requirements-driven synthesis;
+- if it is incomplete, repair or resynthesize it;
+- never substitute change-level lowercase `design.md`, a template copy, or a token dump.
+
+Planning may begin in order to produce the foundation. Stage 5 implementation may not begin until
+the foundation checker reports `ready`.
+
 ## Pipeline Shape
 
 Model the workflow after OpenSpec's lightweight change lifecycle:
@@ -151,6 +164,9 @@ Before writing design artifacts or code:
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
 - Check for project `DESIGN.md`. If it is missing or materially incompatible with the request, route
   through the requirements-driven synthesis module before implementation.
+- Run `node <design-pipeline>/scripts/check-design-foundation.cjs --project-root . --json`.
+  Status `synthesis-required` is the mandatory route into synthesis; only `ready` unlocks
+  implementation.
 - Check whether the project has OpenSpec, GBrain, or Matt Pocock skill artifacts and use the compatibility rules in `references/development-compatibility.md`.
 - Note constraints such as no external images, single-file HTML, mobile-first, accessibility, or brand rules.
 
@@ -235,6 +251,8 @@ Implement directly from `design.md` and `tasks.md`.
 
 Rules:
 
+- Re-run `scripts/check-design-foundation.cjs` and stop unless it reports `ready`.
+- Link the validated project `DESIGN.md` from the active lowercase change `design.md`.
 - If the repo uses OpenSpec, keep the design-pipeline artifacts linked to the active OpenSpec change and do not create a parallel source of truth.
 - If the repo uses GBrain, sync or reference the design decision artifacts through the repo's established GBrain surface instead of inventing a new memory format.
 - If Matt Pocock engineering skills are installed, use `codebase-design`, `grill-with-docs`, `implement`, and `matt-tdd` where they fit the current implementation stage.

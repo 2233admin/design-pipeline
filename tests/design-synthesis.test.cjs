@@ -130,6 +130,8 @@ test("initializes a requirements-driven synthesis run with attributed inputs", (
   assert.equal(manifest.output.path, "DESIGN.md");
   assert.equal(manifest.scope.threshold, 24);
   assert.equal(state.designSynthesis.stage, "grill-with-docs");
+  assert.equal(state.designFoundation.status, "synthesis-required");
+  assert.equal(state.designFoundation.path, "DESIGN.md");
   assert.ok(state.nextActions.some((item) => item.startsWith("/grill-with-docs")));
   for (const property of schema.required) {
     assert.ok(Object.hasOwn(manifest, property), `manifest misses ${property}`);
@@ -302,6 +304,8 @@ test("runs the fitting scope path through DESIGN.md validation and implementatio
   assert.equal(complete.stage, "implementation");
   assert.equal(state.phase, "stage-5-implementation");
   assert.equal(state.status, "in-progress");
+  assert.equal(state.designFoundation.status, "ready");
+  assert.equal(state.designFoundation.sha256, complete.output.sha256);
 });
 
 test("uses Wayfinder only when deterministic scope exceeds the budget", () => {

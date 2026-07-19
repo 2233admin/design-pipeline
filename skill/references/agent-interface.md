@@ -52,6 +52,11 @@ Machine-readable current state. Keep it compact and update it at every phase tra
     "evidenceRoot": "",
     "scores": {}
   },
+  "designFoundation": {
+    "path": "DESIGN.md",
+    "status": "synthesis-required",
+    "sha256": null
+  },
   "designSynthesis": {
     "manifest": "",
     "status": "",
@@ -173,6 +178,9 @@ When another agent resumes:
 When `designSynthesis` is present, read its manifest before the phase artifact. A run waiting at
 `grill-with-docs` or `wayfinder` is intentionally interactive; do not answer the user's unresolved
 decision or fabricate a tracker artifact in order to advance it.
+
+`designFoundation.status` is `synthesis-required`, `invalid`, or `ready`. Stage 5 implementation is
+valid only when it is `ready` and its hash matches the project `DESIGN.md`.
 
 ## Staleness
 

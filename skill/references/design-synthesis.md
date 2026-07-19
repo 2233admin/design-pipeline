@@ -2,12 +2,25 @@
 
 ## Purpose
 
-Use this module when a project does not have a reusable `DESIGN.md`, or when its existing file no
-longer covers the requested product direction.
+Every project using the pipeline must have a reusable `DESIGN.md` before implementation. Use this
+module when the file is missing or when its existing content no longer covers the requested product
+direction.
 
 This is a synthesis workflow, not a template picker. A public DESIGN.md collection, a live website,
 or an existing component library can supply evidence. The target product's requirements, users,
 workflows, constraints, and existing code determine the result.
+
+Check the invariant first:
+
+```powershell
+node <design-pipeline>/scripts/check-design-foundation.cjs `
+  --project-root . `
+  --json
+```
+
+- `ready`: reuse the foundation and link it from the active change.
+- `synthesis-required`: initialize this workflow; implementation remains locked.
+- `invalid`: repair or resynthesize the file before implementation.
 
 The official DESIGN.md format separates machine-readable tokens from human-readable design
 rationale. Preserve both, but optimize first for clear, specific intent. “Modern, clean, premium”
