@@ -29,4 +29,3 @@ The shipped skill remains local-first and network-optional. It SHALL NOT execute
 publish remotely. A host adapter may retrieve source metadata or create a GitHub Issue/PR only after
 the user explicitly authorizes that remote action and the adapter validates the target, redaction,
 tests, and idempotency key.
-

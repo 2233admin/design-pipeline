@@ -66,4 +66,3 @@ The design-pipeline repository uses the same contracts:
 - upstream companion changes become source evidence;
 - reviewed fixes generate publication requests;
 - merged PRs and releases reconcile into the observation history.
-

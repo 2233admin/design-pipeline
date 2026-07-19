@@ -26,4 +26,3 @@
 - [ ] Document host adapter responsibilities for GitHub, browser, and evidence retrieval.
 - [ ] Exercise the audit against the design-pipeline repository itself.
 - [ ] Run tests, installed self-check, packaging, code-intel, and remote review.
-

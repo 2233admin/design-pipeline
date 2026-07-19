@@ -59,4 +59,3 @@ future companion profiles.
 - **WHEN** its registry profile and source metadata satisfy the schemas
 - **THEN** the existing audit and contribution flow SHALL evaluate it without a new hard-coded
   branch.
-
