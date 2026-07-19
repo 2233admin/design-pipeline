@@ -24,8 +24,11 @@ function installSkill(root, name, body) {
   fs.writeFileSync(path.join(target, "SKILL.md"), body);
 }
 
-function runCheck(skillRoots, options = {}) {
-  const result = spawnSync(process.execPath, [checkScript, "--json", ...(options.args || [])], {
+function runCheckRaw(skillRoots, options = {}) {
+  return spawnSync(
+    process.execPath,
+    [options.script || checkScript, "--json", ...(options.args || [])],
+    {
     cwd: options.cwd || repoRoot,
     encoding: "utf8",
     env: {
@@ -34,8 +37,12 @@ function runCheck(skillRoots, options = {}) {
       CODEX_SKILLS_DIR: "",
       ...(options.env || {}),
     },
-  });
+    },
+  );
+}
 
+function runCheck(skillRoots, options = {}) {
+  const result = runCheckRaw(skillRoots, options);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   return JSON.parse(result.stdout);
 }
@@ -198,5 +205,30 @@ test("records stale capability feedback only when explicitly requested", () => {
   } finally {
     fs.rmSync(skillRoot, { recursive: true, force: true });
     fs.rmSync(consumerRoot, { recursive: true, force: true });
+  }
+});
+
+test("fails clearly when a registry requirement contains an invalid regex", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    const installedPipeline = path.join(root, "design-pipeline");
+    const registryPath = path.join(
+      installedPipeline,
+      "references",
+      "companion-capabilities.json",
+    );
+    const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+    registry.profiles[0].requirements[0].patterns = [{ source: "[" }];
+    fs.writeFileSync(registryPath, `${JSON.stringify(registry, null, 2)}\n`);
+
+    const result = runCheckRaw([root], {
+      script: path.join(installedPipeline, "scripts", "check-deps.cjs"),
+    });
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Invalid regex in capability profile animejs-v4-5/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });
