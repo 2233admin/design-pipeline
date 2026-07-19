@@ -10,10 +10,11 @@
 - `sentrux gate .`: passed at `7067 -> 6934` after the shared-core boundary cleanup.
 - The first committed-tree Code Intel run correctly blocked at `6746`; its surgery plan identified
   `validateOptions`. The function was decomposed without behavior changes and the foundation CLI was
-  reduced to a thin adapter. A clean rerun remains pending.
+  reduced to a thin adapter.
+- Code Intel snapshot `20260719-144512`: passed 7/7 executed stages, Sentrux check/gate passed,
+  no blocking debt, quality `7067 -> 6934`.
 
 ## Pending publication verification
 
-- Code Intel on the committed tree.
 - GitHub CI and automated review.
 - Release artifact and installed-release verification.

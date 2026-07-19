@@ -2,14 +2,15 @@
   "schema": "design-pipeline-state.v1",
   "changeId": "enforce-design-foundation",
   "status": "active",
-  "stage": "verification",
-  "updatedAt": "2026-07-19T14:42:46+08:00",
+  "stage": "ready-for-review",
+  "updatedAt": "2026-07-19T14:46:41+08:00",
   "verification": {
     "qa": "passed",
     "testsPassed": 67,
     "testsFailed": 0,
     "selfCheck": "passed",
-    "sentrux": "passed"
+    "sentrux": "passed",
+    "codeIntel": "passed"
   },
-  "nextAction": "Run full QA and Code Intel after the structural cleanup, then complete GitHub publication checks."
+  "nextAction": "Push the branch, open the GitHub pull request, and complete CI, review, merge, and release checks."
 }
