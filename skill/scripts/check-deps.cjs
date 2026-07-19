@@ -35,6 +35,7 @@ try {
   throw new Error(`Invalid companion capability registry JSON at ${registryPath}: ${error.message}`);
 }
 if (
+  !registry ||
   registry.schema !== "design-pipeline-companions.v1" ||
   !Array.isArray(registry.groups) ||
   !Array.isArray(registry.profiles) ||
@@ -43,6 +44,9 @@ if (
   throw new Error(`Invalid companion capability registry structure at ${registryPath}.`);
 }
 for (const profile of registry.profiles) {
+  if (!profile || typeof profile !== "object") {
+    throw new Error(`Invalid capability profile in ${registryPath}.`);
+  }
   const skills = profile.skills || (profile.skill ? [profile.skill] : []);
   if (
     typeof profile.id !== "string" ||
@@ -55,6 +59,7 @@ for (const profile of registry.profiles) {
   }
   for (const requirement of profile.requirements) {
     if (
+      !requirement ||
       typeof requirement.id !== "string" ||
       !requirement.id ||
       typeof requirement.skill !== "string" ||
@@ -64,7 +69,7 @@ for (const profile of registry.profiles) {
       (requirement.match !== undefined && requirement.match !== "all")
     ) {
       throw new Error(
-        `Invalid requirement ${requirement.id || "<unknown>"} in capability profile ${profile.id}.`,
+        `Invalid requirement ${requirement?.id || "<unknown>"} in capability profile ${profile.id}.`,
       );
     }
     for (const pattern of requirement.patterns) {

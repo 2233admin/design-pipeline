@@ -323,11 +323,21 @@ function newIndex(timestamp) {
   };
 }
 
+function isPositiveInteger(value) {
+  if (!Number.isInteger(value)) return false;
+  return value >= 1;
+}
+
+function isOptionalArray(value) {
+  if (value === undefined) return true;
+  return Array.isArray(value);
+}
+
 function isValidIndexEntry(item) {
   if (!item || typeof item !== "object") return false;
   if (typeof item.id !== "string") return false;
   if (typeof item.lastSeenAt !== "string") return false;
-  return Number.isInteger(item.occurrences) && item.occurrences >= 1;
+  return isPositiveInteger(item.occurrences);
 }
 
 function isValidIndex(index) {
@@ -371,8 +381,11 @@ function updateIndex(indexState, observation, timestamp) {
 function isValidObservation(observation, expectedId) {
   if (!observation || observation.schema !== "design-pipeline-feedback.v1") return false;
   if (observation.id !== expectedId) return false;
-  if (!Number.isInteger(observation.occurrences) || observation.occurrences < 1) return false;
-  return Array.isArray(observation.evidence);
+  if (!isPositiveInteger(observation.occurrences)) return false;
+  if (!Array.isArray(observation.evidence)) return false;
+  return (
+    isOptionalArray(observation.changedFiles) && isOptionalArray(observation.validation)
+  );
 }
 
 function readExistingObservation(observationPath, expectedId) {

@@ -248,3 +248,55 @@ test("fails closed without overwriting a corrupt observation", () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("fails closed when parsed feedback state contains null", () => {
+  const root = makeRoot();
+  try {
+    const first = runRecord(root, ["--evidence", "first evidence"]);
+    assert.equal(first.status, 0, first.stderr || first.stdout);
+    const before = readOnlyObservation(root);
+    const indexPath = path.join(root, ".design-pipeline", "feedback", "index.json");
+    fs.writeFileSync(indexPath, "null\n");
+
+    const second = runRecord(root, ["--evidence", "second evidence"]);
+    const after = readOnlyObservation(root);
+
+    assert.notEqual(second.status, 0);
+    assert.match(second.stderr, /Invalid feedback index structure/);
+    assert.doesNotMatch(second.stderr, /TypeError/);
+    assert.deepEqual(after, before);
+    assert.equal(fs.readFileSync(indexPath, "utf8"), "null\n");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects malformed optional arrays in an existing observation", () => {
+  const root = makeRoot();
+  try {
+    const first = runRecord(root, ["--evidence", "first evidence"]);
+    assert.equal(first.status, 0, first.stderr || first.stdout);
+    const observationsDir = path.join(
+      root,
+      ".design-pipeline",
+      "feedback",
+      "observations",
+    );
+    const observationPath = path.join(observationsDir, fs.readdirSync(observationsDir)[0]);
+    const malformed = JSON.parse(fs.readFileSync(observationPath, "utf8"));
+    malformed.changedFiles = "skill/scripts/record-feedback.cjs";
+    fs.writeFileSync(observationPath, `${JSON.stringify(malformed, null, 2)}\n`);
+
+    const second = runRecord(root, ["--evidence", "second evidence"]);
+
+    assert.notEqual(second.status, 0);
+    assert.match(second.stderr, /Invalid feedback observation structure/);
+    assert.doesNotMatch(second.stderr, /TypeError/);
+    assert.equal(
+      JSON.parse(fs.readFileSync(observationPath, "utf8")).changedFiles,
+      "skill/scripts/record-feedback.cjs",
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

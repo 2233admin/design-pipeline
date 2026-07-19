@@ -232,3 +232,53 @@ test("fails clearly when a registry requirement contains an invalid regex", () =
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("fails closed when the capability registry contains null", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    const installedPipeline = path.join(root, "design-pipeline");
+    const registryPath = path.join(
+      installedPipeline,
+      "references",
+      "companion-capabilities.json",
+    );
+    fs.writeFileSync(registryPath, "null\n");
+
+    const result = runCheckRaw([root], {
+      script: path.join(installedPipeline, "scripts", "check-deps.cjs"),
+    });
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Invalid companion capability registry structure/);
+    assert.doesNotMatch(result.stderr, /TypeError/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("fails closed when a capability requirement contains null", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    const installedPipeline = path.join(root, "design-pipeline");
+    const registryPath = path.join(
+      installedPipeline,
+      "references",
+      "companion-capabilities.json",
+    );
+    const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+    registry.profiles[0].requirements = [null];
+    fs.writeFileSync(registryPath, `${JSON.stringify(registry, null, 2)}\n`);
+
+    const result = runCheckRaw([root], {
+      script: path.join(installedPipeline, "scripts", "check-deps.cjs"),
+    });
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Invalid requirement <unknown>/);
+    assert.doesNotMatch(result.stderr, /TypeError/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
