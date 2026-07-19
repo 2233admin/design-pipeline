@@ -162,11 +162,13 @@ function pathIsInside(root, target) {
   return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
 }
 
-function resolveOutputPath(projectRoot, raw) {
-  if (!isNonEmptyString(raw)) fail("--output requires a path");
-  if (path.isAbsolute(raw)) fail("--output must be project-relative");
+function resolveOutputPath(projectRoot, raw, flagName = "--output") {
+  if (!isNonEmptyString(raw)) fail(`${flagName} requires a path`);
+  if (path.isAbsolute(raw)) fail(`${flagName} must be project-relative`);
   const output = path.resolve(projectRoot, raw);
-  if (!pathIsInside(projectRoot, output)) fail("--output must stay inside the project root");
+  if (!pathIsInside(projectRoot, output)) {
+    fail(`${flagName} must stay inside the project root`);
+  }
   return {
     absolute: output,
     relative: relativePath(projectRoot, output),
@@ -329,7 +331,11 @@ function validateDesignSections(text) {
 }
 
 function validateSourceDecisions(text) {
-  if (!/(?:\badopted\b|采纳|采用)/i.test(text) || !/(?:\brejected\b|拒绝|未采用)/i.test(text)) {
+  const heading = text.match(/^##\s+(?:source decisions|evidence and adaptation)\s*$/im);
+  const remaining = text.slice(heading.index + heading[0].length);
+  const nextHeading = remaining.match(/^##\s+/m);
+  const section = nextHeading ? remaining.slice(0, nextHeading.index) : remaining;
+  if (!/(?:\badopted\b|采纳|采用)/i.test(section) || !/(?:\brejected\b|拒绝|未采用)/i.test(section)) {
     fail("DESIGN.md Source Decisions must identify adopted and rejected source properties");
   }
 }
@@ -356,7 +362,11 @@ function validateDesignFoundationText(text, options = {}) {
 
 function checkDesignFoundation(options = {}) {
   const projectRoot = resolveProjectRoot(options.projectRoot);
-  const designFile = resolveOutputPath(projectRoot, options.designFile || "DESIGN.md");
+  const designFile = resolveOutputPath(
+    projectRoot,
+    options.designFile || "DESIGN.md",
+    "--design-file",
+  );
   if (!fs.existsSync(designFile.absolute)) {
     return {
       schema: "design-pipeline.foundation-check.v1",

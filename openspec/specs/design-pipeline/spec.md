@@ -237,6 +237,12 @@ Every pipeline run SHALL validate one reusable project `DESIGN.md` before implem
 - **THEN** the checker SHALL report `ready`
 - **AND** implementation MAY consume the foundation together with change artifacts.
 
+#### Scenario: Project DESIGN.md is invalid
+
+- **WHEN** the file exists but fails frontmatter, required-section, source-decision, or path-containment validation
+- **THEN** the checker SHALL report `invalid` and SHALL NOT report `ready`
+- **AND** implementation SHALL remain locked until the file is repaired or resynthesized.
+
 ### Requirement: Validated product design resumes implementation
 
 The pipeline SHALL keep project `DESIGN.md` distinct from change `design.md` and resume the normal

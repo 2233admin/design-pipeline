@@ -149,10 +149,31 @@ test("rejects an incomplete project design foundation", () => {
   const report = JSON.parse(result.stdout);
   assert.equal(report.status, "invalid");
   assert.match(report.error, /missing required sections/);
+
+  const deceptive = validDesign("foundation-check").replace(
+    /## Source Decisions[\s\S]*$/,
+    "Adopted and rejected are mentioned in unrelated prose.\n\n## Source Decisions\n\nPending.\n",
+  );
+  fs.writeFileSync(path.join(projectRoot, "DESIGN.md"), deceptive);
+  const sourceDecisionResult = runFoundation(projectRoot);
+  assert.equal(
+    sourceDecisionResult.status,
+    1,
+    sourceDecisionResult.stderr || sourceDecisionResult.stdout,
+  );
+  assert.match(JSON.parse(sourceDecisionResult.stdout).error, /Source Decisions/);
 });
 
 test("rejects project design paths outside the project root", () => {
   const projectRoot = makeRoot(false);
+  const absolutePath = runFoundation(
+    projectRoot,
+    "--design-file",
+    path.join(projectRoot, "DESIGN.md"),
+  );
+  assert.equal(absolutePath.status, 1);
+  assert.match(JSON.parse(absolutePath.stdout).error, /--design-file must be project-relative/);
+
   const relativeEscape = runFoundation(projectRoot, "--design-file", "../DESIGN.md");
   assert.equal(relativeEscape.status, 1);
   assert.match(JSON.parse(relativeEscape.stdout).error, /stay inside/);

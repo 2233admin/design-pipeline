@@ -15,6 +15,8 @@
   no blocking debt, quality `7067 -> 6934`.
 - GitHub review follow-up: frontmatter name extraction now returns the value from the validated
   frontmatter block, and website-clone URL lists default safely at the option boundary.
+- CodeRabbit follow-up: adopted/rejected markers are now required inside the Source Decisions
+  section, `--design-file` errors name the correct flag, and the long-lived spec covers `invalid`.
 
 ## Pending publication verification
 
