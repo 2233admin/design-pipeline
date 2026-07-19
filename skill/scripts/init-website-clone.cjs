@@ -182,7 +182,7 @@ function resolveExistingProjectRoot(rawProjectRoot) {
   return projectRoot;
 }
 
-function normalizeTargets(primaryUrls, referenceUrls) {
+function normalizeTargets(primaryUrls = [], referenceUrls = []) {
   return [
     ...primaryUrls.map((url) => ({ url: normalizeUrl(url), role: "primary" })),
     ...referenceUrls.map((url) => ({ url: normalizeUrl(url), role: "reference" })),
@@ -227,11 +227,13 @@ function buildTargets(normalizedTargets) {
 function validateOptions(options) {
   if (options.help) return null;
   validateChangeId(options.changeId);
-  if (options.primaryUrls.length === 0) fail("at least one primary --url is required");
+  const primaryUrls = options.primaryUrls ?? [];
+  const referenceUrls = options.referenceUrls ?? [];
+  if (primaryUrls.length === 0) fail("at least one primary --url is required");
   validateFidelity(options.fidelity);
 
   const projectRoot = resolveExistingProjectRoot(options.projectRoot);
-  const normalizedTargets = normalizeTargets(options.primaryUrls, options.referenceUrls);
+  const normalizedTargets = normalizeTargets(primaryUrls, referenceUrls);
   rejectDuplicateTargets(normalizedTargets);
   const targets = buildTargets(normalizedTargets);
   return { changeId: options.changeId, projectRoot, targets, fidelity: options.fidelity };

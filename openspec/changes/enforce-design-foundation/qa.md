@@ -13,6 +13,8 @@
   reduced to a thin adapter.
 - Code Intel snapshot `20260719-144512`: passed 7/7 executed stages, Sentrux check/gate passed,
   no blocking debt, quality `7067 -> 6934`.
+- GitHub review follow-up: frontmatter name extraction now returns the value from the validated
+  frontmatter block, and website-clone URL lists default safely at the option boundary.
 
 ## Pending publication verification
 

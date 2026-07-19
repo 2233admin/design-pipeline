@@ -311,9 +311,11 @@ function normalizedHeading(value) {
 function validateDesignFrontmatter(text) {
   const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   if (!match) fail("DESIGN.md must start with YAML frontmatter");
-  if (!/^name:\s*(?:"[^"]+"|'[^']+'|[^#\r\n][^\r\n]*)$/m.test(match[1])) {
+  const name = match[1].match(/^name:\s*(?:"([^"]+)"|'([^']+)'|([^#\r\n][^\r\n]*))$/m);
+  if (!name) {
     fail("DESIGN.md frontmatter must contain a non-empty name");
   }
+  return (name[1] || name[2] || name[3]).trim();
 }
 
 function validateDesignSections(text) {
@@ -342,12 +344,12 @@ function validateActiveChange(text, activeChangeId) {
 
 function validateDesignFoundationText(text, options = {}) {
   if (!isNonEmptyString(text)) fail("DESIGN.md must not be empty");
-  validateDesignFrontmatter(text);
+  const name = validateDesignFrontmatter(text);
   validateDesignSections(text);
   validateSourceDecisions(text);
   validateActiveChange(text, options.activeChangeId);
   return {
-    name: text.match(/^name:\s*(.+?)\s*$/m)[1].replace(/^["']|["']$/g, ""),
+    name,
     sha256: sha256Text(text),
   };
 }
