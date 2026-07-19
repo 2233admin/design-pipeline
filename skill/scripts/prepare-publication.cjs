@@ -148,7 +148,7 @@ function uniqueStrings(value, label) {
   return [...new Set(value.map((item) => item.trim()))];
 }
 
-function renderBody(observation, action) {
+function renderBody(observation, action, changedFiles, validation) {
   const sections = [
     observation.summary,
     "",
@@ -165,11 +165,11 @@ function renderBody(observation, action) {
       "",
       "## Changed files",
       "",
-      ...observation.changedFiles.map((item) => `- ${item}`),
+      ...changedFiles.map((item) => `- ${item}`),
       "",
       "## Validation",
       "",
-      ...observation.validation.map((item) => `- ${item}`),
+      ...validation.map((item) => `- ${item}`),
     );
   }
   sections.push("", "Prepared locally. Publication requires explicit host authority.");
@@ -247,7 +247,7 @@ function prepare(options) {
     repository,
     baseBranch,
     title: observation.title,
-    body: renderBody(observation, action),
+    body: renderBody(observation, action, changedFiles, validation),
     observation: {
       id: observation.id,
       fingerprint: observation.fingerprint,

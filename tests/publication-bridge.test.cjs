@@ -144,6 +144,38 @@ test("requires base, changed files, and validation for a pull request", () => {
   assert.deepEqual(request.changedFiles, ["skill/scripts/prepare-publication.cjs"]);
 });
 
+test("renders normalized changed files and validation in the pull request body", () => {
+  const root = makeRoot();
+  const observation = record(root, "pull_request");
+  const observationFile = path.join(root, observation.observationPath);
+  const stored = JSON.parse(fs.readFileSync(observationFile, "utf8"));
+  stored.changedFiles = [
+    " skill/scripts/prepare-publication.cjs ",
+    "skill/scripts/prepare-publication.cjs",
+  ];
+  stored.validation = [" node --test passed ", "node --test passed"];
+  fs.writeFileSync(observationFile, `${JSON.stringify(stored, null, 2)}\n`);
+
+  const result = prepare(
+    root,
+    observation,
+    "--action",
+    "pull_request",
+    "--base",
+    "main",
+  );
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const request = JSON.parse(result.stdout).request;
+  assert.deepEqual(request.changedFiles, ["skill/scripts/prepare-publication.cjs"]);
+  assert.deepEqual(request.validation, ["node --test passed"]);
+  assert.equal(
+    request.body.match(/^- skill\/scripts\/prepare-publication\.cjs$/gm)?.length,
+    1,
+  );
+  assert.equal(request.body.match(/^- node --test passed$/gm)?.length, 1);
+});
+
 test("rejects mismatched receipts without mutating feedback state", () => {
   const root = makeRoot();
   const observation = record(root);

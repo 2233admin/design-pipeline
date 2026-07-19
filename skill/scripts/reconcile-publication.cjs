@@ -101,20 +101,28 @@ function validateRequest(request) {
   return request;
 }
 
+function hasValidReceiptEnvelope(receipt) {
+  return [
+    receipt.schema === "design-pipeline.publication-receipt.v1",
+    /^[a-f0-9]{64}$/.test(receipt.idempotencyKey || ""),
+    ["issue", "pull_request"].includes(receipt.action),
+    /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(receipt.repository || ""),
+  ].every(Boolean);
+}
+
+function hasValidRemoteReceipt(remote) {
+  if (!isObject(remote)) return false;
+  if (typeof remote.url !== "string") return false;
+  if (!remote.url.startsWith("https://")) return false;
+  if (!Number.isInteger(remote.number)) return false;
+  if (remote.number < 1) return false;
+  if (!["open", "closed", "merged"].includes(remote.state)) return false;
+  if (Number.isNaN(new Date(remote.createdAt).getTime())) return false;
+  return true;
+}
+
 function validateReceipt(receipt) {
-  if (
-    receipt.schema !== "design-pipeline.publication-receipt.v1" ||
-    !/^[a-f0-9]{64}$/.test(receipt.idempotencyKey || "") ||
-    !["issue", "pull_request"].includes(receipt.action) ||
-    !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(receipt.repository || "") ||
-    !isObject(receipt.remote) ||
-    typeof receipt.remote.url !== "string" ||
-    !receipt.remote.url.startsWith("https://") ||
-    !Number.isInteger(receipt.remote.number) ||
-    receipt.remote.number < 1 ||
-    !["open", "closed", "merged"].includes(receipt.remote.state) ||
-    Number.isNaN(new Date(receipt.remote.createdAt).getTime())
-  ) {
+  if (!hasValidReceiptEnvelope(receipt) || !hasValidRemoteReceipt(receipt.remote)) {
     fail("publication receipt has an invalid structure");
   }
   if (receipt.action === "issue" && receipt.remote.state === "merged") {
