@@ -1,31 +1,26 @@
-# Pull Request
-
 ## Summary
 
-## Design Outcome
+Describe the design outcome and the smallest pipeline change that supports it.
 
-What design outcome does this improve?
+## Observation / OpenSpec
 
-## OpenSpec Change
+- Observation: `dpf-...` or not applicable
+- OpenSpec change:
 
-- Change id:
-- Proposal:
-- Spec delta:
+## Companion compatibility
 
-## QA
+- Registry profile changed:
+- Upstream source reviewed:
+- Fallback preserved:
+
+## Validation
 
 - [ ] `node scripts/qa.cjs`
-- [ ] Self-check still passes
-- [ ] Missing optional dependencies still degrade to WARN, not FAIL
-- [ ] Agent-readable state contract still documented
-- [ ] Motion docs updated if animation behavior changed
+- [ ] `node --test tests/*.test.cjs`
+- [ ] Package artifacts generated
+- [ ] Installed self-check run
+- [ ] Private paths, credentials, and proprietary evidence removed
 
-## Skill Intake
+## Remote effects
 
-If this adds an external skill source:
-
-- [ ] Curation policy applied
-- [ ] Source documented
-- [ ] Duplicate/conflict check completed
-- [ ] Self-check updated if needed
-
+List any Issue, PR, release, or deployment created by this change. Write `none` when local-only.

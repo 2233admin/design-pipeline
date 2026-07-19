@@ -4,128 +4,62 @@ const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
 
-const args = new Set(process.argv.slice(2));
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
 const jsonMode = args.has("--json");
-const skillRoot =
-  process.env.CODEX_SKILLS_DIR ||
-  path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills");
+const recordFeedbackMode = args.has("--record-feedback");
+
+function optionValue(name) {
+  const index = rawArgs.indexOf(name);
+  if (index < 0) return undefined;
+  const value = rawArgs[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new Error(`${name} requires a value.`);
+  }
+  return value;
+}
+
+const configuredSkillRoots =
+  process.env.DESIGN_PIPELINE_SKILL_ROOTS || process.env.CODEX_SKILLS_DIR;
+const skillRoots = configuredSkillRoots
+  ? configuredSkillRoots.split(path.delimiter).filter(Boolean).map((root) => path.resolve(root))
+  : [path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills")];
+const skillRoot = skillRoots[0];
 
 const cwd = process.cwd();
-
-const groups = [
-  {
-    name: "Core pipeline",
-    level: "required",
-    skills: ["design-pipeline"],
-    resources: [
-      "design-pipeline/references/website-cloning.md",
-      "design-pipeline/references/website-clone-component-spec.md",
-      "design-pipeline/references/website-cloning-manifest.schema.json",
-      "design-pipeline/scripts/init-website-clone.cjs",
-      "design-pipeline/scripts/evaluate-website-clone.cjs",
-    ],
-  },
-  {
-    name: "Visual taste",
-    level: "enhancement",
-    skills: [
-      "frontend-design",
-      "design-taste-frontend",
-      "ui-ux-pro-max",
-      "web-design-guidelines",
-      "emil-design-eng",
-    ],
-    fallback: "Use the built-in visual, UX, accessibility, and motion gates manually.",
-    install: [
-      "Install companion skills from: https://github.com/Leonxlnx/taste-skill",
-      "Install UI/UX Pro Max from: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-      "Install Vercel skills from: https://github.com/vercel-labs/agent-skills",
-    ],
-  },
-  {
-    name: "Motion design",
-    level: "enhancement",
-    skills: [
-      "design-motion-principles",
-      "animation-vocabulary",
-      "review-animations",
-      "vercel-react-view-transitions",
-    ],
-    fallback: "Document trigger, purpose, duration, easing, interruption behavior, and reduced-motion fallback in design.md.",
-    install: [
-      "Install Emil motion skills from: https://github.com/emilkowalski/skill",
-      "Install motion principles from: https://github.com/kylezantos/design-engineer-auditor-package",
-    ],
-  },
-  {
-    name: "Animation implementation",
-    level: "optional",
-    skills: [
-      "gsap-core",
-      "gsap-timeline",
-      "gsap-scrolltrigger",
-      "gsap-react",
-      "gsap-plugins",
-      "gsap-utils",
-      "gsap-performance",
-      "gsap-frameworks",
-      "animejs",
-    ],
-    fallback: "Use CSS transitions/keyframes for simple motion, or implement animation with the project's existing library.",
-    install: [
-      "Install GSAP skills from: https://github.com/greensock/gsap-skills",
-      "Install Anime.js skill from: https://github.com/BowTiedSwan/animejs-skills",
-    ],
-  },
-  {
-    name: "React / Next.js engineering",
-    level: "optional",
-    skills: [
-      "vercel-react-best-practices",
-      "vercel-composition-patterns",
-      "next-dev-loop",
-      "next-cache-components-adoption",
-      "next-cache-components-optimizer",
-    ],
-    fallback: "Use the repo's existing React/Next.js conventions and official docs.",
-    install: [
-      "Install Vercel Agent Skills from: https://github.com/vercel-labs/agent-skills",
-      "Install current Next.js skills from: https://github.com/vercel/next.js/tree/canary/skills",
-    ],
-  },
-  {
-    name: "Matt Pocock development",
-    level: "optional",
-    skills: ["codebase-design", "grill-with-docs", "implement", "matt-tdd", "matt-code-review"],
-    fallback: "Use the repo's normal planning, implementation, test, and review process.",
-    install: ["Install Matt Pocock skills from: https://github.com/mattpocock/skills"],
-  },
-];
-
-const surfaces = [
-  {
-    name: "OpenSpec-style artifacts",
-    paths: ["openspec", ".openspec", "spec/changes", "specs", "docs/specs"],
-    fallback: "Use design/changes/<change-id>/ as the artifact root.",
-  },
-  {
-    name: "GBrain",
-    paths: [".gbrain", "gbrain"],
-    fallback: "Keep design decisions repo-local; sync to GBrain only when the repo already supports it.",
-  },
-  {
-    name: "Design artifacts",
-    paths: ["design/changes", "docs/design"],
-    fallback: "Create design/changes/<change-id>/ when starting a pipeline run.",
-  },
-];
+const registryPath = path.join(__dirname, "..", "references", "companion-capabilities.json");
+const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+if (
+  registry.schema !== "design-pipeline-companions.v1" ||
+  !Array.isArray(registry.groups) ||
+  !Array.isArray(registry.profiles) ||
+  !Array.isArray(registry.surfaces)
+) {
+  throw new Error(`Invalid companion capability registry: ${registryPath}`);
+}
+const groups = registry.groups;
+const capabilityProfiles = registry.profiles;
+const surfaces = registry.surfaces;
+const feedbackRoot = path.resolve(optionValue("--feedback-root") || cwd);
 
 function exists(p) {
   return fs.existsSync(p);
 }
 
+function findSkill(name) {
+  for (const root of skillRoots) {
+    const skillPath = path.join(root, name, "SKILL.md");
+    if (exists(skillPath)) return { root, path: skillPath };
+  }
+  return null;
+}
+
 function skillExists(name) {
-  return exists(path.join(skillRoot, name, "SKILL.md"));
+  return Boolean(findSkill(name));
+}
+
+function resourceExists(name) {
+  return skillRoots.some((root) => exists(path.join(root, name)));
 }
 
 function findSurface(surface) {
@@ -139,8 +73,15 @@ function line(status, text) {
 let requiredMissing = 0;
 const report = {
   skillRoot,
+  skillRoots,
   projectRoot: cwd,
+  registry: {
+    path: registryPath,
+    schema: registry.schema,
+    updatedAt: registry.updatedAt,
+  },
   groups: [],
+  capabilityProfiles: [],
   surfaces: [],
   result: "OK",
 };
@@ -151,8 +92,9 @@ function print(text = "") {
 
 print("# design-pipeline self-check");
 print("");
-print(`Skill root: ${skillRoot}`);
+print(`Skill roots: ${skillRoots.join(", ")}`);
 print(`Project root: ${cwd}`);
+print(`Capability registry: ${registryPath}`);
 print("");
 
 print("## Skill groups");
@@ -161,8 +103,8 @@ for (const group of groups) {
   const resources = group.resources || [];
   const installed = skills.filter(skillExists);
   const missingSkills = skills.filter((name) => !skillExists(name));
-  const installedResources = resources.filter((name) => exists(path.join(skillRoot, name)));
-  const missingResources = resources.filter((name) => !exists(path.join(skillRoot, name)));
+  const installedResources = resources.filter(resourceExists);
+  const missingResources = resources.filter((name) => !resourceExists(name));
   const missing = [...missingSkills, ...missingResources];
   const status = group.level === "required" && missing.length ? "FAIL" : missing.length ? "WARN" : "OK";
   if (group.level === "required") requiredMissing += missing.length;
@@ -191,6 +133,98 @@ for (const group of groups) {
   if (missing.length && group.install) {
     print("Install hints:");
     for (const hint of group.install) print(`- ${hint}`);
+  }
+}
+
+print("");
+print("## Capability profiles");
+for (const profile of capabilityProfiles) {
+  const profileSkills = profile.skills || [profile.skill];
+  const locations = new Map(
+    profileSkills
+      .map((skill) => [skill, findSkill(skill)])
+      .filter(([, located]) => Boolean(located)),
+  );
+  const installedSkills = [...locations.keys()];
+  if (!installedSkills.length) {
+    const result = {
+      id: profile.id,
+      name: profile.name,
+      ...(profile.skill ? { skill: profile.skill } : {}),
+      skills: profileSkills,
+      level: profile.level,
+      status: "INFO",
+      installed: false,
+      installedSkills,
+      source: profile.source,
+      fallback: profile.fallback,
+    };
+    report.capabilityProfiles.push(result);
+    print("");
+    print(`### ${profile.name} (${profile.level})`);
+    print(
+      line(
+        "INFO",
+        `${profileSkills.join(", ")} not installed; capability markers were not evaluated.`,
+      ),
+    );
+    print(`Fallback: ${profile.fallback}`);
+    continue;
+  }
+
+  const texts = new Map(
+    [...locations.entries()].map(([skill, located]) => [
+      skill,
+      fs.readFileSync(located.path, "utf8"),
+    ]),
+  );
+  const missingMarkers = [];
+  for (const requirement of profile.requirements || []) {
+    const text = texts.get(requirement.skill);
+    if (text === undefined) {
+      missingMarkers.push(`${requirement.skill}:missing`);
+      continue;
+    }
+    const matches = requirement.patterns.map(({ source, flags = "" }) =>
+      new RegExp(source, flags).test(text),
+    );
+    const satisfied =
+      requirement.match === "all" ? matches.every(Boolean) : matches.some(Boolean);
+    if (!satisfied) missingMarkers.push(requirement.id);
+  }
+  const status = missingMarkers.length ? "WARN" : "OK";
+  const checkedSkillPaths = Object.fromEntries(
+    [...locations.entries()].map(([skill, located]) => [skill, located.path]),
+  );
+  report.capabilityProfiles.push({
+    id: profile.id,
+    name: profile.name,
+    ...(profile.skill ? { skill: profile.skill } : {}),
+    skills: profileSkills,
+    level: profile.level,
+    status,
+    installed: true,
+    installedSkills,
+    ...(profile.skill && locations.get(profile.skill)
+      ? { skillPath: locations.get(profile.skill).path }
+      : {}),
+    checkedSkillPaths,
+    missingMarkers,
+    source: profile.source,
+    fallback: missingMarkers.length ? profile.fallback : undefined,
+  });
+
+  print("");
+  print(`### ${profile.name} (${profile.level})`);
+  print(
+    line(
+      status,
+      `${installedSkills.join(", ")} capability markers checked across ${locations.size} skill(s)`,
+    ),
+  );
+  if (missingMarkers.length) {
+    print(`Missing capability markers: ${missingMarkers.join(", ")}`);
+    print(`Fallback: ${profile.fallback}`);
   }
 }
 
@@ -224,6 +258,43 @@ if (requiredMissing) {
   report.result = "OK";
   print("");
   print("Result: OK (missing optional/enhancement skills have fallbacks)");
+}
+
+if (recordFeedbackMode) {
+  const { recordObservation } = require("./record-feedback.cjs");
+  const recorded = [];
+  for (const profile of report.capabilityProfiles.filter(
+    (item) => item.status === "WARN",
+  )) {
+    const result = recordObservation({
+      root: cwd,
+      feedbackRoot,
+      kind: "companion-gap",
+      source: "self-check",
+      severity: profile.level === "required" ? "high" : "medium",
+      skill: profile.skill || profile.skills.join(","),
+      title: `${profile.name}: ${profile.missingMarkers.join(", ")}`,
+      summary: `The installed companion surface does not advertise every capability required by the ${profile.name} profile.`,
+      evidence: [
+        `Missing capability markers: ${profile.missingMarkers.join(", ")}`,
+        `Capability source: ${profile.source}`,
+      ],
+      route: "issue",
+    });
+    recorded.push({
+      id: result.observation.id,
+      profileId: profile.id,
+      draftPath: result.draftPath,
+      created: result.created,
+    });
+  }
+  report.feedback = {
+    root: feedbackRoot,
+    recorded,
+    remotePublished: false,
+  };
+  print("");
+  print(`Feedback recorded: ${recorded.length} local draft(s); remote publication not performed.`);
 }
 
 if (jsonMode) {

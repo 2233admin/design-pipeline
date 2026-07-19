@@ -1,0 +1,23 @@
+[constraints]
+max_cycles = 0
+pollution_exclusions = ["dist"]
+
+[[layers]]
+name = "runtime-skill"
+paths = ["skill/*"]
+order = 0
+
+[[layers]]
+name = "repository-tooling"
+paths = ["scripts/*", "tests/*"]
+order = 1
+
+[[boundaries]]
+from = "skill/*"
+to = "scripts/*"
+reason = "The shipped skill must not depend on repository-only packaging and QA tooling."
+
+[[boundaries]]
+from = "skill/*"
+to = "tests/*"
+reason = "The shipped skill must remain usable without repository test fixtures."

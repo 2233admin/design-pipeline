@@ -47,6 +47,17 @@ If GBrain is only available globally but not enabled in the repo:
 - Do not initialize it automatically.
 - Record GBrain compatibility notes in `qa.md` or `design.md` only when useful.
 
+## gstack-style feedback lifecycle
+
+When gstack is installed, its learning, spec, review, and ship surfaces can strengthen the pipeline:
+
+- learning preserves durable patterns after a finding is resolved;
+- spec converts an accepted observation into a backlog-ready Issue;
+- review checks the implementation and evidence independently;
+- ship creates or updates a PR only after the user explicitly requests publication.
+
+The bundled `record-feedback.cjs` remains the portable fallback. Do not copy raw user evidence into gstack learnings. Preserve only the durable, redacted rule.
+
 ## Matt Pocock Skills
 
 Installed Matt skills should be used as engineering lenses around the design work:
@@ -80,3 +91,5 @@ Prefer existing local OMX/GStack skills when their names conflict; use the `matt
 | `design.md` | design / spec delta | Sync final decisions |
 | `tasks.md` | tasks checklist | Sync only completed durable milestones |
 | `qa.md` | validation / verification notes | Sync final QA summary and reusable rules |
+| `.design-pipeline/feedback/observations/*.json` | detected reusable gaps | Link accepted findings to the active change |
+| `.design-pipeline/feedback/drafts/*.md` | local Issue/PR proposals | Publish only through an authorized remote workflow |

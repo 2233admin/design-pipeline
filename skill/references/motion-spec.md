@@ -2,6 +2,18 @@
 
 Create `motion.md` from this template when a change includes non-trivial animation or interaction motion.
 
+## Companion skills
+
+For design-engineering motion judgment and animation language, use the Emil skill set from [`emilkowalski/skills`](https://github.com/emilkowalski/skills):
+
+- `emil-design-eng` — motion, easing, feedback, interaction polish
+- `animation-vocabulary` — precise timing, easing, and choreography language
+- `review-animations` — post-implementation animation quality review
+- `apple-design` — Apple HIG-inspired interface principles and fluid motion for web
+
+Also see `references/companion-skills.md` (Motion / Animation Set).
+Use `references/capability-routing.md` before choosing CSS, Anime.js, GSAP, React View Transitions, or an existing runtime.
+
 ## Summary
 
 - Change id:
@@ -58,6 +70,12 @@ Rules:
 
 Use concrete easing names or cubic-bezier values when implementation needs them.
 
+Recommended defaults from Emil design-engineering practice (adjust per product):
+
+- Enter / UI feedback: ease-out custom curves (fast start, soft settle), e.g. `cubic-bezier(0.23, 1, 0.32, 1)` or `cubic-bezier(0.16, 1, 0.3, 1)`.
+- Exit / dismiss: slightly snappier ease-in or ease-in-out so elements leave without lagging.
+- Prefer ease-out for user-initiated feedback; avoid linear for interactive UI motion.
+
 ## Spatial Behavior
 
 - Origin:
@@ -85,6 +103,9 @@ Use concrete easing names or cubic-bezier values when implementation needs them.
 - Properties allowed:
 - Properties avoided:
 - ScrollTrigger / scroll observer refresh behavior:
+- Layout/text/draggable cleanup behavior:
+- Adapter or render-loop owner:
+- Deterministic stagger seed (when evidence depends on ordering):
 - Heavy asset strategy:
 - Mobile fallback:
 
@@ -99,7 +120,7 @@ Default posture:
 | Candidate | Use when | Rejected because |
 | --- | --- | --- |
 | CSS transitions/keyframes | Simple state changes |  |
-| Anime.js | Lightweight scripted DOM/SVG motion |  |
+| Anime.js v4.5 | Modular timelines, layout/text/SVG, draggable, scroll, WAAPI, adapters/Three.js, deterministic stagger |  |
 | GSAP | Complex choreography, scroll, timelines, plugins, React integration |  |
 | React View Transitions | Route/navigation continuity |  |
 | Existing project library | Project already standardizes on it |  |
@@ -118,6 +139,9 @@ Selected:
 - Tokens/classes:
 - Hooks/utilities:
 - Cleanup/unmount behavior:
+- Anime.js scope/revert behavior:
+- Layout/text accessibility restoration:
+- Adapter registration and render-loop cleanup:
 - Server/client boundary:
 - Testing hooks:
 

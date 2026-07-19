@@ -54,6 +54,9 @@ The website-cloning module is a design-pipeline superset capability. It adds liv
 ## Companion Skills
 
 Reference file: `references/companion-skills.md`.
+Capability routing reference: `references/capability-routing.md`.
+Machine-readable companion registry: `references/companion-capabilities.json`.
+Feedback and contribution reference: `references/feedback-loop.md`.
 Development compatibility reference: `references/development-compatibility.md`.
 Self-check reference: `references/self-check.md`.
 QA checklist reference: `references/qa-checklist.md`.
@@ -74,13 +77,18 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `emil-design-eng`: design-engineering judgment for animation and interaction polish.
 - `animation-vocabulary`: translate vague motion intent into precise timing, easing, choreography, and behavior language.
 - `review-animations`: strict post-implementation animation review.
+- `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).
 - `vercel-react-view-transitions`: React and Next.js view-transition implementation patterns.
+
+Choose companions by capability, not by the presence of a familiar skill name. Read `references/capability-routing.md` when the change crosses evidence capture, design systems, assets, motion runtimes, editable design handoff, or hosted delivery.
 
 For animation implementation, choose library skills by job:
 
 - Use `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-react`, `gsap-plugins`, `gsap-utils`, `gsap-performance`, and `gsap-frameworks` for advanced choreography, scroll-driven animation, timeline control, React integration, SVG/plugin-heavy work, or when GSAP is already in the project.
-- Use `animejs` for lighter DOM/SVG animation, small interactive pieces, simpler timelines, or when the project should avoid GSAP's larger ecosystem.
-- If no animation library is already present, prefer CSS transitions/keyframes for simple state changes, Anime.js for lightweight scripted motion, and GSAP for complex timelines or scroll/sequence-heavy experiences.
+- Use `animejs` v4.5 for modular timelines, layout transitions, accessible text splitting, SVG, draggable interactions, scroll observers, WAAPI, deterministic stagger, or adapter-driven targets such as Three.js.
+- If no animation library is already present, prefer CSS transitions/keyframes for simple state changes; choose Anime.js or GSAP only when the required capability justifies a runtime.
+- Do not add Anime.js and GSAP together unless `design.md` assigns them distinct, non-overlapping responsibilities.
+- Treat an installed but stale `animejs` companion as a warning. Use official v4.5 documentation for missing markers and record the fallback in `qa.md`.
 
 For React and Next.js work, also apply the installed Vercel / Next.js engineering skills listed in `references/companion-skills.md`:
 
@@ -98,7 +106,10 @@ If a companion skill is missing, continue with the same gate manually and note t
 Before writing design artifacts or code:
 
 - Run `node <design-pipeline>/scripts/check-deps.cjs` from the target repo root, or manually perform the same checks from `references/self-check.md` if Node is unavailable.
+- Read `references/companion-capabilities.json` as the source of truth for install groups, suite requirements, capability markers, and upstream sources. Do not add another hard-coded companion list.
+- Read capability-profile warnings separately from install status. `installed` means discoverable; `WARN` means the companion surface does not advertise the current capability baseline.
 - Treat missing optional/enhancement companion skills as a fallback path, not a blocker. Record missing capabilities in `qa.md`.
+- When a warning represents a reusable pipeline or companion gap, run self-check with `--record-feedback` or call `scripts/record-feedback.cjs` immediately. This writes a local, redacted, deduplicated draft; it does not publish remotely.
 - Initialize or update `state.json`, `events.jsonl`, and `handoff.md` using `references/agent-interface.md`.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
 - Inspect existing UI patterns before inventing new ones.
@@ -217,6 +228,22 @@ After completion:
 - Keep active artifacts with the code if the repo has no archive convention.
 - If the repo has OpenSpec-style archiving, move completed change notes to the matching archive folder.
 - Update persistent design docs only when the change creates reusable tokens, components, or interaction rules.
+- Link accepted feedback observations to the completed change. Mark them resolved or superseded only after verification evidence exists.
+
+## Feedback and Maintainer Loop
+
+Use `references/feedback-loop.md` whenever a run exposes a pipeline bug, stale companion, missing capability, quality gap, documentation gap, or reusable feature request.
+
+The local loop is:
+
+1. Observe during self-check, implementation, or QA.
+2. Normalize, redact, and deduplicate with `scripts/record-feedback.cjs`.
+3. Generate an Issue draft by default; generate a PR draft only when changed files and validation evidence exist.
+4. Review the draft, target remote, privacy boundary, and evidence.
+5. Publish only after explicit user authority through an installed GitHub or ship workflow.
+6. Preserve the regression test and update `companion-capabilities.json` when the durable learning changes compatibility routing.
+
+When modifying `design-pipeline` itself, use this same pipeline and OpenSpec lifecycle. The pipeline is allowed to improve itself, but it must not silently mutate third-party skills or use ambient credentials to create remote artifacts.
 
 ## Output Contract
 
@@ -227,4 +254,6 @@ Final responses should report:
 - Verification evidence.
 - Missing companion skills, if any.
 - Self-check result and chosen fallbacks.
+- Feedback observation ids and local draft paths, when findings were recorded.
+- Whether any remote Issue or PR was published; default is “not published.”
 - Remaining risks or explicit validation gaps.

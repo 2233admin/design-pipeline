@@ -28,7 +28,8 @@ Machine-readable current state. Keep it compact and update it at every phase tra
   "surfaces": [],
   "capabilities": {
     "missing": [],
-    "fallbacks": []
+    "fallbacks": [],
+    "feedback": "available"
   },
   "openSpec": {
     "detected": false,
@@ -94,6 +95,9 @@ Common event types:
 - `fallback-selected`
 - `implementation-step`
 - `qa-evidence`
+- `feedback-recorded`
+- `feedback-accepted`
+- `feedback-resolved`
 - `blocker`
 - `state-repair`
 - `handoff`
@@ -168,3 +172,7 @@ If stale, append a `blocker` or `state-repair` event before continuing.
 ## Secret Handling
 
 Never write secrets, tokens, cookies, private credentials, or raw proprietary data into these files. Reference secure locations indirectly when necessary.
+
+- Redact tokens, credentials, private URLs, authenticated headers, and machine-specific paths.
+- Use `record-feedback.cjs` for contribution evidence so common secret patterns and local paths are redacted before draft creation.
+- Do not copy raw browser cookies, proprietary source, or private screenshots into Issue or PR drafts.

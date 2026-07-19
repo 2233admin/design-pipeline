@@ -1,0 +1,217 @@
+{
+  "schema": "design-pipeline-companions.v1",
+  "updatedAt": "2026-07-19",
+  "groups": [
+    {
+      "name": "Core pipeline",
+      "level": "required",
+      "skills": ["design-pipeline"],
+      "resources": [
+        "design-pipeline/references/website-cloning.md",
+        "design-pipeline/references/website-clone-component-spec.md",
+        "design-pipeline/references/website-cloning-manifest.schema.json",
+        "design-pipeline/references/feedback-observation.schema.json",
+        "design-pipeline/references/feedback-loop.md",
+        "design-pipeline/scripts/init-website-clone.cjs",
+        "design-pipeline/scripts/evaluate-website-clone.cjs",
+        "design-pipeline/scripts/record-feedback.cjs"
+      ]
+    },
+    {
+      "name": "Visual taste",
+      "level": "enhancement",
+      "skills": [
+        "frontend-design",
+        "design-taste-frontend",
+        "ui-ux-pro-max",
+        "web-design-guidelines",
+        "emil-design-eng"
+      ],
+      "fallback": "Use the built-in visual, UX, accessibility, and motion gates manually.",
+      "install": [
+        "Install companion skills from: https://github.com/Leonxlnx/taste-skill",
+        "Install UI/UX Pro Max from: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "Install Vercel skills from: https://github.com/vercel-labs/agent-skills"
+      ]
+    },
+    {
+      "name": "Motion design",
+      "level": "enhancement",
+      "skills": [
+        "design-motion-principles",
+        "animation-vocabulary",
+        "review-animations",
+        "apple-design",
+        "vercel-react-view-transitions"
+      ],
+      "fallback": "Document trigger, purpose, duration, easing, interruption behavior, and reduced-motion fallback in design.md.",
+      "install": [
+        "Install Emil motion skills from: https://github.com/emilkowalski/skills",
+        "Install motion principles from: https://github.com/kylezantos/design-motion-principles"
+      ]
+    },
+    {
+      "name": "Animation implementation",
+      "level": "optional",
+      "skills": [
+        "gsap-core",
+        "gsap-timeline",
+        "gsap-scrolltrigger",
+        "gsap-react",
+        "gsap-plugins",
+        "gsap-utils",
+        "gsap-performance",
+        "gsap-frameworks",
+        "animejs"
+      ],
+      "fallback": "Use CSS transitions/keyframes for simple motion, or implement animation with the project's existing library.",
+      "install": [
+        "Install GSAP skills from: https://github.com/greensock/gsap-skills",
+        "Install Anime.js skill from: https://github.com/BowTiedSwan/animejs-skills"
+      ]
+    },
+    {
+      "name": "React / Next.js engineering",
+      "level": "optional",
+      "skills": [
+        "vercel-react-best-practices",
+        "vercel-composition-patterns",
+        "next-dev-loop",
+        "next-cache-components-adoption",
+        "next-cache-components-optimizer"
+      ],
+      "fallback": "Use the repo's existing React/Next.js conventions and official docs.",
+      "install": [
+        "Install Vercel Agent Skills from: https://github.com/vercel-labs/agent-skills",
+        "Install current Next.js skills from: https://github.com/vercel/next.js/tree/canary/skills"
+      ]
+    },
+    {
+      "name": "Matt Pocock development",
+      "level": "optional",
+      "skills": ["codebase-design", "grill-with-docs", "implement", "matt-tdd", "matt-code-review"],
+      "fallback": "Use the repo's normal planning, implementation, test, and review process.",
+      "install": ["Install Matt Pocock skills from: https://github.com/mattpocock/skills"]
+    },
+    {
+      "name": "Feedback and contribution",
+      "level": "optional",
+      "skills": ["gstack", "gstack-learn", "gstack-spec", "gstack-review", "gstack-ship"],
+      "fallback": "Use the bundled feedback recorder, OpenSpec artifacts, repository review, and an explicitly authorized GitHub workflow.",
+      "install": ["Install gstack when cross-session learnings and structured spec/review/ship workflows are desired."]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "animejs-v4-5",
+      "name": "Anime.js v4.5 orchestration",
+      "skill": "animejs",
+      "level": "optional",
+      "source": "https://animejs.com/documentation/",
+      "fallback": "Use official Anime.js v4.5 documentation for missing capabilities and record the stale companion surface in qa.md.",
+      "requirements": [
+        {"id": "v4-api", "skill": "animejs", "patterns": [{"source": "Anime\\.js v4", "flags": "i"}]},
+        {"id": "layout", "skill": "animejs", "patterns": [{"source": "createLayout"}]},
+        {"id": "text", "skill": "animejs", "patterns": [{"source": "splitText"}]},
+        {"id": "scroll", "skill": "animejs", "patterns": [{"source": "onScroll"}]},
+        {"id": "draggable", "skill": "animejs", "patterns": [{"source": "createDraggable"}]},
+        {"id": "scope", "skill": "animejs", "patterns": [{"source": "createScope"}]},
+        {"id": "waapi", "skill": "animejs", "patterns": [{"source": "\\bWAAPI\\b", "flags": "i"}]},
+        {"id": "adapters", "skill": "animejs", "patterns": [{"source": "registerAdapter"}, {"source": "adapters/three"}, {"source": "Three\\.js adapter", "flags": "i"}]},
+        {"id": "3d-stagger", "skill": "animejs", "patterns": [{"source": "3D layouts", "flags": "i"}, {"source": "grid:\\s*\\[columns,\\s*rows,\\s*depth\\]", "flags": "i"}, {"source": "axis.+['\"]z['\"]", "flags": "i"}]},
+        {"id": "deterministic-stagger", "skill": "animejs", "match": "all", "patterns": [{"source": "\\bjitter\\b", "flags": "i"}, {"source": "\\bseed\\b", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "visual-direction-review",
+      "name": "Visual direction and anti-template review",
+      "skills": ["frontend-design", "design-taste-frontend"],
+      "level": "enhancement",
+      "source": "installed companion skill contracts",
+      "fallback": "Use the visual and scorecard gates in qa.md.",
+      "requirements": [
+        {"id": "subject-grounding", "skill": "frontend-design", "patterns": [{"source": "Ground it in the subject", "flags": "i"}]},
+        {"id": "iterative-critique", "skill": "frontend-design", "patterns": [{"source": "critique, build, critique again", "flags": "i"}]},
+        {"id": "anti-default", "skill": "design-taste-frontend", "patterns": [{"source": "Anti-Default Discipline", "flags": "i"}]},
+        {"id": "dependency-verification", "skill": "design-taste-frontend", "patterns": [{"source": "Dependency Verification", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "motion-accessibility-review",
+      "name": "Motion accessibility and review",
+      "skills": ["design-motion-principles", "review-animations"],
+      "level": "enhancement",
+      "source": "installed companion skill contracts",
+      "fallback": "Use motion.md and the bundled motion gate.",
+      "requirements": [
+        {"id": "motion-accessibility", "skill": "design-motion-principles", "patterns": [{"source": "Accessibility is NOT Optional", "flags": "i"}]},
+        {"id": "motion-review-standards", "skill": "review-animations", "patterns": [{"source": "Ten Non-Negotiable Standards", "flags": "i"}]},
+        {"id": "motion-findings", "skill": "review-animations", "patterns": [{"source": "Findings table", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "gsap-production-motion",
+      "name": "GSAP production motion suite",
+      "skills": ["gsap-core", "gsap-timeline", "gsap-scrolltrigger", "gsap-react", "gsap-performance"],
+      "level": "optional",
+      "source": "https://gsap.com/docs/v3/",
+      "fallback": "Use the project's existing runtime or official GSAP docs and preserve cleanup, reduced motion, and performance gates.",
+      "requirements": [
+        {"id": "core-tweens", "skill": "gsap-core", "patterns": [{"source": "gsap\\.(?:to|from|fromTo)\\b"}]},
+        {"id": "timeline", "skill": "gsap-timeline", "patterns": [{"source": "gsap\\.timeline\\b"}]},
+        {"id": "scroll-refresh", "skill": "gsap-scrolltrigger", "patterns": [{"source": "ScrollTrigger\\.refresh\\(\\)"}]},
+        {"id": "react-cleanup", "skill": "gsap-react", "match": "all", "patterns": [{"source": "useGSAP"}, {"source": "contextSafe"}]},
+        {"id": "performance-budget", "skill": "gsap-performance", "patterns": [{"source": "will-change", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "nextjs-design-engineering",
+      "name": "Next.js current design-engineering loop",
+      "skills": ["next-dev-loop", "next-cache-components-adoption", "next-cache-components-optimizer"],
+      "level": "optional",
+      "source": "https://nextjs.org/docs",
+      "fallback": "Use version-matched official Next.js docs and the target repo's existing build loop.",
+      "requirements": [
+        {"id": "next-dev-mcp", "skill": "next-dev-loop", "match": "all", "patterns": [{"source": "Next\\.js \\*\\*16\\.3\\+"}, {"source": "get_compilation_issues"}, {"source": "Turbopack"}]},
+        {"id": "cache-adoption", "skill": "next-cache-components-adoption", "match": "all", "patterns": [{"source": "cacheComponents:\\s*true"}, {"source": "export const instant"}]},
+        {"id": "cache-optimization", "skill": "next-cache-components-optimizer", "match": "all", "patterns": [{"source": "use cache"}, {"source": "cacheLife"}]}
+      ]
+    },
+    {
+      "id": "gstack-feedback-flow",
+      "name": "gstack-style learn, spec, review, and ship flow",
+      "skills": ["gstack-learn", "gstack-spec", "gstack-review", "gstack-ship"],
+      "level": "optional",
+      "source": "installed gstack workflow contracts",
+      "fallback": "Use the bundled feedback recorder plus OpenSpec, repository review, and an authorized GitHub contribution step.",
+      "requirements": [
+        {"id": "durable-learnings", "skill": "gstack-learn", "patterns": [{"source": "learnings\\.jsonl"}, {"source": "gstack-learnings-log"}]},
+        {"id": "issue-spec", "skill": "gstack-spec", "patterns": [{"source": "GitHub issue", "flags": "i"}]},
+        {"id": "code-review", "skill": "gstack-review", "patterns": [{"source": "review", "flags": "i"}]},
+        {"id": "pull-request-ship", "skill": "gstack-ship", "patterns": [{"source": "create (?:a )?PR", "flags": "i"}, {"source": "pull request", "flags": "i"}]}
+      ]
+    }
+  ],
+  "surfaces": [
+    {
+      "name": "OpenSpec-style artifacts",
+      "paths": ["openspec", ".openspec", "spec/changes", "specs", "docs/specs"],
+      "fallback": "Use design/changes/<change-id>/ as the artifact root."
+    },
+    {
+      "name": "GBrain",
+      "paths": [".gbrain", "gbrain"],
+      "fallback": "Keep design decisions repo-local; sync to GBrain only when the repo already supports it."
+    },
+    {
+      "name": "Design artifacts",
+      "paths": ["design/changes", "docs/design"],
+      "fallback": "Create design/changes/<change-id>/ when starting a pipeline run."
+    },
+    {
+      "name": "Feedback queue",
+      "paths": [".design-pipeline/feedback"],
+      "fallback": "Create the queue only when a finding is recorded; absence is normal before the first observation."
+    }
+  ]
+}

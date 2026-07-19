@@ -1,16 +1,16 @@
 # Companion Design Skills
 
-This pipeline is designed to coordinate the following frontend design skills.
+This pipeline is designed to coordinate the following frontend design skills. Use `capability-routing.md` for cross-group selection and version-sensitive runtime routing. The machine-readable source of truth for install groups and capability checks is `companion-capabilities.json`.
 
 ## Primary Set
 
 | Skill | Source | Pipeline role | Current local status |
 | --- | --- | --- | --- |
-| `frontend-design` | `anthropics/skills` | Strong visual direction, composition, non-generic first impression | Missing |
-| `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility | Missing |
+| `frontend-design` | `anthropics/skills` | Strong visual direction, composition, non-generic first impression | Installed |
+| `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility | Installed |
 | `ui-ux-pro-max` | `nextlevelbuilder/ui-ux-pro-max-skill` | UX heuristics, searchable style/color/type system, repeatable choices | Installed |
 | `design-taste-frontend` | `Leonxlnx/taste-skill` | Anti-template design discipline, typography and copy taste | Installed |
-| `emil-design-eng` | `emilkowalski/skill` | Motion, easing, feedback, interaction polish | Installed |
+| `emil-design-eng` | `emilkowalski/skills` | Motion, easing, feedback, interaction polish | Installed |
 
 ## Motion / Animation Set
 
@@ -18,10 +18,11 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 
 | Skill | Source | Pipeline role | Current local status |
 | --- | --- | --- | --- |
-| `design-motion-principles` | `kylezantos/design-engineer-auditor-package` | Dedicated motion create/audit workflow for UI animation, micro-interactions, Framer Motion, CSS, and app transitions | Installed |
-| `emil-design-eng` | `emilkowalski/skill` | Design-engineering motion judgment, UI polish, component feel | Installed |
-| `animation-vocabulary` | `emilkowalski/skill` | Converts vague motion direction into precise animation language | Installed |
-| `review-animations` | `emilkowalski/skill` | Strict animation quality review with production standards | Installed |
+| `design-motion-principles` | `kylezantos/design-motion-principles` (was design-engineer-auditor-package) | Dedicated motion create/audit workflow for UI animation, micro-interactions, Framer Motion, CSS, and app transitions | Installed |
+| `emil-design-eng` | `emilkowalski/skills` | Design-engineering motion judgment, UI polish, component feel | Installed |
+| `animation-vocabulary` | `emilkowalski/skills` | Converts vague motion direction into precise animation language | Installed |
+| `review-animations` | `emilkowalski/skills` | Strict animation quality review with production standards | Installed |
+| `apple-design` | `emilkowalski/skills` | Apple HIG-inspired interface principles and fluid motion for web, from WWDC talks | Installed |
 | `vercel-react-view-transitions` | `vercel-labs/agent-skills` | React and Next.js view transition patterns | Installed |
 
 ## Animation Library Implementation Set
@@ -36,7 +37,11 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 | `gsap-utils` | `greensock/gsap-skills` | Utility helpers, mapping, interpolation, randomization, selectors | Installed |
 | `gsap-performance` | `greensock/gsap-skills` | GSAP animation performance and production safety | Installed |
 | `gsap-frameworks` | `greensock/gsap-skills` | Framework-specific GSAP usage beyond plain JS | Installed |
-| `animejs` | `BowTiedSwan/animejs-skills` | Anime.js lightweight DOM/SVG animations and timelines | Installed |
+| `animejs` | `BowTiedSwan/animejs-skills` + official Anime.js docs | Anime.js v4.5 modules: timelines, layout, text, SVG, draggable, scroll, WAAPI, adapters/Three.js, deterministic 3D stagger | Installed; capability profile may warn when stale |
+
+Anime.js is version-sensitive. A present skill directory is not enough to prove v4.5 coverage; run `check-deps.cjs` and follow `capability-routing.md` when the profile reports missing markers.
+
+GSAP, Next.js, visual-direction, motion-review, and gstack-style feedback suites also have bounded capability profiles. A suite can report `WARN` when only part of it is installed or when an installed skill no longer advertises a required capability.
 
 ## Vercel / Next.js Engineering Set
 
@@ -59,6 +64,7 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 3. `design-taste-frontend`
 4. `ui-ux-pro-max`
 5. `emil-design-eng`
+6. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
 
 ## Taste-Skill Extension Set
 
@@ -105,6 +111,17 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 | `domain-modeling` | `mattpocock/skills` | Domain language and workflow model clarity | Installed |
 | `to-prd` | `mattpocock/skills` | Convert intent into PRD artifacts | Installed |
 | `to-issues` | `mattpocock/skills` | Convert intent into issue artifacts | Installed |
+
+## Feedback And Contribution Set
+
+| Skill | Source | Pipeline role | Current local status |
+| --- | --- | --- | --- |
+| `gstack-learn` | gstack | Durable cross-session learnings | Optional |
+| `gstack-spec` | gstack | Backlog-ready Issue/spec shaping | Optional |
+| `gstack-review` | gstack | Independent diff and risk review | Optional |
+| `gstack-ship` | gstack | Explicitly authorized PR/ship workflow | Optional |
+
+The pipeline does not require gstack. When it is absent, use `record-feedback.cjs`, OpenSpec artifacts, repository review, and the host's authorized GitHub surface.
 
 ## Optional Later
 

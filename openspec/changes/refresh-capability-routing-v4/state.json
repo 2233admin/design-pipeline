@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline-state.v1",
+  "changeId": "refresh-capability-routing-v4",
+  "status": "complete",
+  "stage": "archive-ready",
+  "updatedAt": "2026-07-19T05:12:00+08:00",
+  "verification": {
+    "qa": "passed",
+    "testsPassed": 24,
+    "testsFailed": 0,
+    "selfCheck": "passed-with-optional-warning",
+    "sentrux": "passed"
+  },
+  "nextAction": "Review and merge the local feature branch when desired."
+}
