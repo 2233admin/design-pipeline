@@ -17,6 +17,7 @@ const {
   sha256Text,
   slash,
   updateHandoff,
+  validateDesignFoundationText,
   validateManifest,
   writeJson,
 } = require("./design-synthesis-core.cjs");
@@ -141,6 +142,11 @@ function nextState(state, manifest, phase, status, actions, now) {
     updatedAt: now,
     blockers: Array.isArray(state.blockers) ? state.blockers : [],
     nextActions: mergeUnique(retained, actions),
+    designFoundation: {
+      path: manifest.output.path,
+      status: manifest.output.status === "validated" ? "ready" : "synthesis-required",
+      sha256: manifest.output.sha256,
+    },
     designSynthesis: {
       manifest: `${manifest.artifactRoot}/design-synthesis.json`,
       status: manifest.status,
@@ -339,49 +345,6 @@ function linkWayfinder(run, options, now) {
   console.log("Wayfinder map linked. Continue to design synthesis.");
 }
 
-function normalizedHeading(value) {
-  return value
-    .toLowerCase()
-    .replace(/[’]/g, "'")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function validateFrontmatter(text) {
-  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
-  if (!match) fail("DESIGN.md must start with YAML frontmatter");
-  if (!/^name:\s*(?:"[^"]+"|'[^']+'|[^#\r\n][^\r\n]*)$/m.test(match[1])) {
-    fail("DESIGN.md frontmatter must contain a non-empty name");
-  }
-}
-
-function validateDesignText(text, manifest) {
-  validateFrontmatter(text);
-  const headings = [...text.matchAll(/^##\s+(.+?)\s*$/gm)].map((match) =>
-    normalizedHeading(match[1]),
-  );
-  const required = [
-    ["product context"],
-    ["overview", "brand & style"],
-    ["colors"],
-    ["typography"],
-    ["layout", "layout & spacing"],
-    ["components"],
-    ["do's and don'ts", "dos and don'ts"],
-    ["source decisions", "evidence and adaptation"],
-  ];
-  const missing = required
-    .filter((aliases) => !aliases.some((heading) => headings.includes(heading)))
-    .map((aliases) => aliases[0]);
-  if (missing.length) fail(`DESIGN.md is missing required sections: ${missing.join(", ")}`);
-  if (!new RegExp(manifest.changeId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(text)) {
-    fail("DESIGN.md must link or name the active synthesis change");
-  }
-  if (!/(?:\badopted\b|采纳|采用)/i.test(text) || !/(?:\brejected\b|拒绝|未采用)/i.test(text)) {
-    fail("DESIGN.md Source Decisions must identify adopted and rejected source properties");
-  }
-}
-
 function recordDesign(run, options, now) {
   requireStage(run.manifest, "design-synthesis", options.event);
   if (!isNonEmptyString(options.designFile)) fail("--design-file is required");
@@ -392,7 +355,7 @@ function recordDesign(run, options, now) {
   }
   const design = resolveExistingFileInside(run.projectRoot, options.designFile, "--design-file");
   const text = fs.readFileSync(design.absolute, "utf8");
-  validateDesignText(text, run.manifest);
+  validateDesignFoundationText(text, { activeChangeId: run.manifest.changeId });
   const manifest = structuredClone(run.manifest);
   manifest.status = "needs-review";
   manifest.stage = "design-validation";

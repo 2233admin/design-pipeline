@@ -19,6 +19,16 @@ const BUDGET_THRESHOLDS = {
 };
 const HANDOFF_START = "<!-- DESIGN-PIPELINE:DESIGN-SYNTHESIS:START -->";
 const HANDOFF_END = "<!-- DESIGN-PIPELINE:DESIGN-SYNTHESIS:END -->";
+const DESIGN_FOUNDATION_SECTIONS = [
+  ["product context"],
+  ["overview", "brand & style"],
+  ["colors"],
+  ["typography"],
+  ["layout", "layout & spacing"],
+  ["components"],
+  ["do's and don'ts", "dos and don'ts"],
+  ["source decisions", "evidence and adaptation"],
+];
 
 function fail(message) {
   throw new Error(message);
@@ -152,11 +162,13 @@ function pathIsInside(root, target) {
   return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
 }
 
-function resolveOutputPath(projectRoot, raw) {
-  if (!isNonEmptyString(raw)) fail("--output requires a path");
-  if (path.isAbsolute(raw)) fail("--output must be project-relative");
+function resolveOutputPath(projectRoot, raw, flagName = "--output") {
+  if (!isNonEmptyString(raw)) fail(`${flagName} requires a path`);
+  if (path.isAbsolute(raw)) fail(`${flagName} must be project-relative`);
   const output = path.resolve(projectRoot, raw);
-  if (!pathIsInside(projectRoot, output)) fail("--output must stay inside the project root");
+  if (!pathIsInside(projectRoot, output)) {
+    fail(`${flagName} must stay inside the project root`);
+  }
   return {
     absolute: output,
     relative: relativePath(projectRoot, output),
@@ -290,12 +302,105 @@ function sha256Text(text) {
   return crypto.createHash("sha256").update(text).digest("hex");
 }
 
+function normalizedHeading(value) {
+  return value
+    .toLowerCase()
+    .replace(/[’]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function validateDesignFrontmatter(text) {
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  if (!match) fail("DESIGN.md must start with YAML frontmatter");
+  const name = match[1].match(/^name:\s*(?:"([^"]+)"|'([^']+)'|([^#\r\n][^\r\n]*))$/m);
+  if (!name) {
+    fail("DESIGN.md frontmatter must contain a non-empty name");
+  }
+  return (name[1] || name[2] || name[3]).trim();
+}
+
+function validateDesignSections(text) {
+  const headings = [...text.matchAll(/^##\s+(.+?)\s*$/gm)].map((match) =>
+    normalizedHeading(match[1]),
+  );
+  const missing = DESIGN_FOUNDATION_SECTIONS
+    .filter((aliases) => !aliases.some((heading) => headings.includes(heading)))
+    .map((aliases) => aliases[0]);
+  if (missing.length) fail(`DESIGN.md is missing required sections: ${missing.join(", ")}`);
+}
+
+function validateSourceDecisions(text) {
+  const heading = text.match(/^##\s+(?:source decisions|evidence and adaptation)\s*$/im);
+  const remaining = text.slice(heading.index + heading[0].length);
+  const nextHeading = remaining.match(/^##\s+/m);
+  const section = nextHeading ? remaining.slice(0, nextHeading.index) : remaining;
+  if (!/(?:\badopted\b|采纳|采用)/i.test(section) || !/(?:\brejected\b|拒绝|未采用)/i.test(section)) {
+    fail("DESIGN.md Source Decisions must identify adopted and rejected source properties");
+  }
+}
+
+function validateActiveChange(text, activeChangeId) {
+  if (!activeChangeId) return;
+  const escaped = activeChangeId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!new RegExp(escaped, "i").test(text)) {
+    fail("DESIGN.md must link or name the active synthesis change");
+  }
+}
+
+function validateDesignFoundationText(text, options = {}) {
+  if (!isNonEmptyString(text)) fail("DESIGN.md must not be empty");
+  const name = validateDesignFrontmatter(text);
+  validateDesignSections(text);
+  validateSourceDecisions(text);
+  validateActiveChange(text, options.activeChangeId);
+  return {
+    name,
+    sha256: sha256Text(text),
+  };
+}
+
+function checkDesignFoundation(options = {}) {
+  const projectRoot = resolveProjectRoot(options.projectRoot);
+  const designFile = resolveOutputPath(
+    projectRoot,
+    options.designFile || "DESIGN.md",
+    "--design-file",
+  );
+  if (!fs.existsSync(designFile.absolute)) {
+    return {
+      schema: "design-pipeline.foundation-check.v1",
+      status: "synthesis-required",
+      projectRoot,
+      designFile: designFile.relative,
+      nextCommand:
+        "node <design-pipeline>/scripts/init-design-synthesis.cjs --change-id <change-id> --problem <problem> --project-root .",
+    };
+  }
+  if (!fs.statSync(designFile.absolute).isFile()) fail("--design-file must identify a file");
+  const realFile = fs.realpathSync(designFile.absolute);
+  if (!pathIsInside(projectRoot, realFile)) {
+    fail("--design-file resolves outside --project-root");
+  }
+  const validated = validateDesignFoundationText(fs.readFileSync(realFile, "utf8"));
+  return {
+    schema: "design-pipeline.foundation-check.v1",
+    status: "ready",
+    projectRoot,
+    designFile: designFile.relative,
+    name: validated.name,
+    sha256: validated.sha256,
+  };
+}
+
 module.exports = {
   BUDGET_THRESHOLDS,
   CHANGE_ID_PATTERN,
+  DESIGN_FOUNDATION_SECTIONS,
   HANDOFF_END,
   HANDOFF_START,
   appendEvent,
+  checkDesignFoundation,
   fail,
   findArtifactRoot,
   isNonEmptyString,
@@ -316,6 +421,7 @@ module.exports = {
   stableId,
   updateHandoff,
   validateChangeId,
+  validateDesignFoundationText,
   validateManifest,
   validateProblem,
   writeFile,

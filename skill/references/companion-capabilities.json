@@ -22,6 +22,7 @@
         "design-pipeline/scripts/init-website-clone.cjs",
         "design-pipeline/scripts/evaluate-website-clone.cjs",
         "design-pipeline/scripts/design-synthesis-core.cjs",
+        "design-pipeline/scripts/check-design-foundation.cjs",
         "design-pipeline/scripts/init-design-synthesis.cjs",
         "design-pipeline/scripts/advance-design-synthesis.cjs",
         "design-pipeline/scripts/record-feedback.cjs",
@@ -287,6 +288,11 @@
       "name": "GBrain",
       "paths": [".gbrain", "gbrain"],
       "fallback": "Keep design decisions repo-local; sync to GBrain only when the repo already supports it."
+    },
+    {
+      "name": "Project DESIGN.md foundation",
+      "paths": ["DESIGN.md"],
+      "fallback": "Run requirements-driven DESIGN.md synthesis before implementation."
     },
     {
       "name": "Design artifacts",

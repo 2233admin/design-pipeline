@@ -216,6 +216,33 @@ project design.
 - **THEN** the run SHALL record scope surprise, request a Wayfinder host map, and SHALL NOT fabricate
   a local issue tracker.
 
+### Requirement: Project DESIGN.md is a pre-implementation invariant
+
+Every pipeline run SHALL validate one reusable project `DESIGN.md` before implementation begins.
+
+#### Scenario: Project DESIGN.md is absent
+
+- **WHEN** the foundation checker cannot find the declared project file
+- **THEN** it SHALL report `synthesis-required`
+- **AND** implementation SHALL remain locked until synthesis and validation complete.
+
+#### Scenario: A lowercase change design exists without a project foundation
+
+- **WHEN** change `design.md` exists but project `DESIGN.md` does not pass validation
+- **THEN** the pipeline SHALL NOT treat the change file as a substitute.
+
+#### Scenario: Project DESIGN.md is ready
+
+- **WHEN** frontmatter, required sections, source decisions, and path containment pass
+- **THEN** the checker SHALL report `ready`
+- **AND** implementation MAY consume the foundation together with change artifacts.
+
+#### Scenario: Project DESIGN.md is invalid
+
+- **WHEN** the file exists but fails frontmatter, required-section, source-decision, or path-containment validation
+- **THEN** the checker SHALL report `invalid` and SHALL NOT report `ready`
+- **AND** implementation SHALL remain locked until the file is repaired or resynthesized.
+
 ### Requirement: Validated product design resumes implementation
 
 The pipeline SHALL keep project `DESIGN.md` distinct from change `design.md` and resume the normal

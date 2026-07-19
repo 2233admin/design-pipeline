@@ -9,10 +9,12 @@ const repoRoot = path.resolve(__dirname, "..");
 const requiredFiles = [
   "README.md",
   "LICENSE",
+  "DESIGN.md",
   "skill/SKILL.md",
   "skill/scripts/check-deps.cjs",
   "skill/scripts/record-feedback.cjs",
   "skill/scripts/design-synthesis-core.cjs",
+  "skill/scripts/check-design-foundation.cjs",
   "skill/scripts/init-design-synthesis.cjs",
   "skill/scripts/advance-design-synthesis.cjs",
   "skill/scripts/audit-capabilities.cjs",
@@ -132,6 +134,34 @@ if (check.status !== 0) {
   } catch (err) {
     console.log("FAIL self-check JSON parse");
     process.stdout.write(check.stdout || "");
+    failed = true;
+  }
+}
+
+const foundation = spawnSync(
+  process.execPath,
+  [
+    path.join(repoRoot, "skill/scripts/check-design-foundation.cjs"),
+    "--project-root",
+    repoRoot,
+    "--json",
+  ],
+  { cwd: repoRoot, encoding: "utf8" },
+);
+
+if (foundation.status !== 0) {
+  console.log("FAIL project DESIGN.md foundation check");
+  process.stdout.write(foundation.stdout || "");
+  process.stderr.write(foundation.stderr || "");
+  failed = true;
+} else {
+  try {
+    const parsed = JSON.parse(foundation.stdout);
+    console.log(`OK project DESIGN.md foundation status=${parsed.status}`);
+    if (parsed.status !== "ready") failed = true;
+  } catch (err) {
+    console.log("FAIL project DESIGN.md foundation JSON parse");
+    process.stdout.write(foundation.stdout || "");
     failed = true;
   }
 }

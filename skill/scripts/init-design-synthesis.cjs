@@ -271,6 +271,11 @@ function mergeState(existing, manifest, now) {
       "Treat reference sites and DESIGN.md templates as attributed evidence, not product authority",
     ]),
     nextActions: mergeUnique(base.nextActions, [manifest.interaction.nextCommand]),
+    designFoundation: {
+      path: manifest.output.path,
+      status: manifest.output.status === "validated" ? "ready" : "synthesis-required",
+      sha256: manifest.output.sha256,
+    },
     designSynthesis: {
       manifest: manifestPath,
       status: manifest.status,

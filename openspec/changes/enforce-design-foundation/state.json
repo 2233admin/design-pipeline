@@ -1,0 +1,18 @@
+{
+  "schema": "design-pipeline-state.v1",
+  "changeId": "enforce-design-foundation",
+  "status": "active",
+  "stage": "merge-ready",
+  "updatedAt": "2026-07-19T15:07:26+08:00",
+  "verification": {
+    "qa": "passed",
+    "testsPassed": 67,
+    "testsFailed": 0,
+    "selfCheck": "passed",
+    "sentrux": "passed",
+    "codeIntel": "passed",
+    "ci": "passed",
+    "review": "passed"
+  },
+  "nextAction": "Merge pull request #6, publish v0.5.0, and verify the installed release artifacts."
+}

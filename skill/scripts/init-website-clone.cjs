@@ -161,42 +161,57 @@ function targetIdFor(urlText, collidingBases, usedIds) {
   return id;
 }
 
-function validateOptions(options) {
-  if (options.help) return null;
-  if (!options.changeId) fail("--change-id is required");
-  if (!CHANGE_ID_PATTERN.test(options.changeId) || options.changeId.length > 80) {
+function validateChangeId(changeId) {
+  if (!changeId) fail("--change-id is required");
+  if (!CHANGE_ID_PATTERN.test(changeId) || changeId.length > 80) {
     fail("change id must be lowercase hyphen-case and at most 80 characters");
   }
-  if (options.primaryUrls.length === 0) fail("at least one primary --url is required");
-  if (options.fidelity !== "exact" && options.fidelity !== "adaptive") {
+}
+
+function validateFidelity(fidelity) {
+  if (fidelity !== "exact" && fidelity !== "adaptive") {
     fail("--fidelity must be exact or adaptive");
   }
+}
 
-  const projectRoot = path.resolve(options.projectRoot);
+function resolveExistingProjectRoot(rawProjectRoot) {
+  const projectRoot = path.resolve(rawProjectRoot);
   if (!fs.existsSync(projectRoot) || !fs.statSync(projectRoot).isDirectory()) {
     fail(`project root does not exist: ${projectRoot}`);
   }
+  return projectRoot;
+}
 
-  const normalizedTargets = [
-    ...options.primaryUrls.map((url) => ({ url: normalizeUrl(url), role: "primary" })),
-    ...options.referenceUrls.map((url) => ({ url: normalizeUrl(url), role: "reference" })),
+function normalizeTargets(primaryUrls = [], referenceUrls = []) {
+  return [
+    ...primaryUrls.map((url) => ({ url: normalizeUrl(url), role: "primary" })),
+    ...referenceUrls.map((url) => ({ url: normalizeUrl(url), role: "reference" })),
   ];
+}
+
+function rejectDuplicateTargets(targets) {
   const seen = new Set();
-  for (const target of normalizedTargets) {
+  for (const target of targets) {
     if (seen.has(target.url)) fail(`duplicate normalized URL: ${target.url}`);
     seen.add(target.url);
   }
+}
 
+function findCollidingBases(targets) {
   const baseCounts = new Map();
-  for (const target of normalizedTargets) {
+  for (const target of targets) {
     const base = targetIdBase(target.url);
     baseCounts.set(base, (baseCounts.get(base) || 0) + 1);
   }
-  const collidingBases = new Set(
+  return new Set(
     [...baseCounts.entries()].filter(([, count]) => count > 1).map(([base]) => base),
   );
+}
+
+function buildTargets(normalizedTargets) {
+  const collidingBases = findCollidingBases(normalizedTargets);
   const usedIds = new Set();
-  const targets = normalizedTargets.map(({ url, role }) => {
+  return normalizedTargets.map(({ url, role }) => {
     const id = targetIdFor(url, collidingBases, usedIds);
     return {
       id,
@@ -207,7 +222,20 @@ function validateOptions(options) {
       artifactRoot: `targets/${id}`,
     };
   });
+}
 
+function validateOptions(options) {
+  if (options.help) return null;
+  validateChangeId(options.changeId);
+  const primaryUrls = options.primaryUrls ?? [];
+  const referenceUrls = options.referenceUrls ?? [];
+  if (primaryUrls.length === 0) fail("at least one primary --url is required");
+  validateFidelity(options.fidelity);
+
+  const projectRoot = resolveExistingProjectRoot(options.projectRoot);
+  const normalizedTargets = normalizeTargets(primaryUrls, referenceUrls);
+  rejectDuplicateTargets(normalizedTargets);
+  const targets = buildTargets(normalizedTargets);
   return { changeId: options.changeId, projectRoot, targets, fidelity: options.fidelity };
 }
 
