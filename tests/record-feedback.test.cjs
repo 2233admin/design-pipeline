@@ -43,6 +43,26 @@ function runRecord(root, args) {
   );
 }
 
+function runProgrammaticRecord(root, options) {
+  const source = [
+    "const { recordObservation } = require(process.argv[1]);",
+    "const options = JSON.parse(process.argv[2]);",
+    "console.log(JSON.stringify(recordObservation(options)));",
+  ].join("\n");
+  return spawnSync(
+    process.execPath,
+    ["-e", source, recordScript, JSON.stringify({ root, ...options })],
+    {
+      cwd: root,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        DESIGN_PIPELINE_NOW: "2026-07-19T00:00:00.000Z",
+      },
+    },
+  );
+}
+
 function readOnlyObservation(root) {
   const dir = path.join(root, ".design-pipeline", "feedback", "observations");
   const files = fs.readdirSync(dir);
@@ -134,6 +154,148 @@ test("rejects a PR route without changed files and validation", () => {
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /requires at least one --changed-file and --validation/);
     assert.equal(fs.existsSync(path.join(root, ".design-pipeline")), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("redacts the most specific nested feedback root first", () => {
+  const root = makeRoot();
+  const feedbackRoot = path.join(root, "nested", "feedback-owner");
+  try {
+    const result = runRecord(root, [
+      "--feedback-root",
+      feedbackRoot,
+      "--evidence",
+      `Queue owner: ${feedbackRoot}`,
+    ]);
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const observation = readOnlyObservation(feedbackRoot);
+    assert.equal(observation.evidence[0], "Queue owner: <FEEDBACK_ROOT>");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("normalizes programmatic scalar evidence into arrays", () => {
+  const root = makeRoot();
+  try {
+    const result = runProgrammaticRecord(root, {
+      kind: "feature-request",
+      source: "maintainer",
+      title: "Normalize programmatic feedback input",
+      summary: "Programmatic callers may pass one evidence item as a string.",
+      route: "pr",
+      evidence: "single evidence item",
+      changedFiles: "skill/scripts/record-feedback.cjs",
+      validation: "node scripts/qa.cjs passed",
+    });
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const output = JSON.parse(result.stdout);
+
+    assert.deepEqual(output.observation.evidence, ["single evidence item"]);
+    assert.deepEqual(output.observation.changedFiles, [
+      "skill/scripts/record-feedback.cjs",
+    ]);
+    assert.deepEqual(output.observation.validation, ["node scripts/qa.cjs passed"]);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("fails closed without updating an observation when the index is corrupt", () => {
+  const root = makeRoot();
+  try {
+    const first = runRecord(root, ["--evidence", "first evidence"]);
+    assert.equal(first.status, 0, first.stderr || first.stdout);
+    const before = readOnlyObservation(root);
+    const indexPath = path.join(root, ".design-pipeline", "feedback", "index.json");
+    fs.writeFileSync(indexPath, "{broken");
+
+    const second = runRecord(root, ["--evidence", "second evidence"]);
+    const after = readOnlyObservation(root);
+
+    assert.notEqual(second.status, 0);
+    assert.match(second.stderr, /Invalid feedback index JSON/);
+    assert.deepEqual(after, before);
+    assert.equal(fs.readFileSync(indexPath, "utf8"), "{broken");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("fails closed without overwriting a corrupt observation", () => {
+  const root = makeRoot();
+  try {
+    const first = runRecord(root, ["--evidence", "first evidence"]);
+    assert.equal(first.status, 0, first.stderr || first.stdout);
+    const observationsDir = path.join(
+      root,
+      ".design-pipeline",
+      "feedback",
+      "observations",
+    );
+    const observationPath = path.join(observationsDir, fs.readdirSync(observationsDir)[0]);
+    fs.writeFileSync(observationPath, "{broken");
+
+    const second = runRecord(root, ["--evidence", "second evidence"]);
+
+    assert.notEqual(second.status, 0);
+    assert.match(second.stderr, /Invalid feedback observation JSON/);
+    assert.equal(fs.readFileSync(observationPath, "utf8"), "{broken");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("fails closed when parsed feedback state contains null", () => {
+  const root = makeRoot();
+  try {
+    const first = runRecord(root, ["--evidence", "first evidence"]);
+    assert.equal(first.status, 0, first.stderr || first.stdout);
+    const before = readOnlyObservation(root);
+    const indexPath = path.join(root, ".design-pipeline", "feedback", "index.json");
+    fs.writeFileSync(indexPath, "null\n");
+
+    const second = runRecord(root, ["--evidence", "second evidence"]);
+    const after = readOnlyObservation(root);
+
+    assert.notEqual(second.status, 0);
+    assert.match(second.stderr, /Invalid feedback index structure/);
+    assert.doesNotMatch(second.stderr, /TypeError/);
+    assert.deepEqual(after, before);
+    assert.equal(fs.readFileSync(indexPath, "utf8"), "null\n");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects malformed optional arrays in an existing observation", () => {
+  const root = makeRoot();
+  try {
+    const first = runRecord(root, ["--evidence", "first evidence"]);
+    assert.equal(first.status, 0, first.stderr || first.stdout);
+    const observationsDir = path.join(
+      root,
+      ".design-pipeline",
+      "feedback",
+      "observations",
+    );
+    const observationPath = path.join(observationsDir, fs.readdirSync(observationsDir)[0]);
+    const malformed = JSON.parse(fs.readFileSync(observationPath, "utf8"));
+    malformed.changedFiles = "skill/scripts/record-feedback.cjs";
+    fs.writeFileSync(observationPath, `${JSON.stringify(malformed, null, 2)}\n`);
+
+    const second = runRecord(root, ["--evidence", "second evidence"]);
+
+    assert.notEqual(second.status, 0);
+    assert.match(second.stderr, /Invalid feedback observation structure/);
+    assert.doesNotMatch(second.stderr, /TypeError/);
+    assert.equal(
+      JSON.parse(fs.readFileSync(observationPath, "utf8")).changedFiles,
+      "skill/scripts/record-feedback.cjs",
+    );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

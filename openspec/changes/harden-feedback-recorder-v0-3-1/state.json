@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline-state.v1",
+  "changeId": "harden-feedback-recorder-v0-3-1",
+  "status": "active",
+  "stage": "release-ready",
+  "updatedAt": "2026-07-19T11:42:00+08:00",
+  "verification": {
+    "qa": "passed",
+    "testsPassed": 39,
+    "testsFailed": 0,
+    "selfCheck": "passed-with-optional-warning",
+    "sentrux": "passed"
+  },
+  "nextAction": "Publish the reviewed patch as v0.3.1."
+}

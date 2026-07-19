@@ -76,6 +76,10 @@ Install status and capability compatibility are separate checks. The machine-rea
 
 The first versioned profile is Anime.js v4.5. When `animejs` is installed, the self-check looks for markers covering the v4 API, layout, text, scroll, draggable, scope, WAAPI, adapters, Three.js/3D stagger, and deterministic jitter/seed.
 
+Registry profiles, requirements, and regular expressions are validated before any compatibility
+result is emitted. Invalid registry structure is a hard self-check failure because treating it as a
+missing marker could produce a false compatibility result.
+
 - `OK`: the installed skill advertises the current profile.
 - `WARN`: the skill exists but one or more capability markers are missing.
 - `INFO`: the optional skill is not installed, so the profile was not evaluated.

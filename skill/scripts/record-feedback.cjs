@@ -103,6 +103,12 @@ function requireText(value, option) {
   return text;
 }
 
+function normalizeList(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string" && value) return [value];
+  return [];
+}
+
 function validateOptions(options) {
   options.kind = requireText(options.kind, "--kind");
   options.source = requireText(options.source, "--source");
@@ -158,9 +164,16 @@ function redactText(value, options) {
     .replace(/\r\n?/g, "\n")
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/g, "");
 
-  text = replaceLiteral(text, options.root, "<PROJECT_ROOT>");
-  text = replaceLiteral(text, options.feedbackRoot, "<FEEDBACK_ROOT>");
-  text = replaceLiteral(text, os.homedir(), "<HOME>");
+  const replacements = [
+    { value: options.root, label: "<PROJECT_ROOT>" },
+    { value: options.feedbackRoot, label: "<FEEDBACK_ROOT>" },
+    { value: os.homedir(), label: "<HOME>" },
+  ]
+    .filter(({ value }) => Boolean(value))
+    .sort((left, right) => path.resolve(right.value).length - path.resolve(left.value).length);
+  for (const replacement of replacements) {
+    text = replaceLiteral(text, replacement.value, replacement.label);
+  }
   text = text.replace(
     /([a-z][a-z0-9+.-]*:\/\/)([^/\s:@]+):([^/\s@]+)@/gi,
     "$1[REDACTED]@",
@@ -225,8 +238,12 @@ function atomicWriteJson(filePath, value) {
   atomicWrite(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+function readJson(filePath, label) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (error) {
+    throw new Error(`Invalid ${label} JSON at ${filePath}: ${error.message}`);
+  }
 }
 
 function renderList(items, emptyText) {
@@ -298,15 +315,50 @@ function renderPrDraft(observation) {
   ].join("\n");
 }
 
-function updateIndex(feedbackDir, observation, timestamp) {
-  const indexPath = path.join(feedbackDir, "index.json");
-  let index = {
+function newIndex(timestamp) {
+  return {
     schema: "design-pipeline-feedback-index.v1",
     updatedAt: timestamp,
     observations: [],
   };
-  if (fs.existsSync(indexPath)) index = readJson(indexPath);
+}
 
+function isPositiveInteger(value) {
+  if (!Number.isInteger(value)) return false;
+  return value >= 1;
+}
+
+function isOptionalArray(value) {
+  if (value === undefined) return true;
+  return Array.isArray(value);
+}
+
+function isValidIndexEntry(item) {
+  if (!item || typeof item !== "object") return false;
+  if (typeof item.id !== "string") return false;
+  if (typeof item.lastSeenAt !== "string") return false;
+  return isPositiveInteger(item.occurrences);
+}
+
+function isValidIndex(index) {
+  if (!index || index.schema !== "design-pipeline-feedback-index.v1") return false;
+  if (!Array.isArray(index.observations)) return false;
+  return index.observations.every(isValidIndexEntry);
+}
+
+function loadIndex(feedbackDir, timestamp) {
+  const indexPath = path.join(feedbackDir, "index.json");
+  if (!fs.existsSync(indexPath)) return { path: indexPath, value: newIndex(timestamp) };
+
+  const index = readJson(indexPath, "feedback index");
+  if (!isValidIndex(index)) {
+    throw new Error(`Invalid feedback index structure at ${indexPath}.`);
+  }
+  return { path: indexPath, value: index };
+}
+
+function updateIndex(indexState, observation, timestamp) {
+  const index = indexState.value;
   const entry = {
     id: observation.id,
     status: observation.status,
@@ -323,7 +375,26 @@ function updateIndex(feedbackDir, observation, timestamp) {
   else index.observations.push(entry);
   index.updatedAt = timestamp;
   index.observations.sort((left, right) => right.lastSeenAt.localeCompare(left.lastSeenAt));
-  atomicWriteJson(indexPath, index);
+  atomicWriteJson(indexState.path, index);
+}
+
+function isValidObservation(observation, expectedId) {
+  if (!observation || observation.schema !== "design-pipeline-feedback.v1") return false;
+  if (observation.id !== expectedId) return false;
+  if (!isPositiveInteger(observation.occurrences)) return false;
+  if (!Array.isArray(observation.evidence)) return false;
+  return (
+    isOptionalArray(observation.changedFiles) && isOptionalArray(observation.validation)
+  );
+}
+
+function readExistingObservation(observationPath, expectedId) {
+  if (!fs.existsSync(observationPath)) return null;
+  const observation = readJson(observationPath, "feedback observation");
+  if (!isValidObservation(observation, expectedId)) {
+    throw new Error(`Invalid feedback observation structure at ${observationPath}.`);
+  }
+  return observation;
 }
 
 function recordObservation(rawOptions) {
@@ -336,6 +407,9 @@ function recordObservation(rawOptions) {
     dryRun: false,
     ...rawOptions,
   };
+  options.evidence = normalizeList(options.evidence);
+  options.changedFiles = normalizeList(options.changedFiles);
+  options.validation = normalizeList(options.validation);
   options.root = path.resolve(options.root || process.cwd());
   options.feedbackRoot = path.resolve(options.feedbackRoot || options.root);
   const route = validateOptions(options);
@@ -360,7 +434,10 @@ function recordObservation(rawOptions) {
     .split(path.sep)
     .join("/");
 
-  const existing = fs.existsSync(observationPath) ? readJson(observationPath) : null;
+  const existing = readExistingObservation(observationPath, id);
+  const indexState = options.dryRun
+    ? { path: "", value: newIndex(timestamp) }
+    : loadIndex(feedbackDir, timestamp);
   const observation = {
     schema: "design-pipeline-feedback.v1",
     id,
@@ -405,7 +482,7 @@ function recordObservation(rawOptions) {
   if (!options.dryRun) {
     atomicWriteJson(observationPath, observation);
     atomicWrite(draftPath, draft);
-    updateIndex(feedbackDir, observation, timestamp);
+    updateIndex(indexState, observation, timestamp);
   }
 
   return {
@@ -443,6 +520,7 @@ if (require.main === module) main();
 
 module.exports = {
   createFingerprint,
+  normalizeList,
   parseArgs,
   recordObservation,
   redactText,

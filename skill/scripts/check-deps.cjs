@@ -28,14 +28,70 @@ const skillRoot = skillRoots[0];
 
 const cwd = process.cwd();
 const registryPath = path.join(__dirname, "..", "references", "companion-capabilities.json");
-const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+let registry;
+try {
+  registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+} catch (error) {
+  throw new Error(`Invalid companion capability registry JSON at ${registryPath}: ${error.message}`);
+}
 if (
+  !registry ||
   registry.schema !== "design-pipeline-companions.v1" ||
   !Array.isArray(registry.groups) ||
   !Array.isArray(registry.profiles) ||
   !Array.isArray(registry.surfaces)
 ) {
-  throw new Error(`Invalid companion capability registry: ${registryPath}`);
+  throw new Error(`Invalid companion capability registry structure at ${registryPath}.`);
+}
+for (const profile of registry.profiles) {
+  if (!profile || typeof profile !== "object") {
+    throw new Error(`Invalid capability profile in ${registryPath}.`);
+  }
+  const skills = profile.skills || (profile.skill ? [profile.skill] : []);
+  if (
+    typeof profile.id !== "string" ||
+    !profile.id ||
+    !skills.length ||
+    skills.some((skill) => typeof skill !== "string" || !skill) ||
+    !Array.isArray(profile.requirements)
+  ) {
+    throw new Error(`Invalid capability profile in ${registryPath}.`);
+  }
+  for (const requirement of profile.requirements) {
+    if (
+      !requirement ||
+      typeof requirement.id !== "string" ||
+      !requirement.id ||
+      typeof requirement.skill !== "string" ||
+      !skills.includes(requirement.skill) ||
+      !Array.isArray(requirement.patterns) ||
+      !requirement.patterns.length ||
+      (requirement.match !== undefined && requirement.match !== "all")
+    ) {
+      throw new Error(
+        `Invalid requirement ${requirement?.id || "<unknown>"} in capability profile ${profile.id}.`,
+      );
+    }
+    for (const pattern of requirement.patterns) {
+      if (
+        !pattern ||
+        typeof pattern.source !== "string" ||
+        !pattern.source ||
+        (pattern.flags !== undefined && typeof pattern.flags !== "string")
+      ) {
+        throw new Error(
+          `Invalid pattern in capability profile ${profile.id}, requirement ${requirement.id}.`,
+        );
+      }
+      try {
+        new RegExp(pattern.source, pattern.flags || "");
+      } catch (error) {
+        throw new Error(
+          `Invalid regex in capability profile ${profile.id}, requirement ${requirement.id}: ${error.message}`,
+        );
+      }
+    }
+  }
 }
 const groups = registry.groups;
 const capabilityProfiles = registry.profiles;

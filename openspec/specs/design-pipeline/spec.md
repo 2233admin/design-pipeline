@@ -179,3 +179,18 @@ Pipeline maintainers SHALL use the pipeline's own artifact, feedback, review, QA
 - **WHEN** the accepted fix changes durable companion compatibility
 - **THEN** the maintainer SHALL update the companion registry, preserve a regression test, verify the package, and resolve or supersede the observation.
 
+### Requirement: Feedback state corruption fails closed
+
+The recorder SHALL validate existing observation and index state before writing an update and SHALL
+NOT overwrite corrupt evidence.
+
+### Requirement: Specific paths are redacted first
+
+The recorder SHALL redact longer path scopes before their parent scopes so nested feedback roots
+retain the correct privacy placeholder.
+
+### Requirement: Capability registry patterns are validated before evaluation
+
+Self-check SHALL reject invalid profile, requirement, or regular-expression structures before
+producing compatibility results.
+

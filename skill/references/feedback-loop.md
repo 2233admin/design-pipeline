@@ -34,6 +34,16 @@ node <design-pipeline>/scripts/check-deps.cjs --json --record-feedback
 
 Artifacts are written under `.design-pipeline/feedback/` in the target repository unless `--feedback-root` selects another root.
 
+Before writing, the recorder:
+
+- replaces longer nested paths before parent paths so the feedback root remains identifiable;
+- redacts common tokens, authorization headers, credential-bearing URLs, and machine paths;
+- normalizes scalar programmatic inputs into the same arrays produced by the CLI;
+- validates existing observation and index JSON before an update.
+
+Corrupt feedback state fails closed with a contextual error and is not silently overwritten or
+reset.
+
 ## Routing
 
 - Use an Issue draft for an unconfirmed bug, stale companion, missing capability, or feature request.
