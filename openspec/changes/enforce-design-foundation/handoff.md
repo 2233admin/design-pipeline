@@ -13,5 +13,5 @@ files fail closed; valid files become the reusable product foundation.
 
 ## Next Action
 
-Commit the locally verified implementation, run Code Intel against the committed tree, and complete
-GitHub CI, review, merge, and release verification.
+Run full QA and Code Intel against the structurally cleaned committed tree, then complete GitHub CI,
+review, merge, and release verification.

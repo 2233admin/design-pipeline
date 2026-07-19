@@ -8,6 +8,12 @@ const test = require("node:test");
 const repoRoot = path.resolve(__dirname, "..");
 const initializer = path.join(repoRoot, "skill", "scripts", "init-design-synthesis.cjs");
 const advancer = path.join(repoRoot, "skill", "scripts", "advance-design-synthesis.cjs");
+const foundationChecker = path.join(
+  repoRoot,
+  "skill",
+  "scripts",
+  "check-design-foundation.cjs",
+);
 const createdRoots = new Set();
 
 function makeRoot(withOpenSpec = true) {
@@ -33,6 +39,14 @@ function runAdvance(changeRoot, ...args) {
   return spawnSync(
     process.execPath,
     [advancer, "--change-root", changeRoot, ...args],
+    { encoding: "utf8" },
+  );
+}
+
+function runFoundation(projectRoot, ...args) {
+  return spawnSync(
+    process.execPath,
+    [foundationChecker, "--project-root", projectRoot, "--json", ...args],
     { encoding: "utf8" },
   );
 }
@@ -97,6 +111,60 @@ Buttons, filters, escalation rows, evidence panels, status badges, and recovery 
 - Rejected: the reference brand, copy, colors, and marketing composition.
 `;
 }
+
+test("reports synthesis-required when project DESIGN.md is missing", () => {
+  const projectRoot = makeRoot(false);
+  const result = runFoundation(projectRoot);
+
+  assert.equal(result.status, 2, result.stderr || result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.status, "synthesis-required");
+  assert.equal(report.designFile, "DESIGN.md");
+  assert.match(report.nextCommand, /init-design-synthesis\.cjs/);
+});
+
+test("accepts a complete project design foundation", () => {
+  const projectRoot = makeRoot(false);
+  fs.writeFileSync(path.join(projectRoot, "DESIGN.md"), validDesign("foundation-check"));
+
+  const result = runFoundation(projectRoot);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.status, "ready");
+  assert.equal(report.name, "Escalation Atlas");
+  assert.match(report.sha256, /^[a-f0-9]{64}$/);
+});
+
+test("rejects an incomplete project design foundation", () => {
+  const projectRoot = makeRoot(false);
+  fs.writeFileSync(
+    path.join(projectRoot, "DESIGN.md"),
+    "---\nname: Generic Template\n---\n\n# Generic Template\n\n## Colors\n\nBlue.\n",
+  );
+
+  const result = runFoundation(projectRoot);
+
+  assert.equal(result.status, 1, result.stderr || result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.status, "invalid");
+  assert.match(report.error, /missing required sections/);
+});
+
+test("rejects project design paths outside the project root", () => {
+  const projectRoot = makeRoot(false);
+  const relativeEscape = runFoundation(projectRoot, "--design-file", "../DESIGN.md");
+  assert.equal(relativeEscape.status, 1);
+  assert.match(JSON.parse(relativeEscape.stdout).error, /stay inside/);
+
+  const outside = makeRoot(false);
+  fs.writeFileSync(path.join(outside, "DESIGN.md"), validDesign("foundation-check"));
+  const linked = path.join(projectRoot, "linked");
+  fs.symlinkSync(outside, linked, process.platform === "win32" ? "junction" : "dir");
+  const realEscape = runFoundation(projectRoot, "--design-file", "linked/DESIGN.md");
+  assert.equal(realEscape.status, 1);
+  assert.match(JSON.parse(realEscape.stdout).error, /resolves outside/);
+});
 
 test("initializes a requirements-driven synthesis run with attributed inputs", () => {
   const projectRoot = makeRoot();

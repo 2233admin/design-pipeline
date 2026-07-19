@@ -315,7 +315,6 @@ const tests = spawnSync(
     "tests/website-cloning-init.test.cjs",
     "tests/check-deps.test.cjs",
     "tests/record-feedback.test.cjs",
-    "tests/design-foundation.test.cjs",
     "tests/design-synthesis.test.cjs",
     "tests/capability-audit.test.cjs",
     "tests/publication-bridge.test.cjs",

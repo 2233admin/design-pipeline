@@ -3,7 +3,7 @@
   "changeId": "enforce-design-foundation",
   "status": "active",
   "stage": "verification",
-  "updatedAt": "2026-07-19T14:29:23+08:00",
+  "updatedAt": "2026-07-19T14:42:46+08:00",
   "verification": {
     "qa": "passed",
     "testsPassed": 67,
@@ -11,5 +11,5 @@
     "selfCheck": "passed",
     "sentrux": "passed"
   },
-  "nextAction": "Commit the verified change, run Code Intel, and complete GitHub publication checks."
+  "nextAction": "Run full QA and Code Intel after the structural cleanup, then complete GitHub publication checks."
 }

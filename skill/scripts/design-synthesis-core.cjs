@@ -352,6 +352,35 @@ function validateDesignFoundationText(text, options = {}) {
   };
 }
 
+function checkDesignFoundation(options = {}) {
+  const projectRoot = resolveProjectRoot(options.projectRoot);
+  const designFile = resolveOutputPath(projectRoot, options.designFile || "DESIGN.md");
+  if (!fs.existsSync(designFile.absolute)) {
+    return {
+      schema: "design-pipeline.foundation-check.v1",
+      status: "synthesis-required",
+      projectRoot,
+      designFile: designFile.relative,
+      nextCommand:
+        "node <design-pipeline>/scripts/init-design-synthesis.cjs --change-id <change-id> --problem <problem> --project-root .",
+    };
+  }
+  if (!fs.statSync(designFile.absolute).isFile()) fail("--design-file must identify a file");
+  const realFile = fs.realpathSync(designFile.absolute);
+  if (!pathIsInside(projectRoot, realFile)) {
+    fail("--design-file resolves outside --project-root");
+  }
+  const validated = validateDesignFoundationText(fs.readFileSync(realFile, "utf8"));
+  return {
+    schema: "design-pipeline.foundation-check.v1",
+    status: "ready",
+    projectRoot,
+    designFile: designFile.relative,
+    name: validated.name,
+    sha256: validated.sha256,
+  };
+}
+
 module.exports = {
   BUDGET_THRESHOLDS,
   CHANGE_ID_PATTERN,
@@ -359,6 +388,7 @@ module.exports = {
   HANDOFF_END,
   HANDOFF_START,
   appendEvent,
+  checkDesignFoundation,
   fail,
   findArtifactRoot,
   isNonEmptyString,

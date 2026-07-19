@@ -21,4 +21,5 @@
 ## Verification
 
 - [x] Add missing, invalid, valid, unsafe-path, and synthesis regression tests.
+- [x] Resolve the Code Intel structural regression with a thin CLI adapter and decomposed website-clone option validation.
 - [ ] Run repository QA, installed self-check, Sentrux, Code Intel, CI, and review.
