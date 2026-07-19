@@ -315,32 +315,33 @@ function renderPrDraft(observation) {
   ].join("\n");
 }
 
+function newIndex(timestamp) {
+  return {
+    schema: "design-pipeline-feedback-index.v1",
+    updatedAt: timestamp,
+    observations: [],
+  };
+}
+
+function isValidIndexEntry(item) {
+  if (!item || typeof item !== "object") return false;
+  if (typeof item.id !== "string") return false;
+  if (typeof item.lastSeenAt !== "string") return false;
+  return Number.isInteger(item.occurrences) && item.occurrences >= 1;
+}
+
+function isValidIndex(index) {
+  if (!index || index.schema !== "design-pipeline-feedback-index.v1") return false;
+  if (!Array.isArray(index.observations)) return false;
+  return index.observations.every(isValidIndexEntry);
+}
+
 function loadIndex(feedbackDir, timestamp) {
   const indexPath = path.join(feedbackDir, "index.json");
-  if (!fs.existsSync(indexPath)) {
-    return {
-      path: indexPath,
-      value: {
-        schema: "design-pipeline-feedback-index.v1",
-        updatedAt: timestamp,
-        observations: [],
-      },
-    };
-  }
+  if (!fs.existsSync(indexPath)) return { path: indexPath, value: newIndex(timestamp) };
 
   const index = readJson(indexPath, "feedback index");
-  if (
-    index.schema !== "design-pipeline-feedback-index.v1" ||
-    !Array.isArray(index.observations) ||
-    index.observations.some(
-      (item) =>
-        !item ||
-        typeof item.id !== "string" ||
-        typeof item.lastSeenAt !== "string" ||
-        !Number.isInteger(item.occurrences) ||
-        item.occurrences < 1,
-    )
-  ) {
+  if (!isValidIndex(index)) {
     throw new Error(`Invalid feedback index structure at ${indexPath}.`);
   }
   return { path: indexPath, value: index };
@@ -367,27 +368,20 @@ function updateIndex(indexState, observation, timestamp) {
   atomicWriteJson(indexState.path, index);
 }
 
+function isValidObservation(observation, expectedId) {
+  if (!observation || observation.schema !== "design-pipeline-feedback.v1") return false;
+  if (observation.id !== expectedId) return false;
+  if (!Number.isInteger(observation.occurrences) || observation.occurrences < 1) return false;
+  return Array.isArray(observation.evidence);
+}
+
 function readExistingObservation(observationPath, expectedId) {
   if (!fs.existsSync(observationPath)) return null;
   const observation = readJson(observationPath, "feedback observation");
-  if (
-    observation.schema !== "design-pipeline-feedback.v1" ||
-    observation.id !== expectedId ||
-    !Number.isInteger(observation.occurrences) ||
-    observation.occurrences < 1 ||
-    !Array.isArray(observation.evidence)
-  ) {
+  if (!isValidObservation(observation, expectedId)) {
     throw new Error(`Invalid feedback observation structure at ${observationPath}.`);
   }
   return observation;
-}
-
-function newIndex(timestamp) {
-  return {
-    schema: "design-pipeline-feedback-index.v1",
-    updatedAt: timestamp,
-    observations: [],
-  };
 }
 
 function recordObservation(rawOptions) {

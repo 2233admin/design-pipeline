@@ -3,7 +3,7 @@
   "changeId": "harden-feedback-recorder-v0-3-1",
   "status": "active",
   "stage": "release-ready",
-  "updatedAt": "2026-07-19T11:25:00+08:00",
+  "updatedAt": "2026-07-19T11:34:00+08:00",
   "verification": {
     "qa": "passed",
     "testsPassed": 35,
