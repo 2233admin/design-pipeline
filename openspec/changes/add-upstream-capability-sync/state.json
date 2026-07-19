@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline-state.v1",
+  "changeId": "add-upstream-capability-sync",
+  "status": "active",
+  "stage": "contracts",
+  "updatedAt": "2026-07-19T11:48:00+08:00",
+  "verification": {
+    "qa": "pending",
+    "testsPassed": 0,
+    "testsFailed": 0,
+    "selfCheck": "pending",
+    "sentrux": "pending"
+  },
+  "nextAction": "Define and test the four local-first sync and publication schemas."
+}
