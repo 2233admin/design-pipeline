@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline-state.v1",
+  "changeId": "add-upstream-capability-sync",
+  "status": "ready-for-release",
+  "stage": "verified",
+  "updatedAt": "2026-07-19T13:45:00+08:00",
+  "verification": {
+    "qa": "passed",
+    "testsPassed": 62,
+    "testsFailed": 0,
+    "selfCheck": "passed",
+    "sentrux": "passed"
+  },
+  "nextAction": "Publish the reviewed change through the authorized GitHub release flow."
+}

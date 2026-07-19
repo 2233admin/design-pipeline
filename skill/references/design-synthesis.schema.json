@@ -1,0 +1,358 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schemas/design-synthesis.schema.json",
+  "title": "design-pipeline requirements-driven DESIGN.md synthesis manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "changeId",
+    "status",
+    "stage",
+    "initializedAt",
+    "artifactRoot",
+    "projectRoot",
+    "problem",
+    "inputs",
+    "interaction",
+    "scope",
+    "wayfinder",
+    "output",
+    "evidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": "design-pipeline.design-synthesis.v1"
+    },
+    "changeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 80
+    },
+    "status": {
+      "enum": [
+        "awaiting-input",
+        "in-progress",
+        "awaiting-wayfinder",
+        "ready-for-synthesis",
+        "needs-review",
+        "ready-to-implement",
+        "complete"
+      ]
+    },
+    "stage": {
+      "enum": [
+        "grill-with-docs",
+        "scope-assessment",
+        "wayfinder",
+        "design-synthesis",
+        "design-validation",
+        "implementation",
+        "complete"
+      ]
+    },
+    "initializedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "artifactRoot": {
+      "$ref": "#/$defs/relativePath"
+    },
+    "projectRoot": {
+      "$ref": "#/$defs/relativePath"
+    },
+    "problem": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "framework",
+        "references",
+        "templates"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "requirements-only",
+            "reference-site",
+            "template-evidence",
+            "hybrid"
+          ]
+        },
+        "framework": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "url",
+              "role"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https?://"
+              },
+              "role": {
+                "const": "reference-site"
+              }
+            }
+          }
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "locator",
+              "role"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "locator": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "role": {
+                "const": "template"
+              }
+            }
+          }
+        }
+      }
+    },
+    "interaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "nextCommand",
+        "message"
+      ],
+      "properties": {
+        "mode": {
+          "const": "human-in-loop"
+        },
+        "nextCommand": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "budget",
+        "threshold",
+        "status",
+        "score",
+        "surprise",
+        "counts"
+      ],
+      "properties": {
+        "budget": {
+          "enum": [
+            "small",
+            "session",
+            "program"
+          ]
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "fit",
+            "oversized"
+          ]
+        },
+        "score": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "surprise": {
+          "type": "boolean"
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "surfaces",
+            "workflows",
+            "integrations",
+            "unknowns",
+            "decisions"
+          ],
+          "properties": {
+            "surfaces": {
+              "$ref": "#/$defs/nullableCount"
+            },
+            "workflows": {
+              "$ref": "#/$defs/nullableCount"
+            },
+            "integrations": {
+              "$ref": "#/$defs/nullableCount"
+            },
+            "unknowns": {
+              "$ref": "#/$defs/nullableCount"
+            },
+            "decisions": {
+              "$ref": "#/$defs/nullableCount"
+            }
+          }
+        }
+      }
+    },
+    "wayfinder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "status",
+        "mapUrl"
+      ],
+      "properties": {
+        "required": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "not-evaluated",
+            "not-required",
+            "required",
+            "linked"
+          ]
+        },
+        "mapUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "status",
+        "sha256",
+        "validatedAt"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "status": {
+          "enum": [
+            "missing",
+            "draft",
+            "validated"
+          ]
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "validatedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "path",
+          "recordedAt"
+        ],
+        "properties": {
+          "type": {
+            "enum": [
+              "grill",
+              "repository",
+              "reference-capture",
+              "template-analysis",
+              "direction",
+              "design-validation"
+            ]
+          },
+          "path": {
+            "$ref": "#/$defs/relativePath"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 80
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "not": {
+        "pattern": "^(?:[A-Za-z]:|/|\\\\)"
+      }
+    },
+    "nullableCount": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    }
+  }
+}

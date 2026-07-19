@@ -66,9 +66,39 @@
       "required": ["redacted", "remotePublished"],
       "properties": {
         "redacted": {"const": true},
-        "remotePublished": {"const": false}
+        "remotePublished": {"type": "boolean"}
       }
     },
-    "draftPath": {"type": "string", "minLength": 1}
+    "draftPath": {"type": "string", "minLength": 1},
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "idempotencyKey",
+        "action",
+        "repository",
+        "url",
+        "number",
+        "state",
+        "createdAt",
+        "reconciledAt"
+      ],
+      "properties": {
+        "requestId": {"type": "string", "pattern": "^dpp-[a-f0-9]{16}$"},
+        "idempotencyKey": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "action": {"enum": ["issue", "pull_request"]},
+        "repository": {"type": "string", "minLength": 3},
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|pull)/[1-9][0-9]*/?$"
+        },
+        "number": {"type": "integer", "minimum": 1},
+        "state": {"enum": ["open", "closed", "merged"]},
+        "createdAt": {"type": "string", "format": "date-time"},
+        "reconciledAt": {"type": "string", "format": "date-time"}
+      }
+    }
   }
 }

@@ -11,7 +11,7 @@ Capture immediately, publish deliberately.
 ## Local flow
 
 ```text
-Observe -> Normalize -> Redact -> Deduplicate -> Draft -> Review
+Observe -> Normalize -> Redact -> Deduplicate -> Draft -> Audit -> Review -> Authorize -> Publish -> Reconcile
 ```
 
 Record a finding:
@@ -52,7 +52,8 @@ reset.
 
 ## Publish gate
 
-The bundled scripts never create a remote Issue or PR.
+The bundled scripts never create a remote Issue or PR. See
+`references/upstream-capability-sync.md` for the host-adapter contract.
 
 Before publication:
 
@@ -60,9 +61,11 @@ Before publication:
 2. Re-read the draft for private paths, user data, screenshots, tokens, and proprietary source.
 3. Link reproducible evidence and the relevant capability-registry source.
 4. For a PR, verify the diff, tests, package output, and compatibility fallback.
-5. Obtain explicit authority to publish.
-6. Use the installed GitHub or ship workflow to create or update the remote artifact.
-7. Record the returned URL in the local observation only through a deliberate follow-up change.
+5. Prepare a deterministic request with `scripts/prepare-publication.cjs`.
+6. Obtain explicit authority for that action and repository.
+7. Use an authorized GitHub, browser, or ship host adapter to create or reuse the remote artifact.
+8. Capture a schema-valid receipt containing the same idempotency key, action, and repository.
+9. Reconcile it with `scripts/reconcile-publication.cjs`; do not hand-edit published state.
 
 ## Learning
 

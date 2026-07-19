@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schemas/publication-receipt.schema.json",
+  "title": "Authorized-host publication receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "idempotencyKey",
+    "action",
+    "repository",
+    "remote"
+  ],
+  "properties": {
+    "schema": {"const": "design-pipeline.publication-receipt.v1"},
+    "idempotencyKey": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "action": {"enum": ["issue", "pull_request"]},
+    "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "remote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "number", "state", "createdAt"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|pull)/[1-9][0-9]*/?$"
+        },
+        "number": {"type": "integer", "minimum": 1},
+        "state": {"enum": ["open", "closed", "merged"]},
+        "createdAt": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

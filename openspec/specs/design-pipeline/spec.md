@@ -194,3 +194,86 @@ retain the correct privacy placeholder.
 Self-check SHALL reject invalid profile, requirement, or regular-expression structures before
 producing compatibility results.
 
+### Requirement: Missing product design routes through requirements-driven synthesis
+
+The pipeline SHALL turn product intent, repository constraints, and attributed evidence into a
+project-specific reusable `DESIGN.md`.
+
+#### Scenario: A user supplies an existing DESIGN.md example
+
+- **WHEN** the example is registered as input
+- **THEN** it SHALL be treated as inspiration evidence and SHALL NOT replace product requirements,
+  existing-system constraints, or design reasoning.
+
+### Requirement: Design synthesis has explicit interaction gates
+
+The pipeline SHALL persist grill evidence and deterministic scope assessment before generating
+project design.
+
+#### Scenario: The declared scope exceeds its budget
+
+- **WHEN** the measured scope score is greater than the configured threshold
+- **THEN** the run SHALL record scope surprise, request a Wayfinder host map, and SHALL NOT fabricate
+  a local issue tracker.
+
+### Requirement: Validated product design resumes implementation
+
+The pipeline SHALL keep project `DESIGN.md` distinct from change `design.md` and resume the normal
+implementation lifecycle only after structure and source-decision provenance validation.
+
+#### Scenario: DESIGN.md changes after validation
+
+- **WHEN** the recorded content hash no longer matches the project file
+- **THEN** continuation SHALL fail closed until the design is validated again.
+
+### Requirement: Version-sensitive sources are explicit
+
+The pipeline SHALL support validated source identity, reviewed baseline, review timestamp, and
+freshness policy metadata on generic capability profiles.
+
+#### Scenario: A new companion suite is tracked
+
+- **WHEN** its normal registry profile declares valid `sourceMeta`
+- **THEN** the generic audit SHALL evaluate it without a framework-specific branch.
+
+### Requirement: Freshness is evidence-based
+
+The pipeline SHALL distinguish current, stale, changed, untracked, and unknown upstream source
+states.
+
+#### Scenario: Retrieval evidence is missing
+
+- **WHEN** a tracked profile has no host-provided current source evidence
+- **THEN** the audit SHALL report `UNKNOWN` and SHALL NOT claim the profile is current.
+
+### Requirement: Upstream content remains data
+
+The pipeline SHALL compare only validated revisions, versions, hashes, timestamps, and declared
+markers and SHALL NOT execute retrieved upstream content.
+
+#### Scenario: Evidence contains code-shaped text
+
+- **WHEN** a marker resembles executable JavaScript or a shell command
+- **THEN** the audit SHALL treat it as an inert string.
+
+### Requirement: Remote publication uses an authorized host bridge
+
+The pipeline SHALL prepare deterministic Issue or PR requests locally and SHALL NOT publish them
+directly.
+
+#### Scenario: An exact action is authorized
+
+- **WHEN** the user authorizes the request's action and repository
+- **THEN** a host adapter MAY create or reuse the remote artifact with its idempotency key and SHALL
+  return a validated receipt.
+
+### Requirement: Published contributions reconcile locally
+
+The pipeline SHALL update observation publication state only from a receipt matching the prepared
+request.
+
+#### Scenario: A receipt conflicts with the request
+
+- **WHEN** its idempotency key, action, repository, or observation identity differs
+- **THEN** reconciliation SHALL fail closed without modifying the observation or feedback index.
+

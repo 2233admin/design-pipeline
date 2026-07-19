@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schemas/publication-request.schema.json",
+  "title": "Authorized-host publication request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "idempotencyKey",
+    "action",
+    "repository",
+    "baseBranch",
+    "title",
+    "body",
+    "observation",
+    "changedFiles",
+    "validation",
+    "authority",
+    "requestedAt"
+  ],
+  "properties": {
+    "schema": {"const": "design-pipeline.publication-request.v1"},
+    "id": {"type": "string", "pattern": "^dpp-[a-f0-9]{16}$"},
+    "idempotencyKey": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "action": {"enum": ["issue", "pull_request"]},
+    "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "baseBranch": {"type": ["string", "null"], "maxLength": 200},
+    "title": {"type": "string", "minLength": 3, "maxLength": 180},
+    "body": {"type": "string", "minLength": 3, "maxLength": 30000},
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "fingerprint"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^dpf-[a-f0-9]{16}$"},
+        "fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "changedFiles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 500}
+    },
+    "validation": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 2000}
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": {"const": "required"}
+      }
+    },
+    "requestedAt": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"action": {"const": "pull_request"}}},
+      "then": {
+        "properties": {
+          "baseBranch": {"type": "string", "minLength": 1},
+          "changedFiles": {"minItems": 1},
+          "validation": {"minItems": 1}
+        }
+      }
+    }
+  ]
+}

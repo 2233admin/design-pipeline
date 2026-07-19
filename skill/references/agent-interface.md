@@ -52,6 +52,12 @@ Machine-readable current state. Keep it compact and update it at every phase tra
     "evidenceRoot": "",
     "scores": {}
   },
+  "designSynthesis": {
+    "manifest": "",
+    "status": "",
+    "stage": "",
+    "output": "DESIGN.md"
+  },
   "decisions": [],
   "blockers": [],
   "nextActions": []
@@ -91,7 +97,13 @@ Common event types:
 
 - `self-check`
 - `artifact-created`
+- `interaction-required`
+- `interaction-completed`
 - `decision`
+- `scope-surprise`
+- `wayfinder-linked`
+- `design-validated`
+- `implementation-resumed`
 - `fallback-selected`
 - `implementation-step`
 - `qa-evidence`
@@ -157,6 +169,10 @@ When another agent resumes:
 3. Read `handoff.md`.
 4. Read only the artifact files referenced by current `phase` and `nextActions`.
 5. Continue from `nextActions`; do not restart discovery unless state is stale or contradictory.
+
+When `designSynthesis` is present, read its manifest before the phase artifact. A run waiting at
+`grill-with-docs` or `wayfinder` is intentionally interactive; do not answer the user's unresolved
+decision or fabricate a tracker artifact in order to advance it.
 
 ## Staleness
 
