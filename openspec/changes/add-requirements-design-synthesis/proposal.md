@@ -33,4 +33,3 @@ The missing capability is an interactive synthesis loop:
 - Do not create issue-tracker maps without a configured Wayfinder host adapter.
 - Do not copy a third-party brand identity, proprietary asset, or template wholesale.
 - Do not claim that token extraction alone is a complete design system.
-

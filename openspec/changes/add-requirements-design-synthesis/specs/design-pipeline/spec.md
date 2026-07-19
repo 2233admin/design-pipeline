@@ -53,4 +53,3 @@ artifacts.
 - **WHEN** another agent resumes the run
 - **THEN** the handoff SHALL identify which file defines the current change and which defines
   reusable product identity.
-

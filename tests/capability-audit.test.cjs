@@ -232,4 +232,3 @@ test("detects marker changes without executing retrieved content", () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(JSON.parse(result.stdout).snapshot.summary.CHANGED, 1);
 });
-

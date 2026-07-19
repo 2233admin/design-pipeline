@@ -59,4 +59,3 @@ The transition command verifies that the chosen file:
 
 These are structural and provenance checks. Visual quality remains subject to the normal pipeline
 gate review.
-

@@ -26,4 +26,3 @@ continue through the normal implementation gates.
 - Risk: creative synthesis still belongs to the host agent, so deterministic scripts can validate
   and transition state but cannot replace design judgment.
 - Decision: selected.
-

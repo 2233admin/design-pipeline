@@ -33,4 +33,3 @@ system or access to a paid design-generation service.
 - Invalid transitions and evidence outside the allowed roots fail closed.
 - A generated DESIGN.md must contain the official core sections and project-specific provenance.
 - Successful validation moves the run to implementation without rewriting event history.
-
