@@ -12,12 +12,25 @@ const requiredFiles = [
   "skill/SKILL.md",
   "skill/scripts/check-deps.cjs",
   "skill/scripts/record-feedback.cjs",
+  "skill/scripts/design-synthesis-core.cjs",
+  "skill/scripts/init-design-synthesis.cjs",
+  "skill/scripts/advance-design-synthesis.cjs",
+  "skill/scripts/audit-capabilities.cjs",
+  "skill/scripts/prepare-publication.cjs",
+  "skill/scripts/reconcile-publication.cjs",
   "skill/references/open-source-readiness.md",
   "skill/references/agent-interface.md",
   "skill/references/capability-routing.md",
   "skill/references/companion-capabilities.json",
   "skill/references/feedback-loop.md",
   "skill/references/feedback-observation.schema.json",
+  "skill/references/design-synthesis.md",
+  "skill/references/design-synthesis.schema.json",
+  "skill/references/upstream-capability-sync.md",
+  "skill/references/source-evidence.schema.json",
+  "skill/references/capability-audit.schema.json",
+  "skill/references/publication-request.schema.json",
+  "skill/references/publication-receipt.schema.json",
   "skill/references/motion-spec.md",
   "skill/references/qa-checklist.md",
   "skill/references/website-cloning.md",
@@ -62,10 +75,12 @@ const referenceSources = [
   "skill/references/capability-routing.md",
   "skill/references/curation-policy.md",
   "skill/references/development-compatibility.md",
+  "skill/references/design-synthesis.md",
   "skill/references/feedback-loop.md",
   "skill/references/open-source-readiness.md",
   "skill/references/qa-checklist.md",
   "skill/references/self-check.md",
+  "skill/references/upstream-capability-sync.md",
   "skill/references/website-cloning.md",
   "README.md",
   "CONTRIBUTING.md",
@@ -201,12 +216,51 @@ try {
   );
   const ok =
     feedbackSchema.$schema === "https://json-schema.org/draft/2020-12/schema" &&
-    feedbackSchema.properties?.privacy?.properties?.remotePublished?.const === false;
+    feedbackSchema.properties?.privacy?.properties?.remotePublished?.type === "boolean" &&
+    feedbackSchema.properties?.publication?.type?.includes("object");
   console.log(`${ok ? "OK" : "FAIL"} feedback observation schema`);
   if (!ok) failed = true;
 } catch (error) {
   console.log(`FAIL feedback observation schema: ${error.message}`);
   failed = true;
+}
+
+try {
+  const schema = JSON.parse(
+    fs.readFileSync(
+      path.join(repoRoot, "skill/references/design-synthesis.schema.json"),
+      "utf8",
+    ),
+  );
+  const ok =
+    schema.$schema === "https://json-schema.org/draft/2020-12/schema" &&
+    schema.properties?.schema?.const === "design-pipeline.design-synthesis.v1";
+  console.log(`${ok ? "OK" : "FAIL"} design-synthesis manifest schema`);
+  if (!ok) failed = true;
+} catch (error) {
+  console.log(`FAIL design-synthesis manifest schema: ${error.message}`);
+  failed = true;
+}
+
+for (const [file, schemaId] of [
+  ["source-evidence.schema.json", "design-pipeline.source-evidence.v1"],
+  ["capability-audit.schema.json", "design-pipeline.capability-audit.v1"],
+  ["publication-request.schema.json", "design-pipeline.publication-request.v1"],
+  ["publication-receipt.schema.json", "design-pipeline.publication-receipt.v1"],
+]) {
+  try {
+    const schema = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, "skill/references", file), "utf8"),
+    );
+    const ok =
+      schema.$schema === "https://json-schema.org/draft/2020-12/schema" &&
+      schema.properties?.schema?.const === schemaId;
+    console.log(`${ok ? "OK" : "FAIL"} ${file}`);
+    if (!ok) failed = true;
+  } catch (error) {
+    console.log(`FAIL ${file}: ${error.message}`);
+    failed = true;
+  }
 }
 
 try {
@@ -231,6 +285,9 @@ const tests = spawnSync(
     "tests/website-cloning-init.test.cjs",
     "tests/check-deps.test.cjs",
     "tests/record-feedback.test.cjs",
+    "tests/design-synthesis.test.cjs",
+    "tests/capability-audit.test.cjs",
+    "tests/publication-bridge.test.cjs",
   ],
   {
     cwd: repoRoot,

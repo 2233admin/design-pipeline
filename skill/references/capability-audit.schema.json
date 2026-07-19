@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schemas/capability-audit.schema.json",
+  "title": "Deterministic companion capability audit snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "generatedAt", "registry", "profiles", "summary"],
+  "properties": {
+    "schema": {"const": "design-pipeline.capability-audit.v1"},
+    "generatedAt": {"type": "string", "format": "date-time"},
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "path"],
+      "properties": {
+        "schema": {"type": "string"},
+        "path": {"type": "string", "minLength": 1}
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "profileId",
+          "status",
+          "sourceId",
+          "installedStatus",
+          "reasons"
+        ],
+        "properties": {
+          "profileId": {"type": "string", "minLength": 1},
+          "status": {"enum": ["CURRENT", "STALE", "CHANGED", "UNTRACKED", "UNKNOWN"]},
+          "sourceId": {"type": ["string", "null"]},
+          "installedStatus": {"type": ["string", "null"]},
+          "reasons": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "observed": {"type": ["object", "null"]}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["CURRENT", "STALE", "CHANGED", "UNTRACKED", "UNKNOWN"],
+      "properties": {
+        "CURRENT": {"type": "integer", "minimum": 0},
+        "STALE": {"type": "integer", "minimum": 0},
+        "CHANGED": {"type": "integer", "minimum": 0},
+        "UNTRACKED": {"type": "integer", "minimum": 0},
+        "UNKNOWN": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}
+

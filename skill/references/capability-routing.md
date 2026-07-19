@@ -14,6 +14,7 @@ Route by the design capability the change needs, then use installed skills as im
 
 | Capability | Primary routes | Use when |
 | --- | --- | --- |
+| Requirements to reusable product design | design-synthesis module, `grill-with-docs`, visual direction/design-system skills, Wayfinder host when oversized | The project lacks a suitable DESIGN.md or needs a new product-specific design system |
 | Live-page evidence and reconstruction | website-cloning module, `image-to-code`, Browser/Builder/Evidence ports | Rebuilding or adapting an authorized live reference |
 | Visual direction and taste | `frontend-design`, `design-taste-frontend`, `ui-ux-pro-max`, `emil-design-eng` | Choosing composition, hierarchy, density, typography, and interaction posture |
 | Design system and brand | `design-system`, `brand`, `brandkit`, `ui-styling` | Defining reusable tokens, components, state variants, and brand rules |

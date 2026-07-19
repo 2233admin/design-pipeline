@@ -82,6 +82,23 @@ Some Matt skills were installed with a `matt-` prefix to avoid collisions with e
 
 Prefer existing local OMX/GStack skills when their names conflict; use the `matt-*` versions when specifically applying Matt Pocock's workflow.
 
+### Grill and Wayfinder in design synthesis
+
+`grill-with-docs` is an interaction gate when product language or design-driving decisions remain
+unresolved. Save its ADR, glossary, or decision evidence inside the active change and record the
+transition through the design-synthesis command.
+
+Wayfinder is a scope adapter, not a replacement for OpenSpec:
+
+- use it only when the recorded scope score exceeds the selected execution budget;
+- let its configured issue tracker own the map and decision tickets;
+- store only the map URL and current decision context in synthesis state;
+- keep proposal/spec/design/tasks as the implementation source of truth;
+- after the map resolves the blocking decisions, resume directions and DESIGN.md synthesis.
+
+If no issue tracker is configured, leave the synthesis run awaiting Wayfinder. Do not create a
+lookalike local tracker.
+
 ## Artifact Mapping
 
 | design-pipeline artifact | OpenSpec-style equivalent | GBrain handling |
@@ -89,6 +106,7 @@ Prefer existing local OMX/GStack skills when their names conflict; use the `matt
 | `brief.md` | proposal / requirements | Sync only final product intent |
 | `directions.md` | design alternatives | Usually keep repo-local only |
 | `design.md` | design / spec delta | Sync final decisions |
+| project `DESIGN.md` | reusable product visual identity | Sync stable tokens, rationale, and component rules |
 | `tasks.md` | tasks checklist | Sync only completed durable milestones |
 | `qa.md` | validation / verification notes | Sync final QA summary and reusable rules |
 | `.design-pipeline/feedback/observations/*.json` | detected reusable gaps | Link accepted findings to the active change |

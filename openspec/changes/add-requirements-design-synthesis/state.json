@@ -1,0 +1,55 @@
+{
+  "schema": "design-pipeline.state.v1",
+  "changeId": "add-requirements-design-synthesis",
+  "status": "ready-for-release",
+  "phase": "verified",
+  "updatedAt": "2026-07-19T13:45:00+08:00",
+  "artifactRoot": "openspec/changes/add-requirements-design-synthesis",
+  "projectRoot": ".",
+  "surfaces": [
+    "requirements intake",
+    "DESIGN.md",
+    "interactive state",
+    "Wayfinder host handoff"
+  ],
+  "capabilities": {
+    "missing": [],
+    "fallbacks": []
+  },
+  "openSpec": {
+    "detected": true,
+    "changeId": "add-requirements-design-synthesis",
+    "paths": [
+      "openspec/changes/add-requirements-design-synthesis"
+    ]
+  },
+  "gbrain": {
+    "detected": false,
+    "syncPlanned": false,
+    "paths": []
+  },
+  "motion": {
+    "required": false,
+    "motionSpec": "openspec/changes/add-requirements-design-synthesis/motion.md",
+    "implementationLibrary": "none",
+    "reducedMotion": "not-applicable"
+  },
+  "qa": {
+    "status": "passed",
+    "evidenceRoot": "openspec/changes/add-requirements-design-synthesis/qa.md",
+    "scores": {
+      "testsPassed": 62,
+      "testsFailed": 0,
+      "selfCheck": "passed",
+      "sentrux": "passed"
+    }
+  },
+  "decisions": [
+    "Template collections are inspiration evidence, not DESIGN.md generators",
+    "Creative synthesis stays with the host design agent; bundled scripts own deterministic state and validation"
+  ],
+  "blockers": [],
+  "nextActions": [
+    "Publish the authorized GitHub pull request and release"
+  ]
+}

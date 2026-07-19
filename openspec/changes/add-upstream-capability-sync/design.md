@@ -37,6 +37,18 @@ status per profile. Missing network evidence is not treated as proof of freshnes
 The audit never executes downloaded source text. It compares declared scalar metadata, hashes, and
 reviewed capability markers only.
 
+### Structural surgery plan
+
+The regression suite already locks valid and malformed source-metadata behavior. To clear the
+structural gate without changing the contract:
+
+1. extract URL, date, freshness, marker, and baseline validation into single-purpose helpers;
+2. keep `validateSourceMeta` as an orchestration function with the same errors and return value;
+3. split publication shape, URL-safety, and request/receipt matching checks into bounded helpers;
+4. keep failure text, accepted inputs, and fail-closed behavior unchanged;
+5. rerun capability-audit and publication tests, repository QA, installed self-check, and the Sentrux gate;
+6. do not raise complexity thresholds or introduce a dependency.
+
 ## Publication request
 
 An accepted observation can produce a publication request containing:

@@ -1,15 +1,15 @@
 {
   "schema": "design-pipeline-state.v1",
   "changeId": "add-upstream-capability-sync",
-  "status": "active",
-  "stage": "contracts",
-  "updatedAt": "2026-07-19T11:48:00+08:00",
+  "status": "ready-for-release",
+  "stage": "verified",
+  "updatedAt": "2026-07-19T13:45:00+08:00",
   "verification": {
-    "qa": "pending",
-    "testsPassed": 0,
+    "qa": "passed",
+    "testsPassed": 62,
     "testsFailed": 0,
-    "selfCheck": "pending",
-    "sentrux": "pending"
+    "selfCheck": "passed",
+    "sentrux": "passed"
   },
-  "nextAction": "Define and test the four local-first sync and publication schemas."
+  "nextAction": "Publish the reviewed change through the authorized GitHub release flow."
 }

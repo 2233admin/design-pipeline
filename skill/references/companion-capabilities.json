@@ -7,14 +7,27 @@
       "level": "required",
       "skills": ["design-pipeline"],
       "resources": [
+        "design-pipeline/references/design-synthesis.md",
+        "design-pipeline/references/design-synthesis.schema.json",
         "design-pipeline/references/website-cloning.md",
         "design-pipeline/references/website-clone-component-spec.md",
         "design-pipeline/references/website-cloning-manifest.schema.json",
         "design-pipeline/references/feedback-observation.schema.json",
         "design-pipeline/references/feedback-loop.md",
+        "design-pipeline/references/upstream-capability-sync.md",
+        "design-pipeline/references/source-evidence.schema.json",
+        "design-pipeline/references/capability-audit.schema.json",
+        "design-pipeline/references/publication-request.schema.json",
+        "design-pipeline/references/publication-receipt.schema.json",
         "design-pipeline/scripts/init-website-clone.cjs",
         "design-pipeline/scripts/evaluate-website-clone.cjs",
-        "design-pipeline/scripts/record-feedback.cjs"
+        "design-pipeline/scripts/design-synthesis-core.cjs",
+        "design-pipeline/scripts/init-design-synthesis.cjs",
+        "design-pipeline/scripts/advance-design-synthesis.cjs",
+        "design-pipeline/scripts/record-feedback.cjs",
+        "design-pipeline/scripts/audit-capabilities.cjs",
+        "design-pipeline/scripts/prepare-publication.cjs",
+        "design-pipeline/scripts/reconcile-publication.cjs"
       ]
     },
     {
@@ -108,6 +121,14 @@
       "skill": "animejs",
       "level": "optional",
       "source": "https://animejs.com/documentation/",
+      "sourceMeta": {
+        "id": "animejs-documentation-v4-5",
+        "kind": "documentation",
+        "url": "https://animejs.com/documentation/",
+        "reviewedVersion": "4.5.0",
+        "reviewedAt": "2026-07-19T00:00:00.000Z",
+        "freshnessDays": 30
+      },
       "fallback": "Use official Anime.js v4.5 documentation for missing capabilities and record the stale companion surface in qa.md.",
       "requirements": [
         {"id": "v4-api", "skill": "animejs", "patterns": [{"source": "Anime\\.js v4", "flags": "i"}]},
@@ -128,6 +149,19 @@
       "skills": ["frontend-design", "design-taste-frontend"],
       "level": "enhancement",
       "source": "installed companion skill contracts",
+      "sourceMeta": {
+        "id": "visual-direction-skill-contracts",
+        "kind": "installed-skill",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "reviewedMarkers": [
+          "subject-grounding",
+          "iterative-critique",
+          "anti-default",
+          "dependency-verification"
+        ],
+        "reviewedAt": "2026-07-19T00:00:00.000Z",
+        "freshnessDays": 30
+      },
       "fallback": "Use the visual and scorecard gates in qa.md.",
       "requirements": [
         {"id": "subject-grounding", "skill": "frontend-design", "patterns": [{"source": "Ground it in the subject", "flags": "i"}]},
@@ -142,6 +176,18 @@
       "skills": ["design-motion-principles", "review-animations"],
       "level": "enhancement",
       "source": "installed companion skill contracts",
+      "sourceMeta": {
+        "id": "motion-review-skill-contracts",
+        "kind": "installed-skill",
+        "url": "https://github.com/emilkowalski/skills",
+        "reviewedMarkers": [
+          "motion-accessibility",
+          "motion-review-standards",
+          "motion-findings"
+        ],
+        "reviewedAt": "2026-07-19T00:00:00.000Z",
+        "freshnessDays": 30
+      },
       "fallback": "Use motion.md and the bundled motion gate.",
       "requirements": [
         {"id": "motion-accessibility", "skill": "design-motion-principles", "patterns": [{"source": "Accessibility is NOT Optional", "flags": "i"}]},
@@ -155,6 +201,20 @@
       "skills": ["gsap-core", "gsap-timeline", "gsap-scrolltrigger", "gsap-react", "gsap-performance"],
       "level": "optional",
       "source": "https://gsap.com/docs/v3/",
+      "sourceMeta": {
+        "id": "gsap-documentation-v3",
+        "kind": "documentation",
+        "url": "https://gsap.com/docs/v3/",
+        "reviewedMarkers": [
+          "core-tweens",
+          "timeline",
+          "scroll-refresh",
+          "react-cleanup",
+          "performance-budget"
+        ],
+        "reviewedAt": "2026-07-19T00:00:00.000Z",
+        "freshnessDays": 30
+      },
       "fallback": "Use the project's existing runtime or official GSAP docs and preserve cleanup, reduced motion, and performance gates.",
       "requirements": [
         {"id": "core-tweens", "skill": "gsap-core", "patterns": [{"source": "gsap\\.(?:to|from|fromTo)\\b"}]},
@@ -170,6 +230,18 @@
       "skills": ["next-dev-loop", "next-cache-components-adoption", "next-cache-components-optimizer"],
       "level": "optional",
       "source": "https://nextjs.org/docs",
+      "sourceMeta": {
+        "id": "nextjs-design-engineering-docs",
+        "kind": "documentation",
+        "url": "https://nextjs.org/docs",
+        "reviewedMarkers": [
+          "next-dev-mcp",
+          "cache-adoption",
+          "cache-optimization"
+        ],
+        "reviewedAt": "2026-07-19T00:00:00.000Z",
+        "freshnessDays": 30
+      },
       "fallback": "Use version-matched official Next.js docs and the target repo's existing build loop.",
       "requirements": [
         {"id": "next-dev-mcp", "skill": "next-dev-loop", "match": "all", "patterns": [{"source": "Next\\.js \\*\\*16\\.3\\+"}, {"source": "get_compilation_issues"}, {"source": "Turbopack"}]},
@@ -183,6 +255,19 @@
       "skills": ["gstack-learn", "gstack-spec", "gstack-review", "gstack-ship"],
       "level": "optional",
       "source": "installed gstack workflow contracts",
+      "sourceMeta": {
+        "id": "gstack-workflow-contracts",
+        "kind": "installed-skill",
+        "url": "https://github.com/garrytan/gstack",
+        "reviewedMarkers": [
+          "durable-learnings",
+          "issue-spec",
+          "code-review",
+          "pull-request-ship"
+        ],
+        "reviewedAt": "2026-07-19T00:00:00.000Z",
+        "freshnessDays": 30
+      },
       "fallback": "Use the bundled feedback recorder plus OpenSpec, repository review, and an authorized GitHub contribution step.",
       "requirements": [
         {"id": "durable-learnings", "skill": "gstack-learn", "patterns": [{"source": "learnings\\.jsonl"}, {"source": "gstack-learnings-log"}]},

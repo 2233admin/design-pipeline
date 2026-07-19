@@ -250,11 +250,16 @@ function renderList(items, emptyText) {
   return items.length ? items.map((item) => `- ${item}`).join("\n") : `- ${emptyText}`;
 }
 
+function publicationStatus(observation) {
+  if (!observation.publication) return "Remote publication: not performed.";
+  return `Remote publication: ${observation.publication.state} at ${observation.publication.url}.`;
+}
+
 function renderIssueDraft(observation) {
   return [
     `# ${observation.title}`,
     "",
-    `> Design Pipeline observation \`${observation.id}\`. Remote publication: not performed.`,
+    `> Design Pipeline observation \`${observation.id}\`. ${publicationStatus(observation)}`,
     "",
     "## Summary",
     "",
@@ -290,7 +295,7 @@ function renderPrDraft(observation) {
   return [
     `# ${observation.title}`,
     "",
-    `> Design Pipeline observation \`${observation.id}\`. Remote publication: not performed.`,
+    `> Design Pipeline observation \`${observation.id}\`. ${publicationStatus(observation)}`,
     "",
     "## Summary",
     "",
@@ -383,9 +388,71 @@ function isValidObservation(observation, expectedId) {
   if (observation.id !== expectedId) return false;
   if (!isPositiveInteger(observation.occurrences)) return false;
   if (!Array.isArray(observation.evidence)) return false;
+  if (
+    !observation.privacy ||
+    observation.privacy.redacted !== true ||
+    typeof observation.privacy.remotePublished !== "boolean"
+  ) {
+    return false;
+  }
+  if (observation.publication !== undefined && !isValidPublication(observation.publication)) {
+    return false;
+  }
   return (
     isOptionalArray(observation.changedFiles) && isOptionalArray(observation.validation)
   );
+}
+
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.length > 0;
+}
+
+function hasValidPublicationFields(publication) {
+  return [
+    /^dpp-[a-f0-9]{16}$/.test(publication.requestId || ""),
+    /^[a-f0-9]{64}$/.test(publication.idempotencyKey || ""),
+    ["issue", "pull_request"].includes(publication.action),
+    isNonEmptyString(publication.repository),
+    isNonEmptyString(publication.url),
+    Number.isInteger(publication.number),
+    publication.number > 0,
+    ["open", "closed", "merged"].includes(publication.state),
+    typeof publication.createdAt === "string",
+    typeof publication.reconciledAt === "string",
+  ].every(Boolean);
+}
+
+function parseUrl(value) {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+function isSafeGitHubUrl(url) {
+  if (!url) return false;
+  if (url.protocol !== "https:") return false;
+  if (url.hostname.toLowerCase() !== "github.com") return false;
+  if (url.username || url.password) return false;
+  if (url.port) return false;
+  if (url.search || url.hash) return false;
+  return true;
+}
+
+function publicationUrlMatches(publication) {
+  const url = parseUrl(publication.url);
+  if (!isSafeGitHubUrl(url)) return false;
+  const route = publication.action === "issue" ? "issues" : "pull";
+  const expectedPath = `/${publication.repository}/${route}/${publication.number}`.toLowerCase();
+  const actualPath = url.pathname.replace(/\/$/, "").toLowerCase();
+  return actualPath === expectedPath;
+}
+
+function isValidPublication(publication) {
+  if (!publication || typeof publication !== "object") return false;
+  if (!hasValidPublicationFields(publication)) return false;
+  return publicationUrlMatches(publication);
 }
 
 function readExistingObservation(observationPath, expectedId) {
@@ -472,8 +539,9 @@ function recordObservation(rawOptions) {
       : {}),
     privacy: {
       redacted: true,
-      remotePublished: false,
+      remotePublished: existing?.privacy?.remotePublished === true,
     },
+    ...(existing?.publication ? { publication: existing.publication } : {}),
     draftPath: relativeDraftPath,
   };
   const draft =
@@ -508,7 +576,7 @@ function main() {
       console.log(
         `${result.created ? "Recorded" : "Updated"} ${result.observation.id}: ${result.draftPath}`,
       );
-      console.log("Remote publication: not performed.");
+      console.log(publicationStatus(result.observation));
     }
   } catch (error) {
     console.error(`record-feedback: ${error.message}`);

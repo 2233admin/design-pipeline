@@ -51,12 +51,42 @@ When the user asks to clone, reproduce, rebuild, reverse-engineer, or use one or
 
 The website-cloning module is a design-pipeline superset capability. It adds live evidence capture and convergence gates while preserving all existing accessibility, motion, responsive, engineering, and headless-state requirements.
 
+## Requirements-Driven DESIGN.md Synthesis
+
+When the target project has no reusable `DESIGN.md`, or the existing file cannot express the
+requested product direction:
+
+1. Read `references/design-synthesis.md` completely.
+2. Initialize with `scripts/init-design-synthesis.cjs`, using `--problem` as the primary input.
+3. Register live pages with `--reference-url` and existing DESIGN.md examples with `--template`.
+   Both are attributed evidence; templates are always inspiration-only.
+4. Run `/grill-with-docs <problem>` when material product decisions remain unresolved, persist its
+   ADR/glossary/decision evidence, then record `grill-completed`.
+5. Run the deterministic scope assessment. Only when the score exceeds the selected budget, say
+   “哦，天哪，这比我预期的要大得多。” and request `/wayfinder 为此制作一张地图`.
+6. Wayfinder must use a configured issue-tracker host. Never invent a local issue map when that host
+   is unavailable.
+7. Synthesize 2-3 product-specific directions from requirements, repository constraints, and cited
+   evidence. Select one and write the reusable project `DESIGN.md`.
+8. Validate it through `scripts/advance-design-synthesis.cjs`, then immediately continue into the
+   normal implementation and QA stages unless another material decision is pending.
+
+Keep the artifacts distinct:
+
+- lowercase change `design.md` defines how the active change will be implemented;
+- project `DESIGN.md` defines reusable product identity for future coding agents.
+
+The bundled scripts manage deterministic state and validation. The host design agent performs the
+creative synthesis; do not disguise a copied template or token dump as generated product design.
+
 ## Companion Skills
 
 Reference file: `references/companion-skills.md`.
 Capability routing reference: `references/capability-routing.md`.
 Machine-readable companion registry: `references/companion-capabilities.json`.
+Requirements-driven synthesis reference: `references/design-synthesis.md`.
 Feedback and contribution reference: `references/feedback-loop.md`.
+Upstream capability sync reference: `references/upstream-capability-sync.md`.
 Development compatibility reference: `references/development-compatibility.md`.
 Self-check reference: `references/self-check.md`.
 QA checklist reference: `references/qa-checklist.md`.
@@ -110,10 +140,17 @@ Before writing design artifacts or code:
 - Read capability-profile warnings separately from install status. `installed` means discoverable; `WARN` means the companion surface does not advertise the current capability baseline.
 - Treat missing optional/enhancement companion skills as a fallback path, not a blocker. Record missing capabilities in `qa.md`.
 - When a warning represents a reusable pipeline or companion gap, run self-check with `--record-feedback` or call `scripts/record-feedback.cjs` immediately. This writes a local, redacted, deduplicated draft; it does not publish remotely.
+- When version-sensitive upstream freshness matters, read
+  `references/upstream-capability-sync.md`. The host retrieves source evidence; the bundled audit
+  compares it without executing remote content. Missing evidence is `UNKNOWN`, never current.
+- Prepare Issue or PR publication requests locally. Remote creation requires explicit authority for
+  the exact action and repository, followed by a validated receipt and local reconciliation.
 - Initialize or update `state.json`, `events.jsonl`, and `handoff.md` using `references/agent-interface.md`.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
+- Check for project `DESIGN.md`. If it is missing or materially incompatible with the request, route
+  through the requirements-driven synthesis module before implementation.
 - Check whether the project has OpenSpec, GBrain, or Matt Pocock skill artifacts and use the compatibility rules in `references/development-compatibility.md`.
 - Note constraints such as no external images, single-file HTML, mobile-first, accessibility, or brand rules.
 
@@ -149,7 +186,7 @@ Default decision rule:
 
 ## Stage 3: Design Spec
 
-Create `design.md` as the selected source of truth:
+Create lowercase change `design.md` as the selected source of truth for this change:
 
 - Layout grid and responsive behavior.
 - Color tokens and contrast posture.
@@ -158,6 +195,9 @@ Create `design.md` as the selected source of truth:
 - Motion rules and reduced-motion fallback.
 - Accessibility requirements: semantic structure, focus order, keyboard behavior, labels, announcements, contrast.
 - Asset strategy: real assets, generated bitmap images, icons, or no-assets justification.
+
+When requirements-driven synthesis is active, also write the project `DESIGN.md` according to
+`references/design-synthesis.md`. Link it from change `design.md`; do not duplicate the entire file.
 
 Use concrete values when implementation will need them. Avoid vague style words without implementation consequences.
 
@@ -250,6 +290,7 @@ When modifying `design-pipeline` itself, use this same pipeline and OpenSpec lif
 Final responses should report:
 
 - Change id and artifact folder.
+- Project `DESIGN.md` path, input mode, scope score/budget, and Wayfinder map URL when synthesis ran.
 - Implemented surfaces.
 - Verification evidence.
 - Missing companion skills, if any.
