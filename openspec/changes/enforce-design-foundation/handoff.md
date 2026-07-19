@@ -4,7 +4,7 @@
 
 - Change id: `enforce-design-foundation`
 - Status: active
-- Stage: ready-for-review
+- Stage: merge-ready
 
 ## Decision
 
@@ -13,5 +13,5 @@ files fail closed; valid files become the reusable product foundation.
 
 ## Next Action
 
-Push the branch and complete GitHub CI, automated review, merge, release, and installed-release
+Merge pull request #6, publish v0.5.0, and complete release-artifact and installed-release
 verification.

@@ -17,8 +17,10 @@
   frontmatter block, and website-clone URL lists default safely at the option boundary.
 - CodeRabbit follow-up: adopted/rejected markers are now required inside the Source Decisions
   section, `--design-file` errors name the correct flag, and the long-lived spec covers `invalid`.
+- GitHub CI: passed `qa-and-package`.
+- Automated review: CodeRabbit and GitGuardian passed; all actionable review findings were
+  addressed.
 
 ## Pending publication verification
 
-- GitHub CI and automated review.
 - Release artifact and installed-release verification.
