@@ -1,0 +1,246 @@
+{
+  "schema": "design-pipeline.anti-slop-rubric.v1",
+  "version": "1.0.0",
+  "updatedAt": "2026-07-19",
+  "policy": {
+    "blockingSeverities": [
+      "hard"
+    ],
+    "contextRule": "Contextual findings require product-specific evidence and may be accepted with an explicit rationale.",
+    "preferenceRule": "Named colors, fonts, punctuation, shapes, and common layout families are advisory signals only."
+  },
+  "sources": [
+    {
+      "id": "pols-anti-slop-law",
+      "url": "https://pols.dev/slop.md",
+      "observedAt": "2026-07-19T10:03:01.000Z",
+      "lastModified": "2026-07-17T07:16:09.000Z",
+      "contentHash": "11fc1f770260572a0a87c7171d2e2b0c7dcc5ce660ee7d888e125ef7be5a142d",
+      "intakeState": "watchlist",
+      "usage": "Curated concepts only. The mutable source prompt is not bundled, executed, or appended to global agent instructions."
+    }
+  ],
+  "rules": [
+    {
+      "id": "content-available-without-motion",
+      "title": "Content remains available without entrance motion",
+      "category": "accessibility",
+      "severity": "hard",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Primary content must not depend on an opacity reveal, animation completion, or script timing to become usable.",
+      "evidenceRequired": [
+        "Browser or implementation evidence showing meaningful content in the initial or reduced-motion state."
+      ],
+      "exceptionPolicy": "none",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "controls-are-real-and-operable",
+      "title": "Controls are real and operable",
+      "category": "interaction",
+      "severity": "hard",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Visible controls must have working states, keyboard behavior, labels, and recovery paths appropriate to the surface.",
+      "evidenceRequired": [
+        "Interaction replay, component test, or code evidence for visible controls."
+      ],
+      "exceptionPolicy": "none",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "contrast-and-legibility",
+      "title": "Text and controls remain legible",
+      "category": "accessibility",
+      "severity": "hard",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Color, layering, effects, and imagery must preserve readable content and distinguish interactive states.",
+      "evidenceRequired": [
+        "Contrast measurement or visual evidence under the implemented rendering conditions."
+      ],
+      "exceptionPolicy": "none",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "responsive-content-integrity",
+      "title": "Responsive layouts do not clip or collide",
+      "category": "responsive",
+      "severity": "hard",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Text, controls, media, and overlapping sections must remain usable at the declared viewport range.",
+      "evidenceRequired": [
+        "Mobile and desktop captures or automated layout evidence."
+      ],
+      "exceptionPolicy": "none",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "reduced-motion-path",
+      "title": "Non-trivial motion has a reduced-motion path",
+      "category": "motion",
+      "severity": "hard",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Animation must not be required for comprehension and must honor reduced-motion preferences when non-trivial motion exists.",
+      "evidenceRequired": [
+        "Reduced-motion implementation and replay evidence, or a documented no-motion applicability reason."
+      ],
+      "exceptionPolicy": "none",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "reference-language-not-content",
+      "title": "References contribute language, not copied identity",
+      "category": "provenance",
+      "severity": "hard",
+      "appliesTo": [
+        "website-reference"
+      ],
+      "principle": "Reference analysis may adopt design properties but must not silently copy protected identity, assets, copy, or product-specific content.",
+      "evidenceRequired": [
+        "Adopted and rejected source-property decisions plus asset permission notes."
+      ],
+      "exceptionPolicy": "none",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "cohesive-design-world",
+      "title": "The surface belongs to one coherent design world",
+      "category": "visual-system",
+      "severity": "contextual",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Palette, type, geometry, spacing, assets, and motion should support the same product-specific thesis.",
+      "evidenceRequired": [
+        "Design tokens, direction rationale, or rendered evidence showing system-level cohesion."
+      ],
+      "exceptionPolicy": "documented-context",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "product-grounded-signature",
+      "title": "Signature elements are grounded in the product",
+      "category": "visual-direction",
+      "severity": "contextual",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "A distinctive artifact, silhouette, composition, or interaction should express the subject rather than decorate an unrelated template.",
+      "evidenceRequired": [
+        "Brief-to-design mapping for the signature element."
+      ],
+      "exceptionPolicy": "documented-context",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "template-pattern-density",
+      "title": "Common template patterns do not dominate the composition",
+      "category": "composition",
+      "severity": "contextual",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Evaluate the combined density of familiar hero, CTA, card, pricing, testimonial, and footer skeletons instead of banning one pattern in isolation.",
+      "evidenceRequired": [
+        "Direction or rendered-layout review identifying repeated layout families."
+      ],
+      "exceptionPolicy": "documented-context",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "decorative-effects-serve-purpose",
+      "title": "Decorative effects have a product or interaction purpose",
+      "category": "visual-effects",
+      "severity": "contextual",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Glows, glass, gradients, grain, floating layers, and ambient motion should support hierarchy, atmosphere, feedback, or narrative.",
+      "evidenceRequired": [
+        "Purpose statement and rendered evidence for prominent effects."
+      ],
+      "exceptionPolicy": "documented-context",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "content-specificity",
+      "title": "Content and data are specific to the product",
+      "category": "content",
+      "severity": "contextual",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Copy, data, states, assets, and labels should be plausible for the actual product rather than generic filler.",
+      "evidenceRequired": [
+        "Representative content or data evidence tied to the brief."
+      ],
+      "exceptionPolicy": "documented-context",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "component-defaults-are-art-directed",
+      "title": "Component defaults are adapted to the product system",
+      "category": "components",
+      "severity": "contextual",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Accessible component primitives may be reused, but their visual defaults should be reconciled with the product's tokens and interaction language.",
+      "evidenceRequired": [
+        "Component-spec or rendered evidence showing deliberate adaptation."
+      ],
+      "exceptionPolicy": "documented-context",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    },
+    {
+      "id": "fashion-tell-advisory",
+      "title": "Fashion-pattern signals remain advisory",
+      "category": "taste",
+      "severity": "preference",
+      "appliesTo": [
+        "all"
+      ],
+      "principle": "Named colors, fonts, punctuation, pills, cards, gradients, shadows, and familiar layout families require context rather than automatic rejection.",
+      "evidenceRequired": [
+        "Design rationale when a commonly criticized pattern is prominent."
+      ],
+      "exceptionPolicy": "preference-only",
+      "sourceIds": [
+        "pols-anti-slop-law"
+      ]
+    }
+  ]
+}

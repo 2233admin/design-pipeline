@@ -48,10 +48,16 @@ cannot replace it.
 ## Components
 
 - Project foundation: `DESIGN.md`.
+- Motion foundation: project `MOTION.md`, including an explicit `static` posture when motion is not
+  part of the product.
+- Palette foundation: DOM and raster color evidence reconciled into semantic roles, relationships,
+  and implementation tokens before website-cloning implementation.
 - Change contract: `brief.md`, `directions.md`, lowercase `design.md`, `motion.md`, `tasks.md`,
   and `qa.md`.
 - Headless state: `state.json`, `events.jsonl`, and `handoff.md`.
 - Evidence adapters: browser, website-cloning, capability audit, and host publication receipts.
+- Contextual anti-slop review: structured hard, contextual, and preference rules plus explicit
+  evidence and accepted-context decisions.
 - Guard commands: initialization, transition, foundation validation, self-check, QA, and packaging.
 
 Each component must have a deterministic contract, explicit failure state, and a resumable handoff.
@@ -62,15 +68,24 @@ Each component must have a deterministic contract, explicit failure state, and a
 
 - Synthesize project identity from requirements and attributed evidence.
 - Validate `DESIGN.md` before implementation begins.
+- Validate the palette foundation before implementing a website clone.
+- Treat motion as a reusable design language with timing, choreography, state, accessibility, and
+  performance decisions.
 - Preserve user decisions, provenance, and rejected alternatives.
+- Preserve useful anti-template observations without granting mutable external prompts design
+  authority.
 - Fail closed at filesystem, authority, and remote-receipt boundaries.
 
 ### Don't
 
 - Do not copy a public template and present it as project design.
 - Do not treat a token dump as a complete design foundation.
+- Do not infer a complete palette from accent colors alone.
 - Do not invent an issue map, publication receipt, measurement, or user decision.
 - Do not let framework or animation integrations become the product boundary.
+- Do not copy showcase animation code or turn a runtime API into the motion language.
+- Do not convert named colors, fonts, punctuation, shapes, effects, or common layouts into
+  universal design failures.
 
 ## Source Decisions
 
@@ -80,9 +95,16 @@ Each component must have a deterministic contract, explicit failure state, and a
   product guidance.
 - Adopted OpenSpec-style change artifacts and append-only event evidence for resumability.
 - Adopted reference sites and template collections as attributed evidence only.
+- Adopted a blocking palette-evidence gate for website-cloning work.
+- Adopted a two-level motion contract: project `MOTION.md` plus change-level `motion.md`.
+- Adopted a contextual anti-slop rubric that blocks product-quality defects while keeping
+  subjective fashion signals advisory.
 
 ### Rejected
 
 - Rejected copying a generic DESIGN.md template as the default project foundation.
+- Rejected gallery, loader, animation-library, or benchmark projects as motion-spec authority.
+- Rejected installing a reference catalog directly over the project's `DESIGN.md`.
 - Rejected optional DESIGN.md enforcement at implementation time.
 - Rejected automatic remote publication from local scripts without exact user authority.
+- Rejected appending mutable remote taste prompts to global agent instruction files.

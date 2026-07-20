@@ -2,9 +2,10 @@
 
 ## Purpose
 
-Every project using the pipeline must have a reusable `DESIGN.md` before implementation. Use this
-module when the file is missing or when its existing content no longer covers the requested product
-direction.
+Every project using the pipeline must have reusable `DESIGN.md` and `MOTION.md` foundations before
+implementation. Use this module when `DESIGN.md` is missing or no longer covers the requested
+product direction; synthesize or validate `MOTION.md` from the same requirements and evidence
+before the final continuation gate.
 
 This is a synthesis workflow, not a template picker. A public DESIGN.md collection, a live website,
 or an existing component library can supply evidence. The target product's requirements, users,
@@ -16,11 +17,18 @@ Check the invariant first:
 node <design-pipeline>/scripts/check-design-foundation.cjs `
   --project-root . `
   --json
+
+node <design-pipeline>/scripts/check-motion-foundation.cjs `
+  --project-root . `
+  --json
 ```
 
 - `ready`: reuse the foundation and link it from the active change.
 - `synthesis-required`: initialize this workflow; implementation remains locked.
 - `invalid`: repair or resynthesize the file before implementation.
+
+The motion checker uses the same status names. An intentionally motionless product still authors a
+`static` foundation with accessibility, runtime, and source decisions.
 
 The official DESIGN.md format separates machine-readable tokens from human-readable design
 rationale. Preserve both, but optimize first for clear, specific intent. “Modern, clean, premium”
@@ -160,6 +168,7 @@ Create 2-3 directions in change `directions.md`, select one, and write:
 
 - change `design.md`: implementation decisions for this change;
 - project `DESIGN.md`: reusable product identity for future coding agents.
+- project `MOTION.md`: reusable motion language, or an explicit static posture.
 
 The project DESIGN.md must contain YAML frontmatter with `name` and these level-two sections:
 
@@ -175,6 +184,10 @@ The project DESIGN.md must contain YAML frontmatter with `name` and these level-
 `Source Decisions` must explicitly identify adopted and rejected source properties and link the
 active change id or artifact path.
 
+Project `MOTION.md` follows `references/motion-foundation.md`. It must declare timing and
+choreography principles, primitive vocabulary, procedural and runtime policy, reduced-motion
+substitutions, and source decisions. Change `motion.md` then selects from that foundation.
+
 Record and validate it:
 
 ```powershell
@@ -186,7 +199,8 @@ node <design-pipeline>/scripts/advance-design-synthesis.cjs `
 
 ### 5. Continue
 
-After validation, the host should immediately continue unless another material decision is pending:
+After both project foundations validate, the host should immediately continue unless another
+material decision is pending:
 
 ```powershell
 node <design-pipeline>/scripts/advance-design-synthesis.cjs `
@@ -194,8 +208,9 @@ node <design-pipeline>/scripts/advance-design-synthesis.cjs `
   --event continue
 ```
 
-Implementation reads project `DESIGN.md`, change `design.md`, and `tasks.md`, then uses the normal
-visual, UX, accessibility, motion, responsive, engineering, manual QA, and headless-state gates.
+Implementation reads project `DESIGN.md`, project `MOTION.md`, change `design.md`, change
+`motion.md`, and `tasks.md`, then uses the normal visual, UX, accessibility, motion, responsive,
+engineering, manual QA, and headless-state gates.
 
 ## Component Library Output
 
@@ -219,6 +234,7 @@ Report:
 - scope score, budget, and whether Wayfinder was required;
 - Wayfinder map URL when used;
 - selected direction and project DESIGN.md path;
+- project MOTION.md path, content hash, posture, and selected primitive ids;
 - adopted and rejected source evidence;
 - target framework/component implementation;
 - QA evidence and remaining gaps.

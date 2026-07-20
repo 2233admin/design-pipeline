@@ -1,0 +1,103 @@
+{
+  "schema": "design-pipeline.anti-slop-evidence.v1",
+  "target": {
+    "id": "ak-hypergryph-com",
+    "surface": "website-reference",
+    "url": "https://ak.hypergryph.com/#index"
+  },
+  "observations": [
+    {
+      "ruleId": "content-available-without-motion",
+      "outcome": "pass",
+      "evidence": [
+        "Desktop capture showed navigation, media stage, action rail, and status content without requiring an entrance animation to finish."
+      ]
+    },
+    {
+      "ruleId": "controls-are-real-and-operable",
+      "outcome": "not-verified",
+      "evidence": [
+        "Controls were inventoried but live interaction replay was not completed."
+      ]
+    },
+    {
+      "ruleId": "contrast-and-legibility",
+      "outcome": "pass",
+      "evidence": [
+        "Desktop evidence showed white and cyan interface text against a predominantly black shell."
+      ]
+    },
+    {
+      "ruleId": "responsive-content-integrity",
+      "outcome": "not-verified",
+      "evidence": [
+        "The responsive viewport capture was not reliable enough to verify mobile clipping or overlap."
+      ]
+    },
+    {
+      "ruleId": "reduced-motion-path",
+      "outcome": "not-verified",
+      "evidence": [
+        "Motion durations were observed, but reduced-motion behavior was not replayed."
+      ]
+    },
+    {
+      "ruleId": "reference-language-not-content",
+      "outcome": "pass",
+      "evidence": [
+        "The extracted system excludes logos, characters, QR codes, proprietary fonts, copy, and protected media."
+      ]
+    },
+    {
+      "ruleId": "cohesive-design-world",
+      "outcome": "pass",
+      "evidence": [
+        "Navigation, media, rails, typography, and cyan signal accents consistently follow the signal-dark profile."
+      ]
+    },
+    {
+      "ruleId": "product-grounded-signature",
+      "outcome": "pass",
+      "evidence": [
+        "The cinematic media stage and technical status rails are grounded in the game's world rather than a generic SaaS skeleton."
+      ]
+    },
+    {
+      "ruleId": "template-pattern-density",
+      "outcome": "pass",
+      "evidence": [
+        "The first viewport is not composed from the default eyebrow, split hero, paired CTA, and three-card sequence."
+      ]
+    },
+    {
+      "ruleId": "decorative-effects-serve-purpose",
+      "outcome": "accepted-context",
+      "evidence": [
+        "Long ambient media motion supports the cinematic landing experience and remains visually subordinate to navigation."
+      ],
+      "rationale": "Retain the ambient motion language, subject to reduced-motion verification."
+    },
+    {
+      "ruleId": "content-specificity",
+      "outcome": "pass",
+      "evidence": [
+        "Section identity, status indicators, and actions are specific to the game and its campaign content."
+      ]
+    },
+    {
+      "ruleId": "component-defaults-are-art-directed",
+      "outcome": "pass",
+      "evidence": [
+        "Rails, counters, and navigation geometry use a consistent hard-edged visual system rather than library defaults."
+      ]
+    },
+    {
+      "ruleId": "fashion-tell-advisory",
+      "outcome": "accepted-context",
+      "evidence": [
+        "The design intentionally uses near-black surfaces and a saturated cyan signal color."
+      ],
+      "rationale": "These choices form a coherent franchise-specific signal system and are not generic defaults."
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schemas/anti-slop-evidence.schema.json",
+  "title": "Anti-slop review evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "target", "observations"],
+  "properties": {
+    "schema": {
+      "const": "design-pipeline.anti-slop-evidence.v1"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "surface"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "surface": {
+          "enum": [
+            "marketing",
+            "product-ui",
+            "portfolio",
+            "documentation",
+            "website-reference",
+            "component-library",
+            "other"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ruleId", "outcome", "evidence"],
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "outcome": {
+            "enum": [
+              "pass",
+              "fail",
+              "not-applicable",
+              "not-verified",
+              "accepted-context"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

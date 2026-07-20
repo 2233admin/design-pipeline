@@ -1,0 +1,9 @@
+{
+  "schema": "design-pipeline.state.v1",
+  "changeId": "add-contextual-anti-slop-review",
+  "status": "complete",
+  "phase": "stage-6-gate-review",
+  "updatedAt": "2026-07-19T11:10:23.5085966Z",
+  "blockers": [],
+  "next": []
+}

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pipeline.local/schemas/motion-foundation.v0.1.json",
+  "title": "Design Pipeline Motion Foundation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "name",
+    "posture",
+    "primitiveRegistry",
+    "principles",
+    "primitives",
+    "proceduralMotion",
+    "runtimePolicy",
+    "reducedMotion",
+    "sourceDecisions"
+  ],
+  "properties": {
+    "schema": {
+      "const": "design-pipeline.motion-foundation.v0.1"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "posture": {
+      "enum": ["static", "minimal", "expressive", "cinematic", "procedural"]
+    },
+    "primitiveRegistry": {
+      "const": "design-pipeline.motion-primitives.v1"
+    },
+    "principles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "primitives": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)+$"
+      }
+    },
+    "proceduralMotion": {
+      "type": "object",
+      "required": ["policy"],
+      "properties": {
+        "policy": {
+          "enum": ["disabled", "declarative-only"]
+        },
+        "generators": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "parameters", "reducedMotion"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^procedural\\."
+              },
+              "parameters": {
+                "type": "object"
+              },
+              "seed": {
+                "type": ["integer", "string"]
+              },
+              "reducedMotion": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "runtimePolicy": {
+      "type": "object"
+    },
+    "reducedMotion": {
+      "type": "object",
+      "required": ["substitute"],
+      "properties": {
+        "substitute": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "sourceDecisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["source", "adopted", "rejected", "codeCopied"],
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "license": {
+            "type": "string"
+          },
+          "adopted": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rejected": {
+            "type": "string",
+            "minLength": 1
+          },
+          "codeCopied": {
+            "const": false
+          }
+        }
+      }
+    }
+  }
+}

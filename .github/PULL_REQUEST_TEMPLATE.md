@@ -17,6 +17,8 @@ Describe the design outcome and the smallest pipeline change that supports it.
 
 - [ ] `node scripts/qa.cjs`
 - [ ] `node --test tests/*.test.cjs`
+- [ ] Project `DESIGN.md` and `MOTION.md` foundation checks pass
+- [ ] Website-cloning palette gates pass when cloning behavior changes
 - [ ] Package artifacts generated
 - [ ] Installed self-check run
 - [ ] Private paths, credentials, and proprietary evidence removed

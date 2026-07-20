@@ -1,0 +1,95 @@
+{
+  "schema": "design-pipeline.anti-slop-review.v1",
+  "generatedAt": "2026-07-19T11:07:41.683Z",
+  "status": "blocked",
+  "target": {
+    "id": "endfield-hypergryph-com",
+    "surface": "website-reference",
+    "url": "https://endfield.hypergryph.com/"
+  },
+  "rubric": {
+    "version": "1.0.0",
+    "path": "skill/references/anti-slop-rubric.json",
+    "sources": [
+      {
+        "id": "pols-anti-slop-law",
+        "url": "https://pols.dev/slop.md",
+        "contentHash": "11fc1f770260572a0a87c7171d2e2b0c7dcc5ce660ee7d888e125ef7be5a142d",
+        "intakeState": "watchlist"
+      }
+    ]
+  },
+  "summary": {
+    "applicableRules": 13,
+    "reviewedRules": 13,
+    "passed": 8,
+    "notApplicable": 0,
+    "acceptedContexts": 2,
+    "blockers": 3,
+    "warnings": 0,
+    "information": 0
+  },
+  "findings": [
+    {
+      "ruleId": "controls-are-real-and-operable",
+      "title": "Controls are real and operable",
+      "category": "interaction",
+      "severity": "hard",
+      "level": "blocker",
+      "outcome": "not-verified",
+      "message": "The required evidence was not verified.",
+      "evidence": [
+        "Controls were inventoried but live interaction replay was not completed."
+      ],
+      "rationale": null
+    },
+    {
+      "ruleId": "responsive-content-integrity",
+      "title": "Responsive layouts do not clip or collide",
+      "category": "responsive",
+      "severity": "hard",
+      "level": "blocker",
+      "outcome": "not-verified",
+      "message": "The required evidence was not verified.",
+      "evidence": [
+        "The responsive viewport capture was not reliable enough to verify mobile clipping or overlap."
+      ],
+      "rationale": null
+    },
+    {
+      "ruleId": "reduced-motion-path",
+      "title": "Non-trivial motion has a reduced-motion path",
+      "category": "motion",
+      "severity": "hard",
+      "level": "blocker",
+      "outcome": "not-verified",
+      "message": "The required evidence was not verified.",
+      "evidence": [
+        "Navigation transitions were measured, but reduced-motion behavior was not replayed."
+      ],
+      "rationale": null
+    }
+  ],
+  "acceptedContexts": [
+    {
+      "ruleId": "product-grounded-signature",
+      "title": "Signature elements are grounded in the product",
+      "category": "visual-direction",
+      "severity": "contextual",
+      "evidence": [
+        "The giant Chinese display hierarchy and layered character collage intentionally dominate the first viewport."
+      ],
+      "rationale": "The composition is grounded in the campaign's editorial world and should not be flattened into a conventional hero."
+    },
+    {
+      "ruleId": "fashion-tell-advisory",
+      "title": "Fashion-pattern signals remain advisory",
+      "category": "taste",
+      "severity": "preference",
+      "evidence": [
+        "The design intentionally uses a pale editorial field, oversized display type, and restrained red accent."
+      ],
+      "rationale": "These choices form a cohesive ink-light profile rather than a generic luxury template."
+    }
+  ]
+}

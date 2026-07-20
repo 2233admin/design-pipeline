@@ -13,7 +13,7 @@ PASS
 - `node --check skill/scripts/check-deps.cjs`
 - `node --check skill/scripts/record-feedback.cjs`
 - `node scripts/install-local.cjs`
-  - installed to `C:\Users\Administrator\.codex\skills\design-pipeline`
+  - installed to `<USERPROFILE>\.codex\skills\design-pipeline`
 - Installed self-check:
   - result: OK
   - core bundled resources: 8/8

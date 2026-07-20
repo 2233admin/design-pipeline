@@ -21,6 +21,9 @@ const {
   validateManifest,
   writeJson,
 } = require("./design-synthesis-core.cjs");
+const {
+  checkMotionFoundation,
+} = require("./motion-foundation-core.cjs");
 
 const EVENTS = new Set([
   "grill-completed",
@@ -168,6 +171,7 @@ function handoffSection(manifest) {
 - Status: ${manifest.status}
 - Stage: ${manifest.stage}
 - Product design output: \`${manifest.output.path}\`
+- Project motion foundation: \`MOTION.md\`
 - Change design: \`${manifest.artifactRoot}/design.md\`
 - Input mode: ${manifest.inputs.mode}
 - Scope: ${score}${map}
@@ -373,8 +377,10 @@ function recordDesign(run, options, now) {
   });
   manifest.interaction = {
     mode: "human-in-loop",
-    nextCommand: "Continue into implementation from DESIGN.md, change design.md, and tasks.md.",
-    message: "DESIGN.md passed structure and provenance validation.",
+    nextCommand:
+      "Validate or synthesize project MOTION.md, then continue into implementation from both project foundations and the change artifacts.",
+    message:
+      "DESIGN.md passed structure and provenance validation. Project MOTION.md must also be ready before implementation.",
   };
   const state = nextState(
     run.state,
@@ -410,6 +416,14 @@ function continueImplementation(run, options, now) {
   if (currentHash !== run.manifest.output.sha256) {
     fail("validated DESIGN.md changed; run design-generated again before continuing");
   }
+  const motionFoundation = checkMotionFoundation({
+    projectRoot: run.projectRoot,
+  });
+  if (motionFoundation.status !== "ready") {
+    fail(
+      "cannot continue until project MOTION.md is synthesized and check-motion-foundation reports ready",
+    );
+  }
   const manifest = structuredClone(run.manifest);
   manifest.status = "ready-to-implement";
   manifest.stage = "implementation";
@@ -427,13 +441,26 @@ function continueImplementation(run, options, now) {
     [manifest.interaction.nextCommand],
     now,
   );
+  state.motionFoundation = {
+    path: motionFoundation.motionFile,
+    status: motionFoundation.status,
+    sha256: motionFoundation.sha256,
+    posture: motionFoundation.posture,
+    primitiveRegistry: motionFoundation.primitiveRegistry,
+    selectedPrimitives: motionFoundation.selectedPrimitives,
+  };
   commit(run, manifest, state, {
     ts: now,
     phase: state.phase,
     type: "implementation-resumed",
     summary: "Completed design synthesis and resumed the normal implementation pipeline.",
-    files: [manifest.output.path, `${manifest.artifactRoot}/design.md`, `${manifest.artifactRoot}/tasks.md`],
-    evidence: [manifest.output.path],
+    files: [
+      manifest.output.path,
+      motionFoundation.motionFile,
+      `${manifest.artifactRoot}/design.md`,
+      `${manifest.artifactRoot}/tasks.md`,
+    ],
+    evidence: [manifest.output.path, motionFoundation.motionFile],
     nextActions: [manifest.interaction.nextCommand],
   });
   console.log("Design synthesis complete. Happily continuing into implementation.");

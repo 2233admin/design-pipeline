@@ -1,0 +1,182 @@
+{
+  "schema": "design-pipeline.motion-primitives.v1",
+  "updatedAt": "2026-07-20",
+  "implementationPolicy": {
+    "mode": "clean-room",
+    "codeCopied": false,
+    "notes": "Entries describe original semantic contracts. Runtime implementations must be authored for the target project."
+  },
+  "primitives": [
+    {
+      "id": "transform.orbit",
+      "family": "transform",
+      "intent": "Move an element around a stable center while preserving an explicit phase and direction.",
+      "renderSurfaces": ["css", "svg", "canvas", "webgl"],
+      "channels": ["position.x", "position.y", "rotation", "phase"],
+      "parameters": ["center", "radiusX", "radiusY", "phase", "direction", "duration"],
+      "drivers": ["time", "scroll", "state"],
+      "runtimeCapabilities": {
+        "css": "supported",
+        "waapi": "supported",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Freeze at the authored resting phase or replace with a discrete state change.",
+      "provenance": {
+        "kind": "taxonomy-inspiration",
+        "source": "https://github.com/cilvia333/WebMotionTable",
+        "license": "MIT",
+        "adopted": "The orbit motion category and need for explicit timing parameters.",
+        "rejected": "Repository component, CSS, SVG, and animation implementation.",
+        "codeCopied": false
+      }
+    },
+    {
+      "id": "reveal.trim-line",
+      "family": "reveal",
+      "intent": "Reveal or conceal a path by changing its visible arc length.",
+      "renderSurfaces": ["svg", "canvas"],
+      "channels": ["path.progress", "opacity"],
+      "parameters": ["from", "to", "direction", "duration", "hold"],
+      "drivers": ["time", "scroll", "state"],
+      "runtimeCapabilities": {
+        "css": "degraded",
+        "waapi": "degraded",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Render the final path without progressive drawing.",
+      "provenance": {
+        "kind": "taxonomy-inspiration",
+        "source": "https://github.com/cilvia333/WebMotionTable",
+        "license": "MIT",
+        "adopted": "The trim-line motion category.",
+        "rejected": "Repository component, markup, and animation implementation.",
+        "codeCopied": false
+      }
+    },
+    {
+      "id": "distortion.fractal-noise",
+      "family": "distortion",
+      "intent": "Create bounded organic texture by evolving a multi-octave noise field.",
+      "renderSurfaces": ["svg", "canvas", "webgl"],
+      "channels": ["noise.seed", "noise.frequency", "displacement.scale"],
+      "parameters": ["baseFrequency", "octaves", "seed", "scale", "duration"],
+      "drivers": ["time", "state"],
+      "runtimeCapabilities": {
+        "css": "unsupported",
+        "waapi": "degraded",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Use a static texture or remove displacement while retaining contrast.",
+      "provenance": {
+        "kind": "taxonomy-inspiration",
+        "source": "https://github.com/cilvia333/WebMotionTable",
+        "license": "MIT",
+        "adopted": "The fractal-noise category and its role as a controllable texture primitive.",
+        "rejected": "Repository filters, keyframes, and source implementation.",
+        "codeCopied": false
+      }
+    },
+    {
+      "id": "distortion.turbulent-displace",
+      "family": "distortion",
+      "intent": "Displace geometry with a bounded turbulence field without obscuring semantic content.",
+      "renderSurfaces": ["svg", "canvas", "webgl"],
+      "channels": ["noise.seed", "noise.frequency", "displacement.x", "displacement.y"],
+      "parameters": ["baseFrequency", "octaves", "seed", "scaleX", "scaleY", "duration"],
+      "drivers": ["time", "state"],
+      "runtimeCapabilities": {
+        "css": "unsupported",
+        "waapi": "degraded",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Use a static displaced frame or a non-moving texture.",
+      "provenance": {
+        "kind": "taxonomy-inspiration",
+        "source": "https://github.com/cilvia333/WebMotionTable",
+        "license": "MIT",
+        "adopted": "The turbulent-displacement category.",
+        "rejected": "Repository filter graph and animation implementation.",
+        "codeCopied": false
+      }
+    },
+    {
+      "id": "procedural.rose-curve",
+      "family": "procedural-path",
+      "intent": "Generate a bounded polar rose path for loaders, traces, or decorative systems.",
+      "renderSurfaces": ["svg", "canvas", "webgl"],
+      "channels": ["path.position", "particle.opacity", "particle.scale", "phase"],
+      "parameters": ["petals", "radius", "phase", "samples", "duration", "trailSpan"],
+      "drivers": ["time", "progress"],
+      "runtimeCapabilities": {
+        "css": "unsupported",
+        "waapi": "degraded",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Use a static rose mark or a short opacity pulse with no path travel.",
+      "provenance": {
+        "kind": "public-behavior-and-general-math",
+        "source": "https://github.com/Paidax01/math-curve-loaders",
+        "license": "unverified",
+        "adopted": "The need for a parameterized rose-curve primitive.",
+        "rejected": "Repository JavaScript, DOM structure, styling, and render loop.",
+        "codeCopied": false,
+        "redistributionAllowed": false
+      }
+    },
+    {
+      "id": "procedural.lissajous",
+      "family": "procedural-path",
+      "intent": "Generate a bounded two-axis harmonic path with explicit frequency and phase ratios.",
+      "renderSurfaces": ["svg", "canvas", "webgl"],
+      "channels": ["path.position", "particle.opacity", "particle.scale", "phase"],
+      "parameters": ["frequencyX", "frequencyY", "phaseX", "phaseY", "amplitudeX", "amplitudeY", "samples", "duration"],
+      "drivers": ["time", "progress"],
+      "runtimeCapabilities": {
+        "css": "unsupported",
+        "waapi": "degraded",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Render the static path or replace path travel with a single state pulse.",
+      "provenance": {
+        "kind": "public-behavior-and-general-math",
+        "source": "https://github.com/Paidax01/math-curve-loaders",
+        "license": "unverified",
+        "adopted": "The need for a parameterized Lissajous primitive.",
+        "rejected": "Repository JavaScript, DOM structure, styling, and render loop.",
+        "codeCopied": false,
+        "redistributionAllowed": false
+      }
+    },
+    {
+      "id": "procedural.hypotrochoid",
+      "family": "procedural-path",
+      "intent": "Generate a bounded rolling-circle path with explicit radii and offset.",
+      "renderSurfaces": ["svg", "canvas", "webgl"],
+      "channels": ["path.position", "particle.opacity", "particle.scale", "phase"],
+      "parameters": ["outerRadius", "innerRadius", "offset", "phase", "samples", "duration"],
+      "drivers": ["time", "progress"],
+      "runtimeCapabilities": {
+        "css": "unsupported",
+        "waapi": "degraded",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Render the static path or a non-traveling progress indicator.",
+      "provenance": {
+        "kind": "public-behavior-and-general-math",
+        "source": "https://github.com/Paidax01/math-curve-loaders",
+        "license": "unverified",
+        "adopted": "The need for a parameterized hypotrochoid primitive.",
+        "rejected": "Repository JavaScript, DOM structure, styling, and render loop.",
+        "codeCopied": false,
+        "redistributionAllowed": false
+      }
+    }
+  ]
+}

@@ -9,6 +9,11 @@
       "resources": [
         "design-pipeline/references/design-synthesis.md",
         "design-pipeline/references/design-synthesis.schema.json",
+        "design-pipeline/references/palette-evidence.schema.json",
+        "design-pipeline/references/motion-foundation.md",
+        "design-pipeline/references/motion-foundation.schema.json",
+        "design-pipeline/references/motion-primitives.json",
+        "design-pipeline/references/motion-spec.md",
         "design-pipeline/references/website-cloning.md",
         "design-pipeline/references/website-clone-component-spec.md",
         "design-pipeline/references/website-cloning-manifest.schema.json",
@@ -19,10 +24,23 @@
         "design-pipeline/references/capability-audit.schema.json",
         "design-pipeline/references/publication-request.schema.json",
         "design-pipeline/references/publication-receipt.schema.json",
+        "design-pipeline/references/anti-slop-review.md",
+        "design-pipeline/references/anti-slop-rubric.json",
+        "design-pipeline/references/anti-slop-rubric.schema.json",
+        "design-pipeline/references/anti-slop-evidence.schema.json",
+        "design-pipeline/references/anti-slop-review.schema.json",
         "design-pipeline/scripts/init-website-clone.cjs",
         "design-pipeline/scripts/evaluate-website-clone.cjs",
+        "design-pipeline/scripts/website-cloning-manifest-core.cjs",
+        "design-pipeline/scripts/website-clone-foundation-core.cjs",
+        "design-pipeline/scripts/check-website-clone-foundations.cjs",
+        "design-pipeline/scripts/palette-foundation-core.cjs",
+        "design-pipeline/scripts/check-palette-foundation.cjs",
+        "design-pipeline/scripts/evaluate-anti-slop.cjs",
         "design-pipeline/scripts/design-synthesis-core.cjs",
         "design-pipeline/scripts/check-design-foundation.cjs",
+        "design-pipeline/scripts/motion-foundation-core.cjs",
+        "design-pipeline/scripts/check-motion-foundation.cjs",
         "design-pipeline/scripts/init-design-synthesis.cjs",
         "design-pipeline/scripts/advance-design-synthesis.cjs",
         "design-pipeline/scripts/record-feedback.cjs",
@@ -58,7 +76,7 @@
         "apple-design",
         "vercel-react-view-transitions"
       ],
-      "fallback": "Document trigger, purpose, duration, easing, interruption behavior, and reduced-motion fallback in design.md.",
+      "fallback": "Validate project MOTION.md, then document trigger, primitive ids, purpose, duration, easing, interruption behavior, and reduced-motion substitution in change motion.md.",
       "install": [
         "Install Emil motion skills from: https://github.com/emilkowalski/skills",
         "Install motion principles from: https://github.com/kylezantos/design-motion-principles"
@@ -293,6 +311,11 @@
       "name": "Project DESIGN.md foundation",
       "paths": ["DESIGN.md"],
       "fallback": "Run requirements-driven DESIGN.md synthesis before implementation."
+    },
+    {
+      "name": "Project MOTION.md foundation",
+      "paths": ["MOTION.md"],
+      "fallback": "Synthesize the reusable motion language from requirements and references/motion-foundation.md before implementation."
     },
     {
       "name": "Design artifacts",

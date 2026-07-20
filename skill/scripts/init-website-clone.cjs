@@ -3,6 +3,9 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const {
+  validateWebsiteCloningManifest,
+} = require("./website-cloning-manifest-core.cjs");
 
 const CHANGE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MANIFEST_STATUSES = [
@@ -286,8 +289,70 @@ function targetResearchFiles(target) {
   return {
     "research/behaviors.md": `# Behaviors: ${heading}\n\nRecord scroll, click, hover, time-driven, responsive, loading, empty, and error states. Identify the interaction model before implementation.`,
     "research/page-topology.md": `# Page Topology: ${heading}\n\nMap every section in visual order, including fixed/sticky layers, dependencies, and interaction model.`,
-    "research/design-tokens.md": `# Design Tokens: ${heading}\n\nRecord exact colors, typography, spacing, radii, elevation, breakpoints, and target-project token mappings.`,
+    "research/design-tokens.md": `# Design Tokens: ${heading}
+
+Palette is a foundation dependency. Do not begin implementation while the palette evidence status is
+\`pending\` or while any required source, role, relationship, or target-project mapping is missing.
+
+## Palette Evidence
+
+Source of truth: \`palette-evidence.json\`.
+
+Record both DOM/computed-style colors and screenshot/raster-media colors. Every retained color must
+include its source region and evidence path; do not infer a missing color from memory.
+
+## Semantic Roles
+
+Map measured colors to product roles such as canvas, panel, primary text, muted text, campaign
+accent, signal accent, media dominant, media support, and image scrim.
+
+## Palette Relationships
+
+Record area or coverage ranges, luminance hierarchy, saturation posture, color temperature, and
+which colors may or may not become full-surface fills.
+
+## Target-Project Token Mapping
+
+Map every adopted semantic role to a concrete project token and value, for example
+\`--surface-canvas: #FFFFFF\`. Preserve provenance when adapting a measured source value.
+
+## Remaining Design Tokens
+
+Record typography, spacing, radii, elevation, breakpoints, and responsive mappings after the
+palette foundation is ready.`,
     "research/component-inventory.md": `# Component Inventory: ${heading}\n\nList components, variants, states, responsive behavior, interactions, motion, content, and assets.`,
+  };
+}
+
+function paletteEvidence(target) {
+  return {
+    schema: "design-pipeline.palette-evidence.v1",
+    targetId: target.id,
+    sourceUrl: target.url,
+    status: "pending",
+    capturedAt: null,
+    sources: {
+      domComputed: {
+        status: "pending",
+        evidencePaths: [],
+        colors: [],
+      },
+      rasterMedia: {
+        status: "pending",
+        evidencePaths: [],
+        regions: [],
+        colors: [],
+      },
+    },
+    semanticRoles: [],
+    relationships: {
+      coverage: [],
+      luminanceHierarchy: [],
+      saturationPosture: null,
+      temperaturePosture: null,
+    },
+    targetProjectTokens: [],
+    notes: [],
   };
 }
 
@@ -503,6 +568,7 @@ function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets
       "visual-and-interaction-qa",
     ],
   };
+  validateWebsiteCloningManifest(manifest);
   writeJson(path.join(changeRoot, "website-cloning.json"), manifest);
   writeJson(statePath, mergeState(existingState, changeId, relativeRoot, targets, now));
   appendEvent(path.join(changeRoot, "events.jsonl"), {
@@ -520,6 +586,10 @@ function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets
     const targetRoot = path.join(changeRoot, "targets", target.id);
     for (const [relative, content] of Object.entries(targetResearchFiles(target))) {
       writeIfMissing(path.join(targetRoot, relative), content);
+    }
+    const paletteEvidencePath = path.join(targetRoot, "research", "palette-evidence.json");
+    if (!fs.existsSync(paletteEvidencePath)) {
+      writeJson(paletteEvidencePath, paletteEvidence(target));
     }
     const assetManifestPath = path.join(targetRoot, "assets", "manifest.json");
     if (!fs.existsSync(assetManifestPath)) {
@@ -702,6 +772,7 @@ function existingRunMatches(manifestPath, changeId, artifactRoot, targets, fidel
   let manifest;
   try {
     manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    validateWebsiteCloningManifest(manifest);
   } catch {
     fail(`existing website-cloning manifest is invalid: ${manifestPath}`);
   }
