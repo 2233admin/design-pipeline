@@ -35,6 +35,8 @@ All notable changes to Design Pipeline are documented here.
   contradictory static-motion selections.
 - Made release archives host-independent and reproducible by deriving package metadata from
   `SOURCE_DATE_EPOCH` or the source commit and writing canonical TAR/GZIP/ZIP structures in Node.
+- Made palette validation reject non-object JSON and malformed nested collections as normal
+  blocking results instead of surfacing internal property-access or iteration errors.
 - Split high-complexity validation paths into smaller helpers and added regression tests for the
   newly exposed edge cases.
 

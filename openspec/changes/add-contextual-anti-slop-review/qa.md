@@ -4,14 +4,15 @@ Verified locally on 2026-07-20 as part of the `v0.6.0` release candidate.
 
 ## Evidence
 
-- `node --test --experimental-test-coverage tests/*.test.cjs`: 110 passed, 0 failed; total line
-  coverage 89.69%.
+- `node --test --experimental-test-coverage tests/*.test.cjs`: 112 passed, 0 failed; total line
+  coverage 89.90%.
 - `PACKAGE_VERSION=0.6.0 node scripts/qa.cjs`: repository structure, schemas, isolated self-check,
-  all 110 tests, and package generation passed.
+  all 112 tests, and package generation passed.
 - Anti-slop regression coverage includes strict nested-shape validation and output paths that escape
   through symlinks or Windows directory junctions.
-- `sentrux check .`: all 4 rules passed; quality score 6939.
-- `sentrux gate .`: no quality, coupling, cycle, or god-file regression.
+- `sentrux check .`: all 4 rules passed; quality score 6908.
+- `sentrux gate .`: the reviewed post-merge release baseline showed no quality, coupling, cycle,
+  or god-file regression.
 - Installed `check-deps.cjs --json`: core resources passed. The existing optional Anime.js
   capability warning remains non-blocking.
 - `git diff --check`: no whitespace errors; Git only reported line-ending conversion warnings.
