@@ -112,6 +112,47 @@ Buttons, filters, escalation rows, evidence panels, status badges, and recovery 
 `;
 }
 
+function validMotion() {
+  return `---
+schema: design-pipeline.motion-foundation.v0.1
+name: Escalation Atlas motion
+posture: static
+primitiveRegistry: design-pipeline.motion-primitives.v1
+---
+
+# Escalation Atlas Motion
+
+## Motion Thesis
+
+The console remains stable unless a discrete state change needs confirmation.
+
+## Motion Principles
+
+- Preserve reading, focus, and rapid repeated work.
+
+## Motion Vocabulary
+
+No moving primitive is selected for this static operational posture.
+
+## Procedural Motion
+
+Disabled. Any future equations remain declarative data.
+
+## Runtime Policy
+
+CSS state changes only.
+
+## Reduced Motion
+
+Fallback: render every state directly without interpolation.
+
+## Source Decisions
+
+- Adopted: explicit static posture and direct state feedback.
+- Rejected: decorative loops, motion-only meaning, and delayed input.
+`;
+}
+
 test("reports synthesis-required when project DESIGN.md is missing", () => {
   const projectRoot = makeRoot(false);
   const result = runFoundation(projectRoot);
@@ -383,7 +424,10 @@ test("runs the fitting scope path through DESIGN.md validation and implementatio
   const validated = readJson(path.join(changeRoot, "design-synthesis.json"));
   assert.equal(validated.output.status, "validated");
   assert.match(validated.output.sha256, /^[a-f0-9]{64}$/);
+  assert.match(validated.interaction.nextCommand, /MOTION\.md/);
+  assert.match(fs.readFileSync(path.join(changeRoot, "handoff.md"), "utf8"), /MOTION\.md/);
 
+  fs.writeFileSync(path.join(projectRoot, "MOTION.md"), validMotion());
   const continued = runAdvance(changeRoot, "--event", "continue");
   assert.equal(continued.status, 0, continued.stderr);
   assert.match(continued.stdout, /Happily continuing/i);
@@ -395,6 +439,59 @@ test("runs the fitting scope path through DESIGN.md validation and implementatio
   assert.equal(state.status, "in-progress");
   assert.equal(state.designFoundation.status, "ready");
   assert.equal(state.designFoundation.sha256, complete.output.sha256);
+  assert.equal(state.motionFoundation.status, "ready");
+  assert.equal(state.motionFoundation.posture, "static");
+  assert.match(state.motionFoundation.sha256, /^[a-f0-9]{64}$/);
+});
+
+test("blocks implementation until the project MOTION.md foundation is ready", () => {
+  const projectRoot = makeRoot();
+  assert.equal(initBasic(projectRoot, "motion-gated").status, 0);
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "motion-gated");
+  fs.writeFileSync(path.join(changeRoot, "grill.md"), "# decisions\n");
+  assert.equal(
+    runAdvance(changeRoot, "--event", "grill-completed", "--evidence", "grill.md").status,
+    0,
+  );
+  assert.equal(
+    runAdvance(
+      changeRoot,
+      "--event",
+      "scope-assessed",
+      "--surface-count",
+      "1",
+      "--workflow-count",
+      "1",
+      "--integration-count",
+      "0",
+      "--unknown-count",
+      "0",
+      "--decision-count",
+      "1",
+    ).status,
+    0,
+  );
+  fs.writeFileSync(path.join(projectRoot, "DESIGN.md"), validDesign("motion-gated"));
+  assert.equal(
+    runAdvance(changeRoot, "--event", "design-generated", "--design-file", "DESIGN.md").status,
+    0,
+  );
+
+  const missing = runAdvance(changeRoot, "--event", "continue");
+  assert.notEqual(missing.status, 0);
+  assert.match(missing.stderr, /MOTION\.md/i);
+  assert.equal(
+    readJson(path.join(changeRoot, "design-synthesis.json")).stage,
+    "design-validation",
+  );
+
+  fs.writeFileSync(path.join(projectRoot, "MOTION.md"), validMotion());
+  const ready = runAdvance(changeRoot, "--event", "continue");
+  assert.equal(ready.status, 0, ready.stderr);
+  assert.equal(
+    readJson(path.join(changeRoot, "design-synthesis.json")).stage,
+    "implementation",
+  );
 });
 
 test("uses Wayfinder only when deterministic scope exceeds the budget", () => {

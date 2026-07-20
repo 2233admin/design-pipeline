@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require("node:fs");
+const crypto = require("node:crypto");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
@@ -8,18 +9,28 @@ const { spawnSync } = require("node:child_process");
 const repoRoot = path.resolve(__dirname, "..");
 const requiredFiles = [
   "README.md",
+  "CHANGELOG.md",
   "LICENSE",
   "DESIGN.md",
+  "MOTION.md",
   "skill/SKILL.md",
   "skill/scripts/check-deps.cjs",
   "skill/scripts/record-feedback.cjs",
   "skill/scripts/design-synthesis-core.cjs",
   "skill/scripts/check-design-foundation.cjs",
+  "skill/scripts/motion-foundation-core.cjs",
+  "skill/scripts/check-motion-foundation.cjs",
+  "skill/scripts/palette-foundation-core.cjs",
+  "skill/scripts/check-palette-foundation.cjs",
+  "skill/scripts/website-cloning-manifest-core.cjs",
+  "skill/scripts/website-clone-foundation-core.cjs",
+  "skill/scripts/check-website-clone-foundations.cjs",
   "skill/scripts/init-design-synthesis.cjs",
   "skill/scripts/advance-design-synthesis.cjs",
   "skill/scripts/audit-capabilities.cjs",
   "skill/scripts/prepare-publication.cjs",
   "skill/scripts/reconcile-publication.cjs",
+  "skill/scripts/evaluate-anti-slop.cjs",
   "skill/references/open-source-readiness.md",
   "skill/references/agent-interface.md",
   "skill/references/capability-routing.md",
@@ -33,6 +44,15 @@ const requiredFiles = [
   "skill/references/capability-audit.schema.json",
   "skill/references/publication-request.schema.json",
   "skill/references/publication-receipt.schema.json",
+  "skill/references/anti-slop-review.md",
+  "skill/references/anti-slop-rubric.json",
+  "skill/references/anti-slop-rubric.schema.json",
+  "skill/references/anti-slop-evidence.schema.json",
+  "skill/references/anti-slop-review.schema.json",
+  "skill/references/palette-evidence.schema.json",
+  "skill/references/motion-foundation.md",
+  "skill/references/motion-foundation.schema.json",
+  "skill/references/motion-primitives.json",
   "skill/references/motion-spec.md",
   "skill/references/qa-checklist.md",
   "skill/references/website-cloning.md",
@@ -83,6 +103,7 @@ const referenceSources = [
   "skill/references/qa-checklist.md",
   "skill/references/self-check.md",
   "skill/references/upstream-capability-sync.md",
+  "skill/references/anti-slop-review.md",
   "skill/references/website-cloning.md",
   "README.md",
   "CONTRIBUTING.md",
@@ -166,11 +187,61 @@ if (foundation.status !== 0) {
   }
 }
 
+const motionFoundation = spawnSync(
+  process.execPath,
+  [
+    path.join(repoRoot, "skill/scripts/check-motion-foundation.cjs"),
+    "--project-root",
+    repoRoot,
+    "--json",
+  ],
+  { cwd: repoRoot, encoding: "utf8" },
+);
+
+if (motionFoundation.status !== 0) {
+  console.log("FAIL project MOTION.md foundation check");
+  process.stdout.write(motionFoundation.stdout || "");
+  process.stderr.write(motionFoundation.stderr || "");
+  failed = true;
+} else {
+  try {
+    const parsed = JSON.parse(motionFoundation.stdout);
+    console.log(`OK project MOTION.md foundation status=${parsed.status}`);
+    const requiredModelFields = [
+      "schema",
+      "name",
+      "posture",
+      "primitiveRegistry",
+      "principles",
+      "primitives",
+      "proceduralMotion",
+      "runtimePolicy",
+      "reducedMotion",
+      "sourceDecisions",
+    ];
+    const modelReady =
+      parsed.status === "ready" &&
+      parsed.foundation?.schema === "design-pipeline.motion-foundation.v0.1" &&
+      requiredModelFields.every((field) => Object.hasOwn(parsed.foundation, field));
+    console.log(`${modelReady ? "OK" : "FAIL"} project MOTION.md normalized model`);
+    if (!modelReady) failed = true;
+  } catch (err) {
+    console.log("FAIL project MOTION.md foundation JSON parse");
+    process.stdout.write(motionFoundation.stdout || "");
+    failed = true;
+  }
+}
+
 // Packaging must work for GitHub Releases.
-const pack = spawnSync(process.execPath, [path.join(repoRoot, "scripts/package.cjs")], {
+const packageEnv = {
+  ...process.env,
+  PACKAGE_VERSION: process.env.PACKAGE_VERSION || "0.0.0-qa",
+};
+const packageScript = path.join(repoRoot, "scripts/package.cjs");
+const pack = spawnSync(process.execPath, [packageScript], {
   cwd: repoRoot,
   encoding: "utf8",
-  env: { ...process.env, PACKAGE_VERSION: process.env.PACKAGE_VERSION || "0.0.0-qa" },
+  env: packageEnv,
 });
 process.stdout.write(pack.stdout || "");
 process.stderr.write(pack.stderr || "");
@@ -179,8 +250,67 @@ if (pack.status !== 0) {
   failed = true;
 } else {
   const tgz = path.join(repoRoot, "dist", "design-pipeline-skill.tgz");
-  console.log(`${fs.existsSync(tgz) ? "OK" : "FAIL"} dist/design-pipeline-skill.tgz`);
-  if (!fs.existsSync(tgz)) failed = true;
+  const zip = path.join(repoRoot, "dist", "design-pipeline-skill.zip");
+  const archivePaths = [tgz, zip];
+  const archivesPresent = archivePaths.every((archivePath) => {
+    const present = fs.existsSync(archivePath);
+    console.log(
+      `${present ? "OK" : "FAIL"} ${path.relative(repoRoot, archivePath)}`,
+    );
+    return present;
+  });
+  if (!archivesPresent) {
+    failed = true;
+  } else {
+    const archiveHashes = new Map(
+      archivePaths.map((archivePath) => [
+        archivePath,
+        crypto.createHash("sha256").update(fs.readFileSync(archivePath)).digest("hex"),
+      ]),
+    );
+    const repeatPack = spawnSync(process.execPath, [packageScript], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      env: packageEnv,
+    });
+    if (repeatPack.status !== 0) {
+      process.stdout.write(repeatPack.stdout || "");
+      process.stderr.write(repeatPack.stderr || "");
+      console.log("FAIL package.cjs reproducibility rerun");
+      failed = true;
+    } else {
+      const reproducible = archivePaths.every(
+        (archivePath) =>
+          archiveHashes.get(archivePath) ===
+          crypto.createHash("sha256").update(fs.readFileSync(archivePath)).digest("hex"),
+      );
+      console.log(`${reproducible ? "OK" : "FAIL"} reproducible package archives`);
+      if (!reproducible) failed = true;
+
+      const invalidEpochPack = spawnSync(process.execPath, [packageScript], {
+        cwd: repoRoot,
+        encoding: "utf8",
+        env: { ...packageEnv, SOURCE_DATE_EPOCH: "invalid" },
+      });
+      const rejectsInvalidEpoch =
+        invalidEpochPack.status !== 0 &&
+        (invalidEpochPack.stderr || "").includes("SOURCE_DATE_EPOCH");
+      console.log(
+        `${rejectsInvalidEpoch ? "OK" : "FAIL"} package rejects invalid SOURCE_DATE_EPOCH`,
+      );
+      if (!rejectsInvalidEpoch) failed = true;
+
+      const preservesArchives = archivePaths.every(
+        (archivePath) =>
+          archiveHashes.get(archivePath) ===
+          crypto.createHash("sha256").update(fs.readFileSync(archivePath)).digest("hex"),
+      );
+      console.log(
+        `${preservesArchives ? "OK" : "FAIL"} package failure preserves existing archives`,
+      );
+      if (!preservesArchives) failed = true;
+    }
+  }
 }
 
 // Source URL sanity for Emil pack
@@ -277,6 +407,10 @@ for (const [file, schemaId] of [
   ["capability-audit.schema.json", "design-pipeline.capability-audit.v1"],
   ["publication-request.schema.json", "design-pipeline.publication-request.v1"],
   ["publication-receipt.schema.json", "design-pipeline.publication-receipt.v1"],
+  ["anti-slop-rubric.schema.json", "design-pipeline.anti-slop-rubric.v1"],
+  ["anti-slop-evidence.schema.json", "design-pipeline.anti-slop-evidence.v1"],
+  ["anti-slop-review.schema.json", "design-pipeline.anti-slop-review.v1"],
+  ["palette-evidence.schema.json", "design-pipeline.palette-evidence.v1"],
 ]) {
   try {
     const schema = JSON.parse(
@@ -291,6 +425,24 @@ for (const [file, schemaId] of [
     console.log(`FAIL ${file}: ${error.message}`);
     failed = true;
   }
+}
+
+try {
+  const motionSchema = JSON.parse(
+    fs.readFileSync(
+      path.join(repoRoot, "skill/references/motion-foundation.schema.json"),
+      "utf8",
+    ),
+  );
+  const ok =
+    motionSchema.$schema === "https://json-schema.org/draft/2020-12/schema" &&
+    motionSchema.properties?.schema?.const ===
+      "design-pipeline.motion-foundation.v0.1";
+  console.log(`${ok ? "OK" : "FAIL"} motion-foundation.schema.json`);
+  if (!ok) failed = true;
+} catch (error) {
+  console.log(`FAIL motion-foundation.schema.json: ${error.message}`);
+  failed = true;
 }
 
 try {
@@ -318,6 +470,9 @@ const tests = spawnSync(
     "tests/design-synthesis.test.cjs",
     "tests/capability-audit.test.cjs",
     "tests/publication-bridge.test.cjs",
+    "tests/anti-slop-review.test.cjs",
+    "tests/palette-foundation.test.cjs",
+    "tests/motion-foundation.test.cjs",
   ],
   {
     cwd: repoRoot,

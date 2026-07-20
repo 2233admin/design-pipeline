@@ -9,6 +9,12 @@ const test = require("node:test");
 const repoRoot = path.resolve(__dirname, "..");
 const initializer = path.join(repoRoot, "skill", "scripts", "init-website-clone.cjs");
 const evaluator = path.join(repoRoot, "skill", "scripts", "evaluate-website-clone.cjs");
+const foundationChecker = path.join(
+  repoRoot,
+  "skill",
+  "scripts",
+  "check-website-clone-foundations.cjs",
+);
 const createdProjects = new Set();
 
 function makeTempRoot() {
@@ -20,6 +26,8 @@ function makeTempRoot() {
 function makeProject() {
   const projectRoot = makeTempRoot();
   fs.mkdirSync(path.join(projectRoot, "openspec", "changes"), { recursive: true });
+  fs.copyFileSync(path.join(repoRoot, "DESIGN.md"), path.join(projectRoot, "DESIGN.md"));
+  fs.copyFileSync(path.join(repoRoot, "MOTION.md"), path.join(projectRoot, "MOTION.md"));
   return projectRoot;
 }
 
@@ -116,6 +124,7 @@ test("initializes a resumable website-cloning change from one URL", () => {
     "handoff.md",
     "targets/example-com/research/behaviors.md",
     "targets/example-com/research/page-topology.md",
+    "targets/example-com/research/palette-evidence.json",
     "targets/example-com/research/design-tokens.md",
     "targets/example-com/research/component-inventory.md",
     "targets/example-com/assets/manifest.json",
@@ -247,6 +256,15 @@ test("rejects a damaged manifest instead of treating it as resumable", () => {
     },
     (manifest) => {
       delete manifest.ports;
+    },
+    (manifest) => {
+      manifest.unsupported = true;
+    },
+    (manifest) => {
+      manifest.status = "done";
+    },
+    (manifest) => {
+      manifest.ports.browser.lastProbe = { ok: true };
     },
   ];
 
@@ -489,7 +507,105 @@ test("keeps target ids unique when a generated suffix matches a natural id", () 
   assert.equal(new Set(targets.map((target) => target.id)).size, targets.length);
 });
 
-function markPortsReady(manifest) {
+function writeReadyPalette(changeRoot, target) {
+  const researchRoot = path.join(changeRoot, "targets", target.id, "research");
+  const evidenceRoot = path.join(researchRoot, "evidence");
+  fs.mkdirSync(evidenceRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(evidenceRoot, "dom-colors.json"),
+    `${JSON.stringify({ source: "computed-style", colors: ["#FFFFFF", "#191919"] })}\n`,
+  );
+  fs.writeFileSync(path.join(evidenceRoot, "hero.png"), "test-raster-evidence\n");
+  fs.writeFileSync(
+    path.join(researchRoot, "palette-evidence.json"),
+    `${JSON.stringify(
+      {
+        schema: "design-pipeline.palette-evidence.v1",
+        targetId: target.id,
+        sourceUrl: target.url,
+        status: "ready",
+        capturedAt: "2026-07-20T00:00:00.000Z",
+        sources: {
+          domComputed: {
+            status: "ready",
+            evidencePaths: ["evidence/dom-colors.json"],
+            colors: [
+              { hex: "#FFFFFF", role: "canvas", region: "page-shell" },
+              { hex: "#191919", role: "primary-text", region: "title" },
+            ],
+          },
+          rasterMedia: {
+            status: "ready",
+            evidencePaths: ["evidence/hero.png"],
+            regions: ["hero"],
+            colors: [
+              { hex: "#C8D8F0", role: "media-cool", region: "hero-background" },
+              { hex: "#7DE4D2", role: "media-mint", region: "hero-accent" },
+            ],
+          },
+        },
+        semanticRoles: [
+          { role: "canvas", sourceColor: "#FFFFFF", targetToken: "--surface-canvas" },
+          { role: "primary-text", sourceColor: "#191919", targetToken: "--text-primary" },
+          { role: "media-cool", sourceColor: "#C8D8F0", targetToken: "--media-cool" },
+          { role: "media-mint", sourceColor: "#7DE4D2", targetToken: "--media-mint" },
+        ],
+        relationships: {
+          coverage: [
+            { role: "canvas", min: 0.4, max: 0.7 },
+            { role: "media-cool", min: 0.15, max: 0.45 },
+          ],
+          luminanceHierarchy: ["canvas > media-cool", "primary-text < canvas"],
+          saturationPosture: "Neutral field with localized saturated accents.",
+          temperaturePosture: "Cool media accents on a neutral field.",
+        },
+        targetProjectTokens: [
+          { token: "--surface-canvas", value: "#FFFFFF", sourceRole: "canvas" },
+          { token: "--text-primary", value: "#191919", sourceRole: "primary-text" },
+          { token: "--media-cool", value: "#C8D8F0", sourceRole: "media-cool" },
+          { token: "--media-mint", value: "#7DE4D2", sourceRole: "media-mint" },
+        ],
+        notes: [],
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  fs.writeFileSync(
+    path.join(researchRoot, "design-tokens.md"),
+    `# Design Tokens: ${target.id}
+
+## Palette Evidence
+
+Ready.
+
+## Semantic Roles
+
+Canvas, primary text, and two media roles.
+
+## Palette Relationships
+
+Neutral field with localized cool media.
+
+## Target-Project Token Mapping
+
+- \`--surface-canvas: #FFFFFF\`
+- \`--text-primary: #191919\`
+- \`--media-cool: #C8D8F0\`
+- \`--media-mint: #7DE4D2\`
+`,
+  );
+}
+
+function checkFoundations(changeRoot) {
+  return spawnSync(
+    process.execPath,
+    [foundationChecker, "--change-root", changeRoot, "--json"],
+    { encoding: "utf8" },
+  );
+}
+
+function markPortsReady(manifest, changeRoot) {
   for (const port of Object.values(manifest.ports)) {
     port.status = "ready";
     port.adapter = "test-adapter";
@@ -500,7 +616,94 @@ function markPortsReady(manifest) {
       message: "ready",
     };
   }
+  for (const target of manifest.targets) writeReadyPalette(changeRoot, target);
 }
+
+test("website-clone preflight requires valid DESIGN, MOTION, and palette foundations", () => {
+  const projectRoot = makeProject();
+  assert.equal(
+    run(projectRoot, "--change-id", "foundation-gate", "--url", "https://example.com").status,
+    0,
+  );
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "foundation-gate");
+  const manifest = readJson(path.join(changeRoot, "website-cloning.json"));
+  for (const target of manifest.targets) writeReadyPalette(changeRoot, target);
+
+  const ready = checkFoundations(changeRoot);
+  assert.equal(ready.status, 0, ready.stderr || ready.stdout);
+  assert.equal(JSON.parse(ready.stdout).status, "ready");
+
+  fs.rmSync(path.join(projectRoot, "DESIGN.md"));
+  const missingDesign = checkFoundations(changeRoot);
+  assert.equal(missingDesign.status, 2, missingDesign.stderr || missingDesign.stdout);
+  assert.match(JSON.parse(missingDesign.stdout).blockers.join("\n"), /DESIGN\.md is missing/);
+
+  fs.copyFileSync(path.join(repoRoot, "DESIGN.md"), path.join(projectRoot, "DESIGN.md"));
+  fs.rmSync(path.join(projectRoot, "MOTION.md"));
+  const missingMotion = checkFoundations(changeRoot);
+  assert.equal(missingMotion.status, 2, missingMotion.stderr || missingMotion.stdout);
+  assert.match(JSON.parse(missingMotion.stdout).blockers.join("\n"), /MOTION\.md/);
+});
+
+test("evaluator rejects schema-invalid manifests before changing lifecycle state", () => {
+  const corruptions = [
+    (manifest) => {
+      manifest.ports.browser.lastProbe = { ok: true };
+    },
+    (manifest) => {
+      manifest.unsupported = true;
+    },
+    (manifest) => {
+      manifest.status = "done";
+    },
+  ];
+
+  for (const [index, corrupt] of corruptions.entries()) {
+    const projectRoot = makeProject();
+    const changeId = `invalid-evaluator-${index}`;
+    assert.equal(
+      run(projectRoot, "--change-id", changeId, "--url", "https://example.com").status,
+      0,
+    );
+    const changeRoot = path.join(projectRoot, "openspec", "changes", changeId);
+    const manifestPath = path.join(changeRoot, "website-cloning.json");
+    const manifest = readJson(manifestPath);
+    corrupt(manifest);
+    const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
+    fs.writeFileSync(manifestPath, serialized);
+
+    const result = evaluate(changeRoot);
+    assert.equal(result.status, 1, result.stderr || result.stdout);
+    assert.match(result.stderr, /website-cloning manifest/i);
+    assert.equal(fs.readFileSync(manifestPath, "utf8"), serialized);
+  }
+});
+
+test("evaluator blocks completion when the project motion foundation disappears", () => {
+  const projectRoot = makeProject();
+  assert.equal(
+    run(projectRoot, "--change-id", "missing-motion", "--url", "https://example.com").status,
+    0,
+  );
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "missing-motion");
+  const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const manifest = readJson(manifestPath);
+  markPortsReady(manifest, changeRoot);
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  fs.rmSync(path.join(projectRoot, "MOTION.md"));
+  const evidencePath = path.join(changeRoot, "verification-input.json");
+  fs.writeFileSync(
+    evidencePath,
+    `${JSON.stringify(passingEvidence("example-com"), null, 2)}\n`,
+  );
+
+  const result = evaluate(changeRoot, evidencePath);
+  assert.equal(result.status, 2, result.stderr || result.stdout);
+  assert.match(
+    readJson(manifestPath).verification.reasons.join("\n"),
+    /MOTION\.md/,
+  );
+});
 
 function passingEvidence(targetId, overrides = {}) {
   return {
@@ -557,7 +760,7 @@ test("marks an exact run complete only when ports and evidence pass", () => {
   const changeRoot = path.join(projectRoot, "openspec", "changes", "passing-run");
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const manifest = readJson(manifestPath);
-  markPortsReady(manifest);
+  markPortsReady(manifest, changeRoot);
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   const statePath = path.join(changeRoot, "state.json");
   const initialState = readJson(statePath);
@@ -582,6 +785,15 @@ test("marks an exact run complete only when ports and evidence pass", () => {
   assert.equal(state.qa.websiteCloning.verdict, "complete");
   assert.ok(state.nextActions.includes("keep-this-action"));
 
+  evaluated.status = "in-progress";
+  evaluated.targets[0].status = "in-progress";
+  evaluated.targets[0].phase = "visual-and-interaction-qa";
+  evaluated.verification = {
+    status: "not-run",
+    evaluatedAt: null,
+    reportPath: null,
+    reasons: [],
+  };
   evaluated.ports.browser.status = "unresolved";
   fs.writeFileSync(manifestPath, `${JSON.stringify(evaluated, null, 2)}\n`);
   const reevaluated = evaluate(changeRoot, evidencePath);
@@ -613,7 +825,7 @@ test("marks a measurable exact mismatch as fidelity-limited", () => {
   const changeRoot = path.join(projectRoot, "openspec", "changes", "limited-run");
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const manifest = readJson(manifestPath);
-  markPortsReady(manifest);
+  markPortsReady(manifest, changeRoot);
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   const evidencePath = path.join(changeRoot, "verification-input.json");
   fs.writeFileSync(
@@ -656,7 +868,7 @@ test("adaptive mode can pass without exact-only pixel and layout capabilities", 
   const changeRoot = path.join(projectRoot, "openspec", "changes", "adaptive-run");
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const manifest = readJson(manifestPath);
-  markPortsReady(manifest);
+  markPortsReady(manifest, changeRoot);
   assert.equal(manifest.fidelity.gates.maxPixelDifferenceRatio, null);
   assert.ok(!manifest.ports.evidence.requiredCapabilities.includes("pixel-diff"));
   assert.ok(!manifest.ports.evidence.requiredCapabilities.includes("layout-diff"));
@@ -692,7 +904,7 @@ test("requires an explicit, replayed mapping for every reference target", () => 
   const changeRoot = path.join(projectRoot, "openspec", "changes", "mapped-run");
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const manifest = readJson(manifestPath);
-  markPortsReady(manifest);
+  markPortsReady(manifest, changeRoot);
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   const evidence = passingEvidence("example-com");
   for (const viewport of evidence.targets[0].viewports) {
@@ -792,7 +1004,7 @@ test("rejects evidence outside the change and requires headless state", () => {
   const changeRoot = path.join(projectRoot, "openspec", "changes", "portable-run");
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const manifest = readJson(manifestPath);
-  markPortsReady(manifest);
+  markPortsReady(manifest, changeRoot);
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   const outsideEvidence = path.join(projectRoot, "outside-verification.json");
   fs.writeFileSync(
@@ -840,7 +1052,7 @@ test("commits the manifest only after lifecycle artifacts persist", () => {
   const changeRoot = path.join(projectRoot, "openspec", "changes", "atomic-verdict");
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const manifest = readJson(manifestPath);
-  markPortsReady(manifest);
+  markPortsReady(manifest, changeRoot);
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   const before = fs.readFileSync(manifestPath, "utf8");
   const evidencePath = path.join(changeRoot, "verification-input.json");
@@ -867,7 +1079,7 @@ test("keeps JSONL valid and replaces the current handoff evaluation", () => {
   const changeRoot = path.join(projectRoot, "openspec", "changes", "repeat-gate");
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const manifest = readJson(manifestPath);
-  markPortsReady(manifest);
+  markPortsReady(manifest, changeRoot);
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   const evidencePath = path.join(changeRoot, "verification-input.json");
   fs.writeFileSync(

@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openai.local/design-pipeline/palette-evidence.schema.json",
+  "title": "Design Pipeline Palette Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "targetId",
+    "sourceUrl",
+    "status",
+    "capturedAt",
+    "sources",
+    "semanticRoles",
+    "relationships",
+    "targetProjectTokens",
+    "notes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "design-pipeline.palette-evidence.v1"
+    },
+    "targetId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "sourceUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://"
+    },
+    "status": {
+      "enum": ["pending", "ready"]
+    },
+    "capturedAt": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domComputed", "rasterMedia"],
+      "properties": {
+        "domComputed": {
+          "$ref": "#/$defs/source"
+        },
+        "rasterMedia": {
+          "$ref": "#/$defs/rasterSource"
+        }
+      }
+    },
+    "semanticRoles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "sourceColor", "targetToken"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceColor": {
+            "$ref": "#/$defs/hex"
+          },
+          "targetToken": {
+            "type": "string",
+            "pattern": "^--[A-Za-z0-9-]+$"
+          }
+        }
+      }
+    },
+    "relationships": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coverage",
+        "luminanceHierarchy",
+        "saturationPosture",
+        "temperaturePosture"
+      ],
+      "properties": {
+        "coverage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "min", "max"],
+            "properties": {
+              "role": {
+                "type": "string",
+                "minLength": 1
+              },
+              "min": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "max": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        },
+        "luminanceHierarchy": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "saturationPosture": {
+          "type": ["string", "null"]
+        },
+        "temperaturePosture": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "targetProjectTokens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["token", "value", "sourceRole"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "pattern": "^--[A-Za-z0-9-]+$"
+          },
+          "value": {
+            "$ref": "#/$defs/hex"
+          },
+          "sourceRole": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "hex": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$"
+    },
+    "color": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hex", "role", "region"],
+      "properties": {
+        "hex": {
+          "$ref": "#/$defs/hex"
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "region": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidencePaths", "colors"],
+      "properties": {
+        "status": {
+          "enum": ["pending", "ready"]
+        },
+        "evidencePaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "colors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/color"
+          }
+        }
+      }
+    },
+    "rasterSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidencePaths", "regions", "colors"],
+      "properties": {
+        "status": {
+          "enum": ["pending", "ready"]
+        },
+        "evidencePaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "colors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/color"
+          }
+        }
+      }
+    }
+  }
+}

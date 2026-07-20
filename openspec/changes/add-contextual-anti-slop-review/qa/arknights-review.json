@@ -1,0 +1,95 @@
+{
+  "schema": "design-pipeline.anti-slop-review.v1",
+  "generatedAt": "2026-07-19T11:07:41.619Z",
+  "status": "blocked",
+  "target": {
+    "id": "ak-hypergryph-com",
+    "surface": "website-reference",
+    "url": "https://ak.hypergryph.com/#index"
+  },
+  "rubric": {
+    "version": "1.0.0",
+    "path": "skill/references/anti-slop-rubric.json",
+    "sources": [
+      {
+        "id": "pols-anti-slop-law",
+        "url": "https://pols.dev/slop.md",
+        "contentHash": "11fc1f770260572a0a87c7171d2e2b0c7dcc5ce660ee7d888e125ef7be5a142d",
+        "intakeState": "watchlist"
+      }
+    ]
+  },
+  "summary": {
+    "applicableRules": 13,
+    "reviewedRules": 13,
+    "passed": 8,
+    "notApplicable": 0,
+    "acceptedContexts": 2,
+    "blockers": 3,
+    "warnings": 0,
+    "information": 0
+  },
+  "findings": [
+    {
+      "ruleId": "controls-are-real-and-operable",
+      "title": "Controls are real and operable",
+      "category": "interaction",
+      "severity": "hard",
+      "level": "blocker",
+      "outcome": "not-verified",
+      "message": "The required evidence was not verified.",
+      "evidence": [
+        "Controls were inventoried but live interaction replay was not completed."
+      ],
+      "rationale": null
+    },
+    {
+      "ruleId": "responsive-content-integrity",
+      "title": "Responsive layouts do not clip or collide",
+      "category": "responsive",
+      "severity": "hard",
+      "level": "blocker",
+      "outcome": "not-verified",
+      "message": "The required evidence was not verified.",
+      "evidence": [
+        "The responsive viewport capture was not reliable enough to verify mobile clipping or overlap."
+      ],
+      "rationale": null
+    },
+    {
+      "ruleId": "reduced-motion-path",
+      "title": "Non-trivial motion has a reduced-motion path",
+      "category": "motion",
+      "severity": "hard",
+      "level": "blocker",
+      "outcome": "not-verified",
+      "message": "The required evidence was not verified.",
+      "evidence": [
+        "Motion durations were observed, but reduced-motion behavior was not replayed."
+      ],
+      "rationale": null
+    }
+  ],
+  "acceptedContexts": [
+    {
+      "ruleId": "decorative-effects-serve-purpose",
+      "title": "Decorative effects have a product or interaction purpose",
+      "category": "visual-effects",
+      "severity": "contextual",
+      "evidence": [
+        "Long ambient media motion supports the cinematic landing experience and remains visually subordinate to navigation."
+      ],
+      "rationale": "Retain the ambient motion language, subject to reduced-motion verification."
+    },
+    {
+      "ruleId": "fashion-tell-advisory",
+      "title": "Fashion-pattern signals remain advisory",
+      "category": "taste",
+      "severity": "preference",
+      "evidence": [
+        "The design intentionally uses near-black surfaces and a saturated cyan signal color."
+      ],
+      "rationale": "These choices form a coherent franchise-specific signal system and are not generic defaults."
+    }
+  ]
+}

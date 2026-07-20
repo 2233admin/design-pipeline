@@ -59,10 +59,66 @@ Complete this section when live primary/reference targets are involved.
 
 Never mark this gate exact when a required port is unresolved, comparison evidence is missing, or a builder guessed absent measurements.
 
-## Motion Checks
+## Contextual Anti-Slop Review
+
+Complete this section when anti-template review is active.
+
+- Evidence file:
+- Command:
+- Report:
+- Status: pass / needs-review / blocked
+- Hard blockers:
+- Contextual warnings:
+- Accepted contextual decisions:
+- Preference information reviewed:
+- `Anti-template Decisions` recorded in `design.md` or project `DESIGN.md`:
+- Upstream rubric source/hash reviewed:
+
+Hard rules cover content visibility, operable controls, legibility, responsive integrity,
+reduced-motion behavior, and reference provenance. Named colors, fonts, punctuation, shapes,
+effects, and common layout families are not hard failures.
+
+## Motion Foundation Checks
+
+- Project `MOTION.md` exists:
+- `check-motion-foundation.cjs` status:
+- Normalized foundation model matches `motion-foundation.schema.json`:
+- Foundation schema:
+- Foundation SHA-256:
+- Foundation posture:
+- Required headings use one language consistently:
+- Primitive registry schema:
+- Selected primitive IDs resolve:
+- Missing or orphan primitive IDs:
+- Change `motion.md` foundation hash matches:
+- Runtime capability is supported / degraded / unsupported:
+- Degradation is documented:
+- Procedural equations are declarative:
+- Procedural seeds and sampling are deterministic:
+- Source provenance is measured / instrumented / inferred / authored:
+- External adopted and rejected properties recorded:
+
+## Website Clone Foundation Checks
+
+- `check-website-clone-foundations.cjs` status:
+- Project `DESIGN.md` ready:
+- Project `MOTION.md` ready:
+- All target palette foundations ready:
+- `website-cloning.json` passed strict runtime contract validation:
+- External code copied? expected `no`:
+- Hypergryph or other benchmark treated as evidence only:
+
+## Change Motion Checks
 
 - `motion.md` required? yes/no:
 - `motion.md` created? yes/no:
+- Foundation link and hash recorded:
+- Selected primitive IDs recorded:
+- Scene, stage, camera, and layer ownership:
+- Track and timeline IDs:
+- State machine and interruption behavior:
+- Procedural generators and parameter bounds:
+- Runtime adapter bindings:
 - Implementation matches `motion.md`:
 - Library choice matches `motion.md`:
 - `prefers-reduced-motion`:

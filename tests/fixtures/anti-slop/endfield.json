@@ -1,0 +1,103 @@
+{
+  "schema": "design-pipeline.anti-slop-evidence.v1",
+  "target": {
+    "id": "endfield-hypergryph-com",
+    "surface": "website-reference",
+    "url": "https://endfield.hypergryph.com/"
+  },
+  "observations": [
+    {
+      "ruleId": "content-available-without-motion",
+      "outcome": "pass",
+      "evidence": [
+        "Desktop capture showed the headline, vertical tool rail, collage, and campaign content in the settled first viewport."
+      ]
+    },
+    {
+      "ruleId": "controls-are-real-and-operable",
+      "outcome": "not-verified",
+      "evidence": [
+        "Controls were inventoried but live interaction replay was not completed."
+      ]
+    },
+    {
+      "ruleId": "contrast-and-legibility",
+      "outcome": "pass",
+      "evidence": [
+        "Black and dark-red display text remained legible against the white editorial field in desktop evidence."
+      ]
+    },
+    {
+      "ruleId": "responsive-content-integrity",
+      "outcome": "not-verified",
+      "evidence": [
+        "The responsive viewport capture was not reliable enough to verify mobile clipping or overlap."
+      ]
+    },
+    {
+      "ruleId": "reduced-motion-path",
+      "outcome": "not-verified",
+      "evidence": [
+        "Navigation transitions were measured, but reduced-motion behavior was not replayed."
+      ]
+    },
+    {
+      "ruleId": "reference-language-not-content",
+      "outcome": "pass",
+      "evidence": [
+        "The extracted system excludes logos, characters, QR codes, proprietary fonts, copy, and protected media."
+      ]
+    },
+    {
+      "ruleId": "cohesive-design-world",
+      "outcome": "pass",
+      "evidence": [
+        "White field, near-black type, restrained red emphasis, vertical navigation, and collage composition form one ink-light profile."
+      ]
+    },
+    {
+      "ruleId": "product-grounded-signature",
+      "outcome": "accepted-context",
+      "evidence": [
+        "The giant Chinese display hierarchy and layered character collage intentionally dominate the first viewport."
+      ],
+      "rationale": "The composition is grounded in the campaign's editorial world and should not be flattened into a conventional hero."
+    },
+    {
+      "ruleId": "template-pattern-density",
+      "outcome": "pass",
+      "evidence": [
+        "The vertical rail and asymmetric editorial collage avoid the default SaaS product-page skeleton."
+      ]
+    },
+    {
+      "ruleId": "decorative-effects-serve-purpose",
+      "outcome": "pass",
+      "evidence": [
+        "The collage establishes narrative hierarchy without relying on generic glow, card lift, or floating-tag decoration."
+      ]
+    },
+    {
+      "ruleId": "content-specificity",
+      "outcome": "pass",
+      "evidence": [
+        "The headline, character treatment, and campaign tools are specific to the game's launch presentation."
+      ]
+    },
+    {
+      "ruleId": "component-defaults-are-art-directed",
+      "outcome": "pass",
+      "evidence": [
+        "The vertical tool rail, hard-edged controls, and display composition are visibly art-directed."
+      ]
+    },
+    {
+      "ruleId": "fashion-tell-advisory",
+      "outcome": "accepted-context",
+      "evidence": [
+        "The design intentionally uses a pale editorial field, oversized display type, and restrained red accent."
+      ],
+      "rationale": "These choices form a cohesive ink-light profile rather than a generic luxury template."
+    }
+  ]
+}

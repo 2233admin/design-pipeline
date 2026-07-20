@@ -2,6 +2,12 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const {
+  inspectWebsiteCloneFoundations,
+} = require("./website-clone-foundation-core.cjs");
+const {
+  validateWebsiteCloningManifest,
+} = require("./website-cloning-manifest-core.cjs");
 
 const VERIFICATION_SCHEMA = "design-pipeline.website-cloning.verification.v1";
 const MANIFEST_FILE = "website-cloning.json";
@@ -532,6 +538,7 @@ function loadChangeContext(options) {
   }
   const manifestPath = path.join(changeRoot, MANIFEST_FILE);
   const manifest = readJson(manifestPath, "website-cloning manifest");
+  validateWebsiteCloningManifest(manifest);
   Object.defineProperty(manifest, "__changeRoot", { value: changeRoot, enumerable: false });
   for (const required of ["state.json", "events.jsonl", "handoff.md"]) {
     if (!fs.existsSync(path.join(changeRoot, required))) fail(`${required} is required in the change root`);
@@ -570,8 +577,16 @@ function decideVerdict(blockers, mismatches) {
 
 function inspectClone(manifest, evidence) {
   const portBlockers = inspectPorts(manifest.ports, manifest.fidelity);
+  const foundationBlockers = inspectWebsiteCloneFoundations({
+    changeRoot: manifest.__changeRoot,
+    manifest,
+  }).blockers;
   const evidenceResult = inspectEvidence(manifest, evidence);
-  const blockers = unique([...portBlockers, ...evidenceResult.blockers]);
+  const blockers = unique([
+    ...portBlockers,
+    ...foundationBlockers,
+    ...evidenceResult.blockers,
+  ]);
   const mismatches = evidenceResult.mismatches;
   const verdict = decideVerdict(blockers, mismatches);
   const reasons = verdict === "blocked" ? blockers : mismatches;
@@ -618,6 +633,7 @@ function persistEvaluation(context, evaluation, reportPath) {
     nextActions: evaluationNextActions(verdict),
   });
   updateHandoff(changeRoot, verdict, reasons, now, reportPath || "not-provided");
+  validateWebsiteCloningManifest(manifest);
   writeJson(manifestPath, manifest);
 
   console.log(`Website-cloning verdict: ${verdict}`);

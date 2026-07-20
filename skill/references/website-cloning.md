@@ -85,6 +85,9 @@ The observation bundle must include:
 - full-page and section screenshots;
 - DOM or accessibility-tree structure for relevant regions;
 - exact computed styles with selector and state provenance;
+- a DOM/computed-style palette and a separately measured screenshot/raster-media palette;
+- palette roles, source regions, coverage ranges, luminance hierarchy, saturation posture, and
+  temperature posture;
 - real text, accessible names, links, and form labels;
 - font faces/weights, images, video, SVG, canvas, background images, and layered assets;
 - interaction traces with trigger, before/after state, timing, easing, and interruption behavior;
@@ -217,6 +220,10 @@ The evaluator writes the fidelity verdict to the manifest, state, event log, and
 
 `adaptive` means fidelity to an explicitly mixed contract. It permits named reference mappings or target-project adaptations and cannot be reported as global 1:1. Text, assets, interaction coverage, responsive states, and mapped replays still require evidence. Pixel/layout measurements may be omitted only while their gates are `null`; configure non-null thresholds when an adaptive run must prove unchanged regions outside approved mappings.
 
+Both fidelity modes require a ready palette foundation before implementation. Adaptive mode may
+adapt individual values, but it must preserve documented semantic roles and color relationships.
+It cannot replace a measured multi-color system with an unsupported one-accent summary.
+
 Default exact gates:
 
 - text coverage: `1.0`;
@@ -254,6 +261,7 @@ The active change is the only source of truth:
     research/
       behaviors.md
       page-topology.md
+      palette-evidence.json
       design-tokens.md
       component-inventory.md
       components/<component>.spec.md
@@ -281,6 +289,24 @@ Keep primary and reference evidence isolated. Store copied assets in the target 
 - Wait for fonts and the declared page-ready condition.
 - Record rendering environment and dynamic regions.
 - Inventory fonts, colors, spacing, radii, shadows, breakpoints, metadata, and all asset layers.
+- Extract DOM/computed-style colors and screenshot/raster-media colors as two separate sources.
+- Write `palette-evidence.json`, then map the measured roles and values into `design-tokens.md`.
+- Keep every evidence path relative to the target `research/` directory, backed by an existing
+  file, and contained there after symlinks or Windows directory junctions are resolved.
+- Record source regions, coverage ranges, luminance hierarchy, saturation posture, and temperature
+  posture. A list of hex values without those relationships is incomplete.
+
+Run the complete foundation gate before design synthesis or implementation:
+
+```bash
+node <design-pipeline>/scripts/check-website-clone-foundations.cjs \
+  --change-root <project>/openspec/changes/clone-example \
+  --json
+```
+
+Exit code `0` unlocks implementation. Exit code `2` means project `DESIGN.md`, project `MOTION.md`,
+or target palette evidence is incomplete and Stage D/E must not begin. The evaluator repeats the
+same gate before it can mark fidelity complete.
 
 ### Stage C: interaction and state discovery
 
@@ -293,6 +319,7 @@ Keep primary and reference evidence isolated. Store copied assets in the target 
 
 Before parallel slice work:
 
+- require the combined DESIGN/MOTION/palette foundation gate to report `ready`;
 - map tokens and fonts into the target project's existing system;
 - establish global layout, metadata, shared types, icons, and authorized assets;
 - record framework/library mapping decisions;
@@ -357,6 +384,8 @@ Report:
 - primary and reference targets;
 - components and component contracts created;
 - captured and reused assets with permission notes;
+- palette evidence status for every target, including DOM and raster-media sources;
+- semantic palette roles, coverage relationships, and target-project token mappings;
 - selected Browser/Builder/Evidence adapters;
 - target-project static/build results;
 - fidelity metrics for every viewport;

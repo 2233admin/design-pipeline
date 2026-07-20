@@ -1,162 +1,190 @@
-# Motion Spec
+# Change Motion Spec
 
-Create `motion.md` from this template when a change includes non-trivial animation or interaction motion.
+Create change-level `motion.md` when a change includes non-trivial animation or interaction motion.
+Read `references/motion-foundation.md` first.
 
-## Companion skills
+Project `MOTION.md` is the reusable language; change `motion.md` is an implementation plan and
+evidence record. Never use this file to replace or redefine the foundation.
 
-For design-engineering motion judgment and animation language, use the Emil skill set from [`emilkowalski/skills`](https://github.com/emilkowalski/skills):
+## Foundation Link
 
-- `emil-design-eng` — motion, easing, feedback, interaction polish
-- `animation-vocabulary` — precise timing, easing, and choreography language
-- `review-animations` — post-implementation animation quality review
-- `apple-design` — Apple HIG-inspired interface principles and fluid motion for web
+- Project foundation: `MOTION.md`
+- Foundation schema:
+- Foundation SHA-256:
+- Foundation posture:
+- Primitive registry: `design-pipeline.motion-primitives.v1`
+- Selected primitive IDs:
+- Any authored extension and why the registry is insufficient:
 
-Also see `references/companion-skills.md` (Motion / Animation Set).
-Use `references/capability-routing.md` before choosing CSS, Anime.js, GSAP, React View Transitions, or an existing runtime.
+Run `check-motion-foundation.cjs` before writing the rest. Every selected primitive must exist in
+`motion-primitives.json`, or be recorded as an authored extension with the same provenance,
+accessibility, runtime, and evidence fields.
 
 ## Summary
 
 - Change id:
 - Surfaces:
 - Motion owner:
-- Implementation target: CSS / GSAP / Anime.js / React View Transitions / existing project library
-- Motion risk: low / medium / high
+- Motion risk: low / medium / high:
+- Implementation target: CSS / WAAPI / Anime.js / GSAP / Canvas / SVG / WebGL / existing runtime:
 
 ## Motion Principles
-
-State the motion posture for this surface.
 
 - Purpose:
 - Product feeling:
 - What motion must never do:
 - Reduced-motion principle:
+- Maximum time before the user can interact:
 
-Examples:
+Motion confirms state, preserves orientation, and explains change. It must not block reading,
+navigation, repeated work, or input.
 
-- Operational tools: motion confirms state and preserves orientation; it must not delay repeated work.
-- Marketing/portfolio pages: motion can create reveal and rhythm; it must still keep content inspectable.
-- Data-heavy dashboards: motion should clarify changes; it must not obscure comparison.
+## Scene And Layer Model
+
+| Scene id | Stage / viewport | Camera | Layers | Entry | Exit | Interruption |
+| --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |
+
+For each layer record:
+
+- Layer id and semantic owner:
+- Render surface:
+- Coordinate space:
+- Mask or clipping relationship:
+- Z-order:
+- Content that must remain readable or operable:
 
 ## Interaction Inventory
 
-| Element / flow | Trigger | User intent | Motion response | Required? |
-| --- | --- | --- | --- | --- |
-|  | hover / focus / click / route / scroll / data update / load / error |  |  | yes/no |
-
-Include empty, loading, error, disabled, hover, focus, active, success, and interrupted states when relevant.
-
-## Timeline And Choreography
-
-| Sequence | Starts when | Elements | Order | Duration | Delay / stagger | Can interrupt? |
-| --- | --- | --- | --- | ---: | ---: | --- |
+| Trigger | Target | Primitive / effect | Purpose | Start state | End state | Repeat behavior |
+| --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |  |
+
+Include hover, focus, press, drag, scroll, route, loading, success, error, and data-update motion
+when applicable.
+
+## Tracks And Timeline
+
+| Track id | Scene / target | Channel | Start | Duration | Delay | Easing | Stagger | Driver |
+| --- | --- | --- | ---: | ---: | ---: | --- | ---: | --- |
+|  |  |  |  |  |  |  |  |  |
 
 Rules:
 
-- Specify duration in milliseconds.
-- Specify stagger separately from delay.
-- Describe what happens when the user repeats the action quickly.
-- Avoid chaining motion that blocks reading, navigation, or input.
+- Use milliseconds for time-driven motion.
+- Keep delay separate from stagger.
+- Identify the timeline owner.
+- Record dependency and overlap between tracks.
+- Describe replay, reverse, seek, cancel, and fast repeated input.
+- Scroll-driven tracks record range, scrub behavior, pinning, refresh, and reverse traversal.
 
-## Easing
+## Procedural Generators
 
-| Motion type | Easing | Why |
-| --- | --- | --- |
-| Small UI feedback |  |  |
-| Enter / reveal |  |  |
-| Exit / dismiss |  |  |
-| Route transition |  |  |
-| Scroll-linked motion |  |  |
+| Generator id | Primitive id | Parameters / units | Seed | Samples | Loop / phase | Surface |
+| --- | --- | --- | --- | ---: | --- | --- |
+|  |  |  |  |  |  |  |
 
-Use concrete easing names or cubic-bezier values when implementation needs them.
+Procedural definitions are declarative data. Do not embed arbitrary JavaScript or callbacks.
+Record bounded parameter ranges, deterministic seeds, sampling/path resolution, trail behavior,
+particle count, and mobile fallback.
 
-Recommended defaults from Emil design-engineering practice (adjust per product):
+## State Machine And Interruption
 
-- Enter / UI feedback: ease-out custom curves (fast start, soft settle), e.g. `cubic-bezier(0.23, 1, 0.32, 1)` or `cubic-bezier(0.16, 1, 0.3, 1)`.
-- Exit / dismiss: slightly snappier ease-in or ease-in-out so elements leave without lagging.
-- Prefer ease-out for user-initiated feedback; avoid linear for interactive UI motion.
+| State | Event | Guard | Next state | Running tracks cancelled / preserved | Focus behavior |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
 
-## Spatial Behavior
+Describe:
 
-- Origin:
-- Direction:
-- Distance:
-- Scale:
-- Opacity:
-- Blur/filter:
-- Transform-only where possible:
-- Layout-affecting animation allowed? yes/no, why:
+- repeated click/tap during entry;
+- route change during a running timeline;
+- scroll reversal;
+- viewport resize;
+- component unmount;
+- loading success or failure while motion is active;
+- cleanup of render loops, observers, contexts, filters, and listeners.
 
-## Accessibility
+## Easing And Spatial Behavior
 
-- `prefers-reduced-motion` behavior:
-- Keyboard focus behavior:
-- Screen reader impact:
-- Animation pause/stop/skip:
-- Touch target stability:
-- No motion-only meaning:
+| Motion type | Easing | Origin / direction | Distance / scale | Opacity / filter | Why |
+| --- | --- | --- | --- | --- | --- |
+| Small UI feedback |  |  |  |  |  |
+| Enter / reveal |  |  |  |  |  |
+| Exit / dismiss |  |  |  |  |  |
+| Route transition |  |  |  |  |  |
+| Scroll-linked motion |  |  |  |  |  |
+
+Prefer concrete cubic-bezier values or named spring parameters. Prefer `transform` and `opacity`;
+layout, blur, filters, masks, Canvas, or WebGL require an explicit performance reason.
+
+## Runtime Binding
+
+| Primitive / track | Adapter | Capability | Degradation | Cleanup owner |
+| --- | --- | --- | --- | --- |
+|  | CSS / WAAPI / Anime.js / GSAP / custom | supported / degraded / unsupported |  |  |
+
+Do not add multiple animation runtimes without distinct, non-overlapping ownership. If an adapter is
+degraded, document which semantic property changes and why the result remains acceptable.
+
+## Accessibility And Reduced Motion
+
+- `prefers-reduced-motion` substitution:
+- Keyboard focus during motion:
+- Screen-reader impact:
+- Pause / stop / skip:
+- Touch-target stability:
+- Non-motion equivalent for meaning:
+- Flash, parallax, vestibular, and continuous-loop risks:
+
+Reduced motion is a semantic substitute, not just `duration: 0`. Preserve state, order, focus, and
+feedback.
 
 ## Performance Budget
 
-- Max animation duration before user can interact:
 - Target frame rate:
+- Main-thread budget:
+- Particle / element ceiling:
 - Properties allowed:
 - Properties avoided:
-- ScrollTrigger / scroll observer refresh behavior:
-- Layout/text/draggable cleanup behavior:
-- Adapter or render-loop owner:
-- Deterministic stagger seed (when evidence depends on ordering):
+- Filter / Canvas / WebGL budget:
+- Scroll observer refresh:
 - Heavy asset strategy:
-- Mobile fallback:
+- Low-end mobile fallback:
+- Deterministic sampling seed:
 
-Default posture:
+## Evidence And Provenance
 
-- Prefer `transform` and `opacity`.
-- Avoid animating layout properties unless the reason is explicit.
-- Do not animate large blur/filter effects on low-end mobile without fallback.
+| Evidence id | Fact | Classification | Source | Confidence | Artifact |
+| --- | --- | --- | --- | ---: | --- |
+|  |  | measured / instrumented / inferred / authored |  |  |  |
 
-## Library Decision
+Never relabel an inference as measured. Benchmark pages are evidence inputs, not foundation
+authority. External showcase repositories must record adopted and rejected properties and whether
+code was copied.
 
-| Candidate | Use when | Rejected because |
-| --- | --- | --- |
-| CSS transitions/keyframes | Simple state changes |  |
-| Anime.js v4.5 | Modular timelines, layout/text/SVG, draggable, scroll, WAAPI, adapters/Three.js, deterministic stagger |  |
-| GSAP | Complex choreography, scroll, timelines, plugins, React integration |  |
-| React View Transitions | Route/navigation continuity |  |
-| Existing project library | Project already standardizes on it |  |
+Recommended artifacts:
 
-Selected:
+- `motion-observation.json`
+- temporal trace JSON
+- frame sequence or WebM
+- `motion-ir.json`
+- `motion-verification.json`
 
-- Library:
-- Reason:
-- Required companion skill:
-- Dependency already present? yes/no:
-- If new dependency, why CSS/existing library is insufficient:
-
-## Implementation Notes
-
-- Components/files:
-- Tokens/classes:
-- Hooks/utilities:
-- Cleanup/unmount behavior:
-- Anime.js scope/revert behavior:
-- Layout/text accessibility restoration:
-- Adapter registration and render-loop cleanup:
-- Server/client boundary:
-- Testing hooks:
+These artifacts are optional until the corresponding capture/compiler/evaluator tools exist, but
+their absence must be stated rather than replaced with guessed measurements.
 
 ## QA Scenarios
 
 | Scenario | Expected result | Evidence |
 | --- | --- | --- |
-| First load |  |  |
-| Fast repeated click |  |  |
+| Repeated rapid interaction |  |  |
 | Keyboard navigation |  |  |
 | Reduced motion |  |  |
 | Mobile viewport |  |  |
-| Slow device/network |  |  |
+| Slow device / network |  |  |
 | Route interruption |  |  |
 | Scroll up/down repeatedly |  |  |
+| Resize during motion |  |  |
 
 ## Final Motion Score
 
@@ -165,8 +193,12 @@ Use 0-5.
 | Dimension | Score | Notes |
 | --- | ---: | --- |
 | Purpose |  |  |
-| Clarity |  |  |
+| Timing |  |  |
+| Easing |  |  |
+| Choreography |  |  |
+| Interruption |  |  |
 | Responsiveness |  |  |
 | Accessibility |  |  |
 | Performance |  |  |
+| Foundation fit |  |  |
 | Implementation fit |  |  |

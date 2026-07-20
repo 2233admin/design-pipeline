@@ -43,6 +43,17 @@ Use one copy per independently verifiable component or section. Write `N/A` only
 
 For every relevant element/state, record selector or stable locator, evidence path, and measured values.
 
+## Palette Foundation
+
+- Palette evidence: `../palette-evidence.json`
+- DOM/computed-style roles used:
+- Screenshot/raster-media roles used:
+- Coverage relationships preserved:
+- Luminance, saturation, and temperature relationships preserved:
+- Target-project tokens:
+- Intentional color adaptations:
+- Rejected or missing palette evidence:
+
 ### <Element / State>
 
 - Geometry:
@@ -99,6 +110,7 @@ For every relevant element/state, record selector or stable locator, evidence pa
 ## Builder Contract
 
 - Inputs and evidence paths:
+- Palette gate command/result:
 - Allowed files:
 - Required checks:
 - `SPEC_INCOMPLETE` conditions:
@@ -108,6 +120,8 @@ For every relevant element/state, record selector or stable locator, evidence pa
 
 - Text coverage:
 - Asset coverage:
+- Palette foundation:
+- Palette roles and relationships preserved:
 - Interaction coverage:
 - Pixel-difference threshold/result:
 - Layout-delta threshold/result:

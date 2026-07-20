@@ -12,6 +12,9 @@ MUST:
 - The skill has valid frontmatter `name` and `description`.
 - All referenced files exist.
 - The website-cloning workflow, component contract, manifest schema, and initializer are bundled.
+- The contextual anti-slop rubric, evidence/report schemas, review guide, and evaluator are bundled.
+- The palette evidence schema, foundation checker, and website-cloning integration are bundled.
+- The motion foundation guide, schema, primitive registry, and checker are bundled.
 - Scripts use only standard runtime dependencies unless documented.
 - The skill can run from a default Codex skill root and from `CODEX_SKILLS_DIR`.
 
@@ -97,6 +100,12 @@ Pass:
 
 MUST:
 
+- Project root `MOTION.md` is a documented invariant, including `posture: static`.
+- `references/motion-foundation.md`, `motion-foundation.schema.json`, and
+  `motion-primitives.json` exist.
+- `scripts/check-motion-foundation.cjs` distinguishes missing, invalid, and ready foundations.
+- The primitive registry records clean-room provenance, reduced-motion substitutions, and runtime
+  capability status.
 - `motion.md` is required for non-trivial motion.
 - `references/motion-spec.md` exists.
 - Motion QA checks reduced motion, interruption, timing/easing, performance, and implementation library choice.
@@ -104,6 +113,10 @@ MUST:
 
 Pass:
 
+- `node --test tests/motion-foundation.test.cjs` passes.
+- Missing project `MOTION.md` exits with code 2 and `synthesis-required`.
+- Static and procedural foundations can both reach `ready`.
+- Executable procedural content is rejected.
 - `SKILL.md` references `motion.md` and `motion-spec.md`.
 - `qa-checklist.md` checks implementation against `motion.md`.
 - `check-deps.cjs` validates the full animation implementation group.
@@ -169,10 +182,12 @@ MUST:
 - Missing measurements produce blocked or fidelity-limited state, not guessed values.
 - Existing accessibility, motion, responsive, engineering, and headless gates remain mandatory.
 - Adapted upstream workflow retains its license notice.
+- External taste prompts are tracked as inert evidence; unlicensed source text is not vendored.
 
 Pass:
 
 - `node --test tests/website-cloning-init.test.cjs` passes.
+- `node --test tests/anti-slop-review.test.cjs` passes.
 - `website-cloning-manifest.schema.json` parses.
 - Repository QA resolves all module references.
 

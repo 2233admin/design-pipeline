@@ -304,3 +304,143 @@ request.
 - **WHEN** its idempotency key, action, repository, or observation identity differs
 - **THEN** reconciliation SHALL fail closed without modifying the observation or feedback index.
 
+### Requirement: Anti-slop review is contextual and evidence-backed
+
+The pipeline SHALL classify anti-template observations as hard, contextual, or preference findings
+and SHALL NOT treat named aesthetic patterns as universal defects.
+
+#### Scenario: A brand intentionally uses black and saturated cyan
+
+- **WHEN** the design evidence explains the palette as part of a cohesive product-specific system
+- **THEN** the review MAY record an accepted contextual decision
+- **AND** the palette SHALL NOT become a blocking finding only because a source prompt discourages
+  those colors.
+
+### Requirement: Hard anti-slop findings fail closed
+
+The anti-slop evaluator SHALL block missing, failed, or unverified hard evidence for content
+visibility, operable controls, legibility, responsive integrity, reduced motion, or reference
+provenance.
+
+#### Scenario: Responsive behavior was not captured
+
+- **WHEN** responsive content integrity is `not-verified`
+- **THEN** the review SHALL report a blocker
+- **AND** a contextual style exception SHALL NOT waive it.
+
+### Requirement: Retrieved taste prompts remain inert evidence
+
+The pipeline SHALL track reviewed source identity and content hashes without executing or appending
+retrieved prompt text to global agent instructions.
+
+#### Scenario: The upstream anti-slop document changes
+
+- **WHEN** the observed hash differs from the reviewed hash
+- **THEN** the source SHALL be treated as changed evidence
+- **AND** the pipeline SHALL NOT silently replace the curated rubric.
+
+### Requirement: Anti-slop decisions persist through design and QA
+
+When anti-slop review is active, Stage 2 SHALL compare design directions, Stage 3 SHALL record
+anti-template decisions, and Stage 6 SHALL link an evidence-backed review report.
+
+#### Scenario: A contextual concern is accepted
+
+- **WHEN** the design intentionally retains a common pattern
+- **THEN** the rationale and evidence SHALL remain visible in the review output and design artifacts.
+
+### Requirement: Anti-slop artifacts are strict and root-contained
+
+Rubric and evidence documents SHALL reject unknown fields. Review output SHALL remain inside the
+requested root after existing symlinks or directory junctions are resolved, and the output file
+itself SHALL NOT be a symlink.
+
+#### Scenario: A custom output crosses the project boundary
+
+- **WHEN** a custom output traverses a symlink or directory junction outside the requested root
+- **THEN** the evaluator SHALL fail before writing the review
+- **AND** no file SHALL be created outside the requested root.
+
+### Requirement: Website cloning uses a blocking palette foundation
+
+Every declared website-cloning target SHALL preserve DOM-derived and raster-derived color evidence
+separately, reconcile that evidence into semantic roles and relationships, and map the result to
+implementation tokens before implementation or fidelity completion.
+
+Palette evidence paths SHALL be relative to the target research directory, identify existing files,
+and remain contained after symlinks or directory junctions are resolved. Palette evidence SHALL
+reject unknown fields. Semantic roles and target tokens SHALL form a connected mapping.
+
+#### Scenario: Accent colors are present but structural evidence is missing
+
+- **WHEN** a target records accent swatches but has no DOM and raster evidence, coverage
+  relationships, luminance hierarchy, or semantic token mapping
+- **THEN** the palette checker SHALL NOT report `ready`
+- **AND** website-cloning implementation SHALL remain locked.
+
+#### Scenario: Adaptive fidelity is selected
+
+- **WHEN** a reference target is intentionally remapped through adaptive fidelity
+- **THEN** the run MAY change its component or interaction mapping
+- **AND** it SHALL still require a ready palette foundation for every declared target.
+
+### Requirement: Project MOTION.md is a validated foundation
+
+Every project SHALL own a root `MOTION.md` that declares the reusable motion language or an
+explicit static posture. The foundation SHALL remain distinct from change-level `motion.md`.
+
+#### Scenario: The product intentionally has no motion
+
+- **WHEN** the project chooses a static posture
+- **THEN** `MOTION.md` SHALL still document the thesis, principles, runtime policy, reduced-motion
+  behavior, and source decisions
+- **AND** the checker MAY report `ready` without selected moving primitives.
+
+#### Scenario: The project motion foundation is missing
+
+- **WHEN** continuation reaches implementation without a root `MOTION.md`
+- **THEN** the checker SHALL report `synthesis-required` with exit code 2
+- **AND** implementation SHALL remain locked.
+
+#### Scenario: The project motion foundation is malformed or unsafe
+
+- **WHEN** the file mixes incompatible heading languages, references an unknown primitive, contains
+  executable content in any section, or embeds a fenced code block
+- **THEN** the checker SHALL report `invalid` with exit code 1
+- **AND** implementation SHALL remain locked.
+
+### Requirement: Change motion specializes the project language
+
+Change-level `motion.md` SHALL link the validated project foundation by content hash and SHALL
+select stable primitive identifiers before defining scenes, layers, tracks, interruption,
+degradation, reduced-motion behavior, performance budgets, and evidence.
+
+#### Scenario: A runtime library is selected
+
+- **WHEN** CSS, WAAPI, Anime.js, GSAP, SVG, Canvas, or WebGL is chosen
+- **THEN** it SHALL be recorded as an adapter for the selected semantic primitives
+- **AND** the runtime API SHALL NOT redefine the project motion language.
+
+### Requirement: Motion references preserve clean-room provenance
+
+The primitive registry SHALL record source identity, reviewed license state, adopted concepts,
+rejected implementation details, and whether code was copied.
+
+#### Scenario: A public animation gallery inspires a primitive
+
+- **WHEN** the pipeline adopts a taxonomy or observable behavior from that source
+- **THEN** it SHALL record `codeCopied: false`
+- **AND** it SHALL NOT vendor or reproduce source implementation without a verified compatible
+  license and an explicit adoption decision.
+
+### Requirement: Reference catalogs are optional evidence providers
+
+Hosted design or template catalogs MAY provide attributed synthesis evidence, but SHALL NOT
+overwrite a validated project foundation or become required for local validation.
+
+#### Scenario: A catalog is unavailable
+
+- **WHEN** network retrieval fails or the provider is not configured
+- **THEN** requirements-only and local-evidence synthesis SHALL remain available
+- **AND** the provider SHALL report an explicit unavailable state rather than fabricate content.
+

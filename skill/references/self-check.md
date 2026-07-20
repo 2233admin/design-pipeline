@@ -11,7 +11,7 @@ node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
 On Windows Git Bash:
 
 ```bash
-node /c/Users/Administrator/.codex/skills/design-pipeline/scripts/check-deps.cjs
+node "$HOME/.codex/skills/design-pipeline/scripts/check-deps.cjs"
 ```
 
 For CI or machine-readable output:
@@ -25,10 +25,12 @@ run:
 
 ```bash
 node ~/.codex/skills/design-pipeline/scripts/check-design-foundation.cjs --project-root . --json
+node ~/.codex/skills/design-pipeline/scripts/check-motion-foundation.cjs --project-root . --json
 ```
 
-Only foundation status `ready` unlocks implementation. `synthesis-required` exits with code 2 so a
-host can route into requirements-driven synthesis without confusing it with an invalid file.
+Only `ready` from both foundation checks unlocks implementation. `synthesis-required` exits with
+code 2 so a host can route into requirements-driven design or motion synthesis without confusing a
+missing file with an invalid one.
 
 ## Environment
 
@@ -58,6 +60,8 @@ node "$HOME\.codex\skills\design-pipeline\scripts\check-deps.cjs" --json
 - `WARN`: an enhancement skill is missing, or an installed capability profile is stale. Continue with the documented fallback.
 - `INFO`: a repo surface such as OpenSpec or GBrain was not detected. Continue with `design/changes/<change-id>/`.
 - `synthesis-required`: project `DESIGN.md` is missing; run design synthesis before implementation.
+- `synthesis-required`: project `MOTION.md` is missing; synthesize the reusable motion language
+  from requirements and `references/motion-foundation.md`.
 - `OK`: installed or detected.
 
 ## Dependency Levels
@@ -66,6 +70,8 @@ Required:
 
 - `design-pipeline`
 - Website-cloning workflow, component contract, manifest schema, and initializer bundled with the skill
+- Palette evidence schema and foundation checker bundled with the skill
+- Motion foundation guide, schema, primitive registry, and checker bundled with the skill
 
 Enhancement:
 
@@ -126,7 +132,13 @@ Do not claim pixel-perfect or 1:1 fidelity when any required port remains unreso
 
 Missing animation companion skills does not remove the need for motion documentation.
 
-Create `motion.md` from `references/motion-spec.md` whenever the change includes:
+Every project has root `MOTION.md`, including projects with `posture: static`. Validate it with:
+
+```bash
+node ~/.codex/skills/design-pipeline/scripts/check-motion-foundation.cjs --project-root . --json
+```
+
+Create change-level `motion.md` from `references/motion-spec.md` whenever the change includes:
 
 - GSAP or Anime.js.
 - React view transitions.
@@ -135,7 +147,9 @@ Create `motion.md` from `references/motion-spec.md` whenever the change includes
 - Multi-step choreography.
 - Loading, success, error, hover, focus, or gesture motion that affects user understanding.
 
-If all animation skills are missing, still write `motion.md` and implement with CSS or the project's existing animation library.
+Change `motion.md` records the validated foundation hash and selected primitive IDs. If all
+animation skills are missing, still write it and implement with CSS or the project's existing
+animation library.
 
 ## Headless Agent Rule
 
