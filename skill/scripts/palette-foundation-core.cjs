@@ -19,6 +19,10 @@ function nonEmptyArray(value) {
   return Array.isArray(value) && value.length > 0;
 }
 
+function arrayItems(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function validHexColor(value) {
   return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
 }
@@ -93,7 +97,7 @@ function inspectPaletteSchemaShape(targetId, palette, blockers) {
         ? palette.sources?.domComputed
         : palette.sources?.rasterMedia;
     inspectObjectShape(targetId, name, source, fields, blockers);
-    for (const [index, color] of (source?.colors || []).entries()) {
+    for (const [index, color] of arrayItems(source?.colors).entries()) {
       inspectObjectShape(
         targetId,
         `${name} colors[${index}]`,
@@ -103,7 +107,7 @@ function inspectPaletteSchemaShape(targetId, palette, blockers) {
       );
     }
   }
-  for (const [index, role] of (palette.semanticRoles || []).entries()) {
+  for (const [index, role] of arrayItems(palette.semanticRoles).entries()) {
     inspectObjectShape(
       targetId,
       `semanticRoles[${index}]`,
@@ -124,7 +128,9 @@ function inspectPaletteSchemaShape(targetId, palette, blockers) {
     ],
     blockers,
   );
-  for (const [index, coverage] of (palette.relationships?.coverage || []).entries()) {
+  for (const [index, coverage] of arrayItems(
+    palette.relationships?.coverage,
+  ).entries()) {
     inspectObjectShape(
       targetId,
       `palette coverage[${index}]`,
@@ -133,7 +139,9 @@ function inspectPaletteSchemaShape(targetId, palette, blockers) {
       blockers,
     );
   }
-  for (const [index, token] of (palette.targetProjectTokens || []).entries()) {
+  for (const [index, token] of arrayItems(
+    palette.targetProjectTokens,
+  ).entries()) {
     inspectObjectShape(
       targetId,
       `targetProjectTokens[${index}]`,
@@ -304,9 +312,12 @@ function inspectMappingReferences(targetId, palette, semanticRoles, targetProjec
   );
   const sourceColors = new Set(
     [
-      ...(palette.sources?.domComputed?.colors || []),
-      ...(palette.sources?.rasterMedia?.colors || []),
-    ].map((item) => item?.hex?.toLowerCase()),
+      ...arrayItems(palette.sources?.domComputed?.colors),
+      ...arrayItems(palette.sources?.rasterMedia?.colors),
+    ]
+      .map((item) => item?.hex)
+      .filter(validHexColor)
+      .map((hex) => hex.toLowerCase()),
   );
   for (const mapping of semanticRoles) {
     if (!targetProjectTokens.some((item) => item.token === mapping.targetToken)) {
@@ -334,7 +345,10 @@ function inspectMappingReferences(targetId, palette, semanticRoles, targetProjec
       );
     }
   }
-  for (const coverage of palette.relationships?.coverage || []) {
+  for (const coverage of arrayItems(palette.relationships?.coverage)) {
+    if (!coverage || typeof coverage !== "object" || Array.isArray(coverage)) {
+      continue;
+    }
     if (!roleNames.has(coverage.role)) {
       blockers.push(
         `${targetId}: palette coverage references unknown semantic role ${coverage.role}`,
@@ -429,6 +443,10 @@ function inspectPaletteFoundation({ changeRoot, targets }) {
       palette = readJson(realPalettePath);
     } catch (error) {
       blockers.push(`${target.id}: palette evidence is invalid (${error.message})`);
+      continue;
+    }
+    if (!palette || typeof palette !== "object" || Array.isArray(palette)) {
+      blockers.push(`${target.id}: palette evidence must be an object`);
       continue;
     }
     inspectPaletteSchemaShape(target.id, palette, blockers);

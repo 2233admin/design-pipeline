@@ -437,6 +437,84 @@ test("palette foundation rejects unknown properties declared invalid by its sche
   }
 });
 
+test("palette foundation rejects non-object JSON without crashing", () => {
+  for (const palette of [null, [], "palette", 42]) {
+    const projectRoot = initializeProject();
+    const changeRoot = path.join(projectRoot, "design", "changes", "palette-first");
+    const palettePath = path.join(
+      changeRoot,
+      "targets",
+      "example-com",
+      "research",
+      "palette-evidence.json",
+    );
+    fs.writeFileSync(palettePath, `${JSON.stringify(palette)}\n`);
+
+    const result = runNode(
+      paletteCheckScript,
+      ["--change-root", changeRoot, "--json"],
+      projectRoot,
+    );
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.match(result.stdout, /palette evidence must be an object/i);
+    assert.doesNotMatch(result.stdout, /cannot read properties/i);
+  }
+});
+
+test("palette foundation rejects malformed nested values without crashing", () => {
+  const projectRoot = initializeProject();
+  const changeRoot = path.join(projectRoot, "design", "changes", "palette-first");
+  writeReadyPalette(changeRoot);
+  const palettePath = path.join(
+    changeRoot,
+    "targets",
+    "example-com",
+    "research",
+    "palette-evidence.json",
+  );
+  const original = JSON.parse(fs.readFileSync(palettePath, "utf8"));
+  const mutations = [
+    (palette) => {
+      palette.sources.domComputed.colors = {};
+    },
+    (palette) => {
+      palette.semanticRoles = {};
+    },
+    (palette) => {
+      palette.relationships.coverage = {};
+    },
+    (palette) => {
+      palette.relationships.coverage = [null];
+    },
+    (palette) => {
+      palette.targetProjectTokens = {};
+    },
+    (palette) => {
+      palette.sources.domComputed.colors[0].hex = 1;
+    },
+    (palette) => {
+      palette.sources.rasterMedia.colors[0].hex = {};
+    },
+  ];
+
+  for (const mutate of mutations) {
+    const palette = structuredClone(original);
+    mutate(palette);
+    fs.writeFileSync(palettePath, `${JSON.stringify(palette, null, 2)}\n`);
+
+    const result = runNode(
+      paletteCheckScript,
+      ["--change-root", changeRoot, "--json"],
+      projectRoot,
+    );
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    assert.equal(JSON.parse(result.stdout).status, "blocked");
+    assert.doesNotMatch(result.stdout, /is not a function|cannot read properties/i);
+  }
+});
+
 test("website-clone evaluation blocks completion while palette evidence is pending", () => {
   const projectRoot = initializeProject();
   const { changeRoot, evidencePath } = preparePassingCloneEvaluation(projectRoot);
