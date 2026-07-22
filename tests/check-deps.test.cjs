@@ -113,6 +113,99 @@ test("reports OK for an Anime.js v4.5-capable companion", () => {
   }
 });
 
+test("reports INFO when the optional PixiJS skill suite is absent", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    const report = runCheck([root]);
+    const profile = report.capabilityProfiles.find(
+      (item) => item.id === "pixijs-v8-production-rendering",
+    );
+
+    assert.equal(report.result, "OK");
+    assert.equal(profile.status, "INFO");
+    assert.equal(profile.installed, false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("reports WARN when only the PixiJS router is installed", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    installSkill(
+      root,
+      "pixijs",
+      "PixiJS v8 router with WebGL WebGPU Canvas and https://pixijs.download/release/docs/llms.txt fallback.\n",
+    );
+
+    const report = runCheck([root]);
+    const profile = report.capabilityProfiles.find(
+      (item) => item.id === "pixijs-v8-production-rendering",
+    );
+
+    assert.equal(report.result, "OK");
+    assert.equal(profile.status, "WARN");
+    assert.deepEqual(profile.missingMarkers, [
+      "pixijs-application:missing",
+      "pixijs-accessibility:missing",
+      "pixijs-performance:missing",
+      "pixijs-ticker:missing",
+      "pixijs-environments:missing",
+    ]);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("reports OK for a production-ready PixiJS v8 companion suite", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    installSkill(
+      root,
+      "pixijs",
+      "PixiJS v8 router with WebGL WebGPU Canvas and https://pixijs.download/release/docs/llms.txt fallback.\n",
+    );
+    installSkill(
+      root,
+      "pixijs-application",
+      "new Application() then async app.init(); resizeTo autoDensity resolution app.destroy releaseGlobalResources\n",
+    );
+    installSkill(
+      root,
+      "pixijs-accessibility",
+      "AccessibilitySystem accessibleTitle tabIndex keyboard navigation shadow DOM overlay\n",
+    );
+    installSkill(
+      root,
+      "pixijs-performance",
+      "profile FPS draw calls GPU memory culling batching GCSystem object pooling cacheAsTexture\n",
+    );
+    installSkill(
+      root,
+      "pixijs-ticker",
+      "Ticker deltaTime maxFPS UPDATE_PRIORITY stop remove cleanup\n",
+    );
+    installSkill(
+      root,
+      "pixijs-environments",
+      "Web Workers OffscreenCanvas Node SSR strict-CSP DOMAdapter WebWorkerAdapter\n",
+    );
+
+    const report = runCheck([root]);
+    const profile = report.capabilityProfiles.find(
+      (item) => item.id === "pixijs-v8-production-rendering",
+    );
+
+    assert.equal(profile.status, "OK");
+    assert.deepEqual(profile.missingMarkers, []);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("searches multiple explicit skill roots", () => {
   const pipelineRoot = makeRoot();
   const companionRoot = makeRoot();

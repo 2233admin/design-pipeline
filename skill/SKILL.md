@@ -9,7 +9,7 @@ Use this skill when the user wants UI/frontend work to be driven by a repeatable
 
 This skill does not replace individual design skills. It orchestrates them into a durable workflow with repo artifacts, implementation gates, and verification evidence.
 
-Design is the product boundary. Engineering, OpenSpec, GBrain, Matt Pocock, Vercel, GSAP, and Anime.js integrations are support systems for producing, implementing, and validating better design outcomes. Do not let this pipeline drift into a general-purpose development framework.
+Design is the product boundary. Engineering, OpenSpec, GBrain, Matt Pocock, Vercel, animation libraries, and graphics runtimes are support systems for producing, implementing, and validating better design outcomes. Do not let this pipeline drift into a general-purpose development framework.
 
 ## Project DESIGN.md Invariant
 
@@ -62,8 +62,13 @@ design/changes/<change-id>/
   directions.md
   design.md
   motion.md
+  scene.json      # normative contract for persistent spatial or engine-owned runtime state
+  scene.md        # human-readable projection of scene.json
   tasks.md
   qa.md
+  state.json
+  events.jsonl
+  handoff.md
 ```
 
 Use an existing project convention instead if the repo already has `openspec/`, `spec/changes/`, `docs/design/`, `.omx/`, or another active planning directory.
@@ -131,6 +136,11 @@ Project motion foundation reference: `references/motion-foundation.md`.
 Machine-readable motion foundation schema: `references/motion-foundation.schema.json`.
 Motion primitive registry: `references/motion-primitives.json`.
 Motion spec reference: `references/motion-spec.md`.
+Graphics runtime routing reference: `references/graphics-runtime-routing.md`.
+Machine-readable graphics runtime catalog: `references/graphics-runtime-catalog.json`.
+Change scene/runtime spec reference: `references/scene-runtime-spec.md`.
+Phaser v4 game runtime reference: `references/phaser-v4.md`.
+Game UI and narrative profile reference: `references/game-ui-and-narrative.md`.
 Curation policy reference: `references/curation-policy.md`.
 Contextual anti-slop review reference: `references/anti-slop-review.md`.
 Machine-readable anti-slop rubric: `references/anti-slop-rubric.json`.
@@ -152,15 +162,20 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).
 - `vercel-react-view-transitions`: React and Next.js view-transition implementation patterns.
 
-Choose companions by capability, not by the presence of a familiar skill name. Read `references/capability-routing.md` when the change crosses evidence capture, design systems, assets, motion runtimes, editable design handoff, or hosted delivery.
+Choose companions by capability, not by the presence of a familiar skill name. Read `references/capability-routing.md` when the change crosses evidence capture, design systems, assets, motion runtimes, editable design handoff, or hosted delivery. For 2D, 3D, data visualization, geospatial, GPU, game, or narrative surfaces, also read `references/graphics-runtime-routing.md` and select a capability family before selecting an adapter.
 
 For animation implementation, choose library skills by job:
 
 - Use `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-react`, `gsap-plugins`, `gsap-utils`, `gsap-performance`, and `gsap-frameworks` for advanced choreography, scroll-driven animation, timeline control, React integration, SVG/plugin-heavy work, or when GSAP is already in the project.
 - Use `animejs` v4.5 for modular timelines, layout transitions, accessible text splitting, SVG, draggable interactions, scroll observers, WAAPI, deterministic stagger, or adapter-driven targets such as Three.js.
-- If no animation library is already present, prefer CSS transitions/keyframes for simple state changes; choose Anime.js or GSAP only when the required capability justifies a runtime.
-- Do not add Anime.js and GSAP together unless `design.md` assigns them distinct, non-overlapping responsibilities.
+- Use the official `pixijs` router and the matching PixiJS v8 sub-skills only for justified interactive 2D render surfaces such as sprite fields, particles, filters, shaders, canvas editors, or high-object-count scenes. Read `references/pixijs-rendering.md` before selecting it.
+- Use the built-in Phaser v4 route for a complete 2D game runtime with scenes, game-loop ownership, input, audio, physics, cameras, scaling, and game-state transitions. Read `references/phaser-v4.md`; do not depend on an unverified community skill pack.
+- Use Three.js or React Three Fiber for focused 3D scene rendering; use Babylon.js or PlayCanvas when a fuller 3D engine is justified. Existing project runtimes still win when they meet the capability and budget.
+- Use `references/game-ui-and-narrative.md` for HUDs, game menus, dialogue systems, visual novels, and Galgame surfaces. Keep dialogue, choice, backlog, save/load, skip, autoplay, and accessibility state independent of animation timing.
+- If no animation or rendering library is already present, prefer semantic DOM plus CSS transitions/keyframes for simple state changes; choose Anime.js, GSAP, PixiJS, Phaser, or a 3D runtime only when the required capability justifies it.
+- Do not add overlapping runtimes unless `design.md`, `motion.md`, and when required `scene.md` assign distinct responsibilities. One adapter owns each render loop, clock, property, lifecycle, and cleanup path.
 - Treat an installed but stale `animejs` companion as a warning. Use official v4.5 documentation for missing markers and record the fallback in `qa.md`.
+- Treat a partial or stale PixiJS suite as a warning. Use the canonical PixiJS v8 documentation index for missing APIs and record the fallback in `qa.md`.
 
 For React and Next.js work, also apply the installed Vercel / Next.js engineering skills listed in `references/companion-skills.md`:
 
@@ -190,9 +205,13 @@ Before writing design artifacts or code:
 - Prepare Issue or PR publication requests locally. Remote creation requires explicit authority for
   the exact action and repository, followed by a validated receipt and local reconciliation.
 - Initialize or update `state.json`, `events.jsonl`, and `handoff.md` using `references/agent-interface.md`.
+- Use `scripts/designer-pipeline.cjs` for v2 state initialization, migration, CAS-protected
+  transitions, consistency checks, and explicit repair. Do not independently rewrite state and
+  event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
+- Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.
 - Check for project `DESIGN.md`. If it is missing or materially incompatible with the request, route
   through the requirements-driven synthesis module before implementation.
 - Run `node <design-pipeline>/scripts/check-design-foundation.cjs --project-root . --json`.
@@ -270,12 +289,25 @@ invent a parallel motion vocabulary.
 `motion.md` is required for:
 
 - GSAP or Anime.js usage.
+- PixiJS, Canvas, WebGL, or WebGPU render surfaces.
 - React view transitions.
 - Scroll-triggered animation.
 - Multi-step choreography.
 - Motion that affects navigation, focus, loading, data updates, or user confidence.
 
 Simple CSS hover/focus transitions can stay in `design.md`, but still need reduced-motion behavior and QA notes.
+
+Create normative `scene.json` plus its `scene.md` projection using
+`references/scene-runtime-spec.md` when the change has persistent spatial
+state or an engine-owned lifecycle: Canvas/WebGL/WebGPU scenes, cameras, coordinate transforms,
+asset manifests, render or game loops, physics, world input, procedural state, save/load state, or
+runtime-specific degradation. The pair binds design and motion semantics to a selected adapter; it
+does not replace `design.md` or `motion.md`.
+
+Phaser, PixiJS, Three.js, React Three Fiber, Babylon.js, PlayCanvas, CesiumJS, WebGPU/WGSL, and
+equivalent scene runtimes require both files. A narrative UI without a scene renderer may remain
+DOM-first, but still requires both when it owns dialogue state, save/load, backlog, autoplay,
+or another persistent game-state lifecycle.
 
 ## Stage 4: Tasks
 
@@ -287,6 +319,7 @@ Create `tasks.md` with a checkbox list grouped by implementation surface:
 - States
 - Motion
 - Motion spec
+- Scene/runtime spec when required
 - Accessibility
 - Responsive QA
 - Browser/manual QA
@@ -306,6 +339,10 @@ Rules:
 - Link the validated project `DESIGN.md` from the active lowercase change `design.md`.
 - Link the validated project `MOTION.md` and its hash from active lowercase change `motion.md` when
   the change includes non-trivial motion.
+- Link `scene.json` and `scene.md` from the active change when a graphics, game, or persistent
+  narrative runtime is selected. Run `designer-pipeline scene check` and verify that capability
+  family, adapter, version, lifecycle, assets, input,
+  accessibility, performance, determinism, degradation, and cleanup owners are complete.
 - If the repo uses OpenSpec, keep the design-pipeline artifacts linked to the active OpenSpec change and do not create a parallel source of truth.
 - If the repo uses GBrain, sync or reference the design decision artifacts through the repo's established GBrain surface instead of inventing a new memory format.
 - If Matt Pocock engineering skills are installed, use `codebase-design`, `grill-with-docs`, `implement`, and `matt-tdd` where they fit the current implementation stage.
@@ -328,12 +365,25 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
 - Motion foundation gate: project `MOTION.md` is `ready`, its hash is recorded, and selected
   primitive IDs exist in the bundled registry.
 - Motion spec gate: `motion.md` exists for any non-trivial motion and includes trigger, purpose, timing, easing, choreography, interruption behavior, implementation library, performance budget, and reduced-motion fallback.
+- Scene/runtime gate: `scene.json` and matching `scene.md` exist for every persistent spatial,
+  game-engine, GPU, or stateful narrative surface and record the capability family, adapter,
+  version, scene/camera and
+  coordinate model, lifecycle, assets, input, accessibility, budgets, deterministic evidence,
+  degradation, and cleanup ownership.
 - Responsive gate: mobile and desktop layouts have no overlap or clipped text.
 - Manual QA gate: browser or matching surface was used to inspect the actual UI.
 - Contextual anti-slop gate when active: run `scripts/evaluate-anti-slop.cjs`, repair hard
   blockers, resolve contextual warnings or record accepted context, and link the report from
   `qa.md`. Preference findings never block completion.
 - Scorecard gate: visual taste, UX clarity, accessibility, responsiveness, motion quality, engineering fit, and performance risk are scored 0-5 with notes.
+- Evidence gate: browser/tool output is represented by a validated receipt with explicit status,
+  hashes, redaction, and missing-artifact states; visual guessing never fills missing evidence.
+- Interoperability gate: tokens, UI IR, design-to-code mappings, pattern IDs, and design-tool
+  receipts pass their public schemas when used.
+- Benchmark gate: every required responsive, accessibility, palette, motion, scene, component-state,
+  and evidence scenario passes; aggregates cannot hide a required failure.
+- Adapter governance gate: catalog routes resolve through the registry and new adapters pass pinned
+  provenance, license, maintenance, security, permission, degradation, and admission review.
 
 If a gate cannot be run, record why and use the next-best check.
 

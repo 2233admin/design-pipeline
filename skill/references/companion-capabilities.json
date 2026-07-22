@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline-companions.v1",
-  "updatedAt": "2026-07-19",
+  "updatedAt": "2026-07-23",
   "groups": [
     {
       "name": "Core pipeline",
@@ -14,6 +14,12 @@
         "design-pipeline/references/motion-foundation.schema.json",
         "design-pipeline/references/motion-primitives.json",
         "design-pipeline/references/motion-spec.md",
+        "design-pipeline/references/graphics-runtime-routing.md",
+        "design-pipeline/references/graphics-runtime-catalog.json",
+        "design-pipeline/references/scene-runtime-spec.md",
+        "design-pipeline/references/phaser-v4.md",
+        "design-pipeline/references/game-ui-and-narrative.md",
+        "design-pipeline/references/pixijs-rendering.md",
         "design-pipeline/references/website-cloning.md",
         "design-pipeline/references/website-clone-component-spec.md",
         "design-pipeline/references/website-cloning-manifest.schema.json",
@@ -94,12 +100,39 @@
         "gsap-utils",
         "gsap-performance",
         "gsap-frameworks",
-        "animejs"
+        "animejs",
+        "pixijs",
+        "pixijs-accessibility",
+        "pixijs-application",
+        "pixijs-assets",
+        "pixijs-blend-modes",
+        "pixijs-color",
+        "pixijs-core-concepts",
+        "pixijs-create",
+        "pixijs-custom-rendering",
+        "pixijs-environments",
+        "pixijs-events",
+        "pixijs-filters",
+        "pixijs-html-source",
+        "pixijs-math",
+        "pixijs-migration-v8",
+        "pixijs-performance",
+        "pixijs-scene-container",
+        "pixijs-scene-core-concepts",
+        "pixijs-scene-dom-container",
+        "pixijs-scene-gif",
+        "pixijs-scene-graphics",
+        "pixijs-scene-mesh",
+        "pixijs-scene-particle-container",
+        "pixijs-scene-sprite",
+        "pixijs-scene-text",
+        "pixijs-ticker"
       ],
-      "fallback": "Use CSS transitions/keyframes for simple motion, or implement animation with the project's existing library.",
+      "fallback": "Use CSS transitions/keyframes for simple motion, the project's existing animation library for choreography, or official PixiJS v8 documentation when a justified 2D rendering surface is missing companion coverage.",
       "install": [
         "Install GSAP skills from: https://github.com/greensock/gsap-skills",
-        "Install Anime.js skill from: https://github.com/BowTiedSwan/animejs-skills"
+        "Install Anime.js skill from: https://github.com/BowTiedSwan/animejs-skills",
+        "Install official PixiJS v8 skills from: https://github.com/pixijs/pixijs-skills"
       ]
     },
     {
@@ -160,6 +193,98 @@
         {"id": "adapters", "skill": "animejs", "patterns": [{"source": "registerAdapter"}, {"source": "adapters/three"}, {"source": "Three\\.js adapter", "flags": "i"}]},
         {"id": "3d-stagger", "skill": "animejs", "patterns": [{"source": "3D layouts", "flags": "i"}, {"source": "grid:\\s*\\[columns,\\s*rows,\\s*depth\\]", "flags": "i"}, {"source": "axis.+['\"]z['\"]", "flags": "i"}]},
         {"id": "deterministic-stagger", "skill": "animejs", "match": "all", "patterns": [{"source": "\\bjitter\\b", "flags": "i"}, {"source": "\\bseed\\b", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "pixijs-v8-production-rendering",
+      "name": "PixiJS v8 production 2D rendering",
+      "skills": [
+        "pixijs",
+        "pixijs-application",
+        "pixijs-accessibility",
+        "pixijs-performance",
+        "pixijs-ticker",
+        "pixijs-environments"
+      ],
+      "level": "optional",
+      "source": "https://github.com/pixijs/pixijs-skills",
+      "sourceMeta": {
+        "id": "pixijs-skills-v8",
+        "kind": "github",
+        "url": "https://github.com/pixijs/pixijs-skills",
+        "reviewedRevision": "6aae70d76cf410432dd144029c07a1ad4bb12793",
+        "reviewedMarkers": [
+          "v8-router-and-doc-fallback",
+          "application-lifecycle",
+          "accessibility-overlay",
+          "performance-budget",
+          "ticker-lifecycle",
+          "worker-ssr-csp"
+        ],
+        "reviewedAt": "2026-07-23T00:00:00.000Z",
+        "freshnessDays": 30
+      },
+      "fallback": "Use the canonical PixiJS v8 llms.txt/API documentation for missing surfaces, keep PixiJS optional, and record stale or partial suite coverage in qa.md.",
+      "requirements": [
+        {
+          "id": "v8-router-and-doc-fallback",
+          "skill": "pixijs",
+          "match": "all",
+          "patterns": [
+            {"source": "PixiJS v8", "flags": "i"},
+            {"source": "pixijs\\.download/release/docs/llms\\.txt", "flags": "i"}
+          ]
+        },
+        {
+          "id": "application-lifecycle",
+          "skill": "pixijs-application",
+          "match": "all",
+          "patterns": [
+            {"source": "async app\\.init", "flags": "i"},
+            {"source": "app\\.destroy"},
+            {"source": "releaseGlobalResources"}
+          ]
+        },
+        {
+          "id": "accessibility-overlay",
+          "skill": "pixijs-accessibility",
+          "match": "all",
+          "patterns": [
+            {"source": "AccessibilitySystem"},
+            {"source": "accessibleTitle"},
+            {"source": "tabIndex"}
+          ]
+        },
+        {
+          "id": "performance-budget",
+          "skill": "pixijs-performance",
+          "match": "all",
+          "patterns": [
+            {"source": "draw calls", "flags": "i"},
+            {"source": "GPU memory", "flags": "i"},
+            {"source": "object pooling", "flags": "i"}
+          ]
+        },
+        {
+          "id": "ticker-lifecycle",
+          "skill": "pixijs-ticker",
+          "match": "all",
+          "patterns": [
+            {"source": "deltaTime"},
+            {"source": "maxFPS"},
+            {"source": "UPDATE_PRIORITY"}
+          ]
+        },
+        {
+          "id": "worker-ssr-csp",
+          "skill": "pixijs-environments",
+          "match": "all",
+          "patterns": [
+            {"source": "OffscreenCanvas"},
+            {"source": "WebWorkerAdapter"},
+            {"source": "strict[-\\s]CSP", "flags": "i"}
+          ]
+        }
       ]
     },
     {

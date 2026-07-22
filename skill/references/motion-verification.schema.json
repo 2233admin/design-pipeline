@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/motion-verification.v1.json",
+  "title": "Motion Verification Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "primitiveId", "trigger", "purpose", "durationMs", "toleranceMs", "observedDurationMs", "frameCadenceMs", "interruption", "reducedMotion", "longFrames", "maxLongFrameMs", "captureId", "deterministic"],
+  "properties": {"schema": {"const": "design-pipeline.motion-verification.v1"}}
+}

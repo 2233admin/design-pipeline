@@ -41,7 +41,7 @@ jobs:
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
 
       - name: Package
-        run: node scripts/package.cjs
+        run: node scripts/package.cjs --output-root dist
         env:
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
 

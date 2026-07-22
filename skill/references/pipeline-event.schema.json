@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/pipeline-event.v2.json",
+  "title": "Designer Pipeline Event v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "seq", "ts", "phase", "type", "summary", "files", "evidence", "nextActions"],
+  "properties": {
+    "schema": {"const": "design-pipeline.event.v2"},
+    "id": {"type": "string"},
+    "seq": {"type": "integer", "minimum": 1},
+    "ts": {"type": "string"},
+    "phase": {"type": "string"},
+    "type": {"type": "string"},
+    "summary": {"type": "string"},
+    "files": {"type": "array", "items": {"type": "string"}},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "nextActions": {"type": "array", "items": {"type": "string"}}
+  }
+}

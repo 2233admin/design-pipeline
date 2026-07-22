@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/component-state-matrix.v1.json",
+  "title": "Component State Matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "entries"],
+  "properties": {
+    "schema": {"const": "design-pipeline.component-state-matrix.v1"},
+    "id": {"type": "string"},
+    "entries": {"type": "array", "minItems": 1}
+  }
+}

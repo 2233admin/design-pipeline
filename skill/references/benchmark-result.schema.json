@@ -1,0 +1,9 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://github.com/2233admin/design-pipeline/schema/benchmark-result.v1.json",
+  "title":"Designer Pipeline Benchmark Result",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["schema","benchmarkId","status","aggregate","scenarios","failedRequired","unknownRequired"],
+  "properties":{"schema":{"const":"design-pipeline.benchmark-result.v1"},"benchmarkId":{"type":"string"},"status":{"enum":["passed","failed","blocked"]},"aggregate":{"type":["number","null"]},"scenarios":{"type":"array"},"failedRequired":{"type":"array"},"unknownRequired":{"type":"array"}}
+}

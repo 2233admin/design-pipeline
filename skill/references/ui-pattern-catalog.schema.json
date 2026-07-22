@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/ui-pattern-catalog.v1.json",
+  "title": "UI Pattern Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "patterns"],
+  "properties": {
+    "schema": {"const": "design-pipeline.ui-pattern-catalog.v1"},
+    "version": {"type": "string"},
+    "patterns": {"type": "array", "minItems": 1}
+  }
+}

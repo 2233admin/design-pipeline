@@ -18,8 +18,11 @@ jobs:
         with:
           node-version: "22"
 
-      - name: QA + package
+      - name: Hermetic QA
         run: node scripts/qa.cjs
+
+      - name: Package
+        run: node scripts/package.cjs --output-root dist
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4

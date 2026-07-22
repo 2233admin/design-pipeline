@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-tokens.v1.json",
+  "title": "DTCG-Compatible Design Tokens",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "dtcgProfile", "provenance", "tokens"],
+  "properties": {
+    "schema": {"const": "design-pipeline.design-tokens.v1"},
+    "dtcgProfile": {"const": "2025.10"},
+    "provenance": {"type": "object"},
+    "tokens": {"type": "object"}
+  }
+}

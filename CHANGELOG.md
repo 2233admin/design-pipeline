@@ -2,6 +2,51 @@
 
 All notable changes to Design Pipeline are documented here.
 
+## [0.7.0] - 2026-07-23
+
+### Added
+
+- Added capability-first routing for the official PixiJS v8 skill suite, including a production
+  compatibility profile and a focused rendering contract for scene ownership, lifecycle,
+  performance, accessibility, reduced motion, and runtime fallback.
+- Added deterministic self-check coverage for absent, partial, and production-ready PixiJS skill
+  installations.
+- Added a machine-readable graphics runtime catalog with stable capability families across
+  semantic UI, data/vector graphics, 2D editors and renderers, 2D/3D game engines, geospatial 3D,
+  GPU/shader work, and narrative game UI.
+- Added the engine-independent change `scene.md` contract plus native Phaser v4 and game
+  UI/Galgame routing. Credentialed hosts and unverified community packs remain optional and are
+  never auto-installed.
+- Added the unified `designer-pipeline` CLI with stable JSON envelopes and explicit success,
+  invalid, and blocked exit semantics.
+- Added state/event v2 with a versioned phase registry, deterministic v1 migration, CAS writes,
+  writer locks, crash-safe two-file commits, append-only event hashes, and explicit repair.
+- Added normative `scene.json`, evidence receipts and trusted local web-capture adapters, motion
+  verification, component-state matrices, design tokens, UI IR, design-to-code maps, pattern
+  catalogs, required-scenario benchmarks, and local benchmark feedback recording.
+- Added a single adapter registry and intake policy for 2D/3D runtimes and design-tool hosts,
+  including provenance, license, security, maintenance, degradation, and benchmark admission.
+
+### Changed
+
+- Motion and runtime selection now distinguish a dedicated PixiJS 2D render surface from ordinary
+  DOM/SVG animation and require non-overlapping ownership when PixiJS is combined with CSS,
+  Anime.js, or GSAP.
+- Graphics selection now chooses a durable capability family before an adapter and preserves the
+  target project's accepted runtime when it meets the design, accessibility, and performance
+  contract.
+- `graphics-runtime-catalog.json` now owns family taxonomy and routes only; adapter facts and
+  support state live in `adapter-registry.json`.
+- Release QA now runs hermetically, proves byte-reproducible archives, installs from the packaged
+  artifact into an isolated target, and exercises the installed public CLI.
+
+### Fixed
+
+- Scene validation now distinguishes an honest unavailable/unknown adapter from placeholder prose:
+  the document remains valid but execution is blocked.
+- Required benchmark failures can no longer disappear inside aggregate scores and may enter the
+  redacted, deduplicated local feedback loop without remote publication.
+
 ## [0.6.0] - 2026-07-20
 
 ### Added
@@ -41,3 +86,4 @@ All notable changes to Design Pipeline are documented here.
   newly exposed edge cases.
 
 [0.6.0]: https://github.com/2233admin/design-pipeline/compare/v0.5.0...v0.6.0
+[0.7.0]: https://github.com/2233admin/design-pipeline/compare/v0.6.0...v0.7.0

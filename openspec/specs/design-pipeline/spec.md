@@ -18,7 +18,8 @@ The pipeline SHALL use durable artifacts for each change and SHALL map them to O
 #### Scenario: New design change starts
 
 - **WHEN** a new design change starts
-- **THEN** the pipeline SHALL create or use a change folder with brief, directions, design, motion, tasks, QA, state, events, and handoff artifacts.
+- **THEN** the pipeline SHALL create or use a change folder with brief, directions, design, motion, tasks, QA, state, events, and handoff artifacts
+- **AND** it SHALL add `scene.md` when persistent spatial, graphics-engine, game-engine, GPU, or stateful narrative runtime ownership exists.
 
 ### Requirement: Optional companion skill fallback
 
@@ -35,7 +36,7 @@ The pipeline SHALL require explicit motion documentation for non-trivial animati
 
 #### Scenario: GSAP animation is planned
 
-- **WHEN** GSAP, Anime.js, React View Transitions, scroll animation, route transition, or multi-step choreography is planned
+- **WHEN** GSAP, Anime.js, PixiJS, Phaser, a 3D runtime, React View Transitions, scroll animation, route transition, or multi-step choreography is planned
 - **THEN** the pipeline SHALL require `motion.md` using the motion spec template.
 
 ### Requirement: Capability-first companion routing
@@ -45,7 +46,85 @@ The pipeline SHALL select companion skills from the required design capability a
 #### Scenario: Animation runtime is selected
 
 - **WHEN** a change needs runtime animation
-- **THEN** the pipeline SHALL compare CSS, Anime.js, GSAP, React View Transitions, and the existing project runtime against the documented motion requirements and SHALL NOT add overlapping runtimes without distinct responsibilities.
+- **THEN** the pipeline SHALL compare CSS, Anime.js, GSAP, PixiJS, Phaser, applicable 3D runtimes, React View Transitions, and the existing project runtime against the documented motion and rendering requirements and SHALL NOT add overlapping runtimes without distinct responsibilities.
+
+### Requirement: PixiJS is a bounded 2D rendering route
+
+The pipeline SHALL treat PixiJS as an optional interactive 2D renderer and scene runtime rather
+than as the default animation choice or a replacement for semantic HTML.
+
+#### Scenario: A PixiJS render surface is justified
+
+- **WHEN** sprites, particles, filters, shaders, Canvas/WebGL/WebGPU rendering, or high object counts require a dedicated 2D renderer
+- **THEN** the pipeline SHALL route through the official PixiJS v8 skill suite
+- **AND** change `motion.md` SHALL define temporal semantics and reduced-motion substitution
+- **AND** change `scene.md` SHALL define renderer, scene graph, lifecycle, ticker, asset,
+  performance, accessibility, fallback, and cleanup ownership.
+
+#### Scenario: Ordinary UI motion is requested
+
+- **WHEN** semantic DOM, CSS, or the target repository's existing runtime can satisfy the change
+- **THEN** the pipeline SHALL NOT select PixiJS only because the interface contains motion.
+
+#### Scenario: PixiJS and a choreography runtime are combined
+
+- **WHEN** PixiJS is used with CSS, WAAPI, Anime.js, or GSAP
+- **THEN** `design.md`, `motion.md`, and `scene.md` SHALL assign non-overlapping render, property,
+  clock, lifecycle, and cleanup ownership.
+
+### Requirement: Graphics capabilities are stable before adapters
+
+The pipeline SHALL classify a graphics, game, data, geospatial, GPU, or narrative surface by a
+durable capability family before selecting a library, skill, MCP host, or framework adapter.
+
+#### Scenario: A project already has a suitable renderer
+
+- **WHEN** the accepted project runtime satisfies the selected capability, accessibility, and
+  performance contract
+- **THEN** the pipeline SHALL preserve it rather than add another adapter only because a companion
+  skill exists.
+
+#### Scenario: A scene runtime is selected
+
+- **WHEN** persistent spatial state, cameras, coordinates, assets, input, a render/game loop,
+  physics, procedural state, or save/load lifecycle is required
+- **THEN** the change SHALL include `scene.md`
+- **AND** `scene.md` SHALL bind `DESIGN.md` and `MOTION.md` semantics to one versioned adapter with
+  explicit lifecycle, budgets, degradation, deterministic evidence, and cleanup ownership.
+
+### Requirement: Phaser is a native 2D game-engine route
+
+The pipeline SHALL support Phaser v4 as a built-in routing contract independent of any community
+skill pack or credentialed host.
+
+#### Scenario: A complete browser 2D game runtime is justified
+
+- **WHEN** scenes, cameras, scaling, game-loop ownership, input, audio, physics, assets, and game
+  state must operate as one runtime
+- **THEN** the pipeline SHALL select the Phaser route or preserve an equivalent accepted project
+  engine
+- **AND** change `scene.md` and `motion.md` SHALL remain authoritative over runtime APIs.
+
+#### Scenario: An optional Phaser host or community pack is unavailable
+
+- **WHEN** the official credentialed MCP is not configured or a community pack lacks verified
+  licensing
+- **THEN** local Phaser routing SHALL remain available from the built-in contract and official
+  documentation
+- **AND** the unavailable or unverified surface SHALL NOT be automatically installed or required.
+
+### Requirement: Narrative game UI preserves product state semantics
+
+The pipeline SHALL support HUD, menu, dialogue, visual-novel, and Galgame surfaces without binding
+product state to animation timing.
+
+#### Scenario: Dialogue and choice UI is implemented
+
+- **WHEN** the surface includes dialogue, choices, backlog, skip, autoplay, save/load,
+  localization, character layers, or CG state
+- **THEN** those states SHALL be represented as deterministic data and explicit transitions
+- **AND** keyboard operation, readable text, focus, announcements, reduced motion, and recovery
+  SHALL remain available even when the scene renderer or animation adapter is degraded.
 
 ### Requirement: Version-sensitive capability profile
 
@@ -417,7 +496,7 @@ degradation, reduced-motion behavior, performance budgets, and evidence.
 
 #### Scenario: A runtime library is selected
 
-- **WHEN** CSS, WAAPI, Anime.js, GSAP, SVG, Canvas, or WebGL is chosen
+- **WHEN** CSS, WAAPI, Anime.js, GSAP, PixiJS, Phaser, Three.js, Babylon.js, PlayCanvas, SVG, Canvas, WebGL, or WebGPU is chosen
 - **THEN** it SHALL be recorded as an adapter for the selected semantic primitives
 - **AND** the runtime API SHALL NOT redefine the project motion language.
 
@@ -443,4 +522,116 @@ overwrite a validated project foundation or become required for local validation
 - **WHEN** network retrieval fails or the provider is not configured
 - **THEN** requirements-only and local-evidence synthesis SHALL remain available
 - **AND** the provider SHALL report an explicit unavailable state rather than fabricate content.
+
+### Requirement: Lifecycle state is versioned, atomic, and resumable
+
+The pipeline SHALL use state/event v2 with a versioned phase registry, compare-and-swap mutation,
+one-writer locking, crash-safe state/event commits, and explicit consistency diagnostics.
+
+#### Scenario: Two agents attempt the same transition
+
+- **WHEN** the second writer presents an obsolete state SHA-256
+- **THEN** the mutation SHALL fail without changing state or events
+- **AND** the caller SHALL reread current state before retrying.
+
+#### Scenario: A v1 run is resumed
+
+- **WHEN** either supported v1 state spelling is discovered
+- **THEN** migration SHALL be deterministic and preserve unknown legacy fields
+- **AND** no file SHALL change without explicit write authority and the expected source hash.
+
+### Requirement: Scene runtime has a normative machine contract
+
+Persistent spatial, engine-owned, GPU, or narrative runtime state SHALL use normative `scene.json`
+plus a matching `scene.md` projection linked to DESIGN and MOTION foundation hashes.
+
+#### Scenario: Adapter availability is unknown
+
+- **WHEN** a valid scene records honest `unknown`, `unavailable`, or `blocked` availability
+- **THEN** the document SHALL remain representable without placeholder fabrication
+- **AND** scene execution SHALL remain blocked.
+
+### Requirement: The public CLI is a safe orchestration facade
+
+The pipeline SHALL expose stable JSON results and exit semantics for lifecycle, foundation, scene,
+evidence, motion/component, interoperability, benchmark, adapter, style-signal, and feedback gates.
+All project paths SHALL remain below explicit `--root` after link resolution.
+
+#### Scenario: A command receives an escaping artifact path
+
+- **WHEN** a caller references an artifact outside `--root`
+- **THEN** the command SHALL fail before reading or writing it
+- **AND** the JSON error envelope SHALL remain machine-readable.
+
+### Requirement: Runtime evidence is explicit and adapter-neutral
+
+Browser/tool adapters SHALL produce validated receipts with adapter identity, capability probe,
+explicit status, artifact paths, hashes, redaction, and environment metadata. The kernel SHALL run
+only an explicitly selected trusted local adapter with a bounded process environment and timeout.
+
+#### Scenario: Exact evidence is incomplete
+
+- **WHEN** any required artifact or measurement is missing
+- **THEN** the receipt SHALL report partial, blocked, or unknown
+- **AND** the pipeline SHALL NOT replace missing evidence with visual inference.
+
+### Requirement: Motion and component states are executable gates
+
+Non-trivial motion SHALL carry deterministic timing, cadence, interruption, long-frame, and
+reduced-motion evidence. Reusable components SHALL cover required visual/input/viewport states.
+
+#### Scenario: A component looks correct only at rest
+
+- **WHEN** hover, focus, pressed, disabled, loading, empty, error, keyboard, touch, or required
+  viewport evidence is absent
+- **THEN** component verification SHALL fail or block
+- **AND** a static screenshot SHALL NOT satisfy the missing states.
+
+### Requirement: Design artifacts interoperate through public data contracts
+
+Design tokens, UI IR, pattern catalog IDs, design-to-code mappings, and design-tool receipts SHALL
+use strict machine-readable contracts with provenance and editable/source mappings where relevant.
+
+#### Scenario: A hosted design tool is unavailable
+
+- **WHEN** Figma, Penpot, Onlook, or another host cannot be used
+- **THEN** local DESIGN/MOTION/tokens/UI IR workflows SHALL remain available
+- **AND** the host SHALL be a replaceable adapter rather than a pipeline dependency.
+
+### Requirement: Benchmarks preserve required failures
+
+Generate, edit, and repair benchmarks SHALL cover responsive, accessibility, palette, motion,
+scene, component-state, and evidence dimensions. A required failed or unknown scenario SHALL decide
+the gate independently of the aggregate score.
+
+#### Scenario: One required scenario fails under a high aggregate
+
+- **WHEN** the aggregate passes but one required scenario fails
+- **THEN** the benchmark SHALL fail
+- **AND** the failure MAY be recorded through the redacted, deduplicated local feedback loop.
+
+### Requirement: Adapter facts have one governed authority
+
+The adapter registry SHALL be the sole authority for support, version policy, provenance, license,
+security, host policy, evidence types, degradation, install eligibility, and benchmark admission.
+Graphics catalogs SHALL reference registry IDs rather than duplicate facts.
+
+#### Scenario: An unverified community adapter is proposed
+
+- **WHEN** pinned revision/hash, license, maintenance, security, permission, or score provenance is
+  absent or unverified
+- **THEN** it SHALL NOT be promoted to native/companion or expose automatic installation
+- **AND** intake SHALL keep benchmark admission blocked.
+
+### Requirement: Release QA is hermetic and reproducible
+
+Release QA SHALL prove manifest parity, syntax, complete tests, deterministic package bytes,
+archive completeness, failure atomicity, isolated package installation, installed public CLI
+behavior, and unchanged repository status.
+
+#### Scenario: Packaging fails after a previous successful build
+
+- **WHEN** a required resource is missing or invalid
+- **THEN** packaging SHALL fail without corrupting the prior artifacts
+- **AND** no source-tree mutation SHALL be introduced by QA.
 

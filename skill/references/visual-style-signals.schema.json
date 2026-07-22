@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/visual-style-signals.v1.json",
+  "title": "Visual style signal catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "signals"],
+  "properties": {
+    "schema": {"const": "design-pipeline.visual-style-signals.v1"},
+    "version": {"type": "string"},
+    "signals": {"type": "array", "items": {"type": "object"}}
+  }
+}

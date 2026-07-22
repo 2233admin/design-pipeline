@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/adapter-intake.v1.json",
+  "title": "Adapter supply-chain intake",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "adapterId", "source", "license", "maintenance", "security", "adoption", "decision"],
+  "properties": {
+    "schema": {"const": "design-pipeline.adapter-intake.v1"},
+    "adapterId": {"type": "string"},
+    "source": {"type": "object"},
+    "license": {"type": "object"},
+    "maintenance": {"type": "object"},
+    "security": {"type": "object"},
+    "adoption": {"type": "object"},
+    "score": {"type": ["object", "null"]},
+    "decision": {"type": "object"}
+  }
+}

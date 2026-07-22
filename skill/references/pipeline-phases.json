@@ -1,0 +1,27 @@
+{
+  "schema": "design-pipeline.phase-registry.v1",
+  "current": "design-pipeline.phases.v2",
+  "registries": {
+    "design-pipeline.phases.v1": {
+      "compatibility": "read-only",
+      "phases": ["stage-0-repo-read", "stage-1-brief", "stage-2-directions", "stage-3-design-spec", "stage-3-motion-spec", "stage-4-tasks", "stage-5-implementation", "stage-6-gate-review", "stage-7-archive"]
+    },
+    "design-pipeline.phases.v2": {
+      "compatibility": "read-write",
+      "phases": ["repo-read", "brief", "directions", "design-spec", "motion-spec", "tasks", "implementation", "gate-review", "verification", "release-readiness", "archive"],
+      "transitions": {
+        "repo-read": ["brief"],
+        "brief": ["directions"],
+        "directions": ["design-spec", "motion-spec"],
+        "design-spec": ["motion-spec", "tasks"],
+        "motion-spec": ["tasks"],
+        "tasks": ["implementation"],
+        "implementation": ["gate-review"],
+        "gate-review": ["implementation", "verification"],
+        "verification": ["implementation", "release-readiness"],
+        "release-readiness": ["archive"],
+        "archive": []
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "schema": "design-pipeline.test-manifest.v1",
+  "tests": [
+    "adapter-intake.test.cjs",
+    "adapter-registry.test.cjs",
+    "anti-slop-review.test.cjs",
+    "benchmark.test.cjs",
+    "capability-audit.test.cjs",
+    "check-deps.test.cjs",
+    "component-state-matrix.test.cjs",
+    "design-synthesis.test.cjs",
+    "design-tool-port.test.cjs",
+    "designer-pipeline-cli.test.cjs",
+    "evidence-receipt.test.cjs",
+    "graphics-runtime-catalog.test.cjs",
+    "install-local.test.cjs",
+    "interoperability.test.cjs",
+    "motion-foundation.test.cjs",
+    "motion-verification.test.cjs",
+    "palette-foundation.test.cjs",
+    "pipeline-state.test.cjs",
+    "publication-bridge.test.cjs",
+    "record-feedback.test.cjs",
+    "scene-runtime.test.cjs",
+    "ui-pattern-catalog.test.cjs",
+    "visual-style-signals.test.cjs",
+    "web-evidence-adapter.test.cjs",
+    "website-cloning-init.test.cjs"
+  ]
+}

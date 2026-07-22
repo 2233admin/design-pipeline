@@ -1,0 +1,34 @@
+{
+  "schema": "design-pipeline.graphics-runtime-catalog.v2",
+  "updatedAt": "2026-07-23",
+  "principles": [
+    "Select a capability family before selecting a library.",
+    "Preserve the target repository's accepted runtime when it satisfies the design contract.",
+    "Adapter identity, support, provenance, license, security, and installation facts are owned only by adapter-registry.json.",
+    "Cataloging a route never claims that an adapter is installed or available."
+  ],
+  "families": [
+    {"id":"semantic-ui","name":"Semantic web UI","useWhen":"Text, navigation, forms, product workflows, overlays, and accessible components are primary.","defaultSurface":"DOM"},
+    {"id":"vector-data","name":"Vector and data visualization","useWhen":"Charts, diagrams, topology, axes, labels, or inspectable data marks are primary.","defaultSurface":"SVG or Canvas"},
+    {"id":"canvas-editor-2d","name":"2D canvas editor","useWhen":"Selection, transforms, handles, free drawing, object editing, or an infinite canvas is primary.","defaultSurface":"Canvas 2D or WebGL"},
+    {"id":"scene-renderer-2d","name":"2D scene renderer","useWhen":"Sprites, particles, filters, shaders, or high object counts need a dedicated scene renderer.","defaultSurface":"Canvas, WebGL, or WebGPU"},
+    {"id":"game-engine-2d","name":"2D game engine","useWhen":"Scenes, cameras, input, audio, physics, game state, assets, and game lifecycle must work together.","defaultSurface":"Canvas and DOM overlay"},
+    {"id":"scene-renderer-3d","name":"3D scene renderer","useWhen":"A custom 3D scene, product visualization, shader work, or WebXR needs rendering primitives rather than a full game engine.","defaultSurface":"WebGL or WebGPU"},
+    {"id":"game-engine-3d","name":"3D game and simulation engine","useWhen":"Physics, animation graphs, scene tooling, input, audio, entities, or simulation lifecycle require an integrated engine.","defaultSurface":"WebGL or WebGPU with DOM overlay"},
+    {"id":"geospatial-3d","name":"Geospatial and globe rendering","useWhen":"Maps, terrain, globes, tiles, coordinates, or large geospatial datasets are primary.","defaultSurface":"WebGL or WebGPU with semantic controls"},
+    {"id":"gpu-shader","name":"GPU and shader effects","useWhen":"Custom material, compute, post-processing, particles, or procedural imagery requires WGSL, GLSL, or a shader graph.","defaultSurface":"WebGPU or WebGL"},
+    {"id":"narrative-game-ui","name":"Narrative and Galgame UI","useWhen":"Dialogue, choices, backlog, save/load, skip, auto-play, character layers, CG, localization, and input history form the product loop.","defaultSurface":"Semantic DOM overlay plus optional 2D scene"}
+  ],
+  "routes": [
+    {"family":"semantic-ui","adapterIds":["dom-css-waapi"]},
+    {"family":"vector-data","adapterIds":["svg-d3","apache-echarts"]},
+    {"family":"canvas-editor-2d","adapterIds":["canvas-2d","konva","fabricjs"]},
+    {"family":"scene-renderer-2d","adapterIds":["pixijs-v8"]},
+    {"family":"game-engine-2d","adapterIds":["phaser-v4","phaser-game-agent-mcp","phaser4-community-skill-pack"]},
+    {"family":"scene-renderer-3d","adapterIds":["threejs","react-three-fiber","threejs-webgpu-skill-pack"]},
+    {"family":"game-engine-3d","adapterIds":["babylonjs","playcanvas"]},
+    {"family":"geospatial-3d","adapterIds":["cesiumjs","maplibre-gl-js"]},
+    {"family":"gpu-shader","adapterIds":["webgpu-wgsl"]},
+    {"family":"narrative-game-ui","adapterIds":["narrative-dom-runtime","monogatari"]}
+  ]
+}

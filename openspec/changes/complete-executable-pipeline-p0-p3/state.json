@@ -1,0 +1,107 @@
+{
+  "blockers": [],
+  "changeId": "complete-executable-pipeline-p0-p3",
+  "evidence": [
+    "tests:169/169",
+    "qa:hermetic-package-install-reproducible",
+    "package-tgz-bytes:161631",
+    "package-zip-bytes:661789",
+    "review:leader-adversarial",
+    "staged-scan:clean",
+    "review-infrastructure:unavailable",
+    "qa:release-candidate-hermetic",
+    "package:reproducible"
+  ],
+  "extensions": {
+    "legacy": {
+      "artifactRoot": "openspec/changes/complete-executable-pipeline-p0-p3",
+      "capabilities": {
+        "fallbacks": [
+          "OMX native consensus tracker unavailable in Codex App; durable independent reviews retained"
+        ],
+        "missing": []
+      },
+      "decisions": [
+        "Stable contracts plus optional adapters",
+        "Normative scene.json sidecar",
+        "Incremental complete CLI"
+      ],
+      "gbrain": {
+        "detected": false,
+        "paths": [],
+        "syncPlanned": false
+      },
+      "motion": {
+        "implementationLibrary": "none",
+        "motionSpec": "openspec/changes/complete-executable-pipeline-p0-p3/motion.md",
+        "reducedMotion": "contract-validated",
+        "required": false
+      },
+      "openSpec": {
+        "changeId": "complete-executable-pipeline-p0-p3",
+        "detected": true,
+        "paths": [
+          "openspec/changes/complete-executable-pipeline-p0-p3"
+        ]
+      },
+      "projectRoot": ".",
+      "qa": {
+        "evidenceRoot": "openspec/changes/complete-executable-pipeline-p0-p3/qa.md",
+        "scores": {
+          "cleanBaselinePassed": 112,
+          "overlayBaselinePassed": 118
+        },
+        "status": "in-progress"
+      },
+      "surfaces": [
+        "state",
+        "scene",
+        "cli",
+        "evidence",
+        "interoperability",
+        "benchmark",
+        "adapters"
+      ]
+    },
+    "legacyEvents": {
+      "count": 1,
+      "sha256": "681516f089fa0e825141d9a95f9288a995276ba73d87ac950c3211c82dba066f"
+    },
+    "legacyStatus": "in-progress",
+    "unknown": {}
+  },
+  "foundations": {
+    "design": {
+      "path": "DESIGN.md",
+      "sha256": "1126499915fb720ce0943afcba8b9327885c11a6ccc63160db96cd801a8cf88e",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind design"
+    },
+    "motion": {
+      "path": "MOTION.md",
+      "sha256": "5a23e0fcdb7d4ebddea2f8f446b91edbdaba3812baf44a7066034b5b2d8e7302",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind motion"
+    }
+  },
+  "lastEventSeq": 5,
+  "migration": {
+    "sourceNextField": "nextActions",
+    "sourcePhaseField": "phase",
+    "sourceSchema": "design-pipeline.state.v1",
+    "sourceSha256": "7095c620924fe6f4a363dbe0becd9fdafefd02777f591a27d402565d4a9dbc12",
+    "sourceStatus": "in-progress"
+  },
+  "nextActions": [
+    "Push the exact commit to main without force",
+    "Verify GitHub CI for the exact commit",
+    "Tag v0.7.0 and verify downloaded release assets"
+  ],
+  "phase": "release-readiness",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 5,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "verifying",
+  "updatedAt": "2026-07-22T22:03:40.801Z"
+}

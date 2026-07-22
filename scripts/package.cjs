@@ -3,9 +3,9 @@
 /**
  * Package the design-pipeline skill for GitHub Releases and offline install.
  * Output:
- * - dist/design-pipeline-skill.tgz
- * - dist/design-pipeline-skill.zip
- * - dist/checksums.txt
+ * - <output-root>/design-pipeline-skill.tgz
+ * - <output-root>/design-pipeline-skill.zip
+ * - <output-root>/checksums.txt
  */
 
 const crypto = require("node:crypto");
@@ -15,8 +15,27 @@ const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 
 const repoRoot = path.resolve(__dirname, "..");
-const skillDir = path.join(repoRoot, "skill");
-const distDir = path.join(repoRoot, "dist");
+function parseArgs(argv) {
+  const options = {};
+  for (let index = 0; index < argv.length; index += 1) {
+    const token = argv[index];
+    if (token === "--output-root") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("--")) throw new Error("--output-root requires a value");
+      options.outputRoot = value;
+      index += 1;
+    } else if (token === "--help" || token === "-h") options.help = true;
+    else throw new Error(`unknown option: ${token}`);
+  }
+  return options;
+}
+
+const options = parseArgs(process.argv.slice(2));
+const resourceManifest = JSON.parse(fs.readFileSync(path.join(__dirname, "package-resources.json"), "utf8"));
+if (resourceManifest.schema !== "design-pipeline.package-resources.v1") throw new Error("unsupported package resource manifest");
+if (typeof resourceManifest.packageRoot !== "string" || path.isAbsolute(resourceManifest.packageRoot) || resourceManifest.packageRoot.split(/[\\/]/).includes("..")) throw new Error("packageRoot must be repository-relative");
+const skillDir = path.join(repoRoot, resourceManifest.packageRoot);
+const distDir = path.resolve(options.outputRoot || process.env.PACKAGE_OUTPUT_ROOT || path.join(repoRoot, "dist"));
 const version =
   process.env.PACKAGE_VERSION ||
   process.env.GITHUB_REF_NAME?.replace(/^v/, "") ||
@@ -65,9 +84,9 @@ function packageMetadata(sourceDateEpoch) {
         packagedAt: new Date(sourceDateEpoch * 1000).toISOString(),
         source: "https://github.com/2233admin/design-pipeline",
         install: [
-          "mkdir -p ~/.codex/skills/design-pipeline",
-          "tar -xzf design-pipeline-skill.tgz -C ~/.codex/skills",
-          "node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs",
+          "mkdir -p /tmp/design-pipeline-release && tar -xzf design-pipeline-skill.tgz -C /tmp/design-pipeline-release",
+          "node /tmp/design-pipeline-release/design-pipeline/scripts/install-local.cjs --root ~/.codex/skills --target ~/.codex/skills/design-pipeline --source /tmp/design-pipeline-release/design-pipeline",
+          "node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .",
         ],
       },
       null,
@@ -81,8 +100,15 @@ function collectArchiveEntries(sourceDateEpoch) {
   if (!fs.existsSync(path.join(skillDir, "SKILL.md"))) {
     fail("skill/SKILL.md missing");
   }
-  if (fs.existsSync(path.join(skillDir, "PACKAGE.json"))) {
-    fail("skill/PACKAGE.json is reserved for generated package metadata");
+  if (!Array.isArray(resourceManifest.generated)) fail("generated package resources must be an array");
+  for (const generated of resourceManifest.generated) {
+    if (path.isAbsolute(generated) || generated.split(/[\\/]/).includes("..")) fail(`generated package resource is unsafe: ${generated}`);
+    if (fs.existsSync(path.join(skillDir, generated))) fail(`skill/${generated} is reserved for generated package content`);
+  }
+  for (const required of resourceManifest.required || []) {
+    if (path.isAbsolute(required) || required.split(/[\\/]/).includes("..") || !fs.existsSync(path.join(skillDir, required))) {
+      fail(`required package resource is missing or unsafe: ${required}`);
+    }
   }
 
   const entries = [];
@@ -117,11 +143,15 @@ function collectArchiveEntries(sourceDateEpoch) {
   for (const child of fs.readdirSync(skillDir).sort()) {
     visit(path.join(skillDir, child), child);
   }
-  entries.push({
-    name: "design-pipeline/PACKAGE.json",
-    data: packageMetadata(sourceDateEpoch),
-    isDirectory: false,
-  });
+  const generatedEntries = new Map([
+    ["PACKAGE.json", packageMetadata(sourceDateEpoch)],
+    ["scripts/install-local.cjs", fs.readFileSync(path.join(repoRoot, "scripts/install-local.cjs"))],
+  ]);
+  for (const generated of resourceManifest.generated) {
+    const data = generatedEntries.get(generated);
+    if (!data) fail(`no generator is defined for package resource: ${generated}`);
+    entries.push({ name: `design-pipeline/${generated}`, data, isDirectory: false });
+  }
   entries.sort((left, right) =>
     left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
   );
@@ -315,6 +345,7 @@ function sha256(buffer) {
 
 function publishArtifacts(tgz, zip) {
   const parent = path.dirname(distDir);
+  fs.mkdirSync(parent, { recursive: true });
   const temporary = fs.mkdtempSync(path.join(parent, ".design-pipeline-dist-"));
   const backup = path.join(parent, `.design-pipeline-dist-backup-${process.pid}`);
   let movedExisting = false;
@@ -361,6 +392,10 @@ function publishArtifacts(tgz, zip) {
 }
 
 function main() {
+  if (options.help) {
+    console.log("Usage: node scripts/package.cjs [--output-root <path>]");
+    return;
+  }
   const sourceDateEpoch = resolveSourceDateEpoch();
   const entries = collectArchiveEntries(sourceDateEpoch);
   const tar = createTar(entries, sourceDateEpoch);
@@ -376,7 +411,7 @@ function main() {
   console.log(
     `OK ${path.relative(repoRoot, path.join(distDir, "design-pipeline-skill.zip"))} (${zip.length} bytes)`,
   );
-  console.log("OK dist/checksums.txt");
+  console.log(`OK ${path.relative(repoRoot, path.join(distDir, "checksums.txt"))}`);
 }
 
 try {

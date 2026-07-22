@@ -1,202 +1,82 @@
-# Agent Interface
+# Agent Interface v2
 
-`design-pipeline` must support unattended execution. A human should not need to watch the UI or read the conversation transcript to understand the current state.
+Every active change exposes `state.json`, `events.jsonl`, and `handoff.md`. Together they let a new
+agent inspect, resume, verify, or archive a run without the conversation transcript.
 
-Every pipeline change folder should expose these files:
+## Authority And Schemas
+
+- `state.json` is the current machine state and uses `design-pipeline.state.v2`.
+- `events.jsonl` is append-only history; each line uses `design-pipeline.event.v2`.
+- `handoff.md` is a readable projection and never overrides state/events.
+- `references/pipeline-phases.json` is the versioned phase and transition registry.
+- `references/pipeline-state.schema.json` and `pipeline-event.schema.json` are the public shapes.
+
+The current writable registry is `design-pipeline.phases.v2`:
 
 ```text
-state.json
-events.jsonl
-handoff.md
+repo-read -> brief -> directions -> design-spec -> motion-spec -> tasks
+tasks -> implementation -> gate-review -> verification -> release-readiness -> archive
+gate-review/verification -> implementation (repair loop)
 ```
 
-These files are the AI-facing interface. Another agent can inspect, resume, verify, or archive a run by reading them first.
+## Required State Semantics
 
-## `state.json`
+`state.json` records the registry version, change identity, status, phase, revision, last event
+sequence, timestamp, blockers, next actions, foundation references, optional scene runtime,
+evidence, migration metadata, and extensions. State changes increment `revision`; committed events
+increment `lastEventSeq` and form a hash-linked chain.
 
-Machine-readable current state. Keep it compact and update it at every phase transition.
+Allowed v2 statuses are `initialized`, `planning`, `ready`, `implementing`, `verifying`, `complete`,
+and `blocked`. A future schema or unknown registry is not guessed and must fail closed.
 
-```json
-{
-  "schema": "design-pipeline.state.v1",
-  "changeId": "",
-  "status": "planned",
-  "phase": "stage-0-repo-read",
-  "updatedAt": "",
-  "artifactRoot": "",
-  "projectRoot": "",
-  "surfaces": [],
-  "capabilities": {
-    "missing": [],
-    "fallbacks": [],
-    "feedback": "available"
-  },
-  "openSpec": {
-    "detected": false,
-    "changeId": "",
-    "paths": []
-  },
-  "gbrain": {
-    "detected": false,
-    "syncPlanned": false,
-    "paths": []
-  },
-  "motion": {
-    "required": false,
-    "motionSpec": "",
-    "implementationLibrary": "",
-    "reducedMotion": "unknown"
-  },
-  "qa": {
-    "status": "not-run",
-    "evidenceRoot": "",
-    "scores": {}
-  },
-  "designFoundation": {
-    "path": "DESIGN.md",
-    "status": "synthesis-required",
-    "sha256": null
-  },
-  "designSynthesis": {
-    "manifest": "",
-    "status": "",
-    "stage": "",
-    "output": "DESIGN.md"
-  },
-  "decisions": [],
-  "blockers": [],
-  "nextActions": []
-}
+## Writer Protocol
+
+Use the unified CLI rather than editing state/events independently:
+
+```powershell
+node skill/scripts/designer-pipeline.cjs status --root . --change-root <change> --json
+node skill/scripts/designer-pipeline.cjs change advance --root . --change-root <change> `
+  --expected-sha256 <current-state-sha256> --phase gate-review `
+  --summary "Implementation complete" --timestamp <iso-date> --json
 ```
 
-Allowed `status` values:
+Every mutating command requires the expected SHA-256 of the current state. The writer lock prevents
+concurrent mutation. State and event writes use a staged, crash-safe transaction with rollback;
+callers may retry only after reading the current state again.
 
-- `planned`
-- `in-progress`
-- `blocked`
-- `needs-review`
-- `complete`
-- `archived`
+## Migration And Repair
 
-Allowed `phase` values:
+Both historical `design-pipeline.state.v1`/`phase` and `design-pipeline-state.v1`/`stage` are
+readable. Migration to v2 is deterministic, preserves unknown legacy fields in `extensions`, and
+does not write without `--write` plus the expected source hash.
 
-- `stage-0-repo-read`
-- `stage-1-brief`
-- `stage-2-directions`
-- `stage-3-design-spec`
-- `stage-3-motion-spec`
-- `stage-4-tasks`
-- `stage-5-implementation`
-- `stage-6-gate-review`
-- `stage-7-archive`
-
-## `events.jsonl`
-
-Append-only event log. Each line is JSON.
-
-```json
-{"ts":"","phase":"","type":"decision","summary":"","files":[],"evidence":[],"nextActions":[]}
+```powershell
+node skill/scripts/designer-pipeline.cjs change migrate --root . --change-root <change> --json
+node skill/scripts/designer-pipeline.cjs change migrate --root . --change-root <change> `
+  --write --expected-sha256 <legacy-state-sha256> --json
+node skill/scripts/designer-pipeline.cjs change repair --root . --change-root <change> `
+  --legacy-events --expected-sha256 <v2-state-sha256> --timestamp <iso-date> --json
 ```
 
-Common event types:
+Readers never auto-repair. A missing/mismatched event chain, stale lock, or interrupted transaction
+must produce explicit diagnostics and an explicit repair event with evidence.
 
-- `self-check`
-- `artifact-created`
-- `interaction-required`
-- `interaction-completed`
-- `decision`
-- `scope-surprise`
-- `wayfinder-linked`
-- `design-validated`
-- `implementation-resumed`
-- `fallback-selected`
-- `implementation-step`
-- `qa-evidence`
-- `feedback-recorded`
-- `feedback-accepted`
-- `feedback-resolved`
-- `blocker`
-- `state-repair`
-- `handoff`
-- `archive`
+## Handoff Projection
 
-Rules:
-
-- Append; do not rewrite history unless removing secrets.
-- Keep event summaries short.
-- Reference files by repo-relative path.
-- Include evidence paths whenever verification happened.
-
-## `handoff.md`
-
-Human- and agent-readable resume note. Keep it current enough that another agent can continue without conversation history.
-
-```md
-# Handoff
-
-## Current State
-
-- Change id:
-- Status:
-- Phase:
-- Last updated:
-
-## Goal
-
-## Artifacts
-
-- Brief:
-- Directions:
-- Design:
-- Motion:
-- Tasks:
-- QA:
-- State:
-- Events:
-
-## Decisions
-
-## Missing Capabilities / Fallbacks
-
-## Evidence
-
-## Blockers
-
-## Next Actions
-```
+`handoff.md` records current state, goal, artifact links, decisions, capability fallbacks, evidence,
+blockers, and next actions. Its phase, status, and next actions must agree with `state.json`; evidence
+paths must exist.
 
 ## Resume Protocol
 
-When another agent resumes:
+1. Run `status` and require a consistent v2 state/event pair.
+2. Read the tail of `events.jsonl` and then `handoff.md`.
+3. Read artifacts named by current phase and `nextActions`.
+4. Revalidate referenced foundations/evidence before implementation or release.
+5. Continue from the recorded phase; do not restart discovery unless evidence is stale or contradictory.
 
-1. Read `state.json`.
-2. Read the last 20 lines of `events.jsonl`.
-3. Read `handoff.md`.
-4. Read only the artifact files referenced by current `phase` and `nextActions`.
-5. Continue from `nextActions`; do not restart discovery unless state is stale or contradictory.
+## Secret Boundary
 
-When `designSynthesis` is present, read its manifest before the phase artifact. A run waiting at
-`grill-with-docs` or `wayfinder` is intentionally interactive; do not answer the user's unresolved
-decision or fabricate a tracker artifact in order to advance it.
-
-`designFoundation.status` is `synthesis-required`, `invalid`, or `ready`. Stage 5 implementation is
-valid only when it is `ready` and its hash matches the project `DESIGN.md`.
-
-## Staleness
-
-State is stale when:
-
-- `state.json.updatedAt` predates modified implementation files.
-- `handoff.md` disagrees with `state.json`.
-- `events.jsonl` has no event for the current phase.
-- QA evidence paths no longer exist.
-
-If stale, append a `blocker` or `state-repair` event before continuing.
-
-## Secret Handling
-
-Never write secrets, tokens, cookies, private credentials, or raw proprietary data into these files. Reference secure locations indirectly when necessary.
-
-- Redact tokens, credentials, private URLs, authenticated headers, and machine-specific paths.
-- Use `record-feedback.cjs` for contribution evidence so common secret patterns and local paths are redacted before draft creation.
-- Do not copy raw browser cookies, proprietary source, or private screenshots into Issue or PR drafts.
+State, events, handoff, and feedback never contain tokens, cookies, raw credentials, authenticated
+headers, or proprietary payloads. Use repo-relative evidence references and the feedback recorder's
+redaction path. Remote publication always requires separate explicit authority and a receipt.

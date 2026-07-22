@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/pipeline-state.v2.json",
+  "title": "Designer Pipeline State v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "registryVersion", "changeId", "status", "phase", "revision", "lastEventSeq", "updatedAt", "blockers", "nextActions", "foundations", "sceneRuntime", "evidence", "migration", "extensions"],
+  "properties": {
+    "schema": {"const": "design-pipeline.state.v2"},
+    "registryVersion": {"type": "string"},
+    "changeId": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "status": {"enum": ["initialized", "planning", "ready", "implementing", "verifying", "complete", "blocked"]},
+    "phase": {"type": "string"},
+    "revision": {"type": "integer", "minimum": 0},
+    "lastEventSeq": {"type": "integer", "minimum": 0},
+    "updatedAt": {"type": "string"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "nextActions": {"type": "array", "items": {"type": "string"}},
+    "foundations": {"type": "object"},
+    "sceneRuntime": {"type": ["object", "null"]},
+    "evidence": {"type": "array"},
+    "migration": {"type": ["object", "null"]},
+    "extensions": {"type": "object"}
+  }
+}

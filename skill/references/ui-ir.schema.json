@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/ui-ir.v1.json",
+  "title": "Declarative UI IR",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "catalogVersion", "nodes"],
+  "properties": {"schema":{"const":"design-pipeline.ui-ir.v1"},"catalogVersion":{"type":"string"},"nodes":{"type":"array"}}
+}

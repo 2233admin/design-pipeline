@@ -1,0 +1,9 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://github.com/2233admin/design-pipeline/schema/benchmark-manifest.v1.json",
+  "title":"Designer Pipeline Benchmark Manifest",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["schema","id","requiredDimensions","scenarios"],
+  "properties":{"schema":{"const":"design-pipeline.benchmark-manifest.v1"},"id":{"type":"string"},"requiredDimensions":{"type":"array"},"scenarios":{"type":"array"}}
+}

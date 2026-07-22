@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-code-map.v1.json",
+  "title": "Design To Code Map",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "uiIrSha256", "tokenSha256", "mappings"],
+  "properties": {"schema":{"const":"design-pipeline.design-code-map.v1"},"uiIrSha256":{"type":"string"},"tokenSha256":{"type":"string"},"mappings":{"type":"array"}}
+}

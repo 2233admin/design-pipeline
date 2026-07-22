@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-tool-port.v1.json",
+  "title": "Provider-neutral design-tool receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "provider", "operation", "status", "source", "mappings", "editable", "evidence"],
+  "properties": {
+    "schema": {"const": "design-pipeline.design-tool-receipt.v1"},
+    "id": {"type": "string"},
+    "provider": {"type": "object"},
+    "operation": {"enum": ["import", "export", "round-trip"]},
+    "status": {"enum": ["valid", "invalid", "unknown"]},
+    "source": {"type": "object"},
+    "mappings": {"type": "object"},
+    "editable": {"type": "boolean"},
+    "evidence": {"type": "array"}
+  }
+}

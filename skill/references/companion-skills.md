@@ -38,10 +38,22 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 | `gsap-performance` | `greensock/gsap-skills` | GSAP animation performance and production safety | Installed |
 | `gsap-frameworks` | `greensock/gsap-skills` | Framework-specific GSAP usage beyond plain JS | Installed |
 | `animejs` | `BowTiedSwan/animejs-skills` + official Anime.js docs | Anime.js v4.5 modules: timelines, layout, text, SVG, draggable, scroll, WAAPI, adapters/Three.js, deterministic 3D stagger | Installed; capability profile may warn when stale |
+| `pixijs` + official sub-skills | `pixijs/pixijs-skills` | PixiJS v8 router for Application, scene graph, assets, events, ticker, particles, filters/shaders, performance, environments, and accessibility | Optional; suite capability profile detects missing or partial coverage |
 
 Anime.js is version-sensitive. A present skill directory is not enough to prove v4.5 coverage; run `check-deps.cjs` and follow `capability-routing.md` when the profile reports missing markers.
 
-GSAP, Next.js, visual-direction, motion-review, and gstack-style feedback suites also have bounded capability profiles. A suite can report `WARN` when only part of it is installed or when an installed skill no longer advertises a required capability.
+PixiJS is a specialized 2D renderer, not a default replacement for CSS, Anime.js, or GSAP. Read
+`references/pixijs-rendering.md` before choosing it. The production capability profile checks the
+official router plus Application lifecycle, accessibility, performance, ticker, and environment
+coverage; scene, asset, event, filter, shader, and display-object skills are loaded on demand.
+
+Phaser v4 is supported through the built-in `references/phaser-v4.md` route rather than a required
+companion. The official Phaser Game Agent MCP is credentialed and metered, while the reviewed
+community Phaser pack has no verified repository license; neither is an automatic install path.
+Use `references/graphics-runtime-routing.md` for other 2D, 3D, data, geospatial, GPU, and narrative
+adapters.
+
+GSAP, PixiJS, Next.js, visual-direction, motion-review, and gstack-style feedback suites also have bounded capability profiles. A suite can report `WARN` when only part of it is installed or when an installed skill no longer advertises a required capability.
 
 ## Vercel / Next.js Engineering Set
 

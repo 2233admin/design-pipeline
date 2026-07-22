@@ -1,0 +1,13 @@
+{
+  "schema": "design-pipeline.ui-pattern-catalog.v1",
+  "version": "1.0.0",
+  "patterns": [
+    {"id":"button","aliases":["action","按钮"],"category":"input","platforms":["web","game-ui"],"anatomy":["label","icon"],"states":["hover","focus","pressed","disabled","loading"],"interactions":["activate"],"checks":["accessible-name","keyboard-activation","focus-visible"],"relations":[],"provenance":"clean-room platform semantics","support":"native"},
+    {"id":"dialog","aliases":["modal","对话框"],"category":"overlay","platforms":["web","game-ui"],"anatomy":["title","content","actions"],"states":["open","closing","error"],"interactions":["open","dismiss","confirm"],"checks":["focus-trap","escape","return-focus"],"relations":["button"],"provenance":"clean-room ARIA-aligned workflow","support":"generic-workflow"},
+    {"id":"combobox","aliases":["autocomplete","select-search","组合框"],"category":"input","platforms":["web"],"anatomy":["input","popup","option"],"states":["focus","expanded","empty","error","disabled"],"interactions":["type","navigate","select"],"checks":["aria-expanded","active-descendant","keyboard-navigation"],"relations":[],"provenance":"clean-room ARIA-aligned workflow","support":"generic-workflow"},
+    {"id":"tabs","aliases":["tablist","标签页"],"category":"navigation","platforms":["web","game-ui"],"anatomy":["tablist","tab","tabpanel"],"states":["selected","focus","disabled"],"interactions":["select","keyboard-roving"],"checks":["aria-controls","roving-tabindex"],"relations":[],"provenance":"clean-room platform semantics","support":"native"},
+    {"id":"data-table","aliases":["grid","数据表"],"category":"data","platforms":["web"],"anatomy":["header","row","cell"],"states":["loading","empty","error","selected"],"interactions":["sort","filter","select"],"checks":["header-association","keyboard-navigation"],"relations":[],"provenance":"clean-room product workflow","support":"generic-workflow"},
+    {"id":"dialogue-box","aliases":["visual-novel-dialogue","galgame-textbox","对话框"],"category":"narrative","platforms":["game-ui"],"anatomy":["speaker","text","advance","choices"],"states":["typing","complete","choice","backlog","autoplay","skip"],"interactions":["advance","choose","open-backlog"],"checks":["readable-text","keyboard-advance","announcement"],"relations":["button"],"provenance":"clean-room narrative UI model","support":"native"},
+    {"id":"hud","aliases":["heads-up-display","游戏界面"],"category":"game-ui","platforms":["game-ui"],"anatomy":["status","resources","objectives"],"states":["normal","warning","critical","hidden"],"interactions":["inspect"],"checks":["non-color-signal","safe-area","semantic-mirror"],"relations":[],"provenance":"clean-room game UI model","support":"native"}
+  ]
+}

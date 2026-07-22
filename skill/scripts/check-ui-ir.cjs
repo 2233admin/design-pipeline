@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+"use strict";
+const path=require("node:path");const{validateUiIr}=require("./interoperability-core.cjs");const{jsonResult,readJson}=require("./contract-utils.cjs");function arg(n){const i=process.argv.indexOf(n);return i>=0?process.argv[i+1]:null;}try{const file=path.resolve(arg("--artifact")||"ui-ir.json");const catalog=path.resolve(arg("--catalog")||path.join(__dirname,"../references/ui-pattern-catalog.json"));process.stdout.write(`${JSON.stringify(jsonResult(true,validateUiIr(readJson(file,"ui ir"),readJson(catalog,"patterns"))))}\n`);}catch(error){process.stdout.write(`${JSON.stringify(jsonResult(false,{},error))}\n`);process.exitCode=1;}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/adapter-registry.v1.json",
+  "title": "Designer Pipeline adapter registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "adapters"],
+  "properties": {
+    "schema": {"const": "design-pipeline.adapter-registry.v1"},
+    "version": {"type": "string"},
+    "adapters": {"type": "array", "items": {"type": "object"}}
+  }
+}

@@ -90,8 +90,10 @@ Treat runtimes as adapters to the same semantic contract:
 - `unsupported`: the selected primitive must not be emitted through that adapter.
 
 CSS and WAAPI are preferred for small state transitions. Anime.js and GSAP are optional adapters
-for choreography they materially simplify. Canvas, SVG filters, and WebGL require an explicit
-performance owner and fallback.
+for choreography they materially simplify. PixiJS is an optional 2D rendering adapter only when a
+scene, object count, particle field, filter, shader, or Canvas/WebGL/WebGPU requirement justifies a
+dedicated renderer. Canvas, PixiJS, SVG filters, WebGL, and WebGPU require an explicit performance,
+accessibility, lifecycle, and fallback owner.
 
 ## Evidence And Provenance
 

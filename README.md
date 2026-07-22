@@ -21,6 +21,15 @@ It is not a general-purpose agent marketplace. Engineering integrations exist on
 - Audits upstream companion evidence as current, stale, changed, untracked, or unknown.
 - Bridges explicit publication authority through deterministic Issue/PR requests and receipts.
 - Routes Anime.js v4.5 across layout, text, SVG, draggable, scroll, WAAPI, adapters, and Three.js work.
+- Routes the official PixiJS v8 skill suite for justified interactive 2D rendering, with explicit
+  scene, lifecycle, performance, accessibility, reduced-motion, and fallback contracts.
+- Routes graphics by durable capability family before library choice, with normative `scene.json`
+  plus a human-readable `scene.md` projection for 2D, 3D, game, GPU, geospatial, and persistent
+  narrative state.
+- Exposes one stable `designer-pipeline` CLI for lifecycle state, evidence, motion/component gates,
+  tokens/UI IR, benchmarks, adapter governance, local feedback, and release diagnostics.
+- Provides a native Phaser v4 route for browser games and a game UI/Galgame profile for HUD,
+  dialogue, choices, backlog, skip, autoplay, save/load, localization, and accessibility.
 - Aligns with OpenSpec's proposal -> apply -> archive lifecycle.
 - Reconstructs authorized live websites through Browser, Builder, and Evidence ports with measurable fidelity gates.
 - Blocks website-cloning implementation until DOM and raster palette evidence, semantic roles,
@@ -134,6 +143,39 @@ node skill/scripts/check-motion-foundation.cjs --project-root . --json
 foundation must be repaired. Change-level `motion.md` files specialize the project foundation and
 record its hash; they do not replace it.
 
+PixiJS is available as an optional 2D rendering route, not as the default answer to animation.
+When sprite fields, particles, filters, shaders, canvas editors, or high object counts justify it,
+the pipeline routes through the official `pixijs` skill suite and requires change `motion.md` plus
+`scene.md` to name temporal semantics, renderer, scene graph, ticker, assets, performance budget,
+accessibility strategy, reduced-motion substitution, and cleanup. See
+`skill/references/pixijs-rendering.md`.
+
+## Graphics, Game UI, and Scene Runtime
+
+The stable abstraction is a capability contract, not a favorite library. The pipeline first
+classifies the surface as semantic UI, data/vector graphics, 2D editor canvas, 2D scene renderer,
+2D game engine, 3D renderer, 3D game engine, geospatial 3D, GPU/shader work, or narrative game UI.
+It then preserves the target project's accepted runtime or chooses the smallest suitable adapter.
+
+Persistent spatial or engine-owned work adds normative change `scene.json` and a matching
+`scene.md` projection. The sidecar records coordinates, lifecycle, assets, input,
+UI/accessibility boundaries, adapter/version, performance budgets, deterministic evidence,
+degradation, and cleanup in a machine-checkable contract. The Markdown file explains the same
+decisions and must match the sidecar identity and foundation hashes. `DESIGN.md` remains the visual
+system and `MOTION.md` remains the reusable motion language.
+
+Phaser v4 is the built-in route for a complete browser-based 2D game runtime. PixiJS remains the
+specialized 2D renderer route. Three.js and React Three Fiber cover focused 3D rendering;
+Babylon.js and PlayCanvas cover fuller 3D engine needs. Data, geospatial, WebGPU/WGSL, and
+narrative adapters are cataloged without making every library a mandatory dependency.
+
+The official Phaser Game Agent MCP is optional because it is credentialed and metered. An
+unlicensed community Phaser skill pack is tracked only as a curation candidate and is never
+auto-installed. See `skill/references/graphics-runtime-routing.md`,
+`skill/references/graphics-runtime-catalog.json`, `skill/references/adapter-registry.json`,
+`skill/references/scene-runtime-spec.md`,
+`skill/references/phaser-v4.md`, and `skill/references/game-ui-and-narrative.md`.
+
 ## Contextual Anti-Slop Review
 
 The pipeline internalizes useful anti-template observations as structured QA, not as a global taste
@@ -179,6 +221,11 @@ skill/
     motion-foundation.md
     motion-foundation.schema.json
     motion-primitives.json
+    graphics-runtime-routing.md
+    graphics-runtime-catalog.json
+    scene-runtime-spec.md
+    phaser-v4.md
+    game-ui-and-narrative.md
   scripts/
     check-design-foundation.cjs
     check-motion-foundation.cjs
@@ -202,13 +249,16 @@ scripts/
 
 ## Install Locally
 
-From this repository:
+From this repository, use the path-contained installer:
 
 ```bash
-mkdir -p ~/.codex/skills/design-pipeline
-cp -R skill/* ~/.codex/skills/design-pipeline/
-node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
+node scripts/install-local.cjs --source skill --root ~/.codex/skills --target ~/.codex/skills/design-pipeline
+node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .
 ```
+
+An existing target is preserved unless `--replace` is explicit. The installer stages the copy and
+renames it atomically; symlinks, directory junctions, and paths outside the selected root/target
+boundary are rejected.
 
 To capture stale installed capabilities immediately as local contribution drafts:
 
@@ -222,18 +272,20 @@ Windows PowerShell example:
 
 ```powershell
 $target = Join-Path $HOME ".codex\skills\design-pipeline"
-New-Item -ItemType Directory -Force $target | Out-Null
-Copy-Item skill\* $target -Recurse -Force
-node (Join-Path $target "scripts\check-deps.cjs")
+node scripts\install-local.cjs --source skill --root (Split-Path $target) --target $target
+node (Join-Path $target "scripts\designer-pipeline.cjs") doctor --root .
 ```
 
 Or install from a GitHub Release package:
 
 ```bash
 # download design-pipeline-skill.tgz from Releases, then:
-mkdir -p ~/.codex/skills
-tar -xzf design-pipeline-skill.tgz -C ~/.codex/skills
-node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
+mkdir -p /tmp/design-pipeline-release
+tar -xzf design-pipeline-skill.tgz -C /tmp/design-pipeline-release
+node /tmp/design-pipeline-release/design-pipeline/scripts/install-local.cjs \
+  --root /tmp/design-pipeline-release/design-pipeline \
+  --target ~/.codex/skills/design-pipeline
+node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .
 ```
 
 ## Feedback And Contributions
@@ -281,21 +333,35 @@ is reported as `UNKNOWN`; ambient credentials never imply publication authority.
 See `skill/references/upstream-capability-sync.md` for the evidence, host, idempotency, and receipt
 contracts.
 
-## CLI And Reference Catalog Direction
+## Unified CLI And Reference Providers
 
-The current scripts remain the deterministic kernel. A future `designer-pipeline` CLI may provide a
-single lifecycle façade, while `designmd` and `motionmd` remain responsible for their own document
-semantics. Public template collections may be connected as optional, attributed reference
-providers; they never become the authority for project `DESIGN.md` or `MOTION.md`.
+`skill/scripts/designer-pipeline.cjs` is the stable lifecycle façade over the deterministic kernels.
+It emits `design-pipeline.cli-result.v1`, contains every project path below `--root`, and uses exit
+code `0` for success, `1` for invalid input/error, and `2` for blocked or failed verification.
+
+```powershell
+node skill/scripts/designer-pipeline.cjs doctor --root . --json
+node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
+node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
+node skill/scripts/designer-pipeline.cjs adapter audit --root . --json
+```
+
+The CLI does not replace DESIGN/MOTION document semantics and never publishes remotely. Public
+template collections remain optional, attributed reference providers; they cannot overwrite a
+validated project foundation.
 
 See `docs/cli-and-reference-providers.md` for the boundary and planned command surface.
 
 ## Package / CI
 
 ```bash
-node scripts/qa.cjs        # structure + self-check + package
-node scripts/package.cjs   # writes dist/design-pipeline-skill.tgz (+ zip)
+node scripts/qa.cjs
+node scripts/package.cjs --output-root dist
 ```
+
+QA is hermetic: it checks manifest parity, syntax, all tests, control-plane smoke commands,
+byte-reproducible archives, archive completeness, failure atomicity, isolated installation,
+installed-package CLI behavior, and a byte-identical repository status before/after the run.
 
 GitHub Actions:
 
@@ -325,7 +391,8 @@ The pipeline's runtime design artifacts map to OpenSpec as:
 | `motion.md` | Motion-specific design spec |
 | `tasks.md` | Implementation checklist |
 | `qa.md` | Validation evidence |
-| `state.json` / `events.jsonl` / `handoff.md` | Headless agent state |
+| `scene.json` / `scene.md` | Machine scene contract / readable projection |
+| `state.json` / `events.jsonl` / `handoff.md` | CAS-protected state / append-only history / readable resume note |
 
 ## Minimum Viable Run
 

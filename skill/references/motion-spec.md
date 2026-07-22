@@ -26,7 +26,7 @@ accessibility, runtime, and evidence fields.
 - Surfaces:
 - Motion owner:
 - Motion risk: low / medium / high:
-- Implementation target: CSS / WAAPI / Anime.js / GSAP / Canvas / SVG / WebGL / existing runtime:
+- Implementation target: CSS / WAAPI / Anime.js / GSAP / PixiJS / Phaser / Three.js / React Three Fiber / Babylon.js / PlayCanvas / Canvas / SVG / WebGL / WebGPU / existing runtime:
 
 ## Motion Principles
 
@@ -104,6 +104,12 @@ Describe:
 - loading success or failure while motion is active;
 - cleanup of render loops, observers, contexts, filters, and listeners.
 
+For PixiJS, Phaser, Three.js, React Three Fiber, Babylon.js, PlayCanvas, Canvas, WebGL, WebGPU, and
+other persistent spatial runtimes, create `scene.md` using `references/scene-runtime-spec.md`.
+Keep camera, coordinates, scene graph, assets, input, render/game-loop, DPR/resize, performance,
+determinism, accessibility overlay, fallback, and cleanup ownership there. `motion.md` remains the
+temporal and semantic motion contract.
+
 ## Easing And Spatial Behavior
 
 | Motion type | Easing | Origin / direction | Distance / scale | Opacity / filter | Why |
@@ -121,7 +127,7 @@ layout, blur, filters, masks, Canvas, or WebGL require an explicit performance r
 
 | Primitive / track | Adapter | Capability | Degradation | Cleanup owner |
 | --- | --- | --- | --- | --- |
-|  | CSS / WAAPI / Anime.js / GSAP / custom | supported / degraded / unsupported |  |  |
+|  | CSS / WAAPI / Anime.js / GSAP / PixiJS / Phaser / Three.js / Babylon.js / PlayCanvas / custom | supported / degraded / unsupported |  |  |
 
 Do not add multiple animation runtimes without distinct, non-overlapping ownership. If an adapter is
 degraded, document which semantic property changes and why the result remains acceptable.
@@ -151,6 +157,9 @@ feedback.
 - Heavy asset strategy:
 - Low-end mobile fallback:
 - Deterministic sampling seed:
+- Renderer preference and fallback:
+- Ticker / manual loop owner:
+- Draw-call, texture-memory, and DPR ceiling:
 
 ## Evidence And Provenance
 
@@ -185,6 +194,8 @@ their absence must be stated rather than replaced with guessed measurements.
 | Route interruption |  |  |
 | Scroll up/down repeatedly |  |  |
 | Resize during motion |  |  |
+| Renderer init or asset failure |  |  |
+| Tab hide, route exit, and remount |  |  |
 
 ## Final Motion Score
 

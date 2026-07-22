@@ -18,6 +18,16 @@ Create or update `qa.md` for every design-pipeline change with this structure.
 - Tests:
 - Build:
 
+## Control Plane Checks
+
+- `designer-pipeline doctor`:
+- `designer-pipeline status`:
+- State schema / phase registry:
+- State SHA-256 before mutation:
+- State/event consistency:
+- Migration or repair performed? evidence:
+- Unknown future schema/registry fail-closed check:
+
 ## Browser / Visual Checks
 
 Record screenshots under `design/changes/<change-id>/qa/screenshots/` when possible.
@@ -132,6 +142,74 @@ effects, and common layout families are not hard failures.
 - Cleanup on unmount:
 - Evidence: screenshot / video / trace / manual notes:
 
+## Scene And Runtime Checks
+
+Complete this section when `scene.json` and `scene.md` are required.
+
+- Graphics capability family:
+- Adapter ID and version:
+- Existing runtime preserved or dependency change justified:
+- `scene.json` passes `scene check`:
+- `scene.md` projection identity/hash markers match:
+- DESIGN/MOTION foundation hashes recorded:
+- Scene, camera, coordinates, layers, and safe-area policy:
+- Single render/game-loop owner:
+- Boot, preload, enter, pause, resume, exit, remount, and destroy behavior:
+- Asset manifest, provenance, failure, memory, and disposal behavior:
+- Keyboard, pointer/touch, gamepad, gesture, and modal input conflicts:
+- Semantic DOM or accessibility-overlay boundary:
+- Renderer/backend and unsupported-environment fallback:
+- Frame-time, draw-call, memory, DPR, object, effect, and low-end budgets:
+- Deterministic seeds, save data, fixtures, and capture conditions:
+- Reduced-motion and reduced-effects substitution:
+- Save/load, localization, dialogue, and narrative-state checks when applicable:
+- Credentialed host optional and authority/cost boundary recorded:
+- Unverified community packs excluded from automatic install:
+- Evidence: screenshot / video / trace / profile / accessibility tree / manual notes:
+
+## Evidence Receipt Checks
+
+- Evidence adapter ID/version/path:
+- Adapter capability probe:
+- Receipt schema/status:
+- Evidence root containment:
+- Artifact SHA-256 values match:
+- Screenshot / trace / DOM / console / network / accessibility / performance coverage:
+- Redaction status:
+- Missing evidence explicitly `partial`, `blocked`, or `unknown`:
+
+## Motion And Component Evidence
+
+- `verify motion` result and receipt:
+- Deterministic capture ID / seed:
+- Duration tolerance and long-frame budget:
+- Interruption/reversal behavior:
+- Reduced-motion substitute:
+- `verify components` matrix:
+- Hover / focus / pressed / disabled / loading / empty / error states:
+- Keyboard / touch / mobile / desktop coverage:
+
+## Interoperability And Benchmark
+
+- Design tokens schema/provenance:
+- UI IR schema and catalog component IDs:
+- Design-to-code source/token mappings:
+- Pattern catalog audit/search evidence:
+- Benchmark manifest and measurements:
+- All required dimensions represented:
+- Required failures/unknowns preserved (not averaged away):
+- Local feedback observation recorded when reusable:
+
+## Adapter Governance
+
+- Adapter registry audit:
+- Graphics catalog routes resolve to registry IDs:
+- Adapter support/availability/version recorded:
+- License/provenance/security/host policy reviewed:
+- Intake evidence required for new candidate:
+- Unverified candidate blocked from install/native/companion promotion:
+- Visual style signals linked to DESIGN/MOTION decisions:
+
 ## Accessibility Checks
 
 - Keyboard tab order:
@@ -162,6 +240,23 @@ effects, and common layout families are not hard failures.
 - `handoff.md` agrees with `state.json`:
 - Evidence paths in state/events exist:
 - Another agent can resume from these files without conversation history:
+
+## Package And Release Reproducibility
+
+Complete this section when publishing the pipeline itself.
+
+- Test manifest matches every `tests/*.test.cjs` file:
+- Package resource manifest complete:
+- Two fixed-epoch package runs are byte-identical:
+- TGZ / ZIP / checksum sizes and SHA-256:
+- Invalid package input preserved previous artifacts:
+- Package extracted and installed into isolated target:
+- Existing target preserved without `--replace`:
+- Explicit replacement succeeded:
+- Installed dependency/self-check passed:
+- Installed public CLI smoke passed:
+- Isolated HOME/CODEX_HOME and invalid proxy environment used:
+- Repository status byte-identical before/after QA:
 
 ## Scorecard
 

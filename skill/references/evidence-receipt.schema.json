@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/evidence-receipt.v1.json",
+  "title": "Web Evidence Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "status", "adapter", "target", "capturedAt", "artifacts", "hashes", "redaction"],
+  "properties": {
+    "schema": {"const": "design-pipeline.evidence-receipt.v1"},
+    "id": {"type": "string"},
+    "status": {"enum": ["complete", "partial", "blocked", "unknown"]},
+    "adapter": {"type": "object"},
+    "target": {"type": "object"},
+    "capturedAt": {"type": ["string", "null"]},
+    "artifacts": {"type": "object"},
+    "hashes": {"type": "object"},
+    "redaction": {"type": "object"}
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "design-pipeline.visual-style-signals.v1",
+  "version": "1.0.0",
+  "signals": [
+    {"id":"industrial-tactical","name":"Industrial tactical interface","facets":{"defining":["high-contrast operational hierarchy","structural rules and cropped geometry"],"supporting":["condensed labels","status telemetry"],"variable":["accent hue","texture density"],"avoid":["decorative glow without system meaning","uniform card grids"]},"decisionLinks":{"design":["color roles","type hierarchy","layout rhythm"],"motion":["state transitions","alert escalation"]},"provenance":"clean-room synthesis from interface characteristics"},
+    {"id":"editorial-ink","name":"Editorial ink and archive","facets":{"defining":["paper-like tonal hierarchy","typographic composition"],"supporting":["annotation marks","asymmetric columns"],"variable":["serif family","ink saturation"],"avoid":["generic dashboard chrome","unmotivated neon accents"]},"decisionLinks":{"design":["surface palette","display typography","content measure"],"motion":["page reveal","annotation emphasis"]},"provenance":"clean-room synthesis from editorial characteristics"},
+    {"id":"luminous-science-fiction","name":"Luminous science-fiction field","facets":{"defining":["depth-separated luminous layers","spatial focal object"],"supporting":["fine technical labels","controlled bloom"],"variable":["particle vocabulary","camera depth"],"avoid":["full-screen undifferentiated glow","continuous motion without purpose"]},"decisionLinks":{"design":["depth tokens","luminance budget","focal composition"],"motion":["camera choreography","particle lifecycle","reduced-motion substitute"]},"provenance":"clean-room synthesis from spatial interface characteristics"}
+  ]
+}

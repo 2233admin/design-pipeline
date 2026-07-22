@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+"use strict";
+const path=require("node:path");const{evaluateBenchmark}=require("./benchmark-core.cjs");const{jsonResult,readJson}=require("./contract-utils.cjs");function arg(n){const i=process.argv.indexOf(n);return i>=0?process.argv[i+1]:null;}try{const manifest=readJson(path.resolve(arg("--manifest")||"benchmark.json"),"benchmark");const measurements=readJson(path.resolve(arg("--measurements")||"benchmark-measurements.json"),"benchmark");const result=evaluateBenchmark(manifest,measurements);process.stdout.write(`${JSON.stringify(jsonResult(true,{status:result.status,result}))}\n`);if(result.status!=="passed")process.exitCode=2;}catch(error){process.stdout.write(`${JSON.stringify(jsonResult(false,{},error))}\n`);process.exitCode=1;}

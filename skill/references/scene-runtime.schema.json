@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/scene-runtime.v1.json",
+  "title": "Scene Runtime Sidecar",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "family", "adapter", "foundations", "lifecycle", "coordinateSystem", "assets", "input", "accessibility", "budgets", "evidence", "degradation", "cleanup"],
+  "properties": {
+    "schema": {"const": "design-pipeline.scene-runtime.v1"},
+    "id": {"type": "string"},
+    "family": {"type": "string"},
+    "adapter": {"type": "object"},
+    "foundations": {"type": "object"},
+    "lifecycle": {"type": "object"},
+    "coordinateSystem": {"type": "object"},
+    "assets": {"type": "array"},
+    "input": {"type": "object"},
+    "accessibility": {"type": "object"},
+    "budgets": {"type": "object"},
+    "evidence": {"type": "object"},
+    "degradation": {"type": "object"},
+    "cleanup": {"type": "object"}
+  }
+}
