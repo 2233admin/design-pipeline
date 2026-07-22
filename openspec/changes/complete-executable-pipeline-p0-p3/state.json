@@ -12,7 +12,13 @@
     "qa:release-candidate-hermetic",
     "package:reproducible",
     "tests:170/170",
-    "release-verification:v0.7.0-installer-default-source-repaired"
+    "release-verification:v0.7.0-installer-default-source-repaired",
+    "ci:29962353562:success",
+    "release:29962416312:success",
+    "tag:v0.7.1:b14389a3cabfe023f7a48fc8ad14ab9ac50e1517",
+    "tgz:2d8eec0beeb7f2e543dd8eb9a47a6720dd938c2068ced24efde994ba14297b5f",
+    "zip:3492cd27b7a7ba5c1195bae6f5cb6d5edb2e90dc77133f46ea5115432d0aff62",
+    "installed-doctor:ready"
   ],
   "extensions": {
     "legacy": {
@@ -86,7 +92,7 @@
       "validator": "designer-pipeline foundation check --kind motion"
     }
   },
-  "lastEventSeq": 6,
+  "lastEventSeq": 7,
   "migration": {
     "sourceNextField": "nextActions",
     "sourcePhaseField": "phase",
@@ -94,16 +100,12 @@
     "sourceSha256": "7095c620924fe6f4a363dbe0becd9fdafefd02777f591a27d402565d4a9dbc12",
     "sourceStatus": "in-progress"
   },
-  "nextActions": [
-    "Push patch commit and verify CI",
-    "Tag v0.7.1 without moving v0.7.0",
-    "Verify downloaded v0.7.1 checksums and documented install"
-  ],
-  "phase": "release-readiness",
+  "nextActions": [],
+  "phase": "archive",
   "registryVersion": "design-pipeline.phases.v2",
-  "revision": 6,
+  "revision": 7,
   "sceneRuntime": null,
   "schema": "design-pipeline.state.v2",
-  "status": "verifying",
-  "updatedAt": "2026-07-22T22:15:56.554Z"
+  "status": "complete",
+  "updatedAt": "2026-07-22T22:22:32.853Z"
 }

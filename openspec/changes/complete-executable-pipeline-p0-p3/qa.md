@@ -64,7 +64,16 @@ makes source selection layout-aware, corrects the destination `--root` example, 
 hermetic QA to run the documented packaged command. A dedicated regression test and the full
 `170/170` suite pass before the non-destructive `v0.7.1` patch release.
 
-## Pending
+## Completed release verification
 
-Remote CI, exact-tag verification, and downloaded-artifact checksum/install verification for
-`v0.7.1`.
+- Main CI `29962353562` passed for patch commit
+  `b14389a3cabfe023f7a48fc8ad14ab9ac50e1517`.
+- Release workflow `29962416312` passed for the exact same commit and published
+  [v0.7.1](https://github.com/2233admin/design-pipeline/releases/tag/v0.7.1).
+- Downloaded `design-pipeline-skill.tgz` SHA-256:
+  `2d8eec0beeb7f2e543dd8eb9a47a6720dd938c2068ced24efde994ba14297b5f`.
+- Downloaded `design-pipeline-skill.zip` SHA-256:
+  `3492cd27b7a7ba5c1195bae6f5cb6d5edb2e90dc77133f46ea5115432d0aff62`.
+- Both hashes matched `checksums.txt` and the GitHub asset digests.
+- The downloaded TGZ reported package version `0.7.1`, installed without `--source`, passed its
+  dependency self-check, and returned `ready` from the installed public CLI doctor.

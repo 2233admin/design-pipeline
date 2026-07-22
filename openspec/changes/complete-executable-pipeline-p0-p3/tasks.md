@@ -31,4 +31,4 @@
 
 - [x] Hermetic QA/package/install.
 - [x] Adversarial QA and independent-review attempts; infrastructure gap recorded.
-- [ ] Push release candidate, verify CI, tag exact commit, verify release artifacts.
+- [x] Push release candidate, verify CI, tag exact commit, verify release artifacts.
