@@ -58,3 +58,19 @@ test("source and target nesting is rejected before mutation", () => {
   assert.match(result.stderr, /descendant/);
   assert.equal(fs.existsSync(item.target), false);
 });
+
+test("a packaged installer defaults its source to the extracted package root", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-packaged-install-"));
+  const packageRoot = path.join(root, "design-pipeline");
+  const packageScripts = path.join(packageRoot, "scripts");
+  const skills = path.join(root, "skills");
+  const target = path.join(skills, "design-pipeline");
+  fs.mkdirSync(packageScripts, { recursive: true });
+  fs.copyFileSync(installer, path.join(packageScripts, "install-local.cjs"));
+  fs.writeFileSync(path.join(packageRoot, "SKILL.md"), "# packaged fixture\n");
+  fs.writeFileSync(path.join(packageRoot, "version.txt"), "packaged\n");
+
+  const result = spawnSync(process.execPath, [path.join(packageScripts, "install-local.cjs"), "--root", skills, "--target", target], { encoding: "utf8", windowsHide: true });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(fs.readFileSync(path.join(target, "version.txt"), "utf8"), "packaged\n");
+});

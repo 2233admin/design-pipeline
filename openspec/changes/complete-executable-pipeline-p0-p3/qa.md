@@ -16,12 +16,12 @@ successful local/remote checks.
 ## Final local verification
 
 - Command: `node scripts/qa.cjs`.
-- Result: `169/169` tests passed across `25` manifest-declared test files.
+- Result: `170/170` tests passed across `25` manifest-declared test files.
 - Syntax: every packaged script, adapter, installer, package script, and QA script passed.
 - Control plane: doctor, foundation, state consistency, adapter registry, and style signals passed.
 - Reproducibility at `SOURCE_DATE_EPOCH=1784764800`:
-  - TGZ: `161631` bytes in both builds.
-  - ZIP: `661789` bytes in both builds.
+  - TGZ: `161659` bytes in both builds.
+  - ZIP: `661925` bytes in both builds.
   - TGZ, ZIP, and `checksums.txt` were byte-identical.
 - Package completeness: every declared resource plus generated `PACKAGE.json` and
   `scripts/install-local.cjs` was present.
@@ -55,6 +55,16 @@ adversarial review, repaired the observations above, and performed staged-diff f
 size, binary, and credential scans. Release proceeds with the unavailable independent verdict
 recorded as a tooling residual risk rather than misreported as approval.
 
+## v0.7.0 release verification repair
+
+The first published package exposed a documentation/runtime drift during the required downloaded
+artifact check: the README no-`--source` command expected the packaged installer to use the package
+root, while the installer still defaulted to a source checkout's `skill/` directory. The patch
+makes source selection layout-aware, corrects the destination `--root` example, and changes
+hermetic QA to run the documented packaged command. A dedicated regression test and the full
+`170/170` suite pass before the non-destructive `v0.7.1` patch release.
+
 ## Pending
 
-Remote CI, exact-tag verification, and downloaded-artifact checksum/install verification.
+Remote CI, exact-tag verification, and downloaded-artifact checksum/install verification for
+`v0.7.1`.

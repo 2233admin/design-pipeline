@@ -283,7 +283,7 @@ Or install from a GitHub Release package:
 mkdir -p /tmp/design-pipeline-release
 tar -xzf design-pipeline-skill.tgz -C /tmp/design-pipeline-release
 node /tmp/design-pipeline-release/design-pipeline/scripts/install-local.cjs \
-  --root /tmp/design-pipeline-release/design-pipeline \
+  --root ~/.codex/skills \
   --target ~/.codex/skills/design-pipeline
 node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .
 ```

@@ -65,7 +65,9 @@ function removeTree(target) {
 
 function install(options) {
   const repoRoot = path.resolve(__dirname, "..");
-  const source = path.resolve(options.source || path.join(repoRoot, "skill"));
+  const packagedRoot = path.join(repoRoot, "SKILL.md");
+  const defaultSource = fs.existsSync(packagedRoot) ? repoRoot : path.join(repoRoot, "skill");
+  const source = path.resolve(options.source || defaultSource);
   const defaultRoot = process.env.CODEX_SKILLS_DIR || path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills");
   const root = path.resolve(options.root || defaultRoot);
   const target = path.resolve(options.target || path.join(root, "design-pipeline"));

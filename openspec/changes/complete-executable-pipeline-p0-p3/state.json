@@ -10,7 +10,9 @@
     "staged-scan:clean",
     "review-infrastructure:unavailable",
     "qa:release-candidate-hermetic",
-    "package:reproducible"
+    "package:reproducible",
+    "tests:170/170",
+    "release-verification:v0.7.0-installer-default-source-repaired"
   ],
   "extensions": {
     "legacy": {
@@ -84,7 +86,7 @@
       "validator": "designer-pipeline foundation check --kind motion"
     }
   },
-  "lastEventSeq": 5,
+  "lastEventSeq": 6,
   "migration": {
     "sourceNextField": "nextActions",
     "sourcePhaseField": "phase",
@@ -93,15 +95,15 @@
     "sourceStatus": "in-progress"
   },
   "nextActions": [
-    "Push the exact commit to main without force",
-    "Verify GitHub CI for the exact commit",
-    "Tag v0.7.0 and verify downloaded release assets"
+    "Push patch commit and verify CI",
+    "Tag v0.7.1 without moving v0.7.0",
+    "Verify downloaded v0.7.1 checksums and documented install"
   ],
   "phase": "release-readiness",
   "registryVersion": "design-pipeline.phases.v2",
-  "revision": 5,
+  "revision": 6,
   "sceneRuntime": null,
   "schema": "design-pipeline.state.v2",
   "status": "verifying",
-  "updatedAt": "2026-07-22T22:03:40.801Z"
+  "updatedAt": "2026-07-22T22:15:56.554Z"
 }

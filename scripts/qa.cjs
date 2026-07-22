@@ -148,7 +148,7 @@ try {
   const skillsRoot = path.join(isolatedHome, ".codex", "skills");
   const installed = path.join(skillsRoot, "design-pipeline");
   const installScript = path.join(extracted, "design-pipeline/scripts/install-local.cjs");
-  const installArgs = [installScript, "--root", skillsRoot, "--target", installed, "--source", path.join(extracted, "design-pipeline")];
+  const installArgs = [installScript, "--root", skillsRoot, "--target", installed];
   report(run(process.execPath, installArgs, { echo: false, env: hermeticEnv }).status === 0, "isolated install from packaged archive");
   report(run(process.execPath, installArgs, { echo: false, env: hermeticEnv }).status !== 0, "install replacement requires --replace");
   report(run(process.execPath, [...installArgs, "--replace"], { echo: false, env: hermeticEnv }).status === 0, "explicit contained install replacement");
