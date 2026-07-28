@@ -2,6 +2,17 @@
 
 All notable changes to Design Pipeline are documented here.
 
+## Unreleased
+
+### Fixed
+
+- Made packaging, installation, `doctor`, and dependency self-check use one required-resource
+  manifest, so incomplete installations fail instead of reporting ready.
+- Made local installation validate the staged package and Node.js 22+ before replacing an
+  existing installation.
+- Rejected non-SemVer release versions and stopped interpolating workflow-dispatch input into
+  shell commands.
+
 ## [0.7.3] - 2026-07-28
 
 ### Changed

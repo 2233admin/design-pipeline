@@ -62,6 +62,30 @@ test("reports INFO when the optional Anime.js skill is absent", () => {
   }
 });
 
+test("fails when an installed core pipeline resource is missing", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    const installedPipeline = path.join(root, "design-pipeline");
+    fs.rmSync(path.join(installedPipeline, "scripts", "designer-pipeline.cjs"));
+
+    const result = runCheckRaw([root], {
+      script: path.join(installedPipeline, "scripts", "check-deps.cjs"),
+    });
+    const report = JSON.parse(result.stdout);
+    const core = report.groups.find((item) => item.name === "Core pipeline");
+
+    assert.notEqual(result.status, 0);
+    assert.equal(report.result, "FAIL");
+    assert.equal(core.status, "FAIL");
+    assert.ok(
+      core.missingResources.includes("design-pipeline/scripts/designer-pipeline.cjs"),
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("reports WARN without failing when an installed Anime.js skill is stale", () => {
   const root = makeRoot();
   try {

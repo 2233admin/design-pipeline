@@ -19,6 +19,7 @@
     "scripts/check-design-tool-receipt.cjs",
     "scripts/check-style-signals.cjs",
     "adapters/playwright.cjs",
+    "references/package-resources.json",
     "references/pipeline-phases.json",
     "references/pipeline-state.schema.json",
     "references/pipeline-event.schema.json",

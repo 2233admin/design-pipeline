@@ -119,6 +119,59 @@ function builtIn(name) {
   return path.join(referencesRoot, name);
 }
 
+function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = process.versions.node) {
+  const manifestFile = path.join(skillRoot, "references", "package-resources.json");
+  const missing = [];
+  let manifestError = null;
+  let required = [];
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+    if (
+      manifest?.schema !== "design-pipeline.package-resources.v1" ||
+      !Array.isArray(manifest.required)
+    ) {
+      throw new Error("unsupported structure");
+    }
+    required = manifest.required;
+    for (const resource of required) {
+      if (
+        typeof resource !== "string" ||
+        !resource ||
+        path.isAbsolute(resource) ||
+        resource.split(/[\\/]/).includes("..")
+      ) {
+        throw new Error(`unsafe resource entry: ${resource}`);
+      }
+    }
+  } catch (error) {
+    manifestError = error.message;
+    missing.push("references/package-resources.json");
+  }
+  if (!manifestError) {
+    missing.push(...required.filter((resource) => !fs.existsSync(path.join(skillRoot, resource))));
+  }
+  const nodeSupported = Number.parseInt(nodeVersion.split(".")[0], 10) >= 22;
+  const registry =
+    missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
+      ? null
+      : validateRegistry(
+          readJson(path.join(skillRoot, "references", "adapter-registry.json"), "adapter registry"),
+          readJson(
+            path.join(skillRoot, "references", "graphics-runtime-catalog.json"),
+            "graphics catalog",
+          ),
+        );
+  return {
+    status: missing.length || !nodeSupported ? "blocked" : "ready",
+    node: nodeVersion,
+    nodeSupported,
+    packageRoot: skillRoot,
+    missing,
+    ...(manifestError ? { manifestError } : {}),
+    registry,
+  };
+}
+
 function publicHelp() {
   return [
     "Designer Pipeline CLI",
@@ -355,10 +408,12 @@ function dispatch(argv) {
   const [command, action] = parsed.positionals;
   const root = rootFrom(parsed);
   if (command === "doctor") {
-    const required = ["pipeline-phases.json", "pipeline-state.schema.json", "scene-runtime.schema.json", "evidence-receipt.schema.json", "adapter-registry.json"];
-    const missing = required.filter((name) => !fs.existsSync(builtIn(name)));
-    const registry = missing.length ? null : validateRegistry(readJson(builtIn("adapter-registry.json"), "adapter registry"), readJson(builtIn("graphics-runtime-catalog.json"), "graphics catalog"));
-    return { result: { status: missing.length ? "blocked" : "ready", node: process.versions.node, root, missing, registry }, exitCode: missing.length ? 2 : 0, json: option(parsed, "--json") === true };
+    const result = { ...inspectDoctor(), root };
+    return {
+      result,
+      exitCode: result.status === "ready" ? 0 : 2,
+      json: option(parsed, "--json") === true,
+    };
   }
   let outcome;
   if (command === "status") outcome = { result: statusCommand(parsed, root), exitCode: 0 };
@@ -403,4 +458,4 @@ function execute(argv) {
   }
 }
 
-module.exports = { dispatch, execute, parseArgs, publicHelp };
+module.exports = { dispatch, execute, inspectDoctor, parseArgs, publicHelp };
