@@ -34,6 +34,24 @@ test("package rejects a non-SemVer version before writing artifacts", () => {
   }
 });
 
+test("package ignores non-tag GitHub ref names when choosing a version", () => {
+  const result = spawnSync(
+    process.execPath,
+    [path.join(repoRoot, "scripts", "package.cjs"), "--help"],
+    {
+      cwd: repoRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PACKAGE_VERSION: "",
+        GITHUB_REF_NAME: "12/merge",
+      },
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
 test("release workflow passes dispatch input through env and validates it", () => {
   const workflow = fs.readFileSync(
     path.join(repoRoot, ".github", "workflows", "release.yml"),

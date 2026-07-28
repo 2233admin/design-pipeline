@@ -38,9 +38,10 @@ if (resourceManifest.schema !== "design-pipeline.package-resources.v1") throw ne
 if (typeof resourceManifest.packageRoot !== "string" || path.isAbsolute(resourceManifest.packageRoot) || resourceManifest.packageRoot.split(/[\\/]/).includes("..")) throw new Error("packageRoot must be repository-relative");
 const skillDir = path.join(repoRoot, resourceManifest.packageRoot);
 const distDir = path.resolve(options.outputRoot || process.env.PACKAGE_OUTPUT_ROOT || path.join(repoRoot, "dist"));
+const tagVersion = process.env.GITHUB_REF_NAME?.match(/^v(.+)$/)?.[1];
 const version =
   process.env.PACKAGE_VERSION ||
-  process.env.GITHUB_REF_NAME?.replace(/^v/, "") ||
+  tagVersion ||
   "0.0.0-dev";
 const semverPattern =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
