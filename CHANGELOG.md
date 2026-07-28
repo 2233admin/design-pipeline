@@ -2,6 +2,14 @@
 
 All notable changes to Design Pipeline are documented here.
 
+## [0.7.2] - 2026-07-28
+
+### Fixed
+
+- Standardized Python guidance and validation on Python 3.13.
+- Reframed LearnUI as an optional attributed reference instead of a native catalog roadmap.
+- Ignored local .gstack runtime state so internal terminal tokens cannot be staged accidentally.
+
 ## [0.7.1] - 2026-07-23
 
 ### Fixed
@@ -96,3 +104,4 @@ All notable changes to Design Pipeline are documented here.
 [0.6.0]: https://github.com/2233admin/design-pipeline/compare/v0.5.0...v0.6.0
 [0.7.0]: https://github.com/2233admin/design-pipeline/compare/v0.6.0...v0.7.0
 [0.7.1]: https://github.com/2233admin/design-pipeline/compare/v0.7.0...v0.7.1
+[0.7.2]: https://github.com/2233admin/design-pipeline/compare/v0.7.1...v0.7.2

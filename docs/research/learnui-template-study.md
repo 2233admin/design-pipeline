@@ -2,6 +2,8 @@
 
 研究日期：2026-07-20
 
+修订日期：2026-07-28
+
 研究对象：[LearnUI Dictionary](https://learnui.qiaomu.ai/#dictionary)
 
 源码：[joeseesun/learnui](https://github.com/joeseesun/learnui)
@@ -10,13 +12,13 @@
 
 ## 结论
 
-LearnUI 最值得设计管线吸收的不是它的页面视觉，而是它的知识模板：
+LearnUI 最值得作为参考的不是它的页面视觉，而是它的知识模板：
 
 > 一个 UI 术语被组织为：稳定 ID、平台、名称、别名、模糊搜索词、用途描述、结构拆解、实现 API 映射、生成提示、调试提示、关联模式和可运行标本。
 
-design-pipeline 目前可以把 LearnUI 当作 `reference-site` 或 `template-evidence` 使用，也可以按页面和组件契约复刻授权界面；但尚未把 UI 模式作为类型化、可检索、可审计的一等资产。因此，“通用流程可处理”不等于“字典级原生支持”。
+design-pipeline 已经可以把 LearnUI 当作 reference-site 或 template-evidence 使用，也可以按页面和组件契约复刻授权界面。LearnUI 不需要成为 pipeline 的原生能力；是否存在类型化 UI 字典，不是当前 pipeline 的核心质量指标。
 
-建议吸收 LearnUI 的目录架构和信息组织方式，使用 clean-room 内容与本项目现有证据契约重新实现。不要把 LearnUI 作为运行时依赖，也不要在主页面直接执行来源不受控的 demo 片段。
+当前建议是只把 LearnUI 保留为可选、带来源的参考资料。除非未来出现反复且可量化的检索需求，否则不建设专用 catalog、provider、搜索页或 specimen 平台。
 
 ## 研究方法与验证范围
 
@@ -24,7 +26,7 @@ design-pipeline 目前可以把 LearnUI 当作 `reference-site` 或 `template-ev
 - 固定在 commit `d4337f25224c9d0002b855d9aaa157e589dccc48`，避免结论随主分支漂移。
 - 解析 `data/entries.json`、`data/styles.json` 和 `demos/*.html`。
 - 阅读静态构建器、站点脚本、测验脚本、PWA 配置和设计约束。
-- 在本地分别使用 Python 3.10 与 3.12 运行构建器。
+- 使用 Python 3.13 运行构建器。
 - 对照 design-pipeline 的 synthesis、website cloning、source evidence、provider 设计与 motion primitive 注册表。
 
 ## 1. 它实际上是什么
@@ -174,15 +176,14 @@ LearnUI 自有 demo 的直接注入可以由其项目自己承担信任边界；
 
 ## 5. 构建与维护性发现
 
-README 将构建描述为“Python 标准库、无依赖”，这在依赖包层面成立，但没有声明最低 Python 版本。
+README 将构建描述为 Python 标准库、无依赖，这在依赖包层面成立，但没有声明最低 Python 版本。
 
-本地验证：
+本地验证统一使用 Python 3.13：
 
-- Python 3.10.20：`build.py` 在第 323 行因 f-string 表达式中的反斜杠触发 `SyntaxError`。
-- Python 3.12：构建成功，输出 `Built 152 pages into site/`。
-- 构建后的 `site/` 中有 259 个 HTML 文件；README 写“258 个静态页面”，可能是 404 页是否计入造成的口径差异。
+- build.py 构建成功，输出 Built 152 pages into site/。
+- 构建后的 site/ 中有 259 个 HTML 文件；README 写258 个静态页面，可能是 404 页是否计入造成的口径差异。
 
-因此不建议直接复用其构建器。若需要导入数据，使用独立 adapter 读取固定版本 JSON，输出本项目自己的规范化资产。
+LearnUI 目前仅作为参考，design-pipeline 无需复用其构建器或增加数据 adapter。
 
 ## 6. 版权与许可边界
 
@@ -196,7 +197,7 @@ README 将构建描述为“Python 标准库、无依赖”，这在依赖包层
 - 最稳妥的实现是 clean-room 编写自己的模式定义，仅保留通用事实、标准名称和官方 API 映射。
 - 每个外部来源都应记录 source URL、固定 revision、license state、content hash 和采用/拒绝决策。
 
-## 7. design-pipeline 当前能力映射
+## 7. design-pipeline 当前能力对照
 
 | 能力 | 当前状态 | 证据/说明 |
 | --- | --- | --- |
@@ -205,16 +206,16 @@ README 将构建描述为“Python 标准库、无依赖”，这在依赖包层
 | 页面与组件交互拆解 | 已支持 | component spec 包含 click、hover、focus、input、time 等驱动及状态 |
 | 来源 revision/hash 记录 | 部分支持 | `source-evidence.schema.json` 已有 revision、version、contentHash、markers |
 | hosted catalog 作为可选 provider | 已规划 | README、OpenSpec 与 provider 文档已有方向 |
-| UI pattern 类型化注册表 | 未支持 | 没有 pattern schema 或 registry |
-| 62 个命名模式的一等支持 | 未支持 | 当前为通用处理能力，没有逐条覆盖声明 |
-| aliases / fuzzy terms | 未支持 | 没有 UI 术语搜索索引 |
-| anatomy / API mapping | 未支持 | 没有概念到 ARIA/CSS/React/SwiftUI/AppKit 的统一映射 |
-| related-pattern 图谱 | 未支持 | 没有关系边模型 |
-| pattern 覆盖率状态 | 未支持 | 无 native/generic/companion/unsupported/out-of-scope 状态 |
-| specimen 安全执行契约 | 未支持 | 现有 clone 契约不等于第三方代码沙箱 |
+| UI pattern 类型化注册表 | 未提供，也非当前必需 | Pipeline 目标不是维护 UI 百科 |
+| 62 个命名模式的一等支持 | 不适用 | LearnUI 是参考来源，不是支持矩阵 |
+| aliases / fuzzy terms | 来源侧提供 | 需要时直接查阅，不在本地重复维护 |
+| anatomy / API mapping | 来源侧提供 | 需要时直接查阅，不在本地重复维护 |
+| related-pattern 图谱 | 来源侧提供 | 需要时直接查阅，不在本地重复维护 |
+| pattern 覆盖率状态 | 不适用 | 参考资料不需要原生覆盖率 |
+| specimen 安全执行契约 | 当前不需要 | 只查看参考，不导入或执行第三方 demo |
 | license/source URL/provider item 状态 | schema 不完整 | provider 文档要求的字段尚未完全进入 `source-evidence.schema.json` |
-| 视觉风格信号模型 | 未支持 | 现有 DESIGN.md 有视觉章节，但无 defining/supporting/avoid 信号分类 |
-| macOS 原生模式 | 不在默认 Web 范围 | 应作为独立可选 profile，而不是混入 Web 默认目录 |
+| 视觉风格信号模型 | 可选参考 | 不是当前 pipeline 的建设要求 |
+| macOS 原生模式 | 不适用 | 属于来源站点内容，不是 Web pipeline 缺口 |
 
 相关本地文件：
 
@@ -227,110 +228,32 @@ README 将构建描述为“Python 标准库、无依赖”，这在依赖包层
 - `docs/cli-and-reference-providers.md`
 - `openspec/specs/design-pipeline/spec.md`
 
-## 8. 推荐目标架构
 
-### 8.1 独立的 UI Pattern Catalog
+说明：表中的 未支持只表示 pipeline 没有重复提供 LearnUI 的字典功能，不代表产品缺口或建设要求。参考资料不需要原生覆盖率。
 
-建议新增一个 clean-room schema，最小字段包括：
+## 8. 是否需要建设专用能力
 
-```text
-id
-platform
-category
-name
-aliases
-searchTerms
-intent
-anatomy[]
-states[]
-interactions[]
-accessibility[]
-implementationMappings[]
-acceptanceChecks[]
-debugChecks[]
-related[]
-specimen
-evidence[]
-provenance
-licenseState
-supportStatus
-```
+当前不需要。
 
-`supportStatus` 建议区分：
+现有 reference-site、template-evidence 和通用浏览能力已经覆盖实际使用方式。专用 catalog 会引入重复内容、同步、许可和维护成本，却没有已知的高频需求证明这些成本值得承担。
 
-- `native`：本项目有明确契约、模板或生成器。
-- `generic-workflow`：现有流程能实现，但没有专用知识资产。
-- `companion`：依赖已登记 companion skill/capability。
-- `unsupported`：当前不能可靠生成或验证。
-- `out-of-scope`：平台或能力边界之外。
+只有在后续出现以下证据时才重新评估：
 
-### 8.2 Provider 只提供证据，不覆盖项目基础
+- 多个项目反复需要同一组 UI 术语与实现映射。
+- 直接查阅来源明显拖慢 synthesis 或 QA。
+- 来源不稳定，导致关键参考无法复现。
+- 需要离线、批量或自动化分析这些条目。
 
-LearnUI 或其他目录应作为可选 provider：
+在此之前，最小方案就是保存来源链接，需要时查阅。
 
-```text
-provider fetch
-  -> 固定 revision / hash / license
-  -> 解析为 inert source items
-  -> normalize 到内部 catalog schema
-  -> 人工或规则审计
-  -> synthesis 选择性采用
-  -> QA 验证
-```
+## 9. 最终判断
 
-provider 不应：
+LearnUI 是有价值的参考样本，但不是 design-pipeline 的功能缺口，也不是当前 roadmap 项目。
 
-- 覆盖项目 DESIGN.md 基础。
-- 在离线时阻止 requirements-only 工作流。
-- 把来源 prompt 当作 agent 指令执行。
-- 把 demo 脚本直接注入生产或预览页面。
+- 不建设原生 catalog。
+- 不维护 62 项覆盖率。
+- 不导入或执行其 demo。
+- 不复制其英文内容。
+- 需要时作为有来源的参考证据使用。
 
-### 8.3 Web 与 macOS 分开
-
-第一阶段只覆盖 Web 模式。macOS 条目依赖 AppKit/SwiftUI、窗口系统和平台交互约定，应放在独立 `platformProfile: macos` 中，只有目标项目明确为 macOS 时才参与检索和 synthesis。
-
-### 8.4 视觉风格采用“信号”而非复制内容
-
-可吸收 defining/supporting/variable/avoid 和 facet 的思路，建立自己的视觉方向模型，并与 DESIGN.md 的颜色、字体、布局、组件、motion 和 do/don't 章节连接。
-
-这会比维护一批风格截图更可验证，也能减少“只写一个风格名字、生成结果却不一致”的问题。
-
-## 9. 建议分期
-
-### P0：契约与安全
-
-1. 补齐 source evidence：provider、item ID、source URL、category、license state、local/unavailable、hash。
-2. 定义 `ui-pattern-catalog` schema 与 support status。
-3. 明确外部文本为 inert evidence。
-4. 定义 specimen sandbox 和静态降级契约。
-
-### P1：Web clean-room catalog
-
-1. 先覆盖高频 Web 模式，而不是机械追求 31/31。
-2. 为每个条目维护 aliases、anatomy、states、a11y、implementation mappings 和 acceptance checks。
-3. 建立 related-pattern 图谱和覆盖率报告。
-4. 接入 synthesis 与 clone component spec。
-
-### P2：检索与评审工具
-
-1. 本地 catalog 搜索、平台/类别筛选。
-2. pattern detail Markdown 或静态页面。
-3. specimen 截图/沙箱预览。
-4. source audit 与 coverage audit。
-
-### P3：风格与平台扩展
-
-1. 引入自有视觉风格信号模型。
-2. 扩充 spring、scramble、marquee 等常见 UI motion primitives。
-3. 视产品范围增加 macOS profile。
-
-## 10. 最终判断
-
-我们应该研究并借鉴 LearnUI，但目标不应是“把这个网站搬进来”。正确目标是：
-
-- 将 UI 模式知识变成设计管线可消费、可检索、可验证的结构化资产。
-- 用 provider 记录外部证据，用 clean-room catalog 承载内部长期能力。
-- 将 live specimen 与知识内容解耦，并建立明确安全边界。
-- 用 coverage status 诚实区分“能泛化实现”和“已经原生支持”。
-
-按这个方向推进，LearnUI 会成为一个很好的参考样本，而不会变成新的内容、许可或运行时风险。
+这已经符合 pipeline 对可选 reference catalog 的既有边界。
