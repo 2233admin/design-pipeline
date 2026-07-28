@@ -1,10 +1,17 @@
 # design-pipeline
 
-Design-first pipeline for AI-assisted frontend design work.
+Build better frontend UI with AI without skipping the design work.
 
-`design-pipeline` turns a messy collection of design, UX, motion, animation, frontend, and QA skills into a repeatable OpenSpec-aligned workflow.
+Give `design-pipeline` a product idea, an existing repository, or a reference website. It helps an
+AI coding agent decide how the interface should look and behave, records those decisions in
+`DESIGN.md` and `MOTION.md`, builds the UI, and checks the result before calling it done.
 
-It is not a general-purpose agent marketplace. Engineering integrations exist only to help produce, implement, validate, and preserve better design outcomes.
+Use it when you want repeatable design work instead of a one-off generated screen. It can coordinate
+design, motion, frontend, browser evidence, and QA tools, but it does not install optional frameworks
+or publish changes without explicit permission.
+
+Under the hood, the workflow follows an OpenSpec-style proposal, implementation, validation, and
+archive lifecycle so another agent or developer can resume the work later.
 
 ## What It Does
 
@@ -249,6 +256,8 @@ scripts/
 
 ## Install Locally
 
+Requires Node.js 22 or newer.
+
 From this repository, use the path-contained installer:
 
 ```bash
@@ -276,7 +285,10 @@ node scripts\install-local.cjs --source skill --root (Split-Path $target) --targ
 node (Join-Path $target "scripts\designer-pipeline.cjs") doctor --root .
 ```
 
-Or install from a GitHub Release package:
+To upgrade an existing installation, run the same command with `--replace`. Without that flag, the
+installer leaves the existing installation untouched.
+
+Or install from a GitHub Release package on macOS or Linux:
 
 ```bash
 # download design-pipeline-skill.tgz from Releases, then:
@@ -287,6 +299,24 @@ node /tmp/design-pipeline-release/design-pipeline/scripts/install-local.cjs \
   --target ~/.codex/skills/design-pipeline
 node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .
 ```
+
+Windows PowerShell release install:
+
+```powershell
+# Download design-pipeline-skill.zip from Releases first.
+$extract = Join-Path $env:TEMP ("design-pipeline-release-" + [guid]::NewGuid())
+Expand-Archive -LiteralPath .\design-pipeline-skill.zip -DestinationPath $extract
+$source = Join-Path $extract "design-pipeline"
+$target = Join-Path $HOME ".codex\skills\design-pipeline"
+
+node (Join-Path $source "scripts\install-local.cjs") `
+  --root (Split-Path $target) `
+  --target $target
+node (Join-Path $target "scripts\designer-pipeline.cjs") doctor --root .
+```
+
+For an upgrade, add `--replace` to the installer command. Replacement is staged and rolled back if
+validation fails, so a failed upgrade does not destroy the working installation.
 
 ## Feedback And Contributions
 

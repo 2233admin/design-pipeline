@@ -7,3 +7,8 @@ tmp/
 temp/
 .design-pipeline/
 .gstack/
+.mcp.json
+.omx/
+.repowise/
+.understand-anything/
+.sentrux/baseline*.json
