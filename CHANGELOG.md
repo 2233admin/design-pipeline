@@ -2,6 +2,16 @@
 
 All notable changes to Design Pipeline are documented here.
 
+## Unreleased
+
+### Changed
+
+- Rewrote the README introduction in plain language around the user problem and outcome.
+- Documented Node.js 22 as the supported runtime and added Windows release-install and upgrade
+  commands.
+- Ignored local MCP, OMX, Repowise, Understand Anything, and Sentrux runtime output without
+  ignoring the tracked Sentrux rules.
+
 ## [0.7.2] - 2026-07-28
 
 ### Fixed
