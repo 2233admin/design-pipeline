@@ -18,6 +18,7 @@
     "motion-foundation.test.cjs",
     "motion-verification.test.cjs",
     "palette-foundation.test.cjs",
+    "package-release.test.cjs",
     "pipeline-state.test.cjs",
     "publication-bridge.test.cjs",
     "record-feedback.test.cjs",

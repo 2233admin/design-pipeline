@@ -73,7 +73,7 @@ const hermeticEnv = {
 };
 
 try {
-  const requiredRepoFiles = ["README.md", "CHANGELOG.md", "LICENSE", "DESIGN.md", "MOTION.md", "THIRD_PARTY_NOTICES.md", "skill/SKILL.md", "scripts/package.cjs", "scripts/install-local.cjs", "scripts/test-manifest.json", "scripts/package-resources.json", "openspec/specs/design-pipeline/spec.md"];
+  const requiredRepoFiles = ["README.md", "CHANGELOG.md", "LICENSE", "DESIGN.md", "MOTION.md", "THIRD_PARTY_NOTICES.md", "skill/SKILL.md", "scripts/package.cjs", "scripts/install-local.cjs", "scripts/test-manifest.json", "skill/references/package-resources.json", "openspec/specs/design-pipeline/spec.md"];
   for (const file of requiredRepoFiles) report(fs.existsSync(path.join(repoRoot, file)), file);
 
   const skillText = fs.readFileSync(path.join(repoRoot, "skill/SKILL.md"), "utf8");
@@ -86,7 +86,7 @@ try {
   const declaredTests = [...testManifest.tests].sort();
   report(JSON.stringify(discoveredTests) === JSON.stringify(declaredTests), "test manifest covers every tests/*.test.cjs");
 
-  const resources = readJson(path.join(repoRoot, "scripts/package-resources.json"));
+  const resources = readJson(path.join(repoRoot, "skill/references/package-resources.json"));
   report(resources.schema === "design-pipeline.package-resources.v1" && resources.packageRoot === "skill" && Array.isArray(resources.required) && Array.isArray(resources.generated), "package resource manifest schema");
   const packageRoot = path.join(repoRoot, resources.packageRoot);
   for (const file of resources.required) report(!path.isAbsolute(file) && !file.split(/[\\/]/).includes("..") && fs.existsSync(path.join(packageRoot, file)), `package resource ${file}`);
@@ -129,7 +129,11 @@ try {
   const packageScript = path.join(repoRoot, "scripts/package.cjs");
   const outputA = path.join(tempRoot, "package-a");
   const outputB = path.join(tempRoot, "package-b");
-  const packageEnv = { ...hermeticEnv, PACKAGE_VERSION: "0.7.0-qa", SOURCE_DATE_EPOCH: "1784764800" };
+  const packageEnv = {
+    ...hermeticEnv,
+    PACKAGE_VERSION: process.env.PACKAGE_VERSION || "0.7.0-qa",
+    SOURCE_DATE_EPOCH: "1784764800",
+  };
   const packA = run(process.execPath, [packageScript, "--output-root", outputA], { env: packageEnv });
   const packB = run(process.execPath, [packageScript, "--output-root", outputB], { env: packageEnv });
   report(packA.status === 0 && packB.status === 0, "package to declared temporary roots");

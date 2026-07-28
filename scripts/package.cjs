@@ -31,7 +31,9 @@ function parseArgs(argv) {
 }
 
 const options = parseArgs(process.argv.slice(2));
-const resourceManifest = JSON.parse(fs.readFileSync(path.join(__dirname, "package-resources.json"), "utf8"));
+const resourceManifest = JSON.parse(
+  fs.readFileSync(path.join(repoRoot, "skill", "references", "package-resources.json"), "utf8"),
+);
 if (resourceManifest.schema !== "design-pipeline.package-resources.v1") throw new Error("unsupported package resource manifest");
 if (typeof resourceManifest.packageRoot !== "string" || path.isAbsolute(resourceManifest.packageRoot) || resourceManifest.packageRoot.split(/[\\/]/).includes("..")) throw new Error("packageRoot must be repository-relative");
 const skillDir = path.join(repoRoot, resourceManifest.packageRoot);
@@ -40,6 +42,8 @@ const version =
   process.env.PACKAGE_VERSION ||
   process.env.GITHUB_REF_NAME?.replace(/^v/, "") ||
   "0.0.0-dev";
+const semverPattern =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 const zipMinimumEpoch = 315532800;
 const zipMaximumEpoch = 4354819199;
 
@@ -392,6 +396,9 @@ function publishArtifacts(tgz, zip) {
 }
 
 function main() {
+  if (!semverPattern.test(version)) {
+    fail(`PACKAGE_VERSION must be valid SemVer: ${version}`);
+  }
   if (options.help) {
     console.log("Usage: node scripts/package.cjs [--output-root <path>]");
     return;

@@ -118,6 +118,37 @@ function resourceExists(name) {
   return skillRoots.some((root) => exists(path.join(root, name)));
 }
 
+function groupResources(group) {
+  if (!group.resourceManifest) return group.resources || [];
+  const manifestPath = path.join(__dirname, "..", "references", group.resourceManifest);
+  let manifest;
+  try {
+    manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  } catch (error) {
+    throw new Error(`Invalid package resource manifest JSON at ${manifestPath}: ${error.message}`);
+  }
+  if (
+    !manifest ||
+    manifest.schema !== "design-pipeline.package-resources.v1" ||
+    !Array.isArray(manifest.required)
+  ) {
+    throw new Error(`Invalid package resource manifest structure at ${manifestPath}.`);
+  }
+  const skill = group.skills?.[0];
+  if (!skill) throw new Error(`Resource manifest group ${group.name} must name a skill.`);
+  return manifest.required.map((resource) => {
+    if (
+      typeof resource !== "string" ||
+      !resource ||
+      path.posix.isAbsolute(resource) ||
+      resource.split(/[\\/]/).includes("..")
+    ) {
+      throw new Error(`Unsafe package resource entry in ${manifestPath}: ${resource}`);
+    }
+    return `${skill}/${resource.replaceAll("\\", "/")}`;
+  });
+}
+
 function findSurface(surface) {
   return surface.paths.filter((p) => exists(path.join(cwd, p)));
 }
@@ -156,7 +187,7 @@ print("");
 print("## Skill groups");
 for (const group of groups) {
   const skills = group.skills || [];
-  const resources = group.resources || [];
+  const resources = groupResources(group);
   const installed = skills.filter(skillExists);
   const missingSkills = skills.filter((name) => !skillExists(name));
   const installedResources = resources.filter(resourceExists);

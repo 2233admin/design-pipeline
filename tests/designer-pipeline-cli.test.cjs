@@ -10,6 +10,7 @@ const test = require("node:test");
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = process.env.DESIGN_PIPELINE_CLI_PATH || path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
+const { inspectDoctor } = require("../skill/scripts/cli-core.cjs");
 
 function run(args, cwd = repoRoot) {
   const child = spawnSync(process.execPath, [cli, ...args, ...(args.includes("--json") ? [] : ["--json"])], { cwd, encoding: "utf8", windowsHide: true });
@@ -81,6 +82,24 @@ test("help, doctor, foundation, and stable JSON error envelopes work", () => {
   const duplicate = run(["doctor", "--root", repoRoot, "--root", repoRoot]);
   assert.equal(duplicate.status, 1);
   assert.equal(duplicate.output.error.code, "DUPLICATE_OPTION");
+});
+
+test("doctor blocks incomplete packages and Node versions below 22", () => {
+  const skillRoot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-doctor-"));
+  try {
+    fs.cpSync(path.join(repoRoot, "skill"), skillRoot, { recursive: true });
+    fs.rmSync(path.join(skillRoot, "scripts", "designer-pipeline.cjs"));
+
+    const incomplete = inspectDoctor(skillRoot, process.versions.node);
+    const unsupported = inspectDoctor(path.join(repoRoot, "skill"), "20.19.0");
+
+    assert.equal(incomplete.status, "blocked");
+    assert.ok(incomplete.missing.includes("scripts/designer-pipeline.cjs"));
+    assert.equal(unsupported.status, "blocked");
+    assert.equal(unsupported.nodeSupported, false);
+  } finally {
+    fs.rmSync(skillRoot, { recursive: true, force: true });
+  }
 });
 
 test("change init, status/resume, advance, migrate, and legacy repair are executable", () => {

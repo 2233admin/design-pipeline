@@ -4,6 +4,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { spawnSync } = require("node:child_process");
 
 function fail(message) { throw new Error(message); }
 function inside(root, target) {
@@ -63,6 +64,18 @@ function removeTree(target) {
   if (fs.existsSync(target)) fs.rmSync(target, { recursive: true, force: true });
 }
 
+function validateStagedPackage(target) {
+  const cli = path.join(target, "scripts", "designer-pipeline.cjs");
+  const result = spawnSync(process.execPath, [cli, "doctor", "--root", target, "--json"], {
+    cwd: target,
+    encoding: "utf8",
+    windowsHide: true,
+  });
+  if (result.status !== 0) {
+    fail(`staged package doctor failed: ${(result.stderr || result.stdout || "unknown error").trim()}`);
+  }
+}
+
 function install(options) {
   const repoRoot = path.resolve(__dirname, "..");
   const packagedRoot = path.join(repoRoot, "SKILL.md");
@@ -103,7 +116,7 @@ function install(options) {
     }
 
     fs.cpSync(realSource, temporary, { recursive: true, errorOnExist: true });
-    if (!fs.existsSync(path.join(temporary, "SKILL.md"))) fail("installed copy is missing SKILL.md");
+    validateStagedPackage(temporary);
     if (!targetExisted) {
       fs.renameSync(temporary, target);
       return { root: realRoot, source: realSource, target, replaced: false };
