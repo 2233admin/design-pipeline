@@ -255,7 +255,8 @@ Rules:
   height of at least 1. PNG is the only signature accepted; nothing is decoded, no CRC is checked,
   no dependency is used, and the cost is the same for a thumbnail and a poster. A zero-byte file, a
   text file renamed to `.png`, a directory whose name ends in `.png`, and a download that stopped
-  after four bytes all resolve, and none of them can support a pixel measurement.
+  after four bytes all satisfy an existence check, and raster validation rejects every one of them,
+  each with its own reason, because none of them can support a pixel measurement.
 
   A `measured` claim the evidence cannot support is a blocking reason - not a validation error and
   not a silent rewrite to `qualitative`. The declared mode is reported as declared; the separate
@@ -358,9 +359,12 @@ The gate is also enforced by the artifact set, not only by the stage command. Ev
 `reference-evidence.json` carries the graybox stage in its aggregate `reference check` result under
 `stages.graybox`, on every route and both schema versions, so the stage cannot go unasked.
 
-A run whose `geometry` stage is blocked on a missing source must still show `graybox: ready`. Both
-stages blocked at once is a process gap - nobody looked before polishing - not an environmental
-limitation, and `qa.md` records it that way.
+A run whose `geometry` stage is blocked on a missing source must still show `graybox: ready` when
+its comparison is `qualitative`. Both stages blocked at once is a process gap - nobody looked before
+polishing - and `qa.md` records it that way, with one documented exception: a `measured` comparison
+declared against a pending or unreadable source blocks the graybox stage on its own terms, at the
+same time as the declaration blocks `geometry`. That pair is a contradictory claim, not an absence
+of looking, and the two reasons say which it is.
 
 ## Geometry gate
 

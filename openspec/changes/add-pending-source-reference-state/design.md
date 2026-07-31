@@ -47,9 +47,16 @@ different evidence.
    declared `source.path` resolves inside the change root and the bytes there are a raster whose
    size can be read - existence is necessary, not sufficient. Measurability is a property of the
    disk, not of the declaration.
-3. **Stage readiness** - is the stage the agent is standing in allowed to pass? Answered per stage.
-   The graybox stage can be `ready` while the source is unmeasurable, because a qualitative
-   comparison needs no raster. The geometry and final stages cannot.
+3. **Stage readiness** - is the stage the agent is standing in allowed to pass? Answered per stage,
+   and it does not reduce to measurability. What blocks `geometry` and `final` is the *declaration*:
+   `geometryResult` short-circuits on `source.invalid` and on `availability === "pending"`, and on
+   nothing else about the source. It never consults `source.resolvable` or the raster, so a
+   `resolved` declaration whose raster is absent or unreadable leaves `geometry` free to be `ready`
+   on its own evidence. The raster matters to the graybox stage, and only when the comparison
+   claims `measured`: a qualitative comparison needs no raster, so the graybox stage can be `ready`
+   while the source is unmeasurable, and a `measured` comparison against a pending or unreadable
+   source blocks the graybox stage for its own reason at the same time as the declaration blocks
+   `geometry` for a different one.
 
 A document can be valid and unmeasurable. A stage can be ready while the aggregate gate is blocked.
 Neither implies the others. Freshness - was the evidence captured after the thing it claims to have
@@ -70,21 +77,32 @@ the legacy `resolved` availability with `resolvable: false`, reported as
 
 `designer-pipeline reference check` runs the graybox stage first, then the approval gate, then the
 source gate, then the reconstruction stage when `intent.effectiveFidelity` is a reconstruction
-fidelity. A graybox block propagates into every outcome, so an approved, resolved, measurable source
-is not by itself `ready`.
+fidelity. `foldReconciliation` in `cli-core.cjs` then wraps the whole result with the reconciliation
+stage, so the CLI aggregate carries `stages.graybox` and `stages.reconciliation` while the library
+function `checkReferenceEvidence` carries only the first. A block from either stage propagates into
+every outcome, so an approved, resolved, measurable source is not by itself `ready`.
 
-| Source on disk | Contract | Graybox stage | `reference check` | Meaning |
-| --- | --- | --- | --- | --- |
-| resolved, raster present | valid, approved | ready | `ready` | the only unqualified pass |
-| resolved, raster present | valid, approved | blocked | `blocked`, graybox reason | the graybox stage is a gate, not a report |
-| resolved, raster absent | valid, approved | ready, comparison qualitative | `ready`, `measurable: false` | ordering discipline proven, fidelity not |
-| resolved, raster absent | valid, approved | blocked, `reference-source-raster-missing` | `blocked` | a measured claim with no raster to measure |
-| resolved, path names non-raster bytes | valid, approved | blocked, `reference-source-not-raster` | `blocked` | a measured claim against something that was never an image |
-| resolved, raster present, capture predates `resolvedAt` | valid, approved | blocked, `graybox-capture-predates-source` | `blocked` | a measured claim by an artifact authored before the source landed |
-| pending | valid, approved | ready, comparison qualitative | `blocked`, reason `source-pending` | classification is usable, measurement is not |
-| pending | valid, approved | blocked, `graybox-comparison-unmeasurable` | `blocked`, reason `source-pending`, graybox blockers trail | a measured claim against a pending source |
-| any | valid, approval pending or rejected | any | `blocked`, reason `approval-pending` or `approval-rejected` | unchanged |
-| any | invalid | not reached | contract failure | `reference check` raises rather than reporting |
+The reconciliation column below is `n/a` wherever the row is decided before it is reached. It is
+reached last, so it is the gate that turns an otherwise-passing run into a block:
+
+| Source on disk | Contract | Graybox stage | Reconciliation | `reference check` | Meaning |
+| --- | --- | --- | --- | --- | --- |
+| resolved, raster present | valid, approved | ready | ready | `ready` | the only unqualified pass |
+| resolved, raster present | valid, approved | ready | blocked, `reconciliation-section-missing` | `blocked` | the spec was never reconciled against the render |
+| resolved, raster present | valid, approved | blocked | n/a | `blocked`, graybox reason | the graybox stage is a gate, not a report |
+| resolved, raster absent | valid, approved | ready, comparison qualitative | ready | `ready`, `measurable: false` | ordering discipline proven, fidelity not |
+| resolved, raster absent | valid, approved | blocked, `reference-source-raster-missing` | n/a | `blocked` | a measured claim with no raster to measure |
+| resolved, path names non-raster bytes | valid, approved | blocked, `reference-source-not-raster` | n/a | `blocked` | a measured claim against something that was never an image |
+| resolved, raster present, capture predates `resolvedAt` | valid, approved | blocked, `graybox-capture-predates-source` | n/a | `blocked` | a measured claim by an artifact authored before the source landed |
+| pending | valid, approved | ready, comparison qualitative | ready | `blocked`, reason `source-pending` | classification is usable, measurement is not |
+| pending | valid, approved | blocked, `graybox-comparison-unmeasurable` | n/a | `blocked`, reason `source-pending`, graybox blockers trail | a measured claim against a pending source |
+| any | valid, approval pending or rejected | any | n/a | `blocked`, reason `approval-pending` or `approval-rejected` | unchanged |
+| any | invalid | not reached | not reached | contract failure | `reference check` raises rather than reporting |
+
+A reconciliation block never overwrites an existing `reason`: `foldReconciliation` keeps
+`result.reason` when one is already set and appends its blockers, so a run blocked on
+`source-pending` with reconciliation also missing still reports `source-pending` at the top level
+and carries both blockers. The `stages` map is where the second reason survives.
 
 Every blocked outcome carries `contractValid: true`. `blocked` on `source-pending` is explicitly not
 a failure of the change. It is the correct resting state for a run whose reference lives outside the
