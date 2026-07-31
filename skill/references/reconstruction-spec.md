@@ -43,6 +43,17 @@ record exists to prevent. The stages are deliberately independent and no stage i
 result, so a `final` stage can report `ready` beside a `blocked` `stages.graybox` - a claim read off
 the top-level status alone would call that run `verified` on evidence the graybox gate refused.
 
+Only the complete output of `designer-pipeline reconstruction check --stage final` - its top-level
+status **and** every entry in its `stages` map - is evidence for a verification claim. No
+stage-scoped result is admissible. `reconstruction check` defaults to `--stage geometry`, so the
+command run without `--stage` returns a geometry-scoped result, and neither that result, nor an
+explicit `--stage geometry` or `--stage graybox` run, nor a single `stages.graybox` or
+`stages.geometry` entry lifted out of any result, may be cited as evidence for `verified`. A
+stage-scoped status answers only for the stage that was asked for: it is reported beside the other
+stages without gating on them, so a requested stage can read `ready` in the same result as a blocked
+stage. When the `--stage final` result is missing, unreadable, or incomplete, the claim is
+`unverified`; a gate whose output cannot be read in full has not verified anything.
+
 Nothing outside that one result is an input, and each familiar case reaches `unverified` through a
 stage rather than through a rule of its own:
 
@@ -143,6 +154,13 @@ of field, scanlines, and grading while the measured gates stay blocked beside it
 `--stage geometry` and `--stage final` report the graybox summary alongside their own result. A
 blocked `geometry` never means the graybox passed, and a ready graybox never means geometry passed.
 
+`reconstruction check` defaults to `--stage geometry` when `--stage` is omitted, and every result
+reports the status of the stage that was asked for at the top level. The `stages` map beside it is a
+report, not a gate: a summary that reads `blocked` there does not lower the top-level status of the
+queried stage. That independence is deliberate. It also means a stage-scoped run is never a
+verification claim - see "Where the verification claim is recorded" for the one rule that reads the
+whole `--stage final` result together.
+
 Exit codes are `0` for `ready`, `3` for `fidelity-limited`, and `2` for `blocked`. The public
 `designer-pipeline` CLI propagates those codes unchanged. It previously collapsed everything that
 was not `2` to `0`, which reported a measured threshold miss as success; `3` now reaches the caller
@@ -230,19 +248,55 @@ Rules:
   retroactively become invalid - it is only barred from claiming a region comparison it cannot bind.
 - `comparison.mode` is `measured` only when the source is measurable, and measurability is read from
   disk rather than from the document: the reference contract must resolve `source.availability` to
-  `resolved` and the raster named by `source.path` must actually exist inside the change root. A
-  `measured` claim the evidence cannot support is a blocking reason - not a validation error and not
-  a silent rewrite to `qualitative`. The declared mode is reported as declared; the separate
-  `measurable` field says whether the evidence could have supported it. Four different failures keep
-  four different reasons, so a refused `measured` claim is never explained by some other change's
-  problem:
+  `resolved`, the document must name a `source.path`, and the bytes behind that path must be a
+  raster this gate can read a size out of. Existence is necessary and not sufficient. The gate opens
+  the file and reads its first 24 bytes - never the image - and requires the PNG signature
+  `89 50 4E 47 0D 0A 1A 0A` followed by an IHDR chunk whose 13-byte payload carries a width and a
+  height of at least 1. PNG is the only signature accepted; nothing is decoded, no CRC is checked,
+  no dependency is used, and the cost is the same for a thumbnail and a poster. A zero-byte file, a
+  text file renamed to `.png`, a directory whose name ends in `.png`, and a download that stopped
+  after four bytes all resolve, and none of them can support a pixel measurement.
+
+  A `measured` claim the evidence cannot support is a blocking reason - not a validation error and
+  not a silent rewrite to `qualitative`. The declared mode is reported as declared; the separate
+  `measurable` field says whether the evidence could have supported it. Each failure keeps its own
+  reason, so a refused `measured` claim is never explained by some other change's problem:
 
   | Why the measured claim cannot stand | Reason |
   | --- | --- |
   | `source.availability` is `pending` | `graybox-comparison-unmeasurable` |
-  | the declared `source.path` is not present in the change root | `graybox-comparison-unmeasurable` |
   | no `reference-evidence.json` records a source at all | `reference-source-unrecorded` |
   | the document is present but declares no `source` | `reference-source-undeclared` |
+  | the source resolves without naming a `source.path` (absent, `null`, or blank) | `reference-source-path-undeclared` |
+  | the declared `source.path` does not resolve inside the change root | `reference-source-raster-uncontained` |
+  | the declared `source.path` names no file in the change root | `reference-source-raster-missing` |
+  | the path is not a regular file, or its bytes cannot be read | `reference-source-raster-unreadable` |
+  | the bytes carry no PNG signature; a zero-byte file lands here | `reference-source-not-raster` |
+  | the bytes carry a PNG signature but no readable IHDR width and height | `reference-source-raster-truncated` |
+
+  A `video` or `live-page` source therefore cannot reach `measured` through this gate: it reports
+  `reference-source-not-raster`, and the repair is to export the frame that was actually compared
+  and name that PNG. The previous behaviour granted fidelity evidence against a file it never
+  opened.
+- a `measured` comparison is also checked for freshness, whenever the document records
+  `source.resolvedAt`. A capture taken before the source landed measured nothing against it, and
+  flipping `availability` to `resolved` afterwards relabels the claim rather than re-running it: a
+  `graybox.capturedAt` strictly earlier than `source.resolvedAt` is `blocked` with
+  `graybox-capture-predates-source`, and the repair is to re-run the capture. A `capturedAt` that
+  will not parse is `graybox-capture-uncomparable` rather than counted as fresh - the graybox
+  contract already rejects that shape, so this is a guard rather than a reachable path, but a
+  freshness check that passes when it cannot compare would be worse than no check. A document with
+  no `resolvedAt` never went through a pending phase and is not compared; absence is the legacy
+  default, not a failure. A `qualitative` capture is not compared either: it is the documented
+  output of the pending phase, never claimed to have measured against the source, and never fidelity
+  evidence. `measurable` stays a property of the disk, so a stale capture against a real raster
+  leaves `measurable: true` and still blocks - the two facts are reported separately.
+- `source.resolvedAt` is read by that check, so a `resolvedAt` the contract cannot read is a loud
+  failure that blocks every stage rather than a value dropped on the floor. A `resolvedAt` that is
+  not an ISO 8601 timestamp - a non-string, or a string that will not parse - is
+  `reference-source-resolved-at-invalid`. A `resolvedAt` recorded beside `availability: pending`,
+  the document saying in one field that the source landed and in another that it never arrived, is
+  `reference-source-resolved-at-contradictory`.
 
 - a reference document the contract cannot read blocks the graybox stage on every path, qualitative
   included, before a single field of the block is examined. The stage reads its region binding out
@@ -274,10 +328,15 @@ The stage reports `ready` or `blocked` and never `fidelity-limited`. Blocking re
 `graybox-mode-unverifiable`, `graybox-mode-incomplete`,
 `graybox-suppression-incomplete`, `graybox-comparison-missing`, `graybox-comparison-unmeasurable`,
 `graybox-composition-unrecorded`, `graybox-composition-undeclared`,
-`graybox-region-open`, `graybox-approval-pending`, and `graybox-approval-rejected`. The stage also
-reports the reference-document reasons it shares with the geometry gate:
-`reference-source-unparseable`, `reference-source-malformed`,
-`reference-source-availability-invalid`, `reference-source-unrecorded`,
+`graybox-region-open`, `graybox-capture-predates-source`, `graybox-capture-uncomparable`,
+`graybox-approval-pending`, and `graybox-approval-rejected`. It reports the raster reasons that
+refuse a `measured` claim on its own: `reference-source-path-undeclared`,
+`reference-source-raster-uncontained`, `reference-source-raster-missing`,
+`reference-source-raster-unreadable`, `reference-source-not-raster`, and
+`reference-source-raster-truncated`. The stage also reports the reference-document reasons it shares
+with the geometry gate: `reference-source-unparseable`, `reference-source-malformed`,
+`reference-source-availability-invalid`, `reference-source-resolved-at-invalid`,
+`reference-source-resolved-at-contradictory`, `reference-source-unrecorded`,
 `reference-source-undeclared`, and `reference-source-uncontained`. A change written
 before this gate existed reports `graybox-missing` rather than failing validation, so archived
 changes stay readable.
@@ -337,7 +396,7 @@ threshold miss cannot be claimed when nothing was measured. The same refusal app
 stage.
 
 A reference document the contract cannot read gets the same refusal, with its own reason, so the
-report names the malformed field instead of a fabricated default. All three also produce
+report names the malformed field instead of a fabricated default. All of these also produce
 `measurements: null`:
 
 - `reference-source-unparseable`: `reference-evidence.json` exists but is not parseable JSON, or
@@ -345,6 +404,19 @@ report names the malformed field instead of a fabricated default. All three also
 - `reference-source-malformed`: the document records `source` as `null`, an array, or a non-object.
 - `reference-source-availability-invalid`: `source.availability` is present but is not one of
   `resolved` or `pending` - for example `"Pending"` or `"unavailable"`.
+- `reference-source-resolved-at-invalid`: `source.resolvedAt` is present but is not an ISO 8601
+  timestamp.
+- `reference-source-resolved-at-contradictory`: `source.resolvedAt` records the source landing while
+  `source.availability` still says `pending`.
+
+What the geometry stage does **not** check is stated here rather than left to be inferred. It
+refuses a `pending` source and an unreadable source declaration, and beyond that it recomputes
+landmark error from `reconstruction.json` without opening the file `source.path` names: the raster
+validation above runs on the graybox stage only, so a `ready` geometry result is not evidence that
+the reference raster is a readable raster. Freshness is likewise unchecked here. `graybox.capturedAt`
+is the only capture timestamp this contract records, so `rectification.artifact`,
+`landmarks.overlayArtifact`, and the final renders have no recorded moment to compare against
+`source.resolvedAt`. A gate that does not check something must not be read as having checked it.
 
 Absent is not invalid, and it is not resolved either. An absent `reference-evidence.json`, and a
 present document with no `source` field, both keep the legacy `availability: resolved`, so the
@@ -396,8 +468,11 @@ real but the frame still differs. `blocked` means the comparison is unavailable 
 
 These three statuses feed the verification claim recorded in `qa.md`, but they are not the whole
 input: the claim reads this result's `stages` map as well, so `verified` requires a `ready` final
-status *and* a `ready` `stages.graybox` and `stages.geometry`. See "Where the verification claim is
-recorded" above for the single derivation rule.
+status *and* a `ready` `stages.graybox` and `stages.geometry`. This complete `--stage final` output
+is the only admissible evidence for the claim; a geometry-scoped result - which is what
+`reconstruction check` returns when `--stage` is omitted - a `--stage graybox` result, and a bare
+`stages.graybox` reading are all rejected as evidence for `verified`. See "Where the verification
+claim is recorded" above for the single derivation rule.
 
 ## Invalidation
 

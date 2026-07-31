@@ -44,7 +44,7 @@ Named motions built from that vocabulary:
 - `tick`: instantaneous value replacement on the second or centisecond boundary. Duration zero,
   no easing, no interpolation.
 - `phosphor`: continuous surface noise on the emission layer, amplitude at or under 4% luminance,
-  no periodicity a viewer can lock onto.
+  with no cycle detectable inside the observation window defined under Procedural Motion.
 - `dim-stale`: a single 240ms luminance ramp to the stale tier when a time source stops updating,
   and the same ramp back when it recovers. This is a state change, not a loop.
 
@@ -57,30 +57,47 @@ Procedural motion is declarative-only and limited to the `phosphor` surface laye
 - Generator: fractal noise over time, consumed as a scalar in `[0, 1]` per frame.
 - Bound channels: emission opacity and glow luminance. No geometry channel may be bound.
 - Amplitude ceiling: 4% of the emissive tier's luminance.
-- Frequency band: aperiodic. There is no cycle length, not merely a long one. A keyframe cycle is
-  periodic by construction and cannot satisfy this rule at any duration, so the surface layer may
-  not be driven by one. The scalar is sampled from a hash over time, which never repeats at any
-  observation length.
+- Frequency band: no detectable cycle inside the supported observation window. The window is
+  30 minutes of continuous wall clock sampled at the board's 10Hz cadence, and the standard is that
+  a repeat search over every lag from 1s to 15 minutes finds zero repeating lags. Every change's
+  `motion.md` states this same window and standard verbatim, and its QA records the measured result.
+  A keyframe cycle has a declared cycle length in seconds, so it fails this test by inspection and
+  may not drive the surface layer at any duration. The scalar is instead sampled from a hash over
+  time.
+- Bounded claim, not a guarantee: the generator is a finite deterministic state machine, so a period
+  exists in principle and the lattice periods can eventually re-align. What is asserted here is only
+  what the window above can demonstrate. An unbounded "never repeats at any observation length"
+  claim is unprovable and is not made anywhere in this project.
 - Determinism: the generator is seeded, so a frame captured at a known timestamp reproduces exactly
-  from the seed set plus that timestamp. Aperiodic is not the same as unreproducible.
+  from the seed set plus that timestamp. This clause is provable and is verified by replaying one
+  timestamp twice. No detectable cycle is not the same as unreproducible.
 - The registry entry describes a semantic contract only. The runtime implementation is authored
   for this project; no upstream animation code is copied.
 
 ## Runtime Policy
 
 - Default runtime: no animation library. Surface noise is an SVG filter for the spatial grain; its
-  layer opacity, like every clock value, is written to the DOM by the board's single timer. CSS
-  keyframes are not used for the surface layer, because they can only produce a cycle.
-- One clock owns time. A single interval updates every register and advances the surface noise
-  scalar. No component runs its own timer, and no animation library owns the frame loop.
+  layer opacity, like every clock value, is written to the DOM by the value clock described below.
+  CSS keyframes are not used for the surface layer, because they can only produce a cycle.
+- One clock owns time. Exactly one timer may read the wall clock and write a displayed value or the
+  surface-noise scalar, and no animation library may own the frame loop. Its mechanism is a
+  `setTimeout` chain re-armed each pass against the wall clock (`100 - now % 100`), not a fixed
+  interval, so drift never accumulates.
+- A second timer exists and it owns no time. A 1Hz `setInterval` watchdog compares the value clock's
+  last-tick timestamp against the wall clock and writes only the `dim-stale` state attribute. It
+  reads no register, writes no value, and advances no noise scalar. A third timer, or any widening
+  of this one into a value writer, breaks the contract. These are the only two timers on the board.
+- Resynchronisation is an event handler, not a timer: a `visibilitychange` listener reseats the
+  last-tick timestamp and calls the value clock's render once when the tab becomes visible.
 - No animation dependency may be added. GSAP, Anime.js, and canvas/WebGL runtimes are out of scope
   for this surface; if a future surface needs one, it must be justified in that change's
   `motion.md`, not assumed here.
 - Update cadence: 10Hz maximum for the centisecond readout, 1Hz for all wall-clock registers. The
   board must idle near zero CPU when only 1Hz registers are visible.
 - Budget: the surface layer must not force layout or paint of the numeral layer. Compositing only.
-- Background tabs: the timer coalesces and the board resynchronises from the wall clock on
-  visibility change rather than replaying missed ticks.
+- Background tabs: the value clock coalesces and the board resynchronises from the wall clock on
+  visibility change rather than replaying missed ticks. The watchdog returns early while hidden, so
+  throttling is never reported as source loss.
 
 ## Reduced Motion
 

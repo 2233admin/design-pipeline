@@ -26,6 +26,7 @@ const {
   rootAttributeMode,
   writeArtifact,
   writeJson,
+  writeRaster,
 } = fixtures;
 
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
@@ -216,14 +217,18 @@ test("an unavailable source still requires a graybox and a qualitative one is no
   }));
   const unwritten = checkReconstruction(root, { stage: "graybox" });
   assert.equal(unwritten.status, "blocked");
-  assert.equal(unwritten.reason, "graybox-comparison-unmeasurable");
+  // Round-two finding 1 (`measurable` accepted a non-raster): a path that names no file used to
+  // share one reason with a pending source, a source nothing recorded, and bytes that are not a
+  // raster. It now reports the state the reader has to repair, which is its own.
+  assert.equal(unwritten.reason, "reference-source-raster-missing");
   assert.equal(unwritten.measurable, false);
   assert.equal(unwritten.fidelityEvidence, false);
   assert.match(unwritten.blockers.join("\n"), /reference\.png/);
 
   // Once the declared raster is actually on disk the same document measures, and only then is the
-  // comparison fidelity evidence.
-  writeArtifact(root, "reference.png");
+  // comparison fidelity evidence. Round-two finding 1 (`measurable` accepted a non-raster): this
+  // used to write the default text content, so "actually on disk" meant a file with the right name.
+  writeRaster(root, "reference.png");
   const measured = checkReconstruction(root, { stage: "graybox" });
   assert.equal(measured.status, "ready");
   assert.equal(measured.comparisonMode, "measured");
@@ -465,7 +470,9 @@ test("3D routes still require graybox.png by name and the stage checks that same
   // be here - otherwise the measured claim blocks and the assertion below would be asserting
   // fidelity evidence that nothing produced.
   writeArtifact(root, "graybox.png");
-  writeArtifact(root, "reference.png");
+  // Round-two finding 1 (`measurable` accepted a non-raster): the two assertions below read
+  // `measurable` and `fidelityEvidence` true, and used to do so against a text file named `.png`.
+  writeRaster(root, "reference.png");
   const ready = checkReconstruction(root, { stage: "graybox" });
   assert.equal(ready.status, "ready");
   assert.equal(ready.graybox.capture, "graybox.png");

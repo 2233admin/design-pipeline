@@ -15,6 +15,7 @@ const {
   matchingRegions,
   tempRoot,
   writeArtifact,
+  writeRaster,
   writeReference,
 } = fixtures;
 
@@ -212,7 +213,9 @@ test("the three-register non-uniform breakdown passes and keeps the exception na
   // raster the document names actually on disk, so the measured claim is measurable - the change
   // is ready and the composition is what the comparison was checked against.
   writeArtifact(root, "graybox.png", "layout-only capture");
-  writeArtifact(root, "reference.png", "source raster");
+  // Round-two finding 1 (`measurable` accepted a non-raster): the string "source raster" used to be
+  // enough to make the measured claim below measurable. It described a raster instead of being one.
+  writeRaster(root, "reference.png");
   writeReference(root, grayboxReference({ composition, graybox: grayboxFor(ids) }));
   const ready = checkReferenceEvidence(root);
   assert.equal(ready.status, "ready", ready.blockers.join("\n"));
@@ -342,7 +345,9 @@ test("a reference-evidence document with no composition block still validates", 
   assert.equal(withoutGraybox.reason, "graybox-missing");
 
   writeArtifact(root, "graybox.png", "layout-only capture");
-  writeArtifact(root, "reference.png", "source raster");
+  // Round-two finding 1 (`measurable` accepted a non-raster): as above, the eight bytes of a text
+  // file used to satisfy the measured comparison this root's final assertion reaches `ready` on.
+  writeRaster(root, "reference.png");
 
   // The moment the legacy document records a graybox block it stops being a legacy document. With
   // no composition recorded there is nothing to bind the comparison to, so the comparison could

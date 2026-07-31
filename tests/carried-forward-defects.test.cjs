@@ -53,6 +53,7 @@ const {
   queryParameterMode,
   writeArtifact,
   writeJson,
+  writeRaster,
 } = fixtures;
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -236,7 +237,11 @@ test("D2: a measured comparison with no source on disk is not ready and is not f
   // claim rather than the measured chain.
   const resolved = tempRoot("d2-resolved");
   writeArtifact(resolved, "graybox.png");
-  writeArtifact(resolved, "reference.png");
+  // Round-two finding 1 (`measurable` accepted a non-raster): this call used to write the ASCII
+  // string "evidence" into `reference.png` and the three assertions below still read `measurable`
+  // and `fidelityEvidence` true off those eight bytes. Existence was never the question the gate
+  // claimed to be answering, so the file the measured claim stands on is now a real raster.
+  writeRaster(resolved, "reference.png");
   writeJson(resolved, "reconstruction.json", { graybox: measuredGrayboxBlock() });
   writeJson(resolved, "reference-evidence.json", fixtures.planarReference());
   const measured = checkReconstruction(resolved, { stage: "graybox" });

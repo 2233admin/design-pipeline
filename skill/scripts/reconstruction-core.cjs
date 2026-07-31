@@ -25,6 +25,15 @@ const {
 const REFERENCE_ARTIFACT = "reference-evidence.json";
 const RECONSTRUCTION_ARTIFACT = "reconstruction.json";
 const SOURCE_AVAILABILITY = ["resolved", "pending"];
+// PNG is the only raster this pipeline writes - `graybox.png`, `rectified-reference.png`,
+// `landmark-overlay.png` - and the only image format named anywhere in this repository, so it is
+// the only signature accepted. Accepting a second format means reading its dimension header too:
+// a signature the gate cannot pull pixel dimensions out of would put it back to trusting the file
+// extension, which is the defect this check exists to close.
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const PNG_IHDR_PAYLOAD_BYTES = 13;
+// Signature (8) + IHDR chunk length (4) + chunk type (4) + width (4) + height (4).
+const PNG_HEADER_BYTES = 24;
 
 function landmarkMeasurements(reconstruction) {
   const errors = reconstruction.landmarks.points.map((landmark) => ({
@@ -124,6 +133,34 @@ function sourceShapeFault(relative, source) {
       }, which is not one of ${SOURCE_AVAILABILITY.join(", ")}`,
     };
   }
+  // `resolvedAt` is read here, so it has to be readable here. An absent field is the legacy case -
+  // a document that never went through a pending phase - and is left alone. A field that is present
+  // and cannot be compared, or that is present while the document also says the source never
+  // arrived, is a loud failure rather than a value quietly dropped on the floor: dropping it would
+  // return the freshness check to answering `fresh` because it had nothing to compare.
+  if (Object.hasOwn(source, "resolvedAt")) {
+    const declared = typeof source.availability === "string";
+    if (
+      typeof source.resolvedAt !== "string"
+      || Number.isNaN(Date.parse(source.resolvedAt))
+    ) {
+      return {
+        declared,
+        reason: "reference-source-resolved-at-invalid",
+        blocker: `reference evidence ${relative} records source.resolvedAt as ${
+          JSON.stringify(source.resolvedAt)
+        }, which is not an ISO 8601 timestamp`,
+      };
+    }
+    if (source.availability === "pending") {
+      return {
+        declared,
+        reason: "reference-source-resolved-at-contradictory",
+        blocker: `reference evidence ${relative} declares source.availability pending while `
+          + `source.resolvedAt records the source landing at ${source.resolvedAt}`,
+      };
+    }
+  }
   return null;
 }
 
@@ -141,15 +178,102 @@ function pendingSourceState(relative, source) {
   };
 }
 
-// A declared path is only evidence once it is on disk. A raster that was never written cannot
-// support a measured comparison, however confidently the document describes it.
-function rasterOnDisk(root, declaredPath) {
+// Only the header is read, never the image. The gate is asking whether these bytes are a raster it
+// could measure, not decoding one, and PNG puts that answer in its first 24 bytes: the signature,
+// then an IHDR chunk whose 13-byte payload opens with the width and height. Reading a fixed 24-byte
+// window keeps the cost the same whether the file is a thumbnail or a poster.
+function readRasterHeader(file) {
+  const handle = fs.openSync(file, "r");
   try {
-    const file = resolveInside(root, declaredPath, "reference source", { scope: "reconstruction" });
-    return fs.existsSync(file) && fs.statSync(file).isFile();
-  } catch {
-    return false;
+    const buffer = Buffer.alloc(PNG_HEADER_BYTES);
+    const read = fs.readSync(handle, buffer, 0, PNG_HEADER_BYTES, 0);
+    return buffer.subarray(0, read);
+  } finally {
+    fs.closeSync(handle);
   }
+}
+
+// `null` means the bytes carry the signature but not a header this gate can read a size out of -
+// truncated before IHDR, a first chunk that is not IHDR, an IHDR of the wrong length, or a zero
+// dimension. All of them are one fact: the file says PNG and cannot say how big it is.
+function pngDimensions(header) {
+  if (header.length < PNG_HEADER_BYTES) return null;
+  if (header.readUInt32BE(8) !== PNG_IHDR_PAYLOAD_BYTES) return null;
+  if (header.subarray(12, 16).toString("latin1") !== "IHDR") return null;
+  const width = header.readUInt32BE(16);
+  const height = header.readUInt32BE(20);
+  if (width < 1 || height < 1) return null;
+  return { width, height };
+}
+
+function rasterFault(reason, blocker) {
+  return { ok: false, reason, blocker };
+}
+
+// A declared path is only evidence once the bytes behind it are a raster with a size. Resolving is
+// not enough: a zero-byte file, a directory whose name ends in `.png`, a text file renamed to
+// `.png`, and a download that stopped after four bytes all resolve, and none of them can support a
+// pixel measurement. Each way the path can fail keeps its own reason, so the report names the
+// repair - write the file, fix the permissions, export a real PNG, capture it again - rather than
+// one generic absence that fits all four.
+function rasterState(root, declaredPath) {
+  let file;
+  try {
+    file = resolveInside(root, declaredPath, "reference source", { scope: "reconstruction" });
+  } catch {
+    return rasterFault(
+      "reference-source-raster-uncontained",
+      `the reference source path ${declaredPath} does not resolve inside the change root`,
+    );
+  }
+  let stats;
+  try {
+    stats = fs.statSync(file);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return rasterFault(
+        "reference-source-raster-missing",
+        `the reference source file ${declaredPath} is not present in the change root`,
+      );
+    }
+    return rasterFault(
+      "reference-source-raster-unreadable",
+      `the reference source file ${declaredPath} cannot be inspected: ${error.message}`,
+    );
+  }
+  if (!stats.isFile()) {
+    return rasterFault(
+      "reference-source-raster-unreadable",
+      `the reference source path ${declaredPath} is not a regular file, so it holds no raster to `
+      + "measure",
+    );
+  }
+  let header;
+  try {
+    header = readRasterHeader(file);
+  } catch (error) {
+    return rasterFault(
+      "reference-source-raster-unreadable",
+      `the reference source file ${declaredPath} cannot be read: ${error.message}`,
+    );
+  }
+  if (!header.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) {
+    return rasterFault(
+      "reference-source-not-raster",
+      `the reference source file ${declaredPath} carries no PNG signature, so it is not a raster `
+      + "this gate can measure; a measured comparison needs a PNG still, which for a video or a "
+      + "live page means exporting the frame that was actually compared and naming that",
+    );
+  }
+  const dimensions = pngDimensions(header);
+  if (!dimensions) {
+    return rasterFault(
+      "reference-source-raster-truncated",
+      `the reference source file ${declaredPath} carries a PNG signature but no readable IHDR `
+      + "pixel dimensions, so it is truncated or corrupt",
+    );
+  }
+  return { ok: true, ...dimensions };
 }
 
 // Absence of evidence is not evidence. A reference document nobody wrote, and a document that never
@@ -168,16 +292,30 @@ function unresolvedSourceState(reason, blocker, extra = {}) {
   };
 }
 
+// `resolvable` is now what it always claimed to be: the raster named by the document is on disk and
+// is a raster. `raster` carries the fault so the stage that refuses a measured claim can name the
+// same thing the reader would find. `resolvedAt` is carried through when the document records it -
+// a source that resolved at a known moment is the one case where a capture can be shown to predate
+// its own evidence.
 function resolvedSourceState(root, relative, source) {
   const declaredPath = typeof source.path === "string" && source.path.trim()
     ? source.path.trim()
     : null;
+  const raster = declaredPath
+    ? rasterState(root, declaredPath)
+    : rasterFault(
+      "reference-source-path-undeclared",
+      `reference evidence ${relative} resolves its source without naming a path, so there is `
+      + "nothing on disk to measure against",
+    );
   return {
     availability: "resolved",
     declared: typeof source.availability === "string",
-    resolvable: declaredPath ? rasterOnDisk(root, declaredPath) : false,
+    resolvable: raster.ok === true,
     path: declaredPath,
     artifact: relative,
+    raster,
+    ...(typeof source.resolvedAt === "string" ? { resolvedAt: source.resolvedAt } : {}),
   };
 }
 
@@ -363,7 +501,8 @@ function grayboxComparisonIssues(graybox) {
 }
 
 // Why the declared measured mode could not be honoured. A pending source, a source nothing ever
-// recorded, a source the document never declared, and a raster that is simply not there are four
+// recorded, a source the document never declared, a path that names no file, a path that names
+// something unreadable, bytes that are not a raster, and a raster with no readable size are
 // different stories, and each keeps its own reason: a measured claim is never refused by a reason
 // that describes some other change's problem.
 function unmeasurableIssue(source) {
@@ -379,10 +518,48 @@ function unmeasurableIssue(source) {
       reason: source.unresolved.reason,
     };
   }
+  if (source.raster && source.raster.ok !== true) {
+    return {
+      blocker: `graybox comparison claims measured mode while ${source.raster.blocker}`,
+      reason: source.raster.reason,
+    };
+  }
+  // No caller reaches here with a resolvable source, but a measured claim that survived to this
+  // point without one is still refused rather than allowed through on a missing explanation.
   return {
     blocker: "graybox comparison claims measured mode while the reference source file "
-      + `${source.path ?? "(none declared)"} is not present in the change root`,
+      + `${source.path ?? "(none declared)"} cannot be measured`,
     reason: "graybox-comparison-unmeasurable",
+  };
+}
+
+// `resolvedAt` records the moment a source that began pending actually landed. A capture taken
+// before that moment was taken without the raster, and flipping `availability` to `resolved`
+// afterwards does not turn it into a measurement: the comparison has to be re-run, not re-labelled.
+// Only a `measured` claim is blocked. A qualitative capture is the documented output of the pending
+// phase and never claimed to have measured against the source, so the source landing later does not
+// retroactively invalidate it - and a qualitative graybox is not fidelity evidence in any case.
+// A document with no `resolvedAt` never went through a pending phase and is not compared.
+function grayboxStalenessIssue(graybox, source) {
+  if (!source.resolvedAt || graybox.comparison.mode !== "measured") return null;
+  const capturedAt = Date.parse(graybox.capturedAt);
+  // `validateGraybox` already rejects a `capturedAt` that is not a timestamp, so this is a guard
+  // rather than a path. It is kept because the alternative to naming an uncomparable pair is
+  // counting it as fresh, and a freshness check that passes when it cannot compare is worse than
+  // no check at all.
+  if (Number.isNaN(capturedAt)) {
+    return {
+      blocker: `graybox capture records capturedAt ${JSON.stringify(graybox.capturedAt)}, which `
+        + `cannot be compared against the reference source resolution at ${source.resolvedAt}`,
+      reason: "graybox-capture-uncomparable",
+    };
+  }
+  if (capturedAt >= Date.parse(source.resolvedAt)) return null;
+  return {
+    blocker: `graybox capture was taken at ${graybox.capturedAt}, before the reference source `
+      + `resolved at ${source.resolvedAt}; a capture that predates its source measured nothing `
+      + "against it and has to be re-run rather than re-labelled",
+    reason: "graybox-capture-predates-source",
   };
 }
 
@@ -473,7 +650,10 @@ function grayboxResult(root, carrier, source) {
   const graybox = carrier.graybox;
   if (!graybox) return blockedGrayboxResult([...leading, grayboxMissingIssue()]);
   // Measurability is a property of the disk, not of the declaration. A comparison is measured only
-  // when the reference contract resolves AND the raster it names is actually there.
+  // when the reference contract resolves AND the path it names holds a raster with a readable size.
+  // Freshness is a separate question, asked below: a real raster that landed after the capture
+  // leaves this true and still blocks, because `measurable` answers what the source can support,
+  // not whether this capture is the one that used it.
   const measurable = source.availability === "resolved" && source.resolvable === true;
   const issues = [
     ...leading,
@@ -490,6 +670,9 @@ function grayboxResult(root, carrier, source) {
     graybox.comparison.mode === "measured" && !measurable && !source.invalid
       ? unmeasurableIssue(source)
       : null,
+    // An unreadable source declaration never carries a `resolvedAt` to compare against, so this
+    // step has nothing to add to the fault already reported above.
+    grayboxStalenessIssue(graybox, source),
     graybox.approval.status !== "approved"
       ? {
         blocker: `graybox approval status is ${graybox.approval.status}`,

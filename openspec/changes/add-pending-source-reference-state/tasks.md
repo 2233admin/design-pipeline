@@ -8,11 +8,17 @@
 - [x] Refuse `reconstruction check --stage geometry|final` against a pending source; report `blocked`, never `fidelity-limited`.
 - [x] Keep `intent.requestedFidelity` and `intent.downgrade` untouched by a pending source.
 - [ ] Record `resolvedAt` when a source later lands so pending-origin runs stay identifiable.
-      Deliberately unchecked, not forgotten. The contract accepts and validates `resolvedAt` and
-      forbids it while pending, and `reference-spec.md` tells the agent to write it, but no script
-      writes it and no gate or report reads it, so a pending-origin run is not in fact identifiable.
-      The field is kept rather than removed; `design.md`, section `resolvedAt Has No Writer`, names
-      the writer and the reader that would have to be built to close this, and why deleting the
-      field from the proposal alone would be a worse outcome than leaving this box open.
+      Still unchecked, but for half the reason it was before. The reading half shipped: the graybox
+      stage compares `source.resolvedAt` against `graybox.capturedAt` and blocks a `measured` claim
+      whose capture predates the source with `graybox-capture-predates-source`, an unparseable
+      `resolvedAt` blocks with `reference-source-resolved-at-invalid`, and a `pending` source that
+      also records one blocks with `reference-source-resolved-at-contradictory`. So a run that
+      records `resolvedAt` is now identifiable, and its stale evidence cannot claim to be measured.
+      The writing half did not: no script stamps the field, so it remains an agent hand-edit per
+      `reference-spec.md`, and a document that should have recorded `resolvedAt` but did not is
+      still indistinguishable from one that never went through a pending phase. The task says
+      `Record`, and nothing records it, so the box stays open. `design.md`, section
+      `resolvedAt: Reader Shipped, Writer Missing`, documents the shipped reader exactly and names
+      the writer that would close this.
 - [x] Update `reference-spec.md` and `reconstruction-spec.md`.
 - [x] Run focused tests, full tests, and package QA.

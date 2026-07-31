@@ -69,7 +69,10 @@ both be guesses that make the verdict depend on how the table was ordered.
 The two failures are kept apart by their reason strings:
 
 - `composition contradiction:` - `uniform: false` with no `breaksFrom` recorded anywhere, or a
-  region that differs from a single modal structure without naming what it breaks from;
+  region that differs from a single modal structure and is accounted for in neither direction:
+  it records no `breaksFrom` of its own, and no other region's `breaksFrom` names it. Either one
+  alone clears it, exactly as `isRegionAccountedFor` reads it - a region the document describes
+  from the other end is described;
 - `composition ambiguity:` - no structure is modal, and at least one region is unaccounted for. The
   message names the tied structures, how many regions each describes, and the unaccounted regions,
   and tells the author to record what each one breaks from.

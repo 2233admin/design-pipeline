@@ -352,7 +352,7 @@ body{
 /* phosphor grain: three seeded turbulence layers. There is no keyframe cycle,
    because a keyframe cycle is periodic by construction and the motion contract
    forbids a surface that reads as a loop. Each layer's emission opacity is
-   resampled by the board's single timer from a seeded fractal value-noise
+   resampled by the board's value clock from a seeded fractal value-noise
    generator (see the script). Only opacity is bound; no geometry channel is.
 
    The values below are the static seeded texture: they are what the panel shows
@@ -509,11 +509,15 @@ body{
   function pad(n, w){ n = String(n); while (n.length < w) n = "0" + n; return n; }
 
   // ---- phosphor: seeded fractal value noise, opacity channel only ----------
-  // A CSS keyframe cycle is periodic by construction, so it can never satisfy
-  // "no cycle a viewer can lock onto". The generator below has no cycle at all:
-  // each lattice value is a hash of (seed, lattice index), so the sequence does
-  // not repeat at any observation length. It is still deterministic — a frame
-  // captured at wall-clock time T reproduces exactly from the seeds and T.
+  // A CSS keyframe cycle is periodic by construction with a cycle length in
+  // seconds, so it fails the contract's window test by inspection. This
+  // generator instead hashes (seed, lattice index), and measures clean over the
+  // supported observation window: 30 minutes sampled at 10Hz, repeat search over
+  // every lag from 1s to 15 minutes, zero repeating lags. That is a bounded
+  // claim, not a guarantee — this is a finite deterministic state machine, so a
+  // period exists somewhere past the window and is not asserted either way.
+  // Determinism IS exact: a frame captured at wall-clock time T reproduces from
+  // the seeds and T.
   var GRAIN = [
     { sel: ".g1", seed: 17, lattice: 2600, lo: .10, hi: .34, el: null },
     { sel: ".g2", seed: 58, lattice: 3300, lo: .12, hi: .32, el: null },
@@ -532,7 +536,7 @@ body{
     return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
   }
 
-  // two octaves at a non-integer ratio, so the octaves never re-align either
+  // two octaves at a non-integer ratio, so they do not re-align inside the window
   function noise01(seed, t, lattice){
     var sum = 0, norm = 0, step = lattice;
     for (var k = 0; k < 2; k++){
@@ -604,7 +608,8 @@ body{
     el.met.setAttribute("datetime", "PT" + eSec + "S");
     el.metTail.textContent = "." + pad(Math.floor((e % 1000) / 10), 2);
 
-    // surface noise rides the same clock; no second timer, no frame loop
+    // surface noise rides the value clock; no frame loop, and the only other
+    // timer on the board is the staleness watchdog below, which writes state only
     phosphor(now);
   }
 

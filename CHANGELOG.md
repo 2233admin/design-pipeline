@@ -73,6 +73,19 @@ All notable changes to Design Pipeline are documented here.
   previously prose only, with nowhere in the document to record a description or check one.
   Identical descriptions across regions stay valid; structurally identical registers legitimately
   read the same.
+- Added the `reference-source-path-undeclared`, `reference-source-raster-uncontained`,
+  `reference-source-raster-missing`, `reference-source-raster-unreadable`,
+  `reference-source-not-raster`, and `reference-source-raster-truncated` blocked reasons, so a
+  `measured` graybox comparison names which way its reference raster failed rather than sharing one
+  string with every other unmeasurable state. `graybox-comparison-unmeasurable` now covers a pending
+  source only.
+- Added the `graybox-capture-predates-source` and `graybox-capture-uncomparable` blocked reasons, so
+  a `measured` capture taken before the source it claims to have measured is refused, and a
+  `capturedAt` that cannot be compared is named rather than counted as fresh.
+- Added the `reference-source-resolved-at-invalid` and `reference-source-resolved-at-contradictory`
+  blocked reasons for a `source.resolvedAt` that is not an ISO 8601 timestamp, or that records the
+  source landing while `source.availability` still says `pending`. `resolvedAt` now has a reader, so
+  a declaration it cannot read blocks every stage instead of being dropped.
 
 ### Changed
 
@@ -117,6 +130,23 @@ All notable changes to Design Pipeline are documented here.
   alone. `verified` requires the final status and every reported stage to be `ready`. The old wording
   stated both rules at once, so a run whose `final` stage was `ready` beside a blocked
   `stages.graybox` could be recorded either way; it is now `unverified`.
+- The verification claim now names the one admissible input explicitly, and rejects the rest.
+  `reconstruction check` still defaults to `--stage geometry` when `--stage` is omitted, and that
+  default result must not be read as fully verified: it reports the queried stage's status at the
+  top level and reports the other stages beside it without gating on them, so a geometry result can
+  read `ready` while `stages.graybox` is blocked. That per-stage independence is deliberate and
+  unchanged. What changed is the documentation: no stage-scoped result - the default run, an
+  explicit `--stage geometry` or `--stage graybox` run, or a bare `stages.graybox` reading lifted out
+  of any result - may be cited as evidence for `verified`, and a `--stage final` result that is
+  missing, unreadable, or incomplete records `unverified`. The existing rules are preserved: a
+  blocked stage and a pending or unresolvable source still record `unverified`.
+- The graybox stage now reads the reference raster's bytes instead of trusting that the declared
+  path exists. A `measured` comparison requires the first 24 bytes of `source.path` to carry the PNG
+  signature and an IHDR chunk with a width and height of at least 1; PNG is the only accepted
+  signature, nothing is decoded, and no dependency was added. A change whose `source.kind` is
+  `video` or `live-page` can no longer reach `measured` without exporting the compared frame as a
+  PNG and naming it. The declared mode is still reported as declared and is never rewritten to
+  `qualitative`.
 - The public CLI now propagates the documented kernel exit codes unchanged: `0` success, `1`
   invalid/error, `2` blocked, `3` measured fidelity mismatch. `evidence capture`,
   `feedback record|prepare|reconcile`, and `source audit` label exit `3` as `fidelity-limited`
@@ -143,6 +173,21 @@ All notable changes to Design Pipeline are documented here.
   read from disk, so a `measured` comparison against a raster that was never written blocks and
   grants no fidelity evidence. The declared mode is still reported as declared rather than quietly
   rewritten.
+- Stopped accepting an existing file as evidence that a raster was measured. Existence was the whole
+  test, so a zero-byte file, a directory whose name ended in `.png`, a text file renamed to `.png`,
+  and a truncated download all set `measurable: true` and `fidelityEvidence: true`. The gate now
+  opens the file and reads its header, and each failure keeps its own reason. A path that escapes
+  the change root is reported as `reference-source-raster-uncontained` rather than through a blocker
+  that falsely said the file was not present in the change root.
+- Stopped leaving `source.resolvedAt` unread. It was written into `reference-evidence.json`, typed
+  by the schema, and forbidden while pending, and nothing ever compared it to anything. A `measured`
+  graybox capture timestamped before the source resolved measured nothing against it, and marking
+  the source `resolved` afterwards relabelled the claim instead of re-running it; that now blocks
+  with `graybox-capture-predates-source`. A `qualitative` capture is not compared - it is the
+  documented output of the pending phase - and an absent `resolvedAt` stays the legacy default. The
+  geometry and final stages are still unchecked for freshness, because `graybox.capturedAt` is the
+  only capture timestamp this contract records; that limit is now stated in
+  `references/reconstruction-spec.md` rather than left to be inferred.
 - Stopped accepting a bare `runtimeMode` token as proof that the emissive, optical, and texture
   layers were disabled. A token that names no disabled layers is a declaration the gate cannot
   check, so it now blocks with `graybox-mode-unverifiable`. The document stays contract-valid;

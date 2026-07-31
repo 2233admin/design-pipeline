@@ -288,17 +288,55 @@ const RECONCILIATION_SECTION = [
   "| --- | --- | --- | --- |",
 ].join("\n");
 
-// A `primary` clone target is the website-cloning form of a `primary-target` reference: the
-// implementation is compared back to that exact source. `references/design-spec.md` orders that
-// case graybox first, so the checklist has to name the capture before the spec it is written
-// against. `reference`-only target sets are constraints and keep the existing order.
-function grayboxCaptureTask(targets) {
-  if (!targets.some((target) => target.role === "primary")) return [];
-  const ids = targets.filter((target) => target.role === "primary").map((target) => target.id);
+// Every clone target is a reference, so the role only decides *when* its graybox is captured, never
+// whether one is owed: `references/reference-spec.md` requires `graybox.png` on every reference
+// route. A `primary` clone target is the website-cloning form of a `primary-target` reference - the
+// implementation is compared back to that exact source - and `references/design-spec.md` orders that
+// case graybox first, so the checklist names the capture before the spec it is written against. A
+// `reference` target is a constraint: it keeps the normal order and is captured at the first render,
+// which is the render the build-checks task produces.
+function targetIdsWithRole(targets, role) {
+  return targets.filter((target) => target.role === role).map((target) => target.id);
+}
+
+function primaryGrayboxTask(targets) {
+  const ids = targetIdsWithRole(targets, "primary");
+  if (ids.length === 0) return [];
   return [
     `- [ ] Capture a layout-only graybox for each primary target (${ids.join(", ")}) and pass `
     + "`designer-pipeline reconstruction check --stage graybox` before writing design.md.",
   ];
+}
+
+// The constraint half of the same obligation. Without this task the checklist walked a change with
+// `--reference-url` targets straight from the first render into a reconciliation that cites a
+// graybox nothing ever told the author to capture.
+function referenceGrayboxTask(targets) {
+  const ids = targetIdsWithRole(targets, "reference");
+  if (ids.length === 0) return [];
+  return [
+    `- [ ] Capture a layout-only graybox for each reference target (${ids.join(", ")}) from the `
+    + "first render and pass `designer-pipeline reconstruction check --stage graybox` before visual "
+    + "polish.",
+  ];
+}
+
+// Reconciliation is owed by every change that has a reference, which here means every change that
+// has a target at all. When only one graybox ordering exists in the change, "the graybox capture the
+// spec was written against" names it without ambiguity and the settled wording stands unchanged; a
+// mixed target set has two orderings, so the task has to say which capture belongs to which role.
+function reconciliationTask(targets) {
+  if (targets.length === 0) return [];
+  const base = "- [ ] Fill the `Spec Reconciliation` section in design.md: cite the graybox capture the spec was written against, record every value the implementation changed with an observed cause, and pass `designer-pipeline reconciliation check`.";
+  const primaryIds = targetIdsWithRole(targets, "primary");
+  const referenceIds = targetIdsWithRole(targets, "reference");
+  if (referenceIds.length === 0) return [base];
+  const citations = [];
+  if (primaryIds.length > 0) {
+    citations.push(`the pre-spec graybox for the primary targets (${primaryIds.join(", ")})`);
+  }
+  citations.push(`the first-render graybox for the reference targets (${referenceIds.join(", ")})`);
+  return [`${base} Cite ${citations.join(" and ")}.`];
 }
 
 function taskList(targets) {
@@ -308,10 +346,11 @@ function taskList(targets) {
     "- [ ] Verify authorization and execution capabilities.",
     "- [ ] Capture reconnaissance and interaction evidence for every target.",
     "- [ ] Establish target-project foundation and assets.",
-    ...grayboxCaptureTask(targets),
+    ...primaryGrayboxTask(targets),
     "- [ ] Write one complete spec before each bounded builder slice.",
     "- [ ] Assemble and run the target project's build checks.",
-    "- [ ] Fill the `Spec Reconciliation` section in design.md: cite the graybox capture the spec was written against, record every value the implementation changed with an observed cause, and pass `designer-pipeline reconciliation check`.",
+    ...referenceGrayboxTask(targets),
+    ...reconciliationTask(targets),
     "- [ ] Run visual, interaction, accessibility, motion, responsive, and headless QA.",
   ].join("\n");
 }

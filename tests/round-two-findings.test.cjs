@@ -41,6 +41,7 @@ const {
   rootAttributeMode,
   writeArtifact,
   writeJson,
+  writeRaster,
 } = fixtures;
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -211,7 +212,10 @@ test("F2: a declared-resolved source whose file is absent grants no fidelity evi
 
   const claimed = checkReconstruction(root, { stage: "graybox" });
   assert.notEqual(claimed.status, "ready");
-  assert.equal(claimed.reason, "graybox-comparison-unmeasurable");
+  // Round-two finding 1 (`measurable` accepted a non-raster): F2's own subject - a declared path
+  // with nothing written behind it - used to be refused by the same reason as a pending source.
+  // The refusal was always right; the reason named some other change's problem.
+  assert.equal(claimed.reason, "reference-source-raster-missing");
   assert.equal(claimed.measurable, false);
   assert.equal(claimed.fidelityEvidence, false);
   assert.match(claimed.blockers.join("\n"), /reference\.png/);
@@ -225,8 +229,9 @@ test("F2: a declared-resolved source whose file is absent grants no fidelity evi
   assert.equal(qualitative.measurable, false);
   assert.equal(qualitative.fidelityEvidence, false);
 
-  // Writing the declared raster is what changes the verdict - nothing else does.
-  writeArtifact(root, "reference.png");
+  // Writing the declared raster is what changes the verdict - nothing else does. Round-two finding
+  // 1 (`measurable` accepted a non-raster): "the declared raster" used to mean any bytes at all.
+  writeRaster(root, "reference.png");
   writeJson(root, "reference-evidence.json", planarReference({
     graybox: grayboxBlock({
       comparison: { mode: "measured", regions: comparisonRegions() },

@@ -133,7 +133,10 @@ unavailable file, a schedule, and implementation convenience are not approval.
     every reported stage is `ready`, `fidelity-limited` when the top-level status is
     `fidelity-limited` and no stage is `blocked`, and `unverified` for everything else, including a
     single blocked stage and a pending or unresolvable source. Requested fidelity does not move with
-    it.
+    it. Only that complete output is evidence for the claim. `reconstruction check` defaults to
+    `--stage geometry`, and no stage-scoped result - the default run, an explicit `--stage geometry`
+    or `--stage graybox` run, or a bare `stages.graybox` reading lifted out of any result - may be
+    cited as evidence for `verified`.
 15. Report the unlock action whenever the source is still pending: supplying the source file path
     enables rectification, camera calibration, landmark error, and the fidelity receipt.
 
@@ -543,7 +546,12 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
   `unverified`, derived from one command - `reconstruction check --stage final` - read in full, its
   top-level status together with every entry in its `stages` map. `verified` requires the top-level
   status *and* every reported stage to be `ready`; the top-level status alone is not the derivation,
-  because a `final` stage can report `ready` beside a `blocked` `stages.graybox`. A pending or
+  because a `final` stage can report `ready` beside a `blocked` `stages.graybox`. Only that complete
+  output is evidence for the claim: `reconstruction check` defaults to `--stage geometry`, and a
+  stage-scoped result - the default run, an explicit `--stage geometry` or `--stage graybox` run, or
+  a bare `stages.graybox` reading lifted out of any result - is rejected as evidence for `verified`,
+  because it answers only for the stage that was asked for. A `--stage final` result that is
+  missing, unreadable, or incomplete records `unverified`. A pending or
   unresolvable source records `unverified` by blocking a stage, and nothing in `qa.md`, `design.md`,
   or the final response describes an `unverified` run as verified, exact, identical, pixel-perfect,
   or complete.
@@ -565,6 +573,19 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
   discipline and is never fidelity evidence. A run whose `geometry` stage is blocked on a missing
   source must still show `graybox: ready`; both blocked is a process gap, not an environmental
   limitation.
+- Reference raster gate: a `measured` comparison is refused unless the bytes behind `source.path`
+  are a PNG the stage can read a width and height out of. Existence is not enough; the gate reads
+  the first 24 bytes and checks the PNG signature and the IHDR dimensions. Each failure keeps its
+  own reason - `reference-source-path-undeclared`, `reference-source-raster-uncontained`,
+  `reference-source-raster-missing`, `reference-source-raster-unreadable`,
+  `reference-source-not-raster`, `reference-source-raster-truncated` - and a `video` or `live-page`
+  source reaches `measured` only by exporting the compared frame as a PNG and naming that.
+- Reference freshness gate: when `source.resolvedAt` is recorded, a `measured` graybox capture taken
+  before it blocks with `graybox-capture-predates-source` and has to be re-run rather than
+  re-labelled; a `capturedAt` that will not parse is `graybox-capture-uncomparable`, never counted
+  as fresh. An absent `resolvedAt` is the legacy default and is not compared. A `resolvedAt` that is
+  not an ISO 8601 timestamp is `reference-source-resolved-at-invalid`, and one recorded beside
+  `availability: pending` is `reference-source-resolved-at-contradictory`; both block every stage.
 - Spec reconciliation gate: change `design.md` carries a `Spec Reconciliation` section citing a
   graybox capture that exists on disk. An empty table is `ready`; an absent section is `blocked`.
   Every `Cause` entry describes an observation, not an intention. This gate is folded into
@@ -650,7 +671,14 @@ Final responses should report:
   every entry in its `stages` map. `verified` needs the top-level status and every reported stage to
   be `ready`; `fidelity-limited` needs a top-level `fidelity-limited` with no stage `blocked`;
   everything else is `unverified`, including a single blocked stage, a pending or unresolvable
-  source, and a change with no `reconstruction.json` to run the command against. An `unverified`
+  source, and a change with no `reconstruction.json` to run the command against. Only the complete
+  output of that one command is evidence for the claim. `reconstruction check` defaults to
+  `--stage geometry`, so the command run without `--stage` returns a geometry-scoped result, and
+  neither that result, nor an explicit `--stage geometry` or `--stage graybox` run, nor a single
+  `stages.graybox` or `stages.geometry` entry lifted out of any result, may be cited as evidence for
+  `verified`: a stage-scoped status answers only for the stage that was asked for, and is reported
+  beside the other stages without gating on them. A `--stage final` result that is missing,
+  unreadable, or incomplete is reported as `unverified`. An `unverified`
   claim may never be reported as verified, exact, identical, 1:1, pixel-perfect, faithful, or
   complete. The claim is independent of requested fidelity, which stays where the user set it.
 - Missing companion skills, if any.

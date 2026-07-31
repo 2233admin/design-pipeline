@@ -18,7 +18,7 @@ than re-shot, because a re-shoot with no measurement attached would only look li
 | Engineering | pass | No dependency added, no build step, single file |
 | Accessibility | pass with note | See below |
 | Motion | pass | Only `tick`, `phosphor`, `dim-stale`; all justified in `motion.md`. Previously recorded as a pass while `phosphor` ran a 7.1s keyframe cycle against a contract that forbids one — the pass was asserted from `motion.md` alone and was never checked against the CSS |
-| Motion foundation | pass | project `MOTION.md` `ready`, hash `5ecac0c3…`, primitive `distortion.fractal-noise` exists in the bundled registry |
+| Motion foundation | pass | project `MOTION.md` `ready`, hash `165afdfa…`, primitive `distortion.fractal-noise` exists in the bundled registry |
 | Motion spec | pass | `motion.md` records trigger, purpose, timing, easing, choreography, interruption, library, budget, reduced-motion for each motion |
 | Design foundation | pass | project `DESIGN.md` `ready`, hash `eccabd1a…` |
 | Reference routing | pass | `reference.md` records four independent decisions and selects `2.5d` with confidence 0.85 |
@@ -40,11 +40,12 @@ than re-shot, because a re-shoot with no measurement attached would only look li
 | Fixed numeral advance | measured `.digits` width with `00`, `88`, `11` | 224.6318px in all three cases — stable |
 | Reduced-motion declarations | CSSOM inspection of the `prefers-reduced-motion` block | `.grain .g1/.g2/.g3 { opacity: fixed }`, `.register { transition: none }` |
 | Reduced-motion resolved value | `getComputedStyle` on each grain layer in a browser already reporting `prefers-reduced-motion: reduce` | `0.3 / 0.18 / 0.22` — the static texture is actually visible |
-| Surface noise aperiodicity | replayed the shipped generator over 30 minutes of wall clock at 10Hz and searched every lag from 1s to 15 minutes for a repeat | 0 repeating lags found |
+| Surface noise, no detectable cycle in the supported window | replayed the shipped generator over the supported observation window — 30 minutes of wall clock at 10Hz — and searched every lag from 1s to 15 minutes for a repeat | 0 repeating lags found. This is the whole claim: the generator is finite and deterministic, so a period exists beyond the window and is not asserted either way |
 | Surface noise amplitude | same replay, g1 envelope | `0.109–0.330`, inside the authored `0.10–0.34`; unchanged from the keyframe revision |
 | Surface noise determinism | same input timestamp sampled twice | identical to the bit |
 | `T+` machine-readable value | `#met` tag name and `datetime` attribute after a tick | `TIME`, `datetime="PT90S"` |
 | Console errors after the phosphor rewrite | browser console | none |
+| Timer inventory | read every scheduler call site in `index.html` rather than trusting the spec | one `setTimeout` chain re-armed at `100 - now % 100` (value clock, ~10Hz, owns all values and the noise scalar), one 1Hz `setInterval` (staleness watchdog, writes only `data-state`), one `visibilitychange` handler. Two timers, not one; `MOTION.md` and `motion.md` were corrected to say so |
 
 The reduced-motion declaration check and the reduced-motion resolved-value check are listed
 separately on purpose. The first one passed on the original build and the second one would not
@@ -62,7 +63,7 @@ treated it as if it were.
 | Accessibility | 4 / 5 | Correct semantics; a very low-vision user is not the audience for a distance board |
 | Responsiveness | 4 / 5 | Portrait keeps the object rigid but the board is necessarily small on a phone |
 | Motion quality | 5 / 5 | Nothing moves that should not |
-| Engineering fit | 5 / 5 | One file, zero dependencies, one timer |
+| Engineering fit | 5 / 5 | One file, zero dependencies, one value clock plus a state-only watchdog |
 | Performance risk | 4 / 5 | Three `feTurbulence` layers are the only real cost; composite-only |
 
 ## Graybox Gate
@@ -142,7 +143,7 @@ duplicate information already in each register's accessible name.
 | Gap | Why | Next-best check performed |
 | --- | --- | --- |
 | Exact/final reconstruction gates | source file unavailable | route classification and fidelity invariants recorded in `reference.md` |
-| Graybox gate | **no reason** — nothing blocked it; it was not run. Recorded as a process gap, not an environmental limit | none. There is no next-best check for an ordering gate that was skipped |
+| Graybox gate | **blocked**, reason `graybox-missing`. No environmental blocker existed; the gate was simply not run, so the block is a process gap rather than an environmental limit | none. There is no next-best check for an ordering gate that was skipped |
 | Reduced-motion runtime emulation | `browse` denies `Emulation.setEmulatedMedia` (CDP allowlist) | resolved `getComputedStyle` opacity in a browser already reporting `prefers-reduced-motion: reduce`, plus CSSOM inspection of the declarations |
 | Independent EvidencePort | `playwright` is not installed, so `capture-web-evidence.cjs` cannot run | screenshots captured through gstack browse and stored with the change |
 | Anti-slop evaluator | `evaluate-anti-slop.cjs` needs a rubric-bound report input not produced by this run | anti-template decisions recorded manually in `design.md` |

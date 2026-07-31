@@ -182,6 +182,11 @@ Complete this section when visual references influence the change.
   - `unverified` for everything else, including any single blocked stage and a change with no
     `reconstruction.json` to run the command against:
 - Top-level `ready` beside a blocked `stages.graybox` recorded as `unverified`, not `verified`:
+- The claim was read from a `--stage final` run and from nothing else. `reconstruction check`
+  defaults to `--stage geometry`, and no stage-scoped result - the default run, an explicit
+  `--stage geometry` or `--stage graybox` run, or a bare `stages.graybox` reading lifted out of any
+  result - was cited as evidence for `verified`:
+- A `--stage final` result that was missing, unreadable, or incomplete was recorded as `unverified`:
 - Nothing in this file, in `design.md`, or in the final response describes an `unverified` run as
   verified, exact, identical, 1:1, pixel-perfect, faithful, or complete:
 
@@ -206,11 +211,25 @@ fidelity mode.
   `graybox-mode-unverifiable`, never `ready`):
 - Suppressed treatments listed:
 - Comparison mode declared: `measured` / `qualitative`
-- Comparison measurable (source `resolved` and the named raster present on disk): yes / no
-- If `measured` was refused, the reason names which of the four states applies
-  (`graybox-comparison-unmeasurable` for a pending source or a raster missing from disk,
-  `reference-source-unrecorded` for no reference document, `reference-source-undeclared` for a
-  document that declares no `source`):
+- Comparison measurable (source `resolved`, a `source.path` declared, and the bytes behind it a PNG
+  whose IHDR width and height the gate could read): yes / no
+- If `measured` was refused, the reason names which state applies:
+  - `graybox-comparison-unmeasurable` for a pending source
+  - `reference-source-unrecorded` for no reference document
+  - `reference-source-undeclared` for a document that declares no `source`
+  - `reference-source-path-undeclared` for a resolved source that names no path
+  - `reference-source-raster-uncontained` for a path that escapes the change root
+  - `reference-source-raster-missing` for a path that names no file
+  - `reference-source-raster-unreadable` for a path that is not a regular file, or whose bytes
+    cannot be read
+  - `reference-source-not-raster` for bytes with no PNG signature, a zero-byte file included
+  - `reference-source-raster-truncated` for a PNG signature with no readable IHDR dimensions
+- If the document records `source.resolvedAt`, the `measured` capture is not older than it
+  (`graybox-capture-predates-source` if it is, and the repair is to re-run the capture, never to
+  re-label it; `graybox-capture-uncomparable` if `capturedAt` will not parse):
+- `resolvedAt`, when present, is an ISO 8601 timestamp (`reference-source-resolved-at-invalid`) and
+  is not recorded beside `availability: pending`
+  (`reference-source-resolved-at-contradictory`); absent is the legacy default and is not compared:
 - `fidelityEvidence` (true only when `ready`, `measured`, and measurable):
 - Exactly one carrier holds the `graybox` block (two is `graybox-carrier-conflict`, and neither
   block is validated):
@@ -235,10 +254,15 @@ grading. The geometry gate blocks detail geometry, type treatment, and any measu
 A blocked `geometry` stage is not a reason to withhold optical treatment when the graybox stage is
 `ready`; record the verification claim as `unverified` and continue.
 
-A `measured` comparison the evidence cannot support is `blocked` with
-`graybox-comparison-unmeasurable`, not a downgrade to `qualitative`. A block that cannot be
-validated at all is `blocked` with `graybox-invalid`. Never record `ready` for a gate that could not
-verify its own evidence.
+A `measured` comparison the evidence cannot support is `blocked` with the reason from the list above
+that names the actual state, not a downgrade to `qualitative`. A block that cannot be validated at
+all is `blocked` with `graybox-invalid`. Never record `ready` for a gate that could not verify its
+own evidence.
+
+The raster and freshness checks above run on the graybox stage only. The `geometry` stage refuses a
+pending source and an unreadable source declaration, and otherwise recomputes landmark error without
+opening the file `source.path` names, so a `ready` geometry status is not a statement that the
+reference raster is readable. Record it as the stage-scoped result it is.
 
 ## Spec Reconciliation
 

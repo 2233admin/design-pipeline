@@ -9,6 +9,7 @@
     "carried-forward-defects.test.cjs",
     "check-deps.test.cjs",
     "coderabbit-findings.test.cjs",
+    "coderabbit-round-two.test.cjs",
     "component-state-matrix.test.cjs",
     "composition-structure.test.cjs",
     "design-synthesis.test.cjs",

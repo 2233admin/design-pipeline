@@ -32,11 +32,13 @@
 
 ## Motion
 
-- [x] Single wall-clock-aligned timer owning all registers
+- [x] Single wall-clock-aligned value clock (`setTimeout` chain) owning all registers and the noise
+      scalar; the only other timer is the 1Hz staleness watchdog, which writes state only
 - [x] Discrete `tick`, no interpolation
 - [x] `phosphor` surface noise via `feTurbulence`, composite-only
-- [x] `phosphor` opacity driven by a seeded aperiodic noise generator on the shared timer, not by a
-      CSS keyframe cycle
+- [x] `phosphor` opacity driven on the value clock by a seeded noise generator with no cycle
+      detectable inside the supported 30-minute / 10Hz observation window, not by a CSS keyframe
+      cycle
 - [x] Pause surface noise when the document is hidden
 - [x] `dim-stale` 240ms ramp
 

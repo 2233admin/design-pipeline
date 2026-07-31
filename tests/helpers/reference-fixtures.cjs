@@ -32,6 +32,33 @@ function writeJson(root, relative, document) {
   writeArtifact(root, relative, `${JSON.stringify(document, null, 2)}\n`);
 }
 
+// --- raster bytes --------------------------------------------------------------------------------
+// A PNG *header*, not an image: the 8-byte signature followed by one complete IHDR chunk. The
+// reconstruction gate reads a fixed 24-byte window and never decodes, so these 33 bytes are exactly
+// what makes a file a measurable raster to it, and building them here keeps a binary fixture out of
+// the repository. The signature is written as literal bytes rather than imported from the
+// implementation, for the same reason the schema names below are literals: a fixture that borrows
+// the constant it is checked against has stopped being a second opinion.
+//
+// `width` and `height` default to the viewport `resolvedSource` declares, so the common case is a
+// raster that agrees with the document naming it.
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+const PNG_HEADER_BYTES = 33;
+
+function pngBytes({ width = 723, height = 405, chunkType = "IHDR", payloadLength = 13 } = {}) {
+  const bytes = Buffer.alloc(PNG_HEADER_BYTES);
+  Buffer.from(PNG_SIGNATURE).copy(bytes, 0);
+  bytes.writeUInt32BE(payloadLength, 8);
+  bytes.write(chunkType, 12, "latin1");
+  bytes.writeUInt32BE(width, 16);
+  bytes.writeUInt32BE(height, 20);
+  return bytes;
+}
+
+function writeRaster(root, relative, options) {
+  writeArtifact(root, relative, pngBytes(options));
+}
+
 function readJson(root, relative) {
   return JSON.parse(fs.readFileSync(path.join(root, relative), "utf8"));
 }
@@ -294,6 +321,7 @@ module.exports = {
   planarClassification,
   planarCues,
   planarReference,
+  pngBytes,
   queryParameterMode,
   readJson,
   referenceRoot,
@@ -302,5 +330,6 @@ module.exports = {
   tempRoot,
   writeArtifact,
   writeJson,
+  writeRaster,
   writeReference,
 };
