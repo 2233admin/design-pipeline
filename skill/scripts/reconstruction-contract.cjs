@@ -321,6 +321,71 @@ function validateGrayboxApproval(value, label) {
   assertString(value.evidence, `${label}.evidence`, GRAYBOX_SCOPE);
 }
 
+// The shape of the capture itself: what was shot, when, at what size, and under which declared
+// runtime mode. `runtimeMode` stays optional - an absent mode is a blocked stage, not a bad
+// document - so only a present, non-null value is checked here.
+function validateGrayboxCapture(value, label) {
+  assertString(value.capture, `${label}.capture`, GRAYBOX_SCOPE);
+  assertGrayboxTimestamp(value.capturedAt, `${label}.capturedAt`);
+  validateGrayboxViewport(value.viewport, `${label}.viewport`);
+  if (value.runtimeMode !== undefined && value.runtimeMode !== null) {
+    validateGrayboxRuntimeMode(value.runtimeMode, `${label}.runtimeMode`);
+  }
+}
+
+function validateGrayboxSuppressed(value, label) {
+  assertStringArray(value, `${label}.suppressed`, GRAYBOX_SCOPE, {
+    unique: true,
+    min: 1,
+  });
+  value.forEach((treatment, index) => {
+    assertEnum(
+      treatment,
+      GRAYBOX_SUPPRESSED_TREATMENTS,
+      `${label}.suppressed[${index}]`,
+      GRAYBOX_SCOPE,
+    );
+  });
+}
+
+function validateGrayboxApprovalConsistency(value, label) {
+  if (value.approval.status !== "approved") return;
+  const unresolved = value.comparison.regions.filter(
+    (region) => GRAYBOX_UNRESOLVED_REGION_STATUSES.includes(region.status),
+  );
+  if (unresolved.length) {
+    fail(
+      GRAYBOX_SCOPE,
+      `${label}.approval.status cannot be approved while `
+      + `${unresolved.map((region) => region.id).join(", ")} remain open`,
+    );
+  }
+}
+
+// A comparison that addresses no region at all is the `graybox-comparison-missing` blocked
+// verdict, not an invalid contract - see `validateGrayboxComparison`. The binding below asks
+// which regions were addressed, so it only has something to say once at least one was. Nothing
+// escapes: an empty comparison can never reach `ready`.
+function validateGrayboxRegionBinding(comparedIds, compositionRegionIds, label) {
+  if (!Array.isArray(compositionRegionIds) || !comparedIds.length) return;
+  for (const id of comparedIds) {
+    if (!compositionRegionIds.includes(id)) {
+      fail(
+        GRAYBOX_SCOPE,
+        `${label}.comparison.regions names an undeclared composition region id ${id}`,
+      );
+    }
+  }
+  const unaddressed = compositionRegionIds.filter((id) => !comparedIds.includes(id));
+  if (unaddressed.length) {
+    fail(
+      GRAYBOX_SCOPE,
+      `${label}.comparison.regions must address every composition region id: `
+      + `missing ${unaddressed.join(", ")}`,
+    );
+  }
+}
+
 // `context.compositionRegionIds` binds the comparison to the per-region structural breakdown.
 // It is supplied by every caller that can read `reference-evidence.json`, whichever carrier holds
 // the graybox block, so the binding cannot be dodged by moving the block.
@@ -335,60 +400,12 @@ function validateGraybox(value, context = {}) {
     "approval",
   ];
   assertKeys(value, keys, [...keys, "runtimeMode"], label, GRAYBOX_SCOPE);
-  assertString(value.capture, `${label}.capture`, GRAYBOX_SCOPE);
-  assertGrayboxTimestamp(value.capturedAt, `${label}.capturedAt`);
-  validateGrayboxViewport(value.viewport, `${label}.viewport`);
-  if (value.runtimeMode !== undefined && value.runtimeMode !== null) {
-    validateGrayboxRuntimeMode(value.runtimeMode, `${label}.runtimeMode`);
-  }
-  assertStringArray(value.suppressed, `${label}.suppressed`, GRAYBOX_SCOPE, {
-    unique: true,
-    min: 1,
-  });
-  value.suppressed.forEach((treatment, index) => {
-    assertEnum(
-      treatment,
-      GRAYBOX_SUPPRESSED_TREATMENTS,
-      `${label}.suppressed[${index}]`,
-      GRAYBOX_SCOPE,
-    );
-  });
+  validateGrayboxCapture(value, label);
+  validateGrayboxSuppressed(value.suppressed, label);
   const comparedIds = validateGrayboxComparison(value.comparison, `${label}.comparison`);
   validateGrayboxApproval(value.approval, `${label}.approval`);
-  if (value.approval.status === "approved") {
-    const unresolved = value.comparison.regions.filter(
-      (region) => GRAYBOX_UNRESOLVED_REGION_STATUSES.includes(region.status),
-    );
-    if (unresolved.length) {
-      fail(
-        GRAYBOX_SCOPE,
-        `${label}.approval.status cannot be approved while `
-        + `${unresolved.map((region) => region.id).join(", ")} remain open`,
-      );
-    }
-  }
-  // A comparison that addresses no region at all is the `graybox-comparison-missing` blocked
-  // verdict, not an invalid contract - see `validateGrayboxComparison`. The binding below asks
-  // which regions were addressed, so it only has something to say once at least one was. Nothing
-  // escapes: an empty comparison can never reach `ready`.
-  if (Array.isArray(context.compositionRegionIds) && comparedIds.length) {
-    for (const id of comparedIds) {
-      if (!context.compositionRegionIds.includes(id)) {
-        fail(
-          GRAYBOX_SCOPE,
-          `${label}.comparison.regions names an undeclared composition region id ${id}`,
-        );
-      }
-    }
-    const unaddressed = context.compositionRegionIds.filter((id) => !comparedIds.includes(id));
-    if (unaddressed.length) {
-      fail(
-        GRAYBOX_SCOPE,
-        `${label}.comparison.regions must address every composition region id: `
-        + `missing ${unaddressed.join(", ")}`,
-      );
-    }
-  }
+  validateGrayboxApprovalConsistency(value, label);
+  validateGrayboxRegionBinding(comparedIds, context.compositionRegionIds, label);
   return value;
 }
 

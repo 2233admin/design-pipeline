@@ -3,7 +3,6 @@
 const assert = require("node:assert/strict");
 const childProcess = require("node:child_process");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const {
@@ -16,6 +15,9 @@ const {
   exactReconstruction,
   readyRoot,
 } = require("./fixtures/reconstruction-fixture.cjs");
+const fixtures = require("./helpers/reference-fixtures.cjs");
+
+const { EXACT_3D_ARTIFACTS, writeReference } = fixtures;
 
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const schemaFile = path.resolve(
@@ -23,36 +25,12 @@ const schemaFile = path.resolve(
   "../skill/references/reference-evidence.schema.json",
 );
 
-const RESOLVED_SOURCE = {
-  path: "reference.png",
-  kind: "image",
-  width: 723,
-  height: 405,
-  sha256: "a".repeat(64),
-};
+const RESOLVED_SOURCE = fixtures.resolvedSource({ sha256: "a".repeat(64) });
 
-const PENDING_SOURCE = {
-  availability: "pending",
-  path: null,
-  kind: "image",
-  width: null,
-  height: null,
-  sha256: null,
+const PENDING_SOURCE = fixtures.pendingSource({
   pendingReason: "The reference was pasted into the conversation and never written to the repository.",
   requestedFrom: "user",
-};
-
-const EXACT_ARTIFACTS = [
-  "reference.md",
-  "scene.json",
-  "3d.md",
-  "graybox.png",
-  "rectified-reference.png",
-  "front-elevation.svg",
-  "camera-calibration.json",
-  "landmark-overlay.png",
-  "reconstruction.json",
-];
+});
 
 // A v2 reference owes a per-region structural breakdown. It is authored from the reference, so it
 // stays the same whether or not the raster was ever sent: the pending state removes measurement,
@@ -68,45 +46,23 @@ function composition() {
 }
 
 function exactReference(overrides = {}) {
-  return {
+  return fixtures.fixedCameraReference({
     schema: "design-pipeline.reference-evidence.v2",
-    id: "eva-standard-time",
     source: { ...RESOLVED_SOURCE },
     composition: composition(),
-    intent: {
-      role: "primary-target",
-      requestedFidelity: "exact-reconstruction",
-      effectiveFidelity: "exact-reconstruction",
-      reconstructionArtifact: "reconstruction.json",
+    intent: fixtures.exactIntent({
       downgrade: {
         status: "not-requested",
         evidence: "The user requested an identical reconstruction.",
       },
-    },
-    classification: {
-      objectDimensionality: "3d",
-      cameraModel: "fixed-perspective",
-      interactionModel: "none",
-      outputSurface: "locked-cinematic-frame",
-      runtimeFamily: "fixed-camera-cinematic-3d",
-    },
-    spatialCues: {
-      thickness: { present: true, evidence: "Visible right rail and slab side wall." },
-      occlusion: { present: true, evidence: "Raised digits overlap the recessed field." },
-      contactShadows: { present: true, evidence: "Digits cast short shadows onto the substrate." },
-      bevelHighlights: { present: true, evidence: "Rails and glyph rims carry directional highlights." },
-      perspectiveConvergence: { present: true, evidence: "Horizontal rails converge toward frame left." },
-      depthOfField: { present: true, evidence: "Near right rail and distant left labels soften differently." },
-    },
-    route: "3d",
-    confidence: 0.98,
-    requiredArtifacts: [...EXACT_ARTIFACTS],
+    }),
+    requiredArtifacts: [...EXACT_3D_ARTIFACTS],
     approval: {
       status: "approved",
       evidence: "User confirmed the medium and requested an exact reconstruction.",
     },
     ...overrides,
-  };
+  });
 }
 
 function pendingReference(overrides = {}) {
@@ -114,20 +70,12 @@ function pendingReference(overrides = {}) {
 }
 
 function referenceRoot(reference, prefix = "design-pipeline-pending-source-") {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  fs.writeFileSync(
-    path.join(root, "reference-evidence.json"),
-    `${JSON.stringify(reference, null, 2)}\n`,
-  );
-  return root;
+  return fixtures.referenceRoot(reference, prefix);
 }
 
 function reconstructionRoot(reconstruction = exactReconstruction(), reference = pendingReference()) {
   const root = readyRoot(reconstruction);
-  fs.writeFileSync(
-    path.join(root, "reference-evidence.json"),
-    `${JSON.stringify(reference, null, 2)}\n`,
-  );
+  writeReference(root, reference);
   return root;
 }
 
@@ -169,7 +117,7 @@ test("a reference supplied only in conversation is recorded as pending, never om
   assert.equal(result.classification.runtimeFamily, "fixed-camera-cinematic-3d");
   assert.equal(result.spatialCues.thickness.present, true);
   assert.equal(result.intent.requestedFidelity, "exact-reconstruction");
-  assert.deepEqual(result.requiredArtifacts, EXACT_ARTIFACTS);
+  assert.deepEqual(result.requiredArtifacts, EXACT_3D_ARTIFACTS);
   assert.equal(result.approval.status, "approved");
 });
 
@@ -265,7 +213,7 @@ test("absent availability keeps existing documents valid and defaults to resolve
   const legacy = exactReference();
   delete legacy.intent;
   legacy.schema = "design-pipeline.reference-evidence.v1";
-  legacy.requiredArtifacts = ["reference.md", "scene.json", "3d.md", "graybox.png"];
+  legacy.requiredArtifacts = [...fixtures.THREE_D_ARTIFACTS];
   assert.equal(sourceAvailability(validateReferenceEvidence(legacy)), "resolved");
 
   // A document with no reference contract at all is still treated as resolved.
@@ -358,17 +306,14 @@ test("a pending source does not move requested or effective fidelity", () => {
 
 test("a pending source cannot be used as evidence for an implicit downgrade", () => {
   const reference = pendingReference({
-    intent: {
-      role: "inspiration",
+    intent: fixtures.directionalIntent({
       requestedFidelity: "exact-reconstruction",
-      effectiveFidelity: "directional-inspiration",
-      reconstructionArtifact: null,
       downgrade: {
         status: "not-requested",
         evidence: "The reference image was never written to disk.",
       },
-    },
-    requiredArtifacts: ["reference.md", "scene.json", "3d.md", "graybox.png"],
+    }),
+    requiredArtifacts: [...fixtures.THREE_D_ARTIFACTS],
   });
   assert.throws(
     () => validateReferenceEvidence(reference),

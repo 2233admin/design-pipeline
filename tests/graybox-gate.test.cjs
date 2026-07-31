@@ -3,7 +3,6 @@
 const assert = require("node:assert/strict");
 const childProcess = require("node:child_process");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const {
@@ -19,55 +18,28 @@ const {
   exactReconstruction,
   readyRoot,
 } = require("./fixtures/reconstruction-fixture.cjs");
+const fixtures = require("./helpers/reference-fixtures.cjs");
+
+const {
+  queryParameterMode,
+  readJson,
+  rootAttributeMode,
+  writeArtifact,
+  writeJson,
+} = fixtures;
 
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const CAPTURED_AT = "2026-02-11T09:00:00.000Z";
 const REQUESTED_AT = "2026-02-11T08:30:00.000Z";
 
 function grayboxRoot() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-graybox-"));
-}
-
-function writeArtifact(root, relative, content = "evidence") {
-  const file = path.join(root, relative);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, content);
-}
-
-function writeJson(root, relative, document) {
-  writeArtifact(root, relative, `${JSON.stringify(document, null, 2)}\n`);
-}
-
-function readJson(root, relative) {
-  return JSON.parse(fs.readFileSync(path.join(root, relative), "utf8"));
-}
-
-function resolvedSource(overrides = {}) {
-  return {
-    path: "reference.png",
-    kind: "image",
-    width: 723,
-    height: 405,
-    sha256: "b".repeat(64),
-    ...overrides,
-  };
+  return fixtures.tempRoot("design-pipeline-graybox-");
 }
 
 // A source the user described but never sent: the measured chain cannot run, and no measurement
 // may be invented to stand in for it.
 function pendingSource(overrides = {}) {
-  return {
-    path: null,
-    kind: "image",
-    width: null,
-    height: null,
-    sha256: null,
-    availability: "pending",
-    pendingReason: "The user described the HUD clock from memory and has not sent the still.",
-    requestedFrom: "the user",
-    requestedAt: REQUESTED_AT,
-    ...overrides,
-  };
+  return fixtures.pendingSource({ requestedAt: REQUESTED_AT, ...overrides });
 }
 
 function grayboxComparison(overrides = {}) {
@@ -90,137 +62,35 @@ function grayboxComparison(overrides = {}) {
 }
 
 function grayboxBlock(overrides = {}) {
-  return {
-    capture: "graybox.png",
+  return fixtures.grayboxBlock({
     capturedAt: CAPTURED_AT,
-    viewport: { width: 723, height: 405 },
     // The expanded form. A bare token would be a declaration the gate cannot check, and the tests
     // below that expect `ready` are entitled to a mode whose disabled layers are actually named.
-    runtimeMode: {
-      mechanism: "query-parameter",
-      token: "?graybox=1",
-      disables: ["emissive", "optical", "texture"],
-    },
-    suppressed: ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"],
+    runtimeMode: queryParameterMode(),
     comparison: grayboxComparison(),
-    approval: {
-      status: "approved",
-      evidence: "User compared the layout-only capture against the reference before any treatment.",
-    },
     ...overrides,
-  };
+  });
 }
 
-// The per-region structural breakdown names exactly the two regions the graybox comparison
+// The shared per-region structural breakdown names exactly the two regions the graybox comparison
 // addresses. A v2 reference owes one, and the graybox binding is checked against these ids.
-function planarComposition() {
-  return {
-    uniform: false,
-    regions: [
-      { id: "board", rows: 2, columns: 1, breaksFrom: ["register"] },
-      { id: "register", rows: 1, columns: 3, breaksFrom: [] },
-    ],
-  };
-}
-
 function planarReference(overrides = {}) {
-  return {
-    schema: "design-pipeline.reference-evidence.v2",
-    id: "jst-hud-clock",
-    source: resolvedSource(),
-    composition: planarComposition(),
-    classification: {
-      objectDimensionality: "2.5d",
-      cameraModel: "fixed-orthographic",
-      interactionModel: "bounded-parallax",
-      outputSurface: "screen-space-ui",
-      runtimeFamily: "layered-parallax-ui",
-    },
-    spatialCues: {
-      thickness: { present: true, evidence: "Board plates carry a visible extruded edge." },
-      occlusion: { present: true, evidence: "Register cards overlap the backing plate." },
-      contactShadows: { present: true, evidence: "Cards drop a short shadow onto the plate." },
-      bevelHighlights: { present: false, evidence: "Edges read flat with no directional highlight." },
-      perspectiveConvergence: { present: false, evidence: "Every rail stays parallel to the frame." },
-      depthOfField: { present: false, evidence: "All layers are uniformly sharp." },
-    },
-    route: "2.5d",
-    confidence: 0.88,
-    requiredArtifacts: ["reference.md", "graybox.png"],
-    intent: {
-      role: "inspiration",
-      requestedFidelity: "directional-inspiration",
-      effectiveFidelity: "directional-inspiration",
-      reconstructionArtifact: null,
-      downgrade: {
-        status: "not-requested",
-        evidence: "The user asked for a planar layered treatment, not a rebuild.",
-      },
-    },
-    approval: {
-      status: "approved",
-      evidence: "User confirmed the layered planar reading of the reference.",
-    },
-    ...overrides,
-  };
+  return fixtures.planarReference({ id: "jst-hud-clock", ...overrides });
 }
 
 // The exact combination the unconditional gate exists for: planar route, primary target, exact
 // reconstruction requested.
 function exactPlanarReference(overrides = {}) {
-  return planarReference({
-    requiredArtifacts: [
-      "reference.md",
-      "graybox.png",
-      "rectified-reference.png",
-      "front-elevation.svg",
-      "camera-calibration.json",
-      "landmark-overlay.png",
-      "reconstruction.json",
-    ],
-    intent: {
-      role: "primary-target",
-      requestedFidelity: "exact-reconstruction",
-      effectiveFidelity: "exact-reconstruction",
-      reconstructionArtifact: "reconstruction.json",
-      downgrade: {
-        status: "not-requested",
-        evidence: "The user asked for an identical rebuild of the HUD clock.",
-      },
-    },
-    ...overrides,
-  });
+  return fixtures.exactPlanarReference({ id: "jst-hud-clock", ...overrides });
 }
 
 function fixedCameraReference(overrides = {}) {
-  return {
-    schema: "design-pipeline.reference-evidence.v1",
-    id: "eva-standard-time",
-    source: resolvedSource(),
-    classification: {
-      objectDimensionality: "3d",
-      cameraModel: "fixed-perspective",
-      interactionModel: "none",
-      outputSurface: "locked-cinematic-frame",
-      runtimeFamily: "fixed-camera-cinematic-3d",
-    },
-    spatialCues: {
-      thickness: { present: true, evidence: "Visible right rail and slab side wall." },
-      occlusion: { present: true, evidence: "Raised digits overlap the recessed field." },
-      contactShadows: { present: true, evidence: "Digits cast short shadows onto the substrate." },
-      bevelHighlights: { present: true, evidence: "Rails and glyph rims carry directional highlights." },
-      perspectiveConvergence: { present: true, evidence: "Horizontal rails converge toward frame left." },
+  return fixtures.fixedCameraReference({
+    spatialCues: fixtures.fixedCameraCues({
       depthOfField: { present: true, evidence: "Near and distant rails soften differently." },
-    },
-    route: "3d",
-    confidence: 0.98,
-    requiredArtifacts: ["reference.md", "scene.json", "3d.md", "graybox.png"],
-    approval: {
-      status: "approved",
-      evidence: "User corrected the medium to 3D and requested a fresh implementation.",
-    },
+    }),
     ...overrides,
-  };
+  });
 }
 
 test("a planar route with reference evidence is gated by graybox until a capture and comparison exist", () => {
@@ -401,11 +271,7 @@ test("a capture claiming suppression without a declared runtime graybox mode is 
 test("a declared graybox mode that leaves a runtime layer enabled is blocked", () => {
   const root = readyRoot(exactReconstruction({
     graybox: grayboxBlock({
-      runtimeMode: {
-        mechanism: "root-attribute",
-        token: "data-graybox",
-        disables: ["emissive", "optical"],
-      },
+      runtimeMode: rootAttributeMode({ disables: ["emissive", "optical"] }),
     }),
   }));
   writeArtifact(root, "graybox.png");
@@ -415,13 +281,7 @@ test("a declared graybox mode that leaves a runtime layer enabled is blocked", (
   assert.match(incomplete.blockers.join("\n"), /texture/);
 
   const complete = readyRoot(exactReconstruction({
-    graybox: grayboxBlock({
-      runtimeMode: {
-        mechanism: "root-attribute",
-        token: "data-graybox",
-        disables: ["emissive", "optical", "texture"],
-      },
-    }),
+    graybox: grayboxBlock({ runtimeMode: rootAttributeMode() }),
   }));
   writeArtifact(complete, "graybox.png");
   const ready = checkReconstruction(complete, { stage: "graybox" });

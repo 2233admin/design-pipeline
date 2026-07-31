@@ -2,7 +2,6 @@
 
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const {
@@ -10,6 +9,14 @@ const {
   validateComposition,
   validateReferenceEvidence,
 } = require("../skill/scripts/reference-evidence-core.cjs");
+const fixtures = require("./helpers/reference-fixtures.cjs");
+
+const {
+  matchingRegions,
+  tempRoot,
+  writeArtifact,
+  writeReference,
+} = fixtures;
 
 const repoRoot = path.resolve(__dirname, "..");
 
@@ -22,40 +29,15 @@ function readJson(relative) {
 }
 
 function baseReference(overrides = {}) {
-  return {
-    schema: "design-pipeline.reference-evidence.v1",
+  return fixtures.fixedCameraReference({
     id: "jst-hud-clock",
-    source: {
-      path: "reference.png",
-      kind: "image",
-      width: 723,
-      height: 405,
-      sha256: "b".repeat(64),
-    },
-    classification: {
-      objectDimensionality: "3d",
-      cameraModel: "fixed-perspective",
-      interactionModel: "none",
-      outputSurface: "locked-cinematic-frame",
-      runtimeFamily: "fixed-camera-cinematic-3d",
-    },
-    spatialCues: {
-      thickness: { present: true, evidence: "Visible right rail and slab side wall." },
-      occlusion: { present: true, evidence: "Raised digits overlap the recessed field." },
-      contactShadows: { present: true, evidence: "Digits cast short shadows onto the substrate." },
-      bevelHighlights: { present: true, evidence: "Rails and glyph rims carry directional highlights." },
-      perspectiveConvergence: { present: true, evidence: "Horizontal rails converge toward frame left." },
-      depthOfField: { present: true, evidence: "Near right rail and distant left labels soften differently." },
-    },
-    route: "3d",
     confidence: 0.97,
-    requiredArtifacts: ["reference.md", "scene.json", "3d.md", "graybox.png"],
     approval: {
       status: "approved",
       evidence: "User confirmed the medium and the register readings.",
     },
     ...overrides,
-  };
+  });
 }
 
 // The real reference that motivated the change: three registers, of which the first
@@ -72,29 +54,21 @@ function threeRegisterComposition() {
 }
 
 function grayboxFor(regionIds) {
-  return {
-    capture: "graybox.png",
+  return fixtures.grayboxBlock({
     capturedAt: "2026-07-30T12:00:00.000Z",
     viewport: { width: 1280, height: 720 },
-    runtimeMode: {
-      mechanism: "root-attribute",
-      token: "data-graybox",
-      disables: ["emissive", "optical", "texture"],
-    },
-    suppressed: ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"],
     comparison: {
       mode: "measured",
-      regions: regionIds.map((id) => ({
-        id,
-        finding: `${id} matches the recorded row and column structure.`,
-        status: "matches",
-      })),
+      regions: matchingRegions(
+        regionIds,
+        (id) => `${id} matches the recorded row and column structure.`,
+      ),
     },
     approval: {
       status: "approved",
       evidence: "User approved the layout-only capture against the reference.",
     },
-  };
+  });
 }
 
 test("a composition block with fewer than two regions is rejected", () => {
@@ -207,16 +181,12 @@ test("the three-register non-uniform breakdown passes and keeps the exception na
   assert.deepEqual(second.breaksFrom, []);
   assert.deepEqual(third.breaksFrom, []);
 
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-composition-"));
-  const write = (reference) => fs.writeFileSync(
-    path.join(root, "reference-evidence.json"),
-    `${JSON.stringify(reference, null, 2)}\n`,
-  );
+  const root = tempRoot("design-pipeline-composition-");
 
   // A valid composition does not release the change: structural proof precedes optical treatment
   // on every route. This assertion previously read `ready` for a change with no graybox at all,
   // which is exactly the behaviour the unconditional graybox gate exists to end.
-  write(baseReference({ composition }));
+  writeReference(root, baseReference({ composition }));
   const withoutGraybox = checkReferenceEvidence(root);
   assert.equal(withoutGraybox.status, "blocked");
   assert.equal(withoutGraybox.reason, "graybox-missing");
@@ -224,9 +194,9 @@ test("the three-register non-uniform breakdown passes and keeps the exception na
   // With the layout-only capture recorded against the same three region ids - and the source
   // raster the document names actually on disk, so the measured claim is measurable - the change
   // is ready and the composition is what the comparison was checked against.
-  fs.writeFileSync(path.join(root, "graybox.png"), "layout-only capture");
-  fs.writeFileSync(path.join(root, "reference.png"), "source raster");
-  write(baseReference({ composition, graybox: grayboxFor(ids) }));
+  writeArtifact(root, "graybox.png", "layout-only capture");
+  writeArtifact(root, "reference.png", "source raster");
+  writeReference(root, baseReference({ composition, graybox: grayboxFor(ids) }));
   const ready = checkReferenceEvidence(root);
   assert.equal(ready.status, "ready", ready.blockers.join("\n"));
   assert.equal(ready.stages.graybox.status, "ready");
@@ -292,24 +262,20 @@ test("a reference-evidence document with no composition block still validates", 
   assert.equal(result.route, "3d");
   assert.equal(Object.hasOwn(result, "composition"), false);
 
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-composition-legacy-"));
-  const write = (document) => fs.writeFileSync(
-    path.join(root, "reference-evidence.json"),
-    `${JSON.stringify(document, null, 2)}\n`,
-  );
+  const root = tempRoot("design-pipeline-composition-legacy-");
 
   // The absent composition block is not what holds a legacy document back - the graybox gate is,
   // and it holds every route. This assertion previously read `ready` on a change with no graybox.
-  write(reference);
+  writeReference(root, reference);
   const withoutGraybox = checkReferenceEvidence(root);
   assert.equal(withoutGraybox.status, "blocked");
   assert.equal(withoutGraybox.reason, "graybox-missing");
 
   // With no composition recorded there is nothing to bind the comparison to, so the legacy
   // document reaches ready on the strength of the capture alone.
-  fs.writeFileSync(path.join(root, "graybox.png"), "layout-only capture");
-  fs.writeFileSync(path.join(root, "reference.png"), "source raster");
-  write({ ...reference, graybox: grayboxFor(["slab", "readout"]) });
+  writeArtifact(root, "graybox.png", "layout-only capture");
+  writeArtifact(root, "reference.png", "source raster");
+  writeReference(root, { ...reference, graybox: grayboxFor(["slab", "readout"]) });
   const ready = checkReferenceEvidence(root);
   assert.equal(ready.status, "ready", ready.blockers.join("\n"));
 

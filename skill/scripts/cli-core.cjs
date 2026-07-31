@@ -122,6 +122,11 @@ function builtIn(name) {
   return path.join(referencesRoot, name);
 }
 
+// Optional artifact flags fall back to the packaged reference rather than failing closed.
+function optionalArtifact(parsed, root, flag, builtInName) {
+  return option(parsed, flag) ? artifact(parsed, root, flag) : builtIn(builtInName);
+}
+
 function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = process.versions.node) {
   const manifestFile = path.join(skillRoot, "references", "package-resources.json");
   const missing = [];
@@ -411,7 +416,7 @@ function verifyCommand(parsed, root, action) {
 }
 
 function patternCommand(parsed, root, action) {
-  const catalogFile = option(parsed, "--catalog") ? artifact(parsed, root, "--catalog") : builtIn("ui-pattern-catalog.json");
+  const catalogFile = optionalArtifact(parsed, root, "--catalog", "ui-pattern-catalog.json");
   const catalog = readJson(catalogFile, "pattern catalog");
   if (action === "search") return { result: { status: "valid", results: searchPatterns(catalog, { query: option(parsed, "--query"), category: option(parsed, "--category"), platform: option(parsed, "--platform") }) }, exitCode: 0 };
   if (action === "audit") return { result: auditPatterns(catalog), exitCode: 0 };
@@ -420,8 +425,8 @@ function patternCommand(parsed, root, action) {
 
 function adapterCommand(parsed, root, action) {
   if (action === "audit") {
-    const registryFile = option(parsed, "--registry") ? artifact(parsed, root, "--registry") : builtIn("adapter-registry.json");
-    const catalogFile = option(parsed, "--graphics-catalog") ? artifact(parsed, root, "--graphics-catalog") : builtIn("graphics-runtime-catalog.json");
+    const registryFile = optionalArtifact(parsed, root, "--registry", "adapter-registry.json");
+    const catalogFile = optionalArtifact(parsed, root, "--graphics-catalog", "graphics-runtime-catalog.json");
     return { result: validateRegistry(readJson(registryFile, "adapter registry"), readJson(catalogFile, "graphics catalog")), exitCode: 0 };
   }
   if (action === "receipt-check") {
@@ -435,56 +440,136 @@ function adapterCommand(parsed, root, action) {
   fail("cli", `unknown adapter action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+function doctorCommand({ root }) {
+  const result = { ...inspectDoctor(), root };
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
+function tokensCheckCommand({ file }) {
+  return { result: validateTokens(readJson(file("--artifact"), "design tokens")), exitCode: 0 };
+}
+
+function uiIrCheckCommand({ file }) {
+  const catalogFile = file("--catalog");
+  return { result: validateUiIr(readJson(file("--artifact"), "ui ir"), readJson(catalogFile, "pattern catalog")), exitCode: 0 };
+}
+
+function designCodeMapCheckCommand({ file }) {
+  return { result: validateDesignCodeMap(readJson(file("--artifact"), "design code map")), exitCode: 0 };
+}
+
+function benchmarkEvaluateCommand({ parsed, root, file }) {
+  const result = evaluateBenchmark(readJson(file("--manifest"), "benchmark manifest"), readJson(file("--measurements"), "benchmark measurements"));
+  const feedback = option(parsed, "--record-feedback") === true ? benchmarkFeedback(root, result) : null;
+  return { result: { ...result, ...(feedback ? { feedback } : {}) }, exitCode: result.status === "passed" ? 0 : 2 };
+}
+
+function styleSignalsCheckCommand({ file }) {
+  return { result: validateStyleSignals(readJson(file("--artifact"), "style signals")), exitCode: 0 };
+}
+
+// `feedback` and `source audit` still delegate to the standalone kernels; the wrapper shape is the
+// same for every one of them, so the registry stores the script name rather than repeating it.
+function kernelEntry(script) {
+  return {
+    run: ({ parsed, root }) => {
+      const kernel = runKernel(script, legacyArgs(parsed, 2), root);
+      return { result: { status: kernel.exitCode === 2 ? "blocked" : "complete", kernel: kernel.value }, exitCode: kernel.exitCode };
+    },
+  };
+}
+
+function sourceAddCommand() {
+  fail("cli", "source add is intentionally deferred; record an attributed source-evidence artifact instead", { code: "COMMAND_DEFERRED" });
+}
+
+// Command registry. A top-level entry either carries `run` (the command owns its own subcommand
+// routing and accepts any action) or `actions` (an exact `command action` path; anything else is an
+// unknown command). Leaf entries declare their artifact options as data:
+//   required - must be supplied; resolved through `artifact` and contained by --root
+//   optional - flag to the packaged reference used when the flag is absent
+// Options resolved by `changeRootFrom`/`contained` stay inside their handler because their
+// containment rules, not plain presence, decide the failure.
+const COMMANDS = {
+  doctor: { run: doctorCommand },
+  status: { run: ({ parsed, root }) => ({ result: statusCommand(parsed, root), exitCode: 0 }) },
+  change: { run: ({ parsed, root, action }) => changeCommand(parsed, root, action) },
+  evidence: { run: ({ parsed, root, action }) => evidenceCommand(parsed, root, action) },
+  verify: { run: ({ parsed, root, action }) => verifyCommand(parsed, root, action) },
+  patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
+  adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
+  foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
+  reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
+  reference: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
+  reconstruction: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
+  scene: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
+  tokens: { actions: { check: { required: ["--artifact"], run: tokensCheckCommand } } },
+  "ui-ir": {
+    actions: {
+      check: {
+        required: ["--artifact"],
+        optional: { "--catalog": "ui-pattern-catalog.json" },
+        run: uiIrCheckCommand,
+      },
+    },
+  },
+  "design-code-map": { actions: { check: { required: ["--artifact"], run: designCodeMapCheckCommand } } },
+  benchmark: {
+    actions: {
+      evaluate: {
+        required: ["--manifest", "--measurements"],
+        run: benchmarkEvaluateCommand,
+      },
+    },
+  },
+  "style-signals": {
+    actions: {
+      check: {
+        optional: { "--artifact": "visual-style-signals.json" },
+        run: styleSignalsCheckCommand,
+      },
+    },
+  },
+  feedback: {
+    actions: {
+      record: kernelEntry("record-feedback.cjs"),
+      prepare: kernelEntry("prepare-publication.cjs"),
+      reconcile: kernelEntry("reconcile-publication.cjs"),
+    },
+  },
+  source: { actions: { audit: kernelEntry("audit-capabilities.cjs"), add: { run: sourceAddCommand } } },
+};
+
+function resolveCommand(command, action) {
+  if (!Object.hasOwn(COMMANDS, command)) return null;
+  const entry = COMMANDS[command];
+  if (entry.run) return entry;
+  return action && Object.hasOwn(entry.actions, action) ? entry.actions[action] : null;
+}
+
+// Resolution stays lazy so each handler still fails in the order it reads its options.
+function fileResolver(parsed, root, entry) {
+  const required = entry.required || [];
+  const optional = entry.optional || {};
+  return (flag) => {
+    if (required.includes(flag)) return artifact(parsed, root, flag);
+    if (Object.hasOwn(optional, flag)) return optionalArtifact(parsed, root, flag, optional[flag]);
+    return fail("cli", `${flag} is required`, { code: "OPTION_REQUIRED" });
+  };
+}
+
 function dispatch(argv) {
   const parsed = parseArgs(argv);
+  const json = option(parsed, "--json") === true;
   if (option(parsed, "--help") === true || option(parsed, "-h") === true || !parsed.positionals.length || parsed.positionals[0] === "help") {
-    return { result: { status: "help", help: publicHelp() }, exitCode: 0, json: option(parsed, "--json") === true };
+    return { result: { status: "help", help: publicHelp() }, exitCode: 0, json };
   }
   const [command, action] = parsed.positionals;
   const root = rootFrom(parsed);
-  if (command === "doctor") {
-    const result = { ...inspectDoctor(), root };
-    return {
-      result,
-      exitCode: result.status === "ready" ? 0 : 2,
-      json: option(parsed, "--json") === true,
-    };
-  }
-  let outcome;
-  if (command === "status") outcome = { result: statusCommand(parsed, root), exitCode: 0 };
-  else if (command === "change") outcome = changeCommand(parsed, root, action);
-  else if (command === "foundation" && action === "check") outcome = foundationCommand(parsed, root);
-  else if (["reference", "reconstruction", "scene"].includes(command) && action === "check") {
-    outcome = spatialCommand(parsed, root, command);
-  }
-  else if (command === "reconciliation" && action === "check") outcome = reconciliationCommand(parsed, root);
-  else if (command === "evidence") outcome = evidenceCommand(parsed, root, action);
-  else if (command === "verify") outcome = verifyCommand(parsed, root, action);
-  else if (command === "patterns") outcome = patternCommand(parsed, root, action);
-  else if (command === "tokens" && action === "check") outcome = { result: validateTokens(readJson(artifact(parsed, root, "--artifact"), "design tokens")), exitCode: 0 };
-  else if (command === "ui-ir" && action === "check") {
-    const catalogFile = option(parsed, "--catalog") ? artifact(parsed, root, "--catalog") : builtIn("ui-pattern-catalog.json");
-    outcome = { result: validateUiIr(readJson(artifact(parsed, root, "--artifact"), "ui ir"), readJson(catalogFile, "pattern catalog")), exitCode: 0 };
-  } else if (command === "design-code-map" && action === "check") outcome = { result: validateDesignCodeMap(readJson(artifact(parsed, root, "--artifact"), "design code map")), exitCode: 0 };
-  else if (command === "benchmark" && action === "evaluate") {
-    const result = evaluateBenchmark(readJson(artifact(parsed, root, "--manifest"), "benchmark manifest"), readJson(artifact(parsed, root, "--measurements"), "benchmark measurements"));
-    const feedback = option(parsed, "--record-feedback") === true ? benchmarkFeedback(root, result) : null;
-    outcome = { result: { ...result, ...(feedback ? { feedback } : {}) }, exitCode: result.status === "passed" ? 0 : 2 };
-  } else if (command === "adapter") outcome = adapterCommand(parsed, root, action);
-  else if (command === "style-signals" && action === "check") {
-    const file = option(parsed, "--artifact") ? artifact(parsed, root, "--artifact") : builtIn("visual-style-signals.json");
-    outcome = { result: validateStyleSignals(readJson(file, "style signals")), exitCode: 0 };
-  } else if (command === "feedback" && ["record", "prepare", "reconcile"].includes(action)) {
-    const scripts = { record: "record-feedback.cjs", prepare: "prepare-publication.cjs", reconcile: "reconcile-publication.cjs" };
-    const kernel = runKernel(scripts[action], legacyArgs(parsed, 2), root);
-    outcome = { result: { status: kernel.exitCode === 2 ? "blocked" : "complete", kernel: kernel.value }, exitCode: kernel.exitCode };
-  } else if (command === "source" && action === "audit") {
-    const kernel = runKernel("audit-capabilities.cjs", legacyArgs(parsed, 2), root);
-    outcome = { result: { status: kernel.exitCode === 2 ? "blocked" : "complete", kernel: kernel.value }, exitCode: kernel.exitCode };
-  } else if (command === "source" && action === "add") {
-    fail("cli", "source add is intentionally deferred; record an attributed source-evidence artifact instead", { code: "COMMAND_DEFERRED" });
-  } else fail("cli", `unknown command: ${[command, action].filter(Boolean).join(" ")}`, { code: "UNKNOWN_COMMAND" });
-  return { ...outcome, json: option(parsed, "--json") === true };
+  const entry = resolveCommand(command, action);
+  if (!entry) fail("cli", `unknown command: ${[command, action].filter(Boolean).join(" ")}`, { code: "UNKNOWN_COMMAND" });
+  const outcome = entry.run({ parsed, root, command, action, file: fileResolver(parsed, root, entry) });
+  return { ...outcome, json };
 }
 
 function execute(argv) {

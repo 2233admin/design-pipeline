@@ -11,7 +11,6 @@
 const assert = require("node:assert/strict");
 const childProcess = require("node:child_process");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 
@@ -25,6 +24,7 @@ const {
   exactReconstruction,
   readyRoot,
 } = require("./fixtures/reconstruction-fixture.cjs");
+const fixtures = require("./helpers/reference-fixtures.cjs");
 
 const {
   checkReferenceEvidence,
@@ -32,6 +32,16 @@ const {
   validateReferenceEvidence,
 } = referenceCore;
 const { checkReconstruction } = reconstructionCore;
+const {
+  exactPlanarReference,
+  matchingRegions,
+  planarCues,
+  queryParameterMode,
+  resolvedSource,
+  rootAttributeMode,
+  writeArtifact,
+  writeJson,
+} = fixtures;
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill", "scripts", "designer-pipeline.cjs");
@@ -53,17 +63,7 @@ function track(root) {
 }
 
 function tempRoot(label = "round-two") {
-  return track(fs.mkdtempSync(path.join(os.tmpdir(), `design-pipeline-${label}-`)));
-}
-
-function writeArtifact(root, relative, content = "evidence") {
-  const file = path.join(root, relative);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, content);
-}
-
-function writeJson(root, relative, document) {
-  writeArtifact(root, relative, `${JSON.stringify(document, null, 2)}\n`);
+  return track(fixtures.tempRoot(`design-pipeline-${label}-`));
 }
 
 function runCli(args, cwd) {
@@ -82,129 +82,29 @@ function runCli(args, cwd) {
 }
 
 // --- shared documents -------------------------------------------------------------------------
-// The composition names exactly the two region ids the graybox comparison addresses, so the
+// The shared composition names exactly the two region ids the graybox comparison addresses, so the
 // bidirectional binding is satisfied by default and every failure below is the one under test.
-
-function composition() {
-  return {
-    uniform: false,
-    regions: [
-      { id: "board", rows: 2, columns: 1, breaksFrom: ["register"] },
-      { id: "register", rows: 1, columns: 3, breaksFrom: [] },
-    ],
-  };
-}
-
-function planarCues() {
-  return {
-    thickness: { present: true, evidence: "Board plates carry a visible extruded edge." },
-    occlusion: { present: true, evidence: "Register cards overlap the backing plate." },
-    contactShadows: { present: true, evidence: "Cards drop a short shadow onto the plate." },
-    bevelHighlights: { present: false, evidence: "Edges read flat with no directional highlight." },
-    perspectiveConvergence: { present: false, evidence: "Every rail stays parallel to the frame." },
-    depthOfField: { present: false, evidence: "All layers are uniformly sharp." },
-  };
-}
-
-function resolvedSource(overrides = {}) {
-  return {
-    path: "reference.png",
-    kind: "image",
-    width: 723,
-    height: 405,
-    sha256: "b".repeat(64),
-    ...overrides,
-  };
-}
 
 // A 2.5d primary-target reference: the exact shape that used to reach `ready` with no graybox
 // anywhere, because the graybox rule only covered the 3d and hybrid routes.
 function planarReference(overrides = {}) {
-  return {
-    schema: "design-pipeline.reference-evidence.v2",
-    id: "eva-standard-time",
-    source: resolvedSource(),
-    classification: {
-      objectDimensionality: "2.5d",
-      cameraModel: "fixed-orthographic",
-      interactionModel: "bounded-parallax",
-      outputSurface: "screen-space-ui",
-      runtimeFamily: "layered-parallax-ui",
-    },
-    spatialCues: planarCues(),
-    route: "2.5d",
-    confidence: 0.88,
-    requiredArtifacts: ["reference.md", "graybox.png"],
-    composition: composition(),
-    intent: {
-      role: "primary-target",
-      requestedFidelity: "directional-inspiration",
-      effectiveFidelity: "directional-inspiration",
-      reconstructionArtifact: null,
-      downgrade: {
-        status: "not-requested",
-        evidence: "The user asked for a planar layered treatment, not a rebuild.",
-      },
-    },
-    approval: {
-      status: "approved",
-      evidence: "User confirmed the layered planar reading of the reference.",
-    },
-    ...overrides,
-  };
-}
-
-function exactPlanarReference(overrides = {}) {
-  return planarReference({
-    requiredArtifacts: [
-      "reference.md",
-      "graybox.png",
-      "rectified-reference.png",
-      "front-elevation.svg",
-      "camera-calibration.json",
-      "landmark-overlay.png",
-      "reconstruction.json",
-    ],
-    intent: {
-      role: "primary-target",
-      requestedFidelity: "exact-reconstruction",
-      effectiveFidelity: "exact-reconstruction",
-      reconstructionArtifact: "reconstruction.json",
-      downgrade: {
-        status: "not-requested",
-        evidence: "The user asked for an identical rebuild of the HUD clock.",
-      },
-    },
+  return fixtures.planarReference({
+    intent: fixtures.directionalIntent({ role: "primary-target" }),
     ...overrides,
   });
 }
 
 function comparisonRegions(ids = ["board", "register"]) {
-  return ids.map((id) => ({
-    id,
-    finding: `${id} holds the recorded row and column structure.`,
-    status: "matches",
-  }));
+  return matchingRegions(ids, (id) => `${id} holds the recorded row and column structure.`);
 }
 
 function grayboxBlock(overrides = {}) {
-  return {
-    capture: "graybox.png",
+  return fixtures.grayboxBlock({
     capturedAt: CAPTURED_AT,
-    viewport: { width: 723, height: 405 },
-    runtimeMode: {
-      mechanism: "query-parameter",
-      token: "?graybox=1",
-      disables: ["emissive", "optical", "texture"],
-    },
-    suppressed: ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"],
+    runtimeMode: queryParameterMode(),
     comparison: { mode: "qualitative", regions: comparisonRegions() },
-    approval: {
-      status: "approved",
-      evidence: "User compared the layout-only capture against the reference before any treatment.",
-    },
     ...overrides,
-  };
+  });
 }
 
 // --- F1 ----------------------------------------------------------------------------------------
@@ -399,11 +299,7 @@ test("F3: one graybox contract - both carriers reach the same verdict on the sam
   // 1. The object form of runtimeMode: the layer-completeness check has to be reachable from
   //    reference-evidence.json, not only from reconstruction.json.
   const incomplete = bothCarriers(grayboxBlock({
-    runtimeMode: {
-      mechanism: "root-attribute",
-      token: "data-graybox",
-      disables: ["emissive", "optical"],
-    },
+    runtimeMode: rootAttributeMode({ disables: ["emissive", "optical"] }),
   }));
   assert.deepEqual(incomplete.reference, incomplete.reconstruction);
   assert.equal(incomplete.reference.ok, true);

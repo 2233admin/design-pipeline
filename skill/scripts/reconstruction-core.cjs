@@ -84,6 +84,84 @@ function readCarrier(root, relative) {
   return { state: "present", relative, file, document };
 }
 
+// A source declaration the contract cannot read is `unknown`, never a quiet `resolved`. `declared`
+// says whether the document got as far as naming an availability before the fault was found.
+function unreadableSource(relative, declared, reason, blocker) {
+  return {
+    availability: "unknown",
+    declared,
+    resolvable: false,
+    path: null,
+    artifact: relative,
+    invalid: { reason, blocker },
+  };
+}
+
+// The malformed shapes each map to their own reason. They are checked from the outside in, so the
+// reason names the outermost thing that is wrong rather than the first field that happens to fail.
+function sourceShapeFault(relative, source) {
+  if (source === null || typeof source !== "object" || Array.isArray(source)) {
+    return {
+      declared: false,
+      reason: "reference-source-malformed",
+      blocker: `reference evidence ${relative} records source as ${
+        Array.isArray(source) ? "an array" : String(source)
+      } rather than an object`,
+    };
+  }
+  if (
+    source.availability !== undefined
+    && !SOURCE_AVAILABILITY.includes(source.availability)
+  ) {
+    return {
+      declared: true,
+      reason: "reference-source-availability-invalid",
+      blocker: `reference evidence ${relative} declares source.availability ${
+        JSON.stringify(source.availability)
+      }, which is not one of ${SOURCE_AVAILABILITY.join(", ")}`,
+    };
+  }
+  return null;
+}
+
+function pendingSourceState(relative, source) {
+  const reason = typeof source.pendingReason === "string" && source.pendingReason.trim()
+    ? source.pendingReason.trim()
+    : null;
+  return {
+    availability: "pending",
+    declared: true,
+    resolvable: false,
+    path: typeof source.path === "string" ? source.path : null,
+    artifact: relative,
+    ...(reason ? { pendingReason: reason } : {}),
+  };
+}
+
+// A declared path is only evidence once it is on disk. A raster that was never written cannot
+// support a measured comparison, however confidently the document describes it.
+function rasterOnDisk(root, declaredPath) {
+  try {
+    const file = resolveInside(root, declaredPath, "reference source", { scope: "reconstruction" });
+    return fs.existsSync(file) && fs.statSync(file).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function resolvedSourceState(root, relative, source) {
+  const declaredPath = typeof source.path === "string" && source.path.trim()
+    ? source.path.trim()
+    : null;
+  return {
+    availability: "resolved",
+    declared: typeof source.availability === "string",
+    resolvable: declaredPath ? rasterOnDisk(root, declaredPath) : false,
+    path: declaredPath,
+    artifact: relative,
+  };
+}
+
 // The reference contract owns `source.availability`. An absent document and an absent field both
 // mean `resolved`, so documents written before the pending state existed keep their behaviour. A
 // document that is present but says something the contract does not recognise is a loud failure:
@@ -95,17 +173,12 @@ function referenceSourceState(root, options = {}) {
     return { availability: "resolved", declared: false, resolvable: true, path: null };
   }
   if (carrier.state === "unparseable") {
-    return {
-      availability: "unknown",
-      declared: false,
-      resolvable: false,
-      path: null,
-      artifact: relative,
-      invalid: {
-        reason: "reference-source-unparseable",
-        blocker: `reference evidence ${relative} cannot be parsed`,
-      },
-    };
+    return unreadableSource(
+      relative,
+      false,
+      "reference-source-unparseable",
+      `reference evidence ${relative} cannot be parsed`,
+    );
   }
   const source = carrier.document.source;
   if (source === undefined) {
@@ -117,71 +190,10 @@ function referenceSourceState(root, options = {}) {
       artifact: relative,
     };
   }
-  if (source === null || typeof source !== "object" || Array.isArray(source)) {
-    return {
-      availability: "unknown",
-      declared: false,
-      resolvable: false,
-      path: null,
-      artifact: relative,
-      invalid: {
-        reason: "reference-source-malformed",
-        blocker: `reference evidence ${relative} records source as ${
-          Array.isArray(source) ? "an array" : String(source)
-        } rather than an object`,
-      },
-    };
-  }
-  const availability = source.availability;
-  if (availability !== undefined && !SOURCE_AVAILABILITY.includes(availability)) {
-    return {
-      availability: "unknown",
-      declared: true,
-      resolvable: false,
-      path: null,
-      artifact: relative,
-      invalid: {
-        reason: "reference-source-availability-invalid",
-        blocker: `reference evidence ${relative} declares source.availability ${
-          JSON.stringify(availability)
-        }, which is not one of ${SOURCE_AVAILABILITY.join(", ")}`,
-      },
-    };
-  }
-  if (availability === "pending") {
-    const reason = typeof source.pendingReason === "string" && source.pendingReason.trim()
-      ? source.pendingReason.trim()
-      : null;
-    return {
-      availability: "pending",
-      declared: true,
-      resolvable: false,
-      path: typeof source.path === "string" ? source.path : null,
-      artifact: relative,
-      ...(reason ? { pendingReason: reason } : {}),
-    };
-  }
-  // A declared path is only evidence once it is on disk. A raster that was never written cannot
-  // support a measured comparison, however confidently the document describes it.
-  const declaredPath = typeof source.path === "string" && source.path.trim()
-    ? source.path.trim()
-    : null;
-  let resolvable = false;
-  if (declaredPath) {
-    try {
-      const file = resolveInside(root, declaredPath, "reference source", { scope: "reconstruction" });
-      resolvable = fs.existsSync(file) && fs.statSync(file).isFile();
-    } catch {
-      resolvable = false;
-    }
-  }
-  return {
-    availability: "resolved",
-    declared: typeof availability === "string",
-    resolvable,
-    path: declaredPath,
-    artifact: relative,
-  };
+  const fault = sourceShapeFault(relative, source);
+  if (fault) return unreadableSource(relative, fault.declared, fault.reason, fault.blocker);
+  if (source.availability === "pending") return pendingSourceState(relative, source);
+  return resolvedSourceState(root, relative, source);
 }
 
 // The graybox comparison is bound to the composition region ids recorded in the reference
@@ -215,96 +227,127 @@ function grayboxCarrier(root, options = {}) {
   return { artifact: null, carrier: null, graybox: null };
 }
 
-function grayboxResult(root, graybox, source) {
-  if (!graybox) {
-    return {
-      status: "blocked",
-      blockers: [
-        "graybox block is missing: record a layout-only capture and a structural comparison",
-      ],
-      reasons: ["graybox-missing"],
-      mismatches: [],
-      comparisonMode: null,
-      measurable: false,
-      fidelityEvidence: false,
-    };
-  }
-  const blockers = [];
-  const reasons = [];
-  for (const artifact of missingArtifacts(root, [graybox.capture])) {
-    blockers.push(`missing graybox evidence: ${artifact}`);
-    reasons.push("graybox-capture-missing");
-  }
+// Each step below yields `{ blocker, reason }` pairs in the order the report has always listed
+// them; `null` or an empty array means the step had nothing to say.
+function grayboxSuppressionIssue(graybox) {
   const unsuppressed = GRAYBOX_SUPPRESSED_TREATMENTS.filter(
     (treatment) => !graybox.suppressed.includes(treatment),
   );
-  if (unsuppressed.length) {
-    blockers.push(`graybox does not suppress: ${unsuppressed.join(", ")}`);
-    reasons.push("graybox-suppression-incomplete");
-  }
+  if (!unsuppressed.length) return null;
+  return {
+    blocker: `graybox does not suppress: ${unsuppressed.join(", ")}`,
+    reason: "graybox-suppression-incomplete",
+  };
+}
+
+function grayboxModeIssue(graybox) {
   const runtimeMode = graybox.runtimeMode ?? null;
   if (runtimeMode === null) {
-    blockers.push(
-      "graybox capture claims suppression without a declared runtime graybox mode",
-    );
-    reasons.push("graybox-mode-undeclared");
-  } else if (typeof runtimeMode === "string") {
-    // A bare token names a mode without saying what it turns off. The gate cannot check that the
-    // emissive, optical, and texture layers were actually disabled, and an unverifiable claim is
-    // not evidence that they were. The document stays valid - this is a blocked stage, not a
-    // contract failure - and expanding the token into `{mechanism, token, disables}` clears it.
-    blockers.push(
-      `declared graybox mode ${runtimeMode} does not name the layers it disables: `
-      + `${GRAYBOX_RUNTIME_LAYERS.join(", ")}`,
-    );
-    reasons.push("graybox-mode-unverifiable");
-  } else {
-    const enabled = GRAYBOX_RUNTIME_LAYERS.filter(
-      (layer) => !runtimeMode.disables.includes(layer),
-    );
-    if (enabled.length) {
-      blockers.push(
-        `declared graybox mode ${runtimeMode.token} does not disable: ${enabled.join(", ")}`,
-      );
-      reasons.push("graybox-mode-incomplete");
-    }
+    return {
+      blocker: "graybox capture claims suppression without a declared runtime graybox mode",
+      reason: "graybox-mode-undeclared",
+    };
   }
+  // A bare token names a mode without saying what it turns off. The gate cannot check that the
+  // emissive, optical, and texture layers were actually disabled, and an unverifiable claim is
+  // not evidence that they were. The document stays valid - this is a blocked stage, not a
+  // contract failure - and expanding the token into `{mechanism, token, disables}` clears it.
+  if (typeof runtimeMode === "string") {
+    return {
+      blocker: `declared graybox mode ${runtimeMode} does not name the layers it disables: `
+        + `${GRAYBOX_RUNTIME_LAYERS.join(", ")}`,
+      reason: "graybox-mode-unverifiable",
+    };
+  }
+  const enabled = GRAYBOX_RUNTIME_LAYERS.filter(
+    (layer) => !runtimeMode.disables.includes(layer),
+  );
+  if (!enabled.length) return null;
+  return {
+    blocker: `declared graybox mode ${runtimeMode.token} does not disable: ${enabled.join(", ")}`,
+    reason: "graybox-mode-incomplete",
+  };
+}
+
+function grayboxComparisonIssues(graybox) {
+  const issues = [];
   if (!graybox.comparison.regions.length) {
-    blockers.push("graybox comparison records no regions");
-    reasons.push("graybox-comparison-missing");
+    issues.push({
+      blocker: "graybox comparison records no regions",
+      reason: "graybox-comparison-missing",
+    });
   }
   const open = graybox.comparison.regions.filter(
     (region) => GRAYBOX_UNRESOLVED_REGION_STATUSES.includes(region.status),
   );
   if (open.length) {
-    blockers.push(
-      `graybox regions are still open: ${open.map((region) => region.id).join(", ")}`,
-    );
-    reasons.push("graybox-region-open");
+    issues.push({
+      blocker: `graybox regions are still open: ${open.map((region) => region.id).join(", ")}`,
+      reason: "graybox-region-open",
+    });
   }
+  return issues;
+}
+
+// Why the declared measured mode could not be honoured: a pending source, an unreadable source
+// declaration, and a raster that is simply not there are three different stories.
+function unmeasurableBlocker(source) {
+  if (source.availability === "pending") {
+    return "graybox comparison claims measured mode while the reference source is pending";
+  }
+  if (source.invalid) {
+    return `graybox comparison claims measured mode while ${source.invalid.blocker}`;
+  }
+  return "graybox comparison claims measured mode while the reference source file "
+    + `${source.path ?? "(none declared)"} is not present in the change root`;
+}
+
+function grayboxMissingResult() {
+  return {
+    status: "blocked",
+    blockers: [
+      "graybox block is missing: record a layout-only capture and a structural comparison",
+    ],
+    reasons: ["graybox-missing"],
+    mismatches: [],
+    comparisonMode: null,
+    measurable: false,
+    fidelityEvidence: false,
+  };
+}
+
+function grayboxResult(root, graybox, source) {
+  if (!graybox) return grayboxMissingResult();
   // Measurability is a property of the disk, not of the declaration. A comparison is measured only
   // when the reference contract resolves AND the raster it names is actually there.
   const measurable = source.availability === "resolved" && source.resolvable === true;
-  if (graybox.comparison.mode === "measured" && !measurable) {
-    blockers.push(
-      source.availability === "pending"
-        ? "graybox comparison claims measured mode while the reference source is pending"
-        : source.invalid
-          ? `graybox comparison claims measured mode while ${source.invalid.blocker}`
-          : "graybox comparison claims measured mode while the reference source file "
-            + `${source.path ?? "(none declared)"} is not present in the change root`,
-    );
-    reasons.push("graybox-comparison-unmeasurable");
-  }
-  if (graybox.approval.status !== "approved") {
-    blockers.push(`graybox approval status is ${graybox.approval.status}`);
-    reasons.push(approvalReason("graybox", graybox.approval.status));
-  }
+  const issues = [
+    ...missingArtifacts(root, [graybox.capture]).map((artifact) => ({
+      blocker: `missing graybox evidence: ${artifact}`,
+      reason: "graybox-capture-missing",
+    })),
+    grayboxSuppressionIssue(graybox),
+    grayboxModeIssue(graybox),
+    ...grayboxComparisonIssues(graybox),
+    graybox.comparison.mode === "measured" && !measurable
+      ? {
+        blocker: unmeasurableBlocker(source),
+        reason: "graybox-comparison-unmeasurable",
+      }
+      : null,
+    graybox.approval.status !== "approved"
+      ? {
+        blocker: `graybox approval status is ${graybox.approval.status}`,
+        reason: approvalReason("graybox", graybox.approval.status),
+      }
+      : null,
+  ].filter((issue) => issue !== null);
+  const blockers = issues.map((issue) => issue.blocker);
   const status = blockers.length ? "blocked" : "ready";
   return {
     status,
     blockers,
-    reasons,
+    reasons: issues.map((issue) => issue.reason),
     mismatches: [],
     // The declared mode is reported as declared - a claim the gate refused is not quietly rewritten
     // into one it would have accepted. `measurable` says whether the evidence could support it.
@@ -389,86 +432,117 @@ function geometryResult(root, reconstruction, source = { availability: "resolved
   return { status, blockers, reasons: [...new Set(reasons)], mismatches, measurements };
 }
 
-function finalResult(root, reconstruction, geometry) {
-  if (geometry.status !== "ready") return geometry;
-  const comparison = reconstruction.finalComparison;
-  const blockers = [];
-  const reasons = [];
-  const mismatches = [];
+// What the comparison says about itself, before any file on disk is opened.
+function finalDeclarationIssues(comparison) {
+  const issues = [];
   if (comparison.status !== "measured") {
-    blockers.push(`final comparison status is ${comparison.status}`);
-    reasons.push("final-not-measured");
+    issues.push({
+      blocker: `final comparison status is ${comparison.status}`,
+      reason: "final-not-measured",
+    });
   }
   if (comparison.approval.status !== "approved") {
-    blockers.push(`final comparison approval status is ${comparison.approval.status}`);
-    reasons.push(approvalReason("final", comparison.approval.status));
+    issues.push({
+      blocker: `final comparison approval status is ${comparison.approval.status}`,
+      reason: approvalReason("final", comparison.approval.status),
+    });
   }
   if (comparison.evidencePort.status !== "ready") {
-    blockers.push(`EvidencePort status is ${comparison.evidencePort.status}`);
-    reasons.push("final-evidence-port-pending");
+    issues.push({
+      blocker: `EvidencePort status is ${comparison.evidencePort.status}`,
+      reason: "final-evidence-port-pending",
+    });
   }
   if (comparison.evidencePort.lastProbe.ok !== true) {
-    blockers.push("EvidencePort has no successful capability probe");
-    reasons.push("final-probe-missing");
+    issues.push({
+      blocker: "EvidencePort has no successful capability probe",
+      reason: "final-probe-missing",
+    });
   }
-  for (const artifact of missingArtifacts(root, [
-    comparison.referenceRender,
-    comparison.implementationRender,
-    comparison.diffArtifact,
-    comparison.evidencePort.receiptArtifact,
-    ...comparison.intentionalMasks,
-  ])) {
-    blockers.push(`missing final comparison evidence: ${artifact}`);
-    reasons.push("final-evidence-missing");
-  }
+  return issues;
+}
+
+// The receipt binds each render to the bytes that were actually measured. The receipt path is
+// resolved unconditionally so an escaping path is rejected whether or not the file is there.
+function finalReceiptIssues(root, comparison, renderViewport) {
   const receiptFile = resolveInside(
     root,
     comparison.evidencePort.receiptArtifact,
     "EvidencePort receipt",
     { scope: "reconstruction" },
   );
-  if (fs.existsSync(receiptFile) && comparison.metrics) {
-    const receipt = validateEvidenceReceipt(
-      readJson(receiptFile, "reconstruction evidence receipt"),
-      comparison,
-      reconstruction.camera.renderViewport,
-    );
-    const bindings = [
-      ["reference render", comparison.referenceRender, receipt.referenceSha256],
-      [
-        "implementation render",
-        comparison.implementationRender,
-        receipt.implementationSha256,
-      ],
-      ["diff render", comparison.diffArtifact, receipt.diffSha256],
-    ];
-    for (const [label, relative, expected] of bindings) {
-      const file = resolveInside(root, relative, label, { scope: "reconstruction" });
-      if (fs.existsSync(file) && sha256(fs.readFileSync(file)) !== expected) {
-        blockers.push(`${label} hash does not match the EvidencePort receipt`);
-        reasons.push("final-receipt-mismatch");
-      }
+  if (!fs.existsSync(receiptFile) || !comparison.metrics) return [];
+  const receipt = validateEvidenceReceipt(
+    readJson(receiptFile, "reconstruction evidence receipt"),
+    comparison,
+    renderViewport,
+  );
+  const bindings = [
+    ["reference render", comparison.referenceRender, receipt.referenceSha256],
+    [
+      "implementation render",
+      comparison.implementationRender,
+      receipt.implementationSha256,
+    ],
+    ["diff render", comparison.diffArtifact, receipt.diffSha256],
+  ];
+  const issues = [];
+  for (const [label, relative, expected] of bindings) {
+    const file = resolveInside(root, relative, label, { scope: "reconstruction" });
+    if (fs.existsSync(file) && sha256(fs.readFileSync(file)) !== expected) {
+      issues.push({
+        blocker: `${label} hash does not match the EvidencePort receipt`,
+        reason: "final-receipt-mismatch",
+      });
     }
   }
-  if (comparison.metrics) {
-    if (
-      comparison.metrics.pixelDifferenceRatio
-      > comparison.thresholds.maxPixelDifferenceRatio
-    ) {
-      mismatches.push(
-        `pixel difference ratio ${comparison.metrics.pixelDifferenceRatio} exceeds `
-        + comparison.thresholds.maxPixelDifferenceRatio,
-      );
-    }
-    if (comparison.metrics.ssim < comparison.thresholds.minSsim) {
-      mismatches.push(
-        `SSIM ${comparison.metrics.ssim} is below ${comparison.thresholds.minSsim}`,
-      );
-    }
-    if (mismatches.length) reasons.push("final-threshold-exceeded");
-  } else {
+  return issues;
+}
+
+function finalThresholdMismatches(comparison) {
+  const mismatches = [];
+  if (
+    comparison.metrics.pixelDifferenceRatio
+    > comparison.thresholds.maxPixelDifferenceRatio
+  ) {
+    mismatches.push(
+      `pixel difference ratio ${comparison.metrics.pixelDifferenceRatio} exceeds `
+      + comparison.thresholds.maxPixelDifferenceRatio,
+    );
+  }
+  if (comparison.metrics.ssim < comparison.thresholds.minSsim) {
+    mismatches.push(
+      `SSIM ${comparison.metrics.ssim} is below ${comparison.thresholds.minSsim}`,
+    );
+  }
+  return mismatches;
+}
+
+function finalResult(root, reconstruction, geometry) {
+  if (geometry.status !== "ready") return geometry;
+  const comparison = reconstruction.finalComparison;
+  const issues = [
+    ...finalDeclarationIssues(comparison),
+    ...missingArtifacts(root, [
+      comparison.referenceRender,
+      comparison.implementationRender,
+      comparison.diffArtifact,
+      comparison.evidencePort.receiptArtifact,
+      ...comparison.intentionalMasks,
+    ]).map((artifact) => ({
+      blocker: `missing final comparison evidence: ${artifact}`,
+      reason: "final-evidence-missing",
+    })),
+    ...finalReceiptIssues(root, comparison, reconstruction.camera.renderViewport),
+  ];
+  const blockers = issues.map((issue) => issue.blocker);
+  const reasons = issues.map((issue) => issue.reason);
+  const mismatches = comparison.metrics ? finalThresholdMismatches(comparison) : [];
+  if (!comparison.metrics) {
     blockers.push("final comparison metrics are not measured");
     reasons.push("final-metrics-missing");
+  } else if (mismatches.length) {
+    reasons.push("final-threshold-exceeded");
   }
   const status = blockers.length
     ? "blocked"
