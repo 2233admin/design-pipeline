@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>日本標準時 — Mission Clock Board</title>
+<style>
+:root{
+  /* --- palette: single warm amber phosphor family, luminance-ranked --- */
+  --ink-void:#0b0906;
+  --ink-panel:#171208;
+  --ink-panel-lit:#241a0b;
+  --amber-core:#fff8dc;
+  --amber-bright:#ffe9a3;
+  --amber:#f0b03c;
+  --amber-dim:#c07f24;
+  --amber-faint:#7a5218;
+  --glow-warm:rgba(255,190,70,.55);
+  --glow-cool:rgba(255,240,190,.35);
+
+  /* --- board unit: the whole board scales as one rigid object --- */
+  --u:clamp(7px, min(3.95vh, 2.62vw), 36px);
+
+  /* --- type scale, all derived from --u --- */
+  --fs-display:calc(var(--u) * 7.2);
+  --fs-value:calc(var(--u) * 2.25);
+  --fs-unit:calc(var(--u) * 2.4);
+  --fs-label-jp:calc(var(--u) * 1.35);
+  --fs-label:calc(var(--u) * .6);
+  --fs-gloss:calc(var(--u) * .5);
+  --fs-micro:calc(var(--u) * .85);
+
+  --font-numeral:"Arial Black","Archivo Black","Helvetica Neue",Impact,system-ui,sans-serif;
+  --font-jp:"Yu Gothic UI","Yu Gothic","Hiragino Kaku Gothic ProN","Noto Sans JP","MS Gothic",sans-serif;
+  --font-tech:Bahnschrift,"DIN Alternate","Roboto Condensed","Arial Narrow",Arial,sans-serif;
+
+  /* --- camera --- */
+  --cam-perspective:1150px;
+  --plane-w:108vw;
+  --plane-h:128vh;
+  --plane-top:-7vh;
+  --plane-left:-7vw;
+  --plane-shift:0px;
+  --cam-yaw:-13deg;
+  --cam-pitch:2.5deg;
+  --cam-roll:-2.4deg;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--ink-void);
+  overflow:hidden;
+  font-family:var(--font-tech);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================
+   STAGE + PLANE — one camera, one projection.
+   Nothing inside the plane is skewed independently.
+   ============================================================ */
+.stage{
+  position:fixed;
+  inset:0;
+  perspective:var(--cam-perspective);
+  perspective-origin:38% 44%;
+  background:
+    radial-gradient(120% 90% at 62% 46%, var(--ink-panel-lit) 0%, var(--ink-panel) 42%, var(--ink-void) 78%);
+}
+
+.plane{
+  position:absolute;
+  top:var(--plane-top); left:var(--plane-left);
+  width:var(--plane-w); height:var(--plane-h);
+  transform-style:preserve-3d;
+  transform:translateY(var(--plane-shift)) rotateZ(var(--cam-roll)) rotateY(var(--cam-yaw)) rotateX(var(--cam-pitch));
+  transform-origin:52% 42%;
+  padding:calc(var(--u) * 2.2) calc(var(--u) * 3);
+  display:grid;
+  grid-template-rows:1.5fr 1fr 1fr;
+  row-gap:calc(var(--u) * 1.1);
+  background:
+    linear-gradient(180deg, rgba(255,180,60,.045), rgba(255,140,30,.015) 40%, transparent 75%);
+}
+
+/* panel seams — a physical joint across the board, drawn in plane space */
+.seams{
+  position:absolute; inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent calc(var(--u) * 6.4),
+    rgba(10,7,3,.55) calc(var(--u) * 6.4),
+    rgba(10,7,3,.55) calc(var(--u) * 6.55)
+  );
+  opacity:.5;
+}
+
+/* ============================================================
+   REGISTERS
+   ============================================================ */
+.register{
+  display:grid;
+  grid-template-columns:minmax(0,calc(var(--u) * 15)) minmax(0,calc(var(--u) * 7)) 1fr;
+  column-gap:calc(var(--u) * 1.4);
+  align-items:center;
+  position:relative;
+  transition:opacity .24s cubic-bezier(.4,0,.2,1), filter .24s cubic-bezier(.4,0,.2,1);
+}
+.register[data-state="stale"]{opacity:.42;filter:saturate(.6)}
+
+/* register one is oversized: the label sits above and left of a full-width readout,
+   so the giant numerals own the whole plane width instead of a third column. */
+.register--live{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:calc(var(--u) * .5);
+}
+
+/* structural hairlines, drawn in plane space so they converge with the type */
+.register::after{
+  content:"";
+  position:absolute;
+  left:calc(var(--u) * -4); right:calc(var(--u) * -4);
+  bottom:calc(var(--u) * -.55);
+  height:1px;
+  background:var(--amber-faint);
+  opacity:.55;
+}
+.register--live::after{
+  height:1px;
+  box-shadow:0 calc(var(--u) * .28) 0 var(--amber-faint);
+  opacity:.8;
+}
+.register--cropped::after{display:none}
+
+/* vertical column rules, also drawn in plane space */
+.register .col-rule{
+  position:absolute; top:calc(var(--u) * -.85); bottom:calc(var(--u) * -.85);
+  width:1px; background:var(--amber-faint); opacity:.45;
+}
+.col-rule--a{left:calc(var(--u) * 15.7)}
+.col-rule--b{left:calc(var(--u) * 24.1)}
+
+/* ============================================================
+   LABEL BLOCK — open stroked box, leading tick, JP + Latin gloss
+   ============================================================ */
+.label-block{display:flex;flex-direction:column;gap:calc(var(--u) * .3)}
+
+.label-box{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  align-self:flex-start;
+  padding:calc(var(--u) * .28) calc(var(--u) * .7) calc(var(--u) * .34) calc(var(--u) * 1.05);
+  border:1px solid var(--amber);
+  border-left-width:calc(var(--u) * .12);
+  font-family:var(--font-jp);
+  font-weight:700;
+  font-size:var(--fs-label-jp);
+  letter-spacing:.02em;
+  color:var(--amber-bright);
+  text-shadow:
+    0 0 .05em rgba(255,250,220,.9),
+    0 0 .22em var(--glow-cool),
+    0 0 .7em var(--glow-warm),
+    0 0 1.6em rgba(255,150,30,.35);
+  box-shadow:0 0 calc(var(--u) * .9) rgba(255,170,50,.18), inset 0 0 calc(var(--u) * 1.2) rgba(255,160,40,.07);
+}
+/* leading tick */
+.label-box::before{
+  content:"";
+  position:absolute;
+  left:calc(var(--u) * .34);
+  top:22%; bottom:22%;
+  width:calc(var(--u) * .1);
+  background:var(--amber);
+  opacity:.85;
+}
+
+.gloss{
+  font-family:var(--font-tech);
+  font-size:var(--fs-gloss);
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--amber-dim);
+  padding-left:calc(var(--u) * .18);
+  text-shadow:0 0 .5em rgba(240,160,50,.35);
+}
+
+/* ============================================================
+   MARK BADGE — notched cartouche, fixed width per code length
+   ============================================================ */
+.mark{display:flex;justify-content:center}
+.badge{
+  --badge-w:calc(var(--u) * 5.2);
+  width:var(--badge-w);
+  height:calc(var(--u) * 1.9);
+  display:grid;
+  place-items:center;
+  font-family:var(--font-tech);
+  font-weight:700;
+  font-size:calc(var(--u) * .95);
+  letter-spacing:.16em;
+  color:var(--amber);
+  background:
+    linear-gradient(180deg, rgba(240,176,60,.16), rgba(240,176,60,.05));
+  clip-path:polygon(
+    0% 26%, 7% 0%, 38% 0%, 42% 17%, 58% 17%, 62% 0%, 93% 0%, 100% 26%,
+    100% 74%, 93% 100%, 62% 100%, 58% 83%, 42% 83%, 38% 100%, 7% 100%, 0% 74%
+  );
+  text-shadow:0 0 .35em var(--glow-warm), 0 0 1em rgba(255,150,30,.4);
+  filter:drop-shadow(0 0 calc(var(--u) * .5) rgba(255,170,50,.3));
+}
+.badge[data-code-length="4"]{--badge-w:calc(var(--u) * 6.4)}
+
+/* ============================================================
+   READOUTS
+   ============================================================ */
+.readout{display:flex;align-items:baseline;gap:calc(var(--u) * .25);min-width:0}
+
+.tag{
+  font-family:var(--font-tech);
+  font-size:var(--fs-label);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--amber-bright);
+  text-shadow:0 0 .4em var(--glow-warm), 0 0 1.2em rgba(255,150,30,.4);
+  align-self:flex-start;
+  margin-top:calc(var(--u) * 1.1);
+  padding-right:calc(var(--u) * .3);
+}
+
+/* --- the big live numerals --- */
+.digits{
+  font-family:var(--font-numeral);
+  font-weight:900;
+  font-size:var(--fs-display);
+  line-height:.82;
+  letter-spacing:-.035em;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  color:var(--amber-bright);
+  /* bloom is layered so the halo spreads without closing the counters */
+  text-shadow:
+    0 0 .015em rgba(255,250,225,.55),
+    0 0 .06em rgba(255,240,190,.4),
+    0 0 .17em var(--glow-cool),
+    0 0 .38em var(--glow-warm),
+    0 0 .9em rgba(255,165,40,.4),
+    0 0 1.9em rgba(255,130,15,.24);
+}
+
+.pair{position:relative;display:inline-block}
+.sup{
+  position:absolute;
+  top:calc(var(--u) * -.15);
+  right:calc(var(--u) * -.95);
+  font-family:var(--font-tech);
+  font-size:var(--fs-micro);
+  font-weight:600;
+  color:var(--amber-bright);
+  text-shadow:0 0 .4em var(--glow-warm), 0 0 1.2em rgba(255,150,30,.45);
+}
+
+.unit{
+  font-family:var(--font-jp);
+  font-weight:700;
+  font-size:var(--fs-unit);
+  color:var(--amber);
+  align-self:flex-end;
+  padding:0 calc(var(--u) * .28) calc(var(--u) * .1) calc(var(--u) * .5);
+  text-shadow:0 0 .3em var(--glow-warm), 0 0 1.1em rgba(255,150,30,.45);
+}
+
+/* --- secondary readouts --- */
+.readout--value{align-items:flex-end;gap:calc(var(--u) * .5)}
+
+.stack{display:flex;flex-direction:column;line-height:1.1;padding-bottom:calc(var(--u) * .25)}
+.stack .k{
+  font-size:var(--fs-label);
+  letter-spacing:.1em;
+  color:var(--amber-bright);
+  text-shadow:0 0 .5em var(--glow-warm);
+}
+.stack .k--dim{
+  font-size:calc(var(--u) * .78);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--amber-dim);
+  text-shadow:0 0 .5em rgba(240,160,50,.4);
+}
+
+.value{
+  font-family:var(--font-tech);
+  font-weight:700;
+  font-size:var(--fs-value);
+  line-height:.9;
+  letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  color:var(--amber-bright);
+  text-shadow:
+    0 0 .05em rgba(255,250,225,.95),
+    0 0 .18em var(--glow-cool),
+    0 0 .48em var(--glow-warm),
+    0 0 1.3em rgba(255,155,35,.45);
+}
+.tail{
+  font-family:var(--font-tech);
+  font-weight:700;
+  font-size:calc(var(--u) * 1.55);
+  font-variant-numeric:tabular-nums;
+  color:var(--amber);
+  text-shadow:0 0 .4em var(--glow-warm), 0 0 1.2em rgba(255,150,30,.4);
+}
+
+/* ============================================================
+   SCREEN-SPACE LENS + SENSOR LAYERS
+   These live outside the plane on purpose: they are camera
+   artefacts, not properties of the board.
+   ============================================================ */
+.lens{position:fixed;inset:0;pointer-events:none}
+
+.scanlines{
+  background:repeating-linear-gradient(
+    180deg,
+    rgba(0,0,0,.16) 0px,
+    rgba(0,0,0,.16) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity:.5;
+  mix-blend-mode:multiply;
+}
+
+.vignette{
+  background:radial-gradient(120% 95% at 52% 46%, transparent 38%, rgba(6,4,2,.55) 76%, rgba(4,3,1,.9) 100%);
+}
+
+.defocus{
+  backdrop-filter:blur(1.6px);
+  -webkit-backdrop-filter:blur(1.6px);
+  -webkit-mask-image:radial-gradient(105% 85% at 55% 45%, transparent 52%, #000 92%);
+  mask-image:radial-gradient(105% 85% at 55% 45%, transparent 52%, #000 92%);
+}
+
+/* phosphor grain: three seeded layers cross-fading on irregular periods.
+   Only opacity is bound. No geometry channel is animated. */
+.grain{opacity:.5;mix-blend-mode:overlay}
+.grain svg{width:100%;height:100%;display:block}
+.grain .g{opacity:0}
+.g1{animation:phos-a 11.3s linear infinite}
+.g2{animation:phos-b 7.1s linear infinite}
+.g3{animation:phos-c 13.7s linear infinite}
+@keyframes phos-a{0%,100%{opacity:.34}31%{opacity:.10}67%{opacity:.28}}
+@keyframes phos-b{0%,100%{opacity:.12}44%{opacity:.32}78%{opacity:.16}}
+@keyframes phos-c{0%,100%{opacity:.26}22%{opacity:.11}59%{opacity:.30}}
+
+.stage[data-hidden="true"] ~ .lens .g{animation-play-state:paused}
+
+@media (prefers-reduced-motion:reduce){
+  /* substitute: the same seeded turbulence, rendered once, held still */
+  .g1{animation:none;opacity:.30}
+  .g2{animation:none;opacity:.18}
+  .g3{animation:none;opacity:.22}
+  .register{transition:none}
+}
+
+/* ============================================================
+   RESPONSIVE — the camera pulls back. The grid never reflows.
+   ============================================================ */
+@media (max-width:899px){
+  :root{--cam-yaw:-9deg}
+}
+
+/* Portrait and near-square viewports cannot contain a landscape board at full
+   crop. The camera pulls back and the board stays one rigid object, vertically
+   centred, instead of reflowing into a column stack. */
+@media (max-aspect-ratio:13/10){
+  :root{
+    /* the board is ~50u wide, so the unit is derived from width to keep the
+       whole object inside the frame rather than cropping the readouts away */
+    --u:calc(100vw / 50);
+    --cam-perspective:1900px;
+    --cam-yaw:-8deg;
+    --cam-roll:-1.6deg;
+    --plane-w:104vw;
+    --plane-h:calc(var(--u) * 27);
+    --plane-top:50%;
+    --plane-left:-2vw;
+    --plane-shift:-50%;
+  }
+  .plane{padding:calc(var(--u) * 1.6) calc(var(--u) * 1.6)}
+  .register{
+    grid-template-columns:minmax(0,calc(var(--u) * 13)) minmax(0,calc(var(--u) * 6)) 1fr;
+    column-gap:calc(var(--u) * .9);
+  }
+  .col-rule--a{left:calc(var(--u) * 13.4)}
+  .col-rule--b{left:calc(var(--u) * 20.4)}
+}
+
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+</style>
+</head>
+<body>
+
+<main class="stage" id="stage">
+  <div class="plane">
+    <div class="seams" aria-hidden="true"></div>
+
+    <!-- REGISTER 1 — Japan Standard Time, live -->
+    <section class="register register--live" data-state="ticking" aria-label="日本標準時 Japan Standard Time">
+      <div class="label-block">
+        <span class="label-box">日本標準時</span>
+        <span class="gloss">Japan Standard Time</span>
+      </div>
+      <div class="readout">
+        <span class="tag">Live</span>
+        <time id="jst-time" datetime="" class="sr-only"></time>
+        <span class="pair"><span class="digits" id="jst-h">00</span><span class="sup" aria-hidden="true">h</span></span>
+        <span class="unit" aria-hidden="true">時</span>
+        <span class="pair"><span class="digits" id="jst-m">00</span><span class="sup" aria-hidden="true">m</span></span>
+        <span class="unit" aria-hidden="true">分</span>
+        <span class="pair"><span class="digits" id="jst-s">00</span><span class="sup" aria-hidden="true">s</span></span>
+        <span class="unit" aria-hidden="true">秒</span>
+      </div>
+    </section>
+
+    <!-- REGISTER 2 — mission elapsed time -->
+    <section class="register" data-state="ticking" aria-label="作戦開始時間 H-Hour, mission elapsed time">
+      <div class="label-block">
+        <span class="label-box">作戦開始時間</span>
+        <span class="gloss">H - Hour</span>
+      </div>
+      <span class="col-rule col-rule--a" aria-hidden="true"></span>
+      <span class="col-rule col-rule--b" aria-hidden="true"></span>
+      <div class="mark"><span class="badge" data-code-length="3">MST</span></div>
+      <div class="readout readout--value">
+        <span class="stack">
+          <span class="k">Countdown</span>
+          <span class="k k--dim">GET</span>
+        </span>
+        <span class="value"><span aria-hidden="true">T+</span><span id="met">00:00:00</span></span>
+        <span class="tail" id="met-tail" aria-hidden="true">.00</span>
+      </div>
+    </section>
+
+    <!-- REGISTER 3 — Greenwich Mean Time, cropped by the frame -->
+    <section class="register register--cropped" data-state="ticking" aria-label="世界標準時 Greenwich Mean Time">
+      <div class="label-block">
+        <span class="label-box">世界標準時</span>
+        <span class="gloss">Greenwich Mean Time</span>
+      </div>
+      <span class="col-rule col-rule--a" aria-hidden="true"></span>
+      <span class="col-rule col-rule--b" aria-hidden="true"></span>
+      <div class="mark"><span class="badge" data-code-length="3">GMT</span></div>
+      <div class="readout readout--value">
+        <span class="stack"><span class="k k--dim">GMT</span></span>
+        <time id="gmt" datetime="" class="value">00:00:00</time>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="lens grain" aria-hidden="true">
+  <svg xmlns="http://www.w3.org/2000/svg">
+    <filter id="n1"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="17" stitchTiles="stitch"/></filter>
+    <filter id="n2"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed="58" stitchTiles="stitch"/></filter>
+    <filter id="n3"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="3" seed="93" stitchTiles="stitch"/></filter>
+    <rect class="g g1" width="100%" height="100%" filter="url(#n1)"/>
+    <rect class="g g2" width="100%" height="100%" filter="url(#n2)"/>
+    <rect class="g g3" width="100%" height="100%" filter="url(#n3)"/>
+  </svg>
+</div>
+<div class="lens scanlines" aria-hidden="true"></div>
+<div class="lens defocus" aria-hidden="true"></div>
+<div class="lens vignette" aria-hidden="true"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // One clock owns time. No component runs its own timer.
+  var T0 = Date.now();
+  var lastTick = Date.now();
+
+  var el = {
+    stage: document.getElementById("stage"),
+    jstTime: document.getElementById("jst-time"),
+    jstH: document.getElementById("jst-h"),
+    jstM: document.getElementById("jst-m"),
+    jstS: document.getElementById("jst-s"),
+    met: document.getElementById("met"),
+    metTail: document.getElementById("met-tail"),
+    gmt: document.getElementById("gmt"),
+    registers: Array.prototype.slice.call(document.querySelectorAll(".register"))
+  };
+
+  function pad(n, w){ n = String(n); while (n.length < w) n = "0" + n; return n; }
+
+  // JST is UTC+9 with no daylight saving, so a fixed offset is correct.
+  function jstParts(now){
+    var t = now + 9 * 3600e3;
+    return {
+      h: Math.floor(t / 3600e3) % 24,
+      m: Math.floor(t / 60e3) % 60,
+      s: Math.floor(t / 1000) % 60
+    };
+  }
+
+  // tick: discrete value replacement. No interpolation, no easing.
+  function render(){
+    var now = Date.now();
+    lastTick = now;
+
+    var j = jstParts(now);
+    el.jstH.textContent = pad(j.h, 2);
+    el.jstM.textContent = pad(j.m, 2);
+    el.jstS.textContent = pad(j.s, 2);
+    el.jstTime.setAttribute("datetime", new Date(now).toISOString());
+    el.jstTime.textContent = "日本標準時 " + pad(j.h,2) + ":" + pad(j.m,2) + ":" + pad(j.s,2);
+
+    var d = new Date(now);
+    var gmtText = pad(d.getUTCHours(),2) + ":" + pad(d.getUTCMinutes(),2) + ":" + pad(d.getUTCSeconds(),2);
+    el.gmt.textContent = gmtText;
+    el.gmt.setAttribute("datetime", d.toISOString());
+
+    var e = now - T0;
+    el.met.textContent =
+      pad(Math.floor(e / 3600e3), 2) + ":" +
+      pad(Math.floor(e / 60e3) % 60, 2) + ":" +
+      pad(Math.floor(e / 1000) % 60, 2);
+    el.metTail.textContent = "." + pad(Math.floor((e % 1000) / 10), 2);
+  }
+
+  // 10Hz ceiling, aligned to the wall clock so drift never accumulates.
+  function loop(){
+    render();
+    var delay = 100 - (Date.now() % 100);
+    setTimeout(loop, delay);
+  }
+
+  // dim-stale: a register dims only when its source actually stops updating.
+  // Tab throttling is not source loss, so the check is gated on visibility.
+  setInterval(function(){
+    if (document.hidden) return;
+    var stale = (Date.now() - lastTick) > 3000;
+    el.registers.forEach(function(r){
+      r.setAttribute("data-state", stale ? "stale" : "ticking");
+    });
+  }, 1000);
+
+  document.addEventListener("visibilitychange", function(){
+    el.stage.setAttribute("data-hidden", String(document.hidden));
+    if (!document.hidden){ lastTick = Date.now(); render(); }
+  });
+
+  loop();
+})();
+</script>
+</body>
+</html>

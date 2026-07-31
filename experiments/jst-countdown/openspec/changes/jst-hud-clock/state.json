@@ -1,0 +1,20 @@
+{
+  "blockers": [],
+  "changeId": "jst-hud-clock",
+  "evidence": [],
+  "extensions": {},
+  "foundations": {
+    "design": null,
+    "motion": null
+  },
+  "lastEventSeq": 7,
+  "migration": null,
+  "nextActions": [],
+  "phase": "gate-review",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 7,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "verifying",
+  "updatedAt": "2026-07-31T10:16:48.767Z"
+}
