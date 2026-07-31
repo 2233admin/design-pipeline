@@ -9,7 +9,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { resolveInside } = require("./contract-utils.cjs");
+const { isObject, resolveInside } = require("./contract-utils.cjs");
 
 const SPEC_DRIFT_SCHEMA = "design-pipeline.spec-drift.v1";
 const DESIGN_ARTIFACT = "design.md";
@@ -18,9 +18,25 @@ const COLUMN_HEADINGS = ["Value", "Specified", "Implemented", "Cause"];
 const REQUIRED_COLUMNS = COLUMN_HEADINGS.map((column) => column.toLowerCase());
 // Every column but Cause carries a fact that must be present; Cause has its own reason code.
 const NON_EMPTY_COLUMNS = COLUMN_HEADINGS.slice(0, -1);
-// A change "has a reference" when either reference carrier is on disk. Both are written by the
-// reference-routing stage, so either one is enough to owe a reconciliation.
-const REFERENCE_SIGNALS = ["reference-evidence.json", "reference.md"];
+// --- applicability ------------------------------------------------------------------------------
+// A change "has a reference" when a reference carrier is on disk. Both carriers below are
+// hand-authored by the agent - no script in this repo writes either - so carriers alone make
+// applicability opt-in: a reference-driven change stays `applicable: false` until someone
+// remembers to create a file, which is the same not-forced pattern this gate exists to close.
+const REFERENCE_CARRIERS = ["reference-evidence.json", "reference.md"];
+// The manifests below are written by the pipeline itself, at `change init` time, before the agent
+// has authored anything: `init-website-clone.cjs` writes `website-cloning.json` and
+// `init-design-synthesis.cjs` writes `design-synthesis.json`. They are the reliable signal because
+// they are produced by the scaffolder rather than by the author, they are schema-validated
+// elsewhere in the pipeline, and they state the change's input mode on their face. A website clone
+// reconstructs existing sites, so its targets *are* the reference; a synthesis change is
+// reference-driven exactly when it records reference inputs.
+const CLONE_MANIFEST = "website-cloning.json";
+const SYNTHESIS_MANIFEST = "design-synthesis.json";
+const CLONE_MANIFEST_SCHEMA = "design-pipeline.website-cloning.v1";
+const SYNTHESIS_MANIFEST_SCHEMA = "design-pipeline.design-synthesis.v1";
+const SYNTHESIS_INPUT_MODES = ["reference-site", "template-evidence", "hybrid", "requirements-only"];
+const SYNTHESIS_REFERENCE_MODES = ["reference-site", "hybrid"];
 
 // Cause review is mechanical on purpose. This gate does not judge whether prose describes an
 // observation - it cannot - so it blocks only on an explicit, closed deny-list of phrasings that
@@ -31,6 +47,9 @@ const INTENTION_PHRASES = ["looked better", "felt cramped", "cleaner", "nicer", 
 const AMBIGUOUS_CAUSE_MARKERS = ["wanted", "felt", "liked", "seemed", "better", "worse", "prefer"];
 
 const REASONS = {
+  MANIFEST_UNREADABLE: "reconciliation-manifest-unreadable",
+  MANIFEST_MALFORMED: "reconciliation-manifest-malformed",
+  MANIFEST_CONTRADICTORY: "reconciliation-manifest-contradictory",
   DESIGN_MISSING: "reconciliation-design-missing",
   DESIGN_UNREADABLE: "reconciliation-design-unreadable",
   SECTION_MISSING: "reconciliation-section-missing",
@@ -47,6 +66,11 @@ const REASONS = {
 
 // Reported `reason` is the first blocking reason in this order; `reasons` carries all of them.
 const REASON_ORDER = [
+  // A manifest the gate cannot read is reported before anything else: while it is broken the gate
+  // cannot even decide whether the obligation exists, so no later reason is trustworthy.
+  REASONS.MANIFEST_UNREADABLE,
+  REASONS.MANIFEST_MALFORMED,
+  REASONS.MANIFEST_CONTRADICTORY,
   REASONS.DESIGN_MISSING,
   REASONS.DESIGN_UNREADABLE,
   REASONS.SECTION_MISSING,
@@ -215,9 +239,113 @@ function containedFile(root, relative) {
   }
 }
 
+function fault(reason, message) {
+  return { fault: { reason, message } };
+}
+
+// An ABSENT manifest is a real legacy signal - a change scaffolded before the manifests existed, or
+// a change that is simply not manifest-driven - and keeps the carrier-only default. A manifest that
+// is PRESENT but unreadable is not a legacy signal, it is a broken document, and it blocks: while it
+// cannot be read the gate cannot decide whether the change owes a reconciliation at all.
+function readManifest(root, name) {
+  const file = resolveInside(root, name, "reference manifest", { scope: "spec reconciliation" });
+  if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return { present: false };
+  let text;
+  try {
+    text = fs.readFileSync(file, "utf8");
+  } catch (error) {
+    return { present: true, ...fault(REASONS.MANIFEST_UNREADABLE, `change ${name} cannot be read, so the reconciliation obligation cannot be decided: ${error.message}`) };
+  }
+  let value;
+  try {
+    value = JSON.parse(text);
+  } catch (error) {
+    return { present: true, ...fault(REASONS.MANIFEST_UNREADABLE, `change ${name} is not valid JSON, so the reconciliation obligation cannot be decided: ${error.message}`) };
+  }
+  if (!isObject(value)) {
+    return { present: true, ...fault(REASONS.MANIFEST_UNREADABLE, `change ${name} is not a JSON object, so the reconciliation obligation cannot be decided`) };
+  }
+  return { present: true, value };
+}
+
+// Every website clone reconstructs sites it did not author, so a clone manifest with targets is a
+// reference-driven change no matter what the agent has written by hand yet.
+function detectCloneManifest(manifest) {
+  if (manifest.schema !== CLONE_MANIFEST_SCHEMA) {
+    return fault(
+      REASONS.MANIFEST_MALFORMED,
+      `change ${CLONE_MANIFEST} declares schema ${JSON.stringify(manifest.schema)} instead of `
+      + `${CLONE_MANIFEST_SCHEMA}, so it cannot say whether this change is reference-driven`,
+    );
+  }
+  if (!Array.isArray(manifest.targets) || manifest.targets.length === 0) {
+    return fault(
+      REASONS.MANIFEST_MALFORMED,
+      `change ${CLONE_MANIFEST} records no targets array, so it cannot say whether this change is reference-driven`,
+    );
+  }
+  return { referenceDriven: true };
+}
+
+// A synthesis change is reference-driven exactly when it took reference inputs. `inputs.mode` and
+// `inputs.references` are two independent statements of the same fact; when they disagree the
+// document is contradictory and the gate refuses to pick a winner.
+function detectSynthesisManifest(manifest) {
+  if (manifest.schema !== SYNTHESIS_MANIFEST_SCHEMA) {
+    return fault(
+      REASONS.MANIFEST_MALFORMED,
+      `change ${SYNTHESIS_MANIFEST} declares schema ${JSON.stringify(manifest.schema)} instead of `
+      + `${SYNTHESIS_MANIFEST_SCHEMA}, so it cannot say whether this change is reference-driven`,
+    );
+  }
+  const inputs = manifest.inputs;
+  if (!isObject(inputs) || !Array.isArray(inputs.references)) {
+    return fault(
+      REASONS.MANIFEST_MALFORMED,
+      `change ${SYNTHESIS_MANIFEST} does not record inputs.references as an array, so it cannot say `
+      + "whether this change is reference-driven",
+    );
+  }
+  if (!SYNTHESIS_INPUT_MODES.includes(inputs.mode)) {
+    return fault(
+      REASONS.MANIFEST_MALFORMED,
+      `change ${SYNTHESIS_MANIFEST} records inputs.mode ${JSON.stringify(inputs.mode)}, which is not `
+      + `one of ${SYNTHESIS_INPUT_MODES.join(", ")}`,
+    );
+  }
+  const declared = SYNTHESIS_REFERENCE_MODES.includes(inputs.mode);
+  const carries = inputs.references.length > 0;
+  if (declared !== carries) {
+    return fault(
+      REASONS.MANIFEST_CONTRADICTORY,
+      `change ${SYNTHESIS_MANIFEST} records inputs.mode ${JSON.stringify(inputs.mode)} but `
+      + `${inputs.references.length} reference input(s); the mode and the reference list disagree `
+      + "about whether this change is reference-driven",
+    );
+  }
+  return { referenceDriven: carries };
+}
+
+const REFERENCE_MANIFESTS = [
+  [CLONE_MANIFEST, detectCloneManifest],
+  [SYNTHESIS_MANIFEST, detectSynthesisManifest],
+];
+
 function referenceSignals(root, artifact) {
-  const candidates = artifact ? [...new Set([artifact, ...REFERENCE_SIGNALS])] : REFERENCE_SIGNALS;
-  return candidates.filter((name) => containedFile(root, name));
+  const candidates = artifact ? [...new Set([artifact, ...REFERENCE_CARRIERS])] : REFERENCE_CARRIERS;
+  const signals = candidates.filter((name) => containedFile(root, name));
+  const faults = [];
+  for (const [name, detect] of REFERENCE_MANIFESTS) {
+    const read = readManifest(root, name);
+    if (!read.present) continue;
+    const verdict = read.fault ? read : detect(read.value);
+    if (verdict.fault) {
+      faults.push(verdict.fault);
+      continue;
+    }
+    if (verdict.referenceDriven && !signals.includes(name)) signals.push(name);
+  }
+  return { signals, faults };
 }
 
 // The obligation belongs to a change that has a reference. A change without one may still carry the
@@ -238,6 +366,12 @@ function createReport(applicable) {
         warnings.push({ code: reason, message: blocker });
         return;
       }
+      if (!reasons.includes(reason)) reasons.push(reason);
+      blockers.push(blocker);
+    },
+    // A fault that makes `applicable` itself undecidable cannot be downgraded by `applicable`. It
+    // blocks on its own authority, never as a warning.
+    blockAlways(reason, blocker) {
       if (!reasons.includes(reason)) reasons.push(reason);
       blockers.push(blocker);
     },
@@ -439,9 +573,10 @@ function reviewSection(section, { root, relative, signals, report }) {
 function checkSpecReconciliation(changeRoot, options = {}) {
   const root = fs.realpathSync(path.resolve(changeRoot));
   const relative = options.designFile || DESIGN_ARTIFACT;
-  const signals = referenceSignals(root, options.artifact);
+  const { signals, faults } = referenceSignals(root, options.artifact);
   const applicable = signals.length > 0;
   const report = createReport(applicable);
+  for (const item of faults) report.blockAlways(item.reason, item.message);
 
   const designFile = resolveInside(root, relative, "design spec", { scope: "spec reconciliation" });
   const text = readDesignText(designFile, relative, report);

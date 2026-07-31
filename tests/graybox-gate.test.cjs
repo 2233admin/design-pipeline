@@ -268,6 +268,10 @@ test("a capture claiming suppression without a declared runtime graybox mode is 
   assert.match(partial.blockers.join("\n"), /depth-of-field/);
 });
 
+// Both roots record the per-region breakdown the comparison names. The graybox comparison here
+// addresses `board` and `register`, and a comparison that names regions no composition recorded is
+// now a blocked stage in its own right (`graybox-composition-unrecorded`) - it asserts against a
+// structure nothing wrote down. Supplying the composition keeps this test about the runtime mode.
 test("a declared graybox mode that leaves a runtime layer enabled is blocked", () => {
   const root = readyRoot(exactReconstruction({
     graybox: grayboxBlock({
@@ -275,6 +279,7 @@ test("a declared graybox mode that leaves a runtime layer enabled is blocked", (
     }),
   }));
   writeArtifact(root, "graybox.png");
+  writeJson(root, "reference-evidence.json", planarReference());
   const incomplete = checkReconstruction(root, { stage: "graybox" });
   assert.equal(incomplete.status, "blocked");
   assert.equal(incomplete.reason, "graybox-mode-incomplete");
@@ -284,9 +289,82 @@ test("a declared graybox mode that leaves a runtime layer enabled is blocked", (
     graybox: grayboxBlock({ runtimeMode: rootAttributeMode() }),
   }));
   writeArtifact(complete, "graybox.png");
+  writeJson(complete, "reference-evidence.json", planarReference());
   const ready = checkReconstruction(complete, { stage: "graybox" });
   assert.equal(ready.status, "ready");
   assert.equal(ready.carrier, "reconstruction.json");
+});
+
+// A change that records its graybox block twice is an authoring error, not a precedence question:
+// the two blocks can disagree about the very verdict the stage reports, so neither is chosen.
+test("two carriers holding a graybox block block with a conflict rather than picking a winner", () => {
+  const root = readyRoot(exactReconstruction({ graybox: grayboxBlock() }));
+  writeArtifact(root, "graybox.png");
+  writeJson(root, "reference-evidence.json", planarReference({
+    graybox: grayboxBlock({
+      approval: { status: "rejected", evidence: "The board register structure was wrong." },
+    }),
+  }));
+
+  const conflicted = checkReconstruction(root, { stage: "graybox" });
+  assert.equal(conflicted.status, "blocked");
+  assert.equal(conflicted.reason, "graybox-carrier-conflict");
+  assert.match(conflicted.blockers.join("\n"), /reconstruction\.json/);
+  assert.match(conflicted.blockers.join("\n"), /reference-evidence\.json/);
+  // No winner is picked, so no block is reported as the one that was checked.
+  assert.equal(conflicted.carrier, null);
+  assert.equal(conflicted.graybox, null);
+  // The approved block never masks the rejected one.
+  assert.equal(conflicted.reasons.includes("graybox-approval-rejected"), false);
+
+  // Removing the duplicate is what clears it.
+  writeJson(root, "reference-evidence.json", planarReference());
+  assert.equal(checkReconstruction(root, { stage: "graybox" }).status, "ready");
+});
+
+// Absence of evidence is not evidence: with no reference document, and with a document that never
+// names a source, nothing on disk was resolved, so a `measured` comparison has nothing to measure.
+test("a measured comparison with no resolved reference source blocks on its own reason", () => {
+  const measuredBlock = grayboxBlock({ comparison: grayboxComparison({ mode: "measured" }) });
+
+  const unrecorded = readyRoot(exactReconstruction({ graybox: measuredBlock }));
+  writeArtifact(unrecorded, "graybox.png");
+  assert.equal(fs.existsSync(path.join(unrecorded, "reference-evidence.json")), false);
+  const noDocument = checkReconstruction(unrecorded, { stage: "graybox" });
+  assert.equal(noDocument.status, "blocked");
+  assert.equal(noDocument.source.resolvable, false);
+  assert.equal(noDocument.measurable, false);
+  assert.equal(noDocument.fidelityEvidence, false);
+  assert.equal(noDocument.reasons.includes("reference-source-unrecorded"), true);
+  // The composition is unrecorded for the same reason, and that is a separate blocker.
+  assert.equal(noDocument.reasons.includes("graybox-composition-unrecorded"), true);
+
+  const undeclared = readyRoot(exactReconstruction({ graybox: measuredBlock }));
+  writeArtifact(undeclared, "graybox.png");
+  const sourceless = planarReference();
+  delete sourceless.source;
+  writeJson(undeclared, "reference-evidence.json", sourceless);
+  const noSource = checkReconstruction(undeclared, { stage: "graybox" });
+  assert.equal(noSource.status, "blocked");
+  assert.equal(noSource.reason, "reference-source-undeclared");
+  assert.equal(noSource.measurable, false);
+  assert.equal(noSource.fidelityEvidence, false);
+});
+
+// A reference document the contract cannot read blocks every path, qualitative included: the stage
+// reads its region binding out of that same document.
+test("an unparseable reference document blocks the graybox stage on the qualitative path too", () => {
+  const root = readyRoot(exactReconstruction({ graybox: grayboxBlock() }));
+  writeArtifact(root, "graybox.png");
+  writeArtifact(root, "reference-evidence.json", "{ this is not json");
+
+  const result = checkReconstruction(root, { stage: "graybox" });
+  assert.equal(result.status, "blocked");
+  assert.equal(result.comparisonMode, "qualitative");
+  assert.equal(result.reason, "reference-source-unparseable");
+  assert.match(result.blockers.join("\n"), /cannot be parsed/);
+  assert.equal(result.source.invalid.reason, "reference-source-unparseable");
+  assert.notDeepEqual(result.reasons, []);
 });
 
 test("a blocked geometry stage and a ready graybox stage are reported separately", () => {
@@ -358,7 +436,23 @@ test("3D routes still require graybox.png by name and the stage checks that same
   );
 
   const root = grayboxRoot();
+  // The region binding follows the composition, not the schema version: a document that records a
+  // per-region breakdown is bound by it, and a comparison that names regions against no recorded
+  // composition is blocked rather than passed. This document records the two regions it compares.
+  //
+  // It also declares v2. The graybox block is a v2-era construct - the binding above is exactly why
+  // - so a document carrying one is held to the v2 contract and owes both intent and composition,
+  // whatever version string it wrote. The v1 fixture asserted valid at the top of this test stays a
+  // genuine legacy document precisely because it records neither.
   writeJson(root, "reference-evidence.json", fixedCameraReference({
+    schema: "design-pipeline.reference-evidence.v2",
+    composition: fixtures.boardRegisterComposition(),
+    intent: fixtures.directionalIntent({
+      downgrade: {
+        status: "not-requested",
+        evidence: "The user asked for a fresh implementation in the same medium, not a rebuild.",
+      },
+    }),
     graybox: grayboxBlock({ comparison: grayboxComparison({ mode: "measured" }) }),
   }));
   const missing = checkReconstruction(root, { stage: "graybox" });

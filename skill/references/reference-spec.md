@@ -78,6 +78,27 @@ of a v2 document; omitting it fails validation with
 `reference evidence: reference is missing composition`. A v1 document predates the block and stays
 exempt, so archived changes remain readable.
 
+### Schema era
+
+`design-pipeline.reference-evidence.v1` is a frozen legacy carrier, not a live schema version. It
+records what an older document looked like; it is not a switch that turns the current checklist off.
+
+- A document declaring v1 that stays inside the v1 feature set validates exactly as it always did.
+  The absence of `intent` and `composition` there is a real signal about an older document, and
+  nothing new is demanded of it retroactively.
+- A document declaring v1 while carrying a **v2-era block** - `intent`, or a `graybox` block - is not
+  an older document. It is current work wearing a stale version label, so it is validated as
+  `design-pipeline.reference-evidence.v2` and owes both `intent` and `composition`. Missing either
+  fails validation with a message beginning `schema era mismatch:`, which names the v2-era block
+  found and the root keys still owed.
+
+`graybox` earns its place in that trigger set on evidence, not chronology: the graybox comparison's
+region ids are checked *against* the declared `composition`, so a graybox block with no composition
+to bind to is a gate reporting success on evidence nothing could check. A v1 document that
+*volunteers* a `composition` is supplying more evidence, not escaping a gate, so `composition` is
+deliberately not a trigger. The repair is to add the two missing blocks; the version string may
+stay as written.
+
 Validation fails on a contradiction:
 
 - `uniform: true` with any non-empty `breaksFrom`, or with differing `rows`/`columns`;
@@ -87,10 +108,30 @@ Validation fails on a contradiction:
   divergent region is named - by itself or by the region it breaks from - or the claim is a
   contradiction.
 
+Those three fail with a message beginning `composition contradiction:`.
+
+There is a fourth case, and it is an ambiguity rather than a contradiction. When no single
+`rows x columns` structure is modal - two or more structures tie for the most regions - the document
+never declared a norm, so no region gets the free pass of "this one just follows the norm". Every
+region must then be accounted for: it records a `breaksFrom`, or another region names it. Any region
+left unaccounted for fails validation with a message beginning `composition ambiguity:`, which names
+the tied structures and the regions still unexplained.
+
+The modal structure is read from the counts alone and never from declaration order. Reordering the
+rows of the table cannot change the verdict - previously a tie was resolved in favour of whichever
+tied structure happened to be written first, so the same regions passed or failed depending on how
+the table was sorted.
+
 Region ids are the names the graybox comparison addresses, so the structure claimed before the
 render and the structure seen in the render are compared by name rather than by impression. The
-binding runs in both directions and on both carriers: the comparison must address every declared
-region id, and it may not name an id `composition` never declared.
+binding runs in both directions, on both carriers, and at either schema version - a `composition`
+that is present is applied whether the document declares v1 or v2. The comparison must address every
+declared region id, and it may not name an id `composition` never declared.
+
+An absent binding is not a satisfied one. A comparison that names regions while nothing recorded a
+`composition` is asserting against a structure no document wrote down, so the graybox stage blocks:
+`graybox-composition-unrecorded` when no `reference-evidence.json` exists at all, and
+`graybox-composition-undeclared` when the document exists but records no `composition`.
 
 ### Source availability
 
@@ -105,14 +146,17 @@ pending stays identifiable afterwards.
 
 Absent and invalid are different. An absent `availability` field means `resolved`, and so does an
 absent `reference-evidence.json`, so documents written before the pending state existed keep their
-behaviour. A field that is present but out of enum, a `source` that is not an object, or a document
-that cannot be parsed is a loud failure: the reconstruction stages refuse to measure and report
-`reference-source-availability-invalid`, `reference-source-malformed`, or
+behaviour on the measured chain. A field that is present but out of enum, a `source` that is not an
+object, or a document that cannot be parsed is a loud failure: the reconstruction stages refuse to
+measure and report `reference-source-availability-invalid`, `reference-source-malformed`, or
 `reference-source-unparseable` with `measurements: null`. An unreadable declaration is not evidence
 that the source was supplied.
 
-A resolved `availability` is also not the same as a resolvable file. The declared `source.path` must
-exist inside the change root before any comparison may call itself `measured`; see the graybox
+A resolved `availability` is also not the same as a resolvable file, and neither absent case
+resolves anything. The declared `source.path` must exist inside the change root before any
+comparison may call itself `measured`. With no document, or a document that declares no `source`, no
+path was named and no file was opened, so a `measured` comparison has nothing to stand on and blocks
+with `reference-source-unrecorded` or `reference-source-undeclared` respectively. See the graybox
 measurability rule in `reconstruction-spec.md`.
 
 Write the same classification and evidence to normative `reference-evidence.json`, then run
@@ -148,6 +192,13 @@ whenever that stage is not `ready` - reason `graybox-missing` for a change with 
 `runtimeMode` is a bare token that names no disabled layers. Optical treatment is what this gate holds
 back: materials, glow, bloom, depth of field, scanlines, and grading. Detail geometry, type
 treatment, and measured fidelity claims are held by the geometry gate instead.
+
+`reference check` carries the spec-reconciliation gate the same way, under `stages.reconciliation`.
+A gate an agent has to remember to run separately is not a gate, so `reconciliation check` is still
+available on its own but is no longer the only place the result appears: the aggregate returns
+`blocked` (exit 2) whenever the reconciliation stage is not `ready`, and its blockers trail the
+aggregate's own. A reconciliation that cannot be evaluated at all is `blocked` with reason
+`reconciliation-unverifiable`, never `ready` - the same rule `graybox-invalid` follows.
 
 For `3d` and `hybrid`, also require
 `scene.json` plus `3d.md`. Navigation is required only when the interaction model is inspectable or

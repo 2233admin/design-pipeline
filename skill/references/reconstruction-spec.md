@@ -27,17 +27,35 @@ one line, under `## Reference And Spatial Routing`:
 - Verification claim: `unverified`
 ```
 
-Derive it from `designer-pipeline reconstruction check --stage final`, and from nothing else:
+Derive it from one command - `designer-pipeline reconstruction check --stage final` - and read the
+whole result that command returns: its top-level status **and** every entry in its `stages` map.
+That one invocation already reports `stages.graybox`, `stages.geometry`, and `stages.final` side by
+side, so reading all of them costs nothing extra.
 
-| Final stage status | Verification claim |
+| `--stage final` result | Verification claim |
 | --- | --- |
-| `ready` | `verified` |
-| `fidelity-limited` | `fidelity-limited` |
-| `blocked`, any stage blocked, or a pending/unresolvable source | `unverified` |
+| top-level `ready` and every reported stage `ready` | `verified` |
+| top-level `fidelity-limited` and no reported stage `blocked` | `fidelity-limited` |
+| anything else, including any reported stage `blocked` | `unverified` |
 
-A run with no `reconstruction.json` at all is `unverified`; there is no measured evidence to claim
-against. `unverified` is the default, not a penalty: it is what the record says until a measurement
-replaces it.
+The top-level status alone is not the input, and a rule that said so would recreate the defect this
+record exists to prevent. The stages are deliberately independent and no stage infers another's
+result, so a `final` stage can report `ready` beside a `blocked` `stages.graybox` - a claim read off
+the top-level status alone would call that run `verified` on evidence the graybox gate refused.
+
+Nothing outside that one result is an input, and each familiar case reaches `unverified` through a
+stage rather than through a rule of its own:
+
+- a pending source blocks the geometry stage, and the final stage returns the geometry result, so
+  both stages read `blocked`;
+- an unreadable source declaration blocks the same two stages, with the reason that names the fault;
+- a source that is declared but is not on disk blocks `stages.graybox` the moment the comparison
+  claims `measured`;
+- a run with no `reconstruction.json` at all produces no result to read, so there is nothing that
+  could reach `verified`.
+
+`unverified` is the default, not a penalty: it is what the record says until a measurement replaces
+it.
 
 An `unverified` claim may never be reported as verified, exact, identical, 1:1, pixel-perfect,
 faithful, or complete - not in `qa.md`, not in change `design.md`, and not in the final response. A
@@ -103,7 +121,10 @@ of field, scanlines, and grading while the measured gates stay blocked beside it
 `--stage geometry` and `--stage final` report the graybox summary alongside their own result. A
 blocked `geometry` never means the graybox passed, and a ready graybox never means geometry passed.
 
-Exit codes are `0` for `ready`, `3` for `fidelity-limited`, and `2` for `blocked`.
+Exit codes are `0` for `ready`, `3` for `fidelity-limited`, and `2` for `blocked`. The public
+`designer-pipeline` CLI propagates those codes unchanged. It previously collapsed everything that
+was not `2` to `0`, which reported a measured threshold miss as success; `3` now reaches the caller
+and the command's own status line reads `fidelity-limited` rather than `complete` or `captured`.
 
 ## Normative artifact
 
@@ -131,6 +152,14 @@ scanlines, or cinematic grading are authored. It needs no source raster and cost
 Record the block in `reconstruction.json`. When the change has no `reconstruction.json`, record it
 in `reference-evidence.json` instead, so a graybox does not force the heavier contract into
 existence.
+
+Exactly one carrier holds it. Two carriers each holding a `graybox` block can disagree about the
+very thing the gate reports, so no winner is picked and neither block is validated: the stage is
+`blocked` with reason `graybox-carrier-conflict` and names both files. Delete one.
+
+A `graybox` block inside `reference-evidence.json` is a v2-era construct. A document that declares
+`design-pipeline.reference-evidence.v1` while carrying one is validated as v2 and must record
+`intent` and `composition`; see the schema era rule in `reference-spec.md`.
 
 ```json
 "graybox": {
@@ -167,15 +196,39 @@ Rules:
   one of `emissive`, `optical`, or `texture` enabled is `graybox-mode-incomplete`.
 - `suppressed` must list `materials`, `glow`, `bloom`, `depth-of-field`, `scanlines`, and `grading`.
 - `comparison.regions[]` addresses the region ids recorded in `composition` by name, whichever
-  carrier holds the block. Every declared region id must be addressed, and no region id may be named
-  that `composition` does not declare. Region status is `matches`, `corrected`,
+  carrier holds the block, and at whichever schema version records it: a `composition` that is
+  present is applied, v1 or v2. Every declared region id must be addressed, and no region id may be
+  named that `composition` does not declare. Region status is `matches`, `corrected`,
   `accepted-deviation`, or `open`; an `open` finding blocks.
+- a comparison that names regions while no `composition` was recorded anywhere is not bound to
+  anything, so it is `blocked` rather than passed, and the report names the repair. No
+  `reference-evidence.json` exists to record a composition: `graybox-composition-unrecorded`. The
+  document exists but records no `composition`: `graybox-composition-undeclared`. This is a blocked
+  stage, not a contract failure, so a v1 document that never carried a composition does not
+  retroactively become invalid - it is only barred from claiming a region comparison it cannot bind.
 - `comparison.mode` is `measured` only when the source is measurable, and measurability is read from
   disk rather than from the document: the reference contract must resolve `source.availability` to
   `resolved` and the raster named by `source.path` must actually exist inside the change root. A
-  `measured` claim the evidence cannot support is a blocking reason, `graybox-comparison-unmeasurable`
-  - not a validation error and not a silent rewrite to `qualitative`. The declared mode is reported
-  as declared; the separate `measurable` field says whether the evidence could have supported it.
+  `measured` claim the evidence cannot support is a blocking reason - not a validation error and not
+  a silent rewrite to `qualitative`. The declared mode is reported as declared; the separate
+  `measurable` field says whether the evidence could have supported it. Four different failures keep
+  four different reasons, so a refused `measured` claim is never explained by some other change's
+  problem:
+
+  | Why the measured claim cannot stand | Reason |
+  | --- | --- |
+  | `source.availability` is `pending` | `graybox-comparison-unmeasurable` |
+  | the declared `source.path` is not present in the change root | `graybox-comparison-unmeasurable` |
+  | no `reference-evidence.json` records a source at all | `reference-source-unrecorded` |
+  | the document is present but declares no `source` | `reference-source-undeclared` |
+
+- a reference document the contract cannot read blocks the graybox stage on every path, qualitative
+  included, before a single field of the block is examined. The stage reads its region binding out
+  of that same document, so the fault surfaces here with the reason that names it -
+  `reference-source-unparseable`, `reference-source-malformed`, or
+  `reference-source-availability-invalid` - and is not re-reported as a measurability failure. These
+  are the same three strings the geometry stage uses: one fault, one reason, on every stage and
+  carrier.
 - against a pending or unresolvable source the mode is `qualitative`. A `qualitative` graybox can
   reach `ready`, and it is never fidelity evidence: it proves ordering discipline, not equivalence.
   Only a `ready` graybox whose comparison is both `measured` and `measurable` sets
@@ -194,10 +247,15 @@ node <skill-root>/scripts/designer-pipeline.cjs reconstruction check `
 ```
 
 The stage reports `ready` or `blocked` and never `fidelity-limited`. Blocking reasons are
-`graybox-missing`, `graybox-capture-missing`, `graybox-mode-undeclared`,
+`graybox-missing`, `graybox-carrier-conflict`, `graybox-capture-missing`, `graybox-mode-undeclared`,
 `graybox-mode-unverifiable`, `graybox-mode-incomplete`,
 `graybox-suppression-incomplete`, `graybox-comparison-missing`, `graybox-comparison-unmeasurable`,
-`graybox-region-open`, `graybox-approval-pending`, and `graybox-approval-rejected`. A change written
+`graybox-composition-unrecorded`, `graybox-composition-undeclared`,
+`graybox-region-open`, `graybox-approval-pending`, and `graybox-approval-rejected`. The stage also
+reports the reference-document reasons it shares with the geometry gate:
+`reference-source-unparseable`, `reference-source-malformed`,
+`reference-source-availability-invalid`, `reference-source-unrecorded`, and
+`reference-source-undeclared`. A change written
 before this gate existed reports `graybox-missing` rather than failing validation, so archived
 changes stay readable.
 
@@ -259,9 +317,17 @@ report names the malformed field instead of a fabricated default. All three also
 - `reference-source-availability-invalid`: `source.availability` is present but is not one of
   `resolved` or `pending` - for example `"Pending"` or `"unavailable"`.
 
-Absent is not invalid. An absent `reference-evidence.json`, and a present document with no `source`
-field, both default to `resolved`, so documents written before the pending state existed keep
-working. A field that is present and says something the contract does not recognise is a loud
+Absent is not invalid, and it is not resolved either. An absent `reference-evidence.json`, and a
+present document with no `source` field, both keep the legacy `availability: resolved`, so the
+geometry and final stages on a document written before the pending state existed behave exactly as
+they did. What they do not do is make anything resolvable: no path was named and no file was opened,
+so `resolvable` stays `false` and nothing on disk was consulted. A `measured` graybox comparison on
+such a change therefore blocks, with `reference-source-unrecorded` when no document records a source
+and `reference-source-undeclared` when the document is there but declares none. Absence of evidence
+was never evidence; the previous behaviour reported `resolvable: true` for a source nobody had ever
+written down.
+
+A field that is present and says something the contract does not recognise is a loud
 failure: an unreadable declaration is not evidence that the source was supplied.
 
 ## Final comparison gate
@@ -299,8 +365,10 @@ node <skill-root>/scripts/designer-pipeline.cjs reconstruction check `
 Only `ready` may be described as exact or complete. `fidelity-limited` means the measurements are
 real but the frame still differs. `blocked` means the comparison is unavailable or untrusted.
 
-These are the three inputs to the verification claim recorded in `qa.md`: `ready` records
-`verified`, `fidelity-limited` records `fidelity-limited`, and everything else records `unverified`.
+These three statuses feed the verification claim recorded in `qa.md`, but they are not the whole
+input: the claim reads this result's `stages` map as well, so `verified` requires a `ready` final
+status *and* a `ready` `stages.graybox` and `stages.geometry`. See "Where the verification claim is
+recorded" above for the single derivation rule.
 
 ## Invalidation
 

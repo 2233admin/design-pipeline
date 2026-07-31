@@ -149,6 +149,22 @@ function rasterOnDisk(root, declaredPath) {
   }
 }
 
+// Absence of evidence is not evidence. A reference document nobody wrote, and a document that never
+// names a source, both leave the reference unresolved: nothing on disk was consulted, so nothing can
+// be measured against it. The legacy `resolved` availability survives - an older change keeps its
+// geometry behaviour - but `resolvable` stays false and the measured claim blocks on its own reason
+// rather than inheriting a verdict from a declaration that was never made.
+function unresolvedSourceState(reason, blocker, extra = {}) {
+  return {
+    availability: "resolved",
+    declared: false,
+    resolvable: false,
+    path: null,
+    ...extra,
+    unresolved: { reason, blocker },
+  };
+}
+
 function resolvedSourceState(root, relative, source) {
   const declaredPath = typeof source.path === "string" && source.path.trim()
     ? source.path.trim()
@@ -163,14 +179,19 @@ function resolvedSourceState(root, relative, source) {
 }
 
 // The reference contract owns `source.availability`. An absent document and an absent field both
-// mean `resolved`, so documents written before the pending state existed keep their behaviour. A
+// keep the legacy `resolved` availability, so documents written before the pending state existed
+// keep their behaviour on the measured chain. Neither one resolves anything: no path was named and
+// no file was opened, so `resolvable` is false and a `measured` claim has nothing to stand on. A
 // document that is present but says something the contract does not recognise is a loud failure:
 // an unreadable declaration is not evidence that the source was supplied.
 function referenceSourceState(root, options = {}) {
   const relative = options.referenceArtifact || REFERENCE_ARTIFACT;
   const carrier = readCarrier(root, relative);
   if (carrier.state === "absent") {
-    return { availability: "resolved", declared: false, resolvable: true, path: null };
+    return unresolvedSourceState(
+      "reference-source-unrecorded",
+      `no reference evidence document (${relative}) records a source`,
+    );
   }
   if (carrier.state === "unparseable") {
     return unreadableSource(
@@ -182,13 +203,11 @@ function referenceSourceState(root, options = {}) {
   }
   const source = carrier.document.source;
   if (source === undefined) {
-    return {
-      availability: "resolved",
-      declared: false,
-      resolvable: true,
-      path: null,
-      artifact: relative,
-    };
+    return unresolvedSourceState(
+      "reference-source-undeclared",
+      `reference evidence ${relative} declares no source`,
+      { artifact: relative },
+    );
   }
   const fault = sourceShapeFault(relative, source);
   if (fault) return unreadableSource(relative, fault.declared, fault.reason, fault.blocker);
@@ -198,33 +217,61 @@ function referenceSourceState(root, options = {}) {
 
 // The graybox comparison is bound to the composition region ids recorded in the reference
 // document, whichever carrier holds the graybox block. Moving the block into `reconstruction.json`
-// does not release it from the binding.
-function compositionRegionIds(root, options = {}) {
+// does not release it from the binding, and neither does the schema version: a composition that is
+// present is applied, v1 or v2. `state` keeps the three ways a binding can be missing apart, so a
+// document that recorded nothing is never reported as a document that recorded a match.
+function compositionBinding(root, options = {}) {
   const relative = options.referenceArtifact || REFERENCE_ARTIFACT;
   const carrier = readCarrier(root, relative);
-  if (carrier.state !== "present") return null;
-  if (!Object.hasOwn(carrier.document, "composition")) return null;
+  if (carrier.state === "absent") return { ids: null, state: "unrecorded", artifact: relative };
+  if (carrier.state === "unparseable") return { ids: null, state: "unreadable", artifact: relative };
+  if (!Object.hasOwn(carrier.document, "composition")) {
+    return { ids: null, state: "undeclared", artifact: relative };
+  }
   const { validateComposition } = require("./reference-evidence-core.cjs");
-  return validateComposition(carrier.document.composition);
+  return {
+    ids: validateComposition(carrier.document.composition),
+    state: "recorded",
+    artifact: relative,
+  };
 }
 
+// One change, one graybox block. Two carriers holding one is an authoring error - the two blocks can
+// disagree about the very thing the gate reports - so no winner is picked and neither block is
+// validated: the disagreement itself is the verdict.
 function grayboxCarrier(root, options = {}) {
   const primary = options.artifact || RECONSTRUCTION_ARTIFACT;
   const referenceArtifact = options.referenceArtifact || REFERENCE_ARTIFACT;
   const candidates = primary === referenceArtifact ? [primary] : [primary, referenceArtifact];
-  const regionIds = compositionRegionIds(root, options);
+  const binding = compositionBinding(root, options);
+  const holders = [];
   for (const relative of candidates) {
     const carrier = readCarrier(root, relative);
     if (carrier.state !== "present") continue;
     const block = carrier.document.graybox;
     if (block === undefined || block === null) continue;
+    holders.push(carrier);
+  }
+  if (holders.length > 1) {
     return {
-      artifact: carrier.file,
-      carrier: relative,
-      graybox: validateGraybox(block, { compositionRegionIds: regionIds }),
+      artifact: null,
+      carrier: null,
+      graybox: null,
+      binding,
+      conflict: holders.map((holder) => holder.relative),
     };
   }
-  return { artifact: null, carrier: null, graybox: null };
+  if (!holders.length) {
+    return { artifact: null, carrier: null, graybox: null, binding, conflict: null };
+  }
+  const [holder] = holders;
+  return {
+    artifact: holder.file,
+    carrier: holder.relative,
+    graybox: validateGraybox(holder.document.graybox, { compositionRegionIds: binding.ids }),
+    binding,
+    conflict: null,
+  };
 }
 
 // Each step below yields `{ blocker, reason }` pairs in the order the report has always listed
@@ -289,26 +336,84 @@ function grayboxComparisonIssues(graybox) {
   return issues;
 }
 
-// Why the declared measured mode could not be honoured: a pending source, an unreadable source
-// declaration, and a raster that is simply not there are three different stories.
-function unmeasurableBlocker(source) {
+// Why the declared measured mode could not be honoured. A pending source, a source nothing ever
+// recorded, a source the document never declared, and a raster that is simply not there are four
+// different stories, and each keeps its own reason: a measured claim is never refused by a reason
+// that describes some other change's problem.
+function unmeasurableIssue(source) {
   if (source.availability === "pending") {
-    return "graybox comparison claims measured mode while the reference source is pending";
+    return {
+      blocker: "graybox comparison claims measured mode while the reference source is pending",
+      reason: "graybox-comparison-unmeasurable",
+    };
   }
-  if (source.invalid) {
-    return `graybox comparison claims measured mode while ${source.invalid.blocker}`;
+  if (source.unresolved) {
+    return {
+      blocker: `graybox comparison claims measured mode while ${source.unresolved.blocker}`,
+      reason: source.unresolved.reason,
+    };
   }
-  return "graybox comparison claims measured mode while the reference source file "
-    + `${source.path ?? "(none declared)"} is not present in the change root`;
+  return {
+    blocker: "graybox comparison claims measured mode while the reference source file "
+      + `${source.path ?? "(none declared)"} is not present in the change root`,
+    reason: "graybox-comparison-unmeasurable",
+  };
 }
 
-function grayboxMissingResult() {
+// A reference document the contract cannot read blocks the graybox stage on every path, qualitative
+// included. The stage reads its region binding out of that same document, so a parse failure held
+// quietly in the state while the verdict says ready is the gate reporting on evidence it never saw.
+function unreadableReferenceIssue(source) {
+  if (!source.invalid) return null;
+  return {
+    blocker: `${source.invalid.blocker}; the graybox stage cannot be checked against an `
+      + "unreadable reference document",
+    reason: source.invalid.reason,
+  };
+}
+
+function carrierConflictIssue(carriers) {
+  return {
+    blocker: `two carriers record a graybox block for this change: ${carriers.join(", ")}; `
+      + "keep exactly one so the stage reports on a single block",
+    reason: "graybox-carrier-conflict",
+  };
+}
+
+function grayboxMissingIssue() {
+  return {
+    blocker: "graybox block is missing: record a layout-only capture and a structural comparison",
+    reason: "graybox-missing",
+  };
+}
+
+// The comparison names regions; the composition is what says those names mean anything. With no
+// composition recorded anywhere the comparison is asserting against a structure nothing wrote down,
+// so it is blocked rather than passed - and the document that should have carried the breakdown is
+// named, because "no document at all" and "a document with no composition" are different repairs.
+function grayboxBindingIssue(graybox, binding) {
+  if (binding.state === "recorded" || binding.state === "unreadable") return null;
+  const named = graybox.comparison.regions.map((region) => region.id);
+  if (!named.length) return null;
+  if (binding.state === "unrecorded") {
+    return {
+      blocker: `graybox comparison names regions ${named.join(", ")} while no reference evidence `
+        + `document (${binding.artifact}) records a composition to bind them to`,
+      reason: "graybox-composition-unrecorded",
+    };
+  }
+  return {
+    blocker: `graybox comparison names regions ${named.join(", ")} while reference evidence `
+      + `${binding.artifact} records no composition to bind them to`,
+    reason: "graybox-composition-undeclared",
+  };
+}
+
+function blockedGrayboxResult(issues) {
   return {
     status: "blocked",
-    blockers: [
-      "graybox block is missing: record a layout-only capture and a structural comparison",
-    ],
-    reasons: ["graybox-missing"],
+    blockers: issues.map((issue) => issue.blocker),
+    reasons: issues.map((issue) => issue.reason),
     mismatches: [],
     comparisonMode: null,
     measurable: false,
@@ -316,12 +421,19 @@ function grayboxMissingResult() {
   };
 }
 
-function grayboxResult(root, graybox, source) {
-  if (!graybox) return grayboxMissingResult();
+function grayboxResult(root, carrier, source) {
+  // Everything the stage owes about the documents themselves, before a single block field is read.
+  const leading = [unreadableReferenceIssue(source)].filter((issue) => issue !== null);
+  if (carrier.conflict) {
+    return blockedGrayboxResult([...leading, carrierConflictIssue(carrier.conflict)]);
+  }
+  const graybox = carrier.graybox;
+  if (!graybox) return blockedGrayboxResult([...leading, grayboxMissingIssue()]);
   // Measurability is a property of the disk, not of the declaration. A comparison is measured only
   // when the reference contract resolves AND the raster it names is actually there.
   const measurable = source.availability === "resolved" && source.resolvable === true;
   const issues = [
+    ...leading,
     ...missingArtifacts(root, [graybox.capture]).map((artifact) => ({
       blocker: `missing graybox evidence: ${artifact}`,
       reason: "graybox-capture-missing",
@@ -329,11 +441,11 @@ function grayboxResult(root, graybox, source) {
     grayboxSuppressionIssue(graybox),
     grayboxModeIssue(graybox),
     ...grayboxComparisonIssues(graybox),
-    graybox.comparison.mode === "measured" && !measurable
-      ? {
-        blocker: unmeasurableBlocker(source),
-        reason: "graybox-comparison-unmeasurable",
-      }
+    grayboxBindingIssue(graybox, carrier.binding),
+    // An unreadable declaration is already blocked above; re-reporting it as a measurability
+    // failure would answer a question the stage never got far enough to ask.
+    graybox.comparison.mode === "measured" && !measurable && !source.invalid
+      ? unmeasurableIssue(source)
       : null,
     graybox.approval.status !== "approved"
       ? {
@@ -572,7 +684,7 @@ function summarize(result) {
 function checkGraybox(root, options = {}) {
   const source = referenceSourceState(root, options);
   const carrier = grayboxCarrier(root, options);
-  const result = grayboxResult(root, carrier.graybox, source);
+  const result = grayboxResult(root, carrier, source);
   return {
     ...result,
     reason: result.reasons[0] ?? null,

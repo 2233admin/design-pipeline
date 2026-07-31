@@ -5,6 +5,7 @@ const path = require("node:path");
 const {
   assertEnum,
   assertKeys,
+  assertObject,
   assertString,
   assertStringArray,
   fail,
@@ -270,20 +271,26 @@ function assertBreaksFromIntegrity(regions, ids, scope) {
   });
 }
 
-// The tie-break between equally common structures is first-insertion-order: the strictly-greater
-// comparison keeps the earliest key seen. A reviewer has flagged that as an open question; it is
-// deliberately preserved here so this refactor stays behaviour-neutral.
-function modalRegionStructure(regions) {
+// The modal structure is whichever `rows x columns` key the most regions share, read from the
+// counts alone. Declaration order never enters it: the old strictly-greater scan over a Map kept
+// whichever tied key happened to be written first, which let an author flip the verdict by
+// reordering the table. Every key that reaches the top count is returned, so a tie is visible to
+// the caller instead of being silently resolved.
+function modalRegionStructures(regions) {
   const counts = new Map();
   for (const region of regions) {
     const key = regionStructureKey(region);
     counts.set(key, (counts.get(key) || 0) + 1);
   }
-  let modal = null;
-  for (const [key, count] of counts) {
-    if (modal === null || count > counts.get(modal)) modal = key;
-  }
-  return modal;
+  const count = Math.max(...counts.values());
+  const modal = [...counts.keys()].filter((key) => counts.get(key) === count).sort();
+  return { modal, count };
+}
+
+// A region is accounted for when the document says something about it: either it records what it
+// breaks from, or another region names it as the thing being broken from.
+function isRegionAccountedFor(region, named) {
+  return region.breaksFrom.length > 0 || named.has(region.id);
 }
 
 function assertUniformComposition(regions, breaking, scope) {
@@ -317,18 +324,34 @@ function assertExceptionalComposition(regions, breaking, named, scope) {
       "composition contradiction: composition.uniform is false but no region records a breaksFrom entry",
     );
   }
-  const modal = modalRegionStructure(regions);
+  const { modal, count } = modalRegionStructures(regions);
+  // An exact tie is not a norm. Keeping the first-written key, or the larger group, would both be
+  // guesses that make the verdict depend on how the table was ordered. With nothing modal, no
+  // region gets the free pass of "this one just follows the norm", so every region has to be
+  // accounted for explicitly and the author is told to declare which structure is the norm.
+  if (modal.length > 1) {
+    const unaccounted = regions.filter((region) => !isRegionAccountedFor(region, named));
+    if (unaccounted.length) {
+      fail(
+        scope,
+        "composition ambiguity: composition.uniform is false and no rows-by-columns structure is "
+        + `modal (${modal.join(" and ")} each describe ${count} region(s)), so `
+        + `${unaccounted.map((region) => region.id).join(", ")} cannot be read as following a norm `
+        + "the document never declared; record what each one breaks from",
+      );
+    }
+    return;
+  }
+  const [structure] = modal;
   const unnamed = regions.filter(
-    (region) => regionStructureKey(region) !== modal
-      && !region.breaksFrom.length
-      && !named.has(region.id),
+    (region) => regionStructureKey(region) !== structure && !isRegionAccountedFor(region, named),
   );
   if (unnamed.length) {
     fail(
       scope,
       "composition contradiction: composition.uniform is false but "
       + `${unnamed.map((region) => region.id).join(", ")} differ in rows or columns from the `
-      + `modal ${modal} structure without naming what they break from`,
+      + `modal ${structure} structure without naming what they break from`,
     );
   }
 }
@@ -357,6 +380,35 @@ function validateComposition(composition) {
 // structural breakdown, because that omission is the failure the checklist exists to catch.
 function rootKeysFor(schema) {
   return schema === SCHEMA_V2 ? [...BASE_ROOT_KEYS, ...V2_ONLY_ROOT_KEYS] : BASE_ROOT_KEYS;
+}
+
+// v1 is a frozen legacy carrier, not a live schema version. Keying the composition and intent
+// requirements on the declared version alone made v1 a switch that turns those checks off, so a
+// brand-new document could dodge the whole checklist by writing an older version string.
+//
+// The rule: a document declaring v1 that stays inside the v1 feature set is a genuinely older
+// document and keeps validating exactly as it did - the absence of `intent` and `composition` is a
+// real signal about its age. A document declaring v1 while carrying a construct that only exists
+// from v2 onward is not older; it is current work wearing a stale label, so it is validated as v2
+// and owes everything v2 owes. `graybox` counts as a v2-era construct: its comparison is checked
+// against the declared composition region ids, so a graybox block with no composition to bind to is
+// a stage reporting success on evidence nothing could check.
+const V2_ERA_ROOT_KEYS = ["intent", "graybox"];
+
+function effectiveSchemaFor(reference) {
+  if (reference.schema !== SCHEMA_V1) return reference.schema;
+  const carried = V2_ERA_ROOT_KEYS.filter((key) => Object.hasOwn(reference, key));
+  if (!carried.length) return SCHEMA_V1;
+  const missing = V2_ONLY_ROOT_KEYS.filter((key) => !Object.hasOwn(reference, key));
+  if (missing.length) {
+    fail(
+      SCOPE,
+      `schema era mismatch: schema is ${SCHEMA_V1} but the document carries the v2-era `
+      + `${carried.join(" and ")} block, so it is validated as ${SCHEMA_V2} and must record `
+      + `${missing.join(" and ")}`,
+    );
+  }
+  return SCHEMA_V2;
 }
 
 function validateClassification(classification) {
@@ -428,13 +480,23 @@ function assertRequiredArtifacts(reference) {
 }
 
 function validateReferenceEvidence(reference) {
-  const rootKeys = rootKeysFor(reference.schema);
-  assertKeys(reference, rootKeys, [...rootKeys, "composition", "graybox"], "reference", SCOPE);
+  assertObject(reference, "reference", SCOPE);
+  // The declared version is read before the key checklist, because which keys the document owes is
+  // derived from the era it actually belongs to rather than from the label it wrote.
   if (!SCHEMAS.includes(reference.schema)) {
     fail(SCOPE, `schema must be one of: ${SCHEMAS.join(", ")}`);
   }
+  const schema = effectiveSchemaFor(reference);
+  const rootKeys = rootKeysFor(schema);
+  assertKeys(
+    reference,
+    rootKeys,
+    [...rootKeys, ...V2_ONLY_ROOT_KEYS, "graybox"],
+    "reference",
+    SCOPE,
+  );
   assertString(reference.id, "id", SCOPE);
-  if (reference.schema === SCHEMA_V2) validateIntent(reference.intent);
+  if (schema === SCHEMA_V2) validateIntent(reference.intent);
 
   validateSource(reference.source);
   validateClassification(reference.classification);

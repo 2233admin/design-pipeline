@@ -200,6 +200,16 @@ function publicHelp() {
   ].join("\n");
 }
 
+// The documented kernel contract: 0 success, 1 invalid/error, 2 blocked, 3 measured fidelity
+// mismatch. `runKernel` propagates that status faithfully; it never normalises an unrecognised
+// status to success, because a status this wrapper does not understand is not evidence of success.
+const KERNEL_EXIT_CODES = [0, 2, 3];
+const KERNEL_STATUS_LABELS = { 2: "blocked", 3: "fidelity-limited" };
+
+function kernelStatusLabel(exitCode, successLabel) {
+  return KERNEL_STATUS_LABELS[exitCode] ?? successLabel;
+}
+
 function runKernel(script, args, cwd) {
   const child = spawnSync(process.execPath, [path.join(__dirname, script), ...args], {
     cwd,
@@ -210,13 +220,20 @@ function runKernel(script, args, cwd) {
     maxBuffer: 4 * 1024 * 1024,
   });
   if (child.error) fail("cli", `kernel ${script} failed: ${child.error.message}`, { code: "KERNEL_FAILED" });
+  // A killed child reports `signal` and a null status. `error` is not always set for it (a timeout
+  // kill in particular), so the signal is checked on its own rather than trusted to `error`.
+  if (child.signal) fail("cli", `kernel ${script} was terminated by signal ${child.signal}`, { code: "KERNEL_SIGNALED" });
+  if (typeof child.status !== "number") fail("cli", `kernel ${script} produced no exit status`, { code: "KERNEL_STATUS_MISSING" });
   if (child.status === 1) fail("cli", (child.stderr || child.stdout || `kernel ${script} failed`).trim(), { code: "KERNEL_FAILED" });
+  if (!KERNEL_EXIT_CODES.includes(child.status)) {
+    fail("cli", `kernel ${script} exited with unsupported status ${child.status}`, { code: "KERNEL_STATUS_UNSUPPORTED" });
+  }
   let value = null;
   const output = (child.stdout || "").trim();
   if (output) {
     try { value = JSON.parse(output); } catch { value = { output }; }
   }
-  return { value, exitCode: child.status === 2 ? 2 : 0 };
+  return { value, exitCode: child.status };
 }
 
 function legacyArgs(parsed, skipPositionals) {
@@ -330,6 +347,48 @@ function reconciliationCommand(parsed, root) {
   return { result, exitCode: result.status === "ready" ? 0 : 2 };
 }
 
+// The reconciliation stage mirrors the graybox fold in `reference-evidence-core.cjs`: the stage is
+// summarised into `stages`, its blockers trail the aggregate's own, and a blocked stage keeps the
+// aggregate from ever reporting `ready`. A gate an agent has to remember to run separately is not a
+// gate, so `reference check` carries it.
+function reconciliationStage(changeRoot, options) {
+  try {
+    const result = checkSpecReconciliation(changeRoot, options);
+    return {
+      status: result.status,
+      reason: result.reason,
+      reasons: result.reasons,
+      blockers: result.blockers,
+    };
+  } catch (error) {
+    // A reconciliation that cannot be evaluated is blocked, never ready.
+    return {
+      status: "blocked",
+      reason: "reconciliation-unverifiable",
+      reasons: ["reconciliation-unverifiable"],
+      blockers: [error.message],
+    };
+  }
+}
+
+function foldReconciliation(result, changeRoot, parsed) {
+  const stage = reconciliationStage(changeRoot, {
+    designFile: option(parsed, "--design-file", "design.md"),
+    artifact: option(parsed, "--artifact"),
+  });
+  const blocked = stage.status !== "ready";
+  return {
+    ...result,
+    status: blocked ? "blocked" : result.status,
+    reason: result.reason ?? (blocked ? stage.reason : null),
+    blockers: [...(result.blockers || []), ...(blocked ? stage.blockers : [])],
+    stages: {
+      ...(result.stages || {}),
+      reconciliation: { status: stage.status, reason: stage.reason, reasons: stage.reasons },
+    },
+  };
+}
+
 function spatialCommand(parsed, root, command) {
   const changeRoot = changeRootFrom(parsed, root);
   let result;
@@ -339,9 +398,11 @@ function spatialCommand(parsed, root, command) {
       sidecar: option(parsed, "--sidecar"),
     });
   } else if (command === "reference") {
-    result = checkReferenceEvidence(changeRoot, {
-      artifact: option(parsed, "--artifact"),
-    });
+    result = foldReconciliation(
+      checkReferenceEvidence(changeRoot, { artifact: option(parsed, "--artifact") }),
+      changeRoot,
+      parsed,
+    );
   } else {
     result = checkReconstruction(changeRoot, {
       artifact: option(parsed, "--artifact"),
@@ -395,7 +456,7 @@ function evidenceCommand(parsed, root, action) {
       args.push(flag, flag === "--playwright-module" ? contained(projectRoot, value, flag) : value);
     }
     const kernel = runKernel("capture-web-evidence.cjs", args, projectRoot);
-    return { result: { status: kernel.exitCode === 2 ? "blocked" : "captured", receipt: kernel.value }, exitCode: kernel.exitCode };
+    return { result: { status: kernelStatusLabel(kernel.exitCode, "captured"), receipt: kernel.value }, exitCode: kernel.exitCode };
   }
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
@@ -474,7 +535,7 @@ function kernelEntry(script) {
   return {
     run: ({ parsed, root }) => {
       const kernel = runKernel(script, legacyArgs(parsed, 2), root);
-      return { result: { status: kernel.exitCode === 2 ? "blocked" : "complete", kernel: kernel.value }, exitCode: kernel.exitCode };
+      return { result: { status: kernelStatusLabel(kernel.exitCode, "complete"), kernel: kernel.value }, exitCode: kernel.exitCode };
     },
   };
 }

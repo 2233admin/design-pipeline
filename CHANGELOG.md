@@ -40,6 +40,27 @@ All notable changes to Design Pipeline are documented here.
 - Added the `reference-source-unparseable`, `reference-source-malformed`, and
   `reference-source-availability-invalid` blocked reasons, so a source declaration that is present
   but unreadable blocks with `measurements: null` instead of defaulting to resolved.
+- Added the `reference-source-unrecorded` and `reference-source-undeclared` blocked reasons for a
+  `measured` graybox comparison on a change where no `reference-evidence.json` records a source, or
+  the document declares none.
+- Added the `graybox-carrier-conflict` blocked reason for a change where both `reconstruction.json`
+  and `reference-evidence.json` hold a `graybox` block.
+- Added the `graybox-composition-unrecorded` and `graybox-composition-undeclared` blocked reasons
+  for a graybox comparison that names region ids while no `composition` was recorded anywhere to
+  bind them to.
+- Added the `composition ambiguity:` validation failure for a `uniform: false` composition in which
+  two or more `rows x columns` structures tie for most-common and some region is left unaccounted
+  for. It is deliberately a separate string from the `composition contradiction:` family.
+- Added the `schema era mismatch:` validation failure for a document declaring
+  `design-pipeline.reference-evidence.v1` while carrying a v2-era `intent` or `graybox` block, and
+  the matching v1 rule in the published `reference-evidence.schema.json`.
+- Added `stages.reconciliation` to every `reference check` result, plus the
+  `reconciliation-unverifiable` blocked reason for a reconciliation the aggregate could not evaluate.
+- Added the `reconciliation-manifest-unreadable`, `reconciliation-manifest-malformed`, and
+  `reconciliation-manifest-contradictory` blocked reasons, reported ahead of every other
+  reconciliation reason, for a reference manifest that is present but cannot be read or believed.
+- Added the `KERNEL_SIGNALED`, `KERNEL_STATUS_MISSING`, and `KERNEL_STATUS_UNSUPPORTED` CLI error
+  codes, so a killed, statusless, or unrecognised kernel run is reported as its own failure.
 
 ### Changed
 
@@ -68,6 +89,26 @@ All notable changes to Design Pipeline are documented here.
 - The geometry gate blocks detail geometry, type treatment, and measured fidelity claims. Optical
   treatment is released by the graybox gate alone, so a blocked geometry stage no longer reads as a
   reason to withhold it.
+- `reference check` now carries the spec-reconciliation gate under `stages.reconciliation` and
+  returns `blocked` (exit 2) whenever it is not `ready`. A change that passed `reference check`
+  before this release can now block on a `Spec Reconciliation` section that was never written;
+  adding the section, with an empty table if nothing changed, clears it. `reconciliation check` is
+  unchanged and still available on its own.
+- Spec-reconciliation applicability is now decided by pipeline-written manifests as well as by the
+  hand-authored `reference-evidence.json` and `reference.md` carriers. A valid `website-cloning.json`
+  with at least one target, or a `design-synthesis.json` recording reference inputs, makes the gate
+  apply from `change init` - so a scaffolded website clone is reference-driven before the agent
+  writes a carrier, and its reconciliation findings are blockers rather than warnings. An absent
+  manifest keeps the previous carrier-only behaviour.
+- The verification claim is now derived from the whole `reconstruction check --stage final` result -
+  its top-level status and every entry in its `stages` map - rather than from the top-level status
+  alone. `verified` requires the final status and every reported stage to be `ready`. The old wording
+  stated both rules at once, so a run whose `final` stage was `ready` beside a blocked
+  `stages.graybox` could be recorded either way; it is now `unverified`.
+- The public CLI now propagates the documented kernel exit codes unchanged: `0` success, `1`
+  invalid/error, `2` blocked, `3` measured fidelity mismatch. `evidence capture`,
+  `feedback record|prepare|reconcile`, and `source audit` label exit `3` as `fidelity-limited`
+  rather than `captured` or `complete`.
 
 ### Fixed
 
@@ -91,6 +132,58 @@ All notable changes to Design Pipeline are documented here.
 - Stopped accepting one named exception as proof that a non-uniform composition is accounted for.
   Every region that departs from the modal row and column structure must now either record what it
   breaks from or be named by a region that does.
+- Stopped letting declaration order decide the modal region structure. When two or more
+  `rows x columns` structures tie for most-common, the first one written used to win and become the
+  norm the other regions were measured against, so re-sorting the table flipped the verdict. A tie
+  is now no norm at all: every region must record what it breaks from or be named by one that does,
+  and an unaccounted region fails with `composition ambiguity:`. A composition whose tie is fully
+  declared still validates, in any order.
+- Stopped treating `design-pipeline.reference-evidence.v1` as a live schema version an author could
+  select to switch the current checklist off. A v1 document that carries a v2-era `intent` or
+  `graybox` block is now validated as v2 and must record `intent` and `composition`, failing with
+  `schema era mismatch:`. A v1 document that carries neither is a genuinely older document and
+  validates exactly as before - the absence of those blocks stays a real signal about its age. The
+  fix is to add the two blocks; the version string may stay as written. This closes the path by
+  which a graybox comparison could name region ids no `composition` had ever declared, because with
+  no composition the binding had nothing to check against.
+- Stopped passing a graybox comparison that names regions while no `composition` exists to bind them
+  to. The stage now blocks with `graybox-composition-unrecorded` when no `reference-evidence.json`
+  exists and `graybox-composition-undeclared` when the document exists but records none. This is a
+  blocked stage rather than a contract failure, so a v1 document that never carried a composition
+  does not retroactively become invalid.
+- Stopped letting two carriers each hold a `graybox` block. The first carrier found used to win, so
+  a rejected block in one file could be masked by an approved block in the other. Both files holding
+  a block is now `graybox-carrier-conflict`: neither block is validated and no winner is picked.
+  Keep exactly one.
+- Stopped reporting a reference source as resolvable when nothing on disk had been consulted. An
+  absent `reference-evidence.json` and a document with no `source` field still keep the legacy
+  `resolved` availability, so geometry on an older change is untouched, but they no longer claim to
+  resolve anything: a `measured` graybox comparison on such a change now blocks with
+  `reference-source-unrecorded` or `reference-source-undeclared`. Declaring
+  `comparison.mode: qualitative` is the accurate description and still reaches `ready`.
+- Stopped letting an unreadable reference document sit beside a `ready` graybox stage with no
+  reasons. An unparseable document, a non-object `source`, or an out-of-enum `source.availability`
+  now blocks the graybox stage on every path, qualitative included, before any field of the block is
+  read - and with the same reason string the geometry gate uses, rather than falling through to
+  `graybox-comparison-unmeasurable`.
+- Stopped reporting `ready` from `reference check` for a change whose spec-reconciliation gate had
+  never been run. The stage is folded in, so a missing or unusable `Spec Reconciliation` section now
+  blocks the aggregate; a reconciliation that cannot be evaluated at all is
+  `reconciliation-unverifiable` and never `ready`.
+- Stopped letting a reference manifest that is present but broken decide applicability by silence. A
+  `website-cloning.json` or `design-synthesis.json` that cannot be read, cannot be parsed, is not a
+  JSON object, declares the wrong schema, records no targets, records `inputs.references` as a
+  non-array, records an `inputs.mode` outside the enum, or whose `inputs.mode` and
+  `inputs.references` disagree now blocks with `reconciliation-manifest-unreadable`,
+  `reconciliation-manifest-malformed`, or `reconciliation-manifest-contradictory` - reported ahead of
+  every other reconciliation reason, and not downgraded to a warning, because while the manifest is
+  broken the gate cannot decide whether the obligation exists at all.
+- Stopped collapsing every kernel exit status that was not `2` into success. A kernel exit of `3`, a
+  measured fidelity mismatch, was reported as exit `0` and labelled `captured` or `complete`; it now
+  reaches the caller as exit `3` labelled `fidelity-limited`. A kernel killed by a signal, including
+  by the 60-second timeout, now fails with `KERNEL_SIGNALED` instead of being read through a missing
+  `error` field; a run with no numeric exit status fails with `KERNEL_STATUS_MISSING`; and a status
+  outside `0`-`3` is surfaced as `KERNEL_STATUS_UNSUPPORTED` rather than normalised.
 - Made packaging, installation, `doctor`, and dependency self-check use one required-resource
   manifest, so incomplete installations fail instead of reporting ready.
 - Made local installation validate the staged package and Node.js 22+ before replacing an

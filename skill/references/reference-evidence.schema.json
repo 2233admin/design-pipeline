@@ -289,14 +289,19 @@
   },
   "allOf": [
     {
+      "$comment": "schema era mismatch: v1 is a frozen legacy carrier. A v1 document that stays inside the v1 feature set keeps validating without intent or composition, because that absence is a real signal about an older document. A v1 document that carries a v2-era construct (intent, or a graybox block whose comparison is bound to composition region ids) is current work wearing a stale version label, so it is held to the v2 contract instead of using v1 to switch those checks off.",
       "if": {
         "properties": {
           "schema": { "const": "design-pipeline.reference-evidence.v1" }
         },
-        "required": ["schema"]
+        "required": ["schema"],
+        "anyOf": [
+          { "required": ["intent"] },
+          { "required": ["graybox"] }
+        ]
       },
       "then": {
-        "not": { "required": ["intent"] }
+        "required": ["intent", "composition"]
       }
     },
     {

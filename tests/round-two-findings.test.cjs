@@ -650,6 +650,45 @@ test("F8: the spec reconciliation section is owed by every change that has a ref
   assert.equal(absentCapture.specDrift.rows[0].causeVerdict, "observation");
 });
 
+test("F8: the aggregate reference check folds the reconciliation gate into its stages", () => {
+  const root = tempRoot("f8-aggregate");
+  writeArtifact(root, "graybox.png");
+  writeArtifact(root, "reference.md", "# Reference\n\nThe planar HUD clock treatment.\n");
+  writeJson(root, "reference-evidence.json", planarReference({ graybox: grayboxBlock() }));
+  writeArtifact(
+    root,
+    "design.md",
+    "# Change Design\n\n## Product Design Output\n\nThe planar HUD clock treatment.\n",
+  );
+
+  // Everything the reference stages know about is in order, so the carrier gate alone says ready -
+  // while the change has a reference and no Spec Reconciliation section at all. Before the fold the
+  // only thing between an agent and that false green was remembering to type a second command.
+  assert.equal(checkSpecReconciliation(root).reason, "reconciliation-section-missing");
+
+  const aggregate = runCli(["reference", "check", "--root", root, "--change-root", "."], root);
+  assert.equal(aggregate.status, 2, aggregate.stderr || JSON.stringify(aggregate.output));
+  assert.equal(aggregate.output.status, "blocked");
+  assert.equal(aggregate.output.reason, "reconciliation-section-missing");
+  assert.equal(aggregate.output.stages.reconciliation.status, "blocked");
+  assert.equal(aggregate.output.stages.reconciliation.reason, "reconciliation-section-missing");
+  assert.ok(Object.hasOwn(aggregate.output.stages, "graybox"));
+  assert.match(aggregate.output.blockers.join("\n"), /Spec Reconciliation/);
+
+  // Writing the section is what clears the aggregate, and the stage stays visible when it passes.
+  writeArtifact(root, "design.md", reconciliationSection([
+    `Graybox: \`graybox.png\`, captured ${CAPTURED_AT}`,
+    `Reconciled: ${RECONCILED_AT}`,
+    "",
+    "| Value | Specified | Implemented | Cause |",
+    "| --- | --- | --- | --- |",
+  ]));
+  const cleared = runCli(["reference", "check", "--root", root, "--change-root", "."], root);
+  assert.equal(cleared.status, 0, cleared.stderr || JSON.stringify(cleared.output));
+  assert.equal(cleared.output.status, "ready");
+  assert.equal(cleared.output.stages.reconciliation.status, "ready");
+});
+
 // --- F10 ---------------------------------------------------------------------------------------
 
 function scaffoldedChange(script, args, changeId) {
@@ -669,30 +708,49 @@ function scaffoldedChange(script, args, changeId) {
 
 test("F10: a scaffolded change is not born blocked but its placeholders can never pass", () => {
   const scaffolds = [
-    scaffoldedChange(
-      synthesisInit,
-      ["--problem", "Design an operations console for support leads handling urgent escalations"],
-      "scaffolded-synthesis",
-    ),
-    scaffoldedChange(cloneInit, ["--url", "https://example.com"], "scaffolded-clone"),
+    {
+      // A requirements-only synthesis change took no reference input, so nothing is owed yet and
+      // the stub reports ready with warnings rather than blocking a change that did nothing wrong.
+      changeRoot: scaffoldedChange(
+        synthesisInit,
+        ["--problem", "Design an operations console for support leads handling urgent escalations"],
+        "scaffolded-synthesis",
+      ),
+      signals: [],
+    },
+    {
+      // A website clone reconstructs a site it did not author, and `website-cloning.json` is
+      // written by the scaffolder itself. The obligation is therefore recognised from the change's
+      // first moment rather than waiting for the agent to hand-write a reference carrier.
+      changeRoot: scaffoldedChange(cloneInit, ["--url", "https://example.com"], "scaffolded-clone"),
+      signals: ["website-cloning.json"],
+    },
   ];
 
-  for (const changeRoot of scaffolds) {
+  for (const { changeRoot, signals } of scaffolds) {
     const design = fs.readFileSync(path.join(changeRoot, "design.md"), "utf8");
     const tasks = fs.readFileSync(path.join(changeRoot, "tasks.md"), "utf8");
     assert.match(design, /^## Spec Reconciliation$/m, changeRoot);
     assert.match(design, /\| Value \| Specified \| Implemented \| Cause \|/, changeRoot);
     assert.match(tasks, /Spec Reconciliation/, changeRoot);
 
-    // A freshly scaffolded change has no reference carrier yet, so the section is not owed and the
-    // stub reports ready with warnings rather than blocking a change that has done nothing wrong.
+    const applicable = signals.length > 0;
     const fresh = checkSpecReconciliation(changeRoot);
-    assert.equal(fresh.status, "ready", changeRoot);
-    assert.equal(fresh.applicable, false, changeRoot);
-    assert.deepEqual(fresh.blockers, [], changeRoot);
-    assert.ok(fresh.warnings.length > 0, changeRoot);
+    assert.equal(fresh.applicable, applicable, changeRoot);
+    assert.deepEqual(fresh.referenceSignals, signals, changeRoot);
+    if (applicable) {
+      // Applicability follows the signal the pipeline itself produces, not a file the agent may
+      // never write, so a reference-driven scaffold blocks on its unfilled placeholders at once.
+      assert.equal(fresh.status, "blocked", changeRoot);
+      assert.ok(fresh.reasons.includes("reconciliation-timestamp-invalid"), changeRoot);
+      assert.ok(fresh.reasons.includes("reconciliation-capture-missing"), changeRoot);
+    } else {
+      assert.equal(fresh.status, "ready", changeRoot);
+      assert.deepEqual(fresh.blockers, [], changeRoot);
+      assert.ok(fresh.warnings.length > 0, changeRoot);
+    }
 
-    // The moment a reference lands the same untouched stub blocks: the placeholders do not parse,
+    // The moment a reference carrier lands the same untouched stub blocks: the placeholders do not parse,
     // so a scaffolded value can never be mistaken for a filled-in one.
     writeJson(changeRoot, "reference-evidence.json", planarReference());
     const owed = checkSpecReconciliation(changeRoot);
@@ -711,5 +769,82 @@ test("F10: a scaffolded change is not born blocked but its placeholders can neve
     const reconciled = checkSpecReconciliation(changeRoot);
     assert.equal(reconciled.status, "ready", `${changeRoot}: ${reconciled.blockers.join("; ")}`);
     assert.equal(reconciled.specDrift.changedValues, 0, changeRoot);
+  }
+});
+
+test("F10: a synthesis change is reference-driven when its own manifest records reference inputs", () => {
+  const changeRoot = scaffoldedChange(
+    synthesisInit,
+    [
+      "--problem", "Rebuild the escalation console against an existing operations dashboard",
+      "--reference-url", "https://example.com/dashboard",
+    ],
+    "scaffolded-synthesis-reference",
+  );
+  const owed = checkSpecReconciliation(changeRoot);
+  assert.equal(owed.applicable, true);
+  assert.deepEqual(owed.referenceSignals, ["design-synthesis.json"]);
+  assert.equal(owed.status, "blocked");
+  assert.ok(owed.reasons.includes("reconciliation-capture-missing"));
+});
+
+// An ABSENT manifest keeps the carrier-only default - that is a real signal about a change the
+// scaffolders never touched. A manifest that is PRESENT but cannot be believed is a broken
+// document, and each way of being broken has its own reason so none of them can be mistaken for
+// "this change simply owes nothing".
+test("F10: a present but unbelievable manifest blocks instead of silently deciding applicability", () => {
+  function manifestRoot(name, content) {
+    const root = tempRoot("f10-manifest");
+    writeArtifact(root, "design.md", "# Change Design\n\n## Product Design Output\n\nProse.\n");
+    writeArtifact(root, name, content);
+    return root;
+  }
+
+  // Absent: the legacy default survives untouched.
+  const absent = checkSpecReconciliation(
+    manifestRoot("notes.md", "# Notes\n"),
+  );
+  assert.equal(absent.status, "ready");
+  assert.equal(absent.applicable, false);
+  assert.deepEqual(absent.reasons, []);
+
+  const unreadable = checkSpecReconciliation(manifestRoot("website-cloning.json", "{ not json"));
+  assert.equal(unreadable.status, "blocked");
+  assert.equal(unreadable.reason, "reconciliation-manifest-unreadable");
+
+  const notAnObject = checkSpecReconciliation(manifestRoot("design-synthesis.json", "[]"));
+  assert.equal(notAnObject.status, "blocked");
+  assert.equal(notAnObject.reason, "reconciliation-manifest-unreadable");
+
+  const malformed = checkSpecReconciliation(manifestRoot(
+    "website-cloning.json",
+    JSON.stringify({ schema: "design-pipeline.website-cloning.v1", targets: [] }),
+  ));
+  assert.equal(malformed.status, "blocked");
+  assert.equal(malformed.reason, "reconciliation-manifest-malformed");
+
+  const wrongSchema = checkSpecReconciliation(manifestRoot(
+    "design-synthesis.json",
+    JSON.stringify({ schema: "design-pipeline.design-synthesis.v9", inputs: { mode: "reference-site", references: [{}] } }),
+  ));
+  assert.equal(wrongSchema.status, "blocked");
+  assert.equal(wrongSchema.reason, "reconciliation-manifest-malformed");
+
+  // The mode and the reference list are two statements of the same fact; when they disagree the
+  // gate refuses to pick a winner rather than guessing an obligation into or out of existence.
+  const contradictory = checkSpecReconciliation(manifestRoot(
+    "design-synthesis.json",
+    JSON.stringify({
+      schema: "design-pipeline.design-synthesis.v1",
+      inputs: { mode: "requirements-only", references: [{ id: "reference-1", url: "https://example.com" }] },
+    }),
+  ));
+  assert.equal(contradictory.status, "blocked");
+  assert.equal(contradictory.reason, "reconciliation-manifest-contradictory");
+
+  // A broken manifest never launders itself into `applicable: false` silence.
+  for (const broken of [unreadable, notAnObject, malformed, wrongSchema, contradictory]) {
+    assert.equal(broken.applicable, false);
+    assert.ok(broken.blockers.length > 0);
   }
 });

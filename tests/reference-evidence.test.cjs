@@ -57,6 +57,25 @@ function composition() {
   };
 }
 
+// The graybox block is a v2-era construct: its comparison is bound to the declared composition
+// region ids, so a document carrying one is held to the v2 contract whatever version string it
+// wrote. A document that wants to reach the graybox gate therefore declares v2 and records both
+// intent and composition; the v1 fixture above stays a genuine legacy document with neither.
+function grayboxReference(overrides = {}) {
+  return fixedCameraReference({
+    schema: "design-pipeline.reference-evidence.v2",
+    composition: composition(),
+    intent: fixtures.directionalIntent({
+      downgrade: {
+        status: "not-requested",
+        evidence: "The user asked for a fresh implementation in the same medium, not a rebuild.",
+      },
+    }),
+    graybox: grayboxBlock(),
+    ...overrides,
+  });
+}
+
 function exactReconstructionReference(overrides = {}) {
   return fixedCameraReference({
     schema: "design-pipeline.reference-evidence.v2",
@@ -163,8 +182,18 @@ test("approved fixed-camera evidence is ready once the graybox gate is satisfied
   assert.equal(withoutGraybox.reason, "graybox-missing");
   assert.equal(withoutGraybox.stages.graybox.status, "blocked");
 
-  fs.writeFileSync(path.join(root, "graybox.png"), "layout-only capture");
+  // Bolting a graybox block onto the v1 document does not satisfy the gate: v1 predates the
+  // graybox block, so a v1 document carrying one is current work wearing a stale version label and
+  // is held to the v2 contract rather than allowed to skip it. This assertion previously read
+  // `ready` for a v1 document with no intent and no composition, which was the escape hatch.
   writeReference(root, fixedCameraReference({ graybox: grayboxBlock() }));
+  assert.throws(
+    () => checkReferenceEvidence(root),
+    /schema era mismatch: schema is design-pipeline\.reference-evidence\.v1 but the document carries the v2-era graybox block/,
+  );
+
+  fs.writeFileSync(path.join(root, "graybox.png"), "layout-only capture");
+  writeReference(root, grayboxReference());
   const ready = checkReferenceEvidence(root);
   assert.equal(ready.status, "ready", ready.blockers?.join("\n"));
   assert.equal(ready.stages.graybox.status, "ready");

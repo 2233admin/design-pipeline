@@ -6,6 +6,7 @@
     "anti-slop-review.test.cjs",
     "benchmark.test.cjs",
     "capability-audit.test.cjs",
+    "carried-forward-defects.test.cjs",
     "check-deps.test.cjs",
     "component-state-matrix.test.cjs",
     "composition-structure.test.cjs",

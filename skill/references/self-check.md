@@ -170,14 +170,20 @@ A pending source blocks the measured geometry and final stages. It does not bloc
 and it never changes requested or effective fidelity. Missing measurements stay missing; do not fill
 a path, dimension, or hash to make a gate pass.
 
+What a pending source does block is a *measured* graybox comparison, and so does every other state
+in which nothing on disk was consulted: a change with no `reference-evidence.json`
+(`reference-source-unrecorded`), a document that declares no `source`
+(`reference-source-undeclared`), and a declared `source.path` that is not present in the change root
+(`graybox-comparison-unmeasurable`). The graybox gate itself is still reachable in all four - declare
+`comparison.mode: qualitative`, which is the honest description of a comparison with no source to
+measure against, and the stage can reach `ready` without ever claiming fidelity evidence.
+
 A pending source also does not block optical treatment. The graybox gate blocks materials, glow,
 bloom, depth of field, scanlines, and grading; the geometry gate blocks detail geometry, type
 treatment, and any measured fidelity claim. When the graybox stage is `ready` and geometry is
 blocked on the source, continue - the run proceeds as an unverified reconstruction.
 
 ## Verification Claim Rule
-
-A pending or unresolvable source produces verification claim `unverified`.
 
 No contract field carries the claim, so record it on one line in `qa.md`, under
 `## Reference And Spatial Routing`:
@@ -186,15 +192,31 @@ No contract field carries the claim, so record it on one line in `qa.md`, under
 - Verification claim: `unverified`
 ```
 
-The claim has three values and one derivation, from
-`designer-pipeline reconstruction check --stage final` and nothing else:
+The claim has three values and one derivation. Run
+`designer-pipeline reconstruction check --stage final` and read the whole result it returns - its
+top-level status **and** every entry in its `stages` map, which that single invocation already
+reports:
 
-- `verified` when the final stage reports `ready`;
-- `fidelity-limited` when it reports `fidelity-limited`, meaning the measurements are real and miss
-  a threshold;
-- `unverified` for every other outcome - any blocked stage, a pending source, an unreadable source
-  declaration (`reference-source-unparseable`, `reference-source-malformed`,
-  `reference-source-availability-invalid`), or a change with no `reconstruction.json`.
+- `verified` when the top-level status is `ready` **and** every reported stage is `ready`;
+- `fidelity-limited` when the top-level status is `fidelity-limited` and no reported stage is
+  `blocked`, meaning the measurements are real and miss a threshold;
+- `unverified` for everything else.
+
+The top-level status is not the derivation on its own. The stages are independent by design, so a
+`final` stage can report `ready` beside a `blocked` `stages.graybox`, and reading only the top-level
+status would record `verified` for a run whose graybox gate refused its evidence.
+
+Nothing outside that one result is an input, and the familiar cases arrive at `unverified` through a
+stage rather than through a separate rule:
+
+- a pending source blocks the geometry stage, and the final stage returns the geometry result;
+- an unreadable source declaration blocks the same stages with the reason that names the fault:
+  `reference-source-unparseable`, `reference-source-malformed`, or
+  `reference-source-availability-invalid`;
+- a source that no document records, or a document that declares no `source`, blocks the graybox
+  stage as soon as its comparison claims `measured`: `reference-source-unrecorded` or
+  `reference-source-undeclared`;
+- a change with no `reconstruction.json` produces no result to read, so nothing can reach `verified`.
 
 `unverified` may never be reported as verified, exact, identical, 1:1, pixel-perfect, faithful, or
 complete. A `qualitative` graybox that reached `ready` does not raise the claim: it proves ordering

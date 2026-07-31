@@ -53,6 +53,23 @@ function threeRegisterComposition() {
   };
 }
 
+// `baseReference` is the legacy v1 carrier. The graybox block is a v2-era construct - its
+// comparison is bound to the declared composition region ids - so any document that carries one is
+// held to the v2 contract and owes both intent and composition. Every fixture below that records a
+// graybox therefore declares v2 explicitly.
+function grayboxReference(overrides = {}) {
+  return baseReference({
+    schema: "design-pipeline.reference-evidence.v2",
+    intent: fixtures.directionalIntent({
+      downgrade: {
+        status: "not-requested",
+        evidence: "The user asked for a fresh implementation in the same medium, not a rebuild.",
+      },
+    }),
+    ...overrides,
+  });
+}
+
 function grayboxFor(regionIds) {
   return fixtures.grayboxBlock({
     capturedAt: "2026-07-30T12:00:00.000Z",
@@ -196,10 +213,63 @@ test("the three-register non-uniform breakdown passes and keeps the exception na
   // is ready and the composition is what the comparison was checked against.
   writeArtifact(root, "graybox.png", "layout-only capture");
   writeArtifact(root, "reference.png", "source raster");
-  writeReference(root, baseReference({ composition, graybox: grayboxFor(ids) }));
+  writeReference(root, grayboxReference({ composition, graybox: grayboxFor(ids) }));
   const ready = checkReferenceEvidence(root);
   assert.equal(ready.status, "ready", ready.blockers.join("\n"));
   assert.equal(ready.stages.graybox.status, "ready");
+});
+
+// The same four regions in two orders. Under the old strictly-greater scan the first tied key
+// written won, so declaration order alone decided the verdict: one order named C and D as unnamed
+// exceptions, the other passed. A validator whose result depends on row order is not a validator.
+test("an exact tie in region structure is order-independent and blocks with its own reason", () => {
+  const regions = {
+    a: { id: "a", rows: 1, columns: 3, breaksFrom: [] },
+    b: { id: "b", rows: 1, columns: 3, breaksFrom: ["a"] },
+    c: { id: "c", rows: 5, columns: 7, breaksFrom: [] },
+    d: { id: "d", rows: 5, columns: 7, breaksFrom: [] },
+  };
+  const smallFirst = { uniform: false, regions: [regions.a, regions.b, regions.c, regions.d] };
+  const largeFirst = { uniform: false, regions: [regions.c, regions.d, regions.a, regions.b] };
+
+  for (const [label, composition] of [["small first", smallFirst], ["large first", largeFirst]]) {
+    // No structure is modal, so neither the first-written group nor the larger group is picked as
+    // the norm: c and d are simply never accounted for, and the document is told to say so.
+    assert.throws(() => validateComposition(composition), /composition ambiguity/, label);
+    assert.throws(
+      () => validateComposition(composition),
+      /no rows-by-columns structure is modal \(1x3 and 5x7 each describe 2 region\(s\)\)/,
+      label,
+    );
+    assert.throws(() => validateComposition(composition), /c, d cannot be read as following/, label);
+    // The tie is its own condition and never falls through to the modal-structure contradiction.
+    assert.throws(
+      () => validateComposition(composition),
+      (error) => !/composition contradiction/.test(error.message),
+      label,
+    );
+    assert.throws(
+      () => validateReferenceEvidence(baseReference({ composition })),
+      /composition ambiguity/,
+      label,
+    );
+  }
+
+  // A tie is not fatal on its own. Two regions of different structures tie at one each, and the
+  // block is still well declared when every region is accounted for - one records what it breaks
+  // from, the other is named by it - so nothing is left leaning on a norm that was never declared.
+  const tiedButNamed = {
+    uniform: false,
+    regions: [
+      { id: "board", rows: 2, columns: 1, breaksFrom: ["register"] },
+      { id: "register", rows: 1, columns: 3, breaksFrom: [] },
+    ],
+  };
+  assert.deepEqual(validateComposition(tiedButNamed), ["board", "register"]);
+  assert.deepEqual(
+    validateComposition({ uniform: false, regions: [...tiedButNamed.regions].reverse() }),
+    ["register", "board"],
+  );
 });
 
 test("a region cannot break from itself or from an undeclared region", () => {
@@ -229,14 +299,14 @@ test("the graybox comparison addresses the recorded region ids by name", () => {
   const composition = threeRegisterComposition();
   const ids = composition.regions.map((region) => region.id);
 
-  const matched = baseReference({ composition, graybox: grayboxFor(ids) });
+  const matched = grayboxReference({ composition, graybox: grayboxFor(ids) });
   const result = validateReferenceEvidence(matched);
   assert.deepEqual(
     result.graybox.comparison.regions.map((region) => region.id),
     ids,
   );
 
-  const partial = baseReference({
+  const partial = grayboxReference({
     composition,
     graybox: grayboxFor(["register-1", "register-2"]),
   });
@@ -245,7 +315,7 @@ test("the graybox comparison addresses the recorded region ids by name", () => {
     /must address every composition region id: missing register-3/i,
   );
 
-  const foreign = baseReference({
+  const foreign = grayboxReference({
     composition,
     graybox: grayboxFor([...ids, "register-4"]),
   });
@@ -271,17 +341,54 @@ test("a reference-evidence document with no composition block still validates", 
   assert.equal(withoutGraybox.status, "blocked");
   assert.equal(withoutGraybox.reason, "graybox-missing");
 
-  // With no composition recorded there is nothing to bind the comparison to, so the legacy
-  // document reaches ready on the strength of the capture alone.
   writeArtifact(root, "graybox.png", "layout-only capture");
   writeArtifact(root, "reference.png", "source raster");
+
+  // The moment the legacy document records a graybox block it stops being a legacy document. With
+  // no composition recorded there is nothing to bind the comparison to, so the comparison could
+  // name any region at all and the stage would report ready on evidence it never checked. This
+  // assertion previously read `ready` for exactly that document; v1 is a frozen carrier, not a
+  // switch that turns the per-region checklist off for new work.
   writeReference(root, { ...reference, graybox: grayboxFor(["slab", "readout"]) });
+  assert.throws(
+    () => checkReferenceEvidence(root),
+    /schema era mismatch: schema is design-pipeline\.reference-evidence\.v1 but the document carries the v2-era graybox block/,
+  );
+  assert.throws(
+    () => checkReferenceEvidence(root),
+    /must record intent and composition/,
+  );
+
+  // Declaring the era the document actually belongs to, and paying what that era owes, is what
+  // reaches ready - not relabelling the version string.
+  const composition = {
+    uniform: false,
+    regions: [
+      { id: "slab", rows: 2, columns: 1, breaksFrom: ["readout"] },
+      { id: "readout", rows: 1, columns: 3, breaksFrom: [] },
+    ],
+  };
+  writeReference(root, grayboxReference({
+    composition,
+    graybox: grayboxFor(["slab", "readout"]),
+  }));
   const ready = checkReferenceEvidence(root);
   assert.equal(ready.status, "ready", ready.blockers.join("\n"));
 
   const schema = readJson(path.join("skill", "references", "reference-evidence.schema.json"));
   assert.ok(Object.hasOwn(schema.properties, "composition"));
   assert.equal(schema.required.includes("composition"), false);
+
+  // The published schema carries the same rule: a v1 document that reaches for a v2-era construct
+  // is required to record intent and composition rather than being excused by its version string.
+  const v1Branch = schema.allOf.find(
+    (entry) => entry.if?.properties?.schema?.const === "design-pipeline.reference-evidence.v1",
+  );
+  assert.deepEqual(
+    v1Branch.if.anyOf,
+    [{ required: ["intent"] }, { required: ["graybox"] }],
+  );
+  assert.deepEqual(v1Branch.then.required, ["intent", "composition"]);
 });
 
 test("reference-spec requires the per-region table and forbids back-references", () => {

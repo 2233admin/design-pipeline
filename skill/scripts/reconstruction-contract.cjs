@@ -366,6 +366,13 @@ function validateGrayboxApprovalConsistency(value, label) {
 // verdict, not an invalid contract - see `validateGrayboxComparison`. The binding below asks
 // which regions were addressed, so it only has something to say once at least one was. Nothing
 // escapes: an empty comparison can never reach `ready`.
+//
+// The binding applies to whatever composition the caller found, at any schema version: a v1
+// document that records one is bound by it exactly as a v2 document is. The absent binding
+// (`compositionRegionIds` null or undefined) is not a pass either - it means the caller had no
+// composition to bind against, which the graybox stage blocks on its own reason
+// (`graybox-composition-unrecorded` / `graybox-composition-undeclared`) rather than treating an
+// unrecorded structure as a satisfied one.
 function validateGrayboxRegionBinding(comparedIds, compositionRegionIds, label) {
   if (!Array.isArray(compositionRegionIds) || !comparedIds.length) return;
   for (const id of comparedIds) {
