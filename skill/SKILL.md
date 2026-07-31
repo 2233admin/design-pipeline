@@ -59,11 +59,20 @@ Default artifact root:
 ```text
 design/changes/<change-id>/
   brief.md
+  reference.md    # observed reference evidence and 2D / 2.5D / 3D / hybrid route
+  reference-evidence.json # normative reference role, fidelity, geometry/camera/interaction/output
+  reconstruction.json     # exact/adaptive static-reference calibration and comparison contract
+  rectified-reference.png # canonical front view derived from the supplied frame
+  front-elevation.svg     # object-space construction source
+  camera-calibration.json # locked camera/lens/viewport parameters
+  landmark-overlay.png    # source/render projection overlay
+  fidelity-receipt.json   # EvidencePort metrics bound to render hashes
   directions.md
-  design.md
+  design.md       # visual language and screen-space UI
   motion.md
   scene.json      # normative contract for persistent spatial or engine-owned runtime state
-  scene.md        # human-readable projection of scene.json
+  scene.md        # readable projection for persistent non-3D runtime state
+  3d.md           # readable spatial projection for 3D capability families
   tasks.md
   qa.md
   state.json
@@ -72,6 +81,31 @@ design/changes/<change-id>/
 ```
 
 Use an existing project convention instead if the repo already has `openspec/`, `spec/changes/`, `docs/design/`, `.omx/`, or another active planning directory.
+
+## Static Reference Reconstruction Module
+
+When the user supplies an image and asks for an identical, exact, 1:1, pixel-accurate, cloned, or
+faithfully reproduced result:
+
+1. Read `references/reference-spec.md` and `references/reconstruction-spec.md` completely.
+2. Record the image as `role: primary-target`, with both requested and effective fidelity set to
+   `exact-reconstruction` in `reference-evidence.json` v2. A reference is inspiration only when the
+   user says it is inspiration.
+3. Do not generate alternative design directions. The reference already determines the direction.
+4. Separate image, canonical/object, world, and camera spaces. Rectify the source into a canonical
+   front view, author the front elevation there, then solve and lock the output camera.
+5. Run `designer-pipeline reference check`. Exact and adaptive reconstruction remain blocked until
+   the geometry stage of `reconstruction.json` passes.
+6. Before materials, glow, bloom, depth of field, scanlines, or cinematic grading, run
+   `designer-pipeline reconstruction check --stage geometry`. It independently recomputes
+   distributed landmark error.
+7. After final rendering, an independent EvidencePort must produce reference, implementation, and
+   diff images plus a hash-bound fidelity receipt. Run
+   `designer-pipeline reconstruction check --stage final`.
+8. Missing evidence is `blocked`; complete measured evidence outside thresholds is
+   `fidelity-limited`. Neither state may be described as exact, identical, pixel-perfect, or done.
+9. Exact fidelity may be downgraded only after explicit user approval is recorded in the
+   non-destructive downgrade field. Implementation convenience is not approval.
 
 ## Website Cloning Module
 
@@ -136,6 +170,9 @@ Project motion foundation reference: `references/motion-foundation.md`.
 Machine-readable motion foundation schema: `references/motion-foundation.schema.json`.
 Motion primitive registry: `references/motion-primitives.json`.
 Motion spec reference: `references/motion-spec.md`.
+Reference evidence and spatial-routing spec: `references/reference-spec.md`.
+Change visual/screen-space design spec: `references/design-spec.md`.
+Change 3D world spec: `references/3d-spec.md`.
 Graphics runtime routing reference: `references/graphics-runtime-routing.md`.
 Machine-readable graphics runtime catalog: `references/graphics-runtime-catalog.json`.
 Change scene/runtime spec reference: `references/scene-runtime-spec.md`.
@@ -173,7 +210,9 @@ For animation implementation, choose library skills by job:
 - Use Three.js or React Three Fiber for focused 3D scene rendering; use Babylon.js or PlayCanvas when a fuller 3D engine is justified. Existing project runtimes still win when they meet the capability and budget.
 - Use `references/game-ui-and-narrative.md` for HUDs, game menus, dialogue systems, visual novels, and Galgame surfaces. Keep dialogue, choice, backlog, save/load, skip, autoplay, and accessibility state independent of animation timing.
 - If no animation or rendering library is already present, prefer semantic DOM plus CSS transitions/keyframes for simple state changes; choose Anime.js, GSAP, PixiJS, Phaser, or a 3D runtime only when the required capability justifies it.
-- Do not add overlapping runtimes unless `design.md`, `motion.md`, and when required `scene.md` assign distinct responsibilities. One adapter owns each render loop, clock, property, lifecycle, and cleanup path.
+- Do not add overlapping runtimes unless `design.md`, `motion.md`, and when required `scene.md` or
+  `3d.md` assign distinct responsibilities. One adapter owns each render loop, clock, property,
+  lifecycle, and cleanup path.
 - Treat an installed but stale `animejs` companion as a warning. Use official v4.5 documentation for missing markers and record the fallback in `qa.md`.
 - Treat a partial or stale PixiJS suite as a warning. Use the canonical PixiJS v8 documentation index for missing APIs and record the fallback in `qa.md`.
 
@@ -212,6 +251,14 @@ Before writing design artifacts or code:
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
 - Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.
+- When visual references influence the change, create `reference.md` and normative
+  `reference-evidence.json` from `references/reference-spec.md`. Record object dimensionality,
+  camera model, interaction model, and output surface separately before selecting `2d`, `2.5d`,
+  `3d`, or `hybrid`. Perspective, occlusion, near/far scale, volumetric containers, and camera
+  behavior are spatial evidence; glow and transparency alone are not. Run
+  `designer-pipeline reference check` and stop unless it reports `ready`.
+- When exact static-reference language is present, use reference-evidence v2 and
+  `reconstruction.json`; do not silently treat the image as a mood board or style direction.
 - Check for project `DESIGN.md`. If it is missing or materially incompatible with the request, route
   through the requirements-driven synthesis module before implementation.
 - Run `node <design-pipeline>/scripts/check-design-foundation.cjs --project-root . --json`.
@@ -242,6 +289,14 @@ Keep this short. It is an execution contract, not a product essay.
 
 Create `directions.md` before implementation. Produce 2-3 distinct directions when the user has not already chosen a style.
 
+When references are present, directions must preserve the route and fidelity invariants recorded in
+`reference.md`. A `3d` or `hybrid` route cannot be downgraded to flat card composition for
+implementation convenience.
+
+For a `primary-target` exact reconstruction, do not produce alternative directions. Record that
+`directions.md` is intentionally bypassed because the supplied reference is the selected direction,
+then proceed through rectification and camera calibration.
+
 Each direction must include:
 
 - Visual thesis: layout, density, rhythm, typography, color posture.
@@ -261,7 +316,8 @@ Default decision rule:
 
 ## Stage 3: Design Spec
 
-Create lowercase change `design.md` as the selected source of truth for this change:
+Create lowercase change `design.md` using `references/design-spec.md`. It is the selected source of
+truth for visual language and screen-space UI:
 
 - Layout grid and responsive behavior.
 - Color tokens and contrast posture. For website references, these must cite the ready
@@ -274,6 +330,9 @@ Create lowercase change `design.md` as the selected source of truth for this cha
 - Asset strategy: real assets, generated bitmap images, icons, or no-assets justification.
 - Anti-template decisions when the contextual anti-slop review is active: deliberately avoided
   patterns, retained common patterns, product-specific rationale, and non-applicable rules.
+
+Do not define camera projection, world coordinates, geometry, lighting, world-space UI, or spatial
+navigation in `design.md`. Those belong in `3d.md` for 3D families.
 
 When requirements-driven synthesis is active, also write the project `DESIGN.md` according to
 `references/design-synthesis.md`. Link it from change `design.md`; do not duplicate the entire file.
@@ -297,17 +356,24 @@ invent a parallel motion vocabulary.
 
 Simple CSS hover/focus transitions can stay in `design.md`, but still need reduced-motion behavior and QA notes.
 
-Create normative `scene.json` plus its `scene.md` projection using
+Create normative `scene.json` plus its family-specific readable projection using
 `references/scene-runtime-spec.md` when the change has persistent spatial
 state or an engine-owned lifecycle: Canvas/WebGL/WebGPU scenes, cameras, coordinate transforms,
 asset manifests, render or game loops, physics, world input, procedural state, save/load state, or
 runtime-specific degradation. The pair binds design and motion semantics to a selected adapter; it
 does not replace `design.md` or `motion.md`.
 
-Phaser, PixiJS, Three.js, React Three Fiber, Babylon.js, PlayCanvas, CesiumJS, WebGPU/WGSL, and
-equivalent scene runtimes require both files. A narrative UI without a scene renderer may remain
-DOM-first, but still requires both when it owns dialogue state, save/load, backlog, autoplay,
-or another persistent game-state lifecycle.
+Fixed-camera cinematic 3D, Three.js, React Three Fiber, Babylon.js, PlayCanvas, CesiumJS, and
+equivalent 3D families require `scene.json` plus `3d.md` from `references/3d-spec.md`. Phaser,
+PixiJS, persistent 2D editors,
+WebGPU/WGSL effects without a 3D family, and stateful narrative runtimes use `scene.json` plus
+`scene.md`. A narrative UI without a scene renderer may remain DOM-first, but still requires the
+pair when it owns dialogue state, save/load, backlog, autoplay, or another persistent game-state
+lifecycle.
+
+For `3d` and `hybrid` routes, implement and verify the actual-runtime graybox gate in `3d.md`
+before materials, glow, bloom, transparency, scanlines, or cinematic grading. Camera navigation is
+required only when the approved interaction model is inspectable or navigable.
 
 ## Stage 4: Tasks
 
@@ -336,11 +402,19 @@ Rules:
   <change-root> --json` first and stop unless it reports `ready`.
 - Re-run `scripts/check-design-foundation.cjs` and stop unless it reports `ready`.
 - Re-run `scripts/check-motion-foundation.cjs` and stop unless it reports `ready`.
+- When references influence the change, run `designer-pipeline reference check` and stop unless it
+  reports `ready`.
+- For exact or adaptive static-reference reconstruction, run
+  `designer-pipeline reconstruction check --stage geometry` and stop unless it reports `ready`.
+  This gate must pass on rectification, front elevation, locked camera, distributed landmarks, and
+  overlay evidence before detail geometry, materials, lighting, depth of field, bloom, or grading.
+  Reopening the camera invalidates the gate and requires a new calibration pass.
 - Link the validated project `DESIGN.md` from the active lowercase change `design.md`.
 - Link the validated project `MOTION.md` and its hash from active lowercase change `motion.md` when
   the change includes non-trivial motion.
-- Link `scene.json` and `scene.md` from the active change when a graphics, game, or persistent
-  narrative runtime is selected. Run `designer-pipeline scene check` and verify that capability
+- Link `scene.json` and its required `scene.md` or `3d.md` projection from the active change when a
+  graphics, game, or persistent narrative runtime is selected. Run `designer-pipeline scene check`
+  and verify that capability
   family, adapter, version, lifecycle, assets, input,
   accessibility, performance, determinism, degradation, and cleanup owners are complete.
 - If the repo uses OpenSpec, keep the design-pipeline artifacts linked to the active OpenSpec change and do not create a parallel source of truth.
@@ -365,8 +439,20 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
 - Motion foundation gate: project `MOTION.md` is `ready`, its hash is recorded, and selected
   primitive IDs exist in the bundled registry.
 - Motion spec gate: `motion.md` exists for any non-trivial motion and includes trigger, purpose, timing, easing, choreography, interruption behavior, implementation library, performance budget, and reduced-motion fallback.
-- Scene/runtime gate: `scene.json` and matching `scene.md` exist for every persistent spatial,
-  game-engine, GPU, or stateful narrative surface and record the capability family, adapter,
+- Reference-routing gate: when references influence the change, `reference.md` records evidence and
+  normative `reference-evidence.json` separates reference role, requested/effective fidelity,
+  geometry, camera, interaction, and output; selects `2d`, `2.5d`, `3d`, or `hybrid`; names the
+  required artifact set; and records approval.
+- Exact reconstruction gate: `reconstruction.json` separates image/canonical/world/camera spaces;
+  binds rectification, front elevation, locked camera, distributed landmarks, and overlay; and
+  passes `designer-pipeline reconstruction check --stage geometry`.
+- Final fidelity gate: an independent EvidencePort has the required comparison capabilities and a
+  successful probe; its receipt hashes match the reference, implementation, and diff images; and
+  `designer-pipeline reconstruction check --stage final` reports `ready`. Exact mode permits no
+  intentional mismatch masks.
+- Scene/runtime gate: `scene.json` and matching `3d.md` exist for 3D families; `scene.json` and
+  matching `scene.md` exist for persistent non-3D spatial, game-engine, GPU, or stateful narrative
+  surfaces. They record the capability family, adapter,
   version, scene/camera and
   coordinate model, lifecycle, assets, input, accessibility, budgets, deterministic evidence,
   degradation, and cleanup ownership.

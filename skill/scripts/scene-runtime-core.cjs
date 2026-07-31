@@ -14,7 +14,8 @@ const {
 } = require("./contract-utils.cjs");
 
 const SCHEMA = "design-pipeline.scene-runtime.v1";
-const FAMILIES = ["semantic-ui", "canvas-editor-2d", "scene-renderer-2d", "game-engine-2d", "scene-renderer-3d", "game-engine-3d", "geospatial-3d", "gpu-shader", "narrative-game-ui"];
+const FAMILIES = ["semantic-ui", "canvas-editor-2d", "scene-renderer-2d", "game-engine-2d", "fixed-camera-cinematic-3d", "scene-renderer-3d", "game-engine-3d", "geospatial-3d", "gpu-shader", "narrative-game-ui"];
+const THREE_D_FAMILIES = ["fixed-camera-cinematic-3d", "scene-renderer-3d", "game-engine-3d", "geospatial-3d"];
 const HEADINGS = ["Runtime Thesis", "Lifecycle", "Coordinates and Camera", "Assets and Provenance", "Input", "Accessibility", "Performance Budgets", "Deterministic Evidence", "Degradation", "Cleanup Ownership"];
 const SUPPORT = ["native", "generic-workflow", "companion", "reference-only", "unsupported", "out-of-scope"];
 
@@ -83,12 +84,17 @@ function validateScene(scene) {
   return scene;
 }
 
-function validateSceneMarkdown(text, scene = null) {
+function projectionNameForFamily(family) {
+  return THREE_D_FAMILIES.includes(family) ? "3d.md" : "scene.md";
+}
+
+function validateSceneMarkdown(text, scene = null, options = {}) {
+  const label = options.label || (scene ? projectionNameForFamily(scene.family) : "scene.md");
   for (const heading of HEADINGS) {
     const pattern = new RegExp(`^##\\s+${escapeRegExp(heading)}\\s*$`, "mi");
-    if (!pattern.test(text)) fail("scene runtime", `scene.md is missing ## ${heading}`);
+    if (!pattern.test(text)) fail("scene runtime", `${label} is missing ## ${heading}`);
   }
-  if (!/scene\.json/i.test(text)) fail("scene runtime", "scene.md must link scene.json");
+  if (!/scene\.json/i.test(text)) fail("scene runtime", `${label} must link scene.json`);
   if (scene) {
     const markers = [
       ["Scene ID", scene.id],
@@ -98,26 +104,42 @@ function validateSceneMarkdown(text, scene = null) {
     ];
     for (const [label, value] of markers) {
       if (!new RegExp(`^${escapeRegExp(label)}:\\s*\\x60${escapeRegExp(value)}\\x60\\s*$`, "mi").test(text)) {
-        fail("scene runtime", `scene.md ${label} does not match scene.json`);
+        fail("scene runtime", `${options.label || projectionNameForFamily(scene.family)} ${label} does not match scene.json`);
       }
     }
   }
-  noPlaceholder(text, "scene.md");
+  noPlaceholder(text, label);
   return true;
 }
 
 function checkScene(changeRoot, options = {}) {
   const root = fs.realpathSync(path.resolve(changeRoot));
-  const markdown = resolveInside(root, options.markdown || "scene.md", "scene.md", { scope: "scene runtime", mustExist: true });
   const sidecarPath = resolveInside(root, options.sidecar || "scene.json", "scene.json", { scope: "scene runtime" });
-  const markdownText = fs.readFileSync(markdown, "utf8");
   if (!fs.existsSync(sidecarPath)) {
-    return { status: "upgrade-required", markdown, sidecar: sidecarPath, preview: { schema: SCHEMA, id: path.basename(root), source: "legacy-scene-md" } };
+    const legacyName = options.markdown || (fs.existsSync(path.join(root, "3d.md")) ? "3d.md" : "scene.md");
+    const markdown = resolveInside(root, legacyName, legacyName, { scope: "scene runtime", mustExist: true });
+    return { status: "upgrade-required", markdown, sidecar: sidecarPath, preview: { schema: SCHEMA, id: path.basename(root), source: `legacy-${path.basename(markdown, ".md")}-md` } };
   }
   const scene = validateScene(readJson(sidecarPath, "scene runtime"));
-  validateSceneMarkdown(markdownText, scene);
+  const expectedName = projectionNameForFamily(scene.family);
+  const projectionName = options.markdown || expectedName;
+  const expectedPath = resolveInside(root, projectionName, projectionName, { scope: "scene runtime" });
+  if (!fs.existsSync(expectedPath) && !options.markdown && expectedName === "3d.md") {
+    const legacyPath = path.join(root, "scene.md");
+    if (fs.existsSync(legacyPath)) {
+      return {
+        status: "upgrade-required",
+        markdown: legacyPath,
+        sidecar: sidecarPath,
+        preview: { schema: SCHEMA, id: scene.id, family: scene.family, rename: { from: "scene.md", to: "3d.md" } },
+      };
+    }
+  }
+  const markdown = resolveInside(root, projectionName, projectionName, { scope: "scene runtime", mustExist: true });
+  const markdownText = fs.readFileSync(markdown, "utf8");
+  validateSceneMarkdown(markdownText, scene, { label: path.basename(markdown) });
   const status = scene.adapter.availability === "available" && scene.degradation.status !== "blocked" ? "ready" : "blocked";
   return { status, markdown, sidecar: sidecarPath, scene };
 }
 
-module.exports = { FAMILIES, HEADINGS, SCHEMA, SUPPORT, checkScene, validateScene, validateSceneMarkdown };
+module.exports = { FAMILIES, THREE_D_FAMILIES, HEADINGS, SCHEMA, SUPPORT, checkScene, projectionNameForFamily, validateScene, validateSceneMarkdown };

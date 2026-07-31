@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pipeline.local/reconstruction-evidence.schema.json",
+  "title": "Design Pipeline Reconstruction Evidence Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "referenceSha256",
+    "implementationSha256",
+    "diffSha256",
+    "viewport",
+    "metrics"
+  ],
+  "properties": {
+    "schema": { "const": "design-pipeline.reconstruction-evidence.v1" },
+    "referenceSha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "implementationSha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "diffSha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "viewport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pixelDifferenceRatio", "ssim"],
+      "properties": {
+        "pixelDifferenceRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ssim": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}

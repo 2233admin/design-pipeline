@@ -19,7 +19,11 @@ The pipeline SHALL use durable artifacts for each change and SHALL map them to O
 
 - **WHEN** a new design change starts
 - **THEN** the pipeline SHALL create or use a change folder with brief, directions, design, motion, tasks, QA, state, events, and handoff artifacts
-- **AND** it SHALL add `scene.md` when persistent spatial, graphics-engine, game-engine, GPU, or stateful narrative runtime ownership exists.
+- **AND** it SHALL add `reference.md` plus normative `reference-evidence.json` when visual
+  references influence the change
+- **AND** it SHALL add normative `scene.json` plus family-selected `scene.md` or `3d.md` when
+  persistent spatial, graphics-engine, game-engine, GPU, or stateful narrative runtime ownership
+  exists.
 
 ### Requirement: Optional companion skill fallback
 
@@ -88,9 +92,69 @@ durable capability family before selecting a library, skill, MCP host, or framew
 
 - **WHEN** persistent spatial state, cameras, coordinates, assets, input, a render/game loop,
   physics, procedural state, or save/load lifecycle is required
-- **THEN** the change SHALL include `scene.md`
-- **AND** `scene.md` SHALL bind `DESIGN.md` and `MOTION.md` semantics to one versioned adapter with
-  explicit lifecycle, budgets, degradation, deterministic evidence, and cleanup ownership.
+- **THEN** the change SHALL include normative `scene.json`
+- **AND** 3D families SHALL include `3d.md` while persistent non-3D families SHALL include
+  `scene.md`
+- **AND** the selected projection SHALL bind `DESIGN.md` and `MOTION.md` semantics to one versioned
+  adapter with explicit lifecycle, budgets, degradation, deterministic evidence, and cleanup
+  ownership.
+
+### Requirement: Reference evidence selects the spatial route
+
+The pipeline SHALL separate observed reference evidence from design treatment and runtime
+implementation.
+
+#### Scenario: A visual reference contains spatial evidence
+
+- **WHEN** references show near/far scale, foreshortening, occlusion, volumetric containers,
+  world-space UI, or camera-dependent perspective
+- **THEN** `reference.md` SHALL classify the change as `3d` or `hybrid`
+- **AND** `reference-evidence.json` SHALL separately record object dimensionality, camera model,
+  interaction model, output surface, confidence, spatial cues, required artifacts, and approval
+- **AND** the change SHALL require `scene.json` plus `3d.md`
+- **AND** an actual-runtime graybox SHALL pass before bloom, glow, transparency, scanlines, or
+  cinematic grading are treated as fidelity evidence
+- **AND** camera navigation SHALL be required only when the approved interaction model is
+  inspectable or navigable.
+
+#### Scenario: A 3D reference is a locked cinematic frame
+
+- **WHEN** object dimensionality is `3d`
+- **AND** the camera is fixed
+- **AND** the interaction model is `none`
+- **THEN** the pipeline SHALL preserve the `3d` route
+- **AND** it SHALL select the `fixed-camera-cinematic-3d` capability family
+- **AND** it SHALL NOT require orbit, pan, dolly, or other end-user navigation.
+
+#### Scenario: Spatial evidence contradicts a 2D route
+
+- **WHEN** at least two strong spatial cues are present
+- **AND** the route or object dimensionality is `2d`
+- **THEN** `designer-pipeline reference check` SHALL fail before implementation.
+
+#### Scenario: Reference-route approval is pending
+
+- **WHEN** `reference-evidence.json` is schema-valid
+- **AND** approval status is not `approved`
+- **THEN** `designer-pipeline reference check` SHALL report `blocked`.
+
+#### Scenario: A reference is cinematic but flat
+
+- **WHEN** the observed evidence is limited to glow, blur, transparency, color grading, or scanlines
+- **THEN** the pipeline SHALL NOT infer a 3D route without additional spatial evidence.
+
+### Requirement: Change design owns screen-space presentation
+
+Change `design.md` SHALL own visual language and screen-space UI and SHALL NOT silently own the 3D
+world contract.
+
+#### Scenario: A hybrid HUD is specified
+
+- **WHEN** a change combines a 3D world with DOM or screen-space HUD
+- **THEN** `design.md` SHALL define visual treatment, component semantics, safe areas, and
+  screen-space hierarchy
+- **AND** `3d.md` SHALL define projection, coordinates, geometry, lights, world-space UI, camera
+  navigation, and spatial interaction.
 
 ### Requirement: Phaser is a native 2D game-engine route
 
@@ -161,6 +225,37 @@ The pipeline SHALL define release criteria for open-source publication.
 
 - **WHEN** a maintainer prepares to publish
 - **THEN** all MUST checks in the open-source readiness reference SHALL pass or the release SHALL be marked not ready.
+
+### Requirement: Static reference fidelity is explicit and non-downgradable
+
+The pipeline SHALL distinguish a primary reconstruction target from a constraint or inspiration,
+and SHALL preserve requested fidelity independently from effective fidelity.
+
+#### Scenario: The user requests an identical result from a supplied image
+
+- **WHEN** the user requests identical, exact, 1:1, pixel-accurate, cloned, reproduced, or faithful
+  output from a supplied still image
+- **THEN** `reference-evidence.json` SHALL use `primary-target` and `exact-reconstruction`
+- **AND** the pipeline SHALL NOT generate alternative design directions
+- **AND** exact fidelity SHALL NOT become adaptive or directional without explicit user approval.
+
+#### Scenario: Exact reference geometry is prepared
+
+- **WHEN** an exact or adaptive static-reference implementation is about to begin
+- **THEN** the pipeline SHALL rectify the source into a canonical front view
+- **AND** SHALL record a canonical elevation, locked camera/lens/viewport, distributed
+  source/render landmarks, and overlay evidence in `reconstruction.json`
+- **AND** `designer-pipeline reconstruction check --stage geometry` SHALL independently recompute
+  landmark error and block material or cinematic polish until it reports `ready`.
+
+#### Scenario: Exact reference completion is claimed
+
+- **WHEN** a static-reference reconstruction is submitted as complete
+- **THEN** an independent EvidencePort SHALL provide reference, implementation, and diff images,
+  required comparison capabilities, a successful probe, and a receipt bound to all three hashes
+- **AND** `designer-pipeline reconstruction check --stage final` SHALL distinguish missing evidence
+  as `blocked` from measured threshold misses as `fidelity-limited`
+- **AND** neither result SHALL be described as exact, identical, pixel-perfect, or complete.
 
 ### Requirement: Website-cloning requests use a focused superset module
 
@@ -543,7 +638,9 @@ one-writer locking, crash-safe state/event commits, and explicit consistency dia
 ### Requirement: Scene runtime has a normative machine contract
 
 Persistent spatial, engine-owned, GPU, or narrative runtime state SHALL use normative `scene.json`
-plus a matching `scene.md` projection linked to DESIGN and MOTION foundation hashes.
+plus a matching family-selected projection linked to DESIGN and MOTION foundation hashes. 3D
+renderer, engine, and geospatial families SHALL use `3d.md`; other persistent families SHALL use
+`scene.md`.
 
 #### Scenario: Adapter availability is unknown
 
