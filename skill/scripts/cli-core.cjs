@@ -17,6 +17,7 @@ const {
 const { checkScene } = require("./scene-runtime-core.cjs");
 const { checkReferenceEvidence } = require("./reference-evidence-core.cjs");
 const { checkReconstruction } = require("./reconstruction-core.cjs");
+const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
@@ -182,6 +183,7 @@ function publicHelp() {
     "  doctor | status",
     "  change init|resume|advance|migrate|repair",
     "  foundation check | reference check | reconstruction check | scene check",
+    "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
     "  verify motion|components",
@@ -310,6 +312,17 @@ function foundationCommand(parsed, root) {
   if (["motion", "all"].includes(kind)) result.motion = checkMotionFoundation({ projectRoot, motionFile: option(parsed, "--motion-file", "MOTION.md") });
   const blocked = Object.values(result).some((item) => item.status !== "ready");
   return { result: { status: blocked ? "blocked" : "ready", foundations: result }, exitCode: blocked ? 2 : 0 };
+}
+
+// The reconciliation gate is executable so it can be run, not claimed. It reads change `design.md`
+// and reports blocked when a change that has a reference carries no reconciliation section.
+function reconciliationCommand(parsed, root) {
+  const changeRoot = changeRootFrom(parsed, root);
+  const result = checkSpecReconciliation(changeRoot, {
+    designFile: option(parsed, "--design-file", "design.md"),
+    artifact: option(parsed, "--artifact"),
+  });
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
 }
 
 function spatialCommand(parsed, root, command) {
@@ -444,6 +457,7 @@ function dispatch(argv) {
   else if (["reference", "reconstruction", "scene"].includes(command) && action === "check") {
     outcome = spatialCommand(parsed, root, command);
   }
+  else if (command === "reconciliation" && action === "check") outcome = reconciliationCommand(parsed, root);
   else if (command === "evidence") outcome = evidenceCommand(parsed, root, action);
   else if (command === "verify") outcome = verifyCommand(parsed, root, action);
   else if (command === "patterns") outcome = patternCommand(parsed, root, action);

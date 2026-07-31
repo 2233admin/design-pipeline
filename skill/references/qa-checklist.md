@@ -147,11 +147,73 @@ effects, and common layout families are not hard failures.
 Complete this section when visual references influence the change.
 
 - `reference.md` source inventory and provenance:
+- Source availability: `resolved` / `pending`:
+- Pending reason, requested from, and unlock action reported to the user:
 - Observable spatial evidence for and against 3D:
+- Per-region structure table recorded (rows, columns, contents, breaks from):
+- Uniformity question answered `Yes` / `No` with named exceptions:
+- No region described as `as above` or `same as previous`:
+- `composition` in `reference-evidence.json` matches the table and does not contradict itself:
 - Selected route: `2d` / `2.5d` / `3d` / `hybrid`:
 - Fidelity invariants:
-- Required artifact set:
-- Graybox gate passed before polish for `3d` / `hybrid`:
+- Required artifact set (`graybox.png` present on every route):
+- `reference check` status, reason, and `stages.graybox` status:
+- Requested fidelity unchanged by a pending source:
+- Verification claim: `verified` / `fidelity-limited` / `unverified`
+- Claim derived from `reconstruction check --stage final` status only (`ready` -> `verified`,
+  `fidelity-limited` -> `fidelity-limited`, every other outcome including any blocked stage, a
+  pending or unresolvable source, or no `reconstruction.json` -> `unverified`):
+- Nothing in this file, in `design.md`, or in the final response describes an `unverified` run as
+  verified, exact, identical, 1:1, pixel-perfect, faithful, or complete:
+
+A pending or unresolvable source produces verification claim `unverified`. Write the claim on its
+own line above; it lives nowhere else, because no contract field carries it. `unverified` is the
+default until a measurement replaces it, never a value inferred from a `ready` graybox, a
+declaration, or a placeholder.
+
+## Graybox Gate
+
+Complete this section for every change with a `reference-evidence.json`, on every route and in every
+fidelity mode.
+
+- `reconstruction check --stage graybox` status: ready / blocked
+- Blocking reason if any:
+- Capture path and captured at:
+- Declared runtime graybox mode (mechanism, token, and the layers it disables):
+- Runtime mode names `emissive`, `optical`, and `texture` in `disables` (a bare token is
+  `graybox-mode-unverifiable`, never `ready`):
+- Suppressed treatments listed:
+- Comparison mode declared: `measured` / `qualitative`
+- Comparison measurable (source `resolved` and the named raster present on disk): yes / no
+- `fidelityEvidence` (true only when `ready`, `measured`, and measurable):
+- Region findings and statuses (no `open` findings):
+- Region ids match the recorded `composition` ids exactly - every declared id addressed, none
+  invented:
+- Graybox approval status and evidence:
+- Graybox passed before materials, glow, bloom, depth of field, scanlines, and grading:
+- `geometry` stage status recorded separately (never inferred from graybox):
+- If both graybox and geometry are blocked, recorded as a process gap, not an environmental limit:
+
+The graybox gate blocks optical treatment: materials, glow, bloom, depth of field, scanlines, and
+grading. The geometry gate blocks detail geometry, type treatment, and any measured fidelity claim.
+A blocked `geometry` stage is not a reason to withhold optical treatment when the graybox stage is
+`ready`; record the verification claim as `unverified` and continue.
+
+A `measured` comparison the evidence cannot support is `blocked` with
+`graybox-comparison-unmeasurable`, not a downgrade to `qualitative`. A block that cannot be
+validated at all is `blocked` with `graybox-invalid`. Never record `ready` for a gate that could not
+verify its own evidence.
+
+## Spec Reconciliation
+
+Complete this section for every change with a reference.
+
+- `Spec Reconciliation` section present in `design.md`:
+- Cited graybox capture exists on disk:
+- Reconciled timestamp:
+- Rows: specified value / implemented value / observed cause:
+- Every `Cause` describes an observation, not an intention:
+- Empty table is a valid result; absent section is `blocked`:
 
 ## Scene And Runtime Checks
 
@@ -296,6 +358,10 @@ Log every auto-decision:
 - Blocking issues:
 - Non-blocking issues:
 - Follow-up tasks:
+
+The verdict may not describe the change as exact, identical, 1:1, pixel-perfect, faithful, or
+complete while the recorded verification claim is `unverified`. A pass with an `unverified` claim is
+a pass on the gates that ran, and it says so.
 
 ## Open Source Readiness
 

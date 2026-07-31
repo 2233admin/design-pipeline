@@ -47,10 +47,52 @@ function fixedCameraReference(overrides = {}) {
   };
 }
 
+// The graybox capture and the structural comparison the unconditional gate asks for. It is
+// qualitative: nothing in this file writes the source raster, so nothing here may claim a measured
+// comparison against it.
+function grayboxBlock(overrides = {}) {
+  return {
+    capture: "graybox.png",
+    capturedAt: "2026-07-23T09:00:00.000Z",
+    viewport: { width: 723, height: 405 },
+    runtimeMode: {
+      mechanism: "root-attribute",
+      token: "data-graybox",
+      disables: ["emissive", "optical", "texture"],
+    },
+    suppressed: ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"],
+    comparison: {
+      mode: "qualitative",
+      regions: [
+        { id: "slab", finding: "Slab spans the same share of the frame as the reference.", status: "matches" },
+        { id: "readout", finding: "Readout sat left of the label; moved above it.", status: "corrected" },
+      ],
+    },
+    approval: {
+      status: "approved",
+      evidence: "User compared the layout-only capture against the reference before any treatment.",
+    },
+    ...overrides,
+  };
+}
+
+// A v2 reference owes a per-region structural breakdown, and the graybox comparison above
+// addresses exactly these ids.
+function composition() {
+  return {
+    uniform: false,
+    regions: [
+      { id: "slab", rows: 2, columns: 1, breaksFrom: ["readout"] },
+      { id: "readout", rows: 1, columns: 3, breaksFrom: [] },
+    ],
+  };
+}
+
 function exactReconstructionReference(overrides = {}) {
   return {
     ...fixedCameraReference(),
     schema: "design-pipeline.reference-evidence.v2",
+    composition: composition(),
     intent: {
       role: "primary-target",
       requestedFidelity: "exact-reconstruction",
@@ -166,11 +208,25 @@ test("3D routes require scene, projection, and graybox evidence", () => {
   assert.throws(() => validateReferenceEvidence(reference), /graybox\.png/);
 });
 
-test("approved fixed-camera evidence is ready", () => {
+test("approved fixed-camera evidence is ready once the graybox gate is satisfied", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-reference-"));
-  fs.writeFileSync(
+  const write = (reference) => fs.writeFileSync(
     path.join(root, "reference-evidence.json"),
-    `${JSON.stringify(fixedCameraReference(), null, 2)}\n`,
+    `${JSON.stringify(reference, null, 2)}\n`,
   );
-  assert.equal(checkReferenceEvidence(root).status, "ready");
+
+  // Approval alone is not readiness. Structural proof precedes optical treatment on every route,
+  // so an approved reference with no layout-only capture is blocked, not ready. This assertion
+  // previously read `ready`, which was the behaviour the unconditional graybox gate exists to end.
+  write(fixedCameraReference());
+  const withoutGraybox = checkReferenceEvidence(root);
+  assert.equal(withoutGraybox.status, "blocked");
+  assert.equal(withoutGraybox.reason, "graybox-missing");
+  assert.equal(withoutGraybox.stages.graybox.status, "blocked");
+
+  fs.writeFileSync(path.join(root, "graybox.png"), "layout-only capture");
+  write(fixedCameraReference({ graybox: grayboxBlock() }));
+  const ready = checkReferenceEvidence(root);
+  assert.equal(ready.status, "ready", ready.blockers?.join("\n"));
+  assert.equal(ready.stages.graybox.status, "ready");
 });

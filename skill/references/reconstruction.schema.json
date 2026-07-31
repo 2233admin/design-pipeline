@@ -163,6 +163,92 @@
         }
       }
     },
+    "graybox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capture",
+        "capturedAt",
+        "viewport",
+        "suppressed",
+        "comparison",
+        "approval"
+      ],
+      "properties": {
+        "capture": { "type": "string", "minLength": 1 },
+        "capturedAt": {
+          "type": "string",
+          "minLength": 1,
+          "format": "date-time"
+        },
+        "viewport": { "$ref": "#/$defs/viewport" },
+        "runtimeMode": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1 },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mechanism", "token", "disables"],
+              "properties": {
+                "mechanism": {
+                  "enum": [
+                    "root-attribute",
+                    "query-parameter",
+                    "build-flag",
+                    "runtime-api"
+                  ]
+                },
+                "token": { "type": "string", "minLength": 1 },
+                "disables": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          ]
+        },
+        "suppressed": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"]
+          }
+        },
+        "comparison": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "regions"],
+          "properties": {
+            "mode": { "enum": ["measured", "qualitative"] },
+            "regions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "finding", "status"],
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "finding": { "type": "string", "minLength": 1 },
+                  "status": {
+                    "enum": [
+                      "matches",
+                      "corrected",
+                      "accepted-deviation",
+                      "open"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "approval": { "$ref": "#/$defs/approval" }
+      }
+    },
     "geometryGate": {
       "type": "object",
       "additionalProperties": false,

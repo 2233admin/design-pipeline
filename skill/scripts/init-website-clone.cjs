@@ -269,6 +269,25 @@ function relativeFromProject(projectRoot, artifactRoot, changeId) {
   return path.relative(projectRoot, path.join(artifactRoot, changeId)).replaceAll("\\", "/");
 }
 
+// A website clone always ends up with a reference, so the generated change carries the
+// reconciliation obligation from the start. The stub is deliberately unfilled: the placeholders are
+// not defaults, and `designer-pipeline reconciliation check` reports them as warnings until the
+// reference carrier lands and as blockers afterwards.
+const RECONCILIATION_SECTION = [
+  "## Spec Reconciliation",
+  "",
+  "Required for every change with a reference. Cite the graybox capture this spec was written",
+  "against, then record one row per value the implementation changed after the spec was written. An",
+  "empty table is a valid result; an absent section is `blocked`. Every `Cause` describes an",
+  "observation, never an intention. Verify with `designer-pipeline reconciliation check`.",
+  "",
+  "Graybox: `graybox.png`, captured <iso8601>",
+  "Reconciled: <iso8601>",
+  "",
+  "| Value | Specified | Implemented | Cause |",
+  "| --- | --- | --- | --- |",
+].join("\n");
+
 function planningFiles(changeId, targets) {
   const targetList = targets
     .map((target) => `- ${target.id} (${target.role}): ${target.url}`)
@@ -277,9 +296,9 @@ function planningFiles(changeId, targets) {
     "proposal.md": `# Proposal: ${changeId}\n\n## Why\n\nReconstruct the authorized target website surfaces through the design-pipeline website-cloning module.\n\n## Targets\n\n${targetList}\n\n## Non-Goals\n\n- Do not reproduce protected backend behavior, authentication, or private data by default.\n- Do not replace the target project's established framework without an explicit requirement.`,
     "brief.md": `# Brief: ${changeId}\n\n## Goal\n\nCreate a high-fidelity, maintainable reconstruction of the target website surfaces.\n\n## Targets\n\n${targetList}\n\n## Constraints\n\n- Confirm ownership, authorization, licensing, and applicable terms.\n- Capture real content and assets only when their use is permitted.\n- Preserve accessibility, responsive behavior, and reduced-motion support.`,
     "directions.md": "# Directions\n\nDocument fidelity and adaptation directions after reconnaissance. Select one direction before implementation.",
-    "design.md": "# Design\n\nRecord topology, tokens, component contracts, target-project mappings, responsive behavior, accessibility, and implementation decisions here.",
+    "design.md": `# Design\n\nRecord topology, tokens, component contracts, target-project mappings, responsive behavior, accessibility, and implementation decisions here.\n\n${RECONCILIATION_SECTION}`,
     "motion.md": "# Motion\n\nRecord target motion only when it is observable and purposeful. Include triggers, states, timing, easing, interruption behavior, performance budget, and reduced-motion fallback.",
-    "tasks.md": "# Tasks\n\n- [ ] Verify authorization and execution capabilities.\n- [ ] Capture reconnaissance and interaction evidence for every target.\n- [ ] Establish target-project foundation and assets.\n- [ ] Write one complete spec before each bounded builder slice.\n- [ ] Assemble and run the target project's build checks.\n- [ ] Run visual, interaction, accessibility, motion, responsive, and headless QA.",
+    "tasks.md": "# Tasks\n\n- [ ] Verify authorization and execution capabilities.\n- [ ] Capture reconnaissance and interaction evidence for every target.\n- [ ] Establish target-project foundation and assets.\n- [ ] Write one complete spec before each bounded builder slice.\n- [ ] Assemble and run the target project's build checks.\n- [ ] Fill the `Spec Reconciliation` section in design.md: cite the graybox capture the spec was written against, record every value the implementation changed with an observed cause, and pass `designer-pipeline reconciliation check`.\n- [ ] Run visual, interaction, accessibility, motion, responsive, and headless QA.",
     "qa.md": "# QA\n\nRecord self-check, static checks, desktop/mobile evidence, interaction checks, accessibility, motion, responsive behavior, engineering fit, headless state, scorecard, and final verdict.",
   };
 }

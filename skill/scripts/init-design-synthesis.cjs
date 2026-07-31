@@ -139,6 +139,24 @@ function normalizeInputs(options) {
   };
 }
 
+// A change the pipeline generates must carry the reconciliation obligation on its face. The stub is
+// deliberately unfilled: the placeholders are not defaults, and `designer-pipeline reconciliation
+// check` reports them as warnings until the change has a reference and as blockers afterwards.
+const RECONCILIATION_SECTION = [
+  "## Spec Reconciliation",
+  "",
+  "Required for every change with a reference. Cite the graybox capture this spec was written",
+  "against, then record one row per value the implementation changed after the spec was written. An",
+  "empty table is a valid result; an absent section is `blocked`. Every `Cause` describes an",
+  "observation, never an intention. Verify with `designer-pipeline reconciliation check`.",
+  "",
+  "Graybox: `graybox.png`, captured <iso8601>",
+  "Reconciled: <iso8601>",
+  "",
+  "| Value | Specified | Implemented | Cause |",
+  "| --- | --- | --- | --- |",
+].join("\n");
+
 function planningFiles(input) {
   const referenceLines = input.references.length
     ? input.references.map((item) => `- ${item.id}: ${item.url}`).join("\n")
@@ -150,9 +168,9 @@ function planningFiles(input) {
     "proposal.md": `# Proposal: ${input.changeId}\n\n## Why\n\nThe project needs a requirements-driven reusable DESIGN.md before implementation.\n\n## Problem\n\n${input.problem}\n\n## Safety\n\nReference sites and templates are attributed evidence, not product authority or copy targets.`,
     "brief.md": `# Brief: ${input.changeId}\n\n## Problem\n\n${input.problem}\n\n## Framework\n\n${input.framework}\n\n## Reference Sites\n\n${referenceLines}\n\n## Template Evidence\n\n${templateLines}\n\n## Acceptance\n\n- Resolve material product ambiguity through grill-with-docs.\n- Assess scope before synthesis.\n- Generate a project-specific ${input.output.relative} with explicit source decisions.\n- Continue through implementation and normal design-pipeline QA.`,
     "directions.md": "# Directions\n\nProduce 2-3 distinct, product-specific directions after grill and evidence review. Record fit, risk, adopted evidence, rejected evidence, and the selected direction.",
-    "design.md": "# Change Design\n\n## Requirements Map\n\nMap product requirements and workflows to design consequences.\n\n## Evidence Adoption Matrix\n\nRecord source, observed property, adopt/reject decision, product-specific reason, and target component/token.\n\n## Product Design Output\n\nLink the project DESIGN.md and explain how it maps into the target framework and component system.",
+    "design.md": `# Change Design\n\n## Requirements Map\n\nMap product requirements and workflows to design consequences.\n\n## Evidence Adoption Matrix\n\nRecord source, observed property, adopt/reject decision, product-specific reason, and target component/token.\n\n## Product Design Output\n\nLink the project DESIGN.md and explain how it maps into the target framework and component system.\n\n${RECONCILIATION_SECTION}`,
     "motion.md": "# Motion\n\nRecord motion only when the product needs it. Include purpose, trigger, timing, easing, interruption, performance, and reduced-motion behavior.",
-    "tasks.md": "# Tasks\n\n- [ ] Complete grill-with-docs and save decision evidence.\n- [ ] Assess scope against the selected budget.\n- [ ] Link a real Wayfinder map when scope is oversized.\n- [ ] Produce and select product-specific design directions.\n- [ ] Write and validate the project DESIGN.md.\n- [ ] Map tokens and components into the existing framework.\n- [ ] Implement and run normal design-pipeline QA.",
+    "tasks.md": "# Tasks\n\n- [ ] Complete grill-with-docs and save decision evidence.\n- [ ] Assess scope against the selected budget.\n- [ ] Link a real Wayfinder map when scope is oversized.\n- [ ] Produce and select product-specific design directions.\n- [ ] Write and validate the project DESIGN.md.\n- [ ] Map tokens and components into the existing framework.\n- [ ] Fill the `Spec Reconciliation` section in design.md: cite the graybox capture the spec was written against, record every value the implementation changed with an observed cause, and pass `designer-pipeline reconciliation check`.\n- [ ] Implement and run normal design-pipeline QA.",
     "qa.md": "# QA\n\nRecord DESIGN.md validation, source provenance, visual/UX/accessibility/motion/responsive/engineering gates, component-library checks, and final evidence.",
   };
 }

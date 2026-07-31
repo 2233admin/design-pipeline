@@ -28,12 +28,38 @@
       "additionalProperties": false,
       "required": ["path", "kind", "width", "height", "sha256"],
       "properties": {
-        "path": { "type": "string", "minLength": 1 },
+        "availability": { "enum": ["resolved", "pending"], "default": "resolved" },
+        "path": { "type": ["string", "null"], "minLength": 1 },
         "kind": { "enum": ["image", "video", "live-page", "document", "other"] },
-        "width": { "type": "integer", "minimum": 1 },
-        "height": { "type": "integer", "minimum": 1 },
-        "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
-      }
+        "width": { "type": ["integer", "null"], "minimum": 1 },
+        "height": { "type": ["integer", "null"], "minimum": 1 },
+        "sha256": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" },
+        "pendingReason": { "type": "string", "minLength": 1 },
+        "requestedFrom": { "type": "string", "minLength": 1 },
+        "requestedAt": { "type": "string", "format": "date-time" },
+        "resolvedAt": { "type": "string", "format": "date-time" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "availability": { "const": "pending" } },
+            "required": ["availability"]
+          },
+          "then": {
+            "required": ["pendingReason", "requestedFrom"],
+            "not": { "required": ["resolvedAt"] }
+          },
+          "else": {
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "width": { "type": "integer", "minimum": 1 },
+              "height": { "type": "integer", "minimum": 1 },
+              "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+            },
+            "not": { "required": ["pendingReason"] }
+          }
+        }
+      ]
     },
     "classification": {
       "type": "object",
@@ -66,7 +92,8 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "type": "string", "minLength": 1 }
+      "items": { "type": "string", "minLength": 1 },
+      "contains": { "const": "graybox.png" }
     },
     "approval": {
       "type": "object",
@@ -119,6 +146,145 @@
           }
         }
       }
+    },
+    "composition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uniform", "regions"],
+      "properties": {
+        "uniform": { "type": "boolean" },
+        "regions": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "rows", "columns", "breaksFrom"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "rows": { "type": "integer", "minimum": 1 },
+              "columns": { "type": "integer", "minimum": 1 },
+              "breaksFrom": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "uniform": { "const": true } },
+            "required": ["uniform"]
+          },
+          "then": {
+            "properties": {
+              "regions": {
+                "items": {
+                  "properties": { "breaksFrom": { "maxItems": 0 } }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "regions": {
+                "contains": {
+                  "type": "object",
+                  "required": ["breaksFrom"],
+                  "properties": { "breaksFrom": { "minItems": 1 } }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "graybox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capture", "capturedAt", "viewport", "suppressed", "comparison", "approval"],
+      "properties": {
+        "capture": { "type": "string", "minLength": 1 },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "runtimeMode": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1 },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mechanism", "token", "disables"],
+              "properties": {
+                "mechanism": {
+                  "enum": [
+                    "root-attribute",
+                    "query-parameter",
+                    "build-flag",
+                    "runtime-api"
+                  ]
+                },
+                "token": { "type": "string", "minLength": 1 },
+                "disables": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          ]
+        },
+        "viewport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "suppressed": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"]
+          }
+        },
+        "comparison": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "regions"],
+          "properties": {
+            "mode": { "enum": ["measured", "qualitative"] },
+            "regions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "finding", "status"],
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "finding": { "type": "string", "minLength": 1 },
+                  "status": { "enum": ["matches", "corrected", "accepted-deviation", "open"] }
+                }
+              }
+            }
+          }
+        },
+        "approval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "evidence"],
+          "properties": {
+            "status": { "enum": ["pending", "approved", "rejected"] },
+            "evidence": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
     }
   },
   "allOf": [
@@ -141,7 +307,7 @@
         "required": ["schema"]
       },
       "then": {
-        "required": ["intent"]
+        "required": ["intent", "composition"]
       }
     }
   ],

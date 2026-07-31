@@ -4,6 +4,7 @@ const {
   assertEnum,
   assertKeys,
   assertString,
+  assertStringArray,
   fail,
 } = require("./contract-utils.cjs");
 const {
@@ -14,8 +15,31 @@ const {
 
 const SCHEMA = "design-pipeline.reconstruction.v1";
 const MODES = ["exact-reconstruction", "adaptive-reconstruction"];
-const STAGES = ["geometry", "final"];
+const STAGES = ["graybox", "geometry", "final"];
 const LANDMARK_REGIONS = ["top-left", "top-right", "center", "bottom-left", "bottom-right"];
+const GRAYBOX_SUPPRESSED_TREATMENTS = [
+  "materials",
+  "glow",
+  "bloom",
+  "depth-of-field",
+  "scanlines",
+  "grading",
+];
+const GRAYBOX_RUNTIME_LAYERS = ["emissive", "optical", "texture"];
+const GRAYBOX_MODE_MECHANISMS = [
+  "root-attribute",
+  "query-parameter",
+  "build-flag",
+  "runtime-api",
+];
+const GRAYBOX_COMPARISON_MODES = ["measured", "qualitative"];
+const GRAYBOX_REGION_STATUSES = ["matches", "corrected", "accepted-deviation", "open"];
+const GRAYBOX_UNRESOLVED_REGION_STATUSES = ["open"];
+const GRAYBOX_APPROVAL_STATUSES = ["pending", "approved", "rejected"];
+// One graybox block, one contract. Both carriers - `reconstruction.json` and
+// `reference-evidence.json` - validate through the functions below, so a single document can never
+// collect two verdicts. The scope is the block, not the carrier, so the reason strings match too.
+const GRAYBOX_SCOPE = "graybox";
 
 function assertFiniteNumber(value, label, options = {}) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -229,7 +253,146 @@ function validateApproval(value, label) {
   assertString(value.evidence, `${label}.evidence`, "reconstruction");
 }
 
-function validateReconstruction(reconstruction) {
+// A declared graybox mode is either a bare token ("?graybox=1") or an expanded declaration that
+// also names the mechanism and the layers it disables. `null` and an absent key both mean the
+// change declares no mode; that is a blocked status, not an invalid contract.
+function validateGrayboxRuntimeMode(value, label) {
+  if (typeof value === "string") {
+    assertString(value, label, GRAYBOX_SCOPE);
+    return;
+  }
+  const keys = ["mechanism", "token", "disables"];
+  assertKeys(value, keys, keys, label, GRAYBOX_SCOPE);
+  assertEnum(value.mechanism, GRAYBOX_MODE_MECHANISMS, `${label}.mechanism`, GRAYBOX_SCOPE);
+  assertString(value.token, `${label}.token`, GRAYBOX_SCOPE);
+  assertStringArray(value.disables, `${label}.disables`, GRAYBOX_SCOPE, {
+    unique: true,
+    min: 1,
+  });
+}
+
+function validateGrayboxViewport(value, label) {
+  assertKeys(value, ["width", "height"], ["width", "height"], label, GRAYBOX_SCOPE);
+  for (const dimension of ["width", "height"]) {
+    if (!Number.isInteger(value[dimension]) || value[dimension] <= 0) {
+      fail(GRAYBOX_SCOPE, `${label}.${dimension} must be a positive integer`);
+    }
+  }
+}
+
+function assertGrayboxTimestamp(value, label) {
+  if (typeof value !== "string" || Number.isNaN(new Date(value).getTime())) {
+    fail(GRAYBOX_SCOPE, `${label} must be an ISO 8601 timestamp`);
+  }
+}
+
+// An empty comparison is a blocked gate (`graybox-comparison-missing`), never an invalid contract:
+// a change written before the gate existed still has to be readable.
+function validateGrayboxComparison(value, label) {
+  assertKeys(value, ["mode", "regions"], ["mode", "regions"], label, GRAYBOX_SCOPE);
+  assertEnum(value.mode, GRAYBOX_COMPARISON_MODES, `${label}.mode`, GRAYBOX_SCOPE);
+  if (!Array.isArray(value.regions)) {
+    fail(GRAYBOX_SCOPE, `${label}.regions must be an array`);
+  }
+  const ids = [];
+  for (const [index, region] of value.regions.entries()) {
+    const regionLabel = `${label}.regions[${index}]`;
+    assertKeys(
+      region,
+      ["id", "finding", "status"],
+      ["id", "finding", "status"],
+      regionLabel,
+      GRAYBOX_SCOPE,
+    );
+    assertString(region.id, `${regionLabel}.id`, GRAYBOX_SCOPE);
+    if (ids.includes(region.id)) {
+      fail(GRAYBOX_SCOPE, `${regionLabel}.id duplicates an earlier comparison region id ${region.id}`);
+    }
+    ids.push(region.id);
+    assertString(region.finding, `${regionLabel}.finding`, GRAYBOX_SCOPE);
+    assertEnum(region.status, GRAYBOX_REGION_STATUSES, `${regionLabel}.status`, GRAYBOX_SCOPE);
+  }
+  return ids;
+}
+
+function validateGrayboxApproval(value, label) {
+  assertKeys(value, ["status", "evidence"], ["status", "evidence"], label, GRAYBOX_SCOPE);
+  assertEnum(value.status, GRAYBOX_APPROVAL_STATUSES, `${label}.status`, GRAYBOX_SCOPE);
+  assertString(value.evidence, `${label}.evidence`, GRAYBOX_SCOPE);
+}
+
+// `context.compositionRegionIds` binds the comparison to the per-region structural breakdown.
+// It is supplied by every caller that can read `reference-evidence.json`, whichever carrier holds
+// the graybox block, so the binding cannot be dodged by moving the block.
+function validateGraybox(value, context = {}) {
+  const label = context.label || "graybox";
+  const keys = [
+    "capture",
+    "capturedAt",
+    "viewport",
+    "suppressed",
+    "comparison",
+    "approval",
+  ];
+  assertKeys(value, keys, [...keys, "runtimeMode"], label, GRAYBOX_SCOPE);
+  assertString(value.capture, `${label}.capture`, GRAYBOX_SCOPE);
+  assertGrayboxTimestamp(value.capturedAt, `${label}.capturedAt`);
+  validateGrayboxViewport(value.viewport, `${label}.viewport`);
+  if (value.runtimeMode !== undefined && value.runtimeMode !== null) {
+    validateGrayboxRuntimeMode(value.runtimeMode, `${label}.runtimeMode`);
+  }
+  assertStringArray(value.suppressed, `${label}.suppressed`, GRAYBOX_SCOPE, {
+    unique: true,
+    min: 1,
+  });
+  value.suppressed.forEach((treatment, index) => {
+    assertEnum(
+      treatment,
+      GRAYBOX_SUPPRESSED_TREATMENTS,
+      `${label}.suppressed[${index}]`,
+      GRAYBOX_SCOPE,
+    );
+  });
+  const comparedIds = validateGrayboxComparison(value.comparison, `${label}.comparison`);
+  validateGrayboxApproval(value.approval, `${label}.approval`);
+  if (value.approval.status === "approved") {
+    const unresolved = value.comparison.regions.filter(
+      (region) => GRAYBOX_UNRESOLVED_REGION_STATUSES.includes(region.status),
+    );
+    if (unresolved.length) {
+      fail(
+        GRAYBOX_SCOPE,
+        `${label}.approval.status cannot be approved while `
+        + `${unresolved.map((region) => region.id).join(", ")} remain open`,
+      );
+    }
+  }
+  // A comparison that addresses no region at all is the `graybox-comparison-missing` blocked
+  // verdict, not an invalid contract - see `validateGrayboxComparison`. The binding below asks
+  // which regions were addressed, so it only has something to say once at least one was. Nothing
+  // escapes: an empty comparison can never reach `ready`.
+  if (Array.isArray(context.compositionRegionIds) && comparedIds.length) {
+    for (const id of comparedIds) {
+      if (!context.compositionRegionIds.includes(id)) {
+        fail(
+          GRAYBOX_SCOPE,
+          `${label}.comparison.regions names an undeclared composition region id ${id}`,
+        );
+      }
+    }
+    const unaddressed = context.compositionRegionIds.filter((id) => !comparedIds.includes(id));
+    if (unaddressed.length) {
+      fail(
+        GRAYBOX_SCOPE,
+        `${label}.comparison.regions must address every composition region id: `
+        + `missing ${unaddressed.join(", ")}`,
+      );
+    }
+  }
+  return value;
+}
+
+function validateReconstruction(reconstruction, context = {}) {
   const rootKeys = [
     "schema",
     "id",
@@ -242,7 +405,13 @@ function validateReconstruction(reconstruction) {
     "geometryGate",
     "finalComparison",
   ];
-  assertKeys(reconstruction, rootKeys, rootKeys, "reconstruction", "reconstruction");
+  assertKeys(
+    reconstruction,
+    rootKeys,
+    [...rootKeys, "graybox"],
+    "reconstruction",
+    "reconstruction",
+  );
   if (reconstruction.schema !== SCHEMA) {
     fail("reconstruction", `schema must be ${SCHEMA}`);
   }
@@ -278,15 +447,28 @@ function validateReconstruction(reconstruction) {
   );
   validateApproval(reconstruction.geometryGate.approval, "geometryGate.approval");
   validateFinalComparison(reconstruction.finalComparison, reconstruction.mode);
+  if (reconstruction.graybox !== undefined && reconstruction.graybox !== null) {
+    validateGraybox(reconstruction.graybox, {
+      compositionRegionIds: context.compositionRegionIds,
+    });
+  }
   return reconstruction;
 }
 
 module.exports = {
   EXACT_EVIDENCE_CAPABILITIES,
+  GRAYBOX_APPROVAL_STATUSES,
+  GRAYBOX_COMPARISON_MODES,
+  GRAYBOX_MODE_MECHANISMS,
+  GRAYBOX_REGION_STATUSES,
+  GRAYBOX_RUNTIME_LAYERS,
+  GRAYBOX_SUPPRESSED_TREATMENTS,
+  GRAYBOX_UNRESOLVED_REGION_STATUSES,
   LANDMARK_REGIONS,
   MODES,
   SCHEMA,
   STAGES,
   validateEvidenceReceipt,
+  validateGraybox,
   validateReconstruction,
 };

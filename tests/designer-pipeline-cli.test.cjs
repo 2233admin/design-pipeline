@@ -60,7 +60,27 @@ function fixtures(root) {
     route: "3d", confidence: 0.98,
     requiredArtifacts: ["reference.md", "scene.json", "3d.md", "graybox.png"],
     approval: { status: "approved", evidence: "Approved in the task conversation." },
+    // Structural proof precedes optical treatment on every route, so a reference this command is
+    // expected to pass owes a layout-only capture and a written structural comparison. The
+    // comparison is qualitative: this fixture never writes the source raster, so it may not claim
+    // to have measured against it.
+    graybox: {
+      capture: "graybox.png",
+      capturedAt: "2026-07-23T00:00:00.000Z",
+      viewport: { width: 723, height: 405 },
+      runtimeMode: { mechanism: "root-attribute", token: "data-graybox", disables: ["emissive", "optical", "texture"] },
+      suppressed: ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"],
+      comparison: {
+        mode: "qualitative",
+        regions: [
+          { id: "slab", finding: "Slab occupies the same share of the frame as the reference.", status: "matches" },
+          { id: "readout", finding: "Readout sat beside the label; moved above it.", status: "corrected" },
+        ],
+      },
+      approval: { status: "approved", evidence: "User compared the layout-only capture before any treatment." },
+    },
   });
+  fs.writeFileSync(path.join(root, "graybox.png"), "layout-only capture");
   writeJson(path.join(root, "evidence.json"), {
     schema: "design-pipeline.evidence-receipt.v1", id: "partial", status: "partial",
     adapter: { id: "fake", version: "1", availability: "available", probe: { ok: true, message: "ready" } },

@@ -35,17 +35,91 @@ themselves.
 
 `reference.md` must state:
 
-1. source inventory and provenance;
-2. observable composition, type, color, material, lighting, and motion evidence;
+1. source inventory and provenance, including whether each source resolves to a file path;
+2. observable composition, type, color, material, lighting, and motion evidence, including the
+   per-region structure table below;
 3. spatial evidence for and against 3D;
 4. selected route (`2d`, `2.5d`, `3d`, or `hybrid`) and confidence;
 5. fidelity invariants that must survive implementation;
 6. uncertain or missing evidence and how it will be tested;
 7. resulting artifact requirements.
 
+### Per-region structure
+
+Section 2 must carry one row per comparable region, authored independently from the reference:
+
+| Region | Rows | Columns | Contents left to right | Breaks from |
+| --- | --- | --- | --- | --- |
+| register-1 | 2 | 1 | label block above; full-width readout below | register-2, register-3 |
+| register-2 | 1 | 3 | label block, mark badge, readout | none |
+| register-3 | 1 | 3 | label block, mark badge, readout | none |
+
+Then answer the uniformity question explicitly, in one line, with named exceptions:
+
+```markdown
+Uniform structure across regions? **No.** register-1 is a two-row block; registers 2 and 3 are
+three-column rows.
+```
+
+Rules:
+
+- the answer is `Yes` or `No`. An unanswered or hedged question is invalid.
+- `Breaks from` is required on every row. `none` is a valid value; a blank cell is not.
+- exceptions are named in this table, next to the regions they break from, never only in the
+  surrounding prose.
+- describe every region from the reference. `as above`, `same as previous`, `ditto`, and equivalent
+  back-references are forbidden as region descriptions.
+- the table exists whenever the reference contains two or more comparable regions; a single-region
+  reference adds nothing and may omit it.
+
+Record the same claim in the `composition` block of `reference-evidence.json`, with `uniform` and a
+`regions[]` array of `id`, `rows`, `columns`, and `breaksFrom`. `composition` is a required root key
+of a v2 document; omitting it fails validation with
+`reference evidence: reference is missing composition`. A v1 document predates the block and stays
+exempt, so archived changes remain readable.
+
+Validation fails on a contradiction:
+
+- `uniform: true` with any non-empty `breaksFrom`, or with differing `rows`/`columns`;
+- `uniform: false` with no non-empty `breaksFrom`;
+- `uniform: false` where a region departs from the modal `rows x columns` structure and neither
+  declares a `breaksFrom` nor is named in another region's `breaksFrom`. Every structurally
+  divergent region is named - by itself or by the region it breaks from - or the claim is a
+  contradiction.
+
+Region ids are the names the graybox comparison addresses, so the structure claimed before the
+render and the structure seen in the render are compared by name rather than by impression. The
+binding runs in both directions and on both carriers: the comparison must address every declared
+region id, and it may not name an id `composition` never declared.
+
+### Source availability
+
+Resolve the source to a file path before writing reference artifacts. A resolvable path unlocks
+rectification, camera calibration, landmark error, and the fidelity receipt; ask the user for it and
+say so. When no path is available, record `source.availability: pending` with `pendingReason` and
+`requestedFrom`, leave `path`, `width`, `height`, and `sha256` null, and continue. Absent
+`availability` means `resolved`, and a resolved source requires all four values. Never invent a
+path, a dimension, or a hash. When a pending source later lands, set `availability: resolved`, fill
+all four values, record `resolvedAt`, and keep `requestedFrom` and `requestedAt` so a run that began
+pending stays identifiable afterwards.
+
+Absent and invalid are different. An absent `availability` field means `resolved`, and so does an
+absent `reference-evidence.json`, so documents written before the pending state existed keep their
+behaviour. A field that is present but out of enum, a `source` that is not an object, or a document
+that cannot be parsed is a loud failure: the reconstruction stages refuse to measure and report
+`reference-source-availability-invalid`, `reference-source-malformed`, or
+`reference-source-unparseable` with `measurements: null`. An unreadable declaration is not evidence
+that the source was supplied.
+
+A resolved `availability` is also not the same as a resolvable file. The declared `source.path` must
+exist inside the change root before any comparison may call itself `measured`; see the graybox
+measurability rule in `reconstruction-spec.md`.
+
 Write the same classification and evidence to normative `reference-evidence.json`, then run
 `designer-pipeline reference check`. A valid contract remains blocked until its approval status is
-`approved`. Two or more recorded spatial cues make a `2d` classification invalid.
+`approved`. `blocked` with reason `source-pending` is a recorded state with `contractValid: true`,
+not a contract failure, and it does not change requested or effective fidelity. Two or more recorded
+spatial cues make a `2d` classification invalid.
 
 Version 2 also records the reference role and the fidelity contract:
 
@@ -64,8 +138,20 @@ geometry stage of the declared `reconstruction.json`; approval of the medium alo
 Only explicit user approval may downgrade requested exact fidelity, and the original request remains
 recorded.
 
-For `3d` and `hybrid`, require `scene.json` plus `3d.md` and an actual-runtime graybox before visual
-polish. Navigation is required only when the interaction model is inspectable or navigable. For
+Every route requires an actual-runtime graybox before visual polish, including `2d`, `2.5d`, and
+runs whose source is `pending`; see `reconstruction-spec.md`. Every route therefore names
+`graybox.png` in `requiredArtifacts`, not only `3d` and `hybrid`; omitting it fails validation with
+`reference evidence: every reference route requires graybox.png`. `reference check` also evaluates
+the graybox stage on every call and reports it under `stages.graybox`, and it returns `blocked`
+whenever that stage is not `ready` - reason `graybox-missing` for a change with no graybox block,
+`graybox-invalid` for one that could not be validated, `graybox-mode-unverifiable` for one whose
+`runtimeMode` is a bare token that names no disabled layers. Optical treatment is what this gate holds
+back: materials, glow, bloom, depth of field, scanlines, and grading. Detail geometry, type
+treatment, and measured fidelity claims are held by the geometry gate instead.
+
+For `3d` and `hybrid`, also require
+`scene.json` plus `3d.md`. Navigation is required only when the interaction model is inspectable or
+navigable. For
 persistent non-3D renderers or narrative runtimes, require `scene.json` plus
 `scene.md`. For ordinary `2d`, neither runtime artifact is required unless a persistent engine owns
 state.

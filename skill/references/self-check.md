@@ -151,6 +151,56 @@ Change `motion.md` records the validated foundation hash and selected primitive 
 animation skills are missing, still write it and implement with CSS or the project's existing
 animation library.
 
+## Reference Source Rule
+
+Resolve the reference source at Stage 0, while acting on it is still cheap. A pending source is a
+Stage 0 finding, not a gate-review surprise.
+
+At Stage 0, for every visual reference:
+
+- check that the source resolves to a file path;
+- when it does not, ask the user for one and state that the path unlocks rectification, camera
+  calibration, landmark error, and the fidelity receipt;
+- when no path arrives, record `source.availability: pending` with `pendingReason` and
+  `requestedFrom`, then continue the run;
+- report the pending state and the unlock action in the same turn it is discovered, and again in the
+  final report.
+
+A pending source blocks the measured geometry and final stages. It does not block the graybox gate,
+and it never changes requested or effective fidelity. Missing measurements stay missing; do not fill
+a path, dimension, or hash to make a gate pass.
+
+A pending source also does not block optical treatment. The graybox gate blocks materials, glow,
+bloom, depth of field, scanlines, and grading; the geometry gate blocks detail geometry, type
+treatment, and any measured fidelity claim. When the graybox stage is `ready` and geometry is
+blocked on the source, continue - the run proceeds as an unverified reconstruction.
+
+## Verification Claim Rule
+
+A pending or unresolvable source produces verification claim `unverified`.
+
+No contract field carries the claim, so record it on one line in `qa.md`, under
+`## Reference And Spatial Routing`:
+
+```markdown
+- Verification claim: `unverified`
+```
+
+The claim has three values and one derivation, from
+`designer-pipeline reconstruction check --stage final` and nothing else:
+
+- `verified` when the final stage reports `ready`;
+- `fidelity-limited` when it reports `fidelity-limited`, meaning the measurements are real and miss
+  a threshold;
+- `unverified` for every other outcome - any blocked stage, a pending source, an unreadable source
+  declaration (`reference-source-unparseable`, `reference-source-malformed`,
+  `reference-source-availability-invalid`), or a change with no `reconstruction.json`.
+
+`unverified` may never be reported as verified, exact, identical, 1:1, pixel-perfect, faithful, or
+complete. A `qualitative` graybox that reached `ready` does not raise the claim: it proves ordering
+discipline, not equivalence. Do not substitute a default, a placeholder, or a declaration for the
+measurement that is missing.
+
 ## Headless Agent Rule
 
 Every change folder must include:

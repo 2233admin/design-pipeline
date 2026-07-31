@@ -19,16 +19,78 @@ All notable changes to Design Pipeline are documented here.
 - Added `reconstruction.json`, the public `reconstruction check` command, rectified-front-view and
   camera-calibration gates, independently recomputed landmark error, and hash-bound EvidencePort
   receipts for exact still-frame reconstruction.
+- Added an unconditional graybox gate as `reconstruction check --stage graybox`, covering every
+  spatial route rather than only `3d` and `hybrid`, with a declared runtime suppression mode, a
+  named per-region comparison, and an approval status that must pass before any optical treatment.
+- Added `source.availability` to `reference-evidence.json` so a reference supplied only in
+  conversation is recorded as `pending` with `pendingReason` and `requestedFrom` instead of being
+  omitted, and added the `source-pending` blocked reason that reports `contractValid: true`.
+- Added a required per-region structure table to `reference-spec.md` and a matching `composition`
+  block in `reference-evidence.json`, so a uniformity claim that contradicts its own regions fails
+  validation and the graybox comparison addresses those region ids by name.
+- Added a required `Spec Reconciliation` section to change `design.md`, recording the specified
+  value, the implemented value, and an observed cause for every value implementation changed.
+- Added the public `reconciliation check` command, which reads that section, refuses a cause that
+  states an intention rather than an observation, and emits a `design-pipeline.spec-drift.v1`
+  record. Both scaffolders now generate the section and the task that fills it.
+- Added `stages.graybox` to every `reference check` result, so the graybox verdict is reported on
+  every route and in every fidelity mode rather than only when the stage is asked for by name.
+- Added the `graybox-comparison-unmeasurable` blocked reason and the `measurable` field, so a
+  measured comparison is refused unless the source raster it names is actually on disk.
+- Added the `reference-source-unparseable`, `reference-source-malformed`, and
+  `reference-source-availability-invalid` blocked reasons, so a source declaration that is present
+  but unreadable blocks with `measurements: null` instead of defaulting to resolved.
 
 ### Changed
 
+- Reference source resolution now happens at Stage 0: the pipeline resolves the source to a path,
+  states what the path unlocks, and records a pending source rather than discovering the gap at
+  gate review.
+- For a `primary-target` reference, change `design.md` is now written after the graybox capture and
+  cites the capture it was written against.
+- `reconstruction check` now reports the `graybox`, `geometry`, and `final` stages independently, so
+  a blocked measured stage never hides a passing or missing graybox.
 - Scene validation now selects `3d.md` for 3D families and keeps `scene.md` for persistent non-3D
   runtimes. Legacy 3D `scene.md` files receive a deterministic upgrade-required rename preview.
 - Spatial routing now separates object dimensionality, camera model, interaction model, and output
   surface instead of coupling 3D geometry to camera navigation.
+- `reference check` now reports `blocked` whenever the graybox stage is not ready, including on the
+  exact-reconstruction path where the geometry stage passes. The gate is no longer one an agent has
+  to know to run.
+- `graybox.png` is now a required artifact on every reference route rather than only `3d` and
+  `hybrid`, matching the unconditional gate.
+- `composition` is now a required root key of `reference-evidence.json` v2. A v1 document predates
+  the per-region checklist and stays exempt.
+- The graybox block now has exactly one contract, shared by `reconstruction.json` and
+  `reference-evidence.json`, so a single block can never collect two verdicts from two carriers.
+- The graybox comparison's binding to the recorded composition region ids now fires on whichever
+  carrier holds the block, so moving the block does not release the binding.
+- The geometry gate blocks detail geometry, type treatment, and measured fidelity claims. Optical
+  treatment is released by the graybox gate alone, so a blocked geometry stage no longer reads as a
+  reason to withhold it.
 
 ### Fixed
 
+- Stopped reporting `fidelity-limited` for a reference whose source raster is unavailable. The
+  `geometry` and `final` stages now report `blocked` with reason `source-pending` and no
+  measurements, so a missing measurement is a status rather than a fabricated value.
+- Stopped letting a pending source move `intent.requestedFidelity` or `intent.effectiveFidelity`.
+  Only an explicitly approved downgrade changes the fidelity contract.
+- Stopped accepting a declared source path as evidence that the source exists. Measurability is
+  read from disk, so a `measured` comparison against a raster that was never written blocks and
+  grants no fidelity evidence. The declared mode is still reported as declared rather than quietly
+  rewritten.
+- Stopped accepting a bare `runtimeMode` token as proof that the emissive, optical, and texture
+  layers were disabled. A token that names no disabled layers is a declaration the gate cannot
+  check, so it now blocks with `graybox-mode-unverifiable`. The document stays contract-valid;
+  expanding the token into `{mechanism, token, disables}` clears the block.
+- Stopped folding an unreadable reference document into the absent case. An absent file and an
+  absent field still default to `resolved`; a document that is unparseable, records a non-object
+  `source`, or declares an out-of-enum `source.availability` now blocks with its own reason before
+  any landmark math runs.
+- Stopped accepting one named exception as proof that a non-uniform composition is accounted for.
+  Every region that departs from the modal row and column structure must now either record what it
+  breaks from or be named by a region that does.
 - Made packaging, installation, `doctor`, and dependency self-check use one required-resource
   manifest, so incomplete installations fail instead of reporting ready.
 - Made local installation validate the staged package and Node.js 22+ before replacing an

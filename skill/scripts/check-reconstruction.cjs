@@ -32,7 +32,7 @@ function parseArgs(argv) {
 try {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
-    console.log("Usage: check-reconstruction.cjs --change-root <path> [--artifact reconstruction.json] [--stage geometry|final] [--json]");
+    console.log("Usage: check-reconstruction.cjs --change-root <path> [--artifact reconstruction.json] [--stage graybox|geometry|final] [--json]");
     process.exitCode = 0;
   } else {
     const result = checkReconstruction(path.resolve(options.changeRoot), options);
