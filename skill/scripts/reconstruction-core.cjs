@@ -61,15 +61,18 @@ function approvalReason(prefix, status) {
     : `${prefix}-approval-pending`;
 }
 
-// `state` separates the three cases a caller has to tell apart: the document is absent (legacy, no
-// opinion), the document is present and readable, or the document is present and cannot be read.
-// The last one is never silently folded into the first.
+// `state` separates the cases a caller has to tell apart: the document is absent (legacy, no
+// opinion), the document is present and readable, the document is present and cannot be read, or
+// the path names somewhere outside the change root. None is silently folded into another - in
+// particular a path the contract refused to resolve is not the same fact as a file nobody wrote,
+// and reporting it as `absent` would send the reader looking for a missing document instead of a
+// bad argument.
 function readCarrier(root, relative) {
   let file;
   try {
     file = resolveInside(root, relative, "graybox carrier", { scope: "reconstruction" });
   } catch {
-    return { state: "absent", relative, file: null, document: null };
+    return { state: "uncontained", relative, file: null, document: null };
   }
   if (!fs.existsSync(file)) return { state: "absent", relative, file: null, document: null };
   let document;
@@ -193,6 +196,14 @@ function referenceSourceState(root, options = {}) {
       `no reference evidence document (${relative}) records a source`,
     );
   }
+  if (carrier.state === "uncontained") {
+    return unreadableSource(
+      relative,
+      false,
+      "reference-source-uncontained",
+      `reference evidence path ${relative} does not resolve inside the change root`,
+    );
+  }
   if (carrier.state === "unparseable") {
     return unreadableSource(
       relative,
@@ -224,6 +235,9 @@ function compositionBinding(root, options = {}) {
   const relative = options.referenceArtifact || REFERENCE_ARTIFACT;
   const carrier = readCarrier(root, relative);
   if (carrier.state === "absent") return { ids: null, state: "unrecorded", artifact: relative };
+  if (carrier.state === "uncontained") {
+    return { ids: null, state: "uncontained", artifact: relative };
+  }
   if (carrier.state === "unparseable") return { ids: null, state: "unreadable", artifact: relative };
   if (!Object.hasOwn(carrier.document, "composition")) {
     return { ids: null, state: "undeclared", artifact: relative };
@@ -245,8 +259,18 @@ function grayboxCarrier(root, options = {}) {
   const candidates = primary === referenceArtifact ? [primary] : [primary, referenceArtifact];
   const binding = compositionBinding(root, options);
   const holders = [];
+  // A candidate path that will not resolve inside the change root is reported, never skipped: the
+  // stage read nothing there, and "the block is missing" would describe a document instead of the
+  // argument that named a place the contract refuses to look. The reference carrier's own
+  // containment failure is already named by `referenceSourceState`, so only the primary - which
+  // nothing else resolves at this stage - is recorded here.
+  const uncontained = [];
   for (const relative of candidates) {
     const carrier = readCarrier(root, relative);
+    if (carrier.state === "uncontained") {
+      if (relative !== referenceArtifact) uncontained.push(relative);
+      continue;
+    }
     if (carrier.state !== "present") continue;
     const block = carrier.document.graybox;
     if (block === undefined || block === null) continue;
@@ -258,11 +282,12 @@ function grayboxCarrier(root, options = {}) {
       carrier: null,
       graybox: null,
       binding,
+      uncontained,
       conflict: holders.map((holder) => holder.relative),
     };
   }
   if (!holders.length) {
-    return { artifact: null, carrier: null, graybox: null, binding, conflict: null };
+    return { artifact: null, carrier: null, graybox: null, binding, uncontained, conflict: null };
   }
   const [holder] = holders;
   return {
@@ -270,6 +295,7 @@ function grayboxCarrier(root, options = {}) {
     carrier: holder.relative,
     graybox: validateGraybox(holder.document.graybox, { compositionRegionIds: binding.ids }),
     binding,
+    uncontained,
     conflict: null,
   };
 }
@@ -372,6 +398,14 @@ function unreadableReferenceIssue(source) {
   };
 }
 
+function uncontainedCarrierIssue(relative) {
+  return {
+    blocker: `graybox carrier path ${relative} does not resolve inside the change root; `
+      + "name a path inside it so the stage reports on a document it can read",
+    reason: "graybox-carrier-uncontained",
+  };
+}
+
 function carrierConflictIssue(carriers) {
   return {
     blocker: `two carriers record a graybox block for this change: ${carriers.join(", ")}; `
@@ -391,8 +425,14 @@ function grayboxMissingIssue() {
 // composition recorded anywhere the comparison is asserting against a structure nothing wrote down,
 // so it is blocked rather than passed - and the document that should have carried the breakdown is
 // named, because "no document at all" and "a document with no composition" are different repairs.
+// `unreadable` and `uncontained` bindings are already blocked through `referenceSourceState`, so
+// they return null here rather than being re-reported as a document that recorded no composition.
 function grayboxBindingIssue(graybox, binding) {
-  if (binding.state === "recorded" || binding.state === "unreadable") return null;
+  if (
+    binding.state === "recorded"
+    || binding.state === "unreadable"
+    || binding.state === "uncontained"
+  ) return null;
   const named = graybox.comparison.regions.map((region) => region.id);
   if (!named.length) return null;
   if (binding.state === "unrecorded") {
@@ -423,7 +463,10 @@ function blockedGrayboxResult(issues) {
 
 function grayboxResult(root, carrier, source) {
   // Everything the stage owes about the documents themselves, before a single block field is read.
-  const leading = [unreadableReferenceIssue(source)].filter((issue) => issue !== null);
+  const leading = [
+    unreadableReferenceIssue(source),
+    ...(carrier.uncontained ?? []).map(uncontainedCarrierIssue),
+  ].filter((issue) => issue !== null);
   if (carrier.conflict) {
     return blockedGrayboxResult([...leading, carrierConflictIssue(carrier.conflict)]);
   }
@@ -702,7 +745,14 @@ function grayboxSummary(root, options) {
   try {
     return summarize(checkGraybox(root, options));
   } catch (error) {
-    return { status: "blocked", reasons: ["graybox-invalid"], error: error.message };
+    // `summarize` always carries a `reason`; this branch owes the same shape, and the same value
+    // `reference-evidence-core.cjs` `grayboxStage` reports for the identical failure.
+    return {
+      status: "blocked",
+      reason: "graybox-invalid",
+      reasons: ["graybox-invalid"],
+      error: error.message,
+    };
   }
 }
 

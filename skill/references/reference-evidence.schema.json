@@ -46,8 +46,15 @@
             "required": ["availability"]
           },
           "then": {
+            "$comment": "source contradiction: a source that was never supplied has nothing to measure, so path, width, height, and sha256 are all null under pending. Permitting a value here would let a document say the bytes never arrived while carrying the hash of those bytes.",
             "required": ["pendingReason", "requestedFrom"],
-            "not": { "required": ["resolvedAt"] }
+            "not": { "required": ["resolvedAt"] },
+            "properties": {
+              "path": { "const": null },
+              "width": { "const": null },
+              "height": { "const": null },
+              "sha256": { "const": null }
+            }
           },
           "else": {
             "properties": {
@@ -164,6 +171,7 @@
               "id": { "type": "string", "minLength": 1 },
               "rows": { "type": "integer", "minimum": 1 },
               "columns": { "type": "integer", "minimum": 1 },
+              "contents": { "$ref": "#/$defs/regionContents" },
               "breaksFrom": {
                 "type": "array",
                 "uniqueItems": true,
@@ -174,6 +182,20 @@
         }
       },
       "allOf": [
+        {
+          "$comment": "composition contradiction: contents absent from every region is a composition written before the field existed and stays valid. Contents on some regions and not others is a document that adopted the field and then declined to answer for one region, which is the back-reference dodge with an empty cell in place of the words.",
+          "if": {
+            "required": ["regions"],
+            "properties": {
+              "regions": { "contains": { "required": ["contents"] } }
+            }
+          },
+          "then": {
+            "properties": {
+              "regions": { "items": { "required": ["contents"] } }
+            }
+          }
+        },
         {
           "if": {
             "properties": { "uniform": { "const": true } },
@@ -317,6 +339,14 @@
     }
   ],
   "$defs": {
+    "regionContents": {
+      "$comment": "composition back-reference: a short left-to-right description of what the region holds, authored from the reference. `as above`, `same as previous`, `see above`, `ditto`, `idem`, and equivalents defer to a neighbouring row instead of reading this region, which is the failure the per-region checklist exists to catch. The pattern is written as explicit letter classes because JSON Schema patterns carry no case-insensitive flag.",
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "pattern": "\\b([Aa][Ss][ \\t]+[Aa][Bb][Oo][Vv][Ee]|[Ss][Aa][Mm][Ee][ \\t]+[Aa][Ss]|[Ss][Ee][Ee][ \\t]+[Aa][Bb][Oo][Vv][Ee]|[Dd][Ii][Tt][Tt][Oo]|[Ii][Dd][Ee][Mm])\\b"
+      }
+    },
     "cue": {
       "type": "object",
       "additionalProperties": false,

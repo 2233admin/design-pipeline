@@ -61,6 +61,18 @@ All notable changes to Design Pipeline are documented here.
   reconciliation reason, for a reference manifest that is present but cannot be read or believed.
 - Added the `KERNEL_SIGNALED`, `KERNEL_STATUS_MISSING`, and `KERNEL_STATUS_UNSUPPORTED` CLI error
   codes, so a killed, statusless, or unrecognised kernel run is reported as its own failure.
+- Added the `graybox-carrier-uncontained` and `reference-source-uncontained` blocked reasons for a
+  carrier path that does not resolve inside the change root. Such a path was already refused unread,
+  but the refusal was reported as absence - `graybox-missing`, `reference-source-unrecorded`, or on
+  one path a `ready` stage - which named the wrong fault. A refused path is now reported once, as
+  itself.
+- Added an optional per-region `contents` field to the `composition` block, carrying the same
+  independent reading as the table's `Contents left to right` column, and the
+  `composition back-reference:` validation failure for a description that defers to another region
+  (`as above`, `same as`, `see above`, `ditto`, `idem`) anywhere in the string. The prohibition was
+  previously prose only, with nowhere in the document to record a description or check one.
+  Identical descriptions across regions stay valid; structurally identical registers legitimately
+  read the same.
 
 ### Changed
 
@@ -109,6 +121,16 @@ All notable changes to Design Pipeline are documented here.
   invalid/error, `2` blocked, `3` measured fidelity mismatch. `evidence capture`,
   `feedback record|prepare|reconcile`, and `source audit` label exit `3` as `fidelity-limited`
   rather than `captured` or `complete`.
+- A `pending` source must now carry `null` for `path`, `width`, `height`, and `sha256`. Only the
+  shape of those fields was checked before, so a document could say the bytes never arrived while
+  carrying their digest, and a reader had to guess which half to believe. The contradiction now
+  fails validation with `source contradiction:`, and the published
+  `reference-evidence.schema.json` pins all four to `null` in the pending branch. Every pending
+  document already written nulls all four, so this newly rejects only documents that were already
+  self-contradictory.
+- The website-clone scaffolder now emits the graybox capture task ahead of the spec task whenever a
+  target has `role: "primary"`, naming the primary target ids. The generated checklist previously
+  went straight from foundation to spec, contradicting the ordering rule the pipeline enforces.
 
 ### Fixed
 
@@ -190,6 +212,10 @@ All notable changes to Design Pipeline are documented here.
   existing installation.
 - Rejected non-SemVer release versions and stopped interpolating workflow-dispatch input into
   shell commands.
+- Set `reason` on `stages.graybox` when the graybox block cannot be validated. The summary carried
+  `reasons` and `error` but left `reason` undefined, so the same failure read as `graybox-invalid`
+  through `reference check` and as no reason at all through `reconstruction check`. The two
+  summaries now agree.
 
 ## [0.7.3] - 2026-07-28
 

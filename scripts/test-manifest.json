@@ -8,6 +8,7 @@
     "capability-audit.test.cjs",
     "carried-forward-defects.test.cjs",
     "check-deps.test.cjs",
+    "coderabbit-findings.test.cjs",
     "component-state-matrix.test.cjs",
     "composition-structure.test.cjs",
     "design-synthesis.test.cjs",

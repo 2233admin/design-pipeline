@@ -2,15 +2,23 @@
 
 ## Ordering
 
-| Reference role | Order |
-| --- | --- |
-| `primary-target` | reference evidence, graybox, `design.md`, implementation |
-| `constraint` | reference evidence, `design.md`, implementation, reconciliation |
-| `inspiration` | unchanged; reconciliation optional |
+| Reference role | Order | Reconciliation |
+| --- | --- | --- |
+| `primary-target` | reference evidence, graybox, `design.md`, implementation | required |
+| `constraint` | reference evidence, `design.md`, implementation - the existing order, retained | required, after the first render |
+| `inspiration` | reference evidence, `design.md`, implementation - the existing order, retained | required, after the first render |
 
-For `primary-target` the graybox is cheap and precedes the expensive artifact. The graybox is
-authored from `reference.md` alone, which is observation, not specification. `design.md` then
-records values that have already survived one render.
+Only the ordering differs by role. For `primary-target` the graybox is cheap and precedes the
+expensive artifact: it is authored from `reference.md` alone, which is observation, not
+specification, so `design.md` then records values that have already survived one render. For
+`constraint` and `inspiration` the existing order is retained and nothing is moved.
+
+Reconciliation is required for every change that has a reference, whatever the role. There is no
+optional path. An earlier draft of this design made reconciliation optional for `inspiration`; that
+was the error. A directional reference still produces specified values, those values still drift
+under the first render, and an undocumented drift is the defect this change exists to catch. The
+gate is role-agnostic in the same way: it asks whether the change has a reference at all, not what
+the reference is for.
 
 ## Drift Record
 
@@ -38,7 +46,8 @@ is not.
 
 `qa.md` gains a Spec reconciliation row. It is `blocked` when a change has a reference and
 `design.md` has no reconciliation section, and `ready` when the section exists and cites a capture
-that exists on disk.
+that exists on disk. The gate reads the presence of a reference, never its role, so `inspiration`
+is not exempt.
 
 ## Why Not Just Delete The Spec
 

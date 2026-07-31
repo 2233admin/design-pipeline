@@ -35,6 +35,8 @@
 - [x] Single wall-clock-aligned timer owning all registers
 - [x] Discrete `tick`, no interpolation
 - [x] `phosphor` surface noise via `feTurbulence`, composite-only
+- [x] `phosphor` opacity driven by a seeded aperiodic noise generator on the shared timer, not by a
+      CSS keyframe cycle
 - [x] Pause surface noise when the document is hidden
 - [x] `dim-stale` 240ms ramp
 
@@ -67,5 +69,12 @@
 
 - [x] Rendered in a real browser and inspected
 - [x] Fixed-advance numerals verified by substituting `8` for every digit
-- [x] Reduced-motion path verified with the emulated media feature
+- [ ] Reduced-motion path verified with the emulated media feature — **not run**. `browse` denies
+      `Emulation.setEmulatedMedia` under its CDP allowlist (see `qa.md` Validation Gaps)
+- [x] Reduced-motion rules read out of the CSSOM as the next-best check — declarations only, which
+      is why it missed the resolved-cascade defect recorded in `qa.md`
+- [x] Reduced-motion fallback verified by resolved `getComputedStyle` opacity in a browser whose
+      `prefers-reduced-motion` was already `reduce`
 - [ ] Measured reconstruction gates — **blocked**, source file unavailable (see `qa.md`)
+- [ ] Graybox gate — **blocked**, `graybox-missing`: no graybox capture or block was ever produced.
+      Unlike the gates above this one needs no source raster, so it is a process gap (see `qa.md`)

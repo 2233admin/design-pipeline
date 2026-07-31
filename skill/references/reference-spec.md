@@ -78,6 +78,17 @@ of a v2 document; omitting it fails validation with
 `reference evidence: reference is missing composition`. A v1 document predates the block and stays
 exempt, so archived changes remain readable.
 
+Each region may also carry `contents`, the same independent reading the table's `Contents left to
+right` column holds. Where it is recorded the back-reference rule is machine-enforced: `as above`,
+`same as`, `see above`, `ditto`, and `idem` are refused anywhere in the string, with a message
+prefixed `composition back-reference:`. Two regions may legitimately carry identical descriptions -
+registers 2 and 3 above do - so identical text is never treated as evidence of copying.
+
+`contents` is optional but not selectively optional. A composition that omits it from every region
+predates the field and validates unchanged; a composition that records it for some regions and not
+others fails with `composition contradiction:`, because a document that adopted the field and then
+left one cell empty is the back-reference dodge without the words.
+
 ### Schema era
 
 `design-pipeline.reference-evidence.v1` is a frozen legacy carrier, not a live schema version. It

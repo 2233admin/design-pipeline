@@ -63,6 +63,26 @@ faithful, or complete - not in `qa.md`, not in change `design.md`, and not in th
 not equivalence. Never substitute a default, a placeholder, or a declaration for the missing
 measurement.
 
+## Ordering by reference role
+
+The numbered order below is the `primary-target` order. Reference role selects the ordering, and the
+role is read from `intent.role` in `reference-evidence.json`:
+
+| Role | Ordering | Reconciliation |
+| --- | --- | --- |
+| `primary-target` | graybox captured and passed **before** change `design.md` | required |
+| `constraint` | existing order retained: change `design.md` in its usual place | required after the first render |
+| `inspiration` | existing order retained: change `design.md` in its usual place | required after the first render |
+
+Only the position of change `design.md` moves. The graybox gate itself is unconditional on every
+role, route, and fidelity mode - see "Graybox gate" below.
+
+Reconciliation is required for **every** change that has a reference. The role decides *when* it
+happens, never *whether* it happens; there is no role for which it is optional, `inspiration`
+included. For `constraint` and `inspiration`, write change `design.md` where it already sits and
+reconcile it against the first render afterwards. Every such change records a `Spec Reconciliation`
+section in change `design.md`; an empty table is a valid result, an absent section is not.
+
 ## Required order
 
 1. Resolve the source to a file path, or record `source.availability: pending` with `pendingReason`
@@ -71,7 +91,9 @@ measurement.
 3. Separate image space, canonical/object space, world space, and camera space.
 4. Render the layout-only graybox as `graybox.png` and record its structural comparison.
 5. Pass the graybox gate.
-6. Write change `design.md` against the graybox capture and cite it.
+6. Write change `design.md` against the graybox capture and cite it. This position is conditional on
+   `intent.role: primary-target`; `constraint` and `inspiration` keep their existing `design.md`
+   position and reconcile against the first render instead.
 7. Rectify the relevant source plane into `rectified-reference.png`.
 8. Build `front-elevation.svg` in canonical space.
 9. Construct shallow or full geometry from that elevation.
@@ -247,17 +269,24 @@ node <skill-root>/scripts/designer-pipeline.cjs reconstruction check `
 ```
 
 The stage reports `ready` or `blocked` and never `fidelity-limited`. Blocking reasons are
-`graybox-missing`, `graybox-carrier-conflict`, `graybox-capture-missing`, `graybox-mode-undeclared`,
+`graybox-missing`, `graybox-carrier-conflict`, `graybox-carrier-uncontained`,
+`graybox-capture-missing`, `graybox-mode-undeclared`,
 `graybox-mode-unverifiable`, `graybox-mode-incomplete`,
 `graybox-suppression-incomplete`, `graybox-comparison-missing`, `graybox-comparison-unmeasurable`,
 `graybox-composition-unrecorded`, `graybox-composition-undeclared`,
 `graybox-region-open`, `graybox-approval-pending`, and `graybox-approval-rejected`. The stage also
 reports the reference-document reasons it shares with the geometry gate:
 `reference-source-unparseable`, `reference-source-malformed`,
-`reference-source-availability-invalid`, `reference-source-unrecorded`, and
-`reference-source-undeclared`. A change written
+`reference-source-availability-invalid`, `reference-source-unrecorded`,
+`reference-source-undeclared`, and `reference-source-uncontained`. A change written
 before this gate existed reports `graybox-missing` rather than failing validation, so archived
 changes stay readable.
+
+A carrier path that does not resolve inside the change root is refused before it is read, and the
+refusal is reported as itself rather than as absence: `graybox-carrier-uncontained` for the primary
+artifact, `reference-source-uncontained` for the reference document. A refused path is named once.
+The reference carrier's containment failure is reported only as `reference-source-uncontained`, so
+one refusal never surfaces as two blockers.
 
 A graybox block that cannot be validated at all - an invalid block, or a comparison naming a region
 id `composition` never declared - surfaces through the aggregate `reference check` as `blocked` with

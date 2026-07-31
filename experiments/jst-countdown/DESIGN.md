@@ -77,12 +77,22 @@ Scale (relative to a `--u` board unit so the whole board scales as one object):
 | Step | Size | Use |
 | --- | --- | --- |
 | `display` | `7.2u` | Live time numerals |
-| `value` | `3.1u` | Countdown and GMT values |
-| `unit` | `2.0u` | Kanji unit marks 時 / 分 / 秒 |
+| `value` | `2.25u` | Countdown and GMT values |
+| `unit` | `2.4u` | Kanji unit marks 時 / 分 / 秒 |
 | `label-jp` | `1.35u` | Boxed Japanese row labels |
-| `label` | `0.78u` | Latin section labels |
-| `gloss` | `0.62u` | Latin translations under Japanese labels |
-| `micro` | `0.52u` | Superscript unit letters, decimal tail |
+| `label` | `0.6u` | Latin section labels |
+| `gloss` | `0.5u` | Latin translations under Japanese labels |
+| `micro` | `0.85u` | Superscript unit letters |
+| `tail` | `1.55u` | Trailing decimal on a value readout |
+
+These are the calibrated ratios. The first authored set (`value 3.1u`, `unit 2.0u`, `label 0.78u`,
+`gloss 0.62u`, `micro 0.52u`, no `tail` step) was never rendered; the values above are the ones that
+survived four render passes against the reference frame, and they are what the implementation's
+`--fs-*` custom properties carry. The step names are the contract; the numbers are tuned
+proportions, not measurements, and any change to them is a re-calibration that must be re-rendered.
+
+Note that `unit` sits above `value`: the kanji unit marks are optically smaller than Latin numerals
+at the same em size, so matching them numerically would make them read as the smaller element.
 
 Rules:
 

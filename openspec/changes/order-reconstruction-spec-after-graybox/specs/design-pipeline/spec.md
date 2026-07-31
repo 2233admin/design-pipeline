@@ -11,16 +11,32 @@ For a `primary-target` reference, the pipeline SHALL produce the graybox capture
 - **THEN** the graybox capture SHALL be produced before change `design.md`
 - **AND** `design.md` SHALL cite the capture it was written against.
 
-#### Scenario: A non-primary reference is used
+#### Scenario: A constraint reference is used
 
-- **WHEN** reference role is `constraint` or `inspiration`
-- **THEN** the existing stage order SHALL be preserved
+- **WHEN** reference role is `constraint`
+- **THEN** the existing stage order SHALL be retained as reference evidence, `design.md`,
+  implementation
+- **AND** a reconciliation pass SHALL follow the first render.
+
+#### Scenario: An inspiration reference is used
+
+- **WHEN** reference role is `inspiration`
+- **THEN** the existing stage order SHALL be retained as reference evidence, `design.md`,
+  implementation
 - **AND** a reconciliation pass SHALL follow the first render.
 
 ### Requirement: Specified and implemented values are reconciled
 
 Every change with a reference SHALL record the difference between the values written in
-`design.md` and the values the implementation actually used.
+`design.md` and the values the implementation actually used. This obligation is role-agnostic: it
+applies to `primary-target`, `constraint`, and `inspiration` alike, and reconciliation SHALL NOT be
+optional for any role.
+
+#### Scenario: The reference is directional only
+
+- **WHEN** reference role is `inspiration`
+- **THEN** the change SHALL still record a reconciliation section
+- **AND** the gate SHALL NOT treat the role as an exemption.
 
 #### Scenario: The implementation departs from the spec
 

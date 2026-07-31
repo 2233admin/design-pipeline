@@ -214,6 +214,9 @@ fidelity mode.
 - `fidelityEvidence` (true only when `ready`, `measured`, and measurable):
 - Exactly one carrier holds the `graybox` block (two is `graybox-carrier-conflict`, and neither
   block is validated):
+- Every carrier path resolves inside the change root - a path that escapes it is refused unread and
+  reported as the refusal, not as absence (`graybox-carrier-uncontained` for the primary artifact,
+  `reference-source-uncontained` for the reference document), and is named once, never twice:
 - Region findings and statuses (no `open` findings):
 - A `composition` is recorded somewhere for the comparison to bind to - a comparison that names
   regions with none recorded is `graybox-composition-unrecorded` (no `reference-evidence.json`) or

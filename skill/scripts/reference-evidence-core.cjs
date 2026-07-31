@@ -67,7 +67,8 @@ const SOURCE_KEYS = [
   "requestedAt",
   "resolvedAt",
 ];
-const COMPOSITION_REGION_KEYS = ["id", "rows", "columns", "breaksFrom"];
+const COMPOSITION_REGION_REQUIRED_KEYS = ["id", "rows", "columns", "breaksFrom"];
+const COMPOSITION_REGION_KEYS = [...COMPOSITION_REGION_REQUIRED_KEYS, "contents"];
 const GRAYBOX_ARTIFACT = "graybox.png";
 const GRAYBOX_FINDING_STATUSES = GRAYBOX_REGION_STATUSES;
 const GRAYBOX_UNRESOLVED_FINDING_STATUSES = GRAYBOX_UNRESOLVED_REGION_STATUSES;
@@ -87,6 +88,18 @@ const SOURCE_DIMENSION_KEYS = ["width", "height"];
 const COMPOSITION_AXIS_KEYS = ["rows", "columns"];
 const COMPOSITION_KEYS = ["uniform", "regions"];
 const COMPOSITION_MIN_REGIONS = 2;
+// `as above` describes the row before it, not the region in front of the author. A description that
+// defers to a neighbour is the exact failure the per-region checklist exists to catch: it lets one
+// reading be copied down the table instead of each region being read from the reference. The prose
+// in `reference-spec.md` has forbidden these since the checklist landed; this is the list the
+// validator actually applies.
+const REGION_BACK_REFERENCES = [
+  /\bas\s+above\b/i,
+  /\bsame\s+as\b/i,
+  /\bsee\s+above\b/i,
+  /\bditto\b/i,
+  /\bidem\b/i,
+];
 const CLASSIFICATION_KEYS = [
   "objectDimensionality",
   "cameraModel",
@@ -161,15 +174,18 @@ function validatePendingSource(source, scope) {
   if (Object.hasOwn(source, "resolvedAt")) {
     fail(scope, "source.resolvedAt is not allowed while source.availability is pending");
   }
-  if (source.path !== null) assertString(source.path, "source.path", scope);
-  for (const dimension of SOURCE_DIMENSION_KEYS) {
-    if (source[dimension] === null) continue;
-    if (!Number.isInteger(source[dimension]) || source[dimension] <= 0) {
-      fail(scope, `source.${dimension} must be a positive integer or null while source.availability is pending`);
-    }
-  }
-  if (source.sha256 !== null && !SHA256_PATTERN.test(source.sha256)) {
-    fail(scope, "source.sha256 must be a SHA-256 digest or null while source.availability is pending");
+  // A source that was never supplied has nothing to measure. Permitting a path, a pixel size, or a
+  // digest here let a document say the bytes never arrived while carrying the hash of those bytes,
+  // and a reader would have to guess which half of that sentence to believe. Every measurement is
+  // null under pending, so the absence is the claim rather than something inferred from it.
+  const measured = SOURCE_MEASUREMENT_KEYS.filter((key) => source[key] !== null);
+  if (measured.length) {
+    fail(
+      scope,
+      "source contradiction: source.availability is pending but "
+      + `${measured.join(", ")} carr${measured.length === 1 ? "ies" : "y"} a value; a source that `
+      + "was never supplied cannot carry measurements, so each must be null",
+    );
   }
 }
 
@@ -237,16 +253,51 @@ function assertCompositionShape(composition, scope) {
   }
 }
 
+// A recorded description is held to the independence rule. A blank or whitespace-only string is a
+// description that was reached for and not written, which `assertString` already rejects.
+function validateRegionContents(region, label, scope) {
+  assertString(region.contents, `${label}.contents`, scope);
+  const backReference = REGION_BACK_REFERENCES.find((pattern) => pattern.test(region.contents));
+  if (backReference) {
+    fail(
+      scope,
+      `composition back-reference: ${label}.contents defers to another region `
+      + `(${region.contents.trim()}); describe ${region.id} from the reference instead`,
+    );
+  }
+}
+
+// `contents` is absent from every region of a composition written before the field existed, and that
+// absence is read as the legacy default rather than as a failure. Absent from *some* regions is a
+// different claim: the document has adopted the field and then declined to answer for one region,
+// which is the back-reference dodge wearing an empty cell instead of the words `as above`.
+function assertRegionContentsAdoption(regions, described, scope) {
+  if (!described.length || described.length === regions.length) return;
+  const silent = regions.filter((region) => !Object.hasOwn(region, "contents"));
+  fail(
+    scope,
+    "composition contradiction: composition.regions record contents for "
+    + `${described.map((region) => region.id).join(", ")} but not for `
+    + `${silent.map((region) => region.id).join(", ")}; a composition either predates the contents `
+    + "field or describes every region, never some of them",
+  );
+}
+
 function validateRegionShapes(regions, scope) {
   const ids = [];
+  const described = [];
   regions.forEach((region, index) => {
     const label = `composition.regions[${index}]`;
-    assertKeys(region, COMPOSITION_REGION_KEYS, COMPOSITION_REGION_KEYS, label, scope);
+    assertKeys(region, COMPOSITION_REGION_REQUIRED_KEYS, COMPOSITION_REGION_KEYS, label, scope);
     assertString(region.id, `${label}.id`, scope);
     for (const axis of COMPOSITION_AXIS_KEYS) {
       if (!Number.isInteger(region[axis]) || region[axis] <= 0) {
         fail(scope, `${label}.${axis} must be a positive integer`);
       }
+    }
+    if (Object.hasOwn(region, "contents")) {
+      validateRegionContents(region, label, scope);
+      described.push(region);
     }
     assertStringArray(region.breaksFrom, `${label}.breaksFrom`, scope, { unique: true });
     if (ids.includes(region.id)) {
@@ -254,6 +305,7 @@ function validateRegionShapes(regions, scope) {
     }
     ids.push(region.id);
   });
+  assertRegionContentsAdoption(regions, described, scope);
   return ids;
 }
 

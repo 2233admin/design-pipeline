@@ -29,6 +29,7 @@
   --fs-label:calc(var(--u) * .6);
   --fs-gloss:calc(var(--u) * .5);
   --fs-micro:calc(var(--u) * .85);
+  --fs-tail:calc(var(--u) * 1.55);
 
   --font-numeral:"Arial Black","Archivo Black","Helvetica Neue",Impact,system-ui,sans-serif;
   --font-jp:"Yu Gothic UI","Yu Gothic","Hiragino Kaku Gothic ProN","Noto Sans JP","MS Gothic",sans-serif;
@@ -312,7 +313,7 @@ body{
 .tail{
   font-family:var(--font-tech);
   font-weight:700;
-  font-size:calc(var(--u) * 1.55);
+  font-size:var(--fs-tail);
   font-variant-numeric:tabular-nums;
   color:var(--amber);
   text-shadow:0 0 .4em var(--glow-warm), 0 0 1.2em rgba(255,150,30,.4);
@@ -348,25 +349,28 @@ body{
   mask-image:radial-gradient(105% 85% at 55% 45%, transparent 52%, #000 92%);
 }
 
-/* phosphor grain: three seeded layers cross-fading on irregular periods.
-   Only opacity is bound. No geometry channel is animated. */
+/* phosphor grain: three seeded turbulence layers. There is no keyframe cycle,
+   because a keyframe cycle is periodic by construction and the motion contract
+   forbids a surface that reads as a loop. Each layer's emission opacity is
+   resampled by the board's single timer from a seeded fractal value-noise
+   generator (see the script). Only opacity is bound; no geometry channel is.
+
+   The values below are the static seeded texture: they are what the panel shows
+   before the driver's first sample, and they are what stands under reduced
+   motion, where the driver never writes. They are authored at the same
+   specificity as `.grain .g` so the cascade actually resolves to them. */
 .grain{opacity:.5;mix-blend-mode:overlay}
 .grain svg{width:100%;height:100%;display:block}
 .grain .g{opacity:0}
-.g1{animation:phos-a 11.3s linear infinite}
-.g2{animation:phos-b 7.1s linear infinite}
-.g3{animation:phos-c 13.7s linear infinite}
-@keyframes phos-a{0%,100%{opacity:.34}31%{opacity:.10}67%{opacity:.28}}
-@keyframes phos-b{0%,100%{opacity:.12}44%{opacity:.32}78%{opacity:.16}}
-@keyframes phos-c{0%,100%{opacity:.26}22%{opacity:.11}59%{opacity:.30}}
-
-.stage[data-hidden="true"] ~ .lens .g{animation-play-state:paused}
+.grain .g1{opacity:.22}
+.grain .g2{opacity:.22}
+.grain .g3{opacity:.20}
 
 @media (prefers-reduced-motion:reduce){
   /* substitute: the same seeded turbulence, rendered once, held still */
-  .g1{animation:none;opacity:.30}
-  .g2{animation:none;opacity:.18}
-  .g3{animation:none;opacity:.22}
+  .grain .g1{opacity:.30}
+  .grain .g2{opacity:.18}
+  .grain .g3{opacity:.22}
   .register{transition:none}
 }
 
@@ -447,7 +451,7 @@ body{
           <span class="k">Countdown</span>
           <span class="k k--dim">GET</span>
         </span>
-        <span class="value"><span aria-hidden="true">T+</span><span id="met">00:00:00</span></span>
+        <span class="value"><span aria-hidden="true">T+</span><time id="met" datetime="PT0S">00:00:00</time></span>
         <span class="tail" id="met-tail" aria-hidden="true">.00</span>
       </div>
     </section>
@@ -492,7 +496,6 @@ body{
   var lastTick = Date.now();
 
   var el = {
-    stage: document.getElementById("stage"),
     jstTime: document.getElementById("jst-time"),
     jstH: document.getElementById("jst-h"),
     jstM: document.getElementById("jst-m"),
@@ -504,6 +507,64 @@ body{
   };
 
   function pad(n, w){ n = String(n); while (n.length < w) n = "0" + n; return n; }
+
+  // ---- phosphor: seeded fractal value noise, opacity channel only ----------
+  // A CSS keyframe cycle is periodic by construction, so it can never satisfy
+  // "no cycle a viewer can lock onto". The generator below has no cycle at all:
+  // each lattice value is a hash of (seed, lattice index), so the sequence does
+  // not repeat at any observation length. It is still deterministic — a frame
+  // captured at wall-clock time T reproduces exactly from the seeds and T.
+  var GRAIN = [
+    { sel: ".g1", seed: 17, lattice: 2600, lo: .10, hi: .34, el: null },
+    { sel: ".g2", seed: 58, lattice: 3300, lo: .12, hi: .32, el: null },
+    { sel: ".g3", seed: 93, lattice: 4100, lo: .11, hi: .30, el: null }
+  ];
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  for (var gi = 0; gi < GRAIN.length; gi++){
+    GRAIN[gi].el = document.querySelector(GRAIN[gi].sel);
+  }
+
+  function hash01(seed, i){
+    var h = (Math.imul(i | 0, 2654435761) ^ seed) >>> 0;
+    h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0;
+    h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0;
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  }
+
+  // two octaves at a non-integer ratio, so the octaves never re-align either
+  function noise01(seed, t, lattice){
+    var sum = 0, norm = 0, step = lattice;
+    for (var k = 0; k < 2; k++){
+      var x = t / step, i = Math.floor(x), f = x - i;
+      var s = f * f * (3 - 2 * f);
+      var w = 1 / (k + 1);
+      sum += w * (hash01(seed + k * 101, i) * (1 - s) + hash01(seed + k * 101, i + 1) * s);
+      norm += w;
+      step /= 2.37;
+    }
+    return sum / norm;
+  }
+
+  // Reduced motion: the driver never writes, so the authored static texture in
+  // the stylesheet stands. Nothing here re-enables it.
+  function phosphor(now){
+    if (reduceMotion.matches || document.hidden) return;
+    for (var i = 0; i < GRAIN.length; i++){
+      var g = GRAIN[i];
+      if (!g.el) continue;
+      g.el.style.opacity = (g.lo + (g.hi - g.lo) * noise01(g.seed, now, g.lattice)).toFixed(3);
+    }
+  }
+
+  function releasePhosphor(){
+    if (!reduceMotion.matches) return;
+    for (var i = 0; i < GRAIN.length; i++){
+      if (GRAIN[i].el) GRAIN[i].el.style.removeProperty("opacity");
+    }
+  }
+  if (reduceMotion.addEventListener) reduceMotion.addEventListener("change", releasePhosphor);
+  releasePhosphor();
 
   // JST is UTC+9 with no daylight saving, so a fixed offset is correct.
   function jstParts(now){
@@ -533,11 +594,18 @@ body{
     el.gmt.setAttribute("datetime", d.toISOString());
 
     var e = now - T0;
+    var eSec = Math.floor(e / 1000);
     el.met.textContent =
       pad(Math.floor(e / 3600e3), 2) + ":" +
       pad(Math.floor(e / 60e3) % 60, 2) + ":" +
-      pad(Math.floor(e / 1000) % 60, 2);
+      pad(eSec % 60, 2);
+    // ISO 8601 duration, machine-readable. aria-live stays off: this is
+    // available on demand, never announced per second.
+    el.met.setAttribute("datetime", "PT" + eSec + "S");
     el.metTail.textContent = "." + pad(Math.floor((e % 1000) / 10), 2);
+
+    // surface noise rides the same clock; no second timer, no frame loop
+    phosphor(now);
   }
 
   // 10Hz ceiling, aligned to the wall clock so drift never accumulates.
@@ -557,8 +625,9 @@ body{
     });
   }, 1000);
 
+  // The noise driver checks document.hidden itself, so hiding the tab stops the
+  // surface without a CSS play-state hook.
   document.addEventListener("visibilitychange", function(){
-    el.stage.setAttribute("data-hidden", String(document.hidden));
     if (!document.hidden){ lastTick = Date.now(); render(); }
   });
 

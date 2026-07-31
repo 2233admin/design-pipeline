@@ -7,9 +7,12 @@
 - [x] Add the `source-pending` blocked reason to `reference-evidence-core.cjs` and `check-reference-evidence.cjs`.
 - [x] Refuse `reconstruction check --stage geometry|final` against a pending source; report `blocked`, never `fidelity-limited`.
 - [x] Keep `intent.requestedFidelity` and `intent.downgrade` untouched by a pending source.
-- [ ] Record `resolvedAt` when a source later lands so pending-origin runs stay identifiable. The
-      contract accepts and validates `resolvedAt` and forbids it while pending, and `reference-spec.md`
-      tells the agent to write it, but nothing records it and no gate or report reads it, so a
-      pending-origin run is not in fact identifiable.
+- [ ] Record `resolvedAt` when a source later lands so pending-origin runs stay identifiable.
+      Deliberately unchecked, not forgotten. The contract accepts and validates `resolvedAt` and
+      forbids it while pending, and `reference-spec.md` tells the agent to write it, but no script
+      writes it and no gate or report reads it, so a pending-origin run is not in fact identifiable.
+      The field is kept rather than removed; `design.md`, section `resolvedAt Has No Writer`, names
+      the writer and the reader that would have to be built to close this, and why deleting the
+      field from the proposal alone would be a worse outcome than leaving this box open.
 - [x] Update `reference-spec.md` and `reconstruction-spec.md`.
 - [x] Run focused tests, full tests, and package QA.

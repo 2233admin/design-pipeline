@@ -281,18 +281,24 @@ Before writing design artifacts or code:
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
 - Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.
-- When visual references influence the change, create `reference.md` and normative
+- Resolve the reference source to a file path here, before any reference artifact is written -
+  before `reference.md`, before `reference-evidence.json`, and before `reconstruction.json`. Ask
+  the user for the path when it is not resolvable and name what it unlocks: rectification, camera
+  calibration, landmark error, and the fidelity receipt. When no path arrives, record
+  `source.availability: pending` with `pendingReason` and `requestedFrom` and report it now. A
+  pending source surfaces at Stage 0, not at gate review. Asking for the path after the artifacts
+  already exist is the defect this step exists to prevent.
+- Then, when visual references influence the change, create `reference.md` and normative
   `reference-evidence.json` from `references/reference-spec.md`. Record object dimensionality,
   camera model, interaction model, and output surface separately before selecting `2d`, `2.5d`,
   `3d`, or `hybrid`. Perspective, occlusion, near/far scale, volumetric containers, and camera
   behavior are spatial evidence; glow and transparency alone are not. Run
-  `designer-pipeline reference check` and stop unless it reports `ready`.
+  `designer-pipeline reference check` and stop unless it reports `ready`, with exactly one
+  exception: a standalone `source-pending`, meaning the top-level `reason` is `source-pending` and
+  every entry in the `stages` map reports `ready`. A run blocked for `source-pending` and anything
+  else is still a stop.
 - When exact static-reference language is present, use reference-evidence v2 and
   `reconstruction.json`; do not silently treat the image as a mood board or style direction.
-- Resolve the reference source to a file path here, before any reference artifact is written. Ask
-  the user for the path when it is not resolvable and name what it unlocks. When no path arrives,
-  record `source.availability: pending` with `pendingReason` and `requestedFrom` and report it now.
-  A pending source surfaces at Stage 0, not at gate review.
 - Check for project `DESIGN.md`. If it is missing or materially incompatible with the request, route
   through the requirements-driven synthesis module before implementation.
 - Run `node <design-pipeline>/scripts/check-design-foundation.cjs --project-root . --json`.
@@ -356,8 +362,10 @@ truth for visual language and screen-space UI.
 Order this stage by reference role. For `primary-target`, capture and pass the graybox first, then
 write `design.md` against it and cite that capture; a spec written from a reading alone propagates
 the misreading into the implementation. For `constraint` and `inspiration`, keep the existing order
-and reconcile `design.md` against the first render afterwards. Every change with a reference records
-a `Spec Reconciliation` section; an empty table is a valid result, an absent section is not.
+and reconcile `design.md` against the first render afterwards. Reconciliation is required for every
+change that has a reference; the role decides *when* it happens, never *whether* it happens, and
+there is no role for which it is optional, `inspiration` included. Every change with a reference
+records a `Spec Reconciliation` section; an empty table is a valid result, an absent section is not.
 
 `design.md` records:
 
@@ -451,8 +459,13 @@ Rules:
 - Re-run `scripts/check-design-foundation.cjs` and stop unless it reports `ready`.
 - Re-run `scripts/check-motion-foundation.cjs` and stop unless it reports `ready`.
 - When references influence the change, run `designer-pipeline reference check` and stop unless it
-  reports `ready`. `blocked` with reason `source-pending` records an unresolved source; continue
-  through the graybox gate and keep the measured gates blocked. This command now carries three
+  reports `ready`, with exactly one exception: a standalone `source-pending`. Standalone means the
+  top-level `reason` is `source-pending` **and** every entry in the `stages` map reports `ready`.
+  Only then continue - through the graybox gate, with the measured gates kept blocked. A run blocked
+  for `source-pending` *and* anything else - a blocked `stages.graybox`, a blocked
+  `stages.reconciliation`, any other reason - is still a stop. The aggregate reports one top-level
+  `reason`, so `source-pending` on that line is not by itself evidence that the stages are clear;
+  read the `stages` map before continuing. This command now carries three
   stages - `stages.graybox`, `stages.reconciliation`, and the aggregate's own contract checks - and
   reports `blocked` when any of them is not `ready`, so a change that passed it before the fold can
   block on a `Spec Reconciliation` section that was never written.

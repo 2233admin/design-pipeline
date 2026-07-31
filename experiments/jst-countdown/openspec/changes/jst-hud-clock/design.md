@@ -1,7 +1,7 @@
 # Change Design — jst-hud-clock
 
 Foundation: project `DESIGN.md` — `JST Mission Clock Board`,
-sha256 `3d544262ea94c55a3e6ea244f27aa359bc8600416c7607d78ebd394314a49126`.
+sha256 `eccabd1a28b42adfd439386b0feaad1ff1d8d3a1e62cd9ae15dc9d9436f44063`.
 Route: `2.5d`, fixed perspective, locked cinematic frame (see `reference.md`).
 
 ## Layout Grid And Projection
@@ -64,6 +64,17 @@ and are recorded as such in `reference.md` section 6.
 
 These ratios were calibrated against the reference frame by eye across four render passes. They are
 tuned proportions, not measurements; see `qa.md` Fidelity.
+
+Every row above is the value carried by the matching `--fs-*` custom property in `index.html`, and
+project `DESIGN.md` now records the same set. The calibration originally landed here only, leaving
+the foundation on its pre-render values (`value 3.1u`, `unit 2.0u`, `label 0.78u`, `gloss 0.62u`,
+`micro 0.52u`, no `tail` step); that contradiction is closed by promoting the calibrated set into
+`DESIGN.md`, not by reverting the implementation to numbers no render ever saw.
+
+Two sizes in `index.html` are component-level and are deliberately not scale steps: the `GET` /
+`GMT` sub-label at `0.78u` (`.stack .k--dim`) and the badge code at `0.95u` (`.badge`). Neither
+table claims them, so neither is a scale contradiction — but they are untokenized, and a future
+calibration pass should either fold them into the scale or leave them recorded here as exceptions.
 
 All numerals use `font-variant-numeric: tabular-nums` and a fixed per-digit advance so an `8`
 occupies exactly the space of a `1`.

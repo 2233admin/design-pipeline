@@ -288,6 +288,34 @@ const RECONCILIATION_SECTION = [
   "| --- | --- | --- | --- |",
 ].join("\n");
 
+// A `primary` clone target is the website-cloning form of a `primary-target` reference: the
+// implementation is compared back to that exact source. `references/design-spec.md` orders that
+// case graybox first, so the checklist has to name the capture before the spec it is written
+// against. `reference`-only target sets are constraints and keep the existing order.
+function grayboxCaptureTask(targets) {
+  if (!targets.some((target) => target.role === "primary")) return [];
+  const ids = targets.filter((target) => target.role === "primary").map((target) => target.id);
+  return [
+    `- [ ] Capture a layout-only graybox for each primary target (${ids.join(", ")}) and pass `
+    + "`designer-pipeline reconstruction check --stage graybox` before writing design.md.",
+  ];
+}
+
+function taskList(targets) {
+  return [
+    "# Tasks",
+    "",
+    "- [ ] Verify authorization and execution capabilities.",
+    "- [ ] Capture reconnaissance and interaction evidence for every target.",
+    "- [ ] Establish target-project foundation and assets.",
+    ...grayboxCaptureTask(targets),
+    "- [ ] Write one complete spec before each bounded builder slice.",
+    "- [ ] Assemble and run the target project's build checks.",
+    "- [ ] Fill the `Spec Reconciliation` section in design.md: cite the graybox capture the spec was written against, record every value the implementation changed with an observed cause, and pass `designer-pipeline reconciliation check`.",
+    "- [ ] Run visual, interaction, accessibility, motion, responsive, and headless QA.",
+  ].join("\n");
+}
+
 function planningFiles(changeId, targets) {
   const targetList = targets
     .map((target) => `- ${target.id} (${target.role}): ${target.url}`)
@@ -298,7 +326,7 @@ function planningFiles(changeId, targets) {
     "directions.md": "# Directions\n\nDocument fidelity and adaptation directions after reconnaissance. Select one direction before implementation.",
     "design.md": `# Design\n\nRecord topology, tokens, component contracts, target-project mappings, responsive behavior, accessibility, and implementation decisions here.\n\n${RECONCILIATION_SECTION}`,
     "motion.md": "# Motion\n\nRecord target motion only when it is observable and purposeful. Include triggers, states, timing, easing, interruption behavior, performance budget, and reduced-motion fallback.",
-    "tasks.md": "# Tasks\n\n- [ ] Verify authorization and execution capabilities.\n- [ ] Capture reconnaissance and interaction evidence for every target.\n- [ ] Establish target-project foundation and assets.\n- [ ] Write one complete spec before each bounded builder slice.\n- [ ] Assemble and run the target project's build checks.\n- [ ] Fill the `Spec Reconciliation` section in design.md: cite the graybox capture the spec was written against, record every value the implementation changed with an observed cause, and pass `designer-pipeline reconciliation check`.\n- [ ] Run visual, interaction, accessibility, motion, responsive, and headless QA.",
+    "tasks.md": taskList(targets),
     "qa.md": "# QA\n\nRecord self-check, static checks, desktop/mobile evidence, interaction checks, accessibility, motion, responsive behavior, engineering fit, headless state, scorecard, and final verdict.",
   };
 }

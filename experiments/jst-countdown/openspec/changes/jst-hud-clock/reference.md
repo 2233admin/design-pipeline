@@ -127,16 +127,32 @@ These must survive implementation:
 
 ## 7. Resulting Artifact Requirements
 
-Because role is `primary-target` and requested fidelity is `exact-reconstruction`, this change
-requires `reference-evidence.json` v2, `reconstruction.json`, `rectified-reference.png`,
-`front-elevation.svg`, `camera-calibration.json`, `landmark-overlay.png`, and a hash-bound
-`fidelity-receipt.json`.
+Every reference route requires `graybox.png`, including `2d` and `2.5d`, so this change requires it
+on route grounds alone. Because role is `primary-target` and requested fidelity is
+`exact-reconstruction`, it additionally requires `reference-evidence.json` v2, `reconstruction.json`,
+`rectified-reference.png`, `front-elevation.svg`, `camera-calibration.json`, `landmark-overlay.png`,
+and a hash-bound `fidelity-receipt.json`.
 
-None of these can be produced without the source file. Every one of them is derived from source
-pixels: rectification anchors, landmark coordinates, camera solve, and the diff receipt all
-measure against the source raster.
+These two groups are blocked for different reasons and must not be collapsed into one.
 
-Status: **blocked**. The route classification above is complete and usable; the measured fidelity
-contract is not started. The implementation proceeds as an unverified reconstruction and is
-labelled as such in `qa.md`. Requested fidelity remains `exact-reconstruction` and has not been
-downgraded, because only the user may approve a downgrade.
+**Source-derived group** — `rectified-reference.png`, `front-elevation.svg`,
+`camera-calibration.json`, `landmark-overlay.png`, `fidelity-receipt.json`. None can be produced
+without the source file. Every one of them is derived from source pixels: rectification anchors,
+landmark coordinates, camera solve, and the diff receipt all measure against the source raster.
+Blocked by the environment.
+
+**Graybox group** — `graybox.png` plus a `graybox` block on exactly one carrier. The graybox gate is
+unconditional: it applies to every route, to every fidelity mode including
+`directional-inspiration`, and to runs whose source is `pending`. It needs no source raster and
+costs one screenshot, so the missing source does not excuse it. It gates a different thing from the
+geometry and final stages — it holds back optical treatment (materials, glow, bloom, depth of field,
+scanlines, grading) until the layout has been checked without them. Blocked by **`graybox-missing`**:
+no capture and no block was produced, and the optical treatment shipped anyway. This is a process
+gap, not an environmental limit, and it is recorded as one in `qa.md` and in `state.json.blockers`.
+
+Status: **blocked**, on both counts. The route classification above is complete and usable; the
+graybox gate never ran and the measured fidelity contract is not started. The implementation
+proceeds as an unverified reconstruction and is labelled as such in `qa.md`. Requested fidelity
+remains `exact-reconstruction` and has not been downgraded, because only the user may approve a
+downgrade. Producing `graybox.png` would clear `graybox-missing`; it would not upgrade the fidelity
+claim, which stays `unverified` until a measurement against the source replaces it.

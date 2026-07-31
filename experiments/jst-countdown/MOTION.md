@@ -57,18 +57,22 @@ Procedural motion is declarative-only and limited to the `phosphor` surface laye
 - Generator: fractal noise over time, consumed as a scalar in `[0, 1]` per frame.
 - Bound channels: emission opacity and glow luminance. No geometry channel may be bound.
 - Amplitude ceiling: 4% of the emissive tier's luminance.
-- Frequency band: irregular, with no repeating cycle shorter than the observation window, so the
-  surface never reads as a loop.
-- Determinism: the generator is seeded so a captured frame can be reproduced for evidence.
+- Frequency band: aperiodic. There is no cycle length, not merely a long one. A keyframe cycle is
+  periodic by construction and cannot satisfy this rule at any duration, so the surface layer may
+  not be driven by one. The scalar is sampled from a hash over time, which never repeats at any
+  observation length.
+- Determinism: the generator is seeded, so a frame captured at a known timestamp reproduces exactly
+  from the seed set plus that timestamp. Aperiodic is not the same as unreproducible.
 - The registry entry describes a semantic contract only. The runtime implementation is authored
   for this project; no upstream animation code is copied.
 
 ## Runtime Policy
 
-- Default runtime: CSS only. Surface noise is an SVG filter plus CSS opacity; clock values are
-  written to the DOM by a single timer.
-- One clock owns time. A single interval updates every register. No component runs its own timer,
-  and no animation library owns the frame loop.
+- Default runtime: no animation library. Surface noise is an SVG filter for the spatial grain; its
+  layer opacity, like every clock value, is written to the DOM by the board's single timer. CSS
+  keyframes are not used for the surface layer, because they can only produce a cycle.
+- One clock owns time. A single interval updates every register and advances the surface noise
+  scalar. No component runs its own timer, and no animation library owns the frame loop.
 - No animation dependency may be added. GSAP, Anime.js, and canvas/WebGL runtimes are out of scope
   for this surface; if a future surface needs one, it must be justified in that change's
   `motion.md`, not assumed here.
@@ -82,8 +86,11 @@ Procedural motion is declarative-only and limited to the `phosphor` surface laye
 
 Under `prefers-reduced-motion: reduce`:
 
-- `phosphor` is disabled entirely. Its substitute is a static, seeded noise texture rendered once,
-  so the panel keeps its material character with zero temporal change.
+- `phosphor` is disabled entirely: the noise driver never writes, and the authored static opacity
+  for each seeded turbulence layer stands. Its substitute is therefore a static, seeded noise
+  texture rendered once, so the panel keeps its material character with zero temporal change. The
+  static values must win the cascade against the layer's base rule; a fallback that resolves to
+  zero opacity is a removed texture, not a static one, and does not satisfy this clause.
 - `dim-stale` loses its ramp; the fallback is an immediate luminance change to the stale tier.
 - `tick` is unchanged. Clock advancement is information, not decoration, and suppressing it would
   break the product. This is a deliberate exception and is recorded in every change QA.
