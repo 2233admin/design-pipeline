@@ -105,7 +105,8 @@ Describe:
 - cleanup of render loops, observers, contexts, filters, and listeners.
 
 For PixiJS, Phaser, Three.js, React Three Fiber, Babylon.js, PlayCanvas, Canvas, WebGL, WebGPU, and
-other persistent spatial runtimes, create `scene.md` using `references/scene-runtime-spec.md`.
+other persistent spatial runtimes, create `scene.json` plus the family-selected `scene.md` or
+`3d.md` projection using `references/scene-runtime-spec.md`.
 Keep camera, coordinates, scene graph, assets, input, render/game-loop, DPR/resize, performance,
 determinism, accessibility overlay, fallback, and cleanup ownership there. `motion.md` remains the
 temporal and semantic motion contract.

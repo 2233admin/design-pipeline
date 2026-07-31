@@ -30,9 +30,9 @@ archive lifecycle so another agent or developer can resume the work later.
 - Routes Anime.js v4.5 across layout, text, SVG, draggable, scroll, WAAPI, adapters, and Three.js work.
 - Routes the official PixiJS v8 skill suite for justified interactive 2D rendering, with explicit
   scene, lifecycle, performance, accessibility, reduced-motion, and fallback contracts.
-- Routes graphics by durable capability family before library choice, with normative `scene.json`
-  plus a human-readable `scene.md` projection for 2D, 3D, game, GPU, geospatial, and persistent
-  narrative state.
+- Routes references through machine-checkable geometry, camera, interaction, and output evidence
+  before library choice, including fixed-camera cinematic 3D, with normative `scene.json`, `3d.md`
+  for 3D families, and `scene.md` for persistent non-3D runtime state.
 - Exposes one stable `designer-pipeline` CLI for lifecycle state, evidence, motion/component gates,
   tokens/UI IR, benchmarks, adapter governance, local feedback, and release diagnostics.
 - Provides a native Phaser v4 route for browser games and a game UI/Galgame profile for HUD,
@@ -164,8 +164,15 @@ classifies the surface as semantic UI, data/vector graphics, 2D editor canvas, 2
 2D game engine, 3D renderer, 3D game engine, geospatial 3D, GPU/shader work, or narrative game UI.
 It then preserves the target project's accepted runtime or chooses the smallest suitable adapter.
 
-Persistent spatial or engine-owned work adds normative change `scene.json` and a matching
-`scene.md` projection. The sidecar records coordinates, lifecycle, assets, input,
+When visual references influence a change, `reference.md` records observable spatial evidence and
+`reference-evidence.json` separately records reference role, requested/effective fidelity,
+geometry, camera, interaction, output, confidence, required artifacts, and approval. Exact static
+targets add `reconstruction.json`: rectified front view, canonical elevation, locked camera,
+distributed landmark overlay, and an EvidencePort receipt bound to source/render/diff hashes.
+The fixed-camera cinematic route preserves real 3D without
+requiring end-user camera navigation. Persistent spatial or engine-owned work adds
+normative change `scene.json` and a family-specific projection: `3d.md` for 3D families,
+`scene.md` otherwise. The sidecar records coordinates, lifecycle, assets, input,
 UI/accessibility boundaries, adapter/version, performance budgets, deterministic evidence,
 degradation, and cleanup in a machine-checkable contract. The Markdown file explains the same
 decisions and must match the sidecar identity and foundation hashes. `DESIGN.md` remains the visual
@@ -180,7 +187,7 @@ The official Phaser Game Agent MCP is optional because it is credentialed and me
 unlicensed community Phaser skill pack is tracked only as a curation candidate and is never
 auto-installed. See `skill/references/graphics-runtime-routing.md`,
 `skill/references/graphics-runtime-catalog.json`, `skill/references/adapter-registry.json`,
-`skill/references/scene-runtime-spec.md`,
+`skill/references/scene-runtime-spec.md`, `skill/references/reconstruction-spec.md`,
 `skill/references/phaser-v4.md`, and `skill/references/game-ui-and-narrative.md`.
 
 ## Contextual Anti-Slop Review
@@ -367,11 +374,15 @@ contracts.
 
 `skill/scripts/designer-pipeline.cjs` is the stable lifecycle façade over the deterministic kernels.
 It emits `design-pipeline.cli-result.v1`, contains every project path below `--root`, and uses exit
-code `0` for success, `1` for invalid input/error, and `2` for blocked or failed verification.
+code `0` for success, `1` for invalid input/error, `2` for blocked evidence, and `3` for a complete
+measurement that misses the requested fidelity threshold.
 
 ```powershell
 node skill/scripts/designer-pipeline.cjs doctor --root . --json
 node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
+node skill/scripts/designer-pipeline.cjs reference check --root . --change-root openspec/changes/example --json
+node skill/scripts/designer-pipeline.cjs reconstruction check --root . --change-root openspec/changes/example --stage geometry --json
+node skill/scripts/designer-pipeline.cjs reconstruction check --root . --change-root openspec/changes/example --stage final --json
 node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
 node skill/scripts/designer-pipeline.cjs adapter audit --root . --json
 ```
@@ -416,12 +427,15 @@ The pipeline's runtime design artifacts map to OpenSpec as:
 | design-pipeline | OpenSpec role |
 | --- | --- |
 | `brief.md` | Proposal intent |
+| `reference.md` | Reference evidence and spatial route |
+| `reference-evidence.json` | Normative role, fidelity, geometry, camera, interaction, output, and approval contract |
+| `reconstruction.json` | Static-target rectification, camera calibration, landmark, and final comparison gate |
 | `directions.md` | Design exploration |
-| `design.md` | Technical/design approach |
+| `design.md` | Visual language and screen-space UI |
 | `motion.md` | Motion-specific design spec |
 | `tasks.md` | Implementation checklist |
 | `qa.md` | Validation evidence |
-| `scene.json` / `scene.md` | Machine scene contract / readable projection |
+| `scene.json` / `scene.md` / `3d.md` | Machine runtime contract / non-3D or 3D readable projection |
 | `state.json` / `events.jsonl` / `handoff.md` | CAS-protected state / append-only history / readable resume note |
 
 ## Minimum Viable Run

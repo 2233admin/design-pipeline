@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pipeline.local/reference-evidence.schema.json",
+  "title": "Design Pipeline Reference Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "source",
+    "classification",
+    "spatialCues",
+    "route",
+    "confidence",
+    "requiredArtifacts",
+    "approval"
+  ],
+  "properties": {
+    "schema": {
+      "enum": [
+        "design-pipeline.reference-evidence.v1",
+        "design-pipeline.reference-evidence.v2"
+      ]
+    },
+    "id": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "width", "height", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["image", "video", "live-page", "document", "other"] },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objectDimensionality", "cameraModel", "interactionModel", "outputSurface", "runtimeFamily"],
+      "properties": {
+        "objectDimensionality": { "enum": ["2d", "2.5d", "3d"] },
+        "cameraModel": { "enum": ["none", "fixed-orthographic", "fixed-perspective", "navigable-perspective"] },
+        "interactionModel": { "enum": ["none", "bounded-parallax", "inspectable", "navigable"] },
+        "outputSurface": { "enum": ["screen-space-ui", "locked-cinematic-frame", "interactive-scene"] },
+        "runtimeFamily": { "type": "string", "minLength": 1 }
+      }
+    },
+    "spatialCues": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["thickness", "occlusion", "contactShadows", "bevelHighlights", "perspectiveConvergence", "depthOfField"],
+      "properties": {
+        "thickness": { "$ref": "#/$defs/cue" },
+        "occlusion": { "$ref": "#/$defs/cue" },
+        "contactShadows": { "$ref": "#/$defs/cue" },
+        "bevelHighlights": { "$ref": "#/$defs/cue" },
+        "perspectiveConvergence": { "$ref": "#/$defs/cue" },
+        "depthOfField": { "$ref": "#/$defs/cue" }
+      }
+    },
+    "route": { "enum": ["2d", "2.5d", "3d", "hybrid"] },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "requiredArtifacts": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": { "enum": ["pending", "approved", "rejected"] },
+        "evidence": { "type": "string", "minLength": 1 }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "requestedFidelity",
+        "effectiveFidelity",
+        "reconstructionArtifact",
+        "downgrade"
+      ],
+      "properties": {
+        "role": { "enum": ["primary-target", "constraint", "inspiration"] },
+        "requestedFidelity": {
+          "enum": [
+            "exact-reconstruction",
+            "adaptive-reconstruction",
+            "directional-inspiration"
+          ]
+        },
+        "effectiveFidelity": {
+          "enum": [
+            "exact-reconstruction",
+            "adaptive-reconstruction",
+            "directional-inspiration"
+          ]
+        },
+        "reconstructionArtifact": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "downgrade": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "evidence"],
+          "properties": {
+            "status": {
+              "enum": ["not-requested", "pending-user", "approved-by-user"]
+            },
+            "evidence": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema": { "const": "design-pipeline.reference-evidence.v1" }
+        },
+        "required": ["schema"]
+      },
+      "then": {
+        "not": { "required": ["intent"] }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema": { "const": "design-pipeline.reference-evidence.v2" }
+        },
+        "required": ["schema"]
+      },
+      "then": {
+        "required": ["intent"]
+      }
+    }
+  ],
+  "$defs": {
+    "cue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "evidence"],
+      "properties": {
+        "present": { "type": "boolean" },
+        "evidence": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

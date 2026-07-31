@@ -1,0 +1,22 @@
+{
+  "blockers": [],
+  "changeId": "add-exact-static-reference-reconstruction-gate",
+  "evidence": [],
+  "extensions": {},
+  "foundations": {
+    "design": null,
+    "motion": null
+  },
+  "lastEventSeq": 0,
+  "migration": null,
+  "nextActions": [
+    "Review and release the exact static-reference reconstruction gate with the surrounding pending spatial-routing change."
+  ],
+  "phase": "verification",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 0,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "verifying",
+  "updatedAt": "2026-07-31T06:13:12.430Z"
+}

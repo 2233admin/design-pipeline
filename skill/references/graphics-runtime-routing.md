@@ -7,11 +7,16 @@ security, degradation, and benchmark admission.
 
 ## Stable Layers
 
-1. Project `DESIGN.md` owns visual language, layout, components, type, color, and product identity.
+1. Project `DESIGN.md` owns reusable product identity; change `design.md` owns visual language and
+   screen-space UI.
 2. Project `MOTION.md` owns motion semantics, timing, interruption, and reduced-motion behavior.
-3. Change `scene.json` owns the normative spatial/runtime contract; `scene.md` explains it.
-4. Runtime libraries, companion skills, and external hosts implement replaceable adapters.
-5. Evidence receipts and `qa.md` prove the adapter preserved the contracts and budgets.
+3. Change `reference.md` records observable spatial evidence while `reference-evidence.json`
+   normatively separates geometry, camera, interaction, and output before selecting `2d`, `2.5d`,
+   `3d`, or `hybrid`.
+4. Change `scene.json` owns the normative spatial/runtime contract; `3d.md` explains 3D families
+   and `scene.md` explains persistent non-3D families.
+5. Runtime libraries, companion skills, and external hosts implement replaceable adapters.
+6. Evidence receipts and `qa.md` prove the adapter preserved the contracts and budgets.
 
 Model capability can improve implementation quality; it does not replace these contracts.
 
@@ -35,6 +40,7 @@ Do not select a library because it is popular, installed, or visually impressive
 | `canvas-editor-2d` | Canvas/Konva/Fabric | Selection, transforms, drawing, infinite canvas |
 | `scene-renderer-2d` | PixiJS | Sprites, particles, filters, high object counts |
 | `game-engine-2d` | Phaser | Scenes, cameras, input, audio, physics, game state |
+| `fixed-camera-cinematic-3d` | Three.js fixed-camera profile | Authored 3D stills or sequences with no user camera navigation |
 | `scene-renderer-3d` | Three.js/R3F | Focused product 3D and custom scenes |
 | `game-engine-3d` | Babylon.js/PlayCanvas | Integrated entities, physics, audio, simulation lifecycle |
 | `geospatial-3d` | CesiumJS/MapLibre | Maps, terrain, globes, tiles, spatial coordinates |
@@ -55,9 +61,13 @@ keep benchmark admission blocked and never trigger automatic installation.
 
 ## Required Artifacts
 
-Create `scene.json` plus `scene.md` for persistent PixiJS, Phaser, Three.js/R3F, Babylon.js,
-PlayCanvas, CesiumJS, raw WebGPU, spatial editor, or game/narrative state. Motion stays in
-`motion.md`; runtime structure cannot redefine the project motion language.
+Create `reference.md` and `reference-evidence.json` first when visual references influence the
+route, then require `designer-pipeline reference check` to report `ready`. Create `scene.json` plus
+`3d.md` for fixed-camera cinematic output, Three.js/R3F, Babylon.js, PlayCanvas, CesiumJS, and other
+3D families. Create
+`scene.json` plus `scene.md` for persistent PixiJS, Phaser, raw WebGPU without a 3D family, spatial
+editors, or game/narrative state. Motion stays in `motion.md`; runtime structure cannot redefine the
+project motion language.
 
 Audit current routing with:
 

@@ -4,6 +4,29 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+### Added
+
+- Added mandatory `reference.md` evidence routing for `2d`, `2.5d`, `3d`, and `hybrid` changes.
+- Added normative `reference-evidence.json`, the public `reference check` command, and an approval
+  gate that blocks implementation when spatial classification is unresolved.
+- Added `fixed-camera-cinematic-3d` for authored 3D shots that intentionally expose no user camera
+  navigation.
+- Added `3d.md` as the direct readable spatial contract for 3D renderer, engine, and geospatial
+  families, including an actual-runtime graybox gate before cinematic surface effects.
+- Added an explicit change `design.md` boundary for visual language and screen-space UI.
+- Added non-downgradable static-reference roles and fidelity modes in
+  `reference-evidence.json` v2.
+- Added `reconstruction.json`, the public `reconstruction check` command, rectified-front-view and
+  camera-calibration gates, independently recomputed landmark error, and hash-bound EvidencePort
+  receipts for exact still-frame reconstruction.
+
+### Changed
+
+- Scene validation now selects `3d.md` for 3D families and keeps `scene.md` for persistent non-3D
+  runtimes. Legacy 3D `scene.md` files receive a deterministic upgrade-required rename preview.
+- Spatial routing now separates object dimensionality, camera model, interaction model, and output
+  surface instead of coupling 3D geometry to camera navigation.
+
 ### Fixed
 
 - Made packaging, installation, `doctor`, and dependency self-check use one required-resource

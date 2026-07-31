@@ -26,9 +26,9 @@ function makeScene(family, adapter) {
   };
 }
 
-function markdown(scene) {
+function markdown(scene, title = "Scene Runtime") {
   return [
-    "# Scene Runtime",
+    `# ${title}`,
     "",
     `Scene ID: \`${scene.id}\``,
     `DESIGN SHA-256: \`${scene.foundations.designSha256}\``,
@@ -40,14 +40,25 @@ function markdown(scene) {
   ].join("\n");
 }
 
-test("DOM narrative, PixiJS, Phaser, and 3D scene contracts pass", () => {
-  for (const [family, adapter] of [["narrative-game-ui", "narrative-dom-runtime"], ["scene-renderer-2d", "pixijs-v8"], ["game-engine-2d", "phaser-v4"], ["scene-renderer-3d", "threejs"]]) {
+test("DOM narrative, PixiJS, and Phaser use scene.md while 3D uses 3d.md", () => {
+  for (const [family, adapter] of [["narrative-game-ui", "narrative-dom-runtime"], ["scene-renderer-2d", "pixijs-v8"], ["game-engine-2d", "phaser-v4"], ["scene-renderer-3d", "threejs"], ["fixed-camera-cinematic-3d", "threejs-fixed-camera"]]) {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-scene-"));
     const scene = makeScene(family, adapter);
+    const projection = family.endsWith("-3d") ? "3d.md" : "scene.md";
     fs.writeFileSync(path.join(root, "scene.json"), `${JSON.stringify(scene, null, 2)}\n`);
-    fs.writeFileSync(path.join(root, "scene.md"), markdown(scene));
+    fs.writeFileSync(path.join(root, projection), markdown(scene, projection === "3d.md" ? "3D World" : "Scene Runtime"));
     assert.equal(checkScene(root).status, "ready");
   }
+});
+
+test("legacy 3D scene.md requires a deterministic rename to 3d.md", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-scene-"));
+  const scene = makeScene("scene-renderer-3d", "threejs");
+  fs.writeFileSync(path.join(root, "scene.json"), `${JSON.stringify(scene, null, 2)}\n`);
+  fs.writeFileSync(path.join(root, "scene.md"), markdown(scene));
+  const result = checkScene(root);
+  assert.equal(result.status, "upgrade-required");
+  assert.deepEqual(result.preview.rename, { from: "scene.md", to: "3d.md" });
 });
 
 test("legacy scene markdown produces a deterministic non-writing upgrade preview", () => {
@@ -66,7 +77,7 @@ test("honest unknown adapter availability is valid but blocks execution", () => 
   const scene = makeScene("scene-renderer-3d", "candidate-3d-runtime");
   scene.adapter.availability = "unknown";
   fs.writeFileSync(path.join(root, "scene.json"), `${JSON.stringify(scene, null, 2)}\n`);
-  fs.writeFileSync(path.join(root, "scene.md"), markdown(scene));
+  fs.writeFileSync(path.join(root, "3d.md"), markdown(scene, "3D World"));
   assert.equal(validateScene(scene).adapter.availability, "unknown");
   assert.equal(checkScene(root).status, "blocked");
 });

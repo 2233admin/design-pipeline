@@ -15,7 +15,7 @@ test("graphics catalog covers stable frontend families and routes only by regist
   assert.equal(catalog.adapters, undefined);
   const familyIds = catalog.families.map((family) => family.id);
   assert.equal(new Set(familyIds).size, familyIds.length);
-  for (const required of ["semantic-ui", "vector-data", "canvas-editor-2d", "scene-renderer-2d", "game-engine-2d", "scene-renderer-3d", "game-engine-3d", "geospatial-3d", "gpu-shader", "narrative-game-ui"]) assert.ok(familyIds.includes(required), `missing graphics family ${required}`);
+  for (const required of ["semantic-ui", "vector-data", "canvas-editor-2d", "scene-renderer-2d", "game-engine-2d", "fixed-camera-cinematic-3d", "scene-renderer-3d", "game-engine-3d", "geospatial-3d", "gpu-shader", "narrative-game-ui"]) assert.ok(familyIds.includes(required), `missing graphics family ${required}`);
   assert.equal(validateRegistry(registry, catalog).status, "valid");
 });
 

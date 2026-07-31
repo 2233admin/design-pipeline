@@ -11,7 +11,7 @@ const {
 
 const SUPPORT = ["native", "generic-workflow", "companion", "reference-only", "unsupported", "out-of-scope"];
 const AVAILABILITY = ["available", "unavailable", "blocked", "unknown"];
-const FAMILIES = ["semantic-ui", "vector-data", "canvas-editor-2d", "scene-renderer-2d", "game-engine-2d", "scene-renderer-3d", "game-engine-3d", "geospatial-3d", "gpu-shader", "narrative-game-ui", "design-tool"];
+const FAMILIES = ["semantic-ui", "vector-data", "canvas-editor-2d", "scene-renderer-2d", "game-engine-2d", "fixed-camera-cinematic-3d", "scene-renderer-3d", "game-engine-3d", "geospatial-3d", "gpu-shader", "narrative-game-ui", "design-tool"];
 
 function validateRegistry(registry, graphicsCatalog = null) {
   assertKeys(registry, ["schema", "version", "adapters"], ["schema", "version", "adapters"], "registry", "adapter registry");

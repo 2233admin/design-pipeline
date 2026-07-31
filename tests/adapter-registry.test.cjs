@@ -12,7 +12,7 @@ const catalog = JSON.parse(fs.readFileSync(path.join(root, "graphics-runtime-cat
 
 test("adapter registry is authoritative for support, provenance, license, security, and degradation", () => {
   const result = validateRegistry(registry, catalog);
-  assert.equal(result.adapters, 23);
+  assert.equal(result.adapters, 24);
   assert.equal(result.support.companion, 1);
   assert.ok(registry.adapters.every((adapter) => adapter.provenance.url && adapter.security.execution && adapter.degradation));
 });

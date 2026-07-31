@@ -1,12 +1,13 @@
 # Change Scene And Runtime Contract
 
-Create both `scene.json` and `scene.md` when a change owns persistent 2D/3D state, a render/game
-loop, Canvas/WebGL/WebGPU resources, cameras/coordinates, geospatial state, or persistent narrative
-game state.
+Create normative `scene.json` plus one readable projection when a change owns persistent 2D/3D
+state, a render/game loop, Canvas/WebGL/WebGPU resources, cameras/coordinates, geospatial state, or
+persistent narrative game state.
 
-`scene.json` is normative and uses `design-pipeline.scene-runtime.v1`. `scene.md` is a readable
-projection. Neither replaces project `DESIGN.md`, project `MOTION.md`, or change `design.md` /
-`motion.md`.
+`scene.json` is normative and uses `design-pipeline.scene-runtime.v1`. Use `3d.md` for
+`scene-renderer-3d`, `game-engine-3d`, and `geospatial-3d`; use `scene.md` for other persistent
+families. Neither replaces project `DESIGN.md`, project `MOTION.md`, or change `reference.md`,
+`design.md`, or `motion.md`.
 
 ## Normative Sidecar
 
@@ -35,7 +36,8 @@ values. Evidence must be deterministic and cite at least one receipt.
 
 ## Readable Projection
 
-`scene.md` must link `scene.json` and begin with matching identity markers:
+The selected `scene.md` or `3d.md` projection must link `scene.json` and begin with matching identity
+markers:
 
 ```md
 Scene ID: `<scene-id>`
@@ -62,6 +64,11 @@ Explain concrete decisions under every heading. The Markdown projection may incl
 for boot/pause/resume/destroy, scene/camera/layer mappings, asset ownership, input conflicts, and
 QA scenarios, but it cannot contradict the sidecar.
 
+For 3D families, `3d.md` must additionally satisfy `references/3d-spec.md`, including perspective,
+spatial navigation, scene graph, volumetric construction, world/screen-space ownership, and the
+pre-polish graybox gate. A legacy 3D `scene.md` is reported as `upgrade-required` with a
+deterministic rename preview; the checker does not rewrite it.
+
 ## Gate
 
 ```powershell
@@ -70,7 +77,8 @@ node skill/scripts/designer-pipeline.cjs scene check --root . --change-root <cha
 
 - `ready` / exit `0`: sidecar and projection agree, adapter is available, degradation is not blocked.
 - `blocked` / exit `2`: contract is valid but the adapter/degradation cannot execute.
-- `upgrade-required` / exit `2`: legacy `scene.md` exists without `scene.json`; a deterministic preview is returned and no file is written.
+- `upgrade-required` / exit `2`: a projection exists without `scene.json`, or a 3D family still
+  uses legacy `scene.md`; a deterministic preview is returned and no file is written.
 - invalid / exit `1`: schema, identity, placeholder, foundation, or projection mismatch.
 
 The selected adapter owns one render/update clock and cleanup path. Multiple runtimes require

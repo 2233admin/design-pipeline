@@ -45,6 +45,22 @@ function sceneFixture(root) {
 }
 
 function fixtures(root) {
+  writeJson(path.join(root, "reference-evidence.json"), {
+    schema: "design-pipeline.reference-evidence.v1", id: "cli-reference",
+    source: { path: "reference.png", kind: "image", width: 723, height: 405, sha256: "a".repeat(64) },
+    classification: { objectDimensionality: "3d", cameraModel: "fixed-perspective", interactionModel: "none", outputSurface: "locked-cinematic-frame", runtimeFamily: "fixed-camera-cinematic-3d" },
+    spatialCues: {
+      thickness: { present: true, evidence: "Visible side wall." },
+      occlusion: { present: true, evidence: "Raised digits overlap the field." },
+      contactShadows: { present: true, evidence: "Short shadows under glyphs." },
+      bevelHighlights: { present: true, evidence: "Directional rim highlights." },
+      perspectiveConvergence: { present: true, evidence: "Rails converge." },
+      depthOfField: { present: true, evidence: "Near and far edges soften." },
+    },
+    route: "3d", confidence: 0.98,
+    requiredArtifacts: ["reference.md", "scene.json", "3d.md", "graybox.png"],
+    approval: { status: "approved", evidence: "Approved in the task conversation." },
+  });
   writeJson(path.join(root, "evidence.json"), {
     schema: "design-pipeline.evidence-receipt.v1", id: "partial", status: "partial",
     adapter: { id: "fake", version: "1", availability: "available", probe: { ok: true, message: "ready" } },
@@ -136,6 +152,7 @@ test("every P1-P3 public validation namespace is routed by the source CLI", () =
   fixtures(root);
   const sceneRoot = path.join(root, "scene"); fs.mkdirSync(sceneRoot); sceneFixture(sceneRoot);
   const commands = [
+    ["reference", "check", "--change-root", "."],
     ["scene", "check", "--change-root", "scene"],
     ["evidence", "check", "--receipt", "evidence.json"],
     ["verify", "motion", "--receipt", "motion.json"],

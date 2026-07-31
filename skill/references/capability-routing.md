@@ -45,7 +45,7 @@ Figma and Sites are runtime/plugin surfaces. Their absence is not an install-tim
 | Existing project runtime | The repo already has an accepted animation library and it satisfies the motion spec | It cannot meet accessibility, performance, interruption, or fidelity requirements |
 
 Never add overlapping runtimes for the same change unless `design.md`, `motion.md`, and when
-required `scene.md` name distinct, non-overlapping responsibilities. PixiJS is a specialized
+required `scene.md` or `3d.md` name distinct, non-overlapping responsibilities. PixiJS is a specialized
 renderer; Phaser is a full 2D game runtime. If either is combined with GSAP, Anime.js, CSS, or
 WAAPI, assign one render-loop owner and prevent two runtimes from driving the same property, clock,
 lifecycle, or cleanup path.

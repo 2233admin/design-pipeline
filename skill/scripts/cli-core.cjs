@@ -15,6 +15,8 @@ const {
   writeNewChange,
 } = require("./pipeline-state-core.cjs");
 const { checkScene } = require("./scene-runtime-core.cjs");
+const { checkReferenceEvidence } = require("./reference-evidence-core.cjs");
+const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
@@ -36,7 +38,7 @@ const KNOWN_OPTIONS = new Set([
   "--height", "--installed-evidence", "--kind", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
   "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
-  "--source", "--source-evidence", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width",
+  "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width",
 ]);
 
 function parseArgs(argv) {
@@ -179,7 +181,7 @@ function publicHelp() {
     "Commands:",
     "  doctor | status",
     "  change init|resume|advance|migrate|repair",
-    "  foundation check | scene check",
+    "  foundation check | reference check | reconstruction check | scene check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
     "  verify motion|components",
@@ -187,7 +189,7 @@ function publicHelp() {
     "  benchmark evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
     "",
-    "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked or verification failure.",
+    "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked, 3 measured fidelity mismatch.",
   ].join("\n");
 }
 
@@ -310,10 +312,30 @@ function foundationCommand(parsed, root) {
   return { result: { status: blocked ? "blocked" : "ready", foundations: result }, exitCode: blocked ? 2 : 0 };
 }
 
-function sceneCommand(parsed, root) {
+function spatialCommand(parsed, root, command) {
   const changeRoot = changeRootFrom(parsed, root);
-  const result = checkScene(changeRoot, { markdown: option(parsed, "--markdown"), sidecar: option(parsed, "--sidecar") });
-  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  let result;
+  if (command === "scene") {
+    result = checkScene(changeRoot, {
+      markdown: option(parsed, "--markdown"),
+      sidecar: option(parsed, "--sidecar"),
+    });
+  } else if (command === "reference") {
+    result = checkReferenceEvidence(changeRoot, {
+      artifact: option(parsed, "--artifact"),
+    });
+  } else {
+    result = checkReconstruction(changeRoot, {
+      artifact: option(parsed, "--artifact"),
+      stage: option(parsed, "--stage", "geometry"),
+    });
+  }
+  const exitCode = result.status === "ready"
+    ? 0
+    : result.status === "fidelity-limited"
+      ? 3
+      : 2;
+  return { result, exitCode };
 }
 
 function benchmarkFeedback(root, result) {
@@ -419,7 +441,9 @@ function dispatch(argv) {
   if (command === "status") outcome = { result: statusCommand(parsed, root), exitCode: 0 };
   else if (command === "change") outcome = changeCommand(parsed, root, action);
   else if (command === "foundation" && action === "check") outcome = foundationCommand(parsed, root);
-  else if (command === "scene" && action === "check") outcome = sceneCommand(parsed, root);
+  else if (["reference", "reconstruction", "scene"].includes(command) && action === "check") {
+    outcome = spatialCommand(parsed, root, command);
+  }
   else if (command === "evidence") outcome = evidenceCommand(parsed, root, action);
   else if (command === "verify") outcome = verifyCommand(parsed, root, action);
   else if (command === "patterns") outcome = patternCommand(parsed, root, action);

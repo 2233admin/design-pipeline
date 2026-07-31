@@ -142,15 +142,26 @@ effects, and common layout families are not hard failures.
 - Cleanup on unmount:
 - Evidence: screenshot / video / trace / manual notes:
 
+## Reference And Spatial Routing
+
+Complete this section when visual references influence the change.
+
+- `reference.md` source inventory and provenance:
+- Observable spatial evidence for and against 3D:
+- Selected route: `2d` / `2.5d` / `3d` / `hybrid`:
+- Fidelity invariants:
+- Required artifact set:
+- Graybox gate passed before polish for `3d` / `hybrid`:
+
 ## Scene And Runtime Checks
 
-Complete this section when `scene.json` and `scene.md` are required.
+Complete this section when `scene.json` and `scene.md` or `3d.md` are required.
 
 - Graphics capability family:
 - Adapter ID and version:
 - Existing runtime preserved or dependency change justified:
 - `scene.json` passes `scene check`:
-- `scene.md` projection identity/hash markers match:
+- Family-selected projection (`scene.md` or `3d.md`) identity/hash markers match:
 - DESIGN/MOTION foundation hashes recorded:
 - Scene, camera, coordinates, layers, and safe-area policy:
 - Single render/game-loop owner:

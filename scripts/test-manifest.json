@@ -22,6 +22,8 @@
     "pipeline-state.test.cjs",
     "publication-bridge.test.cjs",
     "record-feedback.test.cjs",
+    "reference-evidence.test.cjs",
+    "reconstruction.test.cjs",
     "scene-runtime.test.cjs",
     "ui-pattern-catalog.test.cjs",
     "visual-style-signals.test.cjs",
