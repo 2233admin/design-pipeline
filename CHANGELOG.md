@@ -378,6 +378,7 @@ All notable changes to Design Pipeline are documented here.
   authority or replacing required browser evidence with headless adapter measurements.
 - Preserved legacy website-cloning manifest resume/evaluation paths by backfilling missing authority
   contracts on identical resumes and reporting older complete manifests as blocked until migrated.
+- Updated GitHub checkout, Node setup, and artifact upload actions to Node 24-compatible releases.
 - Tightened runtime validation to reject malformed anti-slop policy/source metadata, schema-invalid
   website-cloning manifests, empty motion sections, executable motion content in any section, and
   contradictory static-motion selections.
