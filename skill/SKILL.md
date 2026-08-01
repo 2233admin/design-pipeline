@@ -112,7 +112,7 @@ faithfully reproduced result:
 When the user asks to clone, reproduce, rebuild, reverse-engineer, or use one or more live pages as implementation references:
 
 1. Read `references/website-cloning.md` and `references/website-clone-component-spec.md` completely.
-2. Initialize the run with `scripts/init-website-clone.cjs`; pass direct clone targets with `--url` and supporting inspiration/comparison pages with `--reference-url`.
+2. Initialize the run with `scripts/init-website-clone.cjs`; pass direct clone targets with `--url` and supporting inspiration/comparison pages with `--reference-url`. When one target is the user-designated structure or motion template, pass it as the primary `--url`/`--authority-url`, enumerate every allowed difference, protect the required invariants, and select `actual-browser` when live-tab interaction is part of acceptance.
 3. Treat `references/website-cloning-manifest.schema.json` as the machine-readable Browser/Builder/Evidence port and fidelity contract.
 4. Complete `targets/<target-id>/research/palette-evidence.json` from both DOM/computed-style
    evidence and screenshot/raster-media evidence, then reflect the same roles and values in
@@ -122,7 +122,7 @@ When the user asks to clone, reproduce, rebuild, reverse-engineer, or use one or
    project `MOTION.md`, and every target palette must be `ready`; adaptive mode does not bypass
    this gate.
 6. Keep the URL-first user experience, but record each adapter, its available capabilities, and a successful capability probe before claiming exact fidelity.
-7. After EvidencePort writes its measured report, run `scripts/evaluate-website-clone.cjs`; this is the only path that may move the manifest to `complete`.
+7. After EvidencePort writes its measured report, run `scripts/evaluate-website-clone.cjs`; this is the only path that may move the manifest to `complete`. The evaluator must also verify implementation-authority identity, protected invariants, allowed differences, replay provenance, and the declared interaction environment; adaptive fidelity does not bypass these checks.
 8. If a required port or measurement is missing, keep `blocked`; if complete measurements miss a threshold, use `fidelity-limited`. Never fill missing measurements by visual guesswork.
 
 The website-cloning module is a design-pipeline superset capability. It adds live evidence capture and convergence gates while preserving all existing accessibility, motion, responsive, engineering, and headless-state requirements.

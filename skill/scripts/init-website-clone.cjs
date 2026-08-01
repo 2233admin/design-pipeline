@@ -48,7 +48,10 @@ function parseArgs(argv) {
     projectRoot: process.cwd(),
     primaryUrls: [],
     referenceUrls: [],
+    allowedDifferences: [],
+    protectedInvariants: [],
     fidelity: "exact",
+    interactionEnvironment: "adapter-measured",
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -93,6 +96,42 @@ function parseArgs(argv) {
       options.referenceUrls.push(arg.slice("--reference-url=".length));
       continue;
     }
+    if (arg === "--authority-url") {
+      options.authorityUrl = takeValue(argv, index, arg);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--authority-url=")) {
+      options.authorityUrl = arg.slice("--authority-url=".length);
+      continue;
+    }
+    if (arg === "--allowed-difference") {
+      options.allowedDifferences.push(takeValue(argv, index, arg));
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--allowed-difference=")) {
+      options.allowedDifferences.push(arg.slice("--allowed-difference=".length));
+      continue;
+    }
+    if (arg === "--protected-invariant") {
+      options.protectedInvariants.push(takeValue(argv, index, arg));
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--protected-invariant=")) {
+      options.protectedInvariants.push(arg.slice("--protected-invariant=".length));
+      continue;
+    }
+    if (arg === "--interaction-environment") {
+      options.interactionEnvironment = takeValue(argv, index, arg);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--interaction-environment=")) {
+      options.interactionEnvironment = arg.slice("--interaction-environment=".length);
+      continue;
+    }
     if (arg === "--fidelity") {
       options.fidelity = takeValue(argv, index, arg);
       index += 1;
@@ -110,7 +149,7 @@ function parseArgs(argv) {
 
 function printHelp() {
   console.log(
-    "Usage: node init-website-clone.cjs --change-id <id> --url <url> [--reference-url <url> ...] [--fidelity exact|adaptive] [--project-root <path>]",
+    "Usage: node init-website-clone.cjs --change-id <id> --url <url> [--reference-url <url> ...] [--authority-url <primary-url>] [--allowed-difference <name> ...] [--protected-invariant <name> ...] [--interaction-environment adapter-measured|actual-browser] [--fidelity exact|adaptive] [--project-root <path>]",
   );
 }
 
@@ -234,12 +273,49 @@ function validateOptions(options) {
   const referenceUrls = options.referenceUrls ?? [];
   if (primaryUrls.length === 0) fail("at least one primary --url is required");
   validateFidelity(options.fidelity);
+  if (!["adapter-measured", "actual-browser"].includes(options.interactionEnvironment)) {
+    fail("--interaction-environment must be adapter-measured or actual-browser");
+  }
 
   const projectRoot = resolveExistingProjectRoot(options.projectRoot);
   const normalizedTargets = normalizeTargets(primaryUrls, referenceUrls);
   rejectDuplicateTargets(normalizedTargets);
   const targets = buildTargets(normalizedTargets);
-  return { changeId: options.changeId, projectRoot, targets, fidelity: options.fidelity };
+  const defaultAuthorityUrl = targets
+    .filter((target) => target.role === "primary")
+    .map((target) => target.url)
+    .sort((left, right) => left.localeCompare(right))[0];
+  const authorityUrl = options.authorityUrl
+    ? normalizeUrl(options.authorityUrl)
+    : defaultAuthorityUrl;
+  const authorityTarget = targets.find(
+    (target) => target.role === "primary" && target.url === authorityUrl,
+  );
+  if (!authorityTarget) fail("--authority-url must match a declared primary --url");
+  const allowedDifferences = [...new Set(options.allowedDifferences.map((value) => value.trim()))];
+  const protectedInvariants = [
+    ...new Set(
+      (options.protectedInvariants.length
+        ? options.protectedInvariants
+        : ["component topology", "responsive behavior", "interaction behavior"]
+      ).map((value) => value.trim()),
+    ),
+  ];
+  if (allowedDifferences.some((value) => !value)) fail("--allowed-difference must be non-empty");
+  if (protectedInvariants.some((value) => !value)) fail("--protected-invariant must be non-empty");
+  return {
+    changeId: options.changeId,
+    projectRoot,
+    targets,
+    fidelity: options.fidelity,
+    implementationAuthority: {
+      authorityTargetId: authorityTarget.id,
+      designRecord: "design.md#implementation-authority",
+      allowedDifferences,
+      protectedInvariants,
+      requiredInteractionEnvironment: options.interactionEnvironment,
+    },
+  };
 }
 
 function findArtifactRoot(projectRoot) {
@@ -277,7 +353,7 @@ function planningFiles(changeId, targets) {
     "proposal.md": `# Proposal: ${changeId}\n\n## Why\n\nReconstruct the authorized target website surfaces through the design-pipeline website-cloning module.\n\n## Targets\n\n${targetList}\n\n## Non-Goals\n\n- Do not reproduce protected backend behavior, authentication, or private data by default.\n- Do not replace the target project's established framework without an explicit requirement.`,
     "brief.md": `# Brief: ${changeId}\n\n## Goal\n\nCreate a high-fidelity, maintainable reconstruction of the target website surfaces.\n\n## Targets\n\n${targetList}\n\n## Constraints\n\n- Confirm ownership, authorization, licensing, and applicable terms.\n- Capture real content and assets only when their use is permitted.\n- Preserve accessibility, responsive behavior, and reduced-motion support.`,
     "directions.md": "# Directions\n\nDocument fidelity and adaptation directions after reconnaissance. Select one direction before implementation.",
-    "design.md": "# Design\n\nRecord topology, tokens, component contracts, target-project mappings, responsive behavior, accessibility, and implementation decisions here.",
+    "design.md": "# Design\n\nRecord topology, tokens, component contracts, target-project mappings, responsive behavior, accessibility, and implementation decisions here.\n\n## Implementation Authority\n\nThe target, allowed differences, protected invariants, and required interaction environment are declared in `website-cloning.json`. Record the source rationale and project-specific enforcement here.",
     "motion.md": "# Motion\n\nRecord target motion only when it is observable and purposeful. Include triggers, states, timing, easing, interruption behavior, performance budget, and reduced-motion fallback.",
     "tasks.md": "# Tasks\n\n- [ ] Verify authorization and execution capabilities.\n- [ ] Capture reconnaissance and interaction evidence for every target.\n- [ ] Establish target-project foundation and assets.\n- [ ] Write one complete spec before each bounded builder slice.\n- [ ] Assemble and run the target project's build checks.\n- [ ] Run visual, interaction, accessibility, motion, responsive, and headless QA.",
     "qa.md": "# QA\n\nRecord self-check, static checks, desktop/mobile evidence, interaction checks, accessibility, motion, responsive behavior, engineering fit, headless state, scorecard, and final verdict.",
@@ -451,7 +527,26 @@ function mergeHandoff(handoffPath, changeId, artifactRoot, targets, now) {
   writeFile(handoffPath, `${existing.trimEnd()}\n\n${section}`);
 }
 
-function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets, fidelityMode) {
+function ensureImplementationAuthorityDesignRecord(changeRoot) {
+  const designPath = path.join(changeRoot, "design.md");
+  const heading = "## Implementation Authority";
+  const existing = fs.readFileSync(designPath, "utf8");
+  if (existing.includes(heading)) return;
+  writeFile(
+    designPath,
+    `${existing.trimEnd()}\n\n${heading}\n\nThe target, allowed differences, protected invariants, and required interaction environment are declared in \`website-cloning.json\`. Record the source rationale and project-specific enforcement here.`,
+  );
+}
+
+function populateChange(
+  changeRoot,
+  projectRoot,
+  artifactRoot,
+  changeId,
+  targets,
+  fidelityMode,
+  implementationAuthority,
+) {
   const now = new Date().toISOString();
   const relativeRoot = relativeFromProject(projectRoot, artifactRoot, changeId);
   const statePath = path.join(changeRoot, "state.json");
@@ -463,6 +558,7 @@ function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets
   for (const [relative, content] of Object.entries(planningFiles(changeId, targets))) {
     writeIfMissing(path.join(changeRoot, relative), content);
   }
+  ensureImplementationAuthorityDesignRecord(changeRoot);
 
   const manifest = {
     schema: "design-pipeline.website-cloning.v1",
@@ -497,6 +593,7 @@ function populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets
               maxLayoutDeltaPx: null,
             },
     },
+    implementationAuthority,
     referenceMappings: [],
     ports: {
       browser: {
@@ -761,14 +858,31 @@ function validCompletedManifest(manifest) {
   ].every(Boolean);
 }
 
-function manifestContractMatches(manifest, changeId, artifactRoot, targets, fidelityMode) {
+function manifestContractMatches(
+  manifest,
+  changeId,
+  artifactRoot,
+  targets,
+  fidelityMode,
+  implementationAuthority,
+) {
   if (!validManifestHeader(manifest, changeId, artifactRoot, fidelityMode)) return false;
   if (!validManifestPorts(manifest.ports)) return false;
   if (!validManifestTargets(manifest.targets, targets)) return false;
+  if (JSON.stringify(manifest.implementationAuthority) !== JSON.stringify(implementationAuthority)) {
+    return false;
+  }
   return validCompletedManifest(manifest);
 }
 
-function existingRunMatches(manifestPath, changeId, artifactRoot, targets, fidelityMode) {
+function existingRunMatches(
+  manifestPath,
+  changeId,
+  artifactRoot,
+  targets,
+  fidelityMode,
+  implementationAuthority,
+) {
   let manifest;
   try {
     manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
@@ -777,18 +891,34 @@ function existingRunMatches(manifestPath, changeId, artifactRoot, targets, fidel
     fail(`existing website-cloning manifest is invalid: ${manifestPath}`);
   }
 
-  return manifestContractMatches(manifest, changeId, artifactRoot, targets, fidelityMode);
+  return manifestContractMatches(
+    manifest,
+    changeId,
+    artifactRoot,
+    targets,
+    fidelityMode,
+    implementationAuthority,
+  );
 }
 
 function initialize(validated) {
-  const { changeId, projectRoot, targets, fidelity } = validated;
+  const { changeId, projectRoot, targets, fidelity, implementationAuthority } = validated;
   const artifactRoot = findArtifactRoot(projectRoot);
   const changeRoot = path.join(artifactRoot, changeId);
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const relativeRoot = relativeFromProject(projectRoot, artifactRoot, changeId);
 
   if (fs.existsSync(manifestPath)) {
-    if (!existingRunMatches(manifestPath, changeId, relativeRoot, targets, fidelity)) {
+    if (
+      !existingRunMatches(
+        manifestPath,
+        changeId,
+        relativeRoot,
+        targets,
+        fidelity,
+        implementationAuthority,
+      )
+    ) {
       fail(`change ${changeId} is already initialized with a different target set`);
     }
     console.log(`Website-cloning change ${changeId} is already initialized; resume from state.json.`);
@@ -796,7 +926,15 @@ function initialize(validated) {
   }
 
   if (fs.existsSync(changeRoot)) {
-    populateChange(changeRoot, projectRoot, artifactRoot, changeId, targets, fidelity);
+    populateChange(
+      changeRoot,
+      projectRoot,
+      artifactRoot,
+      changeId,
+      targets,
+      fidelity,
+      implementationAuthority,
+    );
   } else {
     fs.mkdirSync(artifactRoot, { recursive: true });
     const stagingRoot = path.join(
@@ -805,7 +943,15 @@ function initialize(validated) {
     );
     try {
       fs.mkdirSync(stagingRoot, { recursive: false });
-      populateChange(stagingRoot, projectRoot, artifactRoot, changeId, targets, fidelity);
+      populateChange(
+        stagingRoot,
+        projectRoot,
+        artifactRoot,
+        changeId,
+        targets,
+        fidelity,
+        implementationAuthority,
+      );
       fs.renameSync(stagingRoot, changeRoot);
     } catch (error) {
       fs.rmSync(stagingRoot, { recursive: true, force: true });

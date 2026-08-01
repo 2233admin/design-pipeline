@@ -47,7 +47,21 @@ function run(projectRoot, ...args) {
 
 function evaluate(changeRoot, evidencePath) {
   const args = [evaluator, "--change-root", changeRoot];
-  if (evidencePath) args.push("--evidence", evidencePath);
+  if (evidencePath) {
+    args.push("--evidence", evidencePath);
+    const evidence = readJson(evidencePath);
+    if (
+      evidence.authority?.evidencePaths?.includes("evidence/implementation-authority.json")
+    ) {
+      const authorityEvidence = path.join(
+        changeRoot,
+        "evidence",
+        "implementation-authority.json",
+      );
+      fs.mkdirSync(path.dirname(authorityEvidence), { recursive: true });
+      fs.writeFileSync(authorityEvidence, '{"captured":true}\n');
+    }
+  }
   return spawnSync(process.execPath, args, { encoding: "utf8" });
 }
 
@@ -89,6 +103,17 @@ test("initializes a resumable website-cloning change from one URL", () => {
   assert.equal(manifest.fidelity.gates.textCoverage, 1);
   assert.equal(manifest.fidelity.gates.assetCoverage, 1);
   assert.equal(manifest.fidelity.gates.interactionCoverage, 1);
+  assert.deepEqual(manifest.implementationAuthority, {
+    authorityTargetId: "example-com",
+    designRecord: "design.md#implementation-authority",
+    allowedDifferences: [],
+    protectedInvariants: [
+      "component topology",
+      "responsive behavior",
+      "interaction behavior",
+    ],
+    requiredInteractionEnvironment: "adapter-measured",
+  });
   assert.equal(manifest.ports.browser.status, "unresolved");
   assert.equal(manifest.ports.builder.status, "unresolved");
   assert.equal(manifest.ports.evidence.status, "unresolved");
@@ -705,7 +730,7 @@ test("evaluator blocks completion when the project motion foundation disappears"
   );
 });
 
-function passingEvidence(targetId, overrides = {}) {
+function passingEvidence(targetId, overrides = {}, authorityOverrides = {}) {
   return {
     schema: "design-pipeline.website-cloning.verification.v1",
     targets: [
@@ -724,8 +749,171 @@ function passingEvidence(targetId, overrides = {}) {
       },
     ],
     mappings: [],
+    authority: {
+      authorityTargetId: targetId,
+      verifiedInvariants: [
+        "component topology",
+        "responsive behavior",
+        "interaction behavior",
+      ],
+      observedDifferences: [],
+      interactionEnvironment: "adapter-measured",
+      replayPassed: true,
+      evidencePaths: ["evidence/implementation-authority.json"],
+      ...authorityOverrides,
+    },
   };
 }
+
+test("blocks completion when implementation authority is missing", () => {
+  const projectRoot = makeProject();
+  assert.equal(
+    run(projectRoot, "--change-id", "missing-authority", "--url", "https://example.com").status,
+    0,
+  );
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "missing-authority");
+  const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const manifest = readJson(manifestPath);
+  markPortsReady(manifest, changeRoot);
+  delete manifest.implementationAuthority;
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const evidencePath = path.join(changeRoot, "verification-input.json");
+  fs.writeFileSync(
+    evidencePath,
+    `${JSON.stringify(passingEvidence("example-com"), null, 2)}\n`,
+  );
+
+  const result = evaluate(changeRoot, evidencePath);
+  assert.equal(result.status, 2, result.stderr);
+  assert.match(readJson(manifestPath).verification.reasons.join("\n"), /authority contract/i);
+});
+
+test("records explicit authority, allowed differences, invariants, and browser environment", () => {
+  const projectRoot = makeProject();
+  const result = run(
+    projectRoot,
+    "--change-id",
+    "template-authority",
+    "--url",
+    "http://127.0.0.1:3200/",
+    "--url",
+    "https://example.com/",
+    "--authority-url",
+    "http://127.0.0.1:3200/",
+    "--allowed-difference",
+    "business copy",
+    "--allowed-difference",
+    "palette tokens",
+    "--protected-invariant",
+    "section order",
+    "--protected-invariant",
+    "motion runtime",
+    "--interaction-environment",
+    "actual-browser",
+    "--fidelity",
+    "adaptive",
+  );
+  assert.equal(result.status, 0, result.stderr);
+  const manifest = readJson(
+    path.join(
+      projectRoot,
+      "openspec",
+      "changes",
+      "template-authority",
+      "website-cloning.json",
+    ),
+  );
+  assert.deepEqual(manifest.implementationAuthority, {
+    authorityTargetId: "127-0-0-1",
+    designRecord: "design.md#implementation-authority",
+    allowedDifferences: ["business copy", "palette tokens"],
+    protectedInvariants: ["section order", "motion runtime"],
+    requiredInteractionEnvironment: "actual-browser",
+  });
+});
+
+test("treats unapproved authority differences and missing invariants as measured mismatches", () => {
+  const projectRoot = makeProject();
+  assert.equal(
+    run(projectRoot, "--change-id", "authority-mismatch", "--url", "https://example.com").status,
+    0,
+  );
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "authority-mismatch");
+  const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const manifest = readJson(manifestPath);
+  markPortsReady(manifest, changeRoot);
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const evidencePath = path.join(changeRoot, "verification-input.json");
+  fs.writeFileSync(
+    evidencePath,
+    `${JSON.stringify(
+      passingEvidence("example-com", {}, {
+        verifiedInvariants: ["component topology", "responsive behavior"],
+        observedDifferences: ["replaced interaction runtime"],
+      }),
+      null,
+      2,
+    )}\n`,
+  );
+
+  const result = evaluate(changeRoot, evidencePath);
+  assert.equal(result.status, 3, result.stderr);
+  const reasons = readJson(manifestPath).verification.reasons.join("\n");
+  assert.match(reasons, /invariant is not verified: interaction behavior/i);
+  assert.match(reasons, /difference is not allowed: replaced interaction runtime/i);
+});
+
+test("blocks headless substitution when actual-browser interaction evidence is required", () => {
+  const projectRoot = makeProject();
+  assert.equal(
+    run(
+      projectRoot,
+      "--change-id",
+      "actual-browser-required",
+      "--url",
+      "https://example.com",
+      "--interaction-environment",
+      "actual-browser",
+    ).status,
+    0,
+  );
+  const changeRoot = path.join(
+    projectRoot,
+    "openspec",
+    "changes",
+    "actual-browser-required",
+  );
+  const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const manifest = readJson(manifestPath);
+  markPortsReady(manifest, changeRoot);
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const evidencePath = path.join(changeRoot, "verification-input.json");
+  fs.writeFileSync(
+    evidencePath,
+    `${JSON.stringify(passingEvidence("example-com"), null, 2)}\n`,
+  );
+
+  const blocked = evaluate(changeRoot, evidencePath);
+  assert.equal(blocked.status, 2, blocked.stderr);
+  assert.match(
+    readJson(manifestPath).verification.reasons.join("\n"),
+    /interaction environment must be actual-browser/i,
+  );
+
+  const retryManifest = readJson(manifestPath);
+  retryManifest.status = "planned";
+  fs.writeFileSync(manifestPath, `${JSON.stringify(retryManifest, null, 2)}\n`);
+  fs.writeFileSync(
+    evidencePath,
+    `${JSON.stringify(
+      passingEvidence("example-com", {}, { interactionEnvironment: "actual-browser" }),
+      null,
+      2,
+    )}\n`,
+  );
+  const passed = evaluate(changeRoot, evidencePath);
+  assert.equal(passed.status, 0, passed.stderr);
+});
 
 test("blocks completion when a required port is unresolved", () => {
   const projectRoot = makeProject();

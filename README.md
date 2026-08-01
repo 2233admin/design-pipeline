@@ -53,6 +53,8 @@ node skill/scripts/init-website-clone.cjs \
   --change-id clone-example \
   --url https://example.com \
   --reference-url https://reference.example \
+  --protected-invariant "component topology" \
+  --interaction-environment actual-browser \
   --fidelity exact
 
 # After authoring project DESIGN.md, project MOTION.md, and target palette evidence:
@@ -69,9 +71,10 @@ node skill/scripts/evaluate-website-clone.cjs \
 
 - `--url` identifies a primary surface that the implementation must match.
 - `--reference-url` supplies mapped design or interaction references without becoming an automatic pixel baseline.
+- The deterministic lexicographically first primary URL is the default implementation authority; set `--authority-url` explicitly for multi-primary runs, and use repeatable `--allowed-difference`/`--protected-invariant` plus `--interaction-environment actual-browser` when a user-visible browser replay is required.
 - If a reference intentionally replaces primary behavior, use `adaptive` and record the mapping; the result is fidelity to a mixed contract, not global 1:1.
 - Exact runs require negotiated Browser, Builder, and Evidence ports. Each port records the selected adapter, actual capabilities, and its latest probe result.
-- Missing ports or measurements produce `blocked`; complete evidence that misses a threshold produces `fidelity-limited`.
+- Missing ports, authority contracts, invariant measurements, replay provenance, or the required interaction environment produce `blocked`; complete evidence that violates an invariant, allowed-difference list, or threshold produces `fidelity-limited`.
 - Only the evaluator can mark `website-cloning.json` complete, and only after all required capabilities and measurements pass. The overall change remains `needs-review` until the normal accessibility, motion, responsive, engineering, and headless gates also pass.
 - Verification is per declared viewport and per reference mapping, so an aggregate score cannot hide one broken breakpoint or interaction state.
 - Exact and adaptive runs both require ready project DESIGN/MOTION foundations and a ready palette
