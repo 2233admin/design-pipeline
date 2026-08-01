@@ -23,6 +23,7 @@ const TARGET_PHASES = new Set([
 ]);
 const PORT_STATUSES = new Set(["unresolved", "ready", "blocked", "degraded"]);
 const VERIFICATION_STATUSES = new Set(["not-run", "passed", "failed", "blocked"]);
+const INTERACTION_ENVIRONMENTS = new Set(["adapter-measured", "actual-browser"]);
 
 function fail(message) {
   throw new Error(`website-cloning manifest: ${message}`);
@@ -153,6 +154,42 @@ function validateFidelity(fidelity) {
   }
 }
 
+function validateImplementationAuthority(authority) {
+  if (authority === undefined) return;
+  assertObjectShape(
+    authority,
+    "implementationAuthority",
+    [
+      "authorityTargetId",
+      "designRecord",
+      "allowedDifferences",
+      "protectedInvariants",
+      "requiredInteractionEnvironment",
+    ],
+  );
+  if (!isNonEmptyString(authority.authorityTargetId)) {
+    fail("implementationAuthority.authorityTargetId must be non-empty");
+  }
+  if (!isNonEmptyString(authority.designRecord)) {
+    fail("implementationAuthority.designRecord must be non-empty");
+  }
+  assertStringArray(
+    authority.allowedDifferences,
+    "implementationAuthority.allowedDifferences",
+    { unique: true },
+  );
+  assertStringArray(
+    authority.protectedInvariants,
+    "implementationAuthority.protectedInvariants",
+    { minItems: 1, unique: true },
+  );
+  assertEnum(
+    authority.requiredInteractionEnvironment,
+    INTERACTION_ENVIRONMENTS,
+    "implementationAuthority.requiredInteractionEnvironment",
+  );
+}
+
 function validateReferenceMapping(mapping, index) {
   const label = `referenceMappings[${index}]`;
   assertObjectShape(
@@ -275,6 +312,17 @@ function validateManifestTargets(manifest) {
   if (new Set(manifest.targets.map((target) => target.id)).size !== manifest.targets.length) {
     fail("target ids must be unique");
   }
+  if (manifest.implementationAuthority) {
+    const authorityTarget = manifest.targets.find(
+      (target) => target.id === manifest.implementationAuthority.authorityTargetId,
+    );
+    if (!authorityTarget) {
+      fail("implementationAuthority.authorityTargetId must identify a declared target");
+    }
+    if (authorityTarget.role !== "primary") {
+      fail("implementationAuthority.authorityTargetId must identify a primary target");
+    }
+  }
 }
 
 function validateManifestMappings(manifest) {
@@ -300,6 +348,9 @@ function validateManifestPorts(manifest) {
 
 function validateCompleteManifest(manifest) {
   if (manifest.status !== "complete") return;
+  if (!manifest.implementationAuthority) {
+    fail("implementationAuthority is required when the manifest is complete");
+  }
   for (const name of ["browser", "builder", "evidence"]) {
     if (manifest.ports[name].status !== "ready") {
       fail(`ports.${name}.status must be ready when complete`);
@@ -337,8 +388,23 @@ function validateWebsiteCloningManifest(manifest) {
       "verification",
       "protocol",
     ],
+    [
+      "schema",
+      "changeId",
+      "status",
+      "initializedAt",
+      "artifactRoot",
+      "targets",
+      "fidelity",
+      "implementationAuthority",
+      "referenceMappings",
+      "ports",
+      "verification",
+      "protocol",
+    ],
   );
   validateManifestIdentity(manifest);
+  validateImplementationAuthority(manifest.implementationAuthority);
   validateManifestTargets(manifest);
   validateManifestMappings(manifest);
   validateManifestPorts(manifest);

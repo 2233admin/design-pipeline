@@ -91,6 +91,11 @@ function preparePassingCloneEvaluation(projectRoot) {
   const changeRoot = path.join(projectRoot, "design", "changes", "palette-first");
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const evidencePath = path.join(changeRoot, "verification.json");
+  const authorityEvidencePath = path.join(
+    changeRoot,
+    "evidence",
+    "implementation-authority.json",
+  );
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   const lastProbe = {
     at: "2026-07-20T00:00:00.000Z",
@@ -122,6 +127,8 @@ function preparePassingCloneEvaluation(projectRoot) {
     },
   };
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  fs.mkdirSync(path.dirname(authorityEvidencePath), { recursive: true });
+  fs.writeFileSync(authorityEvidencePath, '{"captured":true}\n');
   fs.writeFileSync(
     evidencePath,
     `${JSON.stringify(
@@ -141,6 +148,15 @@ function preparePassingCloneEvaluation(projectRoot) {
           },
         ],
         mappings: [],
+        authority: {
+          authorityTargetId: manifest.implementationAuthority.authorityTargetId,
+          verifiedInvariants: manifest.implementationAuthority.protectedInvariants,
+          observedDifferences: [],
+          interactionEnvironment:
+            manifest.implementationAuthority.requiredInteractionEnvironment,
+          replayPassed: true,
+          evidencePaths: ["evidence/implementation-authority.json"],
+        },
       },
       null,
       2,

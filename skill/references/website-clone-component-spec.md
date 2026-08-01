@@ -13,6 +13,10 @@ Use one copy per independently verifiable component or section. Write `N/A` only
 - Builder slice owner:
 - Evidence root:
 - Fidelity mode:
+- Implementation authority target:
+- Allowed differences used by this component:
+- Protected invariants:
+- Required interaction environment:
 
 ## Environment
 
@@ -123,6 +127,9 @@ For every relevant element/state, record selector or stable locator, evidence pa
 - Palette foundation:
 - Palette roles and relationships preserved:
 - Interaction coverage:
+- Authority invariants verified:
+- Observed differences are allowed:
+- Interaction environment and replay evidence:
 - Pixel-difference threshold/result:
 - Layout-delta threshold/result:
 - Accessibility result:
