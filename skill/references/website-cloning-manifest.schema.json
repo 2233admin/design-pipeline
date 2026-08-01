@@ -112,6 +112,9 @@
         }
       }
     },
+    "implementationAuthority": {
+      "$ref": "#/$defs/implementationAuthority"
+    },
     "referenceMappings": {
       "type": "array",
       "items": { "$ref": "#/$defs/referenceMapping" }
@@ -140,6 +143,7 @@
         "required": ["status"]
       },
       "then": {
+        "required": ["implementationAuthority"],
         "properties": {
           "ports": {
             "properties": {
@@ -167,6 +171,35 @@
     }
   ],
   "$defs": {
+    "implementationAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorityTargetId",
+        "designRecord",
+        "allowedDifferences",
+        "protectedInvariants",
+        "requiredInteractionEnvironment"
+      ],
+      "properties": {
+        "authorityTargetId": { "type": "string", "minLength": 1 },
+        "designRecord": { "type": "string", "minLength": 1 },
+        "allowedDifferences": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "protectedInvariants": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "requiredInteractionEnvironment": {
+          "enum": ["adapter-measured", "actual-browser"]
+        }
+      }
+    },
     "referenceMapping": {
       "type": "object",
       "additionalProperties": false,

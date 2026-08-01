@@ -296,6 +296,91 @@ function pathIsPortable(changeRoot, evidencePath) {
   }
 }
 
+function inspectImplementationAuthority(manifest, evidence) {
+  const blockers = [];
+  const mismatches = [];
+  const contract = manifest.implementationAuthority;
+  if (!contract) {
+    blockers.push("implementation authority contract is missing");
+    return { blockers, mismatches };
+  }
+
+  const authorityTarget = manifest.targets.find(
+    (target) => target.id === contract.authorityTargetId,
+  );
+  if (!authorityTarget || authorityTarget.role !== "primary") {
+    blockers.push("implementation authority target must be a declared primary target");
+  }
+
+  const [recordPath, recordAnchor] = String(contract.designRecord || "").split("#", 2);
+  const validRecord =
+    recordPath.replaceAll("\\", "/") === "design.md" &&
+    recordAnchor === "implementation-authority" &&
+    pathIsPortable(manifest.__changeRoot, recordPath) &&
+    fs
+      .readFileSync(path.resolve(manifest.__changeRoot, recordPath), "utf8")
+      .toLowerCase()
+      .includes("implementation authority");
+  if (!validRecord) {
+    blockers.push(
+      "implementation authority designRecord must be design.md#implementation-authority and contain the authority record",
+    );
+  }
+
+  const result = evidence?.authority;
+  if (!result || typeof result !== "object") {
+    blockers.push("implementation authority verification is missing");
+    return { blockers, mismatches };
+  }
+  if (result.authorityTargetId !== contract.authorityTargetId) {
+    blockers.push("implementation authority verification target does not match the manifest");
+  }
+
+  if (!Array.isArray(result.verifiedInvariants)) {
+    blockers.push("implementation authority verifiedInvariants is not recorded");
+  } else {
+    for (const invariant of contract.protectedInvariants) {
+      if (!result.verifiedInvariants.includes(invariant)) {
+        mismatches.push(`implementation authority invariant is not verified: ${invariant}`);
+      }
+    }
+  }
+
+  if (!Array.isArray(result.observedDifferences)) {
+    blockers.push("implementation authority observedDifferences is not recorded");
+  } else {
+    for (const difference of result.observedDifferences) {
+      if (!contract.allowedDifferences.includes(difference)) {
+        mismatches.push(`implementation authority difference is not allowed: ${difference}`);
+      }
+    }
+  }
+
+  if (typeof result.replayPassed !== "boolean") {
+    blockers.push("implementation authority replay result is not recorded");
+  } else if (!result.replayPassed) {
+    mismatches.push("implementation authority interaction replay failed");
+  }
+  if (result.interactionEnvironment !== contract.requiredInteractionEnvironment) {
+    blockers.push(
+      `implementation authority interaction environment must be ${contract.requiredInteractionEnvironment}`,
+    );
+  }
+
+  if (!Array.isArray(result.evidencePaths) || result.evidencePaths.length === 0) {
+    blockers.push("implementation authority evidence path is missing");
+  } else {
+    for (const evidencePath of result.evidencePaths) {
+      if (!pathIsPortable(manifest.__changeRoot, evidencePath)) {
+        blockers.push(
+          `implementation authority evidence path is not portable: ${evidencePath}`,
+        );
+      }
+    }
+  }
+  return { blockers: unique(blockers), mismatches: unique(mismatches) };
+}
+
 function inspectMappingDefinition(manifest, mapping, targetsById, blockers) {
   if (manifest.fidelity.mode === "exact" && mapping.kind === "replacement") {
     blockers.push(`${mapping.id}: replacement reference mapping requires adaptive fidelity`);
@@ -582,12 +667,17 @@ function inspectClone(manifest, evidence) {
     manifest,
   }).blockers;
   const evidenceResult = inspectEvidence(manifest, evidence);
+  const authorityResult = inspectImplementationAuthority(manifest, evidence);
   const blockers = unique([
     ...portBlockers,
     ...foundationBlockers,
     ...evidenceResult.blockers,
+    ...authorityResult.blockers,
   ]);
-  const mismatches = evidenceResult.mismatches;
+  const mismatches = unique([
+    ...evidenceResult.mismatches,
+    ...authorityResult.mismatches,
+  ]);
   const verdict = decideVerdict(blockers, mismatches);
   const reasons = verdict === "blocked" ? blockers : mismatches;
   const targetFailures = new Set(

@@ -24,6 +24,9 @@ node <design-pipeline>/scripts/init-website-clone.cjs \
   --change-id clone-example \
   --url https://example.com \
   --reference-url https://reference.example \
+  --allowed-difference "business copy" \
+  --protected-invariant "component topology" \
+  --interaction-environment actual-browser \
   --fidelity exact
 ```
 
@@ -31,6 +34,10 @@ Options:
 
 - `--url`: primary surface whose implementation is compared back to that same surface. Repeatable and required.
 - `--reference-url`: supporting surface that supplies selected design or interaction constraints but is not automatically a pixel baseline. Repeatable.
+- `--authority-url`: primary target that is normative for implementation structure and behavior; defaults deterministically to the lexicographically first normalized primary URL and must match a declared primary URL. Set it explicitly whenever more than one primary exists.
+- `--allowed-difference`: one exact difference label the implementation may introduce. Repeatable; an observed difference not on this list is a measured mismatch.
+- `--protected-invariant`: one topology, responsive, runtime, motion, or interaction property that verification must prove. Repeatable; defaults to component topology, responsive behavior, and interaction behavior.
+- `--interaction-environment adapter-measured|actual-browser`: provenance required for the interaction replay. Use `actual-browser` when a real user-visible tab is part of acceptance.
 - `--fidelity exact|adaptive`: `exact` converges on measured equivalence; `adaptive` permits documented target-project adaptations.
 - `--change-id`: lowercase hyphen-case id for the active change.
 - `--project-root`: target repository; defaults to the current directory.
@@ -51,6 +58,12 @@ mapping id -> supporting|replacement -> reference target/source region -> primar
 ```
 
 Each manifest mapping names its `designRecord` (for example `design.md#linear-nav`). The source must be a reference target, the destination must be a primary target, and the design artifact must contain the mapping id. Do not pixel-match a primary implementation against a reference target unless the mapping explicitly makes that region a baseline.
+
+### Implementation Authority
+
+Target role and implementation authority are related but not interchangeable. The manifest's `implementationAuthority` identifies the one primary target that is normative for component topology and behavior, links `design.md#implementation-authority`, enumerates allowed differences and protected invariants, and declares the required interaction environment.
+
+When a local template supplies structure and motion while another site supplies copy or routes, initialize the local template as the primary `--url`/`--authority-url` and the content site as a `--reference-url`. Record exact allowed differences such as `business copy`, `route destinations`, or `palette tokens`; adaptive fidelity does not authorize unnamed drift.
 
 ## 3. Port Contracts
 
@@ -208,7 +221,15 @@ The report uses `design-pipeline.website-cloning.verification.v1`. It contains a
       ],
       "unresolvedDifferences": []
     }
-  ]
+  ],
+  "authority": {
+    "authorityTargetId": "example-com",
+    "verifiedInvariants": ["component topology", "responsive behavior", "interaction behavior"],
+    "observedDifferences": [],
+    "interactionEnvironment": "actual-browser",
+    "replayPassed": true,
+    "evidencePaths": ["evidence/implementation-authority.json"]
+  }
 }
 ```
 
@@ -218,7 +239,7 @@ The evaluator writes the fidelity verdict to the manifest, state, event log, and
 
 `exact` means evidence-backed convergence against the primary target under recorded rendering conditions, not an unsupported promise that every GPU, font rasterizer, personalized response, or clock tick produces identical bytes. Do not use exact mode when a reference mapping intentionally replaces primary behavior.
 
-`adaptive` means fidelity to an explicitly mixed contract. It permits named reference mappings or target-project adaptations and cannot be reported as global 1:1. Text, assets, interaction coverage, responsive states, and mapped replays still require evidence. Pixel/layout measurements may be omitted only while their gates are `null`; configure non-null thresholds when an adaptive run must prove unchanged regions outside approved mappings.
+`adaptive` means fidelity to an explicitly mixed contract. It permits named reference mappings or target-project adaptations and cannot be reported as global 1:1. It does not permit differences outside `implementationAuthority.allowedDifferences`, and every protected invariant still needs verification. Text, assets, interaction coverage, responsive states, authority replay, and mapped replays still require evidence. Pixel/layout measurements may be omitted only while their gates are `null`; configure non-null thresholds when an adaptive run must prove unchanged regions outside approved mappings.
 
 Both fidelity modes require a ready palette foundation before implementation. Adaptive mode may
 adapt individual values, but it must preserve documented semantic roles and color relationships.
