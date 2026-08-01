@@ -101,7 +101,7 @@ try {
 
   const syntaxFiles = [
     ...fs.readdirSync(path.join(repoRoot, "skill/scripts")).filter((name) => name.endsWith(".cjs")).map((name) => path.join(repoRoot, "skill/scripts", name)),
-    ...fs.readdirSync(path.join(repoRoot, "skill/adapters")).filter((name) => name.endsWith(".cjs")).map((name) => path.join(repoRoot, "skill/adapters", name)),
+    ...fs.readdirSync(path.join(repoRoot, "skill/adapters")).filter((name) => /\.(?:cjs|mjs)$/.test(name)).map((name) => path.join(repoRoot, "skill/adapters", name)),
     ...fs.readdirSync(path.join(repoRoot, "scripts")).filter((name) => name.endsWith(".cjs")).map((name) => path.join(repoRoot, "scripts", name)),
   ];
   for (const file of syntaxFiles) {
@@ -115,6 +115,8 @@ try {
     ["foundation", "check", "--root", repoRoot, "--project-root", repoRoot, "--json"],
     ["status", "--root", repoRoot, "--change-root", "openspec/changes/complete-executable-pipeline-p0-p3", "--json"],
     ["adapter", "audit", "--root", repoRoot, "--json"],
+    ["design-system", "profiles", "--root", repoRoot, "--json"],
+    ["design-system", "search", "--root", repoRoot, "--query", "AlertDialog", "--kind", "component", "--limit", "1", "--json"],
     ["style-signals", "check", "--root", repoRoot, "--json"],
   ]) {
     const child = run(process.execPath, [cli, ...args], { echo: false, env: hermeticEnv });

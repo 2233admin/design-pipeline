@@ -1,9 +1,91 @@
 {
-  "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://github.com/2233admin/design-pipeline/schema/benchmark-result.v1.json",
-  "title":"Designer Pipeline Benchmark Result",
-  "type":"object",
-  "additionalProperties":false,
-  "required":["schema","benchmarkId","status","aggregate","scenarios","failedRequired","unknownRequired"],
-  "properties":{"schema":{"const":"design-pipeline.benchmark-result.v1"},"benchmarkId":{"type":"string"},"status":{"enum":["passed","failed","blocked"]},"aggregate":{"type":["number","null"]},"scenarios":{"type":"array"},"failedRequired":{"type":"array"},"unknownRequired":{"type":"array"}}
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/benchmark-result.v1.json",
+  "title": "Designer Pipeline Benchmark Result",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "benchmarkId", "status", "aggregate", "scenarios", "failedRequired", "unknownRequired"],
+      "properties": {
+        "schema": { "const": "design-pipeline.benchmark-result.v1" },
+        "benchmarkId": { "type": "string" },
+        "status": { "enum": ["passed", "failed", "blocked"] },
+        "aggregate": { "type": ["number", "null"] },
+        "scenarios": { "type": "array" },
+        "failedRequired": { "type": "array" },
+        "unknownRequired": { "type": "array" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "benchmarkId", "candidateSystem", "status", "aggregate", "scenarios", "systems", "failedRequired", "unknownRequired", "fairness", "invalidReasons"],
+      "properties": {
+        "schema": { "const": "design-pipeline.benchmark-result.v2" },
+        "benchmarkId": { "type": "string" },
+        "candidateSystem": { "type": "string" },
+        "status": { "enum": ["passed", "failed", "blocked"] },
+        "aggregate": { "type": ["number", "null"] },
+        "scenarios": { "type": "array" },
+        "systems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["system", "channel", "status", "aggregate", "scenarios", "failedRequired", "unknownRequired"],
+            "properties": {
+              "system": { "type": "string" },
+              "channel": { "enum": ["stable", "canary", "beta", "experimental"] },
+              "status": { "enum": ["passed", "failed", "blocked"] },
+              "aggregate": { "type": ["number", "null"] },
+              "scenarios": { "type": "array" },
+              "failedRequired": { "type": "array", "items": { "type": "string" } },
+              "unknownRequired": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "failedRequired": { "type": "array", "items": { "type": "string" } },
+        "unknownRequired": { "type": "array", "items": { "type": "string" } },
+        "fairness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["valid", "checks", "channels"],
+          "properties": {
+            "valid": { "type": "boolean" },
+            "checks": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["samePrompts", "sameEnvironmentClass", "evaluatorBlind", "expectedAnswersHidden", "freshContext", "representativeDelivery"],
+              "properties": {
+                "samePrompts": { "type": "boolean" },
+                "sameEnvironmentClass": { "type": "boolean" },
+                "evaluatorBlind": { "type": "boolean" },
+                "expectedAnswersHidden": { "type": "boolean" },
+                "freshContext": { "type": "boolean" },
+                "representativeDelivery": { "type": "boolean" }
+              }
+            },
+            "channels": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["valid", "systemChannels", "missingSystems", "extraSystems", "invalidSystems", "stablePrereleaseMix", "allowCanaryMix", "mixPermitted", "invalidReasons"],
+              "properties": {
+                "valid": { "type": "boolean" },
+                "systemChannels": { "type": "object", "additionalProperties": { "type": "string" } },
+                "missingSystems": { "type": "array", "items": { "type": "string" } },
+                "extraSystems": { "type": "array", "items": { "type": "string" } },
+                "invalidSystems": { "type": "array", "items": { "type": "string" } },
+                "stablePrereleaseMix": { "type": "boolean" },
+                "allowCanaryMix": { "type": "boolean" },
+                "mixPermitted": { "type": "boolean" },
+                "invalidReasons": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "invalidReasons": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  ]
 }

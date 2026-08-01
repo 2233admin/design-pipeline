@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-system-provider-receipt.v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "provider", "apiVersion", "commands", "license", "loss", "failures", "providerCliSha256", "snapshotSha256"],
+  "properties": {
+    "schema": {"const": "design-pipeline.design-system-provider-receipt.v1"},
+    "status": {"enum": ["complete", "failed"]},
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "license"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": ["string", "null"]},
+        "license": {"const": "MIT"}
+      }
+    },
+    "apiVersion": {"type": "string"},
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "id", "argv", "sha256"],
+        "properties": {
+          "type": {"enum": ["manifest", "component", "docs", "template", "hook"]},
+          "id": {"type": ["string", "null"]},
+          "argv": {"type": "array", "items": {"type": "string"}},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "license": {"const": "MIT"},
+    "loss": {"type": "array"},
+    "failures": {"type": "array", "items": {"type": "object"}},
+    "providerCliSha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "snapshotSha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+  }
+}

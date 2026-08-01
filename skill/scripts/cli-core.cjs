@@ -21,25 +21,38 @@ const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
-const { evaluateBenchmark } = require("./benchmark-core.cjs");
+const { createDeveloperBrief, evaluateBenchmark } = require("./benchmark-core.cjs");
 const { recordObservation } = require("./record-feedback.cjs");
 const { evaluateIntake, validateDesignToolReceipt, validateRegistry, validateStyleSignals } = require("./adapter-core.cjs");
 const { checkDesignFoundation } = require("./design-synthesis-core.cjs");
 const { checkMotionFoundation } = require("./motion-foundation-core.cjs");
+const {
+  normalizeDesignSystemSnapshot,
+  searchDesignSystemCatalog,
+} = require("./design-system-catalog-core.cjs");
+const {
+  decideDesignSystem,
+  projectDesignSystemTokens,
+} = require("./design-system-decision-core.cjs");
+const {
+  acquireDesignSystemProvider,
+  atomicWriteProviderJson,
+  loadProfiles,
+} = require("./design-system-provider-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary"]);
 const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--evidence", "--file", "--next-action", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
-  "--action", "--adapter-path", "--artifact", "--base", "--catalog", "--category", "--change-id", "--change-root",
+  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--catalog", "--category", "--change-id", "--change-root",
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
-  "--height", "--installed-evidence", "--kind", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
+  "--height", "--installed-evidence", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
-  "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width",
+  "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
+  "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width",
 ]);
 
 function parseArgs(argv) {
@@ -193,7 +206,8 @@ function publicHelp() {
     "  evidence check|capture",
     "  verify motion|components",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
-    "  benchmark evaluate",
+    "  design-system profiles|normalize|acquire|search|project-tokens|decide",
+    "  benchmark brief|evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
     "",
     "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked, 3 measured fidelity mismatch.",
@@ -484,6 +498,85 @@ function patternCommand(parsed, root, action) {
   fail("cli", `unknown patterns action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+function numberOption(parsed, name, options = {}) {
+  const raw = option(parsed, name);
+  if (raw === null) return null;
+  if (!/^\d+$/.test(String(raw))) fail("cli", `${name} must be a positive integer`, { code: "OPTION_VALUE_INVALID" });
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value < (options.min || 1) || (options.max && value > options.max)) {
+    fail("cli", `${name} is outside the supported range`, { code: "OPTION_VALUE_INVALID" });
+  }
+  return value;
+}
+
+function bundledDesignSystemCatalog() {
+  return normalizeDesignSystemSnapshot(readJson(builtIn("astryx-design-system-snapshot.json"), "bundled Astryx snapshot"));
+}
+
+function designSystemCatalog(parsed, root) {
+  if (option(parsed, "--catalog")) return readJson(artifact(parsed, root, "--catalog"), "design system catalog");
+  if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "design system snapshot"));
+  return bundledDesignSystemCatalog();
+}
+
+function writeResult(parsed, root, value) {
+  if (option(parsed, "--write") !== true) return null;
+  const output = requireOption(parsed, "--output");
+  return atomicWriteProviderJson(root, output, value);
+}
+
+function designSystemCommand(parsed, root, action) {
+  if (action === "profiles") {
+    const profiles = loadProfiles();
+    return { result: { status: "valid", ...profiles }, exitCode: 0 };
+  }
+  if (action === "normalize") {
+    const catalog = designSystemCatalog(parsed, root);
+    const output = writeResult(parsed, root, catalog);
+    return { result: { status: "valid", catalog, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "search") {
+    const catalog = designSystemCatalog(parsed, root);
+    const results = searchDesignSystemCatalog(catalog, {
+      ...(option(parsed, "--query") ? { query: option(parsed, "--query") } : {}),
+      ...(option(parsed, "--kind") ? { kind: option(parsed, "--kind") } : {}),
+      ...(option(parsed, "--category") ? { category: option(parsed, "--category") } : {}),
+      ...(option(parsed, "--status") ? { status: option(parsed, "--status") } : {}),
+      ...(option(parsed, "--limit") ? { limit: numberOption(parsed, "--limit", { max: 1000 }) } : {}),
+    });
+    return { result: { status: "valid", namespace: catalog.namespace, results }, exitCode: 0 };
+  }
+  if (action === "acquire") {
+    const outputRoot = artifact(parsed, root, "--output-root", null, false);
+    const output = path.join(path.relative(root, outputRoot), "provider.json");
+    const result = acquireDesignSystemProvider({
+      root,
+      adapterPath: option(parsed, "--adapter-path") || undefined,
+      providerCliPath: option(parsed, "--provider-cli-path") || undefined,
+      providerId: option(parsed, "--provider", "astryx"),
+      apiVersion: option(parsed, "--api-version") || undefined,
+      timeoutMs: numberOption(parsed, "--timeout-ms", { min: 100, max: 60000 }) || undefined,
+      allowCanary: option(parsed, "--allow-canary") === true,
+      output,
+    });
+    return { result: { ...result, output: path.resolve(root, output) }, exitCode: result.status === "complete" ? 0 : 2 };
+  }
+  if (action === "project-tokens") {
+    const projection = projectDesignSystemTokens(designSystemCatalog(parsed, root));
+    const output = writeResult(parsed, root, projection);
+    return { result: { status: projection.status, projection, ...(output ? { output } : {}) }, exitCode: projection.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "decide") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "design system decision request");
+    if (!request.catalog) request.catalog = designSystemCatalog(parsed, root);
+    if (option(parsed, "--allow-canary") === true) request.allowCanary = true;
+    const decision = decideDesignSystem(request);
+    const output = writeResult(parsed, root, decision);
+    return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: decision.status === "blocked" ? 2 : 0 };
+  }
+  fail("cli", `unknown design-system action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
 function adapterCommand(parsed, root, action) {
   if (action === "audit") {
     const registryFile = optionalArtifact(parsed, root, "--registry", "adapter-registry.json");
@@ -558,6 +651,7 @@ const COMMANDS = {
   evidence: { run: ({ parsed, root, action }) => evidenceCommand(parsed, root, action) },
   verify: { run: ({ parsed, root, action }) => verifyCommand(parsed, root, action) },
   patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
+  "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
   reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
@@ -577,6 +671,16 @@ const COMMANDS = {
   "design-code-map": { actions: { check: { required: ["--artifact"], run: designCodeMapCheckCommand } } },
   benchmark: {
     actions: {
+      brief: {
+        required: ["--manifest"],
+        run: ({ file }) => ({
+          result: {
+            status: "valid",
+            brief: createDeveloperBrief(readJson(file("--manifest"), "benchmark manifest")),
+          },
+          exitCode: 0,
+        }),
+      },
       evaluate: {
         required: ["--manifest", "--measurements"],
         run: benchmarkEvaluateCommand,

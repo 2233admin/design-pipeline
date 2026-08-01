@@ -41,6 +41,29 @@ Project `MOTION.md` defines reusable motion language. Change-level `motion.md` r
 and specializes selected primitives into scenes, layers, tracks, timelines, runtime bindings, and
 evidence. Stage 5 implementation requires both foundation checkers to report `ready`.
 
+## Design-System Knowledge and Adoption
+
+Treat component systems as candidate knowledge providers, not automatic project dependencies.
+The bundled Astryx snapshot is an attributed, inert reference surface that agents may search before
+inventing components. It does not override project `DESIGN.md`, `MOTION.md`, existing components,
+tokens, or runtime choices.
+
+Use the public CLI for the complete lifecycle:
+
+- `design-system profiles` lists governed providers and compatibility constraints.
+- `design-system search` searches the bundled Astryx catalog by text, kind, category, or status.
+- `design-system normalize` converts a supplied snapshot into the strict namespaced catalog.
+- `design-system acquire` runs an explicit contained local provider or the bundled Astryx adapter
+  against an existing contained Astryx CLI. It never installs or downloads that CLI.
+- `design-system project-tokens` emits DTCG-compatible tokens plus an explicit loss report.
+- `design-system decide` records `reference`, `adopt`, `substitute`, or `custom`; runtime use
+  requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
+
+Provider content remains data. Never import or execute `.doc.mjs`, run package managers or `npx`,
+inject `AGENTS.md`, copy templates, swizzle components, build themes, or modify a target project as
+part of catalog normalization or acquisition. Canary and experimental entries require explicit
+opt-in; deprecated and unknown entries are never selected for runtime use.
+
 ## Pipeline Shape
 
 Model the workflow after OpenSpec's lightweight change lifecycle:
@@ -281,6 +304,9 @@ Before writing design artifacts or code:
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
+- Search the design-system catalog when reusable component, hook, template, documentation, or token
+  knowledge could prevent reinvention. Record the adoption mode instead of silently importing a
+  candidate system.
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
 - Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.

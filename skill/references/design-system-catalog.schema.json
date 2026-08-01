@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-system-catalog.v1.json",
+  "title": "Normalized design system catalog v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "namespace", "entries"],
+  "properties": {
+    "schema": { "const": "design-pipeline.design-system-catalog.v1" },
+    "version": { "const": "1" },
+    "namespace": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "localId", "kind", "provenance", "hash"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "localId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$" },
+          "kind": { "enum": ["component", "doc", "template", "hook"] },
+          "provenance": { "$ref": "#/$defs/provenance" },
+          "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "required": ["source", "license"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "license": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 },
+        "attribution": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

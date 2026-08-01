@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-system-decision.v1.json",
+  "title": "Design System Runtime Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "mode", "projectAuthority", "selected", "rejected", "rationale", "evidence"],
+  "properties": {
+    "schema": {"const": "design-pipeline.design-system-decision.v1"},
+    "status": {"enum": ["ready", "review", "blocked"]},
+    "mode": {"enum": ["reference", "adopt", "substitute", "custom"]},
+    "projectAuthority": {"type": ["object", "null"]},
+    "selected": {"type": ["object", "null"]},
+    "rejected": {"type": "array", "items": {"type": "object"}},
+    "rationale": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  }
+}

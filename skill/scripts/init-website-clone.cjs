@@ -704,6 +704,9 @@ function populateChange(
           "wait-for-page-ready",
           "record-environment",
           "record-provenance",
+          ...(implementationAuthority.requiredInteractionEnvironment === "actual-browser"
+            ? ["visible-browser"]
+            : []),
         ],
       },
       builder: {
@@ -955,7 +958,10 @@ function manifestContractMatches(
   if (!validManifestHeader(manifest, changeId, artifactRoot, fidelityMode)) return false;
   if (!validManifestPorts(manifest.ports)) return false;
   if (!validManifestTargets(manifest.targets, targets)) return false;
-  if (JSON.stringify(manifest.implementationAuthority) !== JSON.stringify(implementationAuthority)) {
+  if (
+    manifest.implementationAuthority !== undefined &&
+    JSON.stringify(manifest.implementationAuthority) !== JSON.stringify(implementationAuthority)
+  ) {
     return false;
   }
   return validCompletedManifest(manifest);
@@ -977,7 +983,7 @@ function existingRunMatches(
     fail(`existing website-cloning manifest is invalid: ${manifestPath}`);
   }
 
-  return manifestContractMatches(
+  const matches = manifestContractMatches(
     manifest,
     changeId,
     artifactRoot,
@@ -985,6 +991,18 @@ function existingRunMatches(
     fidelityMode,
     implementationAuthority,
   );
+  if (!matches) return false;
+  if (manifest.implementationAuthority === undefined) {
+    manifest.implementationAuthority = implementationAuthority;
+    if (
+      implementationAuthority.requiredInteractionEnvironment === "actual-browser" &&
+      !manifest.ports.browser.requiredCapabilities.includes("visible-browser")
+    ) {
+      manifest.ports.browser.requiredCapabilities.push("visible-browser");
+    }
+    writeJson(manifestPath, manifest);
+  }
+  return true;
 }
 
 function initialize(validated) {

@@ -1,0 +1,44 @@
+{
+  "blockers": [],
+  "changeId": "internalize-astryx-design-system-provider",
+  "evidence": [
+    "openspec/changes/internalize-astryx-design-system-provider/qa.md",
+    "DESIGN.md",
+    "MOTION.md",
+    "openspec/changes/internalize-astryx-design-system-provider/design.md",
+    "skill/references/astryx-design-system-snapshot.json",
+    "tests/design-system-provider.test.cjs",
+    "tests/design-system-decision.test.cjs",
+    "tests/benchmark.test.cjs",
+    "docs/astryx-design-system-provider.md",
+    "openspec/changes/internalize-astryx-design-system-provider/tasks.md",
+    "C:\\Users\\Administrator\\.codex\\skills\\design-pipeline"
+  ],
+  "extensions": {},
+  "foundations": {
+    "design": {
+      "path": "DESIGN.md",
+      "sha256": "1126499915fb720ce0943afcba8b9327885c11a6ccc63160db96cd801a8cf88e",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind design"
+    },
+    "motion": {
+      "path": "MOTION.md",
+      "sha256": "5a23e0fcdb7d4ebddea2f8f446b91edbdaba3812baf44a7066034b5b2d8e7302",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind motion"
+    }
+  },
+  "lastEventSeq": 10,
+  "migration": null,
+  "nextActions": [
+    "User acceptance test, then archive the OpenSpec change."
+  ],
+  "phase": "release-readiness",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 10,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "complete",
+  "updatedAt": "2026-08-02T02:09:00.000Z"
+}

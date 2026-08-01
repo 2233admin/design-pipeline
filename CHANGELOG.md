@@ -4,7 +4,20 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+## [0.8.0] - 2026-08-02
+
 ### Added
+
+- Internalized Astryx as a first-class, optional design-system knowledge provider with a bundled
+  attributed catalog, deterministic local search, token projection with loss reporting, and
+  explicit `reference`, `adopt`, `substitute`, or `custom` adoption decisions.
+- Added a bounded local provider runner that accepts only contained, user-supplied adapters and
+  read-only JSON commands; it never installs packages, fetches the network, or mutates agent or
+  project instructions.
+- Added benchmark manifest/result v2 fairness gates for identical prompts and environments,
+  blind evaluation, hidden expected answers, fresh contexts, and representative delivery.
+- Added website-clone implementation-authority contracts for allowed differences, protected
+  invariants, reference mappings, and required actual-browser interaction evidence.
 
 - Added mandatory `reference.md` evidence routing for `2d`, `2.5d`, `3d`, and `hybrid` changes.
 - Added normative `reference-evidence.json`, the public `reference check` command, and an approval
@@ -361,6 +374,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Prevented website-cloning runs from completing after drifting from their declared template
+  authority or replacing required browser evidence with headless adapter measurements.
+- Preserved legacy website-cloning manifest resume/evaluation paths by backfilling missing authority
+  contracts on identical resumes and reporting older complete manifests as blocked until migrated.
+- Updated GitHub checkout, Node setup, and artifact upload actions to Node 24-compatible releases.
 - Tightened runtime validation to reject malformed anti-slop policy/source metadata, schema-invalid
   website-cloning manifests, empty motion sections, executable motion content in any section, and
   contradictory static-motion selections.
@@ -376,3 +394,4 @@ All notable changes to Design Pipeline are documented here.
 [0.7.1]: https://github.com/2233admin/design-pipeline/compare/v0.7.0...v0.7.1
 [0.7.2]: https://github.com/2233admin/design-pipeline/compare/v0.7.1...v0.7.2
 [0.7.3]: https://github.com/2233admin/design-pipeline/compare/v0.7.2...v0.7.3
+[0.8.0]: https://github.com/2233admin/design-pipeline/compare/v0.7.3...v0.8.0

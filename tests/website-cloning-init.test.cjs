@@ -263,6 +263,43 @@ test("rerunning the same command resumes without rewriting state history", () =>
   assert.equal(fs.readFileSync(eventsPath, "utf8"), before.events);
 });
 
+test("backfills implementation authority when an identical legacy manifest resumes", () => {
+  const projectRoot = makeProject();
+  const args = [
+    "--change-id",
+    "legacy-resume",
+    "--url",
+    "https://example.com",
+  ];
+  assert.equal(run(projectRoot, ...args).status, 0);
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "legacy-resume");
+  const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const statePath = path.join(changeRoot, "state.json");
+  const eventsPath = path.join(changeRoot, "events.jsonl");
+  const manifest = readJson(manifestPath);
+  delete manifest.implementationAuthority;
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const stateBefore = fs.readFileSync(statePath, "utf8");
+  const eventsBefore = fs.readFileSync(eventsPath, "utf8");
+
+  const resumed = run(projectRoot, ...args);
+  assert.equal(resumed.status, 0, resumed.stderr);
+  assert.match(resumed.stdout, /already initialized/i);
+  assert.deepEqual(readJson(manifestPath).implementationAuthority, {
+    authorityTargetId: "example-com",
+    designRecord: "design.md#implementation-authority",
+    allowedDifferences: [],
+    protectedInvariants: [
+      "component topology",
+      "responsive behavior",
+      "interaction behavior",
+    ],
+    requiredInteractionEnvironment: "adapter-measured",
+  });
+  assert.equal(fs.readFileSync(statePath, "utf8"), stateBefore);
+  assert.equal(fs.readFileSync(eventsPath, "utf8"), eventsBefore);
+});
+
 test("rejects a damaged manifest instead of treating it as resumable", () => {
   const args = [
     "--change-id",
@@ -788,6 +825,42 @@ test("blocks completion when implementation authority is missing", () => {
   assert.match(readJson(manifestPath).verification.reasons.join("\n"), /authority contract/i);
 });
 
+test("legacy complete manifests without authority remain parseable and become blocked", () => {
+  const projectRoot = makeProject();
+  assert.equal(
+    run(projectRoot, "--change-id", "legacy-complete", "--url", "https://example.com").status,
+    0,
+  );
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "legacy-complete");
+  const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const evidencePath = path.join(changeRoot, "verification-input.json");
+  const manifest = readJson(manifestPath);
+  markPortsReady(manifest, changeRoot);
+  delete manifest.implementationAuthority;
+  manifest.status = "complete";
+  for (const target of manifest.targets) {
+    target.status = "complete";
+    target.phase = "complete";
+  }
+  manifest.verification = {
+    status: "passed",
+    evaluatedAt: "2026-07-15T00:00:00.000Z",
+    reportPath: "verification-input.json",
+    reasons: [],
+  };
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  fs.writeFileSync(
+    evidencePath,
+    `${JSON.stringify(passingEvidence("example-com"), null, 2)}\n`,
+  );
+
+  const result = evaluate(changeRoot, evidencePath);
+  assert.equal(result.status, 2, result.stderr);
+  const evaluated = readJson(manifestPath);
+  assert.equal(evaluated.status, "blocked");
+  assert.match(evaluated.verification.reasons.join("\n"), /authority contract is missing/i);
+});
+
 test("records explicit authority, allowed differences, invariants, and browser environment", () => {
   const projectRoot = makeProject();
   const result = run(
@@ -885,6 +958,7 @@ test("blocks headless substitution when actual-browser interaction evidence is r
   );
   const manifestPath = path.join(changeRoot, "website-cloning.json");
   const manifest = readJson(manifestPath);
+  assert.ok(manifest.ports.browser.requiredCapabilities.includes("visible-browser"));
   markPortsReady(manifest, changeRoot);
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   const evidencePath = path.join(changeRoot, "verification-input.json");
@@ -902,6 +976,10 @@ test("blocks headless substitution when actual-browser interaction evidence is r
 
   const retryManifest = readJson(manifestPath);
   retryManifest.status = "planned";
+  retryManifest.ports.browser.availableCapabilities =
+    retryManifest.ports.browser.availableCapabilities.filter(
+      (capability) => capability !== "visible-browser",
+    );
   fs.writeFileSync(manifestPath, `${JSON.stringify(retryManifest, null, 2)}\n`);
   fs.writeFileSync(
     evidencePath,
@@ -911,6 +989,17 @@ test("blocks headless substitution when actual-browser interaction evidence is r
       2,
     )}\n`,
   );
+  const missingVisibleProbe = evaluate(changeRoot, evidencePath);
+  assert.equal(missingVisibleProbe.status, 2, missingVisibleProbe.stderr);
+  assert.match(
+    readJson(manifestPath).verification.reasons.join("\n"),
+    /browser port lacks visible-browser/i,
+  );
+
+  const visibleManifest = readJson(manifestPath);
+  visibleManifest.status = "planned";
+  visibleManifest.ports.browser.availableCapabilities.push("visible-browser");
+  fs.writeFileSync(manifestPath, `${JSON.stringify(visibleManifest, null, 2)}\n`);
   const passed = evaluate(changeRoot, evidencePath);
   assert.equal(passed.status, 0, passed.stderr);
 });
