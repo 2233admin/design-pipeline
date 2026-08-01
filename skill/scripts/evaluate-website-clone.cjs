@@ -121,7 +121,7 @@ function unique(values) {
   return [...new Set(values)];
 }
 
-function requiredPortCapabilities(name, port, fidelity) {
+function requiredPortCapabilities(name, port, fidelity, implementationAuthority) {
   const required = [
     ...CANONICAL_CAPABILITIES[name],
     ...(Array.isArray(port.requiredCapabilities) ? port.requiredCapabilities : []),
@@ -132,10 +132,16 @@ function requiredPortCapabilities(name, port, fidelity) {
   if (name === "evidence" && fidelity?.gates?.maxLayoutDeltaPx !== null) {
     required.push("layout-diff");
   }
+  if (
+    name === "browser" &&
+    implementationAuthority?.requiredInteractionEnvironment === "actual-browser"
+  ) {
+    required.push("visible-browser");
+  }
   return required;
 }
 
-function inspectPort(name, port, fidelity) {
+function inspectPort(name, port, fidelity, implementationAuthority) {
   const blockers = [];
   if (!port || typeof port !== "object") return [`${name} port is missing`];
   if (port.status !== "ready") blockers.push(`${name} port status is ${port.status || "missing"}`);
@@ -145,17 +151,22 @@ function inspectPort(name, port, fidelity) {
   const available = new Set(
     Array.isArray(port.availableCapabilities) ? port.availableCapabilities : [],
   );
-  for (const capability of requiredPortCapabilities(name, port, fidelity)) {
+  for (const capability of requiredPortCapabilities(
+    name,
+    port,
+    fidelity,
+    implementationAuthority,
+  )) {
     if (!available.has(capability)) blockers.push(`${name} port lacks ${capability}`);
   }
   if (port.lastProbe?.ok !== true) blockers.push(`${name} port has no successful capability probe`);
   return blockers;
 }
 
-function inspectPorts(ports, fidelity) {
+function inspectPorts(ports, fidelity, implementationAuthority) {
   return unique(
     ["browser", "builder", "evidence"].flatMap((name) =>
-      inspectPort(name, ports?.[name], fidelity),
+      inspectPort(name, ports?.[name], fidelity, implementationAuthority),
     ),
   );
 }
@@ -661,7 +672,11 @@ function decideVerdict(blockers, mismatches) {
 }
 
 function inspectClone(manifest, evidence) {
-  const portBlockers = inspectPorts(manifest.ports, manifest.fidelity);
+  const portBlockers = inspectPorts(
+    manifest.ports,
+    manifest.fidelity,
+    manifest.implementationAuthority,
+  );
   const foundationBlockers = inspectWebsiteCloneFoundations({
     changeRoot: manifest.__changeRoot,
     manifest,

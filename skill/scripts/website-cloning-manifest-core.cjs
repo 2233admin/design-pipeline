@@ -348,9 +348,8 @@ function validateManifestPorts(manifest) {
 
 function validateCompleteManifest(manifest) {
   if (manifest.status !== "complete") return;
-  if (!manifest.implementationAuthority) {
-    fail("implementationAuthority is required when the manifest is complete");
-  }
+  // Keep legacy v1 complete manifests parseable so the evaluator can downgrade them to blocked
+  // and the initializer can backfill the authority contract on an identical resume.
   for (const name of ["browser", "builder", "evidence"]) {
     if (manifest.ports[name].status !== "ready") {
       fail(`ports.${name}.status must be ready when complete`);

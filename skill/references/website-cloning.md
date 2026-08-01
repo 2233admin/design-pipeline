@@ -37,7 +37,7 @@ Options:
 - `--authority-url`: primary target that is normative for implementation structure and behavior; defaults deterministically to the lexicographically first normalized primary URL and must match a declared primary URL. Set it explicitly whenever more than one primary exists.
 - `--allowed-difference`: one exact difference label the implementation may introduce. Repeatable; an observed difference not on this list is a measured mismatch.
 - `--protected-invariant`: one topology, responsive, runtime, motion, or interaction property that verification must prove. Repeatable; defaults to component topology, responsive behavior, and interaction behavior.
-- `--interaction-environment adapter-measured|actual-browser`: provenance required for the interaction replay. Use `actual-browser` when a real user-visible tab is part of acceptance.
+- `--interaction-environment adapter-measured|actual-browser`: provenance required for the interaction replay. Use `actual-browser` only when the ready browser port reports `visible-browser` in `availableCapabilities` from its successful capability probe; the evidence label alone is not accepted as proof of a visible, non-headless run.
 - `--fidelity exact|adaptive`: `exact` converges on measured equivalence; `adaptive` permits documented target-project adaptations.
 - `--change-id`: lowercase hyphen-case id for the active change.
 - `--project-root`: target repository; defaults to the current directory.
