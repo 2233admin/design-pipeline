@@ -28,12 +28,45 @@
       "additionalProperties": false,
       "required": ["path", "kind", "width", "height", "sha256"],
       "properties": {
-        "path": { "type": "string", "minLength": 1 },
+        "availability": { "enum": ["resolved", "pending"], "default": "resolved" },
+        "path": { "type": ["string", "null"], "minLength": 1 },
         "kind": { "enum": ["image", "video", "live-page", "document", "other"] },
-        "width": { "type": "integer", "minimum": 1 },
-        "height": { "type": "integer", "minimum": 1 },
-        "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
-      }
+        "width": { "type": ["integer", "null"], "minimum": 1 },
+        "height": { "type": ["integer", "null"], "minimum": 1 },
+        "sha256": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" },
+        "pendingReason": { "type": "string", "minLength": 1 },
+        "requestedFrom": { "type": "string", "minLength": 1 },
+        "requestedAt": { "type": "string", "format": "date-time" },
+        "resolvedAt": { "type": "string", "format": "date-time" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "availability": { "const": "pending" } },
+            "required": ["availability"]
+          },
+          "then": {
+            "$comment": "source contradiction: a source that was never supplied has nothing to measure, so path, width, height, and sha256 are all null under pending. Permitting a value here would let a document say the bytes never arrived while carrying the hash of those bytes.",
+            "required": ["pendingReason", "requestedFrom"],
+            "not": { "required": ["resolvedAt"] },
+            "properties": {
+              "path": { "const": null },
+              "width": { "const": null },
+              "height": { "const": null },
+              "sha256": { "const": null }
+            }
+          },
+          "else": {
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "width": { "type": "integer", "minimum": 1 },
+              "height": { "type": "integer", "minimum": 1 },
+              "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+            },
+            "not": { "required": ["pendingReason"] }
+          }
+        }
+      ]
     },
     "classification": {
       "type": "object",
@@ -66,7 +99,8 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "type": "string", "minLength": 1 }
+      "items": { "type": "string", "minLength": 1 },
+      "contains": { "const": "graybox.png" }
     },
     "approval": {
       "type": "object",
@@ -119,18 +153,177 @@
           }
         }
       }
+    },
+    "composition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uniform", "regions"],
+      "properties": {
+        "uniform": { "type": "boolean" },
+        "regions": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "rows", "columns", "breaksFrom"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "rows": { "type": "integer", "minimum": 1 },
+              "columns": { "type": "integer", "minimum": 1 },
+              "contents": { "$ref": "#/$defs/regionContents" },
+              "breaksFrom": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "$comment": "composition contradiction: contents absent from every region is a composition written before the field existed and stays valid. Contents on some regions and not others is a document that adopted the field and then declined to answer for one region, which is the back-reference dodge with an empty cell in place of the words.",
+          "if": {
+            "required": ["regions"],
+            "properties": {
+              "regions": { "contains": { "required": ["contents"] } }
+            }
+          },
+          "then": {
+            "properties": {
+              "regions": { "items": { "required": ["contents"] } }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "uniform": { "const": true } },
+            "required": ["uniform"]
+          },
+          "then": {
+            "properties": {
+              "regions": {
+                "items": {
+                  "properties": { "breaksFrom": { "maxItems": 0 } }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "regions": {
+                "contains": {
+                  "type": "object",
+                  "required": ["breaksFrom"],
+                  "properties": { "breaksFrom": { "minItems": 1 } }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "graybox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capture", "capturedAt", "viewport", "suppressed", "comparison", "approval"],
+      "properties": {
+        "capture": { "type": "string", "minLength": 1 },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "runtimeMode": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1 },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mechanism", "token", "disables"],
+              "properties": {
+                "mechanism": {
+                  "enum": [
+                    "root-attribute",
+                    "query-parameter",
+                    "build-flag",
+                    "runtime-api"
+                  ]
+                },
+                "token": { "type": "string", "minLength": 1 },
+                "disables": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          ]
+        },
+        "viewport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "suppressed": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"]
+          }
+        },
+        "comparison": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "regions"],
+          "properties": {
+            "mode": { "enum": ["measured", "qualitative"] },
+            "regions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "finding", "status"],
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "finding": { "type": "string", "minLength": 1 },
+                  "status": { "enum": ["matches", "corrected", "accepted-deviation", "open"] }
+                }
+              }
+            }
+          }
+        },
+        "approval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "evidence"],
+          "properties": {
+            "status": { "enum": ["pending", "approved", "rejected"] },
+            "evidence": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
     }
   },
   "allOf": [
     {
+      "$comment": "schema era mismatch: v1 is a frozen legacy carrier. A v1 document that stays inside the v1 feature set keeps validating without intent or composition, because that absence is a real signal about an older document. A v1 document that carries a v2-era construct (intent, or a graybox block whose comparison is bound to composition region ids) is current work wearing a stale version label, so it is held to the v2 contract instead of using v1 to switch those checks off.",
       "if": {
         "properties": {
           "schema": { "const": "design-pipeline.reference-evidence.v1" }
         },
-        "required": ["schema"]
+        "required": ["schema"],
+        "anyOf": [
+          { "required": ["intent"] },
+          { "required": ["graybox"] }
+        ]
       },
       "then": {
-        "not": { "required": ["intent"] }
+        "required": ["intent", "composition"]
       }
     },
     {
@@ -141,11 +334,19 @@
         "required": ["schema"]
       },
       "then": {
-        "required": ["intent"]
+        "required": ["intent", "composition"]
       }
     }
   ],
   "$defs": {
+    "regionContents": {
+      "$comment": "composition back-reference: a short left-to-right description of what the region holds, authored from the reference. `as above`, `same as previous`, `see above`, `ditto`, `idem`, and equivalents defer to a neighbouring row instead of reading this region, which is the failure the per-region checklist exists to catch. The pattern is written as explicit letter classes because JSON Schema patterns carry no case-insensitive flag.",
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "pattern": "\\b([Aa][Ss][ \\t]+[Aa][Bb][Oo][Vv][Ee]|[Ss][Aa][Mm][Ee][ \\t]+[Aa][Ss]|[Ss][Ee][Ee][ \\t]+[Aa][Bb][Oo][Vv][Ee]|[Dd][Ii][Tt][Tt][Oo]|[Ii][Dd][Ee][Mm])\\b"
+      }
+    },
     "cue": {
       "type": "object",
       "additionalProperties": false,

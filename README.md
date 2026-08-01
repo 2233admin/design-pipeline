@@ -1,52 +1,123 @@
 # design-pipeline
 
-Build better frontend UI with AI without skipping the design work.
+> 用 AI 做前端 UI，但不跳过设计工作。
 
-Give `design-pipeline` a product idea, an existing repository, or a reference website. It helps an
-AI coding agent decide how the interface should look and behave, records those decisions in
-`DESIGN.md` and `MOTION.md`, builds the UI, and checks the result before calling it done.
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Stars](https://img.shields.io/github/stars/2233admin/design-pipeline)
+![Last Commit](https://img.shields.io/github/last-commit/2233admin/design-pipeline)
+![Node](https://img.shields.io/badge/Node-22+-339933)
 
-Use it when you want repeatable design work instead of a one-off generated screen. It can coordinate
-design, motion, frontend, browser evidence, and QA tools, but it does not install optional frameworks
-or publish changes without explicit permission.
+- **一句话**：给 AI Agent 用的前端设计管线，先写设计再写代码。
+- **适合谁**：你用 AI 做前端 UI，但不想让它每次靠猜做设计决策。
+- **不适合谁**：只要快速原型、不想写任何设计文档的。
 
-Under the hood, the workflow follows an OpenSpec-style proposal, implementation, validation, and
-archive lifecycle so another agent or developer can resume the work later.
+<p align="center">
+  <b>先画图纸，再动工。先写设计，再写代码。</b>
+</p>
 
-## What It Does
+<p align="center">
+  <code>DESIGN.md</code> + <code>MOTION.md</code> + <code>OpenSpec</code> + <code>门禁系统</code>
+  <br>
+  一条给 AI Agent 用的前端设计管线。
+</p>
 
-- Creates durable design artifacts before implementation.
-- Requires a validated project `DESIGN.md` as the foundation for every implementation run.
-- Requires a validated project `MOTION.md`, including an explicit `static` posture when motion is
-  intentionally absent.
-- Synthesizes a project-specific `DESIGN.md` from requirements, repository constraints, and
-  attributed website/template evidence.
-- Adds first-class motion design documentation.
-- Supports headless AI handoff through machine-readable state files.
-- Self-checks optional companion skills, data-driven capability profiles, suites, and multi-root installs.
-- Captures reusable pipeline gaps as redacted, deduplicated local Issue or PR drafts.
-- Audits upstream companion evidence as current, stale, changed, untracked, or unknown.
-- Bridges explicit publication authority through deterministic Issue/PR requests and receipts.
-- Routes Anime.js v4.5 across layout, text, SVG, draggable, scroll, WAAPI, adapters, and Three.js work.
-- Routes the official PixiJS v8 skill suite for justified interactive 2D rendering, with explicit
-  scene, lifecycle, performance, accessibility, reduced-motion, and fallback contracts.
-- Routes references through machine-checkable geometry, camera, interaction, and output evidence
-  before library choice, including fixed-camera cinematic 3D, with normative `scene.json`, `3d.md`
-  for 3D families, and `scene.md` for persistent non-3D runtime state.
-- Exposes one stable `designer-pipeline` CLI for lifecycle state, evidence, motion/component gates,
-  tokens/UI IR, benchmarks, adapter governance, local feedback, and release diagnostics.
-- Provides a native Phaser v4 route for browser games and a game UI/Galgame profile for HUD,
-  dialogue, choices, backlog, skip, autoplay, save/load, localization, and accessibility.
-- Aligns with OpenSpec's proposal -> apply -> archive lifecycle.
-- Reconstructs authorized live websites through Browser, Builder, and Evidence ports with measurable fidelity gates.
-- Blocks website-cloning implementation until DOM and raster palette evidence, semantic roles,
-  relationships, and implementation tokens are complete.
-- Reviews anti-template risk through a contextual, evidence-backed rubric without installing
-  mutable remote prompts as global agent instructions.
+---
 
-## Website Cloning
+## 这是什么
 
-`design-pipeline` is a superset of a website-cloning prompt: it captures reference evidence, builds from complete component contracts, and independently compares the result before claiming fidelity.
+`design-pipeline` 是一套给 AI coding agent 用的前端设计工作流。
+
+它解决的是一个很具体的问题：Agent 拿到需求以后，经常跳过设计，直接生成代码。界面能跑，但缺乏一致性。下次改动，样式散落各处，动效各自为政，维护变成考古。
+
+所以它做四件事：
+
+1. 在写代码之前，先创建 `DESIGN.md` 和 `MOTION.md`。
+2. 用 OpenSpec 风格的提案 → 实现 → 验证 → 归档生命周期管理变更。
+3. 支持网站克隆、设计系统合成、动效设计，每一步都有证据。
+4. 通过门禁系统确保设计质量，不达标就拦住。
+
+有个很小的故事。
+
+你让 Agent 做一个设置页面。它看了一眼需求，十秒后交出代码。能跑，但按钮圆角是 4px 还是 8px？悬停态有没有过渡？暗色模式对比度够吗？没人知道。下次再改，Agent 又猜了一遍，猜得不一样。
+
+好的工具不急着替你表演聪明。它先让沉默的决策变得可见。
+
+design-pipeline 坐在需求与代码之间，不紧不慢。它把用户场景写成设计合同，把动效原则写成时序规范，把组件边界画成能力地图。等图纸亮起来，Agent 才知道哪里能走，哪里别碰，第一行代码该落在哪。
+
+- `DESIGN.md` 记录视觉系统：色彩、字体、间距、组件架构。
+- `MOTION.md` 记录动效语言：时序、缓动、编排、减弱动效行为。
+- `OpenSpec` 管理生命周期：提案、实现、验证、归档，每一步可追溯。
+- 门禁系统拦截不合格的设计：没有证据，不许动工。
+
+## 适合谁
+
+适合这些场景：
+
+- 你用 AI Agent 做前端 UI，但不想每次都靠它猜设计决策。
+- 你要做可维护的界面，不是一次性的生成屏幕。
+- 你需要网站克隆，但要求像素级保真，不是大概像。
+- 你想让动效有设计语言，不是随机加动画。
+- 你管理多个项目，需要一致的设计工作流。
+
+不适合这些场景：
+
+- 只要快速原型，不关心长期维护。
+- 希望工具自动替你做完所有设计决策。
+- 不想写文档，只想直接生成代码。
+
+这套系统的边界很清楚：它负责把设计决策显性化、可追溯、可验证。真正做设计判断，还是人和 Agent 一起做。
+
+## 一分钟上手
+
+需要 Node.js 22 或更新版本。
+
+```bash
+# 安装到本地 skill 目录
+node scripts/install-local.cjs \
+  --source skill \
+  --root ~/.codex/skills \
+  --target ~/.codex/skills/design-pipeline
+
+# 检查环境
+node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .
+```
+
+创建第一个设计基础：
+
+```bash
+# 初始化设计合成
+node skill/scripts/init-design-synthesis.cjs \
+  --change-id create-product-design-system \
+  --problem "Design an operations console for support leads" \
+  --framework nextjs
+
+# 检查设计基础是否就绪
+node skill/scripts/check-design-foundation.cjs --project-root . --json
+```
+
+`ready` 解锁实现。`synthesis-required` 需要补充设计。`invalid` 需要修复。
+
+## 核心功能
+
+### 设计基础：DESIGN.md
+
+每个项目必须有验证过的 `DESIGN.md`，记录视觉系统决策。不是模板复制，是从需求、仓库约束和参考证据合成的项目特定合同。
+
+```bash
+node skill/scripts/check-design-foundation.cjs --project-root . --json
+```
+
+### 动效基础：MOTION.md
+
+每个项目必须声明动效姿势，包括明确声明"静态"（当故意不动效时）。记录时序、缓动、编排、减弱动效行为、性能预算。
+
+```bash
+node skill/scripts/check-motion-foundation.cjs --project-root . --json
+```
+
+### 网站克隆
+
+捕获参考证据，从完整组件合同构建，独立比较结果后才声称保真度。
 
 ```bash
 node skill/scripts/init-website-clone.cjs \
@@ -57,13 +128,11 @@ node skill/scripts/init-website-clone.cjs \
   --interaction-environment actual-browser \
   --fidelity exact
 
-# After authoring project DESIGN.md, project MOTION.md, and target palette evidence:
+# 验证基础
 node skill/scripts/check-website-clone-foundations.cjs \
-  --change-root openspec/changes/clone-example \
-  --json
+  --change-root openspec/changes/clone-example --json
 
-# After the three adapters have reported capabilities and EvidencePort has
-# produced verification-input.json:
+# 评估保真度
 node skill/scripts/evaluate-website-clone.cjs \
   --change-root openspec/changes/clone-example \
   --evidence openspec/changes/clone-example/verification-input.json
@@ -81,382 +150,113 @@ node skill/scripts/evaluate-website-clone.cjs \
   foundation for every target. Adaptive mode may change the mapping contract, but it cannot bypass
   these gates.
 
-See `skill/references/website-cloning.md` for the workflow and fidelity contract.
+### 图形与游戏运行时
 
-## Palette Foundation
+按能力合同路由，不按库偏好。支持：
 
-Website-cloning runs capture DOM-derived and raster-derived colors separately, reconcile them into
-semantic roles and relationships, and then map those decisions to implementation tokens. A few
-accent swatches are not a valid palette foundation. Declared evidence paths must be portable,
-present on disk, and contained below the target research directory after symlinks or Windows
-directory junctions are resolved. Palette and anti-slop evidence use strict schemas, so unknown
-fields are rejected instead of being silently ignored.
+- **2D 渲染**：PixiJS v8（精灵、粒子、滤镜、着色器）
+- **2D 游戏**：Phaser v4（完整浏览器游戏运行时）
+- **3D 渲染**：Three.js、React Three Fiber
+- **3D 引擎**：Babylon.js、PlayCanvas
+- **GPU/着色器**：WebGPU/WGSL
 
-```powershell
-node skill/scripts/check-palette-foundation.cjs `
-  --change-root design/changes/clone-example `
+持久空间工作添加 `scene.json` 和 `scene.md` 投影，记录坐标、生命周期、资产、性能预算。
+
+### 反 Slop 审查
+
+将反模板观察内化为结构化 QA，不是全局口味法则。硬质量失败阻止，上下文发现需要设计推理。
+
+```bash
+node skill/scripts/evaluate-anti-slop.cjs \
+  --root . \
+  --evidence design/changes/example/anti-slop-evidence.json \
   --json
 ```
 
-The gate reports `pending`, `invalid`, or `ready`. Implementation and fidelity completion remain
-locked until every declared target is `ready`.
+### 统一 CLI
 
-## Requirements-Driven DESIGN.md
+`designer-pipeline.cjs` 是稳定生命周期门面：
 
-Template collections such as `awesome-design-md` are useful evidence libraries, but they cannot
-infer a target product's users, workflows, constraints, or component architecture. This pipeline
-uses them as inspiration inputs while generating a new project design contract.
-
-The file is mandatory, but its contents are never a mandatory template copy:
-
-```powershell
-node skill/scripts/check-design-foundation.cjs --project-root . --json
+```bash
+node skill/scripts/designer-pipeline.cjs doctor --root . --json
+node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
+node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
 ```
 
-`ready` unlocks implementation. `synthesis-required` routes into the initializer below. `invalid`
-requires repair or resynthesis.
+退出码：`0` 成功，`1` 无效输入，`2` 被阻止或验证失败。
 
-```powershell
-node skill/scripts/init-design-synthesis.cjs `
-  --change-id create-product-design-system `
-  --problem "Design an operations console for support leads handling urgent escalations" `
-  --reference-url https://example.com `
-  --template "awesome-design-md:linear" `
-  --framework nextjs
+## OpenSpec 对齐
+
+长期行为位于 `openspec/specs/`。进行中的更改位于 `openspec/changes/<change-id>/`：
+
+```text
+proposal.md      # 提案意图
+design.md        # 技术/设计方法
+motion.md        # 动效特定设计规范
+tasks.md         # 实现清单
+qa.md            # 验证证据
+scene.json       # 机器场景合同
+scene.md         # 可读投影
+state.json       # CAS 保护状态
+events.jsonl     # 仅追加历史
+handoff.md       # 可读恢复说明
 ```
 
-The run then:
-
-1. requests `/grill-with-docs <problem>` and records its decision evidence;
-2. measures scope against an explicit budget;
-3. requests `/wayfinder 为此制作一张地图` only when the measured scope is oversized;
-4. synthesizes and validates project `DESIGN.md`;
-5. continues into tokens, components, implementation, and normal design-pipeline QA.
-
-The issue tracker owns a real Wayfinder map. The bundled local scripts never fabricate one or
-publish remotely.
-
-See `skill/references/design-synthesis.md` for the full state machine and commands.
-
-## Project MOTION.md
-
-Every project declares its motion posture in a root `MOTION.md`. The foundation describes motion
-principles, timing, easing, choreography, interaction states, reduced-motion behavior, performance
-budgets, and source decisions. It uses a clean-room primitive vocabulary so an agent can reason
-about motion without copying gallery code or treating one animation library as the design language.
-
-```powershell
-node skill/scripts/check-motion-foundation.cjs --project-root . --json
-```
-
-`ready` unlocks implementation. `synthesis-required` means the file is missing. `invalid` means the
-foundation must be repaired. Change-level `motion.md` files specialize the project foundation and
-record its hash; they do not replace it.
-
-PixiJS is available as an optional 2D rendering route, not as the default answer to animation.
-When sprite fields, particles, filters, shaders, canvas editors, or high object counts justify it,
-the pipeline routes through the official `pixijs` skill suite and requires change `motion.md` plus
-`scene.md` to name temporal semantics, renderer, scene graph, ticker, assets, performance budget,
-accessibility strategy, reduced-motion substitution, and cleanup. See
-`skill/references/pixijs-rendering.md`.
-
-## Graphics, Game UI, and Scene Runtime
-
-The stable abstraction is a capability contract, not a favorite library. The pipeline first
-classifies the surface as semantic UI, data/vector graphics, 2D editor canvas, 2D scene renderer,
-2D game engine, 3D renderer, 3D game engine, geospatial 3D, GPU/shader work, or narrative game UI.
-It then preserves the target project's accepted runtime or chooses the smallest suitable adapter.
-
-When visual references influence a change, `reference.md` records observable spatial evidence and
-`reference-evidence.json` separately records reference role, requested/effective fidelity,
-geometry, camera, interaction, output, confidence, required artifacts, and approval. Exact static
-targets add `reconstruction.json`: rectified front view, canonical elevation, locked camera,
-distributed landmark overlay, and an EvidencePort receipt bound to source/render/diff hashes.
-The fixed-camera cinematic route preserves real 3D without
-requiring end-user camera navigation. Persistent spatial or engine-owned work adds
-normative change `scene.json` and a family-specific projection: `3d.md` for 3D families,
-`scene.md` otherwise. The sidecar records coordinates, lifecycle, assets, input,
-UI/accessibility boundaries, adapter/version, performance budgets, deterministic evidence,
-degradation, and cleanup in a machine-checkable contract. The Markdown file explains the same
-decisions and must match the sidecar identity and foundation hashes. `DESIGN.md` remains the visual
-system and `MOTION.md` remains the reusable motion language.
-
-Phaser v4 is the built-in route for a complete browser-based 2D game runtime. PixiJS remains the
-specialized 2D renderer route. Three.js and React Three Fiber cover focused 3D rendering;
-Babylon.js and PlayCanvas cover fuller 3D engine needs. Data, geospatial, WebGPU/WGSL, and
-narrative adapters are cataloged without making every library a mandatory dependency.
-
-The official Phaser Game Agent MCP is optional because it is credentialed and metered. An
-unlicensed community Phaser skill pack is tracked only as a curation candidate and is never
-auto-installed. See `skill/references/graphics-runtime-routing.md`,
-`skill/references/graphics-runtime-catalog.json`, `skill/references/adapter-registry.json`,
-`skill/references/scene-runtime-spec.md`, `skill/references/reconstruction-spec.md`,
-`skill/references/phaser-v4.md`, and `skill/references/game-ui-and-narrative.md`.
-
-## Contextual Anti-Slop Review
-
-The pipeline internalizes useful anti-template observations as structured QA, not as a global taste
-law. Hard product-quality failures can block. Contextual findings require design reasoning.
-Preferences such as named colors, fonts, punctuation, pills, gradients, or familiar layout families
-remain advisory.
-
-```powershell
-node skill/scripts/evaluate-anti-slop.cjs `
-  --root . `
-  --evidence design/changes/example/anti-slop-evidence.json `
-  --json
-```
-
-The evaluator writes `.design-pipeline/reviews/anti-slop-review.json`. Retrieved source prompts are
-tracked by URL and content hash, remain inert evidence, and are never appended to global
-`CLAUDE.md` or `AGENTS.md`.
-
-See `skill/references/anti-slop-review.md` for the evidence contract and Stage 2/3/6 integration.
-
-## Repository Layout
+## 仓库布局
 
 ```text
 skill/
   SKILL.md
-  references/
-    companion-capabilities.json
-    design-synthesis.md
-    design-synthesis.schema.json
-    feedback-loop.md
-    feedback-observation.schema.json
-    upstream-capability-sync.md
-    source-evidence.schema.json
-    capability-audit.schema.json
-    publication-request.schema.json
-    publication-receipt.schema.json
-    anti-slop-review.md
-    anti-slop-rubric.json
-    anti-slop-rubric.schema.json
-    anti-slop-evidence.schema.json
-    anti-slop-review.schema.json
-    palette-evidence.schema.json
-    motion-foundation.md
-    motion-foundation.schema.json
-    motion-primitives.json
-    graphics-runtime-routing.md
-    graphics-runtime-catalog.json
-    scene-runtime-spec.md
-    phaser-v4.md
-    game-ui-and-narrative.md
-  scripts/
-    check-design-foundation.cjs
-    check-motion-foundation.cjs
-    check-palette-foundation.cjs
-    check-website-clone-foundations.cjs
-    init-design-synthesis.cjs
-    advance-design-synthesis.cjs
-    check-deps.cjs
-    record-feedback.cjs
-    audit-capabilities.cjs
-    prepare-publication.cjs
-    reconcile-publication.cjs
-    evaluate-anti-slop.cjs
+  references/          # 设计规范、schema、路由目录
+  scripts/             # 检查、初始化、评估脚本
 openspec/
   project.md
-  specs/
-  changes/
+  specs/               # 长期行为规格
+  changes/             # 进行中的更改
 docs/
 scripts/
 ```
 
-## Install Locally
+## 反馈和贡献
 
-Requires Node.js 22 or newer.
-
-From this repository, use the path-contained installer:
+记录管线或 companion 发现：
 
 ```bash
-node scripts/install-local.cjs --source skill --root ~/.codex/skills --target ~/.codex/skills/design-pipeline
-node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .
+node ~/.codex/skills/design-pipeline/scripts/record-feedback.cjs \
+  --kind capability-gap \
+  --source runtime \
+  --skill animejs \
+  --title "Anime.js companion lacks adapter guidance" \
+  --summary "The requested Three.js target is supported upstream but missing."
 ```
 
-An existing target is preserved unless `--replace` is explicit. The installer stages the copy and
-renames it atomically; symlinks, directory junctions, and paths outside the selected root/target
-boundary are rejected.
+重复发现共享确定性观察并递增计数。敏感信息在写入前脱敏。
 
-To capture stale installed capabilities immediately as local contribution drafts:
+## 最小可行运行
 
-```bash
-node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs --json --record-feedback
-```
-
-The command writes under `.design-pipeline/feedback/` and never creates a remote Issue or PR.
-
-Windows PowerShell example:
-
-```powershell
-$target = Join-Path $HOME ".codex\skills\design-pipeline"
-node scripts\install-local.cjs --source skill --root (Split-Path $target) --target $target
-node (Join-Path $target "scripts\designer-pipeline.cjs") doctor --root .
-```
-
-To upgrade an existing installation, run the same command with `--replace`. Without that flag, the
-installer leaves the existing installation untouched.
-
-Or install from a GitHub Release package on macOS or Linux:
-
-```bash
-# download design-pipeline-skill.tgz from Releases, then:
-mkdir -p /tmp/design-pipeline-release
-tar -xzf design-pipeline-skill.tgz -C /tmp/design-pipeline-release
-node /tmp/design-pipeline-release/design-pipeline/scripts/install-local.cjs \
-  --root ~/.codex/skills \
-  --target ~/.codex/skills/design-pipeline
-node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .
-```
-
-Windows PowerShell release install:
-
-```powershell
-# Download design-pipeline-skill.zip from Releases first.
-$extract = Join-Path $env:TEMP ("design-pipeline-release-" + [guid]::NewGuid())
-Expand-Archive -LiteralPath .\design-pipeline-skill.zip -DestinationPath $extract
-$source = Join-Path $extract "design-pipeline"
-$target = Join-Path $HOME ".codex\skills\design-pipeline"
-
-node (Join-Path $source "scripts\install-local.cjs") `
-  --root (Split-Path $target) `
-  --target $target
-node (Join-Path $target "scripts\designer-pipeline.cjs") doctor --root .
-```
-
-For an upgrade, add `--replace` to the installer command. Replacement is staged and rolled back if
-validation fails, so a failed upgrade does not destroy the working installation.
-
-## Feedback And Contributions
-
-Record a pipeline or companion finding:
-
-```powershell
-node ~/.codex/skills/design-pipeline/scripts/record-feedback.cjs `
-  --kind capability-gap `
-  --source runtime `
-  --skill animejs `
-  --title "Anime.js companion lacks adapter guidance" `
-  --summary "The requested Three.js target is supported upstream but missing from the installed companion." `
-  --evidence "Self-check missing marker: adapters"
-```
-
-Repeated findings share one deterministic observation and increment its occurrence count. Machine-specific paths and common credential patterns are redacted before files are written. Review the draft before handing it to an authorized GitHub or ship workflow.
-
-## Upstream Capability Sync
-
-Network retrieval belongs to the host. After it writes schema-valid source evidence, the pipeline
-performs a local, data-only comparison:
-
-```powershell
-node ~/.codex/skills/design-pipeline/scripts/audit-capabilities.cjs `
-  --source-evidence .design-pipeline/source-evidence.json `
-  --installed-evidence .design-pipeline/check-deps.json `
-  --record-feedback `
-  --json
-```
-
-An audit can prepare a deterministic publication request, but preparation never publishes:
-
-```powershell
-node ~/.codex/skills/design-pipeline/scripts/prepare-publication.cjs `
-  --observation dpf-0123456789abcdef `
-  --repository owner/repository `
-  --action issue
-```
-
-After explicit authorization, a GitHub/browser host adapter performs the remote action, writes a
-matching receipt, and `reconcile-publication.cjs` records the returned URL. Missing source evidence
-is reported as `UNKNOWN`; ambient credentials never imply publication authority.
-
-See `skill/references/upstream-capability-sync.md` for the evidence, host, idempotency, and receipt
-contracts.
-
-## Unified CLI And Reference Providers
-
-`skill/scripts/designer-pipeline.cjs` is the stable lifecycle façade over the deterministic kernels.
-It emits `design-pipeline.cli-result.v1`, contains every project path below `--root`, and uses exit
-code `0` for success, `1` for invalid input/error, `2` for blocked evidence, and `3` for a complete
-measurement that misses the requested fidelity threshold.
-
-```powershell
-node skill/scripts/designer-pipeline.cjs doctor --root . --json
-node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
-node skill/scripts/designer-pipeline.cjs reference check --root . --change-root openspec/changes/example --json
-node skill/scripts/designer-pipeline.cjs reconstruction check --root . --change-root openspec/changes/example --stage geometry --json
-node skill/scripts/designer-pipeline.cjs reconstruction check --root . --change-root openspec/changes/example --stage final --json
-node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
-node skill/scripts/designer-pipeline.cjs adapter audit --root . --json
-```
-
-The CLI does not replace DESIGN/MOTION document semantics and never publishes remotely. Public
-template collections remain optional, attributed reference providers; they cannot overwrite a
-validated project foundation.
-
-See `docs/cli-and-reference-providers.md` for the boundary and planned command surface.
-
-## Package / CI
-
-```bash
-node scripts/qa.cjs
-node scripts/package.cjs --output-root dist
-```
-
-QA is hermetic: it checks manifest parity, syntax, all tests, control-plane smoke commands,
-byte-reproducible archives, archive completeness, failure atomicity, isolated installation,
-installed-package CLI behavior, and a byte-identical repository status before/after the run.
-
-GitHub Actions:
-
-- `CI` — runs QA and uploads package artifacts on every PR/push
-- `Release` — on `v*` tags (or manual dispatch) publishes release assets
-
-## OpenSpec Alignment
-
-Long-lived behavior lives under `openspec/specs/`.
-
-In-progress changes live under `openspec/changes/<change-id>/` with:
-
-```text
-proposal.md
-design.md
-tasks.md
-specs/<capability>/spec.md
-```
-
-The pipeline's runtime design artifacts map to OpenSpec as:
-
-| design-pipeline | OpenSpec role |
-| --- | --- |
-| `brief.md` | Proposal intent |
-| `reference.md` | Reference evidence and spatial route |
-| `reference-evidence.json` | Normative role, fidelity, geometry, camera, interaction, output, and approval contract |
-| `reconstruction.json` | Static-target rectification, camera calibration, landmark, and final comparison gate |
-| `directions.md` | Design exploration |
-| `design.md` | Visual language and screen-space UI |
-| `motion.md` | Motion-specific design spec |
-| `tasks.md` | Implementation checklist |
-| `qa.md` | Validation evidence |
-| `scene.json` / `scene.md` / `3d.md` | Machine runtime contract / non-3D or 3D readable projection |
-| `state.json` / `events.jsonl` / `handoff.md` | CAS-protected state / append-only history / readable resume note |
-
-## Minimum Viable Run
-
-Even with no optional companion skills installed:
+即使没有安装可选 companion skill：
 
 ```bash
 node skill/scripts/check-deps.cjs
 ```
 
-The command should return `OK`. Missing optional skills should report `WARN` with fallbacks.
+命令应返回 `OK`。缺失可选 skill 报告 `WARN` 并带回退。
 
-## Release Standard
+## 发布标准
 
-Before publishing a release, validate against:
+发布前对照验证：
 
 - `CHANGELOG.md`
 - `skill/references/open-source-readiness.md`
 - `skill/references/qa-checklist.md`
 - `openspec/specs/design-pipeline/spec.md`
 
+## 同生态项目
+
+- [repowise](https://github.com/2233admin/repowise) — AI Agent 的代码库智能层
+- [performance-patterns-skill](https://github.com/2233admin/performance-patterns-skill) — 性能问题先路由再排查
+- [markdown-memory](https://github.com/2233admin/markdown-memory) — 文件驱动的 AI 记忆桥
+
+## License
+
+MIT
