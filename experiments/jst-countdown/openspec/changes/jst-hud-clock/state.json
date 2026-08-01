@@ -1,0 +1,26 @@
+{
+  "blockers": [
+    "graybox-missing: no graybox.png and no graybox block on any carrier. The gate is unconditional on every route including 2.5d and needs no source raster, so this is a process gap, not the source-availability block below. Optical treatment was authored ahead of it.",
+    "reconstruction-source-unavailable: the source frame has no path on disk and no SHA-256, so stages.geometry and stages.final cannot run and every source-derived artifact is unproducible. Requested fidelity stays exact-reconstruction; the verification claim stays unverified."
+  ],
+  "changeId": "jst-hud-clock",
+  "evidence": [],
+  "extensions": {},
+  "foundations": {
+    "design": null,
+    "motion": null
+  },
+  "lastEventSeq": 8,
+  "migration": null,
+  "nextActions": [
+    "Declare a runtime graybox mode in index.html, capture graybox.png, and record a graybox block with a qualitative comparison to clear graybox-missing.",
+    "Obtain the source frame as a file on disk with a resolvable SHA-256 to unblock the geometry and final stages."
+  ],
+  "phase": "gate-review",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 8,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "verifying",
+  "updatedAt": "2026-07-31T15:30:00.000Z"
+}
