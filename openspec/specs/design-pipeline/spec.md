@@ -618,6 +618,72 @@ overwrite a validated project foundation or become required for local validation
 - **THEN** requirements-only and local-evidence synthesis SHALL remain available
 - **AND** the provider SHALL report an explicit unavailable state rather than fabricate content.
 
+### Requirement: Design-system knowledge is normalized and searchable
+
+The pipeline SHALL normalize supplied or bundled design-system snapshots into a deterministic,
+namespaced catalog covering components, hooks, templates, and documentation. Entries SHALL retain
+license, source, revision, rich usage guidance, states, props, theming, localized/dense forms, and
+content hashes when upstream provides them.
+
+#### Scenario: An agent needs a reusable component pattern
+
+- **WHEN** the agent searches by query, kind, category, or stability status
+- **THEN** the CLI SHALL return deterministic local catalog results without executing provider code
+- **AND** Astryx entries SHALL remain attributed candidate knowledge rather than project authority.
+
+#### Scenario: A snapshot is malformed or active
+
+- **WHEN** the snapshot has an unknown schema/version, duplicate ID, escaping path, executable
+  value, prototype-pollution key, or tampered entry hash
+- **THEN** normalization SHALL fail closed before writing output
+- **AND** no network, install, import, or project mutation SHALL occur.
+
+### Requirement: Astryx knowledge is bundled but runtime adoption is optional
+
+The package SHALL include an inert, MIT-attributed snapshot of the pinned stable public Astryx
+surface. Private, charts, lab, Vega, canary, and other non-stable package surfaces SHALL remain
+excluded from the default catalog.
+
+#### Scenario: Astryx is unavailable or incompatible in a target project
+
+- **WHEN** the local Astryx CLI is absent or React, React DOM, or StyleX constraints do not match
+- **THEN** bundled search and reference use SHALL remain available
+- **AND** runtime adoption SHALL remain blocked without changing the target project.
+
+### Requirement: Provider acquisition is bounded and read-only
+
+Live design-system acquisition SHALL execute only an explicit root-contained local adapter or the
+bundled Astryx adapter against an existing root-contained Astryx CLI. The runner SHALL use a fixed
+read-only command allowlist, bounded timeout and output, no shell, a credential/proxy-stripped
+environment, validated JSON envelopes, atomic contained output, and a hash-bearing receipt.
+
+#### Scenario: A provider requests a mutating or escaping operation
+
+- **WHEN** the operation is install, init, swizzle, upgrade, theme build, agent-instruction
+  injection, or references a path outside the root
+- **THEN** the request SHALL be denied before provider execution or output mutation
+- **AND** the failure SHALL remain machine-readable.
+
+### Requirement: Token projection and adoption decisions preserve loss and authority
+
+Provider tokens SHALL project to the public DTCG-compatible token contract with light/dark modes,
+semantic roles, source hashes, and explicit loss reporting. Adoption SHALL use a deterministic
+`reference`, `adopt`, `substitute`, or `custom` decision and SHALL keep the validated project
+DESIGN/system as project authority.
+
+#### Scenario: Runtime adoption is requested
+
+- **WHEN** `adopt` or `substitute` is selected
+- **THEN** React, React DOM, and StyleX constraints SHALL be compatible and adapter intake SHALL be
+  admitted before the decision reports ready
+- **AND** the evaluator SHALL never install packages or modify project files.
+
+#### Scenario: Token semantics cannot be preserved
+
+- **WHEN** token type, role, path, mode, or value cannot be projected without interpretation
+- **THEN** the projection SHALL report review or blocked with a loss item
+- **AND** it SHALL NOT claim a lossless ready state.
+
 ### Requirement: Lifecycle state is versioned, atomic, and resumable
 
 The pipeline SHALL use state/event v2 with a versioned phase registry, compare-and-swap mutation,
@@ -706,6 +772,15 @@ the gate independently of the aggregate score.
 - **WHEN** the aggregate passes but one required scenario fails
 - **THEN** the benchmark SHALL fail
 - **AND** the failure MAY be recorded through the redacted, deduplicated local feedback loop.
+
+#### Scenario: Multiple design systems are compared
+
+- **WHEN** a v2 benchmark evaluates Astryx, another library, or a custom system
+- **THEN** identical prompts and environment class, blind evaluation, hidden private expectations,
+  fresh contexts, and representative delivery SHALL all be verified
+- **AND** any unverified fairness invariant SHALL block the benchmark rather than produce a score
+- **AND** stable and prerelease system channels SHALL not be mixed unless the manifest records an
+  explicit canary-mix allowance.
 
 ### Requirement: Adapter facts have one governed authority
 

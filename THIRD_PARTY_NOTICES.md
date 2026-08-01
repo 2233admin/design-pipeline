@@ -1,5 +1,41 @@
 # Third-Party Notices
 
+## facebook/astryx
+
+The bundled Astryx provider profile and attributed design-system snapshot were derived from:
+
+- Source: https://github.com/facebook/astryx
+- Reviewed commit: `921d3db31ae4323e0625d2f5a95c32fe07a3d5d7`
+- Package version: `0.2.0`
+- Original copyright: Copyright (c) 2026 Meta Platforms, Inc.
+- License: MIT
+
+Only declarative component, documentation, theme, compatibility, and provenance data are bundled.
+No Astryx runtime package is installed or executed by Design Pipeline unless a user explicitly
+selects a contained local provider adapter.
+
+MIT License
+
+Copyright (c) 2026 Meta Platforms, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ## UHolli/ai-website-cloner
 
 The website-cloning workflow in this project adapts concepts from:

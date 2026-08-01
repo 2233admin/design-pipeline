@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-system-token-projection.v1.json",
+  "title": "Design System Token Projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "tokens", "losses"],
+  "properties": {
+    "schema": {"const": "design-pipeline.design-system-token-projection.v1"},
+    "status": {"enum": ["ready", "review", "blocked"]},
+    "tokens": {"type": "object"},
+    "losses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "code", "path", "message"],
+        "properties": {
+          "severity": {"enum": ["review", "blocked"]},
+          "code": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "message": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

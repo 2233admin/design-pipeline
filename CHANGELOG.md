@@ -6,6 +6,15 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Internalized Astryx as a first-class, optional design-system knowledge provider with a bundled
+  attributed catalog, deterministic local search, token projection with loss reporting, and
+  explicit `reference`, `adopt`, `substitute`, or `custom` adoption decisions.
+- Added a bounded local provider runner that accepts only contained, user-supplied adapters and
+  read-only JSON commands; it never installs packages, fetches the network, or mutates agent or
+  project instructions.
+- Added benchmark manifest/result v2 fairness gates for identical prompts and environments,
+  blind evaluation, hidden expected answers, fresh contexts, and representative delivery.
+
 - Added mandatory `reference.md` evidence routing for `2d`, `2.5d`, `3d`, and `hybrid` changes.
 - Added normative `reference-evidence.json`, the public `reference check` command, and an approval
   gate that blocks implementation when spatial classification is unresolved.

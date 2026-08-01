@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-system-provider-profile.v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "profiles"],
+  "properties": {
+    "schema": {"const": "design-pipeline.design-system-provider-profiles.v1"},
+    "version": {"const": "1"},
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "officialUrl", "repositoryUrl", "license", "apiVersions", "compatibility", "canary"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "officialUrl": {"type": "string", "format": "uri"},
+          "repositoryUrl": {"type": "string", "format": "uri"},
+          "license": {"const": "MIT"},
+          "apiVersions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+          "compatibility": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["react", "react-dom", "@stylexjs/stylex"],
+            "properties": {
+              "react": {"const": ">=19"},
+              "react-dom": {"const": ">=19"},
+              "@stylexjs/stylex": {"const": "^0.19"}
+            }
+          },
+          "canary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["default"],
+            "properties": {"default": {"const": "deny"}}
+          }
+        }
+      }
+    }
+  }
+}

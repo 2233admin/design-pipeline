@@ -100,6 +100,71 @@ test("help, doctor, foundation, and stable JSON error envelopes work", () => {
   assert.equal(duplicate.output.error.code, "DUPLICATE_OPTION");
 });
 
+test("bundled design-system knowledge is agent-discoverable without installing Astryx", () => {
+  const profiles = run(["design-system", "profiles", "--root", repoRoot]);
+  assert.equal(profiles.status, 0, profiles.stderr || profiles.stdout);
+  assert.equal(profiles.output.profiles.some(({ id }) => id === "astryx"), true);
+
+  const search = run(["design-system", "search", "--root", repoRoot, "--query", "AlertDialog", "--kind", "component", "--limit", "1"]);
+  assert.equal(search.status, 0, search.stderr || search.stdout);
+  assert.equal(search.output.results[0].id, "astryx:component:AlertDialog");
+  assert.equal(search.output.results[0].provenance.license, "MIT");
+
+  const projection = run(["design-system", "project-tokens", "--root", repoRoot]);
+  assert.equal(projection.status, 0, projection.stderr || projection.stdout);
+  assert.equal(projection.output.projection.schema, "design-pipeline.design-system-token-projection.v1");
+  assert.notEqual(projection.output.status, "blocked");
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-system-decision-cli-"));
+  writeJson(path.join(root, "decision.json"), {
+    schema: "design-pipeline.design-system-decision-request.v1",
+    version: "1",
+    mode: "reference",
+    candidateId: "astryx:component:AlertDialog",
+    project: { designMd: true, runtime: {} },
+  });
+  const decision = run(["design-system", "decide", "--root", root, "--artifact", "decision.json"]);
+  assert.equal(decision.status, 0, decision.stderr || decision.stdout);
+  assert.equal(decision.output.decision.schema, "design-pipeline.design-system-decision.v1");
+  assert.equal(decision.output.decision.selected.id, "astryx:component:AlertDialog");
+  assert.equal(decision.output.decision.projectAuthority.id, "project-design");
+});
+
+test("benchmark v2 exposes a developer brief without private expectations", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-brief-cli-"));
+  const dimensions = ["responsive", "accessibility", "palette", "motion", "scene", "component-state", "evidence"];
+  writeJson(path.join(root, "benchmark.json"), {
+    schema: "design-pipeline.benchmark-manifest.v2",
+    id: "cli-fairness",
+    candidateSystem: "astryx",
+    systems: ["astryx", "custom"],
+    systemChannels: { astryx: "stable", custom: "stable" },
+    fairness: {
+      samePrompts: true,
+      sameEnvironmentClass: true,
+      evaluatorBlind: true,
+      expectedAnswersHidden: true,
+      freshContext: true,
+      representativeDelivery: true,
+    },
+    requiredDimensions: dimensions,
+    scenarios: dimensions.map((dimension, index) => ({
+      id: `scenario-${index}`,
+      operation: ["generate", "edit", "repair"][index % 3],
+      dimension,
+      required: true,
+      threshold: 0.8,
+      evidenceType: `${dimension}-receipt`,
+      prompt: `Complete ${dimension}.`,
+      privateExpectations: [`private ${dimension} criterion`],
+    })),
+  });
+  const brief = run(["benchmark", "brief", "--root", root, "--manifest", "benchmark.json"]);
+  assert.equal(brief.status, 0, brief.stderr || brief.stdout);
+  assert.equal(brief.output.brief.schema, "design-pipeline.benchmark-developer-brief.v1");
+  assert.doesNotMatch(JSON.stringify(brief.output), /privateExpectations|private responsive criterion/);
+});
+
 test("doctor blocks incomplete packages and Node versions below 22", () => {
   const skillRoot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-doctor-"));
   try {

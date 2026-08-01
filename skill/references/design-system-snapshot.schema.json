@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/design-system-snapshot.v1.json",
+  "title": "Design system snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "namespace", "provenance"],
+  "properties": {
+    "schema": { "const": "design-pipeline.design-system-snapshot.v1" },
+    "version": { "const": "1" },
+    "namespace": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "components": { "$ref": "#/$defs/entries" },
+    "docs": { "$ref": "#/$defs/entries" },
+    "templates": { "$ref": "#/$defs/entries" },
+    "hooks": { "$ref": "#/$defs/entries" }
+  },
+  "anyOf": [
+    { "required": ["components"] },
+    { "required": ["docs"] },
+    { "required": ["templates"] },
+    { "required": ["hooks"] }
+  ],
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "required": ["source", "license"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "license": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 },
+        "attribution": { "type": "string", "minLength": 1 }
+      }
+    },
+    "entries": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "entry": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$" },
+        "provenance": { "$ref": "#/$defs/provenanceOverride" }
+      }
+    },
+    "provenanceOverride": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "license": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 },
+        "attribution": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

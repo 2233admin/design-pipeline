@@ -1,0 +1,20 @@
+{
+  "schema": "design-pipeline.design-system-provider-profiles.v1",
+  "version": "1",
+  "profiles": [
+    {
+      "id": "astryx",
+      "name": "Astryx",
+      "officialUrl": "https://astryx.atmeta.com/",
+      "repositoryUrl": "https://github.com/facebook/astryx",
+      "license": "MIT",
+      "apiVersions": ["1"],
+      "compatibility": {
+        "react": ">=19",
+        "react-dom": ">=19",
+        "@stylexjs/stylex": "^0.19"
+      },
+      "canary": {"default": "deny"}
+    }
+  ]
+}
