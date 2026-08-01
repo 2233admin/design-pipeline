@@ -46,7 +46,11 @@ function sceneFixture(root) {
 
 function fixtures(root) {
   writeJson(path.join(root, "reference-evidence.json"), {
-    schema: "design-pipeline.reference-evidence.v1", id: "cli-reference",
+    // v2, not v1: this fixture records a graybox block, and a graybox block is a v2-era construct
+    // whose comparison is bound to the declared composition region ids. A v1 document that carries
+    // one is current work wearing a stale version label, so it is held to the v2 contract and owes
+    // both `intent` and `composition` rather than using the older version string to skip them.
+    schema: "design-pipeline.reference-evidence.v2", id: "cli-reference",
     source: { path: "reference.png", kind: "image", width: 723, height: 405, sha256: "a".repeat(64) },
     classification: { objectDimensionality: "3d", cameraModel: "fixed-perspective", interactionModel: "none", outputSurface: "locked-cinematic-frame", runtimeFamily: "fixed-camera-cinematic-3d" },
     spatialCues: {
@@ -60,7 +64,55 @@ function fixtures(root) {
     route: "3d", confidence: 0.98,
     requiredArtifacts: ["reference.md", "scene.json", "3d.md", "graybox.png"],
     approval: { status: "approved", evidence: "Approved in the task conversation." },
+    intent: {
+      role: "inspiration", requestedFidelity: "directional-inspiration",
+      effectiveFidelity: "directional-inspiration", reconstructionArtifact: null,
+      downgrade: { status: "not-requested", evidence: "The user asked for a fresh implementation, not a rebuild." },
+    },
+    // The per-region breakdown the graybox comparison below is checked against.
+    composition: {
+      uniform: false,
+      regions: [
+        { id: "slab", rows: 2, columns: 1, breaksFrom: ["readout"] },
+        { id: "readout", rows: 1, columns: 3, breaksFrom: [] },
+      ],
+    },
+    // Structural proof precedes optical treatment on every route, so a reference this command is
+    // expected to pass owes a layout-only capture and a written structural comparison. The
+    // comparison is qualitative: this fixture never writes the source raster, so it may not claim
+    // to have measured against it.
+    graybox: {
+      capture: "graybox.png",
+      capturedAt: "2026-07-23T00:00:00.000Z",
+      viewport: { width: 723, height: 405 },
+      runtimeMode: { mechanism: "root-attribute", token: "data-graybox", disables: ["emissive", "optical", "texture"] },
+      suppressed: ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"],
+      comparison: {
+        mode: "qualitative",
+        regions: [
+          { id: "slab", finding: "Slab occupies the same share of the frame as the reference.", status: "matches" },
+          { id: "readout", finding: "Readout sat beside the label; moved above it.", status: "corrected" },
+        ],
+      },
+      approval: { status: "approved", evidence: "User compared the layout-only capture before any treatment." },
+    },
   });
+  fs.writeFileSync(path.join(root, "graybox.png"), "layout-only capture");
+  // `reference check` folds the spec-reconciliation gate into its stages, so a change that carries
+  // a reference owes a `Spec Reconciliation` section here too. An empty table is the valid way to
+  // say no value moved between the spec and the implementation.
+  fs.writeFileSync(path.join(root, "design.md"), [
+    "# Change Design",
+    "",
+    "## Spec Reconciliation",
+    "",
+    "Graybox: `graybox.png`, captured 2026-07-23T00:00:00.000Z",
+    "Reconciled: 2026-07-23T01:00:00.000Z",
+    "",
+    "| Value | Specified | Implemented | Cause |",
+    "| --- | --- | --- | --- |",
+    "",
+  ].join("\n"));
   writeJson(path.join(root, "evidence.json"), {
     schema: "design-pipeline.evidence-receipt.v1", id: "partial", status: "partial",
     adapter: { id: "fake", version: "1", availability: "available", probe: { ok: true, message: "ready" } },

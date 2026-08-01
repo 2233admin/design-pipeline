@@ -28,22 +28,248 @@ All notable changes to Design Pipeline are documented here.
 - Added `reconstruction.json`, the public `reconstruction check` command, rectified-front-view and
   camera-calibration gates, independently recomputed landmark error, and hash-bound EvidencePort
   receipts for exact still-frame reconstruction.
+- Added an unconditional graybox gate as `reconstruction check --stage graybox`, covering every
+  spatial route rather than only `3d` and `hybrid`, with a declared runtime suppression mode, a
+  named per-region comparison, and an approval status that must pass before any optical treatment.
+- Added `source.availability` to `reference-evidence.json` so a reference supplied only in
+  conversation is recorded as `pending` with `pendingReason` and `requestedFrom` instead of being
+  omitted, and added the `source-pending` blocked reason that reports `contractValid: true`.
+- Added a required per-region structure table to `reference-spec.md` and a matching `composition`
+  block in `reference-evidence.json`, so a uniformity claim that contradicts its own regions fails
+  validation and the graybox comparison addresses those region ids by name.
+- Added a required `Spec Reconciliation` section to change `design.md`, recording the specified
+  value, the implemented value, and an observed cause for every value implementation changed.
+- Added the public `reconciliation check` command, which reads that section, refuses a cause that
+  states an intention rather than an observation, and emits a `design-pipeline.spec-drift.v1`
+  record. Both scaffolders now generate the section and the task that fills it.
+- Added `stages.graybox` to every `reference check` result, so the graybox verdict is reported on
+  every route and in every fidelity mode rather than only when the stage is asked for by name.
+- Added the `graybox-comparison-unmeasurable` blocked reason and the `measurable` field, so a
+  measured comparison is refused unless the source raster it names is actually on disk.
+- Added the `reference-source-unparseable`, `reference-source-malformed`, and
+  `reference-source-availability-invalid` blocked reasons, so a source declaration that is present
+  but unreadable blocks with `measurements: null` instead of defaulting to resolved.
+- Added the `reference-source-unrecorded` and `reference-source-undeclared` blocked reasons for a
+  `measured` graybox comparison on a change where no `reference-evidence.json` records a source, or
+  the document declares none.
+- Added the `graybox-carrier-conflict` blocked reason for a change where both `reconstruction.json`
+  and `reference-evidence.json` hold a `graybox` block.
+- Added the `graybox-composition-unrecorded` and `graybox-composition-undeclared` blocked reasons
+  for a graybox comparison that names region ids while no `composition` was recorded anywhere to
+  bind them to.
+- Added the `composition ambiguity:` validation failure for a `uniform: false` composition in which
+  two or more `rows x columns` structures tie for most-common and some region is left unaccounted
+  for. It is deliberately a separate string from the `composition contradiction:` family.
+- Added the `schema era mismatch:` validation failure for a document declaring
+  `design-pipeline.reference-evidence.v1` while carrying a v2-era `intent` or `graybox` block, and
+  the matching v1 rule in the published `reference-evidence.schema.json`.
+- Added `stages.reconciliation` to every `reference check` result, plus the
+  `reconciliation-unverifiable` blocked reason for a reconciliation the aggregate could not evaluate.
+- Added the `reconciliation-manifest-unreadable`, `reconciliation-manifest-malformed`, and
+  `reconciliation-manifest-contradictory` blocked reasons, reported ahead of every other
+  reconciliation reason, for a reference manifest that is present but cannot be read or believed.
+- Added the `KERNEL_SIGNALED`, `KERNEL_STATUS_MISSING`, and `KERNEL_STATUS_UNSUPPORTED` CLI error
+  codes, so a killed, statusless, or unrecognised kernel run is reported as its own failure.
+- Added the `graybox-carrier-uncontained` and `reference-source-uncontained` blocked reasons for a
+  carrier path that does not resolve inside the change root. Such a path was already refused unread,
+  but the refusal was reported as absence - `graybox-missing`, `reference-source-unrecorded`, or on
+  one path a `ready` stage - which named the wrong fault. A refused path is now reported once, as
+  itself.
+- Added an optional per-region `contents` field to the `composition` block, carrying the same
+  independent reading as the table's `Contents left to right` column, and the
+  `composition back-reference:` validation failure for a description that defers to another region
+  (`as above`, `same as`, `see above`, `ditto`, `idem`) anywhere in the string. The prohibition was
+  previously prose only, with nowhere in the document to record a description or check one.
+  Identical descriptions across regions stay valid; structurally identical registers legitimately
+  read the same.
+- Added the `reference-source-path-undeclared`, `reference-source-raster-uncontained`,
+  `reference-source-raster-missing`, `reference-source-raster-unreadable`,
+  `reference-source-not-raster`, and `reference-source-raster-truncated` blocked reasons, so a
+  `measured` graybox comparison names which way its reference raster failed rather than sharing one
+  string with every other unmeasurable state. `graybox-comparison-unmeasurable` now covers a pending
+  source only.
+- Added the `graybox-capture-predates-source` and `graybox-capture-uncomparable` blocked reasons, so
+  a `measured` capture taken before the source it claims to have measured is refused, and a
+  `capturedAt` that cannot be compared is named rather than counted as fresh.
+- Added the `reference-source-resolved-at-invalid` and `reference-source-resolved-at-contradictory`
+  blocked reasons for a `source.resolvedAt` that is not an ISO 8601 timestamp, or that records the
+  source landing while `source.availability` still says `pending`. `resolvedAt` now has a reader, so
+  a declaration it cannot read blocks every stage instead of being dropped.
 
 ### Changed
 
+- Reference source resolution now happens at Stage 0: the pipeline resolves the source to a path,
+  states what the path unlocks, and records a pending source rather than discovering the gap at
+  gate review.
+- For a `primary-target` reference, change `design.md` is now written after the graybox capture and
+  cites the capture it was written against.
+- `reconstruction check` now reports the `graybox`, `geometry`, and `final` stages independently, so
+  a blocked measured stage never hides a passing or missing graybox.
 - Scene validation now selects `3d.md` for 3D families and keeps `scene.md` for persistent non-3D
   runtimes. Legacy 3D `scene.md` files receive a deterministic upgrade-required rename preview.
 - Spatial routing now separates object dimensionality, camera model, interaction model, and output
   surface instead of coupling 3D geometry to camera navigation.
+- `reference check` now reports `blocked` whenever the graybox stage is not ready, including on the
+  exact-reconstruction path where the geometry stage passes. The gate is no longer one an agent has
+  to know to run.
+- `graybox.png` is now a required artifact on every reference route rather than only `3d` and
+  `hybrid`, matching the unconditional gate.
+- `composition` is now a required root key of `reference-evidence.json` v2. A v1 document predates
+  the per-region checklist and stays exempt.
+- The graybox block now has exactly one contract, shared by `reconstruction.json` and
+  `reference-evidence.json`, so a single block can never collect two verdicts from two carriers.
+- The graybox comparison's binding to the recorded composition region ids now fires on whichever
+  carrier holds the block, so moving the block does not release the binding.
+- The geometry gate blocks detail geometry, type treatment, and measured fidelity claims. Optical
+  treatment is released by the graybox gate alone, so a blocked geometry stage no longer reads as a
+  reason to withhold it.
+- `reference check` now carries the spec-reconciliation gate under `stages.reconciliation` and
+  returns `blocked` (exit 2) whenever it is not `ready`. A change that passed `reference check`
+  before this release can now block on a `Spec Reconciliation` section that was never written;
+  adding the section, with an empty table if nothing changed, clears it. `reconciliation check` is
+  unchanged and still available on its own.
+- Spec-reconciliation applicability is now decided by pipeline-written manifests as well as by the
+  hand-authored `reference-evidence.json` and `reference.md` carriers. A valid `website-cloning.json`
+  with at least one target, or a `design-synthesis.json` recording reference inputs, makes the gate
+  apply from `change init` - so a scaffolded website clone is reference-driven before the agent
+  writes a carrier, and its reconciliation findings are blockers rather than warnings. An absent
+  manifest keeps the previous carrier-only behaviour.
+- The verification claim is now derived from the whole `reconstruction check --stage final` result -
+  its top-level status and every entry in its `stages` map - rather than from the top-level status
+  alone. `verified` requires the final status and every reported stage to be `ready`. The old wording
+  stated both rules at once, so a run whose `final` stage was `ready` beside a blocked
+  `stages.graybox` could be recorded either way; it is now `unverified`.
+- The verification claim now names the one admissible input explicitly, and rejects the rest.
+  `reconstruction check` still defaults to `--stage geometry` when `--stage` is omitted, and that
+  default result must not be read as fully verified: it reports the queried stage's status at the
+  top level and reports the other stages beside it without gating on them, so a geometry result can
+  read `ready` while `stages.graybox` is blocked. That per-stage independence is deliberate and
+  unchanged. What changed is the documentation: no stage-scoped result - the default run, an
+  explicit `--stage geometry` or `--stage graybox` run, or a bare `stages.graybox` reading lifted out
+  of any result - may be cited as evidence for `verified`, and a `--stage final` result that is
+  missing, unreadable, or incomplete records `unverified`. The existing rules are preserved: a
+  blocked stage and a pending or unresolvable source still record `unverified`.
+- The graybox stage now reads the reference raster's bytes instead of trusting that the declared
+  path exists. A `measured` comparison requires the first 24 bytes of `source.path` to carry the PNG
+  signature and an IHDR chunk with a width and height of at least 1; PNG is the only accepted
+  signature, nothing is decoded, and no dependency was added. A change whose `source.kind` is
+  `video` or `live-page` can no longer reach `measured` without exporting the compared frame as a
+  PNG and naming it. The declared mode is still reported as declared and is never rewritten to
+  `qualitative`.
+- The public CLI now propagates the documented kernel exit codes unchanged: `0` success, `1`
+  invalid/error, `2` blocked, `3` measured fidelity mismatch. `evidence capture`,
+  `feedback record|prepare|reconcile`, and `source audit` label exit `3` as `fidelity-limited`
+  rather than `captured` or `complete`.
+- A `pending` source must now carry `null` for `path`, `width`, `height`, and `sha256`. Only the
+  shape of those fields was checked before, so a document could say the bytes never arrived while
+  carrying their digest, and a reader had to guess which half to believe. The contradiction now
+  fails validation with `source contradiction:`, and the published
+  `reference-evidence.schema.json` pins all four to `null` in the pending branch. Every pending
+  document already written nulls all four, so this newly rejects only documents that were already
+  self-contradictory.
+- The website-clone scaffolder now emits the graybox capture task ahead of the spec task whenever a
+  target has `role: "primary"`, naming the primary target ids. The generated checklist previously
+  went straight from foundation to spec, contradicting the ordering rule the pipeline enforces.
 
 ### Fixed
 
+- Stopped reporting `fidelity-limited` for a reference whose source raster is unavailable. The
+  `geometry` and `final` stages now report `blocked` with reason `source-pending` and no
+  measurements, so a missing measurement is a status rather than a fabricated value.
+- Stopped letting a pending source move `intent.requestedFidelity` or `intent.effectiveFidelity`.
+  Only an explicitly approved downgrade changes the fidelity contract.
+- Stopped accepting a declared source path as evidence that the source exists. Measurability is
+  read from disk, so a `measured` comparison against a raster that was never written blocks and
+  grants no fidelity evidence. The declared mode is still reported as declared rather than quietly
+  rewritten.
+- Stopped accepting an existing file as evidence that a raster was measured. Existence was the whole
+  test, so a zero-byte file, a directory whose name ended in `.png`, a text file renamed to `.png`,
+  and a truncated download all set `measurable: true` and `fidelityEvidence: true`. The gate now
+  opens the file and reads its header, and each failure keeps its own reason. A path that escapes
+  the change root is reported as `reference-source-raster-uncontained` rather than through a blocker
+  that falsely said the file was not present in the change root.
+- Stopped leaving `source.resolvedAt` unread. It was written into `reference-evidence.json`, typed
+  by the schema, and forbidden while pending, and nothing ever compared it to anything. A `measured`
+  graybox capture timestamped before the source resolved measured nothing against it, and marking
+  the source `resolved` afterwards relabelled the claim instead of re-running it; that now blocks
+  with `graybox-capture-predates-source`. A `qualitative` capture is not compared - it is the
+  documented output of the pending phase - and an absent `resolvedAt` stays the legacy default. The
+  geometry and final stages are still unchecked for freshness, because `graybox.capturedAt` is the
+  only capture timestamp this contract records; that limit is now stated in
+  `references/reconstruction-spec.md` rather than left to be inferred.
+- Stopped accepting a bare `runtimeMode` token as proof that the emissive, optical, and texture
+  layers were disabled. A token that names no disabled layers is a declaration the gate cannot
+  check, so it now blocks with `graybox-mode-unverifiable`. The document stays contract-valid;
+  expanding the token into `{mechanism, token, disables}` clears the block.
+- Stopped folding an unreadable reference document into the absent case. An absent file and an
+  absent field still default to `resolved`; a document that is unparseable, records a non-object
+  `source`, or declares an out-of-enum `source.availability` now blocks with its own reason before
+  any landmark math runs.
+- Stopped accepting one named exception as proof that a non-uniform composition is accounted for.
+  Every region that departs from the modal row and column structure must now either record what it
+  breaks from or be named by a region that does.
+- Stopped letting declaration order decide the modal region structure. When two or more
+  `rows x columns` structures tie for most-common, the first one written used to win and become the
+  norm the other regions were measured against, so re-sorting the table flipped the verdict. A tie
+  is now no norm at all: every region must record what it breaks from or be named by one that does,
+  and an unaccounted region fails with `composition ambiguity:`. A composition whose tie is fully
+  declared still validates, in any order.
+- Stopped treating `design-pipeline.reference-evidence.v1` as a live schema version an author could
+  select to switch the current checklist off. A v1 document that carries a v2-era `intent` or
+  `graybox` block is now validated as v2 and must record `intent` and `composition`, failing with
+  `schema era mismatch:`. A v1 document that carries neither is a genuinely older document and
+  validates exactly as before - the absence of those blocks stays a real signal about its age. The
+  fix is to add the two blocks; the version string may stay as written. This closes the path by
+  which a graybox comparison could name region ids no `composition` had ever declared, because with
+  no composition the binding had nothing to check against.
+- Stopped passing a graybox comparison that names regions while no `composition` exists to bind them
+  to. The stage now blocks with `graybox-composition-unrecorded` when no `reference-evidence.json`
+  exists and `graybox-composition-undeclared` when the document exists but records none. This is a
+  blocked stage rather than a contract failure, so a v1 document that never carried a composition
+  does not retroactively become invalid.
+- Stopped letting two carriers each hold a `graybox` block. The first carrier found used to win, so
+  a rejected block in one file could be masked by an approved block in the other. Both files holding
+  a block is now `graybox-carrier-conflict`: neither block is validated and no winner is picked.
+  Keep exactly one.
+- Stopped reporting a reference source as resolvable when nothing on disk had been consulted. An
+  absent `reference-evidence.json` and a document with no `source` field still keep the legacy
+  `resolved` availability, so geometry on an older change is untouched, but they no longer claim to
+  resolve anything: a `measured` graybox comparison on such a change now blocks with
+  `reference-source-unrecorded` or `reference-source-undeclared`. Declaring
+  `comparison.mode: qualitative` is the accurate description and still reaches `ready`.
+- Stopped letting an unreadable reference document sit beside a `ready` graybox stage with no
+  reasons. An unparseable document, a non-object `source`, or an out-of-enum `source.availability`
+  now blocks the graybox stage on every path, qualitative included, before any field of the block is
+  read - and with the same reason string the geometry gate uses, rather than falling through to
+  `graybox-comparison-unmeasurable`.
+- Stopped reporting `ready` from `reference check` for a change whose spec-reconciliation gate had
+  never been run. The stage is folded in, so a missing or unusable `Spec Reconciliation` section now
+  blocks the aggregate; a reconciliation that cannot be evaluated at all is
+  `reconciliation-unverifiable` and never `ready`.
+- Stopped letting a reference manifest that is present but broken decide applicability by silence. A
+  `website-cloning.json` or `design-synthesis.json` that cannot be read, cannot be parsed, is not a
+  JSON object, declares the wrong schema, records no targets, records `inputs.references` as a
+  non-array, records an `inputs.mode` outside the enum, or whose `inputs.mode` and
+  `inputs.references` disagree now blocks with `reconciliation-manifest-unreadable`,
+  `reconciliation-manifest-malformed`, or `reconciliation-manifest-contradictory` - reported ahead of
+  every other reconciliation reason, and not downgraded to a warning, because while the manifest is
+  broken the gate cannot decide whether the obligation exists at all.
+- Stopped collapsing every kernel exit status that was not `2` into success. A kernel exit of `3`, a
+  measured fidelity mismatch, was reported as exit `0` and labelled `captured` or `complete`; it now
+  reaches the caller as exit `3` labelled `fidelity-limited`. A kernel killed by a signal, including
+  by the 60-second timeout, now fails with `KERNEL_SIGNALED` instead of being read through a missing
+  `error` field; a run with no numeric exit status fails with `KERNEL_STATUS_MISSING`; and a status
+  outside `0`-`3` is surfaced as `KERNEL_STATUS_UNSUPPORTED` rather than normalised.
 - Made packaging, installation, `doctor`, and dependency self-check use one required-resource
   manifest, so incomplete installations fail instead of reporting ready.
 - Made local installation validate the staged package and Node.js 22+ before replacing an
   existing installation.
 - Rejected non-SemVer release versions and stopped interpolating workflow-dispatch input into
   shell commands.
+- Set `reason` on `stages.graybox` when the graybox block cannot be validated. The summary carried
+  `reasons` and `error` but left `reason` undefined, so the same failure read as `graybox-invalid`
+  through `reference check` and as no reason at all through `reconstruction check`. The two
+  summaries now agree.
 
 ## [0.7.3] - 2026-07-28
 

@@ -14,6 +14,7 @@
     "scripts/reconstruction-fidelity-contract.cjs",
     "scripts/reconstruction-core.cjs",
     "scripts/check-reconstruction.cjs",
+    "scripts/check-spec-reconciliation.cjs",
     "scripts/scene-runtime-core.cjs",
     "scripts/evidence-core.cjs",
     "scripts/motion-evidence-core.cjs",

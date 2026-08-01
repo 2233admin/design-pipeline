@@ -27,6 +27,12 @@ Create or update `qa.md` for every design-pipeline change with this structure.
 - State/event consistency:
 - Migration or repair performed? evidence:
 - Unknown future schema/registry fail-closed check:
+- CLI exit code recorded as returned, not as assumed: 0 success, 1 invalid/error, 2 blocked, 3
+  measured fidelity mismatch. `3` is a real outcome that reaches the caller and prints
+  `fidelity-limited`; it is not folded into success:
+- Any kernel failure reported by its own code rather than as success -  `KERNEL_FAILED` (spawn error
+  or exit 1), `KERNEL_SIGNALED` (killed, including by timeout), `KERNEL_STATUS_MISSING` (no exit
+  status), `KERNEL_STATUS_UNSUPPORTED` (a status outside 0-3, surfaced and never normalised):
 
 ## Browser / Visual Checks
 
@@ -147,11 +153,162 @@ effects, and common layout families are not hard failures.
 Complete this section when visual references influence the change.
 
 - `reference.md` source inventory and provenance:
+- Source availability: `resolved` / `pending`:
+- Pending reason, requested from, and unlock action reported to the user:
 - Observable spatial evidence for and against 3D:
+- Per-region structure table recorded (rows, columns, contents, breaks from):
+- Uniformity question answered `Yes` / `No` with named exceptions:
+- No region described as `as above` or `same as previous`:
+- `composition` in `reference-evidence.json` matches the table and does not contradict itself
+  (`composition contradiction: ...`):
+- When two or more `rows x columns` structures tie for most-common, every region records a
+  `breaksFrom` or is named by one that does (`composition ambiguity: ...`). Reordering the table
+  cannot change this verdict:
+- Schema era: a document declaring `design-pipeline.reference-evidence.v1` while carrying `intent`
+  or a `graybox` block is validated as v2 and must record `intent` and `composition`
+  (`schema era mismatch: ...`). A v1 document carrying neither stays exempt:
 - Selected route: `2d` / `2.5d` / `3d` / `hybrid`:
 - Fidelity invariants:
-- Required artifact set:
-- Graybox gate passed before polish for `3d` / `hybrid`:
+- Required artifact set (`graybox.png` present on every route):
+- `reference check` status, reason, and `stages.graybox` status:
+- Requested fidelity unchanged by a pending source:
+- Verification claim: `verified` / `fidelity-limited` / `unverified`
+- Claim derived from the whole `reconstruction check --stage final` result - its top-level status
+  and every entry in its `stages` map, which that one command already reports together:
+  - `verified` only when the top-level status is `ready` and `stages.graybox`, `stages.geometry`,
+    and `stages.final` are all `ready`:
+  - `fidelity-limited` only when the top-level status is `fidelity-limited` and no reported stage is
+    `blocked`:
+  - `unverified` for everything else, including any single blocked stage and a change with no
+    `reconstruction.json` to run the command against:
+- Top-level `ready` beside a blocked `stages.graybox` recorded as `unverified`, not `verified`:
+- The claim was read from a `--stage final` run and from nothing else. `reconstruction check`
+  defaults to `--stage geometry`, and no stage-scoped result - the default run, an explicit
+  `--stage geometry` or `--stage graybox` run, or a bare `stages.graybox` reading lifted out of any
+  result - was cited as evidence for `verified`:
+- A `--stage final` result that was missing, unreadable, or incomplete was recorded as `unverified`:
+- Nothing in this file, in `design.md`, or in the final response describes an `unverified` run as
+  verified, exact, identical, 1:1, pixel-perfect, faithful, or complete:
+
+Write the claim on its own line above; it lives nowhere else, because no contract field carries it.
+`unverified` is the default until a measurement replaces it, never a value inferred from a `ready`
+graybox, a declaration, or a placeholder.
+
+A pending source, an unreadable source declaration, and a source nothing on disk backs all produce
+`unverified`, but they do it by blocking a stage the claim reads, not by a rule of their own. The
+stages are the derivation; there is no second path to the claim.
+
+## Graybox Gate
+
+Complete this section for every change with a `reference-evidence.json`, on every route and in every
+fidelity mode.
+
+- `reconstruction check --stage graybox` status: ready / blocked
+- Blocking reason if any:
+- Capture path and captured at:
+- Declared runtime graybox mode (mechanism, token, and the layers it disables):
+- Runtime mode names `emissive`, `optical`, and `texture` in `disables` (a bare token is
+  `graybox-mode-unverifiable`, never `ready`):
+- Suppressed treatments listed:
+- Comparison mode declared: `measured` / `qualitative`
+- Comparison measurable (source `resolved`, a `source.path` declared, and the bytes behind it a PNG
+  whose IHDR width and height the gate could read): yes / no
+- If `measured` was refused, the reason names which state applies:
+  - `graybox-comparison-unmeasurable` for a pending source
+  - `reference-source-unrecorded` for no reference document
+  - `reference-source-undeclared` for a document that declares no `source`
+  - `reference-source-path-undeclared` for a resolved source that names no path
+  - `reference-source-raster-uncontained` for a path that escapes the change root
+  - `reference-source-raster-missing` for a path that names no file
+  - `reference-source-raster-unreadable` for a path that is not a regular file, or whose bytes
+    cannot be read
+  - `reference-source-not-raster` for bytes with no PNG signature, a zero-byte file included
+  - `reference-source-raster-truncated` for a PNG signature with no readable IHDR dimensions
+- If the document records `source.resolvedAt`, the `measured` capture is not older than it
+  (`graybox-capture-predates-source` if it is, and the repair is to re-run the capture, never to
+  re-label it; `graybox-capture-uncomparable` if `capturedAt` will not parse):
+- `resolvedAt`, when present, is an ISO 8601 timestamp (`reference-source-resolved-at-invalid`) and
+  is not recorded beside `availability: pending`
+  (`reference-source-resolved-at-contradictory`); absent is the legacy default and is not compared:
+- `fidelityEvidence` (true only when `ready`, `measured`, and measurable):
+- Exactly one carrier holds the `graybox` block (two is `graybox-carrier-conflict`, and neither
+  block is validated):
+- Every carrier path resolves inside the change root - a path that escapes it is refused unread and
+  reported as the refusal, not as absence (`graybox-carrier-uncontained` for the primary artifact,
+  `reference-source-uncontained` for the reference document), and is named once, never twice:
+- Region findings and statuses (no `open` findings):
+- A `composition` is recorded somewhere for the comparison to bind to - a comparison that names
+  regions with none recorded is `graybox-composition-unrecorded` (no `reference-evidence.json`) or
+  `graybox-composition-undeclared` (document present, no `composition`):
+- Region ids match the recorded `composition` ids exactly - every declared id addressed, none
+  invented:
+- Reference document readable - an unparseable document, a non-object `source`, or an out-of-enum
+  `source.availability` blocks this stage too, with the same reason the geometry gate uses:
+- Graybox approval status and evidence:
+- Graybox passed before materials, glow, bloom, depth of field, scanlines, and grading:
+- `geometry` stage status recorded separately (never inferred from graybox):
+- If both graybox and geometry are blocked, recorded as a process gap, not an environmental limit:
+
+The graybox gate blocks optical treatment: materials, glow, bloom, depth of field, scanlines, and
+grading. The geometry gate blocks detail geometry, type treatment, and any measured fidelity claim.
+A blocked `geometry` stage is not a reason to withhold optical treatment when the graybox stage is
+`ready`; record the verification claim as `unverified` and continue.
+
+A `measured` comparison the evidence cannot support is `blocked` with the reason from the list above
+that names the actual state, not a downgrade to `qualitative`. A block that cannot be validated at
+all is `blocked` with `graybox-invalid`. Never record `ready` for a gate that could not verify its
+own evidence.
+
+The raster and freshness checks above run on the graybox stage only. The `geometry` stage refuses a
+pending source and an unreadable source declaration, and otherwise recomputes landmark error without
+opening the file `source.path` names, so a `ready` geometry status is not a statement that the
+reference raster is readable. Record it as the stage-scoped result it is.
+
+## Spec Reconciliation
+
+Complete this section for every change with a reference.
+
+- `Spec Reconciliation` section present in `design.md`:
+- Cited graybox capture exists on disk:
+- Reconciled timestamp:
+- Rows: specified value / implemented value / observed cause:
+- Every `Cause` describes an observation, not an intention:
+- Empty table is a valid result; absent section is `blocked`:
+- `reference check` ran and its `stages.reconciliation` status recorded (the gate is folded into the
+  aggregate; `reconciliation check` on its own is still available but is no longer the only place
+  the verdict appears):
+- `reference check` exit code: 0 both stages ready / 2 reconciliation or graybox blocked / 3
+  reconciliation ready and geometry `fidelity-limited`:
+
+### Applicability
+
+The gate applies to a change that has a reference. `reference-evidence.json` and `reference.md` are
+hand-authored, so waiting for one of them made the gate opt-in: a reference-driven change stayed
+`applicable: false` until someone remembered to create a file. Two pipeline-written manifests now
+answer the question as well, and they exist from `change init`, before the agent has authored
+anything:
+
+- `website-cloning.json`: a clone reconstructs sites it did not author, so a valid manifest with at
+  least one target is reference-driven unconditionally.
+- `design-synthesis.json`: reference-driven exactly when `inputs.references` is non-empty, checked
+  against `inputs.mode`.
+
+Record:
+
+- `referenceSignals` reported by the gate (which carriers and manifests were found):
+- `applicable`: yes / no. When no, unfilled-stub findings are warnings rather than blockers:
+- Manifest present and readable. A present manifest that cannot be read or believed blocks on its
+  own authority, because while it is broken the gate cannot decide whether the obligation exists at
+  all:
+  - `reconciliation-manifest-unreadable`: the manifest is present but cannot be read, is not valid
+    JSON, or is not a JSON object.
+  - `reconciliation-manifest-malformed`: it parses, but its reference declaration is unusable - the
+    wrong `schema`, a clone manifest with no non-empty `targets` array, `inputs.references` that is
+    not an array, or an `inputs.mode` outside the enum.
+  - `reconciliation-manifest-contradictory`: `inputs.mode` and `inputs.references` disagree about
+    whether the change is reference-driven, and the gate refuses to pick a winner.
+- An **absent** manifest is not a fault. It is a real legacy signal - a change scaffolded before the
+  manifests existed, or one that is simply not manifest-driven - and keeps the carrier-only default.
 
 ## Scene And Runtime Checks
 
@@ -296,6 +453,10 @@ Log every auto-decision:
 - Blocking issues:
 - Non-blocking issues:
 - Follow-up tasks:
+
+The verdict may not describe the change as exact, identical, 1:1, pixel-perfect, faithful, or
+complete while the recorded verification claim is `unverified`. A pass with an `unverified` claim is
+a pass on the gates that ran, and it says so.
 
 ## Open Source Readiness
 

@@ -85,6 +85,7 @@ design/changes/<change-id>/
   reference.md    # observed reference evidence and 2D / 2.5D / 3D / hybrid route
   reference-evidence.json # normative reference role, fidelity, geometry/camera/interaction/output
   reconstruction.json     # exact/adaptive static-reference calibration and comparison contract
+  graybox.png             # layout-only capture with materials and optical treatment suppressed
   rectified-reference.png # canonical front view derived from the supplied frame
   front-elevation.svg     # object-space construction source
   camera-calibration.json # locked camera/lens/viewport parameters
@@ -110,25 +111,57 @@ Use an existing project convention instead if the repo already has `openspec/`, 
 When the user supplies an image and asks for an identical, exact, 1:1, pixel-accurate, cloned, or
 faithfully reproduced result:
 
-1. Read `references/reference-spec.md` and `references/reconstruction-spec.md` completely.
-2. Record the image as `role: primary-target`, with both requested and effective fidelity set to
+A missing source downgrades the verification claim, never the requested fidelity. Requested fidelity
+changes only through explicit user approval recorded in the non-destructive downgrade field. An
+unavailable file, a schedule, and implementation convenience are not approval.
+
+1. Resolve the reference source to a file path before writing any artifact. When the reference is
+   not a resolvable path, ask the user for one and state what the path unlocks: rectification,
+   camera calibration, landmark error, and the fidelity receipt.
+2. When the user cannot or will not supply a path, record `source.availability: pending` with
+   `pendingReason` and `requestedFrom` in `reference-evidence.json`, then continue. Do not block the
+   remaining work, and never write a fabricated path, dimension, or hash.
+3. Read `references/reference-spec.md` and `references/reconstruction-spec.md` completely.
+4. Record the image as `role: primary-target`, with both requested and effective fidelity set to
    `exact-reconstruction` in `reference-evidence.json` v2. A reference is inspiration only when the
    user says it is inspiration.
-3. Do not generate alternative design directions. The reference already determines the direction.
-4. Separate image, canonical/object, world, and camera spaces. Rectify the source into a canonical
-   front view, author the front elevation there, then solve and lock the output camera.
-5. Run `designer-pipeline reference check`. Exact and adaptive reconstruction remain blocked until
-   the geometry stage of `reconstruction.json` passes.
-6. Before materials, glow, bloom, depth of field, scanlines, or cinematic grading, run
-   `designer-pipeline reconstruction check --stage geometry`. It independently recomputes
-   distributed landmark error.
-7. After final rendering, an independent EvidencePort must produce reference, implementation, and
-   diff images plus a hash-bound fidelity receipt. Run
-   `designer-pipeline reconstruction check --stage final`.
-8. Missing evidence is `blocked`; complete measured evidence outside thresholds is
-   `fidelity-limited`. Neither state may be described as exact, identical, pixel-perfect, or done.
-9. Exact fidelity may be downgraded only after explicit user approval is recorded in the
-   non-destructive downgrade field. Implementation convenience is not approval.
+5. Do not generate alternative design directions. The reference already determines the direction.
+6. Record the per-region structure table in `reference.md` and the matching `composition` block in
+   `reference-evidence.json` before any layout is authored.
+7. Separate image, canonical/object, world, and camera spaces. Rectify the source into a canonical
+   front view, author the front elevation there, then solve and lock the output camera. A pending
+   source blocks rectification and the camera solve; the rest of the module still runs.
+8. Run `designer-pipeline reference check`. `blocked` with reason `source-pending` is a recorded
+   state with `contractValid: true`, not a contract failure. Exact and adaptive reconstruction
+   remain blocked until the geometry stage of `reconstruction.json` passes. Read the exit code as
+   returned: `0` success, `1` invalid or error, `2` blocked, `3` a measured fidelity mismatch. `3`
+   is a real outcome that reaches the caller and prints `fidelity-limited`; it is not success.
+9. Render the layout-only graybox and run
+   `designer-pipeline reconstruction check --stage graybox`. This gate precedes change `design.md`
+   and precedes materials, glow, bloom, depth of field, scanlines, and cinematic grading. It is the
+   only gate on that optical treatment.
+10. Write change `design.md` against the graybox capture and cite that capture in it.
+11. Before detail geometry, type treatment, or any measured fidelity claim, run
+    `designer-pipeline reconstruction check --stage geometry`. It independently recomputes
+    distributed landmark error. Against a pending source it reports `blocked` with reason
+    `source-pending`, never `fidelity-limited`. This stage does not gate optical treatment; when it
+    is blocked and the graybox stage is `ready`, continue.
+12. After final rendering, an independent EvidencePort must produce reference, implementation, and
+    diff images plus a hash-bound fidelity receipt. Run
+    `designer-pipeline reconstruction check --stage final`.
+13. Missing evidence is `blocked`; complete measured evidence outside thresholds is
+    `fidelity-limited`. Neither state may be described as exact, identical, pixel-perfect, or done.
+14. Record the verification claim in `qa.md` from the whole `--stage final` result - its top-level
+    status and its `stages` map together: `verified` only when the top-level status is `ready` and
+    every reported stage is `ready`, `fidelity-limited` when the top-level status is
+    `fidelity-limited` and no stage is `blocked`, and `unverified` for everything else, including a
+    single blocked stage and a pending or unresolvable source. Requested fidelity does not move with
+    it. Only that complete output is evidence for the claim. `reconstruction check` defaults to
+    `--stage geometry`, and no stage-scoped result - the default run, an explicit `--stage geometry`
+    or `--stage graybox` run, or a bare `stages.graybox` reading lifted out of any result - may be
+    cited as evidence for `verified`.
+15. Report the unlock action whenever the source is still pending: supplying the source file path
+    enables rectification, camera calibration, landmark error, and the fidelity receipt.
 
 ## Website Cloning Module
 
@@ -277,12 +310,22 @@ Before writing design artifacts or code:
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
 - Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.
-- When visual references influence the change, create `reference.md` and normative
+- Resolve the reference source to a file path here, before any reference artifact is written -
+  before `reference.md`, before `reference-evidence.json`, and before `reconstruction.json`. Ask
+  the user for the path when it is not resolvable and name what it unlocks: rectification, camera
+  calibration, landmark error, and the fidelity receipt. When no path arrives, record
+  `source.availability: pending` with `pendingReason` and `requestedFrom` and report it now. A
+  pending source surfaces at Stage 0, not at gate review. Asking for the path after the artifacts
+  already exist is the defect this step exists to prevent.
+- Then, when visual references influence the change, create `reference.md` and normative
   `reference-evidence.json` from `references/reference-spec.md`. Record object dimensionality,
   camera model, interaction model, and output surface separately before selecting `2d`, `2.5d`,
   `3d`, or `hybrid`. Perspective, occlusion, near/far scale, volumetric containers, and camera
   behavior are spatial evidence; glow and transparency alone are not. Run
-  `designer-pipeline reference check` and stop unless it reports `ready`.
+  `designer-pipeline reference check` and stop unless it reports `ready`, with exactly one
+  exception: a standalone `source-pending`, meaning the top-level `reason` is `source-pending` and
+  every entry in the `stages` map reports `ready`. A run blocked for `source-pending` and anything
+  else is still a stop.
 - When exact static-reference language is present, use reference-evidence v2 and
   `reconstruction.json`; do not silently treat the image as a mood board or style direction.
 - Check for project `DESIGN.md`. If it is missing or materially incompatible with the request, route
@@ -321,7 +364,7 @@ implementation convenience.
 
 For a `primary-target` exact reconstruction, do not produce alternative directions. Record that
 `directions.md` is intentionally bypassed because the supplied reference is the selected direction,
-then proceed through rectification and camera calibration.
+then proceed through rectification, camera calibration, and the graybox capture.
 
 Each direction must include:
 
@@ -343,7 +386,17 @@ Default decision rule:
 ## Stage 3: Design Spec
 
 Create lowercase change `design.md` using `references/design-spec.md`. It is the selected source of
-truth for visual language and screen-space UI:
+truth for visual language and screen-space UI.
+
+Order this stage by reference role. For `primary-target`, capture and pass the graybox first, then
+write `design.md` against it and cite that capture; a spec written from a reading alone propagates
+the misreading into the implementation. For `constraint` and `inspiration`, keep the existing order
+and reconcile `design.md` against the first render afterwards. Reconciliation is required for every
+change that has a reference; the role decides *when* it happens, never *whether* it happens, and
+there is no role for which it is optional, `inspiration` included. Every change with a reference
+records a `Spec Reconciliation` section; an empty table is a valid result, an absent section is not.
+
+`design.md` records:
 
 - Layout grid and responsive behavior.
 - Color tokens and contrast posture. For website references, these must cite the ready
@@ -356,6 +409,8 @@ truth for visual language and screen-space UI:
 - Asset strategy: real assets, generated bitmap images, icons, or no-assets justification.
 - Anti-template decisions when the contextual anti-slop review is active: deliberately avoided
   patterns, retained common patterns, product-specific rationale, and non-applicable rules.
+- Spec reconciliation when the change has a reference: the cited graybox capture, the reconciliation
+  timestamp, and every value the implementation changed with an observed cause.
 
 Do not define camera projection, world coordinates, geometry, lighting, world-space UI, or spatial
 navigation in `design.md`. Those belong in `3d.md` for 3D families.
@@ -397,9 +452,13 @@ WebGPU/WGSL effects without a 3D family, and stateful narrative runtimes use `sc
 pair when it owns dialogue state, save/load, backlog, autoplay, or another persistent game-state
 lifecycle.
 
-For `3d` and `hybrid` routes, implement and verify the actual-runtime graybox gate in `3d.md`
-before materials, glow, bloom, transparency, scanlines, or cinematic grading. Camera navigation is
-required only when the approved interaction model is inspectable or navigable.
+Every change with a `reference-evidence.json` implements and verifies the actual-runtime graybox
+gate before materials, glow, bloom, depth of field, scanlines, or cinematic grading. The gate is
+unconditional: it applies to `2d` and `2.5d` as well as `3d` and `hybrid`, to every fidelity mode,
+and to runs whose source is `pending`. `3d` and `hybrid` routes record the graybox contract in
+`3d.md` and `reconstruction.json`; `2d` and `2.5d` routes without a `reconstruction.json` record it
+in `reference-evidence.json`. Camera navigation is required only when the approved interaction model
+is inspectable or navigable.
 
 ## Stage 4: Tasks
 
@@ -429,12 +488,47 @@ Rules:
 - Re-run `scripts/check-design-foundation.cjs` and stop unless it reports `ready`.
 - Re-run `scripts/check-motion-foundation.cjs` and stop unless it reports `ready`.
 - When references influence the change, run `designer-pipeline reference check` and stop unless it
-  reports `ready`.
+  reports `ready`, with exactly one exception: a standalone `source-pending`. Standalone means the
+  top-level `reason` is `source-pending` **and** every entry in the `stages` map reports `ready`.
+  Only then continue - through the graybox gate, with the measured gates kept blocked. A run blocked
+  for `source-pending` *and* anything else - a blocked `stages.graybox`, a blocked
+  `stages.reconciliation`, any other reason - is still a stop. The aggregate reports one top-level
+  `reason`, so `source-pending` on that line is not by itself evidence that the stages are clear;
+  read the `stages` map before continuing. This command now carries three
+  stages - `stages.graybox`, `stages.reconciliation`, and the aggregate's own contract checks - and
+  reports `blocked` when any of them is not `ready`, so a change that passed it before the fold can
+  block on a `Spec Reconciliation` section that was never written.
+- The two reconstruction gates block different work and do not overlap. The graybox gate blocks
+  optical treatment: materials, glow, bloom, depth of field, scanlines, and grading. The geometry
+  gate blocks detail geometry, type treatment, and any measured fidelity claim. Optical treatment is
+  released by the graybox gate alone; a blocked geometry stage is not a reason to withhold it.
+- For every change with a `reference-evidence.json`, run
+  `designer-pipeline reconstruction check --stage graybox` and stop unless it reports `ready`
+  before authoring materials, glow, bloom, depth of field, scanlines, or cinematic grading. This
+  gate is unconditional across `2d`, `2.5d`, `3d`, and `hybrid`, across every fidelity mode, and
+  across runs whose source is `pending`. Read the three stages independently: a blocked `geometry`
+  never implies a passed `graybox`, and both blocked at once is a process failure, not an
+  environmental one.
 - For exact or adaptive static-reference reconstruction, run
-  `designer-pipeline reconstruction check --stage geometry` and stop unless it reports `ready`.
+  `designer-pipeline reconstruction check --stage geometry` and stop unless it reports `ready`
+  before detail geometry, type treatment, or any claim that the frame measurably matches the source.
   This gate must pass on rectification, front elevation, locked camera, distributed landmarks, and
-  overlay evidence before detail geometry, materials, lighting, depth of field, bloom, or grading.
-  Reopening the camera invalidates the gate and requires a new calibration pass.
+  overlay evidence. A pending source reports `blocked` with reason `source-pending` and never
+  `fidelity-limited`; an unreadable source declaration reports `reference-source-unparseable`,
+  `reference-source-malformed`, or `reference-source-availability-invalid`. A missing measurement is
+  a status, never a filled-in value. Reopening the camera invalidates the gate and requires a new
+  calibration pass.
+- A source nobody wrote down is not a resolved source. An absent `reference-evidence.json` and a
+  document with no `source` field keep the legacy `resolved` availability, so geometry on an older
+  change is untouched, but neither resolves anything: a `measured` graybox comparison on such a
+  change blocks with `reference-source-unrecorded` or `reference-source-undeclared`. Declare
+  `comparison.mode: qualitative` instead, which is what a comparison with no source to measure
+  against actually is.
+- A blocked geometry stage does not stop the run. When the graybox stage is `ready`, continue into
+  optical treatment and record the verification claim as `unverified`. For a `2.5d` primary-target
+  exact reconstruction with a pending source the geometry stage can never report `ready`, so
+  treating it as a full stop would stop the run permanently; that is a misreading of this gate, not
+  a safe default.
 - Link the validated project `DESIGN.md` from the active lowercase change `design.md`.
 - Link the validated project `MOTION.md` and its hash from active lowercase change `motion.md` when
   the change includes non-trivial motion.
@@ -468,7 +562,69 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
 - Reference-routing gate: when references influence the change, `reference.md` records evidence and
   normative `reference-evidence.json` separates reference role, requested/effective fidelity,
   geometry, camera, interaction, and output; selects `2d`, `2.5d`, `3d`, or `hybrid`; names the
-  required artifact set; and records approval.
+  required artifact set; records source availability; and records approval. Every route names
+  `graybox.png` in `requiredArtifacts`, and v2 documents carry a `composition` block. A document
+  declaring `design-pipeline.reference-evidence.v1` while carrying `intent` or a `graybox` block is
+  current work wearing a stale version label: it is validated as v2 and owes `intent` and
+  `composition`, failing with `schema era mismatch:` until both are recorded. A v1 document that
+  carries neither stays exempt.
+- Verification claim gate: `qa.md` records the claim as `verified`, `fidelity-limited`, or
+  `unverified`, derived from one command - `reconstruction check --stage final` - read in full, its
+  top-level status together with every entry in its `stages` map. `verified` requires the top-level
+  status *and* every reported stage to be `ready`; the top-level status alone is not the derivation,
+  because a `final` stage can report `ready` beside a `blocked` `stages.graybox`. Only that complete
+  output is evidence for the claim: `reconstruction check` defaults to `--stage geometry`, and a
+  stage-scoped result - the default run, an explicit `--stage geometry` or `--stage graybox` run, or
+  a bare `stages.graybox` reading lifted out of any result - is rejected as evidence for `verified`,
+  because it answers only for the stage that was asked for. A `--stage final` result that is
+  missing, unreadable, or incomplete records `unverified`. A pending or
+  unresolvable source records `unverified` by blocking a stage, and nothing in `qa.md`, `design.md`,
+  or the final response describes an `unverified` run as verified, exact, identical, pixel-perfect,
+  or complete.
+- Reference composition gate: `reference.md` carries the per-region structure table, an explicitly
+  answered uniformity question, and named exceptions; `composition` in `reference-evidence.json`
+  matches it and does not contradict itself. When two or more `rows x columns` structures tie for
+  most-common there is no norm to follow, so every region records what it breaks from or is named by
+  one that does; otherwise validation fails with `composition ambiguity:`. The modal structure is
+  read from the counts, so reordering the table cannot change the verdict.
+- Graybox gate: `designer-pipeline reconstruction check --stage graybox` reports `ready` for every
+  change with a `reference-evidence.json`, on every route and in every fidelity mode. The capture is
+  layout-only, its suppression comes from a declared runtime graybox mode that names the layers it
+  disables - a bare token blocks with `graybox-mode-unverifiable` - and its comparison
+  addresses the recorded region ids by name. Exactly one carrier holds the block - two is
+  `graybox-carrier-conflict` and neither block is validated. A comparison that names regions while
+  no `composition` was recorded anywhere is `graybox-composition-unrecorded` or
+  `graybox-composition-undeclared`, not a pass. A reference document the contract cannot read blocks
+  this stage too, with the reason that names the fault. A `qualitative` comparison proves ordering
+  discipline and is never fidelity evidence. A run whose `geometry` stage is blocked on a missing
+  source must still show `graybox: ready`; both blocked is a process gap, not an environmental
+  limitation.
+- Reference raster gate: a `measured` comparison is refused unless the bytes behind `source.path`
+  are a PNG the stage can read a width and height out of. Existence is not enough; the gate reads
+  the first 24 bytes and checks the PNG signature and the IHDR dimensions. Each failure keeps its
+  own reason - `reference-source-path-undeclared`, `reference-source-raster-uncontained`,
+  `reference-source-raster-missing`, `reference-source-raster-unreadable`,
+  `reference-source-not-raster`, `reference-source-raster-truncated` - and a `video` or `live-page`
+  source reaches `measured` only by exporting the compared frame as a PNG and naming that.
+- Reference freshness gate: when `source.resolvedAt` is recorded, a `measured` graybox capture taken
+  before it blocks with `graybox-capture-predates-source` and has to be re-run rather than
+  re-labelled; a `capturedAt` that will not parse is `graybox-capture-uncomparable`, never counted
+  as fresh. An absent `resolvedAt` is the legacy default and is not compared. A `resolvedAt` that is
+  not an ISO 8601 timestamp is `reference-source-resolved-at-invalid`, and one recorded beside
+  `availability: pending` is `reference-source-resolved-at-contradictory`; both block every stage.
+- Spec reconciliation gate: change `design.md` carries a `Spec Reconciliation` section citing a
+  graybox capture that exists on disk. An empty table is `ready`; an absent section is `blocked`.
+  Every `Cause` entry describes an observation, not an intention. This gate is folded into
+  `designer-pipeline reference check` and reported under `stages.reconciliation`, so the aggregate
+  returns `blocked` whenever it is not `ready`; `reconciliation check` on its own is still
+  available. A reconciliation that cannot be evaluated is `reconciliation-unverifiable`, never
+  `ready`. Applicability no longer waits for a hand-authored carrier: a valid `website-cloning.json`
+  with targets, or a `design-synthesis.json` recording reference inputs, makes the gate apply from
+  `change init`. An absent manifest keeps the carrier-only default; a manifest that is present but
+  unreadable, malformed, or self-contradictory blocks with
+  `reconciliation-manifest-unreadable`, `reconciliation-manifest-malformed`, or
+  `reconciliation-manifest-contradictory`, because a broken manifest leaves applicability itself
+  undecidable.
 - Exact reconstruction gate: `reconstruction.json` separates image/canonical/world/camera spaces;
   binds rectification, front elevation, locked camera, distributed landmarks, and overlay; and
   passes `designer-pipeline reconstruction check --stage geometry`.
@@ -531,6 +687,26 @@ Final responses should report:
 - Project `DESIGN.md` path, input mode, scope score/budget, and Wayfinder map URL when synthesis ran.
 - Implemented surfaces.
 - Verification evidence.
+- Reference source availability. When it is `pending`, name the action that unlocks the measured
+  gates: supply the source file path, which enables rectification, camera calibration, landmark
+  error, and the fidelity receipt. Requested fidelity stays as the user asked.
+- Verification claim, for every change with a `reference-evidence.json`: `verified`,
+  `fidelity-limited`, or `unverified`. It is recorded on one line in `qa.md` under
+  `## Reference And Spatial Routing` and derived from one command,
+  `designer-pipeline reconstruction check --stage final`, read in full - its top-level status and
+  every entry in its `stages` map. `verified` needs the top-level status and every reported stage to
+  be `ready`; `fidelity-limited` needs a top-level `fidelity-limited` with no stage `blocked`;
+  everything else is `unverified`, including a single blocked stage, a pending or unresolvable
+  source, and a change with no `reconstruction.json` to run the command against. Only the complete
+  output of that one command is evidence for the claim. `reconstruction check` defaults to
+  `--stage geometry`, so the command run without `--stage` returns a geometry-scoped result, and
+  neither that result, nor an explicit `--stage geometry` or `--stage graybox` run, nor a single
+  `stages.graybox` or `stages.geometry` entry lifted out of any result, may be cited as evidence for
+  `verified`: a stage-scoped status answers only for the stage that was asked for, and is reported
+  beside the other stages without gating on them. A `--stage final` result that is missing,
+  unreadable, or incomplete is reported as `unverified`. An `unverified`
+  claim may never be reported as verified, exact, identical, 1:1, pixel-perfect, faithful, or
+  complete. The claim is independent of requested fidelity, which stays where the user set it.
 - Missing companion skills, if any.
 - Self-check result and chosen fallbacks.
 - Feedback observation ids and local draft paths, when findings were recorded.
