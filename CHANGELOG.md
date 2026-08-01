@@ -4,6 +4,10 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+### Fixed
+
+- Updated the GitHub Release action to its Node 24-compatible major version.
+
 ## [0.8.0] - 2026-08-02
 
 ### Added
