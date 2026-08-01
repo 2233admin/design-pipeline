@@ -51,7 +51,7 @@ jobs:
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.ver.outputs.version }}
           name: design-pipeline v${{ steps.ver.outputs.version }}
