@@ -13,4 +13,4 @@
 
 - [x] 3.1 Add regression tests for missing authority, unauthorized differences, missing invariants, and headless substitution.
 - [x] 3.2 Run OpenSpec validation, focused website-cloning tests, repository QA, package checks, installed self-check, and Sentrux rules.
-- [ ] 3.3 Prepare and reconcile the feedback-backed PR publication request.
+- [x] 3.3 Prepare and reconcile the feedback-backed PR publication request.
