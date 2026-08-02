@@ -1,6 +1,11 @@
 # design-pipeline Specification
 
-## ADDED Requirements
+## Purpose
+
+Define the durable, design-first contracts used to plan, implement, validate, package, and improve
+the design pipeline without making optional tools or hosted integrations part of the core runtime.
+
+## Requirements
 
 ### Requirement: Design-first scope
 
@@ -358,15 +363,33 @@ Pipeline maintainers SHALL use the pipeline's own artifact, feedback, review, QA
 The recorder SHALL validate existing observation and index state before writing an update and SHALL
 NOT overwrite corrupt evidence.
 
+#### Scenario: Existing feedback JSON is corrupt
+
+- **WHEN** a matching observation or the feedback index cannot be parsed or validated
+- **THEN** recording SHALL fail with a contextual error and SHALL NOT overwrite or increment the
+  existing observation.
+
 ### Requirement: Specific paths are redacted first
 
 The recorder SHALL redact longer path scopes before their parent scopes so nested feedback roots
 retain the correct privacy placeholder.
 
+#### Scenario: Feedback root is nested under the project root
+
+- **WHEN** evidence contains the exact nested feedback root
+- **THEN** it SHALL be represented as `<FEEDBACK_ROOT>` rather than a partial
+  `<PROJECT_ROOT>` path.
+
 ### Requirement: Capability registry patterns are validated before evaluation
 
 Self-check SHALL reject invalid profile, requirement, or regular-expression structures before
 producing compatibility results.
+
+#### Scenario: A registry pattern is invalid
+
+- **WHEN** a capability requirement contains an invalid regular expression
+- **THEN** self-check SHALL fail with the profile and requirement identity instead of reporting a
+  false compatibility result.
 
 ### Requirement: Missing product design routes through requirements-driven synthesis
 
