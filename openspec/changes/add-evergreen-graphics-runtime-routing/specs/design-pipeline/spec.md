@@ -26,7 +26,9 @@ accessibility, budgets, determinism, degradation, and cleanup.
 - **WHEN** persistent spatial state, cameras, coordinates, assets, input, a render or game loop,
   procedural state, or save/load lifecycle is required
 - **THEN** change `scene.md` SHALL bind the selected adapter and its lifecycle, budgets,
-  degradation, deterministic evidence, and cleanup ownership.
+  determinism, degradation, and cleanup ownership
+- **AND** change `qa.md` SHALL own evidence that verifies the selected adapter satisfies those
+  contracts.
 
 ### Requirement: Phaser is a native 2D game route
 

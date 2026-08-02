@@ -54,5 +54,6 @@ Missing optional companions remain fallback-safe; missing required `design-pipel
 #### Scenario: An optional companion is missing
 
 - **WHEN** one or more optional companions are unavailable
-- **THEN** self-check SHALL report the missing capability with a fallback and SHALL remain usable
+- **THEN** self-check SHALL report `WARN`, identify the missing capability or marker, preserve the
+  documented fallback, and remain usable
 - **AND** a missing required `design-pipeline` skill SHALL still fail the check.
