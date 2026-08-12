@@ -82,6 +82,8 @@ Default artifact root:
 ```text
 design/changes/<change-id>/
   brief.md
+  direction-preview.json # required/waived applicability, hash-bound candidates, and decision
+  direction-previews/    # index.html plus one comparable screenshot per candidate
   reference.md    # observed reference evidence and 2D / 2.5D / 3D / hybrid route
   reference-evidence.json # normative reference role, fidelity, geometry/camera/interaction/output
   reconstruction.json     # exact/adaptive static-reference calibration and comparison contract
@@ -222,6 +224,9 @@ Upstream capability sync reference: `references/upstream-capability-sync.md`.
 Development compatibility reference: `references/development-compatibility.md`.
 Self-check reference: `references/self-check.md`.
 QA checklist reference: `references/qa-checklist.md`.
+Direct plain-language contract: `references/plain-language.md`.
+CJK typography contract: `references/cjk-typography.md`.
+Visual direction preview contract: `references/direction-preview.md`.
 Project motion foundation reference: `references/motion-foundation.md`.
 Machine-readable motion foundation schema: `references/motion-foundation.schema.json`.
 Motion primitive registry: `references/motion-primitives.json`.
@@ -354,9 +359,28 @@ Create or update `brief.md` with:
 
 Keep this short. It is an execution contract, not a product essay.
 
+When the brief, handoff, or interface copy asks a person to decide or act, read
+`references/plain-language.md`. Put the exact consequence or available action first, then preserve
+scope, limits, exclusions, uncertainty, unchanged state, and recovery actions in the second pass.
+
 ## Stage 2: Design Directions
 
-Create `directions.md` before implementation. Produce 2-3 distinct directions when the user has not already chosen a style.
+Read `references/direction-preview.md` and write `direction-preview.json` before selecting a
+direction. For an open whole-surface request, produce three candidates by default in one comparable
+`direction-previews/index.html`; two candidates require a real product/reference constraint, and
+four are for an explicit broader exploration. Use the same real content fixture, state coverage,
+and viewport, then capture and hash one screenshot per candidate.
+
+Run `designer-pipeline direction check --stage preview --change-root <change-root> --json` while
+the decision is pending. Only after it reports `ready` may the user or an autonomous run select a
+candidate. Record the selected ID and product/visitor-fit rationale, then run `direction check
+--stage selection`. A narrow change, established surface, non-visual change, exact primary target,
+or user-specified single direction records an explicit supported waiver. Missing evidence is not a
+waiver.
+
+Create `directions.md` from the selected, verified preview before implementation. Present the
+committed direction and at most two honest alternates. When a waiver inherits an established or
+user-selected direction, record that inheritance instead of inventing alternatives.
 
 When references are present, directions must preserve the route and fidelity invariants recorded in
 `reference.md`. A `3d` or `hybrid` route cannot be downgraded to flat card composition for
@@ -403,6 +427,11 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
   `palette-evidence.json`, preserve DOM and raster-media sources separately, and record coverage,
   luminance, saturation, and temperature relationships rather than listing accents alone.
 - Type scale and font constraints.
+- When shipped copy contains CJK text, the system/project font stack, CJK body size and line height,
+  punctuation/mixed-script convention, and decorative subset evidence required by
+  `references/cjk-typography.md`.
+- User-facing copy follows `references/plain-language.md`: titles name the smallest accurate scope,
+  the first useful sentence exposes the consequence or action, and controls name only real actions.
 - Component inventory and states.
 - Motion rules and reduced-motion fallback.
 - Accessibility requirements: semantic structure, focus order, keyboard behavior, labels, announcements, contrast.
@@ -553,6 +582,9 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
 
 - Visual gate: composition is non-generic, brand/product signal is clear, palette is not one-note, typography fits the surface.
 - UX gate: primary workflow is obvious, states are complete, destructive actions are guarded, recovery paths exist.
+- Plain-language gate: user-facing copy puts the exact consequence or available action first, then
+  passes the fact-scope review in `references/plain-language.md`; a shorter rewrite cannot widen a
+  partial failure, remove a limit, strengthen uncertainty, or invent an action.
 - Engineering gate: existing patterns are respected, no unnecessary dependency or abstraction was added.
 - Accessibility gate: keyboard navigation, focus behavior, labels, reduced motion, and contrast are checked.
 - Motion gate: interaction feedback is intentional, not decorative, and has reduced-motion fallback.

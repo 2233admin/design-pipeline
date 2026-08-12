@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "internalize-cjk-direction-preview",
+  "applicability": {
+    "status": "waived",
+    "reason": "non-visual"
+  },
+  "comparison": null,
+  "directions": [],
+  "decision": {
+    "status": "waived",
+    "selectedDirectionId": null,
+    "rationale": "This change adds pipeline contracts and validation without changing a product interface."
+  }
+}

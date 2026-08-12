@@ -34,6 +34,61 @@ The pipeline SHALL not fail only because optional companion skills are missing.
 - **WHEN** self-check runs with only the core pipeline installed
 - **THEN** required checks SHALL pass and missing optional skills SHALL report warnings with fallbacks.
 
+### Requirement: Visual directions are previewed before selection
+
+Every change SHALL record whether a visual direction preview is required or waived. An open
+whole-surface design, material visual redesign, or explicit comparison request SHALL render two to
+four real miniature candidates with a shared content fixture, state coverage, and viewport before
+selecting a direction. A narrow, inherited, non-visual, exact-primary-target, or user-fixed
+direction MAY record a supported waiver.
+
+#### Scenario: An open interface has no selected style
+
+- **WHEN** Stage 2 must choose the product's visual direction
+- **THEN** the pipeline SHALL hash-bind one comparison page and one screenshot per candidate
+- **AND** every candidate pair SHALL differ on at least four declared axes, including luminance or era
+- **AND** `directions.md` SHALL NOT commit a direction until the preview and selection gates pass.
+
+#### Scenario: The change has one authoritative direction
+
+- **WHEN** the user supplied a single direction or an exact primary target already decides it
+- **THEN** `direction-preview.json` SHALL record the supported waiver and rationale
+- **AND** the pipeline SHALL NOT invent alternatives merely to satisfy a candidate count.
+
+### Requirement: CJK typography is explicit and bounded
+
+Interfaces containing Chinese, Japanese, or Korean text SHALL record a system/project font stack,
+CJK size and line-height posture, punctuation and mixed-script convention, and representative real
+strings. Full CJK webfonts SHALL NOT be introduced for routine body or control copy; a justified
+decorative heading font SHALL be subset to its known glyphs and retain a tested system fallback.
+
+#### Scenario: A Chinese product surface is designed
+
+- **WHEN** change `design.md` includes Chinese interface copy
+- **THEN** it SHALL record the resolved stack, available weights, body line height, punctuation,
+  overflow behavior, and any decorative subset's bytes, glyph scope, license, and fallback
+- **AND** Stage 6 SHALL verify real CJK and mixed-script strings at responsive widths, 200% zoom,
+  and font-load failure.
+
+### Requirement: User-facing language is direct without changing scope
+
+User-facing interface copy and human decision artifacts SHALL put the first useful consequence or
+available action before internal implementation detail. A second pass SHALL preserve the source's
+affected group, event, scope/count, uncertainty, time/limit, exclusions, unchanged state, and
+available actions.
+
+#### Scenario: Direct wording would widen a partial failure
+
+- **WHEN** only part of an operation failed or remains pending
+- **THEN** the title and first sentence SHALL name that exact scope instead of declaring a total failure
+- **AND** controls SHALL name only actions the current interface actually provides.
+
+#### Scenario: A notice carries a bounded possibility
+
+- **WHEN** the source says an effect may last up to a stated limit
+- **THEN** the rewrite SHALL expose the user-visible effect early
+- **AND** it SHALL preserve both the uncertainty and the upper bound.
+
 ### Requirement: Motion is first-class
 
 The pipeline SHALL require explicit motion documentation for non-trivial animation and interaction motion.

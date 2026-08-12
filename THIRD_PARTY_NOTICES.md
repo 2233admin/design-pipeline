@@ -79,3 +79,40 @@ behavior research:
 
 No source implementation is vendored. Every bundled primitive records `codeCopied: false`, its
 provenance, and its intended use as a design vocabulary rather than an executable library.
+
+## joeseesun typography, direction-preview, and plain-language guidance
+
+The built-in CJK typography, visual direction preview, and plain-language contracts adapt limited
+workflow concepts from:
+
+- Source: https://github.com/joeseesun/qiaomu-design
+- Reviewed commit: `39dac8238a6ba44a4e39c1f0f6ca641224b01879`
+- Source: https://github.com/joeseesun/qiaomu-content-interpreter
+- Reviewed commit: `68adb343a0d61d344699f3c350a5920da85d4ddc`
+- Original copyright: Copyright (c) 2026 joeseesun
+- License: MIT
+
+The project does not vendor either upstream skill, their scripts, personal filesystem workflow,
+image generation, 58-site design library, visual theme, or mandatory direction/article shapes.
+
+MIT License
+
+Copyright (c) 2026 joeseesun
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

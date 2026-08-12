@@ -4,6 +4,14 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+### Added
+
+- Added a hash-bound visual direction preview gate with PNG/viewport validation before direction selection, plus a built-in CJK
+  typography contract covering system stacks, line height, punctuation, and decorative font
+  subsetting without importing the rest of `qiaomu-design`.
+- Added a direct plain-language contract for user-facing copy, with a second-pass fidelity guard
+  that prevents clearer wording from widening scope, limits, uncertainty, or available actions.
+
 ### Fixed
 
 - Updated the GitHub Release action to its Node 24-compatible major version.

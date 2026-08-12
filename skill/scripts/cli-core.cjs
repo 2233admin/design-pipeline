@@ -18,6 +18,7 @@ const { checkScene } = require("./scene-runtime-core.cjs");
 const { checkReferenceEvidence } = require("./reference-evidence-core.cjs");
 const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
+const { checkDirectionPreview } = require("./direction-preview-core.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
@@ -200,7 +201,7 @@ function publicHelp() {
     "Commands:",
     "  doctor | status",
     "  change init|resume|advance|migrate|repair",
-    "  foundation check | reference check | reconstruction check | scene check",
+    "  foundation check | direction check | reference check | reconstruction check | scene check",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
@@ -357,6 +358,15 @@ function reconciliationCommand(parsed, root) {
   const result = checkSpecReconciliation(changeRoot, {
     designFile: option(parsed, "--design-file", "design.md"),
     artifact: option(parsed, "--artifact"),
+  });
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
+function directionCommand(parsed, root) {
+  const changeRoot = changeRootFrom(parsed, root);
+  const result = checkDirectionPreview(changeRoot, {
+    artifact: option(parsed, "--artifact"),
+    stage: option(parsed, "--stage", "preview"),
   });
   return { result, exitCode: result.status === "ready" ? 0 : 2 };
 }
@@ -654,6 +664,7 @@ const COMMANDS = {
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
+  direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },
   reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
   reference: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   reconstruction: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
