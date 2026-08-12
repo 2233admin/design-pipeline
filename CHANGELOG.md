@@ -4,6 +4,32 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+### Added
+
+- Internalized the MIT-licensed `hi5jeff/deepclonewebsite` cloning feature slice at a pinned
+  revision: 29 hash-verified source files now inform authenticated sessions, same-domain template
+  discovery, structure/full capture, offline multipage topology, and evidence-labeled analysis
+  without adding or executing the Open Lovable runtime.
+- Internalized the complete MIT-licensed Prism System design-skill layer at a pinned revision: all
+  107 skills and both registries now ship with exact Git-tree verification, deterministic search,
+  five-route design intake, package attribution, and installed-package checks without importing a
+  second component, token, controller, or build runtime.
+- Internalized the complete MIT-licensed `jal-co/holosticker` repository at a pinned revision: all
+  57 tracked files now ship with byte-level verification and eight minimum-source capability routes
+  for holofoil, die-cut masks, pointer tilt, peel/layers, and requested export formats.
+- Internalized the complete MIT-licensed `shadcnio/react-shadcn-components` repository at a pinned
+  revision: its two released upstream files are byte-verified and its 75 README component/hook
+  entries are searchable offline as review-only reference candidates, never as copied webpage code.
+- Internalized the complete MIT-licensed `MengTo/skills` repository at a pinned revision: all 127
+  skills and 867 tracked files now ship with an integrity manifest, deterministic offline search,
+  pipeline-stage routing, explicit-only authority boundaries, and installed-package verification.
+- Added a clean-room Kage scroll-world case study that routes through the bundled MengTo playbook,
+  captures the current repository's responsive lessons, and keeps its unlicensed code and artwork
+  outside the package.
+- Internalized the complete MIT-licensed `jakubkrehel/skills` interface-discipline suite as a
+  pinned, hash-verified package resource. Its eight skills now drive built-in UI quality review,
+  change-scoped finding classification, and QA evidence without relying on ambient global skills.
+
 ### Fixed
 
 - Updated the GitHub Release action to its Node 24-compatible major version.

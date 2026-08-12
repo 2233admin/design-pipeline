@@ -11,6 +11,26 @@ This skill does not replace individual design skills. It orchestrates them into 
 
 Design is the product boundary. Engineering, OpenSpec, GBrain, Matt Pocock, Vercel, animation libraries, and graphics runtimes are support systems for producing, implementing, and validating better design outcomes. Do not let this pipeline drift into a general-purpose development framework.
 
+## Impeccable Design Contract
+
+The pipeline permanently adopts the reviewed Impeccable contract in
+`references/impeccable-contract.md`. Apply it even when the optional upstream `impeccable` skill is
+not installed: resolve the visitor mode, respect the brief, distinguish refinement from redesign,
+challenge template defaults, complete real UI states, and verify the rendered path in bounded
+desktop/mobile passes. The upstream Neo Kinpaku visual theme is not a default; only its design
+judgment and workflow vocabulary are internalized.
+
+The complete upstream product-design surface is mapped in
+`references/impeccable-product-design.json` and summarized in
+`references/impeccable-product-design.md`. All 23 core commands are available as pipeline intents:
+`shape`, `init`, `document`, `extract`, `visualize`, `critique`, `audit`, `polish`, `bolder`,
+`quieter`, `distill`, `harden`, `onboard`, `animate`, `colorize`, `typeset`, `layout`, `delight`,
+`overdrive`, `clarify`, `adapt`, `optimize`, and `live`. They route into product truth, surface
+shaping, design authority, experience quality, and implementation evidence. `hooks`, `doctor`,
+`routing`, `pin`, and native-platform references are supporting enforcement and maintenance
+capabilities, not visual themes. Do not claim coverage from the command name alone: use the mapped
+artifact and evidence fields as the acceptance contract.
+
 ## Project DESIGN.md Invariant
 
 Every target project must have one reusable project `DESIGN.md` before implementation begins.
@@ -168,6 +188,8 @@ unavailable file, a schedule, and implementation convenience are not approval.
 When the user asks to clone, reproduce, rebuild, reverse-engineer, or use one or more live pages as implementation references:
 
 1. Read `references/website-cloning.md` and `references/website-clone-component-spec.md` completely.
+   For authenticated, multi-page, whole-site, template-discovery, or reverse-analysis work, also
+   read `references/deepclonewebsite.md` and use its direct/structure/full capture boundary.
 2. Initialize the run with `scripts/init-website-clone.cjs`; pass direct clone targets with `--url` and supporting inspiration/comparison pages with `--reference-url`. When one target is the user-designated structure or motion template, pass it as the primary `--url`/`--authority-url`, enumerate every allowed difference, protect the required invariants, and select `actual-browser` when live-tab interaction is part of acceptance.
 3. Treat `references/website-cloning-manifest.schema.json` as the machine-readable Browser/Builder/Evidence port and fidelity contract.
 4. Complete `targets/<target-id>/research/palette-evidence.json` from both DOM/computed-style
@@ -222,6 +244,12 @@ Upstream capability sync reference: `references/upstream-capability-sync.md`.
 Development compatibility reference: `references/development-compatibility.md`.
 Self-check reference: `references/self-check.md`.
 QA checklist reference: `references/qa-checklist.md`.
+Built-in interface discipline reference: `references/interface-discipline.md`.
+Built-in MengTo skills library: `references/mengto-skills.md`.
+Kage clean-room scroll-world case study: `references/kage-scroll-world.md`.
+Built-in shadcnio React component index: `references/shadcnio-react-components.md`.
+Built-in Prism System design intelligence: `references/prism-system.md`.
+Built-in Holosticker implementation: `references/holosticker.md`.
 Project motion foundation reference: `references/motion-foundation.md`.
 Machine-readable motion foundation schema: `references/motion-foundation.schema.json`.
 Motion primitive registry: `references/motion-primitives.json`.
@@ -237,14 +265,18 @@ Game UI and narrative profile reference: `references/game-ui-and-narrative.md`.
 Curation policy reference: `references/curation-policy.md`.
 Contextual anti-slop review reference: `references/anti-slop-review.md`.
 Machine-readable anti-slop rubric: `references/anti-slop-rubric.json`.
+Impeccable design contract: `references/impeccable-contract.md`.
+Impeccable product-design capability map: `references/impeccable-product-design.json` and
+`references/impeccable-product-design.md`.
 
 If these design skills are installed, use them as lenses in this order:
 
-1. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
-2. `design-taste-frontend`: anti-template discipline, typography taste, language and visual restraint.
-3. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
-4. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
-5. `emil-design-eng`: motion, transitions, input feedback, perceived quality, interaction details.
+1. `impeccable`: command vocabulary, surface modes, refinement semantics, bounded verification, and design-detector workflow.
+2. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
+3. `design-taste-frontend`: anti-template discipline, typography taste, language and visual restraint.
+4. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
+5. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
+6. `emil-design-eng`: motion, transitions, input feedback, perceived quality, interaction details.
 
 For dynamic UI, interaction motion, and animation-specific work, apply these motion skills:
 
@@ -257,6 +289,55 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 
 Choose companions by capability, not by the presence of a familiar skill name. Read `references/capability-routing.md` when the change crosses evidence capture, design systems, assets, motion runtimes, editable design handoff, or hosted delivery. For 2D, 3D, data visualization, geospatial, GPU, game, or narrative surfaces, also read `references/graphics-runtime-routing.md` and select a capability family before selecting an adapter.
 
+For product UI, flows, design-system work, user-visible UI changes, or interface reviews, always
+apply the bundled interface discipline in `references/interface-discipline.md`. It is present in
+the package and does not require a global skill installation. Start with its `better-interface`
+router, use full coverage unless a narrow repair qualifies for quick coverage, and use its
+change-scoped review protocol for changed UI.
+
+For visual direction, web technique, motion, WebGL, reference analysis, asset, or game work, search
+the complete bundled MengTo library before inventing a workflow:
+
+```bash
+designer-pipeline mengto search --query "<capability or brief>" --json
+```
+
+Read the narrowest returned `SKILL.md` and only the linked supporting files needed for the task.
+Apply its workflow, numeric guidance, pitfalls, and verification gates through the target project's
+`DESIGN.md`, `MOTION.md`, OpenSpec artifacts, existing stack, accessibility rules, and budgets.
+Never treat a bundled demo, runtime asset, dependency choice, account workflow, or publishing recipe
+as automatic project authority. The activation and adaptation rules live in
+`references/mengto-skills.md`; explicit-only entries still require the user's matching request and
+normal side-effect authority.
+
+For product-design intake, Design DNA, token governance, design-corpus learning, or handoff work,
+route through the bundled Prism System layer before loading a broad recipe set:
+
+```bash
+designer-pipeline prism route --query "<design request>" --json
+designer-pipeline prism search --query "<narrow capability>" --json
+```
+
+Read `references/prism-system.md`, load only the returned local skill sequence, and execute it
+inside the native brief, directions, implementation, and QA stages. Reuse the pipeline's existing
+design tokens, catalogs, adapters, evidence, `DESIGN.md`, and `MOTION.md`; never create a parallel
+Prism runtime or treat upstream autonomy metadata as side-effect authority.
+
+For an explicit holographic sticker, holofoil, die-cut, pointer-tilt, peel, or matching export
+request, inspect the bundled implementation before creating another shader or geometry path:
+
+```bash
+designer-pipeline holosticker inspect --capability "<capability>" --json
+```
+
+Read `references/holosticker.md`, adapt only the returned source files, and route them through the
+project-pinned `threejs` adapter with `scene.json`, `3d.md`, `motion.md`, and browser evidence. Do not
+add the full Studio UI or optional dependencies for an unselected capability.
+
+When `web-design/build-threejs-scroll-worlds` is selected, or Kage is supplied as a reference, also
+read `references/kage-scroll-world.md`. It adds the current Kage repository's license boundary and
+post-snapshot responsive lessons without importing its unlicensed code or artwork.
+
 For animation implementation, choose library skills by job:
 
 - Use `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-react`, `gsap-plugins`, `gsap-utils`, `gsap-performance`, and `gsap-frameworks` for advanced choreography, scroll-driven animation, timeline control, React integration, SVG/plugin-heavy work, or when GSAP is already in the project.
@@ -264,6 +345,7 @@ For animation implementation, choose library skills by job:
 - Use the official `pixijs` router and the matching PixiJS v8 sub-skills only for justified interactive 2D render surfaces such as sprite fields, particles, filters, shaders, canvas editors, or high-object-count scenes. Read `references/pixijs-rendering.md` before selecting it.
 - Use the built-in Phaser v4 route for a complete 2D game runtime with scenes, game-loop ownership, input, audio, physics, cameras, scaling, and game-state transitions. Read `references/phaser-v4.md`; do not depend on an unverified community skill pack.
 - Use Three.js or React Three Fiber for focused 3D scene rendering; use Babylon.js or PlayCanvas when a fuller 3D engine is justified. Existing project runtimes still win when they meet the capability and budget.
+- For explicit holographic sticker work, use `references/holosticker.md` as the pinned Three.js implementation route and select only the required material, die-cut, tilt, peel, or export slice.
 - Use `references/game-ui-and-narrative.md` for HUDs, game menus, dialogue systems, visual novels, and Galgame surfaces. Keep dialogue, choice, backlog, save/load, skip, autoplay, and accessibility state independent of animation timing.
 - If no animation or rendering library is already present, prefer semantic DOM plus CSS transitions/keyframes for simple state changes; choose Anime.js, GSAP, PixiJS, Phaser, or a 3D runtime only when the required capability justifies it.
 - Do not add overlapping runtimes unless `design.md`, `motion.md`, and when required `scene.md` or
@@ -304,6 +386,19 @@ Before writing design artifacts or code:
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
+- For user-visible UI work, read `references/interface-discipline.md`; identify affected flows,
+  shared components, tokens, and consumers, then choose its full or quick review scope before
+  editing.
+- Search the bundled MengTo library for the narrowest matching design, motion, reference, WebGL,
+  asset, game, or verification playbook. Record the selected skill ID and project-owned adaptations
+  in the relevant change artifact; do not copy a demo as the design decision.
+- For product-design intake, Design DNA, design-corpus learning, token governance, or handoff,
+  run `prism route`, load only its returned local skills, and map them onto existing pipeline
+  artifacts. If the heuristic is ambiguous, resolve from project evidence and ask at most one
+  question only when the route changes the work.
+- For React/Tailwind/shadcn-style UI, search the bundled shadcnio component index for behavior
+  candidates. Its linked implementation is not bundled: record it as reference evidence and verify
+  source license, dependencies, and project fit before adapting code.
 - Search the design-system catalog when reusable component, hook, template, documentation, or token
   knowledge could prevent reinvention. Record the adoption mode instead of silently importing a
   candidate system.
@@ -311,6 +406,11 @@ Before writing design artifacts or code:
   `designer-pipeline design-system decompose --query "<brief>" --status stable --json` to discover
   candidate capability terms. The command returns the decomposed capabilities, direct query results,
   capability-level search outcomes, and a `zeroResultInconclusive` flag.
+- **Route reusable UI components by capability and platform.** Run
+  `designer-pipeline design-system route --query "<brief>" --platform web|expo|react-native --json`.
+  The route result selects one compatible entry per recognized capability and records the source,
+  integration mode, license status, and fallback. `review` is expected for commercial or
+  user-supplied references; it is not permission to copy remote code.
 - **Treat a product-level zero-result as inconclusive when capability-level candidates exist.** If
   `directQueryResults` is 0 and `zeroResultInconclusive` is true, the zero result is not evidence of
   catalog exhaustion — decompose the brief further or clarify ambiguous component-system names
@@ -356,6 +456,8 @@ Before writing design artifacts or code:
   `ready` unlocks implementation.
 - Check whether the project has OpenSpec, GBrain, or Matt Pocock skill artifacts and use the compatibility rules in `references/development-compatibility.md`.
 - Note constraints such as no external images, single-file HTML, mobile-first, accessibility, or brand rules.
+- Resolve the surface mode (`Persuade`, `Operate`, `Read`, or `Experience`) and whether the work is
+  an extension, refinement, or redesign before choosing a visual direction.
 
 ## Stage 1: Brief
 
@@ -363,16 +465,21 @@ Create or update `brief.md` with:
 
 - Goal: what UI outcome the user wants.
 - Audience: who uses it and under what pressure.
+- Visitor mode: `Persuade`, `Operate`, `Read`, or `Experience`, with the mode-specific success condition.
 - Surface: pages, components, states, and screen sizes.
 - Constraints: tech stack, assets, data, accessibility, performance, deadlines.
 - Non-goals: what should not change.
+- Real content ranges: minimum, typical, maximum, long, missing, localized, and permission-limited cases where relevant.
 - Acceptance checks: observable behavior and visual qualities.
 
 Keep this short. It is an execution contract, not a product essay.
 
 ## Stage 2: Design Directions
 
-Create `directions.md` before implementation. Produce 2-3 distinct directions when the user has not already chosen a style.
+Create `directions.md` before implementation. For an open whole-surface request, derive 5-7 materially
+different, product-grounded structures internally, then present one committed direction and at most
+two honest alternates. For a narrow request or an extension of an established surface, inherit the
+existing world directly instead of running a concept tournament.
 
 **Gate: a valid `design-system decide` receipt must exist before directions are written.** Run
 `designer-pipeline design-system decide --artifact <request.json> --json`. Verify:
@@ -398,6 +505,10 @@ Each direction must include:
 - Interaction thesis: motion, feedback, empty/loading/error states.
 - Fit: why it suits this product and audience.
 - Risk: where it may fail or feel wrong.
+
+The selected direction must name its product-specific signature, the primary visitor path, the
+important states, and the anti-default decisions that keep it from collapsing into a category
+template.
 
 When anti-template risk matters, use `references/anti-slop-review.md` to compare cohesion,
 product-grounded signature, specificity, and template-pattern density. Named colors, fonts,
@@ -432,6 +543,9 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
 - Component inventory and states.
 - Motion rules and reduced-motion fallback.
 - Accessibility requirements: semantic structure, focus order, keyboard behavior, labels, announcements, contrast.
+- Interface-discipline decisions: selected review scope; layout, type, color, writing, surface,
+  and accessibility constraints affected by the change; and downstream consumers of changed shared
+  components or tokens.
 - Asset strategy: real assets, generated bitmap images, icons, or no-assets justification.
 - Anti-template decisions when the contextual anti-slop review is active: deliberately avoided
   patterns, retained common patterns, product-specific rationale, and non-applicable rules.
@@ -500,6 +614,8 @@ Create `tasks.md` with a checkbox list grouped by implementation surface:
 - Accessibility
 - Responsive QA
 - Browser/manual QA
+- Interface discipline review for changed UI: scope, selected domains, consumer expansion, and
+  finding status classification.
 
 Tasks must be small enough to verify independently. Update checkboxes as implementation proceeds.
 
@@ -572,6 +688,9 @@ Rules:
 - If the repo uses GBrain, sync or reference the design decision artifacts through the repo's established GBrain surface instead of inventing a new memory format.
 - If Matt Pocock engineering skills are installed, use `codebase-design`, `grill-with-docs`, `implement`, and `matt-tdd` where they fit the current implementation stage.
 - Prefer existing components, tokens, icons, and layout primitives.
+- Apply the Impeccable craft floor: real controls and states, readable contrast and measure,
+  keyboard and reduced-motion paths, intentional browser surfaces, and no content hidden behind
+  entrance motion.
 - Do not add a design dependency unless the user explicitly requested it or the repo already uses it.
 - Do not create nested cards, decorative gradient orbs, generic purple/blue gradients, or marketing-style hero layouts for operational tools.
 - Use real visual assets or generated bitmap assets when the task is a website, landing page, portfolio, or visual product surface.
@@ -583,9 +702,15 @@ Rules:
 Before claiming completion, write `qa.md` using `references/qa-checklist.md` with the result of these gates:
 
 - Visual gate: composition is non-generic, brand/product signal is clear, palette is not one-note, typography fits the surface.
+- Impeccable gate: the selected visitor mode is explicit, refinement has not become a hidden
+  redesign, anti-default exceptions are justified, and critique/audit/polish claims are supported
+  by separate evidence.
 - UX gate: primary workflow is obvious, states are complete, destructive actions are guarded, recovery paths exist.
 - Engineering gate: existing patterns are respected, no unnecessary dependency or abstraction was added.
 - Accessibility gate: keyboard navigation, focus behavior, labels, reduced motion, and contrast are checked.
+- Interface-discipline gate: the bundled full or quick protocol was applied to the actual UI;
+  changed UI has an `interface-review` scope, consumer expansion, removed-signal inspection where
+  applicable, and `Introduced` / `Regression` / `Pre-existing` status for every finding in `qa.md`.
 - Motion gate: interaction feedback is intentional, not decorative, and has reduced-motion fallback.
 - Motion foundation gate: project `MOTION.md` is `ready`, its hash is recorded, and selected
   primitive IDs exist in the bundled registry.
@@ -671,6 +796,8 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
   degradation, and cleanup ownership.
 - Responsive gate: mobile and desktop layouts have no overlap or clipped text.
 - Manual QA gate: browser or matching surface was used to inspect the actual UI.
+- Bounded verification gate: one batched desktop/mobile inspection and detector pass was completed,
+  one repair batch was applied, and no open-ended polish loop is being used as a completion claim.
 - Contextual anti-slop gate when active: run `scripts/evaluate-anti-slop.cjs`, repair hard
   blockers, resolve contextual warnings or record accepted context, and link the report from
   `qa.md`. Preference findings never block completion.

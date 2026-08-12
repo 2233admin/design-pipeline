@@ -2,10 +2,53 @@
 
 This pipeline is designed to coordinate the following frontend design skills. Use `capability-routing.md` for cross-group selection and version-sensitive runtime routing. The machine-readable source of truth for install groups and capability checks is `companion-capabilities.json`.
 
+For the full Impeccable product-design surface, read `impeccable-product-design.md` and use
+`impeccable-product-design.json` as the coverage authority. The upstream command surface is fully
+mapped to product truth, surface shaping, design authority, experience quality, and implementation
+evidence; its visual skin is intentionally not imported.
+
+## Built-In Interface Discipline
+
+The following source suite is vendored in every package release, so it is not a companion install
+requirement and does not appear in `companion-capabilities.json`. Read
+`references/interface-discipline.md` for the pipeline protocol and its pinned-source manifest.
+
+The core pipeline also bundles the complete pinned `MengTo/skills` library. Search it through
+`designer-pipeline mengto search`, then apply `references/mengto-skills.md`; it is built-in source,
+not an optional ambient companion.
+
+## Built-In shadcnio Component Index
+
+`references/shadcnio-react-components.md` exposes 75 AI, button, hook, and text entries from the
+complete reviewed `shadcnio/react-shadcn-components` repository through
+`designer-pipeline shadcnio search`. The source repository contains only its MIT LICENSE and README
+index, not the linked webpage implementations; every result remains a review-only reference
+adaptation until source-license, dependency, and project-fit evidence is recorded.
+
+## Built-In Holosticker Implementation
+
+`references/holosticker.md` exposes eight separately adoptable slices from the complete pinned,
+MIT-licensed `jal-co/holosticker` source through `designer-pipeline holosticker inspect`. Use it only
+for explicit holographic sticker, holofoil, die-cut, tilt, peel, or export behavior. It reuses the
+pipeline's existing Three.js route and does not make the upstream Studio UI, analytics, fonts,
+shadcn controls, or `gifenc` automatic project dependencies.
+
+| Skill | Source | Pipeline role |
+| --- | --- | --- |
+| `better-interface` | `jakubkrehel/skills` | Default full/quick review orchestration across all quality domains |
+| `better-accessibility` | `jakubkrehel/skills` | Semantics, input, keyboard, focus, zoom, motion, and screen-reader checks |
+| `better-layout` | `jakubkrehel/skills` | Grouping, alignment, spacing, density, and adaptivity |
+| `better-typography` | `jakubkrehel/skills` | Type choice, sizing, wrapping, reading details, and font features |
+| `better-colors` | `jakubkrehel/skills` | Palette, contrast, gamut, conversion, and token usage |
+| `better-ui` | `jakubkrehel/skills` | Surfaces, icons, motion, and UI performance |
+| `better-writing` | `jakubkrehel/skills` | Product copy quality |
+| `interface-review` | `jakubkrehel/skills` | Diff scope and `Introduced` / `Regression` / `Pre-existing` UI findings |
+
 ## Primary Set
 
 | Skill | Source | Pipeline role | Current local status |
 | --- | --- | --- | --- |
+| `impeccable` | `pbakaus/impeccable` | Surface modes, shape/critique/audit/polish vocabulary, anti-default craft floor, bounded browser iteration, and deterministic design detection | Installed |
 | `frontend-design` | `anthropics/skills` | Strong visual direction, composition, non-generic first impression | Installed |
 | `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility | Installed |
 | `ui-ux-pro-max` | `nextlevelbuilder/ui-ux-pro-max-skill` | UX heuristics, searchable style/color/type system, repeatable choices | Installed |
@@ -71,12 +114,13 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 
 ## Install Priority
 
-1. `web-design-guidelines`
-2. `frontend-design`
-3. `design-taste-frontend`
-4. `ui-ux-pro-max`
-5. `emil-design-eng`
-6. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
+1. `impeccable`
+2. `web-design-guidelines`
+3. `frontend-design`
+4. `design-taste-frontend`
+5. `ui-ux-pro-max`
+6. `emil-design-eng`
+7. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
 
 ## Taste-Skill Extension Set
 
@@ -144,6 +188,6 @@ The pipeline does not require gstack. When it is absent, use `record-feedback.cj
 | `extract-design-system` | `arvindrk/extract-design-system` | Reverse-engineering an existing page or screenshot into tokens |
 | `design-an-interface` | `mattpocock/skills` | Interface ideation workflow |
 | `sleek-design-mobile-apps` | `sleekdotdesign/agent-skills` | Mobile app UI work |
-| `impeccable-design-polish` | `pbakaus/impeccable` | Final polish pass on existing pages |
+| `impeccable` | `pbakaus/impeccable` | Upstream command surface and design detector; the built-in contract remains the fallback |
 
 Update `Current local status` after installing companion skills.

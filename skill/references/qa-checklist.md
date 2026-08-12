@@ -52,6 +52,47 @@ Check:
 - Palette is not one-note.
 - Typography fits the surface and density.
 
+## Interface Discipline Review
+
+Complete this section for product UI, flows, shared component/token changes, or interface reviews.
+
+- Mode: full / quick; reason for quick scope if used:
+- Affected flows, routes, shared components, tokens, and consumers:
+- Bundled domains reviewed: accessibility / layout / typography / colors / UI polish / writing:
+- Detail references read:
+- `interface-review` scope and removed-signal inspection:
+- Findings: severity, status (`Introduced` / `Regression` / `Pre-existing`), evidence, and repair:
+- Remaining pre-existing findings and owner/follow-up:
+- Verdict: pass / repair required / blocked:
+
+## MengTo Playbook Selection
+
+Complete this section when the bundled library informs design, motion, reference, WebGL, asset,
+game, or verification work.
+
+- Search query and command:
+- Selected bundled skill ID and exact source path:
+- Linked references, scripts, assets, or demos read:
+- Project-owned adaptations recorded in `directions.md`, `design.md`, or `motion.md`:
+- Existing dependency/runtime reused; any new dependency justified:
+- Accessibility, reduced-motion, responsive, performance, lifecycle, and cleanup checks retained:
+- Activation: automatic / explicit; authority or credential boundary when explicit:
+- `mengto verify` status and revision:
+
+## Prism System Checks
+
+Complete this section when Prism routing, Design DNA, token governance, corpus distillation, or
+handoff skills influence the change.
+
+- `prism route` query, selected route, confidence, and ambiguity resolution:
+- Local Prism skill paths read:
+- Design DNA and target surface recorded in project-owned artifacts:
+- Existing tokens, catalogs, adapters, `DESIGN.md`, and `MOTION.md` reused:
+- Raw reference evidence kept separate from distilled rules:
+- Derived token recipes, light/dark parity, platform projection, and rendered-value checks:
+- Upstream autonomy labels did not bypass workspace authority:
+- `prism verify` status and revision:
+
 ## Website-Cloning Fidelity Checks
 
 Complete this section when live primary/reference targets are involved.

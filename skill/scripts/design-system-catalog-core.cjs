@@ -230,6 +230,42 @@ const CAPABILITY_TERMS = Object.freeze({
   divider: ["divider", "separator", "rule"],
   "list-group": ["list", "list group", "item", "item list"],
   "typography": ["text", "heading", "paragraph", "typography", "font"],
+  "app-ui": ["app ui", "application ui", "dashboard", "settings", "profile", "auth", "workspace"],
+  "animated-ui": ["animated ui", "motion ui", "animated interface", "micro interaction"],
+  "basic-ui": ["basic ui", "animated input", "animated tabs", "accordion", "checkbox", "modal", "dropdown"],
+  "text-animation": ["text animation", "animated text", "typewriter text", "reveal text", "scramble text", "shimmer text", "animated heading"],
+  "ai-ui": ["ai ui", "ai interface", "assistant ui", "assistant interface", "agent interface"],
+  "ai-chat": ["ai chat", "chat interface", "conversation ui", "prompt composer", "message list"],
+  "ai-agent": ["ai agent", "agent workflow", "tool call", "task list", "approval card", "reasoning trace"],
+  orb: ["orb", "assistant orb", "siri orb"],
+  transition: ["transition", "page transition", "route transition", "shader transition", "reveal transition"],
+  form: ["form", "form input", "form field", "otp"],
+  feedback: ["feedback", "toast feedback", "notification feedback", "modal feedback"],
+  input: ["input", "text input", "file upload", "otp input", "prompt input"],
+  modal: ["modal", "popover", "drawer"],
+  dropdown: ["dropdown", "combobox", "select menu", "searchable dropdown"],
+  "data-display": ["data display", "number flow", "price flow", "metadata", "contribution graph", "stats display"],
+  layout: ["layout", "card stack", "expandable cards", "infinite slider", "dynamic island"],
+  smoothui: ["smoothui", "smooth ui"],
+  "page-block": ["page block", "landing page", "page section", "section"],
+  hero: ["hero", "hero section"],
+  features: ["feature", "features", "feature section"],
+  pricing: ["pricing", "pricing table", "plan"],
+  faq: ["faq", "frequently asked questions"],
+  cta: ["cta", "call to action"],
+  stats: ["stats", "statistics", "metrics", "metric"],
+  navigation: ["navigation", "navbar", "nav bar", "menu"],
+  carousel: ["carousel", "slider", "slideshow"],
+  "depth-carousel": ["depth carousel", "depth card", "3d carousel", "stacked carousel"],
+  "parallax-carousel": ["parallax carousel", "parallax cards"],
+  "3d-depth": ["3d depth", "depth effect", "perspective card"],
+  "interactive-card": ["interactive card", "tilt card", "hover card"],
+  "dither-background": ["dither background", "dithering", "dither", "抖动背景", "抖动"],
+  "animated-background": ["animated background", "动态背景"],
+  "shader-background": ["shader background", "webgl background", "着色器背景"],
+  "numeric-content-transition": ["numeric text", "numeric", "counter", "animated number", "count up", "ticker", "changing number"],
+  "numeric-text": ["numeric text", "number text", "rolling digits", "numeric"],
+  "animated-stat": ["animated stat", "animated metric", "live counter", "stat"],
 });
 
 // Inverse lookup: map individual search terms back to their canonical capability names.
@@ -256,6 +292,7 @@ function decomposeCapabilities(brief, options = {}) {
   ownObject(options, "decompose options");
   safeClone(options, "decompose options");
   const minScore = options.minScore === undefined ? 1 : Number(options.minScore);
+  const allowPartialWords = options.allowPartialWords === undefined ? true : options.allowPartialWords === true;
   const lower = brief.trim().toLowerCase();
   const words = lower.split(/[\s,;.()\[\]{}"'\/=]+/).filter(Boolean);
   const scores = new Map();
@@ -265,8 +302,10 @@ function decomposeCapabilities(brief, options = {}) {
       // Direct substring match of the term in the brief
       if (lower.includes(term)) score += 1;
       // Match individual words from the brief against term parts
-      for (const word of words) {
-        if (word.length >= 3 && term.includes(word)) score += 0.5;
+      if (allowPartialWords) {
+        for (const word of words) {
+          if (word.length >= 3 && term.includes(word)) score += 0.5;
+        }
       }
     }
     score = Math.round(score);

@@ -39,6 +39,170 @@ The pipeline SHALL not fail only because optional companion skills are missing.
 - **WHEN** self-check runs with only the core pipeline installed
 - **THEN** required checks SHALL pass and missing optional skills SHALL report warnings with fallbacks.
 
+### Requirement: Bundled interface discipline
+
+The pipeline SHALL ship a complete, pinned, license-attributed interface-discipline source snapshot
+as a core package resource. It SHALL apply that protocol to product UI, flows, shared
+component/token changes, and interface reviews without depending on globally installed skills or
+network access.
+
+#### Scenario: Fresh standalone installation reviews UI
+
+- **WHEN** a user installs only `design-pipeline` and starts product UI work
+- **THEN** the package SHALL contain the interface router, six quality-domain skills, and
+  change-scoped review skill with their supporting references
+- **AND** the pipeline SHALL select full coverage by default, allowing quick coverage only for a
+  narrow repair with documented scope.
+
+#### Scenario: Changed UI is reviewed
+
+- **WHEN** a change affects user-visible UI
+- **THEN** Stage 0 SHALL identify affected flows, shared components/tokens, and consumers
+- **AND** Stage 6 SHALL record review scope, domains, evidence, and every finding's
+  `Introduced`, `Regression`, or `Pre-existing` status in `qa.md`.
+
+#### Scenario: Source snapshot is changed
+
+- **WHEN** the bundled interface source is updated or altered
+- **THEN** its source revision, license, import scope, file count, and canonical tree hash SHALL be
+  updated together
+- **AND** a deterministic integrity test SHALL fail for a partial or byte-drifted snapshot.
+
+### Requirement: Bundled MengTo skills library
+
+The pipeline SHALL ship every tracked file from one pinned, MIT-attributed `MengTo/skills`
+revision as a core offline resource. It SHALL expose all skills through a machine-readable catalog
+and deterministic local search while keeping target-project design and engineering contracts
+authoritative.
+
+#### Scenario: A matching design workflow exists upstream
+
+- **WHEN** a change needs visual direction, motion, reference analysis, WebGL, assets, game design,
+  implementation, or verification guidance
+- **THEN** the pipeline SHALL search all bundled skills and return exact local source paths
+- **AND** the selected workflow SHALL be adapted through project `DESIGN.md`, `MOTION.md`, existing
+  dependencies, accessibility, performance, and QA requirements.
+
+#### Scenario: The bundled source tree drifts
+
+- **WHEN** any tracked upstream file is missing, added, or byte-altered
+- **THEN** deterministic verification SHALL block on count, byte count, or canonical tree hash
+- **AND** a valid update SHALL change revision, Git tree, inventory, attribution, and hash together.
+
+#### Scenario: A bundled workflow needs external authority
+
+- **WHEN** a playbook involves accounts, credentials, paid services, publication, private data,
+  social posting, voice generation, or other external side effects
+- **THEN** its presence in the package SHALL NOT grant authority
+- **AND** the pipeline SHALL use it only for a matching explicit request under normal host
+  boundaries.
+
+#### Scenario: Kage is used as a scroll-world reference
+
+- **WHEN** a task cites the separately published `MengTo/kage` repository
+- **THEN** the pipeline SHALL route through the bundled `web-design/build-threejs-scroll-worlds`
+  playbook plus the clean-room Kage case study
+- **AND** it SHALL preserve the current repository's no-license boundary by importing no source,
+  font, generated image, foreground artwork, or other project asset.
+
+### Requirement: Bundled shadcnio component index preserves implementation authority
+
+The pipeline SHALL ship the complete reviewed `shadcnio/react-shadcn-components` repository as a
+pinned, MIT-attributed offline resource and expose its README component and hook entries through
+deterministic local search. It SHALL distinguish the bundled index from linked webpage
+implementation code that is not present in the source repository.
+
+#### Scenario: A React component pattern is needed offline
+
+- **WHEN** a change needs an AI-chat, button, hook, or text component pattern
+- **THEN** local search SHALL return matching README entries with their source URLs and local source
+  file
+- **AND** every result SHALL be marked `reference-adaptation` and `review` with implementation
+  license `unverified` until primary source evidence is recorded.
+
+#### Scenario: The bundled source snapshot drifts
+
+- **WHEN** its LICENSE or README is missing, added to, or byte-altered
+- **THEN** deterministic verification SHALL block on file count, byte count, or canonical tree hash
+- **AND** a valid update SHALL change revision, scope, index counts, attribution, and hash together.
+
+#### Scenario: A linked implementation is selected
+
+- **WHEN** a user selects a page linked by the README index
+- **THEN** the pipeline SHALL NOT install dependencies, execute a generator, or copy webpage code
+  solely because it was indexed
+- **AND** it SHALL verify the linked implementation's license, dependencies, accessibility, and
+  target-project fit before adaptation.
+
+### Requirement: Bundled Prism System design intelligence reuses native contracts
+
+The pipeline SHALL ship the complete design-skill subtree from one pinned, MIT-attributed
+`appariciojunior/PrismSystem` revision. It SHALL expose all 107 skills through deterministic local
+search and SHALL expose Prism's `prototype`, `ui-craft`, `new-experience`, `handoff`, and
+`corpus-distill` intake routes without creating a second design-system runtime.
+
+#### Scenario: A product-design request enters the pipeline
+
+- **WHEN** the request concerns Design DNA, prototyping, UI craft, a new experience, handoff, or
+  design-corpus learning
+- **THEN** Stage 0 SHALL classify it through the five-route front door and load only the returned
+  local skills
+- **AND** those skills SHALL execute through the existing brief, directions, implementation, and
+  QA artifacts with project `DESIGN.md`, `MOTION.md`, tokens, catalogs, and adapters authoritative.
+
+#### Scenario: Brand evidence becomes design-system knowledge
+
+- **WHEN** screenshots, Figma evidence, or other references teach the system about a brand
+- **THEN** raw evidence SHALL remain attributable and separate from distilled, versioned rules
+- **AND** semantic tokens and platform projections SHALL remain traceable to project-owned brand
+  inputs and explicit derivation recipes.
+
+#### Scenario: The bundled source or registry drifts
+
+- **WHEN** any mirrored skill-layer file is missing, added, or byte-altered, or either registry no
+  longer matches its declared skills and routes
+- **THEN** deterministic verification SHALL block on file count, byte count, canonical hash, Git
+  tree/blob identity, registry count, category count, or route references.
+
+#### Scenario: An upstream skill declares autonomous execution
+
+- **WHEN** a bundled recipe carries an upstream autonomy label
+- **THEN** that label SHALL NOT grant paid, credentialed, destructive, publishing, messaging, or
+  other external authority
+- **AND** current workspace and project rules SHALL continue to govern all actions.
+
+### Requirement: Bundled Holosticker preserves executable capability boundaries
+
+The pipeline SHALL ship every tracked file from one pinned, MIT-attributed `jal-co/holosticker`
+revision as a byte-verified offline implementation source. It SHALL expose the holographic
+material, die-cut mask, pointer tilt, peel/layers, static export, animated export, React component
+export, and Studio settings as separately selectable capability slices.
+
+#### Scenario: A holographic sticker is requested
+
+- **WHEN** a change explicitly needs holographic foil, a die-cut sticker, pointer tilt, or peel
+  behavior
+- **THEN** the pipeline SHALL route the minimum matching local source files through the
+  `scene-renderer-3d` family and project-pinned `threejs` adapter
+- **AND** it SHALL require `scene.json`, `3d.md`, `motion.md`, accessible controls or static parity,
+  reduced-motion behavior, cleanup ownership, performance budgets, and real-browser evidence.
+
+#### Scenario: An optional output is not requested
+
+- **WHEN** the selected capability does not require GIF/video, GLB, React component export, upload,
+  or the full Studio UI
+- **THEN** the pipeline SHALL not copy those modules or add their dependencies
+- **AND** it SHALL preserve the target project's existing framework, controls, and Three.js
+  version when they satisfy the contract.
+
+#### Scenario: The bundled source snapshot drifts
+
+- **WHEN** any tracked upstream file is missing, added, or byte-altered
+- **THEN** deterministic verification SHALL block on file count, byte count, canonical tree hash,
+  or missing capability source
+- **AND** a valid update SHALL change revision, Git tree, version, inventory, attribution, and hash
+  together.
+
 ### Requirement: Motion is first-class
 
 The pipeline SHALL require explicit motion documentation for non-trivial animation and interaction motion.
@@ -270,6 +434,50 @@ The pipeline SHALL route authorized live-page clone, rebuild, reproduction, and 
 
 - **WHEN** the user asks for a high-fidelity implementation of a live page
 - **THEN** the pipeline SHALL initialize an isolated, resumable target and SHALL preserve the target project's established framework and conventions.
+
+### Requirement: Site-wide cloning separates templates from data
+
+The pipeline SHALL ship a pinned, MIT-attributed `hi5jeff/deepclonewebsite` feature-slice snapshot
+as passive reference material and SHALL adapt its site-wide mechanics through the existing
+Browser/Builder/Evidence ports without adding the Open Lovable runtime.
+
+#### Scenario: An authenticated surface is in scope
+
+- **WHEN** authorized capture requires login
+- **THEN** BrowserPort SHALL use a user-visible browser for the user-controlled login step
+- **AND** credentials, profiles, and storage state SHALL remain ignored runtime material rather than
+  design, package, or repository artifacts.
+
+#### Scenario: The user needs site structure rather than repeated data
+
+- **WHEN** capture mode is `structure`
+- **THEN** discovery SHALL stay within explicitly allowed hosts and finite limits
+- **AND** SHALL group normalized URLs using rendered template evidence such as URL patterns and DOM
+  fingerprints before selecting representative pages
+- **AND** an LLM MAY label or merge deterministic groups but SHALL NOT invent captured pages,
+  assets, states, or measurements.
+
+#### Scenario: Every authorized page is required
+
+- **WHEN** capture mode is `full`
+- **THEN** the user SHALL have explicitly requested whole-site coverage
+- **AND** allowed hosts, exclusions, page/depth/asset limits, and stop conditions SHALL be recorded
+  before navigation.
+
+#### Scenario: Product or backend documentation is inferred
+
+- **WHEN** visible UI evidence is used to produce product structure, data model, backend API, or
+  design-system documents
+- **THEN** every output SHALL cite observed evidence, label inference and confidence, and list
+  unknowns
+- **AND** it SHALL NOT be presented as recovered backend truth.
+
+#### Scenario: The bundled feature slice drifts
+
+- **WHEN** a reviewed source file is missing, added, or normalized-content altered
+- **THEN** deterministic verification SHALL block on file count, normalized byte count, or canonical
+  tree hash
+- **AND** a valid update SHALL change revision, Git tree, scope, attribution, and hash together.
 
 ### Requirement: Website-cloning uses three internal ports
 
@@ -660,6 +868,39 @@ content hashes when upstream provides them.
   value, prototype-pollution key, or tampered entry hash
 - **THEN** normalization SHALL fail closed before writing output
 - **AND** no network, install, import, or project mutation SHALL occur.
+
+### Requirement: Component sources route by capability and platform
+
+The pipeline SHALL expose a deterministic component route over attributed source metadata. A route
+SHALL match the requested capability to a compatible platform, report the integration mode and
+provenance, and preserve a project-owned fallback when a source is unavailable, unverified, or
+license-gated.
+
+#### Scenario: A project needs a component from a referenced source
+
+- **WHEN** `design-system route` receives a product brief and target platform
+- **THEN** it SHALL return the recognized capabilities, one best compatible route per capability,
+  alternatives, source URL, license, and fallback information
+- **AND** it SHALL be deterministic without executing or importing remote source code.
+
+#### Scenario: A route is commercial, user-supplied, or unverified
+
+- **WHEN** the selected source requires a license or its source evidence is not verified
+- **THEN** the route SHALL report `review`
+- **AND** it SHALL NOT claim that the source is installable or copy its implementation.
+
+#### Scenario: No compatible route exists
+
+- **WHEN** no catalog entry advertises a requested capability on the target platform
+- **THEN** the route SHALL report the unavailable capability and use `blocked` only when no
+  recognized capability has a selected route.
+
+#### Scenario: A local component snapshot provides concrete implementation candidates
+
+- **WHEN** a web brief matches a catalog source with a local component inventory, such as SmoothUI
+- **THEN** the route SHALL expose the inventory count, recommended component names, documentation
+  URLs, and the source's registry installation template
+- **AND** the route SHALL remain deterministic without fetching a live API or vendoring source.
 
 ### Requirement: Astryx knowledge is bundled but runtime adoption is optional
 

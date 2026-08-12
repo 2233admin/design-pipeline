@@ -36,6 +36,233 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+## jakubkrehel/skills interface discipline
+
+The bundled interface-discipline snapshot was derived from:
+
+- Source: https://github.com/jakubkrehel/skills
+- Reviewed commit: `0c1f1e5b2481e86c168301bebb6aa3869691ac78`
+- Original copyright: Copyright (c) 2026 Jakub Krehel
+- License: MIT
+
+The package preserves the reviewed repository's `LICENSE`, `README.md`, and complete `skills/`
+tree as inert reference material. It does not install or execute upstream packages.
+
+MIT License
+
+Copyright (c) 2026 Jakub Krehel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## shadcnio/react-shadcn-components
+
+The bundled component index was derived from the complete reviewed repository:
+
+- Source: https://github.com/shadcnio/react-shadcn-components
+- Reviewed commit: `2dc66e0e7b159fa92e761c84f3c5325c9700c415`
+- Original copyright: Copyright (c) 2025 Shadcn IO
+- License: MIT
+
+The reviewed repository contains its `LICENSE` and `README.md` index only. Design Pipeline
+preserves both files as inert source material and derives searchable reference metadata from the
+README; it does not bundle, execute, or grant copy authority for implementation linked from
+`www.shadcn.io` pages.
+
+MIT License
+
+Copyright (c) 2025 Shadcn IO
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## appariciojunior/PrismSystem
+
+The bundled design-skill snapshot was derived from:
+
+- Source: https://github.com/appariciojunior/PrismSystem
+- Reviewed commit: `e93f2a3019162f1da19a9a8c3a5db0f1fba48631`
+- Imported scope: `LICENSE` and `packages/tokens/.agents/skills/**`
+- Original copyright: Copyright (c) 2026 Prism System contributors
+- License: MIT
+
+Design Pipeline preserves the complete reviewed skill subtree and its two registries as inert
+source material. It does not bundle or execute Prism's application packages, sample brand,
+controller, generated themes, Storybook, fonts, screenshots, or build dependencies.
+
+MIT License
+
+Copyright (c) 2026 Prism System contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## jal-co/holosticker
+
+The bundled Holosticker implementation snapshot was derived from:
+
+- Source: https://github.com/jal-co/holosticker
+- Reviewed commit: `34688eb3fd2986c6721ff270a00ca9267f8a195c`
+- Package version: `1.6.1`
+- Original copyright: Copyright (c) 2026 Justin Levine
+- License: MIT
+
+The package preserves every tracked file from the reviewed revision as inert implementation source.
+Design Pipeline does not install or execute the upstream Vite application or its dependencies.
+
+MIT License
+
+Copyright (c) 2026 Justin Levine
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## MengTo/skills design playbooks
+
+The bundled design-playbook library is a byte-preserved snapshot of:
+
+- Source: https://github.com/MengTo/skills
+- Reviewed commit: `3f4c22d10055d3fdddb17248d59d0c1b731cb8d3`
+- Original copyright: Copyright (c) 2026 Meng To
+- License: MIT
+
+The package preserves every tracked file from the reviewed revision as inert reference material.
+Catalog search reads metadata only; it does not execute upstream scripts or demos, install runtime
+dependencies, or authorize external actions.
+
+MIT License
+
+Copyright (c) 2026 Meng To
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## MengTo/kage public case-study evidence
+
+The clean-room scroll-world case study was informed by public behavior and documentation from:
+
+- Source: https://github.com/MengTo/kage
+- Reviewed commit: `4399487d2fb42bce39c7b032fbbb50d230bf4f0b`
+- Reviewed: 2026-08-12
+- License boundary: the source repository states that no license is granted for reuse or
+  redistribution of its original code or artwork.
+
+No file, source implementation, font, generated image, or foreground artwork from that repository
+is vendored. The case study paraphrases architecture, responsive failure modes, and verification
+checks. The separately bundled MIT `MengTo/skills` snapshot above retains its own provenance.
+
+## hi5jeff/deepclonewebsite feature slice
+
+The bundled deep-site-cloning reference is an LF-normalized snapshot of the reviewed feature slice
+from:
+
+- Source: https://github.com/hi5jeff/deepclonewebsite
+- Reviewed commit: `ab180fbe14a0f86c478bf033b375b1d40fabe6b1`
+- Reviewed Git tree: `6deeff7edb181ed4f50dff024c3620fe138e32a7`
+- Original copyright: Copyright (c) 2026 hi5jeff
+- License: MIT
+
+Portions of the upstream project derive from `open-lovable`, MIT License, Copyright (c) 2024
+Mendable. The package preserves the upstream LICENSE with the passive source snapshot. It does not
+execute the vendored Next.js application or install its runtime dependencies.
+
+MIT License
+
+Copyright (c) 2026 hi5jeff
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ## UHolli/ai-website-cloner
 
 The website-cloning workflow in this project adapts concepts from:
@@ -79,3 +306,27 @@ behavior research:
 
 No source implementation is vendored. Every bundled primitive records `codeCopied: false`, its
 provenance, and its intended use as a design vocabulary rather than an executable library.
+
+## Curated component-source metadata
+
+The component route catalog records metadata and public source URLs for user-requested references:
+
+- Beautiful UI: https://www.beautifului.dev/ — license unverified; metadata only.
+- `rit3zh/expo-content-transition`: https://github.com/rit3zh/expo-content-transition — MIT;
+  no source implementation is vendored.
+- React Bits Dither: https://reactbits.dev/backgrounds/dither and
+  https://github.com/DavidHDev/react-bits/tree/main/src/ts-tailwind/Backgrounds/Dither — MIT +
+  Commons Clause; app-level copying and modification are allowed with the upstream notice, but
+  the component itself may not be sold or redistributed alone. No source implementation is
+  vendored.
+- React Bits Pro app UI: https://reactbits.dev/pro/app-ui — commercial license required;
+  metadata only.
+- React Bits depth carousel: https://reactbits.dev/components/depth-carousel — commercial
+  license required or otherwise requires source verification; metadata only.
+- SmoothUI: https://smoothui.dev/docs/components and
+  https://github.com/educlopez/smoothui — MIT; the catalog records a reviewed 130-component
+  metadata snapshot, but no source implementation is vendored. Retain the upstream MIT notice
+  when copying source.
+
+These entries are routing knowledge, not bundled dependencies. A target project must verify the
+applicable license and obtain explicit authority before copying or installing source code.

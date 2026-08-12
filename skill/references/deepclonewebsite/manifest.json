@@ -1,0 +1,44 @@
+{
+  "schema": "design-pipeline.deepclonewebsite-source.v1",
+  "source": {
+    "repository": "https://github.com/hi5jeff/deepclonewebsite",
+    "revision": "ab180fbe14a0f86c478bf033b375b1d40fabe6b1",
+    "gitTree": "6deeff7edb181ed4f50dff024c3620fe138e32a7",
+    "license": "MIT",
+    "reviewedAt": "2026-08-12",
+    "scope": [
+      "LICENSE",
+      "README.zh-CN.md",
+      "open-lovable/package.json",
+      "open-lovable/lib/i18n.ts",
+      "open-lovable/lib/crawl/**",
+      "open-lovable/app/api/crawl/**",
+      "open-lovable/app/site-clone/page.tsx"
+    ]
+  },
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 29,
+    "normalizedByteCount": 137508,
+    "lineEndings": "LF",
+    "treeSha256": "367261a81cf3ef5a3cf4c087664af8a7fafbc8d422ef63a064ab233970006658"
+  },
+  "adoptedCapabilities": [
+    "authenticated-visible-browser-session",
+    "persistent-profile-and-storage-state",
+    "same-domain-site-discovery",
+    "url-pattern-and-dom-fingerprint-grouping",
+    "structure-and-full-capture-modes",
+    "task-state-and-progress-artifacts",
+    "offline-asset-localization",
+    "internal-link-rewriting",
+    "deterministic-ui-distillation",
+    "evidence-labeled-product-data-backend-and-design-analysis"
+  ],
+  "boundary": {
+    "passiveReferenceOnly": true,
+    "addsRuntimeDependency": false,
+    "executesUpstreamCode": false,
+    "bundlesOpenLovableApplication": false
+  }
+}

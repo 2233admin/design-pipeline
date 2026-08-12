@@ -41,6 +41,14 @@ const {
   atomicWriteProviderJson,
   loadProfiles,
 } = require("./design-system-provider-core.cjs");
+const { routeComponents } = require("./component-route-core.cjs");
+const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
+const {
+  searchShadcnioComponents,
+  verifyShadcnioComponentSnapshot,
+} = require("./shadcnio-react-components-core.cjs");
+const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
+const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
@@ -49,7 +57,7 @@ const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--evidence",
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
-  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--catalog", "--category", "--change-id", "--change-root",
+  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root",
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
   "--height", "--installed-evidence", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
@@ -173,6 +181,38 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
   if (!manifestError) {
     missing.push(...required.filter((resource) => !fs.existsSync(path.join(skillRoot, resource))));
   }
+  let mengto = null;
+  try {
+    mengto = verifyMengToSnapshot(path.join(skillRoot, "references", "mengto-skills", "manifest.json"));
+    if (mengto.status !== "ready") missing.push("references/mengto-skills/upstream/**");
+  } catch (error) {
+    mengto = { status: "blocked", issues: [error.message] };
+    missing.push("references/mengto-skills/manifest.json");
+  }
+  let shadcnio = null;
+  try {
+    shadcnio = verifyShadcnioComponentSnapshot(path.join(skillRoot, "references", "shadcnio-react-components", "manifest.json"));
+    if (shadcnio.status !== "ready") missing.push("references/shadcnio-react-components/upstream/**");
+  } catch (error) {
+    shadcnio = { status: "blocked", issues: [error.message] };
+    missing.push("references/shadcnio-react-components/manifest.json");
+  }
+  let prism = null;
+  try {
+    prism = verifyPrismSnapshot(path.join(skillRoot, "references", "prism-system", "manifest.json"));
+    if (prism.status !== "ready") missing.push("references/prism-system/upstream/**");
+  } catch (error) {
+    prism = { status: "blocked", issues: [error.message] };
+    missing.push("references/prism-system/manifest.json");
+  }
+  let holosticker = null;
+  try {
+    holosticker = verifyHolostickerSnapshot(path.join(skillRoot, "references", "holosticker", "manifest.json"));
+    if (holosticker.status !== "ready") missing.push("references/holosticker/upstream/**");
+  } catch (error) {
+    holosticker = { status: "blocked", issues: [error.message] };
+    missing.push("references/holosticker/manifest.json");
+  }
   const nodeSupported = Number.parseInt(nodeVersion.split(".")[0], 10) >= 22;
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
@@ -191,6 +231,10 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     packageRoot: skillRoot,
     missing,
     ...(manifestError ? { manifestError } : {}),
+    mengto,
+    shadcnio,
+    prism,
+    holosticker,
     registry,
   };
 }
@@ -208,7 +252,11 @@ function publicHelp() {
     "  evidence check|capture",
     "  verify motion|components",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
-    "  design-system profiles|normalize|acquire|search|decompose|project-tokens|decide",
+    "  design-system profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
+    "  mengto search|verify",
+    "  shadcnio search|verify",
+    "  prism search|route|verify",
+    "  holosticker inspect|verify",
     "  benchmark brief|evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
     "",
@@ -515,10 +563,20 @@ function bundledDesignSystemCatalog() {
   return normalizeDesignSystemSnapshot(readJson(builtIn("astryx-design-system-snapshot.json"), "bundled Astryx snapshot"));
 }
 
+function bundledComponentSourceCatalog() {
+  return normalizeDesignSystemSnapshot(readJson(builtIn("component-source-catalog.json"), "bundled component source catalog"));
+}
+
 function designSystemCatalog(parsed, root) {
   if (option(parsed, "--catalog")) return readJson(artifact(parsed, root, "--catalog"), "design system catalog");
   if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "design system snapshot"));
   return bundledDesignSystemCatalog();
+}
+
+function componentSourceCatalog(parsed, root) {
+  if (option(parsed, "--catalog")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--catalog"), "component source catalog"));
+  if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "component source snapshot"));
+  return bundledComponentSourceCatalog();
 }
 
 function writeResult(parsed, root, value) {
@@ -603,6 +661,15 @@ function designSystemCommand(parsed, root, action) {
         exitCode: 0,
       };
     }
+    if (action === "route") {
+      const query = requireOption(parsed, "--query");
+      const result = routeComponents({
+        catalog: componentSourceCatalog(parsed, root),
+        brief: query,
+        platform: option(parsed, "--platform", "web"),
+      });
+      return { result, exitCode: result.status === "blocked" ? 2 : 0 };
+    }
   fail("cli", `unknown design-system action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
@@ -621,6 +688,78 @@ function adapterCommand(parsed, root, action) {
     return { result, exitCode: result.status === "admissible" ? 0 : 2 };
   }
   fail("cli", `unknown adapter action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function mengToCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchMengToSkills({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 5),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyMengToSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown mengto action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function shadcnioCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchShadcnioComponents({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 10),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyShadcnioComponentSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown shadcnio action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function prismCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchPrismSkills({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 5),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "route") {
+    const result = routePrismRequest({ query: requireOption(parsed, "--query") });
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  if (action === "verify") {
+    const result = verifyPrismSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown prism action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function holostickerCommand(parsed, action) {
+  if (action === "inspect") {
+    return {
+      result: inspectHolosticker({ capability: option(parsed, "--capability") }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyHolostickerSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown holosticker action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
 function doctorCommand({ root }) {
@@ -681,6 +820,10 @@ const COMMANDS = {
   verify: { run: ({ parsed, root, action }) => verifyCommand(parsed, root, action) },
   patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
+  mengto: { run: ({ parsed, action }) => mengToCommand(parsed, action) },
+  shadcnio: { run: ({ parsed, action }) => shadcnioCommand(parsed, action) },
+  prism: { run: ({ parsed, action }) => prismCommand(parsed, action) },
+  holosticker: { run: ({ parsed, action }) => holostickerCommand(parsed, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
   reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },

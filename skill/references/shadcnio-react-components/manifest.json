@@ -1,0 +1,28 @@
+{
+  "schema": "design-pipeline.shadcnio-react-components-source.v1",
+  "source": {
+    "repository": "https://github.com/shadcnio/react-shadcn-components",
+    "revision": "2dc66e0e7b159fa92e761c84f3c5325c9700c415",
+    "license": "MIT",
+    "reviewedAt": "2026-08-12",
+    "scope": [
+      "LICENSE",
+      "README.md"
+    ]
+  },
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 2,
+    "byteCount": 20889,
+    "treeSha256": "7a8b6f8798efb8bb7895fa1f4297afe1bcf39f8246d6d6fdf12bc7b370c4e1a8"
+  },
+  "index": {
+    "entryCount": 75,
+    "categories": {
+      "ai": 16,
+      "button": 15,
+      "hook": 34,
+      "text": 10
+    }
+  }
+}

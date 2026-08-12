@@ -99,6 +99,82 @@ node skill/scripts/check-design-foundation.cjs --project-root . --json
 
 ## 核心功能
 
+### 内置接口质量协议
+
+Pipeline 内置了完整的接口质量技能快照：可访问性、布局、字体、颜色、表面与图标、产品文案，以及按变更范围审查 UI 的规则。它随包交付、固定上游版本并由哈希校验，不依赖某台机器是否安装了额外 Agent skill。每次 UI 改动都按 `full` 或受限的 `quick` 范围审查，并在 `qa.md` 区分本次引入、回归和既有问题。
+
+### 内置 MengTo 设计技能库
+
+Pipeline 完整内置了 `MengTo/skills` 的固定快照：127 个技能、867 个受 Git 跟踪文件，包含所有 `SKILL.md`、引用、脚本、资产、demo、OpenAI metadata 和顶层运行时资源。快照保留上游原文，Pipeline 另加本地能力路由、阶段映射、依赖门禁和 QA 覆盖层。
+
+Kage 走同一个 Three.js scroll-world 路由；Pipeline 另带一份干净室案例层，吸收独立 Kage 仓库后续的移动端视口、固定菜单、横向溢出和纵横比修复，但不复制该仓库未授权的源码或素材。
+
+```bash
+# 搜索最窄的设计/动效/WebGL/游戏工作流
+node skill/scripts/designer-pipeline.cjs mengto search \
+  --query "scroll-controlled Three.js world" --json
+
+# 验证完整文件数、字节数和规范化树哈希
+node skill/scripts/designer-pipeline.cjs mengto verify --json
+```
+
+设计相关 playbook 可以按能力自动候选；账号、发布、社交、声音、TTS、Apple profiling 和浏览器录像类 playbook 仅在用户明确要求时启用。打包不等于获得凭据、付费、隐私数据或外部发布权限。
+
+### 内置 shadcnio React 组件索引
+
+Pipeline 完整保留了 `shadcnio/react-shadcn-components` 已审查版本的 2 个上游文件（MIT
+LICENSE 与 README），并离线解析 README 的 75 个 AI、按钮、Hook 和文本组件条目。上游仓库
+不含它链接到 `shadcn.io` 页面中的实现代码，因此检索结果只是 `reference-adaptation` 候选，默认
+`review`；在复制或实现前必须单独核验页面源码的许可证、依赖、无障碍和项目兼容性。
+
+```bash
+# 搜索行为参考，不会安装依赖或复制页面实现
+node skill/scripts/designer-pipeline.cjs shadcnio search \
+  --query "AI prompt input" --category ai --json
+
+# 验证固定修订、2 个文件、75 条索引和规范化树哈希
+node skill/scripts/designer-pipeline.cjs shadcnio verify --json
+```
+
+### 内置 Prism System 设计智能层
+
+Pipeline 完整保留了 `appariciojunior/PrismSystem` 已审查版本的 107 个设计技能及其两份
+注册表（MIT）。这些技能覆盖 Design DNA、原型、UI 审查、新体验、交付、设计语料蒸馏、
+Token 治理、Figma、React 和质量门禁；它们通过现有 Pipeline 阶段执行，不引入第二套组件库、
+品牌样例、控制器或构建链。
+
+```bash
+# 从完整离线注册表查找最窄技能
+node skill/scripts/designer-pipeline.cjs prism search \
+  --query "dark mode token contrast" --category foundations --json
+
+# 使用 Prism 的五路入口分类设计请求
+node skill/scripts/designer-pipeline.cjs prism route \
+  --query "review this settings screen for accessibility" --json
+
+# 验证 127 个固定文件和上游 Git tree/blob
+node skill/scripts/designer-pipeline.cjs prism verify --json
+```
+
+上游 `autonomy` 字段只描述配方，不授予凭据、付费、破坏性操作、发布、消息发送或其他外部
+权限；项目 `DESIGN.md`、`MOTION.md`、现有代码与当前工作区规则始终优先。
+
+### 内置 Holosticker 全息贴纸实现
+
+Pipeline 完整保留了 `jal-co/holosticker` 的 57 个上游文件（MIT），包含真实的 Three.js
+全息材质、精确距离场异形切边、指针倾斜、3D 揭膜和 PNG/GIF/视频/GLB/React 导出链路。
+能力按 8 个最小源码切片暴露，不会因为需要一个全息材质就把整套 Studio UI、分析脚本、
+字体、shadcn 控件或 `gifenc` 带进目标项目。
+
+```bash
+# 查看可复用能力及其真实源码、依赖和接入边界
+node skill/scripts/designer-pipeline.cjs holosticker inspect \
+  --capability holo-material --json
+
+# 验证固定修订、57 个文件和规范化树哈希
+node skill/scripts/designer-pipeline.cjs holosticker verify --json
+```
+
 ### 设计基础：DESIGN.md
 
 每个项目必须有验证过的 `DESIGN.md`，记录视觉系统决策。不是模板复制，是从需求、仓库约束和参考证据合成的项目特定合同。
@@ -115,9 +191,38 @@ node skill/scripts/check-design-foundation.cjs --project-root . --json
 node skill/scripts/check-motion-foundation.cjs --project-root . --json
 ```
 
+### 组件能力路由
+
+组件库不直接变成项目依赖。流水线先把需求拆成能力，再按平台、来源证据、接入方式和许可证选路；没有授权的远程库只会得到 `review`，不会被静默复制。
+
+```bash
+# Web 应用 UI：优先返回 React Bits Pro，保留许可证审查
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "SaaS dashboard app UI" --platform web --json
+
+# Expo 数字动效：路由到 expo-content-transition
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "animated numeric stat" --platform expo --json
+
+# 深度轮播：返回参考源、接入命令和无授权时的 CSS 降级路径
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "depth carousel" --platform web --json
+
+# SmoothUI：从本地 130 项快照中推荐具体组件
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "SmoothUI animated tabs" --platform web --json
+```
+
+当前内置的是这些来源元数据：Beautiful UI、`expo-content-transition`、React Bits 免费 Dither、React Bits Pro app UI、React Bits depth carousel、SmoothUI 130 项组件快照，以及 Web DOM 数字过渡回退。SmoothUI 快照会返回组件名、文档 URL、registry 安装命令、依赖和 reduced-motion 信息；组件源码不在本仓库内，其他来源仍按路由结果做许可审查。
+
 ### 网站克隆
 
 捕获参考证据，从完整组件合同构建，独立比较结果后才声称保真度。
+
+整站或登录后页面另有内置的 `deepclonewebsite` 功能切片参考：支持可见浏览器登录门、
+同域页面归型、`structure`/显式 `full` 捕获、离线多页链接，以及基于可见证据的产品结构、
+数据模型、后端需求和设计系统假设。它是固定版本、哈希校验的被动源码参考，不会安装或
+执行 Open Lovable，也不会把推断文档冒充真实后端。
 
 ```bash
 node skill/scripts/init-website-clone.cjs \
