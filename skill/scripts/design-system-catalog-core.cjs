@@ -194,15 +194,146 @@ function serializeCatalog(catalog) {
   return canonicalJson(catalog);
 }
 
+// Canonical UI capability terms mapped by UI pattern. Each entry lists the search terms
+// to use when decomposing a product-level brief into catalog-searched capabilities.
+// Keys are canonical UI pattern names; values are arrays of catalog search terms.
+const CAPABILITY_TERMS = Object.freeze({
+  "app-shell": ["app shell", "shell", "layout", "top bar", "sidebar", "navigation"],
+  "command-palette": ["command", "palette", "command palette", "kbd", "shortcut", "quick action"],
+  "side-nav": ["side nav", "navigation", "sidebar", "sidenav", "nav", "menu"],
+  "data-table": ["data table", "table", "datagrid", "grid", "row", "column"],
+  progress: ["progress", "loading", "spinner", "progress bar", "skeleton"],
+  dialog: ["dialog", "modal", "alertdialog", "popup", "popover", "tooltip"],
+  tabs: ["tab", "tabs", "tab bar"],
+  button: ["button", "icon button", "action"],
+  "text-input": ["input", "text field", "textarea", "form", "field"],
+  select: ["select", "dropdown", "combobox", "listbox", "menu"],
+  "date-picker": ["date", "date picker", "calendar", "date range"],
+  toggle: ["toggle", "switch", "checkbox", "radio"],
+  avatar: ["avatar", "avatar group", "person"],
+  badge: ["badge", "tag", "chip", "pill"],
+  card: ["card", "tile", "panel"],
+  "empty-state": ["empty state", "empty", "placeholder", "no data", "illustration"],
+  "error-state": ["error", "error state", "alert", "warning", "banner"],
+  "loading-state": ["loading", "skeleton", "spinner", "progress"],
+  pagination: ["pagination", "page", "pager", "previous", "next"],
+  breadcrumb: ["breadcrumb", "breadcrumbs", "trail", "path"],
+  search: ["search", "search input", "search bar", "filter"],
+  stepper: ["stepper", "step", "wizard", "progress stepper"],
+  "toast-notification": ["toast", "notification", "snackbar", "notice"],
+  "accordion": ["accordion", "collapse", "expand", "disclosure"],
+  drawer: ["drawer", "panel", "side panel", "sheet"],
+  "file-upload": ["file upload", "upload", "dropzone", "file"],
+  "color-picker": ["color picker", "color", "picker"],
+  slider: ["slider", "range", "range slider"],
+  tooltip: ["tooltip", "popover", "hint", "help"],
+  divider: ["divider", "separator", "rule"],
+  "list-group": ["list", "list group", "item", "item list"],
+  "typography": ["text", "heading", "paragraph", "typography", "font"],
+});
+
+// Inverse lookup: map individual search terms back to their canonical capability names.
+const TERM_TO_CAPABILITY = new Map();
+for (const [capability, terms] of Object.entries(CAPABILITY_TERMS)) {
+  for (const term of terms) {
+    if (!TERM_TO_CAPABILITY.has(term)) TERM_TO_CAPABILITY.set(term, []);
+    TERM_TO_CAPABILITY.get(term).push(capability);
+  }
+}
+
+/**
+ * Decompose a product-level brief phrase into canonical capability terms.
+ * Returns a deduplicated list of canonical capability names whose terms are likely
+ * relevant to the brief, based on substring matching of the brief against known terms.
+ *
+ * @param {string} brief - The product-level brief or query phrase.
+ * @param {object} [options]
+ * @param {number} [options.minScore=1] - Minimum matching term count to include a capability.
+ * @returns {string[]} Sorted, deduplicated canonical capability names.
+ */
+function decomposeCapabilities(brief, options = {}) {
+  if (typeof brief !== "string" || !brief.trim()) return [];
+  ownObject(options, "decompose options");
+  safeClone(options, "decompose options");
+  const minScore = options.minScore === undefined ? 1 : Number(options.minScore);
+  const lower = brief.trim().toLowerCase();
+  const words = lower.split(/[\s,;.()\[\]{}"'\/=]+/).filter(Boolean);
+  const scores = new Map();
+  for (const [capability, terms] of Object.entries(CAPABILITY_TERMS)) {
+    let score = 0;
+    for (const term of terms) {
+      // Direct substring match of the term in the brief
+      if (lower.includes(term)) score += 1;
+      // Match individual words from the brief against term parts
+      for (const word of words) {
+        if (word.length >= 3 && term.includes(word)) score += 0.5;
+      }
+    }
+    score = Math.round(score);
+    if (score >= minScore) scores.set(capability, score);
+  }
+  return [...scores.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([capability]) => capability);
+}
+
+/**
+ * Search the catalog for each capability term and return a map of capability → search results.
+ * Each result entry includes the capability name, the search terms used, the number of matches,
+ * and the matched catalog entries (cloned, safe).
+ *
+ * @param {object} catalog - Validated design system catalog.
+ * @param {string[]} capabilities - Canonical capability names from decomposeCapabilities.
+ * @param {object} [searchOptions] - Additional search options (kind, category, status, limit).
+ * @returns {object} { capabilityMap: { [capability]: { terms, count, entries } } }
+ */
+function searchCapabilities(catalog, capabilities, searchOptions = {}) {
+  validateCatalog(catalog);
+  if (!Array.isArray(capabilities)) invalid("capabilities must be an array");
+  safeClone(searchOptions, "search capabilities options");
+  const capabilityMap = {};
+  const seenIds = new Set();
+  for (const capability of capabilities) {
+    const terms = CAPABILITY_TERMS[capability];
+    if (!terms) continue;
+    const matched = new Map();
+    for (const term of terms) {
+      const results = searchCatalog(catalog, { ...searchOptions, query: term });
+      for (const entry of results) {
+        if (!matched.has(entry.id)) {
+          matched.set(entry.id, { entry, matchedTerms: [] });
+        }
+        matched.get(entry.id).matchedTerms.push(term);
+      }
+    }
+    const entries = [...matched.values()].map((item) => {
+      const cloned = safeClone(item.entry);
+      cloned.matchedTerms = item.matchedTerms;
+      return cloned;
+    });
+    entries.forEach((entry) => seenIds.add(entry.id));
+    capabilityMap[capability] = {
+      terms,
+      count: entries.length,
+      entries,
+    };
+  }
+  return { capabilityMap, uniqueEntryCount: seenIds.size };
+}
+
 module.exports = {
+  CAPABILITY_TERMS,
   CATALOG_SCHEMA,
   COLLECTIONS,
   KINDS,
   SNAPSHOT_SCHEMA,
+  TERM_TO_CAPABILITY,
   VERSION,
   canonicalCatalogJson: serializeCatalog,
+  decomposeCapabilities,
   normalizeDesignSystemSnapshot: normalizeSnapshot,
   normalizeSnapshot,
+  searchCapabilities,
   searchCatalog,
   searchDesignSystemCatalog: searchCatalog,
   serializeCatalog,

@@ -26,6 +26,21 @@ function catalog(options = {}) {
   });
 }
 
+// A valid capability inventory for governed (non-custom) decide requests. The ids in
+// capabilityResults are illustrative; decideDesignSystem only validates the inventory structure,
+// not that the ids exist in the catalog.
+function capInventory() {
+  return {
+    directQuery: "example brief",
+    directQueryResults: 0,
+    searchedCapabilities: ["data-table", "dialog"],
+    capabilityResults: {
+      "data-table": { terms: ["table"], count: 1, matchedIds: ["example:template:example-react"] },
+      dialog: { terms: ["dialog"], count: 0, matchedIds: [] },
+    },
+  };
+}
+
 test("projects light/dark tuples, CSS strings, and semantic roles without loss", () => {
   const result = projectDesignSystemTokens(catalog());
   assert.equal(result.status, "ready");
@@ -70,7 +85,7 @@ test("projects tokens from the normalized v1 catalog entry shape", () => {
 });
 
 test("adopt requires compatible React, react-dom, StyleX and admitted intake", () => {
-  const base = { mode: "adopt", catalog: catalog(), project: { runtime: { react: "19.1.0", reactDom: "19.1.0", stylex: "0.15.4" } } };
+  const base = { mode: "adopt", catalog: catalog(), project: { runtime: { react: "19.1.0", reactDom: "19.1.0", stylex: "0.15.4" } }, capabilityInventory: capInventory() };
   assert.equal(decideDesignSystem(base).status, "blocked");
   assert.equal(decideDesignSystem({ ...base, adapterIntake: { status: "admissible" } }).status, "ready");
   const incompatible = structuredClone(base);
@@ -81,7 +96,7 @@ test("adopt requires compatible React, react-dom, StyleX and admitted intake", (
 
 test("StyleX caret ranges respect zero-major minor boundaries", () => {
   const value = catalog({ runtime: { react: "^19.0.0", reactDom: "^19.0.0", stylex: "^0.19" } });
-  const request = { mode: "adopt", catalog: value, adapterIntake: { status: "admitted" }, project: { runtime: { react: "19.0.0", reactDom: "19.0.0", stylex: "0.19.3" } } };
+  const request = { mode: "adopt", catalog: value, adapterIntake: { status: "admitted" }, project: { runtime: { react: "19.0.0", reactDom: "19.0.0", stylex: "0.19.3" } }, capabilityInventory: capInventory() };
   assert.equal(decideDesignSystem(request).status, "ready");
   request.project.runtime.stylex = "0.15.4";
   assert.equal(decideDesignSystem(request).rejected[0].reason, "runtime-incompatible");
@@ -89,21 +104,21 @@ test("StyleX caret ranges respect zero-major minor boundaries", () => {
 
 test("runtime comparison supports minimum and exact semantic versions", () => {
   const value = catalog({ runtime: { react: ">=19", reactDom: "19.1.0", stylex: "0.19.3" } });
-  const base = { mode: "adopt", catalog: value, adapterIntake: { status: "admitted" }, project: { runtime: { react: "19.2.0", reactDom: "19.1.0", stylex: "0.19.3" } } };
+  const base = { mode: "adopt", catalog: value, adapterIntake: { status: "admitted" }, project: { runtime: { react: "19.2.0", reactDom: "19.1.0", stylex: "0.19.3" } }, capabilityInventory: capInventory() };
   assert.equal(decideDesignSystem(base).status, "ready");
   base.project.runtime.stylex = "0.19.4";
   assert.equal(decideDesignSystem(base).status, "blocked");
 });
 
 test("canary is denied by default and allowed explicitly", () => {
-  const request = { mode: "reference", catalog: catalog({ status: "canary" }), project: {} };
+  const request = { mode: "reference", catalog: catalog({ status: "canary" }), project: {}, capabilityInventory: capInventory() };
   assert.equal(decideDesignSystem(request).status, "blocked");
   assert.equal(decideDesignSystem({ ...request, allowCanary: true }).selected.status, "canary");
 });
 
 test("existing project authority is retained without short-circuiting governed modes", () => {
   const project = { designSystem: "local-system", runtime: { react: "19.1.0", reactDom: "19.1.0", stylex: "0.15.4" } };
-  const request = { mode: "reference", catalog: catalog(), project };
+  const request = { mode: "reference", catalog: catalog(), project, capabilityInventory: capInventory() };
   const first = decideDesignSystem(request);
   const second = decideDesignSystem(structuredClone(request));
   assert.equal(first.projectAuthority.id, "local-system");
@@ -118,10 +133,10 @@ test("existing project authority is retained without short-circuiting governed m
 
 test("known non-stable statuses are filtered per entry without poisoning the catalog", () => {
   const value = catalog({ status: "experimental", extraTemplates: [{ id: "stable-react", status: "stable", runtime: {} }] });
-  assert.equal(decideDesignSystem({ mode: "reference", catalog: value, project: {} }).selected.id, "example:template:stable-react");
-  assert.equal(decideDesignSystem({ mode: "reference", catalog: catalog({ status: "experimental" }), project: {}, allowCanary: true }).selected.status, "experimental");
+  assert.equal(decideDesignSystem({ mode: "reference", catalog: value, project: {}, capabilityInventory: capInventory() }).selected.id, "example:template:stable-react");
+  assert.equal(decideDesignSystem({ mode: "reference", catalog: catalog({ status: "experimental" }), project: {}, allowCanary: true, capabilityInventory: capInventory() }).selected.status, "experimental");
   for (const status of ["deprecated", "unknown"]) {
-    const result = decideDesignSystem({ mode: "reference", catalog: catalog({ status }), project: {} });
+    const result = decideDesignSystem({ mode: "reference", catalog: catalog({ status }), project: {}, capabilityInventory: capInventory() });
     assert.equal(result.status, "blocked");
     assert.equal(result.rejected[0].reason, `status-${status}`);
   }
@@ -132,7 +147,7 @@ test("unknown schemas, statuses, versions, and modes fail closed", () => {
   assert.throws(() => decideDesignSystem({ schema: "future", mode: "reference", catalog: catalog(), project: {} }), /unsupported request schema/);
   assert.throws(() => decideDesignSystem({ version: "2", mode: "reference", catalog: catalog(), project: {} }), /unsupported request version/);
   const future = catalog({ status: "future" });
-  assert.throws(() => decideDesignSystem({ mode: "reference", catalog: future, project: {} }), /invalid value/);
+  assert.throws(() => decideDesignSystem({ mode: "reference", catalog: future, project: {}, capabilityInventory: capInventory() }), /invalid value/);
   const version = catalog();
   version.version = "2";
   assert.throws(() => decideDesignSystem({ mode: "reference", catalog: version, project: {} }), /unsupported catalog version/);

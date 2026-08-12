@@ -29,6 +29,8 @@ const { checkMotionFoundation } = require("./motion-foundation-core.cjs");
 const {
   normalizeDesignSystemSnapshot,
   searchDesignSystemCatalog,
+  decomposeCapabilities,
+  searchCapabilities,
 } = require("./design-system-catalog-core.cjs");
 const {
   decideDesignSystem,
@@ -51,8 +53,8 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
   "--height", "--installed-evidence", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
-  "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width",
+    "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
+    "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
 ]);
 
 function parseArgs(argv) {
@@ -206,7 +208,7 @@ function publicHelp() {
     "  evidence check|capture",
     "  verify motion|components",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
-    "  design-system profiles|normalize|acquire|search|project-tokens|decide",
+    "  design-system profiles|normalize|acquire|search|decompose|project-tokens|decide",
     "  benchmark brief|evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
     "",
@@ -567,13 +569,40 @@ function designSystemCommand(parsed, root, action) {
     return { result: { status: projection.status, projection, ...(output ? { output } : {}) }, exitCode: projection.status === "blocked" ? 2 : 0 };
   }
   if (action === "decide") {
-    const request = readJson(artifact(parsed, root, "--artifact"), "design system decision request");
-    if (!request.catalog) request.catalog = designSystemCatalog(parsed, root);
-    if (option(parsed, "--allow-canary") === true) request.allowCanary = true;
-    const decision = decideDesignSystem(request);
-    const output = writeResult(parsed, root, decision);
-    return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: decision.status === "blocked" ? 2 : 0 };
-  }
+      const request = readJson(artifact(parsed, root, "--artifact"), "design system decision request");
+      if (!request.catalog) request.catalog = designSystemCatalog(parsed, root);
+      if (option(parsed, "--allow-canary") === true) request.allowCanary = true;
+      const decision = decideDesignSystem(request);
+      const output = writeResult(parsed, root, decision);
+      return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: decision.status === "blocked" ? 2 : 0 };
+    }
+    if (action === "decompose") {
+      const query = requireOption(parsed, "--query");
+      const catalog = designSystemCatalog(parsed, root);
+      const capabilities = decomposeCapabilities(query, { minScore: Number(option(parsed, "--min-score", 1)) });
+      const searchOptions = {};
+      if (option(parsed, "--kind")) searchOptions.kind = option(parsed, "--kind");
+      if (option(parsed, "--category")) searchOptions.category = option(parsed, "--category");
+      if (option(parsed, "--status")) searchOptions.status = option(parsed, "--status");
+      if (option(parsed, "--limit")) searchOptions.limit = numberOption(parsed, "--limit", { max: 1000 });
+      // Run the direct product-level query for comparison
+      const directResults = option(parsed, "--query") ? searchDesignSystemCatalog(catalog, { query: option(parsed, "--query"), ...searchOptions }) : [];
+      // Run capability-level searches
+      const { capabilityMap, uniqueEntryCount } = searchCapabilities(catalog, capabilities, searchOptions);
+      const zeroResultInconclusive = directResults.length === 0 && uniqueEntryCount > 0;
+      return {
+        result: {
+          status: "valid",
+          directQuery: query,
+          directQueryResults: directResults.length,
+          capabilities,
+          capabilityMap,
+          zeroResultInconclusive,
+          totalUniqueEntries: uniqueEntryCount,
+        },
+        exitCode: 0,
+      };
+    }
   fail("cli", `unknown design-system action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 

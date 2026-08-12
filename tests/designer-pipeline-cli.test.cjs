@@ -174,6 +174,14 @@ test("bundled design-system knowledge is agent-discoverable without installing A
     mode: "reference",
     candidateId: "astryx:component:AlertDialog",
     project: { designMd: true, runtime: {} },
+    capabilityInventory: {
+      directQuery: "AlertDialog",
+      directQueryResults: 1,
+      searchedCapabilities: ["dialog"],
+      capabilityResults: {
+        dialog: { terms: ["dialog"], count: 1, matchedIds: ["astryx:component:AlertDialog"] },
+      },
+    },
   });
   const decision = run(["design-system", "decide", "--root", root, "--artifact", "decision.json"]);
   assert.equal(decision.status, 0, decision.stderr || decision.stdout);

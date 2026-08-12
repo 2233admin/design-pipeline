@@ -172,11 +172,34 @@ function decideDesignSystem(request) {
   const existing = existingSystem(request.project);
   const projectAuthority = existing;
   if (existing) evidence.push(`project-authority:${existing.source}`);
+
+  // Validate capabilityInventory when mode is not custom
+  if (request.mode !== "custom" && request.capabilityInventory === undefined) {
+    rationale.push("Capability inventory is required before selecting a design system. Decompose the brief into capability terms and search the catalog first.");
+    return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence, capabilityInventory: null };
+  }
+  if (request.capabilityInventory !== undefined) {
+    assertObject(request.capabilityInventory, "capabilityInventory", "design system decision");
+    const { searchedCapabilities, directQuery, directQueryResults, capabilityResults } = request.capabilityInventory;
+    if (!Array.isArray(searchedCapabilities)) fail("design system decision", "capabilityInventory.searchedCapabilities must be an array");
+    if (typeof directQuery !== "string" || !directQuery.trim()) fail("design system decision", "capabilityInventory.directQuery must be a non-empty string");
+    if (typeof directQueryResults !== "number" || !Number.isInteger(directQueryResults) || directQueryResults < 0) fail("design system decision", "capabilityInventory.directQueryResults must be a non-negative integer");
+    if (typeof capabilityResults !== "object" || capabilityResults === null) fail("design system decision", "capabilityInventory.capabilityResults must be an object");
+    const zeroResultInconclusive = directQueryResults === 0 && Object.values(capabilityResults).some((cr) => cr && cr.count > 0);
+    if (zeroResultInconclusive) {
+      rationale.push("Direct product-level query returned zero results, but capability-level decomposition found candidates. Treating zero-result as inconclusive.");
+      evidence.push("zero-result-inconclusive: direct-query returned zero while capability-level searches found candidates");
+    }
+    evidence.push(`capability-inventory:${searchedCapabilities.length} capabilities, ${directQueryResults} direct, ${Object.values(capabilityResults).reduce((s, cr) => s + (cr ? cr.count : 0), 0)} capability`);
+  }
+
   if (request.mode === "custom") {
     const selected = existing || { id: request.customId || "project-custom", source: "project" };
     rationale.push("Custom mode keeps the design system project-owned.");
     evidence.push("mode:custom");
-    return { schema: DECISION_SCHEMA, status: "ready", mode: request.mode, projectAuthority: selected, selected, rejected, rationale, evidence };
+    const result = { schema: DECISION_SCHEMA, status: "ready", mode: request.mode, projectAuthority, selected, rejected, rationale, evidence };
+    if (request.capabilityInventory) result.capabilityInventory = request.capabilityInventory;
+    return result;
   }
   const candidates = request.catalog.entries.slice().sort((a, b) => a.id.localeCompare(b.id));
   let selected = null;
@@ -195,7 +218,7 @@ function decideDesignSystem(request) {
   }
   if (!selected) {
     rationale.push("No eligible catalog entry satisfies status and runtime constraints.");
-    return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence };
+    return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence, ...(request.capabilityInventory ? { capabilityInventory: request.capabilityInventory } : {}) };
   }
   if (["adopt", "substitute"].includes(request.mode)) {
     const intakeStatus = request.adapterIntake?.status;
@@ -203,14 +226,16 @@ function decideDesignSystem(request) {
       if (intakeStatus !== undefined && !["blocked", "review"].includes(intakeStatus)) fail("design system decision", `unknown adapter intake status ${intakeStatus}`);
       rejected.push({ id: selected.id, reason: "adapter-intake-not-admitted" });
       rationale.push(`${request.mode} requires an admitted adapter intake.`);
-      return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence };
+      return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence, ...(request.capabilityInventory ? { capabilityInventory: request.capabilityInventory } : {}) };
     }
     evidence.push(`adapter-intake:${intakeStatus}`);
   }
   if (existing && request.mode === "substitute") rejected.push({ id: existing.id, reason: "explicitly-substituted" });
   if (existing && request.mode !== "substitute") rationale.push("The project system remains the governing authority.");
   rationale.push(request.mode === "reference" ? "Selected as a non-runtime reference." : `Selected for ${request.mode} with compatible runtime constraints.`);
-  return { schema: DECISION_SCHEMA, status: "ready", mode: request.mode, projectAuthority, selected, rejected, rationale, evidence };
+  const result = { schema: DECISION_SCHEMA, status: "ready", mode: request.mode, projectAuthority, selected, rejected, rationale, evidence };
+  if (request.capabilityInventory) result.capabilityInventory = request.capabilityInventory;
+  return result;
 }
 
 module.exports = { CATALOG_SCHEMA, DECISION_SCHEMA, MODES, PROJECTION_SCHEMA, decideDesignSystem, projectDesignSystemTokens, validateCatalog };

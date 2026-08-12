@@ -307,6 +307,22 @@ Before writing design artifacts or code:
 - Search the design-system catalog when reusable component, hook, template, documentation, or token
   knowledge could prevent reinvention. Record the adoption mode instead of silently importing a
   candidate system.
+- **Decompose the brief into capability terms before searching.** Run
+  `designer-pipeline design-system decompose --query "<brief>" --status stable --json` to discover
+  candidate capability terms. The command returns the decomposed capabilities, direct query results,
+  capability-level search outcomes, and a `zeroResultInconclusive` flag.
+- **Treat a product-level zero-result as inconclusive when capability-level candidates exist.** If
+  `directQueryResults` is 0 and `zeroResultInconclusive` is true, the zero result is not evidence of
+  catalog exhaustion — decompose the brief further or clarify ambiguous component-system names
+  instead of silently mapping them to a familiar library.
+- **Build a `capabilityInventory` for the decision receipt.** The inventory records the direct query,
+  its result count, the decomposed capabilities, and per-capability search results. It is the
+  evidence that the catalog was not exhausted behind a single product-phrase miss.
+- **Require a `design-system decide` receipt before Stage 2 (directions).** Run
+  `designer-pipeline design-system decide --artifact <request.json> --json` and verify the status is
+  `ready`. The receipt must include a non-null `capabilityInventory` for `reference`, `adopt`, or
+  `substitute` modes. A `custom` mode decision must record the capability inventory in its rationale.
+  Without a valid receipt, do not proceed to directions or implementation.
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
 - Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.
@@ -357,6 +373,16 @@ Keep this short. It is an execution contract, not a product essay.
 ## Stage 2: Design Directions
 
 Create `directions.md` before implementation. Produce 2-3 distinct directions when the user has not already chosen a style.
+
+**Gate: a valid `design-system decide` receipt must exist before directions are written.** Run
+`designer-pipeline design-system decide --artifact <request.json> --json`. Verify:
+- status is `ready`;
+- a non-null `capabilityInventory` is present for `reference`, `adopt`, or `substitute` modes;
+- for a `custom` or existing-library decision, the receipt records the capability inventory and the
+  rejected candidates and rationale in `rejected`/`rationale`.
+
+A zero-candidate conclusion is not acceptable unless the receipt records the capability inventory and
+the searches performed. If the required receipt is missing or invalid, do not write directions.
 
 When references are present, directions must preserve the route and fidelity invariants recorded in
 `reference.md`. A `3d` or `hybrid` route cannot be downgraded to flat card composition for
@@ -483,6 +509,11 @@ Implement directly from `design.md` and `tasks.md`.
 
 Rules:
 
+- **Re-verify the `design-system decide` receipt before implementation.** Run
+  `designer-pipeline design-system decide --artifact <request.json> --json` and stop unless status is
+  `ready`. Confirm the receipt still carries a non-null `capabilityInventory` for non-custom modes, so
+  a late fallback cannot be presented as user-authorized without the compared candidates and user
+  decision recorded.
 - For website-cloning changes, run `scripts/check-website-clone-foundations.cjs --change-root
   <change-root> --json` first and stop unless it reports `ready`.
 - Re-run `scripts/check-design-foundation.cjs` and stop unless it reports `ready`.

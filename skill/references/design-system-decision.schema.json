@@ -13,6 +13,33 @@
     "selected": {"type": ["object", "null"]},
     "rejected": {"type": "array", "items": {"type": "object"}},
     "rationale": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}}
+    "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "capabilityInventory": {
+      "description": "Records the capability decomposition and catalog searches that informed this decision. Required (non-null) for reference, adopt, and substitute modes; a null value or absence means the decision was made without a capability inventory and is not authoritative for a governed mode.",
+      "type": ["object", "null"],
+      "properties": {
+        "directQuery": {"description": "The original product-level query or brief phrase searched against the catalog.", "type": "string", "minLength": 1},
+        "directQueryResults": {"description": "Number of catalog entries the directQuery returned. Zero against a populated capability inventory is inconclusive, not exhaustion.", "type": "integer", "minimum": 0},
+        "searchedCapabilities": {"description": "Canonical capability names decomposed from the brief and searched.", "type": "array", "items": {"type": "string", "minLength": 1}},
+        "capabilityResults": {
+          "description": "Per-capability search outcomes keyed by canonical capability name.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["terms", "count"],
+            "properties": {
+              "terms": {"description": "Search terms used for this capability.", "type": "array", "items": {"type": "string", "minLength": 1}},
+              "count": {"description": "Number of catalog entries found for this capability.", "type": "integer", "minimum": 0},
+              "matchedIds": {"description": "Catalog entry ids matched for this capability.", "type": "array", "items": {"type": "string", "minLength": 1}}
+            }
+          }
+        },
+        "zeroResultInconclusive": {
+          "description": "True when directQueryResults is 0 but at least one capabilityResults entry has count > 0; the product-level miss is not treated as catalog exhaustion.",
+          "type": "boolean"
+        }
+      },
+      "required": ["directQuery", "directQueryResults", "searchedCapabilities", "capabilityResults"]
+    }
   }
 }
