@@ -12,6 +12,7 @@
       "name": "Visual taste",
       "level": "enhancement",
       "skills": [
+        "impeccable",
         "frontend-design",
         "design-taste-frontend",
         "ui-ux-pro-max",
@@ -20,6 +21,7 @@
       ],
       "fallback": "Use the built-in visual, UX, accessibility, and motion gates manually.",
       "install": [
+        "Install Impeccable from: https://github.com/pbakaus/impeccable",
         "Install companion skills from: https://github.com/Leonxlnx/taste-skill",
         "Install UI/UX Pro Max from: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
         "Install Vercel skills from: https://github.com/vercel-labs/agent-skills"
@@ -307,6 +309,36 @@
         {"id": "iterative-critique", "skill": "frontend-design", "patterns": [{"source": "critique, build, critique again", "flags": "i"}]},
         {"id": "anti-default", "skill": "design-taste-frontend", "patterns": [{"source": "Anti-Default Discipline", "flags": "i"}]},
         {"id": "dependency-verification", "skill": "design-taste-frontend", "patterns": [{"source": "Dependency Verification", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "impeccable-design-contract",
+      "name": "Impeccable design contract and bounded polish",
+      "skill": "impeccable",
+      "level": "enhancement",
+      "source": "https://github.com/pbakaus/impeccable",
+      "sourceMeta": {
+        "id": "impeccable-skill-v4",
+        "kind": "github",
+        "url": "https://github.com/pbakaus/impeccable",
+        "reviewedRevision": "ae388ac58fb33aade50fc47e2be07c3192dcaabd",
+        "reviewedMarkers": [
+          "surface-modes",
+          "refinement-semantics",
+          "bounded-verification",
+          "command-routing",
+          "drift-boundary"
+        ],
+        "reviewedAt": "2026-08-12T00:00:00.000Z",
+        "freshnessDays": 30
+      },
+      "fallback": "Use references/impeccable-contract.md and the built-in brief, anti-slop, state, browser, and bounded verification gates.",
+      "requirements": [
+        {"id": "surface-modes", "skill": "impeccable", "match": "all", "patterns": [{"source": "Persuade"}, {"source": "Operate"}, {"source": "Read"}, {"source": "Experience"}]},
+        {"id": "refinement-semantics", "skill": "impeccable", "patterns": [{"source": "Refinement preserves; redesign replaces", "flags": "i"}]},
+        {"id": "bounded-verification", "skill": "impeccable", "patterns": [{"source": "Verify in bounded passes, not a loop", "flags": "i"}]},
+        {"id": "command-routing", "skill": "impeccable", "patterns": [{"source": "No argument:", "flags": "i"}]},
+        {"id": "drift-boundary", "skill": "impeccable", "patterns": [{"source": "Never repair drift as a side effect", "flags": "i"}]}
       ]
     },
     {

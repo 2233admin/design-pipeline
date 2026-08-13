@@ -1,0 +1,25 @@
+{
+  "schema": "design-pipeline.interface-discipline-source.v1",
+  "source": {
+    "repository": "https://github.com/jakubkrehel/skills",
+    "revision": "0c1f1e5b2481e86c168301bebb6aa3869691ac78",
+    "license": "MIT",
+    "reviewedAt": "2026-08-12",
+    "scope": ["LICENSE", "README.md", "skills/**"]
+  },
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 43,
+    "treeSha256": "ad58bc29530deb65c6a5025c604262f32e42828f8837ed86e87376ed3e4abee6"
+  },
+  "skills": [
+    "better-accessibility",
+    "better-colors",
+    "better-interface",
+    "better-layout",
+    "better-typography",
+    "better-ui",
+    "better-writing",
+    "interface-review"
+  ]
+}

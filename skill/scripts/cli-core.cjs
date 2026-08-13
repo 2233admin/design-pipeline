@@ -43,6 +43,10 @@ const {
   loadProfiles,
 } = require("./design-system-provider-core.cjs");
 const { routeComponents } = require("./component-route-core.cjs");
+const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
+const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
+const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
+const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker-core.cjs");
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
 const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
@@ -54,7 +58,7 @@ const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--evidence",
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
-  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--catalog", "--category", "--change-id", "--change-root",
+  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root",
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
   "--height", "--installed-evidence", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
@@ -178,6 +182,38 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
   if (!manifestError) {
     missing.push(...required.filter((resource) => !fs.existsSync(path.join(skillRoot, resource))));
   }
+  let mengto = null;
+  try {
+    mengto = verifyMengToSnapshot(path.join(skillRoot, "references", "mengto-skills", "manifest.json"));
+    if (mengto.status !== "ready") missing.push("references/mengto-skills/upstream/**");
+  } catch (error) {
+    mengto = { status: "blocked", issues: [error.message] };
+    missing.push("references/mengto-skills/manifest.json");
+  }
+  let shadcnio = null;
+  try {
+    shadcnio = verifyShadcnioComponentSnapshot(path.join(skillRoot, "references", "shadcnio-react-components", "manifest.json"));
+    if (shadcnio.status !== "ready") missing.push("references/shadcnio-react-components/upstream/**");
+  } catch (error) {
+    shadcnio = { status: "blocked", issues: [error.message] };
+    missing.push("references/shadcnio-react-components/manifest.json");
+  }
+  let prism = null;
+  try {
+    prism = verifyPrismSnapshot(path.join(skillRoot, "references", "prism-system", "manifest.json"));
+    if (prism.status !== "ready") missing.push("references/prism-system/upstream/**");
+  } catch (error) {
+    prism = { status: "blocked", issues: [error.message] };
+    missing.push("references/prism-system/manifest.json");
+  }
+  let holosticker = null;
+  try {
+    holosticker = verifyHolostickerSnapshot(path.join(skillRoot, "references", "holosticker", "manifest.json"));
+    if (holosticker.status !== "ready") missing.push("references/holosticker/upstream/**");
+  } catch (error) {
+    holosticker = { status: "blocked", issues: [error.message] };
+    missing.push("references/holosticker/manifest.json");
+  }
   const nodeSupported = Number.parseInt(nodeVersion.split(".")[0], 10) >= 22;
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
@@ -196,6 +232,10 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     packageRoot: skillRoot,
     missing,
     ...(manifestError ? { manifestError } : {}),
+    mengto,
+    shadcnio,
+    prism,
+    holosticker,
     registry,
   };
 }
@@ -727,6 +767,78 @@ function adapterCommand(parsed, root, action) {
   fail("cli", `unknown adapter action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+function mengToCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchMengToSkills({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 5),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyMengToSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown mengto action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function shadcnioCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchShadcnioComponents({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 10),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyShadcnioComponentSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown shadcnio action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function prismCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchPrismSkills({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 5),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "route") {
+    const result = routePrismRequest({ query: requireOption(parsed, "--query") });
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  if (action === "verify") {
+    const result = verifyPrismSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown prism action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function holostickerCommand(parsed, action) {
+  if (action === "inspect") {
+    return {
+      result: inspectHolosticker({ capability: option(parsed, "--capability") }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyHolostickerSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown holosticker action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
 function doctorCommand({ root }) {
   const result = { ...inspectDoctor(), root };
   return { result, exitCode: result.status === "ready" ? 0 : 2 };
@@ -785,6 +897,10 @@ const COMMANDS = {
   verify: { run: ({ parsed, root, action }) => verifyCommand(parsed, root, action) },
   patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
+  mengto: { run: ({ parsed, action }) => mengToCommand(parsed, action) },
+  shadcnio: { run: ({ parsed, action }) => shadcnioCommand(parsed, action) },
+  prism: { run: ({ parsed, action }) => prismCommand(parsed, action) },
+  holosticker: { run: ({ parsed, action }) => holostickerCommand(parsed, action) },
   toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
   execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },

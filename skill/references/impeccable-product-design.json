@@ -1,0 +1,64 @@
+{
+  "schema": "design-pipeline.impeccable-product-design.v1",
+  "source": {
+    "url": "https://github.com/pbakaus/impeccable",
+    "revision": "ae388ac58fb33aade50fc47e2be07c3192dcaabd",
+    "reviewedAt": "2026-08-12"
+  },
+  "visitorModes": [
+    {"id": "Persuade", "success": "The visitor decides and acts.", "primaryEvidence": ["brief.md", "directions.md", "qa.md"]},
+    {"id": "Operate", "success": "The visitor completes a task.", "primaryEvidence": ["brief.md", "tasks.md", "qa.md"]},
+    {"id": "Read", "success": "The visitor understands the material.", "primaryEvidence": ["brief.md", "design.md", "qa.md"]},
+    {"id": "Experience", "success": "The visitor explores the work itself.", "primaryEvidence": ["brief.md", "directions.md", "qa.md"]}
+  ],
+  "pipelineStages": [
+    {"id": "product-truth", "name": "Product truth", "artifacts": ["PRODUCT.md", "brief.md"]},
+    {"id": "surface-shaping", "name": "Surface and flow shaping", "artifacts": ["directions.md", "brief.md", "tasks.md"]},
+    {"id": "design-authority", "name": "Design authority and system extraction", "artifacts": ["DESIGN.md", "design.md", "design-tokens.md"]},
+    {"id": "experience-quality", "name": "Experience quality and production hardening", "artifacts": ["tasks.md", "qa.md", "component-state-matrix.json"]},
+    {"id": "implementation-evidence", "name": "Implementation and bounded evidence", "artifacts": ["MOTION.md", "motion.md", "qa.md", "handoff.md"]}
+  ],
+  "commands": [
+    {"id": "shape", "kind": "build", "stage": "product-truth", "route": "Stage 1 Brief", "outputs": ["brief.md"], "proves": ["job", "audience", "outcome", "states", "content ranges", "constraints", "non-goals"]},
+    {"id": "init", "kind": "build", "stage": "product-truth", "route": "Product foundation", "outputs": ["PRODUCT.md"], "proves": ["users", "purpose", "positioning", "capabilities", "brand commitments", "evidence", "platform"]},
+    {"id": "document", "kind": "build", "stage": "design-authority", "route": "Project design foundation", "outputs": ["DESIGN.md", ".impeccable/design.json"], "proves": ["incumbent tokens", "typography", "layout", "depth", "shapes", "component rules"]},
+    {"id": "extract", "kind": "build", "stage": "design-authority", "route": "Design-system catalog", "outputs": ["DESIGN.md", "design-tokens.md", "design-system decision receipt"], "proves": ["reusable tokens", "components", "variants", "source authority"]},
+    {"id": "critique", "kind": "evaluate", "stage": "experience-quality", "route": "UX critique and specificity review", "outputs": ["qa.md", "critique evidence"], "proves": ["specificity", "hierarchy", "cognitive load", "emotional journey", "heuristics"]},
+    {"id": "audit", "kind": "evaluate", "stage": "implementation-evidence", "route": "Technical quality audit", "outputs": ["qa.md", "detector/browser evidence"], "proves": ["accessibility", "performance", "responsive behavior", "theming", "implementation integrity"]},
+    {"id": "polish", "kind": "refine", "stage": "experience-quality", "route": "Change-scoped root-cause refinement", "outputs": ["tasks.md", "qa.md"], "proves": ["incumbent identity preserved", "defects repaired", "no hidden redesign"]},
+    {"id": "bolder", "kind": "refine", "stage": "surface-shaping", "route": "Direction intensity refinement", "outputs": ["directions.md", "design.md", "qa.md"], "proves": ["stronger product signal", "one deliberate axis changed", "same product truth"]},
+    {"id": "quieter", "kind": "refine", "stage": "surface-shaping", "route": "Noise and stimulation reduction", "outputs": ["directions.md", "design.md", "qa.md"], "proves": ["reduced ornament", "clearer hierarchy", "same product truth"]},
+    {"id": "distill", "kind": "refine", "stage": "surface-shaping", "route": "Essence and complexity reduction", "outputs": ["brief.md", "design.md", "tasks.md"], "proves": ["removed redundancy", "preserved primary job", "reduced structural complexity"]},
+    {"id": "harden", "kind": "refine", "stage": "experience-quality", "route": "Production states and edge-case closure", "outputs": ["tasks.md", "component-state-matrix.json", "qa.md"], "proves": ["loading", "empty", "error", "success", "permission", "overflow", "i18n", "recovery"]},
+    {"id": "onboard", "kind": "refine", "stage": "surface-shaping", "route": "First-run and activation flow", "outputs": ["brief.md", "tasks.md", "qa.md"], "proves": ["first-run job", "activation path", "empty states", "progressive disclosure"]},
+    {"id": "animate", "kind": "enhance", "stage": "implementation-evidence", "route": "Purposeful motion design", "outputs": ["MOTION.md", "motion.md", "motion evidence", "qa.md"], "proves": ["purpose", "trigger", "timing", "easing", "interruption", "reduced motion", "cleanup"]},
+    {"id": "colorize", "kind": "enhance", "stage": "design-authority", "route": "Palette role and semantic color refinement", "outputs": ["DESIGN.md", "design.md", "palette evidence"], "proves": ["semantic roles", "contrast", "theme coherence", "state colors"]},
+    {"id": "typeset", "kind": "enhance", "stage": "design-authority", "route": "Typography hierarchy and content rendering", "outputs": ["DESIGN.md", "design.md", "qa.md"], "proves": ["type scale", "measure", "wrapping", "font fit", "tabular numerals", "localization"]},
+    {"id": "layout", "kind": "enhance", "stage": "design-authority", "route": "Layout topology, rhythm, and hierarchy", "outputs": ["design.md", "reference evidence", "qa.md"], "proves": ["grouping", "alignment", "spacing rhythm", "responsive topology", "RTL-safe layout"]},
+    {"id": "delight", "kind": "enhance", "stage": "surface-shaping", "route": "Product-specific personality", "outputs": ["directions.md", "design.md", "motion.md", "qa.md"], "proves": ["earned personality", "memorable detail", "non-generic signature", "accessible fallback"]},
+    {"id": "overdrive", "kind": "enhance", "stage": "surface-shaping", "route": "Explicit high-ambition concept", "outputs": ["directions.md", "design.md", "scene.md or 3d.md", "qa.md"], "proves": ["explicit ambition", "runtime justification", "performance budget", "degradation", "accessibility"]},
+    {"id": "clarify", "kind": "fix", "stage": "product-truth", "route": "UX copy and semantic label repair", "outputs": ["brief.md", "design.md", "qa.md"], "proves": ["plain language", "actionable errors", "consistent terminology", "visible status"]},
+    {"id": "adapt", "kind": "fix", "stage": "implementation-evidence", "route": "Device, breakpoint, and context adaptation", "outputs": ["brief.md", "design.md", "qa.md"], "proves": ["mobile", "tablet", "desktop", "low-data", "touch", "keyboard", "native constraints"]},
+    {"id": "optimize", "kind": "fix", "stage": "implementation-evidence", "route": "UI performance diagnosis and repair", "outputs": ["qa.md", "benchmark result"], "proves": ["load cost", "runtime cost", "layout stability", "animation budget", "asset budget"]},
+    {"id": "live", "kind": "iterate", "stage": "implementation-evidence", "route": "Browser variant iteration and acceptance", "outputs": ["browser evidence", "approved variant", "qa.md"], "proves": ["actual rendered behavior", "responsive result", "accepted variant", "source cleanup"]},
+    {"id": "visualize", "kind": "build", "stage": "surface-shaping", "route": "Comp-led direction and asset production", "outputs": [".impeccable/mocks/", "surface brief", "asset inventory", "directions.md"], "proves": ["composition", "narrative", "density", "focal moment", "asset medium", "approval"]}
+  ],
+  "aliases": [
+    {"id": "craft", "mapsTo": ["shape", "new-work"], "deprecated": true},
+    {"id": "teach", "mapsTo": ["init"], "deprecated": true}
+  ],
+  "supportingCapabilities": [
+    {"id": "routing", "route": "context-aware command selection", "outputs": ["next-action recommendation"]},
+    {"id": "hooks", "route": "post-edit detector and narrow ignores", "outputs": [".impeccable/config.json", "hook findings"]},
+    {"id": "doctor", "route": "artifact and schema drift maintenance", "outputs": ["drift report"]},
+    {"id": "pin", "route": "standalone command shortcuts", "outputs": ["$<command> shortcut"]},
+    {"id": "native-platform", "route": "iOS, Android, and adaptive guidance", "outputs": ["platform-specific design constraints"]}
+  ],
+  "coverage": {
+    "upstreamCoreCommandCount": 23,
+    "mappedCoreCommandCount": 23,
+    "mappedSupportingCapabilityCount": 5,
+    "productDesignOnly": true,
+    "skinThemeImported": false
+  }
+}

@@ -1,6 +1,11 @@
 # design-pipeline Specification
 
-## ADDED Requirements
+## Purpose
+
+Define the durable, design-first contracts used to plan, implement, validate, package, and improve
+the design pipeline without making optional tools or hosted integrations part of the core runtime.
+
+## Requirements
 
 ### Requirement: Design-first scope
 
@@ -411,6 +416,50 @@ The pipeline SHALL route authorized live-page clone, rebuild, reproduction, and 
 - **WHEN** the user asks for a high-fidelity implementation of a live page
 - **THEN** the pipeline SHALL initialize an isolated, resumable target and SHALL preserve the target project's established framework and conventions.
 
+### Requirement: Site-wide cloning separates templates from data
+
+The pipeline SHALL ship a pinned, MIT-attributed `hi5jeff/deepclonewebsite` feature-slice snapshot
+as passive reference material and SHALL adapt its site-wide mechanics through the existing
+Browser/Builder/Evidence ports without adding the Open Lovable runtime.
+
+#### Scenario: An authenticated surface is in scope
+
+- **WHEN** authorized capture requires login
+- **THEN** BrowserPort SHALL use a user-visible browser for the user-controlled login step
+- **AND** credentials, profiles, and storage state SHALL remain ignored runtime material rather than
+  design, package, or repository artifacts.
+
+#### Scenario: The user needs site structure rather than repeated data
+
+- **WHEN** capture mode is `structure`
+- **THEN** discovery SHALL stay within explicitly allowed hosts and finite limits
+- **AND** SHALL group normalized URLs using rendered template evidence such as URL patterns and DOM
+  fingerprints before selecting representative pages
+- **AND** an LLM MAY label or merge deterministic groups but SHALL NOT invent captured pages,
+  assets, states, or measurements.
+
+#### Scenario: Every authorized page is required
+
+- **WHEN** capture mode is `full`
+- **THEN** the user SHALL have explicitly requested whole-site coverage
+- **AND** allowed hosts, exclusions, page/depth/asset limits, and stop conditions SHALL be recorded
+  before navigation.
+
+#### Scenario: Product or backend documentation is inferred
+
+- **WHEN** visible UI evidence is used to produce product structure, data model, backend API, or
+  design-system documents
+- **THEN** every output SHALL cite observed evidence, label inference and confidence, and list
+  unknowns
+- **AND** it SHALL NOT be presented as recovered backend truth.
+
+#### Scenario: The bundled feature slice drifts
+
+- **WHEN** a reviewed source file is missing, added, or normalized-content altered
+- **THEN** deterministic verification SHALL block on file count, normalized byte count, or canonical
+  tree hash
+- **AND** a valid update SHALL change revision, Git tree, scope, attribution, and hash together.
+
 ### Requirement: Website-cloning uses three internal ports
 
 The URL-first interface SHALL hide Browser, Builder, and Evidence ports with machine-readable capability contracts.
@@ -503,15 +552,33 @@ Pipeline maintainers SHALL use the pipeline's own artifact, feedback, review, QA
 The recorder SHALL validate existing observation and index state before writing an update and SHALL
 NOT overwrite corrupt evidence.
 
+#### Scenario: Existing feedback JSON is corrupt
+
+- **WHEN** a matching observation or the feedback index cannot be parsed or validated
+- **THEN** recording SHALL fail with a contextual error and SHALL NOT overwrite or increment the
+  existing observation.
+
 ### Requirement: Specific paths are redacted first
 
 The recorder SHALL redact longer path scopes before their parent scopes so nested feedback roots
 retain the correct privacy placeholder.
 
+#### Scenario: Feedback root is nested under the project root
+
+- **WHEN** evidence contains the exact nested feedback root
+- **THEN** it SHALL be represented as `<FEEDBACK_ROOT>` rather than a partial
+  `<PROJECT_ROOT>` path.
+
 ### Requirement: Capability registry patterns are validated before evaluation
 
 Self-check SHALL reject invalid profile, requirement, or regular-expression structures before
 producing compatibility results.
+
+#### Scenario: A registry pattern is invalid
+
+- **WHEN** a capability requirement contains an invalid regular expression
+- **THEN** self-check SHALL fail with the profile and requirement identity instead of reporting a
+  false compatibility result.
 
 ### Requirement: Missing product design routes through requirements-driven synthesis
 
@@ -782,6 +849,39 @@ content hashes when upstream provides them.
   value, prototype-pollution key, or tampered entry hash
 - **THEN** normalization SHALL fail closed before writing output
 - **AND** no network, install, import, or project mutation SHALL occur.
+
+### Requirement: Component sources route by capability and platform
+
+The pipeline SHALL expose a deterministic component route over attributed source metadata. A route
+SHALL match the requested capability to a compatible platform, report the integration mode and
+provenance, and preserve a project-owned fallback when a source is unavailable, unverified, or
+license-gated.
+
+#### Scenario: A project needs a component from a referenced source
+
+- **WHEN** `design-system route` receives a product brief and target platform
+- **THEN** it SHALL return the recognized capabilities, one best compatible route per capability,
+  alternatives, source URL, license, and fallback information
+- **AND** it SHALL be deterministic without executing or importing remote source code.
+
+#### Scenario: A route is commercial, user-supplied, or unverified
+
+- **WHEN** the selected source requires a license or its source evidence is not verified
+- **THEN** the route SHALL report `review`
+- **AND** it SHALL NOT claim that the source is installable or copy its implementation.
+
+#### Scenario: No compatible route exists
+
+- **WHEN** no catalog entry advertises a requested capability on the target platform
+- **THEN** the route SHALL report the unavailable capability and use `blocked` only when no
+  recognized capability has a selected route.
+
+#### Scenario: A local component snapshot provides concrete implementation candidates
+
+- **WHEN** a web brief matches a catalog source with a local component inventory, such as SmoothUI
+- **THEN** the route SHALL expose the inventory count, recommended component names, documentation
+  URLs, and the source's registry installation template
+- **AND** the route SHALL remain deterministic without fetching a live API or vendoring source.
 
 ### Requirement: Astryx knowledge is bundled but runtime adoption is optional
 

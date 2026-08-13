@@ -213,6 +213,28 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.equal(decision.output.decision.projectAuthority.id, "project-design");
 });
 
+test("component route selects platform-specific sources without copying remote code", () => {
+  const web = run(["design-system", "route", "--root", repoRoot, "--query", "depth carousel", "--platform", "web"]);
+  assert.equal(web.status, 0, web.stderr || web.stdout);
+  assert.equal(web.output.status, "review");
+  assert.equal(web.output.routes.find(({ capability }) => capability === "depth-carousel").selected.source, "React Bits");
+
+  const expo = run(["design-system", "route", "--root", repoRoot, "--query", "animated numeric stat", "--platform", "expo"]);
+  assert.equal(expo.status, 0, expo.stderr || expo.stdout);
+  assert.equal(expo.output.status, "ready");
+  assert.equal(expo.output.routes.find(({ capability }) => capability === "numeric-text").selected.package, "expo-content-transition");
+});
+
+test("component route exposes SmoothUI component recommendations from the local snapshot", () => {
+  const result = run(["design-system", "route", "--root", repoRoot, "--query", "SmoothUI animated tabs", "--platform", "web"]);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const tabs = result.output.routes.find(({ capability }) => capability === "tabs");
+  assert.equal(tabs.selected.source, "SmoothUI");
+  assert.equal(tabs.selected.componentCount, 130);
+  assert.ok(tabs.selected.recommendedComponents.includes("animated-tabs"));
+  assert.match(tabs.selected.recommendedComponentDetails[0].docUrl, /smoothui\.dev\/docs\/components\/animated-tabs/);
+});
+
 test("benchmark v2 exposes a developer brief without private expectations", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-brief-cli-"));
   const dimensions = ["responsive", "accessibility", "palette", "motion", "scene", "component-state", "evidence"];

@@ -36,7 +36,7 @@
 3. 支持网站克隆、设计系统合成、动效设计，每一步都有证据。
 4. 通过门禁系统确保设计质量，不达标就拦住。
 
-当前 `0.9.0-beta.2` 测试版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
+当前 `0.9.0-beta.3` 测试版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
 可安装、可验证的前端工具架：
 
 - 需求、`DESIGN.md`、`MOTION.md` 与 OpenSpec 变更生命周期；
@@ -141,9 +141,38 @@ node skill/scripts/check-design-foundation.cjs --project-root . --json
 node skill/scripts/check-motion-foundation.cjs --project-root . --json
 ```
 
+### 组件能力路由
+
+组件库不直接变成项目依赖。流水线先把需求拆成能力，再按平台、来源证据、接入方式和许可证选路；没有授权的远程库只会得到 `review`，不会被静默复制。
+
+```bash
+# Web 应用 UI：优先返回 React Bits Pro，保留许可证审查
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "SaaS dashboard app UI" --platform web --json
+
+# Expo 数字动效：路由到 expo-content-transition
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "animated numeric stat" --platform expo --json
+
+# 深度轮播：返回参考源、接入命令和无授权时的 CSS 降级路径
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "depth carousel" --platform web --json
+
+# SmoothUI：从本地 130 项快照中推荐具体组件
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "SmoothUI animated tabs" --platform web --json
+```
+
+当前内置的是这些来源元数据：Beautiful UI、`expo-content-transition`、React Bits 免费 Dither、React Bits Pro app UI、React Bits depth carousel、SmoothUI 130 项组件快照，以及 Web DOM 数字过渡回退。SmoothUI 快照会返回组件名、文档 URL、registry 安装命令、依赖和 reduced-motion 信息；组件源码不在本仓库内，其他来源仍按路由结果做许可审查。
+
 ### 网站克隆
 
 捕获参考证据，从完整组件合同构建，独立比较结果后才声称保真度。
+
+整站或登录后页面另有内置的 `deepclonewebsite` 功能切片参考：支持可见浏览器登录门、
+同域页面归型、`structure`/显式 `full` 捕获、离线多页链接，以及基于可见证据的产品结构、
+数据模型、后端需求和设计系统假设。它是固定版本、哈希校验的被动源码参考，不会安装或
+执行 Open Lovable，也不会把推断文档冒充真实后端。
 
 ```bash
 node skill/scripts/init-website-clone.cjs \

@@ -17,6 +17,11 @@
 
 Use this module to reconstruct authorized live web surfaces from measured evidence. The simple interface is one or more URLs; the deep implementation coordinates capture, specification, building, and independent comparison.
 
+For authenticated or site-wide work, also read `references/deepclonewebsite.md`. Its pinned source
+slice contributes visible-browser login, same-domain template discovery, structure/full capture,
+offline multipage topology, and optional evidence-labeled analysis. The snapshot is passive
+reference material; the Browser/Builder/Evidence contracts in this document remain authoritative.
+
 Initialize from the target project root:
 
 ```bash
@@ -300,12 +305,16 @@ Keep primary and reference evidence isolated. Store copied assets in the target 
 ### Stage A: authorization and baseline
 
 - Confirm ownership, permission, applicable terms, and in-scope pages.
+- Choose direct, structure, or explicit full capture; record allowed hosts, login needs, page/depth
+  limits, exclusions, outputs, and stop conditions.
 - Record exact versus adaptive fidelity and primary/reference roles.
 - Verify the target project can run before edits.
 - Negotiate Browser, Builder, and Evidence ports.
 
 ### Stage B: deterministic reconnaissance
 
+- For structure/full capture, write a same-domain site map before selecting representative page
+  types; preserve normalized and final URLs, DOM fingerprints, samples, failures, and provenance.
 - Capture full-page reference screenshots at every viewport.
 - Wait for fonts and the declared page-ready condition.
 - Record rendering environment and dynamic regions.

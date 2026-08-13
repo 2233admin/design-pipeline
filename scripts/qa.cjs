@@ -117,6 +117,9 @@ try {
     ["adapter", "audit", "--root", repoRoot, "--json"],
     ["design-system", "profiles", "--root", repoRoot, "--json"],
     ["design-system", "search", "--root", repoRoot, "--query", "AlertDialog", "--kind", "component", "--limit", "1", "--json"],
+    ["shadcnio", "verify", "--root", repoRoot, "--json"],
+    ["prism", "verify", "--root", repoRoot, "--json"],
+    ["holosticker", "verify", "--root", repoRoot, "--json"],
     ["style-signals", "check", "--root", repoRoot, "--json"],
   ]) {
     const child = run(process.execPath, [cli, ...args], { echo: false, env: hermeticEnv });
@@ -159,6 +162,22 @@ try {
   report(run(process.execPath, installArgs, { echo: false, env: hermeticEnv }).status !== 0, "install replacement requires --replace");
   report(run(process.execPath, [...installArgs, "--replace"], { echo: false, env: hermeticEnv }).status === 0, "explicit contained install replacement");
   report(run(process.execPath, [path.join(installed, "scripts/check-deps.cjs"), "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed dependency self-check");
+  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed MengTo snapshot verification");
+  const installedMengToSearch = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "search", "--root", repoRoot, "--query", "scroll-controlled Three.js world", "--limit", "1", "--json"], { echo: false, env: hermeticEnv });
+  let installedMengToResult = null; try { installedMengToResult = JSON.parse(installedMengToSearch.stdout); } catch {}
+  report(installedMengToSearch.status === 0 && installedMengToResult?.results?.[0]?.id === "web-design/build-threejs-scroll-worlds", "installed MengTo catalog search");
+  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "shadcnio", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed shadcnio snapshot verification");
+  const installedShadcnioSearch = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "shadcnio", "search", "--root", repoRoot, "--query", "AI prompt input", "--category", "ai", "--limit", "1", "--json"], { echo: false, env: hermeticEnv });
+  let installedShadcnioResult = null; try { installedShadcnioResult = JSON.parse(installedShadcnioSearch.stdout); } catch {}
+  report(installedShadcnioSearch.status === 0 && installedShadcnioResult?.results?.[0]?.id === "ai/prompt-input", "installed shadcnio catalog search");
+  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "prism", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed Prism snapshot verification");
+  const installedPrismRoute = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "prism", "route", "--root", repoRoot, "--query", "review this frame for accessibility", "--json"], { echo: false, env: hermeticEnv });
+  let installedPrismResult = null; try { installedPrismResult = JSON.parse(installedPrismRoute.stdout); } catch {}
+  report(installedPrismRoute.status === 0 && installedPrismResult?.route === "ui-craft", "installed Prism design route");
+  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "holosticker", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed Holosticker snapshot verification");
+  const installedHolostickerInspect = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "holosticker", "inspect", "--root", repoRoot, "--capability", "holo-material", "--json"], { echo: false, env: hermeticEnv });
+  let installedHolostickerResult = null; try { installedHolostickerResult = JSON.parse(installedHolostickerInspect.stdout); } catch {}
+  report(installedHolostickerInspect.status === 0 && installedHolostickerResult?.capabilities?.[0]?.id === "holo-material", "installed Holosticker capability inspection");
 
   const installedCliTests = run(process.execPath, ["--test", path.join(repoRoot, "tests/designer-pipeline-cli.test.cjs")], { env: { ...hermeticEnv, DESIGN_PIPELINE_CLI_PATH: path.join(installed, "scripts/designer-pipeline.cjs") } });
   report(installedCliTests.status === 0, "installed-package public CLI smoke");

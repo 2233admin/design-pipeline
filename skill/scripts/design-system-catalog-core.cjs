@@ -218,7 +218,8 @@ const CAPABILITY_TERMS = Object.freeze({
   tooltip: ["tooltip", "popover", "hint", "help"], divider: ["divider", "separator", "rule"],
   "list-group": ["list", "list group", "item", "item list"], typography: ["text", "heading", "paragraph", "typography", "font"],
   "app-ui": ["app ui", "application ui", "dashboard", "settings", "profile", "auth", "workspace"],
-  "animated-ui": ["animated ui", "motion ui", "animated interface", "micro interaction"],
+  "animated-ui": ["animated ui", "motion ui", "animated interface", "animated react components", "micro interaction"],
+  "animated-react-components": ["animated react components"],
   "page-block": ["page block", "landing page", "page section", "section"], hero: ["hero", "hero section"],
   features: ["feature", "features", "feature section"], pricing: ["pricing", "pricing table", "plan"],
   faq: ["faq", "frequently asked questions"], cta: ["cta", "call to action"], stats: ["stats", "statistics", "metrics", "metric"],
@@ -235,6 +236,14 @@ const CAPABILITY_TERMS = Object.freeze({
   "numeric-text": ["numeric text", "number text", "rolling digits", "numeric"], "animated-stat": ["animated stat", "animated metric", "live counter", "stat"]
 });
 
+const TERM_TO_CAPABILITY = new Map();
+for (const [capability, terms] of Object.entries(CAPABILITY_TERMS)) {
+  for (const term of terms) {
+    if (!TERM_TO_CAPABILITY.has(term)) TERM_TO_CAPABILITY.set(term, []);
+    TERM_TO_CAPABILITY.get(term).push(capability);
+  }
+}
+
 function decomposeCapabilities(brief, options = {}) {
   if (typeof brief !== "string" || !brief.trim()) return [];
   ownObject(options, "decompose options");
@@ -249,7 +258,7 @@ function decomposeCapabilities(brief, options = {}) {
     for (const term of terms) {
       const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       if (new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i").test(lower)) score += 1;
-      if (allowPartialWords) for (const word of words) if (word.length >= 3 && term.includes(word)) score += 0.5;
+      if (allowPartialWords) for (const word of words) if (word.length >= 3 && (term.includes(word) || word.includes(term))) score += 0.5;
     }
     score = Math.round(score);
     if (score >= minScore) scores.push([capability, score]);
@@ -289,6 +298,7 @@ module.exports = {
   COLLECTIONS,
   KINDS,
   SNAPSHOT_SCHEMA,
+  TERM_TO_CAPABILITY,
   VERSION,
   canonicalCatalogJson: serializeCatalog,
   decomposeCapabilities,

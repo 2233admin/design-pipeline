@@ -4,6 +4,25 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+## [0.9.0-beta.3] - 2026-08-14
+
+### Added
+
+- Aggregated the retrievable archived and unarchived `design-pipeline` Session changes into one
+  tested release line, including DeepCloneWebsite, HoloSticker, Interface Discipline, MengTo,
+  Prism, shadcnio, Impeccable, Kage, and governed component-source routing.
+- Added pinned, byte-verified source snapshots, catalogs, CLI commands, package-resource entries,
+  and regression coverage for the newly internalized surfaces.
+- Added platform-aware component routing for Expo numeric transitions, React Bits, React Bits Pro,
+  SmoothUI, and project-owned fallbacks with explicit license and review states.
+
+### Fixed
+
+- Made upstream snapshot verification host-independent by preserving exact LF bytes and aligning
+  manifests with the checked-in snapshots.
+- Restored complete CLI registration, resource packaging, and capability decomposition for all
+  newly aggregated Session changes.
+
 ## [0.9.0-beta.2] - 2026-08-14
 
 ### Added
@@ -445,3 +464,4 @@ All notable changes to Design Pipeline are documented here.
 [0.8.0]: https://github.com/2233admin/design-pipeline/compare/v0.7.3...v0.8.0
 [0.9.0-beta.1]: https://github.com/2233admin/design-pipeline/compare/v0.8.0...v0.9.0-beta.1
 [0.9.0-beta.2]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.1...v0.9.0-beta.2
+[0.9.0-beta.3]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.2...v0.9.0-beta.3
