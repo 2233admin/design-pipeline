@@ -14,6 +14,10 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   not upstream `SKILL.md` bodies.
 - `shadcn-ui/ui`, reviewed commit `a85299a9edd2a961e32f01ced86963a852652bd2`, MIT,
   Copyright (c) 2023 shadcn. Preset option values and defaults are declarative compatibility data.
+- `Koboyo Icons`, reviewed 2026-08-13 from https://koboyo.com/icons and
+  https://koboyo.com/icons/license. The registry stores discovery, license, and access-boundary
+  metadata only; no icon corpus, API key, or MCP runtime is bundled. Use remains subject to the
+  current Koboyo Icons License, including its redistribution and competing-product restrictions.
 
 The MIT-licensed sources retain their upstream copyright and permission notices. Their repositories
 remain the authority for full license text and runtime installation instructions.

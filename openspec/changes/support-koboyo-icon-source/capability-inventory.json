@@ -1,0 +1,64 @@
+{
+  "capabilityResults": {
+    "app-ui": {
+      "count": 40,
+      "matchedIds": [
+        "astryx:component:AppShell",
+        "astryx:template:EmptyStateContainer",
+        "astryx:template:GridDashboardLayout",
+        "astryx:template:TopNavEnterpriseDashboard",
+        "astryx:template:dashboard",
+        "astryx:template:dashboard-portfolio",
+        "astryx:component:LayoutPanel",
+        "astryx:template:CardWithInnerLayout",
+        "astryx:template:ChatComposerFooterActions",
+        "astryx:template:CollapsibleDividedAccordion",
+        "astryx:template:CollapsibleSingleAccordion",
+        "astryx:template:DialogFormDialog",
+        "astryx:template:FormLayoutHorizontalLabels",
+        "astryx:template:LayoutSidebarLayout",
+        "astryx:template:ListBasicList",
+        "astryx:template:ListItemBasicItem",
+        "astryx:template:PopoverSettingsPanel",
+        "astryx:template:SectionWithDividers",
+        "astryx:template:SideNavNestedItems",
+        "astryx:template:SwitchSettingsPanel",
+        "astryx:template:TableColumnSettingsTable",
+        "astryx:template:TreeListInteractiveSettings",
+        "astryx:template:settings",
+        "astryx:template:settings-dialog",
+        "astryx:template:settings-sidebar",
+        "astryx:component:Avatar",
+        "astryx:template:AspectRatioCircleImage",
+        "astryx:template:AvatarInteractive",
+        "astryx:template:AvatarUserCard",
+        "astryx:template:AvatarWithImage",
+        "astryx:template:HoverCardHookUsage",
+        "astryx:template:HoverCardProfileHoverCard",
+        "astryx:template:HoverCardShowcase",
+        "astryx:template:TopNavWithLogo",
+        "astryx:template:AppShellContentOnly",
+        "astryx:template:login",
+        "astryx:template:SideNavHeadingBasic",
+        "astryx:template:ide",
+        "astryx:template:messaging-shell",
+        "astryx:template:shell-side-nav"
+      ],
+      "terms": [
+        "app ui",
+        "application ui",
+        "dashboard",
+        "settings",
+        "profile",
+        "auth",
+        "workspace"
+      ]
+    }
+  },
+  "directQuery": "Application UI using explicit Koboyo hand-drawn icons",
+  "directQueryResults": 0,
+  "searchedCapabilities": [
+    "app-ui"
+  ],
+  "zeroResultInconclusive": true
+}

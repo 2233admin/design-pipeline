@@ -8,7 +8,8 @@ const DECISION_SCHEMA = "design-pipeline.frontend-stack-decision.v1";
 const FRAMEWORKS = new Set(["react", "svelte", "vue", "solid", "agnostic"]);
 const REQUIRED_STYLING = ["less", "none", "postcss-only", "scss", "tailwindcss"];
 const REQUIRED_UI = ["ant-design", "ark-ui", "base-ui", "chakra-ui", "daisyui", "headless-ui", "heroui", "mantine", "mui", "none", "park-ui", "radix-ui", "react-aria", "shadcn-svelte", "shadcn-ui"];
-const REQUIRED_TOOLS = ["MengTo/skills", "hi5jeff/deepclonewebsite", "wevm/frog"];
+const REQUIRED_TOOLS = ["MengTo/skills", "hi5jeff/deepclonewebsite", "koboyo/icons", "wevm/frog"];
+const HAND_DRAWN_ICON_TERMS = ["koboyo", "hand-drawn icon", "hand drawn icon", "sketch icon", "sketched icon", "手绘图标", "手绘 icon", "涂鸦图标"];
 
 function invalid(message) { fail("frontend stack", message); }
 function strings(value, label, allowEmpty = true) {
@@ -26,6 +27,12 @@ function validateRegistry(registry) {
       if (ids.has(entry.id)) invalid(`${key} contains duplicate ${entry.id}`);
       ids.add(entry.id);
     }
+  }
+  for (const tool of registry.tools) {
+    strings(tool.capabilities, `tools.${tool.id}.capabilities`, false);
+    if (!["always", "capability", "keyword"].includes(tool.activation)) invalid(`tool ${tool.id} has an invalid activation`);
+    if (tool.activation === "keyword") strings(tool.keywords, `tools.${tool.id}.keywords`, false);
+    for (const key of ["mode", "status", "source"]) if (typeof tool[key] !== "string" || !tool[key].trim()) invalid(`tool ${tool.id} has an invalid ${key}`);
   }
   if (registry.styling.map(({ id }) => id).sort().join("|") !== REQUIRED_STYLING.join("|")) invalid("styling options do not match the governed set");
   if (registry.uiLibraries.map(({ id }) => id).sort().join("|") !== REQUIRED_UI.join("|")) invalid("UI libraries do not match the governed set");
@@ -75,6 +82,10 @@ function requestedCapabilities(request, styling) {
   if (styling.id === "tailwindcss") capabilities.add("tailwindcss");
   const brief = String(request.brief || "").toLowerCase();
   if (["clone", "cloning", "rebuild", "replicate", "reverse engineer", "复刻", "克隆", "仿站", "逆向", "1:1"].some((term) => brief.includes(term))) capabilities.add("website-cloning");
+  if (HAND_DRAWN_ICON_TERMS.some((term) => brief.includes(term))) {
+    capabilities.add("hand-drawn-icons");
+    capabilities.add("icon-search");
+  }
   return [...capabilities].sort();
 }
 
@@ -83,7 +94,11 @@ function routeTools(request, registry, capabilities, skillCatalog) {
   const tools = registry.tools.filter((tool) => tool.activation === "always" || tool.capabilities.some((capability) => capabilities.includes(capability)) || (tool.keywords || []).some((term) => brief.includes(term)));
   const routes = tools.map((tool) => ({
     id: tool.id, mode: tool.mode, status: tool.status, capabilities: tool.capabilities.filter((item) => capabilities.includes(item)), source: tool.source,
-    ...(tool.revision ? { revision: tool.revision } : {}), ...(tool.requirements ? { requirements: tool.requirements } : {}), ...(tool.fallback ? { fallback: tool.fallback } : {}),
+    ...(tool.revision ? { revision: tool.revision } : {}), ...(tool.reviewedAt ? { reviewedAt: tool.reviewedAt } : {}),
+    ...(tool.license ? { license: tool.license } : {}), ...(tool.licenseUrl ? { licenseUrl: tool.licenseUrl } : {}),
+    ...(tool.endpoint ? { endpoint: tool.endpoint } : {}), ...(tool.interfaces ? { interfaces: tool.interfaces } : {}),
+    ...(tool.readOnlyTools ? { readOnlyTools: tool.readOnlyTools } : {}), ...(tool.requirements ? { requirements: tool.requirements } : {}),
+    ...(tool.constraints ? { constraints: tool.constraints } : {}), ...(tool.fallback ? { fallback: tool.fallback } : {}),
   }));
   const recommendedSkills = [...new Set(capabilities.flatMap((capability) => skillCatalog.routes[capability] || []))].sort();
   return { routes: sortValue(routes), recommendedSkills };

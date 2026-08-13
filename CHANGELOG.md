@@ -6,6 +6,8 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Added an explicit, low-frequency Koboyo hand-drawn icon route with read-only MCP discovery,
+  license constraints, credential handling, and non-default routing tests.
 - Added a mandatory frontend-stack and tool-routing gate with all supported styling choices, 15 UI
   libraries, the complete current shadcn preset dimensions, and pinned governed routes for
   `deepclonewebsite`, Frog, and the 127-entry MengTo skill catalog.

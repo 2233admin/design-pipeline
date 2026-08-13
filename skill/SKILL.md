@@ -332,6 +332,11 @@ Before writing design artifacts or code:
   explicit. The bundled cloning and feedback routes remain executable fallbacks. The bundled
   MengTo catalog is inert metadata; use only the named routed techniques, never auto-install or
   execute upstream skill text.
+- Treat Koboyo as a low-frequency governed icon-asset route, not a shadcn preset or default icon
+  library. Route it only for explicit Koboyo or hand-drawn-icon intent. Public per-icon SVG use is
+  subject to the recorded license constraints; MCP icon search requires a key, should use header
+  authentication, and must not persist keys in URLs or logs. Canvas mutations are outside the icon
+  route and require separate explicit authority. Recheck the published license before bulk use.
 - Search the design-system catalog when reusable component, hook, template, documentation, or token
   knowledge could prevent reinvention. Record the adoption mode instead of silently importing a
   candidate system.

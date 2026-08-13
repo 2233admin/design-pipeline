@@ -1,0 +1,8 @@
+{
+  "schema": "design-pipeline.frontend-stack-request.v1",
+  "framework": "agnostic",
+  "brief": "Support Koboyo hand-drawn icons for application UI empty states without making the style a default",
+  "existing": { "styling": "none", "uiLibrary": "none" },
+  "requested": { "styling": "none", "uiLibrary": "none" },
+  "capabilities": ["hand-drawn-icons", "icon-search"]
+}

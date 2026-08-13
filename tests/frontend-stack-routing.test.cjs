@@ -17,7 +17,30 @@ test("registry internalizes every requested styling, UI, preset, and skill sourc
   assert.deepEqual(Object.keys(registry.shadcn.defaults), registry.shadcn.styles);
   assert.equal(skills.count, 127);
   assert.equal(Object.values(skills.categories).flat().length, 127);
-  for (const id of ["hi5jeff/deepclonewebsite", "wevm/frog", "MengTo/skills"]) assert.ok(registry.tools.some((tool) => tool.id === id));
+  for (const id of ["hi5jeff/deepclonewebsite", "wevm/frog", "MengTo/skills", "koboyo/icons"]) assert.ok(registry.tools.some((tool) => tool.id === id));
+});
+
+test("Koboyo is an explicit reviewed icon route, not a shadcn preset or default tool", () => {
+  const result = resolveFrontendStack({
+    schema: "design-pipeline.frontend-stack-request.v1",
+    framework: "react",
+    brief: "Use Koboyo hand-drawn icons for a playful empty state",
+    requested: { styling: "tailwindcss", uiLibrary: "shadcn-ui", shadcnPreset: "nova" },
+  }, registry, skills);
+  const route = result.toolRoutes.find(({ id }) => id === "koboyo/icons");
+  assert.equal(result.status, "ready");
+  assert.ok(route);
+  assert.equal(route.status, "review");
+  assert.equal(route.endpoint, "https://api.koboyo.com/v1-mcp");
+  assert.equal(route.licenseUrl, "https://koboyo.com/icons/license");
+  assert.ok(route.readOnlyTools.includes("search_icons"));
+  assert.ok(route.readOnlyTools.includes("get_icon_svg"));
+  assert.ok(route.requirements.some((item) => item.includes("never persist an API key")));
+  assert.ok(route.constraints.some((item) => item.includes("Do not redistribute")));
+  assert.equal(registry.shadcn.iconLibraries.includes("koboyo"), false);
+
+  const ordinary = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "react", brief: "Build a dashboard", requested: {} }, registry, skills);
+  assert.equal(ordinary.toolRoutes.some(({ id }) => id === "koboyo/icons"), false);
 });
 
 test("a clone brief routes built-ins, all three upstreams, and complete shadcn preset", () => {

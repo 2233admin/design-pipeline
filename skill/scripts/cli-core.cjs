@@ -557,7 +557,7 @@ function designSystemCommand(parsed, root, action) {
   if (action === "options") {
     const registry = bundledFrontendStackRegistry();
     const skillCatalog = readJson(builtIn("mengto-skills-catalog.json"), "MengTo skill catalog");
-    return { result: { status: "valid", registry, counts: { styling: registry.styling.length, uiLibraries: registry.uiLibraries.length, shadcnPresets: Object.keys(registry.shadcn.defaults).length, indexedSkills: skillCatalog.count } }, exitCode: 0 };
+    return { result: { status: "valid", registry, counts: { styling: registry.styling.length, uiLibraries: registry.uiLibraries.length, shadcnPresets: Object.keys(registry.shadcn.defaults).length, iconSources: registry.tools.filter((tool) => tool.capabilities.includes("hand-drawn-icons")).length, indexedSkills: skillCatalog.count } }, exitCode: 0 };
   }
   if (action === "resolve-stack") {
     const request = readJson(artifact(parsed, root, "--artifact"), "frontend stack request");

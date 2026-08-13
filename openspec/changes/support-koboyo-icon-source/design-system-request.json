@@ -1,0 +1,9 @@
+{
+  "schema": "design-pipeline.design-system-decision-request.v1",
+  "version": "1",
+  "mode": "custom",
+  "customId": "design-pipeline-project-owned",
+  "project": { "designMd": true, "runtime": {} },
+  "frontendStackDecisionPath": "openspec/changes/support-koboyo-icon-source/frontend-stack-decision.json",
+  "capabilityInventoryPath": "openspec/changes/support-koboyo-icon-source/capability-inventory.json"
+}

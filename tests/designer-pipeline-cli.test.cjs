@@ -155,7 +155,7 @@ test("help, doctor, foundation, and stable JSON error envelopes work", () => {
 test("bundled design-system knowledge is agent-discoverable without installing Astryx", () => {
   const options = run(["design-system", "options", "--root", repoRoot]);
   assert.equal(options.status, 0, options.stderr || options.stdout);
-  assert.deepEqual(options.output.counts, { styling: 5, uiLibraries: 15, shadcnPresets: 8, indexedSkills: 127 });
+  assert.deepEqual(options.output.counts, { styling: 5, uiLibraries: 15, shadcnPresets: 8, iconSources: 1, indexedSkills: 127 });
 
   const profiles = run(["design-system", "profiles", "--root", repoRoot]);
   assert.equal(profiles.status, 0, profiles.stderr || profiles.stdout);
