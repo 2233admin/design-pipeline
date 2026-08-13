@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "clone-stencil-prewalk-pipeline",
+  "applicability": {
+    "status": "waived",
+    "reason": "exact-primary-target"
+  },
+  "comparison": null,
+  "directions": [],
+  "decision": {
+    "status": "waived",
+    "selectedDirectionId": null,
+    "rationale": "The user selected the live Prewalk page as the exact primary target, so alternate visual directions would violate implementation authority."
+  }
+}

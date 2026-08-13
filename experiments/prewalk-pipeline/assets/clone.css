@@ -1,0 +1,10 @@
+
+:root { color-scheme: dark; }
+.pipeline-canvas { display: contents; }
+.pipeline-canvas img { max-width: 100%; object-fit: fill; }
+html[data-graybox] * { color: #909096 !important; border-color: #56565e !important; background-image: none !important; box-shadow: none !important; text-shadow: none !important; filter: none !important; }
+html[data-graybox] body { background: #111114 !important; }
+html[data-graybox] figure, html[data-graybox] table, html[data-graybox] pre { background: #202026 !important; outline: 1px solid #56565e !important; }
+html[data-graybox] figure *, html[data-graybox] table * { color: #77777e !important; fill: #77777e !important; stroke: #56565e !important; background-color: transparent !important; }
+html[data-graybox] img { opacity: 0 !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

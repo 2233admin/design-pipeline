@@ -1,0 +1,15 @@
+{
+  "schema": "prewalk.raster-palette.v1",
+  "capturedAt": "2026-08-12T18:47:38.048Z",
+  "source": "../evidence/reference/full-1440x900.png",
+  "method": "160px-wide nearest 16-value RGB buckets, alpha removed",
+  "regions": ["full-page", "cost-pass-rate-canvas", "token-donut-canvas", "swap-strategy-canvas"],
+  "colors": [
+    { "hex": "#000000", "role": "dominant canvas", "region": "full-page", "coverage": 0.8258 },
+    { "hex": "#101010", "role": "near-black media field", "region": "full-page and canvases", "coverage": 0.0395 },
+    { "hex": "#202020", "role": "media grid and edges", "region": "charts", "coverage": 0.0227 },
+    { "hex": "#303030", "role": "media support", "region": "charts and diagrams", "coverage": 0.0174 },
+    { "hex": "#44cfff", "role": "cool signal", "region": "chart marks and links", "coverage": 0.001 },
+    { "hex": "#f5b04a", "role": "warm signal", "region": "chart marks and plan diagram", "coverage": 0.001 }
+  ]
+}

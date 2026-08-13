@@ -1,0 +1,70 @@
+{
+  "schema": "design-pipeline.reference-evidence.v2",
+  "id": "stencil-so-blog-prewalk",
+  "source": {
+    "availability": "resolved",
+    "path": "reference.png",
+    "kind": "image",
+    "width": 1425,
+    "height": 9361,
+    "sha256": "0a1f4f1532ac39c12bfcbe2a1e00926b1bc1ebb569d4d973ca3ce4506ee9042c",
+    "resolvedAt": "2026-08-12T19:13:58.460Z"
+  },
+  "classification": {
+    "objectDimensionality": "2d",
+    "cameraModel": "none",
+    "interactionModel": "none",
+    "outputSurface": "screen-space-ui",
+    "runtimeFamily": "semantic-dom-static-article"
+  },
+  "spatialCues": {
+    "thickness": { "present": false, "evidence": "All surfaces are flat DOM, SVG, canvas or image layers." },
+    "occlusion": { "present": false, "evidence": "No camera-dependent overlap or world-space occlusion was observed." },
+    "contactShadows": { "present": false, "evidence": "No physical contact-shadow system was observed." },
+    "bevelHighlights": { "present": false, "evidence": "Borders and chart lines are flat screen-space marks." },
+    "perspectiveConvergence": { "present": false, "evidence": "Article and figure rails remain parallel to the screen." },
+    "depthOfField": { "present": false, "evidence": "All content is uniformly rasterized at the viewport plane." }
+  },
+  "route": "2d",
+  "confidence": 0.99,
+  "requiredArtifacts": [
+    "reference.md",
+    "graybox.png",
+    "rectified-reference.png",
+    "front-elevation.svg",
+    "camera-calibration.json",
+    "landmark-overlay.png",
+    "reconstruction.json"
+  ],
+  "approval": {
+    "status": "approved",
+    "evidence": "The user explicitly requested a complete 1:1 local rebuild of the supplied live page for comparison."
+  },
+  "intent": {
+    "role": "primary-target",
+    "requestedFidelity": "exact-reconstruction",
+    "effectiveFidelity": "exact-reconstruction",
+    "reconstructionArtifact": "reconstruction.json",
+    "downgrade": {
+      "status": "not-requested",
+      "evidence": "No fidelity downgrade was requested or accepted."
+    }
+  },
+  "composition": {
+    "uniform": false,
+    "regions": [
+      { "id": "site-header", "rows": 1, "columns": 2, "contents": "Stencil brand; Blog link", "breaksFrom": ["plan-critique"] },
+      { "id": "article-header", "rows": 3, "columns": 1, "contents": "category/share; title; author/date", "breaksFrom": ["plan-critique"] },
+      { "id": "outcome-summary", "rows": 2, "columns": 1, "contents": "metric strip; cost/pass chart", "breaksFrom": [] },
+      { "id": "plan-critique", "rows": 2, "columns": 1, "contents": "heading/prose; handoff diagram", "breaksFrom": [] },
+      { "id": "reading-cost", "rows": 2, "columns": 1, "contents": "token chart; prose/list", "breaksFrom": [] },
+      { "id": "execution-ribbons", "rows": 3, "columns": 1, "contents": "plan ribbon; oneshot ribbon; prewalk ribbon", "breaksFrom": ["plan-critique"] },
+      { "id": "trajectory", "rows": 3, "columns": 1, "contents": "heading/prose; procedure; comparison ribbons", "breaksFrom": ["plan-critique"] },
+      { "id": "history", "rows": 2, "columns": 1, "contents": "history prose; swap chart", "breaksFrom": [] },
+      { "id": "receipts", "rows": 2, "columns": 1, "contents": "Sol table; Opus table", "breaksFrom": [] },
+      { "id": "unexpected-effect", "rows": 2, "columns": 1, "contents": "cheating chart; explanation", "breaksFrom": [] },
+      { "id": "prefill-conclusion", "rows": 2, "columns": 1, "contents": "conclusion prose; commands/source note", "breaksFrom": [] },
+      { "id": "site-footer", "rows": 1, "columns": 1, "contents": "year mark", "breaksFrom": ["plan-critique"] }
+    ]
+  }
+}

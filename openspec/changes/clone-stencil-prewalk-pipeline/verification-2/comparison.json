@@ -1,0 +1,69 @@
+{
+  "schema": "prewalk.pipeline.comparison.v1",
+  "referenceUrl": "https://stencil.so/blog/prewalk",
+  "implementationUrl": "file:///D:/projects/design-pipeline/experiments/prewalk-pipeline/index.html",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "pixelDifferenceRatio": 0.002794498263605815,
+      "ssim": 0.956437165572204,
+      "maxLayoutDeltaPx": 0,
+      "textCoverage": 1,
+      "interactionCoverage": 1,
+      "copyReplay": {
+        "reference": {
+          "attempted": true,
+          "writes": [
+            "https://stencil.so/blog/prewalk"
+          ]
+        },
+        "implementation": {
+          "attempted": false,
+          "writes": []
+        }
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 16,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "pixelDifferenceRatio": 0.0022661864748502653,
+      "ssim": 0.9902708309762097,
+      "maxLayoutDeltaPx": 0,
+      "textCoverage": 1,
+      "interactionCoverage": 1,
+      "copyReplay": {
+        "reference": null,
+        "implementation": null
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 16,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "pixelDifferenceRatio": 0.0015603277922899678,
+      "ssim": 0.9897509564097077,
+      "maxLayoutDeltaPx": 0,
+      "textCoverage": 1,
+      "interactionCoverage": 1,
+      "copyReplay": {
+        "reference": null,
+        "implementation": null
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 16,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    }
+  ]
+}

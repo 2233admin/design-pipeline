@@ -1,0 +1,18 @@
+{
+  "schema": "prewalk.dom-computed-palette.v1",
+  "capturedAt": "2026-08-12T18:47:38.048Z",
+  "source": "../evidence/reference/observation-1440x900.json",
+  "viewport": { "width": 1440, "height": 900 },
+  "colors": [
+    { "hex": "#000000", "role": "canvas", "region": "body" },
+    { "hex": "#0a0a0c", "role": "panel", "region": "figures and tables" },
+    { "hex": "#f5f5f6", "role": "primary text", "region": "headings and emphasis" },
+    { "hex": "#a3a3ac", "role": "body text", "region": "article copy and chart labels" },
+    { "hex": "#63636d", "role": "muted text", "region": "metadata, borders and footer" },
+    { "hex": "#44cfff", "role": "signal cyan", "region": "links, tables and charts" },
+    { "hex": "#a86af4", "role": "signal violet", "region": "trace and chart series" },
+    { "hex": "#f5b04a", "role": "signal amber", "region": "plan handoff and chart series" },
+    { "hex": "#4ade80", "role": "signal green", "region": "positive result series" },
+    { "hex": "#f4644a", "role": "signal red", "region": "warning and comparison series" }
+  ]
+}

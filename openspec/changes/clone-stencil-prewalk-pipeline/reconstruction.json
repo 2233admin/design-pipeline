@@ -1,0 +1,104 @@
+{
+  "schema": "design-pipeline.reconstruction.v1",
+  "id": "stencil-so-blog-prewalk",
+  "referenceId": "stencil-so-blog-prewalk",
+  "mode": "exact-reconstruction",
+  "coordinateSpaces": {
+    "image": "Pixels in the exported 1425x9361 full-page Chromium frame.",
+    "canonical": "Identity-rectified top-left page coordinates.",
+    "world": "Flat DOM document coordinates in CSS pixels.",
+    "camera": "Locked orthographic viewport with no perspective transform."
+  },
+  "rectification": {
+    "method": "not-required-front-view",
+    "artifact": "rectified-reference.png",
+    "frontElevation": "front-elevation.svg",
+    "sourceViewport": { "width": 1425, "height": 9361 },
+    "canonicalViewport": { "width": 1425, "height": 9361 },
+    "anchors": [
+      { "id": "page-tl", "source": { "x": 0, "y": 0 }, "canonical": { "x": 0, "y": 0 } },
+      { "id": "page-tr", "source": { "x": 1424, "y": 0 }, "canonical": { "x": 1424, "y": 0 } },
+      { "id": "page-br", "source": { "x": 1424, "y": 9360 }, "canonical": { "x": 1424, "y": 9360 } },
+      { "id": "page-bl", "source": { "x": 0, "y": 9360 }, "canonical": { "x": 0, "y": 9360 } }
+    ]
+  },
+  "camera": {
+    "model": "orthographic",
+    "locked": true,
+    "calibrationArtifact": "camera-calibration.json",
+    "renderViewport": { "width": 1425, "height": 9361 },
+    "parameters": {
+      "near": 0.1,
+      "far": 2,
+      "position": [0, 0, 1],
+      "target": [0, 0, 0],
+      "up": [0, 1, 0],
+      "rollDegrees": 0,
+      "viewHeight": 9361
+    }
+  },
+  "landmarks": {
+    "overlayArtifact": "landmark-overlay.png",
+    "thresholds": { "minCount": 8, "minRegions": 4, "maxMeanErrorPx": 1.5, "maxPointErrorPx": 3 },
+    "points": [
+      { "id": "nav-left", "region": "top-left", "source": { "x": 144.33, "y": 0 }, "render": { "x": 144.33, "y": 0 } },
+      { "id": "article-title", "region": "top-left", "source": { "x": 144.33, "y": 206.26 }, "render": { "x": 144.33, "y": 206.26 } },
+      { "id": "article-right", "region": "top-right", "source": { "x": 904.33, "y": 154.26 }, "render": { "x": 904.33, "y": 154.26 } },
+      { "id": "first-chart-bottom", "region": "top-right", "source": { "x": 904.33, "y": 1062.6 }, "render": { "x": 904.33, "y": 1062.6 } },
+      { "id": "ribbons-top", "region": "center", "source": { "x": 144.33, "y": 3439.06 }, "render": { "x": 144.33, "y": 3439.06 } },
+      { "id": "trajectory-bottom", "region": "center", "source": { "x": 904.33, "y": 5266.94 }, "render": { "x": 904.33, "y": 5266.94 } },
+      { "id": "history-chart", "region": "center", "source": { "x": 144.33, "y": 5762.92 }, "render": { "x": 144.33, "y": 5762.92 } },
+      { "id": "receipts-bottom", "region": "bottom-left", "source": { "x": 144.33, "y": 7151.79 }, "render": { "x": 144.33, "y": 7151.79 } },
+      { "id": "effect-heading", "region": "bottom-left", "source": { "x": 144.33, "y": 7369.38 }, "render": { "x": 144.33, "y": 7369.38 } },
+      { "id": "effect-right", "region": "bottom-right", "source": { "x": 904.33, "y": 7855.27 }, "render": { "x": 904.33, "y": 7855.27 } },
+      { "id": "conclusion-heading", "region": "bottom-left", "source": { "x": 144.33, "y": 8368.84 }, "render": { "x": 144.33, "y": 8368.84 } },
+      { "id": "footer-right", "region": "bottom-right", "source": { "x": 1312.33, "y": 9360 }, "render": { "x": 1312.33, "y": 9360 } }
+    ]
+  },
+  "graybox": {
+    "capture": "graybox.png",
+    "capturedAt": "2026-08-12T19:20:33.625Z",
+    "viewport": { "width": 1425, "height": 9361 },
+    "runtimeMode": { "mechanism": "root-attribute", "token": "data-graybox", "disables": ["emissive", "optical", "texture"] },
+    "suppressed": ["materials", "glow", "bloom", "depth-of-field", "scanlines", "grading"],
+    "comparison": {
+      "mode": "measured",
+      "regions": [
+        { "id": "site-header", "finding": "Header shell geometry matches the reference observation.", "status": "matches" },
+        { "id": "article-header", "finding": "Article header origin, width and height match.", "status": "matches" },
+        { "id": "outcome-summary", "finding": "Metric strip and first chart preserve their measured blocks.", "status": "matches" },
+        { "id": "plan-critique", "finding": "Heading, prose and diagram remain in the observed order.", "status": "matches" },
+        { "id": "reading-cost", "finding": "Token chart and prose/list geometry match.", "status": "matches" },
+        { "id": "execution-ribbons", "finding": "Three ribbon blocks retain their measured flow geometry.", "status": "matches" },
+        { "id": "trajectory", "finding": "Trajectory heading, procedure and ribbons match the measured block.", "status": "matches" },
+        { "id": "history", "finding": "History prose and chart geometry match.", "status": "matches" },
+        { "id": "receipts", "finding": "Both receipt tables retain their measured positions.", "status": "matches" },
+        { "id": "unexpected-effect", "finding": "Effect chart and explanation remain aligned.", "status": "matches" },
+        { "id": "prefill-conclusion", "finding": "Conclusion copy occupies the measured final article block.", "status": "matches" },
+        { "id": "site-footer", "finding": "Footer stays at the measured page terminus.", "status": "matches" }
+      ]
+    },
+    "approval": { "status": "approved", "evidence": "BrowserPort observations show identical layout landmark coordinates before visual materials are applied." }
+  },
+  "geometryGate": { "approval": { "status": "approved", "evidence": "Identity rectification and twelve distributed DOM landmarks were measured at the locked full-page viewport." } },
+  "finalComparison": {
+    "status": "measured",
+    "referenceRender": "reference.png",
+    "implementationRender": "implementation.png",
+    "diffArtifact": "pixel-diff.png",
+    "intentionalMasks": [],
+    "thresholds": { "maxPixelDifferenceRatio": 0.001, "minSsim": 0.999 },
+    "metrics": {
+      "pixelDifferenceRatio": 0.0001743703345534009,
+      "ssim": 0.9997225956332809
+    },
+    "evidencePort": {
+      "status": "ready",
+      "adapter": "playwright-pixelmatch-windowed-ssim",
+      "availableCapabilities": ["render-reference", "render-implementation", "pixel-diff", "ssim"],
+      "lastProbe": { "ok": true, "evidence": "Visible Chromium reference and implementation renders were compared without masks; see verification-final/comparison.json." },
+      "receiptArtifact": "fidelity-receipt.json"
+    },
+    "approval": { "status": "approved", "evidence": "Pixel difference 0.0001743703 is below 0.001 and windowed SSIM 0.9997225956 is above 0.999 at the locked desktop render." }
+  }
+}

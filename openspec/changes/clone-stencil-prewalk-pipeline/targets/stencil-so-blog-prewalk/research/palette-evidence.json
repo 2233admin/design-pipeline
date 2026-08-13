@@ -1,0 +1,75 @@
+{
+  "schema": "design-pipeline.palette-evidence.v1",
+  "targetId": "stencil-so-blog-prewalk",
+  "sourceUrl": "https://stencil.so/blog/prewalk",
+  "status": "ready",
+  "capturedAt": "2026-08-12T18:47:38.048Z",
+  "sources": {
+    "domComputed": {
+      "status": "ready",
+      "evidencePaths": ["dom-computed-palette.json"],
+      "colors": [
+        { "hex": "#000000", "role": "canvas", "region": "body" },
+        { "hex": "#0a0a0c", "role": "panel", "region": "figures and tables" },
+        { "hex": "#f5f5f6", "role": "primary text", "region": "headings and emphasis" },
+        { "hex": "#a3a3ac", "role": "body text", "region": "article copy and chart labels" },
+        { "hex": "#63636d", "role": "muted text", "region": "metadata, borders and footer" },
+        { "hex": "#44cfff", "role": "signal cyan", "region": "links, tables and charts" },
+        { "hex": "#a86af4", "role": "signal violet", "region": "trace and chart series" },
+        { "hex": "#f5b04a", "role": "signal amber", "region": "plan handoff and chart series" },
+        { "hex": "#4ade80", "role": "signal green", "region": "positive result series" },
+        { "hex": "#f4644a", "role": "signal red", "region": "warning and comparison series" }
+      ]
+    },
+    "rasterMedia": {
+      "status": "ready",
+      "evidencePaths": ["raster-palette.json"],
+      "regions": ["full-page", "cost-pass-rate-canvas", "token-donut-canvas", "swap-strategy-canvas"],
+      "colors": [
+        { "hex": "#000000", "role": "dominant canvas", "region": "full-page" },
+        { "hex": "#101010", "role": "near-black media field", "region": "full-page and canvases" },
+        { "hex": "#202020", "role": "media grid and edges", "region": "charts" },
+        { "hex": "#303030", "role": "media support", "region": "charts and diagrams" },
+        { "hex": "#44cfff", "role": "cool signal", "region": "chart marks and links" },
+        { "hex": "#f5b04a", "role": "warm signal", "region": "chart marks and plan diagram" }
+      ]
+    }
+  },
+  "semanticRoles": [
+    { "role": "canvas", "sourceColor": "#000000", "targetToken": "--prewalk-canvas" },
+    { "role": "panel", "sourceColor": "#0a0a0c", "targetToken": "--prewalk-panel" },
+    { "role": "primary-text", "sourceColor": "#f5f5f6", "targetToken": "--prewalk-text-primary" },
+    { "role": "body-text", "sourceColor": "#a3a3ac", "targetToken": "--prewalk-text-body" },
+    { "role": "muted-text", "sourceColor": "#63636d", "targetToken": "--prewalk-text-muted" },
+    { "role": "signal-cyan", "sourceColor": "#44cfff", "targetToken": "--prewalk-cyan" },
+    { "role": "signal-violet", "sourceColor": "#a86af4", "targetToken": "--prewalk-violet" },
+    { "role": "signal-amber", "sourceColor": "#f5b04a", "targetToken": "--prewalk-amber" },
+    { "role": "signal-green", "sourceColor": "#4ade80", "targetToken": "--prewalk-green" },
+    { "role": "signal-red", "sourceColor": "#f4644a", "targetToken": "--prewalk-red" }
+  ],
+  "relationships": {
+    "coverage": [
+      { "role": "canvas", "min": 0.8, "max": 0.9 },
+      { "role": "panel", "min": 0.02, "max": 0.08 },
+      { "role": "primary-text", "min": 0.005, "max": 0.04 },
+      { "role": "body-text", "min": 0.01, "max": 0.08 },
+      { "role": "signal-cyan", "min": 0.0001, "max": 0.02 }
+    ],
+    "luminanceHierarchy": ["primary-text > body-text > muted-text > panel > canvas", "signals remain sparse marks over near-black fields"],
+    "saturationPosture": "Nearly achromatic surfaces and typography; high saturation is restricted to measured chart, link and result signals.",
+    "temperaturePosture": "Neutral-cool foundation with balanced cyan/violet signals and limited amber/red counterpoints."
+  },
+  "targetProjectTokens": [
+    { "token": "--prewalk-canvas", "value": "#000000", "sourceRole": "canvas" },
+    { "token": "--prewalk-panel", "value": "#0a0a0c", "sourceRole": "panel" },
+    { "token": "--prewalk-text-primary", "value": "#f5f5f6", "sourceRole": "primary-text" },
+    { "token": "--prewalk-text-body", "value": "#a3a3ac", "sourceRole": "body-text" },
+    { "token": "--prewalk-text-muted", "value": "#63636d", "sourceRole": "muted-text" },
+    { "token": "--prewalk-cyan", "value": "#44cfff", "sourceRole": "signal-cyan" },
+    { "token": "--prewalk-violet", "value": "#a86af4", "sourceRole": "signal-violet" },
+    { "token": "--prewalk-amber", "value": "#f5b04a", "sourceRole": "signal-amber" },
+    { "token": "--prewalk-green", "value": "#4ade80", "sourceRole": "signal-green" },
+    { "token": "--prewalk-red", "value": "#f4644a", "sourceRole": "signal-red" }
+  ],
+  "notes": ["DOM and raster palettes were measured independently from the visible BrowserPort capture.", "The full-page raster is 82.58% pure black at the sampled scale; signal colors remain intentionally sparse."]
+}

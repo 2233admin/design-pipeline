@@ -1,0 +1,11 @@
+{
+  "schema": "prewalk.orthographic-calibration.v1",
+  "locked": true,
+  "sourceViewport": { "width": 1425, "height": 9361 },
+  "renderViewport": { "width": 1425, "height": 9361 },
+  "model": "orthographic",
+  "viewHeight": 9361,
+  "origin": "top-left",
+  "scale": 1,
+  "rollDegrees": 0
+}

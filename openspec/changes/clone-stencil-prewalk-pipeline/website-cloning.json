@@ -1,0 +1,172 @@
+{
+  "schema": "design-pipeline.website-cloning.v1",
+  "changeId": "clone-stencil-prewalk-pipeline",
+  "status": "complete",
+  "initializedAt": "2026-08-12T18:43:44.205Z",
+  "artifactRoot": "openspec/changes/clone-stencil-prewalk-pipeline",
+  "targets": [
+    {
+      "id": "stencil-so-blog-prewalk",
+      "url": "https://stencil.so/blog/prewalk",
+      "role": "primary",
+      "status": "complete",
+      "phase": "complete",
+      "artifactRoot": "targets/stencil-so-blog-prewalk"
+    }
+  ],
+  "fidelity": {
+    "mode": "exact",
+    "comparisonPolicy": "Compare each primary target against its own normalized capture; reference targets supply constraints and are not assumed to be direct pixel baselines.",
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 900
+      },
+      {
+        "width": 768,
+        "height": 1024
+      },
+      {
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "gates": {
+      "textCoverage": 1,
+      "assetCoverage": 1,
+      "interactionCoverage": 1,
+      "maxPixelDifferenceRatio": 0.001,
+      "maxLayoutDeltaPx": 1
+    }
+  },
+  "implementationAuthority": {
+    "authorityTargetId": "stencil-so-blog-prewalk",
+    "designRecord": "design.md#implementation-authority",
+    "allowedDifferences": [],
+    "protectedInvariants": [
+      "component topology",
+      "responsive behavior",
+      "interaction behavior",
+      "no runtime dependency on stencil.so CSS or page embedding"
+    ],
+    "requiredInteractionEnvironment": "actual-browser"
+  },
+  "referenceMappings": [],
+  "ports": {
+    "browser": {
+      "status": "ready",
+      "adapter": "playwright-chromium-visible-v151",
+      "availableCapabilities": [
+        "navigate",
+        "report-final-url-status",
+        "set-viewport",
+        "set-device-scale",
+        "screenshot",
+        "evaluate",
+        "scroll",
+        "click",
+        "hover",
+        "focus",
+        "type",
+        "resize",
+        "wait-for-fonts",
+        "wait-for-page-ready",
+        "record-environment",
+        "record-provenance",
+        "visible-browser"
+      ],
+      "lastProbe": {
+        "at": "2026-08-12T18:47:38.048Z",
+        "ok": true,
+        "message": "Visible Chromium 151 captured the complete live page at all declared viewports; receipt: targets/stencil-so-blog-prewalk/evidence/reference/capture-summary.json"
+      },
+      "requiredCapabilities": [
+        "navigate",
+        "report-final-url-status",
+        "set-viewport",
+        "set-device-scale",
+        "screenshot",
+        "evaluate",
+        "scroll",
+        "click",
+        "hover",
+        "focus",
+        "type",
+        "resize",
+        "wait-for-fonts",
+        "wait-for-page-ready",
+        "record-environment",
+        "record-provenance",
+        "visible-browser"
+      ]
+    },
+    "builder": {
+      "status": "ready",
+      "adapter": "repository-local-static-clone-builder",
+      "availableCapabilities": [
+        "read-spec",
+        "read-evidence",
+        "write-files",
+        "run-project-checks"
+      ],
+      "lastProbe": {
+        "at": "2026-08-12T19:20:38.302Z",
+        "ok": true,
+        "message": "Builder self-test passed and produced index.html with 22 localized assets; build receipt: experiments/prewalk-pipeline/build-receipt.json; forbidden runtime-source audit returned zero matches."
+      },
+      "requiredCapabilities": [
+        "read-spec",
+        "read-evidence",
+        "write-files",
+        "run-project-checks"
+      ]
+    },
+    "evidence": {
+      "status": "ready",
+      "adapter": "playwright-pixelmatch-windowed-ssim",
+      "availableCapabilities": [
+        "render-reference",
+        "render-implementation",
+        "pixel-diff",
+        "layout-diff",
+        "content-diff",
+        "responsive-diff",
+        "state-diff",
+        "interaction-replay",
+        "mapped-interaction-replay",
+        "record-evidence-provenance"
+      ],
+      "lastProbe": {
+        "at": "2026-08-12T19:17:10.786Z",
+        "ok": true,
+        "message": "Visible Chromium rendered the authority and local implementation at all declared viewports; pixel, layout, text, asset, state and copy-action evidence was recorded under verification-final/."
+      },
+      "requiredCapabilities": [
+        "render-reference",
+        "render-implementation",
+        "pixel-diff",
+        "layout-diff",
+        "content-diff",
+        "responsive-diff",
+        "state-diff",
+        "interaction-replay",
+        "mapped-interaction-replay",
+        "record-evidence-provenance"
+      ]
+    }
+  },
+  "verification": {
+    "status": "passed",
+    "evaluatedAt": "2026-08-12T19:28:50.539Z",
+    "reportPath": "verification.json",
+    "reasons": []
+  },
+  "protocol": [
+    "preflight",
+    "reconnaissance",
+    "foundation",
+    "component-spec-and-build",
+    "assembly",
+    "visual-and-interaction-qa"
+  ]
+}

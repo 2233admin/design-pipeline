@@ -1,0 +1,71 @@
+{
+  "schema": "prewalk.pipeline.comparison.v1",
+  "referenceUrl": "https://stencil.so/blog/prewalk",
+  "implementationUrl": "file:///D:/projects/design-pipeline/experiments/prewalk-pipeline/index.html",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "pixelDifferenceRatio": 0.0015269023964676139,
+      "ssim": 0.9856396951759135,
+      "maxLayoutDeltaPx": 0,
+      "textCoverage": 1,
+      "interactionCoverage": 0.875,
+      "copyReplay": {
+        "reference": {
+          "attempted": true,
+          "writes": [
+            "https://stencil.so/blog/prewalk"
+          ]
+        },
+        "implementation": {
+          "attempted": true,
+          "writes": [
+            "https://stencil.so/blog/prewalk"
+          ]
+        }
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 16,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "pixelDifferenceRatio": 0.0024988522634611936,
+      "ssim": 0.9883450054840626,
+      "maxLayoutDeltaPx": 0,
+      "textCoverage": 1,
+      "interactionCoverage": 0.875,
+      "copyReplay": {
+        "reference": null,
+        "implementation": null
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 16,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "pixelDifferenceRatio": 0.043266573095988865,
+      "ssim": 0.27745193938567797,
+      "maxLayoutDeltaPx": 0,
+      "textCoverage": 1,
+      "interactionCoverage": 0.875,
+      "copyReplay": {
+        "reference": null,
+        "implementation": null
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 16,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    }
+  ]
+}

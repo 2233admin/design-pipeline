@@ -1,0 +1,97 @@
+{
+  "blockers": [],
+  "changeId": "clone-stencil-prewalk-pipeline",
+  "evidence": [
+    "targets/stencil-so-blog-prewalk/evidence/reference/capture-summary.json",
+    "direction-preview.json",
+    "reference-evidence.json",
+    "graybox.png",
+    "targets/stencil-so-blog-prewalk/evidence/reference/interactions-1440x900.json",
+    "targets/stencil-so-blog-prewalk/research/components/prewalk-page.spec.md",
+    "experiments/prewalk-pipeline/build-receipt.json",
+    "targets/stencil-so-blog-prewalk/assets/manifest.json",
+    "verification.json",
+    "verification-final/comparison.json",
+    "verification-final/runtime-audit.json",
+    "fidelity-receipt.json",
+    "ab-comparison.json",
+    "verification-baseline-a/comparison.json"
+  ],
+  "extensions": {
+    "legacy": {
+      "artifactRoot": "openspec/changes/clone-stencil-prewalk-pipeline",
+      "capabilities": {
+        "fallbacks": [],
+        "missing": []
+      },
+      "decisions": [
+        "Use isolated evidence and research artifacts for every normalized target URL"
+      ],
+      "gbrain": {
+        "detected": false,
+        "paths": [],
+        "syncPlanned": false
+      },
+      "motion": {
+        "implementationLibrary": "unknown",
+        "motionSpec": "openspec/changes/clone-stencil-prewalk-pipeline/motion.md",
+        "reducedMotion": "pending",
+        "required": false
+      },
+      "openSpec": {
+        "changeId": "clone-stencil-prewalk-pipeline",
+        "detected": true,
+        "paths": [
+          "openspec/changes/clone-stencil-prewalk-pipeline"
+        ]
+      },
+      "projectRoot": ".",
+      "qa": {
+        "evidenceRoot": "openspec/changes/clone-stencil-prewalk-pipeline/qa.md",
+        "scores": {},
+        "status": "not-run"
+      },
+      "surfaces": [
+        "stencil-so-blog-prewalk"
+      ]
+    },
+    "legacyEvents": {
+      "count": 1,
+      "sha256": "3f53974062b95b9697fe4878cdd6c96be8b90c160fd7a95bc6ad084a4707bdff"
+    },
+    "legacyStatus": "planned",
+    "unknown": {}
+  },
+  "foundations": {
+    "design": {
+      "path": "DESIGN.md",
+      "sha256": "1126499915fb720ce0943afcba8b9327885c11a6ccc63160db96cd801a8cf88e",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind design"
+    },
+    "motion": {
+      "path": "MOTION.md",
+      "sha256": "5a23e0fcdb7d4ebddea2f8f446b91edbdaba3812baf44a7066034b5b2d8e7302",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind motion"
+    }
+  },
+  "lastEventSeq": 11,
+  "migration": {
+    "sourceNextField": "nextActions",
+    "sourcePhaseField": "phase",
+    "sourceSchema": "design-pipeline.state.v1",
+    "sourceSha256": "bbfec10ec08e35378407febaac335f5e9fc77ada8fa055e9051ac9aac9792aff",
+    "sourceStatus": "planned"
+  },
+  "nextActions": [
+    "Review A and B side by side in the browser"
+  ],
+  "phase": "release-readiness",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 11,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "verifying",
+  "updatedAt": "2026-08-12T19:34:14.112Z"
+}

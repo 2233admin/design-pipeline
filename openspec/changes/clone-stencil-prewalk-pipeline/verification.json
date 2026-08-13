@@ -1,0 +1,52 @@
+{
+  "schema": "design-pipeline.website-cloning.verification.v1",
+  "targets": [
+    {
+      "targetId": "stencil-so-blog-prewalk",
+      "textCoverage": 1,
+      "assetCoverage": 1,
+      "interactionCoverage": 1,
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 900,
+          "pixelDifferenceRatio": 0.0001743703345534009,
+          "maxLayoutDeltaPx": 0,
+          "unresolvedDifferences": []
+        },
+        {
+          "width": 768,
+          "height": 1024,
+          "pixelDifferenceRatio": 0.0005896640528373702,
+          "maxLayoutDeltaPx": 0,
+          "unresolvedDifferences": []
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "pixelDifferenceRatio": 0.0003907619890172341,
+          "maxLayoutDeltaPx": 0,
+          "unresolvedDifferences": []
+        }
+      ],
+      "unresolvedDifferences": []
+    }
+  ],
+  "mappings": [],
+  "authority": {
+    "authorityTargetId": "stencil-so-blog-prewalk",
+    "verifiedInvariants": [
+      "component topology",
+      "responsive behavior",
+      "interaction behavior",
+      "no runtime dependency on stencil.so CSS or page embedding"
+    ],
+    "observedDifferences": [],
+    "interactionEnvironment": "actual-browser",
+    "replayPassed": true,
+    "evidencePaths": [
+      "evidence/implementation-authority.json",
+      "verification-final/comparison.json"
+    ]
+  }
+}

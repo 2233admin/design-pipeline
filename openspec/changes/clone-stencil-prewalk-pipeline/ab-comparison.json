@@ -1,0 +1,78 @@
+{
+  "schema": "prewalk.pipeline.ab-comparison.v1",
+  "evaluatedAt": "2026-08-12T19:33:34.904Z",
+  "authority": "https://stencil.so/blog/prewalk",
+  "baselineA": "file:///D:/projects/design-pipeline/experiments/prewalk-story/index.html",
+  "pipelineB": "file:///D:/projects/design-pipeline/experiments/prewalk-pipeline/index.html",
+  "method": "Same visible Chromium EvidencePort, source capture, device scale, viewports, pixel threshold, SSIM, layout landmarks, text normalization, and interaction identity.",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "baselineA": {
+        "pixelDifferenceRatio": 0.0756578760014089,
+        "ssim": 0.7416431302796099,
+        "maxLayoutDeltaPx": 4188.34,
+        "textCoverage": 0.904330312185297,
+        "assetCoverage": "13/16",
+        "interactionCoverage": 0.375
+      },
+      "pipelineB": {
+        "pixelDifferenceRatio": 0.0001743703345534009,
+        "ssim": 0.9997225956332809,
+        "maxLayoutDeltaPx": 0,
+        "textCoverage": 1,
+        "assetCoverage": "16/16",
+        "interactionCoverage": 1
+      },
+      "pixelDifferenceReductionFactor": 433.8919013671943
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "baselineA": {
+        "pixelDifferenceRatio": 0.1885120317770487,
+        "ssim": 0.48977541980580774,
+        "maxLayoutDeltaPx": 4259.73,
+        "textCoverage": 0.904330312185297,
+        "assetCoverage": "13/16",
+        "interactionCoverage": 0.375
+      },
+      "pipelineB": {
+        "pixelDifferenceRatio": 0.0005896640528373702,
+        "ssim": 0.999780297294011,
+        "maxLayoutDeltaPx": 0,
+        "textCoverage": 1,
+        "assetCoverage": "16/16",
+        "interactionCoverage": 1
+      },
+      "pixelDifferenceReductionFactor": 319.69395263278915
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "baselineA": {
+        "pixelDifferenceRatio": 0.08753693559235823,
+        "ssim": 0.7611097201058233,
+        "maxLayoutDeltaPx": 5641.63,
+        "textCoverage": 0.904330312185297,
+        "assetCoverage": "13/16",
+        "interactionCoverage": 0.375
+      },
+      "pipelineB": {
+        "pixelDifferenceRatio": 0.0003907619890172341,
+        "ssim": 0.9998522864764163,
+        "maxLayoutDeltaPx": 0,
+        "textCoverage": 1,
+        "assetCoverage": "16/16",
+        "interactionCoverage": 1
+      },
+      "pixelDifferenceReductionFactor": 224.01599452524414
+    }
+  ],
+  "verdict": {
+    "baselineA": "fails-exact-gates",
+    "pipelineB": "passes-all-exact-gates",
+    "winner": "pipelineB"
+  }
+}
