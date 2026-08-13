@@ -66,3 +66,14 @@ test("release workflow passes dispatch input through env and validates it", () =
   assert.doesNotMatch(runScript, /\$\{\{ inputs\.version \}\}/);
   assert.match(runScript, /node scripts\/package\.cjs --help/);
 });
+
+test("release workflow binds manual releases to the tested commit and marks prereleases", () => {
+  const workflow = fs.readFileSync(
+    path.join(repoRoot, ".github", "workflows", "release.yml"),
+    "utf8",
+  );
+  const releaseStep = workflow.split("      - name: Create GitHub Release")[1];
+
+  assert.match(releaseStep, /target_commitish: \$\{\{ github\.sha \}\}/);
+  assert.match(releaseStep, /prerelease: \$\{\{ contains\(steps\.ver\.outputs\.version, '-'\) \}\}/);
+});

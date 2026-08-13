@@ -4,6 +4,8 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+## [0.9.0-beta.1] - 2026-08-13
+
 ### Added
 
 - Added unified `toolchain resolve`, `toolchain probe`, and `toolchain receipt-check` commands that
@@ -27,9 +29,15 @@ All notable changes to Design Pipeline are documented here.
   subsetting without importing the rest of `qiaomu-design`.
 - Added a direct plain-language contract for user-facing copy, with a second-pass fidelity guard
   that prevents clearer wording from widening scope, limits, uncertainty, or available actions.
+- Added a reproducible Prewalk website-reconstruction sample with real headed-browser evidence at
+  three viewports, zero layout drift, complete text/interaction coverage, and sub-0.06% pixel
+  difference.
 
 ### Fixed
 
+- Bound manually dispatched GitHub releases to the exact tested commit and marked SemVer
+  prereleases explicitly, so beta artifacts cannot silently tag the default branch or appear as a
+  stable release.
 - Updated the GitHub Release action to its Node 24-compatible major version.
 
 ## [0.8.0] - 2026-08-02
@@ -423,3 +431,4 @@ All notable changes to Design Pipeline are documented here.
 [0.7.2]: https://github.com/2233admin/design-pipeline/compare/v0.7.1...v0.7.2
 [0.7.3]: https://github.com/2233admin/design-pipeline/compare/v0.7.2...v0.7.3
 [0.8.0]: https://github.com/2233admin/design-pipeline/compare/v0.7.3...v0.8.0
+[0.9.0-beta.1]: https://github.com/2233admin/design-pipeline/compare/v0.8.0...v0.9.0-beta.1
