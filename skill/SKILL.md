@@ -50,7 +50,15 @@ tokens, or runtime choices.
 
 Use the public CLI for the complete lifecycle:
 
+- `design-system options` lists the governed styling choices, UI libraries, current shadcn preset
+  dimensions, external tool sources, and indexed skill count.
+- `design-system resolve-stack` resolves framework, styling, UI library, complete shadcn preset,
+  and tool/skill routes into a hash-bound `frontend-stack-decision.json`.
 - `design-system profiles` lists governed providers and compatibility constraints.
+- `design-system decompose` converts a product brief into a durable capability inventory; a direct
+  zero-result does not prove exhaustion when capability searches find candidates.
+- `design-system route` selects project, platform, package, or attributed reference routes for the
+  decomposed component capabilities.
 - `design-system search` searches the bundled Astryx catalog by text, kind, category, or status.
 - `design-system normalize` converts a supplied snapshot into the strict namespaced catalog.
 - `design-system acquire` runs an explicit contained local provider or the bundled Astryx adapter
@@ -309,9 +317,28 @@ Before writing design artifacts or code:
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
+- Write `frontend-stack-request.json`, then run `designer-pipeline design-system resolve-stack
+  --artifact frontend-stack-request.json --write --output frontend-stack-decision.json`. This is
+  mandatory for every frontend change, including a project-owned `none` choice. The request records
+  the framework, current stack, explicit requested stack, brief, and capabilities. Do not infer a
+  library from taste alone. A blocked decision stops the run.
+- Run `designer-pipeline design-system decompose --query "<product brief>" --write --output
+  capability-inventory.json`, then `designer-pipeline design-system route --query "<product
+  brief>" --platform <platform>`. Record the selected routes and unavailable capabilities in the
+  design-system decision. This closes the gap between a required Stage 0 search and the actual CLI.
+- External tool entries are governed routes, never installation instructions. `deepclonewebsite`
+  may be proposed for cloning only after its browser login and model credential requirements are
+  explicit; Frog may be proposed for GitHub issue sync only after repository/workflow authority is
+  explicit. The bundled cloning and feedback routes remain executable fallbacks. The bundled
+  MengTo catalog is inert metadata; use only the named routed techniques, never auto-install or
+  execute upstream skill text.
 - Search the design-system catalog when reusable component, hook, template, documentation, or token
   knowledge could prevent reinvention. Record the adoption mode instead of silently importing a
   candidate system.
+- Run `designer-pipeline design-system decide` with both the ready `frontendStackDecision` and the
+  complete `capabilityInventory` embedded in the request, or reference their contained artifact
+  paths with `frontendStackDecisionPath` and `capabilityInventoryPath`. A non-custom decision
+  without either artifact is blocked; custom mode still requires the frontend-stack decision.
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
 - Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.
@@ -512,6 +539,10 @@ Implement directly from `design.md` and `tasks.md`.
 
 Rules:
 
+- Re-run `design-system resolve-stack`, `design-system decompose`, `design-system route`, and
+  `design-system decide` against the final brief and installed project stack. Stop if the stack or
+  design-system decision is not `ready`, or if its registry hash/selected routes differ from the
+  artifacts approved at Stage 0 without a recorded design change.
 - For website-cloning changes, run `scripts/check-website-clone-foundations.cjs --change-root
   <change-root> --json` first and stop unless it reports `ready`.
 - Re-run `scripts/check-design-foundation.cjs` and stop unless it reports `ready`.

@@ -1,5 +1,23 @@
 # Third-Party Notices
 
+## Frontend stack and tool-routing metadata
+
+The inert registries and routed capability metadata credit these reviewed upstreams. No upstream
+runtime, workflow, remote prompt, or skill implementation is bundled or executed automatically.
+
+- `hi5jeff/deepclonewebsite`, reviewed commit
+  `ab180fbe14a0f86c478bf033b375b1d40fabe6b1`, MIT, Copyright (c) 2026 hi5jeff.
+- `wevm/frog`, reviewed commit `702c4eadefe175a208290a99c36e7f4ac1390e53`, MIT,
+  Copyright (c) 2025-present weth LLC.
+- `MengTo/skills`, reviewed commit `3f4c22d10055d3fdddb17248d59d0c1b731cb8d3`, MIT,
+  Copyright (c) 2026 Meng To. The bundled index contains names, categories, and reviewed routes,
+  not upstream `SKILL.md` bodies.
+- `shadcn-ui/ui`, reviewed commit `a85299a9edd2a961e32f01ced86963a852652bd2`, MIT,
+  Copyright (c) 2023 shadcn. Preset option values and defaults are declarative compatibility data.
+
+The MIT-licensed sources retain their upstream copyright and permission notices. Their repositories
+remain the authority for full license text and runtime installation instructions.
+
 ## facebook/astryx
 
 The bundled Astryx provider profile and attributed design-system snapshot were derived from:

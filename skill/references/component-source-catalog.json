@@ -1,0 +1,11 @@
+{
+  "schema": "design-pipeline.design-system-snapshot.v1",
+  "version": "1",
+  "namespace": "frontend-component-sources",
+  "provenance": { "source": "Curated frontend component source metadata", "license": "mixed", "attribution": "Metadata only; no remote implementation is vendored" },
+  "components": [
+    { "id": "native/dom-numeric-transition", "name": "DOM numeric transition", "category": "motion", "status": "stable", "routing": { "capabilities": ["animated-stat", "numeric-content-transition", "numeric-text"], "platforms": ["web"], "mode": "platform", "evidenceStatus": "verified", "fallback": "Semantic text with CSS or WAAPI." }, "provenance": { "source": "Web platform", "license": "platform" } },
+    { "id": "project/app-ui", "name": "Project-owned app UI", "category": "app-ui", "status": "stable", "routing": { "capabilities": ["app-shell", "app-ui", "button", "card", "cta", "data-table", "dialog", "faq", "features", "hero", "navigation", "page-block", "pricing", "stats", "tabs", "text-input"], "platforms": ["web"], "mode": "project-owned", "evidenceStatus": "verified", "fallback": "Use semantic DOM, project tokens, and current dependencies." }, "provenance": { "source": "Design Pipeline project-owned patterns", "license": "project" } },
+    { "id": "mengto/reference-techniques", "name": "MengTo skill techniques", "category": "reference", "status": "stable", "routing": { "capabilities": ["animated-background", "animated-ui", "app-ui", "dither-background", "hero", "interactive-card", "navigation", "page-block", "shader-background"], "platforms": ["web"], "mode": "reference-adaptation", "evidenceStatus": "verified", "fallback": "Keep project-owned components and adapt only the routed technique." }, "provenance": { "source": "MengTo/skills", "url": "https://github.com/MengTo/skills", "license": "MIT", "attribution": "Metadata and routed technique names only" } }
+  ]
+}

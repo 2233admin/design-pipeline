@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/frontend-stack-decision.v1.json",
+  "title": "Frontend Stack And Tool Routing Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "framework", "registryHash", "selected", "capabilities", "toolRoutes", "recommendedSkills", "blockers", "reviews", "evidence"],
+  "properties": {
+    "schema": { "const": "design-pipeline.frontend-stack-decision.v1" },
+    "status": { "enum": ["ready", "blocked"] },
+    "framework": { "enum": ["react", "svelte", "vue", "solid", "agnostic"] },
+    "registryHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "selected": { "type": "object" },
+    "capabilities": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "toolRoutes": { "type": "array", "items": { "type": "object" } },
+    "recommendedSkills": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "blockers": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "reviews": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}

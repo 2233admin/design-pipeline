@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/frontend-stack-request.v1.json",
+  "title": "Frontend Stack And Tool Routing Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "framework", "brief"],
+  "properties": {
+    "schema": { "const": "design-pipeline.frontend-stack-request.v1" },
+    "framework": { "enum": ["react", "svelte", "vue", "solid", "agnostic"] },
+    "brief": { "type": "string", "minLength": 1 },
+    "existing": { "type": "object" },
+    "requested": { "type": "object" },
+    "capabilities": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "design-pipeline.frontend-stack-registry.v1",
+  "version": "1",
+  "reviewedAt": "2026-08-13",
+  "styling": [
+    { "id": "tailwindcss", "aliases": ["tailwind"], "label": "Tailwind CSS" },
+    { "id": "scss", "aliases": ["sass"], "label": "SCSS" },
+    { "id": "less", "aliases": [], "label": "Less" },
+    { "id": "postcss-only", "aliases": ["postcss"], "label": "PostCSS-only" },
+    { "id": "none", "aliases": [], "label": "None" }
+  ],
+  "uiLibraries": [
+    { "id": "shadcn-ui", "aliases": ["shadcn", "shadcn/ui"], "label": "shadcn/ui", "frameworks": ["react"], "requiredStyling": ["tailwindcss"], "license": "MIT", "source": "https://github.com/shadcn-ui/ui" },
+    { "id": "shadcn-svelte", "aliases": ["shadcn/svelte"], "label": "shadcn-svelte", "frameworks": ["svelte"], "requiredStyling": ["tailwindcss"], "license": "MIT", "source": "https://github.com/huntabyte/shadcn-svelte" },
+    { "id": "daisyui", "aliases": ["daisyUI"], "label": "daisyUI", "frameworks": ["agnostic"], "requiredStyling": ["tailwindcss"], "license": "MIT", "source": "https://github.com/saadeghi/daisyui" },
+    { "id": "radix-ui", "aliases": ["radix"], "label": "Radix UI", "frameworks": ["react"], "license": "MIT", "source": "https://github.com/radix-ui/primitives" },
+    { "id": "headless-ui", "aliases": ["headlessui"], "label": "Headless UI", "frameworks": ["react", "vue"], "license": "MIT", "source": "https://github.com/tailwindlabs/headlessui" },
+    { "id": "park-ui", "aliases": ["park"], "label": "Park UI", "frameworks": ["react", "solid"], "externalStyleEngine": "panda-css", "license": "MIT", "source": "https://github.com/chakra-ui/park-ui" },
+    { "id": "chakra-ui", "aliases": ["chakra"], "label": "Chakra UI", "frameworks": ["react"], "externalStyleEngine": "emotion", "license": "MIT", "source": "https://github.com/chakra-ui/chakra-ui" },
+    { "id": "heroui", "aliases": ["nextui", "next-ui"], "label": "HeroUI (formerly NextUI)", "frameworks": ["react"], "requiredStyling": ["tailwindcss"], "license": "Apache-2.0", "source": "https://github.com/heroui-inc/heroui" },
+    { "id": "mantine", "aliases": [], "label": "Mantine", "frameworks": ["react"], "license": "MIT", "source": "https://github.com/mantinedev/mantine" },
+    { "id": "mui", "aliases": ["material-ui"], "label": "MUI", "frameworks": ["react"], "externalStyleEngine": "emotion", "license": "MIT", "source": "https://github.com/mui/material-ui" },
+    { "id": "ant-design", "aliases": ["antd"], "label": "Ant Design", "frameworks": ["react"], "externalStyleEngine": "css-in-js", "license": "MIT", "source": "https://github.com/ant-design/ant-design" },
+    { "id": "base-ui", "aliases": ["baseui"], "label": "Base UI", "frameworks": ["react"], "license": "MIT", "source": "https://github.com/mui/base-ui" },
+    { "id": "ark-ui", "aliases": ["arkui"], "label": "Ark UI", "frameworks": ["react", "solid", "vue", "svelte"], "license": "MIT", "source": "https://github.com/chakra-ui/ark" },
+    { "id": "react-aria", "aliases": ["reactaria"], "label": "React Aria", "frameworks": ["react"], "license": "Apache-2.0", "source": "https://github.com/adobe/react-spectrum" },
+    { "id": "none", "aliases": [], "label": "None", "frameworks": ["agnostic"], "license": "project", "source": "project-owned" }
+  ],
+  "shadcn": {
+    "source": "https://github.com/shadcn-ui/ui",
+    "revision": "a85299a9edd2a961e32f01ced86963a852652bd2",
+    "bases": ["radix", "base", "aria"],
+    "styles": ["nova", "vega", "maia", "lyra", "mira", "luma", "sera", "rhea"],
+    "baseColors": ["neutral", "stone", "zinc", "gray", "mauve", "olive", "mist", "taupe"],
+    "themes": ["neutral", "stone", "zinc", "gray", "amber", "blue", "cyan", "emerald", "fuchsia", "green", "indigo", "lime", "orange", "pink", "purple", "red", "rose", "sky", "teal", "violet", "yellow", "mauve", "olive", "mist", "taupe"],
+    "chartColors": ["neutral", "stone", "zinc", "gray", "amber", "blue", "cyan", "emerald", "fuchsia", "green", "indigo", "lime", "orange", "pink", "purple", "red", "rose", "sky", "teal", "violet", "yellow", "mauve", "olive", "mist", "taupe"],
+    "iconLibraries": ["lucide", "hugeicons", "tabler", "phosphor", "remixicon"],
+    "fonts": ["inter", "noto-sans", "nunito-sans", "figtree", "roboto", "raleway", "dm-sans", "public-sans", "outfit", "jetbrains-mono", "geist", "geist-mono", "lora", "merriweather", "playfair-display", "noto-serif", "roboto-slab", "oxanium", "manrope", "space-grotesk", "montserrat", "ibm-plex-sans", "source-sans-3", "instrument-sans", "eb-garamond", "instrument-serif"],
+    "fontHeadings": ["inherit", "inter", "noto-sans", "nunito-sans", "figtree", "roboto", "raleway", "dm-sans", "public-sans", "outfit", "jetbrains-mono", "geist", "geist-mono", "lora", "merriweather", "playfair-display", "noto-serif", "roboto-slab", "oxanium", "manrope", "space-grotesk", "montserrat", "ibm-plex-sans", "source-sans-3", "instrument-sans", "eb-garamond", "instrument-serif"],
+    "radii": ["default", "none", "small", "medium", "large"],
+    "menuAccents": ["subtle", "bold"],
+    "menuColors": ["default", "inverted", "default-translucent", "inverted-translucent"],
+    "defaults": {
+      "nova": { "base": "radix", "style": "nova", "baseColor": "neutral", "theme": "neutral", "chartColor": "neutral", "iconLibrary": "lucide", "font": "geist", "fontHeading": "inherit", "menuAccent": "subtle", "menuColor": "default", "radius": "default" },
+      "vega": { "base": "radix", "style": "vega", "baseColor": "neutral", "theme": "neutral", "chartColor": "neutral", "iconLibrary": "lucide", "font": "inter", "fontHeading": "inherit", "menuAccent": "subtle", "menuColor": "default", "radius": "default" },
+      "maia": { "base": "radix", "style": "maia", "baseColor": "neutral", "theme": "neutral", "chartColor": "neutral", "iconLibrary": "hugeicons", "font": "figtree", "fontHeading": "inherit", "menuAccent": "subtle", "menuColor": "default", "radius": "default" },
+      "lyra": { "base": "radix", "style": "lyra", "baseColor": "neutral", "theme": "neutral", "chartColor": "neutral", "iconLibrary": "phosphor", "font": "jetbrains-mono", "fontHeading": "inherit", "menuAccent": "subtle", "menuColor": "default", "radius": "default" },
+      "mira": { "base": "radix", "style": "mira", "baseColor": "neutral", "theme": "neutral", "chartColor": "neutral", "iconLibrary": "hugeicons", "font": "inter", "fontHeading": "inherit", "menuAccent": "subtle", "menuColor": "default", "radius": "default" },
+      "luma": { "base": "radix", "style": "luma", "baseColor": "neutral", "theme": "neutral", "chartColor": "neutral", "iconLibrary": "lucide", "font": "inter", "fontHeading": "inherit", "menuAccent": "subtle", "menuColor": "default", "radius": "default" },
+      "sera": { "base": "radix", "style": "sera", "baseColor": "taupe", "theme": "taupe", "chartColor": "taupe", "iconLibrary": "lucide", "font": "noto-sans", "fontHeading": "playfair-display", "menuAccent": "subtle", "menuColor": "default", "radius": "default" },
+      "rhea": { "base": "radix", "style": "rhea", "baseColor": "neutral", "theme": "neutral", "chartColor": "neutral", "iconLibrary": "lucide", "font": "inter", "fontHeading": "inherit", "menuAccent": "subtle", "menuColor": "default", "radius": "default" }
+    }
+  },
+  "tools": [
+    { "id": "design-pipeline/core", "capabilities": ["design-workflow"], "activation": "always", "mode": "project-owned", "status": "ready", "source": "bundled" },
+    { "id": "design-pipeline/website-cloning", "capabilities": ["website-cloning"], "activation": "keyword", "keywords": ["clone", "cloning", "rebuild", "replicate", "复刻", "克隆", "仿站", "1:1"], "mode": "project-owned", "status": "ready", "source": "bundled" },
+    { "id": "hi5jeff/deepclonewebsite", "capabilities": ["website-cloning", "reverse-engineering"], "activation": "keyword", "keywords": ["clone", "cloning", "rebuild", "reverse engineer", "复刻", "克隆", "逆向"], "mode": "governed-candidate", "status": "review", "source": "https://github.com/hi5jeff/deepclonewebsite", "revision": "ab180fbe14a0f86c478bf033b375b1d40fabe6b1", "license": "MIT", "requirements": ["Node.js 20+", "Chrome or Edge", "interactive login", "OpenAI-compatible API credential"], "fallback": "design-pipeline/website-cloning" },
+    { "id": "design-pipeline/feedback-loop", "capabilities": ["friction-logging"], "activation": "always", "mode": "project-owned", "status": "ready", "source": "bundled" },
+    { "id": "wevm/frog", "capabilities": ["friction-logging", "github-issue-sync"], "activation": "capability", "mode": "governed-candidate", "status": "review", "source": "https://github.com/wevm/frog", "revision": "702c4eadefe175a208290a99c36e7f4ac1390e53", "license": "MIT", "requirements": ["Node.js 22+", "explicit GitHub repository and workflow permission"], "fallback": "design-pipeline/feedback-loop" },
+    { "id": "MengTo/skills", "capabilities": ["design-workflow", "interaction-extraction", "visual-style", "verification"], "activation": "always", "mode": "bundled-index", "status": "ready", "source": "https://github.com/MengTo/skills", "revision": "3f4c22d10055d3fdddb17248d59d0c1b731cb8d3", "license": "MIT", "catalog": "mengto-skills-catalog.json" }
+  ]
+}

@@ -4,7 +4,7 @@
   "title": "Design System Runtime Decision",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "status", "mode", "projectAuthority", "selected", "rejected", "rationale", "evidence"],
+  "required": ["schema", "status", "mode", "projectAuthority", "selected", "rejected", "rationale", "evidence", "frontendStackDecision", "capabilityInventory"],
   "properties": {
     "schema": {"const": "design-pipeline.design-system-decision.v1"},
     "status": {"enum": ["ready", "review", "blocked"]},
@@ -13,6 +13,8 @@
     "selected": {"type": ["object", "null"]},
     "rejected": {"type": "array", "items": {"type": "object"}},
     "rationale": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}}
+    "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "frontendStackDecision": {"type": ["object", "null"]},
+    "capabilityInventory": {"type": ["object", "null"]}
   }
 }

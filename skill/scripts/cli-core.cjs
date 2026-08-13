@@ -28,7 +28,9 @@ const { evaluateIntake, validateDesignToolReceipt, validateRegistry, validateSty
 const { checkDesignFoundation } = require("./design-synthesis-core.cjs");
 const { checkMotionFoundation } = require("./motion-foundation-core.cjs");
 const {
+  decomposeCapabilities,
   normalizeDesignSystemSnapshot,
+  searchCapabilities,
   searchDesignSystemCatalog,
 } = require("./design-system-catalog-core.cjs");
 const {
@@ -40,6 +42,8 @@ const {
   atomicWriteProviderJson,
   loadProfiles,
 } = require("./design-system-provider-core.cjs");
+const { routeComponents } = require("./component-route-core.cjs");
+const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
@@ -53,7 +57,7 @@ const KNOWN_OPTIONS = new Set([
   "--height", "--installed-evidence", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
   "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
-  "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width",
+  "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
 ]);
 
 function parseArgs(argv) {
@@ -207,7 +211,7 @@ function publicHelp() {
     "  evidence check|capture",
     "  verify motion|components",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
-    "  design-system profiles|normalize|acquire|search|project-tokens|decide",
+    "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
     "  benchmark brief|evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
     "",
@@ -523,10 +527,24 @@ function bundledDesignSystemCatalog() {
   return normalizeDesignSystemSnapshot(readJson(builtIn("astryx-design-system-snapshot.json"), "bundled Astryx snapshot"));
 }
 
+function bundledComponentSourceCatalog() {
+  return normalizeDesignSystemSnapshot(readJson(builtIn("component-source-catalog.json"), "bundled component source catalog"));
+}
+
+function bundledFrontendStackRegistry() {
+  return validateFrontendStackRegistry(readJson(builtIn("frontend-stack-registry.json"), "frontend stack registry"));
+}
+
 function designSystemCatalog(parsed, root) {
   if (option(parsed, "--catalog")) return readJson(artifact(parsed, root, "--catalog"), "design system catalog");
   if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "design system snapshot"));
   return bundledDesignSystemCatalog();
+}
+
+function componentSourceCatalog(parsed, root) {
+  if (option(parsed, "--catalog")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--catalog"), "component source catalog"));
+  if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "component source snapshot"));
+  return bundledComponentSourceCatalog();
 }
 
 function writeResult(parsed, root, value) {
@@ -536,6 +554,17 @@ function writeResult(parsed, root, value) {
 }
 
 function designSystemCommand(parsed, root, action) {
+  if (action === "options") {
+    const registry = bundledFrontendStackRegistry();
+    const skillCatalog = readJson(builtIn("mengto-skills-catalog.json"), "MengTo skill catalog");
+    return { result: { status: "valid", registry, counts: { styling: registry.styling.length, uiLibraries: registry.uiLibraries.length, shadcnPresets: Object.keys(registry.shadcn.defaults).length, indexedSkills: skillCatalog.count } }, exitCode: 0 };
+  }
+  if (action === "resolve-stack") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "frontend stack request");
+    const decision = resolveFrontendStack(request, bundledFrontendStackRegistry(), readJson(builtIn("mengto-skills-catalog.json"), "MengTo skill catalog"));
+    const output = writeResult(parsed, root, decision);
+    return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: decision.status === "blocked" ? 2 : 0 };
+  }
   if (action === "profiles") {
     const profiles = loadProfiles();
     return { result: { status: "valid", ...profiles }, exitCode: 0 };
@@ -555,6 +584,33 @@ function designSystemCommand(parsed, root, action) {
       ...(option(parsed, "--limit") ? { limit: numberOption(parsed, "--limit", { max: 1000 }) } : {}),
     });
     return { result: { status: "valid", namespace: catalog.namespace, results }, exitCode: 0 };
+  }
+  if (action === "decompose") {
+    const query = requireOption(parsed, "--query");
+    const catalog = designSystemCatalog(parsed, root);
+    const capabilities = decomposeCapabilities(query, { minScore: numberOption(parsed, "--min-score", { max: 100 }) || 1, allowPartialWords: false });
+    const searchOptions = {
+      ...(option(parsed, "--kind") ? { kind: option(parsed, "--kind") } : {}),
+      ...(option(parsed, "--category") ? { category: option(parsed, "--category") } : {}),
+      ...(option(parsed, "--status") ? { status: option(parsed, "--status") } : {}),
+      ...(option(parsed, "--limit") ? { limit: numberOption(parsed, "--limit", { max: 1000 }) } : {}),
+    };
+    const directResults = searchDesignSystemCatalog(catalog, { query, ...searchOptions });
+    const { capabilityMap, uniqueEntryCount } = searchCapabilities(catalog, capabilities, searchOptions);
+    const inventory = {
+      directQuery: query,
+      directQueryResults: directResults.length,
+      searchedCapabilities: capabilities,
+      capabilityResults: Object.fromEntries(Object.entries(capabilityMap).map(([id, value]) => [id, { terms: value.terms, count: value.count, matchedIds: value.entries.slice(0, 50).map((entry) => entry.id) }])),
+      zeroResultInconclusive: directResults.length === 0 && uniqueEntryCount > 0,
+    };
+    const output = writeResult(parsed, root, inventory);
+    return { result: { status: "valid", inventory, totalUniqueEntries: uniqueEntryCount, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "route") {
+    const result = routeComponents({ catalog: componentSourceCatalog(parsed, root), brief: requireOption(parsed, "--query"), platform: option(parsed, "--platform", "web") });
+    const output = writeResult(parsed, root, result);
+    return { result: { ...result, ...(output ? { output } : {}) }, exitCode: result.status === "blocked" ? 2 : 0 };
   }
   if (action === "acquire") {
     const outputRoot = artifact(parsed, root, "--output-root", null, false);
@@ -578,6 +634,13 @@ function designSystemCommand(parsed, root, action) {
   }
   if (action === "decide") {
     const request = readJson(artifact(parsed, root, "--artifact"), "design system decision request");
+    for (const [pathField, valueField, label] of [["frontendStackDecisionPath", "frontendStackDecision", "frontend stack decision"], ["capabilityInventoryPath", "capabilityInventory", "capability inventory"]]) {
+      if (request[pathField] !== undefined) {
+        if (request[valueField] !== undefined || typeof request[pathField] !== "string") fail("cli", `${pathField} must be the only source for ${valueField}`);
+        request[valueField] = readJson(contained(root, request[pathField], pathField), label);
+        delete request[pathField];
+      }
+    }
     if (!request.catalog) request.catalog = designSystemCatalog(parsed, root);
     if (option(parsed, "--allow-canary") === true) request.allowCanary = true;
     const decision = decideDesignSystem(request);

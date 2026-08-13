@@ -6,6 +6,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Added a mandatory frontend-stack and tool-routing gate with all supported styling choices, 15 UI
+  libraries, the complete current shadcn preset dimensions, and pinned governed routes for
+  `deepclonewebsite`, Frog, and the 127-entry MengTo skill catalog.
+- Added public `design-system options`, `resolve-stack`, `decompose`, and `route` commands so Stage
+  0 discovery is executable and its decisions can be rechecked before implementation.
 - Added a hash-bound visual direction preview gate with PNG/viewport validation before direction selection, plus a built-in CJK
   typography contract covering system stacks, line height, punctuation, and decorative font
   subsetting without importing the rest of `qiaomu-design`.

@@ -1,0 +1,125 @@
+{
+  "blockers": [],
+  "capabilities": [
+    "design-workflow",
+    "friction-logging",
+    "github-issue-sync",
+    "interaction-extraction",
+    "verification",
+    "visual-style",
+    "website-cloning"
+  ],
+  "evidence": [
+    "registry:2026-08-13",
+    "mengto:3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+    "tool:design-pipeline/core@bundled",
+    "tool:design-pipeline/website-cloning@bundled",
+    "tool:hi5jeff/deepclonewebsite@ab180fbe14a0f86c478bf033b375b1d40fabe6b1",
+    "tool:design-pipeline/feedback-loop@bundled",
+    "tool:wevm/frog@702c4eadefe175a208290a99c36e7f4ac1390e53",
+    "tool:MengTo/skills@3f4c22d10055d3fdddb17248d59d0c1b731cb8d3"
+  ],
+  "framework": "agnostic",
+  "recommendedSkills": [
+    "animation-systems",
+    "audit-reference-originality",
+    "audit-verify-explain-grade-5",
+    "build-awwwards-quality-sites",
+    "design-first-ui-prompting",
+    "html-to-interaction-prompts",
+    "iterate-until-verified",
+    "optimize-web-animations",
+    "stitched-full-page-capture"
+  ],
+  "registryHash": "679de9a9d13d6b5d4520e38de2bfcd51eddad3c3b669eca52c785dbce5608d5d",
+  "reviews": [],
+  "schema": "design-pipeline.frontend-stack-decision.v1",
+  "selected": {
+    "styling": {
+      "id": "none",
+      "label": "None"
+    },
+    "uiLibrary": {
+      "id": "none",
+      "label": "None",
+      "license": "project",
+      "source": "project-owned"
+    }
+  },
+  "status": "ready",
+  "toolRoutes": [
+    {
+      "capabilities": [
+        "design-workflow"
+      ],
+      "id": "design-pipeline/core",
+      "mode": "project-owned",
+      "source": "bundled",
+      "status": "ready"
+    },
+    {
+      "capabilities": [
+        "website-cloning"
+      ],
+      "id": "design-pipeline/website-cloning",
+      "mode": "project-owned",
+      "source": "bundled",
+      "status": "ready"
+    },
+    {
+      "capabilities": [
+        "website-cloning"
+      ],
+      "fallback": "design-pipeline/website-cloning",
+      "id": "hi5jeff/deepclonewebsite",
+      "mode": "governed-candidate",
+      "requirements": [
+        "Node.js 20+",
+        "Chrome or Edge",
+        "interactive login",
+        "OpenAI-compatible API credential"
+      ],
+      "revision": "ab180fbe14a0f86c478bf033b375b1d40fabe6b1",
+      "source": "https://github.com/hi5jeff/deepclonewebsite",
+      "status": "review"
+    },
+    {
+      "capabilities": [
+        "friction-logging"
+      ],
+      "id": "design-pipeline/feedback-loop",
+      "mode": "project-owned",
+      "source": "bundled",
+      "status": "ready"
+    },
+    {
+      "capabilities": [
+        "friction-logging",
+        "github-issue-sync"
+      ],
+      "fallback": "design-pipeline/feedback-loop",
+      "id": "wevm/frog",
+      "mode": "governed-candidate",
+      "requirements": [
+        "Node.js 22+",
+        "explicit GitHub repository and workflow permission"
+      ],
+      "revision": "702c4eadefe175a208290a99c36e7f4ac1390e53",
+      "source": "https://github.com/wevm/frog",
+      "status": "review"
+    },
+    {
+      "capabilities": [
+        "design-workflow",
+        "interaction-extraction",
+        "visual-style",
+        "verification"
+      ],
+      "id": "MengTo/skills",
+      "mode": "bundled-index",
+      "revision": "3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+      "source": "https://github.com/MengTo/skills",
+      "status": "ready"
+    }
+  ]
+}

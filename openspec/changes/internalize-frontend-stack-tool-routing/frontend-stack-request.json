@@ -1,0 +1,8 @@
+{
+  "schema": "design-pipeline.frontend-stack-request.v1",
+  "framework": "agnostic",
+  "brief": "Internalize frontend styling, UI library, shadcn preset, website cloning, friction logging, and design skill routing into the pipeline CLI",
+  "existing": { "styling": "none", "uiLibrary": "none" },
+  "requested": { "styling": "none", "uiLibrary": "none" },
+  "capabilities": ["design-workflow", "friction-logging", "github-issue-sync", "interaction-extraction", "verification", "visual-style", "website-cloning"]
+}

@@ -153,6 +153,10 @@ test("help, doctor, foundation, and stable JSON error envelopes work", () => {
 });
 
 test("bundled design-system knowledge is agent-discoverable without installing Astryx", () => {
+  const options = run(["design-system", "options", "--root", repoRoot]);
+  assert.equal(options.status, 0, options.stderr || options.stdout);
+  assert.deepEqual(options.output.counts, { styling: 5, uiLibraries: 15, shadcnPresets: 8, indexedSkills: 127 });
+
   const profiles = run(["design-system", "profiles", "--root", repoRoot]);
   assert.equal(profiles.status, 0, profiles.stderr || profiles.stdout);
   assert.equal(profiles.output.profiles.some(({ id }) => id === "astryx"), true);
@@ -168,12 +172,28 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.notEqual(projection.output.status, "blocked");
 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-system-decision-cli-"));
+  writeJson(path.join(root, "stack-request.json"), { schema: "design-pipeline.frontend-stack-request.v1", framework: "react", brief: "clone a page with a dialog", requested: { styling: "tailwindcss", uiLibrary: "shadcn-ui", shadcnPreset: "nova" } });
+  const stack = run(["design-system", "resolve-stack", "--root", root, "--artifact", "stack-request.json", "--write", "--output", "stack-decision.json"]);
+  assert.equal(stack.status, 0, stack.stderr || stack.stdout);
+  assert.ok(stack.output.decision.toolRoutes.some(({ id }) => id === "hi5jeff/deepclonewebsite"));
+
+  const decomposed = run(["design-system", "decompose", "--root", root, "--query", "app dialog and data table", "--write", "--output", "capability-inventory.json"]);
+  assert.equal(decomposed.status, 0, decomposed.stderr || decomposed.stdout);
+  assert.ok(decomposed.output.inventory.searchedCapabilities.includes("dialog"));
+  assert.ok(decomposed.output.inventory.capabilityResults["data-table"].count < 200);
+  assert.equal(decomposed.output.inventory.searchedCapabilities.includes("tabs"), false);
+  const routed = run(["design-system", "route", "--root", repoRoot, "--query", "landing page hero"]);
+  assert.equal(routed.status, 0, routed.stderr || routed.stdout);
+  assert.equal(routed.output.routes.some(({ selected }) => selected), true);
+
   writeJson(path.join(root, "decision.json"), {
     schema: "design-pipeline.design-system-decision-request.v1",
     version: "1",
     mode: "reference",
     candidateId: "astryx:component:AlertDialog",
     project: { designMd: true, runtime: {} },
+    frontendStackDecisionPath: "stack-decision.json",
+    capabilityInventoryPath: "capability-inventory.json",
   });
   const decision = run(["design-system", "decide", "--root", root, "--artifact", "decision.json"]);
   assert.equal(decision.status, 0, decision.stderr || decision.stdout);

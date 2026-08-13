@@ -159,6 +159,20 @@ function existingSystem(project) {
   return null;
 }
 
+function validateFrontendStackDecision(value) {
+  if (!isObject(value) || value.schema !== "design-pipeline.frontend-stack-decision.v1") return false;
+  if (value.status !== "ready" || !/^[a-f0-9]{64}$/.test(value.registryHash || "")) return false;
+  return isObject(value.selected) && isObject(value.selected.styling) && isObject(value.selected.uiLibrary) && Array.isArray(value.toolRoutes);
+}
+
+function validateCapabilityInventory(value) {
+  assertObject(value, "capabilityInventory", "design system decision");
+  if (!Array.isArray(value.searchedCapabilities)) fail("design system decision", "capabilityInventory.searchedCapabilities must be an array");
+  if (typeof value.directQuery !== "string" || !value.directQuery.trim()) fail("design system decision", "capabilityInventory.directQuery must be a non-empty string");
+  if (!Number.isInteger(value.directQueryResults) || value.directQueryResults < 0) fail("design system decision", "capabilityInventory.directQueryResults must be a non-negative integer");
+  if (!isObject(value.capabilityResults)) fail("design system decision", "capabilityInventory.capabilityResults must be an object");
+}
+
 function decideDesignSystem(request) {
   assertObject(request, "request", "design system decision");
   if (request.schema !== undefined && request.schema !== "design-pipeline.design-system-decision-request.v1") fail("design system decision", "unsupported request schema");
@@ -172,11 +186,26 @@ function decideDesignSystem(request) {
   const existing = existingSystem(request.project);
   const projectAuthority = existing;
   if (existing) evidence.push(`project-authority:${existing.source}`);
+  if (!validateFrontendStackDecision(request.frontendStackDecision)) {
+    rationale.push("A ready frontend-stack decision is required before selecting a design system.");
+    return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence, frontendStackDecision: request.frontendStackDecision || null, capabilityInventory: request.capabilityInventory || null };
+  }
+  evidence.push(`frontend-stack:${request.frontendStackDecision.registryHash}`);
+  if (request.mode !== "custom" && request.capabilityInventory === undefined) {
+    rationale.push("Capability inventory is required before selecting a design system. Decompose the brief and search the catalog first.");
+    return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence, frontendStackDecision: request.frontendStackDecision, capabilityInventory: null };
+  }
+  if (request.capabilityInventory !== undefined) {
+    validateCapabilityInventory(request.capabilityInventory);
+    const capabilityHits = Object.values(request.capabilityInventory.capabilityResults).reduce((sum, item) => sum + (item?.count || 0), 0);
+    if (request.capabilityInventory.directQueryResults === 0 && capabilityHits > 0) evidence.push("zero-result-inconclusive");
+    evidence.push(`capability-inventory:${request.capabilityInventory.searchedCapabilities.length}:${capabilityHits}`);
+  }
   if (request.mode === "custom") {
     const selected = existing || { id: request.customId || "project-custom", source: "project" };
     rationale.push("Custom mode keeps the design system project-owned.");
     evidence.push("mode:custom");
-    return { schema: DECISION_SCHEMA, status: "ready", mode: request.mode, projectAuthority: selected, selected, rejected, rationale, evidence };
+    return { schema: DECISION_SCHEMA, status: "ready", mode: request.mode, projectAuthority: selected, selected, rejected, rationale, evidence, frontendStackDecision: request.frontendStackDecision, capabilityInventory: request.capabilityInventory || null };
   }
   const candidates = request.catalog.entries.slice().sort((a, b) => a.id.localeCompare(b.id));
   let selected = null;
@@ -195,7 +224,7 @@ function decideDesignSystem(request) {
   }
   if (!selected) {
     rationale.push("No eligible catalog entry satisfies status and runtime constraints.");
-    return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence };
+    return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence, frontendStackDecision: request.frontendStackDecision, capabilityInventory: request.capabilityInventory };
   }
   if (["adopt", "substitute"].includes(request.mode)) {
     const intakeStatus = request.adapterIntake?.status;
@@ -203,14 +232,14 @@ function decideDesignSystem(request) {
       if (intakeStatus !== undefined && !["blocked", "review"].includes(intakeStatus)) fail("design system decision", `unknown adapter intake status ${intakeStatus}`);
       rejected.push({ id: selected.id, reason: "adapter-intake-not-admitted" });
       rationale.push(`${request.mode} requires an admitted adapter intake.`);
-      return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence };
+      return { schema: DECISION_SCHEMA, status: "blocked", mode: request.mode, projectAuthority, selected: null, rejected, rationale, evidence, frontendStackDecision: request.frontendStackDecision, capabilityInventory: request.capabilityInventory };
     }
     evidence.push(`adapter-intake:${intakeStatus}`);
   }
   if (existing && request.mode === "substitute") rejected.push({ id: existing.id, reason: "explicitly-substituted" });
   if (existing && request.mode !== "substitute") rationale.push("The project system remains the governing authority.");
   rationale.push(request.mode === "reference" ? "Selected as a non-runtime reference." : `Selected for ${request.mode} with compatible runtime constraints.`);
-  return { schema: DECISION_SCHEMA, status: "ready", mode: request.mode, projectAuthority, selected, rejected, rationale, evidence };
+  return { schema: DECISION_SCHEMA, status: "ready", mode: request.mode, projectAuthority, selected, rejected, rationale, evidence, frontendStackDecision: request.frontendStackDecision, capabilityInventory: request.capabilityInventory };
 }
 
 module.exports = { CATALOG_SCHEMA, DECISION_SCHEMA, MODES, PROJECTION_SCHEMA, decideDesignSystem, projectDesignSystemTokens, validateCatalog };
