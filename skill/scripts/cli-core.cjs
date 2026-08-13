@@ -45,6 +45,7 @@ const {
 const { routeComponents } = require("./component-route-core.cjs");
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
+const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
@@ -57,7 +58,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
   "--height", "--installed-evidence", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
+  "--outcome", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill", "--state",
   "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
 ]);
 
@@ -214,6 +215,7 @@ function publicHelp() {
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
     "  toolchain resolve|probe|receipt-check",
+    "  execution route|prepare|finalize",
     "  benchmark brief|evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
     "",
@@ -586,6 +588,31 @@ function toolchainCommand(parsed, root, action) {
   fail("cli", `unknown toolchain action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+function executionCommand(parsed, root, action) {
+  if (action === "route") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "execution request");
+    const toolchainPlan = readJson(artifact(parsed, root, "--plan"), "toolchain plan");
+    const plan = resolveExecutionTarget(request, { projectRoot: root, toolchainPlan });
+    const output = writeResult(parsed, root, plan);
+    return { result: { status: plan.status, plan, ...(output ? { output } : {}) }, exitCode: plan.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "prepare") {
+    const plan = readJson(artifact(parsed, root, "--artifact"), "execution plan");
+    const state = prepareExecutionTarget(plan, { projectRoot: root, now: timestamp(parsed) });
+    const output = writeResult(parsed, root, state);
+    return { result: { status: "prepared", state, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "finalize") {
+    const plan = readJson(artifact(parsed, root, "--artifact"), "execution plan");
+    const state = readJson(artifact(parsed, root, "--state"), "execution state");
+    const outcome = readJson(artifact(parsed, root, "--outcome"), "execution outcome");
+    const receipt = finalizeExecutionTarget(plan, state, outcome, { projectRoot: root });
+    const output = writeResult(parsed, root, receipt);
+    return { result: { status: receipt.status, receipt, ...(output ? { output } : {}) }, exitCode: receipt.status === "complete" ? 0 : 2 };
+  }
+  fail("cli", `unknown execution action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
 function designSystemCommand(parsed, root, action) {
   if (action === "options") {
     const registry = bundledFrontendStackRegistry();
@@ -759,6 +786,7 @@ const COMMANDS = {
   patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
   toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
+  execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
   direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },

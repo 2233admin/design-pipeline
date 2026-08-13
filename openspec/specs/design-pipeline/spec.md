@@ -192,6 +192,35 @@ deterministic `design-pipeline.toolchain-plan.v1` before external tools are invo
   or installing them
 - **AND** the invocation SHALL remain owned by the target Reflex project.
 
+### Requirement: Execution targets are routed and receipted before Builder work
+
+The pipeline SHALL bind the resolved toolchain plan to an explicit execution target, branch,
+owner, and literal project-relative file scope without implementing the external Builder itself.
+
+#### Scenario: A clean frontend change is routed
+
+- **WHEN** one ready execution slice requests `auto` mode from a clean attached Git branch
+- **THEN** `designer-pipeline execution route` SHALL select `in-place`
+- **AND** multiple clean slices SHALL select `sequential`
+- **AND** required isolation or an already-dirty repository SHALL select a new `codex/*` worktree.
+
+#### Scenario: A worktree is prepared and finalized
+
+- **WHEN** a ready worktree plan is prepared
+- **THEN** the worktree SHALL start from the bound base HEAD on the declared branch and root
+- **AND** completion SHALL compare committed, staged, unstaged, and untracked files with the
+  declared scopes
+- **AND** only a successful, clean, in-scope result SHALL remove the worktree without force
+- **AND** failure, dirtiness, scope escape, branch drift, or cleanup failure SHALL retain the
+  worktree and prevent a complete receipt.
+
+#### Scenario: Execution evidence is handed to the gate
+
+- **WHEN** execution is finalized
+- **THEN** `design-pipeline.execution-receipt.v1` SHALL bind both execution-plan and toolchain-plan
+  hashes, target branch/root, base and final HEAD, invocation, changed files, evidence receipts,
+  timestamps, blockers, and cleanup result.
+
 ### Requirement: Reference evidence selects the spatial route
 
 The pipeline SHALL separate observed reference evidence from design treatment and runtime

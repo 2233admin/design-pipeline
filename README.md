@@ -219,6 +219,38 @@ node skill/scripts/designer-pipeline.cjs toolchain receipt-check \
 `resolve` 不执行安装；`probe` 只运行注册表内置的只读可用性检查。完整调用必须留下
 `design-pipeline.toolchain-receipt.v1`，绑定计划哈希、实际版本、命令、退出码、产物和哈希。
 
+工具链就绪后，执行目标路由只选择并准备目标，不代替 Builder。请求绑定工具链计划哈希，
+并为每个执行片声明 owner 与文件范围：
+
+```json
+{
+  "schema": "design-pipeline.execution-request.v1",
+  "id": "react-settings",
+  "toolchainPlanSha256": "<64-hex>",
+  "preferredMode": "auto",
+  "isolation": "optional",
+  "slices": [{ "id": "ui", "owner": "frontend", "scope": ["src/"] }]
+}
+```
+
+```bash
+node skill/scripts/designer-pipeline.cjs execution route --root . \
+  --artifact .design-pipeline/execution-request.json --plan .design-pipeline/toolchain-plan.json \
+  --write --output .design-pipeline/execution-plan.json --json
+
+node skill/scripts/designer-pipeline.cjs execution prepare --root . \
+  --artifact .design-pipeline/execution-plan.json \
+  --write --output .design-pipeline/execution-state.json --json
+
+node skill/scripts/designer-pipeline.cjs execution finalize --root . \
+  --artifact .design-pipeline/execution-plan.json --state .design-pipeline/execution-state.json \
+  --outcome .design-pipeline/execution-outcome.json \
+  --write --output .design-pipeline/execution-receipt.json --json
+```
+
+`auto` 对单执行片使用 `in-place`，多执行片使用 `sequential`；要求隔离或仓库已脏时使用
+`worktree`。worktree 只有在成功、已提交、干净且变更未越界时才移除；失败或不确定状态保留现场。
+
 ### 反 Slop 审查
 
 将反模板观察内化为结构化 QA，不是全局口味法则。硬质量失败阻止，上下文发现需要设计推理。

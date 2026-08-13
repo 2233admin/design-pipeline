@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/execution-state.v1.json",
+  "title": "Prepared Execution State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "executionPlanSha256", "toolchainPlanSha256", "mode", "projectRoot", "executionRoot", "branch", "baseHead", "startedAt", "worktreeCreated"],
+  "properties": {
+    "schema": { "const": "design-pipeline.execution-state.v1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$" },
+    "executionPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "toolchainPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "mode": { "enum": ["in-place", "worktree", "sequential"] },
+    "projectRoot": { "type": "string", "minLength": 1 },
+    "executionRoot": { "type": "string", "minLength": 1 },
+    "branch": { "type": "string", "minLength": 1 },
+    "baseHead": { "type": "string", "pattern": "^[a-f0-9]{40,64}$" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "worktreeCreated": { "type": "boolean" }
+  }
+}

@@ -21,6 +21,7 @@
     "direction-preview.test.cjs",
     "designer-pipeline-cli.test.cjs",
     "evidence-receipt.test.cjs",
+    "execution-target-routing.test.cjs",
     "frontend-stack-routing.test.cjs",
     "graphics-runtime-catalog.test.cjs",
     "graybox-gate.test.cjs",

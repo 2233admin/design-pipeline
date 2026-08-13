@@ -330,6 +330,12 @@ Before writing design artifacts or code:
   selected external runtime. Probes are read-only and registry-owned; they never install or update
   a package. Record every invocation as `design-pipeline.toolchain-receipt.v1`, binding the plan
   hash, actual tool version, command, exit code, artifacts, hashes, and linked evidence receipts.
+- Before BuilderPort work, write `execution-request.json` with the toolchain plan hash plus explicit
+  slice owner and literal project-relative scope, then run `designer-pipeline execution route` and
+  `execution prepare`. `auto` routes one clean slice in place, multiple clean slices sequentially,
+  and dirty or isolation-required work to a `codex/*` worktree. Finalize with a structured outcome.
+  A successful worktree must be committed, clean, and in scope before it is removed; failures,
+  dirty results, scope violations, and cleanup failures retain the worktree and block completion.
 - Run `designer-pipeline design-system decompose --query "<product brief>" --write --output
   capability-inventory.json`, then `designer-pipeline design-system route --query "<product
   brief>" --platform <platform>`. Record the selected routes and unavailable capabilities in the
