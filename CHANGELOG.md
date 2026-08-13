@@ -4,6 +4,18 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+## [0.9.0-beta.2] - 2026-08-14
+
+### Added
+
+- Internalized a dependency-free, read-only GitHub workflow surface for PR snapshots, review
+  threads, and bounded CI failure drilldowns.
+- Internalized the official HyperFrames HTML-video route contract with deterministic seeking,
+  video-specific routing, and check-before-render gates; the upstream runtime remains optional.
+- Internalized SmoothUI component metadata and the React Bits DecryptedText behavioral contract
+  as governed, reference-adaptation routes with explicit provenance, license boundaries, motion
+  accessibility, and no-auto-install rules.
+
 ## [0.9.0-beta.1] - 2026-08-13
 
 ### Added
@@ -432,3 +444,4 @@ All notable changes to Design Pipeline are documented here.
 [0.7.3]: https://github.com/2233admin/design-pipeline/compare/v0.7.2...v0.7.3
 [0.8.0]: https://github.com/2233admin/design-pipeline/compare/v0.7.3...v0.8.0
 [0.9.0-beta.1]: https://github.com/2233admin/design-pipeline/compare/v0.8.0...v0.9.0-beta.1
+[0.9.0-beta.2]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.1...v0.9.0-beta.2

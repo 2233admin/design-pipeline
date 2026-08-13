@@ -36,7 +36,7 @@
 3. 支持网站克隆、设计系统合成、动效设计，每一步都有证据。
 4. 通过门禁系统确保设计质量，不达标就拦住。
 
-当前 `0.9.0-beta.1` 测试版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
+当前 `0.9.0-beta.2` 测试版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
 可安装、可验证的前端工具架：
 
 - 需求、`DESIGN.md`、`MOTION.md` 与 OpenSpec 变更生命周期；
@@ -346,6 +346,8 @@ node skill/scripts/check-deps.cjs
 - [repowise](https://github.com/2233admin/repowise) — AI Agent 的代码库智能层
 - [performance-patterns-skill](https://github.com/2233admin/performance-patterns-skill) — 性能问题先路由再排查
 - [markdown-memory](https://github.com/2233admin/markdown-memory) — 文件驱动的 AI 记忆桥
+- [gc-minimal-zine-poster](https://github.com/LiamGvchi/gc-minimal-zine-poster) — 极简 zine 海报生成与参考分析 Skill
+- [gc-still-image-motion-director](https://github.com/LiamGvchi/gc-still-image-motion-director) — 静态图片动效判断与 Prompt 约束 Skill
 
 ## License
 

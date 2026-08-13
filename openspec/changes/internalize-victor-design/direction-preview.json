@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "internalize-victor-design",
+  "applicability": {
+    "status": "waived",
+    "reason": "non-visual"
+  },
+  "comparison": null,
+  "directions": [],
+  "decision": {
+    "status": "waived",
+    "selectedDirectionId": null,
+    "rationale": "This change updates design-process guidance and contract tests without changing a product surface."
+  }
+}

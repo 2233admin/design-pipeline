@@ -302,6 +302,20 @@ If a companion skill is missing, continue with the same gate manually and note t
 
 Before writing design artifacts or code:
 
+- For HTML video, reels, motion graphics, captions, overlays, slideshows, explainers, voiceovers,
+  or Remotion ports, route through `references/hyperframes.md` before choosing a runtime. HyperFrames
+  uses HTML as the source of truth and a deterministic, paused, seekable timeline; ordinary UI
+  motion remains on the normal motion route. Load only the matched workflow/domain skill when the
+  upstream HyperFrames skill tree is available.
+
+- For read-only pull-request orientation, review-thread inspection, or CI failure drilldown, use
+  `node <design-pipeline>/scripts/github.cjs pr-snapshot|pr-threads|ci-failures`. The commands
+  collapse repeated `gh` calls into bounded reports, preserve valid `gh` failure statuses, keep
+  review resolution state through GraphQL, and write full CI logs to the OS temp directory. They
+  require `gh` on `PATH` and an authenticated session; they never create or mutate GitHub
+  artifacts. Use raw `gh` for workflows these commands do not cover, and never pipe `gh` into
+  `head`.
+
 - Run `node <design-pipeline>/scripts/check-deps.cjs` from the target repo root, or manually perform the same checks from `references/self-check.md` if Node is unavailable.
 - Read `references/companion-capabilities.json` as the source of truth for install groups, suite requirements, capability markers, and upstream sources. Do not add another hard-coded companion list.
 - Read capability-profile warnings separately from install status. `installed` means discoverable; `WARN` means the companion surface does not advertise the current capability baseline.
@@ -344,8 +358,9 @@ Before writing design artifacts or code:
   may be proposed for cloning only after its browser login and model credential requirements are
   explicit; Frog may be proposed for GitHub issue sync only after repository/workflow authority is
   explicit. The bundled cloning and feedback routes remain executable fallbacks. The bundled
-  MengTo catalog is inert metadata; use only the named routed techniques, never auto-install or
-  execute upstream skill text.
+  MengTo, SmoothUI, and React Bits catalogs are inert metadata; use only the named routed
+  components or techniques, never auto-install or execute upstream source text. Preserve the
+  recorded MIT/Commons Clause boundaries and adapt into project-owned components.
 - Treat Koboyo as a low-frequency governed icon-asset route, not a shadcn preset or default icon
   library. Route it only for explicit Koboyo or hand-drawn-icon intent. Public per-icon SVG use is
   subject to the recorded license constraints; MCP icon search requires a key, should use header
@@ -408,6 +423,15 @@ Create or update `brief.md` with:
 
 Keep this short. It is an execution contract, not a product essay.
 
+### Form sanity backstop
+
+Before choosing a visual direction, declare the deliverable form from the user's or controller's
+language, then state the reader action in plain terms. Apply the single-canvas counterfactual: if
+the proposed carrier were all the reader received, could it perform that action without the author
+explaining it? If the brief implies a sequence, set, or state flow, do not compress it to one canvas
+for production convenience. Record unresolved form uncertainty in the brief and take the
+least-assumptive path; a model-written concept cannot approve its own form.
+
 When the brief, handoff, or interface copy asks a person to decide or act, read
 `references/plain-language.md`. Put the exact consequence or available action first, then preserve
 scope, limits, exclusions, uncertainty, unchanged state, and recovery actions in the second pass.
@@ -445,6 +469,12 @@ Each direction must include:
 - Interaction thesis: motion, feedback, empty/loading/error states.
 - Fit: why it suits this product and audience.
 - Risk: where it may fail or feel wrong.
+
+Choose the carrier and visual language from the subject, audience task, and viewing context,
+not from a style label alone. Every major visual technique must name its subject or reference cause
+and its intended viewer effect. Anti-template work has two sides: reject generic AI grammar and
+reject under-designed output; a title over an untreated asset with faint decorative furniture is
+not a finished direction.
 
 When anti-template risk matters, use `references/anti-slop-review.md` to compare cohesion,
 product-grounded signature, specificity, and template-pattern density. Named colors, fonts,

@@ -25,6 +25,13 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 | `apple-design` | `emilkowalski/skills` | Apple HIG-inspired interface principles and fluid motion for web, from WWDC talks | Installed |
 | `vercel-react-view-transitions` | `vercel-labs/agent-skills` | React and Next.js view transition patterns | Installed |
 
+## Poster / Still-image Motion Set
+
+| Skill | Source | Pipeline role | Current local status |
+| --- | --- | --- | --- |
+| `gc-minimal-zine-poster-v0-3` | `LiamGvchi/gc-minimal-zine-poster` | Minimal zine poster generation, reference analysis, and prompt synthesis | Not installed |
+| `gc-still-image-motion-director` | `LiamGvchi/gc-still-image-motion-director` | Still-image motion decision and image-to-video prompt generation constraints | Not installed |
+
 ## Animation Library Implementation Set
 
 | Skill | Source | Pipeline role | Current local status |
@@ -134,6 +141,19 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 | `gstack-ship` | gstack | Explicitly authorized PR/ship workflow | Optional |
 
 The pipeline does not require gstack. When it is absent, use `record-feedback.cjs`, OpenSpec artifacts, repository review, and the host's authorized GitHub surface.
+
+## Video / HTML composition Set
+
+| Skill | Source | Pipeline role | Current local status |
+| --- | --- | --- | --- |
+| `hyperframes` | `heygen-com/hyperframes` | HTML composition authoring, deterministic timing, workflow routing, and production handoff | Bundled contract; upstream workflow skills optional |
+| `hyperframes-cli` | `heygen-com/hyperframes` | Init, lint, check, snapshot, preview, render, and diagnostics | Use project-pinned CLI when present |
+| `hyperframes-animation` | `heygen-com/hyperframes` | Seek-safe motion rules, transitions, and runtime adapters | Use on demand for HyperFrames compositions |
+| `hyperframes-core` | `heygen-com/hyperframes` | DOM timing attributes, tracks, sub-compositions, media, and determinism | Use on demand for HyperFrames compositions |
+
+The bundled reference is a clean-room route summary, not a redistribution of the upstream skill
+tree. Read `references/hyperframes.md` first and keep the project's existing MOTION.md and evidence
+gates authoritative for product motion and QA.
 
 ## Optional Later
 

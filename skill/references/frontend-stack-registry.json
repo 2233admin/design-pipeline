@@ -1,7 +1,7 @@
 {
   "schema": "design-pipeline.frontend-stack-registry.v1",
   "version": "1",
-  "reviewedAt": "2026-08-13",
+  "reviewedAt": "2026-08-14",
   "styling": [
     { "id": "tailwindcss", "aliases": ["tailwind"], "label": "Tailwind CSS" },
     { "id": "scss", "aliases": ["sass"], "label": "SCSS" },
@@ -59,6 +59,39 @@
     { "id": "wevm/frog", "capabilities": ["friction-logging", "github-issue-sync"], "activation": "capability", "mode": "governed-candidate", "status": "review", "source": "https://github.com/wevm/frog", "revision": "702c4eadefe175a208290a99c36e7f4ac1390e53", "license": "MIT", "requirements": ["Node.js 22+", "explicit GitHub repository and workflow permission"], "fallback": "design-pipeline/feedback-loop" },
     { "id": "MengTo/skills", "capabilities": ["design-workflow", "interaction-extraction", "visual-style", "verification"], "activation": "always", "mode": "bundled-index", "status": "ready", "source": "https://github.com/MengTo/skills", "revision": "3f4c22d10055d3fdddb17248d59d0c1b731cb8d3", "license": "MIT", "catalog": "mengto-skills-catalog.json" },
     {
+      "id": "SmoothUI/components",
+      "capabilities": ["animated-ui", "component-source", "motion-design"],
+      "activation": "keyword",
+      "keywords": ["smoothui", "smooth ui", "animated react component", "smoothui component"],
+      "mode": "governed-candidate",
+      "status": "review",
+      "source": "https://smoothui.dev/docs/components",
+      "repository": "https://github.com/educlopez/smoothui",
+      "reviewedAt": "2026-08-13",
+      "license": "MIT",
+      "licenseUrl": "https://github.com/educlopez/smoothui/blob/main/LICENSE",
+      "interfaces": ["component-catalog", "shadcn-registry", "mcp", "rest-api"],
+      "requirements": ["Select a named component and verify React, Tailwind, shadcn/ui, and existing motion-runtime compatibility", "Adapt source into the target project; do not auto-install or execute upstream code during routing"],
+      "fallback": "Use the bundled component-source catalog and project-owned semantic UI/motion runtime."
+    },
+    {
+      "id": "DavidHDev/react-bits",
+      "capabilities": ["animated-ui", "component-source", "text-animation", "decrypted-text"],
+      "activation": "keyword",
+      "keywords": ["react bits", "reactbits", "decrypted text", "scramble text", "text animation"],
+      "mode": "governed-candidate",
+      "status": "review",
+      "source": "https://reactbits.dev/text-animations/decrypted-text",
+      "repository": "https://github.com/DavidHDev/react-bits",
+      "reviewedAt": "2026-08-13",
+      "license": "MIT + Commons Clause",
+      "licenseUrl": "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md",
+      "interfaces": ["component-catalog", "shadcn-registry", "jsrepo"],
+      "requirements": ["Select a named component and preserve the semantic text and motion-accessibility contract", "Respect the Commons Clause; do not redistribute the component library itself"],
+      "constraints": ["Do not auto-install or execute upstream code during routing", "Use readable semantic text as the reduced-motion fallback"],
+      "fallback": "Use the bundled React Bits DecryptedText reference contract and the project motion runtime."
+    },
+    {
       "id": "koboyo/icons",
       "capabilities": ["hand-drawn-icons", "icon-search"],
       "activation": "keyword",
@@ -82,6 +115,22 @@
         "Do not use the library to build a competing icon, canvas, diagram, presentation, or drawing product",
         "Recheck the license before bulk use because the published catalog and license-page icon counts differ"
       ]
+    },
+    {
+      "id": "heygen-com/hyperframes",
+      "capabilities": ["video-production", "html-video", "hyperframes"],
+      "activation": "keyword",
+      "keywords": ["/hyperframes", "hyperframes", "video", "reel", "motion graphic", "animated explainer", "title card", "slideshow", "subtitle", "captions", "voiceover", "remotion"],
+      "mode": "governed-candidate",
+      "status": "review",
+      "source": "https://github.com/heygen-com/hyperframes",
+      "revision": "0e4da52c8222b8d18a1211b34f2fb3bd0f7e79ee",
+      "reviewedAt": "2026-08-14",
+      "license": "Apache-2.0",
+      "interfaces": ["agent-skill", "html-composition", "hyperframes-cli"],
+      "requirements": ["Node.js 22+", "FFmpeg", "Use a project-pinned `hyperframes` CLI and load the bundled HyperFrames contract before authoring", "Load workflow and domain skills on demand; do not install the full upstream tree by default"],
+      "constraints": ["Use HTML as the composition source of truth", "Use one paused, seekable timeline and deterministic frame-time behavior", "Run `npx hyperframes check` before preview and render only after approval", "Do not use React/Babel output or wall-clock playback for a HyperFrames composition"],
+      "fallback": "Use references/hyperframes.md with the project's existing motion and evidence gates"
     }
   ]
 }

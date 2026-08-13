@@ -54,6 +54,21 @@ Result states:
 - `needs-review`: contextual evidence is missing, failed, or not verified.
 - `pass`: no blocker or warning remains; accepted contextual decisions stay visible.
 
+## Two-sided craft check
+
+Anti-slop is not a ban on richness. Run both checks:
+
+- **Formula veto:** reject swappable template grammar, fake metadata, purposeless effects, and
+  visual devices that only announce that something is designed.
+- **Over-restraint veto:** reject a direction or final surface that has only a title, an untreated
+  asset, and weak furniture. A sparse brief is solved with real content, purposeful operations on
+  the material, or explicitly marked interpretive copy—not by shrinking the design target.
+- **Cause/effect test:** every major type, color, image, material, motion, or framing choice names
+  a subject/reference cause and what it should make the viewer understand, feel, or do.
+- **Reference-level check:** compare against adjacent human-made work at the same carrier and
+  viewing scale. A visible preview must already use real copy, target geometry, and enough authored
+  relationships to be judged; promises in a control record do not count.
+
 ## Pipeline use
 
 ### Stage 2

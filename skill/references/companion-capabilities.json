@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline-companions.v1",
-  "updatedAt": "2026-07-23",
+  "updatedAt": "2026-08-14",
   "groups": [
     {
       "name": "Core pipeline",
@@ -39,6 +39,19 @@
       "install": [
         "Install Emil motion skills from: https://github.com/emilkowalski/skills",
         "Install motion principles from: https://github.com/kylezantos/design-motion-principles"
+      ]
+    },
+    {
+      "name": "Poster synthesis and still-image motion",
+      "level": "optional",
+      "skills": [
+        "gc-minimal-zine-poster-v0-3",
+        "gc-still-image-motion-director"
+      ],
+      "fallback": "Use the project's native output quality and motion-control process; preserve text, paper texture, grids, and composition before exporting clips.",
+      "install": [
+        "Install gc-minimal-zine-poster-v0-3 from: https://github.com/LiamGvchi/gc-minimal-zine-poster",
+        "Install gc-still-image-motion-director from: https://github.com/LiamGvchi/gc-still-image-motion-director"
       ]
     },
     {
@@ -87,6 +100,13 @@
         "Install Anime.js skill from: https://github.com/BowTiedSwan/animejs-skills",
         "Install official PixiJS v8 skills from: https://github.com/pixijs/pixijs-skills"
       ]
+    },
+    {
+      "name": "Video / HTML composition",
+      "level": "optional",
+      "skills": ["hyperframes", "hyperframes-cli", "hyperframes-core", "hyperframes-animation"],
+      "fallback": "Use the bundled references/hyperframes.md contract with the project's existing motion and evidence gates.",
+      "install": ["Install the official HyperFrames skills from: https://github.com/heygen-com/hyperframes", "Use `npx hyperframes skills update <workflow-name>` only for the selected workflow"]
     },
     {
       "name": "React / Next.js engineering",
@@ -146,6 +166,28 @@
         {"id": "adapters", "skill": "animejs", "patterns": [{"source": "registerAdapter"}, {"source": "adapters/three"}, {"source": "Three\\.js adapter", "flags": "i"}]},
         {"id": "3d-stagger", "skill": "animejs", "patterns": [{"source": "3D layouts", "flags": "i"}, {"source": "grid:\\s*\\[columns,\\s*rows,\\s*depth\\]", "flags": "i"}, {"source": "axis.+['\"]z['\"]", "flags": "i"}]},
         {"id": "deterministic-stagger", "skill": "animejs", "match": "all", "patterns": [{"source": "\\bjitter\\b", "flags": "i"}, {"source": "\\bseed\\b", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "hyperframes-html-composition",
+      "name": "HyperFrames HTML composition contract",
+      "skill": "hyperframes",
+      "level": "optional",
+      "source": "https://github.com/heygen-com/hyperframes",
+      "sourceMeta": {
+        "id": "hyperframes-skill-main",
+        "kind": "github",
+        "url": "https://github.com/heygen-com/hyperframes",
+        "reviewedRevision": "0e4da52c8222b8d18a1211b34f2fb3bd0f7e79ee",
+        "reviewedMarkers": ["mandatory-entry-point", "html-source-of-truth", "paused-seekable-timeline"],
+        "reviewedAt": "2026-08-14T00:00:00.000Z",
+        "freshnessDays": 30
+      },
+      "fallback": "Use references/hyperframes.md and the project-owned motion/evidence gates.",
+      "requirements": [
+        {"id": "mandatory-entry-point", "skill": "hyperframes", "match": "all", "patterns": [{"source": "Mandatory entry point", "flags": "i"}, {"source": "HTML"}]},
+        {"id": "html-source-of-truth", "skill": "hyperframes", "match": "all", "patterns": [{"source": "HTML as the source of truth", "flags": "i"}, {"source": "data-\\*", "flags": "i"}]},
+        {"id": "paused-seekable-timeline", "skill": "hyperframes", "match": "all", "patterns": [{"source": "paused", "flags": "i"}, {"source": "seek", "flags": "i"}, {"source": "BRIEF\\.md"}]}
       ]
     },
     {

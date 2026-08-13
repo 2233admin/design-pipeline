@@ -43,6 +43,22 @@ The rewrite must preserve every fact that affects a decision. In particular:
 
 A shorter sentence that changes scope is worse, even when it sounds clearer.
 
+## Source-shaped copy
+
+Treat every sentence as one of three things: a sourced fact, a real human voice, or a deliberate
+structural role such as a title, label, caption, or action. If it only makes the artifact sound
+designed, remove it.
+
+- Keep facts, numbers, quotes, URLs, user corrections, and names traceable; do not invent metadata,
+  institutions, metrics, product behavior, or personal experience to fill visual or narrative space.
+- Prefer plain declarative sentences and specific nouns over rhetorical polish and abstract claims.
+- Use a contrast only when both sides are true and both are needed. Do not build a sentence around
+  the contrast itself.
+- Mark newly drafted interpretive copy until it is approved. Preserve useful headings, context, and
+  reader guidance even when removing formulaic phrasing.
+- Keep one unusual but relevant detail when it carries source truth; do not manufacture a detail to
+  simulate personality.
+
 ## Interface Copy
 
 - Titles name the smallest accurate problem or outcome.

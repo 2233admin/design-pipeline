@@ -228,6 +228,9 @@ const CAPABILITY_TERMS = Object.freeze({
   "interactive-card": ["interactive card", "tilt card", "hover card"],
   "dither-background": ["dither background", "dithering", "dither", "抖动背景", "抖动"],
   "animated-background": ["animated background", "动态背景"], "shader-background": ["shader background", "webgl background", "着色器背景"],
+  smoothui: ["smoothui", "smooth ui"], "react-bits": ["react bits", "reactbits"], "decrypted-text": ["decrypted text", "decryptedtext", "decrypting text"],
+  "text-animation": ["text animation", "animated text", "scramble text", "reveal text", "glitch text", "typewriter text", "文字动画"],
+  transition: ["transition", "page transition", "scene transition", "过渡"],
   "numeric-content-transition": ["numeric text", "numeric", "counter", "animated number", "count up", "ticker", "changing number"],
   "numeric-text": ["numeric text", "number text", "rolling digits", "numeric"], "animated-stat": ["animated stat", "animated metric", "live counter", "stat"]
 });

@@ -18,6 +18,13 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   https://koboyo.com/icons/license. The registry stores discovery, license, and access-boundary
   metadata only; no icon corpus, API key, or MCP runtime is bundled. Use remains subject to the
   current Koboyo Icons License, including its redistribution and competing-product restrictions.
+- `educlopez/smoothui`, reviewed 2026-08-13 from https://smoothui.dev/docs/components and
+  https://github.com/educlopez/smoothui, MIT. The pipeline stores component and motion metadata
+  only; no SmoothUI implementation is bundled or auto-installed.
+- `DavidHDev/react-bits`, reviewed 2026-08-13 from
+  https://reactbits.dev/text-animations/decrypted-text and https://github.com/DavidHDev/react-bits,
+  MIT + Commons Clause. The pipeline stores the DecryptedText behavioral and accessibility
+  contract only; it does not redistribute the component library itself.
 - `reflex-dev/xy`, reviewed release `v0.0.6` at commit
   `55b8b61e432842995dc0b581113b0998a70a052d`, Apache-2.0. The pipeline bundles only routing and
   integration guidance; no XY Python, Rust, WebGL, or Reflex runtime code is redistributed.
@@ -141,3 +148,26 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## AVGVSTVS96/better-github-skill
+
+The read-only GitHub orientation surface in `skill/scripts/github.cjs` is a clean-room
+reimplementation of the public workflow described by:
+
+- Source: https://github.com/AVGVSTVS96/better-github-skill
+- Reviewed commit: `9482bc6312a810ec78bbed4d8f74320dcc68bd2`
+- Reviewed: 2026-08-13
+
+No upstream source code is redistributed. The upstream repository did not contain a license file
+at the reviewed commit, so future source synchronization requires a fresh license review.
+
+## heygen-com/hyperframes
+
+The bundled `skill/references/hyperframes.md` is a clean-room summary of the official HyperFrames
+agent-skill contract. The repository does not bundle the HyperFrames runtime, CLI, browser, FFmpeg,
+or the upstream skill tree.
+
+- Source: https://github.com/heygen-com/hyperframes
+- Reviewed revision: `0e4da52c8222b8d18a1211b34f2fb3bd0f7e79ee`
+- Reviewed: 2026-08-14
+- License: Apache-2.0

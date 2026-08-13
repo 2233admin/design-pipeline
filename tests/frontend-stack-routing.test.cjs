@@ -61,6 +61,29 @@ test("a clone brief routes built-ins, all three upstreams, and complete shadcn p
   for (const id of ["html-to-interaction-prompts", "stitched-full-page-capture", "iterate-until-verified"]) assert.ok(result.recommendedSkills.includes(id));
 });
 
+test("HyperFrames route is keyword-triggered for explicit video workflow briefs", () => {
+  const result = resolveFrontendStack({
+    schema: "design-pipeline.frontend-stack-request.v1",
+    framework: "react",
+    brief: "Using /hyperframes, create a 10-second product intro with a fade-in title and subtle motion",
+    requested: { styling: "tailwindcss", uiLibrary: "shadcn-ui", shadcnPreset: "nova" },
+  }, registry, skills);
+  const route = result.toolRoutes.find(({ id }) => id === "heygen-com/hyperframes");
+  assert.equal(result.status, "ready");
+  assert.ok(route);
+  assert.equal(route.status, "review");
+  assert.equal(route.mode, "governed-candidate");
+  assert.equal(route.source, "https://github.com/heygen-com/hyperframes");
+
+  const ordinary = resolveFrontendStack({
+    schema: "design-pipeline.frontend-stack-request.v1",
+    framework: "react",
+    brief: "Build a dashboard",
+    requested: {},
+  }, registry, skills);
+  assert.equal(ordinary.toolRoutes.some(({ id }) => id === "heygen-com/hyperframes"), false);
+});
+
 test("framework and required styling mismatches block instead of silently substituting", () => {
   const result = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "vue", brief: "Vue UI", requested: { styling: "scss", uiLibrary: "shadcn-ui" } }, registry, skills);
   assert.equal(result.status, "blocked");

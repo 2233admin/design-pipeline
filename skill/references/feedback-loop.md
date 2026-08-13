@@ -8,6 +8,19 @@ Capture immediately, publish deliberately.
 
 “Real-time” means the observation is normalized and written during the command that detects it. The module does not install a watcher, poll a remote, or publish with ambient credentials.
 
+## Issue and PR writing
+
+Write the smallest useful story, not a polished performance:
+
+- Lead with what happened and who or what is affected. Keep one finding per draft.
+- Use this order when it fits: observed behavior -> scope and impact -> evidence -> suspected cause or open question -> smallest next check.
+- Separate facts from hypotheses. Preserve exact counts, limits, timestamps, exclusions, and uncertainty.
+- Prefer one concrete, non-sensitive reproduction detail over generic context. Never invent a user story, quote, metric, or personal experience.
+- Keep useful headings and action steps. Remove ritualized empathy, marketing language, predictable “not X but Y” turns, and empty future-looking conclusions.
+- If the evidence is incomplete, say `待验证` and name the missing input instead of filling the gap with plausible prose.
+
+Before publication, do two passes: first make the consequence and next action easy to find; then compare the draft against the evidence and restore anything that widened its claim.
+
 ## Local flow
 
 ```text
