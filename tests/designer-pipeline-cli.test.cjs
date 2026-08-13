@@ -177,6 +177,17 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.equal(stack.status, 0, stack.stderr || stack.stdout);
   assert.ok(stack.output.decision.toolRoutes.some(({ id }) => id === "hi5jeff/deepclonewebsite"));
 
+  writeJson(path.join(root, "toolchain-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "reflex", brief: "Reflex dashboard with an XY chart", requested: { styling: "tailwindcss", uiLibrary: "none" }, graphics: { family: "vector-data" } });
+  const toolchain = run(["toolchain", "resolve", "--root", root, "--artifact", "toolchain-request.json", "--write", "--output", "toolchain-plan.json"]);
+  assert.equal(toolchain.status, 0, toolchain.stderr || toolchain.stdout);
+  assert.equal(toolchain.output.plan.graphics.id, "reflex-xy");
+  assert.deepEqual(toolchain.output.plan.invocations.find(({ toolId }) => toolId === "reflex-xy").command, ["reflex", "run"]);
+
+  writeJson(path.join(root, "toolchain-probe-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "react", brief: "Plain React settings page", requested: { styling: "scss", uiLibrary: "none" } });
+  const probe = run(["toolchain", "probe", "--root", root, "--artifact", "toolchain-probe-request.json"]);
+  assert.equal(probe.status, 0, probe.stderr || probe.stdout);
+  assert.equal(probe.output.probe.status, "ready");
+
   const decomposed = run(["design-system", "decompose", "--root", root, "--query", "app dialog and data table", "--write", "--output", "capability-inventory.json"]);
   assert.equal(decomposed.status, 0, decomposed.stderr || decomposed.stdout);
   assert.ok(decomposed.output.inventory.searchedCapabilities.includes("dialog"));

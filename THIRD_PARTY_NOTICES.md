@@ -18,6 +18,9 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   https://koboyo.com/icons/license. The registry stores discovery, license, and access-boundary
   metadata only; no icon corpus, API key, or MCP runtime is bundled. Use remains subject to the
   current Koboyo Icons License, including its redistribution and competing-product restrictions.
+- `reflex-dev/xy`, reviewed release `v0.0.6` at commit
+  `55b8b61e432842995dc0b581113b0998a70a052d`, Apache-2.0. The pipeline bundles only routing and
+  integration guidance; no XY Python, Rust, WebGL, or Reflex runtime code is redistributed.
 
 The MIT-licensed sources retain their upstream copyright and permission notices. Their repositories
 remain the authority for full license text and runtime installation instructions.

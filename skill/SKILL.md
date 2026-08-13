@@ -244,6 +244,7 @@ Change visual/screen-space design spec: `references/design-spec.md`.
 Change 3D world spec: `references/3d-spec.md`.
 Graphics runtime routing reference: `references/graphics-runtime-routing.md`.
 Machine-readable graphics runtime catalog: `references/graphics-runtime-catalog.json`.
+XY Python charting reference: `references/xy-charting.md`.
 Change scene/runtime spec reference: `references/scene-runtime-spec.md`.
 Phaser v4 game runtime reference: `references/phaser-v4.md`.
 Game UI and narrative profile reference: `references/game-ui-and-narrative.md`.
@@ -274,6 +275,7 @@ For animation implementation, choose library skills by job:
 
 - Use `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-react`, `gsap-plugins`, `gsap-utils`, `gsap-performance`, and `gsap-frameworks` for advanced choreography, scroll-driven animation, timeline control, React integration, SVG/plugin-heavy work, or when GSAP is already in the project.
 - Use `animejs` v4.5 for modular timelines, layout transitions, accessible text splitting, SVG, draggable interactions, scroll observers, WAAPI, deterministic stagger, or adapter-driven targets such as Three.js.
+- Use the built-in `reflex-xy` route for Python-native charts, notebooks, static chart export, Reflex applications, or large datasets that need screen-bounded rendering. Read `references/xy-charting.md`; pin the alpha version in the target project and keep a semantic data-table path.
 - Use the official `pixijs` router and the matching PixiJS v8 sub-skills only for justified interactive 2D render surfaces such as sprite fields, particles, filters, shaders, canvas editors, or high-object-count scenes. Read `references/pixijs-rendering.md` before selecting it.
 - Use the built-in Phaser v4 route for a complete 2D game runtime with scenes, game-loop ownership, input, audio, physics, cameras, scaling, and game-state transitions. Read `references/phaser-v4.md`; do not depend on an unverified community skill pack.
 - Use Three.js or React Three Fiber for focused 3D scene rendering; use Babylon.js or PlayCanvas when a fuller 3D engine is justified. Existing project runtimes still win when they meet the capability and budget.
@@ -317,11 +319,17 @@ Before writing design artifacts or code:
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
-- Write `frontend-stack-request.json`, then run `designer-pipeline design-system resolve-stack
-  --artifact frontend-stack-request.json --write --output frontend-stack-decision.json`. This is
-  mandatory for every frontend change, including a project-owned `none` choice. The request records
-  the framework, current stack, explicit requested stack, brief, and capabilities. Do not infer a
-  library from taste alone. A blocked decision stops the run.
+- Write `toolchain-request.json`, then run `designer-pipeline toolchain resolve --artifact
+  toolchain-request.json --write --output toolchain-plan.json`. This is mandatory for every
+  frontend change, including a project-owned `none` UI-library choice. The request records the
+  framework, current and requested stack, brief, capabilities, and any graphics family or adapter.
+  The plan owns the joined frontend/tool/graphics selection plus `probe`, `invoke`, and `verify`
+  descriptors. Do not infer a library from taste alone. A blocked plan stops the run. The older
+  `design-system resolve-stack` command remains a narrower compatibility surface.
+- Run `designer-pipeline toolchain probe --artifact toolchain-request.json` before invoking a
+  selected external runtime. Probes are read-only and registry-owned; they never install or update
+  a package. Record every invocation as `design-pipeline.toolchain-receipt.v1`, binding the plan
+  hash, actual tool version, command, exit code, artifacts, hashes, and linked evidence receipts.
 - Run `designer-pipeline design-system decompose --query "<product brief>" --write --output
   capability-inventory.json`, then `designer-pipeline design-system route --query "<product
   brief>" --platform <platform>`. Record the selected routes and unavailable capabilities in the
@@ -346,7 +354,10 @@ Before writing design artifacts or code:
   without either artifact is blocked; custom mode still requires the frontend-stack decision.
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
-- Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.
+- Confirm the graphics selection in `toolchain-plan.json` against
+  `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it
+  satisfies the capability and budget; a selected adapter without a trusted lifecycle blocks the
+  unified plan instead of becoming an implied execution path.
 - Resolve the reference source to a file path here, before any reference artifact is written -
   before `reference.md`, before `reference-evidence.json`, and before `reconstruction.json`. Ask
   the user for the path when it is not resolvable and name what it unlocks: rectification, camera

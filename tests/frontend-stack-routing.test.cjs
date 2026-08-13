@@ -73,3 +73,23 @@ test("routing refuses an implicit request contract", () => {
   assert.throws(() => resolveFrontendStack({ framework: "react", brief: "React UI" }, registry, skills), /unsupported request/);
   assert.throws(() => resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "react" }, registry, skills), /brief is required/);
 });
+
+test("Reflex is governed and incompatible React UI libraries still block", () => {
+  const ready = resolveFrontendStack({
+    schema: "design-pipeline.frontend-stack-request.v1",
+    framework: "reflex",
+    brief: "Reflex analytics page",
+    requested: { styling: "tailwindcss", uiLibrary: "none" },
+  }, registry, skills);
+  assert.equal(ready.status, "ready");
+  assert.equal(ready.framework, "reflex");
+
+  const blocked = resolveFrontendStack({
+    schema: "design-pipeline.frontend-stack-request.v1",
+    framework: "reflex",
+    brief: "Reflex analytics page",
+    requested: { styling: "tailwindcss", uiLibrary: "mui" },
+  }, registry, skills);
+  assert.equal(blocked.status, "blocked");
+  assert.ok(blocked.blockers.some((item) => item.includes("does not support reflex")));
+});

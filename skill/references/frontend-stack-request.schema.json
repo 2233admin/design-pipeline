@@ -7,7 +7,7 @@
   "required": ["schema", "framework", "brief"],
   "properties": {
     "schema": { "const": "design-pipeline.frontend-stack-request.v1" },
-    "framework": { "enum": ["react", "svelte", "vue", "solid", "agnostic"] },
+    "framework": { "enum": ["react", "svelte", "vue", "solid", "reflex", "agnostic"] },
     "brief": { "type": "string", "minLength": 1 },
     "existing": { "type": "object" },
     "requested": { "type": "object" },

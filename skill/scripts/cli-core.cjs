@@ -44,6 +44,7 @@ const {
 } = require("./design-system-provider-core.cjs");
 const { routeComponents } = require("./component-route-core.cjs");
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
+const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
@@ -212,6 +213,7 @@ function publicHelp() {
     "  verify motion|components",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
+    "  toolchain resolve|probe|receipt-check",
     "  benchmark brief|evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
     "",
@@ -553,6 +555,37 @@ function writeResult(parsed, root, value) {
   return atomicWriteProviderJson(root, output, value);
 }
 
+function toolchainSources() {
+  return {
+    frontendRegistry: bundledFrontendStackRegistry(),
+    skillCatalog: readJson(builtIn("mengto-skills-catalog.json"), "MengTo skill catalog"),
+    adapterRegistry: readJson(builtIn("adapter-registry.json"), "adapter registry"),
+    graphicsCatalog: readJson(builtIn("graphics-runtime-catalog.json"), "graphics catalog"),
+  };
+}
+
+function toolchainCommand(parsed, root, action) {
+  if (["resolve", "probe"].includes(action)) {
+    const request = readJson(artifact(parsed, root, "--artifact"), "toolchain request");
+    const plan = resolveToolchain(request, toolchainSources());
+    const result = action === "probe" ? probeToolchain(plan, { projectRoot: root }) : plan;
+    const output = writeResult(parsed, root, result);
+    return { result: { status: result.status, [action === "probe" ? "probe" : "plan"]: result, ...(output ? { output } : {}) }, exitCode: result.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "receipt-check") {
+    const receiptFile = artifact(parsed, root, "--receipt");
+    const evidenceRoot = contained(root, option(parsed, "--evidence-root", path.dirname(receiptFile)), "--evidence-root");
+    const plan = option(parsed, "--artifact") ? readJson(artifact(parsed, root, "--artifact"), "toolchain plan") : null;
+    const result = validateToolchainReceipt(readJson(receiptFile, "toolchain receipt"), {
+      evidenceRoot,
+      requireFiles: option(parsed, "--require-files") === true,
+      ...(plan ? { plan } : {}),
+    });
+    return { result, exitCode: result.status === "blocked" ? 2 : 0 };
+  }
+  fail("cli", `unknown toolchain action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
 function designSystemCommand(parsed, root, action) {
   if (action === "options") {
     const registry = bundledFrontendStackRegistry();
@@ -725,6 +758,7 @@ const COMMANDS = {
   verify: { run: ({ parsed, root, action }) => verifyCommand(parsed, root, action) },
   patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
+  toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
   direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },

@@ -167,6 +167,7 @@ node skill/scripts/evaluate-website-clone.cjs \
 
 按能力合同路由，不按库偏好。支持：
 
+- **数据可视化**：XY（Python、Reflex、Notebook、静态导出与大数据交互）
 - **2D 渲染**：PixiJS v8（精灵、粒子、滤镜、着色器）
 - **2D 游戏**：Phaser v4（完整浏览器游戏运行时）
 - **3D 渲染**：Three.js、React Three Fiber
@@ -174,6 +175,36 @@ node skill/scripts/evaluate-website-clone.cjs \
 - **GPU/着色器**：WebGPU/WGSL
 
 持久空间工作添加 `scene.json` 和 `scene.md` 投影，记录坐标、生命周期、资产、性能预算。
+
+### 统一前端工具链
+
+`toolchain resolve` 将框架、样式、组件库、外部工具和图形运行时合并成一份可执行计划。
+管线只负责选择、探测、调用描述和验收契约；依赖仍由目标项目安装和固定版本。
+
+```json
+{
+  "schema": "design-pipeline.toolchain-request.v1",
+  "framework": "reflex",
+  "brief": "Reflex analytics page with an XY chart",
+  "requested": { "styling": "tailwindcss", "uiLibrary": "none" },
+  "graphics": { "family": "vector-data" }
+}
+```
+
+```bash
+node skill/scripts/designer-pipeline.cjs toolchain resolve \
+  --root . --artifact toolchain-request.json --write --output toolchain-plan.json --json
+
+node skill/scripts/designer-pipeline.cjs toolchain probe \
+  --root . --artifact toolchain-request.json --json
+
+node skill/scripts/designer-pipeline.cjs toolchain receipt-check \
+  --root . --artifact toolchain-plan.json --receipt evidence/toolchain-receipt.json \
+  --evidence-root evidence --require-files --json
+```
+
+`resolve` 不执行安装；`probe` 只运行注册表内置的只读可用性检查。完整调用必须留下
+`design-pipeline.toolchain-receipt.v1`，绑定计划哈希、实际版本、命令、退出码、产物和哈希。
 
 ### 反 Slop 审查
 
@@ -192,6 +223,7 @@ node skill/scripts/evaluate-anti-slop.cjs \
 
 ```bash
 node skill/scripts/designer-pipeline.cjs doctor --root . --json
+node skill/scripts/designer-pipeline.cjs toolchain resolve --root . --artifact toolchain-request.json --json
 node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
 node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
 ```

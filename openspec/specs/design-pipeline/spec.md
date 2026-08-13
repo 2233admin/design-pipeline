@@ -154,6 +154,44 @@ durable capability family before selecting a library, skill, MCP host, or framew
   adapter with explicit lifecycle, budgets, degradation, deterministic evidence, and cleanup
   ownership.
 
+### Requirement: Frontend tools resolve through one executable plan
+
+The pipeline SHALL join frontend-stack, governed tool, and graphics-runtime decisions into one
+deterministic `design-pipeline.toolchain-plan.v1` before external tools are invoked.
+
+#### Scenario: A frontend toolchain is resolved
+
+- **WHEN** a valid request declares framework, brief, current/requested stack, capabilities, and an
+  optional graphics family or adapter
+- **THEN** `designer-pipeline toolchain resolve` SHALL emit the selected styling, UI library,
+  graphics adapter, tools, probes, invocations, verification requirements, blockers, and hashes of
+  every governing registry
+- **AND** a catalog-only adapter or an adapter without a trusted `probe`, `plan`, `invoke`, and
+  `verify` lifecycle SHALL block the unified plan rather than imply execution support.
+
+#### Scenario: Tool availability is checked
+
+- **WHEN** `designer-pipeline toolchain probe` evaluates a ready plan
+- **THEN** it SHALL execute only bundled read-only probe commands with a timeout and bounded output
+- **AND** it SHALL NOT install, update, download, or start the selected project runtime
+- **AND** an unavailable required tool SHALL produce a blocked probe result.
+
+#### Scenario: An external tool invocation completes
+
+- **WHEN** the selected tool is invoked by the target project or agent host
+- **THEN** the result SHALL use `design-pipeline.toolchain-receipt.v1`
+- **AND** the receipt SHALL bind the plan hash, actual tool version, command, exit code, timestamps,
+  artifact paths and hashes, and linked evidence receipts
+- **AND** a complete receipt with a failed command or no evidence SHALL be invalid.
+
+#### Scenario: Reflex selects the XY chart route
+
+- **WHEN** framework is `reflex` and the requested graphics family is `vector-data`
+- **THEN** the unified resolver SHALL select `reflex-xy`
+- **AND** its lifecycle SHALL probe installed `xy` and `reflex` package metadata without importing
+  or installing them
+- **AND** the invocation SHALL remain owned by the target Reflex project.
+
 ### Requirement: Reference evidence selects the spatial route
 
 The pipeline SHALL separate observed reference evidence from design treatment and runtime
@@ -231,6 +269,29 @@ skill pack or credentialed host.
 - **THEN** local Phaser routing SHALL remain available from the built-in contract and official
   documentation
 - **AND** the unavailable or unverified surface SHALL NOT be automatically installed or required.
+
+### Requirement: XY is a native Python charting route
+
+The pipeline SHALL support XY as a built-in `vector-data` routing contract for Python charts,
+notebooks, static exports, Reflex applications, and large datasets without automatically installing
+or vendoring its runtime.
+
+#### Scenario: XY is justified by the target surface
+
+- **WHEN** the project uses Python and requires interactive charts, notebook display, Reflex
+  integration, static chart export, or screen-bounded rendering for large datasets
+- **THEN** the pipeline SHALL select `reflex-xy` or preserve an equivalent accepted project runtime
+- **AND** the target project SHALL pin the selected pre-1.0 version and verify its actual output,
+  accessibility, performance, CSP, and hosting boundaries.
+
+#### Scenario: Interactive XY cannot provide a complete semantic path
+
+- **WHEN** WebGL, the Python host, direct-point keyboard navigation, or aggregated-bin navigation is
+  unavailable or incomplete for the required user path
+- **THEN** the product SHALL provide a tested static export and semantic data table or equivalent
+  accessible representation
+- **AND** the pipeline SHALL NOT treat XY's built-in routing contract as proof that its runtime is
+  installed or that the chart is accessible.
 
 ### Requirement: Narrative game UI preserves product state semantics
 

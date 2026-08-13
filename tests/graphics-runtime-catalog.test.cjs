@@ -32,6 +32,21 @@ test("PixiJS and Phaser routes resolve to authoritative support and provenance f
   assert.equal(phaser.provenance.reviewedVersion, "4.2.1");
 });
 
+test("XY is a pinned native vector-data route with packaged alpha boundaries", () => {
+  const route = catalog.routes.find(({ family }) => family === "vector-data");
+  const xy = registry.adapters.find(({ id }) => id === "reflex-xy");
+  const guidance = fs.readFileSync(path.join(references, "xy-charting.md"), "utf8");
+  assert.ok(route.adapterIds.includes("reflex-xy"));
+  assert.equal(xy.support, "native");
+  assert.equal(xy.hostPolicy, "project-installed-only");
+  assert.equal(xy.provenance.reviewedVersion, "0.0.6");
+  assert.equal(xy.provenance.revision, "55b8b61e432842995dc0b581113b0998a70a052d");
+  assert.equal(xy.license.id, "Apache-2.0");
+  assert.match(guidance, /alpha/i);
+  assert.match(guidance, /semantic data table/i);
+  assert.match(guidance, /pip install xy/);
+});
+
 test("unverified community routes cannot claim native/companion support or install commands", () => {
   for (const adapter of registry.adapters.filter((item) => item.license.state === "unverified")) {
     assert.ok(!["native", "companion"].includes(adapter.support));

@@ -39,6 +39,7 @@
     "reconstruction.test.cjs",
     "round-two-findings.test.cjs",
     "scene-runtime.test.cjs",
+    "toolchain-routing.test.cjs",
     "ui-pattern-catalog.test.cjs",
     "visual-style-signals.test.cjs",
     "web-evidence-adapter.test.cjs",

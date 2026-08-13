@@ -31,12 +31,18 @@ Model capability can improve implementation quality; it does not replace these c
 
 Do not select a library because it is popular, installed, or visually impressive.
 
+For Python charting, notebook, static-export, or Reflex application work where large-data
+interaction is material, the built-in `reflex-xy` route is available. Read `xy-charting.md` before
+selecting it. XY is alpha and project-installed-only: pin the target project's version, verify the
+required export and accessibility surfaces, and preserve an accepted chart runtime when it already
+satisfies the contract.
+
 ## Families
 
 | Family | Typical route | Primary fit |
 | --- | --- | --- |
 | `semantic-ui` | DOM/CSS/WAAPI | Text, forms, navigation, workflows, semantic accessibility |
-| `vector-data` | SVG/D3/ECharts | Data marks, labels, axes, inspectability |
+| `vector-data` | SVG/D3, XY, ECharts | Data marks, labels, axes, inspectability, large Python datasets |
 | `canvas-editor-2d` | Canvas/Konva/Fabric | Selection, transforms, drawing, infinite canvas |
 | `scene-renderer-2d` | PixiJS | Sprites, particles, filters, high object counts |
 | `game-engine-2d` | Phaser | Scenes, cameras, input, audio, physics, game state |

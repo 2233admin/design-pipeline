@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline.graphics-runtime-catalog.v2",
-  "updatedAt": "2026-07-23",
+  "updatedAt": "2026-08-13",
   "principles": [
     "Select a capability family before selecting a library.",
     "Preserve the target repository's accepted runtime when it satisfies the design contract.",
@@ -9,7 +9,7 @@
   ],
   "families": [
     {"id":"semantic-ui","name":"Semantic web UI","useWhen":"Text, navigation, forms, product workflows, overlays, and accessible components are primary.","defaultSurface":"DOM"},
-    {"id":"vector-data","name":"Vector and data visualization","useWhen":"Charts, diagrams, topology, axes, labels, or inspectable data marks are primary.","defaultSurface":"SVG or Canvas"},
+    {"id":"vector-data","name":"Vector and data visualization","useWhen":"Charts, diagrams, topology, axes, labels, inspectable data marks, or large tabular datasets are primary.","defaultSurface":"SVG, Canvas, or WebGL with semantic chrome"},
     {"id":"canvas-editor-2d","name":"2D canvas editor","useWhen":"Selection, transforms, handles, free drawing, object editing, or an infinite canvas is primary.","defaultSurface":"Canvas 2D or WebGL"},
     {"id":"scene-renderer-2d","name":"2D scene renderer","useWhen":"Sprites, particles, filters, shaders, or high object counts need a dedicated scene renderer.","defaultSurface":"Canvas, WebGL, or WebGPU"},
     {"id":"game-engine-2d","name":"2D game engine","useWhen":"Scenes, cameras, input, audio, physics, game state, assets, and game lifecycle must work together.","defaultSurface":"Canvas and DOM overlay"},
@@ -22,7 +22,7 @@
   ],
   "routes": [
     {"family":"semantic-ui","adapterIds":["dom-css-waapi"]},
-    {"family":"vector-data","adapterIds":["svg-d3","apache-echarts"]},
+    {"family":"vector-data","adapterIds":["svg-d3","reflex-xy","apache-echarts"]},
     {"family":"canvas-editor-2d","adapterIds":["canvas-2d","konva","fabricjs"]},
     {"family":"scene-renderer-2d","adapterIds":["pixijs-v8"]},
     {"family":"game-engine-2d","adapterIds":["phaser-v4","phaser-game-agent-mcp","phaser4-community-skill-pack"]},

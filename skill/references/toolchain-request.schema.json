@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/toolchain-request.v1.json",
+  "title": "Unified Frontend Toolchain Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "framework", "brief"],
+  "properties": {
+    "schema": { "const": "design-pipeline.toolchain-request.v1" },
+    "framework": { "enum": ["react", "svelte", "vue", "solid", "reflex", "agnostic"] },
+    "brief": { "type": "string", "minLength": 1 },
+    "existing": { "type": "object" },
+    "requested": { "type": "object" },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "graphics": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "adapter": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

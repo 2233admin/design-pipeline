@@ -6,6 +6,15 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Added unified `toolchain resolve`, `toolchain probe`, and `toolchain receipt-check` commands that
+  join frontend-stack and graphics routing into a hash-bound executable plan without installing
+  target-project dependencies.
+- Added the first complete adapter lifecycle for Reflex + XY, including a read-only availability
+  probe, project-owned invocation descriptor, standardized receipt, artifact hashes, and Reflex
+  framework routing.
+- Added XY as a built-in, project-installed Python charting route for notebooks, Reflex apps,
+  static exports, and large datasets, with pinned alpha/version, accessibility, CSP, and fallback
+  boundaries.
 - Added an explicit, low-frequency Koboyo hand-drawn icon route with read-only MCP discovery,
   license constraints, credential handling, and non-default routing tests.
 - Added a mandatory frontend-stack and tool-routing gate with all supported styling choices, 15 UI
