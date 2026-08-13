@@ -21,9 +21,10 @@
 | Builder | Pass | Builder self-test; 22 localized assets; `experiments/prewalk-pipeline/build-receipt.json` |
 | Runtime source independence | Pass | Zero forbidden iframe, live Stencil CSS, module preload, external script, or root-relative asset matches |
 | Asset integrity | Pass | All 22 manifest destinations exist and match their SHA-256 values |
+| Evidence retention | Pass | Superseded verification rounds removed; retained baseline A, final evidence, and the reference cache required for reproduction |
 | Website clone evaluator | Pass | Verdict `complete`, no reasons; `website-cloning.json`, `verification.json` |
-| Pipeline lifecycle | Pass | v2 state at `gate-review`, status `verifying`, event history `consistent` |
-| Regression checks | Pass | 39/39 website-cloning and pipeline CLI tests; both local adapters passed self-test and syntax check |
+| Pipeline lifecycle | Pass | v2 state at `archive`, status `complete`, event history `consistent` |
+| Regression checks | Pass | 372/372 repository tests; both local adapters passed pinned-runtime self-test and syntax check |
 
 ## Visual And Responsive Evidence
 
@@ -64,8 +65,11 @@ comparison is `ab-comparison.json`.
 
 ## Engineering Fit And Limits
 
-- The implementation adds no framework, runtime library, package, iframe, analytics, or hydration
-  dependency. Existing Node, Playwright, PNGJS, and Pixelmatch installations are reused.
+- The implementation adds no framework, iframe, analytics, or hydration dependency. The isolated
+  browser adapter pins Playwright, PNGJS, and Pixelmatch in `tools/browser-automation/package-lock.json`;
+  `npm ci`, `npm run install-browser`, and `npm test` reproduce its runtime and self-checks.
+- Repo-relative implementation paths are converted to `file:` URLs only for browser navigation, so
+  newly generated comparison receipts do not embed the checkout's absolute path.
 - Localized source assets are licensed here only as local evaluation evidence and are not cleared for
   publication.
 - The repository-local pipeline was authoritative for this run. The globally installed copy lacks

@@ -15,7 +15,8 @@
     "verification-final/runtime-audit.json",
     "fidelity-receipt.json",
     "ab-comparison.json",
-    "verification-baseline-a/comparison.json"
+    "verification-baseline-a/comparison.json",
+    "qa.md"
   ],
   "extensions": {
     "legacy": {
@@ -76,7 +77,7 @@
       "validator": "designer-pipeline foundation check --kind motion"
     }
   },
-  "lastEventSeq": 11,
+  "lastEventSeq": 12,
   "migration": {
     "sourceNextField": "nextActions",
     "sourcePhaseField": "phase",
@@ -84,14 +85,12 @@
     "sourceSha256": "bbfec10ec08e35378407febaac335f5e9fc77ada8fa055e9051ac9aac9792aff",
     "sourceStatus": "planned"
   },
-  "nextActions": [
-    "Review A and B side by side in the browser"
-  ],
-  "phase": "release-readiness",
+  "nextActions": [],
+  "phase": "archive",
   "registryVersion": "design-pipeline.phases.v2",
-  "revision": 11,
+  "revision": 12,
   "sceneRuntime": null,
   "schema": "design-pipeline.state.v2",
-  "status": "verifying",
-  "updatedAt": "2026-08-12T19:34:14.112Z"
+  "status": "complete",
+  "updatedAt": "2026-08-13T06:41:56.736Z"
 }

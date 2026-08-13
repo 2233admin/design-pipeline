@@ -3,9 +3,9 @@
 ## Current State
 
 - Change id: `clone-stencil-prewalk-pipeline`
-- Status: verifying
-- Phase: release readiness
-- Last updated: 2026-08-12T19:31:46.130Z
+- Status: complete
+- Phase: archive
+- Last updated: 2026-08-13T06:41:56.736Z
 
 ## Goal
 
@@ -28,6 +28,8 @@ Reconstruct the authorized target website surfaces with auditable extraction and
 - Preserve all 12 regions and the source's mobile horizontal-overflow invariant.
 - Localize every runtime visual dependency; use responsive static frames only for the four
   non-interactive canvases.
+- Pin the isolated browser adapter runtime and retain only baseline A, final evidence, and the
+  reference cache needed to reproduce the comparison.
 
 ## Blockers
 
@@ -35,8 +37,7 @@ None recorded.
 
 ## Next Actions
 
-1. Compare candidate B with the preserved baseline A.
-2. Obtain explicit authorization before publishing or pushing shared branches.
+None. The verified reconstruction is archived.
 
 <!-- DESIGN-PIPELINE:WEBSITE-CLONING-EVALUATION:START -->
 
@@ -52,6 +53,6 @@ None recorded.
 
 ### Next Action
 
-Compare candidate B with the preserved baseline A; all remaining design-pipeline gates have passed.
+None. Candidate B passed the declared gates and the A/B comparison; the change is archived.
 
 <!-- DESIGN-PIPELINE:WEBSITE-CLONING-EVALUATION:END -->

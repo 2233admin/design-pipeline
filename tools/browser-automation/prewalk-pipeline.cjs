@@ -7,11 +7,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { chromium } = require("playwright");
-const pixelmatchModule = require("pixelmatch");
-const { PNG } = require("pngjs");
-
-const pixelmatch = pixelmatchModule.default || pixelmatchModule;
+const { pathToFileURL } = require("node:url");
 const DEFAULT_VIEWPORTS = [
   { width: 1440, height: 900 },
   { width: 768, height: 1024 },
@@ -48,6 +44,10 @@ function keyFor(viewport) {
 
 function normalizeText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function navigationTarget(value) {
+  return /^(?:https?|file):/i.test(value) ? value : pathToFileURL(path.resolve(value)).href;
 }
 
 function ensureOut(out) {
@@ -249,6 +249,7 @@ async function replayCopy(page) {
 async function capture(options) {
   ensureOut(options.out);
   if (!options.url) throw new Error("--url is required");
+  const { chromium } = require("playwright");
   const browser = await chromium.launch({ headless: !options.headed });
   const summary = { adapter: "playwright-chromium", browserVersion: browser.version(), visibleBrowser: options.headed, viewports: [] };
   try {
@@ -265,7 +266,7 @@ async function capture(options) {
           },
         });
       });
-      const response = await page.goto(options.url, { waitUntil: "networkidle", timeout: 90000 });
+      const response = await page.goto(navigationTarget(options.url), { waitUntil: "networkidle", timeout: 90000 });
       await waitUntilStable(page);
       await walkPage(page);
       const report = await inspectPage(page, response, viewport);
@@ -298,7 +299,7 @@ async function capture(options) {
   process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 }
 
-function padImage(image, width, height) {
+function padImage(image, width, height, PNG) {
   const padded = new PNG({ width, height, colorType: 6 });
   padded.data.fill(255);
   PNG.bitblt(image, padded, 0, 0, image.width, image.height, 0, 0);
@@ -366,6 +367,8 @@ function interactionCoverage(reference, implementation) {
 async function compare(options) {
   ensureOut(options.out);
   if (!options.url || !options.implementationUrl) throw new Error("--url and --implementation-url are required");
+  const [{ PNG }, pixelmatchModule] = await Promise.all([import("pngjs"), import("pixelmatch")]);
+  const pixelmatch = pixelmatchModule.default;
   const referenceOut = options.referenceDir || path.join(options.out, "reference");
   const implementationOut = path.join(options.out, "implementation");
   if (!options.referenceDir) await capture({ ...options, out: referenceOut });
@@ -377,8 +380,8 @@ async function compare(options) {
     const implementationImage = PNG.sync.read(fs.readFileSync(path.join(implementationOut, `full-${key}.png`)));
     const width = Math.max(referenceImage.width, implementationImage.width);
     const height = Math.max(referenceImage.height, implementationImage.height);
-    const reference = padImage(referenceImage, width, height);
-    const implementation = padImage(implementationImage, width, height);
+    const reference = padImage(referenceImage, width, height, PNG);
+    const implementation = padImage(implementationImage, width, height, PNG);
     const diff = new PNG({ width, height });
     const different = pixelmatch(reference.data, implementation.data, diff.data, width, height, { threshold: 0.1, includeAA: true });
     fs.writeFileSync(path.join(options.out, `diff-${key}.png`), PNG.sync.write(diff));
@@ -417,8 +420,9 @@ function selfTest() {
   assert.deepEqual(parseViewports("390x844,1440x900"), [{ width: 390, height: 844 }, { width: 1440, height: 900 }]);
   assert.equal(normalizeText(" a\n b  "), "a b");
   assert.equal(textCoverage("alpha beta", "alpha beta gamma"), 1);
-  const same = new PNG({ width: 1, height: 1 });
-  same.data.fill(255);
+  assert.match(navigationTarget("fixture.html"), /^file:\/\//);
+  assert.equal(navigationTarget("https://example.com"), "https://example.com");
+  const same = { width: 1, height: 1, data: Buffer.alloc(4, 255) };
   assert.equal(windowedSsim(same, same), 1);
   process.stdout.write("OK prewalk pipeline browser adapter self-test\n");
 }
