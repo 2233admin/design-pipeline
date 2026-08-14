@@ -131,6 +131,20 @@ design、diff review、document critique 与 game balance 七份默认蓝图；�
 项目可以携带新的 Blueprint，声明自己的交互结构、状态输出、QA 和受允许的集成目标，
 Blueprint 哈希变化会自动使旧浏览器验证失效。
 
+### 分层自适应
+
+Design Pipeline 可以从明确纠正和重复使用证据中提出更合适的协作或项目规则，但不会训练
+模型权重，也不会自动改写方法论。Methodology Kernel 与质量门禁保持冻结；当前任务策略
+只在本次任务有效；项目和用户规则存放在外部、版本化的 JSON Skill 中。每个候选只能做
+一次 `add`、`replace` 或 `delete`，默认停留在影子模式。只有不同评估者在互不重叠的 replay
+与 held-out 场景中都测得严格提升、所有不变量通过、哈希一致且用户明确批准后，候选才能
+晋升。持久规则只能选择有限的协作维度，不接受自由文本行为指令；候选绑定外部 Skill 的
+精确路径、版本和内容哈希，晋升与回退通过可恢复的 prepare/commit 日志避免半提交状态。
+账本使用进程互斥区分“仍在写入”和“崩溃待恢复”，同一维度只保留 task > project > user >
+defaults 的一个有效值；参与者标签与审批/拒绝理由只保存用途隔离的哈希，不保存原文。
+`adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget` 提供检查、
+作用域合并、拒绝、回退和真正移除候选内容的完整生命周期。
+
 ### 直接表达
 
 面向用户的提示、错误、公告和恢复说明先写清实际影响或下一步，再解释内部原因。第二遍
@@ -336,6 +350,7 @@ node skill/scripts/designer-pipeline.cjs doctor --root . --json
 node skill/scripts/designer-pipeline.cjs toolchain resolve --root . --artifact toolchain-request.json --json
 node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
 node skill/scripts/designer-pipeline.cjs playground check --root . --change-root openspec/changes/example --stage integration --json
+node skill/scripts/designer-pipeline.cjs adaptation check --root . --json
 node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
 ```
 

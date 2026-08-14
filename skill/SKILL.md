@@ -279,6 +279,8 @@ Direct plain-language contract: `references/plain-language.md`.
 CJK typography contract: `references/cjk-typography.md`.
 Visual direction preview contract: `references/direction-preview.md`.
 Governed Playground contract: `references/playground.md`.
+Evidence-gated layered adaptation contract: `references/adaptation.md`.
+Machine-readable adaptation contract: `references/adaptation-contract.schema.json`.
 Framework-agnostic component contract: `references/component-capabilities.md`.
 Project motion foundation reference: `references/motion-foundation.md`.
 Machine-readable motion foundation schema: `references/motion-foundation.schema.json`.
@@ -915,6 +917,12 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
   receipts pass their public schemas when used.
 - Benchmark gate: every required responsive, accessibility, palette, motion, scene, component-state,
   and evidence scenario passes; aggregates cannot hide a required failure.
+- Adaptation gate when active: read `references/adaptation.md`; keep the Methodology Kernel frozen;
+  keep task policy ephemeral; admit exactly one inert `add`, `replace`, or `delete` candidate; and
+  require independent, hash-bound, disjoint replay and held-out evidence with strict improvement,
+  complete invariants, and explicit approval before a project or user skill is promoted. A shadow
+  candidate, tie, unknown, regression, scope mismatch, or missing evidence never changes effective
+  guidance.
 - Adapter governance gate: catalog routes resolve through the registry and new adapters pass pinned
   provenance, license, maintenance, security, permission, degradation, and admission review.
 
@@ -944,6 +952,27 @@ The local loop is:
 
 When modifying `design-pipeline` itself, use this same pipeline and OpenSpec lifecycle. The pipeline is allowed to improve itself, but it must not silently mutate third-party skills or use ambient credentials to create remote artifacts.
 
+## Layered Adaptation Loop
+
+Use `references/adaptation.md` only after the user's requested artifact or implementation is
+delivered. Capture minimal evidence rather than transcripts. Treat a single acceptance or silence
+as weak evidence; it cannot produce durable guidance. Keep every candidate in shadow mode until a
+different evaluator runs both replay and held-out comparisons and `designer-pipeline adaptation
+evaluate` returns a passing hash-bound receipt.
+
+`Methodology Kernel` and packaged `skill/` resources are release-governed and cannot be adaptation
+targets. `Task Session Policy` expires. Only an external versioned Project Adaptation Skill or User
+Collaboration Skill may be promoted, and promotion requires explicit user approval. Durable rules
+select from the finite collaboration dimensions in the contract; they are never free-form behavior
+instructions. Bind each candidate to the exact external-skill path, incumbent content hash, metric
+direction, manifest, and construction fixtures before evaluation. Promotion and rollback use their
+process-owned, recoverable prepare/commit journal; raw actor and review labels are stored only as
+purpose-separated hashes. Resolve mutually exclusive values by collaboration dimension in the
+order defaults, user, project, current task while carrying constraints
+and quality gates as immutable inputs. Rejection leaves the incumbent unchanged. Roll back before
+forgetting a promoted candidate, then remove its usable content and retain only the non-sensitive
+tombstone required to prevent reinstatement.
+
 ## Output Contract
 
 Final responses should report:
@@ -952,6 +981,8 @@ Final responses should report:
 - Project `DESIGN.md` path, input mode, scope score/budget, and Wayfinder map URL when synthesis ran.
 - Implemented surfaces.
 - Playground applicability, selected state/integration status, and accepted prompt path when used.
+- Adaptation applicability, scope, shadow/evaluated/promoted disposition, evidence receipt, and
+  rollback or forgetting status when the layered loop was used.
 - Verification evidence.
 - Reference source availability. When it is `pending`, name the action that unlocks the measured
   gates: supply the source file path, which enables rectification, camera calibration, landmark

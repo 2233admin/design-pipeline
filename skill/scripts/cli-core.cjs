@@ -62,11 +62,12 @@ const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
 const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
+const { run: runAdaptation } = require("./adaptation-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary"]);
-const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--evidence", "--file", "--next-action", "--validation"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
+const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
@@ -74,8 +75,9 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--outcome", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill", "--state",
-  "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
+  "--outcome", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
+  "--scope", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
+  "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash",
 ]);
 
 function parseArgs(argv) {
@@ -271,6 +273,10 @@ function publicHelp() {
     "  execution route|prepare|finalize",
     "  benchmark brief|evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
+    "  adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget",
+    "    propose: --experience --evidence-hash --scope --proposer --skill --target-version --evaluation-manifest-sha256 --primary-metric --metric-direction --construction-fixture --rules",
+    "    rule shape: { op, id, rule: { dimension, value, appliesTo?, excludes?, expiresAt? } }; each skill has at most one rule per dimension; see references/adaptation-contract.schema.json",
+    "    evaluate: --candidate --replay --held-out --evaluator; promote: --candidate --receipt --skill --approve --approval",
     "",
     "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked, 3 measured fidelity mismatch.",
   ].join("\n");
@@ -945,6 +951,43 @@ function styleSignalsCheckCommand({ file }) {
   return { result: validateStyleSignals(readJson(file("--artifact"), "style signals")), exitCode: 0 };
 }
 
+function adaptationCommand(parsed, root, action) {
+  if (action === "resolve") {
+    const result = runAdaptation(root, action, { state: option(parsed, "--state"), input: readJson(artifact(parsed, root, "--artifact"), "adaptation policy input") });
+    return { result, exitCode: 0 };
+  }
+  const result = runAdaptation(root, action, {
+    state: option(parsed, "--state"),
+    scope: option(parsed, "--scope"),
+    experience: option(parsed, "--experience"),
+    artifact: option(parsed, "--artifact"),
+    rules: option(parsed, "--rules"),
+    rule: option(parsed, "--rule"),
+    recorder: option(parsed, "--recorder"),
+    actor: option(parsed, "--actor"),
+    proposer: option(parsed, "--proposer"),
+    candidate: option(parsed, "--candidate"),
+    replay: option(parsed, "--replay"),
+    heldOut: option(parsed, "--held-out"),
+    evaluator: option(parsed, "--evaluator"),
+    receipt: option(parsed, "--receipt"),
+    skill: option(parsed, "--skill"),
+    approve: option(parsed, "--approve") === true,
+    approval: option(parsed, "--approval"),
+    reason: option(parsed, "--reason"),
+    promotion: option(parsed, "--promotion"),
+    targetVersion: option(parsed, "--target-version"),
+    evaluationManifestHash: option(parsed, "--evaluation-manifest-sha256"),
+    primaryMetric: option(parsed, "--primary-metric"),
+    metricDirection: option(parsed, "--metric-direction"),
+    constructionFixtureIds: optionList(parsed, "--construction-fixture"),
+    evidenceHashes: [...optionList(parsed, "--evidence"), ...optionList(parsed, "--evidence-hash")],
+    failpoint: option(parsed, "--failpoint"),
+    timestamp: option(parsed, "--timestamp"),
+  });
+  return { result, exitCode: result.status === "blocked" ? 2 : 0 };
+}
+
 // `feedback` and `source audit` still delegate to the standalone kernels; the wrapper shape is the
 // same for every one of them, so the registry stores the script name rather than repeating it.
 function kernelEntry(script) {
@@ -983,6 +1026,7 @@ const COMMANDS = {
   toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
   execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
+  adaptation: { run: ({ parsed, root, action }) => adaptationCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
   direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },
   playground: { actions: { check: { run: ({ parsed, root }) => playgroundCommand(parsed, root) } } },
@@ -1074,7 +1118,7 @@ function execute(argv) {
     const outcome = dispatch(argv);
     return { output: jsonResult(true, outcome.result), exitCode: outcome.exitCode, json: outcome.json };
   } catch (error) {
-    return { output: jsonResult(false, {}, error), exitCode: error?.code === "BLOCKED" ? 2 : 1, json: argv.includes("--json") };
+    return { output: jsonResult(false, {}, error), exitCode: ["BLOCKED", "STATE_LOCKED"].includes(error?.code) ? 2 : 1, json: argv.includes("--json") };
   }
 }
 
