@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/toolchain-plan.v1.json",
+  "title": "Unified Frontend Toolchain Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "framework", "brief", "styling", "uiLibrary", "graphics", "tools", "probes", "invocations", "verification", "recommendedSkills", "blockers", "reviews", "evidence", "sourceHashes"],
+  "properties": {
+    "schema": { "const": "design-pipeline.toolchain-plan.v1" },
+    "status": { "enum": ["ready", "blocked"] },
+    "framework": { "enum": ["react", "svelte", "vue", "solid", "reflex", "agnostic"] },
+    "brief": { "type": "string", "minLength": 1 },
+    "styling": { "type": "object" },
+    "uiLibrary": { "type": "object" },
+    "graphics": { "type": ["object", "null"] },
+    "tools": { "type": "array", "items": { "type": "object" } },
+    "probes": { "type": "array", "items": { "type": "object" } },
+    "invocations": { "type": "array", "items": { "type": "object" } },
+    "verification": { "type": "array", "items": { "type": "object" } },
+    "recommendedSkills": { "type": "array", "items": { "type": "string" } },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "reviews": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "sourceHashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frontendRegistry", "adapterRegistry", "graphicsCatalog"],
+      "properties": {
+        "frontendRegistry": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "adapterRegistry": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "graphicsCatalog": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}

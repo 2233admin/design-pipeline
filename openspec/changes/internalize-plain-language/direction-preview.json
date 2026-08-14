@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "internalize-plain-language",
+  "applicability": {
+    "status": "waived",
+    "reason": "non-visual"
+  },
+  "comparison": null,
+  "directions": [],
+  "decision": {
+    "status": "waived",
+    "selectedDirectionId": null,
+    "rationale": "This change governs wording and review behavior without changing a product interface."
+  }
+}

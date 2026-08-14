@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/component-capability.v1.json",
+  "title": "Framework-agnostic Component Capability IR",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "brief", "components", "capabilities", "requiredChecks", "registryHash", "blockers"],
+  "properties": {
+    "schema": { "const": "design-pipeline.component-capability.v1" },
+    "status": { "enum": ["ready", "blocked"] },
+    "brief": { "type": "string", "minLength": 1 },
+    "components": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "capabilities": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "requiredChecks": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "registryHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "blockers": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schema": "prewalk.pipeline.comparison.v1",
+  "referenceUrl": "https://stencil.so/blog/prewalk",
+  "implementationUrl": "file:///D:/projects/design-pipeline/experiments/prewalk-story/index.html",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "pixelDifferenceRatio": 0.0756578760014089,
+      "ssim": 0.7416431302796099,
+      "maxLayoutDeltaPx": 4188.34,
+      "textCoverage": 0.904330312185297,
+      "interactionCoverage": 0.375,
+      "copyReplay": {
+        "reference": {
+          "attempted": true,
+          "writes": [
+            "https://stencil.so/blog/prewalk"
+          ]
+        },
+        "implementation": {
+          "attempted": true,
+          "writes": [
+            "https://stencil.so/blog/prewalk"
+          ]
+        }
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 13,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "pixelDifferenceRatio": 0.1885120317770487,
+      "ssim": 0.48977541980580774,
+      "maxLayoutDeltaPx": 4259.73,
+      "textCoverage": 0.904330312185297,
+      "interactionCoverage": 0.375,
+      "copyReplay": {
+        "reference": null,
+        "implementation": null
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 13,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "pixelDifferenceRatio": 0.08753693559235823,
+      "ssim": 0.7611097201058233,
+      "maxLayoutDeltaPx": 5641.63,
+      "textCoverage": 0.904330312185297,
+      "interactionCoverage": 0.375,
+      "copyReplay": {
+        "reference": null,
+        "implementation": null
+      },
+      "referenceAssetCount": 16,
+      "implementationAssetCount": 13,
+      "referenceInteractionCount": 8,
+      "implementationInteractionCount": 8,
+      "unresolvedDifferences": []
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "design-pipeline-prewalk-browser-automation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "install-browser": "playwright install chromium",
+    "test": "node prewalk-pipeline.cjs self-test && node build-prewalk-clone.cjs self-test"
+  },
+  "dependencies": {
+    "pixelmatch": "7.2.0",
+    "playwright": "1.62.0",
+    "pngjs": "7.0.0"
+  }
+}

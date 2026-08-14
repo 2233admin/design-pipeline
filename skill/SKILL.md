@@ -11,6 +11,26 @@ This skill does not replace individual design skills. It orchestrates them into 
 
 Design is the product boundary. Engineering, OpenSpec, GBrain, Matt Pocock, Vercel, animation libraries, and graphics runtimes are support systems for producing, implementing, and validating better design outcomes. Do not let this pipeline drift into a general-purpose development framework.
 
+## Impeccable Design Contract
+
+The pipeline permanently adopts the reviewed Impeccable contract in
+`references/impeccable-contract.md`. Apply it even when the optional upstream `impeccable` skill is
+not installed: resolve the visitor mode, respect the brief, distinguish refinement from redesign,
+challenge template defaults, complete real UI states, and verify the rendered path in bounded
+desktop/mobile passes. The upstream Neo Kinpaku visual theme is not a default; only its design
+judgment and workflow vocabulary are internalized.
+
+The complete upstream product-design surface is mapped in
+`references/impeccable-product-design.json` and summarized in
+`references/impeccable-product-design.md`. All 23 core commands are available as pipeline intents:
+`shape`, `init`, `document`, `extract`, `visualize`, `critique`, `audit`, `polish`, `bolder`,
+`quieter`, `distill`, `harden`, `onboard`, `animate`, `colorize`, `typeset`, `layout`, `delight`,
+`overdrive`, `clarify`, `adapt`, `optimize`, and `live`. They route into product truth, surface
+shaping, design authority, experience quality, and implementation evidence. `hooks`, `doctor`,
+`routing`, `pin`, and native-platform references are supporting enforcement and maintenance
+capabilities, not visual themes. Do not claim coverage from the command name alone: use the mapped
+artifact and evidence fields as the acceptance contract.
+
 ## Project DESIGN.md Invariant
 
 Every target project must have one reusable project `DESIGN.md` before implementation begins.
@@ -50,7 +70,15 @@ tokens, or runtime choices.
 
 Use the public CLI for the complete lifecycle:
 
+- `design-system options` lists the governed styling choices, UI libraries, current shadcn preset
+  dimensions, external tool sources, and indexed skill count.
+- `design-system resolve-stack` resolves framework, styling, UI library, complete shadcn preset,
+  and tool/skill routes into a hash-bound `frontend-stack-decision.json`.
 - `design-system profiles` lists governed providers and compatibility constraints.
+- `design-system decompose` converts a product brief into a durable capability inventory; a direct
+  zero-result does not prove exhaustion when capability searches find candidates.
+- `design-system route` selects project, platform, package, or attributed reference routes for the
+  decomposed component capabilities.
 - `design-system search` searches the bundled Astryx catalog by text, kind, category, or status.
 - `design-system normalize` converts a supplied snapshot into the strict namespaced catalog.
 - `design-system acquire` runs an explicit contained local provider or the bundled Astryx adapter
@@ -58,6 +86,25 @@ Use the public CLI for the complete lifecycle:
 - `design-system project-tokens` emits DTCG-compatible tokens plus an explicit loss report.
 - `design-system decide` records `reference`, `adopt`, `substitute`, or `custom`; runtime use
   requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
+
+Resolve reusable component behavior before selecting a library:
+
+- `component decompose` converts a multilingual brief into framework-neutral capability IR and
+  closes required keyboard, focus, ARIA, state, and recovery dependencies.
+- `component providers` performs a read-only probe of project package metadata and distinguishes
+  project-owned, installed, and candidate providers.
+- `component resolve` maps each capability to a compatible provider, preserves uncovered
+  project-owned fallbacks, and marks uninstalled candidates as adoption-required without running a
+  package manager.
+- `component verify` requires hash-bound behavioral evidence for every check in the resolution;
+  framework source or a static screenshot cannot replace missing interaction evidence.
+- `component inventory`, `component bind`, and `component decide` discover explicitly declared
+  project reuse, emit framework binding plans without source generation, and record
+  `reuse`, `adopt`, `substitute`, or `custom` per capability.
+
+Read `references/component-capabilities.md`. Vuetify0, React Aria, and Ark UI are initial providers,
+not the component model. Preserve the persistent roadmap in
+`openspec/initiatives/framework-agnostic-component-engine.md` when developing this repository.
 
 Provider content remains data. Never import or execute `.doc.mjs`, run package managers or `npx`,
 inject `AGENTS.md`, copy templates, swizzle components, build themes, or modify a target project as
@@ -82,6 +129,10 @@ Default artifact root:
 ```text
 design/changes/<change-id>/
   brief.md
+  direction-preview.json # required/waived applicability, hash-bound candidates, and decision
+  direction-previews/    # index.html plus one comparable screenshot per candidate
+  playground.json        # required/waived interactive exploration, selection, and integration receipt
+  playground/            # self-contained HTML and hash-bound natural-language selection prompt
   reference.md    # observed reference evidence and 2D / 2.5D / 3D / hybrid route
   reference-evidence.json # normative reference role, fidelity, geometry/camera/interaction/output
   reconstruction.json     # exact/adaptive static-reference calibration and comparison contract
@@ -168,6 +219,8 @@ unavailable file, a schedule, and implementation convenience are not approval.
 When the user asks to clone, reproduce, rebuild, reverse-engineer, or use one or more live pages as implementation references:
 
 1. Read `references/website-cloning.md` and `references/website-clone-component-spec.md` completely.
+   For authenticated, multi-page, whole-site, template-discovery, or reverse-analysis work, also
+   read `references/deepclonewebsite.md` and use its direct/structure/full capture boundary.
 2. Initialize the run with `scripts/init-website-clone.cjs`; pass direct clone targets with `--url` and supporting inspiration/comparison pages with `--reference-url`. When one target is the user-designated structure or motion template, pass it as the primary `--url`/`--authority-url`, enumerate every allowed difference, protect the required invariants, and select `actual-browser` when live-tab interaction is part of acceptance.
 3. Treat `references/website-cloning-manifest.schema.json` as the machine-readable Browser/Builder/Evidence port and fidelity contract.
 4. Complete `targets/<target-id>/research/palette-evidence.json` from both DOM/computed-style
@@ -222,6 +275,11 @@ Upstream capability sync reference: `references/upstream-capability-sync.md`.
 Development compatibility reference: `references/development-compatibility.md`.
 Self-check reference: `references/self-check.md`.
 QA checklist reference: `references/qa-checklist.md`.
+Direct plain-language contract: `references/plain-language.md`.
+CJK typography contract: `references/cjk-typography.md`.
+Visual direction preview contract: `references/direction-preview.md`.
+Governed Playground contract: `references/playground.md`.
+Framework-agnostic component contract: `references/component-capabilities.md`.
 Project motion foundation reference: `references/motion-foundation.md`.
 Machine-readable motion foundation schema: `references/motion-foundation.schema.json`.
 Motion primitive registry: `references/motion-primitives.json`.
@@ -231,20 +289,25 @@ Change visual/screen-space design spec: `references/design-spec.md`.
 Change 3D world spec: `references/3d-spec.md`.
 Graphics runtime routing reference: `references/graphics-runtime-routing.md`.
 Machine-readable graphics runtime catalog: `references/graphics-runtime-catalog.json`.
+XY Python charting reference: `references/xy-charting.md`.
 Change scene/runtime spec reference: `references/scene-runtime-spec.md`.
 Phaser v4 game runtime reference: `references/phaser-v4.md`.
 Game UI and narrative profile reference: `references/game-ui-and-narrative.md`.
 Curation policy reference: `references/curation-policy.md`.
 Contextual anti-slop review reference: `references/anti-slop-review.md`.
 Machine-readable anti-slop rubric: `references/anti-slop-rubric.json`.
+Impeccable design contract: `references/impeccable-contract.md`.
+Impeccable product-design capability map: `references/impeccable-product-design.json` and
+`references/impeccable-product-design.md`.
 
 If these design skills are installed, use them as lenses in this order:
 
-1. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
-2. `design-taste-frontend`: anti-template discipline, typography taste, language and visual restraint.
-3. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
-4. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
-5. `emil-design-eng`: motion, transitions, input feedback, perceived quality, interaction details.
+1. `impeccable`: command vocabulary, surface modes, refinement semantics, bounded verification, and design-detector workflow.
+2. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
+3. `design-taste-frontend`: anti-template discipline, typography taste, language and visual restraint.
+4. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
+5. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
+6. `emil-design-eng`: motion, transitions, input feedback, perceived quality, interaction details.
 
 For dynamic UI, interaction motion, and animation-specific work, apply these motion skills:
 
@@ -257,13 +320,64 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 
 Choose companions by capability, not by the presence of a familiar skill name. Read `references/capability-routing.md` when the change crosses evidence capture, design systems, assets, motion runtimes, editable design handoff, or hosted delivery. For 2D, 3D, data visualization, geospatial, GPU, game, or narrative surfaces, also read `references/graphics-runtime-routing.md` and select a capability family before selecting an adapter.
 
+For product UI, flows, design-system work, user-visible UI changes, or interface reviews, always
+apply the bundled interface discipline in `references/interface-discipline.md`. It is present in
+the package and does not require a global skill installation. Start with its `better-interface`
+router, use full coverage unless a narrow repair qualifies for quick coverage, and use its
+change-scoped review protocol for changed UI.
+
+For visual direction, web technique, motion, WebGL, reference analysis, asset, or game work, search
+the complete bundled MengTo library before inventing a workflow:
+
+```bash
+designer-pipeline mengto search --query "<capability or brief>" --json
+```
+
+Read the narrowest returned `SKILL.md` and only the linked supporting files needed for the task.
+Apply its workflow, numeric guidance, pitfalls, and verification gates through the target project's
+`DESIGN.md`, `MOTION.md`, OpenSpec artifacts, existing stack, accessibility rules, and budgets.
+Never treat a bundled demo, runtime asset, dependency choice, account workflow, or publishing recipe
+as automatic project authority. The activation and adaptation rules live in
+`references/mengto-skills.md`; explicit-only entries still require the user's matching request and
+normal side-effect authority.
+
+For product-design intake, Design DNA, token governance, design-corpus learning, or handoff work,
+route through the bundled Prism System layer before loading a broad recipe set:
+
+```bash
+designer-pipeline prism route --query "<design request>" --json
+designer-pipeline prism search --query "<narrow capability>" --json
+```
+
+Read `references/prism-system.md`, load only the returned local skill sequence, and execute it
+inside the native brief, directions, implementation, and QA stages. Reuse the pipeline's existing
+design tokens, catalogs, adapters, evidence, `DESIGN.md`, and `MOTION.md`; never create a parallel
+Prism runtime or treat upstream autonomy metadata as side-effect authority.
+
+For an explicit holographic sticker, holofoil, die-cut, pointer-tilt, peel, or matching export
+request, inspect the bundled implementation before creating another shader or geometry path:
+
+```bash
+designer-pipeline holosticker inspect --capability "<capability>" --json
+```
+
+Read `references/holosticker.md`, adapt only the returned source files, and route them through the
+project-pinned `threejs` adapter with `scene.json`, `3d.md`, `motion.md`, and browser evidence. Do not
+add the full Studio UI or optional dependencies for an unselected capability.
+
+When `web-design/build-threejs-scroll-worlds` is selected, or Kage is supplied as a reference, also
+read `references/kage-scroll-world.md`. It adds the current Kage repository's license boundary and
+post-snapshot responsive lessons without importing its unlicensed code or artwork.
+
 For animation implementation, choose library skills by job:
 
 - Use `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-react`, `gsap-plugins`, `gsap-utils`, `gsap-performance`, and `gsap-frameworks` for advanced choreography, scroll-driven animation, timeline control, React integration, SVG/plugin-heavy work, or when GSAP is already in the project.
 - Use `animejs` v4.5 for modular timelines, layout transitions, accessible text splitting, SVG, draggable interactions, scroll observers, WAAPI, deterministic stagger, or adapter-driven targets such as Three.js.
+- Use the built-in `reflex-xy` route for Python-native charts, notebooks, static chart export, Reflex applications, or large datasets that need screen-bounded rendering. Read `references/xy-charting.md`; pin the alpha version in the target project and keep a semantic data-table path.
 - Use the official `pixijs` router and the matching PixiJS v8 sub-skills only for justified interactive 2D render surfaces such as sprite fields, particles, filters, shaders, canvas editors, or high-object-count scenes. Read `references/pixijs-rendering.md` before selecting it.
 - Use the built-in Phaser v4 route for a complete 2D game runtime with scenes, game-loop ownership, input, audio, physics, cameras, scaling, and game-state transitions. Read `references/phaser-v4.md`; do not depend on an unverified community skill pack.
 - Use Three.js or React Three Fiber for focused 3D scene rendering; use Babylon.js or PlayCanvas when a fuller 3D engine is justified. Existing project runtimes still win when they meet the capability and budget.
+- For explicit holographic sticker work, use `references/holosticker.md` as the pinned Three.js implementation route and select only the required material, die-cut, tilt, peel, or export slice.
 - Use `references/game-ui-and-narrative.md` for HUDs, game menus, dialogue systems, visual novels, and Galgame surfaces. Keep dialogue, choice, backlog, save/load, skip, autoplay, and accessibility state independent of animation timing.
 - If no animation or rendering library is already present, prefer semantic DOM plus CSS transitions/keyframes for simple state changes; choose Anime.js, GSAP, PixiJS, Phaser, or a 3D runtime only when the required capability justifies it.
 - Do not add overlapping runtimes unless `design.md`, `motion.md`, and when required `scene.md` or
@@ -287,6 +401,20 @@ If a companion skill is missing, continue with the same gate manually and note t
 
 Before writing design artifacts or code:
 
+- For HTML video, reels, motion graphics, captions, overlays, slideshows, explainers, voiceovers,
+  or Remotion ports, route through `references/hyperframes.md` before choosing a runtime. HyperFrames
+  uses HTML as the source of truth and a deterministic, paused, seekable timeline; ordinary UI
+  motion remains on the normal motion route. Load only the matched workflow/domain skill when the
+  upstream HyperFrames skill tree is available.
+
+- For read-only pull-request orientation, review-thread inspection, or CI failure drilldown, use
+  `node <design-pipeline>/scripts/github.cjs pr-snapshot|pr-threads|ci-failures`. The commands
+  collapse repeated `gh` calls into bounded reports, preserve valid `gh` failure statuses, keep
+  review resolution state through GraphQL, and write full CI logs to the OS temp directory. They
+  require `gh` on `PATH` and an authenticated session; they never create or mutate GitHub
+  artifacts. Use raw `gh` for workflows these commands do not cover, and never pipe `gh` into
+  `head`.
+
 - Run `node <design-pipeline>/scripts/check-deps.cjs` from the target repo root, or manually perform the same checks from `references/self-check.md` if Node is unavailable.
 - Read `references/companion-capabilities.json` as the source of truth for install groups, suite requirements, capability markers, and upstream sources. Do not add another hard-coded companion list.
 - Read capability-profile warnings separately from install status. `installed` means discoverable; `WARN` means the companion surface does not advertise the current capability baseline.
@@ -304,12 +432,52 @@ Before writing design artifacts or code:
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
+- Write `toolchain-request.json`, then run `designer-pipeline toolchain resolve --artifact
+  toolchain-request.json --write --output toolchain-plan.json`. This is mandatory for every
+  frontend change, including a project-owned `none` UI-library choice. The request records the
+  framework, current and requested stack, brief, capabilities, and any graphics family or adapter.
+  The plan owns the joined frontend/tool/graphics selection plus `probe`, `invoke`, and `verify`
+  descriptors. Do not infer a library from taste alone. A blocked plan stops the run. The older
+  `design-system resolve-stack` command remains a narrower compatibility surface.
+- Run `designer-pipeline toolchain probe --artifact toolchain-request.json` before invoking a
+  selected external runtime. Probes are read-only and registry-owned; they never install or update
+  a package. Record every invocation as `design-pipeline.toolchain-receipt.v1`, binding the plan
+  hash, actual tool version, command, exit code, artifacts, hashes, and linked evidence receipts.
+- Before BuilderPort work, write `execution-request.json` with the toolchain plan hash plus explicit
+  slice owner and literal project-relative scope, then run `designer-pipeline execution route` and
+  `execution prepare`. `auto` routes one clean slice in place, multiple clean slices sequentially,
+  and dirty or isolation-required work to a `codex/*` worktree. Finalize with a structured outcome.
+  A successful worktree must be committed, clean, and in scope before it is removed; failures,
+  dirty results, scope violations, and cleanup failures retain the worktree and block completion.
+- Run `designer-pipeline design-system decompose --query "<product brief>" --write --output
+  capability-inventory.json`, then `designer-pipeline design-system route --query "<product
+  brief>" --platform <platform>`. Record the selected routes and unavailable capabilities in the
+  design-system decision. This closes the gap between a required Stage 0 search and the actual CLI.
+- External tool entries are governed routes, never installation instructions. `deepclonewebsite`
+  may be proposed for cloning only after its browser login and model credential requirements are
+  explicit; Frog may be proposed for GitHub issue sync only after repository/workflow authority is
+  explicit. The bundled cloning and feedback routes remain executable fallbacks. The bundled
+  MengTo, SmoothUI, and React Bits catalogs are inert metadata; use only the named routed
+  components or techniques, never auto-install or execute upstream source text. Preserve the
+  recorded MIT/Commons Clause boundaries and adapt into project-owned components.
+- Treat Koboyo as a low-frequency governed icon-asset route, not a shadcn preset or default icon
+  library. Route it only for explicit Koboyo or hand-drawn-icon intent. Public per-icon SVG use is
+  subject to the recorded license constraints; MCP icon search requires a key, should use header
+  authentication, and must not persist keys in URLs or logs. Canvas mutations are outside the icon
+  route and require separate explicit authority. Recheck the published license before bulk use.
 - Search the design-system catalog when reusable component, hook, template, documentation, or token
   knowledge could prevent reinvention. Record the adoption mode instead of silently importing a
   candidate system.
+- Run `designer-pipeline design-system decide` with both the ready `frontendStackDecision` and the
+  complete `capabilityInventory` embedded in the request, or reference their contained artifact
+  paths with `frontendStackDecisionPath` and `capabilityInventoryPath`. A non-custom decision
+  without either artifact is blocked; custom mode still requires the frontend-stack decision.
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
-- Identify any graphics or game runtime already present and classify the requested surface through `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it satisfies the capability and budget.
+- Confirm the graphics selection in `toolchain-plan.json` against
+  `references/graphics-runtime-catalog.json`. Preserve an accepted existing adapter when it
+  satisfies the capability and budget; a selected adapter without a trusted lifecycle blocks the
+  unified plan instead of becoming an implied execution path.
 - Resolve the reference source to a file path here, before any reference artifact is written -
   before `reference.md`, before `reference-evidence.json`, and before `reconstruction.json`. Ask
   the user for the path when it is not resolvable and name what it unlocks: rectification, camera
@@ -340,6 +508,8 @@ Before writing design artifacts or code:
   `ready` unlocks implementation.
 - Check whether the project has OpenSpec, GBrain, or Matt Pocock skill artifacts and use the compatibility rules in `references/development-compatibility.md`.
 - Note constraints such as no external images, single-file HTML, mobile-first, accessibility, or brand rules.
+- Resolve the surface mode (`Persuade`, `Operate`, `Read`, or `Experience`) and whether the work is
+  an extension, refinement, or redesign before choosing a visual direction.
 
 ## Stage 1: Brief
 
@@ -347,16 +517,48 @@ Create or update `brief.md` with:
 
 - Goal: what UI outcome the user wants.
 - Audience: who uses it and under what pressure.
+- Visitor mode: `Persuade`, `Operate`, `Read`, or `Experience`, with the mode-specific success condition.
 - Surface: pages, components, states, and screen sizes.
 - Constraints: tech stack, assets, data, accessibility, performance, deadlines.
 - Non-goals: what should not change.
+- Real content ranges: minimum, typical, maximum, long, missing, localized, and permission-limited cases where relevant.
 - Acceptance checks: observable behavior and visual qualities.
+- Playground applicability: whether an interactive representation would express or tune the
+  product problem better than prose, with a supported required reason or waiver.
 
 Keep this short. It is an execution contract, not a product essay.
 
+### Form sanity backstop
+
+Before choosing a visual direction, declare the deliverable form from the user's or controller's
+language, then state the reader action in plain terms. Apply the single-canvas counterfactual: if
+the proposed carrier were all the reader received, could it perform that action without the author
+explaining it? If the brief implies a sequence, set, or state flow, do not compress it to one canvas
+for production convenience. Record unresolved form uncertainty in the brief and take the
+least-assumptive path; a model-written concept cannot approve its own form.
+
+When the brief, handoff, or interface copy asks a person to decide or act, read
+`references/plain-language.md`. Put the exact consequence or available action first, then preserve
+scope, limits, exclusions, uncertainty, unchanged state, and recovery actions in the second pass.
+
 ## Stage 2: Design Directions
 
-Create `directions.md` before implementation. Produce 2-3 distinct directions when the user has not already chosen a style.
+Read `references/direction-preview.md` and write `direction-preview.json` before selecting a
+direction. For an open whole-surface request, produce three candidates by default in one comparable
+`direction-previews/index.html`; two candidates require a real product/reference constraint, and
+four are for an explicit broader exploration. Use the same real content fixture, state coverage,
+and viewport, then capture and hash one screenshot per candidate.
+
+Run `designer-pipeline direction check --stage preview --change-root <change-root> --json` while
+the decision is pending. Only after it reports `ready` may the user or an autonomous run select a
+candidate. Record the selected ID and product/visitor-fit rationale, then run `direction check
+--stage selection`. A narrow change, established surface, non-visual change, exact primary target,
+or user-specified single direction records an explicit supported waiver. Missing evidence is not a
+waiver.
+
+Create `directions.md` from the selected, verified preview before implementation. Present the
+committed direction and at most two honest alternates. When a waiver inherits an established or
+user-selected direction, record that inheritance instead of inventing alternatives.
 
 When references are present, directions must preserve the route and fidelity invariants recorded in
 `reference.md`. A `3d` or `hybrid` route cannot be downgraded to flat card composition for
@@ -373,6 +575,12 @@ Each direction must include:
 - Fit: why it suits this product and audience.
 - Risk: where it may fail or feel wrong.
 
+Choose the carrier and visual language from the subject, audience task, and viewing context,
+not from a style label alone. Every major visual technique must name its subject or reference cause
+and its intended viewer effect. Anti-template work has two sides: reject generic AI grammar and
+reject under-designed output; a title over an untreated asset with faint decorative furniture is
+not a finished direction.
+
 When anti-template risk matters, use `references/anti-slop-review.md` to compare cohesion,
 product-grounded signature, specificity, and template-pattern density. Named colors, fonts,
 punctuation, shapes, effects, or common layout families are not automatic rejection criteria.
@@ -382,6 +590,19 @@ Default decision rule:
 - Product dashboards and operational tools: choose the quietest direction that maximizes scanability and repeated use.
 - Marketing pages and portfolios: choose the direction with the strongest first-viewport signal and least generic composition.
 - Components and app flows: choose the direction with the clearest states, accessibility, and interaction feedback.
+
+Read `references/playground.md` when the user requests a Playground or an interactive
+representation would express the problem better than prose. A Playground may tune an accepted
+visual system, visualize code architecture or concepts, explore data, critique a document or diff,
+or tune game balance when that work directly supports product design, frontend implementation,
+scene/runtime design, or QA. Generate the self-contained HTML and run `designer-pipeline
+playground check --stage build`. Read the matching blueprint under
+`references/playground-templates/` before generating the HTML. When no built-in route fits, create
+a hash-bound change Blueprint using the open protocol and record its governed integration target.
+Persist the accepted full state and natural-language prompt,
+exercise every control and preset in a browser, persist the hash-bound verification report, and run
+`playground check --stage selection`. Do not use a design Playground to replace honest direction
+comparison. A supported waiver remains explicit and machine-readable.
 
 ## Stage 3: Design Spec
 
@@ -403,14 +624,27 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
   `palette-evidence.json`, preserve DOM and raster-media sources separately, and record coverage,
   luminance, saturation, and temperature relationships rather than listing accents alone.
 - Type scale and font constraints.
+- When shipped copy contains CJK text, the system/project font stack, CJK body size and line height,
+  punctuation/mixed-script convention, and decorative subset evidence required by
+  `references/cjk-typography.md`.
+- User-facing copy follows `references/plain-language.md`: titles name the smallest accurate scope,
+  the first useful sentence exposes the consequence or action, and controls name only real actions.
 - Component inventory and states.
 - Motion rules and reduced-motion fallback.
 - Accessibility requirements: semantic structure, focus order, keyboard behavior, labels, announcements, contrast.
+- Interface-discipline decisions: selected review scope; layout, type, color, writing, surface,
+  and accessibility constraints affected by the change; and downstream consumers of changed shared
+  components or tokens.
 - Asset strategy: real assets, generated bitmap images, icons, or no-assets justification.
 - Anti-template decisions when the contextual anti-slop review is active: deliberately avoided
   patterns, retained common patterns, product-specific rationale, and non-applicable rules.
 - Spec reconciliation when the change has a reference: the cited graybox capture, the reconciliation
   timestamp, and every value the implementation changed with an observed cause.
+- Design Playground integration when applicable: the accepted instruction plus `playground-kind`,
+  `playground-artifact-sha256`, `playground-state-sha256`, and `playground-prompt-sha256` bindings.
+  Non-design modes use the purpose-aware target in `references/playground.md`: `motion.md`,
+  `handoff.md`, `brief.md`, `qa.md`, or `scene.md`. Run `designer-pipeline playground check --stage
+  integration` after writing the target; a later selection invalidates it and requires reintegration.
 
 Do not define camera projection, world coordinates, geometry, lighting, world-space UI, or spatial
 navigation in `design.md`. Those belong in `3d.md` for 3D families.
@@ -468,12 +702,15 @@ Create `tasks.md` with a checkbox list grouped by implementation surface:
 - Layout
 - Components
 - States
+- Playground build, selection, and purpose-aware integration when required
 - Motion
 - Motion spec
 - Scene/runtime spec when required
 - Accessibility
 - Responsive QA
 - Browser/manual QA
+- Interface discipline review for changed UI: scope, selected domains, consumer expansion, and
+  finding status classification.
 
 Tasks must be small enough to verify independently. Update checkboxes as implementation proceeds.
 
@@ -483,6 +720,15 @@ Implement directly from `design.md` and `tasks.md`.
 
 Rules:
 
+- When `playground.json` records required applicability, run `designer-pipeline playground check
+  --stage integration --change-root <change-root> --json` and stop unless it reports `ready`.
+  Implementation consumes the bound purpose-aware artifact, never unbound browser state or an
+  earlier copied prompt.
+
+- Re-run `design-system resolve-stack`, `design-system decompose`, `design-system route`, and
+  `design-system decide` against the final brief and installed project stack. Stop if the stack or
+  design-system decision is not `ready`, or if its registry hash/selected routes differ from the
+  artifacts approved at Stage 0 without a recorded design change.
 - For website-cloning changes, run `scripts/check-website-clone-foundations.cjs --change-root
   <change-root> --json` first and stop unless it reports `ready`.
 - Re-run `scripts/check-design-foundation.cjs` and stop unless it reports `ready`.
@@ -541,6 +787,9 @@ Rules:
 - If the repo uses GBrain, sync or reference the design decision artifacts through the repo's established GBrain surface instead of inventing a new memory format.
 - If Matt Pocock engineering skills are installed, use `codebase-design`, `grill-with-docs`, `implement`, and `matt-tdd` where they fit the current implementation stage.
 - Prefer existing components, tokens, icons, and layout primitives.
+- Apply the Impeccable craft floor: real controls and states, readable contrast and measure,
+  keyboard and reduced-motion paths, intentional browser surfaces, and no content hidden behind
+  entrance motion.
 - Do not add a design dependency unless the user explicitly requested it or the repo already uses it.
 - Do not create nested cards, decorative gradient orbs, generic purple/blue gradients, or marketing-style hero layouts for operational tools.
 - Use real visual assets or generated bitmap assets when the task is a website, landing page, portfolio, or visual product surface.
@@ -552,9 +801,23 @@ Rules:
 Before claiming completion, write `qa.md` using `references/qa-checklist.md` with the result of these gates:
 
 - Visual gate: composition is non-generic, brand/product signal is clear, palette is not one-note, typography fits the surface.
+- Impeccable gate: the selected visitor mode is explicit, refinement has not become a hidden
+  redesign, anti-default exceptions are justified, and critique/audit/polish claims are supported
+  by separate evidence.
 - UX gate: primary workflow is obvious, states are complete, destructive actions are guarded, recovery paths exist.
+- Playground gate: when interactive exploration is required, the self-contained build, selected
+  typed state, natural-language prompt, and purpose-aware target bindings all pass `playground
+  check --stage integration`; browser/manual QA exercises every control and preset and confirms
+  that representation, prompt, and copied text stay synchronized. Otherwise a supported waiver is
+  recorded.
+- Plain-language gate: user-facing copy puts the exact consequence or available action first, then
+  passes the fact-scope review in `references/plain-language.md`; a shorter rewrite cannot widen a
+  partial failure, remove a limit, strengthen uncertainty, or invent an action.
 - Engineering gate: existing patterns are respected, no unnecessary dependency or abstraction was added.
 - Accessibility gate: keyboard navigation, focus behavior, labels, reduced motion, and contrast are checked.
+- Interface-discipline gate: the bundled full or quick protocol was applied to the actual UI;
+  changed UI has an `interface-review` scope, consumer expansion, removed-signal inspection where
+  applicable, and `Introduced` / `Regression` / `Pre-existing` status for every finding in `qa.md`.
 - Motion gate: interaction feedback is intentional, not decorative, and has reduced-motion fallback.
 - Motion foundation gate: project `MOTION.md` is `ready`, its hash is recorded, and selected
   primitive IDs exist in the bundled registry.
@@ -640,6 +903,8 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
   degradation, and cleanup ownership.
 - Responsive gate: mobile and desktop layouts have no overlap or clipped text.
 - Manual QA gate: browser or matching surface was used to inspect the actual UI.
+- Bounded verification gate: one batched desktop/mobile inspection and detector pass was completed,
+  one repair batch was applied, and no open-ended polish loop is being used as a completion claim.
 - Contextual anti-slop gate when active: run `scripts/evaluate-anti-slop.cjs`, repair hard
   blockers, resolve contextual warnings or record accepted context, and link the report from
   `qa.md`. Preference findings never block completion.
@@ -686,6 +951,7 @@ Final responses should report:
 - Change id and artifact folder.
 - Project `DESIGN.md` path, input mode, scope score/budget, and Wayfinder map URL when synthesis ran.
 - Implemented surfaces.
+- Playground applicability, selected state/integration status, and accepted prompt path when used.
 - Verification evidence.
 - Reference source availability. When it is `pending`, name the action that unlocks the measured
   gates: supply the source file path, which enables rectification, camera calibration, landmark

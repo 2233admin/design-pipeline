@@ -1,0 +1,208 @@
+{
+  "capabilityInventory": {
+    "capabilityResults": {
+      "app-ui": {
+        "count": 40,
+        "matchedIds": [
+          "astryx:component:AppShell",
+          "astryx:template:EmptyStateContainer",
+          "astryx:template:GridDashboardLayout",
+          "astryx:template:TopNavEnterpriseDashboard",
+          "astryx:template:dashboard",
+          "astryx:template:dashboard-portfolio",
+          "astryx:component:LayoutPanel",
+          "astryx:template:CardWithInnerLayout",
+          "astryx:template:ChatComposerFooterActions",
+          "astryx:template:CollapsibleDividedAccordion",
+          "astryx:template:CollapsibleSingleAccordion",
+          "astryx:template:DialogFormDialog",
+          "astryx:template:FormLayoutHorizontalLabels",
+          "astryx:template:LayoutSidebarLayout",
+          "astryx:template:ListBasicList",
+          "astryx:template:ListItemBasicItem",
+          "astryx:template:PopoverSettingsPanel",
+          "astryx:template:SectionWithDividers",
+          "astryx:template:SideNavNestedItems",
+          "astryx:template:SwitchSettingsPanel",
+          "astryx:template:TableColumnSettingsTable",
+          "astryx:template:TreeListInteractiveSettings",
+          "astryx:template:settings",
+          "astryx:template:settings-dialog",
+          "astryx:template:settings-sidebar",
+          "astryx:component:Avatar",
+          "astryx:template:AspectRatioCircleImage",
+          "astryx:template:AvatarInteractive",
+          "astryx:template:AvatarUserCard",
+          "astryx:template:AvatarWithImage",
+          "astryx:template:HoverCardHookUsage",
+          "astryx:template:HoverCardProfileHoverCard",
+          "astryx:template:HoverCardShowcase",
+          "astryx:template:TopNavWithLogo",
+          "astryx:template:AppShellContentOnly",
+          "astryx:template:login",
+          "astryx:template:SideNavHeadingBasic",
+          "astryx:template:ide",
+          "astryx:template:messaging-shell",
+          "astryx:template:shell-side-nav"
+        ],
+        "terms": [
+          "app ui",
+          "application ui",
+          "dashboard",
+          "settings",
+          "profile",
+          "auth",
+          "workspace"
+        ]
+      }
+    },
+    "directQuery": "Application UI using explicit Koboyo hand-drawn icons",
+    "directQueryResults": 0,
+    "searchedCapabilities": [
+      "app-ui"
+    ],
+    "zeroResultInconclusive": true
+  },
+  "evidence": [
+    "project-authority:DESIGN.md",
+    "frontend-stack:3f62e1ca274a4dfcd098427169595275caabdc1780d774e2ac7d1202e98f2652",
+    "zero-result-inconclusive",
+    "capability-inventory:1:40",
+    "mode:custom"
+  ],
+  "frontendStackDecision": {
+    "blockers": [],
+    "capabilities": [
+      "design-workflow",
+      "friction-logging",
+      "hand-drawn-icons",
+      "icon-search"
+    ],
+    "evidence": [
+      "registry:2026-08-13",
+      "mengto:3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+      "tool:design-pipeline/core@bundled",
+      "tool:design-pipeline/feedback-loop@bundled",
+      "tool:wevm/frog@702c4eadefe175a208290a99c36e7f4ac1390e53",
+      "tool:MengTo/skills@3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+      "tool:koboyo/icons@https://koboyo.com/icons"
+    ],
+    "framework": "agnostic",
+    "recommendedSkills": [],
+    "registryHash": "3f62e1ca274a4dfcd098427169595275caabdc1780d774e2ac7d1202e98f2652",
+    "reviews": [],
+    "schema": "design-pipeline.frontend-stack-decision.v1",
+    "selected": {
+      "styling": {
+        "id": "none",
+        "label": "None"
+      },
+      "uiLibrary": {
+        "id": "none",
+        "label": "None",
+        "license": "project",
+        "source": "project-owned"
+      }
+    },
+    "status": "ready",
+    "toolRoutes": [
+      {
+        "capabilities": [
+          "design-workflow"
+        ],
+        "id": "design-pipeline/core",
+        "mode": "project-owned",
+        "source": "bundled",
+        "status": "ready"
+      },
+      {
+        "capabilities": [
+          "friction-logging"
+        ],
+        "id": "design-pipeline/feedback-loop",
+        "mode": "project-owned",
+        "source": "bundled",
+        "status": "ready"
+      },
+      {
+        "capabilities": [
+          "friction-logging"
+        ],
+        "fallback": "design-pipeline/feedback-loop",
+        "id": "wevm/frog",
+        "license": "MIT",
+        "mode": "governed-candidate",
+        "requirements": [
+          "Node.js 22+",
+          "explicit GitHub repository and workflow permission"
+        ],
+        "revision": "702c4eadefe175a208290a99c36e7f4ac1390e53",
+        "source": "https://github.com/wevm/frog",
+        "status": "review"
+      },
+      {
+        "capabilities": [
+          "design-workflow"
+        ],
+        "id": "MengTo/skills",
+        "license": "MIT",
+        "mode": "bundled-index",
+        "revision": "3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+        "source": "https://github.com/MengTo/skills",
+        "status": "ready"
+      },
+      {
+        "capabilities": [
+          "hand-drawn-icons",
+          "icon-search"
+        ],
+        "constraints": [
+          "Do not redistribute a substantial part of the library",
+          "Do not use the library to build a competing icon, canvas, diagram, presentation, or drawing product",
+          "Recheck the license before bulk use because the published catalog and license-page icon counts differ"
+        ],
+        "endpoint": "https://api.koboyo.com/v1-mcp",
+        "id": "koboyo/icons",
+        "interfaces": [
+          "public-svg",
+          "mcp-read-only-icons"
+        ],
+        "license": "Koboyo Icons License",
+        "licenseUrl": "https://koboyo.com/icons/license",
+        "mode": "governed-candidate",
+        "readOnlyTools": [
+          "search_icons",
+          "find_icons_for",
+          "list_categories",
+          "list_icons",
+          "get_icon",
+          "get_icon_svg",
+          "get_library_info"
+        ],
+        "requirements": [
+          "Use public per-icon SVGs or supply a Koboyo API key for MCP search",
+          "Prefer Authorization header authentication; never persist an API key in a URL or log",
+          "Obtain explicit authority before any canvas mutation"
+        ],
+        "reviewedAt": "2026-08-13",
+        "source": "https://koboyo.com/icons",
+        "status": "review"
+      }
+    ]
+  },
+  "mode": "custom",
+  "projectAuthority": {
+    "id": "project-design",
+    "source": "DESIGN.md"
+  },
+  "rationale": [
+    "Custom mode keeps the design system project-owned."
+  ],
+  "rejected": [],
+  "schema": "design-pipeline.design-system-decision.v1",
+  "selected": {
+    "id": "project-design",
+    "source": "DESIGN.md"
+  },
+  "status": "ready"
+}

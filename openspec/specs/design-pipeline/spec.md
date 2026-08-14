@@ -1,6 +1,11 @@
 # design-pipeline Specification
 
-## ADDED Requirements
+## Purpose
+
+Define the durable, design-first contracts used to plan, implement, validate, package, and improve
+the design pipeline without making optional tools or hosted integrations part of the core runtime.
+
+## Requirements
 
 ### Requirement: Design-first scope
 
@@ -33,6 +38,94 @@ The pipeline SHALL not fail only because optional companion skills are missing.
 
 - **WHEN** self-check runs with only the core pipeline installed
 - **THEN** required checks SHALL pass and missing optional skills SHALL report warnings with fallbacks.
+
+### Requirement: Visual directions are previewed before selection
+
+Every change SHALL record whether a visual direction preview is required or waived. An open
+whole-surface design, material visual redesign, or explicit comparison request SHALL render two to
+four real miniature candidates with a shared content fixture, state coverage, and viewport before
+selecting a direction. A narrow, inherited, non-visual, exact-primary-target, or user-fixed
+direction MAY record a supported waiver.
+
+#### Scenario: An open interface has no selected style
+
+- **WHEN** Stage 2 must choose the product's visual direction
+- **THEN** the pipeline SHALL hash-bind one comparison page and one screenshot per candidate
+- **AND** every candidate pair SHALL differ on at least four declared axes, including luminance or era
+- **AND** `directions.md` SHALL NOT commit a direction until the preview and selection gates pass.
+
+#### Scenario: The change has one authoritative direction
+
+- **WHEN** the user supplied a single direction or an exact primary target already decides it
+- **THEN** `direction-preview.json` SHALL record the supported waiver and rationale
+- **AND** the pipeline SHALL NOT invent alternatives merely to satisfy a candidate count.
+
+### Requirement: CJK typography is explicit and bounded
+
+Interfaces containing Chinese, Japanese, or Korean text SHALL record a system/project font stack,
+CJK size and line-height posture, punctuation and mixed-script convention, and representative real
+strings. Full CJK webfonts SHALL NOT be introduced for routine body or control copy; a justified
+decorative heading font SHALL be subset to its known glyphs and retain a tested system fallback.
+
+#### Scenario: A Chinese product surface is designed
+
+- **WHEN** change `design.md` includes Chinese interface copy
+- **THEN** it SHALL record the resolved stack, available weights, body line height, punctuation,
+  overflow behavior, and any decorative subset's bytes, glyph scope, license, and fallback
+- **AND** Stage 6 SHALL verify real CJK and mixed-script strings at responsive widths, 200% zoom,
+  and font-load failure.
+
+### Requirement: Playground interaction is resumable and purpose-bound
+
+When a product-design, frontend, scene/runtime, or design-QA problem is poorly suited to prose, the
+pipeline SHALL provide a self-contained interactive Playground with typed controls, complete
+presets, an immediate representation, and a natural-language handoff. The selected state SHALL be
+hash-bound into the governed change artifact selected by Playground kind.
+
+#### Scenario: A problem benefits from interactive representation
+
+- **WHEN** the user requests a Playground or interactive state is a better reasoning medium than text
+- **THEN** the pipeline SHALL validate the self-contained HTML, declared controls and presets,
+  live-update path, prompt output, and copy behavior
+- **AND** it SHALL persist the complete selected state and exact non-default controls
+- **AND** the integration target SHALL be `design.md`, `motion.md`, `handoff.md`, `brief.md`,
+  `qa.md`, or `scene.md` according to Playground kind
+- **AND** downstream use SHALL remain blocked until that target binds the kind, Playground, state,
+  and prompt hashes.
+
+#### Scenario: Interactive exploration does not improve the decision
+
+- **WHEN** the change is narrow, non-visual, exact-target, fixed-spec, or fully resolved by the
+  direction preview
+- **THEN** the pipeline MAY record a supported waiver with rationale
+- **AND** missing playground evidence SHALL NOT silently become a waiver.
+
+#### Scenario: A project needs a new Playground kind
+
+- **WHEN** none of the built-in Blueprint routes represents the interactive problem
+- **THEN** the change MAY declare a lowercase path-safe kind and a contained, hash-bound Markdown
+  Blueprint with required surface, state/output, and QA sections
+- **AND** it SHALL select only a governed integration target
+- **AND** Blueprint drift SHALL invalidate browser verification.
+
+### Requirement: User-facing language is direct without changing scope
+
+User-facing interface copy and human decision artifacts SHALL put the first useful consequence or
+available action before internal implementation detail. A second pass SHALL preserve the source's
+affected group, event, scope/count, uncertainty, time/limit, exclusions, unchanged state, and
+available actions.
+
+#### Scenario: Direct wording would widen a partial failure
+
+- **WHEN** only part of an operation failed or remains pending
+- **THEN** the title and first sentence SHALL name that exact scope instead of declaring a total failure
+- **AND** controls SHALL name only actions the current interface actually provides.
+
+#### Scenario: A notice carries a bounded possibility
+
+- **WHEN** the source says an effect may last up to a stated limit
+- **THEN** the rewrite SHALL expose the user-visible effect early
+- **AND** it SHALL preserve both the uncertainty and the upper bound.
 
 ### Requirement: Motion is first-class
 
@@ -98,6 +191,73 @@ durable capability family before selecting a library, skill, MCP host, or framew
 - **AND** the selected projection SHALL bind `DESIGN.md` and `MOTION.md` semantics to one versioned
   adapter with explicit lifecycle, budgets, degradation, deterministic evidence, and cleanup
   ownership.
+
+### Requirement: Frontend tools resolve through one executable plan
+
+The pipeline SHALL join frontend-stack, governed tool, and graphics-runtime decisions into one
+deterministic `design-pipeline.toolchain-plan.v1` before external tools are invoked.
+
+#### Scenario: A frontend toolchain is resolved
+
+- **WHEN** a valid request declares framework, brief, current/requested stack, capabilities, and an
+  optional graphics family or adapter
+- **THEN** `designer-pipeline toolchain resolve` SHALL emit the selected styling, UI library,
+  graphics adapter, tools, probes, invocations, verification requirements, blockers, and hashes of
+  every governing registry
+- **AND** a catalog-only adapter or an adapter without a trusted `probe`, `plan`, `invoke`, and
+  `verify` lifecycle SHALL block the unified plan rather than imply execution support.
+
+#### Scenario: Tool availability is checked
+
+- **WHEN** `designer-pipeline toolchain probe` evaluates a ready plan
+- **THEN** it SHALL execute only bundled read-only probe commands with a timeout and bounded output
+- **AND** it SHALL NOT install, update, download, or start the selected project runtime
+- **AND** an unavailable required tool SHALL produce a blocked probe result.
+
+#### Scenario: An external tool invocation completes
+
+- **WHEN** the selected tool is invoked by the target project or agent host
+- **THEN** the result SHALL use `design-pipeline.toolchain-receipt.v1`
+- **AND** the receipt SHALL bind the plan hash, actual tool version, command, exit code, timestamps,
+  artifact paths and hashes, and linked evidence receipts
+- **AND** a complete receipt with a failed command or no evidence SHALL be invalid.
+
+#### Scenario: Reflex selects the XY chart route
+
+- **WHEN** framework is `reflex` and the requested graphics family is `vector-data`
+- **THEN** the unified resolver SHALL select `reflex-xy`
+- **AND** its lifecycle SHALL probe installed `xy` and `reflex` package metadata without importing
+  or installing them
+- **AND** the invocation SHALL remain owned by the target Reflex project.
+
+### Requirement: Execution targets are routed and receipted before Builder work
+
+The pipeline SHALL bind the resolved toolchain plan to an explicit execution target, branch,
+owner, and literal project-relative file scope without implementing the external Builder itself.
+
+#### Scenario: A clean frontend change is routed
+
+- **WHEN** one ready execution slice requests `auto` mode from a clean attached Git branch
+- **THEN** `designer-pipeline execution route` SHALL select `in-place`
+- **AND** multiple clean slices SHALL select `sequential`
+- **AND** required isolation or an already-dirty repository SHALL select a new `codex/*` worktree.
+
+#### Scenario: A worktree is prepared and finalized
+
+- **WHEN** a ready worktree plan is prepared
+- **THEN** the worktree SHALL start from the bound base HEAD on the declared branch and root
+- **AND** completion SHALL compare committed, staged, unstaged, and untracked files with the
+  declared scopes
+- **AND** only a successful, clean, in-scope result SHALL remove the worktree without force
+- **AND** failure, dirtiness, scope escape, branch drift, or cleanup failure SHALL retain the
+  worktree and prevent a complete receipt.
+
+#### Scenario: Execution evidence is handed to the gate
+
+- **WHEN** execution is finalized
+- **THEN** `design-pipeline.execution-receipt.v1` SHALL bind both execution-plan and toolchain-plan
+  hashes, target branch/root, base and final HEAD, invocation, changed files, evidence receipts,
+  timestamps, blockers, and cleanup result.
 
 ### Requirement: Reference evidence selects the spatial route
 
@@ -176,6 +336,29 @@ skill pack or credentialed host.
 - **THEN** local Phaser routing SHALL remain available from the built-in contract and official
   documentation
 - **AND** the unavailable or unverified surface SHALL NOT be automatically installed or required.
+
+### Requirement: XY is a native Python charting route
+
+The pipeline SHALL support XY as a built-in `vector-data` routing contract for Python charts,
+notebooks, static exports, Reflex applications, and large datasets without automatically installing
+or vendoring its runtime.
+
+#### Scenario: XY is justified by the target surface
+
+- **WHEN** the project uses Python and requires interactive charts, notebook display, Reflex
+  integration, static chart export, or screen-bounded rendering for large datasets
+- **THEN** the pipeline SHALL select `reflex-xy` or preserve an equivalent accepted project runtime
+- **AND** the target project SHALL pin the selected pre-1.0 version and verify its actual output,
+  accessibility, performance, CSP, and hosting boundaries.
+
+#### Scenario: Interactive XY cannot provide a complete semantic path
+
+- **WHEN** WebGL, the Python host, direct-point keyboard navigation, or aggregated-bin navigation is
+  unavailable or incomplete for the required user path
+- **THEN** the product SHALL provide a tested static export and semantic data table or equivalent
+  accessible representation
+- **AND** the pipeline SHALL NOT treat XY's built-in routing contract as proof that its runtime is
+  installed or that the chart is accessible.
 
 ### Requirement: Narrative game UI preserves product state semantics
 
@@ -265,6 +448,50 @@ The pipeline SHALL route authorized live-page clone, rebuild, reproduction, and 
 
 - **WHEN** the user asks for a high-fidelity implementation of a live page
 - **THEN** the pipeline SHALL initialize an isolated, resumable target and SHALL preserve the target project's established framework and conventions.
+
+### Requirement: Site-wide cloning separates templates from data
+
+The pipeline SHALL ship a pinned, MIT-attributed `hi5jeff/deepclonewebsite` feature-slice snapshot
+as passive reference material and SHALL adapt its site-wide mechanics through the existing
+Browser/Builder/Evidence ports without adding the Open Lovable runtime.
+
+#### Scenario: An authenticated surface is in scope
+
+- **WHEN** authorized capture requires login
+- **THEN** BrowserPort SHALL use a user-visible browser for the user-controlled login step
+- **AND** credentials, profiles, and storage state SHALL remain ignored runtime material rather than
+  design, package, or repository artifacts.
+
+#### Scenario: The user needs site structure rather than repeated data
+
+- **WHEN** capture mode is `structure`
+- **THEN** discovery SHALL stay within explicitly allowed hosts and finite limits
+- **AND** SHALL group normalized URLs using rendered template evidence such as URL patterns and DOM
+  fingerprints before selecting representative pages
+- **AND** an LLM MAY label or merge deterministic groups but SHALL NOT invent captured pages,
+  assets, states, or measurements.
+
+#### Scenario: Every authorized page is required
+
+- **WHEN** capture mode is `full`
+- **THEN** the user SHALL have explicitly requested whole-site coverage
+- **AND** allowed hosts, exclusions, page/depth/asset limits, and stop conditions SHALL be recorded
+  before navigation.
+
+#### Scenario: Product or backend documentation is inferred
+
+- **WHEN** visible UI evidence is used to produce product structure, data model, backend API, or
+  design-system documents
+- **THEN** every output SHALL cite observed evidence, label inference and confidence, and list
+  unknowns
+- **AND** it SHALL NOT be presented as recovered backend truth.
+
+#### Scenario: The bundled feature slice drifts
+
+- **WHEN** a reviewed source file is missing, added, or normalized-content altered
+- **THEN** deterministic verification SHALL block on file count, normalized byte count, or canonical
+  tree hash
+- **AND** a valid update SHALL change revision, Git tree, scope, attribution, and hash together.
 
 ### Requirement: Website-cloning uses three internal ports
 
@@ -358,15 +585,33 @@ Pipeline maintainers SHALL use the pipeline's own artifact, feedback, review, QA
 The recorder SHALL validate existing observation and index state before writing an update and SHALL
 NOT overwrite corrupt evidence.
 
+#### Scenario: Existing feedback JSON is corrupt
+
+- **WHEN** a matching observation or the feedback index cannot be parsed or validated
+- **THEN** recording SHALL fail with a contextual error and SHALL NOT overwrite or increment the
+  existing observation.
+
 ### Requirement: Specific paths are redacted first
 
 The recorder SHALL redact longer path scopes before their parent scopes so nested feedback roots
 retain the correct privacy placeholder.
 
+#### Scenario: Feedback root is nested under the project root
+
+- **WHEN** evidence contains the exact nested feedback root
+- **THEN** it SHALL be represented as `<FEEDBACK_ROOT>` rather than a partial
+  `<PROJECT_ROOT>` path.
+
 ### Requirement: Capability registry patterns are validated before evaluation
 
 Self-check SHALL reject invalid profile, requirement, or regular-expression structures before
 producing compatibility results.
+
+#### Scenario: A registry pattern is invalid
+
+- **WHEN** a capability requirement contains an invalid regular expression
+- **THEN** self-check SHALL fail with the profile and requirement identity instead of reporting a
+  false compatibility result.
 
 ### Requirement: Missing product design routes through requirements-driven synthesis
 
@@ -638,6 +883,39 @@ content hashes when upstream provides them.
 - **THEN** normalization SHALL fail closed before writing output
 - **AND** no network, install, import, or project mutation SHALL occur.
 
+### Requirement: Component sources route by capability and platform
+
+The pipeline SHALL expose a deterministic component route over attributed source metadata. A route
+SHALL match the requested capability to a compatible platform, report the integration mode and
+provenance, and preserve a project-owned fallback when a source is unavailable, unverified, or
+license-gated.
+
+#### Scenario: A project needs a component from a referenced source
+
+- **WHEN** `design-system route` receives a product brief and target platform
+- **THEN** it SHALL return the recognized capabilities, one best compatible route per capability,
+  alternatives, source URL, license, and fallback information
+- **AND** it SHALL be deterministic without executing or importing remote source code.
+
+#### Scenario: A route is commercial, user-supplied, or unverified
+
+- **WHEN** the selected source requires a license or its source evidence is not verified
+- **THEN** the route SHALL report `review`
+- **AND** it SHALL NOT claim that the source is installable or copy its implementation.
+
+#### Scenario: No compatible route exists
+
+- **WHEN** no catalog entry advertises a requested capability on the target platform
+- **THEN** the route SHALL report the unavailable capability and use `blocked` only when no
+  recognized capability has a selected route.
+
+#### Scenario: A local component snapshot provides concrete implementation candidates
+
+- **WHEN** a web brief matches a catalog source with a local component inventory, such as SmoothUI
+- **THEN** the route SHALL expose the inventory count, recommended component names, documentation
+  URLs, and the source's registry installation template
+- **AND** the route SHALL remain deterministic without fetching a live API or vendoring source.
+
 ### Requirement: Astryx knowledge is bundled but runtime adoption is optional
 
 The package SHALL include an inert, MIT-attributed snapshot of the pinned stable public Astryx
@@ -749,6 +1027,44 @@ reduced-motion evidence. Reusable components SHALL cover required visual/input/v
   viewport evidence is absent
 - **THEN** component verification SHALL fail or block
 - **AND** a static screenshot SHALL NOT satisfy the missing states.
+
+### Requirement: Component capability is resolved before framework provider selection
+
+The pipeline SHALL express reusable component requirements through a governed, framework-neutral
+capability IR. Dependency closure SHALL add required keyboard, focus, ARIA, state, and recovery
+behavior before selecting any provider.
+
+#### Scenario: The same data-grid requirement targets different frameworks
+
+- **WHEN** Vue, React, Svelte, Solid, or project-owned DOM projects request the same filtering,
+  sorting, pagination, and selection behavior
+- **THEN** they SHALL share the same capability and verification contract
+- **AND** framework libraries SHALL appear only in replaceable provider routes.
+
+### Requirement: Component provider discovery is contained and non-mutating
+
+Provider probing SHALL inspect existing project metadata without installing packages or rewriting
+configuration. Resolution SHALL distinguish project-owned, installed, and adoption-required
+candidate routes and SHALL report uncovered capabilities explicitly.
+
+#### Scenario: A compatible provider is not installed
+
+- **WHEN** Vuetify0, React Aria, Ark UI, or another provider is compatible but absent
+- **THEN** it MAY be returned as an adoption-required candidate only when explicitly preferred
+- **AND** the project-owned route SHALL remain available without hidden dependency mutation.
+
+### Requirement: Component verification is provider-independent and hash-bound
+
+Every resolved component capability SHALL produce required behavior checks. Verification SHALL
+match the exact resolution hash and SHALL remain blocked when a required check is missing, failed,
+or lacks evidence.
+
+#### Scenario: Framework code exists without keyboard evidence
+
+- **WHEN** the implementation uses a named component library but the keyboard check has no passing
+  evidence
+- **THEN** verification SHALL remain blocked
+- **AND** library identity or a static screenshot SHALL NOT satisfy the behavior contract.
 
 ### Requirement: Design artifacts interoperate through public data contracts
 

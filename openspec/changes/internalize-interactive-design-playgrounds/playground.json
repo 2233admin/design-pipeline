@@ -1,0 +1,29 @@
+{
+  "schema": "design-pipeline.playground.v1",
+  "changeId": "internalize-interactive-design-playgrounds",
+  "applicability": {
+    "status": "waived",
+    "reason": "fixed-design-spec",
+    "rationale": "This self-hosting change implements an already specified contract and does not need another interactive decision surface."
+  },
+  "surface": null,
+  "selection": {
+    "status": "waived",
+    "values": null,
+    "changedControlIds": [],
+    "stateSha256": null,
+    "prompt": null
+  },
+  "verification": {
+    "status": "waived",
+    "method": null,
+    "checkedAt": null,
+    "surfaceSha256": null,
+    "checks": null,
+    "evidence": null
+  },
+  "integration": {
+    "status": "waived",
+    "target": null
+  }
+}

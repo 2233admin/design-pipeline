@@ -153,6 +153,10 @@ test("help, doctor, foundation, and stable JSON error envelopes work", () => {
 });
 
 test("bundled design-system knowledge is agent-discoverable without installing Astryx", () => {
+  const options = run(["design-system", "options", "--root", repoRoot]);
+  assert.equal(options.status, 0, options.stderr || options.stdout);
+  assert.deepEqual(options.output.counts, { styling: 5, uiLibraries: 15, shadcnPresets: 8, iconSources: 1, indexedSkills: 127 });
+
   const profiles = run(["design-system", "profiles", "--root", repoRoot]);
   assert.equal(profiles.status, 0, profiles.stderr || profiles.stdout);
   assert.equal(profiles.output.profiles.some(({ id }) => id === "astryx"), true);
@@ -168,18 +172,67 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.notEqual(projection.output.status, "blocked");
 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-system-decision-cli-"));
+  writeJson(path.join(root, "stack-request.json"), { schema: "design-pipeline.frontend-stack-request.v1", framework: "react", brief: "clone a page with a dialog", requested: { styling: "tailwindcss", uiLibrary: "shadcn-ui", shadcnPreset: "nova" } });
+  const stack = run(["design-system", "resolve-stack", "--root", root, "--artifact", "stack-request.json", "--write", "--output", "stack-decision.json"]);
+  assert.equal(stack.status, 0, stack.stderr || stack.stdout);
+  assert.ok(stack.output.decision.toolRoutes.some(({ id }) => id === "hi5jeff/deepclonewebsite"));
+
+  writeJson(path.join(root, "toolchain-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "reflex", brief: "Reflex dashboard with an XY chart", requested: { styling: "tailwindcss", uiLibrary: "none" }, graphics: { family: "vector-data" } });
+  const toolchain = run(["toolchain", "resolve", "--root", root, "--artifact", "toolchain-request.json", "--write", "--output", "toolchain-plan.json"]);
+  assert.equal(toolchain.status, 0, toolchain.stderr || toolchain.stdout);
+  assert.equal(toolchain.output.plan.graphics.id, "reflex-xy");
+  assert.deepEqual(toolchain.output.plan.invocations.find(({ toolId }) => toolId === "reflex-xy").command, ["reflex", "run"]);
+
+  writeJson(path.join(root, "toolchain-probe-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "react", brief: "Plain React settings page", requested: { styling: "scss", uiLibrary: "none" } });
+  const probe = run(["toolchain", "probe", "--root", root, "--artifact", "toolchain-probe-request.json"]);
+  assert.equal(probe.status, 0, probe.stderr || probe.stdout);
+  assert.equal(probe.output.probe.status, "ready");
+
+  const decomposed = run(["design-system", "decompose", "--root", root, "--query", "app dialog and data table", "--write", "--output", "capability-inventory.json"]);
+  assert.equal(decomposed.status, 0, decomposed.stderr || decomposed.stdout);
+  assert.ok(decomposed.output.inventory.searchedCapabilities.includes("dialog"));
+  assert.ok(decomposed.output.inventory.capabilityResults["data-table"].count < 200);
+  assert.equal(decomposed.output.inventory.searchedCapabilities.includes("tabs"), false);
+  const routed = run(["design-system", "route", "--root", repoRoot, "--query", "landing page hero"]);
+  assert.equal(routed.status, 0, routed.stderr || routed.stdout);
+  assert.equal(routed.output.routes.some(({ selected }) => selected), true);
+
   writeJson(path.join(root, "decision.json"), {
     schema: "design-pipeline.design-system-decision-request.v1",
     version: "1",
     mode: "reference",
     candidateId: "astryx:component:AlertDialog",
     project: { designMd: true, runtime: {} },
+    frontendStackDecisionPath: "stack-decision.json",
+    capabilityInventoryPath: "capability-inventory.json",
   });
   const decision = run(["design-system", "decide", "--root", root, "--artifact", "decision.json"]);
   assert.equal(decision.status, 0, decision.stderr || decision.stdout);
   assert.equal(decision.output.decision.schema, "design-pipeline.design-system-decision.v1");
   assert.equal(decision.output.decision.selected.id, "astryx:component:AlertDialog");
   assert.equal(decision.output.decision.projectAuthority.id, "project-design");
+});
+
+test("component route selects platform-specific sources without copying remote code", () => {
+  const web = run(["design-system", "route", "--root", repoRoot, "--query", "depth carousel", "--platform", "web"]);
+  assert.equal(web.status, 0, web.stderr || web.stdout);
+  assert.equal(web.output.status, "review");
+  assert.equal(web.output.routes.find(({ capability }) => capability === "depth-carousel").selected.source, "React Bits");
+
+  const expo = run(["design-system", "route", "--root", repoRoot, "--query", "animated numeric stat", "--platform", "expo"]);
+  assert.equal(expo.status, 0, expo.stderr || expo.stdout);
+  assert.equal(expo.output.status, "ready");
+  assert.equal(expo.output.routes.find(({ capability }) => capability === "numeric-text").selected.package, "expo-content-transition");
+});
+
+test("component route exposes SmoothUI component recommendations from the local snapshot", () => {
+  const result = run(["design-system", "route", "--root", repoRoot, "--query", "SmoothUI animated tabs", "--platform", "web"]);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const tabs = result.output.routes.find(({ capability }) => capability === "tabs");
+  assert.equal(tabs.selected.source, "SmoothUI");
+  assert.equal(tabs.selected.componentCount, 130);
+  assert.ok(tabs.selected.recommendedComponents.includes("animated-tabs"));
+  assert.match(tabs.selected.recommendedComponentDetails[0].docUrl, /smoothui\.dev\/docs\/components\/animated-tabs/);
 });
 
 test("benchmark v2 exposes a developer brief without private expectations", () => {

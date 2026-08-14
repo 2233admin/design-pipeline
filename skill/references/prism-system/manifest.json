@@ -1,0 +1,61 @@
+{
+  "schema": "design-pipeline.prism-system-source.v1",
+  "source": {
+    "repository": "https://github.com/appariciojunior/PrismSystem",
+    "revision": "e93f2a3019162f1da19a9a8c3a5db0f1fba48631",
+    "committedAt": "2026-07-27T10:11:55+01:00",
+    "license": "MIT",
+    "reviewedAt": "2026-08-12",
+    "scope": ["LICENSE", "packages/tokens/.agents/skills/**"],
+    "skillsTree": "a4cbce60f29831615f017c758b81e362e862eda7",
+    "licenseBlob": "4f6c0ffb1720df3297dec644938ee200c93b1f40"
+  },
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 127,
+    "byteCount": 1255423,
+    "treeSha256": "bebf354edf8a1849089c37fefe908d9e49ca3b7a4918ec56894c03c641e88a14"
+  },
+  "index": {
+    "name": "ds-skills",
+    "version": "6.1.0",
+    "skillCount": 107,
+    "categories": {
+      "design": 18,
+      "discovery": 9,
+      "figma": 21,
+      "foundations": 8,
+      "handoff": 6,
+      "quality": 14,
+      "react": 20,
+      "workflow": 11
+    }
+  },
+  "routes": [
+    {
+      "id": "prototype",
+      "keywords": ["prototype", "mock", "mockup", "quick", "first pass", "explore", "try ", "idea", "sketch", "rough"],
+      "sequence": ["design/foundation/design-dna.md", "design/agents/prototyping-agent.md"]
+    },
+    {
+      "id": "ui-craft",
+      "keywords": ["critique", "check", "review", "is this", "tokens", "spacing", "contrast", "accessibility", "a11y", "states", "audit", "fix", "polish", "improve", "frame", "score"],
+      "sequence": ["design/foundation/design-dna.md", "design/ui/design-critique.md", "design/ui/a11y-check.md", "design/ui/content-style-check.md", "design/ui/token-mapping-audit.md"]
+    },
+    {
+      "id": "new-experience",
+      "keywords": ["new ", "design a", "flow", "journey", "create", "experience", "page type", "onboarding", "paywall", "feature"],
+      "sequence": ["design/foundation/design-dna.md", "design/ux/experience-principles.md", "design/ux/flow-design.md", "design/ux/page-templates.md", "design/ui/design-critique.md", "design/handoff/handoff-flow.md"]
+    },
+    {
+      "id": "handoff",
+      "keywords": ["handoff", "hand off", "hand-off", "spec", "ready for engineering", "engineering", "packet", "ship it", "developer"],
+      "sequence": ["design/foundation/design-dna.md", "design/handoff/handoff-flow.md"]
+    },
+    {
+      "id": "corpus-distill",
+      "keywords": ["screenshot", "screenshots", "corpus", "learn how", "learn from", "distil", "distill", "drop these", "these images", "these screens"],
+      "sequence": ["design/corpus/distill-corpus.md"]
+    }
+  ]
+}

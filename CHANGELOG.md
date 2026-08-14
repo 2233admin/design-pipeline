@@ -4,8 +4,91 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+### Added
+
+- Added framework-agnostic Component Capability IR, dependency closure, read-only project Provider
+  probing, and per-capability resolution for project DOM, Vuetify0, React Aria, and Ark UI.
+- Added public `component decompose|providers|resolve|verify` commands with adoption-required
+  candidate disclosure and hash-bound, fail-closed behavior evidence.
+- Added read-only project component inventory, framework binding plans, and explicit per-capability
+  `reuse|adopt|substitute|custom` decisions without source generation.
+- Added a persistent four-phase framework-agnostic component-engine initiative so framework
+  bindings, live provider documentation, browser evidence, and the provider SDK remain resumable.
+- Added a governed multi-mode Playground contract and public `playground check` CLI with build,
+  selection, browser-verification, and purpose-aware integration gates.
+- Added design, code-map, concept-map, data, critique, diff-review, game-balance, and custom routes;
+  hash-bound typed state; cohesive presets; natural-language handoff; self-contained HTML checks;
+  explicit applicability waivers; and release regression coverage.
+- Added packaged generation blueprints for code maps, concept maps, data explorers, design tuning,
+  diff review, document critique, and game balance.
+- Added an open, hash-bound change Blueprint protocol so project-specific Playground kinds can
+  extend the built-in defaults without weakening HTML safety or choosing arbitrary output paths.
+
+## [0.9.0-beta.3] - 2026-08-14
+
+### Added
+
+- Aggregated the retrievable archived and unarchived `design-pipeline` Session changes into one
+  tested release line, including DeepCloneWebsite, HoloSticker, Interface Discipline, MengTo,
+  Prism, shadcnio, Impeccable, Kage, and governed component-source routing.
+- Added pinned, byte-verified source snapshots, catalogs, CLI commands, package-resource entries,
+  and regression coverage for the newly internalized surfaces.
+- Added platform-aware component routing for Expo numeric transitions, React Bits, React Bits Pro,
+  SmoothUI, and project-owned fallbacks with explicit license and review states.
+
 ### Fixed
 
+- Made upstream snapshot verification host-independent by preserving exact LF bytes and aligning
+  manifests with the checked-in snapshots.
+- Restored complete CLI registration, resource packaging, and capability decomposition for all
+  newly aggregated Session changes.
+
+## [0.9.0-beta.2] - 2026-08-14
+
+### Added
+
+- Internalized a dependency-free, read-only GitHub workflow surface for PR snapshots, review
+  threads, and bounded CI failure drilldowns.
+- Internalized the official HyperFrames HTML-video route contract with deterministic seeking,
+  video-specific routing, and check-before-render gates; the upstream runtime remains optional.
+- Internalized SmoothUI component metadata and the React Bits DecryptedText behavioral contract
+  as governed, reference-adaptation routes with explicit provenance, license boundaries, motion
+  accessibility, and no-auto-install rules.
+
+## [0.9.0-beta.1] - 2026-08-13
+
+### Added
+
+- Added unified `toolchain resolve`, `toolchain probe`, and `toolchain receipt-check` commands that
+  join frontend-stack and graphics routing into a hash-bound executable plan without installing
+  target-project dependencies.
+- Added the first complete adapter lifecycle for Reflex + XY, including a read-only availability
+  probe, project-owned invocation descriptor, standardized receipt, artifact hashes, and Reflex
+  framework routing.
+- Added XY as a built-in, project-installed Python charting route for notebooks, Reflex apps,
+  static exports, and large datasets, with pinned alpha/version, accessibility, CSP, and fallback
+  boundaries.
+- Added an explicit, low-frequency Koboyo hand-drawn icon route with read-only MCP discovery,
+  license constraints, credential handling, and non-default routing tests.
+- Added a mandatory frontend-stack and tool-routing gate with all supported styling choices, 15 UI
+  libraries, the complete current shadcn preset dimensions, and pinned governed routes for
+  `deepclonewebsite`, Frog, and the 127-entry MengTo skill catalog.
+- Added public `design-system options`, `resolve-stack`, `decompose`, and `route` commands so Stage
+  0 discovery is executable and its decisions can be rechecked before implementation.
+- Added a hash-bound visual direction preview gate with PNG/viewport validation before direction selection, plus a built-in CJK
+  typography contract covering system stacks, line height, punctuation, and decorative font
+  subsetting without importing the rest of `qiaomu-design`.
+- Added a direct plain-language contract for user-facing copy, with a second-pass fidelity guard
+  that prevents clearer wording from widening scope, limits, uncertainty, or available actions.
+- Added a reproducible Prewalk website-reconstruction sample with real headed-browser evidence at
+  three viewports, zero layout drift, complete text/interaction coverage, and sub-0.06% pixel
+  difference.
+
+### Fixed
+
+- Bound manually dispatched GitHub releases to the exact tested commit and marked SemVer
+  prereleases explicitly, so beta artifacts cannot silently tag the default branch or appear as a
+  stable release.
 - Updated the GitHub Release action to its Node 24-compatible major version.
 
 ## [0.8.0] - 2026-08-02
@@ -399,3 +482,6 @@ All notable changes to Design Pipeline are documented here.
 [0.7.2]: https://github.com/2233admin/design-pipeline/compare/v0.7.1...v0.7.2
 [0.7.3]: https://github.com/2233admin/design-pipeline/compare/v0.7.2...v0.7.3
 [0.8.0]: https://github.com/2233admin/design-pipeline/compare/v0.7.3...v0.8.0
+[0.9.0-beta.1]: https://github.com/2233admin/design-pipeline/compare/v0.8.0...v0.9.0-beta.1
+[0.9.0-beta.2]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.1...v0.9.0-beta.2
+[0.9.0-beta.3]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.2...v0.9.0-beta.3

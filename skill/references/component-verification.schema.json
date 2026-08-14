@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/component-verification.v1.json",
+  "title": "Component Behavior Verification Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "resolutionHash", "passed", "failed", "missing", "evidence"],
+  "properties": {
+    "schema": { "const": "design-pipeline.component-verification.v1" },
+    "status": { "enum": ["verified", "blocked"] },
+    "resolutionHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "passed": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "failed": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "missing": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}

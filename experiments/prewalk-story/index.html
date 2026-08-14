@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>You only need the frontier model for one single edit — Stencil replica</title>
+  <link rel="stylesheet" href="https://stencil.so/_build/assets/client-C65yZmsU.css">
+  <link rel="stylesheet" href="https://stencil.so/_build/assets/styles-CkpDw653.css">
+  <style>
+    .snapshot { display:block; height:auto; max-width:100%; width:760px; }
+    .snapshot.st-chart { border:0!important; height:300px; object-fit:fill; width:100%; }
+    .snapshot.st-chart.chart-340 { height:340px; }
+    .diagram-snapshot { border:1px solid var(--st-border-subtle); margin:var(--st-space-7) 0; }
+    .trace-snapshot { margin:var(--st-space-7) 0; }
+    .trace-snapshot img { border:0!important; width:760px; }
+    .share-item svg { display:block; }
+    .post-header-sigil { object-fit:contain; }
+    .chart-wrap { position:relative; }
+    .chart-wrap .st-chart { margin-bottom:0; }
+    .chart-note { color:var(--st-text-tertiary); font-family:var(--st-font-mono); font-size:10px; letter-spacing:.06em; line-height:1.7; margin:12px 0 24px; text-transform:uppercase; }
+    .chart-tip-local { display:none; position:absolute; transform:translate(14px,-50%); }
+    .chart-tip-local[data-visible] { display:block; }
+    @media (min-width:641px) { .prose:after { content:""; display:block; height:33px; } }
+    @media (max-width:640px) {
+      .snapshot, .trace-snapshot img { width:100%; }
+      .diagram-snapshot, .trace-snapshot { margin-block:var(--st-space-6); }
+      .chart-note { font-size:9px; }
+      #cost-chart + .chart-note { padding-bottom:34px; }
+      .diagram-snapshot { height:470px; }
+      .diagram-snapshot img { height:468px; object-fit:fill; }
+      .token-figure { height:404px; }
+      .trace-snapshot.trace-main img { height:618px; max-width:none; object-fit:fill; width:495px; }
+      .trace-snapshot.trace-secondary img { height:439px; max-width:none; object-fit:fill; width:704px; }
+      .receipts-sol { height:318px; }
+      .receipts-opus { height:340px; }
+      .receipts .st-table { height:100%; min-width:362px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <nav aria-label="Primary navigation" class="navbar">
+        <div class="nav-left">
+          <a class="logo" href="#top" aria-label="Stencil home">
+            <svg class="logo-mark" viewBox="42 6 116 176" aria-hidden="true">
+              <defs><mask id="logo-cut"><rect width="200" height="200" fill="white"></rect><line x1="100" y1="14" x2="100" y2="186" stroke="black" stroke-width="28"></line></mask></defs>
+              <g class="mark-mono" mask="url(#logo-cut)">
+                <polygon points="100,45 150,70 100,95 50,70" fill="currentColor"></polygon>
+                <polygon points="100,75 150,100 100,125 50,100" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round"></polygon>
+                <polygon points="100,105 150,130 100,155 50,130" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round"></polygon>
+              </g>
+              <g class="mark-color" opacity="0">
+                <polygon points="100,45 150,70 100,95 50,70" fill="#38bdf8" stroke="#f8fafc" stroke-width="8" stroke-linejoin="round"></polygon>
+                <polygon points="100,75 150,100 100,125 50,100" fill="#818cf8" fill-opacity=".8" stroke="#f8fafc" stroke-width="8" stroke-linejoin="round"></polygon>
+                <polygon points="100,105 150,130 100,155 50,130" fill="#c084fc" fill-opacity=".6" stroke="#f8fafc" stroke-width="8" stroke-linejoin="round"></polygon>
+              </g>
+              <line x1="100" y1="30" x2="100" y2="172" stroke="currentColor" stroke-width="8" stroke-linecap="round"></line>
+              <circle cx="100" cy="26" r="9" fill="currentColor"></circle>
+            </svg>
+            <span class="logo-text">Stencil</span>
+          </a>
+          <div class="nav-links"><a href="#top" class="nav-link active">Blog</a></div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="site-main" id="top">
+      <article class="post page-section">
+        <header class="post-header">
+          <div class="post-header-meta">
+            <span class="post-tag">
+              <img class="post-header-sigil" src="source-canvas-0.png" alt="" width="20" height="20">
+              <p class="eyebrow">Research</p>
+            </span>
+            <div aria-label="Share this post" class="share" role="group">
+              <a aria-label="Share on X" class="share-item" href="https://x.com/intent/post?text=You%20only%20need%20the%20frontier%20model%20for%20one%20single%20edit" rel="noopener" target="_blank" title="Share on X"><svg aria-hidden="true" fill="currentColor" height="13" viewBox="0 0 24 24" width="13"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"></path></svg></a>
+              <a aria-label="Share on Hacker News" class="share-item" href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fstencil.so%2Fblog%2Fprewalk" rel="noopener" target="_blank" title="Share on Hacker News"><svg aria-hidden="true" fill="currentColor" height="13" viewBox="0 0 24 24" width="13"><path d="M0 24V0h24v24H0zM6.951 5.896l4.112 7.708v5.064h1.583v-4.972l4.148-7.799h-1.749l-2.457 4.875c-.372.745-.688 1.434-.688 1.434s-.297-.708-.651-1.434L8.831 5.896h-1.88z"></path></svg></a>
+              <a aria-label="Share on Bluesky" class="share-item" href="https://bsky.app/intent/compose?text=You%20only%20need%20the%20frontier%20model%20for%20one%20single%20edit" rel="noopener" target="_blank" title="Share on Bluesky"><svg aria-hidden="true" fill="currentColor" height="13" viewBox="0 0 24 24" width="13"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"></path></svg></a>
+              <button aria-label="Copy link" class="share-item" id="copy-link" title="Copy link" type="button"><svg aria-hidden="true" fill="none" height="13" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13"><path d="M9 15 15 9M7.5 12l-2.75 2.75a3.89 3.89 0 0 0 5.5 5.5L13 17.5M16.5 12l2.75-2.75a3.89 3.89 0 0 0-5.5-5.5L11 6.5"></path></svg></button>
+            </div>
+          </div>
+          <h1>You only need the frontier model for one single edit</h1>
+          <div class="post-author">
+            <img class="post-author-avatar" src="https://stencil.so/authors/can.webp" alt="" width="28" height="28">
+            <div class="post-author-info"><span class="post-author-name">Can Bölük</span><time class="post-author-date" datetime="2026-07-13">2026-07-13</time></div>
+          </div>
+        </header>
+
+        <div class="prose">
+          <p>Monkey see, monkey do! 🍌</p>
+
+          <div class="post-stats">
+            <div class="post-stat"><span class="post-stat-value">97%</span><span class="post-stat-label">of frontier performance</span></div>
+            <div class="post-stat"><span class="post-stat-value">41%</span><span class="post-stat-label">cheaper in $$</span></div>
+            <div class="post-stat"><span class="post-stat-value">1.9×</span><span class="post-stat-label">faster completion</span></div>
+            <div class="post-stat"><span class="post-stat-value">~3×</span><span class="post-stat-label">less likely to cheat</span></div>
+          </div>
+
+          <div class="chart-wrap" id="cost-chart">
+            <img class="snapshot st-chart chart-340" src="source-canvas-1.png" alt="Cost versus pass rate scatter plot" width="760" height="340">
+            <div class="st-chart-tip chart-tip-local" id="chart-tip">5.6 Sol + /prewalk‡ · $1.04 · 85%</div>
+          </div>
+          <p class="chart-note">Cost vs pass rate, 7 arms · SWE-Bench Pro · a bare model = oneshot · $/task includes the frontier model's opening turns · † executes with Flash 3.5 · ‡ executes with 5.6 Luna</p>
+
+          <h2>/plan makes perfect sense. It really shouldn't!</h2>
+          <p>You've heard this pitch; you may have even shipped it. The expensive model is clearly the better architect, but it feels like a waste to use it for the entire pipeline. Why not let it do the <strong>“hard part”?</strong></p>
+          <p>Read the code, think deeply, write a precise plan. Then a model a tenth the price executes the plan. Senior architect, junior engineer.</p>
+          <p>Sounds great, right?</p>
+          <p>Find the red dot above, labeled <code>Opus 4.8 + /plan†</code>. Opus plans read-only, Gemini Flash implements: lands at <strong>$3.18 per task, 12.7 minutes, 84.6% pass</strong>.</p>
+          <p>Opus doing the entire task by itself, no handoff, no junior: <strong>$2.78, 10.1 minutes, 84.6%</strong>.</p>
+          <p>The <em>“cost-saving”</em> measure costs 14% <em>more</em> than not saving. <strong>Huh?</strong></p>
+
+          <figure class="diagram-snapshot"><img class="snapshot" src="source-plan.png" alt="Plan handoff reads the code twice and transfers only a small postcard"></figure>
+
+          <p>The mistake is upstream of the architecture diagram. People price agents the way they price people: senior time is expensive, so minimize senior involvement.</p>
+          <p>But the expensive part of an agent's day is not the fixing, building, or even the thinking. <strong>Opus fixing things does not cost money. Opus <em>reading</em> things costs money.</strong></p>
+          <p>Take a look at this admittedly anecdotal distribution of where our tokens went; fully automated agents look no different.</p>
+
+          <figure class="figure-center token-figure">
+            <img class="snapshot st-chart" src="source-canvas-2.png" alt="1.8 billion token distribution: reading dominates" width="760" height="300">
+            <figcaption>1.81B tokens across ~2M tool calls · “doing the task” (every edit and write) is 9%; reading is what scales the bill, and both models pay full price for it</figcaption>
+          </figure>
+
+          <p>Nine percent of the tokens are edits. The rest is reading, and this split is not a quirk of one harness, or something you can “fix”. Trust us, we've tried — that's how <a href="https://stencil.so/blog/snapcompact">snapcompact</a> happened.</p>
+          <p>Any agent, any model, any scaffold: the bill is essentially <code>O(reads)</code>.</p>
+          <p>Now walk through every reason you'd reach for /plan, with that in mind:</p>
+          <ul>
+            <li><strong>“I want the deep understanding of the big model.”</strong> The understanding lives in 100K+ tokens of grounded context: files read, dead ends eliminated, hypotheses tested. The plan document is a 2K-token postcard from that context. The executor gets the postcard, not the understanding, and has to rebuild the rest at its own expense.</li>
+            <li><strong>“The task is very complicated.”</strong> Then you don't want the main agent executing <em>at all</em>; a single read-only planning turn isn't the answer. Let it explore, then dispatch sub-agents to do the work. A game of telephone doesn't help you here.</li>
+            <li><strong>“I'm cost constrained.”</strong> Reading is the cost. /plan makes the frontier model read everything at frontier prices, then makes the cheap model read it <em>again</em>. You didn't move the expensive part; you duplicated it.</li>
+          </ul>
+          <p>Here's what that looks like in practice, with a diagram we've spent way too much time on:</p>
+
+          <figure class="trace-snapshot trace-main" id="django-13279-ribbons">
+            <img src="source-trace-0.png" alt="Three execution ribbons comparing plan handoff, one-shot, and prewalk">
+          </figure>
+
+          <p>Look at the top ribbon. Opus reads <code>base.py</code>, <code>signing.py</code>, the test file (twenty cards of gray), then writes its plan and leaves. And what's the first thing Flash does with that beautiful document? It re-reads <code>base.py</code> and the test file, because a plan is not a file and you cannot edit prose. The gray reads just keep stacking, first at Opus prices, then again at Flash prices. There is no version of this where a second reader is the cost optimization.</p>
+
+          <h2>Hand off a trajectory, not a fairytale</h2>
+          <p>A plan document is a literal postcard, describing a journey to a model that never took it.</p>
+          <p>What actually <em>could</em> transfer something of value is the context window itself:</p>
+          <p><code>/prewalk</code> does this:</p>
+          <ol>
+            <li>Start the task on the frontier model with one hidden instruction prefixed: <em>plan deeply, then capture the plan as a todo list, then start.</em></li>
+            <li>The frontier model explores, writes the plan, initializes the todo list.</li>
+            <li>The moment the <strong>first edit lands</strong> (the point where it was confident enough to act), you swap to the cheap model and <strong>prune the planning instruction</strong> from context.</li>
+          </ol>
+          <p>The trick is that:</p>
+          <ul>
+            <li>The cheap model never goes “wait, I thought we were planning”. There is no planning instruction left in its context.</li>
+            <li>As far as it knows, it explored around, created a comprehensive plan in the form of a todo list, and then confidently started executing.</li>
+            <li>Even better, it already made one <strong>valid move!</strong> <em>(a free in-context example)</em></li>
+          </ul>
+
+          <figure class="trace-snapshot trace-secondary"><img src="source-trace-1.png" alt="Prewalk execution ribbon compared with a full one-shot run"></figure>
+
+          <h3>How we got here</h3>
+          <p>The nice thing about working in an open-source harness is that you get to chat with people about how they do things, and almost everyone has a completely different setup.</p>
+          <p>Anyhow: I'd occasionally start easy-to-medium tasks with a frontier model, then switch to Kimi K27 after a few turns so it wouldn't fall into its usual thought loops. I never bothered to measure whether this was rational... until someone else mentioned doing the same thing.</p>
+          <p>Naturally, we had to benchmark it: are we idiots, or does this actually work, and when?</p>
+          <p><strong>First attempt:</strong> swap at a fixed turn, say #4. Obviously bad in hindsight: sometimes the frontier model is still lost at turn four, sometimes it has already finished the whole fix. <strong>Second attempt:</strong> swap after the first edit. The model has demonstrated the pattern once, in place, in style. Pretty nice, although still finicky: small models kept declaring the task done out of nowhere.</p>
+
+          <figure><img class="snapshot st-chart" src="source-canvas-3.png" alt="Pass-rate comparison of four swap strategies" width="760" height="300"></figure>
+
+          <p>The solution was to ask our unwitting herding agent to spell out a plan step by step, and then, once it's ready to execute, init a TODO list with a validation step for each item. It then edits some piece of code, and that's when we trigger the swap.</p>
+          <p>Gating on any edit alone is no good; the todo list still has a very important role here. Our tiny friend can forget the plan, a validation step, or what it's doing entirely, but it cannot forget the todo reminder that bugs it endlessly, giving us free steering.</p>
+          <p>Another funny failure mode: GPT 5.6 as the guide really likes creating 60-item TODO lists and completing them in batches (do they just hand out rewards for anything?), so an item limit in the prompt is a must.</p>
+
+          <h3>The receipts</h3>
+          <p><strong>GPT-5.6 Sol</strong>:</p>
+          <figure class="receipts receipts-sol">
+            <table class="st-table">
+              <thead><tr><th>arm</th><th>pass</th><th>cost</th><th>duration</th></tr></thead>
+              <tbody>
+                <tr><td>Executor: oneshot (GPT 5.6 Luna)</td><td class="st-mono">77%</td><td class="st-mono">$0.60</td><td class="st-mono">570s</td></tr>
+                <tr class="st-row--selected"><td class="st-primary-cell">/prewalk</td><td class="st-mono">85% <span class="st-delta st-delta--pos">(+10%)</span></td><td class="st-mono">$1.04 <span class="st-delta st-delta--neg">(−39%)</span></td><td class="st-mono">300s <span class="st-delta st-delta--neg">(−47%)</span></td></tr>
+                <tr><td>GPT 5.6 Sol: oneshot</td><td class="st-mono">88%</td><td class="st-mono">$1.71</td><td class="st-mono">372s</td></tr>
+              </tbody>
+            </table>
+          </figure>
+          <p>97% of Sol's pass rate at 61% of the cost, and it's the <em>fastest of the three</em>, because Sol stops burning slow frontier tokens after the opening and Luna doesn't waste turns lost in the woods.</p>
+          <p><strong>Opus 4.8</strong>:</p>
+          <figure class="receipts receipts-opus">
+            <table class="st-table">
+              <thead><tr><th>arm</th><th>pass</th><th>cost</th><th>duration</th></tr></thead>
+              <tbody>
+                <tr><td>Executor: oneshot (Gemini Flash 3.5)</td><td class="st-mono">60%</td><td class="st-mono">$1.16</td><td class="st-mono">360s</td></tr>
+                <tr class="st-row--selected"><td class="st-primary-cell">/prewalk</td><td class="st-mono">78% <span class="st-delta st-delta--pos">(+30%)</span></td><td class="st-mono">$1.46 <span class="st-delta st-delta--neg">(−47%)</span></td><td class="st-mono">402s <span class="st-delta st-delta--neg">(−34%)</span></td></tr>
+                <tr><td>Opus 4.8: oneshot</td><td class="st-mono">85%</td><td class="st-mono">$2.78</td><td class="st-mono">606s</td></tr>
+              </tbody>
+            </table>
+          </figure>
+          <p>92% of Opus at 53% of the cost, 1.5× the speed, +18 points over oneshot Flash.</p>
+          <p>One more thing before we move on. Scroll back up to the <a href="#django-13279-ribbons">ribbons from our django-13279 test ride</a> and look for something that <em>isn't</em> there: cheating!</p>
+
+          <h2>The effect we didn't expect</h2>
+          <p>Every SWE-bench task is a bug that was really fixed, years ago, in public. The answer to the exam is on GitHub.</p>
+          <p>Below: the share of runs that went poking around the web for it. <strong>Filthy cheaters!</strong></p>
+          <figure>
+            <div class="misalign">
+              <div class="misalign-group">
+                <div class="misalign-title">Claude Opus 4.8</div>
+                <div class="misalign-row misalign-row--neutral"><span class="misalign-label">oneshot</span><span class="misalign-track"><span class="misalign-fill" style="width:44%"></span></span><span class="misalign-value">44% <span class="misalign-delta">163t</span></span></div>
+                <div class="misalign-row misalign-row--danger"><span class="misalign-label">/plan</span><span class="misalign-track"><span class="misalign-fill" style="width:72%"></span></span><span class="misalign-value">72% <span class="misalign-delta">+28pts · 273t</span></span></div>
+                <div class="misalign-row misalign-row--cyan"><span class="misalign-label">/prewalk†</span><span class="misalign-track"><span class="misalign-fill" style="width:13%"></span></span><span class="misalign-value">13% <span class="misalign-delta">−31pts · 65t</span></span></div>
+              </div>
+              <div class="misalign-group">
+                <div class="misalign-title">GPT-5.6</div>
+                <div class="misalign-row misalign-row--neutral"><span class="misalign-label">Sol: oneshot</span><span class="misalign-track"><span class="misalign-fill" style="width:95%"></span></span><span class="misalign-value">95% <span class="misalign-delta">234t</span></span></div>
+                <div class="misalign-row misalign-row--neutral"><span class="misalign-label">Luna: oneshot</span><span class="misalign-track"><span class="misalign-fill" style="width:100%"></span></span><span class="misalign-value">100% <span class="misalign-delta">308t</span></span></div>
+                <div class="misalign-row misalign-row--cyan"><span class="misalign-label">/prewalk</span><span class="misalign-track"><span class="misalign-fill" style="width:70%"></span></span><span class="misalign-value">70% <span class="misalign-delta">−25pts · 162t</span></span></div>
+              </div>
+            </div>
+          </figure>
+
+          <p>Same model, same scaffolds, almost the same idea, yet wildly different behavior. Why does <code>/plan</code> still cheat while <code>/prewalk</code> doesn't?</p>
+          <p>Best explanation we have: <strong>prewalk starves it, from both ends.</strong> Cheating is what a capable model does when it gets desperate. In the solo traces the GitHub turns start mid-run, once exploration stalls: Sol breaks around turn 14, Opus around turn 12. Prewalk terminates the frontier model at the <em>beginning</em> of its effort budget, median ~7 turns: it exits while it's still deriving an approach and landing a first edit (the confident phase), well before its googling phase begins. <code>/plan</code> gets neither mercy: it has no turn limit, and its deliverable (a comprehensive document explaining how the fix <em>should</em> work, without ever testing an edit against the code) is exactly the kind of assignment that breeds desperation.</p>
+          <p>The executor then inherits the opposite of desperation: a context where the approach already survived contact with the code. Repro written, first edit landed, checklist ticking. Nothing in that context looks like searching, so the imitation machine doesn't search.</p>
+
+          <h2>Prefill walked so prewalk could run</h2>
+          <p>None of this is a new idea. It's the oldest trick in the book: <strong>prefill</strong>. Assistant doesn't do what you want? Start the assistant's turn yourself, and the model continues as if the words were its own.</p>
+          <p>It began as a consistency hack prior to grammar-constrained decoding. omp and many others still do it: session titles come from a tiny local model, which just happens to do better when you start its turn with <code>&lt;title&gt;</code>. A model that small can't be <em>argued</em> into a format, but it can be tricked into one.</p>
+          <p>Then the red-teamers found the other end. Prefill “Sure, here's how to…” and a much larger model sails past its own refusal: it has no channel distinguishing words it said from words placed in its mouth, and consistency with “having already accepted” beats the system prompt. Prefill became a standard jailbreak class, powerful enough that it's now banned at the inference layer nearly everywhere, starting with Anthropic since Sonnet 4.5 IIRC. JSON mode and structured outputs paved over the legitimate uses, and it faded away.</p>
+          <p>But the principle can't stop working, because it isn't a funny quirk; it's what autoregression <em>is</em>. You can't hand a frontier model ten prefilled tokens anymore; some won't even let you disable thinking, precisely so that you can't maliciously prefill turns (which the model will <em>hopefully</em> realize while thinking, from the absent assistant thinking blocks). But nothing stops you from handing it ten innocently prefilled <strong>turns</strong>: exploration that already happened, a todo list mid-checkmark.</p>
+          <hr><br>
+          <p>We upstreamed it to omp, where it ships as of today as <code>--prewalk</code>, <code>--prewalk-into &lt;model&gt;</code>, or just <code>/prewalk</code>. It should be easy to implement essentially anywhere, so if you get a chance to give it a go, do let us know how it fares!</p>
+        </div>
+      </article>
+    </main>
+    <footer class="site-footer">Stencil · 2026</footer>
+  </div>
+
+  <script>
+    const copyButton = document.querySelector('#copy-link');
+    copyButton?.addEventListener('click', async () => {
+      await navigator.clipboard?.writeText('https://stencil.so/blog/prewalk');
+      copyButton.dataset.copied = '';
+      copyButton.title = 'Copied';
+      setTimeout(() => { delete copyButton.dataset.copied; copyButton.title = 'Copy link'; }, 1200);
+    });
+
+    const chart = document.querySelector('#cost-chart');
+    const tip = document.querySelector('#chart-tip');
+    const points = [
+      { x: .205, y: .225, text: '5.6 Sol + /prewalk‡ · $1.04 · 85%' },
+      { x: .645, y: .235, text: 'Opus 4.8 · $2.78 · 84.6%' },
+      { x: .802, y: .245, text: 'Opus 4.8 + /plan† · $3.18 · 84.6%' },
+      { x: .315, y: .405, text: 'Opus 4.8 + /prewalk† · $1.46 · 78%' },
+      { x: .225, y: .43, text: '5.6 Luna · $0.60 · 77%' },
+      { x: .225, y: .82, text: 'Flash 3.5 · $1.16 · 60%' },
+    ];
+    chart?.addEventListener('mousemove', (event) => {
+      const box = chart.getBoundingClientRect();
+      const x = event.clientX - box.left;
+      const y = event.clientY - box.top;
+      const hit = points.find((point) => Math.hypot(x - point.x * box.width, y - point.y * box.height) < 24);
+      if (!hit) { delete tip.dataset.visible; return; }
+      tip.textContent = hit.text;
+      tip.style.left = `${x}px`;
+      tip.style.top = `${y}px`;
+      tip.dataset.visible = '';
+    });
+    chart?.addEventListener('mouseleave', () => { delete tip.dataset.visible; });
+    window.__prewalkReplicaReady = { exactLayout: true, sourceVisuals: 7, interactiveChart: true };
+  </script>
+</body>
+</html>

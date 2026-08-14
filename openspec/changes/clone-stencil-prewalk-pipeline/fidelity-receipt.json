@@ -1,0 +1,14 @@
+{
+  "schema": "design-pipeline.reconstruction-evidence.v1",
+  "referenceSha256": "0a1f4f1532ac39c12bfcbe2a1e00926b1bc1ebb569d4d973ca3ce4506ee9042c",
+  "implementationSha256": "41dd7f53effe96163bf77c1bd2b431284617e7a22d4e4a05eb3b1e65851fe1ef",
+  "diffSha256": "ac85a5ee7110aeb651bff12784f8e498f20a7821a39d10b510ded872e14e7f64",
+  "viewport": {
+    "width": 1425,
+    "height": 9361
+  },
+  "metrics": {
+    "pixelDifferenceRatio": 0.0001743703345534009,
+    "ssim": 0.9997225956332809
+  }
+}

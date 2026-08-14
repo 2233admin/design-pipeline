@@ -23,6 +23,17 @@ Those decisions belong in `3d.md` for 3D/hybrid routes, or `scene.md` for persis
 runtime routes. `motion.md` continues to own timing, interruption, choreography, and
 reduced-motion semantics.
 
+## CJK Typography
+
+When shipped copy contains Chinese, Japanese, or Korean text, read `cjk-typography.md` and add a
+`CJK Typography` section to change `design.md`. Record the actual system/project font stack and
+available weights, body size and line height, punctuation and mixed-script convention, overflow
+behavior, and representative real strings. Every decorative CJK font also records its exact glyph
+scope, WOFF2/hosted subset bytes, license, `font-display` policy, and system fallback.
+
+A Latin-only screenshot, a declared stack with no resolved fallback check, or a full CJK webfont
+download used for body/UI copy does not satisfy this contract.
+
 When `design.md` references a world-space element, it may define its visual treatment but must link
 to the owning object/camera/interaction contract in `3d.md`.
 

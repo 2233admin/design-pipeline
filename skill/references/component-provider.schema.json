@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/component-provider-registry.v1.json",
+  "title": "Component Provider Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "version", "reviewedAt", "providers"],
+  "properties": {
+    "schema": { "const": "design-pipeline.component-provider-registry.v1" },
+    "version": { "const": "1" },
+    "reviewedAt": { "type": "string", "format": "date" },
+    "providers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "frameworks", "interfaces", "capabilities", "packages", "mode", "status", "source"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "label": { "type": "string", "minLength": 1 },
+          "frameworks": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["agnostic", "react", "vue", "nuxt", "svelte", "solid"] } },
+          "interfaces": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "capabilities": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "packages": { "type": "object", "additionalProperties": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } } },
+          "mode": { "enum": ["project-owned", "project-pinned-adapter"] },
+          "status": { "enum": ["ready", "review", "experimental"] },
+          "source": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

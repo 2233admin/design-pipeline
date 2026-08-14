@@ -1,0 +1,84 @@
+{
+  "schema": "design-pipeline.holosticker-source.v1",
+  "source": {
+    "repository": "https://github.com/jal-co/holosticker",
+    "revision": "34688eb3fd2986c6721ff270a00ca9267f8a195c",
+    "gitTree": "11a1e9e0622d5a14a28a139c7dbcf17501eb1e0f",
+    "version": "1.6.1",
+    "license": "MIT",
+    "reviewedAt": "2026-08-12",
+    "scope": "complete tracked repository"
+  },
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 57,
+    "byteCount": 3408918,
+    "treeSha256": "6c9d99ab2b7b77cc7b4d036c5c8727ec44a29dcdd1b498e5cb974129b5eaccb3"
+  },
+  "capabilities": [
+    {
+      "id": "holo-material",
+      "label": "View-dependent holographic foil material",
+      "useWhen": "A Three.js surface needs diffraction bands, thin-film iridescence, metallic flakes, refractor facets, and environment reflections.",
+      "sourceFiles": ["src/lib/settings.ts", "src/lib/three-renderer.ts"],
+      "dependencies": ["three"],
+      "adoption": "core"
+    },
+    {
+      "id": "die-cut-mask",
+      "label": "Distance-field die-cut mask",
+      "useWhen": "Transparent artwork needs a cut border with tolerance that closes small counters and gaps.",
+      "sourceFiles": ["src/lib/three-renderer.ts"],
+      "dependencies": ["three"],
+      "adoption": "core"
+    },
+    {
+      "id": "pointer-tilt",
+      "label": "Pointer-driven foil tilt",
+      "useWhen": "Pointer movement should rotate the sticker and sweep view-dependent foil bands.",
+      "sourceFiles": ["src/components/StickerCanvas.tsx", "src/lib/three-renderer.ts"],
+      "dependencies": ["react", "three"],
+      "adoption": "core"
+    },
+    {
+      "id": "peel-and-layers",
+      "label": "Three-dimensional peel and exploded layers",
+      "useWhen": "A sticker needs a graded hinge bend, conical curl, foil backside, or separated backing, foil, and artwork layers.",
+      "sourceFiles": ["src/lib/settings.ts", "src/lib/three-renderer.ts"],
+      "dependencies": ["three"],
+      "adoption": "core"
+    },
+    {
+      "id": "static-export",
+      "label": "Transparent PNG and GLB export",
+      "useWhen": "The rendered sticker must be exported as a transparent bitmap or current 3D geometry.",
+      "sourceFiles": ["src/lib/three-renderer.ts"],
+      "dependencies": ["three"],
+      "adoption": "optional"
+    },
+    {
+      "id": "animated-export",
+      "label": "Sweep and peel animation export",
+      "useWhen": "The requested deliverable explicitly includes looping GIF or WebM animation.",
+      "sourceFiles": ["src/components/GifExportDialog.tsx", "src/lib/three-renderer.ts"],
+      "dependencies": ["three", "gifenc"],
+      "adoption": "optional"
+    },
+    {
+      "id": "react-component-export",
+      "label": "Self-contained React component export",
+      "useWhen": "A tuned sticker must be emitted as a reusable React component backed by Three.js.",
+      "sourceFiles": ["src/components/ComponentExportDialog.tsx", "src/lib/react-export.ts"],
+      "dependencies": ["react", "three"],
+      "adoption": "optional"
+    },
+    {
+      "id": "studio-settings",
+      "label": "Interactive studio controls and settings persistence",
+      "useWhen": "The product itself needs upload, foil tuning, layer controls, dark mode, or JSON settings import and export.",
+      "sourceFiles": ["src/App.tsx", "src/components/Sidebar.tsx", "src/lib/settings.ts"],
+      "dependencies": ["react", "three"],
+      "adoption": "optional"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/execution-outcome.v1.json",
+  "title": "Execution Outcome",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "invocation", "completedAt", "evidenceReceipts", "notes"],
+  "properties": {
+    "schema": { "const": "design-pipeline.execution-outcome.v1" },
+    "status": { "enum": ["complete", "failed"] },
+    "invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "exitCode"],
+      "properties": {
+        "command": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "exitCode": { "type": "integer" }
+      }
+    },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "evidenceReceipts": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "notes": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "design-pipeline.design-system-decision-request.v1",
+  "version": "1",
+  "mode": "custom",
+  "customId": "design-pipeline-project-owned",
+  "project": { "designMd": true, "runtime": {} },
+  "frontendStackDecisionPath": "openspec/changes/internalize-frontend-stack-tool-routing/frontend-stack-decision.json",
+  "capabilityInventoryPath": "openspec/changes/internalize-frontend-stack-tool-routing/capability-inventory.json"
+}

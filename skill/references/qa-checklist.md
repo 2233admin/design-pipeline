@@ -52,6 +52,42 @@ Check:
 - Palette is not one-note.
 - Typography fits the surface and density.
 
+## Plain-Language Checks
+
+Complete for user-facing interface copy and artifacts that ask a person to decide or act.
+
+- First useful sentence states the exact consequence or available action:
+- Actor, event, scope/count, uncertainty, time/limit, exclusions, and unchanged state preserved:
+- Title names the smallest accurate problem or outcome:
+- Buttons and recovery guidance correspond to actions the interface actually provides:
+- Internal causes and jargon removed unless they change the reader's decision:
+- High-impact old/proposed comparison and selected version:
+- Directness introduced no broader or stronger claim:
+
+## Direction Preview Checks
+
+- `direction-preview.json` applicability: required / waived; reason:
+- `direction check --stage preview` status and exit code:
+- Candidate IDs, shared viewport, content fixture hash, and state coverage:
+- Pairwise axis differences; luminance or era difference retained:
+- `index.html` and one screenshot per candidate exist with matching hashes:
+- Preview shell and candidates usable at desktop and narrow widths:
+- Selection source: user / bounded autonomous run / waived:
+- `direction check --stage selection` status and selected-direction rationale:
+- `directions.md` was written only after the selection gate passed:
+
+## CJK Typography Checks
+
+Complete when shipped copy contains Chinese, Japanese, or Korean text.
+
+- Resolved system/project font stack and real available weights:
+- Body size, line height, measure, tracking, and overflow behavior:
+- Full-width punctuation and mixed-script convention checked with real strings:
+- No synthesized italic CJK or negative CJK body tracking:
+- Decorative font scope, subset glyphs, WOFF2/hosted bytes, license, and fallback:
+- Font-loaded and font-failure captures:
+- Desktop/mobile, light/dark, and 200% zoom evidence:
+
 ## Website-Cloning Fidelity Checks
 
 Complete this section when live primary/reference targets are involved.

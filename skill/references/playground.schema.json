@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pipeline.local/schemas/playground.schema.json",
+  "title": "Design Pipeline Playground Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "changeId", "applicability", "surface", "selection", "verification", "integration"],
+  "properties": {
+    "schema": { "const": "design-pipeline.playground.v1" },
+    "changeId": { "$ref": "#/$defs/id" },
+    "applicability": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason", "rationale"],
+          "properties": {
+            "status": { "const": "required" },
+            "reason": { "enum": ["explicit-playground", "interaction-better-than-text", "high-dimensional-visual", "parameter-sensitive"] },
+            "rationale": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason", "rationale"],
+          "properties": {
+            "status": { "const": "waived" },
+            "reason": { "enum": ["narrow-change", "non-visual", "exact-primary-target", "fixed-design-spec", "direction-preview-sufficient"] },
+            "rationale": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "surface": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "blueprint", "title", "context", "artifact", "controls", "presets"],
+          "properties": {
+            "kind": { "$ref": "#/$defs/id" },
+            "blueprint": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["source", "id"],
+                  "properties": {
+                    "source": { "const": "builtin" },
+                    "id": { "$ref": "#/$defs/id" }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["source", "id", "artifact", "integrationTarget"],
+                  "properties": {
+                    "source": { "const": "change" },
+                    "id": { "$ref": "#/$defs/id" },
+                    "artifact": { "$ref": "#/$defs/artifact" },
+                    "integrationTarget": { "enum": ["design.md", "motion.md", "handoff.md", "brief.md", "qa.md", "scene.md"] }
+                  }
+                }
+              ]
+            },
+            "title": { "type": "string", "minLength": 1 },
+            "context": { "type": "string", "minLength": 1 },
+            "artifact": { "$ref": "#/$defs/artifact" },
+            "controls": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 24,
+              "items": { "$ref": "#/$defs/control" }
+            },
+            "presets": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 5,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "name", "values"],
+                "properties": {
+                  "id": { "$ref": "#/$defs/id" },
+                  "name": { "type": "string", "minLength": 1 },
+                  "values": { "$ref": "#/$defs/values" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "selection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "values", "changedControlIds", "stateSha256", "prompt"],
+          "properties": {
+            "status": { "enum": ["pending", "waived"] },
+            "values": { "type": "null" },
+            "changedControlIds": { "const": [] },
+            "stateSha256": { "type": "null" },
+            "prompt": { "type": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "values", "changedControlIds", "stateSha256", "prompt"],
+          "properties": {
+            "status": { "const": "selected" },
+            "values": { "$ref": "#/$defs/values" },
+            "changedControlIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+            "stateSha256": { "$ref": "#/$defs/hash" },
+            "prompt": { "$ref": "#/$defs/artifact" }
+          }
+        }
+      ]
+    },
+    "verification": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "method", "checkedAt", "surfaceSha256", "checks", "evidence"],
+          "properties": {
+            "status": { "enum": ["pending", "waived"] },
+            "method": { "type": "null" },
+            "checkedAt": { "type": "null" },
+            "surfaceSha256": { "type": "null" },
+            "checks": { "type": "null" },
+            "evidence": { "type": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "method", "checkedAt", "surfaceSha256", "checks", "evidence"],
+          "properties": {
+            "status": { "const": "passed" },
+            "method": { "enum": ["browser", "manual-browser"] },
+            "checkedAt": { "type": "string", "format": "date-time" },
+            "surfaceSha256": { "$ref": "#/$defs/hash" },
+            "checks": { "$ref": "#/$defs/verificationChecks" },
+            "evidence": { "$ref": "#/$defs/artifact" }
+          }
+        }
+      ]
+    },
+    "integration": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "target"],
+          "properties": {
+            "status": { "enum": ["pending", "waived"] },
+            "target": { "type": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "target"],
+          "properties": {
+            "status": { "const": "applied" },
+            "target": { "$ref": "#/$defs/artifact" }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "applicability": { "properties": { "status": { "const": "waived" } }, "required": ["status"] } } },
+      "then": {
+        "properties": {
+          "surface": { "type": "null" },
+          "selection": { "properties": { "status": { "const": "waived" } } },
+          "verification": { "properties": { "status": { "const": "waived" } } },
+          "integration": { "properties": { "status": { "const": "waived" } } }
+        }
+      },
+      "else": {
+        "properties": {
+          "surface": { "type": "object" },
+          "selection": { "properties": { "status": { "enum": ["pending", "selected"] } } },
+          "verification": { "properties": { "status": { "enum": ["pending", "passed"] } } },
+          "integration": { "properties": { "status": { "enum": ["pending", "applied"] } } }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$" },
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "scalar": { "type": ["string", "number", "boolean"] },
+    "values": { "type": "object", "minProperties": 1, "additionalProperties": { "$ref": "#/$defs/scalar" } },
+    "verificationChecks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["everyControlUpdatesState", "everyPresetAppliesDeclaredState", "previewUpdatesImmediately", "promptUpdatesImmediately", "copyMatchesPrompt", "keyboardOperable"],
+      "properties": {
+        "everyControlUpdatesState": { "const": true },
+        "everyPresetAppliesDeclaredState": { "const": true },
+        "previewUpdatesImmediately": { "const": true },
+        "promptUpdatesImmediately": { "const": true },
+        "copyMatchesPrompt": { "const": true },
+        "keyboardOperable": { "const": true }
+      }
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "group", "type", "default"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string", "minLength": 1 },
+        "group": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["range", "select", "checkbox", "color", "text"] },
+        "default": { "$ref": "#/$defs/scalar" },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number", "exclusiveMinimum": 0 },
+        "options": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "range" } }, "required": ["type"] },
+          "then": { "required": ["min", "max", "step"], "properties": { "default": { "type": "number" } } },
+          "else": { "not": { "anyOf": [{ "required": ["min"] }, { "required": ["max"] }, { "required": ["step"] }] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "select" } }, "required": ["type"] },
+          "then": { "required": ["options"], "properties": { "default": { "type": "string" } } },
+          "else": { "not": { "required": ["options"] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "checkbox" } }, "required": ["type"] },
+          "then": { "properties": { "default": { "type": "boolean" } } }
+        },
+        {
+          "if": { "properties": { "type": { "enum": ["color", "text"] } }, "required": ["type"] },
+          "then": { "properties": { "default": { "type": "string" } } }
+        }
+      ]
+    }
+  }
+}

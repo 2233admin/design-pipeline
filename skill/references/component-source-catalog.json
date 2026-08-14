@@ -1,0 +1,3897 @@
+{
+  "schema": "design-pipeline.design-system-snapshot.v1",
+  "version": "1",
+  "namespace": "frontend-component-sources",
+  "provenance": {
+    "source": "Curated frontend component source metadata",
+    "license": "mixed",
+    "attribution": "Metadata only; no remote implementation is vendored"
+  },
+  "components": [
+    {
+      "id": "smoothui/animated-components",
+      "name": "SmoothUI animated React components",
+      "category": "animated-ui",
+      "status": "stable",
+      "keywords": ["SmoothUI", "smooth ui", "React", "Motion", "GSAP", "Tailwind CSS", "shadcn/ui", "accessible", "reduced motion", "micro-interaction"],
+      "description": "Reference catalog for animated React components spanning basic UI, navigation, buttons, text, AI/agent surfaces, transitions, and composition patterns.",
+      "routing": {
+        "capabilities": ["smoothui", "animated-ui", "animated-react-components", "app-ui", "button", "dialog", "drawer", "form", "text-input", "select", "combobox", "toggle", "progress", "stepper", "tabs", "tooltip", "accordion", "toast-notification", "file-upload", "pagination", "breadcrumb", "carousel", "interactive-card", "text-animation", "shader-background", "transition"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "verified",
+        "fallback": "Use project-owned semantic DOM, current UI dependencies, and the existing motion runtime; adapt only the named interaction."
+      },
+      "alignment": {
+        "framework": "React",
+        "styling": ["Tailwind CSS", "shadcn/ui-compatible"],
+        "motion": ["Motion", "GSAP"],
+        "quality": ["keyboard-accessible", "reduced-motion-aware", "typed props"],
+        "delivery": "Copy-source or registry-style integration; design-pipeline does not auto-install or execute upstream code."
+      },
+      "provenance": {
+        "source": "SmoothUI",
+        "url": "https://smoothui.dev/docs/components",
+        "repository": "https://github.com/educlopez/smoothui",
+        "license": "MIT",
+        "attribution": "Metadata and routed technique names only; no remote implementation is vendored"
+      }
+    },
+    {
+      "id": "react-bits/decrypted-text",
+      "name": "React Bits DecryptedText",
+      "category": "text-animation",
+      "status": "stable",
+      "keywords": ["React Bits", "reactbits", "decrypted text", "scramble text", "text animation", "reveal text"],
+      "description": "Reference contract for hacker-style text decryption that cycles random glyphs until the original text is revealed.",
+      "routing": {
+        "capabilities": ["react-bits", "decrypted-text", "text-animation", "animated-ui", "typography"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "verified",
+        "fallback": "Keep the real text in an accessible semantic layer and use the project motion runtime; reduced motion resolves directly to readable text."
+      },
+      "alignment": {
+        "framework": "React",
+        "motion": "Motion",
+        "variants": ["JS + CSS", "JS + Tailwind", "TS + CSS", "TS + Tailwind"],
+        "triggers": ["hover", "click", "view", "inViewHover"],
+        "revealDirections": ["start", "end", "center"],
+        "clickModes": ["once", "toggle"],
+        "props": ["text", "speed", "maxIterations", "sequential", "revealDirection", "useOriginalCharsOnly", "characters", "animateOn", "clickMode"],
+        "accessibility": ["screen-reader text", "aria-hidden visual glyphs", "reduced-motion plain text"],
+        "cleanup": ["clear interval", "disconnect intersection observer"]
+      },
+      "provenance": {
+        "source": "React Bits DecryptedText",
+        "url": "https://reactbits.dev/text-animations/decrypted-text",
+        "repository": "https://github.com/DavidHDev/react-bits",
+        "license": "MIT + Commons Clause",
+        "attribution": "Metadata and behavioral contract only; no remote implementation is vendored"
+      }
+    },
+    {
+      "id": "native/dom-numeric-transition",
+      "name": { "en": "DOM numeric transition", "zh": "DOM 数字过渡" },
+      "category": "motion",
+      "status": "stable",
+      "routing": {
+        "capabilities": ["animated-stat", "numeric-content-transition", "numeric-text"],
+        "platforms": ["web"],
+        "mode": "platform",
+        "evidenceStatus": "verified",
+        "fallback": "Use semantic text with CSS/WAAPI and a reduced-motion instant update."
+      },
+      "provenance": {
+        "source": "Web platform",
+        "license": "platform",
+        "attribution": "Project-owned fallback; no external source copied"
+      }
+    },
+    {
+      "id": "beautiful-ui/reference-library",
+      "name": { "en": "Beautiful UI reference library", "zh": "Beautiful UI 参考组件库" },
+      "category": "app-ui",
+      "status": "stable",
+      "routing": {
+        "capabilities": ["app-ui"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "requiresLicense": true,
+        "fallback": "Keep the project-owned semantic DOM and tokens; adopt only measured interaction ideas."
+      },
+      "provenance": {
+        "source": "Beautiful UI",
+        "url": "https://www.beautifului.dev/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
+      "id": "expo-content-transition/numeric-text",
+      "name": { "en": "NumericText", "zh": "原生数字文本过渡" },
+      "category": "motion",
+      "status": "stable",
+      "routing": {
+        "capabilities": ["animated-stat", "numeric-content-transition", "numeric-text"],
+        "platforms": ["expo", "react-native"],
+        "mode": "package",
+        "evidenceStatus": "verified",
+        "package": "expo-content-transition",
+        "install": "bun install expo-content-transition",
+        "fallback": "On web, use native/dom-numeric-transition; Expo Go is not supported."
+      },
+      "provenance": {
+        "source": "expo-content-transition",
+        "url": "https://github.com/rit3zh/expo-content-transition",
+        "license": "MIT",
+        "attribution": "Ritesh / expo-content-transition"
+      }
+    },
+    {
+      "id": "reactbits-pro/app-ui",
+      "name": { "en": "React Bits Pro app UI blocks", "zh": "React Bits Pro 应用 UI 区块" },
+      "category": "page-block",
+      "status": "stable",
+      "routing": {
+        "capabilities": ["animated-ui", "app-ui", "cta", "faq", "features", "hero", "navigation", "page-block", "pricing", "stats"],
+        "platforms": ["web"],
+        "mode": "registry-copy",
+        "evidenceStatus": "verified",
+        "requiresLicense": true,
+        "package": "@reactbits-pro",
+        "install": "npx shadcn@latest add @reactbits-pro/<name>",
+        "fallback": "Use the project-owned catalog and CSS motion primitives when the license is unavailable."
+      },
+      "provenance": {
+        "source": "React Bits Pro",
+        "url": "https://reactbits.dev/pro/app-ui",
+        "license": "commercial-license-required",
+        "attribution": "React Bits Pro metadata only; source code is not vendored"
+      }
+    },
+    {
+      "id": "reactbits/dither",
+      "name": { "en": "React Bits Dither background", "zh": "React Bits Dither 抖动背景" },
+      "category": "background",
+      "status": "stable",
+      "routing": {
+        "capabilities": ["animated-background", "dither-background", "shader-background"],
+        "platforms": ["web"],
+        "mode": "registry-copy",
+        "evidenceStatus": "verified",
+        "requiresLicense": false,
+        "install": "Copy the JS/TS + CSS/Tailwind variant from the official Dither page or its shadcn command.",
+        "fallback": "Use a CSS noise/gradient layer with reduced-motion disabled animation when WebGL is unavailable.",
+        "degradation": "WebGL2 shader background; keep content in semantic DOM above it and honor prefers-reduced-motion."
+      },
+      "provenance": {
+        "source": "React Bits",
+        "url": "https://reactbits.dev/backgrounds/dither",
+        "sourceCode": "https://github.com/DavidHDev/react-bits/tree/main/src/ts-tailwind/Backgrounds/Dither",
+        "license": "MIT + Commons Clause",
+        "licenseNotice": "Include the upstream copyright and license notice; do not sell or redistribute the component by itself.",
+        "attribution": "David Haz / DavidHDev/react-bits; source is available and intended for app-level adaptation"
+      }
+    },
+    {
+      "id": "smoothui/components",
+      "name": {
+        "en": "SmoothUI component catalog",
+        "zh": "SmoothUI 动效组件目录"
+      },
+      "category": "component-library",
+      "status": "stable",
+      "routing": {
+        "capabilities": [
+          "accordion",
+          "ai-agent",
+          "ai-chat",
+          "ai-ui",
+          "animated-ui",
+          "app-ui",
+          "avatar",
+          "badge",
+          "basic-ui",
+          "button",
+          "card",
+          "carousel",
+          "data-display",
+          "dialog",
+          "drawer",
+          "dropdown",
+          "feedback",
+          "file-upload",
+          "form",
+          "input",
+          "layout",
+          "modal",
+          "navigation",
+          "pagination",
+          "progress",
+          "search",
+          "select",
+          "skeleton",
+          "slider",
+          "smoothui",
+          "stepper",
+          "tabs",
+          "text-animation",
+          "text-input",
+          "toast-notification",
+          "toggle",
+          "tooltip",
+          "transition",
+          "typography",
+          "orb"
+        ],
+        "platforms": [
+          "web"
+        ],
+        "mode": "registry-copy",
+        "evidenceStatus": "verified",
+        "requiresLicense": false,
+        "install": "pnpm dlx shadcn@latest add https://smoothui.dev/r/<component>.json",
+        "fallback": "Keep semantic DOM and project-owned tokens; use CSS/DOM fallbacks and honor prefers-reduced-motion when Motion, GSAP, or WebGL effects are unavailable.",
+        "degradation": "React + Tailwind + shadcn registry components; resolve each inventory item's Motion/GSAP/Radix dependency before installation.",
+        "componentCount": 130,
+        "catalogReviewedAt": "2026-08-12",
+        "recommendations": {
+          "basic-ui": [
+            "animated-file-upload",
+            "animated-input",
+            "animated-o-t-p-input",
+            "animated-progress-bar",
+            "animated-stepper",
+            "animated-tabs",
+            "animated-tags",
+            "animated-toggle",
+            "animated-tooltip",
+            "basic-accordion",
+            "basic-dropdown",
+            "basic-modal",
+            "checkbox",
+            "context-menu",
+            "dropdown-menu",
+            "form",
+            "notification-badge",
+            "radio-group",
+            "rich-popover",
+            "scrubber",
+            "searchable-dropdown",
+            "skeleton-loader"
+          ],
+          "button": [
+            "button-copy",
+            "clip-corners-button",
+            "dot-morph-button",
+            "magnetic-button",
+            "smooth-button"
+          ],
+          "text-animation": [
+            "ai-context-meter",
+            "bottom-up-letters",
+            "context-menu",
+            "depth-parallax-words",
+            "mask-reveal-up",
+            "per-word-crossfade",
+            "reveal-text",
+            "scramble-hover",
+            "scroll-reveal-paragraph",
+            "shader-reveal-circle-transition",
+            "shader-reveal-luma-transition",
+            "shader-reveal-noise-transition",
+            "shader-reveal-planetary-transition",
+            "shader-reveal-push-transition",
+            "shader-reveal-stripes-transition",
+            "shader-reveal-transition",
+            "shader-reveal-wipe-transition",
+            "shader-reveal-zoom-transition",
+            "shimmer-sweep",
+            "shine-text",
+            "spring-scale-in",
+            "top-down-letters",
+            "typewriter-text",
+            "wave-text"
+          ],
+          "ai-ui": [
+            "agent-avatar",
+            "ai-approval",
+            "ai-artifact",
+            "ai-branch",
+            "ai-citation",
+            "ai-context-meter",
+            "ai-conversation",
+            "ai-diff",
+            "ai-loader",
+            "ai-message",
+            "ai-orb-face",
+            "ai-prompt-input",
+            "ai-reasoning",
+            "ai-response",
+            "ai-sources",
+            "ai-suggestions",
+            "ai-task-list",
+            "ai-tool-call",
+            "siri-orb"
+          ],
+          "ai-chat": [
+            "agent-avatar",
+            "ai-artifact",
+            "ai-branch",
+            "ai-citation",
+            "ai-conversation",
+            "ai-loader",
+            "ai-message",
+            "ai-prompt-input",
+            "ai-reasoning",
+            "ai-response",
+            "ai-sources",
+            "ai-suggestions"
+          ],
+          "ai-agent": [
+            "agent-avatar",
+            "ai-approval",
+            "ai-artifact",
+            "ai-conversation",
+            "ai-diff",
+            "ai-loader",
+            "ai-prompt-input",
+            "ai-reasoning",
+            "ai-task-list",
+            "ai-tool-call"
+          ],
+          "orb": [
+            "ai-orb-face",
+            "siri-orb"
+          ],
+          "transition": [
+            "aperture-blur-transition",
+            "chroma-blur-transition",
+            "organic-merge-transition",
+            "prism-sweep-transition",
+            "radial-circles-transition",
+            "sdf-blob-transition",
+            "sdf-circle-transition",
+            "shader-reveal-circle-transition",
+            "shader-reveal-luma-transition",
+            "shader-reveal-noise-transition",
+            "shader-reveal-planetary-transition",
+            "shader-reveal-push-transition",
+            "shader-reveal-stripes-transition",
+            "shader-reveal-transition",
+            "shader-reveal-wipe-transition",
+            "shader-reveal-zoom-transition",
+            "warped-circle-transition"
+          ],
+          "carousel": [
+            "app-download-stack",
+            "exposure-slider",
+            "infinite-slider",
+            "photo-stack",
+            "reviews-carousel",
+            "scrollable-card-stack"
+          ],
+          "form": [
+            "ai-prompt-input",
+            "animated-file-upload",
+            "animated-input",
+            "animated-o-t-p-input",
+            "basic-dropdown",
+            "combobox",
+            "dropdown-menu",
+            "form",
+            "interactive-image-selector",
+            "searchable-dropdown",
+            "select",
+            "social-selector"
+          ],
+          "feedback": [
+            "animated-tooltip",
+            "basic-modal",
+            "basic-toast",
+            "dialog",
+            "gooey-popover",
+            "notification-badge",
+            "rich-popover"
+          ],
+          "input": [
+            "ai-prompt-input",
+            "animated-file-upload",
+            "animated-input",
+            "animated-o-t-p-input",
+            "basic-dropdown",
+            "combobox",
+            "dropdown-menu",
+            "interactive-image-selector",
+            "searchable-dropdown",
+            "select",
+            "social-selector"
+          ],
+          "modal": [
+            "basic-modal",
+            "dialog",
+            "drawer",
+            "gooey-popover",
+            "rich-popover"
+          ],
+          "dropdown": [
+            "basic-dropdown",
+            "combobox",
+            "dropdown-menu",
+            "interactive-image-selector",
+            "searchable-dropdown",
+            "select",
+            "social-selector"
+          ],
+          "tabs": [
+            "animated-tabs",
+            "phototab"
+          ],
+          "progress": [
+            "ai-loader",
+            "animated-progress-bar",
+            "grid-loader",
+            "scrubber",
+            "skeleton-loader"
+          ],
+          "slider": [
+            "exposure-slider",
+            "infinite-slider",
+            "scrubber"
+          ],
+          "data-display": [
+            "animated-avatar-group",
+            "contribution-graph",
+            "github-stars-animation",
+            "image-metadata-preview",
+            "number-flow",
+            "photo-stack",
+            "price-flow",
+            "reviews-carousel",
+            "scroll-reveal-paragraph",
+            "tweet-card"
+          ],
+          "layout": [
+            "app-download-stack",
+            "dynamic-island",
+            "expandable-cards",
+            "exposure-slider",
+            "glow-hover-card",
+            "infinite-slider",
+            "job-listing-component",
+            "photo-stack",
+            "product-card",
+            "reviews-carousel",
+            "scrollable-card-stack",
+            "switchboard-card",
+            "tweet-card"
+          ],
+          "animated-ui": [
+            "agent-avatar",
+            "ai-approval",
+            "ai-artifact",
+            "ai-branch",
+            "ai-citation",
+            "ai-context-meter",
+            "ai-conversation",
+            "ai-diff",
+            "ai-loader",
+            "ai-message",
+            "ai-orb-face",
+            "ai-prompt-input",
+            "ai-reasoning",
+            "ai-response",
+            "ai-sources",
+            "ai-suggestions",
+            "ai-task-list",
+            "ai-tool-call",
+            "animated-avatar-group",
+            "animated-file-upload",
+            "animated-input",
+            "animated-o-t-p-input",
+            "animated-progress-bar",
+            "animated-stepper"
+          ],
+          "smoothui": [
+            "agent-avatar",
+            "ai-approval",
+            "ai-artifact",
+            "ai-branch",
+            "ai-citation",
+            "ai-context-meter",
+            "ai-conversation",
+            "ai-diff",
+            "ai-loader",
+            "ai-message",
+            "ai-orb-face",
+            "ai-prompt-input",
+            "ai-reasoning",
+            "ai-response",
+            "ai-sources",
+            "ai-suggestions",
+            "ai-task-list",
+            "ai-tool-call",
+            "animated-avatar-group",
+            "animated-file-upload",
+            "animated-input",
+            "animated-o-t-p-input",
+            "animated-progress-bar",
+            "animated-stepper",
+            "animated-tabs",
+            "animated-tags",
+            "animated-toggle",
+            "animated-tooltip",
+            "aperture-blur-transition",
+            "app-download-stack",
+            "apple-invites",
+            "basic-accordion",
+            "basic-dropdown",
+            "basic-modal",
+            "basic-toast",
+            "blur-out-up",
+            "book",
+            "bottom-up-letters",
+            "breadcrumb",
+            "button-copy",
+            "checkbox",
+            "chroma-blur-transition",
+            "clip-corners-button",
+            "combobox",
+            "context-menu",
+            "contribution-graph",
+            "cursor-follow",
+            "depth-parallax-words",
+            "dialog",
+            "dot-morph-button",
+            "drawer",
+            "dropdown-menu",
+            "dynamic-island",
+            "expandable-cards",
+            "exposure-slider",
+            "fade-through",
+            "figma-comment",
+            "focus-blur-resolve",
+            "form",
+            "github-stars-animation",
+            "glow-hover-card",
+            "gooey-popover",
+            "grid-loader",
+            "image-metadata-preview",
+            "infinite-slider",
+            "interactive-image-selector",
+            "job-listing-component",
+            "kinetic-center-build",
+            "line-by-line-slide",
+            "magnetic-button",
+            "mask-reveal-up",
+            "micro-scale-fade",
+            "morph-surface",
+            "notification-badge",
+            "number-flow",
+            "organic-merge-transition",
+            "pagination",
+            "per-character-rise",
+            "per-word-crossfade",
+            "photo-stack",
+            "phototab",
+            "power-off-slide",
+            "price-flow",
+            "prism-sweep-transition",
+            "product-card",
+            "radial-circles-transition",
+            "radio-group",
+            "reveal-text",
+            "reviews-carousel",
+            "rich-popover",
+            "scale-down-fade",
+            "scramble-hover",
+            "scroll-reveal-paragraph",
+            "scrollable-card-stack",
+            "scrubber",
+            "sdf-blob-transition",
+            "sdf-circle-transition",
+            "searchable-dropdown",
+            "select",
+            "shader-reveal-circle-transition",
+            "shader-reveal-luma-transition",
+            "shader-reveal-noise-transition",
+            "shader-reveal-planetary-transition",
+            "shader-reveal-push-transition",
+            "shader-reveal-stripes-transition",
+            "shader-reveal-transition",
+            "shader-reveal-wipe-transition",
+            "shader-reveal-zoom-transition",
+            "shared-axis-x",
+            "shared-axis-y",
+            "shared-axis-z",
+            "shimmer-sweep",
+            "shine-text",
+            "short-slide-down",
+            "short-slide-right",
+            "siri-orb",
+            "skeleton-loader",
+            "smooth-button",
+            "social-selector",
+            "soft-blur-in",
+            "spring-scale-in",
+            "stagger-from-center",
+            "stagger-from-edges",
+            "switchboard-card",
+            "top-down-letters",
+            "tweet-card",
+            "typewriter-text",
+            "user-account-avatar",
+            "warped-circle-transition",
+            "wave-text"
+          ]
+        },
+        "componentInventory": [
+          {
+            "name": "agent-avatar",
+            "displayName": "AgentAvatar",
+            "category": "ai",
+            "description": "Canvas-based generative pixel avatar for AI agents, unique per seed.",
+            "tags": [
+              "avatar",
+              "generative",
+              "canvas",
+              "pixel-art",
+              "ai-agent",
+              "deterministic",
+              "animated"
+            ],
+            "useCases": [
+              "Display unique avatars for AI agents or chatbots",
+              "Generate deterministic user avatars from seed strings",
+              "Visual identity for automated systems"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/agent-avatar.json",
+            "registryUrl": "https://smoothui.dev/r/agent-avatar.json",
+            "docUrl": "https://smoothui.dev/docs/components/agent-avatar",
+            "propsCount": 0
+          },
+          {
+            "name": "ai-approval",
+            "displayName": "AiApproval",
+            "category": "ai",
+            "description": "Human-in-the-loop approval card where the chosen option expands to fill the card while the alternatives collapse away.",
+            "tags": [
+              "ai",
+              "approval",
+              "human-in-the-loop",
+              "confirm",
+              "agent",
+              "decision"
+            ],
+            "useCases": [
+              "Question an agent asks before acting",
+              "Destructive action that needs a human yes",
+              "Branch choice mid-workflow"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-approval.json",
+            "registryUrl": "https://smoothui.dev/r/ai-approval.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-approval",
+            "propsCount": 10
+          },
+          {
+            "name": "ai-artifact",
+            "displayName": "AiArtifact",
+            "category": "ai",
+            "description": "Generated-artifact frame whose preview and code panes swap along a shared axis rather than cross-fading.",
+            "tags": [
+              "ai",
+              "artifact",
+              "tabs",
+              "preview",
+              "code",
+              "canvas"
+            ],
+            "useCases": [
+              "Generated component with preview and source",
+              "Chart or document produced mid-conversation",
+              "Any output that has both a rendered and a raw form"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-artifact.json",
+            "registryUrl": "https://smoothui.dev/r/ai-artifact.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-artifact",
+            "propsCount": 11
+          },
+          {
+            "name": "ai-branch",
+            "displayName": "AiBranch",
+            "category": "ai",
+            "description": "An interactive AI branch component for displaying conversation flows.",
+            "tags": [
+              "ai",
+              "chat",
+              "branching",
+              "conversation",
+              "message",
+              "navigation",
+              "animated"
+            ],
+            "useCases": [
+              "Navigate between AI conversation branches",
+              "Show alternative AI responses in chat interfaces",
+              "Build multi-turn conversation UIs with edit/regenerate support"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-branch.json",
+            "registryUrl": "https://smoothui.dev/r/ai-branch.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-branch",
+            "propsCount": 1
+          },
+          {
+            "name": "ai-citation",
+            "displayName": "AiCitation",
+            "category": "ai",
+            "description": "Inline citation pill that opens an origin-aware source card, anchored to the pill it came from.",
+            "tags": [
+              "ai",
+              "citation",
+              "popover",
+              "hover-card",
+              "sources",
+              "inline"
+            ],
+            "useCases": [
+              "Inline reference inside generated prose",
+              "Footnote-style source preview",
+              "Any inline marker that needs a peek at its target"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-citation.json",
+            "registryUrl": "https://smoothui.dev/r/ai-citation.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-citation",
+            "propsCount": 13
+          },
+          {
+            "name": "ai-context-meter",
+            "displayName": "AiContextMeter",
+            "category": "ai",
+            "description": "Context window meter whose ring fills and shifts hue at the warning threshold, never changing size.",
+            "tags": [
+              "ai",
+              "context",
+              "tokens",
+              "meter",
+              "usage",
+              "ring"
+            ],
+            "useCases": [
+              "Context window usage next to a composer",
+              "Token budget indicator in a settings row",
+              "Any quota that has a soft warning band"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-context-meter.json",
+            "registryUrl": "https://smoothui.dev/r/ai-context-meter.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-context-meter",
+            "propsCount": 11
+          },
+          {
+            "name": "ai-conversation",
+            "displayName": "AiConversation",
+            "category": "ai",
+            "description": "Thread scroll container that follows the bottom only while the reader is already there, offering a jump-to-latest pill when it stops.",
+            "tags": [
+              "ai",
+              "chat",
+              "scroll",
+              "conversation",
+              "stick-to-bottom",
+              "thread"
+            ],
+            "useCases": [
+              "Scroll container for a chat thread",
+              "Streaming transcript that must not fight the reader",
+              "Agent log that grows while being read"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-conversation.json",
+            "registryUrl": "https://smoothui.dev/r/ai-conversation.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-conversation",
+            "propsCount": 7
+          },
+          {
+            "name": "ai-diff",
+            "displayName": "AiDiff",
+            "category": "ai",
+            "description": "Proposed code or data edit where added lines wipe in from the left and rejected lines collapse to nothing.",
+            "tags": [
+              "ai",
+              "diff",
+              "code",
+              "review",
+              "accept",
+              "reject"
+            ],
+            "useCases": [
+              "AI-proposed edit awaiting review",
+              "Tool call that rewrites a file",
+              "Any before/after the user must accept or reject"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-diff.json",
+            "registryUrl": "https://smoothui.dev/r/ai-diff.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-diff",
+            "propsCount": 6
+          },
+          {
+            "name": "ai-loader",
+            "displayName": "AiLoader",
+            "category": "ai",
+            "description": "Family of AI waiting indicators — dots, sweep bar and pixel grid — sharing one cycle length, with an optional elapsed counter.",
+            "tags": [
+              "ai",
+              "loader",
+              "spinner",
+              "thinking",
+              "progress",
+              "chat"
+            ],
+            "useCases": [
+              "Waiting indicator while a model is working",
+              "Inline indicator inside a message list",
+              "Long-running agent step with an elapsed counter"
+            ],
+            "animationType": "tween",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-loader.json",
+            "registryUrl": "https://smoothui.dev/r/ai-loader.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-loader",
+            "propsCount": 6
+          },
+          {
+            "name": "ai-message",
+            "displayName": "AiMessage",
+            "category": "ai",
+            "description": "Chat message bubble whose action row slides out of the bubble's own edge, revealed on hover and on focus.",
+            "tags": [
+              "ai",
+              "chat",
+              "message",
+              "bubble",
+              "actions",
+              "copy"
+            ],
+            "useCases": [
+              "User and assistant turns in a chat thread",
+              "Message with copy, retry and feedback actions",
+              "Thread rows that need an avatar or orb slot"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-message.json",
+            "registryUrl": "https://smoothui.dev/r/ai-message.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-message",
+            "propsCount": 22
+          },
+          {
+            "name": "ai-orb-face",
+            "displayName": "AiOrbFace",
+            "category": "ai",
+            "description": "Cartoon character orb whose expression carries the AI state — cursor-following gaze, natural blinks, thinking saccades, happy arcs and spiral eyes.",
+            "tags": [
+              "orb",
+              "ai",
+              "character",
+              "mascot",
+              "eyes",
+              "svg",
+              "playful"
+            ],
+            "useCases": [
+              "Assistant mascot that reacts as the user works",
+              "Onboarding companion with readable moods",
+              "Playful alternative to a spinner or status badge"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "motion"
+            ],
+            "registryDependencies": [
+              "ai-core"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-orb-face.json",
+            "registryUrl": "https://smoothui.dev/r/ai-orb-face.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-orb-face",
+            "propsCount": 6
+          },
+          {
+            "name": "ai-prompt-input",
+            "displayName": "AiPromptInput",
+            "category": "ai",
+            "description": "AI prompt composer with autogrowing textarea, attachment chips and a send-to-stop path morph.",
+            "tags": [
+              "ai",
+              "chat",
+              "input",
+              "textarea",
+              "composer",
+              "prompt",
+              "form"
+            ],
+            "useCases": [
+              "Chat composer for an assistant or agent",
+              "Prompt box with attachments and a model picker slot",
+              "Stop control while a response is streaming"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "registryDependencies": [
+              "ai-core"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-prompt-input.json",
+            "registryUrl": "https://smoothui.dev/r/ai-prompt-input.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-prompt-input",
+            "propsCount": 19
+          },
+          {
+            "name": "ai-reasoning",
+            "displayName": "AiReasoning",
+            "category": "ai",
+            "description": "Collapsible AI reasoning trace that shimmers only while the model works, reports how long it took and gets out of the way.",
+            "tags": [
+              "ai",
+              "reasoning",
+              "thinking",
+              "collapsible",
+              "chat",
+              "trace"
+            ],
+            "useCases": [
+              "Chain-of-thought trace above an answer",
+              "Agent step log that should not dominate the layout",
+              "Any disclosure that becomes clutter once resolved"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-reasoning.json",
+            "registryUrl": "https://smoothui.dev/r/ai-reasoning.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-reasoning",
+            "propsCount": 12
+          },
+          {
+            "name": "ai-response",
+            "displayName": "AiResponse",
+            "category": "ai",
+            "description": "Streaming assistant text where words animate in as they arrive, with a caret that rides the last glyph and inline citation pills.",
+            "tags": [
+              "ai",
+              "streaming",
+              "text",
+              "citations",
+              "chat",
+              "response"
+            ],
+            "useCases": [
+              "Streaming answer in a chat thread",
+              "Answer with inline source citations",
+              "Any token-by-token text that should not read as a typewriter"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-response.json",
+            "registryUrl": "https://smoothui.dev/r/ai-response.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-response",
+            "propsCount": 7
+          },
+          {
+            "name": "ai-sources",
+            "displayName": "AiSources",
+            "category": "ai",
+            "description": "Favicon stack that fans out on hover and expands into a source list, with each favicon morphing into its row.",
+            "tags": [
+              "ai",
+              "sources",
+              "citations",
+              "rag",
+              "favicons",
+              "list"
+            ],
+            "useCases": [
+              "Sources behind a generated answer",
+              "Retrieved chunks in a RAG interface",
+              "Compact provenance row under a message"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-sources.json",
+            "registryUrl": "https://smoothui.dev/r/ai-sources.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-sources",
+            "propsCount": 6
+          },
+          {
+            "name": "ai-suggestions",
+            "displayName": "AiSuggestions",
+            "category": "ai",
+            "description": "Prompt suggestion chips that radiate in from the centre of the row rather than sweeping left to right.",
+            "tags": [
+              "ai",
+              "chat",
+              "suggestions",
+              "chips",
+              "prompt",
+              "empty-state"
+            ],
+            "useCases": [
+              "Empty state of a chat with starter prompts",
+              "Follow-up questions after an answer",
+              "Quick actions offered mid-conversation"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-suggestions.json",
+            "registryUrl": "https://smoothui.dev/r/ai-suggestions.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-suggestions",
+            "propsCount": 5
+          },
+          {
+            "name": "ai-task-list",
+            "displayName": "AiTaskList",
+            "category": "ai",
+            "description": "Live agent plan with nested steps, a drawn checkmark on completion and a travelling underline on whatever is running.",
+            "tags": [
+              "ai",
+              "tasks",
+              "plan",
+              "agent",
+              "checklist",
+              "progress"
+            ],
+            "useCases": [
+              "Live agent plan with nested steps",
+              "Multi-step tool run with per-step status",
+              "To-do list an agent ticks off as it works"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-task-list.json",
+            "registryUrl": "https://smoothui.dev/r/ai-task-list.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-task-list",
+            "propsCount": 4
+          },
+          {
+            "name": "ai-tool-call",
+            "displayName": "AiToolCall",
+            "category": "ai",
+            "description": "Collapsible tool invocation whose status badge is one ring that evolves — breathing, spinning, then drawing a check or a cross.",
+            "tags": [
+              "ai",
+              "tool",
+              "function-call",
+              "agent",
+              "status",
+              "collapsible"
+            ],
+            "useCases": [
+              "Tool or function call inside an agent transcript",
+              "MCP tool invocation with arguments and result",
+              "Compact status row for a background step"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/ai-tool-call.json",
+            "registryUrl": "https://smoothui.dev/r/ai-tool-call.json",
+            "docUrl": "https://smoothui.dev/docs/components/ai-tool-call",
+            "propsCount": 11
+          },
+          {
+            "name": "animated-avatar-group",
+            "displayName": "AnimatedAvatarGroup",
+            "category": "data-display",
+            "description": "Stack of overlapping avatars with smooth expand/collapse animation",
+            "tags": [
+              "avatar",
+              "group",
+              "stack",
+              "overlap",
+              "hover",
+              "expand",
+              "animated"
+            ],
+            "useCases": [
+              "Show team members or contributors as overlapping avatars",
+              "Display active users in a collaborative workspace",
+              "Compact user list that expands on hover"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-avatar-group.json",
+            "registryUrl": "https://smoothui.dev/r/animated-avatar-group.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-avatar-group",
+            "propsCount": 6
+          },
+          {
+            "name": "animated-file-upload",
+            "displayName": "AnimatedFileUpload",
+            "category": "basic-ui",
+            "description": "Animated drag-and-drop file upload component",
+            "tags": [
+              "upload",
+              "file",
+              "drag-drop",
+              "input",
+              "animated"
+            ],
+            "useCases": [
+              "File upload with drag-and-drop support",
+              "Image upload area with preview",
+              "Document upload in forms"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-file-upload.json",
+            "registryUrl": "https://smoothui.dev/r/animated-file-upload.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-file-upload",
+            "propsCount": 6
+          },
+          {
+            "name": "animated-input",
+            "displayName": "AnimatedInput",
+            "category": "basic-ui",
+            "description": "A AnimatedInput component for SmoothUI.",
+            "tags": [
+              "input",
+              "form",
+              "floating-label",
+              "material-design",
+              "animated"
+            ],
+            "useCases": [
+              "Form input with floating label animation",
+              "Material Design style text field",
+              "Accessible input with animated placeholder transition"
+            ],
+            "animationType": "tween",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-input.json",
+            "registryUrl": "https://smoothui.dev/r/animated-input.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-input",
+            "propsCount": 10
+          },
+          {
+            "name": "animated-o-t-p-input",
+            "displayName": "AnimatedOTPInput",
+            "category": "basic-ui",
+            "description": "A AnimatedOTPInput component for SmoothUI.",
+            "tags": [
+              "otp",
+              "input",
+              "verification",
+              "code",
+              "pin",
+              "form",
+              "animated"
+            ],
+            "useCases": [
+              "One-time password input for two-factor authentication",
+              "Verification code entry with animated digit slots",
+              "PIN code input with staggered entrance animations"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react",
+              "input-otp"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-o-t-p-input.json",
+            "registryUrl": "https://smoothui.dev/r/animated-o-t-p-input.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-o-t-p-input",
+            "propsCount": 8
+          },
+          {
+            "name": "animated-progress-bar",
+            "displayName": "AnimatedProgressBar",
+            "category": "basic-ui",
+            "description": "A AnimatedProgressBar component for SmoothUI.",
+            "tags": [
+              "progress",
+              "bar",
+              "loading",
+              "percentage",
+              "spring",
+              "animated"
+            ],
+            "useCases": [
+              "Show file upload or task completion progress",
+              "Animated skill level or stat bar",
+              "Visual progress indicator for multi-step flows"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-progress-bar.json",
+            "registryUrl": "https://smoothui.dev/r/animated-progress-bar.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-progress-bar",
+            "propsCount": 9
+          },
+          {
+            "name": "animated-stepper",
+            "displayName": "AnimatedStepper",
+            "category": "basic-ui",
+            "description": "Animated stepper/wizard component with step transitions",
+            "tags": [
+              "stepper",
+              "wizard",
+              "steps",
+              "progress",
+              "animated"
+            ],
+            "useCases": [
+              "Multi-step form wizard with animated transitions",
+              "Onboarding flow with progress indicator",
+              "Checkout process with step navigation"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-stepper.json",
+            "registryUrl": "https://smoothui.dev/r/animated-stepper.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-stepper",
+            "propsCount": 7
+          },
+          {
+            "name": "animated-tabs",
+            "displayName": "AnimatedTabs",
+            "category": "basic-ui",
+            "description": "Animated tabs component with sliding indicator",
+            "tags": [
+              "tabs",
+              "navigation",
+              "indicator",
+              "underline",
+              "pill",
+              "segment",
+              "animated"
+            ],
+            "useCases": [
+              "Tab navigation with smooth sliding indicator",
+              "Section switcher with animated underline, pill, or segment styles",
+              "Content organization with animated tab transitions"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-tabs.json",
+            "registryUrl": "https://smoothui.dev/r/animated-tabs.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-tabs",
+            "propsCount": 6
+          },
+          {
+            "name": "animated-tags",
+            "displayName": "AnimatedTags",
+            "category": "basic-ui",
+            "description": "A AnimatedTags component for SmoothUI.",
+            "tags": [
+              "tags",
+              "chips",
+              "filter",
+              "selection",
+              "animated",
+              "add-remove"
+            ],
+            "useCases": [
+              "Tag selection with add/remove animations",
+              "Animated filter chips for content categorization",
+              "Interactive tag picker for forms and filters"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-tags.json",
+            "registryUrl": "https://smoothui.dev/r/animated-tags.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-tags",
+            "propsCount": 4
+          },
+          {
+            "name": "animated-toggle",
+            "displayName": "AnimatedToggle",
+            "category": "basic-ui",
+            "description": "Animated toggle switch with morph and icon variants",
+            "tags": [
+              "toggle",
+              "switch",
+              "checkbox",
+              "morph",
+              "icon",
+              "animated"
+            ],
+            "useCases": [
+              "Settings toggle with smooth morph animation",
+              "Theme switcher with icon variant",
+              "Feature flag toggle with accessible keyboard support"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-toggle.json",
+            "registryUrl": "https://smoothui.dev/r/animated-toggle.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-toggle",
+            "propsCount": 10
+          },
+          {
+            "name": "animated-tooltip",
+            "displayName": "AnimatedTooltip",
+            "category": "basic-ui",
+            "description": "Spring-animated tooltip with multiple placement options",
+            "tags": [
+              "tooltip",
+              "popover",
+              "hint",
+              "placement",
+              "spring",
+              "animated"
+            ],
+            "useCases": [
+              "Show contextual help text on hover",
+              "Icon button label tooltip with spring animation",
+              "Multi-placement tooltip for UI element descriptions"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/animated-tooltip.json",
+            "registryUrl": "https://smoothui.dev/r/animated-tooltip.json",
+            "docUrl": "https://smoothui.dev/docs/components/animated-tooltip",
+            "propsCount": 10
+          },
+          {
+            "name": "aperture-blur-transition",
+            "displayName": "ApertureBlurTransition",
+            "category": "other",
+            "description": "Persistent WebGL shader transition wrapper that swaps content behind a cinematic aperture bloom.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/aperture-blur-transition.json",
+            "registryUrl": "https://smoothui.dev/r/aperture-blur-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/aperture-blur-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "app-download-stack",
+            "displayName": "AppDownloadStack",
+            "category": "other",
+            "description": "A AppDownloadStack component for SmoothUI.",
+            "tags": [
+              "download",
+              "stack",
+              "cards",
+              "app-store",
+              "selection",
+              "animated"
+            ],
+            "useCases": [
+              "App download selection with stacked card animation",
+              "Batch app installer with animated progress",
+              "Multi-select download manager with expand/collapse"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/app-download-stack.json",
+            "registryUrl": "https://smoothui.dev/r/app-download-stack.json",
+            "docUrl": "https://smoothui.dev/docs/components/app-download-stack",
+            "propsCount": 8
+          },
+          {
+            "name": "apple-invites",
+            "displayName": "AppleInvites",
+            "category": "other",
+            "description": "A AppleInvites component for SmoothUI.",
+            "tags": [
+              "carousel",
+              "cards",
+              "invites",
+              "apple",
+              "3d",
+              "perspective",
+              "animated"
+            ],
+            "useCases": [
+              "Event invitation cards with 3D carousel",
+              "Apple-style invite card stack with swipe gestures",
+              "Showcase cards with perspective transforms and crown badges"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "@smoothui/data",
+              "motion",
+              "lucide-react",
+              "popmotion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/apple-invites.json",
+            "registryUrl": "https://smoothui.dev/r/apple-invites.json",
+            "docUrl": "https://smoothui.dev/docs/components/apple-invites",
+            "propsCount": 9
+          },
+          {
+            "name": "basic-accordion",
+            "displayName": "BasicAccordion",
+            "category": "basic-ui",
+            "description": "A BasicAccordion component for SmoothUI.",
+            "tags": [
+              "accordion",
+              "collapsible",
+              "faq",
+              "expand",
+              "animated"
+            ],
+            "useCases": [
+              "FAQ section with expandable answers",
+              "Collapsible content sections for long pages",
+              "Settings panel with grouped collapsible sections"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/basic-accordion.json",
+            "registryUrl": "https://smoothui.dev/r/basic-accordion.json",
+            "docUrl": "https://smoothui.dev/docs/components/basic-accordion",
+            "propsCount": 4
+          },
+          {
+            "name": "basic-dropdown",
+            "displayName": "BasicDropdown",
+            "category": "basic-ui",
+            "description": "A BasicDropdown component for SmoothUI.",
+            "tags": [
+              "dropdown",
+              "select",
+              "menu",
+              "form",
+              "portal",
+              "animated"
+            ],
+            "useCases": [
+              "Form select dropdown with smooth open/close animation",
+              "Action menu with icon support",
+              "Accessible dropdown with keyboard navigation and portal rendering"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/basic-dropdown.json",
+            "registryUrl": "https://smoothui.dev/r/basic-dropdown.json",
+            "docUrl": "https://smoothui.dev/docs/components/basic-dropdown",
+            "propsCount": 4
+          },
+          {
+            "name": "basic-modal",
+            "displayName": "BasicModal",
+            "category": "basic-ui",
+            "description": "A BasicModal component for SmoothUI.",
+            "tags": [
+              "modal",
+              "dialog",
+              "overlay",
+              "popup",
+              "portal",
+              "animated"
+            ],
+            "useCases": [
+              "Confirmation dialog with backdrop animation",
+              "Form modal with multiple size options",
+              "Content overlay with click-outside dismissal"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react",
+              "usehooks-ts"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/basic-modal.json",
+            "registryUrl": "https://smoothui.dev/r/basic-modal.json",
+            "docUrl": "https://smoothui.dev/docs/components/basic-modal",
+            "propsCount": 5
+          },
+          {
+            "name": "basic-toast",
+            "displayName": "BasicToast",
+            "category": "feedback",
+            "description": "A BasicToast component for SmoothUI.",
+            "tags": [
+              "toast",
+              "notification",
+              "alert",
+              "snackbar",
+              "feedback",
+              "animated"
+            ],
+            "useCases": [
+              "Show success/error notifications after form submissions",
+              "Temporary status messages with auto-dismiss",
+              "Multi-type alerts with icons for success, error, warning, info"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/basic-toast.json",
+            "registryUrl": "https://smoothui.dev/r/basic-toast.json",
+            "docUrl": "https://smoothui.dev/docs/components/basic-toast",
+            "propsCount": 6
+          },
+          {
+            "name": "blur-out-up",
+            "displayName": "BlurOutUp",
+            "category": "other",
+            "description": "A BlurOutUp text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/blur-out-up.json",
+            "registryUrl": "https://smoothui.dev/r/blur-out-up.json",
+            "docUrl": "https://smoothui.dev/docs/components/blur-out-up",
+            "propsCount": 8
+          },
+          {
+            "name": "book",
+            "displayName": "Book",
+            "category": "other",
+            "description": "A 3D CSS book component with perspective transforms and hover animation",
+            "tags": [
+              "book",
+              "3d",
+              "css",
+              "perspective",
+              "hover",
+              "cover",
+              "decorative"
+            ],
+            "useCases": [
+              "3D book cover display with hover open animation",
+              "Product showcase for ebooks or documentation",
+              "Decorative book component with stripe and simple variants"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/book.json",
+            "registryUrl": "https://smoothui.dev/r/book.json",
+            "docUrl": "https://smoothui.dev/docs/components/book",
+            "propsCount": 16
+          },
+          {
+            "name": "bottom-up-letters",
+            "displayName": "BottomUpLetters",
+            "category": "other",
+            "description": "A BottomUpLetters text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/bottom-up-letters.json",
+            "registryUrl": "https://smoothui.dev/r/bottom-up-letters.json",
+            "docUrl": "https://smoothui.dev/docs/components/bottom-up-letters",
+            "propsCount": 8
+          },
+          {
+            "name": "breadcrumb",
+            "displayName": "Breadcrumb",
+            "category": "other",
+            "description": "Animated breadcrumb navigation with stagger-in animation",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/breadcrumb.json",
+            "registryUrl": "https://smoothui.dev/r/breadcrumb.json",
+            "docUrl": "https://smoothui.dev/docs/components/breadcrumb",
+            "propsCount": 4
+          },
+          {
+            "name": "button-copy",
+            "displayName": "ButtonCopy",
+            "category": "button",
+            "description": "A ButtonCopy component for SmoothUI.",
+            "tags": [
+              "button",
+              "copy",
+              "clipboard",
+              "feedback",
+              "icon-swap",
+              "animated"
+            ],
+            "useCases": [
+              "Copy to clipboard button with loading/success animation",
+              "Code snippet copy button with icon transition",
+              "Share button with animated state feedback"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/button-copy.json",
+            "registryUrl": "https://smoothui.dev/r/button-copy.json",
+            "docUrl": "https://smoothui.dev/docs/components/button-copy",
+            "propsCount": 8
+          },
+          {
+            "name": "checkbox",
+            "displayName": "Checkbox",
+            "category": "basic-ui",
+            "description": "An animated Checkbox component for SmoothUI with checkmark and indeterminate state animations.",
+            "tags": [
+              "checkbox",
+              "form",
+              "input",
+              "toggle",
+              "animated"
+            ],
+            "useCases": [
+              "Form checkbox with animated checkmark",
+              "Indeterminate state for partial selections",
+              "Accessible checkbox with keyboard support"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion",
+              "radix-ui"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/checkbox.json",
+            "registryUrl": "https://smoothui.dev/r/checkbox.json",
+            "docUrl": "https://smoothui.dev/docs/components/checkbox",
+            "propsCount": 18
+          },
+          {
+            "name": "chroma-blur-transition",
+            "displayName": "ChromaBlurTransition",
+            "category": "other",
+            "description": "Persistent WebGL shader transition wrapper that swaps content under a soft chromatic blur wash.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/chroma-blur-transition.json",
+            "registryUrl": "https://smoothui.dev/r/chroma-blur-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/chroma-blur-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "clip-corners-button",
+            "displayName": "ClipCornersButton",
+            "category": "button",
+            "description": "A ClipCornersButton component for SmoothUI.",
+            "tags": [
+              "button",
+              "clip-path",
+              "corners",
+              "geometric",
+              "hover",
+              "animated"
+            ],
+            "useCases": [
+              "Stylized CTA button with clipped corner hover effect",
+              "Geometric button for gaming or tech-themed UIs",
+              "Creative hover button with corner triangle animations"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "registryDependencies": [
+              "smooth-button"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/clip-corners-button.json",
+            "registryUrl": "https://smoothui.dev/r/clip-corners-button.json",
+            "docUrl": "https://smoothui.dev/docs/components/clip-corners-button",
+            "propsCount": 3
+          },
+          {
+            "name": "combobox",
+            "displayName": "Combobox",
+            "category": "other",
+            "description": "An animated Combobox component for SmoothUI with text filtering, async search, and keyboard navigation.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "registryDependencies": [
+              "smooth-button"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/combobox.json",
+            "registryUrl": "https://smoothui.dev/r/combobox.json",
+            "docUrl": "https://smoothui.dev/docs/components/combobox",
+            "propsCount": 26
+          },
+          {
+            "name": "context-menu",
+            "displayName": "ContextMenu",
+            "category": "basic-ui",
+            "description": "An animated Context Menu component for SmoothUI with spring animations, nested submenus, and keyboard navigation.",
+            "tags": [
+              "context-menu",
+              "menu",
+              "right-click",
+              "submenu",
+              "animated"
+            ],
+            "useCases": [
+              "Right-click context menus with nested submenus",
+              "File browser context actions",
+              "Canvas or workspace right-click actions"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/context-menu.json",
+            "registryUrl": "https://smoothui.dev/r/context-menu.json",
+            "docUrl": "https://smoothui.dev/docs/components/context-menu",
+            "propsCount": 6
+          },
+          {
+            "name": "contribution-graph",
+            "displayName": "ContributionGraph",
+            "category": "data-display",
+            "description": "A ContributionGraph component for SmoothUI.",
+            "tags": [
+              "graph",
+              "heatmap",
+              "calendar",
+              "github",
+              "activity",
+              "data-visualization"
+            ],
+            "useCases": [
+              "GitHub-style contribution heatmap",
+              "Activity tracking calendar visualization",
+              "Yearly data density chart with tooltip details"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/contribution-graph.json",
+            "registryUrl": "https://smoothui.dev/r/contribution-graph.json",
+            "docUrl": "https://smoothui.dev/docs/components/contribution-graph",
+            "propsCount": 5
+          },
+          {
+            "name": "cursor-follow",
+            "displayName": "CursorFollow",
+            "category": "other",
+            "description": "A CursorFollow component for SmoothUI.",
+            "tags": [
+              "cursor",
+              "follow",
+              "mouse",
+              "interactive",
+              "bubble",
+              "spring",
+              "animated"
+            ],
+            "useCases": [
+              "Custom cursor follower with spring physics",
+              "Interactive cursor bubble that shows context text",
+              "Decorative cursor effect for portfolios and creative sites"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/cursor-follow.json",
+            "registryUrl": "https://smoothui.dev/r/cursor-follow.json",
+            "docUrl": "https://smoothui.dev/docs/components/cursor-follow",
+            "propsCount": 2
+          },
+          {
+            "name": "depth-parallax-words",
+            "displayName": "DepthParallaxWords",
+            "category": "other",
+            "description": "A DepthParallaxWords text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/depth-parallax-words.json",
+            "registryUrl": "https://smoothui.dev/r/depth-parallax-words.json",
+            "docUrl": "https://smoothui.dev/docs/components/depth-parallax-words",
+            "propsCount": 8
+          },
+          {
+            "name": "dialog",
+            "displayName": "Dialog",
+            "category": "other",
+            "description": "Animated Dialog and AlertDialog components for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion",
+              "radix-ui"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/dialog.json",
+            "registryUrl": "https://smoothui.dev/r/dialog.json",
+            "docUrl": "https://smoothui.dev/docs/components/dialog",
+            "propsCount": 18
+          },
+          {
+            "name": "dot-morph-button",
+            "displayName": "DotMorphButton",
+            "category": "button",
+            "description": "A DotMorphButton component for SmoothUI.",
+            "tags": [
+              "button",
+              "dot",
+              "morph",
+              "hover",
+              "animated"
+            ],
+            "useCases": [
+              "Button with dot-to-arrow morph on hover",
+              "Creative CTA button with shape-shifting indicator",
+              "Hover-aware button with morphing dot animation"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "registryDependencies": [
+              "smooth-button"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/dot-morph-button.json",
+            "registryUrl": "https://smoothui.dev/r/dot-morph-button.json",
+            "docUrl": "https://smoothui.dev/docs/components/dot-morph-button",
+            "propsCount": 3
+          },
+          {
+            "name": "drawer",
+            "displayName": "Drawer",
+            "category": "other",
+            "description": "An animated Drawer component for SmoothUI that slides from any side.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/drawer.json",
+            "registryUrl": "https://smoothui.dev/r/drawer.json",
+            "docUrl": "https://smoothui.dev/docs/components/drawer",
+            "propsCount": 18
+          },
+          {
+            "name": "dropdown-menu",
+            "displayName": "DropdownMenu",
+            "category": "basic-ui",
+            "description": "An animated Dropdown Menu component for SmoothUI with spring animations, nested submenus, and keyboard navigation.",
+            "tags": [
+              "dropdown",
+              "menu",
+              "navigation",
+              "submenu",
+              "animated"
+            ],
+            "useCases": [
+              "Action menus with nested submenus",
+              "Navigation dropdown with keyboard support",
+              "Context-aware menu with animated open/close"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/dropdown-menu.json",
+            "registryUrl": "https://smoothui.dev/r/dropdown-menu.json",
+            "docUrl": "https://smoothui.dev/docs/components/dropdown-menu",
+            "propsCount": 14
+          },
+          {
+            "name": "dynamic-island",
+            "displayName": "DynamicIsland",
+            "category": "other",
+            "description": "A DynamicIsland component for SmoothUI.",
+            "tags": [
+              "dynamic-island",
+              "apple",
+              "notification",
+              "music",
+              "timer",
+              "morph",
+              "animated"
+            ],
+            "useCases": [
+              "Apple Dynamic Island-inspired notification area",
+              "Morphing status bar for music player, timer, and calls",
+              "Context-aware notification component with layout animations"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/dynamic-island.json",
+            "registryUrl": "https://smoothui.dev/r/dynamic-island.json",
+            "docUrl": "https://smoothui.dev/docs/components/dynamic-island",
+            "propsCount": 6
+          },
+          {
+            "name": "expandable-cards",
+            "displayName": "ExpandableCards",
+            "category": "layout",
+            "description": "A ExpandableCards component for SmoothUI.",
+            "tags": [
+              "cards",
+              "expandable",
+              "modal",
+              "gallery",
+              "layout-animation",
+              "animated"
+            ],
+            "useCases": [
+              "Card grid that expands to full detail view",
+              "Image gallery with animated card expansion",
+              "Content cards with smooth shared layout transitions"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/expandable-cards.json",
+            "registryUrl": "https://smoothui.dev/r/expandable-cards.json",
+            "docUrl": "https://smoothui.dev/docs/components/expandable-cards",
+            "propsCount": 5
+          },
+          {
+            "name": "exposure-slider",
+            "displayName": "ExposureSlider",
+            "category": "other",
+            "description": "iOS-style exposure slider with draggable ticker and progress ring",
+            "tags": [
+              "slider",
+              "exposure",
+              "ios",
+              "ticker",
+              "progress-ring",
+              "gesture",
+              "drag"
+            ],
+            "useCases": [
+              "iOS-style exposure/brightness slider with ticker marks",
+              "Precise value control with drag gesture and progress ring",
+              "Camera-style parameter adjustment slider"
+            ],
+            "animationType": "gesture",
+            "complexity": "complex",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/exposure-slider.json",
+            "registryUrl": "https://smoothui.dev/r/exposure-slider.json",
+            "docUrl": "https://smoothui.dev/docs/components/exposure-slider",
+            "propsCount": 16
+          },
+          {
+            "name": "fade-through",
+            "displayName": "FadeThrough",
+            "category": "other",
+            "description": "A FadeThrough text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/fade-through.json",
+            "registryUrl": "https://smoothui.dev/r/fade-through.json",
+            "docUrl": "https://smoothui.dev/docs/components/fade-through",
+            "propsCount": 4
+          },
+          {
+            "name": "figma-comment",
+            "displayName": "FigmaComment",
+            "category": "other",
+            "description": "A FigmaComment component for SmoothUI.",
+            "tags": [
+              "comment",
+              "figma",
+              "avatar",
+              "popover",
+              "morph",
+              "collaborative",
+              "animated"
+            ],
+            "useCases": [
+              "Figma-style expandable comment bubble with avatar",
+              "Collaborative annotation comment component",
+              "Morphing comment indicator that expands to show content"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/figma-comment.json",
+            "registryUrl": "https://smoothui.dev/r/figma-comment.json",
+            "docUrl": "https://smoothui.dev/docs/components/figma-comment",
+            "propsCount": 8
+          },
+          {
+            "name": "focus-blur-resolve",
+            "displayName": "FocusBlurResolve",
+            "category": "other",
+            "description": "A FocusBlurResolve text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/focus-blur-resolve.json",
+            "registryUrl": "https://smoothui.dev/r/focus-blur-resolve.json",
+            "docUrl": "https://smoothui.dev/docs/components/focus-blur-resolve",
+            "propsCount": 6
+          },
+          {
+            "name": "form",
+            "displayName": "Form",
+            "category": "basic-ui",
+            "description": "A lightweight, composable Form component with animated error messages and full accessibility support.",
+            "tags": [
+              "form",
+              "validation",
+              "error",
+              "input",
+              "accessible",
+              "animated"
+            ],
+            "useCases": [
+              "Contact forms with validation",
+              "Settings forms with field-level errors",
+              "Signup forms with accessible error messages"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/form.json",
+            "registryUrl": "https://smoothui.dev/r/form.json",
+            "docUrl": "https://smoothui.dev/docs/components/form",
+            "propsCount": 6
+          },
+          {
+            "name": "github-stars-animation",
+            "displayName": "GithubStarsAnimation",
+            "category": "data-display",
+            "description": "A GitHubStarsAnimation component for SmoothUI.",
+            "tags": [
+              "github",
+              "stars",
+              "counter",
+              "social-proof",
+              "api",
+              "animated"
+            ],
+            "useCases": [
+              "Display GitHub repository star count with animated counter",
+              "Social proof widget with stargazer avatars",
+              "Repository statistics badge with live API data"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/github-stars-animation.json",
+            "registryUrl": "https://smoothui.dev/r/github-stars-animation.json",
+            "docUrl": "https://smoothui.dev/docs/components/github-stars-animation",
+            "propsCount": 10
+          },
+          {
+            "name": "glow-hover-card",
+            "displayName": "GlowHoverCard",
+            "category": "layout",
+            "description": "A GlowHoverCards component for SmoothUI.",
+            "tags": [
+              "card",
+              "glow",
+              "hover",
+              "gradient",
+              "mask",
+              "interactive",
+              "animated"
+            ],
+            "useCases": [
+              "Card grid with cursor-tracking glow border effect",
+              "Feature showcase cards with dynamic hover glow",
+              "Interactive card group with shared glow mask"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/glow-hover-card.json",
+            "registryUrl": "https://smoothui.dev/r/glow-hover-card.json",
+            "docUrl": "https://smoothui.dev/docs/components/glow-hover-card",
+            "propsCount": 4
+          },
+          {
+            "name": "gooey-popover",
+            "displayName": "GooeyPopover",
+            "category": "other",
+            "description": "A GooeyPopover component for SmoothUI.",
+            "tags": [
+              "popover",
+              "gooey",
+              "svg-filter",
+              "gsap",
+              "morph",
+              "blob",
+              "animated"
+            ],
+            "useCases": [
+              "Organic gooey blob popover with SVG filter effect",
+              "Creative popover with liquid morph animation",
+              "Unique menu or content reveal with gooey physics"
+            ],
+            "animationType": "tween",
+            "complexity": "complex",
+            "dependencies": [
+              "gsap"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/gooey-popover.json",
+            "registryUrl": "https://smoothui.dev/r/gooey-popover.json",
+            "docUrl": "https://smoothui.dev/docs/components/gooey-popover",
+            "propsCount": 12
+          },
+          {
+            "name": "grid-loader",
+            "displayName": "GridLoader",
+            "category": "feedback",
+            "description": "3x3 grid-based loading animation with preset patterns",
+            "tags": [
+              "loader",
+              "grid",
+              "loading",
+              "spinner",
+              "pattern",
+              "animated"
+            ],
+            "useCases": [
+              "3x3 grid loading animation with customizable patterns",
+              "Creative loading indicator with preset shape sequences",
+              "Decorative loader with configurable cell patterns"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/grid-loader.json",
+            "registryUrl": "https://smoothui.dev/r/grid-loader.json",
+            "docUrl": "https://smoothui.dev/docs/components/grid-loader",
+            "propsCount": 22
+          },
+          {
+            "name": "image-metadata-preview",
+            "displayName": "ImageMetadataPreview",
+            "category": "data-display",
+            "description": "A ImageMetadataPreview component for SmoothUI.",
+            "tags": [
+              "image",
+              "metadata",
+              "preview",
+              "expandable",
+              "file-info",
+              "animated"
+            ],
+            "useCases": [
+              "Image preview card with expandable metadata panel",
+              "File information display with share and close actions",
+              "Media asset preview with creation date and source info"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react",
+              "react-use-measure"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/image-metadata-preview.json",
+            "registryUrl": "https://smoothui.dev/r/image-metadata-preview.json",
+            "docUrl": "https://smoothui.dev/docs/components/image-metadata-preview",
+            "propsCount": 6
+          },
+          {
+            "name": "infinite-slider",
+            "displayName": "InfiniteSlider",
+            "category": "other",
+            "description": "A InfiniteSlider component for SmoothUI.",
+            "tags": [
+              "slider",
+              "infinite",
+              "marquee",
+              "carousel",
+              "auto-scroll",
+              "animated"
+            ],
+            "useCases": [
+              "Infinite scrolling logo marquee or content slider",
+              "Auto-scrolling testimonial or partner logo carousel",
+              "Continuous content slider with hover speed control"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "react-use-measure"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/infinite-slider.json",
+            "registryUrl": "https://smoothui.dev/r/infinite-slider.json",
+            "docUrl": "https://smoothui.dev/docs/components/infinite-slider",
+            "propsCount": 7
+          },
+          {
+            "name": "interactive-image-selector",
+            "displayName": "InteractiveImageSelector",
+            "category": "other",
+            "description": "A InteractiveImageSelector component for SmoothUI.",
+            "tags": [
+              "image",
+              "selector",
+              "gallery",
+              "selection",
+              "gesture",
+              "animated"
+            ],
+            "useCases": [
+              "Image gallery with animated selection and deselection",
+              "Multi-image picker with gesture-driven animations",
+              "Photo selection interface with share and delete actions"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/interactive-image-selector.json",
+            "registryUrl": "https://smoothui.dev/r/interactive-image-selector.json",
+            "docUrl": "https://smoothui.dev/docs/components/interactive-image-selector",
+            "propsCount": 7
+          },
+          {
+            "name": "job-listing-component",
+            "displayName": "JobListingComponent",
+            "category": "layout",
+            "description": "A JobListingComponent component for SmoothUI.",
+            "tags": [
+              "job",
+              "listing",
+              "card",
+              "expandable",
+              "careers",
+              "animated"
+            ],
+            "useCases": [
+              "Job listing cards with expandable details",
+              "Careers page component with company logos",
+              "Animated job board with salary and location info"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "usehooks-ts"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/job-listing-component.json",
+            "registryUrl": "https://smoothui.dev/r/job-listing-component.json",
+            "docUrl": "https://smoothui.dev/docs/components/job-listing-component",
+            "propsCount": 3
+          },
+          {
+            "name": "kinetic-center-build",
+            "displayName": "KineticCenterBuild",
+            "category": "other",
+            "description": "A KineticCenterBuild text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/kinetic-center-build.json",
+            "registryUrl": "https://smoothui.dev/r/kinetic-center-build.json",
+            "docUrl": "https://smoothui.dev/docs/components/kinetic-center-build",
+            "propsCount": 4
+          },
+          {
+            "name": "line-by-line-slide",
+            "displayName": "LineByLineSlide",
+            "category": "other",
+            "description": "A LineByLineSlide text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/line-by-line-slide.json",
+            "registryUrl": "https://smoothui.dev/r/line-by-line-slide.json",
+            "docUrl": "https://smoothui.dev/docs/components/line-by-line-slide",
+            "propsCount": 11
+          },
+          {
+            "name": "magnetic-button",
+            "displayName": "MagneticButton",
+            "category": "button",
+            "description": "Button that subtly follows the cursor with magnetic effect",
+            "tags": [
+              "button",
+              "magnetic",
+              "cursor",
+              "hover",
+              "spring",
+              "interactive",
+              "animated"
+            ],
+            "useCases": [
+              "Button that subtly follows cursor with magnetic attraction",
+              "Interactive CTA with spring-physics hover effect",
+              "Playful button with cursor-aware displacement"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "@radix-ui/react-slot",
+              "class-variance-authority",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/magnetic-button.json",
+            "registryUrl": "https://smoothui.dev/r/magnetic-button.json",
+            "docUrl": "https://smoothui.dev/docs/components/magnetic-button",
+            "propsCount": 4
+          },
+          {
+            "name": "mask-reveal-up",
+            "displayName": "MaskRevealUp",
+            "category": "other",
+            "description": "A MaskRevealUp text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/mask-reveal-up.json",
+            "registryUrl": "https://smoothui.dev/r/mask-reveal-up.json",
+            "docUrl": "https://smoothui.dev/docs/components/mask-reveal-up",
+            "propsCount": 11
+          },
+          {
+            "name": "micro-scale-fade",
+            "displayName": "MicroScaleFade",
+            "category": "other",
+            "description": "A MicroScaleFade text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/micro-scale-fade.json",
+            "registryUrl": "https://smoothui.dev/r/micro-scale-fade.json",
+            "docUrl": "https://smoothui.dev/docs/components/micro-scale-fade",
+            "propsCount": 6
+          },
+          {
+            "name": "morph-surface",
+            "displayName": "MorphSurface",
+            "category": "other",
+            "description": "Feedback dock that morphs from a compact pill into a panel and back, with a spring layout transition.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "class-variance-authority",
+              "motion"
+            ],
+            "registryDependencies": [
+              "smooth-button"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/morph-surface.json",
+            "registryUrl": "https://smoothui.dev/r/morph-surface.json",
+            "docUrl": "https://smoothui.dev/docs/components/morph-surface",
+            "propsCount": 0
+          },
+          {
+            "name": "notification-badge",
+            "displayName": "NotificationBadge",
+            "category": "basic-ui",
+            "description": "Animated notification badge with count and status variants",
+            "tags": [
+              "badge",
+              "notification",
+              "count",
+              "status",
+              "dot",
+              "ping",
+              "animated"
+            ],
+            "useCases": [
+              "Notification count badge with animated entrance",
+              "Online/offline status indicator with pulse",
+              "Unread message counter with ping animation"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/notification-badge.json",
+            "registryUrl": "https://smoothui.dev/r/notification-badge.json",
+            "docUrl": "https://smoothui.dev/docs/components/notification-badge",
+            "propsCount": 9
+          },
+          {
+            "name": "number-flow",
+            "displayName": "NumberFlow",
+            "category": "data-display",
+            "description": "A NumberFlow component for SmoothUI.",
+            "tags": [
+              "number",
+              "counter",
+              "odometer",
+              "digit",
+              "transition",
+              "animated"
+            ],
+            "useCases": [
+              "Animated number counter with rolling digit transitions",
+              "Price or stat display with smooth increment/decrement",
+              "Odometer-style number animation for dashboards"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/number-flow.json",
+            "registryUrl": "https://smoothui.dev/r/number-flow.json",
+            "docUrl": "https://smoothui.dev/docs/components/number-flow",
+            "propsCount": 7
+          },
+          {
+            "name": "organic-merge-transition",
+            "displayName": "OrganicMergeTransition",
+            "category": "other",
+            "description": "A soft-min SDF merge transition with two organic expanding shapes.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "sdf-blob-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/organic-merge-transition.json",
+            "registryUrl": "https://smoothui.dev/r/organic-merge-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/organic-merge-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "pagination",
+            "displayName": "Pagination",
+            "category": "other",
+            "description": "Animated pagination with spring-based active page indicator",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "registryDependencies": [
+              "smooth-button"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/pagination.json",
+            "registryUrl": "https://smoothui.dev/r/pagination.json",
+            "docUrl": "https://smoothui.dev/docs/components/pagination",
+            "propsCount": 10
+          },
+          {
+            "name": "per-character-rise",
+            "displayName": "PerCharacterRise",
+            "category": "other",
+            "description": "A PerCharacterRise text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/per-character-rise.json",
+            "registryUrl": "https://smoothui.dev/r/per-character-rise.json",
+            "docUrl": "https://smoothui.dev/docs/components/per-character-rise",
+            "propsCount": 8
+          },
+          {
+            "name": "per-word-crossfade",
+            "displayName": "PerWordCrossfade",
+            "category": "other",
+            "description": "A PerWordCrossfade text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/per-word-crossfade.json",
+            "registryUrl": "https://smoothui.dev/r/per-word-crossfade.json",
+            "docUrl": "https://smoothui.dev/docs/components/per-word-crossfade",
+            "propsCount": 8
+          },
+          {
+            "name": "photo-stack",
+            "displayName": "PhotoStack",
+            "category": "data-display",
+            "description": "A PhotoStack component for SmoothUI.",
+            "tags": [
+              "photo",
+              "cards",
+              "stack",
+              "draggable",
+              "gesture",
+              "interactive"
+            ],
+            "useCases": [
+              "Draggable photo or testimonial deck",
+              "Portfolio image gallery with flick-to-next interaction",
+              "Persona / team showcase you can swipe through"
+            ],
+            "animationType": "gesture",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/photo-stack.json",
+            "registryUrl": "https://smoothui.dev/r/photo-stack.json",
+            "docUrl": "https://smoothui.dev/docs/components/photo-stack",
+            "propsCount": 5
+          },
+          {
+            "name": "phototab",
+            "displayName": "Phototab",
+            "category": "other",
+            "description": "A Phototab component for SmoothUI.",
+            "tags": [
+              "tabs",
+              "photo",
+              "image",
+              "gallery",
+              "radix",
+              "animated"
+            ],
+            "useCases": [
+              "Photo gallery with animated tab navigation",
+              "Image showcase with icon-labeled tabs",
+              "Category-based image viewer with smooth transitions"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "@radix-ui/react-tabs"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/phototab.json",
+            "registryUrl": "https://smoothui.dev/r/phototab.json",
+            "docUrl": "https://smoothui.dev/docs/components/phototab",
+            "propsCount": 14
+          },
+          {
+            "name": "power-off-slide",
+            "displayName": "PowerOffSlide",
+            "category": "other",
+            "description": "A PowerOffSlide component for SmoothUI.",
+            "tags": [
+              "slide",
+              "power-off",
+              "gesture",
+              "drag",
+              "confirmation",
+              "ios",
+              "animated"
+            ],
+            "useCases": [
+              "iOS-style slide to power off confirmation",
+              "Destructive action confirmation with drag gesture",
+              "Slide-to-confirm component for critical actions"
+            ],
+            "animationType": "gesture",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/power-off-slide.json",
+            "registryUrl": "https://smoothui.dev/r/power-off-slide.json",
+            "docUrl": "https://smoothui.dev/docs/components/power-off-slide",
+            "propsCount": 5
+          },
+          {
+            "name": "price-flow",
+            "displayName": "PriceFlow",
+            "category": "data-display",
+            "description": "A PriceFlow component for SmoothUI.",
+            "tags": [
+              "price",
+              "counter",
+              "currency",
+              "digit",
+              "transition",
+              "animated"
+            ],
+            "useCases": [
+              "Animated price display with rolling digit transitions",
+              "Real-time price ticker with smooth updates",
+              "Currency amount display with increment/decrement animation"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/price-flow.json",
+            "registryUrl": "https://smoothui.dev/r/price-flow.json",
+            "docUrl": "https://smoothui.dev/docs/components/price-flow",
+            "propsCount": 2
+          },
+          {
+            "name": "prism-sweep-transition",
+            "displayName": "PrismSweepTransition",
+            "category": "feedback",
+            "description": "A persistent WebGL prism sweep transition wrapper for route and state changes.",
+            "tags": [
+              "transition",
+              "page-transition",
+              "route-transition",
+              "prism",
+              "sweep",
+              "gradient",
+              "motion",
+              "state-change"
+            ],
+            "useCases": [
+              "Celebrate a successful publish or submit flow",
+              "Punctuate major route changes with a shader-inspired liquid sweep",
+              "Wrap demos, previews, or onboarding steps with a premium liquid state transition"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/prism-sweep-transition.json",
+            "registryUrl": "https://smoothui.dev/r/prism-sweep-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/prism-sweep-transition",
+            "propsCount": 14
+          },
+          {
+            "name": "product-card",
+            "displayName": "ProductCard",
+            "category": "other",
+            "description": "Animated product card component for ecommerce",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "registryDependencies": [
+              "smooth-button"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/product-card.json",
+            "registryUrl": "https://smoothui.dev/r/product-card.json",
+            "docUrl": "https://smoothui.dev/docs/components/product-card",
+            "propsCount": 10
+          },
+          {
+            "name": "radial-circles-transition",
+            "displayName": "RadialCirclesTransition",
+            "category": "other",
+            "description": "A radial SDF circle pattern transition inspired by the Codrops radial circles step.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "sdf-blob-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/radial-circles-transition.json",
+            "registryUrl": "https://smoothui.dev/r/radial-circles-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/radial-circles-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "radio-group",
+            "displayName": "RadioGroup",
+            "category": "basic-ui",
+            "description": "An animated Radio Group component for SmoothUI with selection indicator spring animation.",
+            "tags": [
+              "radio",
+              "form",
+              "input",
+              "selection",
+              "animated"
+            ],
+            "useCases": [
+              "Form radio group with animated selection indicator",
+              "Single-select option group",
+              "Accessible radio buttons with arrow key navigation"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion",
+              "radix-ui"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/radio-group.json",
+            "registryUrl": "https://smoothui.dev/r/radio-group.json",
+            "docUrl": "https://smoothui.dev/docs/components/radio-group",
+            "propsCount": 18
+          },
+          {
+            "name": "reveal-text",
+            "displayName": "RevealText",
+            "category": "text",
+            "description": "A RevealText component for SmoothUI.",
+            "tags": [
+              "text",
+              "reveal",
+              "entrance",
+              "direction",
+              "scroll-trigger",
+              "animated"
+            ],
+            "useCases": [
+              "Text entrance animation with directional reveal",
+              "Hero headline with animated appearance on scroll",
+              "Section title with staggered character reveal"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/reveal-text.json",
+            "registryUrl": "https://smoothui.dev/r/reveal-text.json",
+            "docUrl": "https://smoothui.dev/docs/components/reveal-text",
+            "propsCount": 5
+          },
+          {
+            "name": "reviews-carousel",
+            "displayName": "ReviewsCarousel",
+            "category": "data-display",
+            "description": "A ReviewsCarousel component for SmoothUI.",
+            "tags": [
+              "carousel",
+              "reviews",
+              "testimonials",
+              "slider",
+              "cards",
+              "animated"
+            ],
+            "useCases": [
+              "Review card carousel with stacked card effect",
+              "Testimonial slider with navigation arrows",
+              "Customer feedback display with animated card transitions"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/reviews-carousel.json",
+            "registryUrl": "https://smoothui.dev/r/reviews-carousel.json",
+            "docUrl": "https://smoothui.dev/docs/components/reviews-carousel",
+            "propsCount": 4
+          },
+          {
+            "name": "rich-popover",
+            "displayName": "RichPopover",
+            "category": "basic-ui",
+            "description": "A RichPopover component for SmoothUI.",
+            "tags": [
+              "popover",
+              "tooltip",
+              "rich",
+              "radix",
+              "link-preview",
+              "animated"
+            ],
+            "useCases": [
+              "Rich content popover with title, description, and action",
+              "Link preview tooltip with metadata display",
+              "Enhanced tooltip with icon, CTA button, and meta info"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react",
+              "@radix-ui/react-popover"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/rich-popover.json",
+            "registryUrl": "https://smoothui.dev/r/rich-popover.json",
+            "docUrl": "https://smoothui.dev/docs/components/rich-popover",
+            "propsCount": 12
+          },
+          {
+            "name": "scale-down-fade",
+            "displayName": "ScaleDownFade",
+            "category": "other",
+            "description": "A ScaleDownFade text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/scale-down-fade.json",
+            "registryUrl": "https://smoothui.dev/r/scale-down-fade.json",
+            "docUrl": "https://smoothui.dev/docs/components/scale-down-fade",
+            "propsCount": 6
+          },
+          {
+            "name": "scramble-hover",
+            "displayName": "ScrambleHover",
+            "category": "text",
+            "description": "A ScrambleHover component for SmoothUI.",
+            "tags": [
+              "text",
+              "scramble",
+              "hover",
+              "glitch",
+              "effect",
+              "interactive"
+            ],
+            "useCases": [
+              "Hover text effect with character scramble animation",
+              "Glitch-style text reveal on mouse interaction",
+              "Creative menu link hover effect"
+            ],
+            "animationType": "tween",
+            "complexity": "simple",
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/scramble-hover.json",
+            "registryUrl": "https://smoothui.dev/r/scramble-hover.json",
+            "docUrl": "https://smoothui.dev/docs/components/scramble-hover",
+            "propsCount": 4
+          },
+          {
+            "name": "scroll-reveal-paragraph",
+            "displayName": "ScrollRevealParagraph",
+            "category": "text",
+            "description": "A ScrollRevealParagraph component for SmoothUI.",
+            "tags": [
+              "text",
+              "scroll",
+              "reveal",
+              "paragraph",
+              "word-by-word",
+              "animated"
+            ],
+            "useCases": [
+              "Paragraph text that reveals word by word on scroll",
+              "Scroll-driven text opacity animation for storytelling",
+              "Reading progress indicator through text highlighting"
+            ],
+            "animationType": "scroll",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/scroll-reveal-paragraph.json",
+            "registryUrl": "https://smoothui.dev/r/scroll-reveal-paragraph.json",
+            "docUrl": "https://smoothui.dev/docs/components/scroll-reveal-paragraph",
+            "propsCount": 2
+          },
+          {
+            "name": "scrollable-card-stack",
+            "displayName": "ScrollableCardStack",
+            "category": "layout",
+            "description": "A ScrollableCardStack component for SmoothUI.",
+            "tags": [
+              "cards",
+              "stack",
+              "scroll",
+              "perspective",
+              "3d",
+              "gesture",
+              "animated"
+            ],
+            "useCases": [
+              "3D card stack with scroll-driven transitions",
+              "Social media feed with perspective card stacking",
+              "Content showcase with scroll and hover interactions"
+            ],
+            "animationType": "gesture",
+            "complexity": "complex",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/scrollable-card-stack.json",
+            "registryUrl": "https://smoothui.dev/r/scrollable-card-stack.json",
+            "docUrl": "https://smoothui.dev/docs/components/scrollable-card-stack",
+            "propsCount": 5
+          },
+          {
+            "name": "scrubber",
+            "displayName": "Scrubber",
+            "category": "basic-ui",
+            "description": "Design-tool style scrubber slider with animated thumb and built-in label",
+            "tags": [
+              "slider",
+              "scrubber",
+              "range",
+              "input",
+              "drag",
+              "design-tool",
+              "animated"
+            ],
+            "useCases": [
+              "Design tool-style scrubber slider with animated thumb",
+              "Precise numeric value control with drag interaction",
+              "Parameter adjustment slider with built-in label and ticks"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/scrubber.json",
+            "registryUrl": "https://smoothui.dev/r/scrubber.json",
+            "docUrl": "https://smoothui.dev/docs/components/scrubber",
+            "propsCount": 20
+          },
+          {
+            "name": "sdf-blob-transition",
+            "displayName": "SdfBlobTransition",
+            "category": "other",
+            "description": "A persistent WebGL SDF blob transition wrapper for route and state changes.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/sdf-blob-transition.json",
+            "registryUrl": "https://smoothui.dev/r/sdf-blob-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/sdf-blob-transition",
+            "propsCount": 6
+          },
+          {
+            "name": "sdf-circle-transition",
+            "displayName": "SdfCircleTransition",
+            "category": "other",
+            "description": "A clean SDF circle reveal based on the first Codrops shader step.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "sdf-blob-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/sdf-circle-transition.json",
+            "registryUrl": "https://smoothui.dev/r/sdf-circle-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/sdf-circle-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "searchable-dropdown",
+            "displayName": "SearchableDropdown",
+            "category": "basic-ui",
+            "description": "A SearchableDropdown component for SmoothUI.",
+            "tags": [
+              "dropdown",
+              "search",
+              "select",
+              "filter",
+              "combobox",
+              "portal",
+              "animated"
+            ],
+            "useCases": [
+              "Searchable select dropdown with filter-as-you-type",
+              "Combobox with animated open/close and item highlights",
+              "Filterable dropdown menu with icon and description support"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion",
+              "lucide-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/searchable-dropdown.json",
+            "registryUrl": "https://smoothui.dev/r/searchable-dropdown.json",
+            "docUrl": "https://smoothui.dev/docs/components/searchable-dropdown",
+            "propsCount": 6
+          },
+          {
+            "name": "select",
+            "displayName": "Select",
+            "category": "other",
+            "description": "An animated Select dropdown component for SmoothUI wrapping Radix Select with smooth animations.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "lucide-react",
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/select.json",
+            "registryUrl": "https://smoothui.dev/r/select.json",
+            "docUrl": "https://smoothui.dev/docs/components/select",
+            "propsCount": 6
+          },
+          {
+            "name": "shader-reveal-circle-transition",
+            "displayName": "ShaderRevealCircleTransition",
+            "category": "other",
+            "description": "Demo 3 adaptation: noisy circular reveal with radial interpolation.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "shader-reveal-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-circle-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-circle-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-circle-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "shader-reveal-luma-transition",
+            "displayName": "ShaderRevealLumaTransition",
+            "category": "other",
+            "description": "Demo 5 adaptation: luminance-style vertical displacement translated into a shader overlay.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "shader-reveal-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-luma-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-luma-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-luma-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "shader-reveal-noise-transition",
+            "displayName": "ShaderRevealNoiseTransition",
+            "category": "other",
+            "description": "Demo 1 adaptation: 4D-noise threshold transition with an organic shader gate.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "shader-reveal-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-noise-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-noise-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-noise-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "shader-reveal-planetary-transition",
+            "displayName": "ShaderRevealPlanetaryTransition",
+            "category": "other",
+            "description": "Demo 6 adaptation: rotated displacement vectors with a planetary swirl feel.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "shader-reveal-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-planetary-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-planetary-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-planetary-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "shader-reveal-push-transition",
+            "displayName": "ShaderRevealPushTransition",
+            "category": "other",
+            "description": "Demo 8 adaptation: procedural noise push/pull displacement.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "shader-reveal-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-push-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-push-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-push-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "shader-reveal-stripes-transition",
+            "displayName": "ShaderRevealStripesTransition",
+            "category": "other",
+            "description": "Demo 7 adaptation: divided UV stripe displacement with diagonal motion.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "shader-reveal-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-stripes-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-stripes-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-stripes-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "shader-reveal-transition",
+            "displayName": "ShaderRevealTransition",
+            "category": "other",
+            "description": "A shared WebGL transition engine with eight shader-driven reveal variants.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-transition",
+            "propsCount": 6
+          },
+          {
+            "name": "shader-reveal-wipe-transition",
+            "displayName": "ShaderRevealWipeTransition",
+            "category": "other",
+            "description": "Demo 4 adaptation: displacement-noise horizontal wipe with a sharp eased edge.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "shader-reveal-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-wipe-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-wipe-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-wipe-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "shader-reveal-zoom-transition",
+            "displayName": "ShaderRevealZoomTransition",
+            "category": "other",
+            "description": "Demo 2 adaptation: vertical-progress zoom mix translated into a UI frame transition.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "shader-reveal-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shader-reveal-zoom-transition.json",
+            "registryUrl": "https://smoothui.dev/r/shader-reveal-zoom-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/shader-reveal-zoom-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "shared-axis-x",
+            "displayName": "SharedAxisX",
+            "category": "other",
+            "description": "A SharedAxisX text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shared-axis-x.json",
+            "registryUrl": "https://smoothui.dev/r/shared-axis-x.json",
+            "docUrl": "https://smoothui.dev/docs/components/shared-axis-x",
+            "propsCount": 4
+          },
+          {
+            "name": "shared-axis-y",
+            "displayName": "SharedAxisY",
+            "category": "other",
+            "description": "A SharedAxisY text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shared-axis-y.json",
+            "registryUrl": "https://smoothui.dev/r/shared-axis-y.json",
+            "docUrl": "https://smoothui.dev/docs/components/shared-axis-y",
+            "propsCount": 4
+          },
+          {
+            "name": "shared-axis-z",
+            "displayName": "SharedAxisZ",
+            "category": "other",
+            "description": "A SharedAxisZ text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shared-axis-z.json",
+            "registryUrl": "https://smoothui.dev/r/shared-axis-z.json",
+            "docUrl": "https://smoothui.dev/docs/components/shared-axis-z",
+            "propsCount": 4
+          },
+          {
+            "name": "shimmer-sweep",
+            "displayName": "ShimmerSweep",
+            "category": "other",
+            "description": "A ShimmerSweep text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shimmer-sweep.json",
+            "registryUrl": "https://smoothui.dev/r/shimmer-sweep.json",
+            "docUrl": "https://smoothui.dev/docs/components/shimmer-sweep",
+            "propsCount": 6
+          },
+          {
+            "name": "shine-text",
+            "displayName": "ShineText",
+            "category": "other",
+            "description": "A ShineText light-sweep text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/shine-text.json",
+            "registryUrl": "https://smoothui.dev/r/shine-text.json",
+            "docUrl": "https://smoothui.dev/docs/components/shine-text",
+            "propsCount": 10
+          },
+          {
+            "name": "short-slide-down",
+            "displayName": "ShortSlideDown",
+            "category": "other",
+            "description": "A ShortSlideDown text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/short-slide-down.json",
+            "registryUrl": "https://smoothui.dev/r/short-slide-down.json",
+            "docUrl": "https://smoothui.dev/docs/components/short-slide-down",
+            "propsCount": 4
+          },
+          {
+            "name": "short-slide-right",
+            "displayName": "ShortSlideRight",
+            "category": "other",
+            "description": "A ShortSlideRight text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/short-slide-right.json",
+            "registryUrl": "https://smoothui.dev/r/short-slide-right.json",
+            "docUrl": "https://smoothui.dev/docs/components/short-slide-right",
+            "propsCount": 4
+          },
+          {
+            "name": "siri-orb",
+            "displayName": "SiriOrb",
+            "category": "ai",
+            "description": "A beautiful animated orb component inspired by Siri's visual design.",
+            "tags": [
+              "siri",
+              "orb",
+              "ai",
+              "animated",
+              "glow",
+              "css",
+              "audio",
+              "reactive",
+              "voice"
+            ],
+            "useCases": [
+              "Animated Siri-inspired orb for AI interfaces",
+              "Visual AI status indicator with pulsing glow",
+              "Decorative animated orb for loading or presence states"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "registryDependencies": [
+              "ai-core"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/siri-orb.json",
+            "registryUrl": "https://smoothui.dev/r/siri-orb.json",
+            "docUrl": "https://smoothui.dev/docs/components/siri-orb",
+            "propsCount": 15
+          },
+          {
+            "name": "skeleton-loader",
+            "displayName": "SkeletonLoader",
+            "category": "basic-ui",
+            "description": "Animated skeleton loading placeholders",
+            "tags": [
+              "skeleton",
+              "loader",
+              "loading",
+              "placeholder",
+              "shimmer",
+              "animated"
+            ],
+            "useCases": [
+              "Loading placeholder that matches content dimensions",
+              "Skeleton screen for async data loading states",
+              "Shimmer effect placeholder for cards and text blocks"
+            ],
+            "animationType": "tween",
+            "complexity": "simple",
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/skeleton-loader.json",
+            "registryUrl": "https://smoothui.dev/r/skeleton-loader.json",
+            "docUrl": "https://smoothui.dev/docs/components/skeleton-loader",
+            "propsCount": 6
+          },
+          {
+            "name": "smooth-button",
+            "displayName": "SmoothButton",
+            "category": "other",
+            "description": "A polished button component with gradient variants and press animation",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "@radix-ui/react-slot",
+              "class-variance-authority",
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/smooth-button.json",
+            "registryUrl": "https://smoothui.dev/r/smooth-button.json",
+            "docUrl": "https://smoothui.dev/docs/components/smooth-button",
+            "propsCount": 0
+          },
+          {
+            "name": "social-selector",
+            "displayName": "SocialSelector",
+            "category": "other",
+            "description": "A SocialSelector component for SmoothUI.",
+            "tags": [
+              "social",
+              "selector",
+              "icons",
+              "share",
+              "hover",
+              "animated"
+            ],
+            "useCases": [
+              "Social media platform selector with animated icons",
+              "Share menu with platform-specific icon animations",
+              "Social link picker with hover feedback"
+            ],
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/social-selector.json",
+            "registryUrl": "https://smoothui.dev/r/social-selector.json",
+            "docUrl": "https://smoothui.dev/docs/components/social-selector",
+            "propsCount": 5
+          },
+          {
+            "name": "soft-blur-in",
+            "displayName": "SoftBlurIn",
+            "category": "other",
+            "description": "A SoftBlurIn text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/soft-blur-in.json",
+            "registryUrl": "https://smoothui.dev/r/soft-blur-in.json",
+            "docUrl": "https://smoothui.dev/docs/components/soft-blur-in",
+            "propsCount": 8
+          },
+          {
+            "name": "spring-scale-in",
+            "displayName": "SpringScaleIn",
+            "category": "text",
+            "description": "A SpringScaleIn text animation component for SmoothUI.",
+            "tags": [
+              "text",
+              "scale",
+              "spring",
+              "per-word",
+              "entrance",
+              "bounce",
+              "animated"
+            ],
+            "useCases": [
+              "iOS-style word pop-in",
+              "Playful heading entrance",
+              "Widget or card title reveal"
+            ],
+            "animationType": "spring",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/spring-scale-in.json",
+            "registryUrl": "https://smoothui.dev/r/spring-scale-in.json",
+            "docUrl": "https://smoothui.dev/docs/components/spring-scale-in",
+            "propsCount": 8
+          },
+          {
+            "name": "stagger-from-center",
+            "displayName": "StaggerFromCenter",
+            "category": "other",
+            "description": "A StaggerFromCenter text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/stagger-from-center.json",
+            "registryUrl": "https://smoothui.dev/r/stagger-from-center.json",
+            "docUrl": "https://smoothui.dev/docs/components/stagger-from-center",
+            "propsCount": 8
+          },
+          {
+            "name": "stagger-from-edges",
+            "displayName": "StaggerFromEdges",
+            "category": "other",
+            "description": "A StaggerFromEdges text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/stagger-from-edges.json",
+            "registryUrl": "https://smoothui.dev/r/stagger-from-edges.json",
+            "docUrl": "https://smoothui.dev/docs/components/stagger-from-edges",
+            "propsCount": 8
+          },
+          {
+            "name": "switchboard-card",
+            "displayName": "SwitchboardCard",
+            "category": "other",
+            "description": "A SwitchboardCard component with light grid illustration for SmoothUI.",
+            "tags": [
+              "card",
+              "switchboard",
+              "lights",
+              "grid",
+              "decorative",
+              "animated"
+            ],
+            "useCases": [
+              "Decorative card with animated light grid pattern",
+              "Feature card with switchboard-style visual illustration",
+              "Landing page card with dynamic light effects"
+            ],
+            "animationType": "tween",
+            "complexity": "moderate",
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/switchboard-card.json",
+            "registryUrl": "https://smoothui.dev/r/switchboard-card.json",
+            "docUrl": "https://smoothui.dev/docs/components/switchboard-card",
+            "propsCount": 12
+          },
+          {
+            "name": "top-down-letters",
+            "displayName": "TopDownLetters",
+            "category": "other",
+            "description": "A TopDownLetters text animation component for SmoothUI.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/top-down-letters.json",
+            "registryUrl": "https://smoothui.dev/r/top-down-letters.json",
+            "docUrl": "https://smoothui.dev/docs/components/top-down-letters",
+            "propsCount": 8
+          },
+          {
+            "name": "tweet-card",
+            "displayName": "TweetCard",
+            "category": "data-display",
+            "description": "A beautiful tweet card component for displaying Twitter/X posts.",
+            "tags": [
+              "tweet",
+              "twitter",
+              "x",
+              "embed",
+              "social",
+              "card"
+            ],
+            "useCases": [
+              "Embed Twitter/X posts with styled card component",
+              "Social proof section with real tweet displays",
+              "Testimonial display using actual tweets"
+            ],
+            "animationType": "none",
+            "complexity": "moderate",
+            "dependencies": [
+              "react-tweet"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/tweet-card.json",
+            "registryUrl": "https://smoothui.dev/r/tweet-card.json",
+            "docUrl": "https://smoothui.dev/docs/components/tweet-card",
+            "propsCount": 2
+          },
+          {
+            "name": "typewriter-text",
+            "displayName": "TypewriterText",
+            "category": "text",
+            "description": "A TypewriterText component for SmoothUI.",
+            "tags": [
+              "text",
+              "typewriter",
+              "typing",
+              "cursor",
+              "loop",
+              "animated"
+            ],
+            "useCases": [
+              "Typewriter text effect for hero headlines",
+              "Typing animation for chatbot or terminal-style UIs",
+              "Looping text reveal for taglines or feature highlights"
+            ],
+            "animationType": "tween",
+            "complexity": "simple",
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/typewriter-text.json",
+            "registryUrl": "https://smoothui.dev/r/typewriter-text.json",
+            "docUrl": "https://smoothui.dev/docs/components/typewriter-text",
+            "propsCount": 4
+          },
+          {
+            "name": "user-account-avatar",
+            "displayName": "UserAccountAvatar",
+            "category": "other",
+            "description": "A UserAccountAvatar component for SmoothUI.",
+            "tags": [
+              "avatar",
+              "account",
+              "popover",
+              "profile",
+              "orders",
+              "radix",
+              "animated"
+            ],
+            "useCases": [
+              "User account avatar with popover profile panel",
+              "Account menu with profile editing and order tracking",
+              "Interactive user avatar with animated tab navigation"
+            ],
+            "animationType": "spring",
+            "complexity": "complex",
+            "dependencies": [
+              "motion",
+              "lucide-react",
+              "@radix-ui/react-popover"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/user-account-avatar.json",
+            "registryUrl": "https://smoothui.dev/r/user-account-avatar.json",
+            "docUrl": "https://smoothui.dev/docs/components/user-account-avatar",
+            "propsCount": 5
+          },
+          {
+            "name": "warped-circle-transition",
+            "displayName": "WarpedCircleTransition",
+            "category": "other",
+            "description": "A wavy perimeter circle reveal inspired by the Codrops circle warping step.",
+            "animationType": "spring",
+            "complexity": "moderate",
+            "registryDependencies": [
+              "sdf-blob-transition"
+            ],
+            "hasReducedMotion": false,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/warped-circle-transition.json",
+            "registryUrl": "https://smoothui.dev/r/warped-circle-transition.json",
+            "docUrl": "https://smoothui.dev/docs/components/warped-circle-transition",
+            "propsCount": 5
+          },
+          {
+            "name": "wave-text",
+            "displayName": "WaveText",
+            "category": "text",
+            "description": "A WaveText component for SmoothUI.",
+            "tags": [
+              "text",
+              "wave",
+              "animation",
+              "continuous",
+              "bounce",
+              "decorative",
+              "animated"
+            ],
+            "useCases": [
+              "Continuous wave animation on text characters",
+              "Decorative animated heading for playful UIs",
+              "Attention-grabbing text effect for CTAs or logos"
+            ],
+            "animationType": "tween",
+            "complexity": "simple",
+            "dependencies": [
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npx shadcn@latest add https://smoothui.dev/r/wave-text.json",
+            "registryUrl": "https://smoothui.dev/r/wave-text.json",
+            "docUrl": "https://smoothui.dev/docs/components/wave-text",
+            "propsCount": 5
+          }
+        ]
+      },
+      "provenance": {
+        "source": "SmoothUI",
+        "url": "https://smoothui.dev/docs/components",
+        "sourceCode": "https://github.com/educlopez/smoothui",
+        "license": "MIT",
+        "licenseNotice": "Retain the upstream MIT copyright and license notice when copying source.",
+        "attribution": "educlopez/smoothui; local metadata snapshot only; implementation is not vendored"
+      }
+    },
+    {
+      "id": "reactbits-pro/depth-carousel",
+      "name": { "en": "React Bits depth carousel", "zh": "React Bits 深度轮播" },
+      "category": "carousel",
+      "status": "stable",
+      "routing": {
+        "capabilities": ["3d-depth", "carousel", "depth-carousel", "interactive-card", "parallax-carousel"],
+        "platforms": ["web"],
+        "mode": "registry-copy",
+        "evidenceStatus": "user-provided",
+        "requiresLicense": true,
+        "package": "@reactbits-pro",
+        "install": "npx shadcn@latest add @reactbits-pro/<name>",
+        "fallback": "Use CSS perspective plus keyboard-operable semantic carousel controls."
+      },
+      "provenance": {
+        "source": "React Bits",
+        "url": "https://reactbits.dev/components/depth-carousel",
+        "license": "commercial-license-required",
+        "attribution": "User-provided reference; metadata only"
+      }
+    }
+  ]
+}

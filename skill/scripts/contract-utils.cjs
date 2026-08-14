@@ -4,6 +4,10 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
+const PNG_HEADER_BYTES = 24;
+const PNG_IHDR_PAYLOAD_BYTES = 13;
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
 function fail(scope, message, details = {}) {
   const error = new Error(`${scope}: ${message}`);
   error.code = details.code || "CONTRACT_INVALID";
@@ -90,6 +94,16 @@ function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
+function pngDimensions(header) {
+  if (!Buffer.isBuffer(header) || header.length < PNG_HEADER_BYTES) return null;
+  if (!header.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) return null;
+  if (header.readUInt32BE(8) !== PNG_IHDR_PAYLOAD_BYTES) return null;
+  if (header.subarray(12, 16).toString("latin1") !== "IHDR") return null;
+  const width = header.readUInt32BE(16);
+  const height = header.readUInt32BE(20);
+  return width > 0 && height > 0 ? { width, height } : null;
+}
+
 function sortValue(value) {
   if (Array.isArray(value)) return value.map(sortValue);
   if (!isObject(value)) return value;
@@ -138,6 +152,7 @@ module.exports = {
   jsonResult,
   nonEmpty,
   pathInside,
+  pngDimensions,
   readJson,
   rejectExecutable,
   resolveInside,

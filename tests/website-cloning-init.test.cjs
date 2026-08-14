@@ -5,6 +5,10 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
+const {
+  canonicalJson,
+  createInitialState,
+} = require("../skill/scripts/pipeline-state-core.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const initializer = path.join(repoRoot, "skill", "scripts", "init-website-clone.cjs");
@@ -1091,6 +1095,50 @@ test("marks an exact run complete only when ports and evidence pass", () => {
       "Run the remaining design-pipeline gates before archiving or claiming delivery complete",
     ),
   );
+});
+
+test("records a website-cloning verdict without breaking v2 state history", () => {
+  const projectRoot = makeProject();
+  assert.equal(
+    run(projectRoot, "--change-id", "v2-passing-run", "--url", "https://example.com").status,
+    0,
+  );
+  const changeRoot = path.join(projectRoot, "openspec", "changes", "v2-passing-run");
+  const manifestPath = path.join(changeRoot, "website-cloning.json");
+  const manifest = readJson(manifestPath);
+  markPortsReady(manifest, changeRoot);
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const statePath = path.join(changeRoot, "state.json");
+  const eventsPath = path.join(changeRoot, "events.jsonl");
+  fs.writeFileSync(
+    statePath,
+    canonicalJson(createInitialState({
+      changeId: "v2-passing-run",
+      timestamp: "2026-08-12T00:00:00.000Z",
+      phase: "gate-review",
+      status: "verifying",
+    })),
+  );
+  fs.writeFileSync(eventsPath, "");
+  const evidencePath = path.join(changeRoot, "verification-input.json");
+  fs.writeFileSync(
+    evidencePath,
+    `${JSON.stringify(passingEvidence("example-com"), null, 2)}\n`,
+  );
+
+  const result = evaluate(changeRoot, evidencePath);
+
+  assert.equal(result.status, 0, result.stderr);
+  const state = readJson(statePath);
+  const event = readJson(eventsPath);
+  assert.equal(readJson(manifestPath).status, "complete");
+  assert.equal(state.schema, "design-pipeline.state.v2");
+  assert.equal(state.status, "verifying");
+  assert.equal(state.phase, "gate-review");
+  assert.equal(state.lastEventSeq, 1);
+  assert.equal(event.schema, "design-pipeline.event.v2");
+  assert.equal(event.seq, 1);
+  assert.equal(event.type, "verification-passed");
 });
 
 test("marks a measurable exact mismatch as fidelity-limited", () => {

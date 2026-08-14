@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/toolchain-probe-result.v1.json",
+  "title": "Frontend Toolchain Probe Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "planSha256", "results", "blockers"],
+  "properties": {
+    "schema": { "const": "design-pipeline.toolchain-probe-result.v1" },
+    "status": { "enum": ["ready", "blocked"] },
+    "planSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "results": { "type": "array", "items": { "type": "object" } },
+    "blockers": { "type": "array", "items": { "type": "string" } }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "blockers": [],
+  "changeId": "support-koboyo-icon-source",
+  "evidence": [
+    "openspec/changes/support-koboyo-icon-source/brief.md",
+    "openspec/changes/support-koboyo-icon-source/frontend-stack-decision.json",
+    "openspec/changes/support-koboyo-icon-source/direction-preview.json",
+    "openspec/changes/support-koboyo-icon-source/design.md",
+    "openspec/changes/support-koboyo-icon-source/specs/design-pipeline/spec.md",
+    "openspec/changes/support-koboyo-icon-source/motion.md",
+    "openspec/changes/support-koboyo-icon-source/tasks.md",
+    "skill/references/frontend-stack-registry.json",
+    "skill/scripts/frontend-stack-core.cjs",
+    "tests/frontend-stack-routing.test.cjs",
+    "focused-tests:14/14",
+    "openspec/changes/support-koboyo-icon-source/component-route.json",
+    "openspec/changes/support-koboyo-icon-source/design-system-decision.json",
+    "qa:372/372",
+    "package:reproducible",
+    "installed-cli-smoke:9/9",
+    "openspec/changes/support-koboyo-icon-source/qa.md",
+    "openspec/changes/support-koboyo-icon-source/handoff.md"
+  ],
+  "extensions": {},
+  "foundations": {
+    "design": {
+      "path": "DESIGN.md",
+      "sha256": "1126499915fb720ce0943afcba8b9327885c11a6ccc63160db96cd801a8cf88e",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind design"
+    },
+    "motion": {
+      "path": "MOTION.md",
+      "sha256": "5a23e0fcdb7d4ebddea2f8f446b91edbdaba3812baf44a7066034b5b2d8e7302",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind motion"
+    }
+  },
+  "lastEventSeq": 9,
+  "migration": null,
+  "nextActions": [],
+  "phase": "release-readiness",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 9,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "verifying",
+  "updatedAt": "2026-08-13T04:33:02.594Z"
+}

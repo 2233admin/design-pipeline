@@ -36,6 +36,19 @@
 3. 支持网站克隆、设计系统合成、动效设计，每一步都有证据。
 4. 通过门禁系统确保设计质量，不达标就拦住。
 
+当前 `0.9.0-beta.3` 测试版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
+可安装、可验证的前端工具架：
+
+- 需求、`DESIGN.md`、`MOTION.md` 与 OpenSpec 变更生命周期；
+- 前端框架、样式、15 个 UI 库、组件来源和 127 项设计技能索引的统一选择；
+- 网站克隆、方向预览、中文排版、设计系统、动效、组件状态和浏览器证据门禁；
+- DOM、SVG/D3、XY、PixiJS、Phaser、Three.js、Babylon.js、PlayCanvas、WebGPU 等图形路线；
+- 工具环境探测、哈希绑定的调用计划、标准化 receipt、打包和隔离安装验收。
+
+目录中的工具不等于已经安装。管线负责选择、探测和验收；目标项目仍然负责固定并安装
+实际运行时。`reflex-xy` 是目前第一个具备完整生命周期合同的外部图形适配器，不代表
+系统只支持 XY。
+
 有个很小的故事。
 
 你让 Agent 做一个设置页面。它看了一眼需求，十秒后交出代码。能跑，但按钮圆角是 4px 还是 8px？悬停态有没有过渡？暗色模式对比度够吗？没人知道。下次再改，Agent 又猜了一遍，猜得不一样。
@@ -99,6 +112,31 @@ node skill/scripts/check-design-foundation.cjs --project-root . --json
 
 ## 核心功能
 
+### 可视化方向预览与中文排版
+
+开放式整页设计在选方向前先生成同内容、同状态、同视口的迷你 mockup 对比页，并由
+`direction check` 校验候选差异、文件与哈希；窄范围或唯一参考则显式豁免。含中文、日文或
+韩文的界面默认使用系统字体栈，并记录 CJK 行高、标点规则以及装饰字体的最小字形子集与
+fallback，避免用数 MB 的完整字体掩盖排版问题。
+
+### 交互式 Playground
+
+Playground 是一种适合“文字不够好用”的模型交互介质：它把问题做成无外部依赖的单文件
+HTML，通过控件、即时表示、预设和可复制的自然语言提示词来探索结果。它既能调整组件、
+布局、色彩、字体与动效，也能可视化代码架构和概念关系、探索数据、评审文档或 diff、
+调整游戏平衡。`playground check` 验证构建、浏览器行为、选择和用途路由；接受的结果按
+类型进入 `design.md`、`motion.md`、`handoff.md`、`brief.md`、`qa.md` 或 `scene.md`，并由
+SHA-256 绑定，防止实现阶段漂移。包内同时提供 code map、concept map、data explorer、
+design、diff review、document critique 与 game balance 七份默认蓝图；它们不是封闭分类。
+项目可以携带新的 Blueprint，声明自己的交互结构、状态输出、QA 和受允许的集成目标，
+Blueprint 哈希变化会自动使旧浏览器验证失效。
+
+### 直接表达
+
+面向用户的提示、错误、公告和恢复说明先写清实际影响或下一步，再解释内部原因。第二遍
+逐项核对范围、数量、时限、不确定性、未改变的状态和真实可用操作；更短的句子如果把
+局部问题说成整体失败，仍然不合格。
+
 ### 设计基础：DESIGN.md
 
 每个项目必须有验证过的 `DESIGN.md`，记录视觉系统决策。不是模板复制，是从需求、仓库约束和参考证据合成的项目特定合同。
@@ -115,9 +153,62 @@ node skill/scripts/check-design-foundation.cjs --project-root . --json
 node skill/scripts/check-motion-foundation.cjs --project-root . --json
 ```
 
+### 组件能力路由
+
+组件库不直接变成项目依赖。流水线先把需求拆成稳定的行为能力，再按项目框架、已有依赖、
+来源证据、接入方式和许可证选路；没有授权的远程库只会得到 `review`，不会被静默复制。
+
+```bash
+# 与框架无关地分解表格能力，并自动补齐键盘、焦点、ARIA 和完整状态
+node skill/scripts/designer-pipeline.cjs component decompose \
+  --query "支持筛选、排序、分页和多选的数据表格" --json
+
+# 只读探测 Vue 项目；不会安装 Vuetify0、Ark UI 或修改 package.json
+node skill/scripts/designer-pipeline.cjs component providers \
+  --root ../my-vue-project --framework vue --json
+
+# 从请求文件生成逐能力 Provider 路由
+node skill/scripts/designer-pipeline.cjs component resolve \
+  --root ../my-vue-project --artifact component-request.json \
+  --write --output component-resolution.json --json
+
+# 根据 resolution hash 和真实行为证据验收
+node skill/scripts/designer-pipeline.cjs component verify \
+  --root ../my-vue-project --artifact component-resolution.json \
+  --receipt component-receipt.json --json
+```
+
+Vuetify0、React Aria 和 Ark UI 是首批可替换 Provider；项目自有 DOM 实现始终是受治理的
+回退路径。能力 IR 不包含 Vue composable、React Hook 或其他框架 API。
+
+```bash
+# Web 应用 UI：优先返回 React Bits Pro，保留许可证审查
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "SaaS dashboard app UI" --platform web --json
+
+# Expo 数字动效：路由到 expo-content-transition
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "animated numeric stat" --platform expo --json
+
+# 深度轮播：返回参考源、接入命令和无授权时的 CSS 降级路径
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "depth carousel" --platform web --json
+
+# SmoothUI：从本地 130 项快照中推荐具体组件
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "SmoothUI animated tabs" --platform web --json
+```
+
+当前内置的是这些来源元数据：Beautiful UI、`expo-content-transition`、React Bits 免费 Dither、React Bits Pro app UI、React Bits depth carousel、SmoothUI 130 项组件快照，以及 Web DOM 数字过渡回退。SmoothUI 快照会返回组件名、文档 URL、registry 安装命令、依赖和 reduced-motion 信息；组件源码不在本仓库内，其他来源仍按路由结果做许可审查。
+
 ### 网站克隆
 
 捕获参考证据，从完整组件合同构建，独立比较结果后才声称保真度。
+
+整站或登录后页面另有内置的 `deepclonewebsite` 功能切片参考：支持可见浏览器登录门、
+同域页面归型、`structure`/显式 `full` 捕获、离线多页链接，以及基于可见证据的产品结构、
+数据模型、后端需求和设计系统假设。它是固定版本、哈希校验的被动源码参考，不会安装或
+执行 Open Lovable，也不会把推断文档冒充真实后端。
 
 ```bash
 node skill/scripts/init-website-clone.cjs \
@@ -154,6 +245,7 @@ node skill/scripts/evaluate-website-clone.cjs \
 
 按能力合同路由，不按库偏好。支持：
 
+- **数据可视化**：XY（Python、Reflex、Notebook、静态导出与大数据交互）
 - **2D 渲染**：PixiJS v8（精灵、粒子、滤镜、着色器）
 - **2D 游戏**：Phaser v4（完整浏览器游戏运行时）
 - **3D 渲染**：Three.js、React Three Fiber
@@ -161,6 +253,68 @@ node skill/scripts/evaluate-website-clone.cjs \
 - **GPU/着色器**：WebGPU/WGSL
 
 持久空间工作添加 `scene.json` 和 `scene.md` 投影，记录坐标、生命周期、资产、性能预算。
+
+### 统一前端工具链
+
+`toolchain resolve` 将框架、样式、组件库、外部工具和图形运行时合并成一份可执行计划。
+管线只负责选择、探测、调用描述和验收契约；依赖仍由目标项目安装和固定版本。
+
+```json
+{
+  "schema": "design-pipeline.toolchain-request.v1",
+  "framework": "reflex",
+  "brief": "Reflex analytics page with an XY chart",
+  "requested": { "styling": "tailwindcss", "uiLibrary": "none" },
+  "graphics": { "family": "vector-data" }
+}
+```
+
+```bash
+node skill/scripts/designer-pipeline.cjs toolchain resolve \
+  --root . --artifact toolchain-request.json --write --output toolchain-plan.json --json
+
+node skill/scripts/designer-pipeline.cjs toolchain probe \
+  --root . --artifact toolchain-request.json --json
+
+node skill/scripts/designer-pipeline.cjs toolchain receipt-check \
+  --root . --artifact toolchain-plan.json --receipt evidence/toolchain-receipt.json \
+  --evidence-root evidence --require-files --json
+```
+
+`resolve` 不执行安装；`probe` 只运行注册表内置的只读可用性检查。完整调用必须留下
+`design-pipeline.toolchain-receipt.v1`，绑定计划哈希、实际版本、命令、退出码、产物和哈希。
+
+工具链就绪后，执行目标路由只选择并准备目标，不代替 Builder。请求绑定工具链计划哈希，
+并为每个执行片声明 owner 与文件范围：
+
+```json
+{
+  "schema": "design-pipeline.execution-request.v1",
+  "id": "react-settings",
+  "toolchainPlanSha256": "<64-hex>",
+  "preferredMode": "auto",
+  "isolation": "optional",
+  "slices": [{ "id": "ui", "owner": "frontend", "scope": ["src/"] }]
+}
+```
+
+```bash
+node skill/scripts/designer-pipeline.cjs execution route --root . \
+  --artifact .design-pipeline/execution-request.json --plan .design-pipeline/toolchain-plan.json \
+  --write --output .design-pipeline/execution-plan.json --json
+
+node skill/scripts/designer-pipeline.cjs execution prepare --root . \
+  --artifact .design-pipeline/execution-plan.json \
+  --write --output .design-pipeline/execution-state.json --json
+
+node skill/scripts/designer-pipeline.cjs execution finalize --root . \
+  --artifact .design-pipeline/execution-plan.json --state .design-pipeline/execution-state.json \
+  --outcome .design-pipeline/execution-outcome.json \
+  --write --output .design-pipeline/execution-receipt.json --json
+```
+
+`auto` 对单执行片使用 `in-place`，多执行片使用 `sequential`；要求隔离或仓库已脏时使用
+`worktree`。worktree 只有在成功、已提交、干净且变更未越界时才移除；失败或不确定状态保留现场。
 
 ### 反 Slop 审查
 
@@ -179,7 +333,9 @@ node skill/scripts/evaluate-anti-slop.cjs \
 
 ```bash
 node skill/scripts/designer-pipeline.cjs doctor --root . --json
+node skill/scripts/designer-pipeline.cjs toolchain resolve --root . --artifact toolchain-request.json --json
 node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
+node skill/scripts/designer-pipeline.cjs playground check --root . --change-root openspec/changes/example --stage integration --json
 node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
 ```
 
@@ -256,6 +412,8 @@ node skill/scripts/check-deps.cjs
 - [repowise](https://github.com/2233admin/repowise) — AI Agent 的代码库智能层
 - [performance-patterns-skill](https://github.com/2233admin/performance-patterns-skill) — 性能问题先路由再排查
 - [markdown-memory](https://github.com/2233admin/markdown-memory) — 文件驱动的 AI 记忆桥
+- [gc-minimal-zine-poster](https://github.com/LiamGvchi/gc-minimal-zine-poster) — 极简 zine 海报生成与参考分析 Skill
+- [gc-still-image-motion-director](https://github.com/LiamGvchi/gc-still-image-motion-director) — 静态图片动效判断与 Prompt 约束 Skill
 
 ## License
 

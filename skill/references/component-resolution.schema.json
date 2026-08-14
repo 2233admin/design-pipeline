@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/component-resolution.v1.json",
+  "title": "Component Capability Resolution",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "framework", "brief", "capabilities", "routes", "requiredChecks", "missingCapabilities", "blockers", "registryHashes", "constraints", "resolutionHash"],
+  "properties": {
+    "schema": { "const": "design-pipeline.component-resolution.v1" },
+    "status": { "enum": ["ready", "blocked"] },
+    "framework": { "enum": ["agnostic", "react", "vue", "nuxt", "svelte", "solid"] },
+    "brief": { "type": ["string", "null"] },
+    "capabilities": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "routes": { "type": "array", "items": { "type": "object" } },
+    "requiredChecks": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "missingCapabilities": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "registryHashes": { "type": "object", "required": ["capabilities", "providers"], "properties": { "capabilities": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "providers": { "type": "string", "pattern": "^[a-f0-9]{64}$" } } },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "resolutionHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

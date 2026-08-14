@@ -1,0 +1,412 @@
+{
+  "capabilityInventory": {
+    "capabilityResults": {
+      "animated-ui": {
+        "count": 0,
+        "matchedIds": [],
+        "terms": [
+          "animated ui",
+          "motion ui",
+          "animated interface",
+          "micro interaction"
+        ]
+      },
+      "app-shell": {
+        "count": 140,
+        "matchedIds": [
+          "astryx:component:AppShell",
+          "astryx:template:AppShellShowcase",
+          "astryx:template:AppShellSideNavOnly",
+          "astryx:template:shell-nav",
+          "astryx:template:shell-side-nav",
+          "astryx:template:shell-top-nav",
+          "astryx:component:ChatComposer",
+          "astryx:component:ChatLayout",
+          "astryx:component:Layout",
+          "astryx:doc:layout",
+          "astryx:template:AppShellContentOnly",
+          "astryx:template:AppShellMobileHookUsage",
+          "astryx:template:CodeBlockTerminal",
+          "astryx:template:blank",
+          "astryx:template:messaging-shell",
+          "astryx:component:AspectRatio",
+          "astryx:component:AvatarGroup",
+          "astryx:component:Center",
+          "astryx:component:ChatLayoutScrollButton",
+          "astryx:component:Divider",
+          "astryx:component:FormLayout",
+          "astryx:component:Grid",
+          "astryx:component:GridSpan",
+          "astryx:component:LayoutContent",
+          "astryx:component:LayoutFooter",
+          "astryx:component:LayoutHeader",
+          "astryx:component:LayoutPanel",
+          "astryx:component:MetadataList",
+          "astryx:component:Section",
+          "astryx:component:Stack",
+          "astryx:component:Text",
+          "astryx:component:TopNav",
+          "astryx:hook:useAppShellMobile",
+          "astryx:hook:useOverflow",
+          "astryx:hook:useResizable",
+          "astryx:hook:useScrollLock",
+          "astryx:hook:useScrollOverflow",
+          "astryx:template:AppShellTopNavOnly",
+          "astryx:template:AppShellTopNavWithSideNav",
+          "astryx:template:AppShellWithBanner",
+          "astryx:template:AvatarGroupShowcase",
+          "astryx:template:BaseTypeaheadCustomSearch",
+          "astryx:template:CardWithInnerLayout",
+          "astryx:template:DialogHeaderBasic",
+          "astryx:template:DividerVertical",
+          "astryx:template:EmptyStateCompact",
+          "astryx:template:FormLayoutShowcase",
+          "astryx:template:GridDashboardLayout",
+          "astryx:template:HeadingCardGrid",
+          "astryx:template:HeadingPageLayout"
+        ],
+        "terms": [
+          "app shell",
+          "shell",
+          "layout",
+          "top bar",
+          "sidebar",
+          "navigation"
+        ]
+      },
+      "data-table": {
+        "count": 113,
+        "matchedIds": [
+          "astryx:template:MarkdownDataTable",
+          "astryx:template:PaginationWithTable",
+          "astryx:template:TablePaginatedTable",
+          "astryx:template:ToolbarTableFilter",
+          "astryx:template:table",
+          "astryx:template:table-grouped",
+          "astryx:template:table-page",
+          "astryx:template:table-page-chart",
+          "astryx:template:table-page-shoe-store-heatmap",
+          "astryx:component:Item",
+          "astryx:component:List",
+          "astryx:component:MetadataList",
+          "astryx:component:Outline",
+          "astryx:component:OverflowList",
+          "astryx:component:Table",
+          "astryx:component:TableCell",
+          "astryx:component:TableHeaderCell",
+          "astryx:component:TableRow",
+          "astryx:component:TreeList",
+          "astryx:hook:useTableColumnResize",
+          "astryx:hook:useTableColumnSettings",
+          "astryx:hook:useTableFilterState",
+          "astryx:hook:useTableFiltering",
+          "astryx:hook:useTableGroupedRows",
+          "astryx:hook:useTablePagination",
+          "astryx:hook:useTableSortable",
+          "astryx:hook:useTableStickyColumns",
+          "astryx:hook:useTableTreeData",
+          "astryx:hook:useTableTreeState",
+          "astryx:template:BadgeStatusLabels",
+          "astryx:template:ColumnResizeHookUsage",
+          "astryx:template:PaginationPageSize",
+          "astryx:template:PowerSearchSearchWithTable",
+          "astryx:template:SkeletonTableRowSkeleton",
+          "astryx:template:StickyColumnsHookUsage",
+          "astryx:template:TableColumnSettingsTable",
+          "astryx:template:TableFilterableTable",
+          "astryx:template:TableGridDividersTable",
+          "astryx:template:TableGroupedRowsTable",
+          "astryx:template:TableInCard",
+          "astryx:template:TableInlineFilterTable",
+          "astryx:template:TableResizableTable",
+          "astryx:template:TableRichCellTable",
+          "astryx:template:TableRowExpansionTable",
+          "astryx:template:TableRowIndexTable",
+          "astryx:template:TableRowStatusTable",
+          "astryx:template:TableSelectableTable",
+          "astryx:template:TableShowcase",
+          "astryx:template:TableSortableTable",
+          "astryx:template:TableStripedTable"
+        ],
+        "terms": [
+          "data table",
+          "table",
+          "datagrid",
+          "grid",
+          "row",
+          "column"
+        ]
+      },
+      "dialog": {
+        "count": 54,
+        "matchedIds": [
+          "astryx:component:AlertDialog",
+          "astryx:component:CommandPalette",
+          "astryx:component:Dialog",
+          "astryx:component:DialogHeader",
+          "astryx:hook:useFocusTrap",
+          "astryx:hook:useImperativeAlertDialog",
+          "astryx:hook:useImperativeDialog",
+          "astryx:hook:usePopover",
+          "astryx:hook:useScrollLock",
+          "astryx:template:AlertDialogAsyncAction",
+          "astryx:template:DialogConfirmationDialog",
+          "astryx:template:DialogFormDialog",
+          "astryx:template:DialogFullscreenDialog",
+          "astryx:template:DialogHeaderBasic",
+          "astryx:template:DialogScrollingContent",
+          "astryx:template:DialogShowcase",
+          "astryx:template:DialogWithSubtitle",
+          "astryx:template:settings-dialog",
+          "astryx:template:AlertDialogDeleteConfirmation",
+          "astryx:component:DropdownMenu",
+          "astryx:component:HoverCard",
+          "astryx:component:Popover",
+          "astryx:hook:useHoverCard",
+          "astryx:hook:useLayer",
+          "astryx:component:ContextMenu",
+          "astryx:component:SideNavHeading",
+          "astryx:component:TopNavHeading",
+          "astryx:component:TopNavMegaMenuItem",
+          "astryx:component:TopNavMenu",
+          "astryx:hook:useTableFiltering",
+          "astryx:template:DateInputShowcase",
+          "astryx:template:DateRangeInputShowcase",
+          "astryx:template:DateTimeInputShowcase",
+          "astryx:template:NavHeadingMenuShowcase",
+          "astryx:template:PopoverConfirmAction",
+          "astryx:template:PopoverFilterPanel",
+          "astryx:template:PopoverHookUsage",
+          "astryx:template:PopoverKeyboardShortcuts",
+          "astryx:template:PopoverSettingsPanel",
+          "astryx:template:PopoverShowcase",
+          "astryx:template:TableFilterableTable",
+          "astryx:component:FieldLabel",
+          "astryx:component:MediaTheme",
+          "astryx:component:Tooltip",
+          "astryx:hook:useTableRowStatus",
+          "astryx:hook:useTooltip",
+          "astryx:template:AvatarTooltip",
+          "astryx:template:FieldLabelShowcase",
+          "astryx:template:TextInputTypes",
+          "astryx:template:TimestampTooltipTimezones"
+        ],
+        "terms": [
+          "dialog",
+          "modal",
+          "alertdialog",
+          "popup",
+          "popover",
+          "tooltip"
+        ]
+      },
+      "hero": {
+        "count": 5,
+        "matchedIds": [
+          "astryx:template:centered-hero",
+          "astryx:template:documentation",
+          "astryx:template:form-two-column",
+          "astryx:template:gallery-hero",
+          "astryx:template:shell-top-nav"
+        ],
+        "terms": [
+          "hero",
+          "hero section"
+        ]
+      },
+      "page-block": {
+        "count": 24,
+        "matchedIds": [
+          "astryx:template:ai-chat-landing",
+          "astryx:template:documentation",
+          "astryx:component:Section",
+          "astryx:component:SideNavSection",
+          "astryx:hook:useTableGroupedRows",
+          "astryx:template:BannerStatuses",
+          "astryx:template:BlockquoteTestimonials",
+          "astryx:template:ChatSystemMessageVariants",
+          "astryx:template:CodeBlockHighlightedLines",
+          "astryx:template:CollapsibleControlledAccordion",
+          "astryx:template:CollapsibleGroupAccordion",
+          "astryx:template:CollapsibleSingleAccordion",
+          "astryx:template:CommandPaletteListBasic",
+          "astryx:template:OutlineControlled",
+          "astryx:template:OutlineShowcase",
+          "astryx:template:SectionVariants",
+          "astryx:template:SectionWashHighlight",
+          "astryx:template:SectionWithDividers",
+          "astryx:template:ToolbarCardHeader",
+          "astryx:template:ToolbarWithTabs",
+          "astryx:template:TopNavMegaMenuBasic",
+          "astryx:template:VisuallyHiddenStructuralHeading",
+          "astryx:template:settings-dialog",
+          "astryx:template:settings-sidebar"
+        ],
+        "terms": [
+          "page block",
+          "landing page",
+          "page section",
+          "section"
+        ]
+      }
+    },
+    "directQuery": "Internalize frontend app shell, dialog, data table, landing page hero, animated UI, and website cloning",
+    "directQueryResults": 0,
+    "searchedCapabilities": [
+      "app-shell",
+      "data-table",
+      "animated-ui",
+      "dialog",
+      "hero",
+      "page-block"
+    ],
+    "zeroResultInconclusive": true
+  },
+  "evidence": [
+    "project-authority:DESIGN.md",
+    "frontend-stack:679de9a9d13d6b5d4520e38de2bfcd51eddad3c3b669eca52c785dbce5608d5d",
+    "zero-result-inconclusive",
+    "capability-inventory:6:336",
+    "mode:custom"
+  ],
+  "frontendStackDecision": {
+    "blockers": [],
+    "capabilities": [
+      "design-workflow",
+      "friction-logging",
+      "github-issue-sync",
+      "interaction-extraction",
+      "verification",
+      "visual-style",
+      "website-cloning"
+    ],
+    "evidence": [
+      "registry:2026-08-13",
+      "mengto:3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+      "tool:design-pipeline/core@bundled",
+      "tool:design-pipeline/website-cloning@bundled",
+      "tool:hi5jeff/deepclonewebsite@ab180fbe14a0f86c478bf033b375b1d40fabe6b1",
+      "tool:design-pipeline/feedback-loop@bundled",
+      "tool:wevm/frog@702c4eadefe175a208290a99c36e7f4ac1390e53",
+      "tool:MengTo/skills@3f4c22d10055d3fdddb17248d59d0c1b731cb8d3"
+    ],
+    "framework": "agnostic",
+    "recommendedSkills": [
+      "animation-systems",
+      "audit-reference-originality",
+      "audit-verify-explain-grade-5",
+      "build-awwwards-quality-sites",
+      "design-first-ui-prompting",
+      "html-to-interaction-prompts",
+      "iterate-until-verified",
+      "optimize-web-animations",
+      "stitched-full-page-capture"
+    ],
+    "registryHash": "679de9a9d13d6b5d4520e38de2bfcd51eddad3c3b669eca52c785dbce5608d5d",
+    "reviews": [],
+    "schema": "design-pipeline.frontend-stack-decision.v1",
+    "selected": {
+      "styling": {
+        "id": "none",
+        "label": "None"
+      },
+      "uiLibrary": {
+        "id": "none",
+        "label": "None",
+        "license": "project",
+        "source": "project-owned"
+      }
+    },
+    "status": "ready",
+    "toolRoutes": [
+      {
+        "capabilities": [
+          "design-workflow"
+        ],
+        "id": "design-pipeline/core",
+        "mode": "project-owned",
+        "source": "bundled",
+        "status": "ready"
+      },
+      {
+        "capabilities": [
+          "website-cloning"
+        ],
+        "id": "design-pipeline/website-cloning",
+        "mode": "project-owned",
+        "source": "bundled",
+        "status": "ready"
+      },
+      {
+        "capabilities": [
+          "website-cloning"
+        ],
+        "fallback": "design-pipeline/website-cloning",
+        "id": "hi5jeff/deepclonewebsite",
+        "mode": "governed-candidate",
+        "requirements": [
+          "Node.js 20+",
+          "Chrome or Edge",
+          "interactive login",
+          "OpenAI-compatible API credential"
+        ],
+        "revision": "ab180fbe14a0f86c478bf033b375b1d40fabe6b1",
+        "source": "https://github.com/hi5jeff/deepclonewebsite",
+        "status": "review"
+      },
+      {
+        "capabilities": [
+          "friction-logging"
+        ],
+        "id": "design-pipeline/feedback-loop",
+        "mode": "project-owned",
+        "source": "bundled",
+        "status": "ready"
+      },
+      {
+        "capabilities": [
+          "friction-logging",
+          "github-issue-sync"
+        ],
+        "fallback": "design-pipeline/feedback-loop",
+        "id": "wevm/frog",
+        "mode": "governed-candidate",
+        "requirements": [
+          "Node.js 22+",
+          "explicit GitHub repository and workflow permission"
+        ],
+        "revision": "702c4eadefe175a208290a99c36e7f4ac1390e53",
+        "source": "https://github.com/wevm/frog",
+        "status": "review"
+      },
+      {
+        "capabilities": [
+          "design-workflow",
+          "interaction-extraction",
+          "visual-style",
+          "verification"
+        ],
+        "id": "MengTo/skills",
+        "mode": "bundled-index",
+        "revision": "3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+        "source": "https://github.com/MengTo/skills",
+        "status": "ready"
+      }
+    ]
+  },
+  "mode": "custom",
+  "projectAuthority": {
+    "id": "project-design",
+    "source": "DESIGN.md"
+  },
+  "rationale": [
+    "Custom mode keeps the design system project-owned."
+  ],
+  "rejected": [],
+  "schema": "design-pipeline.design-system-decision.v1",
+  "selected": {
+    "id": "project-design",
+    "source": "DESIGN.md"
+  },
+  "status": "ready"
+}

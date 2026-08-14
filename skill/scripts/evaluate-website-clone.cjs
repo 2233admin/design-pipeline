@@ -8,6 +8,8 @@ const {
 const {
   validateWebsiteCloningManifest,
 } = require("./website-cloning-manifest-core.cjs");
+const { sha256 } = require("./contract-utils.cjs");
+const { STATE_V2, advanceChange } = require("./pipeline-state-core.cjs");
 
 const VERIFICATION_SCHEMA = "design-pipeline.website-cloning.verification.v1";
 const MANIFEST_FILE = "website-cloning.json";
@@ -594,6 +596,25 @@ function updateState(changeRoot, state, verdict, reasons, now, reportPath) {
         ? evaluationActions[1]
         : evaluationActions[2];
   state.nextActions = unique([...priorActions, nextAction]);
+  if (state.schema === STATE_V2) {
+    const result = advanceChange(
+      statePath,
+      path.join(changeRoot, "events.jsonl"),
+      {
+        expectedSha256: sha256(fs.readFileSync(statePath)),
+        timestamp: now,
+        phase: "gate-review",
+        status: verdict === "blocked" ? "blocked" : "verifying",
+        type: verdict === "complete" ? "verification-passed" : "verification-failed",
+        summary: `Website-cloning fidelity gate verdict: ${verdict}.`,
+        files: [MANIFEST_FILE],
+        evidence: reportPath ? [reportPath] : [],
+        blockers: state.blockers,
+        nextActions: state.nextActions,
+      },
+    );
+    return { phase: result.state.phase, eventWritten: true };
+  }
   state.qa = {
     ...(state.qa || {}),
     websiteCloning: {
@@ -603,7 +624,7 @@ function updateState(changeRoot, state, verdict, reasons, now, reportPath) {
     },
   };
   writeJson(statePath, state);
-  return state.phase;
+  return { phase: state.phase, eventWritten: false };
 }
 
 function updateHandoff(changeRoot, verdict, reasons, now, reportPath) {
@@ -727,16 +748,18 @@ function persistEvaluation(context, evaluation, reportPath) {
   };
   updateTargetStates(manifest, verdict, targetFailures);
 
-  const phase = updateState(changeRoot, state, verdict, reasons, now, reportPath);
-  appendEvent(path.join(changeRoot, "events.jsonl"), {
-    ts: now,
-    phase,
-    type: verdict === "complete" ? "verification-passed" : "verification-failed",
-    summary: `Website-cloning fidelity gate verdict: ${verdict}.`,
-    files: [MANIFEST_FILE],
-    evidence: reportPath ? [reportPath] : [],
-    nextActions: evaluationNextActions(verdict),
-  });
+  const stateUpdate = updateState(changeRoot, state, verdict, reasons, now, reportPath);
+  if (!stateUpdate.eventWritten) {
+    appendEvent(path.join(changeRoot, "events.jsonl"), {
+      ts: now,
+      phase: stateUpdate.phase,
+      type: verdict === "complete" ? "verification-passed" : "verification-failed",
+      summary: `Website-cloning fidelity gate verdict: ${verdict}.`,
+      files: [MANIFEST_FILE],
+      evidence: reportPath ? [reportPath] : [],
+      nextActions: evaluationNextActions(verdict),
+    });
+  }
   updateHandoff(changeRoot, verdict, reasons, now, reportPath || "not-provided");
   validateWebsiteCloningManifest(manifest);
   writeJson(manifestPath, manifest);

@@ -12,9 +12,12 @@ const catalog = JSON.parse(fs.readFileSync(path.join(root, "graphics-runtime-cat
 
 test("adapter registry is authoritative for support, provenance, license, security, and degradation", () => {
   const result = validateRegistry(registry, catalog);
-  assert.equal(result.adapters, 24);
+  assert.equal(result.adapters, 25);
   assert.equal(result.support.companion, 1);
   assert.ok(registry.adapters.every((adapter) => adapter.provenance.url && adapter.security.execution && adapter.degradation));
+  const xy = registry.adapters.find((adapter) => adapter.id === "reflex-xy");
+  assert.deepEqual(Object.keys(xy.lifecycle), ["probe", "plan", "invoke", "verify"]);
+  assert.equal(xy.lifecycle.verify.receiptSchema, "design-pipeline.toolchain-receipt.v1");
 });
 
 test("catalog route drift and duplicated ids fail", () => {
@@ -30,4 +33,10 @@ test("unverified entries cannot gain install or companion claims", () => {
   target.support = "companion";
   target.install = "https://example.invalid/install";
   assert.throws(() => validateRegistry(unsafe), /unverified license|install/);
+});
+
+test("adapter lifecycle commands and evidence contracts are strict", () => {
+  const unsafe = structuredClone(registry);
+  unsafe.adapters.find((adapter) => adapter.id === "reflex-xy").lifecycle.probe.command = [];
+  assert.throws(() => validateRegistry(unsafe, catalog), /probe.command/);
 });

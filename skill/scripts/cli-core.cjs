@@ -18,6 +18,8 @@ const { checkScene } = require("./scene-runtime-core.cjs");
 const { checkReferenceEvidence } = require("./reference-evidence-core.cjs");
 const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
+const { checkDirectionPreview } = require("./direction-preview-core.cjs");
+const { checkPlayground } = require("./playground-core.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
@@ -27,7 +29,9 @@ const { evaluateIntake, validateDesignToolReceipt, validateRegistry, validateSty
 const { checkDesignFoundation } = require("./design-synthesis-core.cjs");
 const { checkMotionFoundation } = require("./motion-foundation-core.cjs");
 const {
+  decomposeCapabilities,
   normalizeDesignSystemSnapshot,
+  searchCapabilities,
   searchDesignSystemCatalog,
 } = require("./design-system-catalog-core.cjs");
 const {
@@ -39,6 +43,25 @@ const {
   atomicWriteProviderJson,
   loadProfiles,
 } = require("./design-system-provider-core.cjs");
+const { routeComponents } = require("./component-route-core.cjs");
+const {
+  decomposeComponentBrief,
+  inventoryProjectComponents,
+  bindComponentResolution,
+  decideComponentBindings,
+  probeComponentProviders,
+  resolveComponentCapabilities,
+  validateCapabilityRegistry,
+  validateProviderRegistry,
+  verifyComponentReceipt,
+} = require("./component-capability-core.cjs");
+const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
+const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
+const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
+const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker-core.cjs");
+const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
+const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
+const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
@@ -47,12 +70,12 @@ const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--evidence",
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
-  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--catalog", "--category", "--change-id", "--change-root",
+  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root",
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
-  "--height", "--installed-evidence", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
+  "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
-  "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width",
+  "--outcome", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill", "--state",
+  "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
 ]);
 
 function parseArgs(argv) {
@@ -171,6 +194,38 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
   if (!manifestError) {
     missing.push(...required.filter((resource) => !fs.existsSync(path.join(skillRoot, resource))));
   }
+  let mengto = null;
+  try {
+    mengto = verifyMengToSnapshot(path.join(skillRoot, "references", "mengto-skills", "manifest.json"));
+    if (mengto.status !== "ready") missing.push("references/mengto-skills/upstream/**");
+  } catch (error) {
+    mengto = { status: "blocked", issues: [error.message] };
+    missing.push("references/mengto-skills/manifest.json");
+  }
+  let shadcnio = null;
+  try {
+    shadcnio = verifyShadcnioComponentSnapshot(path.join(skillRoot, "references", "shadcnio-react-components", "manifest.json"));
+    if (shadcnio.status !== "ready") missing.push("references/shadcnio-react-components/upstream/**");
+  } catch (error) {
+    shadcnio = { status: "blocked", issues: [error.message] };
+    missing.push("references/shadcnio-react-components/manifest.json");
+  }
+  let prism = null;
+  try {
+    prism = verifyPrismSnapshot(path.join(skillRoot, "references", "prism-system", "manifest.json"));
+    if (prism.status !== "ready") missing.push("references/prism-system/upstream/**");
+  } catch (error) {
+    prism = { status: "blocked", issues: [error.message] };
+    missing.push("references/prism-system/manifest.json");
+  }
+  let holosticker = null;
+  try {
+    holosticker = verifyHolostickerSnapshot(path.join(skillRoot, "references", "holosticker", "manifest.json"));
+    if (holosticker.status !== "ready") missing.push("references/holosticker/upstream/**");
+  } catch (error) {
+    holosticker = { status: "blocked", issues: [error.message] };
+    missing.push("references/holosticker/manifest.json");
+  }
   const nodeSupported = Number.parseInt(nodeVersion.split(".")[0], 10) >= 22;
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
@@ -189,6 +244,10 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     packageRoot: skillRoot,
     missing,
     ...(manifestError ? { manifestError } : {}),
+    mengto,
+    shadcnio,
+    prism,
+    holosticker,
     registry,
   };
 }
@@ -200,13 +259,16 @@ function publicHelp() {
     "Commands:",
     "  doctor | status",
     "  change init|resume|advance|migrate|repair",
-    "  foundation check | reference check | reconstruction check | scene check",
+    "  foundation check | direction check | playground check | reference check | reconstruction check | scene check",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
     "  verify motion|components",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
-    "  design-system profiles|normalize|acquire|search|project-tokens|decide",
+    "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
+    "  component decompose|providers|resolve|inventory|bind|decide|verify",
+    "  toolchain resolve|probe|receipt-check",
+    "  execution route|prepare|finalize",
     "  benchmark brief|evaluate",
     "  adapter audit|intake|receipt-check | style-signals check",
     "",
@@ -357,6 +419,24 @@ function reconciliationCommand(parsed, root) {
   const result = checkSpecReconciliation(changeRoot, {
     designFile: option(parsed, "--design-file", "design.md"),
     artifact: option(parsed, "--artifact"),
+  });
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
+function directionCommand(parsed, root) {
+  const changeRoot = changeRootFrom(parsed, root);
+  const result = checkDirectionPreview(changeRoot, {
+    artifact: option(parsed, "--artifact"),
+    stage: option(parsed, "--stage", "preview"),
+  });
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
+function playgroundCommand(parsed, root) {
+  const changeRoot = changeRootFrom(parsed, root);
+  const result = checkPlayground(changeRoot, {
+    artifact: option(parsed, "--artifact"),
+    stage: option(parsed, "--stage", "build"),
   });
   return { result, exitCode: result.status === "ready" ? 0 : 2 };
 }
@@ -513,10 +593,32 @@ function bundledDesignSystemCatalog() {
   return normalizeDesignSystemSnapshot(readJson(builtIn("astryx-design-system-snapshot.json"), "bundled Astryx snapshot"));
 }
 
+function bundledComponentSourceCatalog() {
+  return normalizeDesignSystemSnapshot(readJson(builtIn("component-source-catalog.json"), "bundled component source catalog"));
+}
+
+function bundledFrontendStackRegistry() {
+  return validateFrontendStackRegistry(readJson(builtIn("frontend-stack-registry.json"), "frontend stack registry"));
+}
+
+function bundledComponentCapabilityRegistry() {
+  return validateCapabilityRegistry(readJson(builtIn("component-capabilities.json"), "component capability registry"));
+}
+
+function bundledComponentProviderRegistry(capabilities = bundledComponentCapabilityRegistry()) {
+  return validateProviderRegistry(readJson(builtIn("component-providers.json"), "component provider registry"), capabilities);
+}
+
 function designSystemCatalog(parsed, root) {
   if (option(parsed, "--catalog")) return readJson(artifact(parsed, root, "--catalog"), "design system catalog");
   if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "design system snapshot"));
   return bundledDesignSystemCatalog();
+}
+
+function componentSourceCatalog(parsed, root) {
+  if (option(parsed, "--catalog")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--catalog"), "component source catalog"));
+  if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "component source snapshot"));
+  return bundledComponentSourceCatalog();
 }
 
 function writeResult(parsed, root, value) {
@@ -525,7 +627,74 @@ function writeResult(parsed, root, value) {
   return atomicWriteProviderJson(root, output, value);
 }
 
+function toolchainSources() {
+  return {
+    frontendRegistry: bundledFrontendStackRegistry(),
+    skillCatalog: readJson(builtIn("mengto-skills-catalog.json"), "MengTo skill catalog"),
+    adapterRegistry: readJson(builtIn("adapter-registry.json"), "adapter registry"),
+    graphicsCatalog: readJson(builtIn("graphics-runtime-catalog.json"), "graphics catalog"),
+  };
+}
+
+function toolchainCommand(parsed, root, action) {
+  if (["resolve", "probe"].includes(action)) {
+    const request = readJson(artifact(parsed, root, "--artifact"), "toolchain request");
+    const plan = resolveToolchain(request, toolchainSources());
+    const result = action === "probe" ? probeToolchain(plan, { projectRoot: root }) : plan;
+    const output = writeResult(parsed, root, result);
+    return { result: { status: result.status, [action === "probe" ? "probe" : "plan"]: result, ...(output ? { output } : {}) }, exitCode: result.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "receipt-check") {
+    const receiptFile = artifact(parsed, root, "--receipt");
+    const evidenceRoot = contained(root, option(parsed, "--evidence-root", path.dirname(receiptFile)), "--evidence-root");
+    const plan = option(parsed, "--artifact") ? readJson(artifact(parsed, root, "--artifact"), "toolchain plan") : null;
+    const result = validateToolchainReceipt(readJson(receiptFile, "toolchain receipt"), {
+      evidenceRoot,
+      requireFiles: option(parsed, "--require-files") === true,
+      ...(plan ? { plan } : {}),
+    });
+    return { result, exitCode: result.status === "blocked" ? 2 : 0 };
+  }
+  fail("cli", `unknown toolchain action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function executionCommand(parsed, root, action) {
+  if (action === "route") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "execution request");
+    const toolchainPlan = readJson(artifact(parsed, root, "--plan"), "toolchain plan");
+    const plan = resolveExecutionTarget(request, { projectRoot: root, toolchainPlan });
+    const output = writeResult(parsed, root, plan);
+    return { result: { status: plan.status, plan, ...(output ? { output } : {}) }, exitCode: plan.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "prepare") {
+    const plan = readJson(artifact(parsed, root, "--artifact"), "execution plan");
+    const state = prepareExecutionTarget(plan, { projectRoot: root, now: timestamp(parsed) });
+    const output = writeResult(parsed, root, state);
+    return { result: { status: "prepared", state, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "finalize") {
+    const plan = readJson(artifact(parsed, root, "--artifact"), "execution plan");
+    const state = readJson(artifact(parsed, root, "--state"), "execution state");
+    const outcome = readJson(artifact(parsed, root, "--outcome"), "execution outcome");
+    const receipt = finalizeExecutionTarget(plan, state, outcome, { projectRoot: root });
+    const output = writeResult(parsed, root, receipt);
+    return { result: { status: receipt.status, receipt, ...(output ? { output } : {}) }, exitCode: receipt.status === "complete" ? 0 : 2 };
+  }
+  fail("cli", `unknown execution action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
 function designSystemCommand(parsed, root, action) {
+  if (action === "options") {
+    const registry = bundledFrontendStackRegistry();
+    const skillCatalog = readJson(builtIn("mengto-skills-catalog.json"), "MengTo skill catalog");
+    return { result: { status: "valid", registry, counts: { styling: registry.styling.length, uiLibraries: registry.uiLibraries.length, shadcnPresets: Object.keys(registry.shadcn.defaults).length, iconSources: registry.tools.filter((tool) => tool.capabilities.includes("hand-drawn-icons")).length, indexedSkills: skillCatalog.count } }, exitCode: 0 };
+  }
+  if (action === "resolve-stack") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "frontend stack request");
+    const decision = resolveFrontendStack(request, bundledFrontendStackRegistry(), readJson(builtIn("mengto-skills-catalog.json"), "MengTo skill catalog"));
+    const output = writeResult(parsed, root, decision);
+    return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: decision.status === "blocked" ? 2 : 0 };
+  }
   if (action === "profiles") {
     const profiles = loadProfiles();
     return { result: { status: "valid", ...profiles }, exitCode: 0 };
@@ -545,6 +714,33 @@ function designSystemCommand(parsed, root, action) {
       ...(option(parsed, "--limit") ? { limit: numberOption(parsed, "--limit", { max: 1000 }) } : {}),
     });
     return { result: { status: "valid", namespace: catalog.namespace, results }, exitCode: 0 };
+  }
+  if (action === "decompose") {
+    const query = requireOption(parsed, "--query");
+    const catalog = designSystemCatalog(parsed, root);
+    const capabilities = decomposeCapabilities(query, { minScore: numberOption(parsed, "--min-score", { max: 100 }) || 1, allowPartialWords: false });
+    const searchOptions = {
+      ...(option(parsed, "--kind") ? { kind: option(parsed, "--kind") } : {}),
+      ...(option(parsed, "--category") ? { category: option(parsed, "--category") } : {}),
+      ...(option(parsed, "--status") ? { status: option(parsed, "--status") } : {}),
+      ...(option(parsed, "--limit") ? { limit: numberOption(parsed, "--limit", { max: 1000 }) } : {}),
+    };
+    const directResults = searchDesignSystemCatalog(catalog, { query, ...searchOptions });
+    const { capabilityMap, uniqueEntryCount } = searchCapabilities(catalog, capabilities, searchOptions);
+    const inventory = {
+      directQuery: query,
+      directQueryResults: directResults.length,
+      searchedCapabilities: capabilities,
+      capabilityResults: Object.fromEntries(Object.entries(capabilityMap).map(([id, value]) => [id, { terms: value.terms, count: value.count, matchedIds: value.entries.slice(0, 50).map((entry) => entry.id) }])),
+      zeroResultInconclusive: directResults.length === 0 && uniqueEntryCount > 0,
+    };
+    const output = writeResult(parsed, root, inventory);
+    return { result: { status: "valid", inventory, totalUniqueEntries: uniqueEntryCount, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "route") {
+    const result = routeComponents({ catalog: componentSourceCatalog(parsed, root), brief: requireOption(parsed, "--query"), platform: option(parsed, "--platform", "web") });
+    const output = writeResult(parsed, root, result);
+    return { result: { ...result, ...(output ? { output } : {}) }, exitCode: result.status === "blocked" ? 2 : 0 };
   }
   if (action === "acquire") {
     const outputRoot = artifact(parsed, root, "--output-root", null, false);
@@ -568,6 +764,13 @@ function designSystemCommand(parsed, root, action) {
   }
   if (action === "decide") {
     const request = readJson(artifact(parsed, root, "--artifact"), "design system decision request");
+    for (const [pathField, valueField, label] of [["frontendStackDecisionPath", "frontendStackDecision", "frontend stack decision"], ["capabilityInventoryPath", "capabilityInventory", "capability inventory"]]) {
+      if (request[pathField] !== undefined) {
+        if (request[valueField] !== undefined || typeof request[pathField] !== "string") fail("cli", `${pathField} must be the only source for ${valueField}`);
+        request[valueField] = readJson(contained(root, request[pathField], pathField), label);
+        delete request[pathField];
+      }
+    }
     if (!request.catalog) request.catalog = designSystemCatalog(parsed, root);
     if (option(parsed, "--allow-canary") === true) request.allowCanary = true;
     const decision = decideDesignSystem(request);
@@ -575,6 +778,54 @@ function designSystemCommand(parsed, root, action) {
     return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: decision.status === "blocked" ? 2 : 0 };
   }
   fail("cli", `unknown design-system action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function componentCommand(parsed, root, action) {
+  const capabilities = bundledComponentCapabilityRegistry();
+  const providers = bundledComponentProviderRegistry(capabilities);
+  if (action === "decompose") {
+    const inventory = decomposeComponentBrief(requireOption(parsed, "--query"), capabilities);
+    const output = writeResult(parsed, root, inventory);
+    return { result: { status: inventory.status, inventory, ...(output ? { output } : {}) }, exitCode: inventory.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "providers") {
+    const probe = probeComponentProviders(root, providers, capabilities, option(parsed, "--framework", "agnostic"));
+    const output = writeResult(parsed, root, probe);
+    return { result: { status: probe.status, probe, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "inventory") {
+    const inventory = inventoryProjectComponents(root, option(parsed, "--framework", "agnostic"));
+    const output = writeResult(parsed, root, inventory);
+    return { result: { status: inventory.status, inventory, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "resolve") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "component resolution request");
+    const resolution = resolveComponentCapabilities(request, root, capabilities, providers);
+    const output = writeResult(parsed, root, resolution);
+    return { result: { status: resolution.status, resolution, ...(output ? { output } : {}) }, exitCode: resolution.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "verify") {
+    const resolution = readJson(artifact(parsed, root, "--artifact"), "component resolution");
+    const receipt = readJson(artifact(parsed, root, "--receipt"), "component verification receipt");
+    const verification = verifyComponentReceipt(resolution, receipt);
+    const output = writeResult(parsed, root, verification);
+    return { result: { status: verification.status, verification, ...(output ? { output } : {}) }, exitCode: verification.status === "verified" ? 0 : 2 };
+  }
+  if (action === "bind") {
+    const resolution = readJson(artifact(parsed, root, "--artifact"), "component resolution");
+    const inventory = readJson(artifact(parsed, root, "--inventory"), "component inventory");
+    const plan = bindComponentResolution(resolution, inventory, providers);
+    const output = writeResult(parsed, root, plan);
+    return { result: { status: plan.status, plan, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "decide") {
+    const plan = readJson(artifact(parsed, root, "--artifact"), "component binding plan");
+    const inventory = readJson(artifact(parsed, root, "--inventory"), "component inventory");
+    const decision = decideComponentBindings(plan, inventory);
+    const output = writeResult(parsed, root, decision);
+    return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  fail("cli", `unknown component action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
 function adapterCommand(parsed, root, action) {
@@ -592,6 +843,78 @@ function adapterCommand(parsed, root, action) {
     return { result, exitCode: result.status === "admissible" ? 0 : 2 };
   }
   fail("cli", `unknown adapter action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function mengToCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchMengToSkills({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 5),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyMengToSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown mengto action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function shadcnioCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchShadcnioComponents({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 10),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyShadcnioComponentSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown shadcnio action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function prismCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchPrismSkills({
+        query: requireOption(parsed, "--query"),
+        category: option(parsed, "--category"),
+        limit: option(parsed, "--limit", 5),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "route") {
+    const result = routePrismRequest({ query: requireOption(parsed, "--query") });
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  if (action === "verify") {
+    const result = verifyPrismSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown prism action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function holostickerCommand(parsed, action) {
+  if (action === "inspect") {
+    return {
+      result: inspectHolosticker({ capability: option(parsed, "--capability") }),
+      exitCode: 0,
+    };
+  }
+  if (action === "verify") {
+    const result = verifyHolostickerSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown holosticker action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
 function doctorCommand({ root }) {
@@ -652,8 +975,17 @@ const COMMANDS = {
   verify: { run: ({ parsed, root, action }) => verifyCommand(parsed, root, action) },
   patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
+  component: { run: ({ parsed, root, action }) => componentCommand(parsed, root, action) },
+  mengto: { run: ({ parsed, action }) => mengToCommand(parsed, action) },
+  shadcnio: { run: ({ parsed, action }) => shadcnioCommand(parsed, action) },
+  prism: { run: ({ parsed, action }) => prismCommand(parsed, action) },
+  holosticker: { run: ({ parsed, action }) => holostickerCommand(parsed, action) },
+  toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
+  execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
+  direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },
+  playground: { actions: { check: { run: ({ parsed, root }) => playgroundCommand(parsed, root) } } },
   reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
   reference: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   reconstruction: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },

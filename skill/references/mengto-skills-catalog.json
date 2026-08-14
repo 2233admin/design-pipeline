@@ -1,0 +1,21 @@
+{
+  "schema": "design-pipeline.skill-catalog.v1",
+  "source": "https://github.com/MengTo/skills",
+  "revision": "3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+  "license": "MIT",
+  "count": 127,
+  "categories": {
+    "codex": ["article-prompts-to-skills", "audit-reference-originality", "audit-verify-explain-grade-5", "browser-video-recording", "build-daily-inspiration-sites", "daily-ui-inspiration-capture", "elevenlabs-tts", "generate-reference-inspired-brand-worlds", "html-to-interaction-prompts", "implement-fog-of-war", "iterate-until-verified", "optimize-web-animations", "performance-profiling", "publish-project-to-github", "stitched-full-page-capture", "video-to-superprompt", "web-technique-to-skill", "write-like-meng-on-x", "x-bookmark-quote-posts"],
+    "game-development": ["author-game-levels", "build-game-audio-feedback", "build-game-camera-controls", "build-game-changelog", "build-game-inventory", "build-game-map-editor", "build-game-monster-system", "build-hybrid-game-assets", "build-isometric-arpg", "build-mobile-threejs-games", "build-rigged-game-assets", "build-threejs-enemy-systems", "build-vesperfall-review-assets", "create-game-vfx", "design-action-combat", "design-game-encounters", "optimize-threejs-games", "ship-web-games", "test-playable-web-games", "tune-enemy-ai"],
+    "media": ["aura-asset-images", "unsplash-asset-images"],
+    "ui": ["design-first-ui-prompting"],
+    "web-design": ["add-shader-cursor-trail", "agency-grid-layout-minimal", "ambient-section-particles", "animation-on-scroll", "animation-systems", "atmosphere-background", "background-grid-webgl", "beam-glow-states", "beautiful-shadows", "blue-cloudy-clean-modern", "blue-laser-clean-glass-layout", "book-serif-index", "bright-green-tech-system-webgl", "build-awwwards-quality-sites", "build-threejs-scroll-worlds", "cinematic-gsap-lenis-motion-system", "cinematic-scroll-storytelling", "clean-minimal-beige-light-mode", "cobejs", "company-logos", "container-lines", "corner-diagonals", "corner-lasers", "css-alpha-masking", "css-border-gradient", "dark-blue-contrasting-clean", "dark-glass-clean-layout", "dither-background", "dither-laser-dark-mode", "documentary-brutalist-agency", "editorial-portfolio-chapters", "editorial-service-booking", "editorial-tech", "falling-leaves", "framed-grid-layout", "framed-tech-dark-border-gradient", "funky-purple-container-tech", "glass-dark-mode-clock", "glass-dark-ui", "globe-gl", "globe-particles", "gooey-blob-system", "gsap", "gsap-scrolltrigger-storytelling", "high-contrast-skeuomorphic-clean", "image-first-grid-layout", "landing-page", "light-mode-paper-technical", "liquid-metal-border", "marquee-loop", "masked-reveal", "matterjs", "mesh-gradient-dark-blue-clean", "nested-container-clean-agency", "nested-container-frames", "number-details", "operational-enterprise-ai", "orange-clean-paper-saas", "pointer-trail-emitter", "pricing-page", "product-proof-saas", "progressive-blur", "reveal-hover-effect", "scroll-progress-timeline", "scroll-scrubbed-visual-sequence", "scroll-scrubbed-word-reveal", "scroll-world-storytelling", "shaders-cursor-ripples", "skeuomorphic-ui", "solar-duotone-bold", "split-layout-technical", "staggered-word-reveal", "tailwindcss", "tech-green-dark-mode-modern", "technical-wireframe-info-layout", "thinking-orbs", "threejs", "threejs-landscape", "threejs-towers", "threejs-weather", "unicorn-studio", "vantajs", "webgl-3d-object", "webgl-landing-steering", "webgl-laser"]
+  },
+  "routes": {
+    "website-cloning": ["html-to-interaction-prompts", "stitched-full-page-capture", "audit-reference-originality", "iterate-until-verified"],
+    "interaction-extraction": ["html-to-interaction-prompts", "animation-systems", "optimize-web-animations"],
+    "tailwindcss": ["tailwindcss"],
+    "visual-style": ["design-first-ui-prompting", "build-awwwards-quality-sites"],
+    "verification": ["iterate-until-verified", "audit-verify-explain-grade-5"]
+  }
+}

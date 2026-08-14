@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const {
   assertEnum,
+  pngDimensions,
   readJson,
   resolveInside,
   sha256,
@@ -31,7 +32,6 @@ const SOURCE_AVAILABILITY = ["resolved", "pending"];
 // a signature the gate cannot pull pixel dimensions out of would put it back to trusting the file
 // extension, which is the defect this check exists to close.
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-const PNG_IHDR_PAYLOAD_BYTES = 13;
 // Signature (8) + IHDR chunk length (4) + chunk type (4) + width (4) + height (4).
 const PNG_HEADER_BYTES = 24;
 
@@ -191,19 +191,6 @@ function readRasterHeader(file) {
   } finally {
     fs.closeSync(handle);
   }
-}
-
-// `null` means the bytes carry the signature but not a header this gate can read a size out of -
-// truncated before IHDR, a first chunk that is not IHDR, an IHDR of the wrong length, or a zero
-// dimension. All of them are one fact: the file says PNG and cannot say how big it is.
-function pngDimensions(header) {
-  if (header.length < PNG_HEADER_BYTES) return null;
-  if (header.readUInt32BE(8) !== PNG_IHDR_PAYLOAD_BYTES) return null;
-  if (header.subarray(12, 16).toString("latin1") !== "IHDR") return null;
-  const width = header.readUInt32BE(16);
-  const height = header.readUInt32BE(20);
-  if (width < 1 || height < 1) return null;
-  return { width, height };
 }
 
 function rasterFault(reason, blocker) {

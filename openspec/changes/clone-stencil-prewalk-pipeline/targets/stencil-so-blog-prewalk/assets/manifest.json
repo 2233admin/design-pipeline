@@ -1,0 +1,161 @@
+{
+  "schema": "design-pipeline.website-cloning.assets.v1",
+  "targetId": "stencil-so-blog-prewalk",
+  "policy": "Local evaluation copy requested by the user; not published. Upstream ownership and licensing remain with Stencil and the respective font authors.",
+  "assets": [
+    {
+      "sourceUrl": "https://stencil.so/fonts/InstrumentSans.woff2",
+      "destination": "experiments/prewalk-pipeline/assets/vendor/0-InstrumentSans.woff2",
+      "type": "font",
+      "bytes": 30092,
+      "sha256": "2ee17598a98d8a59e4df8152d015bec9ab8e4d5672cc0ab42bef806b568e3971"
+    },
+    {
+      "sourceUrl": "https://stencil.so/fonts/Inter.woff2",
+      "destination": "experiments/prewalk-pipeline/assets/vendor/1-Inter.woff2",
+      "type": "font",
+      "bytes": 55488,
+      "sha256": "71d03efd642950bca9d4591e463f46b4c3d17fe08925a93245b316b7931b1db8"
+    },
+    {
+      "sourceUrl": "https://stencil.so/fonts/BerkeleyMono-Regular.woff2",
+      "destination": "experiments/prewalk-pipeline/assets/vendor/2-BerkeleyMono-Regular.woff2",
+      "type": "font",
+      "bytes": 32824,
+      "sha256": "883cd3ca82d0fb8251f3e1d78c6eebc311fa88231f22d43e19945c3fb6844115"
+    },
+    {
+      "sourceUrl": "https://stencil.so/fonts/BerkeleyMono-Medium.woff2",
+      "destination": "experiments/prewalk-pipeline/assets/vendor/3-BerkeleyMono-Medium.woff2",
+      "type": "font",
+      "bytes": 33496,
+      "sha256": "3d889002a0a079ceaa6a88b06f3e50fb2c2c8cd51ddbf5bece5626361d1dd760"
+    },
+    {
+      "sourceUrl": "https://stencil.so/fonts/Twemoji.woff2",
+      "destination": "experiments/prewalk-pipeline/assets/vendor/4-Twemoji.woff2",
+      "type": "font",
+      "bytes": 3392,
+      "sha256": "f9d4e13d59af9aaf3a35881eeeed4f98b97d78dff7e5e9577aca56195d3fbb90"
+    },
+    {
+      "sourceUrl": "https://stencil.so/_build/assets/client-C65yZmsU.css",
+      "destination": "experiments/prewalk-pipeline/assets/client.css",
+      "type": "stylesheet",
+      "bytes": 34687,
+      "sha256": "a1ebc1aba2c472ee5129cd538c18bd81214d9ab260bc13a3eb3ee8e55e915317"
+    },
+    {
+      "sourceUrl": "https://stencil.so/_build/assets/styles-CkpDw653.css",
+      "destination": "experiments/prewalk-pipeline/assets/styles.css",
+      "type": "stylesheet",
+      "bytes": 10160,
+      "sha256": "e6ef1c035f605f95ad8783364de362414a4a0f7b079d782a8458c49bc4e60a7a"
+    },
+    {
+      "sourceUrl": "https://stencil.so/_build/assets/dither-limb-BeAgeYtb.png",
+      "destination": "experiments/prewalk-pipeline/assets/vendor/0-dither-limb-BeAgeYtb.png",
+      "type": "stylesheet-image",
+      "bytes": 23621,
+      "sha256": "46078ae0ec2793bb1de089ab57cf4360a7cc48cb8f63070263ecb490241d1c6a"
+    },
+    {
+      "sourceUrl": "https://stencil.so/authors/can.webp",
+      "destination": "experiments/prewalk-pipeline/assets/can.webp",
+      "type": "author-image",
+      "bytes": 1970,
+      "sha256": "eca947a7bdccbdf3ed66618b5cbd86a95b1f862bdca4e25d5c96ddf6c02c1130"
+    },
+    {
+      "sourceUrl": "https://stencil.so/og/prewalk.png",
+      "destination": "experiments/prewalk-pipeline/assets/og-prewalk.png",
+      "type": "share-preview-image",
+      "bytes": 49333,
+      "sha256": "035332cf97fc04094463a7b14f746a63f019d2224ec40b2093b6738d0a173a61"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-1440x900-0.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-1440x900-0.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 312,
+      "sha256": "7907f28d2cd359a6b73629214420be96ed11e1b22f557d1c3c22c927c690ecde"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-1440x900-1.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-1440x900-1.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 40625,
+      "sha256": "fca92cfa2f5ebfe53861f1a8e686d98607b6ee66c23e8715d5d900c8446a1580"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-1440x900-2.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-1440x900-2.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 23497,
+      "sha256": "173c348f6bbfcb612d0478f162ba755ac4ca7d97a0e4345466bbe088d7e9e281"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-1440x900-3.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-1440x900-3.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 18871,
+      "sha256": "3e46542d2bd401bebb82aa2a56a52d660290a19fa71db39ed313caf890fb5957"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-768x1024-0.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-768x1024-0.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 312,
+      "sha256": "7907f28d2cd359a6b73629214420be96ed11e1b22f557d1c3c22c927c690ecde"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-768x1024-1.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-768x1024-1.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 39087,
+      "sha256": "f86ab7668ee69d842cb7e28d2efcd94301d06cbac4d94a123f528f0ca2b6eaf9"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-768x1024-2.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-768x1024-2.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 23775,
+      "sha256": "c261cdfbde6379f0b2f8637d6d9f4efc16b2aaeaf5dba3cb3ac80a25e63569df"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-768x1024-3.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-768x1024-3.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 17990,
+      "sha256": "f13c6be5959692bb8a3f47f03d4f6dc1ea0dc7d70277a47f5f49985846252c38"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-390x844-0.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-390x844-0.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 312,
+      "sha256": "7907f28d2cd359a6b73629214420be96ed11e1b22f557d1c3c22c927c690ecde"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-390x844-1.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-390x844-1.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 30400,
+      "sha256": "63645f2d7eb329641d31738772f6da30846b72e42fa376bdf0b089d311eb7a34"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-390x844-2.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-390x844-2.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 15150,
+      "sha256": "4830952d86e4ad590177479b669102c9db339247eb7aa9b1123d9cd7f85271c4"
+    },
+    {
+      "sourceUrl": "verification-4/reference/canvas-390x844-3.png",
+      "destination": "experiments/prewalk-pipeline/assets/canvas-390x844-3.png",
+      "type": "captured-noninteractive-canvas",
+      "bytes": 13184,
+      "sha256": "89a214e5dd3e88bc6bf0665da372d19cb402df5d04dd5bc268505270156fa811"
+    }
+  ]
+}

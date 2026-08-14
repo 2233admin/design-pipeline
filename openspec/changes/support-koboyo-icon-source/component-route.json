@@ -1,0 +1,74 @@
+{
+  "capabilities": [
+    "app-ui"
+  ],
+  "platform": "web",
+  "query": "Application UI using explicit Koboyo hand-drawn icons",
+  "routes": [
+    {
+      "alternatives": [
+        {
+          "capabilities": [
+            "animated-background",
+            "animated-ui",
+            "app-ui",
+            "dither-background",
+            "hero",
+            "interactive-card",
+            "navigation",
+            "page-block",
+            "shader-background"
+          ],
+          "fallback": "Keep project-owned components and adapt only the routed technique.",
+          "id": "frontend-component-sources:component:mengto/reference-techniques",
+          "license": "MIT",
+          "matchedCapability": "app-ui",
+          "mode": "reference-adaptation",
+          "name": "MengTo skill techniques",
+          "platforms": [
+            "web"
+          ],
+          "source": "MengTo/skills",
+          "status": "review"
+        }
+      ],
+      "capability": "app-ui",
+      "rationale": "Design Pipeline project-owned patterns is the strongest recorded web route.",
+      "selected": {
+        "capabilities": [
+          "app-shell",
+          "app-ui",
+          "button",
+          "card",
+          "cta",
+          "data-table",
+          "dialog",
+          "faq",
+          "features",
+          "hero",
+          "navigation",
+          "page-block",
+          "pricing",
+          "stats",
+          "tabs",
+          "text-input"
+        ],
+        "fallback": "Use semantic DOM, project tokens, and current dependencies.",
+        "id": "frontend-component-sources:component:project/app-ui",
+        "license": "project",
+        "matchedCapability": "app-ui",
+        "mode": "project-owned",
+        "name": "Project-owned app UI",
+        "platforms": [
+          "web"
+        ],
+        "source": "Design Pipeline project-owned patterns",
+        "status": "ready"
+      },
+      "status": "ready"
+    }
+  ],
+  "schema": "design-pipeline.component-route.v1",
+  "status": "ready",
+  "unavailable": []
+}

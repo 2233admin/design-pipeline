@@ -1,0 +1,8 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "internalize-frontend-stack-tool-routing",
+  "applicability": { "status": "waived", "reason": "non-visual" },
+  "comparison": null,
+  "directions": [],
+  "decision": { "status": "waived", "selectedDirectionId": null, "rationale": "This change adds pipeline registries, routing, and validation without changing a product interface." }
+}

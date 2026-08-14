@@ -1,0 +1,8 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "support-koboyo-icon-source",
+  "applicability": { "status": "waived", "reason": "non-visual" },
+  "comparison": null,
+  "directions": [],
+  "decision": { "status": "waived", "selectedDirectionId": null, "rationale": "This change adds governed asset-source routing without changing a product interface." }
+}

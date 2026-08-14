@@ -1,0 +1,16 @@
+{
+  "schema": "prewalk.implementation-authority.v1",
+  "authorityTargetId": "stencil-so-blog-prewalk",
+  "capturedAt": "2026-08-12T19:17:10.786Z",
+  "environment": "actual-browser",
+  "browser": "Chromium 151.0.7922.34",
+  "implementation": "experiments/prewalk-pipeline/index.html",
+  "protectedInvariants": {
+    "component topology": "All twelve regions retain source order and every measured landmark has 0px layout delta.",
+    "responsive behavior": "Desktop, tablet and intentional 724px mobile document width match the authority.",
+    "interaction behavior": "All eight interactive elements match; hover/focus were exercised and copy wrote the canonical URL in both renders.",
+    "no runtime dependency on stencil.so CSS or page embedding": "Styles, fonts, images and canvas frames are local; forbidden runtime-source audit returned zero matches."
+  },
+  "allowedDifferences": [],
+  "comparison": "verification-final/comparison.json"
+}

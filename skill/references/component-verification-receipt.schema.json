@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/component-verification-receipt.v1.json",
+  "title": "Component Behavior Verification Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "resolutionHash", "checks"],
+  "properties": {
+    "schema": { "const": "design-pipeline.component-verification-receipt.v1" },
+    "resolutionHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status", "evidence"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["pass", "fail", "missing"] },
+          "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    }
+  }
+}

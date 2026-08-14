@@ -13,6 +13,26 @@ const SUPPORT = ["native", "generic-workflow", "companion", "reference-only", "u
 const AVAILABILITY = ["available", "unavailable", "blocked", "unknown"];
 const FAMILIES = ["semantic-ui", "vector-data", "canvas-editor-2d", "scene-renderer-2d", "game-engine-2d", "fixed-camera-cinematic-3d", "scene-renderer-3d", "game-engine-3d", "geospatial-3d", "gpu-shader", "narrative-game-ui", "design-tool"];
 
+function validateLifecycle(adapter) {
+  if (adapter.lifecycle === undefined) return;
+  assertKeys(adapter.lifecycle, ["probe", "plan", "invoke", "verify"], ["probe", "plan", "invoke", "verify"], `${adapter.id}.lifecycle`, "adapter registry");
+  const { probe, plan, invoke, verify } = adapter.lifecycle;
+  assertKeys(probe, ["kind", "command", "timeoutMs"], ["kind", "command", "timeoutMs"], `${adapter.id}.lifecycle.probe`, "adapter registry");
+  assertEnum(probe.kind, ["command"], `${adapter.id}.lifecycle.probe.kind`, "adapter registry");
+  assertStringArray(probe.command, `${adapter.id}.lifecycle.probe.command`, "adapter registry", { min: 1 });
+  if (!Number.isInteger(probe.timeoutMs) || probe.timeoutMs < 100 || probe.timeoutMs > 30000) fail("adapter registry", `${adapter.id}.lifecycle.probe.timeoutMs must be 100..30000`);
+  assertKeys(plan, ["guide", "dependencies", "requirements"], ["guide", "dependencies", "requirements"], `${adapter.id}.lifecycle.plan`, "adapter registry");
+  assertString(plan.guide, `${adapter.id}.lifecycle.plan.guide`, "adapter registry");
+  assertStringArray(plan.dependencies, `${adapter.id}.lifecycle.plan.dependencies`, "adapter registry");
+  assertStringArray(plan.requirements, `${adapter.id}.lifecycle.plan.requirements`, "adapter registry");
+  assertKeys(invoke, ["kind", "owner", "entrypoint", "command"], ["kind", "owner", "entrypoint", "command"], `${adapter.id}.lifecycle.invoke`, "adapter registry");
+  for (const key of ["kind", "owner", "entrypoint"]) assertString(invoke[key], `${adapter.id}.lifecycle.invoke.${key}`, "adapter registry");
+  assertStringArray(invoke.command, `${adapter.id}.lifecycle.invoke.command`, "adapter registry", { min: 1 });
+  assertKeys(verify, ["receiptSchema", "evidenceTypes"], ["receiptSchema", "evidenceTypes"], `${adapter.id}.lifecycle.verify`, "adapter registry");
+  assertString(verify.receiptSchema, `${adapter.id}.lifecycle.verify.receiptSchema`, "adapter registry");
+  assertStringArray(verify.evidenceTypes, `${adapter.id}.lifecycle.verify.evidenceTypes`, "adapter registry", { min: 1, unique: true });
+}
+
 function validateRegistry(registry, graphicsCatalog = null) {
   assertKeys(registry, ["schema", "version", "adapters"], ["schema", "version", "adapters"], "registry", "adapter registry");
   if (registry.schema !== "design-pipeline.adapter-registry.v1") fail("adapter registry", "unsupported schema");
@@ -21,7 +41,7 @@ function validateRegistry(registry, graphicsCatalog = null) {
   const ids = new Set();
   for (const adapter of registry.adapters) {
     const required = ["id", "family", "support", "kind", "hostPolicy", "versionRange", "provenance", "license", "security", "evidenceTypes", "degradation", "benchmarkAdmission"];
-    assertKeys(adapter, required, [...required, "install"], `adapter ${adapter.id || "<unknown>"}`, "adapter registry");
+    assertKeys(adapter, required, [...required, "install", "lifecycle"], `adapter ${adapter.id || "<unknown>"}`, "adapter registry");
     assertString(adapter.id, "adapter.id", "adapter registry");
     if (ids.has(adapter.id)) fail("adapter registry", `duplicate adapter ${adapter.id}`);
     ids.add(adapter.id);
@@ -40,6 +60,7 @@ function validateRegistry(registry, graphicsCatalog = null) {
     assertStringArray(adapter.evidenceTypes, `${adapter.id}.evidenceTypes`, "adapter registry", { min: 1, unique: true });
     assertString(adapter.degradation, `${adapter.id}.degradation`, "adapter registry");
     assertEnum(adapter.benchmarkAdmission, ["required", "optional", "blocked"], `${adapter.id}.benchmarkAdmission`, "adapter registry");
+    validateLifecycle(adapter);
     if (adapter.license.state === "unverified" && ["native", "companion"].includes(adapter.support)) fail("adapter registry", `${adapter.id} cannot claim ${adapter.support} with an unverified license`);
     if (adapter.install && !(adapter.support === "companion" && adapter.license.state === "verified")) fail("adapter registry", `${adapter.id} install is allowed only for verified companions`);
     if (adapter.benchmarkAdmission === "blocked" && ["native", "companion"].includes(adapter.support)) fail("adapter registry", `${adapter.id} blocked admission contradicts ${adapter.support} support`);

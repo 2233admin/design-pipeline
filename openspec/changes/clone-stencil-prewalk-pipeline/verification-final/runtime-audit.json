@@ -1,0 +1,28 @@
+{
+  "schema": "prewalk.pipeline.runtime-audit.v1",
+  "capturedAt": "2026-08-12T19:30:32.667Z",
+  "url": "file:///D:/projects/design-pipeline/experiments/prewalk-pipeline/index.html",
+  "browser": "playwright-chromium",
+  "consoleErrors": [],
+  "requestFailures": [],
+  "tabOrder": [
+    { "tag": "a", "name": "Stencil" },
+    { "tag": "a", "name": "Blog" },
+    { "tag": "a", "name": "Share on X" },
+    { "tag": "a", "name": "Share on Hacker News" },
+    { "tag": "a", "name": "Share on Bluesky" },
+    { "tag": "button", "name": "Copy link" },
+    { "tag": "a", "name": "snapcompact" },
+    { "tag": "a", "name": "ribbons from our django-13279 test ride" }
+  ],
+  "reducedMotion": {
+    "activeAnimations": 0,
+    "nonZeroAnimationDurations": 0,
+    "nonZeroTransitionDurations": 0
+  },
+  "responsive": [
+    { "width": 1440, "height": 900, "scrollWidth": 1425, "scrollHeight": 9368 },
+    { "width": 768, "height": 1024, "scrollWidth": 766, "scrollHeight": 9574 },
+    { "width": 390, "height": 844, "scrollWidth": 720, "scrollHeight": 13207 }
+  ]
+}

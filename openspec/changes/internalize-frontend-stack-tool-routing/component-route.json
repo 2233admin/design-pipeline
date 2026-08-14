@@ -1,0 +1,282 @@
+{
+  "capabilities": [
+    "app-shell",
+    "data-table",
+    "animated-ui",
+    "dialog",
+    "hero",
+    "page-block"
+  ],
+  "platform": "web",
+  "query": "app shell dialog data table landing page hero animated UI",
+  "routes": [
+    {
+      "alternatives": [],
+      "capability": "app-shell",
+      "rationale": "Design Pipeline project-owned patterns is the strongest recorded web route.",
+      "selected": {
+        "capabilities": [
+          "app-shell",
+          "app-ui",
+          "button",
+          "card",
+          "cta",
+          "data-table",
+          "dialog",
+          "faq",
+          "features",
+          "hero",
+          "navigation",
+          "page-block",
+          "pricing",
+          "stats",
+          "tabs",
+          "text-input"
+        ],
+        "fallback": "Use semantic DOM, project tokens, and current dependencies.",
+        "id": "frontend-component-sources:component:project/app-ui",
+        "license": "project",
+        "matchedCapability": "app-shell",
+        "mode": "project-owned",
+        "name": "Project-owned app UI",
+        "platforms": [
+          "web"
+        ],
+        "source": "Design Pipeline project-owned patterns",
+        "status": "ready"
+      },
+      "status": "ready"
+    },
+    {
+      "alternatives": [],
+      "capability": "data-table",
+      "rationale": "Design Pipeline project-owned patterns is the strongest recorded web route.",
+      "selected": {
+        "capabilities": [
+          "app-shell",
+          "app-ui",
+          "button",
+          "card",
+          "cta",
+          "data-table",
+          "dialog",
+          "faq",
+          "features",
+          "hero",
+          "navigation",
+          "page-block",
+          "pricing",
+          "stats",
+          "tabs",
+          "text-input"
+        ],
+        "fallback": "Use semantic DOM, project tokens, and current dependencies.",
+        "id": "frontend-component-sources:component:project/app-ui",
+        "license": "project",
+        "matchedCapability": "data-table",
+        "mode": "project-owned",
+        "name": "Project-owned app UI",
+        "platforms": [
+          "web"
+        ],
+        "source": "Design Pipeline project-owned patterns",
+        "status": "ready"
+      },
+      "status": "ready"
+    },
+    {
+      "alternatives": [],
+      "capability": "animated-ui",
+      "rationale": "MengTo/skills is the strongest recorded web route.",
+      "selected": {
+        "capabilities": [
+          "animated-background",
+          "animated-ui",
+          "app-ui",
+          "dither-background",
+          "hero",
+          "interactive-card",
+          "navigation",
+          "page-block",
+          "shader-background"
+        ],
+        "fallback": "Keep project-owned components and adapt only the routed technique.",
+        "id": "frontend-component-sources:component:mengto/reference-techniques",
+        "license": "MIT",
+        "matchedCapability": "animated-ui",
+        "mode": "reference-adaptation",
+        "name": "MengTo skill techniques",
+        "platforms": [
+          "web"
+        ],
+        "source": "MengTo/skills",
+        "status": "review"
+      },
+      "status": "review"
+    },
+    {
+      "alternatives": [],
+      "capability": "dialog",
+      "rationale": "Design Pipeline project-owned patterns is the strongest recorded web route.",
+      "selected": {
+        "capabilities": [
+          "app-shell",
+          "app-ui",
+          "button",
+          "card",
+          "cta",
+          "data-table",
+          "dialog",
+          "faq",
+          "features",
+          "hero",
+          "navigation",
+          "page-block",
+          "pricing",
+          "stats",
+          "tabs",
+          "text-input"
+        ],
+        "fallback": "Use semantic DOM, project tokens, and current dependencies.",
+        "id": "frontend-component-sources:component:project/app-ui",
+        "license": "project",
+        "matchedCapability": "dialog",
+        "mode": "project-owned",
+        "name": "Project-owned app UI",
+        "platforms": [
+          "web"
+        ],
+        "source": "Design Pipeline project-owned patterns",
+        "status": "ready"
+      },
+      "status": "ready"
+    },
+    {
+      "alternatives": [
+        {
+          "capabilities": [
+            "animated-background",
+            "animated-ui",
+            "app-ui",
+            "dither-background",
+            "hero",
+            "interactive-card",
+            "navigation",
+            "page-block",
+            "shader-background"
+          ],
+          "fallback": "Keep project-owned components and adapt only the routed technique.",
+          "id": "frontend-component-sources:component:mengto/reference-techniques",
+          "license": "MIT",
+          "matchedCapability": "hero",
+          "mode": "reference-adaptation",
+          "name": "MengTo skill techniques",
+          "platforms": [
+            "web"
+          ],
+          "source": "MengTo/skills",
+          "status": "review"
+        }
+      ],
+      "capability": "hero",
+      "rationale": "Design Pipeline project-owned patterns is the strongest recorded web route.",
+      "selected": {
+        "capabilities": [
+          "app-shell",
+          "app-ui",
+          "button",
+          "card",
+          "cta",
+          "data-table",
+          "dialog",
+          "faq",
+          "features",
+          "hero",
+          "navigation",
+          "page-block",
+          "pricing",
+          "stats",
+          "tabs",
+          "text-input"
+        ],
+        "fallback": "Use semantic DOM, project tokens, and current dependencies.",
+        "id": "frontend-component-sources:component:project/app-ui",
+        "license": "project",
+        "matchedCapability": "hero",
+        "mode": "project-owned",
+        "name": "Project-owned app UI",
+        "platforms": [
+          "web"
+        ],
+        "source": "Design Pipeline project-owned patterns",
+        "status": "ready"
+      },
+      "status": "ready"
+    },
+    {
+      "alternatives": [
+        {
+          "capabilities": [
+            "animated-background",
+            "animated-ui",
+            "app-ui",
+            "dither-background",
+            "hero",
+            "interactive-card",
+            "navigation",
+            "page-block",
+            "shader-background"
+          ],
+          "fallback": "Keep project-owned components and adapt only the routed technique.",
+          "id": "frontend-component-sources:component:mengto/reference-techniques",
+          "license": "MIT",
+          "matchedCapability": "page-block",
+          "mode": "reference-adaptation",
+          "name": "MengTo skill techniques",
+          "platforms": [
+            "web"
+          ],
+          "source": "MengTo/skills",
+          "status": "review"
+        }
+      ],
+      "capability": "page-block",
+      "rationale": "Design Pipeline project-owned patterns is the strongest recorded web route.",
+      "selected": {
+        "capabilities": [
+          "app-shell",
+          "app-ui",
+          "button",
+          "card",
+          "cta",
+          "data-table",
+          "dialog",
+          "faq",
+          "features",
+          "hero",
+          "navigation",
+          "page-block",
+          "pricing",
+          "stats",
+          "tabs",
+          "text-input"
+        ],
+        "fallback": "Use semantic DOM, project tokens, and current dependencies.",
+        "id": "frontend-component-sources:component:project/app-ui",
+        "license": "project",
+        "matchedCapability": "page-block",
+        "mode": "project-owned",
+        "name": "Project-owned app UI",
+        "platforms": [
+          "web"
+        ],
+        "source": "Design Pipeline project-owned patterns",
+        "status": "ready"
+      },
+      "status": "ready"
+    }
+  ],
+  "schema": "design-pipeline.component-route.v1",
+  "status": "review",
+  "unavailable": []
+}
