@@ -19,6 +19,7 @@ const { checkReferenceEvidence } = require("./reference-evidence-core.cjs");
 const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
+const { checkPlayground } = require("./playground-core.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
@@ -43,6 +44,17 @@ const {
   loadProfiles,
 } = require("./design-system-provider-core.cjs");
 const { routeComponents } = require("./component-route-core.cjs");
+const {
+  decomposeComponentBrief,
+  inventoryProjectComponents,
+  bindComponentResolution,
+  decideComponentBindings,
+  probeComponentProviders,
+  resolveComponentCapabilities,
+  validateCapabilityRegistry,
+  validateProviderRegistry,
+  verifyComponentReceipt,
+} = require("./component-capability-core.cjs");
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
 const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
@@ -60,7 +72,7 @@ const KNOWN_OPTIONS = new Set([
   ...REPEATABLE_OPTIONS,
   "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root",
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
-  "--height", "--installed-evidence", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
+  "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
   "--outcome", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill", "--state",
   "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
@@ -247,13 +259,14 @@ function publicHelp() {
     "Commands:",
     "  doctor | status",
     "  change init|resume|advance|migrate|repair",
-    "  foundation check | direction check | reference check | reconstruction check | scene check",
+    "  foundation check | direction check | playground check | reference check | reconstruction check | scene check",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
     "  verify motion|components",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
+    "  component decompose|providers|resolve|inventory|bind|decide|verify",
     "  toolchain resolve|probe|receipt-check",
     "  execution route|prepare|finalize",
     "  benchmark brief|evaluate",
@@ -419,6 +432,15 @@ function directionCommand(parsed, root) {
   return { result, exitCode: result.status === "ready" ? 0 : 2 };
 }
 
+function playgroundCommand(parsed, root) {
+  const changeRoot = changeRootFrom(parsed, root);
+  const result = checkPlayground(changeRoot, {
+    artifact: option(parsed, "--artifact"),
+    stage: option(parsed, "--stage", "build"),
+  });
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
 // The reconciliation stage mirrors the graybox fold in `reference-evidence-core.cjs`: the stage is
 // summarised into `stages`, its blockers trail the aggregate's own, and a blocked stage keeps the
 // aggregate from ever reporting `ready`. A gate an agent has to remember to run separately is not a
@@ -577,6 +599,14 @@ function bundledComponentSourceCatalog() {
 
 function bundledFrontendStackRegistry() {
   return validateFrontendStackRegistry(readJson(builtIn("frontend-stack-registry.json"), "frontend stack registry"));
+}
+
+function bundledComponentCapabilityRegistry() {
+  return validateCapabilityRegistry(readJson(builtIn("component-capabilities.json"), "component capability registry"));
+}
+
+function bundledComponentProviderRegistry(capabilities = bundledComponentCapabilityRegistry()) {
+  return validateProviderRegistry(readJson(builtIn("component-providers.json"), "component provider registry"), capabilities);
 }
 
 function designSystemCatalog(parsed, root) {
@@ -750,6 +780,54 @@ function designSystemCommand(parsed, root, action) {
   fail("cli", `unknown design-system action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+function componentCommand(parsed, root, action) {
+  const capabilities = bundledComponentCapabilityRegistry();
+  const providers = bundledComponentProviderRegistry(capabilities);
+  if (action === "decompose") {
+    const inventory = decomposeComponentBrief(requireOption(parsed, "--query"), capabilities);
+    const output = writeResult(parsed, root, inventory);
+    return { result: { status: inventory.status, inventory, ...(output ? { output } : {}) }, exitCode: inventory.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "providers") {
+    const probe = probeComponentProviders(root, providers, capabilities, option(parsed, "--framework", "agnostic"));
+    const output = writeResult(parsed, root, probe);
+    return { result: { status: probe.status, probe, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "inventory") {
+    const inventory = inventoryProjectComponents(root, option(parsed, "--framework", "agnostic"));
+    const output = writeResult(parsed, root, inventory);
+    return { result: { status: inventory.status, inventory, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "resolve") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "component resolution request");
+    const resolution = resolveComponentCapabilities(request, root, capabilities, providers);
+    const output = writeResult(parsed, root, resolution);
+    return { result: { status: resolution.status, resolution, ...(output ? { output } : {}) }, exitCode: resolution.status === "blocked" ? 2 : 0 };
+  }
+  if (action === "verify") {
+    const resolution = readJson(artifact(parsed, root, "--artifact"), "component resolution");
+    const receipt = readJson(artifact(parsed, root, "--receipt"), "component verification receipt");
+    const verification = verifyComponentReceipt(resolution, receipt);
+    const output = writeResult(parsed, root, verification);
+    return { result: { status: verification.status, verification, ...(output ? { output } : {}) }, exitCode: verification.status === "verified" ? 0 : 2 };
+  }
+  if (action === "bind") {
+    const resolution = readJson(artifact(parsed, root, "--artifact"), "component resolution");
+    const inventory = readJson(artifact(parsed, root, "--inventory"), "component inventory");
+    const plan = bindComponentResolution(resolution, inventory, providers);
+    const output = writeResult(parsed, root, plan);
+    return { result: { status: plan.status, plan, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "decide") {
+    const plan = readJson(artifact(parsed, root, "--artifact"), "component binding plan");
+    const inventory = readJson(artifact(parsed, root, "--inventory"), "component inventory");
+    const decision = decideComponentBindings(plan, inventory);
+    const output = writeResult(parsed, root, decision);
+    return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  fail("cli", `unknown component action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
 function adapterCommand(parsed, root, action) {
   if (action === "audit") {
     const registryFile = optionalArtifact(parsed, root, "--registry", "adapter-registry.json");
@@ -897,6 +975,7 @@ const COMMANDS = {
   verify: { run: ({ parsed, root, action }) => verifyCommand(parsed, root, action) },
   patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
+  component: { run: ({ parsed, root, action }) => componentCommand(parsed, root, action) },
   mengto: { run: ({ parsed, action }) => mengToCommand(parsed, action) },
   shadcnio: { run: ({ parsed, action }) => shadcnioCommand(parsed, action) },
   prism: { run: ({ parsed, action }) => prismCommand(parsed, action) },
@@ -906,6 +985,7 @@ const COMMANDS = {
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
   direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },
+  playground: { actions: { check: { run: ({ parsed, root }) => playgroundCommand(parsed, root) } } },
   reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
   reference: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   reconstruction: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },

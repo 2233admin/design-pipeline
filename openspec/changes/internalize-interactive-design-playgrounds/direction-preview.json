@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "internalize-interactive-design-playgrounds",
+  "applicability": {
+    "status": "waived",
+    "reason": "non-visual"
+  },
+  "comparison": null,
+  "directions": [],
+  "decision": {
+    "status": "waived",
+    "selectedDirectionId": null,
+    "rationale": "This change adds a data contract and CLI gate without changing a product UI."
+  }
+}

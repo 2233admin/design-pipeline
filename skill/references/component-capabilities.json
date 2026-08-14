@@ -1,0 +1,24 @@
+{
+  "schema": "design-pipeline.component-capability-registry.v1",
+  "version": "1",
+  "reviewedAt": "2026-08-14",
+  "capabilities": [
+    { "id": "aria.control-semantics", "keywords": ["accessible", "accessibility", "aria", "无障碍", "可访问"], "requires": [], "verification": ["aria-semantics"] },
+    { "id": "focus.management", "keywords": ["focus", "焦点"], "requires": ["aria.control-semantics"], "verification": ["focus-order", "focus-restoration"] },
+    { "id": "keyboard.navigation", "keywords": ["keyboard", "键盘"], "requires": ["focus.management"], "verification": ["keyboard-navigation"] },
+    { "id": "state.loading", "keywords": ["loading", "加载"], "requires": ["aria.control-semantics"], "verification": ["loading-state"] },
+    { "id": "state.empty", "keywords": ["empty", "空数据", "空状态"], "requires": ["aria.control-semantics"], "verification": ["empty-state"] },
+    { "id": "state.error", "keywords": ["error", "错误", "失败"], "requires": ["aria.control-semantics"], "verification": ["error-state"] },
+    { "id": "state.disabled", "keywords": ["disabled", "禁用"], "requires": ["aria.control-semantics"], "verification": ["disabled-state"] },
+    { "id": "selection.single", "keywords": ["single select", "single selection", "单选"], "requires": ["keyboard.navigation"], "verification": ["selection-state", "selection-announcement"] },
+    { "id": "selection.multiple", "keywords": ["multi-select", "multiple selection", "multiselect", "多选", "批量选择"], "requires": ["keyboard.navigation"], "verification": ["selection-state", "selection-announcement"] },
+    { "id": "data.filtering", "keywords": ["filter", "filtering", "筛选", "过滤"], "requires": ["aria.control-semantics"], "verification": ["filtering-behavior", "result-announcement"] },
+    { "id": "data.sorting", "keywords": ["sort", "sorting", "排序"], "requires": ["aria.control-semantics"], "verification": ["sorting-behavior", "aria-sort"] },
+    { "id": "data.pagination", "keywords": ["pagination", "paginate", "分页"], "requires": ["aria.control-semantics"], "verification": ["pagination-behavior", "page-announcement"] },
+    { "id": "data.grid", "keywords": ["data grid", "datatable", "data table", "table", "数据表", "表格"], "requires": ["keyboard.navigation", "state.loading", "state.empty", "state.error"], "verification": ["grid-semantics", "row-column-navigation"] },
+    { "id": "disclosure.toggle", "keywords": ["disclosure", "accordion", "expand", "collapse", "展开", "折叠"], "requires": ["keyboard.navigation"], "verification": ["expanded-state", "controlled-relationship"] },
+    { "id": "overlay.dialog", "keywords": ["dialog", "modal", "弹窗", "对话框"], "requires": ["focus.management", "keyboard.navigation"], "verification": ["dialog-semantics", "escape-dismissal", "focus-trap"] },
+    { "id": "form.validation", "keywords": ["validation", "validate", "表单校验", "验证"], "requires": ["aria.control-semantics", "focus.management"], "verification": ["validation-message", "invalid-state"] },
+    { "id": "form.submission", "keywords": ["submit", "submission", "提交"], "requires": ["form.validation", "state.disabled", "state.error"], "verification": ["submission-behavior", "duplicate-submit-guard"] }
+  ]
+}

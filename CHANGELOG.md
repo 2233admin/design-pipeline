@@ -4,6 +4,26 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+### Added
+
+- Added framework-agnostic Component Capability IR, dependency closure, read-only project Provider
+  probing, and per-capability resolution for project DOM, Vuetify0, React Aria, and Ark UI.
+- Added public `component decompose|providers|resolve|verify` commands with adoption-required
+  candidate disclosure and hash-bound, fail-closed behavior evidence.
+- Added read-only project component inventory, framework binding plans, and explicit per-capability
+  `reuse|adopt|substitute|custom` decisions without source generation.
+- Added a persistent four-phase framework-agnostic component-engine initiative so framework
+  bindings, live provider documentation, browser evidence, and the provider SDK remain resumable.
+- Added a governed multi-mode Playground contract and public `playground check` CLI with build,
+  selection, browser-verification, and purpose-aware integration gates.
+- Added design, code-map, concept-map, data, critique, diff-review, game-balance, and custom routes;
+  hash-bound typed state; cohesive presets; natural-language handoff; self-contained HTML checks;
+  explicit applicability waivers; and release regression coverage.
+- Added packaged generation blueprints for code maps, concept maps, data explorers, design tuning,
+  diff review, document critique, and game balance.
+- Added an open, hash-bound change Blueprint protocol so project-specific Playground kinds can
+  extend the built-in defaults without weakening HTML safety or choosing arbitrary output paths.
+
 ## [0.9.0-beta.3] - 2026-08-14
 
 ### Added

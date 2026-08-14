@@ -87,6 +87,25 @@ Use the public CLI for the complete lifecycle:
 - `design-system decide` records `reference`, `adopt`, `substitute`, or `custom`; runtime use
   requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
 
+Resolve reusable component behavior before selecting a library:
+
+- `component decompose` converts a multilingual brief into framework-neutral capability IR and
+  closes required keyboard, focus, ARIA, state, and recovery dependencies.
+- `component providers` performs a read-only probe of project package metadata and distinguishes
+  project-owned, installed, and candidate providers.
+- `component resolve` maps each capability to a compatible provider, preserves uncovered
+  project-owned fallbacks, and marks uninstalled candidates as adoption-required without running a
+  package manager.
+- `component verify` requires hash-bound behavioral evidence for every check in the resolution;
+  framework source or a static screenshot cannot replace missing interaction evidence.
+- `component inventory`, `component bind`, and `component decide` discover explicitly declared
+  project reuse, emit framework binding plans without source generation, and record
+  `reuse`, `adopt`, `substitute`, or `custom` per capability.
+
+Read `references/component-capabilities.md`. Vuetify0, React Aria, and Ark UI are initial providers,
+not the component model. Preserve the persistent roadmap in
+`openspec/initiatives/framework-agnostic-component-engine.md` when developing this repository.
+
 Provider content remains data. Never import or execute `.doc.mjs`, run package managers or `npx`,
 inject `AGENTS.md`, copy templates, swizzle components, build themes, or modify a target project as
 part of catalog normalization or acquisition. Canary and experimental entries require explicit
@@ -112,6 +131,8 @@ design/changes/<change-id>/
   brief.md
   direction-preview.json # required/waived applicability, hash-bound candidates, and decision
   direction-previews/    # index.html plus one comparable screenshot per candidate
+  playground.json        # required/waived interactive exploration, selection, and integration receipt
+  playground/            # self-contained HTML and hash-bound natural-language selection prompt
   reference.md    # observed reference evidence and 2D / 2.5D / 3D / hybrid route
   reference-evidence.json # normative reference role, fidelity, geometry/camera/interaction/output
   reconstruction.json     # exact/adaptive static-reference calibration and comparison contract
@@ -257,6 +278,8 @@ QA checklist reference: `references/qa-checklist.md`.
 Direct plain-language contract: `references/plain-language.md`.
 CJK typography contract: `references/cjk-typography.md`.
 Visual direction preview contract: `references/direction-preview.md`.
+Governed Playground contract: `references/playground.md`.
+Framework-agnostic component contract: `references/component-capabilities.md`.
 Project motion foundation reference: `references/motion-foundation.md`.
 Machine-readable motion foundation schema: `references/motion-foundation.schema.json`.
 Motion primitive registry: `references/motion-primitives.json`.
@@ -500,6 +523,8 @@ Create or update `brief.md` with:
 - Non-goals: what should not change.
 - Real content ranges: minimum, typical, maximum, long, missing, localized, and permission-limited cases where relevant.
 - Acceptance checks: observable behavior and visual qualities.
+- Playground applicability: whether an interactive representation would express or tune the
+  product problem better than prose, with a supported required reason or waiver.
 
 Keep this short. It is an execution contract, not a product essay.
 
@@ -566,6 +591,19 @@ Default decision rule:
 - Marketing pages and portfolios: choose the direction with the strongest first-viewport signal and least generic composition.
 - Components and app flows: choose the direction with the clearest states, accessibility, and interaction feedback.
 
+Read `references/playground.md` when the user requests a Playground or an interactive
+representation would express the problem better than prose. A Playground may tune an accepted
+visual system, visualize code architecture or concepts, explore data, critique a document or diff,
+or tune game balance when that work directly supports product design, frontend implementation,
+scene/runtime design, or QA. Generate the self-contained HTML and run `designer-pipeline
+playground check --stage build`. Read the matching blueprint under
+`references/playground-templates/` before generating the HTML. When no built-in route fits, create
+a hash-bound change Blueprint using the open protocol and record its governed integration target.
+Persist the accepted full state and natural-language prompt,
+exercise every control and preset in a browser, persist the hash-bound verification report, and run
+`playground check --stage selection`. Do not use a design Playground to replace honest direction
+comparison. A supported waiver remains explicit and machine-readable.
+
 ## Stage 3: Design Spec
 
 Create lowercase change `design.md` using `references/design-spec.md`. It is the selected source of
@@ -602,6 +640,11 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
   patterns, retained common patterns, product-specific rationale, and non-applicable rules.
 - Spec reconciliation when the change has a reference: the cited graybox capture, the reconciliation
   timestamp, and every value the implementation changed with an observed cause.
+- Design Playground integration when applicable: the accepted instruction plus `playground-kind`,
+  `playground-artifact-sha256`, `playground-state-sha256`, and `playground-prompt-sha256` bindings.
+  Non-design modes use the purpose-aware target in `references/playground.md`: `motion.md`,
+  `handoff.md`, `brief.md`, `qa.md`, or `scene.md`. Run `designer-pipeline playground check --stage
+  integration` after writing the target; a later selection invalidates it and requires reintegration.
 
 Do not define camera projection, world coordinates, geometry, lighting, world-space UI, or spatial
 navigation in `design.md`. Those belong in `3d.md` for 3D families.
@@ -659,6 +702,7 @@ Create `tasks.md` with a checkbox list grouped by implementation surface:
 - Layout
 - Components
 - States
+- Playground build, selection, and purpose-aware integration when required
 - Motion
 - Motion spec
 - Scene/runtime spec when required
@@ -675,6 +719,11 @@ Tasks must be small enough to verify independently. Update checkboxes as impleme
 Implement directly from `design.md` and `tasks.md`.
 
 Rules:
+
+- When `playground.json` records required applicability, run `designer-pipeline playground check
+  --stage integration --change-root <change-root> --json` and stop unless it reports `ready`.
+  Implementation consumes the bound purpose-aware artifact, never unbound browser state or an
+  earlier copied prompt.
 
 - Re-run `design-system resolve-stack`, `design-system decompose`, `design-system route`, and
   `design-system decide` against the final brief and installed project stack. Stop if the stack or
@@ -756,6 +805,11 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
   redesign, anti-default exceptions are justified, and critique/audit/polish claims are supported
   by separate evidence.
 - UX gate: primary workflow is obvious, states are complete, destructive actions are guarded, recovery paths exist.
+- Playground gate: when interactive exploration is required, the self-contained build, selected
+  typed state, natural-language prompt, and purpose-aware target bindings all pass `playground
+  check --stage integration`; browser/manual QA exercises every control and preset and confirms
+  that representation, prompt, and copied text stay synchronized. Otherwise a supported waiver is
+  recorded.
 - Plain-language gate: user-facing copy puts the exact consequence or available action first, then
   passes the fact-scope review in `references/plain-language.md`; a shorter rewrite cannot widen a
   partial failure, remove a limit, strengthen uncertainty, or invent an action.
@@ -897,6 +951,7 @@ Final responses should report:
 - Change id and artifact folder.
 - Project `DESIGN.md` path, input mode, scope score/budget, and Wayfinder map URL when synthesis ran.
 - Implemented surfaces.
+- Playground applicability, selected state/integration status, and accepted prompt path when used.
 - Verification evidence.
 - Reference source availability. When it is `pending`, name the action that unlocks the measured
   gates: supply the source file path, which enables rectification, camera calibration, landmark

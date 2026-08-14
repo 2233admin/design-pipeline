@@ -96,6 +96,7 @@ function selectGraphics(request, registry, catalog, blockers) {
 }
 
 function frontendStages(route) {
+  const lifecycle = route.lifecycle;
   return {
     tool: {
       id: route.id,
@@ -103,20 +104,30 @@ function frontendStages(route) {
       mode: route.mode,
       status: route.status,
     },
-    probe: {
+    probe: lifecycle?.probe ? {
+      toolId: route.id,
+      status: "pending",
+      ...lifecycle.probe,
+    } : {
       toolId: route.id,
       kind: "catalog",
       status: route.status === "ready" ? "available" : "review",
       command: null,
     },
-    invocation: {
+    invocation: lifecycle?.invoke ? {
+      toolId: route.id,
+      ...lifecycle.invoke,
+    } : {
       toolId: route.id,
       kind: "agent-route",
       owner: "agent",
       target: route.id,
       command: null,
     },
-    verification: {
+    verification: lifecycle?.verify ? {
+      toolId: route.id,
+      ...lifecycle.verify,
+    } : {
       toolId: route.id,
       receiptSchema: RECEIPT_SCHEMA,
       evidenceTypes: route.capabilities,

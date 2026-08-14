@@ -1,0 +1,18 @@
+{
+  "schema": "design-pipeline.playground-blueprints.v1",
+  "allowedIntegrationTargets": ["design.md", "motion.md", "handoff.md", "brief.md", "qa.md", "scene.md"],
+  "routes": [
+    { "kind": "design-system", "blueprint": "design-playground", "path": "references/playground-templates/design-playground.md", "integrationTarget": "design.md" },
+    { "kind": "component", "blueprint": "design-playground", "path": "references/playground-templates/design-playground.md", "integrationTarget": "design.md" },
+    { "kind": "layout", "blueprint": "design-playground", "path": "references/playground-templates/design-playground.md", "integrationTarget": "design.md" },
+    { "kind": "color", "blueprint": "design-playground", "path": "references/playground-templates/design-playground.md", "integrationTarget": "design.md" },
+    { "kind": "typography", "blueprint": "design-playground", "path": "references/playground-templates/design-playground.md", "integrationTarget": "design.md" },
+    { "kind": "motion", "blueprint": "design-playground", "path": "references/playground-templates/design-playground.md", "integrationTarget": "motion.md" },
+    { "kind": "code-map", "blueprint": "code-map", "path": "references/playground-templates/code-map.md", "integrationTarget": "handoff.md" },
+    { "kind": "concept-map", "blueprint": "concept-map", "path": "references/playground-templates/concept-map.md", "integrationTarget": "brief.md" },
+    { "kind": "data-explorer", "blueprint": "data-explorer", "path": "references/playground-templates/data-explorer.md", "integrationTarget": "brief.md" },
+    { "kind": "document-critique", "blueprint": "document-critique", "path": "references/playground-templates/document-critique.md", "integrationTarget": "qa.md" },
+    { "kind": "diff-review", "blueprint": "diff-review", "path": "references/playground-templates/diff-review.md", "integrationTarget": "qa.md" },
+    { "kind": "game-balance", "blueprint": "game-balance", "path": "references/playground-templates/game-balance.md", "integrationTarget": "scene.md" }
+  ]
+}

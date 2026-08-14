@@ -119,6 +119,18 @@ node skill/scripts/check-design-foundation.cjs --project-root . --json
 韩文的界面默认使用系统字体栈，并记录 CJK 行高、标点规则以及装饰字体的最小字形子集与
 fallback，避免用数 MB 的完整字体掩盖排版问题。
 
+### 交互式 Playground
+
+Playground 是一种适合“文字不够好用”的模型交互介质：它把问题做成无外部依赖的单文件
+HTML，通过控件、即时表示、预设和可复制的自然语言提示词来探索结果。它既能调整组件、
+布局、色彩、字体与动效，也能可视化代码架构和概念关系、探索数据、评审文档或 diff、
+调整游戏平衡。`playground check` 验证构建、浏览器行为、选择和用途路由；接受的结果按
+类型进入 `design.md`、`motion.md`、`handoff.md`、`brief.md`、`qa.md` 或 `scene.md`，并由
+SHA-256 绑定，防止实现阶段漂移。包内同时提供 code map、concept map、data explorer、
+design、diff review、document critique 与 game balance 七份默认蓝图；它们不是封闭分类。
+项目可以携带新的 Blueprint，声明自己的交互结构、状态输出、QA 和受允许的集成目标，
+Blueprint 哈希变化会自动使旧浏览器验证失效。
+
 ### 直接表达
 
 面向用户的提示、错误、公告和恢复说明先写清实际影响或下一步，再解释内部原因。第二遍
@@ -143,7 +155,31 @@ node skill/scripts/check-motion-foundation.cjs --project-root . --json
 
 ### 组件能力路由
 
-组件库不直接变成项目依赖。流水线先把需求拆成能力，再按平台、来源证据、接入方式和许可证选路；没有授权的远程库只会得到 `review`，不会被静默复制。
+组件库不直接变成项目依赖。流水线先把需求拆成稳定的行为能力，再按项目框架、已有依赖、
+来源证据、接入方式和许可证选路；没有授权的远程库只会得到 `review`，不会被静默复制。
+
+```bash
+# 与框架无关地分解表格能力，并自动补齐键盘、焦点、ARIA 和完整状态
+node skill/scripts/designer-pipeline.cjs component decompose \
+  --query "支持筛选、排序、分页和多选的数据表格" --json
+
+# 只读探测 Vue 项目；不会安装 Vuetify0、Ark UI 或修改 package.json
+node skill/scripts/designer-pipeline.cjs component providers \
+  --root ../my-vue-project --framework vue --json
+
+# 从请求文件生成逐能力 Provider 路由
+node skill/scripts/designer-pipeline.cjs component resolve \
+  --root ../my-vue-project --artifact component-request.json \
+  --write --output component-resolution.json --json
+
+# 根据 resolution hash 和真实行为证据验收
+node skill/scripts/designer-pipeline.cjs component verify \
+  --root ../my-vue-project --artifact component-resolution.json \
+  --receipt component-receipt.json --json
+```
+
+Vuetify0、React Aria 和 Ark UI 是首批可替换 Provider；项目自有 DOM 实现始终是受治理的
+回退路径。能力 IR 不包含 Vue composable、React Hook 或其他框架 API。
 
 ```bash
 # Web 应用 UI：优先返回 React Bits Pro，保留许可证审查
@@ -299,6 +335,7 @@ node skill/scripts/evaluate-anti-slop.cjs \
 node skill/scripts/designer-pipeline.cjs doctor --root . --json
 node skill/scripts/designer-pipeline.cjs toolchain resolve --root . --artifact toolchain-request.json --json
 node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
+node skill/scripts/designer-pipeline.cjs playground check --root . --change-root openspec/changes/example --stage integration --json
 node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
 ```
 

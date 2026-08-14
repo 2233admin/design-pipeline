@@ -99,6 +99,7 @@ function routeTools(request, registry, capabilities, skillCatalog) {
     ...(tool.endpoint ? { endpoint: tool.endpoint } : {}), ...(tool.interfaces ? { interfaces: tool.interfaces } : {}),
     ...(tool.readOnlyTools ? { readOnlyTools: tool.readOnlyTools } : {}), ...(tool.requirements ? { requirements: tool.requirements } : {}),
     ...(tool.constraints ? { constraints: tool.constraints } : {}), ...(tool.fallback ? { fallback: tool.fallback } : {}),
+    ...(tool.lifecycle ? { lifecycle: tool.lifecycle } : {}),
   }));
   const recommendedSkills = [...new Set(capabilities.flatMap((capability) => skillCatalog.routes[capability] || []))].sort();
   return { routes: sortValue(routes), recommendedSkills };

@@ -52,6 +52,30 @@
     }
   },
   "tools": [
+    {
+      "id": "vitejs/devtools",
+      "capabilities": ["vite-devtools", "vite-plugin-inspection", "build-analysis", "test-inspection"],
+      "activation": "keyword",
+      "keywords": ["vite devtools", "vite+ devtools", "@vitejs/devtools", "vite plugin inspector"],
+      "mode": "project-pinned-adapter",
+      "status": "review",
+      "source": "https://devtools.vite.dev/",
+      "repository": "https://github.com/vitejs/devtools",
+      "reviewedAt": "2026-08-14",
+      "license": "MIT",
+      "requirements": ["Vite 8 and a project-local @vitejs/devtools preview dependency", "Enable standalone or embedded mode explicitly in the target project's Vite configuration", "A Vite+ project may provide the Vite 8 runtime through @voidzero-dev/vite-plus-core"],
+      "constraints": ["Probe only; never install, upgrade, or rewrite target-project configuration automatically", "Treat Vite DevTools as early preview and preserve the existing Playwright evidence fallback", "Do not claim integration-specific evidence unless that integration is installed and mounted"],
+      "fallback": "Use the project-owned Vite command and the bundled Playwright evidence adapter.",
+      "lifecycle": {
+        "probe": {
+          "kind": "command",
+          "command": ["node", "-e", "const fs=require('node:fs'),p=require('node:path');const read=n=>{const f=p.join(process.cwd(),'node_modules',...n.split('/'),'package.json');return fs.existsSync(f)?JSON.parse(fs.readFileSync(f,'utf8')).version:null};const d=read('@vitejs/devtools'),v=read('vite'),vp=read('vite-plus');if(!d)process.exit(2);process.stdout.write(`devtools=${d};vite=${v||'unknown'};vite-plus=${vp||'absent'}`)"],
+          "timeoutMs": 5000
+        },
+        "invoke": {"kind": "managed-cli", "owner": "agent", "target": "project-local vite-devtools binary", "command": ["vite-devtools", "--root", ".", "--no-open"]},
+        "verify": {"receiptSchema": "design-pipeline.toolchain-receipt.v1", "evidenceTypes": ["devtools-availability", "mounted-integrations", "browser-console", "playwright-trace"]}
+      }
+    },
     { "id": "design-pipeline/core", "capabilities": ["design-workflow"], "activation": "always", "mode": "project-owned", "status": "ready", "source": "bundled" },
     { "id": "design-pipeline/website-cloning", "capabilities": ["website-cloning"], "activation": "keyword", "keywords": ["clone", "cloning", "rebuild", "replicate", "复刻", "克隆", "仿站", "1:1"], "mode": "project-owned", "status": "ready", "source": "bundled" },
     { "id": "hi5jeff/deepclonewebsite", "capabilities": ["website-cloning", "reverse-engineering"], "activation": "keyword", "keywords": ["clone", "cloning", "rebuild", "reverse engineer", "复刻", "克隆", "逆向"], "mode": "governed-candidate", "status": "review", "source": "https://github.com/hi5jeff/deepclonewebsite", "revision": "ab180fbe14a0f86c478bf033b375b1d40fabe6b1", "license": "MIT", "requirements": ["Node.js 20+", "Chrome or Edge", "interactive login", "OpenAI-compatible API credential"], "fallback": "design-pipeline/website-cloning" },

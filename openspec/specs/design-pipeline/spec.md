@@ -75,6 +75,39 @@ decorative heading font SHALL be subset to its known glyphs and retain a tested 
 - **AND** Stage 6 SHALL verify real CJK and mixed-script strings at responsive widths, 200% zoom,
   and font-load failure.
 
+### Requirement: Playground interaction is resumable and purpose-bound
+
+When a product-design, frontend, scene/runtime, or design-QA problem is poorly suited to prose, the
+pipeline SHALL provide a self-contained interactive Playground with typed controls, complete
+presets, an immediate representation, and a natural-language handoff. The selected state SHALL be
+hash-bound into the governed change artifact selected by Playground kind.
+
+#### Scenario: A problem benefits from interactive representation
+
+- **WHEN** the user requests a Playground or interactive state is a better reasoning medium than text
+- **THEN** the pipeline SHALL validate the self-contained HTML, declared controls and presets,
+  live-update path, prompt output, and copy behavior
+- **AND** it SHALL persist the complete selected state and exact non-default controls
+- **AND** the integration target SHALL be `design.md`, `motion.md`, `handoff.md`, `brief.md`,
+  `qa.md`, or `scene.md` according to Playground kind
+- **AND** downstream use SHALL remain blocked until that target binds the kind, Playground, state,
+  and prompt hashes.
+
+#### Scenario: Interactive exploration does not improve the decision
+
+- **WHEN** the change is narrow, non-visual, exact-target, fixed-spec, or fully resolved by the
+  direction preview
+- **THEN** the pipeline MAY record a supported waiver with rationale
+- **AND** missing playground evidence SHALL NOT silently become a waiver.
+
+#### Scenario: A project needs a new Playground kind
+
+- **WHEN** none of the built-in Blueprint routes represents the interactive problem
+- **THEN** the change MAY declare a lowercase path-safe kind and a contained, hash-bound Markdown
+  Blueprint with required surface, state/output, and QA sections
+- **AND** it SHALL select only a governed integration target
+- **AND** Blueprint drift SHALL invalidate browser verification.
+
 ### Requirement: User-facing language is direct without changing scope
 
 User-facing interface copy and human decision artifacts SHALL put the first useful consequence or
@@ -994,6 +1027,44 @@ reduced-motion evidence. Reusable components SHALL cover required visual/input/v
   viewport evidence is absent
 - **THEN** component verification SHALL fail or block
 - **AND** a static screenshot SHALL NOT satisfy the missing states.
+
+### Requirement: Component capability is resolved before framework provider selection
+
+The pipeline SHALL express reusable component requirements through a governed, framework-neutral
+capability IR. Dependency closure SHALL add required keyboard, focus, ARIA, state, and recovery
+behavior before selecting any provider.
+
+#### Scenario: The same data-grid requirement targets different frameworks
+
+- **WHEN** Vue, React, Svelte, Solid, or project-owned DOM projects request the same filtering,
+  sorting, pagination, and selection behavior
+- **THEN** they SHALL share the same capability and verification contract
+- **AND** framework libraries SHALL appear only in replaceable provider routes.
+
+### Requirement: Component provider discovery is contained and non-mutating
+
+Provider probing SHALL inspect existing project metadata without installing packages or rewriting
+configuration. Resolution SHALL distinguish project-owned, installed, and adoption-required
+candidate routes and SHALL report uncovered capabilities explicitly.
+
+#### Scenario: A compatible provider is not installed
+
+- **WHEN** Vuetify0, React Aria, Ark UI, or another provider is compatible but absent
+- **THEN** it MAY be returned as an adoption-required candidate only when explicitly preferred
+- **AND** the project-owned route SHALL remain available without hidden dependency mutation.
+
+### Requirement: Component verification is provider-independent and hash-bound
+
+Every resolved component capability SHALL produce required behavior checks. Verification SHALL
+match the exact resolution hash and SHALL remain blocked when a required check is missing, failed,
+or lacks evidence.
+
+#### Scenario: Framework code exists without keyboard evidence
+
+- **WHEN** the implementation uses a named component library but the keyboard check has no passing
+  evidence
+- **THEN** verification SHALL remain blocked
+- **AND** library identity or a static screenshot SHALL NOT satisfy the behavior contract.
 
 ### Requirement: Design artifacts interoperate through public data contracts
 

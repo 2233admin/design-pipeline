@@ -82,6 +82,22 @@ test("failed probes block with one actionable root-cause line", () => {
   assert.deepEqual(result.blockers, ["reflex-xy: PackageNotFoundError: xy"]);
 });
 
+test("Vite DevTools routes its project-local probe and evidence contract", () => {
+  const plan = resolveToolchain(request({
+    framework: "react",
+    brief: "Use Vite DevTools to inspect the plugin graph",
+    requested: { styling: "none", uiLibrary: "none" },
+    graphics: undefined,
+  }), sources);
+  const probe = plan.probes.find(({ toolId }) => toolId === "vitejs/devtools");
+  const invocation = plan.invocations.find(({ toolId }) => toolId === "vitejs/devtools");
+  const verification = plan.verification.find(({ toolId }) => toolId === "vitejs/devtools");
+  assert.deepEqual(probe.command.slice(0, 2), ["node", "-e"]);
+  assert.equal(invocation.owner, "agent");
+  assert.deepEqual(invocation.command.slice(0, 2), ["vite-devtools", "--root"]);
+  assert.ok(verification.evidenceTypes.includes("mounted-integrations"));
+});
+
 test("tool invocation receipts bind the plan, command, artifacts, and hashes", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "toolchain-receipt-"));
   const plan = resolveToolchain(request(), sources);

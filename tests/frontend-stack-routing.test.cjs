@@ -84,6 +84,29 @@ test("HyperFrames route is keyword-triggered for explicit video workflow briefs"
   assert.equal(ordinary.toolRoutes.some(({ id }) => id === "heygen-com/hyperframes"), false);
 });
 
+test("Vite DevTools is an explicit preview adapter with a non-mutating lifecycle", () => {
+  const result = resolveFrontendStack({
+    schema: "design-pipeline.frontend-stack-request.v1",
+    framework: "react",
+    brief: "Inspect this Vite app with @vitejs/devtools",
+    requested: {},
+  }, registry, skills);
+  const route = result.toolRoutes.find(({ id }) => id === "vitejs/devtools");
+  assert.ok(route);
+  assert.equal(route.status, "review");
+  assert.equal(route.lifecycle.probe.command[0], "node");
+  assert.deepEqual(route.lifecycle.invoke.command.slice(0, 2), ["vite-devtools", "--root"]);
+  assert.ok(route.constraints.some((item) => item.includes("never install")));
+
+  const ordinary = resolveFrontendStack({
+    schema: "design-pipeline.frontend-stack-request.v1",
+    framework: "react",
+    brief: "Build a dashboard",
+    requested: {},
+  }, registry, skills);
+  assert.equal(ordinary.toolRoutes.some(({ id }) => id === "vitejs/devtools"), false);
+});
+
 test("framework and required styling mismatches block instead of silently substituting", () => {
   const result = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "vue", brief: "Vue UI", requested: { styling: "scss", uiLibrary: "shadcn-ui" } }, registry, skills);
   assert.equal(result.status, "blocked");

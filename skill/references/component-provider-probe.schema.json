@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/component-provider-probe.v1.json",
+  "title": "Component Provider Probe",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "framework", "packageFile", "providers"],
+  "properties": {
+    "schema": { "const": "design-pipeline.component-provider-probe.v1" },
+    "status": { "const": "ready" },
+    "framework": { "enum": ["agnostic", "react", "vue", "nuxt", "svelte", "solid"] },
+    "packageFile": { "type": ["string", "null"] },
+    "providers": { "type": "array", "items": { "type": "object" } }
+  }
+}
