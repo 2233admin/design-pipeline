@@ -163,6 +163,7 @@ try {
   report(run(process.execPath, [...installArgs, "--replace"], { echo: false, env: hermeticEnv }).status === 0, "explicit contained install replacement");
   report(run(process.execPath, [path.join(installed, "scripts/check-deps.cjs"), "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed dependency self-check");
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "playground", "check", "--root", repoRoot, "--change-root", "openspec/changes/internalize-interactive-design-playgrounds", "--stage", "integration", "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed playground contract smoke");
+  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "adaptation", "check", "--root", tempRoot, "--state", "adaptation-smoke/state.json", "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed layered adaptation contract smoke");
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed MengTo snapshot verification");
   const installedMengToSearch = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "search", "--root", repoRoot, "--query", "scroll-controlled Three.js world", "--limit", "1", "--json"], { echo: false, env: hermeticEnv });
   let installedMengToResult = null; try { installedMengToResult = JSON.parse(installedMengToSearch.stdout); } catch {}

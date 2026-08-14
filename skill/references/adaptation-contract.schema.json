@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "design-pipeline.adaptation-contract.v1",
+  "title": "Local evidence-gated adaptation artifacts",
+  "oneOf": [
+    { "$ref": "#/$defs/experience" },
+    { "$ref": "#/$defs/externalSkill" },
+    { "$ref": "#/$defs/ruleChangeSet" },
+    { "$ref": "#/$defs/evaluation" },
+    { "$ref": "#/$defs/resolverInput" }
+  ],
+  "$defs": {
+    "experience": {
+      "type": "object",
+      "required": ["schema", "signal"],
+      "properties": {
+        "schema": { "const": "design-pipeline.adaptation-experience.v1" },
+        "signal": { "enum": ["explicit", "implicit"] },
+        "explicit": { "type": "boolean" },
+        "repeated": { "type": "boolean" },
+        "occurrences": { "type": "integer", "minimum": 1 },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "maxItems": 32
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "signal": { "const": "explicit" } }, "required": ["signal"] },
+          "then": { "properties": { "explicit": { "const": true } } }
+        },
+        {
+          "if": { "properties": { "signal": { "const": "implicit" } }, "required": ["signal"] },
+          "then": { "properties": { "explicit": { "const": false } } }
+        }
+      ]
+    },
+    "dimension": {
+      "enum": ["communication-density", "question-sequencing", "representation", "evidence-order", "tool-presentation", "delivery-format", "workflow-sequence"]
+    },
+    "dimensionValue": {
+      "enum": ["concise", "balanced", "detailed", "one-at-a-time", "frontier-batch", "autonomous-defaults", "prose-first", "table-first", "diagram-first", "playground-first", "conclusion-first", "evidence-first", "chronological", "quiet", "summarized", "verbose", "summary", "patch-summary", "artifact-links", "full-report", "plan-first", "prototype-first", "test-first"]
+    },
+    "dimensionPair": {
+      "oneOf": [
+        { "properties": { "dimension": { "const": "communication-density" }, "value": { "enum": ["concise", "balanced", "detailed"] } }, "required": ["dimension", "value"] },
+        { "properties": { "dimension": { "const": "question-sequencing" }, "value": { "enum": ["one-at-a-time", "frontier-batch", "autonomous-defaults"] } }, "required": ["dimension", "value"] },
+        { "properties": { "dimension": { "const": "representation" }, "value": { "enum": ["prose-first", "table-first", "diagram-first", "playground-first"] } }, "required": ["dimension", "value"] },
+        { "properties": { "dimension": { "const": "evidence-order" }, "value": { "enum": ["conclusion-first", "evidence-first", "chronological"] } }, "required": ["dimension", "value"] },
+        { "properties": { "dimension": { "const": "tool-presentation" }, "value": { "enum": ["quiet", "summarized", "verbose"] } }, "required": ["dimension", "value"] },
+        { "properties": { "dimension": { "const": "delivery-format" }, "value": { "enum": ["summary", "patch-summary", "artifact-links", "full-report"] } }, "required": ["dimension", "value"] },
+        { "properties": { "dimension": { "const": "workflow-sequence" }, "value": { "enum": ["plan-first", "prototype-first", "test-first"] } }, "required": ["dimension", "value"] }
+      ]
+    },
+    "durableRule": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+        "dimension": { "$ref": "#/$defs/dimension" },
+        "value": { "$ref": "#/$defs/dimensionValue" },
+        "appliesTo": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" }, "uniqueItems": true },
+        "excludes": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" }, "uniqueItems": true },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false,
+      "required": ["id", "dimension", "value"],
+      "allOf": [{ "$ref": "#/$defs/dimensionPair" }]
+    },
+    "externalSkill": {
+      "type": "object",
+      "required": ["schema", "scope", "version", "rules"],
+      "properties": {
+        "schema": { "const": "design-pipeline.adaptation-skill.v1" },
+        "scope": { "enum": ["project", "user"] },
+        "version": { "type": "string", "minLength": 1 },
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/durableRule" },
+          "maxItems": 256
+        }
+      },
+      "additionalProperties": false
+    },
+    "ruleChange": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["op", "id", "rule"],
+          "properties": {
+            "op": { "enum": ["add", "replace"] },
+            "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+            "rule": { "$ref": "#/$defs/durableRuleWithoutId" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["op", "id"],
+          "properties": {
+            "op": { "const": "delete" },
+            "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ruleChangeSet": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": { "$ref": "#/$defs/ruleChange" }
+    },
+    "durableRuleWithoutId": {
+      "type": "object",
+      "properties": {
+        "dimension": { "$ref": "#/$defs/dimension" },
+        "value": { "$ref": "#/$defs/dimensionValue" },
+        "appliesTo": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" }, "uniqueItems": true },
+        "excludes": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" }, "uniqueItems": true },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false,
+      "required": ["dimension", "value"],
+      "allOf": [{ "$ref": "#/$defs/dimensionPair" }]
+    },
+    "evaluationArm": {
+      "type": "object",
+      "required": ["score", "invariants"],
+      "properties": {
+        "score": { "type": "number" },
+        "invariants": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "boolean" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "evaluation": {
+      "type": "object",
+      "required": ["schema", "manifestHash", "candidateHash", "primaryMetric", "fixtureIds", "complete", "baseline", "candidate"],
+      "properties": {
+        "schema": { "const": "design-pipeline.adaptation-evaluation.v1" },
+        "manifestHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "candidateHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "primaryMetric": { "type": "string", "minLength": 1 },
+        "fixtureIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "complete": { "type": "boolean" },
+        "unknown": { "type": "boolean" },
+        "baseline": { "$ref": "#/$defs/evaluationArm" },
+        "candidate": { "$ref": "#/$defs/evaluationArm" }
+      },
+      "additionalProperties": false
+    },
+    "boundary": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+        "description": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "resolverInput": {
+      "type": "object",
+      "required": ["schema"],
+      "properties": {
+        "schema": { "const": "design-pipeline.adaptation-policy-input.v1" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "defaults": { "type": "array", "items": { "$ref": "#/$defs/durableRule" } },
+        "user": { "type": "array", "items": { "$ref": "#/$defs/durableRule" } },
+        "project": { "type": "array", "items": { "$ref": "#/$defs/durableRule" } },
+        "task": { "type": "array", "items": { "$ref": "#/$defs/durableRule" } },
+        "constraints": { "type": "array", "items": { "$ref": "#/$defs/boundary" } },
+        "gates": { "type": "array", "items": { "$ref": "#/$defs/boundary" } }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -24,6 +24,7 @@
     "design-system-decision.test.cjs",
     "design-system-provider.test.cjs",
     "design-tool-port.test.cjs",
+    "adaptation.test.cjs",
     "direction-preview.test.cjs",
     "playground.test.cjs",
     "designer-pipeline-cli.test.cjs",

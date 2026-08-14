@@ -6,6 +6,16 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Added a non-RL layered-adaptation lifecycle with frozen methodology, ephemeral task policy,
+  versioned project/user skills, bounded shadow candidates, independent replay and held-out
+  evaluation, strict-improvement promotion, explicit approval, rollback, and content-scrubbing
+  forgetting.
+- Bound durable candidates to finite collaboration dimensions and the exact incumbent skill hash,
+  with process-owned locking, recoverable prepare/commit journals, sequential-version rollback,
+  dimension-keyed precedence, and hash-only actor/review labels.
+- Added public `adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget`
+  commands, a machine-readable artifact contract, negative-transfer and tamper regression tests,
+  and packaged-install smoke coverage.
 - Added framework-agnostic Component Capability IR, dependency closure, read-only project Provider
   probing, and per-capability resolution for project DOM, Vuetify0, React Aria, and Ark UI.
 - Added public `component decompose|providers|resolve|verify` commands with adoption-required
