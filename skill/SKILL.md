@@ -109,7 +109,7 @@ Run component conformance through the layered v1 gate after those artifacts exis
 - `component-first stack|components|playground|page` evaluates only the requested stage and its
   required context. Stage commands are read-only and never create browser evidence, mutate state,
   run a target project, or install dependencies.
-- `high-fidelity check` remains a v1 delegation alias. A passing component-first result is not a
+- `high-fidelity check` is a v1 delegation alias. A passing component-first result is not a
   visual-acceptance result.
 - Model `project-owned` as `componentOrigin`, never as a runtime stack. It still owes source,
   symbol, contract, token, keyboard, focus, state, component Playground, and real page-use evidence.

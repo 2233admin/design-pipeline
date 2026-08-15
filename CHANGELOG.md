@@ -4,8 +4,19 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+## [0.9.0-beta.4] - 2026-08-15
+
 ### Added
 
+- Added the read-only `component-first-gate.v1` aggregate with separate stack, component,
+  Playground, page-use, and external-evidence gates; stable reason codes; deterministic
+  serializers; and published aggregate/stage schemas.
+- Added public `component-first check|stack|components|playground|page` commands and the
+  compatibility-only `high-fidelity check` alias with explicit passed, invalid, and blocked exit
+  codes.
+- Added strict project-owned component evidence, prototype/production readiness separation,
+  contained hash-bound PNG decoding, package resources, and passing installed-package journeys for
+  the aggregate, every stage, and the compatibility alias.
 - Added a non-RL layered-adaptation lifecycle with frozen methodology, ephemeral task policy,
   versioned project/user skills, bounded shadow candidates, independent replay and held-out
   evaluation, strict-improvement promotion, explicit approval, rollback, and content-scrubbing
@@ -495,3 +506,4 @@ All notable changes to Design Pipeline are documented here.
 [0.9.0-beta.1]: https://github.com/2233admin/design-pipeline/compare/v0.8.0...v0.9.0-beta.1
 [0.9.0-beta.2]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.1...v0.9.0-beta.2
 [0.9.0-beta.3]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.2...v0.9.0-beta.3
+[0.9.0-beta.4]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.3...v0.9.0-beta.4
