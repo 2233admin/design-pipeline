@@ -20,7 +20,8 @@ function normalizeDeclarations(declarations, targetRoot, projectRoot) {
     let source = { path: declaration.sourcePath ?? null, contained: true, exists: false };
     if (typeof declaration.sourcePath === "string" && declaration.sourcePath.trim()) {
       const sourceRoot = declaration.componentOrigin === "workspace-package" ? projectRoot : targetRoot;
-      const resolved = resolveInside(sourceRoot, declaration.sourcePath, `components.declarations[${index}].sourcePath`, { scope: "component-first components" });
+      const normalizedSourcePath = declaration.sourcePath.trim().replaceAll("\\", "/");
+      const resolved = resolveInside(sourceRoot, normalizedSourcePath, `components.declarations[${index}].sourcePath`, { scope: "component-first components" });
       const exists = fs.existsSync(resolved) && fs.statSync(resolved).isFile();
       const canonical = exists ? fs.realpathSync(resolved) : resolved;
       source = {

@@ -45,6 +45,11 @@ All notable changes to Design Pipeline are documented here.
 - Added an open, hash-bound change Blueprint protocol so project-specific Playground kinds can
   extend the built-in defaults without weakening HTML safety or choosing arbitrary output paths.
 
+### Fixed
+
+- Normalized backslash component source paths before containment and file checks so artifacts
+  produced on Windows evaluate identically on Linux CI and packaged runtimes.
+
 ## [0.9.0-beta.3] - 2026-08-14
 
 ### Added
