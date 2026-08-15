@@ -1,0 +1,45 @@
+{
+  "blockers": [],
+  "changeId": "decouple-component-first-gate",
+  "evidence": [
+    "history-search:no-prior-component-first",
+    "direction-preview.json",
+    "design.md",
+    "motion.md",
+    "tasks.md",
+    "tests/component-first.test.cjs",
+    "focused-tests:19-pass",
+    "schemas:4-valid",
+    "openspec:3-strict-valid",
+    "declared-tests:496-pass",
+    "package-qa:exit-0",
+    "diff-check:pass",
+    "qa.md",
+    "handoff.md"
+  ],
+  "extensions": {},
+  "foundations": {
+    "design": {
+      "path": "DESIGN.md",
+      "sha256": "1126499915fb720ce0943afcba8b9327885c11a6ccc63160db96cd801a8cf88e",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind design"
+    },
+    "motion": {
+      "path": "MOTION.md",
+      "sha256": "5a23e0fcdb7d4ebddea2f8f446b91edbdaba3812baf44a7066034b5b2d8e7302",
+      "status": "ready",
+      "validator": "designer-pipeline foundation check --kind motion"
+    }
+  },
+  "lastEventSeq": 9,
+  "migration": null,
+  "nextActions": [],
+  "phase": "release-readiness",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 9,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "complete",
+  "updatedAt": "2026-08-15T04:09:00.000Z"
+}

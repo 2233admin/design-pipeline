@@ -1,0 +1,12 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "decouple-component-first-gate",
+  "applicability": { "status": "waived", "reason": "non-visual" },
+  "comparison": null,
+  "directions": [],
+  "decision": {
+    "status": "waived",
+    "selectedDirectionId": null,
+    "rationale": "This change adds deterministic CJS contracts and CLI output without changing a product interface."
+  }
+}

@@ -7,6 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
+const { createComponentFirstFixture } = require("../tests/fixtures/component-first-fixture.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 let failed = false;
@@ -163,6 +164,31 @@ try {
   report(run(process.execPath, [...installArgs, "--replace"], { echo: false, env: hermeticEnv }).status === 0, "explicit contained install replacement");
   report(run(process.execPath, [path.join(installed, "scripts/check-deps.cjs"), "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed dependency self-check");
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "playground", "check", "--root", repoRoot, "--change-root", "openspec/changes/internalize-interactive-design-playgrounds", "--stage", "integration", "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed playground contract smoke");
+  const componentFirstSmokeRoot = path.join(tempRoot, "component-first-smoke");
+  fs.mkdirSync(componentFirstSmokeRoot, { recursive: true });
+  fs.writeFileSync(path.join(componentFirstSmokeRoot, "component-first.json"), `${JSON.stringify({
+    schema: "component-first-gate.v1",
+    target: { id: "smoke-target", root: ".", kind: "prototype", entrypoints: [], routes: [], snapshotDigest: null },
+    policy: { id: "component-first-default", version: 1 },
+    stack: {}, components: {}, playground: {}, pageUsage: {}, evidence: {},
+  }, null, 2)}\n`);
+  const installedComponentFirst = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "component-first", "stack", "--root", componentFirstSmokeRoot, "--artifact", "component-first.json", "--json"], { echo: false, env: hermeticEnv });
+  let installedComponentFirstResult = null; try { installedComponentFirstResult = JSON.parse(installedComponentFirst.stdout); } catch {}
+  report(installedComponentFirst.status === 2 && installedComponentFirstResult?.ok === true && installedComponentFirstResult?.resultSchema === "component-first-stage-result.v1", "installed component-first facade and stage CLI smoke");
+  const passingComponentFirst = createComponentFirstFixture(null);
+  try {
+    for (const action of ["check", "stack", "components", "playground", "page"]) {
+      const result = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "component-first", action, "--root", passingComponentFirst.projectRoot, "--artifact", passingComponentFirst.artifact, "--json"], { echo: false, env: hermeticEnv });
+      let payload = null; try { payload = JSON.parse(result.stdout); } catch {}
+      const expectedSchema = action === "check" ? "component-first-gate.v1" : "component-first-stage-result.v1";
+      report(result.status === 0 && payload?.ok === true && payload?.status === "passed" && payload?.resultSchema === expectedSchema, `installed component-first passing ${action} journey`);
+    }
+    const alias = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "high-fidelity", "check", "--root", passingComponentFirst.projectRoot, "--artifact", passingComponentFirst.artifact, "--json"], { echo: false, env: hermeticEnv });
+    let aliasPayload = null; try { aliasPayload = JSON.parse(alias.stdout); } catch {}
+    report(alias.status === 0 && aliasPayload?.ok === true && aliasPayload?.status === "passed" && aliasPayload?.resultSchema === "component-first-gate.v1", "installed high-fidelity compatibility alias passing journey");
+  } finally {
+    fs.rmSync(path.dirname(passingComponentFirst.projectRoot), { recursive: true, force: true });
+  }
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "adaptation", "check", "--root", tempRoot, "--state", "adaptation-smoke/state.json", "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed layered adaptation contract smoke");
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed MengTo snapshot verification");
   const installedMengToSearch = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "search", "--root", repoRoot, "--query", "scroll-controlled Three.js world", "--limit", "1", "--json"], { echo: false, env: hermeticEnv });
