@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.playground-verification.v1",
+  "changeId": "game-balance",
+  "method": "manual-browser",
+  "checkedAt": "2026-08-15T00:00:00.000Z",
+  "surfaceSha256": "0f1041e4d815271de0b91525676e1024aff4c5cf766fc5ffa4d198f2194f2092",
+  "checks": {
+    "everyControlUpdatesState": true,
+    "everyPresetAppliesDeclaredState": true,
+    "previewUpdatesImmediately": true,
+    "promptUpdatesImmediately": true,
+    "copyMatchesPrompt": true,
+    "keyboardOperable": true
+  }
+}

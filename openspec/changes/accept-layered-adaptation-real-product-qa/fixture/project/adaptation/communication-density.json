@@ -1,0 +1,10 @@
+[
+  {
+    "op": "add",
+    "id": "communication-density",
+    "rule": {
+      "dimension": "communication-density",
+      "value": "concise"
+    }
+  }
+]

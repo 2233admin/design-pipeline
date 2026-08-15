@@ -1,0 +1,103 @@
+{
+  "schema": "design-pipeline.acceptance-evaluation-manifest.v1",
+  "version": "fixed-v1",
+  "taskIds": [
+    "architecture-visualization",
+    "component-design-adjustment",
+    "layout-brainstorming",
+    "game-balance"
+  ],
+  "partitions": {
+    "construction": [
+      "construction-architecture"
+    ],
+    "replay": [
+      "replay-component",
+      "replay-layout"
+    ],
+    "heldOut": [
+      "held-out-architecture",
+      "held-out-game"
+    ]
+  },
+  "evaluator": {
+    "role": "independent-evaluator",
+    "identityHash": "84dcc83f6f014c07034d3c8113d4a71bbc153e0ee15a4e221f103d5f60a5fd85"
+  },
+  "dimensions": [
+    "communication-density",
+    "representation",
+    "evidence-order"
+  ],
+  "effectRows": [
+    {
+      "dimension": "communication-density",
+      "baseline": {
+        "corrections": 4,
+        "score": 0.62,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "adapted": {
+        "corrections": 2,
+        "score": 0.81,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      }
+    },
+    {
+      "dimension": "representation",
+      "baseline": {
+        "corrections": 3,
+        "score": 0.58,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "adapted": {
+        "corrections": 1,
+        "score": 0.79,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      }
+    },
+    {
+      "dimension": "evidence-order",
+      "baseline": {
+        "corrections": 5,
+        "score": 0.55,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "adapted": {
+        "corrections": 2,
+        "score": 0.84,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      }
+    }
+  ]
+}

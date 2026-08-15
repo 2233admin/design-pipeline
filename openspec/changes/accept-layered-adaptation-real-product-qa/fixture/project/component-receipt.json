@@ -1,0 +1,90 @@
+{
+  "schema": "design-pipeline.component-verification-receipt.v1",
+  "resolutionHash": "37ec36e7aadb2817d28161cdba8db172c4be66a1786044d5c0d734d28f905dba",
+  "checks": [
+    {
+      "id": "aria-semantics",
+      "status": "pass",
+      "evidence": [
+        "fixture:aria-semantics"
+      ]
+    },
+    {
+      "id": "dialog-semantics",
+      "status": "pass",
+      "evidence": [
+        "fixture:dialog-semantics"
+      ]
+    },
+    {
+      "id": "empty-state",
+      "status": "pass",
+      "evidence": [
+        "fixture:empty-state"
+      ]
+    },
+    {
+      "id": "error-state",
+      "status": "pass",
+      "evidence": [
+        "fixture:error-state"
+      ]
+    },
+    {
+      "id": "escape-dismissal",
+      "status": "pass",
+      "evidence": [
+        "fixture:escape-dismissal"
+      ]
+    },
+    {
+      "id": "focus-order",
+      "status": "pass",
+      "evidence": [
+        "fixture:focus-order"
+      ]
+    },
+    {
+      "id": "focus-restoration",
+      "status": "pass",
+      "evidence": [
+        "fixture:focus-restoration"
+      ]
+    },
+    {
+      "id": "focus-trap",
+      "status": "pass",
+      "evidence": [
+        "fixture:focus-trap"
+      ]
+    },
+    {
+      "id": "grid-semantics",
+      "status": "pass",
+      "evidence": [
+        "fixture:grid-semantics"
+      ]
+    },
+    {
+      "id": "keyboard-navigation",
+      "status": "pass",
+      "evidence": [
+        "fixture:keyboard-navigation"
+      ]
+    },
+    {
+      "id": "loading-state",
+      "status": "pass",
+      "evidence": [
+        "fixture:loading-state"
+      ]
+    },
+    {
+      "id": "row-column-navigation",
+      "status": "pass",
+      "evidence": [
+        "fixture:row-column-navigation"
+      ]
+    }
+  ]
+}

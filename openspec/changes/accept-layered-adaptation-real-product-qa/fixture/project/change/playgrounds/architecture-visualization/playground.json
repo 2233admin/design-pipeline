@@ -1,0 +1,124 @@
+{
+  "schema": "design-pipeline.playground.v1",
+  "changeId": "architecture-visualization",
+  "applicability": {
+    "status": "required",
+    "reason": "parameter-sensitive",
+    "rationale": "The user must choose and adjust the strategy against a live preview."
+  },
+  "surface": {
+    "kind": "code-map",
+    "blueprint": {
+      "source": "builtin",
+      "id": "code-map"
+    },
+    "title": "Architecture visualization",
+    "context": "Choose and adjust the initial strategy for Architecture visualization.",
+    "artifact": {
+      "path": "playground/index.html",
+      "sha256": "daf05aa6aa2759a18766f3bef7d268090196497595b3e401004687c3eb637a41"
+    },
+    "controls": [
+      {
+        "id": "radius",
+        "label": "Corner radius",
+        "group": "Shape",
+        "type": "range",
+        "default": 12,
+        "min": 0,
+        "max": 32,
+        "step": 1
+      },
+      {
+        "id": "density",
+        "label": "Density",
+        "group": "Layout",
+        "type": "select",
+        "default": "balanced",
+        "options": [
+          "airy",
+          "balanced",
+          "compact"
+        ]
+      },
+      {
+        "id": "outlined",
+        "label": "Outlined",
+        "group": "Material",
+        "type": "checkbox",
+        "default": true
+      }
+    ],
+    "presets": [
+      {
+        "id": "calm",
+        "name": "Calm",
+        "values": {
+          "radius": 12,
+          "density": "airy",
+          "outlined": true
+        }
+      },
+      {
+        "id": "compact",
+        "name": "Compact",
+        "values": {
+          "radius": 8,
+          "density": "compact",
+          "outlined": true
+        }
+      },
+      {
+        "id": "bold",
+        "name": "Bold",
+        "values": {
+          "radius": 20,
+          "density": "balanced",
+          "outlined": false
+        }
+      }
+    ]
+  },
+  "selection": {
+    "status": "selected",
+    "values": {
+      "radius": 8,
+      "density": "compact",
+      "outlined": true
+    },
+    "changedControlIds": [
+      "radius",
+      "density"
+    ],
+    "stateSha256": "7f547d47079b125b3ac03d0047588f9f6f42077e7fd2bc8af70b0928b09e7086",
+    "prompt": {
+      "path": "playground/selection-prompt.md",
+      "sha256": "3565f1952da0d047957f38787331566dcec15ab967123b72c68cc0305e0d7c51"
+    }
+  },
+  "verification": {
+    "status": "passed",
+    "method": "manual-browser",
+    "checkedAt": "2026-08-15T00:00:00.000Z",
+    "surfaceSha256": "d2c905f709bd1a08a35824b77b46ea3a090cf97c02b746eb4601a5e41a7b43fc",
+    "checks": {
+      "everyControlUpdatesState": true,
+      "everyPresetAppliesDeclaredState": true,
+      "previewUpdatesImmediately": true,
+      "promptUpdatesImmediately": true,
+      "copyMatchesPrompt": true,
+      "keyboardOperable": true
+    },
+    "evidence": {
+      "path": "playground/verification.json",
+      "sha256": "71932e50537ed97924d6ee68114cf7dee172ba3fd177bf7fa418fdfe6c9feff9"
+    }
+  },
+  "integration": {
+    "status": "applied",
+    "target": {
+      "path": "handoff.md",
+      "sha256": "e77407b217e0b5f7fe2e356e54174bd33cc5769051a9a908703a9377f23c8394"
+    }
+  }
+}

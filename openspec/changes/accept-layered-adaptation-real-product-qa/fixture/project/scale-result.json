@@ -1,0 +1,16 @@
+{
+  "schema": "design-pipeline.maintainability-acceptance.v1",
+  "root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\design-pipeline-scale-jGHvBx",
+  "taskCount": 20,
+  "latencyMs": {
+    "p50": 132.23570000000018,
+    "p95": 179.15620000000035,
+    "max": 179.15620000000035
+  },
+  "ledgerBytes": {
+    "first": 913,
+    "final": 14954,
+    "growth": 14041
+  },
+  "interpretation": "Synthetic task-recording and check workload only; ledger growth is not adaptation benefit."
+}

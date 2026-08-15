@@ -1,0 +1,103 @@
+{
+  "schema": "design-pipeline.acceptance-evaluation-result.v1",
+  "status": "ready",
+  "manifestSha256": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+  "taskCount": 4,
+  "evaluatorRole": "independent-evaluator",
+  "partitions": {
+    "construction": [
+      "construction-architecture"
+    ],
+    "replay": [
+      "replay-component",
+      "replay-layout"
+    ],
+    "heldOut": [
+      "held-out-architecture",
+      "held-out-game"
+    ]
+  },
+  "partitionOverlap": false,
+  "invariantsPass": true,
+  "rows": [
+    {
+      "dimension": "communication-density",
+      "correctionDelta": -2,
+      "scoreDelta": 0.19,
+      "baseline": {
+        "corrections": 4,
+        "score": 0.62,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "adapted": {
+        "corrections": 2,
+        "score": 0.81,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "invariantsPass": true
+    },
+    {
+      "dimension": "representation",
+      "correctionDelta": -2,
+      "scoreDelta": 0.21,
+      "baseline": {
+        "corrections": 3,
+        "score": 0.58,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "adapted": {
+        "corrections": 1,
+        "score": 0.79,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "invariantsPass": true
+    },
+    {
+      "dimension": "evidence-order",
+      "correctionDelta": -3,
+      "scoreDelta": 0.29,
+      "baseline": {
+        "corrections": 5,
+        "score": 0.55,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "adapted": {
+        "corrections": 2,
+        "score": 0.84,
+        "invariants": {
+          "accessibility": true,
+          "quality": true,
+          "security": true,
+          "determinism": true
+        }
+      },
+      "invariantsPass": true
+    }
+  ],
+  "interpretation": "Effect sizes from a synthetic controlled fixture; no generalization claim."
+}

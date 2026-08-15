@@ -1,0 +1,1485 @@
+{
+  "schema": "design-pipeline.acceptance-run.v1",
+  "root": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project",
+  "playgroundFeedback": [
+    {
+      "sourceTask": "architecture-visualization",
+      "selected": {
+        "radius": 8,
+        "density": "compact",
+        "outlined": true
+      },
+      "prompt": "Update this surface to compact spacing with a 8px radius while preserving accessibility.",
+      "promptSha256": "caae48233e609305ea43cccbb99dba43c4f6d2a0a9b3fb7d3ddb15da4d1f00d3",
+      "nextTask": "component-design-adjustment",
+      "feedbackArtifact": "change/playgrounds/component-design-adjustment/feedback-from-architecture-visualization.md",
+      "feedbackApplied": true
+    },
+    {
+      "sourceTask": "component-design-adjustment",
+      "selected": {
+        "radius": 8,
+        "density": "compact",
+        "outlined": true
+      },
+      "prompt": "Update this surface to compact spacing with a 8px radius while preserving accessibility.",
+      "promptSha256": "caae48233e609305ea43cccbb99dba43c4f6d2a0a9b3fb7d3ddb15da4d1f00d3",
+      "nextTask": "layout-brainstorming",
+      "feedbackArtifact": "change/playgrounds/layout-brainstorming/feedback-from-component-design-adjustment.md",
+      "feedbackApplied": true
+    },
+    {
+      "sourceTask": "layout-brainstorming",
+      "selected": {
+        "radius": 8,
+        "density": "compact",
+        "outlined": true
+      },
+      "prompt": "Update this surface to compact spacing with a 8px radius while preserving accessibility.",
+      "promptSha256": "caae48233e609305ea43cccbb99dba43c4f6d2a0a9b3fb7d3ddb15da4d1f00d3",
+      "nextTask": "game-balance",
+      "feedbackArtifact": "change/playgrounds/game-balance/feedback-from-layout-brainstorming.md",
+      "feedbackApplied": true
+    },
+    {
+      "sourceTask": "game-balance",
+      "selected": {
+        "radius": 8,
+        "density": "compact",
+        "outlined": true
+      },
+      "prompt": "Update this surface to compact spacing with a 8px radius while preserving accessibility.",
+      "promptSha256": "caae48233e609305ea43cccbb99dba43c4f6d2a0a9b3fb7d3ddb15da4d1f00d3",
+      "nextTask": null,
+      "feedbackArtifact": null,
+      "feedbackApplied": false
+    }
+  ],
+  "promotions": [
+    {
+      "candidate": {
+        "id": "candidate-05f471f5600c6fe15610",
+        "hash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "targetSkill": "external/project-skill.json",
+        "incumbentHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+        "evaluationManifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+        "primaryMetric": "preference-adherence-score",
+        "metricDirection": "maximize",
+        "scope": "project",
+        "proposerHash": "6fc70e678d9db1f81d35ddd64043f53cc1578f19e3ae00c6e7aeb7d0ee197ec5",
+        "ruleCount": 1,
+        "rules": [
+          {
+            "op": "add",
+            "id": "communication-density",
+            "rule": {
+              "dimension": "communication-density",
+              "value": "concise"
+            }
+          }
+        ]
+      },
+      "promotion": {
+        "id": "promotion-4d56f9f6f210ca7e798c",
+        "candidateId": "candidate-05f471f5600c6fe15610",
+        "receiptId": "receipt-74553a7daade200b0084",
+        "skill": "external/project-skill.json",
+        "beforeHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+        "afterHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886"
+      }
+    },
+    {
+      "candidate": {
+        "id": "candidate-1af66a06f4e2ec6f2add",
+        "hash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "targetSkill": "external/project-skill.json",
+        "incumbentHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+        "evaluationManifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+        "primaryMetric": "preference-adherence-score",
+        "metricDirection": "maximize",
+        "scope": "project",
+        "proposerHash": "1737ab7e8fe8cf638d2755ecdde4364ce066167376db6aa91a902ca314a6308d",
+        "ruleCount": 1,
+        "rules": [
+          {
+            "op": "add",
+            "id": "representation",
+            "rule": {
+              "dimension": "representation",
+              "value": "diagram-first"
+            }
+          }
+        ]
+      },
+      "promotion": {
+        "id": "promotion-4df91bc5b784c16a5386",
+        "candidateId": "candidate-1af66a06f4e2ec6f2add",
+        "receiptId": "receipt-e0e4edc0b791b05451c1",
+        "skill": "external/project-skill.json",
+        "beforeHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+        "afterHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857"
+      }
+    },
+    {
+      "candidate": {
+        "id": "candidate-be4e295bba753fc6fb74",
+        "hash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "targetSkill": "external/project-skill.json",
+        "incumbentHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+        "evaluationManifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+        "primaryMetric": "preference-adherence-score",
+        "metricDirection": "maximize",
+        "scope": "project",
+        "proposerHash": "b8300e702626b4b42163d1e05a7bfa812f0ff506d6aa0fec4d3105cabbfc745a",
+        "ruleCount": 1,
+        "rules": [
+          {
+            "op": "add",
+            "id": "evidence-order",
+            "rule": {
+              "dimension": "evidence-order",
+              "value": "evidence-first"
+            }
+          }
+        ]
+      },
+      "promotion": {
+        "id": "promotion-58a0fcbfa39775a3df55",
+        "candidateId": "candidate-be4e295bba753fc6fb74",
+        "receiptId": "receipt-e8fe7c104bc0bec35bd3",
+        "skill": "external/project-skill.json",
+        "beforeHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+        "afterHash": "344fb860cc2523ad28a908fcbd2e77a66820229ec1b5a7901b8ba34053ef1469"
+      }
+    }
+  ],
+  "effective": {
+    "status": "ready",
+    "state": ".design-pipeline/adaptation/state.json",
+    "scope": null,
+    "candidates": [
+      {
+        "id": "candidate-05f471f5600c6fe15610",
+        "hash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+        "scope": "project",
+        "status": "superseded",
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "evidenceHashes": [
+          "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114"
+        ],
+        "targetSkill": "external/project-skill.json",
+        "incumbentHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+        "primaryMetric": "preference-adherence-score",
+        "metricDirection": "maximize",
+        "rules": [
+          {
+            "id": "communication-density",
+            "op": "add",
+            "rule": {
+              "dimension": "communication-density",
+              "value": "concise"
+            }
+          }
+        ]
+      },
+      {
+        "id": "candidate-1af66a06f4e2ec6f2add",
+        "hash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+        "scope": "project",
+        "status": "superseded",
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "evidenceHashes": [
+          "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114"
+        ],
+        "targetSkill": "external/project-skill.json",
+        "incumbentHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+        "primaryMetric": "preference-adherence-score",
+        "metricDirection": "maximize",
+        "rules": [
+          {
+            "id": "representation",
+            "op": "add",
+            "rule": {
+              "dimension": "representation",
+              "value": "diagram-first"
+            }
+          }
+        ]
+      },
+      {
+        "id": "candidate-be4e295bba753fc6fb74",
+        "hash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+        "scope": "project",
+        "status": "promoted",
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "evidenceHashes": [
+          "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114"
+        ],
+        "targetSkill": "external/project-skill.json",
+        "incumbentHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+        "primaryMetric": "preference-adherence-score",
+        "metricDirection": "maximize",
+        "rules": [
+          {
+            "id": "evidence-order",
+            "op": "add",
+            "rule": {
+              "dimension": "evidence-order",
+              "value": "evidence-first"
+            }
+          }
+        ]
+      }
+    ],
+    "receipts": 3,
+    "promotions": [
+      {
+        "id": "promotion-4d56f9f6f210ca7e798c",
+        "status": "superseded",
+        "scope": "project",
+        "skill": "external/project-skill.json",
+        "beforeHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+        "afterHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+        "supersedes": null
+      },
+      {
+        "id": "promotion-4df91bc5b784c16a5386",
+        "status": "superseded",
+        "scope": "project",
+        "skill": "external/project-skill.json",
+        "beforeHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+        "afterHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+        "supersedes": "promotion-4d56f9f6f210ca7e798c"
+      },
+      {
+        "id": "promotion-58a0fcbfa39775a3df55",
+        "status": "promoted",
+        "scope": "project",
+        "skill": "external/project-skill.json",
+        "beforeHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+        "afterHash": "344fb860cc2523ad28a908fcbd2e77a66820229ec1b5a7901b8ba34053ef1469",
+        "supersedes": "promotion-4df91bc5b784c16a5386"
+      }
+    ],
+    "effectiveRules": [
+      {
+        "dimension": "communication-density",
+        "id": "communication-density",
+        "value": "concise",
+        "scope": "project",
+        "promotionId": "promotion-58a0fcbfa39775a3df55"
+      },
+      {
+        "dimension": "representation",
+        "id": "representation",
+        "value": "diagram-first",
+        "scope": "project",
+        "promotionId": "promotion-58a0fcbfa39775a3df55"
+      },
+      {
+        "dimension": "evidence-order",
+        "id": "evidence-order",
+        "value": "evidence-first",
+        "scope": "project",
+        "promotionId": "promotion-58a0fcbfa39775a3df55"
+      }
+    ],
+    "expiredRules": [],
+    "tombstones": [],
+    "issues": [],
+    "schema": "design-pipeline.cli-result.v1",
+    "ok": true
+  },
+  "finalCheck": {
+    "status": "ready",
+    "state": ".design-pipeline/adaptation/state.json",
+    "scope": null,
+    "candidates": [],
+    "receipts": 3,
+    "promotions": [
+      {
+        "id": "promotion-4d56f9f6f210ca7e798c",
+        "status": "rolled-back",
+        "scope": "project",
+        "skill": "external/project-skill.json",
+        "beforeHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+        "afterHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+        "supersedes": null
+      },
+      {
+        "id": "promotion-4df91bc5b784c16a5386",
+        "status": "rolled-back",
+        "scope": "project",
+        "skill": "external/project-skill.json",
+        "beforeHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+        "afterHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+        "supersedes": "promotion-4d56f9f6f210ca7e798c"
+      },
+      {
+        "id": "promotion-58a0fcbfa39775a3df55",
+        "status": "rolled-back",
+        "scope": "project",
+        "skill": "external/project-skill.json",
+        "beforeHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+        "afterHash": "344fb860cc2523ad28a908fcbd2e77a66820229ec1b5a7901b8ba34053ef1469",
+        "supersedes": "promotion-4df91bc5b784c16a5386"
+      }
+    ],
+    "effectiveRules": [],
+    "expiredRules": [],
+    "tombstones": [
+      {
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "forgottenAt": "2026-08-15T00:00:00.000Z",
+        "hash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+        "kind": "candidate",
+        "scope": "project"
+      },
+      {
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "forgottenAt": "2026-08-15T00:00:00.000Z",
+        "hash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+        "kind": "candidate",
+        "scope": "project"
+      },
+      {
+        "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+        "forgottenAt": "2026-08-15T00:00:00.000Z",
+        "hash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+        "kind": "candidate",
+        "scope": "project"
+      }
+    ],
+    "issues": [],
+    "schema": "design-pipeline.cli-result.v1",
+    "ok": true
+  },
+  "ledgerBytes": 17550,
+  "ledgerSha256": "38b6d64cb9576cfb716abf61e6879e83073c4020c10aaf1237ef9f29c5279bfd",
+  "commands": [
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs foundation check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --project-root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "foundations": {
+          "design": {
+            "schema": "design-pipeline.foundation-check.v1",
+            "status": "ready",
+            "projectRoot": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project",
+            "designFile": "DESIGN.md",
+            "name": "Layered adaptation acceptance fixture",
+            "sha256": "a6fbac7d539e55624b17200037a9b5b236f9b82661b8a694a085803d2a107ebb"
+          },
+          "motion": {
+            "schema": "design-pipeline.motion-foundation-check.v1",
+            "status": "ready",
+            "projectRoot": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project",
+            "motionFile": "MOTION.md",
+            "name": "Layered adaptation acceptance motion",
+            "posture": "static",
+            "language": "en",
+            "primitiveRegistry": "design-pipeline.motion-primitives.v1",
+            "selectedPrimitives": [],
+            "foundation": {
+              "schema": "design-pipeline.motion-foundation.v0.1",
+              "name": "Layered adaptation acceptance motion",
+              "posture": "static",
+              "primitiveRegistry": "design-pipeline.motion-primitives.v1",
+              "principles": [
+                "State changes remain legible without motion.",
+                "Motion never weakens focus, contrast, or recovery."
+              ],
+              "primitives": [],
+              "proceduralMotion": {
+                "policy": "disabled",
+                "description": "Disabled. No procedural motion is needed for acceptance."
+              },
+              "runtimePolicy": {
+                "summary": "The fixture has no animation runtime; target products declare one separately."
+              },
+              "reducedMotion": {
+                "substitute": "Fallback: all state, evidence, prompts, and recovery actions remain available immediately as text."
+              },
+              "sourceDecisions": [
+                {
+                  "source": "MOTION.md",
+                  "adopted": "an explicit static posture and immediate text state.",
+                  "rejected": "decorative motion and motion-only meaning.",
+                  "codeCopied": false
+                }
+              ]
+            },
+            "sha256": "9df81b34d5f9e6b249441f8b430162878ada37257bb265b836ccfdae527e0d1b"
+          }
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs direction check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --change-root change --stage preview --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "reason": null,
+        "reasons": [],
+        "blockers": [],
+        "stage": "preview",
+        "applicable": true,
+        "directionCount": 3,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "decision": {
+          "status": "selected",
+          "selectedDirectionId": "quiet",
+          "rationale": "Quiet Grid gives the clearest repeated-use scan path while preserving evidence and recovery states."
+        },
+        "artifact": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project\\change\\direction-preview.json",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs direction check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --change-root change --stage selection --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "reason": null,
+        "reasons": [],
+        "blockers": [],
+        "stage": "selection",
+        "applicable": true,
+        "directionCount": 3,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "decision": {
+          "status": "selected",
+          "selectedDirectionId": "quiet",
+          "rationale": "Quiet Grid gives the clearest repeated-use scan path while preserving evidence and recovery states."
+        },
+        "artifact": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project\\change\\direction-preview.json",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs playground check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --change-root change/playgrounds/architecture-visualization --stage integration --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "reason": null,
+        "reasons": [],
+        "blockers": [],
+        "stage": "integration",
+        "applicable": true,
+        "controlCount": 3,
+        "presetCount": 3,
+        "blueprint": {
+          "source": "builtin",
+          "id": "code-map",
+          "sha256": "d8bbf5ea9c7b754cb22851cf4b9a4353aa9cdcbbc6716c2ee1a6efb2969ed5ba"
+        },
+        "selectionStatus": "selected",
+        "integrationStatus": "applied",
+        "artifact": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project\\change\\playgrounds\\architecture-visualization\\playground.json",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs playground check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --change-root change/playgrounds/component-design-adjustment --stage integration --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "reason": null,
+        "reasons": [],
+        "blockers": [],
+        "stage": "integration",
+        "applicable": true,
+        "controlCount": 3,
+        "presetCount": 3,
+        "blueprint": {
+          "source": "builtin",
+          "id": "design-playground",
+          "sha256": "88d0b6d4065c3bc7a9cecac3af6772c1e8c96f7331608c41dfd0623c0bc7d9ab"
+        },
+        "selectionStatus": "selected",
+        "integrationStatus": "applied",
+        "artifact": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project\\change\\playgrounds\\component-design-adjustment\\playground.json",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs playground check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --change-root change/playgrounds/layout-brainstorming --stage integration --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "reason": null,
+        "reasons": [],
+        "blockers": [],
+        "stage": "integration",
+        "applicable": true,
+        "controlCount": 3,
+        "presetCount": 3,
+        "blueprint": {
+          "source": "builtin",
+          "id": "design-playground",
+          "sha256": "88d0b6d4065c3bc7a9cecac3af6772c1e8c96f7331608c41dfd0623c0bc7d9ab"
+        },
+        "selectionStatus": "selected",
+        "integrationStatus": "applied",
+        "artifact": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project\\change\\playgrounds\\layout-brainstorming\\playground.json",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs playground check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --change-root change/playgrounds/game-balance --stage integration --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "reason": null,
+        "reasons": [],
+        "blockers": [],
+        "stage": "integration",
+        "applicable": true,
+        "controlCount": 3,
+        "presetCount": 3,
+        "blueprint": {
+          "source": "builtin",
+          "id": "game-balance",
+          "sha256": "7a82dfa6b2c376745370e0b7161a723bb37f968c0c540f0ee181f7375bd3e544"
+        },
+        "selectionStatus": "selected",
+        "integrationStatus": "applied",
+        "artifact": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project\\change\\playgrounds\\game-balance\\playground.json",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs component decompose --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --query accessible paginated data grid dialog keyboard navigation --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "inventory": {
+          "blockers": [],
+          "brief": "accessible paginated data grid dialog keyboard navigation",
+          "capabilities": [
+            "aria.control-semantics",
+            "data.grid",
+            "data.pagination",
+            "focus.management",
+            "keyboard.navigation",
+            "overlay.dialog",
+            "state.empty",
+            "state.error",
+            "state.loading"
+          ],
+          "components": [
+            "data-grid"
+          ],
+          "registryHash": "71fe3a1b807de5359554c0b46fe8dff4848c98d1d2ec123c5647b996f3d15017",
+          "requiredChecks": [
+            "aria-semantics",
+            "dialog-semantics",
+            "empty-state",
+            "error-state",
+            "escape-dismissal",
+            "focus-order",
+            "focus-restoration",
+            "focus-trap",
+            "grid-semantics",
+            "keyboard-navigation",
+            "loading-state",
+            "page-announcement",
+            "pagination-behavior",
+            "row-column-navigation"
+          ],
+          "schema": "design-pipeline.component-capability.v1",
+          "status": "ready"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs component resolve --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --artifact component-request.json --write --output component-resolution.json --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "resolution": {
+          "blockers": [],
+          "brief": null,
+          "capabilities": [
+            "aria.control-semantics",
+            "data.grid",
+            "focus.management",
+            "keyboard.navigation",
+            "overlay.dialog",
+            "state.empty",
+            "state.error",
+            "state.loading"
+          ],
+          "constraints": [
+            "resolution never installs packages or rewrites project configuration",
+            "candidate providers require an explicit adoption decision"
+          ],
+          "framework": "react",
+          "missingCapabilities": [],
+          "registryHashes": {
+            "capabilities": "71fe3a1b807de5359554c0b46fe8dff4848c98d1d2ec123c5647b996f3d15017",
+            "providers": "595566f3e440970107ae36a299af8983858def410ae048d37aade54ed10ef192"
+          },
+          "requiredChecks": [
+            "aria-semantics",
+            "dialog-semantics",
+            "empty-state",
+            "error-state",
+            "escape-dismissal",
+            "focus-order",
+            "focus-restoration",
+            "focus-trap",
+            "grid-semantics",
+            "keyboard-navigation",
+            "loading-state",
+            "row-column-navigation"
+          ],
+          "resolutionHash": "37ec36e7aadb2817d28161cdba8db172c4be66a1786044d5c0d734d28f905dba",
+          "routes": [
+            {
+              "activation": "project-owned",
+              "adoptionRequired": false,
+              "capability": "aria.control-semantics",
+              "interfaces": [
+                "dom",
+                "project-component"
+              ],
+              "packages": [],
+              "provider": "project-dom",
+              "status": "ready"
+            },
+            {
+              "activation": "project-owned",
+              "adoptionRequired": false,
+              "capability": "data.grid",
+              "interfaces": [
+                "dom",
+                "project-component"
+              ],
+              "packages": [],
+              "provider": "project-dom",
+              "status": "ready"
+            },
+            {
+              "activation": "project-owned",
+              "adoptionRequired": false,
+              "capability": "focus.management",
+              "interfaces": [
+                "dom",
+                "project-component"
+              ],
+              "packages": [],
+              "provider": "project-dom",
+              "status": "ready"
+            },
+            {
+              "activation": "project-owned",
+              "adoptionRequired": false,
+              "capability": "keyboard.navigation",
+              "interfaces": [
+                "dom",
+                "project-component"
+              ],
+              "packages": [],
+              "provider": "project-dom",
+              "status": "ready"
+            },
+            {
+              "activation": "project-owned",
+              "adoptionRequired": false,
+              "capability": "overlay.dialog",
+              "interfaces": [
+                "dom",
+                "project-component"
+              ],
+              "packages": [],
+              "provider": "project-dom",
+              "status": "ready"
+            },
+            {
+              "activation": "project-owned",
+              "adoptionRequired": false,
+              "capability": "state.empty",
+              "interfaces": [
+                "dom",
+                "project-component"
+              ],
+              "packages": [],
+              "provider": "project-dom",
+              "status": "ready"
+            },
+            {
+              "activation": "project-owned",
+              "adoptionRequired": false,
+              "capability": "state.error",
+              "interfaces": [
+                "dom",
+                "project-component"
+              ],
+              "packages": [],
+              "provider": "project-dom",
+              "status": "ready"
+            },
+            {
+              "activation": "project-owned",
+              "adoptionRequired": false,
+              "capability": "state.loading",
+              "interfaces": [
+                "dom",
+                "project-component"
+              ],
+              "packages": [],
+              "provider": "project-dom",
+              "status": "ready"
+            }
+          ],
+          "schema": "design-pipeline.component-resolution.v1",
+          "status": "ready"
+        },
+        "output": "C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project\\component-resolution.json",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs component verify --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --artifact component-resolution.json --receipt component-receipt.json --json",
+      "exit": 0,
+      "status": "verified",
+      "output": {
+        "status": "verified",
+        "verification": {
+          "evidence": [
+            "fixture:aria-semantics",
+            "fixture:dialog-semantics",
+            "fixture:empty-state",
+            "fixture:error-state",
+            "fixture:escape-dismissal",
+            "fixture:focus-order",
+            "fixture:focus-restoration",
+            "fixture:focus-trap",
+            "fixture:grid-semantics",
+            "fixture:keyboard-navigation",
+            "fixture:loading-state",
+            "fixture:row-column-navigation"
+          ],
+          "failed": [],
+          "missing": [],
+          "passed": [
+            "aria-semantics",
+            "dialog-semantics",
+            "empty-state",
+            "error-state",
+            "escape-dismissal",
+            "focus-order",
+            "focus-restoration",
+            "focus-trap",
+            "grid-semantics",
+            "keyboard-navigation",
+            "loading-state",
+            "row-column-navigation"
+          ],
+          "resolutionHash": "37ec36e7aadb2817d28161cdba8db172c4be66a1786044d5c0d734d28f905dba",
+          "schema": "design-pipeline.component-verification.v1",
+          "status": "verified"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation record --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --experience adaptation/experience-one.json --scope project --recorder fixture-recorder --json",
+      "exit": 0,
+      "status": "recorded",
+      "output": {
+        "status": "recorded",
+        "experience": {
+          "hash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "scope": "project",
+          "sourceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "explicit": true,
+          "repeated": false,
+          "recordedAt": "2026-08-15T00:00:00.000Z",
+          "recorderHash": "98ea406d86050ddb4eff7389c93bea8a0297eacb9539ac74831f24486d7d1b5a",
+          "recordHash": "6d09d0f3d2d6856871a2d594621b5d4fa5b1c6d6695701e3986c5cc9caa9c438"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation record --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --experience adaptation/experience-two.json --scope project --recorder fixture-recorder --json",
+      "exit": 0,
+      "status": "recorded",
+      "output": {
+        "status": "recorded",
+        "experience": {
+          "hash": "5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114",
+          "scope": "project",
+          "sourceHash": "5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114",
+          "explicit": true,
+          "repeated": false,
+          "recordedAt": "2026-08-15T00:00:00.000Z",
+          "recorderHash": "98ea406d86050ddb4eff7389c93bea8a0297eacb9539ac74831f24486d7d1b5a",
+          "recordHash": "357d3297e7a2c6168880fabe9d0bec3b7b846a565da236f5a7b3f2792e4b788a"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation propose --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --experience 3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af --evidence-hash 5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114 --scope project --proposer proposer-communication-density --skill external/project-skill.json --target-version 1.0.0 --evaluation-manifest-sha256 da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369 --primary-metric preference-adherence-score --metric-direction maximize --construction-fixture construction-architecture --rules adaptation/communication-density.json --json",
+      "exit": 0,
+      "status": "proposed",
+      "output": {
+        "status": "proposed",
+        "candidate": {
+          "id": "candidate-05f471f5600c6fe15610",
+          "hash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "targetSkill": "external/project-skill.json",
+          "incumbentHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+          "evaluationManifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+          "primaryMetric": "preference-adherence-score",
+          "metricDirection": "maximize",
+          "scope": "project",
+          "proposerHash": "6fc70e678d9db1f81d35ddd64043f53cc1578f19e3ae00c6e7aeb7d0ee197ec5",
+          "ruleCount": 1,
+          "rules": [
+            {
+              "op": "add",
+              "id": "communication-density",
+              "rule": {
+                "dimension": "communication-density",
+                "value": "concise"
+              }
+            }
+          ]
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation evaluate --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-05f471f5600c6fe15610 --replay adaptation/communication-density-replay.json --held-out adaptation/communication-density-held-out.json --evaluator evaluator-communication-density --json",
+      "exit": 0,
+      "status": "passed",
+      "output": {
+        "status": "passed",
+        "receipt": {
+          "candidateId": "candidate-05f471f5600c6fe15610",
+          "candidateHash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "evaluatorHash": "aab22107090cacd2e9d40052577e0341fc8f8dc2b05c6629595d3601336e3b1f",
+          "replayHash": "c1f60fb06ea7cac7556ef2a07faea215d1ff79487e031c4bdb41a00934e72a1e",
+          "heldOutHash": "29b4c019ab95abdce9bf0aa5a8d81b46fd1a9b097cc0c780fbfa997456d66352",
+          "replay": {
+            "baselineScore": 0,
+            "candidateScore": 1,
+            "rawDifference": 1,
+            "invariantRegressions": [],
+            "manifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+            "candidateHash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+            "primaryMetric": "preference-adherence-score",
+            "fixtureIds": [
+              "replay-communication-density"
+            ],
+            "complete": true,
+            "improvement": 1
+          },
+          "heldOut": {
+            "baselineScore": 0,
+            "candidateScore": 1,
+            "rawDifference": 1,
+            "invariantRegressions": [],
+            "manifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+            "candidateHash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+            "primaryMetric": "preference-adherence-score",
+            "fixtureIds": [
+              "held-out-communication-density"
+            ],
+            "complete": true,
+            "improvement": 1
+          },
+          "fixtureOverlap": [],
+          "constructionFixtureOverlap": [],
+          "passed": true,
+          "evaluatedAt": "2026-08-15T00:00:00.000Z",
+          "hash": "069435b483a1a96bc546f0c5daa29099daeb4641983d2521d6c35d07d28933ab",
+          "id": "receipt-74553a7daade200b0084"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation promote --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-05f471f5600c6fe15610 --receipt receipt-74553a7daade200b0084 --skill external/project-skill.json --approve --approval approved-communication-density --timestamp 2026-08-15T00:00:00.000Z --json",
+      "exit": 0,
+      "status": "promoted",
+      "output": {
+        "status": "promoted",
+        "promotion": {
+          "id": "promotion-4d56f9f6f210ca7e798c",
+          "candidateId": "candidate-05f471f5600c6fe15610",
+          "receiptId": "receipt-74553a7daade200b0084",
+          "skill": "external/project-skill.json",
+          "beforeHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+          "afterHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation propose --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --experience 3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af --evidence-hash 5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114 --scope project --proposer proposer-representation --skill external/project-skill.json --target-version 1.0.0+adapt-48dfbe9293e9 --evaluation-manifest-sha256 da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369 --primary-metric preference-adherence-score --metric-direction maximize --construction-fixture construction-architecture --rules adaptation/representation.json --json",
+      "exit": 0,
+      "status": "proposed",
+      "output": {
+        "status": "proposed",
+        "candidate": {
+          "id": "candidate-1af66a06f4e2ec6f2add",
+          "hash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "targetSkill": "external/project-skill.json",
+          "incumbentHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+          "evaluationManifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+          "primaryMetric": "preference-adherence-score",
+          "metricDirection": "maximize",
+          "scope": "project",
+          "proposerHash": "1737ab7e8fe8cf638d2755ecdde4364ce066167376db6aa91a902ca314a6308d",
+          "ruleCount": 1,
+          "rules": [
+            {
+              "op": "add",
+              "id": "representation",
+              "rule": {
+                "dimension": "representation",
+                "value": "diagram-first"
+              }
+            }
+          ]
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation evaluate --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-1af66a06f4e2ec6f2add --replay adaptation/representation-replay.json --held-out adaptation/representation-held-out.json --evaluator evaluator-representation --json",
+      "exit": 0,
+      "status": "passed",
+      "output": {
+        "status": "passed",
+        "receipt": {
+          "candidateId": "candidate-1af66a06f4e2ec6f2add",
+          "candidateHash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "evaluatorHash": "abced1a953a2188bfa74a0b20f98015a321ef560812a1c6c6b29e1c6f473f85e",
+          "replayHash": "fa1aedea8a650d7acf1eee0d40d6d67f2eaa1af4575f6198bd093cf4bc6ee78e",
+          "heldOutHash": "6235ba9cef67564b41a1d95fc534a0ebfca100edff9542c519acd40fac78c246",
+          "replay": {
+            "baselineScore": 0,
+            "candidateScore": 1,
+            "rawDifference": 1,
+            "invariantRegressions": [],
+            "manifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+            "candidateHash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+            "primaryMetric": "preference-adherence-score",
+            "fixtureIds": [
+              "replay-representation"
+            ],
+            "complete": true,
+            "improvement": 1
+          },
+          "heldOut": {
+            "baselineScore": 0,
+            "candidateScore": 1,
+            "rawDifference": 1,
+            "invariantRegressions": [],
+            "manifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+            "candidateHash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+            "primaryMetric": "preference-adherence-score",
+            "fixtureIds": [
+              "held-out-representation"
+            ],
+            "complete": true,
+            "improvement": 1
+          },
+          "fixtureOverlap": [],
+          "constructionFixtureOverlap": [],
+          "passed": true,
+          "evaluatedAt": "2026-08-15T00:00:00.000Z",
+          "hash": "a2deb5c22ccf5254eb21739b19d8d98e3ddf103fb890b0a228c2cfc1aadc0669",
+          "id": "receipt-e0e4edc0b791b05451c1"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation promote --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-1af66a06f4e2ec6f2add --receipt receipt-e0e4edc0b791b05451c1 --skill external/project-skill.json --approve --approval approved-representation --timestamp 2026-08-15T00:01:00.000Z --json",
+      "exit": 0,
+      "status": "promoted",
+      "output": {
+        "status": "promoted",
+        "promotion": {
+          "id": "promotion-4df91bc5b784c16a5386",
+          "candidateId": "candidate-1af66a06f4e2ec6f2add",
+          "receiptId": "receipt-e0e4edc0b791b05451c1",
+          "skill": "external/project-skill.json",
+          "beforeHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+          "afterHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation propose --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --experience 3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af --evidence-hash 5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114 --scope project --proposer proposer-evidence-order --skill external/project-skill.json --target-version 1.0.0+adapt-3ce440b65a84 --evaluation-manifest-sha256 da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369 --primary-metric preference-adherence-score --metric-direction maximize --construction-fixture construction-architecture --rules adaptation/evidence-order.json --json",
+      "exit": 0,
+      "status": "proposed",
+      "output": {
+        "status": "proposed",
+        "candidate": {
+          "id": "candidate-be4e295bba753fc6fb74",
+          "hash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "targetSkill": "external/project-skill.json",
+          "incumbentHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+          "evaluationManifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+          "primaryMetric": "preference-adherence-score",
+          "metricDirection": "maximize",
+          "scope": "project",
+          "proposerHash": "b8300e702626b4b42163d1e05a7bfa812f0ff506d6aa0fec4d3105cabbfc745a",
+          "ruleCount": 1,
+          "rules": [
+            {
+              "op": "add",
+              "id": "evidence-order",
+              "rule": {
+                "dimension": "evidence-order",
+                "value": "evidence-first"
+              }
+            }
+          ]
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation evaluate --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-be4e295bba753fc6fb74 --replay adaptation/evidence-order-replay.json --held-out adaptation/evidence-order-held-out.json --evaluator evaluator-evidence-order --json",
+      "exit": 0,
+      "status": "passed",
+      "output": {
+        "status": "passed",
+        "receipt": {
+          "candidateId": "candidate-be4e295bba753fc6fb74",
+          "candidateHash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "evaluatorHash": "6dc8c0ba3c4b1ea73958c8c535d88a9853bb1e6d64602c052900dd9960ce9423",
+          "replayHash": "4755297a3e33bfc0e72ed9fd993965aed128deb41f022e1024e709816e5f90fa",
+          "heldOutHash": "cd0dc0eeed4c154b28e5875a0b07b20a86d161cd229b1cdbf046044283114472",
+          "replay": {
+            "baselineScore": 0,
+            "candidateScore": 1,
+            "rawDifference": 1,
+            "invariantRegressions": [],
+            "manifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+            "candidateHash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+            "primaryMetric": "preference-adherence-score",
+            "fixtureIds": [
+              "replay-evidence-order"
+            ],
+            "complete": true,
+            "improvement": 1
+          },
+          "heldOut": {
+            "baselineScore": 0,
+            "candidateScore": 1,
+            "rawDifference": 1,
+            "invariantRegressions": [],
+            "manifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+            "candidateHash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+            "primaryMetric": "preference-adherence-score",
+            "fixtureIds": [
+              "held-out-evidence-order"
+            ],
+            "complete": true,
+            "improvement": 1
+          },
+          "fixtureOverlap": [],
+          "constructionFixtureOverlap": [],
+          "passed": true,
+          "evaluatedAt": "2026-08-15T00:00:00.000Z",
+          "hash": "fd8c2be53f084f63f28c7e383301801bdb2e0bfb55456059cde9f177525268da",
+          "id": "receipt-e8fe7c104bc0bec35bd3"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation promote --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-be4e295bba753fc6fb74 --receipt receipt-e8fe7c104bc0bec35bd3 --skill external/project-skill.json --approve --approval approved-evidence-order --timestamp 2026-08-15T00:02:00.000Z --json",
+      "exit": 0,
+      "status": "promoted",
+      "output": {
+        "status": "promoted",
+        "promotion": {
+          "id": "promotion-58a0fcbfa39775a3df55",
+          "candidateId": "candidate-be4e295bba753fc6fb74",
+          "receiptId": "receipt-e8fe7c104bc0bec35bd3",
+          "skill": "external/project-skill.json",
+          "beforeHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+          "afterHash": "344fb860cc2523ad28a908fcbd2e77a66820229ec1b5a7901b8ba34053ef1469"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "state": ".design-pipeline/adaptation/state.json",
+        "scope": null,
+        "candidates": [
+          {
+            "id": "candidate-05f471f5600c6fe15610",
+            "hash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+            "scope": "project",
+            "status": "superseded",
+            "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+            "evidenceHashes": [
+              "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+              "5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114"
+            ],
+            "targetSkill": "external/project-skill.json",
+            "incumbentHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+            "primaryMetric": "preference-adherence-score",
+            "metricDirection": "maximize",
+            "rules": [
+              {
+                "id": "communication-density",
+                "op": "add",
+                "rule": {
+                  "dimension": "communication-density",
+                  "value": "concise"
+                }
+              }
+            ]
+          },
+          {
+            "id": "candidate-1af66a06f4e2ec6f2add",
+            "hash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+            "scope": "project",
+            "status": "superseded",
+            "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+            "evidenceHashes": [
+              "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+              "5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114"
+            ],
+            "targetSkill": "external/project-skill.json",
+            "incumbentHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+            "primaryMetric": "preference-adherence-score",
+            "metricDirection": "maximize",
+            "rules": [
+              {
+                "id": "representation",
+                "op": "add",
+                "rule": {
+                  "dimension": "representation",
+                  "value": "diagram-first"
+                }
+              }
+            ]
+          },
+          {
+            "id": "candidate-be4e295bba753fc6fb74",
+            "hash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+            "scope": "project",
+            "status": "promoted",
+            "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+            "evidenceHashes": [
+              "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+              "5de3e3df8670aac0ed5bc354d0c806b156963819c109ff93f869de18e2290114"
+            ],
+            "targetSkill": "external/project-skill.json",
+            "incumbentHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+            "primaryMetric": "preference-adherence-score",
+            "metricDirection": "maximize",
+            "rules": [
+              {
+                "id": "evidence-order",
+                "op": "add",
+                "rule": {
+                  "dimension": "evidence-order",
+                  "value": "evidence-first"
+                }
+              }
+            ]
+          }
+        ],
+        "receipts": 3,
+        "promotions": [
+          {
+            "id": "promotion-4d56f9f6f210ca7e798c",
+            "status": "superseded",
+            "scope": "project",
+            "skill": "external/project-skill.json",
+            "beforeHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+            "afterHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+            "supersedes": null
+          },
+          {
+            "id": "promotion-4df91bc5b784c16a5386",
+            "status": "superseded",
+            "scope": "project",
+            "skill": "external/project-skill.json",
+            "beforeHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+            "afterHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+            "supersedes": "promotion-4d56f9f6f210ca7e798c"
+          },
+          {
+            "id": "promotion-58a0fcbfa39775a3df55",
+            "status": "promoted",
+            "scope": "project",
+            "skill": "external/project-skill.json",
+            "beforeHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+            "afterHash": "344fb860cc2523ad28a908fcbd2e77a66820229ec1b5a7901b8ba34053ef1469",
+            "supersedes": "promotion-4df91bc5b784c16a5386"
+          }
+        ],
+        "effectiveRules": [
+          {
+            "dimension": "communication-density",
+            "id": "communication-density",
+            "value": "concise",
+            "scope": "project",
+            "promotionId": "promotion-58a0fcbfa39775a3df55"
+          },
+          {
+            "dimension": "representation",
+            "id": "representation",
+            "value": "diagram-first",
+            "scope": "project",
+            "promotionId": "promotion-58a0fcbfa39775a3df55"
+          },
+          {
+            "dimension": "evidence-order",
+            "id": "evidence-order",
+            "value": "evidence-first",
+            "scope": "project",
+            "promotionId": "promotion-58a0fcbfa39775a3df55"
+          }
+        ],
+        "expiredRules": [],
+        "tombstones": [],
+        "issues": [],
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation forget --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-05f471f5600c6fe15610 --json",
+      "exit": 2,
+      "status": null,
+      "output": {
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": false,
+        "error": {
+          "code": "BLOCKED",
+          "message": "adaptation: candidate is retained by live promotion chain promotion-4d56f9f6f210ca7e798c, promotion-4df91bc5b784c16a5386, promotion-58a0fcbfa39775a3df55; roll back the newest successor through this candidate before forgetting",
+          "details": {
+            "code": "BLOCKED"
+          }
+        }
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation rollback --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --promotion promotion-58a0fcbfa39775a3df55 --skill external/project-skill.json --json",
+      "exit": 0,
+      "status": "rolled-back",
+      "output": {
+        "status": "rolled-back",
+        "promotionId": "promotion-58a0fcbfa39775a3df55",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation rollback --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --promotion promotion-4df91bc5b784c16a5386 --skill external/project-skill.json --json",
+      "exit": 0,
+      "status": "rolled-back",
+      "output": {
+        "status": "rolled-back",
+        "promotionId": "promotion-4df91bc5b784c16a5386",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation rollback --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --promotion promotion-4d56f9f6f210ca7e798c --skill external/project-skill.json --json",
+      "exit": 0,
+      "status": "rolled-back",
+      "output": {
+        "status": "rolled-back",
+        "promotionId": "promotion-4d56f9f6f210ca7e798c",
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation forget --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-05f471f5600c6fe15610 --json",
+      "exit": 0,
+      "status": "forgotten",
+      "output": {
+        "status": "forgotten",
+        "tombstone": {
+          "kind": "candidate",
+          "hash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "scope": "project",
+          "forgottenAt": "2026-08-15T00:00:00.000Z"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation forget --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-1af66a06f4e2ec6f2add --json",
+      "exit": 0,
+      "status": "forgotten",
+      "output": {
+        "status": "forgotten",
+        "tombstone": {
+          "kind": "candidate",
+          "hash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "scope": "project",
+          "forgottenAt": "2026-08-15T00:00:00.000Z"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation forget --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --candidate candidate-be4e295bba753fc6fb74 --json",
+      "exit": 0,
+      "status": "forgotten",
+      "output": {
+        "status": "forgotten",
+        "tombstone": {
+          "kind": "candidate",
+          "hash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+          "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+          "scope": "project",
+          "forgottenAt": "2026-08-15T00:00:00.000Z"
+        },
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    },
+    {
+      "command": "node skill/scripts/designer-pipeline.cjs adaptation check --root C:\\Users\\Administrator\\.codex\\worktrees\\a928\\design-pipeline\\openspec\\changes\\accept-layered-adaptation-real-product-qa\\fixture\\project --json",
+      "exit": 0,
+      "status": "ready",
+      "output": {
+        "status": "ready",
+        "state": ".design-pipeline/adaptation/state.json",
+        "scope": null,
+        "candidates": [],
+        "receipts": 3,
+        "promotions": [
+          {
+            "id": "promotion-4d56f9f6f210ca7e798c",
+            "status": "rolled-back",
+            "scope": "project",
+            "skill": "external/project-skill.json",
+            "beforeHash": "b1543cc869e314347e6d2f387556d174a87f98346dc5c7efbabd633ca9acba08",
+            "afterHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+            "supersedes": null
+          },
+          {
+            "id": "promotion-4df91bc5b784c16a5386",
+            "status": "rolled-back",
+            "scope": "project",
+            "skill": "external/project-skill.json",
+            "beforeHash": "7fbb86048fd37e317d3dc057882f659ba548036d0a2388a7924e71aca34b0886",
+            "afterHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+            "supersedes": "promotion-4d56f9f6f210ca7e798c"
+          },
+          {
+            "id": "promotion-58a0fcbfa39775a3df55",
+            "status": "rolled-back",
+            "scope": "project",
+            "skill": "external/project-skill.json",
+            "beforeHash": "0f75fc6c84dd51122e07601d57201a155a297039c8f870a535b79bec87fde857",
+            "afterHash": "344fb860cc2523ad28a908fcbd2e77a66820229ec1b5a7901b8ba34053ef1469",
+            "supersedes": "promotion-4df91bc5b784c16a5386"
+          }
+        ],
+        "effectiveRules": [],
+        "expiredRules": [],
+        "tombstones": [
+          {
+            "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+            "forgottenAt": "2026-08-15T00:00:00.000Z",
+            "hash": "ac1c42243876b69eceb0528d1bcf4f2ab0a202d4a43294be5ecf761afaf069fe",
+            "kind": "candidate",
+            "scope": "project"
+          },
+          {
+            "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+            "forgottenAt": "2026-08-15T00:00:00.000Z",
+            "hash": "b935845a0d71d143a8a58d06d90726d532e56581043ba5fc209313e9a336297f",
+            "kind": "candidate",
+            "scope": "project"
+          },
+          {
+            "experienceHash": "3a853e6075ab85c3b535c95928b129b3a59e7a00f4ef92bc4bc5d3fdb90b38af",
+            "forgottenAt": "2026-08-15T00:00:00.000Z",
+            "hash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+            "kind": "candidate",
+            "scope": "project"
+          }
+        ],
+        "issues": [],
+        "schema": "design-pipeline.cli-result.v1",
+        "ok": true
+      }
+    }
+  ]
+}

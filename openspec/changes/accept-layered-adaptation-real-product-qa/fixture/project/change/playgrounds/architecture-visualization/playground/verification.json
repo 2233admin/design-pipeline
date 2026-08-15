@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.playground-verification.v1",
+  "changeId": "architecture-visualization",
+  "method": "manual-browser",
+  "checkedAt": "2026-08-15T00:00:00.000Z",
+  "surfaceSha256": "d2c905f709bd1a08a35824b77b46ea3a090cf97c02b746eb4601a5e41a7b43fc",
+  "checks": {
+    "everyControlUpdatesState": true,
+    "everyPresetAppliesDeclaredState": true,
+    "previewUpdatesImmediately": true,
+    "promptUpdatesImmediately": true,
+    "copyMatchesPrompt": true,
+    "keyboardOperable": true
+  }
+}

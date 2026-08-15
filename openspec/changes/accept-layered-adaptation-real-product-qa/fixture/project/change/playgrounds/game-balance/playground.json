@@ -1,0 +1,124 @@
+{
+  "schema": "design-pipeline.playground.v1",
+  "changeId": "game-balance",
+  "applicability": {
+    "status": "required",
+    "reason": "parameter-sensitive",
+    "rationale": "The user must choose and adjust the strategy against a live preview."
+  },
+  "surface": {
+    "kind": "game-balance",
+    "blueprint": {
+      "source": "builtin",
+      "id": "game-balance"
+    },
+    "title": "Game balance",
+    "context": "Choose and adjust the initial strategy for Game balance.",
+    "artifact": {
+      "path": "playground/index.html",
+      "sha256": "daf05aa6aa2759a18766f3bef7d268090196497595b3e401004687c3eb637a41"
+    },
+    "controls": [
+      {
+        "id": "radius",
+        "label": "Corner radius",
+        "group": "Shape",
+        "type": "range",
+        "default": 12,
+        "min": 0,
+        "max": 32,
+        "step": 1
+      },
+      {
+        "id": "density",
+        "label": "Density",
+        "group": "Layout",
+        "type": "select",
+        "default": "balanced",
+        "options": [
+          "airy",
+          "balanced",
+          "compact"
+        ]
+      },
+      {
+        "id": "outlined",
+        "label": "Outlined",
+        "group": "Material",
+        "type": "checkbox",
+        "default": true
+      }
+    ],
+    "presets": [
+      {
+        "id": "calm",
+        "name": "Calm",
+        "values": {
+          "radius": 12,
+          "density": "airy",
+          "outlined": true
+        }
+      },
+      {
+        "id": "compact",
+        "name": "Compact",
+        "values": {
+          "radius": 8,
+          "density": "compact",
+          "outlined": true
+        }
+      },
+      {
+        "id": "bold",
+        "name": "Bold",
+        "values": {
+          "radius": 20,
+          "density": "balanced",
+          "outlined": false
+        }
+      }
+    ]
+  },
+  "selection": {
+    "status": "selected",
+    "values": {
+      "radius": 8,
+      "density": "compact",
+      "outlined": true
+    },
+    "changedControlIds": [
+      "radius",
+      "density"
+    ],
+    "stateSha256": "7f547d47079b125b3ac03d0047588f9f6f42077e7fd2bc8af70b0928b09e7086",
+    "prompt": {
+      "path": "playground/selection-prompt.md",
+      "sha256": "55e985c92f90be3170f529f151a618dc4614e810eb606df07017e8c84615af76"
+    }
+  },
+  "verification": {
+    "status": "passed",
+    "method": "manual-browser",
+    "checkedAt": "2026-08-15T00:00:00.000Z",
+    "surfaceSha256": "0f1041e4d815271de0b91525676e1024aff4c5cf766fc5ffa4d198f2194f2092",
+    "checks": {
+      "everyControlUpdatesState": true,
+      "everyPresetAppliesDeclaredState": true,
+      "previewUpdatesImmediately": true,
+      "promptUpdatesImmediately": true,
+      "copyMatchesPrompt": true,
+      "keyboardOperable": true
+    },
+    "evidence": {
+      "path": "playground/verification.json",
+      "sha256": "5438140809a336a9f68cf87a013d6f197f97c6d498d755561d0e89e4631c6790"
+    }
+  },
+  "integration": {
+    "status": "applied",
+    "target": {
+      "path": "scene.md",
+      "sha256": "5c550006945969f4fae1f09fdf42300941afe900b2887df90781cf0003ad06b6"
+    }
+  }
+}

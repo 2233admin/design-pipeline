@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.playground-verification.v1",
+  "changeId": "layout-brainstorming",
+  "method": "manual-browser",
+  "checkedAt": "2026-08-15T00:00:00.000Z",
+  "surfaceSha256": "f5c9b8c9544b5065ebdbc4660803ce803bb876eb73dce4d082d480f5dcd4b812",
+  "checks": {
+    "everyControlUpdatesState": true,
+    "everyPresetAppliesDeclaredState": true,
+    "previewUpdatesImmediately": true,
+    "promptUpdatesImmediately": true,
+    "copyMatchesPrompt": true,
+    "keyboardOperable": true
+  }
+}

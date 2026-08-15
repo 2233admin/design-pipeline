@@ -1,0 +1,139 @@
+{
+  "blockers": [],
+  "brief": null,
+  "capabilities": [
+    "aria.control-semantics",
+    "data.grid",
+    "focus.management",
+    "keyboard.navigation",
+    "overlay.dialog",
+    "state.empty",
+    "state.error",
+    "state.loading"
+  ],
+  "constraints": [
+    "resolution never installs packages or rewrites project configuration",
+    "candidate providers require an explicit adoption decision"
+  ],
+  "framework": "react",
+  "missingCapabilities": [],
+  "registryHashes": {
+    "capabilities": "71fe3a1b807de5359554c0b46fe8dff4848c98d1d2ec123c5647b996f3d15017",
+    "providers": "595566f3e440970107ae36a299af8983858def410ae048d37aade54ed10ef192"
+  },
+  "requiredChecks": [
+    "aria-semantics",
+    "dialog-semantics",
+    "empty-state",
+    "error-state",
+    "escape-dismissal",
+    "focus-order",
+    "focus-restoration",
+    "focus-trap",
+    "grid-semantics",
+    "keyboard-navigation",
+    "loading-state",
+    "row-column-navigation"
+  ],
+  "resolutionHash": "37ec36e7aadb2817d28161cdba8db172c4be66a1786044d5c0d734d28f905dba",
+  "routes": [
+    {
+      "activation": "project-owned",
+      "adoptionRequired": false,
+      "capability": "aria.control-semantics",
+      "interfaces": [
+        "dom",
+        "project-component"
+      ],
+      "packages": [],
+      "provider": "project-dom",
+      "status": "ready"
+    },
+    {
+      "activation": "project-owned",
+      "adoptionRequired": false,
+      "capability": "data.grid",
+      "interfaces": [
+        "dom",
+        "project-component"
+      ],
+      "packages": [],
+      "provider": "project-dom",
+      "status": "ready"
+    },
+    {
+      "activation": "project-owned",
+      "adoptionRequired": false,
+      "capability": "focus.management",
+      "interfaces": [
+        "dom",
+        "project-component"
+      ],
+      "packages": [],
+      "provider": "project-dom",
+      "status": "ready"
+    },
+    {
+      "activation": "project-owned",
+      "adoptionRequired": false,
+      "capability": "keyboard.navigation",
+      "interfaces": [
+        "dom",
+        "project-component"
+      ],
+      "packages": [],
+      "provider": "project-dom",
+      "status": "ready"
+    },
+    {
+      "activation": "project-owned",
+      "adoptionRequired": false,
+      "capability": "overlay.dialog",
+      "interfaces": [
+        "dom",
+        "project-component"
+      ],
+      "packages": [],
+      "provider": "project-dom",
+      "status": "ready"
+    },
+    {
+      "activation": "project-owned",
+      "adoptionRequired": false,
+      "capability": "state.empty",
+      "interfaces": [
+        "dom",
+        "project-component"
+      ],
+      "packages": [],
+      "provider": "project-dom",
+      "status": "ready"
+    },
+    {
+      "activation": "project-owned",
+      "adoptionRequired": false,
+      "capability": "state.error",
+      "interfaces": [
+        "dom",
+        "project-component"
+      ],
+      "packages": [],
+      "provider": "project-dom",
+      "status": "ready"
+    },
+    {
+      "activation": "project-owned",
+      "adoptionRequired": false,
+      "capability": "state.loading",
+      "interfaces": [
+        "dom",
+        "project-component"
+      ],
+      "packages": [],
+      "provider": "project-dom",
+      "status": "ready"
+    }
+  ],
+  "schema": "design-pipeline.component-resolution.v1",
+  "status": "ready"
+}

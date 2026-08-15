@@ -1,0 +1,7 @@
+{
+  "schema": "design-pipeline.adaptation-experience.v1",
+  "signal": "explicit",
+  "evidence": [
+    "user confirmation: keep evidence visible"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "design-pipeline.playground-feedback.v1",
+  "transitions": [
+    {
+      "sourceTask": "architecture-visualization",
+      "selected": {
+        "radius": 8,
+        "density": "compact",
+        "outlined": true
+      },
+      "prompt": "Update this surface to compact spacing with a 8px radius while preserving accessibility.",
+      "promptSha256": "caae48233e609305ea43cccbb99dba43c4f6d2a0a9b3fb7d3ddb15da4d1f00d3",
+      "nextTask": "component-design-adjustment",
+      "feedbackArtifact": "change/playgrounds/component-design-adjustment/feedback-from-architecture-visualization.md",
+      "feedbackApplied": true
+    },
+    {
+      "sourceTask": "component-design-adjustment",
+      "selected": {
+        "radius": 8,
+        "density": "compact",
+        "outlined": true
+      },
+      "prompt": "Update this surface to compact spacing with a 8px radius while preserving accessibility.",
+      "promptSha256": "caae48233e609305ea43cccbb99dba43c4f6d2a0a9b3fb7d3ddb15da4d1f00d3",
+      "nextTask": "layout-brainstorming",
+      "feedbackArtifact": "change/playgrounds/layout-brainstorming/feedback-from-component-design-adjustment.md",
+      "feedbackApplied": true
+    },
+    {
+      "sourceTask": "layout-brainstorming",
+      "selected": {
+        "radius": 8,
+        "density": "compact",
+        "outlined": true
+      },
+      "prompt": "Update this surface to compact spacing with a 8px radius while preserving accessibility.",
+      "promptSha256": "caae48233e609305ea43cccbb99dba43c4f6d2a0a9b3fb7d3ddb15da4d1f00d3",
+      "nextTask": "game-balance",
+      "feedbackArtifact": "change/playgrounds/game-balance/feedback-from-layout-brainstorming.md",
+      "feedbackApplied": true
+    },
+    {
+      "sourceTask": "game-balance",
+      "selected": {
+        "radius": 8,
+        "density": "compact",
+        "outlined": true
+      },
+      "prompt": "Update this surface to compact spacing with a 8px radius while preserving accessibility.",
+      "promptSha256": "caae48233e609305ea43cccbb99dba43c4f6d2a0a9b3fb7d3ddb15da4d1f00d3",
+      "nextTask": null,
+      "feedbackArtifact": null,
+      "feedbackApplied": false
+    }
+  ],
+  "interpretation": "Each user-adjusted prompt is written as the next task's explicit input; the template is only the initial strategy."
+}

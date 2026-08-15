@@ -1,0 +1,9 @@
+{
+  "schema": "design-pipeline.component-resolution-request.v1",
+  "framework": "react",
+  "capabilities": [
+    "data.grid",
+    "overlay.dialog",
+    "keyboard.navigation"
+  ]
+}

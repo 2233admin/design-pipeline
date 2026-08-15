@@ -1,0 +1,35 @@
+{
+  "schema": "design-pipeline.recovery-acceptance.v1",
+  "concurrent": [
+    {
+      "code": 0,
+      "signal": null,
+      "output": ""
+    },
+    {
+      "code": 1,
+      "signal": null,
+      "output": ""
+    }
+  ],
+  "committedExperienceCount": 1,
+  "recoveredAfterAbort": {
+    "status": "ready",
+    "lockExists": false
+  },
+  "liveLock": {
+    "status": "blocked",
+    "lockExists": true
+  },
+  "deadLock": {
+    "status": "ready",
+    "lockExists": false
+  },
+  "pathEscape": "adaptation: --experience must stay inside C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\design-pipeline-path-QjdhDS",
+  "tamper": {
+    "status": "blocked",
+    "issue": "adaptation: experience 42c1d289fe6ce1a6fe77f9e0f4ba28e0d605e7d667058532f24e934cc6126b26 is invalid"
+  },
+  "symlink": "adaptation: --experience resolves outside C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\design-pipeline-path-QjdhDS",
+  "root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\design-pipeline-recovery-d8VAsg"
+}

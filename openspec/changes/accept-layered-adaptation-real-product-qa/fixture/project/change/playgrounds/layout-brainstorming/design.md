@@ -1,0 +1,4 @@
+playground-kind: layout
+playground-artifact-sha256: daf05aa6aa2759a18766f3bef7d268090196497595b3e401004687c3eb637a41
+playground-state-sha256: 7f547d47079b125b3ac03d0047588f9f6f42077e7fd2bc8af70b0928b09e7086
+playground-prompt-sha256: 5e85611168287e7ec4b893c9e5f7566320df218a1a7cd2dc1ec27a81e55afc7a

@@ -1,0 +1,24 @@
+<!doctype html>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; font-src 'none'; media-src 'none'; worker-src 'none'; manifest-src 'none'">
+<main data-design-playground>
+<h1 data-playground-title>Fixture design surface</h1>
+<div data-playground-controls>
+<label>Corner radius <input data-playground-control="radius" type="range" min="0" max="32" step="1" value="12"></label>
+<label>Density <select data-playground-control="density"><option>airy</option><option selected>balanced</option><option>compact</option></select></label>
+<label><input data-playground-control="outlined" type="checkbox" checked> Outlined</label>
+<button data-playground-preset="calm">Calm</button><button data-playground-preset="compact">Compact</button><button data-playground-preset="bold">Bold</button>
+</div>
+<section data-playground-preview aria-live="polite"></section><output data-playground-prompt></output><button data-playground-copy type="button">Copy prompt</button>
+</main>
+<script>
+const state = { radius: 12, density: "balanced", outlined: true };
+const presetValues = { calm: { radius: 12, density: "airy", outlined: true }, compact: { radius: 8, density: "compact", outlined: true }, bold: { radius: 20, density: "balanced", outlined: false } };
+const controls = document.querySelectorAll("[data-playground-control]");
+function renderPreview() { document.querySelector("[data-playground-preview]").textContent = JSON.stringify(state); }
+function updatePrompt() { document.querySelector("[data-playground-prompt]").textContent = "Update this surface to " + state.density + " spacing with a " + state.radius + "px radius while preserving accessibility."; }
+function updateAll() { renderPreview(); updatePrompt(); }
+function syncControl(control) { state[control.dataset.playgroundControl] = control.type === "checkbox" ? control.checked : control.type === "range" ? Number(control.value) : control.value; }
+controls.forEach((control) => { control.addEventListener("input", () => { syncControl(control); updateAll(); }); control.addEventListener("change", () => { syncControl(control); updateAll(); }); });
+document.querySelectorAll("[data-playground-preset]").forEach((preset) => preset.addEventListener("click", () => { Object.assign(state, presetValues[preset.dataset.playgroundPreset]); updateAll(); }));
+document.querySelector("[data-playground-copy]").addEventListener("click", () => navigator.clipboard.writeText(document.querySelector("[data-playground-prompt]").textContent)); updateAll();
+</script>

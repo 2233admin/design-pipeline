@@ -1,0 +1,26 @@
+{
+  "schema": "design-pipeline.adaptation-evaluation.v1",
+  "manifestHash": "da3b2f75c7b36a5b417507213620d47b80f1f75c2a1be5e6f45f820ac6844369",
+  "candidateHash": "2b5b46c64c97cf5b687bc88e5084a6dcfd81d2b25c67271f257e07c1222867da",
+  "primaryMetric": "preference-adherence-score",
+  "fixtureIds": [
+    "held-out-evidence-order"
+  ],
+  "complete": true,
+  "baseline": {
+    "score": 0,
+    "invariants": {
+      "accessibility": true,
+      "determinism": true,
+      "security": true
+    }
+  },
+  "candidate": {
+    "score": 1,
+    "invariants": {
+      "accessibility": true,
+      "determinism": true,
+      "security": true
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.playground-verification.v1",
+  "changeId": "component-design-adjustment",
+  "method": "manual-browser",
+  "checkedAt": "2026-08-15T00:00:00.000Z",
+  "surfaceSha256": "07258a8bf5949c67867224823909f3c3d72843a512c112ce3e5f243599b8d8b1",
+  "checks": {
+    "everyControlUpdatesState": true,
+    "everyPresetAppliesDeclaredState": true,
+    "previewUpdatesImmediately": true,
+    "promptUpdatesImmediately": true,
+    "copyMatchesPrompt": true,
+    "keyboardOperable": true
+  }
+}

@@ -73,6 +73,11 @@ function processAlive(pid) {
   catch (error) { return error?.code === "EPERM"; }
 }
 
+function restoreQuarantinedLock(quarantine, lockFile) {
+  try { fs.renameSync(quarantine, lockFile); }
+  catch (error) { if (!["EEXIST", "ENOENT"].includes(error?.code)) throw error; }
+}
+
 function acquireLedgerLock(root, raw) {
   const file = statePath(root, raw);
   const lockFile = `${file}.lock`;
@@ -81,18 +86,40 @@ function acquireLedgerLock(root, raw) {
     const token = crypto.randomBytes(16).toString("hex");
     const temporary = `${lockFile}.claim-${process.pid}-${token}`;
     fs.writeFileSync(temporary, canonicalJson({ pid: process.pid, token, acquiredAt: now() }), { encoding: "utf8", mode: 0o600, flag: "wx" });
+    let linked = false;
     try {
       fs.linkSync(temporary, lockFile);
+      linked = true;
+      if (lockOwner(lockFile).token !== token) fail("adaptation", "adaptation ledger lock was claimed concurrently", { code: "STATE_LOCKED" });
       HELD_LEDGER_LOCKS.set(lockFile, token);
       return { lockFile, token };
     } catch (error) {
+      if (linked) {
+        try {
+          if (fs.existsSync(lockFile) && lockOwner(lockFile).token === token) fs.unlinkSync(lockFile);
+        } catch {}
+      }
       if (error?.code !== "EEXIST") throw error;
     } finally {
       try { fs.unlinkSync(temporary); } catch {}
     }
     const owner = lockOwner(lockFile);
     if (processAlive(owner.pid)) fail("adaptation", `adaptation ledger is busy in process ${owner.pid}`, { code: "STATE_LOCKED" });
-    try { fs.unlinkSync(lockFile); } catch (error) { if (error?.code !== "ENOENT") throw error; }
+    const quarantine = `${lockFile}.stale-${process.pid}-${crypto.randomBytes(8).toString("hex")}`;
+    try {
+      fs.renameSync(lockFile, quarantine);
+    } catch (error) {
+      if (error?.code === "ENOENT") continue;
+      throw error;
+    }
+    let quarantinedOwner;
+    try { quarantinedOwner = lockOwner(quarantine); }
+    catch (error) { restoreQuarantinedLock(quarantine, lockFile); throw error; }
+    if (quarantinedOwner.token !== owner.token) {
+      restoreQuarantinedLock(quarantine, lockFile);
+      fail("adaptation", "adaptation ledger lock changed while it was reclaimed", { code: "STATE_LOCKED" });
+    }
+    try { fs.unlinkSync(quarantine); } catch (error) { if (error?.code !== "ENOENT") throw error; }
   }
   fail("adaptation", "could not acquire adaptation ledger lock", { code: "STATE_LOCKED" });
 }
@@ -100,7 +127,8 @@ function acquireLedgerLock(root, raw) {
 function releaseLedgerLock(lock) {
   try {
     if (fs.existsSync(lock.lockFile) && lockOwner(lock.lockFile).token === lock.token) fs.unlinkSync(lock.lockFile);
-  } finally { HELD_LEDGER_LOCKS.delete(lock.lockFile); }
+  } catch {}
+  finally { HELD_LEDGER_LOCKS.delete(lock.lockFile); }
 }
 
 function withLedgerLock(root, raw, operation) {
@@ -387,7 +415,13 @@ function ruleList(value) {
 }
 
 function id(prefix, payload) { return `${prefix}-${hash(payload).slice(0, 20)}`; }
-function need(map, key, label) { const value = map[text(key, label)]; if (!value) fail("adaptation", `${label} not found: ${key}`, { code: "NOT_FOUND" }); return value; }
+function need(map, key, label) {
+  const normalizedKey = text(key, label);
+  if (!Object.hasOwn(map, normalizedKey)) fail("adaptation", `${label} not found: ${key}`, { code: "NOT_FOUND" });
+  const value = map[normalizedKey];
+  if (!value) fail("adaptation", `${label} not found: ${key}`, { code: "NOT_FOUND" });
+  return value;
+}
 
 function record(root, options) {
   const artifact = readArtifact(root, options.experience || options.artifact, "--experience");
@@ -659,7 +693,7 @@ function forget(root, options) {
 
 function check(root, options) {
   let loaded;
-  try { loaded = loadState(root, options.state); } catch (error) { return { status: "blocked", state: options.state || ".design-pipeline/adaptation/state.json", candidates: [], promotions: [], effectiveRules: [], tombstones: [], issues: [error.message] }; }
+  try { loaded = loadState(root, options.state); } catch (error) { return blockedCheckResult(options, error); }
   const requestedScope = options.scope ? scope(options.scope) : null;
   const candidates = Object.values(loaded.state.candidates).filter((item) => !requestedScope || item.scope === requestedScope);
   const issues = activePromotionIssues(root, loaded.state);
@@ -669,7 +703,6 @@ function check(root, options) {
   const checkedAt = new Date(now(options.timestamp)).getTime();
   for (const selectedScope of ["user", "project"]) {
     for (const promotion of Object.values(loaded.state.promotions).filter((item) => item.status === "promoted" && item.scope === selectedScope).sort((a, b) => `${a.promotedAt}:${a.id}`.localeCompare(`${b.promotedAt}:${b.id}`))) {
-      for (const rule of promotion.before?.rules || []) effective.delete(rule.dimension);
       for (const rule of promotion.after?.rules || []) {
         if (rule.expiresAt && new Date(rule.expiresAt).getTime() <= checkedAt) { expiredRules.push({ id: rule.id, scope: selectedScope, promotionId: promotion.id }); continue; }
         effective.set(rule.dimension, { ...rule, scope: selectedScope, promotionId: promotion.id });
@@ -677,6 +710,10 @@ function check(root, options) {
     }
   }
   return { status: issues.length ? "blocked" : "ready", state: path.relative(root, loaded.file).replaceAll("\\", "/"), scope: requestedScope, candidates: candidates.map((item) => ({ id: item.id, hash: item.hash, scope: item.scope, status: item.status, experienceHash: item.experienceHash, evidenceHashes: item.evidenceHashes || [item.experienceHash], targetSkill: item.targetSkill, incumbentHash: item.incumbentHash, primaryMetric: item.primaryMetric, metricDirection: item.metricDirection, rules: item.rules })), receipts: Object.keys(loaded.state.receipts).length, promotions: Object.values(loaded.state.promotions).filter((item) => !requestedScope || item.scope === requestedScope).map((item) => ({ id: item.id, status: item.status, scope: item.scope, skill: item.skill, beforeHash: item.beforeHash, afterHash: item.afterHash, supersedes: item.supersedes || null })), effectiveRules: [...effective.values()], expiredRules, tombstones: Object.values(loaded.state.tombstones).filter((item) => !requestedScope || item.scope === requestedScope), issues };
+}
+
+function blockedCheckResult(options, error) {
+  return { status: "blocked", state: options.state || ".design-pipeline/adaptation/state.json", scope: null, candidates: [], receipts: 0, promotions: [], effectiveRules: [], expiredRules: [], tombstones: [], issues: [error.message] };
 }
 
 // Deterministic, side-effect-free resolver. Rules are plain data selected in precedence order;
@@ -732,7 +769,7 @@ const publicActions = {
 
 function publicCheck(root, options = {}) {
   try { return withLedgerLock(root, options.state, () => check(root, options)); }
-  catch (error) { return { status: "blocked", state: options.state || ".design-pipeline/adaptation/state.json", candidates: [], promotions: [], effectiveRules: [], tombstones: [], issues: [error.message] }; }
+  catch (error) { return blockedCheckResult(options, error); }
 }
 
 function publicResolvePolicy(rootOrInput = {}, maybeInput) {

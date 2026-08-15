@@ -1,0 +1,92 @@
+{
+  "schema": "design-pipeline.direction-preview.v1",
+  "changeId": "change",
+  "applicability": {
+    "status": "required",
+    "reason": "visual-redesign"
+  },
+  "comparison": {
+    "brief": {
+      "path": "brief.md",
+      "sha256": "4a28c58138c668f37a323f4946b097c86633e35efab32ed063e431ebc0426f7c"
+    },
+    "index": {
+      "path": "direction-previews/index.html",
+      "sha256": "5de98d2b4dd54e94a8701f197b2516fd124e0dd6dadf5d8f90958cfab5820426"
+    },
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "contentFixtureSha256": "42a7c79f9396e1962f295d20a94516e2019c9ff7e7db333de520b0ae03c83830",
+    "stateCoverage": [
+      "default",
+      "blocked",
+      "selected"
+    ]
+  },
+  "directions": [
+    {
+      "id": "quiet",
+      "name": "Quiet Grid",
+      "thesis": "Quiet Grid makes evidence legible.",
+      "signature": "Quiet Grid acceptance signature",
+      "axes": {
+        "luminance": "light",
+        "typeFamily": "sans",
+        "color": "monochrome",
+        "layout": "grid",
+        "density": "airy",
+        "era": "modern",
+        "material": "flat"
+      },
+      "screenshot": {
+        "path": "direction-previews/quiet.png",
+        "sha256": "337a5a72c72a2655346c21cbd51963bb4c6061a52c2ee0bbc0fa1e2cd2265f67"
+      }
+    },
+    {
+      "id": "signal",
+      "name": "Signal Console",
+      "thesis": "Signal Console makes evidence legible.",
+      "signature": "Signal Console acceptance signature",
+      "axes": {
+        "luminance": "dark",
+        "typeFamily": "mono",
+        "color": "duotone",
+        "layout": "split",
+        "density": "dense",
+        "era": "futurist",
+        "material": "glass"
+      },
+      "screenshot": {
+        "path": "direction-previews/signal.png",
+        "sha256": "337a5a72c72a2655346c21cbd51963bb4c6061a52c2ee0bbc0fa1e2cd2265f67"
+      }
+    },
+    {
+      "id": "field",
+      "name": "Field Notes",
+      "thesis": "Field Notes makes evidence legible.",
+      "signature": "Field Notes acceptance signature",
+      "axes": {
+        "luminance": "light",
+        "typeFamily": "serif",
+        "color": "multicolor",
+        "layout": "asymmetric",
+        "density": "balanced",
+        "era": "industrial",
+        "material": "paper"
+      },
+      "screenshot": {
+        "path": "direction-previews/field.png",
+        "sha256": "337a5a72c72a2655346c21cbd51963bb4c6061a52c2ee0bbc0fa1e2cd2265f67"
+      }
+    }
+  ],
+  "decision": {
+    "status": "selected",
+    "selectedDirectionId": "quiet",
+    "rationale": "Quiet Grid gives the clearest repeated-use scan path while preserving evidence and recovery states."
+  }
+}

@@ -90,7 +90,7 @@ test("promotion requires hash-bound independent evidence and explicit approval; 
   assert.throws(() => adaptation.promote(root, { candidate: candidate.id, receipt: receipt.id, skill: write(root, "user-skill.json", skill("user")), approve: true, approval: "reviewed" }), /match|scope/i);
   const kernelPath = write(root, "skill/scripts/kernel.json", skill());
   assert.throws(() => proposed(root, { proposer: "kernel", skill: kernelPath }), /kernel|immutable/i);
-  if (process.platform === "win32") assert.throws(() => proposed(root, { proposer: "kernel-case", skill: "SKILL/scripts/kernel.json" }), /kernel|immutable/i);
+  if (process.platform === "win32" || process.platform === "darwin") assert.throws(() => proposed(root, { proposer: "kernel-case", skill: "SKILL/scripts/kernel.json" }), /kernel|immutable/i);
   assert.throws(() => proposed(root, { proposer: "profile", skill: write(root, "profile-skill.json", { ...skill(), rules: [{ id: "profile", dimension: "communication-density", value: "concise", personality: "introvert" }] }) }), /sensitive|profil/i);
   const drifted = JSON.parse(fs.readFileSync(path.join(root, target), "utf8")); drifted.version = "1.0.0-drift"; fs.writeFileSync(path.join(root, target), JSON.stringify(drifted));
   assert.throws(() => adaptation.promote(root, { candidate: candidate.id, receipt: receipt.id, skill: target, approve: true, approval: "reviewed" }), /version|drift/i);
@@ -99,6 +99,81 @@ test("promotion requires hash-bound independent evidence and explicit approval; 
   const state = JSON.parse(fs.readFileSync(path.join(root, ".design-pipeline/adaptation/state.json"), "utf8"));
   assert.equal(state.promotions[promotion.id].status, "promoted");
   assert.match(JSON.parse(fs.readFileSync(path.join(root, target), "utf8")).version, /\+adapt-/);
+});
+
+test("identifier lookups reject inherited map keys", (t) => {
+  const root = fixture(t);
+  try {
+    assert.throws(() => adaptation.reject(root, { candidate: "__proto__", reason: "probe" }), /not found/i);
+    assert.throws(() => adaptation.reject(root, { candidate: "constructor", reason: "probe" }), /not found/i);
+    assert.equal(Object.prototype.status, undefined);
+    assert.equal(Object.prototype.rejection, undefined);
+  } finally {
+    delete Object.prototype.status;
+    delete Object.prototype.rejection;
+  }
+});
+
+test("blocked check envelopes retain the ready result shape", (t) => {
+  const root = fixture(t);
+  const stateFile = path.join(root, ".design-pipeline", "adaptation", "state.json");
+  fs.mkdirSync(path.dirname(stateFile), { recursive: true });
+  fs.writeFileSync(stateFile, "{}\n");
+  const result = adaptation.check(root, { scope: "project" });
+  assert.deepEqual(Object.keys(result).sort(), ["candidates", "effectiveRules", "expiredRules", "issues", "promotions", "receipts", "scope", "state", "status", "tombstones"]);
+  assert.equal(result.scope, null);
+  assert.equal(result.receipts, 0);
+  assert.deepEqual(result.expiredRules, []);
+});
+
+test("lock release cannot mask the operation error", (t) => {
+  const root = fixture(t);
+  const experienceFile = write(root, "experience.json", experience());
+  const lockFile = path.join(root, ".design-pipeline", "adaptation", "state.json.lock");
+  const originalReadFileSync = fs.readFileSync;
+  let lockReads = 0;
+  fs.readFileSync = (file, ...args) => {
+    if (path.resolve(String(file)) === path.resolve(lockFile)) {
+      lockReads += 1;
+      if (lockReads === 1) return originalReadFileSync(file, ...args);
+      const error = new Error("synthetic unreadable lock");
+      error.code = "EIO";
+      throw error;
+    }
+    return originalReadFileSync(file, ...args);
+  };
+  try {
+    assert.throws(() => adaptation.record(root, { experience: experienceFile, scope: "invalid", recorder: "probe" }), /scope must be task, project, or user/i);
+  } finally {
+    fs.readFileSync = originalReadFileSync;
+    try { fs.unlinkSync(lockFile); } catch {}
+  }
+});
+
+test("stale-lock reclaim preserves a lock that changed during quarantine", (t) => {
+  const root = fixture(t);
+  const lockFile = path.join(root, ".design-pipeline", "adaptation", "state.json.lock");
+  fs.mkdirSync(path.dirname(lockFile), { recursive: true });
+  fs.writeFileSync(lockFile, JSON.stringify({ pid: 2147483647, token: "stale-owner" }));
+  const originalRenameSync = fs.renameSync;
+  let injected = false;
+  fs.renameSync = (from, to) => {
+    if (!injected && path.resolve(String(from)) === path.resolve(lockFile)) {
+      injected = true;
+      fs.unlinkSync(lockFile);
+      const replacement = `${lockFile}.replacement`;
+      fs.writeFileSync(replacement, JSON.stringify({ pid: process.pid, token: "fresh-owner" }));
+      fs.linkSync(replacement, lockFile);
+      fs.unlinkSync(replacement);
+    }
+    return originalRenameSync(from, to);
+  };
+  try {
+    assert.equal(adaptation.check(root, {}).status, "blocked");
+    assert.deepEqual(JSON.parse(fs.readFileSync(lockFile, "utf8")), { pid: process.pid, token: "fresh-owner" });
+  } finally {
+    fs.renameSync = originalRenameSync;
+  }
 });
 
 test("policy scopes isolate, expire, and resolve project over user; rollback and forget preserve only a tombstone", (t) => {
@@ -274,6 +349,25 @@ test("sequential versions supersede by skill and rollback reactivates the exact 
   assert.equal(state.promotions[firstPromotion.id].before, undefined);
   assert.equal(state.promotions[secondPromotion.id].before, undefined, "rolled-back successor snapshots carrying forgotten guidance are scrubbed too");
   assert.doesNotMatch(JSON.stringify(state), /evidence-first/);
+});
+
+test("independent promotion chains do not delete each other's dimensions", (t) => {
+  const root = fixture(t);
+  const firstTarget = write(root, "chain-a.json", skill());
+  const first = proposed(root, { proposer: "chain-a", skill: firstTarget, rules: [{ op: "add", id: "a-density", rule: { dimension: "communication-density", value: "detailed" } }] });
+  const firstReceipt = evaluated(root, first, { evaluator: "chain-a-evaluator" });
+  const firstPromotion = adaptation.promote(root, { candidate: first.id, receipt: firstReceipt.id, skill: firstTarget, approve: true, approval: "chain-a-approved", timestamp: "2026-08-15T00:00:00.000Z" }).promotion;
+
+  const secondTarget = write(root, "chain-b.json", { ...skill(), rules: [{ id: "b-density", dimension: "communication-density", value: "balanced" }] });
+  const second = proposed(root, { proposer: "chain-b", skill: secondTarget, declaration: { targetVersion: "1.0.0" }, rules: [{ op: "delete", id: "b-density" }] });
+  const secondReceipt = evaluated(root, second, { evaluator: "chain-b-evaluator" });
+  const secondPromotion = adaptation.promote(root, { candidate: second.id, receipt: secondReceipt.id, skill: secondTarget, approve: true, approval: "chain-b-approved", timestamp: "2026-08-16T00:00:00.000Z" }).promotion;
+
+  const checked = adaptation.check(root, {});
+  assert.equal(checked.effectiveRules.find((rule) => rule.promotionId === firstPromotion.id)?.value, "detailed");
+  assert.equal(checked.effectiveRules.some((rule) => rule.promotionId === secondPromotion.id), false);
+  const resolved = adaptation.resolvePolicy(root, { schema: POLICY_SCHEMA });
+  assert.equal(resolved.rules.find((rule) => rule.dimension === "communication-density")?.value, "detailed");
 });
 
 test("actor labels and review reasons are hash-only in the local ledger", (t) => {

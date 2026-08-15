@@ -1,0 +1,124 @@
+{
+  "schema": "design-pipeline.playground.v1",
+  "changeId": "layout-brainstorming",
+  "applicability": {
+    "status": "required",
+    "reason": "parameter-sensitive",
+    "rationale": "The user must choose and adjust the strategy against a live preview."
+  },
+  "surface": {
+    "kind": "layout",
+    "blueprint": {
+      "source": "builtin",
+      "id": "design-playground"
+    },
+    "title": "Layout brainstorming",
+    "context": "Choose and adjust the initial strategy for Layout brainstorming.",
+    "artifact": {
+      "path": "playground/index.html",
+      "sha256": "daf05aa6aa2759a18766f3bef7d268090196497595b3e401004687c3eb637a41"
+    },
+    "controls": [
+      {
+        "id": "radius",
+        "label": "Corner radius",
+        "group": "Shape",
+        "type": "range",
+        "default": 12,
+        "min": 0,
+        "max": 32,
+        "step": 1
+      },
+      {
+        "id": "density",
+        "label": "Density",
+        "group": "Layout",
+        "type": "select",
+        "default": "balanced",
+        "options": [
+          "airy",
+          "balanced",
+          "compact"
+        ]
+      },
+      {
+        "id": "outlined",
+        "label": "Outlined",
+        "group": "Material",
+        "type": "checkbox",
+        "default": true
+      }
+    ],
+    "presets": [
+      {
+        "id": "calm",
+        "name": "Calm",
+        "values": {
+          "radius": 12,
+          "density": "airy",
+          "outlined": true
+        }
+      },
+      {
+        "id": "compact",
+        "name": "Compact",
+        "values": {
+          "radius": 8,
+          "density": "compact",
+          "outlined": true
+        }
+      },
+      {
+        "id": "bold",
+        "name": "Bold",
+        "values": {
+          "radius": 20,
+          "density": "balanced",
+          "outlined": false
+        }
+      }
+    ]
+  },
+  "selection": {
+    "status": "selected",
+    "values": {
+      "radius": 8,
+      "density": "compact",
+      "outlined": true
+    },
+    "changedControlIds": [
+      "radius",
+      "density"
+    ],
+    "stateSha256": "7f547d47079b125b3ac03d0047588f9f6f42077e7fd2bc8af70b0928b09e7086",
+    "prompt": {
+      "path": "playground/selection-prompt.md",
+      "sha256": "5e85611168287e7ec4b893c9e5f7566320df218a1a7cd2dc1ec27a81e55afc7a"
+    }
+  },
+  "verification": {
+    "status": "passed",
+    "method": "manual-browser",
+    "checkedAt": "2026-08-15T00:00:00.000Z",
+    "surfaceSha256": "f5c9b8c9544b5065ebdbc4660803ce803bb876eb73dce4d082d480f5dcd4b812",
+    "checks": {
+      "everyControlUpdatesState": true,
+      "everyPresetAppliesDeclaredState": true,
+      "previewUpdatesImmediately": true,
+      "promptUpdatesImmediately": true,
+      "copyMatchesPrompt": true,
+      "keyboardOperable": true
+    },
+    "evidence": {
+      "path": "playground/verification.json",
+      "sha256": "8940e97d595d592815f353ad730c8fd46ca63ae4d809e71d105e360eded798c8"
+    }
+  },
+  "integration": {
+    "status": "applied",
+    "target": {
+      "path": "design.md",
+      "sha256": "3d5d8fe4b641dcec94044b1382f02ed8137661bf8a3e4ed3db600624ddbde5a6"
+    }
+  }
+}

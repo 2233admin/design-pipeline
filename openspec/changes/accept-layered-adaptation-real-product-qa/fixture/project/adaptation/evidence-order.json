@@ -1,0 +1,10 @@
+[
+  {
+    "op": "add",
+    "id": "evidence-order",
+    "rule": {
+      "dimension": "evidence-order",
+      "value": "evidence-first"
+    }
+  }
+]

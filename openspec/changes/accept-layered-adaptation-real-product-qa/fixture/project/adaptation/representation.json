@@ -1,0 +1,10 @@
+[
+  {
+    "op": "add",
+    "id": "representation",
+    "rule": {
+      "dimension": "representation",
+      "value": "diagram-first"
+    }
+  }
+]
