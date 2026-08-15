@@ -195,6 +195,34 @@ node skill/scripts/designer-pipeline.cjs component verify \
 Vuetify0、React Aria 和 Ark UI 是首批可替换 Provider；项目自有 DOM 实现始终是受治理的
 回退路径。能力 IR 不包含 Vue composable、React Hook 或其他框架 API。
 
+### Component-first 一致性 Gate
+
+`component-first-gate.v1` 把明确 target、stack request/decision、组件 resolution/verification、
+组件声明、Playground、页面使用和外部截图证据组合成一个只读一致性检查。它复用上面的
+stack、component capability 和通用 Playground 内核；不会启动浏览器、运行目标项目或安装依赖。
+
+```bash
+# 聚合检查；0=passed，1=invalid，2=blocked
+node skill/scripts/designer-pipeline.cjs component-first check \
+  --root ../my-project --artifact component-first.json --json
+
+# 只运行一个 stage 及必要的上下文解析
+node skill/scripts/designer-pipeline.cjs component-first stack --root ../my-project --artifact component-first.json --json
+node skill/scripts/designer-pipeline.cjs component-first components --root ../my-project --artifact component-first.json --json
+node skill/scripts/designer-pipeline.cjs component-first playground --root ../my-project --artifact component-first.json --json
+node skill/scripts/designer-pipeline.cjs component-first page --root ../my-project --artifact component-first.json --json
+
+# v1 兼容别名；这里只委托组件一致性，不代表视觉验收通过
+node skill/scripts/designer-pipeline.cjs high-fidelity check \
+  --root ../my-project --artifact component-first.json --json
+```
+
+项目自有组件使用 `componentOrigin: "project-owned"`，不能把 `project-owned` 写成 runtime
+stack；它仍需源码、symbol、contract、token、键盘、焦点、状态、Playground 与页面实际使用证据。
+`page-ready` 同时声明 `scope: prototype | production`，prototype 证据不能满足 production target。
+截图必须是能完整解码且实际字节 hash 匹配的 PNG。普通 hash binding 只能发现 artifact 不匹配、
+过期或串用，不能证明 receipt 没有人为伪造；可信 producer、签名和 CI attestation 留给 artifact v2。
+
 ```bash
 # Web 应用 UI：优先返回 React Bits Pro，保留许可证审查
 node skill/scripts/designer-pipeline.cjs design-system route \

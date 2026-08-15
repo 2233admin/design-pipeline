@@ -20,6 +20,8 @@ const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
 const { checkPlayground } = require("./playground-core.cjs");
+const { checkComponentFirstGate, checkComponentFirstStage } = require("./component-first-core.cjs");
+const { exitCodeForStatus: componentFirstExitCode } = require("./component-first/orchestration/aggregate-result.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
@@ -262,6 +264,7 @@ function publicHelp() {
     "  doctor | status",
     "  change init|resume|advance|migrate|repair",
     "  foundation check | direction check | playground check | reference check | reconstruction check | scene check",
+    "  component-first check|stack|components|playground|page | high-fidelity check",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
@@ -951,6 +954,24 @@ function styleSignalsCheckCommand({ file }) {
   return { result: validateStyleSignals(readJson(file("--artifact"), "style signals")), exitCode: 0 };
 }
 
+function componentFirstCliResult(result) {
+  const { schema, ...value } = result;
+  return { resultSchema: schema, ...value };
+}
+
+function componentFirstCommand(parsed, root, action) {
+  const input = readJson(artifact(parsed, root, "--artifact"), "component-first gate");
+  const result = action === "check"
+    ? checkComponentFirstGate(input, { projectRoot: root })
+    : checkComponentFirstStage(action, input, { projectRoot: root });
+  return { result: componentFirstCliResult(result), exitCode: componentFirstExitCode(result.status) };
+}
+
+function highFidelityCommand(parsed, root, action) {
+  if (action !== "check") fail("cli", `unknown high-fidelity action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+  return componentFirstCommand(parsed, root, "check");
+}
+
 function adaptationCommand(parsed, root, action) {
   if (action === "resolve") {
     const result = runAdaptation(root, action, { state: option(parsed, "--state"), input: readJson(artifact(parsed, root, "--artifact"), "adaptation policy input") });
@@ -1019,6 +1040,8 @@ const COMMANDS = {
   patterns: { run: ({ parsed, root, action }) => patternCommand(parsed, root, action) },
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
   component: { run: ({ parsed, root, action }) => componentCommand(parsed, root, action) },
+  "component-first": { run: ({ parsed, root, action }) => componentFirstCommand(parsed, root, action) },
+  "high-fidelity": { run: ({ parsed, root, action }) => highFidelityCommand(parsed, root, action) },
   mengto: { run: ({ parsed, action }) => mengToCommand(parsed, action) },
   shadcnio: { run: ({ parsed, action }) => shadcnioCommand(parsed, action) },
   prism: { run: ({ parsed, action }) => prismCommand(parsed, action) },

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pipeline.local/schemas/component-first-stage-result.schema.json",
+  "title": "Component-First Stage Result V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "stage", "status", "reasonCodes", "findings", "evidenceRefs", "inputDigest", "policy", "target"],
+  "properties": {
+    "schema": { "const": "component-first-stage-result.v1" },
+    "stage": { "enum": ["stack", "components", "playground", "page"] },
+    "status": { "enum": ["passed", "blocked", "invalid"] },
+    "reasonCodes": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^CF_[A-Z0-9_]+$" } },
+    "findings": { "type": "array" },
+    "evidenceRefs": { "type": "array" },
+    "inputDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "policy": { "type": "object", "required": ["id", "version", "digest"] },
+    "target": { "type": "object", "required": ["id", "root", "kind", "entrypoints", "routes", "snapshotDigest"] }
+  }
+}

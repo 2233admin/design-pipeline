@@ -30,6 +30,8 @@ doctor
 status
 change init|resume|advance|migrate|repair
 foundation check
+component-first check|stack|components|playground|page
+high-fidelity check
 scene check
 evidence check|capture
 verify motion|components
@@ -43,6 +45,13 @@ style-signals check
 feedback record|prepare|reconcile
 source audit
 ```
+
+`component-first` consumes one contained v1 aggregate artifact and returns either
+`component-first-gate.v1` or `component-first-stage-result.v1` inside the normal CLI envelope.
+Stage commands are read-only. `high-fidelity check` delegates to the v1 component conformance
+aggregate for compatibility; it does not claim that typography, layout, motion, or visual fidelity
+passed. Browser evidence is produced externally, then path/hash/PNG-decoded by adapters before pure
+gates evaluate it. Hash binding prevents mismatch and stale reuse but is not producer attestation.
 
 `source add` is intentionally deferred until an attributed provider contract exists. It returns a
 stable `COMMAND_DEFERRED` error rather than performing an implicit fetch.

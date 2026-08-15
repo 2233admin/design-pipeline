@@ -102,6 +102,23 @@ Resolve reusable component behavior before selecting a library:
   project reuse, emit framework binding plans without source generation, and record
   `reuse`, `adopt`, `substitute`, or `custom` per capability.
 
+Run component conformance through the layered v1 gate after those artifacts exist:
+
+- `component-first check --artifact component-first.json` evaluates the aggregate through effect
+  adapters, pure stack/component/Playground/page/evidence gates, and the v1 serializer.
+- `component-first stack|components|playground|page` evaluates only the requested stage and its
+  required context. Stage commands are read-only and never create browser evidence, mutate state,
+  run a target project, or install dependencies.
+- `high-fidelity check` remains a v1 delegation alias. A passing component-first result is not a
+  visual-acceptance result.
+- Model `project-owned` as `componentOrigin`, never as a runtime stack. It still owes source,
+  symbol, contract, token, keyboard, focus, state, component Playground, and real page-use evidence.
+- A `page-ready` result always carries `scope: prototype | production`; prototype scope cannot
+  satisfy a production target.
+- Browser runners remain external. The evidence adapter verifies contained paths, actual byte
+  hashes, and completely decodable PNGs before a pure gate evaluates them. Ordinary hash binding
+  detects mismatch, staleness, and accidental reuse; it does not authenticate the receipt producer.
+
 Read `references/component-capabilities.md`. Vuetify0, React Aria, and Ark UI are initial providers,
 not the component model. Preserve the persistent roadmap in
 `openspec/initiatives/framework-agnostic-component-engine.md` when developing this repository.
