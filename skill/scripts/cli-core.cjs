@@ -736,12 +736,16 @@ function designSystemCommand(parsed, root, action) {
     };
     const directResults = searchDesignSystemCatalog(catalog, { query, ...searchOptions });
     const { capabilityMap, uniqueEntryCount } = searchCapabilities(catalog, capabilities, searchOptions);
+    const hasCatalogCoverage = directResults.length > 0 || uniqueEntryCount > 0;
     const inventory = {
       directQuery: query,
       directQueryResults: directResults.length,
       searchedCapabilities: capabilities,
       capabilityResults: Object.fromEntries(Object.entries(capabilityMap).map(([id, value]) => [id, { terms: value.terms, count: value.count, matchedIds: value.entries.slice(0, 50).map((entry) => entry.id) }])),
-      zeroResultInconclusive: directResults.length === 0 && uniqueEntryCount > 0,
+      zeroResultInconclusive: directResults.length === 0,
+      ...(!hasCatalogCoverage ? {
+        next: "The bundled catalog did not cover this query. Record a capability gap and evaluate an authorized external provider or an explicitly approved project-owned fallback before implementation.",
+      } : {}),
     };
     const output = writeResult(parsed, root, inventory);
     return { result: { status: "valid", inventory, totalUniqueEntries: uniqueEntryCount, ...(output ? { output } : {}) }, exitCode: 0 };

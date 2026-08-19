@@ -71,3 +71,22 @@ test("route output is deterministic and rejects unsupported platforms", () => {
   assert.deepEqual(first, second);
   assert.throws(() => routeComponents({ catalog: catalog(), brief: "dashboard", platform: "ios" }), /not supported/);
 });
+
+test("keeps the overall route blocked while any requested capability is unavailable", () => {
+  const result = routeComponents({ catalog: catalog(), brief: "form input progress", platform: "web" });
+  assert.equal(result.status, "blocked");
+  assert.deepEqual(result.unavailable, ["loading-state"]);
+  assert.equal(result.routes.find((route) => route.capability === "loading-state").status, "blocked");
+  assert.match(result.next, /every unavailable capability \(loading-state\)/i);
+});
+
+test("treats an empty capability decomposition as an unresolved catalog gap", () => {
+  const result = routeComponents({
+    catalog: catalog(),
+    brief: "maintained particle weather canvas with boundary collision and reduced motion",
+    platform: "web",
+  });
+  assert.equal(result.status, "blocked");
+  assert.deepEqual(result.capabilities, []);
+  assert.match(result.next, /no governed capabilities were recognized/i);
+});

@@ -193,6 +193,12 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.ok(decomposed.output.inventory.searchedCapabilities.includes("dialog"));
   assert.ok(decomposed.output.inventory.capabilityResults["data-table"].count < 200);
   assert.equal(decomposed.output.inventory.searchedCapabilities.includes("tabs"), false);
+  const uncovered = run(["design-system", "decompose", "--root", root, "--query", "maintained particle weather canvas with boundary collision and reduced motion"]);
+  assert.equal(uncovered.status, 0, uncovered.stderr || uncovered.stdout);
+  assert.equal(uncovered.output.inventory.directQueryResults, 0);
+  assert.deepEqual(uncovered.output.inventory.searchedCapabilities, []);
+  assert.equal(uncovered.output.inventory.zeroResultInconclusive, true);
+  assert.match(uncovered.output.inventory.next, /bundled catalog did not cover this query/i);
   const routed = run(["design-system", "route", "--root", repoRoot, "--query", "landing page hero"]);
   assert.equal(routed.status, 0, routed.stderr || routed.stdout);
   assert.equal(routed.output.routes.some(({ selected }) => selected), true);
@@ -233,6 +239,20 @@ test("component route exposes SmoothUI component recommendations from the local 
   assert.equal(tabs.selected.componentCount, 130);
   assert.ok(tabs.selected.recommendedComponents.includes("animated-tabs"));
   assert.match(tabs.selected.recommendedComponentDetails[0].docUrl, /smoothui\.dev\/docs\/components\/animated-tabs/);
+});
+
+test("component route exits blocked when coverage is partial or the brief is not decomposed", () => {
+  const partial = run(["design-system", "route", "--root", repoRoot, "--query", "form input progress", "--platform", "web"]);
+  assert.equal(partial.status, 2, partial.stderr || partial.stdout);
+  assert.equal(partial.output.status, "blocked");
+  assert.deepEqual(partial.output.unavailable, ["loading-state"]);
+  assert.match(partial.output.next, /loading-state/i);
+
+  const empty = run(["design-system", "route", "--root", repoRoot, "--query", "maintained particle weather canvas with boundary collision and reduced motion", "--platform", "web"]);
+  assert.equal(empty.status, 2, empty.stderr || empty.stdout);
+  assert.equal(empty.output.status, "blocked");
+  assert.deepEqual(empty.output.capabilities, []);
+  assert.match(empty.output.next, /catalog coverage as unresolved/i);
 });
 
 test("benchmark v2 exposes a developer brief without private expectations", () => {

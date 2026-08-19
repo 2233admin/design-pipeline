@@ -164,11 +164,19 @@ function routeComponents(options = {}) {
   }
 
   const hasSelectedRoute = routes.some((route) => route.selected);
-  const status = !capabilities.length || !hasSelectedRoute
+  const hasBlockedRoute = routes.some((route) => route.status === "blocked");
+  const status = !capabilities.length || !hasSelectedRoute || hasBlockedRoute
     ? "blocked"
     : routes.some((route) => route.status === "review")
       ? "review"
       : "ready";
+  const next = status === "blocked"
+    ? capabilities.length
+      ? `Resolve every unavailable capability (${unavailable.join(", ")}) through an authorized provider or an explicitly approved project-owned fallback before implementation.`
+      : "No governed capabilities were recognized from the brief. Treat catalog coverage as unresolved and expand the capability vocabulary or provide explicit capabilities before implementation."
+    : status === "review"
+      ? "Verify license/source authority or select a project-owned fallback before copying code."
+      : null;
   return sortValue({
     schema: ROUTE_SCHEMA,
     status,
@@ -177,7 +185,7 @@ function routeComponents(options = {}) {
     capabilities,
     routes,
     ...(unavailable.length ? { unavailable } : {}),
-    ...(status === "review" ? { next: "Verify license/source authority or select a project-owned fallback before copying code." } : {}),
+    ...(next ? { next } : {}),
   });
 }
 

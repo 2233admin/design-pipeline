@@ -75,8 +75,9 @@ Use the public CLI for the complete lifecycle:
 - `design-system resolve-stack` resolves framework, styling, UI library, complete shadcn preset,
   and tool/skill routes into a hash-bound `frontend-stack-decision.json`.
 - `design-system profiles` lists governed providers and compatibility constraints.
-- `design-system decompose` converts a product brief into a durable capability inventory; a direct
-  zero-result does not prove exhaustion when capability searches find candidates.
+- `design-system decompose` converts a product brief into a durable capability inventory. Any
+  zero-result is inconclusive outside the bundled catalog; an empty decomposition is a vocabulary
+  gap, not permission to assume no reusable provider exists.
 - `design-system route` selects project, platform, package, or attributed reference routes for the
   decomposed component capabilities.
 - `design-system search` searches the bundled Astryx catalog by text, kind, category, or status.
@@ -96,6 +97,8 @@ Resolve reusable component behavior before selecting a library:
 - `component resolve` maps each capability to a compatible provider, preserves uncovered
   project-owned fallbacks, and marks uninstalled candidates as adoption-required without running a
   package manager.
+- Component-source routing remains `blocked` while any requested capability is unavailable; one
+  successful route cannot mask a blocked sibling capability.
 - `component verify` requires hash-bound behavioral evidence for every check in the resolution;
   framework source or a static screenshot cannot replace missing interaction evidence.
 - `component inventory`, `component bind`, and `component decide` discover explicitly declared
