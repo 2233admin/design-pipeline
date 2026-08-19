@@ -2,7 +2,7 @@
 
 ## Discovery semantics
 
-`design-system decompose` searches a finite bundled catalog. A direct zero-result therefore cannot
+`design-system decompose` searches a finite selected catalog. A direct zero-result therefore cannot
 prove that no reusable implementation exists. When neither direct search nor decomposed capability
 search finds coverage, the inventory adds an actionable `next` message and keeps
 `zeroResultInconclusive` true. An empty decomposition is treated as a vocabulary gap.
@@ -19,6 +19,7 @@ fallback. The pipeline does not install packages or perform external discovery a
 
 ## Compatibility
 
-The result schemas and existing route entries are unchanged. This intentionally changes exit code
-from 0 to 2 for requests that previously reported `ready` despite partial coverage, and adds a
-`next` field to unresolved discovery output.
+Existing response fields and route entries remain compatible. Unresolved discovery output gains an
+optional additive `next` field; no closed JSON schema governs this design-system discovery
+inventory. This intentionally changes exit code from 0 to 2 for requests that previously reported
+`ready` despite partial coverage.

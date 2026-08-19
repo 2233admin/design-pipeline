@@ -198,7 +198,7 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.equal(uncovered.output.inventory.directQueryResults, 0);
   assert.deepEqual(uncovered.output.inventory.searchedCapabilities, []);
   assert.equal(uncovered.output.inventory.zeroResultInconclusive, true);
-  assert.match(uncovered.output.inventory.next, /bundled catalog did not cover this query/i);
+  assert.match(uncovered.output.inventory.next, /selected catalog did not cover this query/i);
   const routed = run(["design-system", "route", "--root", repoRoot, "--query", "landing page hero"]);
   assert.equal(routed.status, 0, routed.stderr || routed.stdout);
   assert.equal(routed.output.routes.some(({ selected }) => selected), true);

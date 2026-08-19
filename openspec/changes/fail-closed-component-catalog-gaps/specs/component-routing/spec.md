@@ -2,13 +2,13 @@
 
 ## Requirement: zero-result honesty
 
-The pipeline MUST treat a zero-result from the bundled design-system catalog as inconclusive and
+The pipeline MUST treat a zero-result from the selected design-system catalog as inconclusive and
 MUST provide an actionable next step when neither direct nor capability search has coverage.
 
 ### Scenario: vocabulary gap
 
 Given a non-empty brief that decomposes to no governed capabilities and has no direct catalog match,
-`design-system decompose` reports `zeroResultInconclusive: true` and explains that bundled catalog
+`design-system decompose` reports `zeroResultInconclusive: true` and explains that selected catalog
 coverage is missing.
 
 ## Requirement: complete routing before readiness

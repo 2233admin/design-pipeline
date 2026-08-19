@@ -7,4 +7,4 @@
 - [x] Document the fail-closed behavior in the public skill contract and README.
 - [x] Run focused tests and full repository QA.
 - [x] Prepare the authorized pull-request publication request.
-- [ ] Publish the pull request and reconcile its host receipt.
+- [x] Publish the pull request and reconcile its host receipt.

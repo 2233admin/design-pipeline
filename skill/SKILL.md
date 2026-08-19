@@ -76,7 +76,7 @@ Use the public CLI for the complete lifecycle:
   and tool/skill routes into a hash-bound `frontend-stack-decision.json`.
 - `design-system profiles` lists governed providers and compatibility constraints.
 - `design-system decompose` converts a product brief into a durable capability inventory. Any
-  zero-result is inconclusive outside the bundled catalog; an empty decomposition is a vocabulary
+  zero-result is inconclusive outside the selected catalog; an empty decomposition is a vocabulary
   gap, not permission to assume no reusable provider exists.
 - `design-system route` selects project, platform, package, or attributed reference routes for the
   decomposed component capabilities.

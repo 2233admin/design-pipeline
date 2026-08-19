@@ -1,6 +1,6 @@
 # Proposal
 
-Make component discovery and routing fail closed when the bundled catalog or capability vocabulary
+Make component discovery and routing fail closed when the selected catalog or capability vocabulary
 does not cover the full request. A zero-result must remain explicitly inconclusive, and a partially
 routed request must not report `ready` while any requested capability is blocked.
 
