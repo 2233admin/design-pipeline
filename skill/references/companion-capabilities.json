@@ -351,19 +351,124 @@
         "id": "motion-review-skill-contracts",
         "kind": "installed-skill",
         "url": "https://github.com/emilkowalski/skills",
+        "reviewedRevision": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+        "reviewedContentHash": "fff4cfc7619acb1467b0e3fafac6a4075fead4f7e90711a772af2c0280090139",
+        "contentHashScope": "ordered UTF-8 sourceFiles with path-and-newline separators",
+        "sourceFiles": [
+          "skills/improve-animations/SKILL.md",
+          "skills/find-animation-opportunities/SKILL.md",
+          "skills/animation-vocabulary/SKILL.md",
+          "skills/review-animations/SKILL.md"
+        ],
         "reviewedMarkers": [
           "motion-accessibility",
           "motion-review-standards",
           "motion-findings"
         ],
-        "reviewedAt": "2026-07-19T00:00:00.000Z",
-        "freshnessDays": 30
+        "reviewedAt": "2026-08-26T00:00:00.000Z",
+        "freshnessDays": 30,
+        "license": "MIT",
+        "useBoundary": "installed companion evidence only; no automatic upstream upgrade"
       },
       "fallback": "Use motion.md and the bundled motion gate.",
       "requirements": [
         {"id": "motion-accessibility", "skill": "design-motion-principles", "patterns": [{"source": "Accessibility is NOT Optional", "flags": "i"}]},
         {"id": "motion-review-standards", "skill": "review-animations", "patterns": [{"source": "Ten Non-Negotiable Standards", "flags": "i"}]},
         {"id": "motion-findings", "skill": "review-animations", "patterns": [{"source": "Findings table", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "ux-research-method-reference",
+      "name": "UX research method reference",
+      "skill": "design-pipeline",
+      "level": "enhancement",
+      "source": "https://github.com/tommyjepsen/awesome-ux-skills/blob/4e5d0925e1a0d34894734611b225205aa10e5a2f/ux-research-methods.md",
+      "sourceMeta": {
+        "id": "awesome-ux-research-methods",
+        "kind": "github",
+        "url": "https://github.com/tommyjepsen/awesome-ux-skills/blob/4e5d0925e1a0d34894734611b225205aa10e5a2f/ux-research-methods.md",
+        "reviewedRevision": "4e5d0925e1a0d34894734611b225205aa10e5a2f",
+        "reviewedContentHash": "396572fd3133134972196037484def6b553fa28a2b69a7aba2f3aceeaf1cf711",
+        "reviewedAt": "2026-08-26T00:00:00.000Z",
+        "freshnessDays": 365,
+        "license": "unverified",
+        "useBoundary": "reference-only; no upstream install, import, copy, or execution"
+      },
+      "fallback": "Use references/ux-research-methods.md.",
+      "requirements": [
+        {"id": "reference-recorded", "skill": "design-pipeline", "patterns": [{"source": "\\S", "flags": "s"}]}
+      ]
+    },
+    {
+      "id": "ai-interaction-pattern-reference",
+      "name": "AI interaction pattern reference",
+      "skill": "design-pipeline",
+      "level": "enhancement",
+      "source": "https://github.com/tommyjepsen/awesome-ux-skills/tree/4e5d0925e1a0d34894734611b225205aa10e5a2f",
+      "sourceMeta": {
+        "id": "awesome-ux-ai-interaction",
+        "kind": "github",
+        "url": "https://github.com/tommyjepsen/awesome-ux-skills/tree/4e5d0925e1a0d34894734611b225205aa10e5a2f",
+        "reviewedRevision": "4e5d0925e1a0d34894734611b225205aa10e5a2f",
+        "reviewedContentHash": "a9733a2e6b2f1dd11fa00216ebd2e5e66cced4c98d9dcb980c6ceb778bb93808",
+        "reviewedAt": "2026-08-26T00:00:00.000Z",
+        "freshnessDays": 365,
+        "license": "unverified",
+        "useBoundary": "reference-only; no upstream install, import, copy, or execution"
+      },
+      "fallback": "Use references/ai-interaction-patterns.md.",
+      "requirements": [
+        {"id": "reference-recorded", "skill": "design-pipeline", "patterns": [{"source": "\\S", "flags": "s"}]}
+      ]
+    },
+    {
+      "id": "animation-opportunity-reference",
+      "name": "Animation opportunity and review reference",
+      "skill": "design-pipeline",
+      "level": "enhancement",
+      "source": "https://github.com/emilkowalski/skills/tree/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+      "sourceMeta": {
+        "id": "emilkowalski-animation-review",
+        "kind": "github",
+        "url": "https://github.com/emilkowalski/skills/tree/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+        "reviewedRevision": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+        "reviewedContentHash": "fff4cfc7619acb1467b0e3fafac6a4075fead4f7e90711a772af2c0280090139",
+        "contentHashScope": "ordered UTF-8 sourceFiles with path-and-newline separators",
+        "sourceFiles": [
+          "skills/improve-animations/SKILL.md",
+          "skills/find-animation-opportunities/SKILL.md",
+          "skills/animation-vocabulary/SKILL.md",
+          "skills/review-animations/SKILL.md"
+        ],
+        "reviewedAt": "2026-08-26T00:00:00.000Z",
+        "freshnessDays": 365,
+        "license": "MIT",
+        "useBoundary": "reference-only; no upstream install, copy, or execution"
+      },
+      "fallback": "Use references/animation-opportunity-and-review.md with the motion foundation and spec.",
+      "requirements": [
+        {"id": "reference-recorded", "skill": "design-pipeline", "patterns": [{"source": "\\S", "flags": "s"}]}
+      ]
+    },
+    {
+      "id": "ui-ux-pro-max-companion",
+      "name": "UI UX Pro Max companion baseline",
+      "skill": "ui-ux-pro-max",
+      "level": "enhancement",
+      "source": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceMeta": {
+        "id": "ui-ux-pro-max",
+        "kind": "github",
+        "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "reviewedRevision": "e4f45473691e4b389519ee4bc359a3d6df666c26",
+        "reviewedAt": "2026-08-26T00:00:00.000Z",
+        "freshnessDays": 30,
+        "license": "MIT",
+        "useBoundary": "installed companion evidence only; no automatic upstream upgrade"
+      },
+      "fallback": "Use the bundled design and UX gates.",
+      "requirements": [
+        {"id": "ui-ux-pro-max-contract", "skill": "ui-ux-pro-max", "patterns": [{"source": "UI/UX", "flags": "i"}]}
       ]
     },
     {

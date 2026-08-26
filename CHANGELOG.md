@@ -21,6 +21,15 @@ All notable changes to Design Pipeline are documented here.
   `resolvedAt` from the file instead of a hand-edited measurement.
 - Bound a ready job route to toolchain and execution through an optional hash-checked job plan.
 
+## [0.9.0-beta.5] - 2026-08-26
+
+### Added
+
+- Added fixed source revision, content-hash, review-date, license, and use-boundary metadata to the
+  curated UX research, AI interaction, and animation references.
+- Registered those references and the UI UX Pro Max companion in the existing capability audit,
+  with deterministic current, changed, and missing evidence coverage.
+
 ## [0.9.0-beta.4] - 2026-08-15
 
 ### Added
@@ -529,3 +538,4 @@ All notable changes to Design Pipeline are documented here.
 [0.9.0-beta.2]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.1...v0.9.0-beta.2
 [0.9.0-beta.3]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.2...v0.9.0-beta.3
 [0.9.0-beta.4]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.3...v0.9.0-beta.4
+[0.9.0-beta.5]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.4...v0.9.0-beta.5
