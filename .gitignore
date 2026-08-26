@@ -6,6 +6,7 @@ dist/
 tmp/
 temp/
 NUL
+.eliza-*.ts
 .orca/
 .serena/
 .design-pipeline/
