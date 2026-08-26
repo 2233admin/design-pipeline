@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop · GSAP · Premium Retail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&display=swap"></noscript>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:     #f6f3ee;
+    --bg2:    #efe9e0;
+    --ink:    #16130f;
+    --gold:   #c79a3e;
+    --rose:   #d9576b;
+    --card:   #ffffff;
+    --muted:  #9a9387;
+    --stone:  #e7e1d6;
+    --green:  #3a9d6a;
+  }
+
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+  }
+
+  #stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(130% 120% at 50% -10%, #fbf9f5 0%, var(--bg) 48%, var(--bg2) 100%);
+    perspective: 1300px;
+    overflow: hidden;
+  }
+
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(72px); opacity: 0.36;
+    will-change: transform; pointer-events: none;
+  }
+  #blobA { width: 48vmin; height: 48vmin; background: #e8c98a; top: -12%; left: -8%; }
+  #blobB { width: 42vmin; height: 42vmin; background: #f0b9c3; bottom: -14%; right: -10%; opacity: 0.3; }
+  #blobC { width: 30vmin; height: 30vmin; background: #cfe6d6; top: 58%; left: 64%; opacity: 0.26; }
+
+  .scene {
+    position: absolute;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    will-change: transform, opacity; z-index: 2;
+  }
+
+  /* ===== PRODUCT CARD ===== */
+  #cardScene { z-index: 3; }
+  .card {
+    position: relative;
+    width: clamp(280px, 38vmin, 400px);
+    background: var(--card);
+    border-radius: 26px;
+    box-shadow: 0 36px 80px rgba(40,30,15,.18), 0 4px 14px rgba(40,30,15,.06);
+    padding: 22px 22px 26px;
+    overflow: hidden;
+    will-change: transform, opacity;
+  }
+  .product {
+    position: relative;
+    height: clamp(190px, 28vmin, 280px);
+    border-radius: 18px;
+    background:
+      radial-gradient(120% 120% at 30% 20%, #fff 0%, #f3eee5 60%, #e7ddcc 100%);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  /* stylized "bottle/perfume" product silhouette via CSS */
+  .bottle {
+    position: relative; width: 84px; height: 150px;
+    will-change: transform;
+  }
+  .bottle .body {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 84px; height: 116px; border-radius: 18px;
+    background: linear-gradient(160deg, #2b2620 0%, #4a4036 55%, #6b5c49 100%);
+    box-shadow: inset -8px -10px 22px rgba(0,0,0,.3), inset 6px 6px 16px rgba(255,255,255,.12);
+  }
+  .bottle .neck {
+    position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+    width: 26px; height: 22px; background: #3a342b;
+  }
+  .bottle .cap {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 34px; height: 22px; border-radius: 5px;
+    background: linear-gradient(180deg, var(--gold), #9c7728);
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .bottle .label {
+    position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 40px; border-radius: 4px;
+    background: #f5efe2;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px;
+  }
+  .bottle .label b { font-family: 'Syne', sans-serif; font-size: 10px; letter-spacing: .12em; color: #2b2620; }
+  .bottle .label span { width: 30px; height: 2px; background: var(--gold); }
+  /* shine sweep */
+  .shine {
+    position: absolute; top: -40%; left: -60%;
+    width: 50%; height: 180%;
+    background: linear-gradient(105deg, transparent, rgba(255,255,255,.55), transparent);
+    transform: rotate(18deg); will-change: transform; pointer-events: none;
+  }
+
+  .sale {
+    position: absolute; top: 16px; right: 16px;
+    width: 62px; height: 62px; border-radius: 50%;
+    background: var(--rose); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
+    letter-spacing: -0.02em;
+    box-shadow: 0 8px 20px rgba(217,87,107,.4);
+    will-change: transform, opacity; z-index: 4;
+  }
+
+  .cardinfo { padding: 16px 4px 0; }
+  .ptitle {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 20px; color: var(--ink); letter-spacing: -0.01em;
+  }
+  .pcat { font-size: 12px; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; margin-top: 2px; }
+
+  .stars { display: flex; gap: 4px; margin-top: 12px; }
+  .star {
+    width: 20px; height: 20px; position: relative; will-change: transform, opacity;
+    color: var(--stone);
+  }
+  .star svg { width: 100%; height: 100%; display: block; }
+  .star .fill { position: absolute; inset: 0; color: var(--gold); clip-path: inset(0 100% 0 0); will-change: clip-path; }
+  .rating-num { font-size: 12px; color: var(--muted); margin-left: 6px; align-self: center; }
+
+  .pricerow { display: flex; align-items: baseline; gap: 12px; margin-top: 16px; }
+  .price {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 30px; color: var(--ink); letter-spacing: -0.02em;
+    will-change: transform, opacity;
+  }
+  .oldprice {
+    font-size: 17px; color: var(--muted); text-decoration: line-through;
+    will-change: transform, opacity;
+  }
+
+  .cta {
+    margin-top: 20px; width: 100%;
+    background: var(--ink); color: #fff;
+    border: none; border-radius: 14px;
+    padding: 15px; font-family: 'Inter', sans-serif;
+    font-weight: 700; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase;
+    will-change: transform, opacity; position: relative; overflow: hidden;
+  }
+  .cta .ctashine {
+    position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(105deg, transparent, rgba(255,255,255,.35), transparent);
+    will-change: transform;
+  }
+
+  /* ===== LOCKUP ===== */
+  .line { display: flex; overflow: hidden; padding: 0.04em 0; justify-content: center; }
+  .word {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: clamp(2.4rem, 12vw, 9.5rem);
+    line-height: 0.88; letter-spacing: -0.03em;
+    color: var(--ink); text-transform: uppercase; white-space: nowrap;
+    will-change: transform, opacity;
+  }
+  .word.gold { color: var(--gold); }
+  .word.serif { font-family: 'Fraunces', serif; font-weight: 600; text-transform: none; font-style: italic; letter-spacing: -0.02em; }
+  .word.stroke { color: transparent; -webkit-text-stroke: 2px var(--ink); }
+  .char { display: inline-block; will-change: transform, opacity; }
+
+  .kicker {
+    font-family: 'Inter', sans-serif; font-weight: 700;
+    font-size: clamp(0.66rem, 1.5vw, 1rem);
+    letter-spacing: 0.42em; text-transform: uppercase;
+    color: var(--muted); text-indent: 0.42em;
+  }
+
+  .brandmark {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    text-transform: lowercase;
+    font-size: clamp(2.6rem, 13vw, 11rem);
+    line-height: 0.84; letter-spacing: -0.03em; color: var(--ink);
+  }
+  .brandmark .gold { color: var(--gold); }
+
+  /* ===== FINALE — retail brand sting ===== */
+  #bagWrap {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1; will-change: transform, opacity; pointer-events: none;
+  }
+  #bag { width: 46vmin; height: 46vmin; display: block; overflow: visible; }
+  #bag .stroke {
+    fill: none; stroke: var(--ink); stroke-width: 5;
+    stroke-linecap: round; stroke-linejoin: round;
+    will-change: stroke-dashoffset;
+  }
+  #bag .handle { stroke: var(--gold); }
+  #bag .tagline { stroke: var(--rose); stroke-width: 4; }
+  #bag .glyph { fill: var(--gold); will-change: transform, opacity; }
+
+  .uline {
+    position: absolute; height: 5px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--rose));
+    transform-origin: left center; will-change: transform;
+    z-index: 2;
+  }
+
+  .cartpill {
+    position: absolute;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px 9px 14px; border-radius: 999px;
+    background: var(--green); color: #fff;
+    font-family: 'Inter', sans-serif; font-weight: 700;
+    font-size: clamp(12px, 1.7vw, 16px); letter-spacing: 0.12em; text-transform: uppercase;
+    box-shadow: 0 12px 28px rgba(58,157,106,.38);
+    will-change: transform, opacity; z-index: 3;
+  }
+  .cartpill .tick {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(255,255,255,.22);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .cartpill .tick svg { width: 12px; height: 12px; display: block; }
+  .cartpill .tick path { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; will-change: stroke-dashoffset; }
+
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+  .panel { position: absolute; will-change: transform; visibility: hidden; }
+
+  #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 50; }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none;
+    opacity: 0.05; mix-blend-mode: multiply; z-index: 60;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  #progress {
+    position: fixed; left: 0; bottom: 0; height: 3px; width: 100%;
+    transform: scaleX(0); transform-origin: left;
+    background: linear-gradient(90deg, var(--gold), var(--rose));
+    z-index: 70;
+  }
+
+  .ui {
+    position: fixed; font-family: 'Inter', sans-serif; font-weight: 700;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    z-index: 80; color: #8c8478;
+  }
+  #brand { top: 22px; left: 24px; }
+  #replay {
+    bottom: 20px; right: 22px; background: transparent;
+    border: 1.5px solid #d3ccbf; border-radius: 999px;
+    padding: 9px 18px; cursor: pointer;
+    transition: color .2s, border-color .2s, background .2s;
+  }
+  #replay:hover { color: var(--bg); background: var(--ink); border-color: var(--ink); }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="blob" id="blobA"></div>
+    <div class="blob" id="blobB"></div>
+    <div class="blob" id="blobC"></div>
+
+    <!-- Scene 1 : kicker intro -->
+    <div class="scene" id="s1">
+      <div class="line"><span class="kicker">New&nbsp;&nbsp;Season&nbsp;&nbsp;Drop</span></div>
+      <div class="line"><span class="word serif gold">just</span></div>
+      <div class="line"><span class="word stroke">LANDED</span></div>
+    </div>
+
+    <!-- Scene 2-4 : product card -->
+    <div class="scene" id="cardScene">
+      <div class="card">
+        <div class="product">
+          <div class="bottle">
+            <div class="cap"></div>
+            <div class="neck"></div>
+            <div class="body"></div>
+            <div class="label"><b>AURA</b><span></span></div>
+          </div>
+          <div class="shine" id="shine"></div>
+        </div>
+        <div class="sale" id="sale">-50%</div>
+        <div class="cardinfo">
+          <div class="ptitle">Aura Eau de Parfum</div>
+          <div class="pcat">Signature Collection</div>
+          <div class="stars" id="stars">
+            <span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg><span class="fill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg></span></span>
+            <span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg><span class="fill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg></span></span>
+            <span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg><span class="fill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg></span></span>
+            <span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg><span class="fill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg></span></span>
+            <span class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg><span class="fill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.8 5.9 20.5l1.5-6.8L2.2 9l6.9-.7z"/></svg></span></span>
+            <span class="rating-num" id="ratingNum">4.9</span>
+          </div>
+          <div class="pricerow">
+            <span class="price" id="price">$89</span>
+            <span class="oldprice" id="oldprice">$178</span>
+          </div>
+          <button class="cta" id="cta">Add to Cart<span class="ctashine" id="ctashine"></span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scene 5 : bridge -->
+    <div class="scene" id="s5">
+      <div class="line"><span class="word serif gold">shop</span></div>
+      <div class="line"><span class="word">NOW</span></div>
+    </div>
+
+    <!-- Scene 6 : finale -->
+    <div id="bagWrap">
+      <svg id="bag" viewBox="0 0 120 120" aria-hidden="true">
+        <!-- bag body -->
+        <path class="stroke body" d="M24 44 H96 L92 110 A4 4 0 0 1 88 114 H32 A4 4 0 0 1 28 110 Z"/>
+        <!-- handle -->
+        <path class="stroke handle" d="M44 44 V34 A16 16 0 0 1 76 34 V44"/>
+        <!-- price tagline -->
+        <path class="stroke tagline" d="M48 74 H72"/>
+        <!-- gold price-tag glyph -->
+        <circle class="glyph" cx="60" cy="64" r="3.4"/>
+      </svg>
+    </div>
+
+    <div class="scene" id="s6">
+      <div class="line"><span class="kicker">E-Commerce&nbsp;&nbsp;Skills</span></div>
+      <div class="line"><span class="word gold">SHOP</span></div>
+      <div class="line"><span class="word">ECOMMERCE</span></div>
+      <div class="uline" id="uline"></div>
+      <div class="line brandline"><span class="word brandmark">iart<span class="gold">.</span>ai</span></div>
+    </div>
+
+    <div class="cartpill" id="cartpill">
+      <span class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+      <span>In&nbsp;Cart</span>
+    </div>
+  </div>
+
+  <div id="fx">
+    <div class="panel" id="p1"></div>
+    <div class="panel" id="p2"></div>
+    <div class="panel" id="p3"></div>
+    <div class="panel" id="p4"></div>
+  </div>
+
+  <div id="flash"></div>
+  <div class="grain"></div>
+  <div id="progress"></div>
+  <div class="ui" id="brand">◆ iart.ai</div>
+  <button class="ui" id="replay">↻ Replay</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+  function splitChars(word) {
+    const text = word.textContent;
+    word.textContent = '';
+    const chars = [];
+    for (const ch of text) {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.innerHTML = (ch === ' ') ? '&nbsp;' : ch;
+      word.appendChild(span);
+      if (ch !== ' ') chars.push(span);
+    }
+    return chars;
+  }
+  document.querySelectorAll('.word:not(.brandmark)').forEach(splitChars);
+
+  function splitBrand(el) {
+    const html = el.innerHTML;
+    el.innerHTML = '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.childNodes.forEach(node => {
+      const isDot = node.nodeType === 1;
+      for (const ch of node.textContent) {
+        const span = document.createElement('span');
+        span.className = 'char' + (isDot ? ' gold' : '');
+        span.textContent = ch;
+        el.appendChild(span);
+      }
+    });
+  }
+  document.querySelectorAll('.brandmark').forEach(splitBrand);
+
+  const charsOf = (sel) => gsap.utils.toArray(sel + ' .char');
+
+  gsap.set('.scene', { autoAlpha: 0 });
+  gsap.set('#bagWrap', { autoAlpha: 0 });
+  gsap.set('#cartpill', { autoAlpha: 0 });
+  gsap.set('#uline', { autoAlpha: 0 });
+  gsap.set('#sale', { autoAlpha: 0, scale: 0 });
+  gsap.set('.star .fill', { clipPath: 'inset(0 100% 0 0)' });
+
+  gsap.to('#blobA', { xPercent: 14, yPercent: 16, duration: 9,  repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#blobB', { xPercent: -14, yPercent: -12, duration: 11, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#blobC', { xPercent: -18, yPercent: 14, duration: 8,  repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  function build() {
+    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+
+    tl.fromTo('#progress', { scaleX: 0 }, { scaleX: 1, duration: 7.8, ease: 'none' }, 0);
+
+    // ===== SCENE 1 (0.0 – 1.4) =====
+    tl.set('#s1', { autoAlpha: 1 }, 0)
+      .from('#s1 .kicker', { yPercent: 100, opacity: 0, duration: 0.5 }, 0.05)
+      .from(charsOf('#s1'), {
+        yPercent: 120, opacity: 0, rotateX: -90,
+        stagger: { each: 0.03, from: 'start' }, duration: 0.55
+      }, 0.18)
+      // TRANSITION A — IMPLODE
+      .to(charsOf('#s1').concat(gsap.utils.toArray('#s1 .kicker')), {
+        scale: 0, rotation: 120, opacity: 0, filter: 'blur(6px)',
+        stagger: { each: 0.02, from: 'edges' }, duration: 0.45, ease: 'power3.in'
+      }, 1.05)
+      .set('#s1', { autoAlpha: 0 });
+
+    // TRANSITION (curtain part — gold panels) into card
+    gsap.set('#p1', { visibility: 'visible', top: 0, left: 0,    width: '50.5%', height: '100%', backgroundColor: 'var(--ink)', xPercent: -100 });
+    gsap.set('#p2', { visibility: 'visible', top: 0, left: '50%', width: '50.5%', height: '100%', backgroundColor: 'var(--ink)', xPercent: 100 });
+    tl.to(['#p1','#p2'], { xPercent: 0, duration: 0.28, ease: 'power3.in' }, 1.35)
+      .to('#p1', { xPercent: -100, duration: 0.42, ease: 'power4.out' }, 1.66)
+      .to('#p2', { xPercent: 100, duration: 0.42, ease: 'power4.out' }, 1.66)
+      .set(['#p1','#p2'], { visibility: 'hidden' }, 2.1);
+
+    // ===== CARD SCENE (1.5 – 5.4) =====
+    // card slides up + reveals
+    tl.set('#cardScene', { autoAlpha: 1 }, 1.5)
+      .from('.card', { yPercent: 18, opacity: 0, scale: 0.92, duration: 0.65, ease: 'power3.out' }, 1.5)
+      .from('.product', { opacity: 0, duration: 0.4 }, 1.6)
+      .from('.bottle', { yPercent: 30, opacity: 0, rotation: -8, duration: 0.6, ease: 'back.out(1.5)' }, 1.75)
+      .from(['.ptitle','.pcat'], { y: 14, opacity: 0, stagger: 0.08, duration: 0.5 }, 2.0);
+
+    // shine sweep across product
+    gsap.set('#shine', { x: 0 });
+    tl.fromTo('#shine', { xPercent: -120 }, { xPercent: 520, duration: 0.9, ease: 'power2.inOut' }, 2.2);
+
+    // sale badge pops
+    tl.to('#sale', { autoAlpha: 1, scale: 1.3, rotation: -12, duration: 0.4, ease: 'back.out(3)' }, 2.5)
+      .to('#sale', { scale: 1, rotation: 0, duration: 0.3, ease: 'sine.out' }, 2.85)
+      .to('#sale', { scale: 1.12, duration: 0.45, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 3.2);
+
+    // stars fill left-to-right
+    tl.to('.star .fill', {
+        clipPath: 'inset(0 0% 0 0)',
+        stagger: 0.1, duration: 0.3, ease: 'power2.out'
+      }, 2.9)
+      .from('.star', { scale: 0.6, stagger: 0.1, duration: 0.3, ease: 'back.out(2.5)' }, 2.9)
+      .from('#ratingNum', { opacity: 0, x: -6, duration: 0.3 }, 3.4);
+
+    // price + old price pop
+    tl.from('#oldprice', { opacity: 0, x: -8, duration: 0.4 }, 3.5);
+    const priceObj = { v: 178 };
+    tl.set('#price', { textContent: '$178' }, 3.55)
+      .from('#price', { scale: 1.4, opacity: 0, duration: 0.3, ease: 'back.out(2)' }, 3.55)
+      .to(priceObj, {
+        v: 89, duration: 0.7, ease: 'power2.out',
+        onUpdate: () => { document.getElementById('price').textContent = '$' + Math.round(priceObj.v); }
+      }, 3.65)
+      .to('#price', { scale: 1.18, duration: 0.35, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 4.35);
+
+    // CTA button reveals + shine + click press
+    tl.from('#cta', { y: 16, opacity: 0, duration: 0.5, ease: 'back.out(1.4)' }, 4.3)
+      .fromTo('#ctashine', { xPercent: -160 }, { xPercent: 420, duration: 0.7, ease: 'power2.inOut' }, 4.7)
+      .to('#cta', { scale: 0.95, duration: 0.12, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 5.0)
+      .to('#cta', { backgroundColor: '#3a9d6a', duration: 0.2 }, 5.0);
+
+    // gentle card float
+    tl.to('.card', { y: -8, duration: 1.6, ease: 'sine.inOut' }, 2.4);
+
+    // exit — card scales/blur out
+    tl.to('#cardScene', { scale: 0.74, opacity: 0, filter: 'blur(8px)', duration: 0.4, ease: 'power3.in' }, 5.5)
+      .set('#cardScene', { autoAlpha: 0 });
+
+    // TRANSITION B — VENETIAN SHUTTER
+    const blinds = ['#p1','#p2','#p3','#p4'];
+    const blindColors = ['var(--ink)','var(--gold)','var(--rose)','var(--ink)'];
+    gsap.set(blinds, {
+      visibility: 'visible', left: 0, width: '100%', height: '25.2%',
+      top: (i) => (i * 25) + '%',
+      backgroundColor: (i) => blindColors[i],
+      scaleY: 0, transformOrigin: 'top center'
+    });
+    tl.to(blinds, { scaleY: 1, duration: 0.24, stagger: 0.05, ease: 'power2.in' }, 5.55)
+      .set(blinds, { transformOrigin: 'bottom center' }, 5.9)
+      .to(blinds, { scaleY: 0, duration: 0.3, stagger: 0.05, ease: 'power2.out' }, 5.93)
+      .set(blinds, { visibility: 'hidden' }, 6.3);
+
+    // ===== SCENE 5 (5.85 – 6.5) bridge =====
+    tl.set('#s5', { autoAlpha: 1 }, 5.85)
+      .from(charsOf('#s5'), {
+        yPercent: 130, opacity: 0, skewY: 8,
+        stagger: { each: 0.03, from: 'center' }, duration: 0.5
+      }, 5.9)
+      .to(charsOf('#s5'), {
+        opacity: 0, yPercent: -70, scale: 0.6,
+        stagger: { each: 0.015, from: 'edges' }, duration: 0.32, ease: 'power3.in'
+      }, 6.4)
+      .set('#s5', { autoAlpha: 0 });
+
+    // TRANSITION C — COLOR BAND SWEEP
+    const bands = ['#p1','#p2','#p3'];
+    const bandColors = ['var(--gold)','var(--ink)','var(--rose)'];
+    gsap.set(bands, {
+      visibility: 'visible', left: '-5%', width: '110%', height: '120%',
+      top: 0, skewY: -6,
+      backgroundColor: (i) => bandColors[i],
+      yPercent: 130
+    });
+    tl.to(bands, { yPercent: -130, duration: 0.55, stagger: 0.07, ease: 'power3.inOut' }, 6.35)
+      .set(bands, { visibility: 'hidden' }, 6.95);
+
+    // ===== SCENE 6 (6.65 – 7.8) finale — retail brand sting =====
+    // prep stroke-draw on the shopping bag SVG
+    const bagStrokes = gsap.utils.toArray('#bag .stroke');
+    bagStrokes.forEach((p) => {
+      const len = p.getTotalLength();
+      gsap.set(p, { strokeDasharray: len, strokeDashoffset: len });
+    });
+    const tickPath = document.querySelector('#cartpill .tick path');
+    const tickLen = tickPath.getTotalLength();
+    gsap.set(tickPath, { strokeDasharray: tickLen, strokeDashoffset: tickLen });
+    gsap.set('#bag .glyph', { transformOrigin: '50% 50%', scale: 0, opacity: 0 });
+
+    // bag draws on behind the lockup, slightly above center
+    tl.set('#bagWrap', { autoAlpha: 1, scale: 0.96, y: '-6%' }, 6.6)
+      .to(bagStrokes, {
+        strokeDashoffset: 0, duration: 0.7,
+        stagger: 0.12, ease: 'power2.inOut'
+      }, 6.62)
+      .to('#bag .glyph', { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(3)' }, 7.05)
+      .to('#bagWrap', { scale: 1, duration: 0.5, ease: 'power3.out' }, 7.05)
+      .to('#bagWrap', { y: '-4%', duration: 1.3, ease: 'sine.inOut' }, 7.2);
+
+    // lockup type-in
+    tl.set('#s6', { autoAlpha: 1 }, 6.72)
+      .from('#s6 .kicker', { yPercent: 100, opacity: 0, duration: 0.5 }, 6.78)
+      .from(gsap.utils.toArray('#s6 .word:not(.brandmark) .char'), {
+        yPercent: 115, rotateX: -85, opacity: 0,
+        stagger: { each: 0.035, from: 'start' }, duration: 0.6, ease: 'back.out(1.6)'
+      }, 6.85);
+
+    // thin underline sweep under the wordmark
+    gsap.set('#uline', { width: 'clamp(220px, 42vmin, 520px)', bottom: '21%' });
+    tl.set('#uline', { autoAlpha: 1, scaleX: 0 }, 7.18)
+      .to('#uline', { scaleX: 1, duration: 0.55, ease: 'power4.out' }, 7.18);
+
+    // brand signature
+    tl.from('#s6 .brandmark .char', {
+        yPercent: 115, opacity: 0,
+        stagger: { each: 0.05, from: 'start' }, duration: 0.6, ease: 'back.out(1.8)'
+      }, 7.22)
+      .from('#s6 .brandmark .gold', { scale: 0, duration: 0.45, ease: 'back.out(3)' }, 7.55)
+      .to('#s6 .brandmark .gold', { scale: 1.3, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 7.18)
+      .to('#s6 .brandmark', { scale: 1.03, duration: 1.0, ease: 'sine.inOut' }, 7.2);
+
+    // "IN CART" pill pops in top-right of the lockup, tick draws
+    gsap.set('#cartpill', { top: '24%', left: '62%', xPercent: 0, scale: 0, rotation: -8, transformOrigin: '50% 50%' });
+    tl.to('#cartpill', { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.45, ease: 'back.out(2.4)' }, 7.0)
+      .to(tickPath, { strokeDashoffset: 0, duration: 0.32, ease: 'power2.out' }, 7.2)
+      .to('#cartpill', { scale: 1.08, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 7.5);
+
+    tl.to('#flash', { opacity: 0.4, duration: 0.06 }, 6.62)
+      .to('#flash', { opacity: 0, duration: 0.3 }, 6.68);
+
+    tl.to({}, { duration: 0.5 });
+    return tl;
+  }
+
+  let master = build();
+  document.getElementById('replay').addEventListener('click', () => master.restart());
+</script>
+</body>
+</html>

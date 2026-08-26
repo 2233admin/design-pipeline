@@ -88,21 +88,23 @@ Use the public CLI for the complete lifecycle:
   requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
 
 DesignMD Directory is an ingestible local knowledge source for five resource kinds: skills,
-templates, design examples, guides, and tools. Sync it into an inert, hash-bound snapshot before
-routing any result:
+templates, design examples, guides, and tools. The GitHub example set from `dimabraven/design-md`
+is bundled offline. Directory sync remains a live snapshot:
 
+- `designer-pipeline designmd search --query "keyboard-first dark productivity" --json` and
+  `designer-pipeline designmd inspect --id design-md:example:linear --json` read the bundled
+  examples. `designer-pipeline designmd verify --json` checks that snapshot.
 - `designer-pipeline designmd sync --output-root .design-pipeline/designmd --json` crawls the
   DesignMD hubs and writes `designmd-catalog.json` plus local content snapshots.
 - `designer-pipeline designmd search --catalog .design-pipeline/designmd/designmd-catalog.json
-  --kind skill --query "accessibility" --json` searches the local snapshot.
+  --kind skill --query "accessibility" --json` searches the live directory snapshot.
 - `designer-pipeline designmd inspect --catalog .design-pipeline/designmd/designmd-catalog.json
-  --id designmd:skill:a11y-audit --json` reads one entry and its provenance.
+  --id designmd:skill:a11y-audit --json` reads one directory entry and its provenance.
 - `designer-pipeline designmd verify --catalog .design-pipeline/designmd/designmd-catalog.json
-  --json` checks content hashes and snapshot structure.
+  --json` checks the directory snapshot hashes.
 
-Fetched DesignMD content is reference-only until its source, license, revision, and project fit are
-reviewed. Never execute remote page content or install an upstream package during sync; route a
-verified entry through `prism`, `design-system`, or a governed tool adapter instead.
+Fetched and bundled DesignMD content is reference-only. Never execute remote page content, wrap
+`designmd-cli install`, or copy a Stripe/Linear/Vercel example in as the product `DESIGN.md`.
 
 Resolve reusable component behavior before selecting a library:
 
@@ -372,7 +374,7 @@ change-scoped review protocol for changed UI.
 
 Catalog CLIs are escape hatches. Open them only when `designer-pipeline route` selects that catalog
 as the primary knowledge door, or when a listed secondary is needed as reference. Do not search
-MengTo, Prism, Astryx, shadcnio, DesignMD, and holosticker as peer Stage 0 searches.
+MengTo, Prism, Astryx, shadcnio, DesignMD, iart, and holosticker as peer Stage 0 searches.
 
 For visual direction, web technique, motion, WebGL, reference analysis, asset, or game work, when
 the job dispatcher selects MengTo as primary, search the bundled library before inventing a
@@ -389,6 +391,20 @@ Never treat a bundled demo, runtime asset, dependency choice, account workflow, 
 as automatic project authority. The activation and adaptation rules live in
 `references/mengto-skills.md`; explicit-only entries still require the user's matching request and
 normal side-effect authority.
+
+For web motion, WebGL motion, kinetic type, or motion-graphics/video craft, when the job
+dispatcher selects iart as primary, route before implementing. A domain brief is enough; do not
+wait for a skill id:
+
+```bash
+designer-pipeline iart route --query "<motion or video brief>" --json
+designer-pipeline iart search --query "<narrow playbook>" --json
+```
+
+Read `references/iart-motion-skills.md`. Record the selected playbook, alternatives, and runtime,
+then load only that `SKILL.md`. Keep project `MOTION.md` authoritative. HTML video, reels,
+captions, overlays, and explainers use HyperFrames unless the brief names Remotion, Manim, or
+After Effects. A route result is a selection, not install or execution authority.
 
 For product-design intake, Design DNA, token governance, design-corpus learning, or handoff work,
 when the job dispatcher selects Prism as primary, route through the bundled Prism System layer

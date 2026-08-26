@@ -137,6 +137,15 @@ test("selecting a catalog does not make it executable-ready", () => {
   assert.equal(result.primaryKnowledge.admission, "reference-only");
   assert.ok(result.next.some((step) => step.command === "designmd" && step.role === "primary" && step.required === true));
   assert.ok(result.next.some((step) => step.command === "prism" && step.role === "secondary" && step.required === false));
+
+  const examples = routeJob({ query: "use dimabraven designmd-cli examples" });
+  assert.equal(examples.job, "designmd-ingest");
+
+  const motion = routeJob({ query: "make a tiktok caption animation" });
+  assert.equal(motion.job, "motion-graphics");
+  assert.equal(motion.primaryKnowledge.id, "iart");
+  assert.equal(motion.primaryKnowledge.action, "route");
+  assert.equal(motion.primaryKnowledge.admission, "inert");
 });
 
 test("a new job is a registry entry, not dispatcher source", () => {

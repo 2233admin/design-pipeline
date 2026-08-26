@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion Design · Fundamentals · GSAP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,500&family=Space+Grotesk:wght@500;700&family=Inter:wght@500;700;900&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,500&family=Space+Grotesk:wght@500;700&family=Inter:wght@500;700;900&display=swap"></noscript>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --paper:  #f3efe6;
+    --paper2: #e8e2d4;
+    --ink:    #16140f;
+    --orange: #ff5a2b;
+    --teal:   #1fb6a6;
+    --blue:   #2f5bff;
+    --yellow: #ffc23c;
+    --pink:   #ff5d97;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--paper);
+    font-family: 'Anton', sans-serif;
+  }
+
+  #stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(120% 120% at 50% 0%, #fbf8f1 0%, var(--paper) 46%, var(--paper2) 100%);
+    perspective: 1200px; overflow: hidden;
+  }
+
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(64px); opacity: 0.34;
+    will-change: transform; pointer-events: none;
+  }
+  #blobA { width: 46vmin; height: 46vmin; background: var(--orange); top: -10%; left: -6%; }
+  #blobB { width: 40vmin; height: 40vmin; background: var(--blue);   bottom: -12%; right: -8%; opacity: 0.26; }
+  #blobC { width: 30vmin; height: 30vmin; background: var(--teal);   top: 56%; left: 60%; opacity: 0.22; }
+
+  .scene {
+    position: absolute;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    will-change: transform, opacity; z-index: 2;
+  }
+  .line {
+    display: flex; gap: 0 0.07em;
+    overflow: visible; padding: 0.05em 0;
+    justify-content: center;
+  }
+  .word {
+    font-size: clamp(2.6rem, 12.5vw, 10.5rem);
+    line-height: 0.86; letter-spacing: -0.02em;
+    color: var(--ink); text-transform: uppercase;
+    white-space: nowrap; will-change: transform, opacity;
+  }
+  .char { display: inline-block; will-change: transform, opacity; }
+
+  .serif { font-family: 'Fraunces', serif; font-weight: 900; text-transform: none; letter-spacing: -0.03em; }
+  .serif.italic { font-style: italic; font-weight: 500; }
+  .grotesk { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
+
+  .orange { color: var(--orange); }
+  .teal   { color: var(--teal); }
+  .blue   { color: var(--blue); }
+  .pink   { color: var(--pink); }
+  .stroke { color: transparent; -webkit-text-stroke: 2.5px var(--ink); }
+
+  .mega {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(3rem, 17vw, 14rem);
+    line-height: 0.8; color: var(--ink); letter-spacing: -0.03em;
+  }
+  .lockup {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(2.2rem, 10vw, 8.5rem);
+    line-height: 0.84; letter-spacing: -0.035em; color: var(--ink);
+  }
+  .brandmark {
+    font-family: 'Fraunces', serif; font-weight: 900;
+    text-transform: lowercase;
+    font-size: clamp(2.4rem, 12vw, 10rem);
+    line-height: 0.82; letter-spacing: -0.04em; color: var(--ink);
+  }
+  .brandmark .dot { color: var(--orange); }
+
+  .kicker {
+    font-family: 'Inter', sans-serif; font-weight: 900;
+    font-size: clamp(0.7rem, 1.6vw, 1.05rem);
+    letter-spacing: 0.45em; text-transform: uppercase;
+    color: #837c6c; text-indent: 0.45em;
+  }
+  .num {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(5rem, 28vw, 24rem);
+    line-height: 0.8; color: var(--ink); letter-spacing: -0.04em;
+  }
+
+  /* bouncing ball */
+  #ball {
+    position: absolute; width: 12vmin; height: 12vmin;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff8b62, var(--orange) 60%, #d83d12);
+    box-shadow: 0 14px 30px rgba(216,61,18,0.35);
+    top: 18%; left: 50%; margin-left: -6vmin;
+    z-index: 3; will-change: transform; visibility: hidden;
+  }
+  #ballShadow {
+    position: absolute; width: 12vmin; height: 3vmin;
+    border-radius: 50%; background: rgba(20,18,12,0.22);
+    filter: blur(4px); top: 76%; left: 50%; margin-left: -6vmin;
+    z-index: 2; will-change: transform; visibility: hidden;
+  }
+
+  /* SVG easing curve */
+  #curveWrap {
+    position: absolute; width: min(70vmin, 70vw); height: min(46vmin, 46vw);
+    z-index: 3; visibility: hidden;
+  }
+  #curveWrap svg { width: 100%; height: 100%; overflow: visible; }
+  .grid { stroke: rgba(22,20,15,0.12); stroke-width: 1.5; }
+  .curve { fill: none; stroke: var(--blue); stroke-width: 6; stroke-linecap: round; }
+  .handleLine { stroke: var(--pink); stroke-width: 2.5; stroke-dasharray: 6 6; }
+  .handle { fill: var(--pink); }
+  .anchor { fill: var(--ink); }
+
+  /* finale callback: easing curve + landing ball that becomes the dot */
+  #finaleCurve {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    z-index: 1; overflow: visible; pointer-events: none; visibility: hidden;
+  }
+  #finalePath {
+    fill: none; stroke: var(--blue); stroke-width: 5;
+    stroke-linecap: round; opacity: 0.85;
+  }
+  #finaleBall {
+    position: absolute; width: 8vmin; height: 8vmin;
+    border-radius: 50%; top: 0; left: 0; margin: -4vmin 0 0 -4vmin;
+    background: radial-gradient(circle at 35% 30%, #ff8b62, var(--orange) 60%, #d83d12);
+    box-shadow: 0 10px 22px rgba(216,61,18,0.35);
+    z-index: 4; will-change: transform; visibility: hidden;
+  }
+
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+  .panel { position: absolute; will-change: transform; visibility: hidden; }
+
+  #flash { position: fixed; inset: 0; background: var(--ink); opacity: 0; pointer-events: none; z-index: 50; }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none;
+    opacity: 0.06; mix-blend-mode: multiply; z-index: 60;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  #progress {
+    position: fixed; left: 0; bottom: 0;
+    height: 3px; width: 100%;
+    transform: scaleX(0); transform-origin: left;
+    background: linear-gradient(90deg, var(--orange), var(--blue), var(--teal));
+    z-index: 70;
+  }
+
+  .ui {
+    position: fixed; font-family: 'Inter', sans-serif; font-weight: 900;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    z-index: 80; color: #837c6c;
+  }
+  #brand { top: 22px; left: 24px; }
+  #replay {
+    bottom: 20px; right: 22px; background: transparent;
+    border: 1.5px solid #cbc4b5; border-radius: 999px;
+    padding: 9px 18px; cursor: pointer;
+    transition: color .2s, border-color .2s, background .2s;
+  }
+  #replay:hover { color: var(--paper); background: var(--ink); border-color: var(--ink); }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="blob" id="blobA"></div>
+    <div class="blob" id="blobB"></div>
+    <div class="blob" id="blobC"></div>
+
+    <!-- Scene 1 : intro -->
+    <div class="scene" id="s1">
+      <div class="line"><span class="kicker">iart.ai&nbsp;&nbsp;Motion&nbsp;&nbsp;Lab</span></div>
+      <div class="line"><span class="word">the</span></div>
+      <div class="line"><span class="word serif italic orange">fundamentals</span></div>
+    </div>
+
+    <!-- Scene 2 : bouncing ball (deco lives outside .scene) -->
+    <div class="scene" id="s2">
+      <div class="line"><span class="word mega">SQUASH</span></div>
+      <div class="line"><span class="word stroke">&amp;&nbsp;STRETCH</span></div>
+    </div>
+    <div id="ball"></div>
+    <div id="ballShadow"></div>
+
+    <!-- Scene 3 : easing curve draws -->
+    <div class="scene" id="s3">
+      <div class="line"><span class="word grotesk blue">EASE</span></div>
+    </div>
+    <div id="curveWrap">
+      <svg viewBox="0 0 300 200" preserveAspectRatio="none">
+        <line class="grid" x1="0" y1="200" x2="300" y2="200"></line>
+        <line class="grid" x1="0" y1="0" x2="0" y2="200"></line>
+        <path id="easeCurve" class="curve" d="M0,200 C90,200 150,0 300,0"></path>
+        <line id="hl1" class="handleLine" x1="0" y1="200" x2="90" y2="200"></line>
+        <line id="hl2" class="handleLine" x1="300" y1="0" x2="150" y2="0"></line>
+        <circle class="anchor" cx="0" cy="200" r="7"></circle>
+        <circle class="anchor" cx="300" cy="0" r="7"></circle>
+        <circle id="cp1" class="handle" cx="90" cy="200" r="8"></circle>
+        <circle id="cp2" class="handle" cx="150" cy="0" r="8"></circle>
+      </svg>
+    </div>
+
+    <!-- Scene 4 : rhythm words -->
+    <div class="scene" id="s4">
+      <div class="line"><span class="word teal">TIMING</span></div>
+      <div class="line"><span class="word blue">SPACING</span></div>
+      <div class="line"><span class="word orange">EASE</span></div>
+    </div>
+
+    <!-- Scene 5 : 12 principles -->
+    <div class="scene" id="s5">
+      <div class="line"><span class="word num">12</span></div>
+      <div class="line"><span class="word serif italic">principles</span></div>
+    </div>
+
+    <!-- Scene 6 : lockup -->
+    <div class="scene" id="s6">
+      <div class="line"><span class="word lockup">MOTION</span></div>
+      <div class="line"><span class="word lockup orange">DESIGN</span></div>
+    </div>
+
+    <!-- Scene 7 : iart.ai signature (the dot is the ball that landed) -->
+    <div class="scene" id="s7">
+      <div class="line"><span class="word brandmark">iart<span class="dot">.</span>ai</span></div>
+      <div class="line"><span class="kicker">Principles&nbsp;&nbsp;in&nbsp;&nbsp;Motion</span></div>
+    </div>
+
+    <!-- Finale callback: the easing curve draws once more; the ball rolls down it and lands as the dot -->
+    <svg id="finaleCurve" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
+      <path id="finalePath" d="M120,140 C360,140 420,470 880,470"></path>
+    </svg>
+    <div id="finaleBall"></div>
+  </div>
+
+  <div id="fx">
+    <div class="panel" id="p1"></div>
+    <div class="panel" id="p2"></div>
+    <div class="panel" id="p3"></div>
+    <div class="panel" id="p4"></div>
+    <div class="panel" id="p5"></div>
+  </div>
+
+  <div id="flash"></div>
+  <div class="grain"></div>
+  <div id="progress"></div>
+  <div class="ui" id="brand">◆ iart.ai</div>
+  <button class="ui" id="replay">↻ Replay</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+  function splitChars(word) {
+    const text = word.textContent;
+    word.textContent = '';
+    const chars = [];
+    for (const ch of text) {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.innerHTML = (ch === ' ' || ch === ' ') ? '&nbsp;' : ch;
+      word.appendChild(span);
+      if (ch !== ' ' && ch !== ' ') chars.push(span);
+    }
+    return chars;
+  }
+  document.querySelectorAll('.word:not(.brandmark)').forEach(splitChars);
+
+  function splitBrand(el) {
+    const html = el.innerHTML;
+    el.innerHTML = '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.childNodes.forEach(node => {
+      const isDot = node.nodeType === 1;
+      const text = node.textContent;
+      for (const ch of text) {
+        const span = document.createElement('span');
+        span.className = 'char' + (isDot ? ' dot' : '');
+        span.textContent = ch;
+        el.appendChild(span);
+      }
+    });
+  }
+  document.querySelectorAll('.brandmark').forEach(splitBrand);
+
+  const charsOf = (sel) => gsap.utils.toArray(sel + ' .char');
+
+  gsap.set('.scene', { autoAlpha: 0 });
+
+  gsap.to('#blobA', { xPercent: 12, yPercent: 18, duration: 9, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#blobB', { xPercent: -16, yPercent: -10, duration: 11, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#blobC', { xPercent: -20, yPercent: 14, duration: 8, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  function build() {
+    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+    tl.fromTo('#progress', { scaleX: 0 }, { scaleX: 1, duration: 13.4, ease: 'none' }, 0);
+
+    // ===== SCENE 1 : intro =====
+    tl.set('#s1', { autoAlpha: 1 }, 0)
+      .from('#s1 .kicker', { yPercent: 100, opacity: 0, duration: 0.5 }, 0.05)
+      .from(charsOf('#s1'), {
+        yPercent: 120, rotateX: -90, opacity: 0,
+        stagger: { each: 0.03, from: 'start' }, duration: 0.6
+      }, 0.2)
+      .to(charsOf('#s1').concat(gsap.utils.toArray('#s1 .kicker')), {
+        // TRANSITION 1 — IMPLODE
+        scale: 0, rotation: 140, opacity: 0, filter: 'blur(6px)',
+        stagger: { each: 0.02, from: 'edges' }, duration: 0.5, ease: 'power3.in'
+      }, 1.25)
+      .set('#s1', { autoAlpha: 0 });
+
+    // ===== SCENE 2 : bouncing ball + squash & stretch =====
+    tl.set('#s2', { autoAlpha: 1 }, 1.55)
+      .set(['#ball','#ballShadow'], { visibility: 'visible' }, 1.55)
+      .from(charsOf('#s2'), {
+        yPercent: 120, opacity: 0, stagger: { each: 0.03, from: 'start' }, duration: 0.5
+      }, 1.6);
+
+    // ball drop 1 (with squash on impact + stretch in air)
+    tl.fromTo('#ball', { y: 0, scaleX: 1, scaleY: 1 },
+        { y: '48vh', duration: 0.55, ease: 'power2.in' }, 1.7)
+      .to('#ball', { scaleX: 1.4, scaleY: 0.6, duration: 0.08, ease: 'power2.out' }, 2.25)
+      .to('#ball', { scaleX: 1, scaleY: 1, duration: 0.1, ease: 'power1.out' }, 2.33)
+      .to('#ball', { y: '24vh', scaleX: 0.85, scaleY: 1.2, duration: 0.34, ease: 'power2.out' }, 2.33)
+      .to('#ball', { scaleX: 1, scaleY: 1, duration: 0.2 }, 2.62)
+      // bounce 2
+      .to('#ball', { y: '48vh', scaleX: 0.9, scaleY: 1.15, duration: 0.3, ease: 'power2.in' }, 2.78)
+      .to('#ball', { scaleX: 1.3, scaleY: 0.7, duration: 0.07, ease: 'power2.out' }, 3.08)
+      .to('#ball', { scaleX: 1, scaleY: 1, duration: 0.1 }, 3.15);
+    // shadow tracks the ball vertically (scale with proximity)
+    tl.fromTo('#ballShadow', { scaleX: 0.5, opacity: 0.2 },
+        { scaleX: 1.1, opacity: 0.5, duration: 0.55, ease: 'power2.in' }, 1.7)
+      .to('#ballShadow', { scaleX: 0.6, opacity: 0.25, duration: 0.34 }, 2.33)
+      .to('#ballShadow', { scaleX: 1.1, opacity: 0.5, duration: 0.3 }, 2.78);
+
+    tl.to('#s2', { autoAlpha: 0, duration: 0.3 }, 3.25)
+      .to(['#ball','#ballShadow'], { autoAlpha: 0, duration: 0.3 }, 3.25)
+      .set(['#ball','#ballShadow'], { visibility: 'hidden' }, 3.55);
+
+    // TRANSITION 2 — COLOR BAND SWEEP
+    const bands = ['#p1','#p2','#p3'];
+    const bandColors = ['var(--orange)','var(--ink)','var(--blue)'];
+    gsap.set(bands, {
+      visibility: 'visible', left: '-5%', width: '110%', height: '120%',
+      top: 0, skewY: -6, backgroundColor: (i) => bandColors[i], yPercent: 130
+    });
+    tl.to(bands, { yPercent: -130, duration: 0.6, stagger: 0.08, ease: 'power3.inOut' }, 3.3)
+      .set(bands, { visibility: 'hidden' }, 4.0);
+
+    // ===== SCENE 3 : easing curve draws across =====
+    tl.set('#s3', { autoAlpha: 1 }, 3.6)
+      .set('#curveWrap', { visibility: 'visible' }, 3.6);
+    const curve = document.getElementById('easeCurve');
+    const len = curve.getTotalLength();
+    gsap.set(curve, { strokeDasharray: len, strokeDashoffset: len });
+    gsap.set(['#cp1','#cp2','#hl1','#hl2'], { opacity: 0 });
+
+    tl.from('#s3 .char', { yPercent: 120, opacity: 0, stagger: 0.04, duration: 0.45 }, 3.62)
+      .to(curve, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.inOut' }, 3.7)
+      .to(['#hl1','#hl2'], { opacity: 1, duration: 0.3 }, 4.3)
+      .fromTo(['#cp1','#cp2'], { scale: 0, opacity: 0, transformOrigin: 'center' },
+        { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.5)', stagger: 0.08 }, 4.4)
+      // wiggle a handle to show bezier control
+      .to('#cp2', { attr: { cy: 30 }, duration: 0.35, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 4.7)
+      .to('#hl2', { attr: { y1: 30 }, duration: 0.35, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 4.7);
+
+    tl.to('#curveWrap', { autoAlpha: 0, scale: 0.85, duration: 0.35, ease: 'power2.in', transformOrigin: 'center' }, 5.2)
+      .to('#s3', { autoAlpha: 0, duration: 0.3 }, 5.2)
+      .set('#curveWrap', { visibility: 'hidden' }, 5.55);
+
+    // TRANSITION 3 — VENETIAN SHUTTER (vertical blinds)
+    const blinds = ['#p1','#p2','#p3','#p4'];
+    const blindColors = ['var(--blue)','var(--orange)','var(--teal)','var(--ink)'];
+    gsap.set(blinds, {
+      visibility: 'visible', top: 0, height: '100%', width: '25.2%',
+      left: (i) => (i * 25) + '%',
+      backgroundColor: (i) => blindColors[i],
+      scaleX: 0, transformOrigin: 'left center'
+    });
+    tl.to(blinds, { scaleX: 1, duration: 0.24, stagger: 0.05, ease: 'power2.in' }, 5.3)
+      .set(blinds, { transformOrigin: 'right center' }, 5.65)
+      .to(blinds, { scaleX: 0, duration: 0.3, stagger: 0.05, ease: 'power2.out' }, 5.68)
+      .set(blinds, { visibility: 'hidden' }, 6.05);
+
+    // ===== SCENE 4 : TIMING / SPACING / EASE =====
+    tl.set('#s4', { autoAlpha: 1 }, 5.55);
+    tl.from('#s4 .line:nth-child(1) .char', { yPercent: 120, opacity: 0, stagger: 0.04, duration: 0.4 }, 5.57)
+      .from('#s4 .line:nth-child(2) .char', { yPercent: -120, opacity: 0, stagger: 0.04, duration: 0.4 }, 5.75)
+      .from('#s4 .line:nth-child(3) .char', { scale: 2.2, opacity: 0, stagger: 0.03, duration: 0.4, ease: 'back.out(2)' }, 5.95)
+      .to(charsOf('#s4'), { opacity: 0, yPercent: 40, filter: 'blur(8px)', stagger: 0.01, duration: 0.3, ease: 'power2.in' }, 6.45)
+      .set('#s4', { autoAlpha: 0 });
+
+    // TRANSITION 4 — WHIP-PAN BLUR
+    tl.to('#stage', { x: -90, filter: 'blur(7px)', duration: 0.16, ease: 'power2.in' }, 6.5)
+      .set('#stage', { x: 100 }, 6.66)
+      .to('#stage', { x: 0, filter: 'blur(0px)', duration: 0.32, ease: 'power3.out' }, 6.66);
+
+    // ===== SCENE 5 : 12 principles =====
+    tl.set('#s5', { autoAlpha: 1 }, 6.7)
+      .from('#s5 .num .char', { scale: 0, rotation: -40, opacity: 0, stagger: 0.08, duration: 0.55, ease: 'back.out(2)' }, 6.7)
+      .from('#s5 .serif .char', { yPercent: 110, opacity: 0, stagger: 0.03, duration: 0.45 }, 6.95)
+      .to('#flash', { opacity: 0.25, duration: 0.06 }, 6.7)
+      .to('#flash', { opacity: 0, duration: 0.3 }, 6.76)
+      .to(charsOf('#s5'), { yPercent: -120, opacity: 0, filter: 'blur(8px)', stagger: { each: 0.02, from: 'edges' }, duration: 0.4, ease: 'power3.in' }, 7.15)
+      .set('#s5', { autoAlpha: 0 });
+
+    // TRANSITION 5 — CURTAIN part to lockup
+    gsap.set('#p1', { visibility: 'visible', top: 0, left: 0,   width: '50.5%', height: '100%', backgroundColor: 'var(--ink)', xPercent: -100 });
+    gsap.set('#p2', { visibility: 'visible', top: 0, left: '50%', width: '50.5%', height: '100%', backgroundColor: 'var(--ink)', xPercent: 100 });
+    tl.to(['#p1','#p2'], { xPercent: 0, duration: 0.28, ease: 'power3.in' }, 7.3)
+      .to('#p1', { xPercent: -100, duration: 0.42, ease: 'power4.out' }, 7.6)
+      .to('#p2', { xPercent: 100, duration: 0.42, ease: 'power4.out' }, 7.6)
+      .set(['#p1','#p2'], { visibility: 'hidden' }, 8.05);
+
+    // ===== SCENE 6 : MOTION DESIGN lockup =====
+    tl.set('#s6', { autoAlpha: 1 }, 7.65)
+      .from('#s6 .line:nth-child(1) .char', { yPercent: 115, rotateX: -85, opacity: 0, stagger: { each: 0.05, from: 'start' }, duration: 0.6, ease: 'back.out(1.7)' }, 7.65)
+      .from('#s6 .line:nth-child(2) .char', { yPercent: 115, rotateX: -85, opacity: 0, stagger: { each: 0.05, from: 'start' }, duration: 0.6, ease: 'back.out(1.7)' }, 7.82)
+      .to(charsOf('#s6'), { yPercent: -60, opacity: 0, filter: 'blur(8px)', stagger: { each: 0.02, from: 'edges' }, duration: 0.4, ease: 'power3.in' }, 9.0)
+      .set('#s6', { autoAlpha: 0 });
+
+    // ===== FINALE CALLBACK : the easing curve draws once more, the ball rolls
+    //        down it and lands as the dot in iart.ai (squash on impact) =====
+    // Manual path-following (no MotionPathPlugin needed) keeps this GSAP-only.
+    const fSvg  = document.getElementById('finaleCurve');
+    const fBall = document.getElementById('finaleBall');
+    const fPath = document.getElementById('finalePath');
+    const fLen  = fPath.getTotalLength();
+    gsap.set(fPath, { strokeDasharray: fLen, strokeDashoffset: fLen });
+
+    // Convert a point in SVG userspace to viewport pixels, then place the ball.
+    function placeBallAtLength(L) {
+      const pt = fPath.getPointAtLength(L);
+      const m = fPath.getScreenCTM();
+      const sx = pt.x * m.a + pt.y * m.c + m.e;   // viewport px
+      const sy = pt.x * m.b + pt.y * m.d + m.f;
+      gsap.set(fBall, { x: sx, y: sy });          // ball centered via negative margins
+    }
+    const roller = { p: 0 };
+
+    tl.set('#finaleCurve', { visibility: 'visible' }, 9.0)
+      // draw the easing curve in
+      .to(fPath, { strokeDashoffset: 0, duration: 0.7, ease: 'power2.inOut' }, 9.05);
+
+    // ball appears at the curve start and rolls down the curve to the landing point
+    tl.set('#finaleBall', { visibility: 'visible' }, 9.05)
+      .set(roller, { p: 0, onComplete: () => placeBallAtLength(0) }, 9.05)
+      .set('#finaleBall', { autoAlpha: 1, scaleX: 1, scaleY: 1 }, 9.05)
+      .to(roller, {
+        p: 1, duration: 0.85, ease: 'power1.in',
+        onUpdate: () => placeBallAtLength(roller.p * fLen)
+      }, 9.1)
+      // squash on impact at the landing point
+      .to('#finaleBall', { scaleX: 1.5, scaleY: 0.55, duration: 0.08, ease: 'power2.out' }, 9.95)
+      .to('#finaleBall', { scaleX: 1, scaleY: 1, duration: 0.12, ease: 'power1.out' }, 10.03);
+
+    // brandmark resolves in; the ball morphs into the orange dot
+    tl.set('#s7', { autoAlpha: 1 }, 10.05)
+      .from(charsOf('#s7 .brandmark').filter(c => !c.classList.contains('dot')),
+        { yPercent: 115, rotateX: -85, opacity: 0, stagger: { each: 0.06, from: 'start' }, duration: 0.6, ease: 'back.out(1.8)' }, 10.05)
+      .set('#s7 .brandmark .dot', { opacity: 0 }, 10.05)
+      // hand-off: hide the rolling ball, reveal the real dot in its place
+      .to('#finaleBall', { autoAlpha: 0, duration: 0.2 }, 10.5)
+      .fromTo('#s7 .brandmark .dot',
+        { opacity: 0, scaleX: 1.5, scaleY: 0.55, transformOrigin: 'center bottom' },
+        { opacity: 1, scaleX: 1, scaleY: 1, duration: 0.28, ease: 'back.out(2.2)' }, 10.5)
+      .to('#s7 .brandmark .dot', { scale: 1.25, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut', transformOrigin: 'center' }, 10.8)
+      .from('#s7 .kicker', { yPercent: 100, opacity: 0, duration: 0.55 }, 10.65)
+      // settle: fade the curve away, gentle breathe on the wordmark
+      .to('#finaleCurve', { autoAlpha: 0, duration: 0.6, ease: 'power2.out' }, 10.4)
+      .to('#s7 .brandmark', { scale: 1.03, duration: 1.0, ease: 'sine.inOut' }, 10.8);
+
+    return tl;
+  }
+
+  let master = build();
+  document.getElementById('replay').addEventListener('click', () => master.restart());
+</script>
+</body>
+</html>

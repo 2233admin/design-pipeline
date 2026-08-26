@@ -1,0 +1,14 @@
+{
+  "name": "ecommerce-video-skills",
+  "owner": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "plugins": [
+    {
+      "name": "ecommerce-video-skills",
+      "source": "./",
+      "description": "Generate ecommerce / product video — product demos, sale promos, and photo slideshows — straight from your screenshots, prices, and image folders."
+    }
+  ]
+}

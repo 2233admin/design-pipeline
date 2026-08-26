@@ -1,0 +1,103 @@
+{
+  "schema": "design-pipeline.design-md-source.v1",
+  "source": {
+    "repository": "https://github.com/dimabraven/design-md",
+    "revision": "f74ca151f92af178f1e0b93f2191e5ec77b33203",
+    "gitTree": "a48c343f49eb774062044e514335e95c569f5f57",
+    "committedAt": "2026-07-21T17:24:32+03:00",
+    "license": "MIT",
+    "reviewedAt": "2026-08-26",
+    "scope": [
+      "**"
+    ]
+  },
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 7,
+    "byteCount": 39981,
+    "treeSha256": "dbddce90459c6bb62889cdf23f616e180ff479486ea19024e0f320e63f5a02d4",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "oid": "e43b0f988953ae3a84b00331d0ccf5f7d51cb3cf",
+        "size": 10
+      },
+      {
+        "path": "examples/linear.md",
+        "mode": "100644",
+        "oid": "e376f934cbe9cee8fbddceaef749c75984efb34e",
+        "size": 5346
+      },
+      {
+        "path": "examples/minimal-saas.md",
+        "mode": "100644",
+        "oid": "b4abf60ec5ed5bd76b528fa72ec38c0d4fe336e3",
+        "size": 7318
+      },
+      {
+        "path": "examples/stripe.md",
+        "mode": "100644",
+        "oid": "2ad45acef22a02c16a3466cc5802d5e5192cce40",
+        "size": 9363
+      },
+      {
+        "path": "examples/vercel.md",
+        "mode": "100644",
+        "oid": "c03c7c481438fa26835ee40d16757b239c74c219",
+        "size": 8747
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "22d32c5769df9b297a0683ff5f99f114a9df988f",
+        "size": 1068
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "b1fe1fe7d14391d5bd915f2970f450562668414a",
+        "size": 8129
+      }
+    ]
+  },
+  "examples": [
+    {
+      "id": "design-md:example:linear",
+      "slug": "linear",
+      "kind": "example",
+      "name": "Linear Design System",
+      "description": "dark, minimal, keyboard-first productivity tool",
+      "path": "upstream/examples/linear.md",
+      "admission": "reference-only"
+    },
+    {
+      "id": "design-md:example:minimal-saas",
+      "slug": "minimal-saas",
+      "kind": "example",
+      "name": "Minimal SaaS Design System",
+      "description": "clean, neutral, professional, works for any B2B product",
+      "path": "upstream/examples/minimal-saas.md",
+      "admission": "reference-only"
+    },
+    {
+      "id": "design-md:example:stripe",
+      "slug": "stripe",
+      "kind": "example",
+      "name": "Stripe Design System",
+      "description": "clean, high-density, professional, payment infrastructure",
+      "path": "upstream/examples/stripe.md",
+      "admission": "reference-only"
+    },
+    {
+      "id": "design-md:example:vercel",
+      "slug": "vercel",
+      "kind": "example",
+      "name": "Vercel Design System",
+      "description": "dark, monochrome, developer-native, high-contrast",
+      "path": "upstream/examples/vercel.md",
+      "admission": "reference-only"
+    }
+  ]
+}

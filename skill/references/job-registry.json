@@ -27,15 +27,25 @@
       "keywords": ["pixijs", "pixi.js", "phaser", "webgpu", "babylon", "playcanvas", "three.js", "threejs", "webgl", "粒子"],
       "primaryKnowledge": { "id": "graphics-runtime", "command": "toolchain", "action": "resolve", "admission": "ready" },
       "secondaries": [
-        { "id": "mengto", "command": "mengto", "action": "search", "admission": "inert" }
+        { "id": "mengto", "command": "mengto", "action": "search", "admission": "inert" },
+        { "id": "iart", "command": "iart", "action": "route", "admission": "inert" }
       ],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "motion-graphics",
+      "activation": "explicit",
+      "priority": 70,
+      "keywords": ["tiktok", "reels", "remotion", "manim", "kinetic typography", "explainer video", "after effects", "short-form video", "短视频", "片头"],
+      "primaryKnowledge": { "id": "iart", "command": "iart", "action": "route", "admission": "inert" },
+      "secondaries": [],
       "kernel": ["foundation", "toolchain"]
     },
     {
       "id": "designmd-ingest",
       "activation": "explicit",
       "priority": 70,
-      "keywords": ["designmd", "designmd.directory", "design.md directory"],
+      "keywords": ["designmd", "designmd.directory", "design.md directory", "dimabraven", "designmd-cli"],
       "primaryKnowledge": { "id": "designmd", "command": "designmd", "action": "sync", "admission": "reference-only" },
       "secondaries": [
         { "id": "prism", "command": "prism", "action": "route", "admission": "inert" }
@@ -60,7 +70,8 @@
       "keywords": ["mengto", "gsap", "scrolltrigger", "anime.js", "playbook", "lenis", "动效手法"],
       "primaryKnowledge": { "id": "mengto", "command": "mengto", "action": "search", "admission": "inert" },
       "secondaries": [
-        { "id": "prism", "command": "prism", "action": "route", "admission": "inert" }
+        { "id": "prism", "command": "prism", "action": "route", "admission": "inert" },
+        { "id": "iart", "command": "iart", "action": "route", "admission": "inert" }
       ],
       "kernel": ["foundation", "toolchain"]
     },

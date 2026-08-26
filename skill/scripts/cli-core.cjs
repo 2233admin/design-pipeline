@@ -62,6 +62,8 @@ const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require(".
 const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
 const { buildJobPlan, routeJob } = require("./job-route-core.cjs");
 const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker-core.cjs");
+const { inspectDesignMdSource, searchDesignMdSource, verifyDesignMdSource } = require("./design-md-source-core.cjs");
+const { routeIartRequest, searchIartSkills, verifyIartSnapshot } = require("./iart-motion-skills-core.cjs");
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
 const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
@@ -238,6 +240,22 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     holosticker = { status: "blocked", issues: [error.message] };
     missing.push("references/holosticker/manifest.json");
   }
+  let designMdSource = null;
+  try {
+    designMdSource = verifyDesignMdSource(path.join(skillRoot, "references", "design-md", "manifest.json"));
+    if (designMdSource.status !== "ready") missing.push("references/design-md/upstream/**");
+  } catch (error) {
+    designMdSource = { status: "blocked", issues: [error.message] };
+    missing.push("references/design-md/manifest.json");
+  }
+  let iart = null;
+  try {
+    iart = verifyIartSnapshot(path.join(skillRoot, "references", "iart-motion-skills", "manifest.json"));
+    if (iart.status !== "ready") missing.push("references/iart-motion-skills/upstream/**");
+  } catch (error) {
+    iart = { status: "blocked", issues: [error.message] };
+    missing.push("references/iart-motion-skills/manifest.json");
+  }
   const nodeSupported = Number.parseInt(nodeVersion.split(".")[0], 10) >= 22;
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
@@ -260,6 +278,8 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     shadcnio,
     prism,
     holosticker,
+    designMdSource,
+    iart,
     registry,
   };
 }
@@ -286,6 +306,7 @@ function publicHelp() {
     "  prism search|route|verify",
     "  holosticker inspect|verify",
     "  designmd sync|search|inspect|verify",
+    "  iart search|route|verify",
     "  toolchain resolve|probe|receipt-check",
     "  execution route|prepare|finalize",
     "  benchmark brief|evaluate",
@@ -705,7 +726,12 @@ function designMdCommand(parsed, root, action) {
     const status = ENVELOPE_STATUSES_SAFE(sync.status) ? sync.status : kernelStatusLabel(kernel.exitCode, "ready");
     return { result: { status, sync }, exitCode: kernel.exitCode };
   }
+  const hasCatalog = Boolean(option(parsed, "--catalog"));
   if (action === "verify") {
+    if (!hasCatalog) {
+      const verified = verifyDesignMdSource();
+      return { result: verified, exitCode: verified.status === "ready" ? 0 : 2 };
+    }
     const verified = verifyPersistedCatalog(artifact(parsed, root, "--catalog"));
     return {
       result: {
@@ -721,6 +747,27 @@ function designMdCommand(parsed, root, action) {
       },
       exitCode: designMdExitCode(verified.status),
     };
+  }
+  if (!hasCatalog) {
+    if (action === "search") {
+      return {
+        result: searchDesignMdSource({
+          query: option(parsed, "--query", ""),
+          kind: option(parsed, "--kind"),
+          limit: option(parsed, "--limit", 20),
+        }),
+        exitCode: 0,
+      };
+    }
+    if (action === "inspect") {
+      try {
+        return { result: inspectDesignMdSource(requireOption(parsed, "--id")), exitCode: 0 };
+      } catch (error) {
+        if (error.code === "ENTRY_NOT_FOUND") fail("designmd", error.message, { code: "ENTRY_NOT_FOUND" });
+        throw error;
+      }
+    }
+    fail("cli", `unknown designmd action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
   }
   const catalog = designMdCatalog(parsed, root);
   if (action === "search") {
@@ -746,6 +793,32 @@ function designMdCommand(parsed, root, action) {
     };
   }
   fail("cli", `unknown designmd action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function iartCommand(parsed, action) {
+  if (action === "search") {
+    return {
+      result: searchIartSkills({
+        query: requireOption(parsed, "--query"),
+        family: option(parsed, "--family"),
+        pack: option(parsed, "--pack"),
+        limit: option(parsed, "--limit", 5),
+      }),
+      exitCode: 0,
+    };
+  }
+  if (action === "route") {
+    const result = routeIartRequest({
+      query: requireOption(parsed, "--query"),
+      limit: option(parsed, "--limit", 5),
+    });
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  if (action === "verify") {
+    const result = verifyIartSnapshot();
+    return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  }
+  fail("cli", `unknown iart action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
 function ENVELOPE_STATUSES_SAFE(status) {
@@ -1152,6 +1225,7 @@ const COMMANDS = {
   prism: { run: ({ parsed, action }) => prismCommand(parsed, action) },
   holosticker: { run: ({ parsed, action }) => holostickerCommand(parsed, action) },
   designmd: { run: ({ parsed, root, action }) => designMdCommand(parsed, root, action) },
+  iart: { run: ({ parsed, action }) => iartCommand(parsed, action) },
   toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
   execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },

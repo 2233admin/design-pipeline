@@ -192,6 +192,17 @@ try {
   }
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "adaptation", "check", "--root", tempRoot, "--state", "adaptation-smoke/state.json", "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed layered adaptation contract smoke");
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed MengTo snapshot verification");
+  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "designmd", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed DesignMD source verification");
+  const installedDesignMdSearch = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "designmd", "search", "--root", repoRoot, "--query", "keyboard-first", "--limit", "1", "--json"], { echo: false, env: hermeticEnv });
+  let installedDesignMdResult = null; try { installedDesignMdResult = JSON.parse(installedDesignMdSearch.stdout); } catch {}
+  report(installedDesignMdSearch.status === 0 && installedDesignMdResult?.results?.[0]?.id === "design-md:example:linear", "installed DesignMD example search");
+  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "iart", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed iart snapshot verification");
+  const installedIartSearch = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "iart", "search", "--root", repoRoot, "--query", "scroll-triggered GSAP pin", "--limit", "1", "--json"], { echo: false, env: hermeticEnv });
+  let installedIartResult = null; try { installedIartResult = JSON.parse(installedIartSearch.stdout); } catch {}
+  report(installedIartSearch.status === 0 && installedIartResult?.results?.[0]?.id === "web-animation-skills/gsap-web", "installed iart catalog search");
+  const installedIartRoute = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "iart", "route", "--root", repoRoot, "--query", "tiktok caption animation", "--json"], { echo: false, env: hermeticEnv });
+  let installedIartRouteResult = null; try { installedIartRouteResult = JSON.parse(installedIartRoute.stdout); } catch {}
+  report(installedIartRoute.status === 0 && installedIartRouteResult?.selected?.id === "tiktok-video-skills/caption-animation" && installedIartRouteResult?.runtime === "hyperframes", "installed iart domain route");
   const installedMengToSearch = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "search", "--root", repoRoot, "--query", "scroll-controlled Three.js world", "--limit", "1", "--json"], { echo: false, env: hermeticEnv });
   let installedMengToResult = null; try { installedMengToResult = JSON.parse(installedMengToSearch.stdout); } catch {}
   report(installedMengToSearch.status === 0 && installedMengToResult?.results?.[0]?.id === "web-design/build-threejs-scroll-worlds", "installed MengTo catalog search");

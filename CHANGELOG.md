@@ -6,6 +6,14 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Internalized the pinned `dimabraven/design-md` example set so `designmd search|inspect|verify`
+  work offline without a directory catalog. Live DesignMD Directory sync stays separate, and bundled
+  examples remain inspiration-only.
+- Internalized licensed `iart-ai` motion-skill packs with local `iart route|search|verify`. A
+  domain brief opens selection of playbook plus runtime; video/Remotion/Manim/ops stay out of
+  generic UI work but do not require a skill id. `generative-illustration-skills` stays excluded
+  until it ships a LICENSE.
+- Added a `motion-graphics` job and iart as a secondary on technique and graphics-runtime jobs.
 - Added a versioned job registry and public `route` command so Stage 0 classifies one primary job
   before opening a knowledge catalog. New capabilities register as jobs rather than as another
   mandatory search.

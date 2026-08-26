@@ -32,6 +32,8 @@
     "cli-routing.test.cjs",
     "job-route.test.cjs",
     "designmd-ingestion.test.cjs",
+    "design-md-source.test.cjs",
+    "iart-motion-skills.test.cjs",
     "playground.test.cjs",
     "designer-pipeline-cli.test.cjs",
     "evidence-receipt.test.cjs",

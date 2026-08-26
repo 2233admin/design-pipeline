@@ -1,0 +1,22 @@
+{
+  "name": "text-message-video-skills",
+  "version": "0.1.0",
+  "description": "Text-message animation skills for AI coding agents — turn a chat script into a scroll-stopping iMessage/WhatsApp/SMS conversation video, rendered from a messages array.",
+  "author": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "homepage": "https://iart.ai",
+  "repository": "https://github.com/iart-ai/text-message-video-skills",
+  "license": "MIT",
+  "keywords": [
+    "text-message-animation",
+    "fake-text-video",
+    "imessage-animation",
+    "chat-animation",
+    "text-story-video",
+    "short-form-video",
+    "motion-graphics",
+    "claude-skill"
+  ]
+}

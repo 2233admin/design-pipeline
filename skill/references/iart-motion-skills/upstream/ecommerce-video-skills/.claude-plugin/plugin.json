@@ -1,0 +1,22 @@
+{
+  "name": "ecommerce-video-skills",
+  "version": "0.1.0",
+  "description": "Generate ecommerce / product video — product demos, sale promos, and photo slideshows — straight from your screenshots, prices, and image folders.",
+  "author": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "homepage": "https://iart.ai",
+  "repository": "https://github.com/iart-ai/ecommerce-video-skills",
+  "license": "MIT",
+  "keywords": [
+    "ecommerce-video",
+    "product-video",
+    "product-demo",
+    "promo-video",
+    "sale-video",
+    "slideshow",
+    "motion-graphics",
+    "claude-skill"
+  ]
+}

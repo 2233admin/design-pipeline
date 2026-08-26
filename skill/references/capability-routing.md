@@ -15,7 +15,7 @@ Route by the design capability the change needs, then use installed skills as im
 6. Do not add two overlapping runtime libraries only to gain skills.
 7. Record missing or stale companion coverage in `qa.md` and continue with official documentation plus the built-in pipeline gate.
 
-Do not treat MengTo, Prism, Astryx, shadcnio, DesignMD, and holosticker as peer Stage 0 searches.
+Do not treat MengTo, Prism, Astryx, shadcnio, DesignMD, iart, and holosticker as peer Stage 0 searches.
 The table below is the catalog map the dispatcher points at, not a list of required searches.
 
 ## Capability Map
@@ -33,8 +33,9 @@ The table below is the catalog map the dispatcher points at, not a list of requi
 | Visual direction and taste | `impeccable`, `frontend-design`, `design-taste-frontend`, `ui-ux-pro-max`, `emil-design-eng` | Choosing surface mode, composition, hierarchy, density, typography, interaction posture, and bounded polish |
 | Design system and brand | `design-system`, `brand`, `brandkit`, `ui-styling` | Defining reusable tokens, components, state variants, and brand rules |
 | Visual assets | `imagegen-frontend-web`, `imagegen-frontend-mobile`, image generation tools | A website, portfolio, campaign, or product surface needs real bitmap assets or visual references |
-| Motion language and audit | `design-motion-principles`, `animation-vocabulary`, `review-animations`, `apple-design` | Writing `motion.md`, defining timing/easing, or reviewing implemented motion |
-| Runtime animation | CSS, `animejs`, GSAP skill set, React View Transitions | Implementing DOM/SVG choreography with the smallest fitting runtime |
+| Motion language and audit | `design-motion-principles`, `animation-vocabulary`, `review-animations`, `apple-design`, built-in `iart-motion-skills.md` plus `iart route` | Writing `motion.md`, defining timing/easing, or reviewing implemented motion |
+| Runtime animation | CSS, `animejs`, GSAP skill set, React View Transitions, automatic iart web-animation/WebGL playbooks | Implementing DOM/SVG choreography with the smallest fitting runtime |
+| Motion graphics and HTML video | `iart route` plus HyperFrames runtime; Remotion/Manim/AE only when named | TikTok/Reels, explainers, kinetic titles, or programmatic video; route is selection, not a second renderer |
 | Graphics and game runtime selection | `graphics-runtime-routing.md`, `graphics-runtime-catalog.json`, existing project adapter | Selecting a stable capability family before choosing a 2D, 3D, data, geospatial, GPU, game, or narrative runtime |
 | Interactive 2D rendering | official `pixijs` v8 skill suite, `pixijs-rendering.md` | Sprites, particles, filters, shaders, Canvas/WebGL/WebGPU scenes, or high object counts justify a dedicated renderer |
 | Complete 2D game runtime | built-in Phaser v4 route, `phaser-v4.md` | Scenes, game-loop ownership, input, cameras, scaling, audio, physics, and game-state transitions belong to one engine |

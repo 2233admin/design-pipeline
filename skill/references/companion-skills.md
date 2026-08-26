@@ -17,6 +17,15 @@ The core pipeline also bundles the complete pinned `MengTo/skills` library. Sear
 `designer-pipeline mengto search`, then apply `references/mengto-skills.md`; it is built-in source,
 not an optional ambient companion.
 
+The core pipeline also bundles the reviewed MIT `dimabraven/design-md` examples. Search them
+through `designer-pipeline designmd search` without a directory catalog, then apply
+`references/design-md.md`. They are inspiration-only and never a product `DESIGN.md`.
+
+The core pipeline also bundles licensed `iart-ai` motion-skill packs. Route them through
+`designer-pipeline iart route` before implementing, then apply `references/iart-motion-skills.md`.
+A domain brief is enough; HTML video still uses HyperFrames as the runtime unless Remotion, Manim,
+or After Effects was named.
+
 ## Built-In shadcnio Component Index
 
 `references/shadcnio-react-components.md` exposes 75 AI, button, hook, and text entries from the

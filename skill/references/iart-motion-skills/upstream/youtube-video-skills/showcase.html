@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube · GSAP · Intro + Outro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Archivo:wght@700;900&family=Roboto+Mono:wght@500;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Archivo:wght@700;900&family=Roboto+Mono:wght@500;700&display=swap"></noscript>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:     #0b0b0e;
+    --bg2:    #141418;
+    --ink:    #ffffff;
+    --muted:  #8a8a93;
+    --line:   #26262e;
+    --red:    #ff0033;
+    --red2:   #ff3b5c;
+    --amber:  #ffb020;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Archivo', sans-serif;
+  }
+
+  #stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(120% 90% at 50% -10%, #1c1c22 0%, var(--bg2) 45%, var(--bg) 100%);
+    perspective: 1300px;
+    overflow: hidden;
+  }
+
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(75px); opacity: 0.4;
+    will-change: transform; pointer-events: none;
+  }
+  #blobA { width: 46vmin; height: 46vmin; background: var(--red);  top: -14%; left: -8%; opacity: 0.32; }
+  #blobB { width: 40vmin; height: 40vmin; background: #4a0010;     bottom: -16%; right: -10%; opacity: 0.5; }
+  #blobC { width: 28vmin; height: 28vmin; background: var(--red2); top: 55%; left: 60%; opacity: 0.22; }
+
+  .scene {
+    position: absolute;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    will-change: transform, opacity;
+    z-index: 4;
+  }
+  .line { display: flex; gap: 0 0.05em; overflow: hidden; padding: 0.05em 0; justify-content: center; }
+  .char { display: inline-block; will-change: transform, opacity; }
+
+  .kicker {
+    font-family: 'Roboto Mono', monospace; font-weight: 700;
+    font-size: clamp(0.66rem, 1.5vw, 1rem);
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--red2); text-indent: 0.4em;
+  }
+
+  .word {
+    font-family: 'Archivo', sans-serif; font-weight: 900;
+    font-size: clamp(2.6rem, 12vw, 10rem);
+    line-height: 0.88; letter-spacing: -0.02em;
+    color: var(--ink); text-transform: uppercase;
+    white-space: nowrap; will-change: transform, opacity;
+  }
+  .word.red    { color: var(--red); }
+  .word.stroke { color: transparent; -webkit-text-stroke: 2px var(--ink); }
+
+  .cond { font-family: 'Oswald', sans-serif; font-weight: 700; }
+
+  /* play button */
+  #playWrap {
+    position: absolute; z-index: 3;
+    width: min(36vh, 320px); height: min(36vh, 320px);
+    display: flex; align-items: center; justify-content: center;
+    will-change: transform, opacity;
+  }
+  #playCircle {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 30px 90px rgba(255,0,51,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+    will-change: transform;
+  }
+  #playPulse {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 3px solid var(--red);
+    will-change: transform, opacity;
+  }
+  #playTri {
+    position: relative; z-index: 2; margin-left: 6%;
+    width: 0; height: 0;
+    border-top: min(8vh, 70px) solid transparent;
+    border-bottom: min(8vh, 70px) solid transparent;
+    border-left: min(13vh, 110px) solid #fff;
+    will-change: transform;
+  }
+
+  /* subscribe button + bell */
+  #subWrap {
+    position: absolute; z-index: 4;
+    display: flex; align-items: center; gap: 20px;
+    will-change: transform, opacity;
+  }
+  #subBtn {
+    font-family: 'Archivo', sans-serif; font-weight: 900;
+    font-size: clamp(1.2rem, 3.4vw, 2.4rem);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: #fff; background: var(--red);
+    padding: 0.42em 0.9em; border-radius: 10px;
+    box-shadow: 0 14px 40px rgba(255,0,51,0.4);
+    will-change: transform;
+  }
+  #bell {
+    font-size: clamp(2rem, 6vw, 3.6rem);
+    will-change: transform; transform-origin: 50% 12%;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+  }
+
+  /* audiogram */
+  #audio {
+    position: absolute; z-index: 3;
+    display: flex; align-items: flex-end; gap: clamp(4px, 1.2vw, 12px);
+    height: 38vh; will-change: transform, opacity;
+  }
+  #audio .ab {
+    width: clamp(8px, 2.4vw, 26px);
+    height: 12%;
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--red2), var(--red));
+    will-change: transform; transform-origin: bottom center;
+  }
+
+  /* scrubber */
+  #scrub {
+    position: absolute; z-index: 4; bottom: 16vh;
+    width: min(64vw, 620px); height: 6px; border-radius: 4px;
+    background: var(--line); will-change: opacity;
+  }
+  #scrubFill {
+    position: absolute; left: 0; top: 0; height: 100%; width: 0%;
+    border-radius: 4px; background: var(--red);
+  }
+  #scrubDot {
+    position: absolute; top: 50%; left: 0; width: 16px; height: 16px;
+    border-radius: 50%; background: #fff; transform: translate(-50%, -50%);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+  #scrubTime {
+    position: absolute; right: 0; top: -26px;
+    font-family: 'Roboto Mono', monospace; font-weight: 700; font-size: 13px;
+    color: var(--muted);
+  }
+
+  .brandmark {
+    font-family: 'Archivo', sans-serif; font-weight: 900;
+    text-transform: lowercase;
+    font-size: clamp(3rem, 16vw, 14rem);
+    line-height: 0.84; letter-spacing: -0.04em; color: var(--ink);
+  }
+  .brandmark .red { color: var(--red); }
+
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+  .panel { position: absolute; will-change: transform; visibility: hidden; }
+
+  #flash { position: fixed; inset: 0; background: var(--ink); opacity: 0; pointer-events: none; z-index: 50; }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none;
+    opacity: 0.06; mix-blend-mode: overlay; z-index: 60;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  #progress {
+    position: fixed; left: 0; bottom: 0; height: 4px; width: 100%;
+    transform: scaleX(0); transform-origin: left;
+    background: var(--red);
+    z-index: 70;
+  }
+
+  .ui {
+    position: fixed; font-family: 'Roboto Mono', monospace; font-weight: 700;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    z-index: 80; color: var(--muted);
+  }
+  #brand { top: 22px; left: 24px; }
+  #brand b { color: var(--red); }
+  #replay {
+    bottom: 18px; right: 22px; background: transparent;
+    border: 1.5px solid var(--line); border-radius: 999px;
+    padding: 9px 18px; cursor: pointer; color: var(--muted);
+    transition: color .2s, border-color .2s, background .2s;
+  }
+  #replay:hover { color: #fff; background: var(--red); border-color: var(--red); }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="blob" id="blobA"></div>
+    <div class="blob" id="blobB"></div>
+    <div class="blob" id="blobC"></div>
+
+    <!-- Scene 1 : intro -->
+    <div class="scene" id="s1">
+      <div class="line"><span class="kicker">Now Streaming</span></div>
+      <div class="line"><span class="word">PRESS</span></div>
+      <div class="line"><span class="word red">PLAY</span></div>
+    </div>
+
+    <!-- play button (decor) -->
+    <div id="playWrap">
+      <div id="playPulse"></div>
+      <div id="playCircle"></div>
+      <div id="playTri"></div>
+    </div>
+
+    <!-- subscribe + bell -->
+    <div id="subWrap">
+      <div id="subBtn">Subscribe</div>
+      <div id="bell">&#128276;</div>
+    </div>
+
+    <!-- audiogram -->
+    <div id="audio"></div>
+    <!-- scrubber -->
+    <div id="scrub">
+      <div id="scrubFill"></div>
+      <div id="scrubDot"></div>
+      <div id="scrubTime">0:00 / 3:00</div>
+    </div>
+
+    <!-- Scene 5 : INTRO + OUTRO bridge -->
+    <div class="scene" id="s5">
+      <div class="line"><span class="word cond">INTRO</span><span class="word cond red">&nbsp;+&nbsp;</span><span class="word cond stroke">OUTRO</span></div>
+    </div>
+
+    <!-- Scene 6 : brand finale -->
+    <div class="scene" id="s6">
+      <div class="line"><span class="kicker">YouTube · Intro + Outro</span></div>
+      <div class="line"><span class="word brandmark">iart<span class="red">.</span>ai</span></div>
+      <div class="line"><span class="kicker">Like · Comment · Subscribe</span></div>
+    </div>
+  </div>
+
+  <div id="fx">
+    <div class="panel" id="p1"></div>
+    <div class="panel" id="p2"></div>
+    <div class="panel" id="p3"></div>
+    <div class="panel" id="p4"></div>
+  </div>
+
+  <div id="flash"></div>
+  <div class="grain"></div>
+  <div id="progress"></div>
+  <div class="ui" id="brand">&#9670; <b>iart.ai</b></div>
+  <button class="ui" id="replay">&#8635; Replay</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+  // build audiogram bars
+  const audio = document.getElementById('audio');
+  const BAR_COUNT = 28;
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const b = document.createElement('div');
+    b.className = 'ab';
+    audio.appendChild(b);
+  }
+
+  function splitChars(word) {
+    const text = word.textContent;
+    word.textContent = '';
+    const chars = [];
+    for (const ch of text) {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.innerHTML = (ch === ' ') ? '&nbsp;' : ch;
+      word.appendChild(span);
+      if (ch !== ' ') chars.push(span);
+    }
+    return chars;
+  }
+  document.querySelectorAll('.word:not(.brandmark)').forEach(splitChars);
+
+  function splitBrand(el) {
+    const html = el.innerHTML;
+    el.innerHTML = '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.childNodes.forEach(node => {
+      const isDot = node.nodeType === 1;
+      for (const ch of node.textContent) {
+        const span = document.createElement('span');
+        span.className = 'char' + (isDot ? ' red' : '');
+        span.textContent = ch;
+        el.appendChild(span);
+      }
+    });
+  }
+  document.querySelectorAll('.brandmark').forEach(splitBrand);
+
+  const charsOf = (sel) => gsap.utils.toArray(sel + ' .char');
+
+  gsap.set('.scene', { autoAlpha: 0 });
+  gsap.set(['#playWrap', '#subWrap', '#audio', '#scrub'], { autoAlpha: 0 });
+
+  gsap.to('#blobA', { xPercent: 14, yPercent: 18, duration: 9, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#blobB', { xPercent: -16, yPercent: -12, duration: 11, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#blobC', { xPercent: -20, yPercent: 14, duration: 8, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  function build() {
+    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+    tl.fromTo('#progress', { scaleX: 0 }, { scaleX: 1, duration: 7.8, ease: 'none' }, 0);
+
+    // ===== SCENE 1 (0.0 – 1.4) =====
+    tl.set('#s1', { autoAlpha: 1 }, 0)
+      .from('#s1 .kicker', { yPercent: 100, opacity: 0, duration: 0.5 }, 0.05)
+      .from(charsOf('#s1'), {
+        yPercent: 120, rotateX: -90, opacity: 0,
+        stagger: { each: 0.03, from: 'start' }, duration: 0.6
+      }, 0.18)
+      // TRANSITION 1 — IMPLODE
+      .to(charsOf('#s1').concat(gsap.utils.toArray('#s1 .kicker')), {
+        scale: 0, rotation: 120, opacity: 0, filter: 'blur(6px)',
+        stagger: { each: 0.02, from: 'edges' }, duration: 0.45, ease: 'power3.in'
+      }, 1.15)
+      .set('#s1', { autoAlpha: 0 });
+
+    // ===== SCENE 2 (1.4 – 2.9) PLAY BUTTON pops + pulses =====
+    gsap.set('#playPulse', { scale: 1, opacity: 0 });
+    tl.set('#playWrap', { autoAlpha: 1 }, 1.4)
+      .from('#playCircle', { scale: 0, duration: 0.5, ease: 'back.out(1.8)' }, 1.4)
+      .from('#playTri', { scale: 0, opacity: 0, duration: 0.4, ease: 'back.out(2.5)' }, 1.65)
+      // pulse rings
+      .fromTo('#playPulse', { scale: 1, opacity: 0.8 }, { scale: 1.6, opacity: 0, duration: 0.8, ease: 'power2.out' }, 1.9)
+      .fromTo('#playPulse', { scale: 1, opacity: 0.8 }, { scale: 1.6, opacity: 0, duration: 0.8, ease: 'power2.out' }, 2.3)
+      .to('#playCircle', { scale: 1.06, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 2.0)
+      .to('#playWrap', { scale: 0.85, autoAlpha: 0, filter: 'blur(8px)', duration: 0.4, ease: 'power2.in' }, 2.85)
+      .set('#playWrap', { autoAlpha: 0 });
+
+    // TRANSITION 2 — VENETIAN SHUTTER
+    const blinds = ['#p1','#p2','#p3','#p4'];
+    const blindColors = ['var(--bg2)','var(--red)','#1a1a20','var(--bg2)'];
+    gsap.set(blinds, {
+      visibility: 'visible', left: 0, width: '100%', height: '25.2%',
+      top: (i) => (i * 25) + '%',
+      backgroundColor: (i) => blindColors[i],
+      scaleY: 0, transformOrigin: 'top center'
+    });
+    tl.to(blinds, { scaleY: 1, duration: 0.24, stagger: 0.05, ease: 'power2.in' }, 2.9)
+      .set(blinds, { transformOrigin: 'bottom center' }, 3.24)
+      .to(blinds, { scaleY: 0, duration: 0.3, stagger: 0.05, ease: 'power2.out' }, 3.26)
+      .set(blinds, { visibility: 'hidden' }, 3.6);
+
+    // ===== SCENE 3 (3.2 – 4.5) SUBSCRIBE + bell ring =====
+    tl.set('#subWrap', { autoAlpha: 1 }, 3.2)
+      .from('#subBtn', { scale: 0, opacity: 0, duration: 0.5, ease: 'back.out(2)' }, 3.2)
+      .to('#subBtn', { scale: 0.92, duration: 0.12, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 3.7)
+      .from('#bell', { scale: 0, opacity: 0, duration: 0.4, ease: 'back.out(2.5)' }, 3.55)
+      // bell ring (rapid rotation wobble)
+      .to('#bell', { rotation: 24, duration: 0.06, ease: 'sine.inOut' }, 3.85)
+      .to('#bell', { rotation: -24, duration: 0.1, yoyo: true, repeat: 5, ease: 'sine.inOut' }, 3.91)
+      .to('#bell', { rotation: 0, duration: 0.12 }, 4.45)
+      .to('#flash', { opacity: 0.25, duration: 0.05 }, 3.85)
+      .to('#flash', { opacity: 0, duration: 0.3 }, 3.9)
+      .to('#subWrap', { scale: 0.85, autoAlpha: 0, filter: 'blur(6px)', duration: 0.35, ease: 'power2.in' }, 4.4)
+      .set('#subWrap', { autoAlpha: 0 });
+
+    // TRANSITION 3 — COLOR-BAND WIPE
+    const bands = ['#p1','#p2','#p3'];
+    const bandColors = ['var(--red)','#1a1a20','var(--red2)'];
+    gsap.set(bands, {
+      visibility: 'visible', left: '-5%', width: '110%', height: '120%',
+      top: 0, skewY: -6,
+      backgroundColor: (i) => bandColors[i],
+      yPercent: 130
+    });
+    tl.to(bands, { yPercent: -130, duration: 0.55, stagger: 0.08, ease: 'power3.inOut' }, 4.5)
+      .set(bands, { visibility: 'hidden' }, 5.15);
+
+    // ===== SCENE 4 (4.75 – 6.0) AUDIOGRAM dances + scrubber =====
+    gsap.set('#audio', { y: '-4vh' });
+    const bars = gsap.utils.toArray('#audio .ab');
+    tl.set('#audio', { autoAlpha: 1 }, 4.75)
+      .from('#audio .ab', { scaleY: 0, opacity: 0, stagger: { each: 0.015, from: 'center' }, duration: 0.35 }, 4.75);
+    // dancing bars — each bar oscillates on its own rhythm
+    bars.forEach((b, i) => {
+      const baseH = gsap.utils.random(30, 95);
+      tl.to(b, {
+        height: baseH + '%',
+        duration: 0.18,
+        repeat: 5,
+        yoyo: true,
+        ease: 'sine.inOut',
+        modifiers: {
+          height: () => (gsap.utils.random(18, 100)).toFixed(1) + '%'
+        }
+      }, 5.0 + (i % 6) * 0.02);
+    });
+    // scrubber fills
+    gsap.set('#scrubFill', { width: '0%' });
+    gsap.set('#scrubDot', { left: '0%' });
+    tl.set('#scrub', { autoAlpha: 1 }, 4.9)
+      .from('#scrub', { scaleX: 0, transformOrigin: 'left', duration: 0.4 }, 4.9)
+      .to('#scrubFill', { width: '100%', duration: 1.05, ease: 'none' }, 5.0)
+      .to('#scrubDot', { left: '100%', duration: 1.05, ease: 'none' }, 5.0)
+      .call(() => { document.getElementById('scrubTime').textContent = '3:00 / 3:00'; }, null, 6.0)
+      // exit
+      .to(['#audio','#scrub'], { autoAlpha: 0, scale: 0.9, filter: 'blur(8px)', duration: 0.4, ease: 'power2.in' }, 6.0)
+      .set(['#audio','#scrub'], { autoAlpha: 0 });
+
+    // TRANSITION 4 — WHIP-PAN BLUR
+    tl.to('#stage', { x: -90, filter: 'blur(7px)', duration: 0.16, ease: 'power2.in' }, 6.04)
+      .set('#stage', { x: 100 }, 6.2)
+      .to('#stage', { x: 0, filter: 'blur(0px)', duration: 0.34, ease: 'power3.out' }, 6.2);
+
+    // ===== SCENE 5 (6.2 – 6.7) INTRO + OUTRO bridge =====
+    tl.set('#s5', { autoAlpha: 1 }, 6.2)
+      .from(charsOf('#s5'), {
+        yPercent: 110, rotateX: -80, opacity: 0,
+        stagger: { each: 0.035, from: 'center' }, duration: 0.5, ease: 'back.out(1.7)'
+      }, 6.2)
+      .to(charsOf('#s5'), {
+        yPercent: -130, opacity: 0, filter: 'blur(10px)',
+        stagger: { each: 0.02, from: 'edges' }, duration: 0.35, ease: 'power3.in'
+      }, 6.65)
+      .set('#s5', { autoAlpha: 0 });
+
+    // TRANSITION 5 — CURTAIN part (red panels)
+    gsap.set('#p1', { visibility: 'visible', top: 0, left: 0,   width: '50.5%', height: '100%', backgroundColor: 'var(--red)', xPercent: -100 });
+    gsap.set('#p2', { visibility: 'visible', top: 0, left: '50%', width: '50.5%', height: '100%', backgroundColor: 'var(--red)', xPercent: 100 });
+    tl.to(['#p1','#p2'], { xPercent: 0, duration: 0.28, ease: 'power3.in' }, 6.78)
+      .to('#p1', { xPercent: -100, duration: 0.42, ease: 'power4.out' }, 7.08)
+      .to('#p2', { xPercent: 100, duration: 0.42, ease: 'power4.out' }, 7.08)
+      .set(['#p1','#p2'], { visibility: 'hidden' }, 7.5);
+
+    // ===== SCENE 6 (6.95 – 7.8) BRAND finale =====
+    tl.set('#s6', { autoAlpha: 1 }, 6.95)
+      .from('#s6 .kicker', { yPercent: 100, opacity: 0, stagger: 0.15, duration: 0.5 }, 6.95)
+      .from(charsOf('#s6 .brandmark'), {
+        yPercent: 115, rotateX: -85, opacity: 0,
+        stagger: { each: 0.06, from: 'start' }, duration: 0.7, ease: 'back.out(1.8)'
+      }, 7.05)
+      .from('#s6 .brandmark .red', { scale: 0, duration: 0.5, ease: 'back.out(3)' }, 7.4)
+      .to('#s6 .brandmark .red', { scale: 1.3, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 7.55)
+      .to('#s6 .brandmark', { scale: 1.03, duration: 0.9, ease: 'sine.inOut' }, 7.5)
+      .to('#flash', { opacity: 0.25, duration: 0.06 }, 7.05)
+      .to('#flash', { opacity: 0, duration: 0.3 }, 7.11);
+
+    tl.to({}, { duration: 0.5 });
+    return tl;
+  }
+
+  let master = build();
+  document.getElementById('replay').addEventListener('click', () => master.restart());
+</script>
+</body>
+</html>

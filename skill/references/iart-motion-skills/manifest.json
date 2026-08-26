@@ -1,0 +1,3005 @@
+{
+  "schema": "design-pipeline.iart-motion-skills-source.v1",
+  "index": {
+    "repository": "https://github.com/iart-ai/motion-skills",
+    "revision": "945c4c70f7cf82a4502cfe3877ff8466972d2842",
+    "license": "MIT",
+    "reviewedAt": "2026-08-26"
+  },
+  "excluded": [
+    {
+      "id": "generative-illustration-skills",
+      "reason": "reviewed revision has no LICENSE file"
+    }
+  ],
+  "packs": [
+    {
+      "id": "motion-skills",
+      "repository": "https://github.com/iart-ai/motion-skills",
+      "revision": "945c4c70f7cf82a4502cfe3877ff8466972d2842",
+      "gitTree": "60edc823df97972df4b87c2bf7115ef6a96317bc",
+      "committedAt": "2026-06-30T23:02:01+08:00",
+      "license": "MIT",
+      "family": "index",
+      "activationDefault": "reference",
+      "skillCount": 0,
+      "fileCount": 9
+    },
+    {
+      "id": "web-animation-skills",
+      "repository": "https://github.com/iart-ai/web-animation-skills",
+      "revision": "b6dba3eb759726845a44163ff0bad70dd9e7fbb6",
+      "gitTree": "b3716d4c1f9da41c60f17c8018f5f9ff41baf284",
+      "committedAt": "2026-06-22T21:24:23+08:00",
+      "license": "MIT",
+      "family": "web-motion",
+      "activationDefault": "automatic",
+      "skillCount": 9,
+      "fileCount": 42
+    },
+    {
+      "id": "webgl-animation-skills",
+      "repository": "https://github.com/iart-ai/webgl-animation-skills",
+      "revision": "50697d659fbf70152f48f9f8aadf1efe78bbdde1",
+      "gitTree": "be55aec884d7c76562ddaf59ee368c48c70acd84",
+      "committedAt": "2026-06-22T21:24:25+08:00",
+      "license": "MIT",
+      "family": "webgl",
+      "activationDefault": "automatic",
+      "skillCount": 3,
+      "fileCount": 20
+    },
+    {
+      "id": "motion-design-skills",
+      "repository": "https://github.com/iart-ai/motion-design-skills",
+      "revision": "3c129f769d90a1328c209c386492333c9ac62312",
+      "gitTree": "82fc32426d562a5adddf503e2a58bdd8d11288a5",
+      "committedAt": "2026-06-22T21:24:16+08:00",
+      "license": "MIT",
+      "family": "motion-design",
+      "activationDefault": "automatic",
+      "skillCount": 9,
+      "fileCount": 47
+    },
+    {
+      "id": "kinetic-typography-skills",
+      "repository": "https://github.com/iart-ai/kinetic-typography-skills",
+      "revision": "fccc94bd325d824235ee9e715e65abde57b6513a",
+      "gitTree": "6fb27cc6ff3df15e127b9c69e01a1dd9f7dea159",
+      "committedAt": "2026-06-22T21:24:10+08:00",
+      "license": "MIT",
+      "family": "web-motion",
+      "activationDefault": "automatic",
+      "skillCount": 1,
+      "fileCount": 13
+    },
+    {
+      "id": "data-animation-skills",
+      "repository": "https://github.com/iart-ai/data-animation-skills",
+      "revision": "8ce2709c3992490251e8a991535b1945f01c6865",
+      "gitTree": "c29a617cb7b2b152a16337b1c9f892fb713e5db5",
+      "committedAt": "2026-06-22T21:24:02+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 3,
+      "fileCount": 21
+    },
+    {
+      "id": "tiktok-video-skills",
+      "repository": "https://github.com/iart-ai/tiktok-video-skills",
+      "revision": "2a775336b5a638cbf8a61dbd785f9a1b649be016",
+      "gitTree": "61aae28da0a8adaaff22ad0bef62f3c2c5de6e05",
+      "committedAt": "2026-06-22T21:24:22+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 4,
+      "fileCount": 23
+    },
+    {
+      "id": "text-message-video-skills",
+      "repository": "https://github.com/iart-ai/text-message-video-skills",
+      "revision": "3a800e1e9b9635fa196a07b0143c80f7e9648558",
+      "gitTree": "da64f7b71887bfe3c88ac36f95444dc331d9e800",
+      "committedAt": "2026-06-22T21:24:20+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 1,
+      "fileCount": 14
+    },
+    {
+      "id": "youtube-video-skills",
+      "repository": "https://github.com/iart-ai/youtube-video-skills",
+      "revision": "f3df381d65abe5078f5ed410bbc3ed72e7cb92bd",
+      "gitTree": "d20eeb9c6022206b94073b98cb7799ee90ea7918",
+      "committedAt": "2026-06-22T21:24:27+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 2,
+      "fileCount": 16
+    },
+    {
+      "id": "ecommerce-video-skills",
+      "repository": "https://github.com/iart-ai/ecommerce-video-skills",
+      "revision": "2bd0dd19c9b2df5230f5d8f7453861b9681e49b4",
+      "gitTree": "4964058fd2886d1d3529ba5cb9b8123dadfa3cef",
+      "committedAt": "2026-06-22T21:24:04+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 3,
+      "fileCount": 23
+    },
+    {
+      "id": "ad-video-skills",
+      "repository": "https://github.com/iart-ai/ad-video-skills",
+      "revision": "0de0f2a1c1f42a98103fc0ec436509276428372c",
+      "gitTree": "553d0cb2bc1132ab389c46713ecb2fac3e8a5b90",
+      "committedAt": "2026-06-22T21:23:58+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 3,
+      "fileCount": 21
+    },
+    {
+      "id": "explainer-video-skills",
+      "repository": "https://github.com/iart-ai/explainer-video-skills",
+      "revision": "3e2d411b725d9a72939cf8e5eb81579e751373e7",
+      "gitTree": "4bd354428641721d0dc5ad27d074895752323ec0",
+      "committedAt": "2026-06-22T21:24:06+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 5,
+      "fileCount": 28
+    },
+    {
+      "id": "map-animation-skills",
+      "repository": "https://github.com/iart-ai/map-animation-skills",
+      "revision": "390ca98bbcf2ea88a430a69c0dcbf423e43d075d",
+      "gitTree": "4f6d546945e8c53be9a0904ab35270994a299b3c",
+      "committedAt": "2026-06-22T21:24:14+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 1,
+      "fileCount": 14
+    },
+    {
+      "id": "freelance-motion-skills",
+      "repository": "https://github.com/iart-ai/freelance-motion-skills",
+      "revision": "d85c2b484693d0387333c778d9c95230fa1856ce",
+      "gitTree": "ca87cc8f6a7d8db8d29b2bbd9d315f674b9da6c7",
+      "committedAt": "2026-06-22T21:24:08+08:00",
+      "license": "MIT",
+      "family": "ops",
+      "activationDefault": "explicit",
+      "skillCount": 5,
+      "fileCount": 36
+    },
+    {
+      "id": "manim-skills",
+      "repository": "https://github.com/iart-ai/manim-skills",
+      "revision": "a15833c44de5108a3ee68f178a1fca126aa7c6d8",
+      "gitTree": "91c6408abe2eff68733d3ec365e32a72f83f5317",
+      "committedAt": "2026-06-22T21:24:12+08:00",
+      "license": "MIT",
+      "family": "motion-graphics",
+      "activationDefault": "explicit",
+      "skillCount": 1,
+      "fileCount": 15
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 342,
+    "byteCount": 69877098,
+    "treeSha256": "10a095a314e7244d6fabb0cb450a9b7facd5be495d3a2b93ffc0c0febe0ca69e",
+    "executableFiles": [
+      "ad-video-skills/scripts/contact-sheet.sh",
+      "ad-video-skills/scripts/probe-mp4.sh",
+      "ad-video-skills/scripts/seek-shot.sh",
+      "data-animation-skills/scripts/contact-sheet.sh",
+      "data-animation-skills/scripts/probe-mp4.sh",
+      "data-animation-skills/scripts/seek-shot.sh",
+      "ecommerce-video-skills/scripts/contact-sheet.sh",
+      "ecommerce-video-skills/scripts/probe-mp4.sh",
+      "ecommerce-video-skills/scripts/seek-shot.sh",
+      "explainer-video-skills/scripts/contact-sheet.sh",
+      "explainer-video-skills/scripts/probe-mp4.sh",
+      "explainer-video-skills/scripts/seek-shot.sh",
+      "freelance-motion-skills/scripts/contact-sheet.sh",
+      "freelance-motion-skills/scripts/probe-mp4.sh",
+      "freelance-motion-skills/scripts/seek-shot.sh",
+      "kinetic-typography-skills/scripts/contact-sheet.sh",
+      "kinetic-typography-skills/scripts/probe-mp4.sh",
+      "kinetic-typography-skills/scripts/seek-shot.sh",
+      "manim-skills/scripts/contact-sheet.sh",
+      "manim-skills/scripts/probe-mp4.sh",
+      "manim-skills/scripts/seek-shot.sh",
+      "map-animation-skills/scripts/contact-sheet.sh",
+      "map-animation-skills/scripts/probe-mp4.sh",
+      "map-animation-skills/scripts/seek-shot.sh",
+      "motion-design-skills/scripts/contact-sheet.sh",
+      "motion-design-skills/scripts/probe-mp4.sh",
+      "motion-design-skills/scripts/seek-shot.sh",
+      "motion-skills/tools/verify/contact-sheet.sh",
+      "motion-skills/tools/verify/probe-mp4.sh",
+      "motion-skills/tools/verify/seek-shot.sh",
+      "text-message-video-skills/scripts/contact-sheet.sh",
+      "text-message-video-skills/scripts/probe-mp4.sh",
+      "text-message-video-skills/scripts/seek-shot.sh",
+      "tiktok-video-skills/scripts/contact-sheet.sh",
+      "tiktok-video-skills/scripts/probe-mp4.sh",
+      "tiktok-video-skills/scripts/seek-shot.sh",
+      "web-animation-skills/scripts/contact-sheet.sh",
+      "web-animation-skills/scripts/probe-mp4.sh",
+      "web-animation-skills/scripts/seek-shot.sh",
+      "webgl-animation-skills/scripts/contact-sheet.sh",
+      "webgl-animation-skills/scripts/probe-mp4.sh",
+      "webgl-animation-skills/scripts/seek-shot.sh",
+      "youtube-video-skills/scripts/contact-sheet.sh",
+      "youtube-video-skills/scripts/probe-mp4.sh",
+      "youtube-video-skills/scripts/seek-shot.sh"
+    ],
+    "objects": [
+      {
+        "path": "ad-video-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "17c9634cacc78bc453410c3e894c47f891217685",
+        "size": 389
+      },
+      {
+        "path": "ad-video-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "873a0ad1c9c534474dc07063f9bc02661a3b856a",
+        "size": 628
+      },
+      {
+        "path": "ad-video-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "ad-video-skills/README.md",
+        "mode": "100644",
+        "oid": "7053881d56db4d97d71ca4938871c3e2806862c9",
+        "size": 4625
+      },
+      {
+        "path": "ad-video-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "ad-video-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "ad-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "ad-video-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "ad-video-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "791585d56dd0e9714b7451fe03b9777b5d3ef636",
+        "size": 5592105
+      },
+      {
+        "path": "ad-video-skills/showcase.html",
+        "mode": "100644",
+        "oid": "611ae33144a942818de4341140c3326bf05cb729",
+        "size": 22839
+      },
+      {
+        "path": "ad-video-skills/skills/ad-creative-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "ad-video-skills/skills/ad-creative-video/references/batch-ad-pipeline.md",
+        "mode": "100644",
+        "oid": "147bcb498145f51e44b1d8ba8131acb947394f51",
+        "size": 12659
+      },
+      {
+        "path": "ad-video-skills/skills/ad-creative-video/references/platform-specs.md",
+        "mode": "100644",
+        "oid": "d885c98a167ede2c8012e7d73c5c0a0a8f8ec999",
+        "size": 4679
+      },
+      {
+        "path": "ad-video-skills/skills/ad-creative-video/SKILL.md",
+        "mode": "100644",
+        "oid": "cfe4a4399108ecdc0ca95b00510c5ec88e467ea2",
+        "size": 10432
+      },
+      {
+        "path": "ad-video-skills/skills/launch-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "ad-video-skills/skills/launch-video/references/launch-structure.md",
+        "mode": "100644",
+        "oid": "3791fb1f047640913ae653c3efb3d91565765c28",
+        "size": 6052
+      },
+      {
+        "path": "ad-video-skills/skills/launch-video/SKILL.md",
+        "mode": "100644",
+        "oid": "1cd03de5d9aeba07e7e0f63194d0290455f83d98",
+        "size": 7542
+      },
+      {
+        "path": "ad-video-skills/skills/testimonial-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "ad-video-skills/skills/testimonial-video/references/batch-and-typography.md",
+        "mode": "100644",
+        "oid": "50551efa96620ce5724530aa4e47b029fe6c7043",
+        "size": 6447
+      },
+      {
+        "path": "ad-video-skills/skills/testimonial-video/references/quote-card.md",
+        "mode": "100644",
+        "oid": "6bb5dd591178be05fd139d1ecca642e60ccc106e",
+        "size": 10218
+      },
+      {
+        "path": "ad-video-skills/skills/testimonial-video/SKILL.md",
+        "mode": "100644",
+        "oid": "fa81f01437acf5b5d19abd5bcf7385ec35bdcd42",
+        "size": 11000
+      },
+      {
+        "path": "data-animation-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "529884e3df260bf0e6a41ed42d3274c54701de36",
+        "size": 375
+      },
+      {
+        "path": "data-animation-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "aaf395053f26b081c1c734ab07c601fbda652ebd",
+        "size": 611
+      },
+      {
+        "path": "data-animation-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "data-animation-skills/README.md",
+        "mode": "100644",
+        "oid": "596da74e0f758985ac9a4cbc0431246dcd72d214",
+        "size": 4762
+      },
+      {
+        "path": "data-animation-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "data-animation-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "data-animation-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "data-animation-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "data-animation-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "d17f13eb3ae5d18f19deb3028ff0120c6a90cf82",
+        "size": 6786224
+      },
+      {
+        "path": "data-animation-skills/showcase.html",
+        "mode": "100644",
+        "oid": "a8a3ebdb710932bfb34a98dc8e533a7b8db9dbb1",
+        "size": 19843
+      },
+      {
+        "path": "data-animation-skills/skills/animated-infographic/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "data-animation-skills/skills/animated-infographic/references/sequenced-infographic.md",
+        "mode": "100644",
+        "oid": "784d4d3c1ef637f99b18d6f0f14ed4702b4e8af4",
+        "size": 12770
+      },
+      {
+        "path": "data-animation-skills/skills/animated-infographic/SKILL.md",
+        "mode": "100644",
+        "oid": "2668695d48331ddba3bc98e18bae6fcff27fa1ea",
+        "size": 10710
+      },
+      {
+        "path": "data-animation-skills/skills/chart-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "data-animation-skills/skills/chart-animation/references/bar-chart-race.md",
+        "mode": "100644",
+        "oid": "066bafbe7ac58e4cb33d3c554d6b102e3acdcd3a",
+        "size": 7733
+      },
+      {
+        "path": "data-animation-skills/skills/chart-animation/references/data-pipeline.md",
+        "mode": "100644",
+        "oid": "d499e50d313215292239bd5c87ffe9a23a19e6e0",
+        "size": 7528
+      },
+      {
+        "path": "data-animation-skills/skills/chart-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "e48c85e2c660740abe1e1fe6d41b77534da41875",
+        "size": 10526
+      },
+      {
+        "path": "data-animation-skills/skills/presentation-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "data-animation-skills/skills/presentation-video/references/sequencing.md",
+        "mode": "100644",
+        "oid": "6fe7fc556c0ae28bf43a4faac3b06c5c34357f31",
+        "size": 6837
+      },
+      {
+        "path": "data-animation-skills/skills/presentation-video/references/slide-components.md",
+        "mode": "100644",
+        "oid": "c6431b7258ef7b001c3d266e4b97daccfd02b41c",
+        "size": 7081
+      },
+      {
+        "path": "data-animation-skills/skills/presentation-video/SKILL.md",
+        "mode": "100644",
+        "oid": "116f839e0a39f876e6afdf9b84984a7815d3da5e",
+        "size": 13668
+      },
+      {
+        "path": "ecommerce-video-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "ce440a8aa924bc841f26cccc603077d099ee6295",
+        "size": 377
+      },
+      {
+        "path": "ecommerce-video-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "97685ef9b9cf85df1e9ad45dbd9f9227e4619d6d",
+        "size": 606
+      },
+      {
+        "path": "ecommerce-video-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "ecommerce-video-skills/README.md",
+        "mode": "100644",
+        "oid": "dc13efb30d07023cdcca65a0817eec7d0a018306",
+        "size": 4800
+      },
+      {
+        "path": "ecommerce-video-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "ecommerce-video-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "ecommerce-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "ecommerce-video-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "ecommerce-video-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "779529096caea4a51d93f38d20871213e30c83eb",
+        "size": 4007764
+      },
+      {
+        "path": "ecommerce-video-skills/showcase.html",
+        "mode": "100644",
+        "oid": "5bf3b9f5b018f59fb4f02f8cc499da73989dc9bc",
+        "size": 26165
+      },
+      {
+        "path": "ecommerce-video-skills/skills/photo-slideshow/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "ecommerce-video-skills/skills/photo-slideshow/references/aspect-and-layout.md",
+        "mode": "100644",
+        "oid": "8bf4fdfc1d6583080635364cf07d4ecd776b6ffe",
+        "size": 3811
+      },
+      {
+        "path": "ecommerce-video-skills/skills/photo-slideshow/references/ken-burns.md",
+        "mode": "100644",
+        "oid": "88f735c58c79f08fb7814121bd1337d2273cae34",
+        "size": 5036
+      },
+      {
+        "path": "ecommerce-video-skills/skills/photo-slideshow/references/templating-folder.md",
+        "mode": "100644",
+        "oid": "e18b4823d10592a5a4b1183333b9262dcb9c8119",
+        "size": 6944
+      },
+      {
+        "path": "ecommerce-video-skills/skills/photo-slideshow/references/timing-and-audio.md",
+        "mode": "100644",
+        "oid": "3e5b0da6e66d5029ce1656ac013b1a653d83d8a3",
+        "size": 3962
+      },
+      {
+        "path": "ecommerce-video-skills/skills/photo-slideshow/SKILL.md",
+        "mode": "100644",
+        "oid": "c4eb4e930788311eba2f9430b6cc69cab4fd5a03",
+        "size": 11337
+      },
+      {
+        "path": "ecommerce-video-skills/skills/product-demo-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "ecommerce-video-skills/skills/product-demo-video/references/annotation-and-transitions.md",
+        "mode": "100644",
+        "oid": "6292c31aa797da65a9f6d1462e8d945ea93c0389",
+        "size": 6619
+      },
+      {
+        "path": "ecommerce-video-skills/skills/product-demo-video/references/screenshot-demo.md",
+        "mode": "100644",
+        "oid": "31efbd45735af37f55da5cf585d371657ef366d0",
+        "size": 9801
+      },
+      {
+        "path": "ecommerce-video-skills/skills/product-demo-video/SKILL.md",
+        "mode": "100644",
+        "oid": "d732d2e385e6142f5a1268b5e53576d90ce8969f",
+        "size": 12274
+      },
+      {
+        "path": "ecommerce-video-skills/skills/promo-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "ecommerce-video-skills/skills/promo-video/references/promo-components.md",
+        "mode": "100644",
+        "oid": "38e4779b56e0c1e5bd472eaa486c508030fe5d81",
+        "size": 10035
+      },
+      {
+        "path": "ecommerce-video-skills/skills/promo-video/SKILL.md",
+        "mode": "100644",
+        "oid": "2364cc6028bc599ce0c7e55eda5c68c50748865f",
+        "size": 11076
+      },
+      {
+        "path": "explainer-video-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "7846596b5be2fb1893aacfaa86c7f276aabf09df",
+        "size": 369
+      },
+      {
+        "path": "explainer-video-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "ac0c1ee4f0b8fd7a024187cbbc22ac26d331568e",
+        "size": 626
+      },
+      {
+        "path": "explainer-video-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "explainer-video-skills/README.md",
+        "mode": "100644",
+        "oid": "cfb5640c8f9c7acc74d91f55a2878a33dda1d1c0",
+        "size": 5039
+      },
+      {
+        "path": "explainer-video-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "explainer-video-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "explainer-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "explainer-video-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "explainer-video-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "7545674ba517ba5538c60e578e47c063bdb55a1e",
+        "size": 3372389
+      },
+      {
+        "path": "explainer-video-skills/showcase.html",
+        "mode": "100644",
+        "oid": "913ec2cd3004d8458c98f6e9001d7594f04167e9",
+        "size": 19785
+      },
+      {
+        "path": "explainer-video-skills/skills/diagram-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "explainer-video-skills/skills/diagram-animation/references/diagram-and-chart-recipes.md",
+        "mode": "100644",
+        "oid": "ed232bb48434e1f32ee608270b2483f805f04ed0",
+        "size": 9273
+      },
+      {
+        "path": "explainer-video-skills/skills/diagram-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "9e57fe0dc0459ff4db5c9cd4675fcf02978ed980",
+        "size": 8449
+      },
+      {
+        "path": "explainer-video-skills/skills/explainer-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "explainer-video-skills/skills/explainer-video/references/script-to-screen-workflow.md",
+        "mode": "100644",
+        "oid": "c7f02d3aae9749f60a0a86615e0e273d659a28ff",
+        "size": 6710
+      },
+      {
+        "path": "explainer-video-skills/skills/explainer-video/SKILL.md",
+        "mode": "100644",
+        "oid": "5855ace8f27c74e4d55201bc764552767e7fea6b",
+        "size": 10013
+      },
+      {
+        "path": "explainer-video-skills/skills/isometric-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "explainer-video-skills/skills/isometric-animation/references/isometric-recipes.md",
+        "mode": "100644",
+        "oid": "2ab2a9eb143bc6e4cbbb34bcfe6ae323f8a14a62",
+        "size": 10320
+      },
+      {
+        "path": "explainer-video-skills/skills/isometric-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "000c63e1c154b55667c873a986294235678fe2ff",
+        "size": 11180
+      },
+      {
+        "path": "explainer-video-skills/skills/whiteboard-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "explainer-video-skills/skills/whiteboard-animation/references/draw-on-recipes.md",
+        "mode": "100644",
+        "oid": "9ca06fb84e7b6c7fa681d0ae9a17dee74f26a8e8",
+        "size": 7731
+      },
+      {
+        "path": "explainer-video-skills/skills/whiteboard-animation/references/whiteboard-pipeline.md",
+        "mode": "100644",
+        "oid": "69b8bbb257144b2f97194e8c5a5362e37dc63887",
+        "size": 5920
+      },
+      {
+        "path": "explainer-video-skills/skills/whiteboard-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "7532b0341326f9351cffb8d4ff48415901e4394e",
+        "size": 11744
+      },
+      {
+        "path": "explainer-video-skills/skills/wrapped-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "explainer-video-skills/skills/wrapped-video/references/batch-pipeline.md",
+        "mode": "100644",
+        "oid": "5fb5a0a1f168a56f72f5e9220fd155b6d4f8d8a1",
+        "size": 5462
+      },
+      {
+        "path": "explainer-video-skills/skills/wrapped-video/references/remotion-recipes.md",
+        "mode": "100644",
+        "oid": "cd8c58951d994e7433ad5753dc9a3ad30f3e6a3f",
+        "size": 6315
+      },
+      {
+        "path": "explainer-video-skills/skills/wrapped-video/references/scene-grammar.md",
+        "mode": "100644",
+        "oid": "81a86b931697806030c22513ebece4f975242c11",
+        "size": 4694
+      },
+      {
+        "path": "explainer-video-skills/skills/wrapped-video/SKILL.md",
+        "mode": "100644",
+        "oid": "4675c490ce74bf955e4a95171e316cd8834372aa",
+        "size": 12729
+      },
+      {
+        "path": "freelance-motion-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "52ff420fa5ef55046a8a7e176a82457a67194ae7",
+        "size": 391
+      },
+      {
+        "path": "freelance-motion-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "d6463663eeb273b0c9aeb2a8647f36b6414013c2",
+        "size": 631
+      },
+      {
+        "path": "freelance-motion-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "freelance-motion-skills/README.md",
+        "mode": "100644",
+        "oid": "fda8fbb5c25c73dee0cf065d65b8acb847d85971",
+        "size": 5448
+      },
+      {
+        "path": "freelance-motion-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "freelance-motion-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "freelance-motion-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "freelance-motion-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "freelance-motion-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "763a7dc6610debe1d8098fe9b60b91c1f8e44a03",
+        "size": 3641970
+      },
+      {
+        "path": "freelance-motion-skills/showcase.html",
+        "mode": "100644",
+        "oid": "ffeee0d8aeaacf1ee4667f36bc94b316398597aa",
+        "size": 24401
+      },
+      {
+        "path": "freelance-motion-skills/skills/brand-motion-guidelines/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/brand-motion-guidelines/references/dos-and-donts.md",
+        "mode": "100644",
+        "oid": "3bfa12fca1cb7787fa2d7910e9f09a98aae304d5",
+        "size": 3268
+      },
+      {
+        "path": "freelance-motion-skills/skills/brand-motion-guidelines/references/full-template.md",
+        "mode": "100644",
+        "oid": "c025d094f4baf3a23d9ed4cbec24dbd4eadbd27d",
+        "size": 6165
+      },
+      {
+        "path": "freelance-motion-skills/skills/brand-motion-guidelines/references/token-reference.md",
+        "mode": "100644",
+        "oid": "00fc85f12d3a87a0fe6ff005fe4cf029cb8c6286",
+        "size": 2712
+      },
+      {
+        "path": "freelance-motion-skills/skills/brand-motion-guidelines/SKILL.md",
+        "mode": "100644",
+        "oid": "5bc05b3bd0ada9780c151aef4cdddfb7406e8969",
+        "size": 13060
+      },
+      {
+        "path": "freelance-motion-skills/skills/client-revisions/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/client-revisions/references/email-templates.md",
+        "mode": "100644",
+        "oid": "40c5260dbdad74504abbb2d3f8666570b680724d",
+        "size": 2683
+      },
+      {
+        "path": "freelance-motion-skills/skills/client-revisions/references/feedback-translator.md",
+        "mode": "100644",
+        "oid": "d457d3976ae4fd4291b7b2db0c3720d015a8d068",
+        "size": 2739
+      },
+      {
+        "path": "freelance-motion-skills/skills/client-revisions/references/sow-clauses.md",
+        "mode": "100644",
+        "oid": "affb0fe3578d3859d1f348aef709c49dff56cdd3",
+        "size": 2682
+      },
+      {
+        "path": "freelance-motion-skills/skills/client-revisions/SKILL.md",
+        "mode": "100644",
+        "oid": "8b61680340aa6d83633b6712911946c1ee0901ae",
+        "size": 11518
+      },
+      {
+        "path": "freelance-motion-skills/skills/creative-brief/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/creative-brief/references/clarifying-questions.md",
+        "mode": "100644",
+        "oid": "498808adfda864b3434907e31131bff1daa7c830",
+        "size": 3616
+      },
+      {
+        "path": "freelance-motion-skills/skills/creative-brief/references/vague-translator.md",
+        "mode": "100644",
+        "oid": "320e3d8f8902716b5174c5287c3c5b01fa6a5cac",
+        "size": 2322
+      },
+      {
+        "path": "freelance-motion-skills/skills/creative-brief/references/worked-example.md",
+        "mode": "100644",
+        "oid": "a2420d8f7b3d4400868e9e7459290f531d91a1be",
+        "size": 3737
+      },
+      {
+        "path": "freelance-motion-skills/skills/creative-brief/SKILL.md",
+        "mode": "100644",
+        "oid": "d83e6b95458e9bd8e50ba4ad4b026e0490cf4ff9",
+        "size": 13331
+      },
+      {
+        "path": "freelance-motion-skills/skills/motion-pricing/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/motion-pricing/references/quote-template.md",
+        "mode": "100644",
+        "oid": "5740ddc83a12b22ea519c30fc80660f3d3edb28a",
+        "size": 4589
+      },
+      {
+        "path": "freelance-motion-skills/skills/motion-pricing/references/rate-card.md",
+        "mode": "100644",
+        "oid": "36a121ce3052fba45530e7087b390402911ceb4a",
+        "size": 2989
+      },
+      {
+        "path": "freelance-motion-skills/skills/motion-pricing/references/worked-example.md",
+        "mode": "100644",
+        "oid": "cd60469a6aacf1177c080353f7f274efa602e317",
+        "size": 2185
+      },
+      {
+        "path": "freelance-motion-skills/skills/motion-pricing/SKILL.md",
+        "mode": "100644",
+        "oid": "99bd1fc1973cbfeebdfe6d653441d5e7a925fe81",
+        "size": 12113
+      },
+      {
+        "path": "freelance-motion-skills/skills/video-delivery-specs/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/video-delivery-specs/references/platform-specs.md",
+        "mode": "100644",
+        "oid": "31666714b333677408cf48cecbe30a1732174a7a",
+        "size": 2997
+      },
+      {
+        "path": "freelance-motion-skills/skills/video-delivery-specs/references/qc-checklist.md",
+        "mode": "100644",
+        "oid": "075b0b4677918eddd712d9bfbc8cb1f65424b415",
+        "size": 3642
+      },
+      {
+        "path": "freelance-motion-skills/skills/video-delivery-specs/references/repurposing-matrix.md",
+        "mode": "100644",
+        "oid": "b8d93e9eb2e5ef8869cbb69d1f956e90a677fbe4",
+        "size": 2593
+      },
+      {
+        "path": "freelance-motion-skills/skills/video-delivery-specs/references/safe-areas.md",
+        "mode": "100644",
+        "oid": "d5dd8782187c9e918f7e95ce598a31b1fdc4c323",
+        "size": 3701
+      },
+      {
+        "path": "freelance-motion-skills/skills/video-delivery-specs/SKILL.md",
+        "mode": "100644",
+        "oid": "9db28aa41559590c91fcb031a3882f1bc5581614",
+        "size": 11799
+      },
+      {
+        "path": "kinetic-typography-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "5150b584f697acd181ea79cf943487c9ca7f4d3d",
+        "size": 400
+      },
+      {
+        "path": "kinetic-typography-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "9548984392b9da4b54019a96c139046551d96633",
+        "size": 634
+      },
+      {
+        "path": "kinetic-typography-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "kinetic-typography-skills/README.md",
+        "mode": "100644",
+        "oid": "3c4a8f2cf098800451ce9fc26fe4bdc7ee03d71c",
+        "size": 4431
+      },
+      {
+        "path": "kinetic-typography-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "kinetic-typography-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "kinetic-typography-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "kinetic-typography-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "kinetic-typography-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "72f1e6d1ddf2e94a9e2eb9f78a61e38bab4927ca",
+        "size": 3693777
+      },
+      {
+        "path": "kinetic-typography-skills/showcase.html",
+        "mode": "100644",
+        "oid": "30a08c0033544cc6284e943328f65e25ac27dac3",
+        "size": 17884
+      },
+      {
+        "path": "kinetic-typography-skills/skills/kinetic-typography/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "kinetic-typography-skills/skills/kinetic-typography/references/reveal-recipes.md",
+        "mode": "100644",
+        "oid": "b7368c831358bda6cfbe0a7a843b51318a09232b",
+        "size": 7224
+      },
+      {
+        "path": "kinetic-typography-skills/skills/kinetic-typography/SKILL.md",
+        "mode": "100644",
+        "oid": "b9608fee2fcfe6c2eae9c9c7517c01923123af61",
+        "size": 7793
+      },
+      {
+        "path": "manim-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "4eb8c988b3e697db3c274b70a6b6c227e2fb44f5",
+        "size": 373
+      },
+      {
+        "path": "manim-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "e69efb6cffe301baed39ce94185342c7766706a9",
+        "size": 620
+      },
+      {
+        "path": "manim-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "manim-skills/README.md",
+        "mode": "100644",
+        "oid": "5e7223d666d238065b08a0a2b17e0318e33e56a6",
+        "size": 4511
+      },
+      {
+        "path": "manim-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "manim-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "manim-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "manim-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "manim-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "f2e91de1b3b584432a56a2e89817dd2b465f149e",
+        "size": 2645747
+      },
+      {
+        "path": "manim-skills/showcase.html",
+        "mode": "100644",
+        "oid": "10dd74d6927ecfb314ffab31b6646d2915458817",
+        "size": 23834
+      },
+      {
+        "path": "manim-skills/skills/manim/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "manim-skills/skills/manim/references/3d-and-camera.md",
+        "mode": "100644",
+        "oid": "e3cbb85cf4adbfbcb3790086a646abd779a5c415",
+        "size": 2885
+      },
+      {
+        "path": "manim-skills/skills/manim/references/graphs-and-updaters.md",
+        "mode": "100644",
+        "oid": "fa48dfcccd4ae485afa6ab5399b368db224b1d5c",
+        "size": 2246
+      },
+      {
+        "path": "manim-skills/skills/manim/references/math-and-text.md",
+        "mode": "100644",
+        "oid": "8b44a18e136774f8d2fcf54fd5c70274ab673005",
+        "size": 2521
+      },
+      {
+        "path": "manim-skills/skills/manim/SKILL.md",
+        "mode": "100644",
+        "oid": "4e64f3690af397e2c950cbf43058bedefece2ff9",
+        "size": 9866
+      },
+      {
+        "path": "map-animation-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "f8658bd16cdab0e95eeeed9436bd743e6510d404",
+        "size": 437
+      },
+      {
+        "path": "map-animation-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "88b542b31d24fd06f5346fe1a24baadfffef876b",
+        "size": 670
+      },
+      {
+        "path": "map-animation-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "map-animation-skills/README.md",
+        "mode": "100644",
+        "oid": "b5a98bab29a27e1a3293d0d5ae924a87cafe60d9",
+        "size": 4614
+      },
+      {
+        "path": "map-animation-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "map-animation-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "map-animation-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "map-animation-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "map-animation-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "5020ee5dbb2c50824141b602d0a5da3b78394408",
+        "size": 5342974
+      },
+      {
+        "path": "map-animation-skills/showcase.html",
+        "mode": "100644",
+        "oid": "d77e2a320f48aecdbe7df704323ad0928ec891dc",
+        "size": 18337
+      },
+      {
+        "path": "map-animation-skills/skills/map-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "map-animation-skills/skills/map-animation/references/earth-studio-to-ae.md",
+        "mode": "100644",
+        "oid": "5ff7796921cd90c8db83b938cd645ac5eb1c0f57",
+        "size": 6842
+      },
+      {
+        "path": "map-animation-skills/skills/map-animation/references/vector-maps.md",
+        "mode": "100644",
+        "oid": "1017105cfa94fdd6ce8e56b5dd6559fba469e2ed",
+        "size": 10060
+      },
+      {
+        "path": "map-animation-skills/skills/map-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "e9d23902bd12257986ba18bb25eada97a5186071",
+        "size": 12821
+      },
+      {
+        "path": "motion-design-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "59f6c626e07c5e6b9e790869c6d5e7a7bcab353b",
+        "size": 414
+      },
+      {
+        "path": "motion-design-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "6cad9da0121398dc11c10720f495bb6348d8aa0f",
+        "size": 658
+      },
+      {
+        "path": "motion-design-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "motion-design-skills/README.md",
+        "mode": "100644",
+        "oid": "3920e74ec59ff36d5ce9ba64f71c8915b3e1b8f9",
+        "size": 5499
+      },
+      {
+        "path": "motion-design-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "motion-design-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "motion-design-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "motion-design-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "motion-design-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "f558cad7baea3f29aca1392f537d365de837cb57",
+        "size": 4130435
+      },
+      {
+        "path": "motion-design-skills/showcase.html",
+        "mode": "100644",
+        "oid": "63b3b056f1c50b7a581bc892519713804d52fac6",
+        "size": 23312
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/references/export-recipes.md",
+        "mode": "100644",
+        "oid": "a5acb31483e66610b4fe87cd49fe90ea9f589b71",
+        "size": 10670
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/references/expression-library.md",
+        "mode": "100644",
+        "oid": "62489e12bc2856e52ac1007fe492e2edded975ea",
+        "size": 7046
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/references/expressions.md",
+        "mode": "100644",
+        "oid": "44b501acabedf8b73c011e16a879631df4747e41",
+        "size": 6055
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/references/performance-triage.md",
+        "mode": "100644",
+        "oid": "948946686d07bf7bb780a0f5a7a7876b4677265a",
+        "size": 11129
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/references/project-hygiene.md",
+        "mode": "100644",
+        "oid": "dcc39c7cdf90dfe937abab70080144783c83b066",
+        "size": 10849
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/scripts/apply-effect-to-layers.jsx",
+        "mode": "100644",
+        "oid": "7b3e81bbf194d93358b359552cf1bc97cbfb50e3",
+        "size": 1627
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/scripts/batch-rename.jsx",
+        "mode": "100644",
+        "oid": "1d8ee2db7cff498442f0d8ebc9adb79ab02a44d7",
+        "size": 1168
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/scripts/sequential-offset.jsx",
+        "mode": "100644",
+        "oid": "bd2070ed4dde5de22d1ab1c7a368459439e90dac",
+        "size": 1447
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/SKILL.md",
+        "mode": "100644",
+        "oid": "c7f266baccb546ab893153d62c4d80753e40fec4",
+        "size": 7430
+      },
+      {
+        "path": "motion-design-skills/skills/animation-principles/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/animation-principles/references/easing-curves.md",
+        "mode": "100644",
+        "oid": "84834be6ab67d861d48d4ed9a52b9e58c34ac59e",
+        "size": 5317
+      },
+      {
+        "path": "motion-design-skills/skills/animation-principles/references/easing-graph-editor.md",
+        "mode": "100644",
+        "oid": "63eee854bdee2ff3562db17fe7a623c5faca7ca5",
+        "size": 9406
+      },
+      {
+        "path": "motion-design-skills/skills/animation-principles/references/twelve-principles.md",
+        "mode": "100644",
+        "oid": "86a539cbddac5d851de3f1ac12f4927475f5c327",
+        "size": 4534
+      },
+      {
+        "path": "motion-design-skills/skills/animation-principles/SKILL.md",
+        "mode": "100644",
+        "oid": "7234e0e4f64d4fbfb67eb56626b379c3a2eb584f",
+        "size": 8527
+      },
+      {
+        "path": "motion-design-skills/skills/beat-sync-editing/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/beat-sync-editing/references/editing-techniques.md",
+        "mode": "100644",
+        "oid": "cc1ad12eb375f93a0359d57786df50d3a35bf635",
+        "size": 6451
+      },
+      {
+        "path": "motion-design-skills/skills/beat-sync-editing/SKILL.md",
+        "mode": "100644",
+        "oid": "8aff45b32cf7a9e614ec096ef219b5f88b6c4492",
+        "size": 13926
+      },
+      {
+        "path": "motion-design-skills/skills/color-motion/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/color-motion/references/color-management.md",
+        "mode": "100644",
+        "oid": "668697e792b7922a125d473ba39085a09ac50eb6",
+        "size": 11767
+      },
+      {
+        "path": "motion-design-skills/skills/color-motion/references/palettes-and-interpolation.md",
+        "mode": "100644",
+        "oid": "8b2cee53284aeba14ef36de856187d2c91f65325",
+        "size": 6804
+      },
+      {
+        "path": "motion-design-skills/skills/color-motion/SKILL.md",
+        "mode": "100644",
+        "oid": "098dc574ad85d466e69b9765c69f56b701f955fe",
+        "size": 11924
+      },
+      {
+        "path": "motion-design-skills/skills/logo-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/logo-animation/references/logo-patterns.md",
+        "mode": "100644",
+        "oid": "49a4d3025ddfbd1c7413cb90c882319142da8e05",
+        "size": 8083
+      },
+      {
+        "path": "motion-design-skills/skills/logo-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "0a762029ab9c1bd60cbf449d05c1c9c096ecd5e0",
+        "size": 8019
+      },
+      {
+        "path": "motion-design-skills/skills/motion-art-direction/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/motion-art-direction/references/direction-playbook.md",
+        "mode": "100644",
+        "oid": "d01cbd5684c103cff62df6cc38a6530954372c58",
+        "size": 9116
+      },
+      {
+        "path": "motion-design-skills/skills/motion-art-direction/SKILL.md",
+        "mode": "100644",
+        "oid": "70c5f92e106c0a2180f958488a4de245005f1f7e",
+        "size": 7581
+      },
+      {
+        "path": "motion-design-skills/skills/motion-background/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/motion-background/references/background-recipes.md",
+        "mode": "100644",
+        "oid": "87ecd70108e7b0a2ee2ef58adaeffff6d9c0da52",
+        "size": 8886
+      },
+      {
+        "path": "motion-design-skills/skills/motion-background/SKILL.md",
+        "mode": "100644",
+        "oid": "b7877556134136ca2e06d5261c058f5a6d592231",
+        "size": 11954
+      },
+      {
+        "path": "motion-design-skills/skills/remotion-video/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/remotion-video/references/api-and-patterns.md",
+        "mode": "100644",
+        "oid": "62419b1f187c2c20631ef7856e3911c9d1debdc7",
+        "size": 7312
+      },
+      {
+        "path": "motion-design-skills/skills/remotion-video/SKILL.md",
+        "mode": "100644",
+        "oid": "a88f52ad273a0f39d8f65a378e3742ca2a82c259",
+        "size": 9226
+      },
+      {
+        "path": "motion-design-skills/skills/shot-composition/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/shot-composition/references/camera-and-grids.md",
+        "mode": "100644",
+        "oid": "c2a386520beead0cc933ea98392887aab5318355",
+        "size": 6264
+      },
+      {
+        "path": "motion-design-skills/skills/shot-composition/SKILL.md",
+        "mode": "100644",
+        "oid": "90723872d1284c0da7d7d3fa5e675104d79788b5",
+        "size": 12995
+      },
+      {
+        "path": "motion-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "motion-skills/README.md",
+        "mode": "100644",
+        "oid": "80d9aaad1db2980d88da86857c9798d8ac92e9bd",
+        "size": 4784
+      },
+      {
+        "path": "motion-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "4b829fa8b28d9503c70c0815211be66b3b4a9efc",
+        "size": 3651648
+      },
+      {
+        "path": "motion-skills/showcase.html",
+        "mode": "100644",
+        "oid": "3c373e4688aebd7bfcdd5ec310d07481c6b8da9d",
+        "size": 18777
+      },
+      {
+        "path": "motion-skills/tools/showcase-to-gif.mjs",
+        "mode": "100644",
+        "oid": "d9e3d686a2542b4ad2c45471fe93089e5b86d671",
+        "size": 3005
+      },
+      {
+        "path": "motion-skills/tools/verify/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "motion-skills/tools/verify/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "motion-skills/tools/verify/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "motion-skills/tools/verify/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "text-message-video-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "0dbcd394e2d4236ef50a041c477b7d1c23cd4834",
+        "size": 403
+      },
+      {
+        "path": "text-message-video-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "59d52b7380dd63e0796dc4691f443e0c929a15da",
+        "size": 663
+      },
+      {
+        "path": "text-message-video-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "text-message-video-skills/README.md",
+        "mode": "100644",
+        "oid": "4dbb828276f728080cbb60d19d988055ce01cfcc",
+        "size": 4542
+      },
+      {
+        "path": "text-message-video-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "text-message-video-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "text-message-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "text-message-video-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "text-message-video-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "928cf2c69c795db8bbd52d56c304a1acb3a365e0",
+        "size": 3588954
+      },
+      {
+        "path": "text-message-video-skills/showcase.html",
+        "mode": "100644",
+        "oid": "f0f0d4b64e01ce89bb9b040cdc815d5c06d0af86",
+        "size": 19159
+      },
+      {
+        "path": "text-message-video-skills/skills/text-message-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "text-message-video-skills/skills/text-message-animation/references/bubble-recipes.md",
+        "mode": "100644",
+        "oid": "548f6180ef85280a5b2a99d4bf1c5db43fcd8fe0",
+        "size": 12665
+      },
+      {
+        "path": "text-message-video-skills/skills/text-message-animation/references/data-driven.md",
+        "mode": "100644",
+        "oid": "6256a50b80fd0fabbb097e3326532ad77503c80e",
+        "size": 5447
+      },
+      {
+        "path": "text-message-video-skills/skills/text-message-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "dd78703a3df658e4deca9db46b0454b057c98e6e",
+        "size": 14346
+      },
+      {
+        "path": "tiktok-video-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "be5275cf3a810c428fa494f1bdc8bf865a14c3ac",
+        "size": 329
+      },
+      {
+        "path": "tiktok-video-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "ca7b09fad7594c23cee80d1e8f3921a9bd41a4ff",
+        "size": 571
+      },
+      {
+        "path": "tiktok-video-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "tiktok-video-skills/README.md",
+        "mode": "100644",
+        "oid": "497e38b893d9a9235977d575d0125f39e1c4c3d9",
+        "size": 5005
+      },
+      {
+        "path": "tiktok-video-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "tiktok-video-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "tiktok-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "tiktok-video-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "tiktok-video-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "534d3106bde0a29c3938571e0c75e0701608dff6",
+        "size": 3794665
+      },
+      {
+        "path": "tiktok-video-skills/showcase.html",
+        "mode": "100644",
+        "oid": "991c9df0c86cbf2610ba69e787e0c4c9dc59fc0d",
+        "size": 20107
+      },
+      {
+        "path": "tiktok-video-skills/skills/caption-animation/README.md",
+        "mode": "100644",
+        "oid": "2685cf8125510a6d901731fd0f27f65747b3414f",
+        "size": 1426
+      },
+      {
+        "path": "tiktok-video-skills/skills/caption-animation/references/word-timed-captions.md",
+        "mode": "100644",
+        "oid": "3bb9ceb579340cac57a6bef766cc1b057652d75c",
+        "size": 10180
+      },
+      {
+        "path": "tiktok-video-skills/skills/caption-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "f648cbdf7e2bb9b0f96c8537da39ee9c5e0d9908",
+        "size": 9937
+      },
+      {
+        "path": "tiktok-video-skills/skills/countdown-video/README.md",
+        "mode": "100644",
+        "oid": "83cc54741f1cd5389f1a162cdf0edbd407aeff8c",
+        "size": 1494
+      },
+      {
+        "path": "tiktok-video-skills/skills/countdown-video/references/countdown-cookbook.md",
+        "mode": "100644",
+        "oid": "f6c505fb00791adc7a3137871d13aa6806df1559",
+        "size": 7814
+      },
+      {
+        "path": "tiktok-video-skills/skills/countdown-video/references/digit-flip.md",
+        "mode": "100644",
+        "oid": "2ba204d0cac84a0fa80adb6326b50773c4b1b7f0",
+        "size": 6083
+      },
+      {
+        "path": "tiktok-video-skills/skills/countdown-video/SKILL.md",
+        "mode": "100644",
+        "oid": "43b66ababf707df7eae79d3cdab2efadd456563f",
+        "size": 9450
+      },
+      {
+        "path": "tiktok-video-skills/skills/lower-thirds/README.md",
+        "mode": "100644",
+        "oid": "1f3ee500e283ad820d0b2c2730509bca699b7640",
+        "size": 1414
+      },
+      {
+        "path": "tiktok-video-skills/skills/lower-thirds/references/lower-third-component.md",
+        "mode": "100644",
+        "oid": "a8f7b548c92a438cfc5d2d846b744f227654905f",
+        "size": 9994
+      },
+      {
+        "path": "tiktok-video-skills/skills/lower-thirds/SKILL.md",
+        "mode": "100644",
+        "oid": "1ca8fbb1478de77124a227abbf7fac689846b46c",
+        "size": 9620
+      },
+      {
+        "path": "tiktok-video-skills/skills/short-form-video/README.md",
+        "mode": "100644",
+        "oid": "c733aa3f0bcc1ea17d564ec48dbd95ff2d20e657",
+        "size": 1377
+      },
+      {
+        "path": "tiktok-video-skills/skills/short-form-video/references/retention-pacing.md",
+        "mode": "100644",
+        "oid": "2a3ab7bd2ca6d0b77161434985555aee4ffedd72",
+        "size": 9910
+      },
+      {
+        "path": "tiktok-video-skills/skills/short-form-video/SKILL.md",
+        "mode": "100644",
+        "oid": "7bc689429479a7f3364670770429840ba945bc3e",
+        "size": 11079
+      },
+      {
+        "path": "web-animation-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "ca5b4c37e4a6a654c8732797d78906974a9f4228",
+        "size": 384
+      },
+      {
+        "path": "web-animation-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "5dcbb9683275fc55d48204b18199afc07c70da12",
+        "size": 653
+      },
+      {
+        "path": "web-animation-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "web-animation-skills/README.md",
+        "mode": "100644",
+        "oid": "90bd1872c3406a6ba6a641c7ffc72715665f882a",
+        "size": 5568
+      },
+      {
+        "path": "web-animation-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "web-animation-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "web-animation-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "web-animation-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "web-animation-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "158f5b3b44a6a574e2bbde717ecd3ac05c57048d",
+        "size": 5731850
+      },
+      {
+        "path": "web-animation-skills/showcase.html",
+        "mode": "100644",
+        "oid": "f430fd9a39037bcabb356b44e22a47d8fd68d431",
+        "size": 22449
+      },
+      {
+        "path": "web-animation-skills/skills/60fps-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/60fps-animation/references/patterns-and-profiling.md",
+        "mode": "100644",
+        "oid": "abf57e562fced069044813b4aa5add06ddb41047",
+        "size": 4806
+      },
+      {
+        "path": "web-animation-skills/skills/60fps-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "99a1c78866a0e8bffc3189625c2db605696ba759",
+        "size": 10774
+      },
+      {
+        "path": "web-animation-skills/skills/accessible-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/accessible-animation/references/patterns.md",
+        "mode": "100644",
+        "oid": "287c164ec70293a6803d167da1be9bae32ee938d",
+        "size": 6846
+      },
+      {
+        "path": "web-animation-skills/skills/accessible-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "8337a1a01e66b7f2beafbcce6ef11cb71ee0f93a",
+        "size": 11775
+      },
+      {
+        "path": "web-animation-skills/skills/ascii-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/ascii-animation/references/rendering.md",
+        "mode": "100644",
+        "oid": "8d5878788af5d6a0abf93812ed553a22883ab61a",
+        "size": 7681
+      },
+      {
+        "path": "web-animation-skills/skills/ascii-animation/scripts/img-to-ascii.mjs",
+        "mode": "100644",
+        "oid": "1071dc4223268fe14e02d8fb9a47d13a0ff4becd",
+        "size": 2041
+      },
+      {
+        "path": "web-animation-skills/skills/ascii-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "839963e7b7d15c6cdc7dac6f5f0070a0ba0847f1",
+        "size": 9219
+      },
+      {
+        "path": "web-animation-skills/skills/glassmorphism/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/glassmorphism/references/glass-recipes.md",
+        "mode": "100644",
+        "oid": "f1ab2fc58e26416947f1a0f64cbfeba7a7d64f6d",
+        "size": 10388
+      },
+      {
+        "path": "web-animation-skills/skills/glassmorphism/SKILL.md",
+        "mode": "100644",
+        "oid": "2fff8b24f86578d14cbd73cc8e49b395858bdb46",
+        "size": 11668
+      },
+      {
+        "path": "web-animation-skills/skills/gsap-web/examples/hero-timeline.js",
+        "mode": "100644",
+        "oid": "c7b5752cd7b7a67decce2802e55bd0cf6163e0bd",
+        "size": 2594
+      },
+      {
+        "path": "web-animation-skills/skills/gsap-web/examples/standalone-template.html",
+        "mode": "100644",
+        "oid": "55b007f67cc74dab9a23b039e82ddca5f1a4bfdb",
+        "size": 2714
+      },
+      {
+        "path": "web-animation-skills/skills/gsap-web/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/gsap-web/references/scrolltrigger-cookbook.md",
+        "mode": "100644",
+        "oid": "2f74cb4da753f8a887ffc8ebb537362fd35f2314",
+        "size": 5613
+      },
+      {
+        "path": "web-animation-skills/skills/gsap-web/references/scrolltrigger-lenis.md",
+        "mode": "100644",
+        "oid": "0a4989f7b14604eb0992520cdba8647dfb90a7d5",
+        "size": 10528
+      },
+      {
+        "path": "web-animation-skills/skills/gsap-web/SKILL.md",
+        "mode": "100644",
+        "oid": "a8bc3348335df7655453a4acc7eb7f3dd309d5e1",
+        "size": 12360
+      },
+      {
+        "path": "web-animation-skills/skills/lottie-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/lottie-animation/references/integration-and-export.md",
+        "mode": "100644",
+        "oid": "0443dea6c85750dac88117ff1572733ec34ff985",
+        "size": 9567
+      },
+      {
+        "path": "web-animation-skills/skills/lottie-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "5dfc7191e2a1bed1559968d1aa720bae6264aaff",
+        "size": 9002
+      },
+      {
+        "path": "web-animation-skills/skills/micro-interaction/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/micro-interaction/references/css-recipes.md",
+        "mode": "100644",
+        "oid": "207f27526942173b2420ff4a1c098732f2721bfe",
+        "size": 4917
+      },
+      {
+        "path": "web-animation-skills/skills/micro-interaction/references/framer-motion-recipes.md",
+        "mode": "100644",
+        "oid": "1053f18f5521f5c31c79e1fc10dcc80704908419",
+        "size": 5950
+      },
+      {
+        "path": "web-animation-skills/skills/micro-interaction/SKILL.md",
+        "mode": "100644",
+        "oid": "232299482627396565011b61812842ec88ae2ec3",
+        "size": 8634
+      },
+      {
+        "path": "web-animation-skills/skills/page-transition-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/page-transition-animation/references/full-examples.md",
+        "mode": "100644",
+        "oid": "f36576f31a9d79b423c0af98c7fc1087871f2e53",
+        "size": 5366
+      },
+      {
+        "path": "web-animation-skills/skills/page-transition-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "cfc1e64de3e1d0fb6d9e7ee8a6cccdf74ddfa972",
+        "size": 12195
+      },
+      {
+        "path": "web-animation-skills/skills/svg-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/svg-animation/references/svg-techniques.md",
+        "mode": "100644",
+        "oid": "030f530ebaf4001a86e13ddb40487bf21b356dce",
+        "size": 9053
+      },
+      {
+        "path": "web-animation-skills/skills/svg-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "70c9b5cf44aaa83008d46fed8fec9c21777231a9",
+        "size": 8622
+      },
+      {
+        "path": "webgl-animation-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "8d4cc46a73198804bde0825ebb24f23aab4b9fe3",
+        "size": 356
+      },
+      {
+        "path": "webgl-animation-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "9e941c21b8b48836ff5bedc0b595090a2f219c97",
+        "size": 581
+      },
+      {
+        "path": "webgl-animation-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "webgl-animation-skills/README.md",
+        "mode": "100644",
+        "oid": "b58867c8c1b7cb88b4d441ed2180646a9792cc97",
+        "size": 4730
+      },
+      {
+        "path": "webgl-animation-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "webgl-animation-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "webgl-animation-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "webgl-animation-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "webgl-animation-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "db9d5b723c893d182c2bde2a9d7033e76ca04c5e",
+        "size": 9258395
+      },
+      {
+        "path": "webgl-animation-skills/showcase.html",
+        "mode": "100644",
+        "oid": "6f63128b940442246e9132c7270b25dac891fd49",
+        "size": 24914
+      },
+      {
+        "path": "webgl-animation-skills/skills/particle-system/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "webgl-animation-skills/skills/particle-system/references/particle-recipes.md",
+        "mode": "100644",
+        "oid": "15beccac7985b6b8f99b9e2f33e2fd3bd9472b24",
+        "size": 11097
+      },
+      {
+        "path": "webgl-animation-skills/skills/particle-system/SKILL.md",
+        "mode": "100644",
+        "oid": "819edffebf0134bdb326dcfec02615846ae4dba2",
+        "size": 11654
+      },
+      {
+        "path": "webgl-animation-skills/skills/shader-glsl/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "webgl-animation-skills/skills/shader-glsl/references/glsl-cookbook.md",
+        "mode": "100644",
+        "oid": "7e7741b2ae390e1c425fa9a9db05d55eeb0d8b74",
+        "size": 8190
+      },
+      {
+        "path": "webgl-animation-skills/skills/shader-glsl/SKILL.md",
+        "mode": "100644",
+        "oid": "638fe6e5b8d6120ab736bfaa3d77790a74049b76",
+        "size": 10485
+      },
+      {
+        "path": "webgl-animation-skills/skills/threejs-animation/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "webgl-animation-skills/skills/threejs-animation/references/r3f-and-perf.md",
+        "mode": "100644",
+        "oid": "9fef4e33b8fce839ffab678b1c46b3724fd34c46",
+        "size": 8056
+      },
+      {
+        "path": "webgl-animation-skills/skills/threejs-animation/references/resource-disposal.md",
+        "mode": "100644",
+        "oid": "36803cc939aec9f9d341e713b4b01aa050a26d43",
+        "size": 13828
+      },
+      {
+        "path": "webgl-animation-skills/skills/threejs-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "108fd0ba2e31f5dcdd5e6ec7c5a402fdf1bc1d6d",
+        "size": 13610
+      },
+      {
+        "path": "youtube-video-skills/.claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "e4b82071ede3305f832d104efab50895b0f3f501",
+        "size": 350
+      },
+      {
+        "path": "youtube-video-skills/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "a24b013b04bf2a30c0c2654faf6f64ac1cf0eb4d",
+        "size": 602
+      },
+      {
+        "path": "youtube-video-skills/LICENSE",
+        "mode": "100644",
+        "oid": "a61b911146037f2ef312f67e9b45de6c99b7f870",
+        "size": 1064
+      },
+      {
+        "path": "youtube-video-skills/README.md",
+        "mode": "100644",
+        "oid": "725cf2f385ce0e64b3d007843ffbf4df7960b771",
+        "size": 4527
+      },
+      {
+        "path": "youtube-video-skills/scripts/contact-sheet.sh",
+        "mode": "100755",
+        "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
+        "size": 851
+      },
+      {
+        "path": "youtube-video-skills/scripts/probe-mp4.sh",
+        "mode": "100755",
+        "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
+        "size": 1514
+      },
+      {
+        "path": "youtube-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
+        "path": "youtube-video-skills/scripts/seek-shot.sh",
+        "mode": "100755",
+        "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
+        "size": 1095
+      },
+      {
+        "path": "youtube-video-skills/showcase.gif",
+        "mode": "100644",
+        "oid": "ecd8c0774e7e98a5ae1d61154062875cb1772c79",
+        "size": 2966294
+      },
+      {
+        "path": "youtube-video-skills/showcase.html",
+        "mode": "100644",
+        "oid": "4e647ce9afec3a1986fe587607ebc5febb388cae",
+        "size": 18668
+      },
+      {
+        "path": "youtube-video-skills/skills/audiogram/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "youtube-video-skills/skills/audiogram/references/waveform-render.md",
+        "mode": "100644",
+        "oid": "d9f1b6fbce2fc1cce796b1434947235d3b566359",
+        "size": 9998
+      },
+      {
+        "path": "youtube-video-skills/skills/audiogram/SKILL.md",
+        "mode": "100644",
+        "oid": "e6a4cd6ddc5e650a934af9ebf40945489dd71f6a",
+        "size": 9697
+      },
+      {
+        "path": "youtube-video-skills/skills/youtube-intro-outro/README.md",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "youtube-video-skills/skills/youtube-intro-outro/references/intro-outro.md",
+        "mode": "100644",
+        "oid": "393a40741d1141f26150953b76dc3bd26b73527d",
+        "size": 11173
+      },
+      {
+        "path": "youtube-video-skills/skills/youtube-intro-outro/SKILL.md",
+        "mode": "100644",
+        "oid": "8554ac49576931d0177557ee367171e4241c73b9",
+        "size": 11296
+      }
+    ]
+  },
+  "families": {
+    "motion-design": 9,
+    "motion-graphics": 23,
+    "ops": 5,
+    "web-motion": 10,
+    "webgl": 3
+  },
+  "skills": [
+    {
+      "id": "ad-video-skills/ad-creative-video",
+      "name": "ad-creative-video",
+      "pack": "ad-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a video ad\", \"create an animated ad\", \"build a performance/UGC-style ad\", \"batch-produce ad creative variations\", \"generate ad variants for A/B testing\", \"swap headline/offer/CTA across many ad versions\", or \"export one ad in multiple aspect ratios for Meta/TikTok/Reels\". Covers ad hook structures, hook→CTA message-match, data-driven variant generation (1 template × CSV = N ads), multi-aspect export, and platform specs.",
+      "path": "upstream/ad-video-skills/skills/ad-creative-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "ad-video-skills/launch-video",
+      "name": "launch-video",
+      "pack": "ad-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a launch video\", \"create a product hype/sizzle film\", \"build a teaser/trailer for a drop\", \"do a reveal montage with an end-card CTA\", \"cut a hero video to the beat\", or \"export a launch film in 16:9/9:16/1:1\". Covers the hook→tease→reveal→feature-montage→end-card arc and multi-aspect export.",
+      "path": "upstream/ad-video-skills/skills/launch-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "ad-video-skills/testimonial-video",
+      "name": "testimonial-video",
+      "pack": "ad-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make an animated testimonial\", \"create a quote video\", \"build a review video\", \"turn a customer testimonial into a graphic\", \"animate a customer review\", \"make a social proof video\", \"add an animated star rating\", or \"turn a list of reviews into videos\". Covers quote typography, staggered line reveals, kinetic emphasis on key phrases, animated star ratings, the author block (name/role/avatar/company), and templating one card across many quotes.",
+      "path": "upstream/ad-video-skills/skills/testimonial-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "data-animation-skills/animated-infographic",
+      "name": "animated-infographic",
+      "pack": "data-animation-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make an animated infographic\", \"create an infographic video\", \"build an infographic animation\", \"animate an explainer infographic\", \"do a sequenced reveal of icons and stats\", \"animate icons with key numbers and connectors\", or \"lay out a designed infographic that animates in sequence\". Covers infographic layout & visual hierarchy, staggered element reveals, animating icons/pictograms, key-number counters, connectors/flow, and section pacing. For heavy charting (bar chart race, charts from a CSV) use the chart-animation skill instead.",
+      "path": "upstream/data-animation-skills/skills/animated-infographic/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "data-animation-skills/chart-animation",
+      "name": "chart-animation",
+      "pack": "data-animation-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a bar chart race\", \"turn a CSV into a video\", \"build an animated data visualization\", \"create an animated statistics video\", \"animate a chart/graph\", \"make a number counter/ticker\", \"animate a ranking over time\", or \"batch-render one chart template across many datasets\". Covers data-driven keyframing, value interpolation, rank transitions, counters, pacing, annotation, and template×data batch output.",
+      "path": "upstream/data-animation-skills/skills/chart-animation/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "data-animation-skills/presentation-video",
+      "name": "presentation-video",
+      "pack": "data-animation-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make an animated presentation\", \"turn a pitch deck into a video\", \"convert slides/a deck to video\", \"make a presentation video\", \"build a deck video\", \"narrate a slide deck as a video\", or \"auto-advance slides synced to a voiceover\". Covers rebuilding slides as motion graphics with staggered build reveals, slide-to-slide transitions, and timing locked to per-slide narration.",
+      "path": "upstream/data-animation-skills/skills/presentation-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "ecommerce-video-skills/photo-slideshow",
+      "name": "photo-slideshow",
+      "pack": "ecommerce-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a photo slideshow\", \"turn photos into a video\", \"create a photo montage video\", \"make a picture slideshow with music\", \"build a memories/recap video from photos\", \"add Ken Burns pan/zoom to photos\", \"sync slide changes to the music beat\", or \"render a video from a folder of images\". Covers per-photo Ken Burns motion, transitions, beat-synced timing, mixed aspect-ratio handling, captions/dates, intro/outro cards, and templating a photo folder into a finished video.",
+      "path": "upstream/ecommerce-video-skills/skills/photo-slideshow/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "ecommerce-video-skills/product-demo-video",
+      "name": "product-demo-video",
+      "pack": "ecommerce-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a product demo video\", \"create an app demo video\", \"build a feature announcement video\", \"do a SaaS demo\", \"make a UI walkthrough video\", \"animate product screenshots into a demo\", \"add an animated cursor/click to a screenshot\", or \"zoom into part of a UI\". Covers turning static screenshots/designs (not screen recordings) into a clean animated demo: device/browser frames, animated cursor + click ripple, zoom/pan to focal UI, callout annotations, step pacing, screen-to-screen transitions, and feature captions.",
+      "path": "upstream/ecommerce-video-skills/skills/product-demo-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "ecommerce-video-skills/promo-video",
+      "name": "promo-video",
+      "pack": "ecommerce-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a sale video\", \"create a promo video\", \"build a discount/percentage-off reveal\", \"animate a was→now price with a strike-through\", \"do a Black Friday / flash-sale / clearance video\", \"make a promo-code reveal with a countdown\", or \"batch a promo template across many products\". Covers the offer-announcement arc — discount reveal, price strike-through, promo code, urgency, product shot, CTA — and product+offer data → many videos.",
+      "path": "upstream/ecommerce-video-skills/skills/promo-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "explainer-video-skills/diagram-animation",
+      "name": "diagram-animation",
+      "pack": "explainer-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"animate this diagram\", \"build a flowchart that reveals step by step\", \"animate an architecture/sequence diagram\", \"make a chart animate in\", \"grow the bars / draw the line / count up the number\", \"show data flowing along a connector\", or \"turn a static diagram into a guided reveal\". Covers SVG, Framer Motion, D3, and Remotion.",
+      "path": "upstream/explainer-video-skills/skills/diagram-animation/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "explainer-video-skills/explainer-video",
+      "name": "explainer-video",
+      "pack": "explainer-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make an explainer video\", \"turn this into a short explainer\", \"write a script and storyboard for a product video\", \"produce a how-it-works/onboarding video\", \"sync narration and captions\", or \"build a 30–90s animated explainer\". Covers script→storyboard→scene build→narration/caption sync→edit→polish.",
+      "path": "upstream/explainer-video-skills/skills/explainer-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "explainer-video-skills/isometric-animation",
+      "name": "isometric-animation",
+      "pack": "explainer-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make an isometric animation\", \"build a 2.5D isometric scene\", \"create an isometric infographic\", \"animate an exploded diagram\", \"do an isometric city/stack build\", \"show stacked layers in iso\", \"extrude blocks with depth\", or \"add a gentle camera drift to an iso scene\". Covers CSS 3D transforms, SVG iso planes, and Three.js OrthographicCamera for true 3D iso — no build step.",
+      "path": "upstream/explainer-video-skills/skills/isometric-animation/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "explainer-video-skills/whiteboard-animation",
+      "name": "whiteboard-animation",
+      "pack": "explainer-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a whiteboard animation\", \"draw-on explainer\", \"VideoScribe style\", \"hand-drawn explainer video\", \"animate a sketch being drawn\", \"do a doodle/scribe video\", \"show a hand drawing the illustration\", or \"animate handwriting appearing on a whiteboard\". Covers SVG stroke draw-on, a marker hand that follows the path tip, staggered reveal, erase/wipe transitions, and narrated export.",
+      "path": "upstream/explainer-video-skills/skills/whiteboard-animation/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "explainer-video-skills/wrapped-video",
+      "name": "wrapped-video",
+      "pack": "explainer-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a Spotify Wrapped style video\", \"build a year in review / year-in-review video\", \"create a personalized data video\", \"generate a recap video\", \"build a wrapped video generator\", \"turn a data table into shareable videos\", or \"make per-user stat videos\". Covers the data row → one shareable video pattern, the Wrapped scene grammar (big-number reveals, top-X lists, superlatives), animated data counters, vertical 9:16 framing, and batch-rendering many personalized videos from one template.",
+      "path": "upstream/explainer-video-skills/skills/wrapped-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "freelance-motion-skills/brand-motion-guidelines",
+      "name": "brand-motion-guidelines",
+      "pack": "freelance-motion-skills",
+      "family": "ops",
+      "description": "This skill should be used when the user asks to \"write motion guidelines\", \"create a brand motion system\", \"define easing and timing tokens\", \"document our animation principles\", \"build a motion language like Slack/IBM/Klarna\", \"set up entrance/exit/transition rules\", or \"add a reduced-motion / accessibility section\". It outputs a fill-in-ready brand motion guidelines document.",
+      "path": "upstream/freelance-motion-skills/skills/brand-motion-guidelines/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "brief",
+        "qa"
+      ]
+    },
+    {
+      "id": "freelance-motion-skills/client-revisions",
+      "name": "client-revisions",
+      "pack": "freelance-motion-skills",
+      "family": "ops",
+      "description": "This skill should be used when the user asks to \"stop scope creep\", \"limit revision rounds\", \"write SOW revision language\", \"the client keeps asking for changes\", \"how do I say this is out of scope\", \"translate vague feedback\", \"client said make it pop\", or \"write a change-order email\". It provides revision-cap contract language, a consolidated-feedback request, a vague-feedback translator, and a polite out-of-scope email.",
+      "path": "upstream/freelance-motion-skills/skills/client-revisions/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "brief",
+        "qa"
+      ]
+    },
+    {
+      "id": "freelance-motion-skills/creative-brief",
+      "name": "creative-brief",
+      "pack": "freelance-motion-skills",
+      "family": "ops",
+      "description": "This skill should be used when the user asks to \"write a creative brief\", \"build a motion brief\", \"the client doesn't know what they want\", \"turn this vague client request into a brief\", \"what questions should I ask the client\", or \"make a brief I can get sign-off on\". It turns a fuzzy client ask into a structured, sign-off-ready motion design brief and the exact clarifying questions to send back.",
+      "path": "upstream/freelance-motion-skills/skills/creative-brief/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "brief",
+        "qa"
+      ]
+    },
+    {
+      "id": "freelance-motion-skills/motion-pricing",
+      "name": "motion-pricing",
+      "pack": "freelance-motion-skills",
+      "family": "ops",
+      "description": "This skill should be used when the user asks to \"quote a motion project\", \"estimate this animation job\", \"how much should I charge for this video\", \"what's my day rate\", \"build a quote\", \"price a 30-second explainer\", or \"is this estimate fair\". It explains motion-design pricing models, the day-rate math, the cost drivers, and outputs a line-itemed quote with a worked example.",
+      "path": "upstream/freelance-motion-skills/skills/motion-pricing/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "brief",
+        "qa"
+      ]
+    },
+    {
+      "id": "freelance-motion-skills/video-delivery-specs",
+      "name": "video-delivery-specs",
+      "pack": "freelance-motion-skills",
+      "family": "ops",
+      "description": "This skill should be used when the user asks \"what are the specs for Instagram Reels / TikTok / YouTube / broadcast\", \"export settings for social\", \"what aspect ratio and bitrate\", \"how do I repurpose 16:9 to 9:16\", \"safe area / title-safe for vertical\", \"pre-delivery checklist\", or \"collect files for handover\". It outputs per-platform spec sheets, a cutdown matrix, captioning/accessibility notes, and a QC + collect-files checklist.",
+      "path": "upstream/freelance-motion-skills/skills/video-delivery-specs/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "brief",
+        "qa"
+      ]
+    },
+    {
+      "id": "kinetic-typography-skills/kinetic-typography",
+      "name": "kinetic-typography",
+      "pack": "kinetic-typography-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"animate a headline\", \"make a kinetic typography video\", \"do a split-text reveal\", \"stagger text by character/word/line\", \"make a lyric or caption video\", \"animate a variable font weight\", \"put text on a path\", or \"create an animated title card\". Covers reveal techniques in CSS, GSAP SplitText, Framer Motion, and Remotion.",
+      "path": "upstream/kinetic-typography-skills/skills/kinetic-typography/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "manim-skills/manim",
+      "name": "manim",
+      "pack": "manim-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a math animation\", \"animate an equation\", \"use Manim\", \"make a 3Blue1Brown-style video\", \"plot or animate a graph/function\", \"visualize a math/physics/CS concept\", \"morph one formula into another\", \"animate a geometric proof\", or \"render a math explainer\". Covers Manim Community Edition — Scenes, Mobjects, animations, LaTeX/MathTex, graphs, updaters/ValueTracker, 3D, and rendering to MP4/GIF via the CLI.",
+      "path": "upstream/manim-skills/skills/manim/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "map-animation-skills/map-animation",
+      "name": "map-animation",
+      "pack": "map-animation-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a Vox-style map animation\", \"animate a map zoom\", \"draw a route on a map\", \"highlight a country/region\", \"use Google Earth Studio\", \"drop pins on a map and animate them\", \"pan/orbit a camera over a map\", or \"add map graphics to an explainer video\". Covers Earth Studio→After Effects camera import, GeoJSON/SVG vector map motion, pins/routes/highlights/labels, the 12fps stutter cadence, and data-driven Remotion renders.",
+      "path": "upstream/map-animation-skills/skills/map-animation/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/after-effects",
+      "name": "after-effects",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks anything about Adobe After Effects — to \"write an After Effects expression\", \"make a wiggle / loopOut / inertial bounce\", \"rig a control with a slider / null\", \"build a MOGRT / Essential Graphics template\", \"export AE to Lottie or Media Encoder\"; OR to \"export from After Effects\", \"export with transparency / an alpha channel\", \"fix a black background on export\", \"choose ProRes vs H.264\", \"which codec / what bitrate for 1080p / 4K\", \"stop H.264 disappearing from the Render Queue\"; OR when \"After Effects is slow / laggy / crashing / froze\", \"RAM preview won't play in real time\", \"AE is using all my memory / render takes forever\", \"how do I speed up After Effects\"; OR to \"organize my After Effects project\", \"relink missing footage\", \"fix broken links after moving files\", \"set a folder structure / naming conventions\", \"batch rename layers\", or \"write an ExtendScript / .jsx script\". Covers expressions & rigging, export recipes, performance triage, and project hygiene.",
+      "path": "upstream/motion-design-skills/skills/after-effects/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/animation-principles",
+      "name": "animation-principles",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks to \"make this animation feel natural\", \"fix motion that feels stiff/floaty/cheap\", \"my animation looks robotic\", \"choose an easing curve\", \"how do I use the Graph Editor\", \"add overshoot or bounce\", \"Easy Ease isn't enough\", \"make snappy motion\", \"pick a duration for this transition\", \"stagger a list animation\", \"sync animation to a beat\", or \"review motion for good timing\". It is the tech-agnostic foundation for deciding how something should move.",
+      "path": "upstream/motion-design-skills/skills/animation-principles/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/beat-sync-editing",
+      "name": "beat-sync-editing",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks to \"cut to the beat\", \"fix the pacing\", \"edit this sequence\", \"sync cuts to music/BPM\", \"add a match cut / J-cut / L-cut\", \"build a speed ramp\", or \"plan a shot sequence / edit timeline\". Covers editing rhythm, transitions, retiming, and translating an edit plan to an NLE or a code timeline (Remotion/AE frames).",
+      "path": "upstream/motion-design-skills/skills/beat-sync-editing/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/color-motion",
+      "name": "color-motion",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks to \"build a color palette for a motion piece\", \"make a gradient background\", \"animate a color transition\", \"interpolate colors smoothly\", \"fix muddy/gray gradients\", \"convert colors to OKLCH\", \"color-grade a video for mood\", \"fix washed-out After Effects renders\", \"gamma shift\", \"Rec.709 vs sRGB\", \"colors shifted after rendering\", or \"match preview to final video\". Covers palette construction, gradients, perceptual interpolation (OKLCH/Lab), grading order, and video/render color management.",
+      "path": "upstream/motion-design-skills/skills/color-motion/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/logo-animation",
+      "name": "logo-animation",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks to \"animate our logo\", \"make a logo intro/stinger\", \"build a brand reveal\", \"create an app splash animation\", \"loop a loader logo\", \"draw on our SVG mark\", \"morph an icon into the wordmark\", or \"sync the logo to a sound-logo\". Covers web (SVG/Lottie), video, and app-splash delivery.",
+      "path": "upstream/motion-design-skills/skills/logo-animation/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/motion-art-direction",
+      "name": "motion-art-direction",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks to \"direct a motion graphics video\", \"do creative/art direction for a video\", \"define a motion language\", \"set the tone and pacing\", \"make the animation feel consistent\", \"decide what to animate (and what not to)\", \"turn a brief/brand into motion choices\", or needs the senior creative judgment that sits above specific techniques (gsap/lottie/shader). Covers motion language, tone & energy, pacing/rhythm, motion hierarchy, restraint, and cross-shot consistency.",
+      "path": "upstream/motion-design-skills/skills/motion-art-direction/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/motion-background",
+      "name": "motion-background",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks to \"add an animated background\", \"build a mesh/gradient background\", \"make an aurora/shader background\", \"add constellation/particle background\", \"animated hero background\", or \"a subtle looping background behind content\". Covers CSS mesh gradients, GLSL shader gradients (Three.js), canvas particle constellations, seamless loops, and reduced-motion/performance handling — fully self-contained.",
+      "path": "upstream/motion-design-skills/skills/motion-background/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/remotion-video",
+      "name": "remotion-video",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks to \"make a video with Remotion\", \"create a programmatic/data-driven video in React\", \"render an MP4/GIF from code\", \"animate with useCurrentFrame/interpolate/spring\", \"sync video to audio/beats\", or \"render a templated video per record headlessly\". Covers building React compositions and rendering them via CLI or @remotion/renderer.",
+      "path": "upstream/motion-design-skills/skills/remotion-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "motion-design-skills/shot-composition",
+      "name": "shot-composition",
+      "pack": "motion-design-skills",
+      "family": "motion-design",
+      "description": "This skill should be used when the user asks to \"compose a frame\", \"set up a grid\", \"plan shot composition\", \"place the focal point\", \"decide where elements enter and exit\", \"add a parallax/camera move\", \"adapt a layout for 16:9 / 9:16 / 1:1\", or \"keep content inside safe areas\". Covers grids, safe areas, focal hierarchy, and 2D/3D camera framing.",
+      "path": "upstream/motion-design-skills/skills/shot-composition/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "qa"
+      ]
+    },
+    {
+      "id": "text-message-video-skills/text-message-animation",
+      "name": "text-message-animation",
+      "pack": "text-message-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a fake text message video\", \"animate an iMessage conversation\", \"create a text story video\", \"do a chat reply animation\", \"WhatsApp/SMS conversation video\", \"typing indicator animation\", \"render a chat thread to a video\", or \"batch text-message videos from a script/CSV\". Covers sent/received bubble layout, staggered appear timing with typing indicators, read receipts/timestamps, per-message pop sound-sync, 9:16 safe-area, and data-driven render from a messages array.",
+      "path": "upstream/text-message-video-skills/skills/text-message-animation/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "tiktok-video-skills/caption-animation",
+      "name": "caption-animation",
+      "pack": "tiktok-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"add animated captions\", \"make TikTok captions\", \"karaoke captions\", \"word-by-word subtitles\", \"auto subtitles\", \"highlight the active word\", \"burn in captions to a video\", \"sync captions to a voiceover/narration\", or \"turn an SRT/transcript into animated text\". Covers word-level timing from Whisper, per-word pop/scale-in, active-word highlight, 9:16 safe-area placement, readable type, and burn-in vs sidecar SRT/VTT.",
+      "path": "upstream/tiktok-video-skills/skills/caption-animation/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "tiktok-video-skills/countdown-video",
+      "name": "countdown-video",
+      "pack": "tiktok-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a countdown timer video\", \"create a countdown animation\", \"build a stream starting soon countdown\", \"do an event/launch/sale countdown\", \"animate a mm:ss or dd:hh:mm:ss timer\", \"add digit roll/flip transitions to a counter\", or \"loop a countdown background\". Covers frame-accurate (drift-free) timers, digit flip/roll motion, time formatting, and a configurable duration prop.",
+      "path": "upstream/tiktok-video-skills/skills/countdown-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "tiktok-video-skills/lower-thirds",
+      "name": "lower-thirds",
+      "pack": "tiktok-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make an animated lower third\", \"add lower thirds\", \"create a name tag/name lower third\", \"build broadcast titles\", \"animate a title/name/role caption\", \"do a speaker name overlay\", or \"template lower thirds across a list of names\". Covers enter/exit animation (slide/wipe/mask reveal), in/out timing & dwell, safe-area & broadcast conventions, name-vs-role type hierarchy, brand styling, and rendering one design across many names.",
+      "path": "upstream/tiktok-video-skills/skills/lower-thirds/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "tiktok-video-skills/short-form-video",
+      "name": "short-form-video",
+      "pack": "tiktok-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a Reels/TikTok/YouTube Shorts video\", \"build a short-form video template\", \"write a hook for a short\", \"edit for retention\", \"add pattern interrupts\", \"make a video loop\", \"fix the first 3 seconds\", \"pace cuts for a vertical video\", or \"set up 9:16 safe areas\". Covers the hook→retention→loop grammar of vertical short-form (distinct from a launch hype film).",
+      "path": "upstream/tiktok-video-skills/skills/short-form-video/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/60fps-animation",
+      "name": "60fps-animation",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"fix janky CSS animation\", \"make animation 60fps\", \"stop layout thrashing\", \"animate width/height/top/left smoothly\", \"convert animation to transform\", \"animate box-shadow performantly\", \"animate height auto\", \"FLIP animation\", or \"why is my scroll/hover animation choppy\".",
+      "path": "upstream/web-animation-skills/skills/60fps-animation/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/accessible-animation",
+      "name": "accessible-animation",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"respect prefers-reduced-motion\", \"honor reduced motion\", \"make my animations accessible\", \"fix vestibular / motion-sickness issues\", \"add a useReducedMotion hook\", \"gate GSAP / Framer Motion / Lenis for reduced motion\", or \"meet WCAG 2.3.3 / C39\". Provides tiered (not all-or-nothing) reduced-motion patterns in CSS and JS.",
+      "path": "upstream/web-animation-skills/skills/accessible-animation/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/ascii-animation",
+      "name": "ascii-animation",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"make an ASCII animation\", \"build a terminal/CLI intro or loader\", \"convert an image or video to ASCII art\", \"add an ASCII shader/post-effect to a canvas or Three.js scene\", \"create retro/hacker text-character motion\", or \"animate text characters with a brightness ramp\". Covers generative ASCII fields, image/video/3D-to-ASCII, and animated character art for both web and terminal.",
+      "path": "upstream/web-animation-skills/skills/ascii-animation/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/glassmorphism",
+      "name": "glassmorphism",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"add a glassmorphism effect\", \"frosted glass UI\", \"Apple liquid glass style\", \"frosted blur card\", \"translucent glass panel animation\", \"make a frosted nav bar\", \"build a glass modal/dialog\", \"animate a glass card on hover\", or \"add a refracting liquid-glass hero\". Covers frosted translucent panels with backdrop-filter blur, edge/specular highlights, SVG liquid-glass refraction, motion on hover/scroll/enter, and accessible reduced-transparency fallbacks.",
+      "path": "upstream/web-animation-skills/skills/glassmorphism/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/gsap-web",
+      "name": "gsap-web",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"build a scroll animation\", \"add ScrollTrigger\", \"pin a section while scrolling\", \"scrub an animation to scroll\", \"create a hero timeline\", \"do a horizontal scroll section\", \"split text and animate words\", \"animate a layout change with GSAP Flip\", \"sync ScrollTrigger with Lenis\", \"Lenis smooth scroll jittery\", \"ScrollTrigger markers drift\", \"ScrollTrigger pins break with Lenis/Locomotive\", or \"set up smooth scroll with GSAP pinning\". Covers GSAP timelines, ScrollTrigger, SplitText, Flip, and Lenis/Locomotive smooth-scroll sync for code-driven web motion.",
+      "path": "upstream/web-animation-skills/skills/gsap-web/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/lottie-animation",
+      "name": "lottie-animation",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"add a Lottie animation\", \"play a .lottie or .json animation\", \"integrate a Bodymovin/After Effects animation on web or mobile\", \"control Lottie playback / segments\", \"make a scroll-driven Lottie\", \"recolor a Lottie at runtime\", or \"export an AE animation to Lottie\". Covers dotLottie/lottie-web integration, playback control, interactivity, theming, and the AE export checklist.",
+      "path": "upstream/web-animation-skills/skills/lottie-animation/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/micro-interaction",
+      "name": "micro-interaction",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"add a hover/press effect\", \"animate a toggle or switch\", \"build an animated like button\", \"make a toast/snackbar slide in\", \"animate a drawer or modal\", \"animate list reordering or add/remove\", \"do a shared-element layout transition\", or \"polish UI feedback\". Covers UI motion with Framer Motion (motion/react) and modern CSS.",
+      "path": "upstream/web-animation-skills/skills/micro-interaction/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/page-transition-animation",
+      "name": "page-transition-animation",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"animate page or route transitions\", \"add a page transition or crossfade between views\", \"animate route changes in Next.js App Router\", \"use the View Transitions API\", \"AnimatePresence exit doesn't fire on navigation\", or \"Framer Motion exit animation not working / exit animation before unmount in Next.js\". Covers enter/exit page-transition animation with the View Transitions API and Framer Motion, for Next.js App Router and general SPA routing.",
+      "path": "upstream/web-animation-skills/skills/page-transition-animation/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-animation-skills/svg-animation",
+      "name": "svg-animation",
+      "pack": "web-animation-skills",
+      "family": "web-motion",
+      "description": "This skill should be used when the user asks to \"animate an SVG\", \"make a line draw itself on\", \"do a stroke draw-on / signature animation\", \"morph one shape into another\", \"move an element along a path\", \"animate an icon/logo\", or \"animate an SVG gradient or filter\". Covers stroke-dashoffset draw-on, path morphing, motion-along-path, and animated icons/gradients/filters via CSS, SMIL, and GSAP.",
+      "path": "upstream/web-animation-skills/skills/svg-animation/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "webgl-animation-skills/particle-system",
+      "name": "particle-system",
+      "pack": "webgl-animation-skills",
+      "family": "webgl",
+      "description": "This skill should be used when the user asks to \"build a particle system\", \"make confetti/snow/smoke/sparks\", \"create a connected-dot/constellation network background\", \"add a flow-field or curl-noise particle effect\", \"render thousands of GPU particles with Three.js Points\", or \"animate emitters with forces\". Covers per-particle integration, forces, flow fields, burst/continuous emission, spatial-grid connected dots, and GPU points + shaders.",
+      "path": "upstream/webgl-animation-skills/skills/particle-system/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "webgl-animation-skills/shader-glsl",
+      "name": "shader-glsl",
+      "pack": "webgl-animation-skills",
+      "family": "webgl",
+      "description": "This skill should be used when the user asks to \"write a fragment shader\", \"make a GLSL gradient/noise/plasma background\", \"create an image transition (dissolve, displacement, glitch)\", \"add distortion or chromatic aberration\", \"build an SDF shape shader\", \"wire up a Three.js ShaderMaterial with uniforms\", or \"do GPU post-processing\". Covers GLSL fragment shaders, noise/fbm, SDFs, domain warping, transitions, and Three.js integration.",
+      "path": "upstream/webgl-animation-skills/skills/shader-glsl/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "webgl-animation-skills/threejs-animation",
+      "name": "threejs-animation",
+      "pack": "webgl-animation-skills",
+      "family": "webgl",
+      "description": "This skill should be used when the user asks to \"build a 3D hero section or WebGL background\", \"animate a Three.js scene\", \"play or crossfade GLTF animation clips\", \"move/lerp the camera or link it to scroll\", \"render thousands of objects with InstancedMesh\", \"set up React Three Fiber (R3F) motion\", \"add bloom/DOF post-processing\", or \"keep a Three.js/R3F animation smooth and leak-free (dispose geometries/materials/textures, free GPU memory on unmount)\". Covers scenes, render loops, camera moves, GLTF AnimationMixer, instancing, scroll-linked 3D, R3F, and animation performance/disposal.",
+      "path": "upstream/webgl-animation-skills/skills/threejs-animation/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "youtube-video-skills/audiogram",
+      "name": "audiogram",
+      "pack": "youtube-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make an audiogram\", \"turn a podcast into a video\", \"create a waveform video\", \"make a podcast clip video\", \"convert audio to video\", \"animate a waveform/audio bars\", \"add a moving waveform to my voiceover\", or \"make a square/vertical clip for a podcast quote\". Covers amplitude-driven waveforms, frequency bars, synced captions, cover-art layout, a progress bar, and 1:1 / 9:16 social framing.",
+      "path": "upstream/youtube-video-skills/skills/audiogram/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "youtube-video-skills/youtube-intro-outro",
+      "name": "youtube-intro-outro",
+      "pack": "youtube-video-skills",
+      "family": "motion-graphics",
+      "description": "This skill should be used when the user asks to \"make a YouTube intro\", \"create a channel intro\", \"build a logo sting/bumper\", \"design an outro / end screen / end card\", \"add subscribe and next-video cards\", \"make an intro animation\", \"build a reusable intro template\", or \"sync the logo reveal to an audio sting\". Covers the 3-5s branded intro, the last-20s end-screen outro inside YouTube's element safe zones, timing conventions, audio-sting sync, and a swap-the-brand template.",
+      "path": "upstream/youtube-video-skills/skills/youtube-intro-outro/SKILL.md",
+      "activation": "explicit",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    }
+  ]
+}

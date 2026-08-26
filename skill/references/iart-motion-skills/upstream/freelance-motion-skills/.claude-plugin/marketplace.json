@@ -1,0 +1,14 @@
+{
+  "name": "freelance-motion-skills",
+  "owner": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "plugins": [
+    {
+      "name": "freelance-motion-skills",
+      "source": "./",
+      "description": "The freelance motion design toolkit for AI coding agents — brief, price, manage revisions, deliver, and document brand motion without the back-office guesswork."
+    }
+  ]
+}

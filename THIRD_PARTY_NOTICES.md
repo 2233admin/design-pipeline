@@ -403,3 +403,34 @@ or the upstream skill tree.
 - Reviewed revision: `0e4da52c8222b8d18a1211b34f2fb3bd0f7e79ee`
 - Reviewed: 2026-08-14
 - License: Apache-2.0
+
+## dimabraven/design-md examples
+
+The bundled DesignMD example catalog is a byte-preserved snapshot of:
+
+- Source: https://github.com/dimabraven/design-md
+- Reviewed commit: `f74ca151f92af178f1e0b93f2191e5ec77b33203`
+- Reviewed: 2026-08-26
+- Original copyright: Copyright (c) 2026 Dima Braven
+- License: MIT
+
+The package preserves every tracked file from the reviewed revision as inert reference material.
+Catalog search does not install those files as a product DESIGN.md and does not wrap
+`designmd-cli`. The upstream LICENSE is retained at
+`skill/references/design-md/upstream/LICENSE`.
+
+## iart-ai motion skills
+
+The bundled motion-skill library is a byte-preserved snapshot of the MIT-licensed
+[`iart-ai/motion-skills`](https://github.com/iart-ai/motion-skills) index and the licensed packs
+listed in `skill/references/iart-motion-skills/manifest.json`.
+
+- Index commit: `945c4c70f7cf82a4502cfe3877ff8466972d2842`
+- Reviewed: 2026-08-26
+- Original copyright: Copyright (c) 2026 iart.ai
+- License: MIT
+
+`generative-illustration-skills` is excluded because the reviewed revision has no LICENSE file.
+Catalog search does not execute upstream scripts, install Remotion, Manim, After Effects, or
+ffmpeg, or authorize paid or credentialed generation. Each bundled pack retains its upstream
+LICENSE.

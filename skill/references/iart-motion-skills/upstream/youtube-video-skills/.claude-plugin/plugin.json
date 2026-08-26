@@ -1,0 +1,23 @@
+{
+  "name": "youtube-video-skills",
+  "version": "0.1.0",
+  "description": "YouTube intro/outro and podcast audiogram skills for AI coding agents — brand your channel and turn every episode into video.",
+  "author": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "homepage": "https://iart.ai",
+  "repository": "https://github.com/iart-ai/youtube-video-skills",
+  "license": "MIT",
+  "keywords": [
+    "youtube-video",
+    "youtube-intro",
+    "youtube-outro",
+    "audiogram",
+    "podcast-video",
+    "channel-branding",
+    "waveform",
+    "motion-graphics",
+    "claude-skill"
+  ]
+}

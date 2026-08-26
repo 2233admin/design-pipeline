@@ -1,0 +1,22 @@
+{
+  "name": "explainer-video-skills",
+  "version": "0.1.0",
+  "description": "Explainer video skills for AI coding agents: script, storyboard, and render narrated explainers, year-in-review recaps, and animated diagrams.",
+  "author": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "homepage": "https://iart.ai",
+  "repository": "https://github.com/iart-ai/explainer-video-skills",
+  "license": "MIT",
+  "keywords": [
+    "explainer-video",
+    "whiteboard-animation",
+    "isometric-animation",
+    "wrapped-video",
+    "diagram-animation",
+    "year-in-review",
+    "motion-graphics",
+    "claude-skill"
+  ]
+}

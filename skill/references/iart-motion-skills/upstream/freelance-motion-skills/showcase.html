@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freelance Motion · GSAP · Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Sora:wght@600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Sora:wght@600;700;800&display=swap"></noscript>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:     #0c0e14;
+    --bg2:    #07080d;
+    --paper:  #f1f3f8;
+    --ink:    #0c0e14;
+    --lime:   #c8f135;
+    --cyan:   #46e0d0;
+    --violet: #8a7bff;
+    --muted:  #6c7488;
+    --line:   #1d2230;
+    --card:   #12151f;
+  }
+
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+  }
+
+  #stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(130% 120% at 50% -10%, #161a26 0%, var(--bg) 50%, var(--bg2) 100%);
+    perspective: 1300px;
+    overflow: hidden;
+  }
+
+  /* subtle grid lines themed background */
+  .gridbg {
+    position: absolute; inset: -2px;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity: 0.4; pointer-events: none;
+    -webkit-mask-image: radial-gradient(120% 100% at 50% 40%, #000 30%, transparent 80%);
+            mask-image: radial-gradient(120% 100% at 50% 40%, #000 30%, transparent 80%);
+  }
+
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); opacity: 0.28;
+    will-change: transform; pointer-events: none;
+  }
+  #blobA { width: 48vmin; height: 48vmin; background: var(--violet); top: -14%; left: -8%; }
+  #blobB { width: 42vmin; height: 42vmin; background: var(--cyan); bottom: -16%; right: -10%; opacity: 0.22; }
+  #blobC { width: 30vmin; height: 30vmin; background: var(--lime); top: 58%; left: 64%; opacity: 0.16; }
+
+  .scene {
+    position: absolute;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    will-change: transform, opacity; z-index: 2;
+  }
+
+  /* ===== WORKFLOW PIPELINE ===== */
+  #flowScene { z-index: 3; flex-direction: row; gap: 0; }
+  .step {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: clamp(96px, 18vmin, 170px);
+    height: clamp(96px, 18vmin, 170px);
+    border-radius: 22px;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    will-change: transform, opacity;
+  }
+  .step .ico {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 10px;
+  }
+  .step .lbl {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: clamp(11px, 1.5vw, 15px); letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--paper);
+  }
+  .step.s-brief  .ico { background: rgba(138,123,255,.16); color: var(--violet); }
+  .step.s-create .ico { background: rgba(70,224,208,.16); color: var(--cyan); }
+  .step.s-deliver .ico { background: rgba(200,241,53,.16); color: var(--lime); }
+
+  .arrow {
+    width: clamp(34px, 6vmin, 70px); height: 2px;
+    background: var(--muted); position: relative;
+    will-change: transform, opacity;
+    align-self: center;
+  }
+  .arrow::after {
+    content: ''; position: absolute; right: -1px; top: 50%;
+    width: 8px; height: 8px; border-top: 2px solid var(--muted); border-right: 2px solid var(--muted);
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .arrow .fill {
+    position: absolute; inset: 0; background: var(--cyan);
+    transform: scaleX(0); transform-origin: left; will-change: transform;
+  }
+
+  /* ===== RATE COUNTER ===== */
+  #rateScene { z-index: 3; }
+  .ratebox {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 36px 56px; border-radius: 24px;
+    background: var(--card); border: 1.5px solid var(--line);
+    box-shadow: 0 30px 70px rgba(0,0,0,.45);
+    will-change: transform, opacity;
+  }
+  .rate-kicker {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+    font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .rate-num {
+    font-family: 'Sora', sans-serif; font-weight: 800;
+    font-size: clamp(3rem, 13vw, 8rem); line-height: 1;
+    color: var(--paper); letter-spacing: -0.03em;
+  }
+  .rate-num .cur { color: var(--lime); }
+  .rate-sub { font-family: 'Space Grotesk', sans-serif; color: var(--muted); font-size: 14px; margin-top: 8px; letter-spacing: 0.1em; }
+
+  /* ===== CHECKLIST ===== */
+  #checkScene { z-index: 3; }
+  .checklist {
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 34px 40px; border-radius: 24px;
+    background: var(--card); border: 1.5px solid var(--line);
+    box-shadow: 0 30px 70px rgba(0,0,0,.45);
+    min-width: clamp(280px, 40vmin, 420px);
+    will-change: transform, opacity;
+  }
+  .check-item { display: flex; align-items: center; gap: 14px; will-change: transform, opacity; }
+  .checkbox {
+    width: 28px; height: 28px; border-radius: 9px;
+    border: 2px solid var(--line); position: relative; flex-shrink: 0;
+    background: #0c0f17;
+  }
+  .checkbox .tick {
+    position: absolute; left: 7px; top: 3px; width: 8px; height: 14px;
+    border-right: 3px solid var(--lime); border-bottom: 3px solid var(--lime);
+    transform: rotate(45deg) scale(0); transform-origin: center;
+    will-change: transform;
+  }
+  .check-label {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+    font-size: clamp(14px, 2vw, 19px); color: var(--paper); letter-spacing: 0.01em;
+    will-change: color;
+  }
+
+  /* ===== LOCKUP ===== */
+  .line { display: flex; overflow: hidden; padding: 0.04em 0; justify-content: center; }
+  .word {
+    font-family: 'Sora', sans-serif; font-weight: 800;
+    font-size: clamp(2.1rem, 10vw, 8rem);
+    line-height: 0.9; letter-spacing: -0.04em;
+    color: var(--paper); text-transform: uppercase; white-space: nowrap;
+    will-change: transform, opacity;
+  }
+  .word.lime { color: var(--lime); }
+  .word.cyan { color: var(--cyan); }
+  .word.stroke { color: transparent; -webkit-text-stroke: 1.6px var(--paper); }
+  .char { display: inline-block; will-change: transform, opacity; }
+
+  .kicker {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+    font-size: clamp(0.66rem, 1.5vw, 1rem);
+    letter-spacing: 0.42em; text-transform: uppercase;
+    color: var(--muted); text-indent: 0.42em;
+  }
+
+  .brandmark {
+    font-family: 'Sora', sans-serif; font-weight: 800;
+    text-transform: lowercase;
+    font-size: clamp(2.4rem, 12vw, 10rem);
+    line-height: 0.84; letter-spacing: -0.05em; color: var(--paper);
+  }
+  .brandmark .lime { color: var(--lime); }
+
+  /* ===== FINALE — BUSINESS CARD SIGN-OFF ===== */
+  .bizcard {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.18em;
+    padding: clamp(34px, 6vmin, 64px) clamp(40px, 8vmin, 96px);
+    width: clamp(320px, 64vmin, 760px);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(18,21,31,.72), rgba(7,8,13,.72));
+    box-shadow: 0 40px 90px rgba(0,0,0,.5);
+    will-change: transform, opacity;
+  }
+  .cardframe {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    overflow: visible; pointer-events: none;
+  }
+  .cardframe rect { will-change: stroke-dashoffset; }
+  .card-tag {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+    font-size: clamp(9px, 1.2vw, 12px); letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 8px;
+    will-change: transform, opacity;
+  }
+  .card-tag .dotmark {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--lime); box-shadow: 0 0 10px var(--lime);
+  }
+  .card-tag-foot { margin-top: 0.28em; color: #555c70; letter-spacing: 0.2em; }
+  .sigwrap {
+    width: clamp(180px, 34vmin, 320px); height: auto;
+    margin: 0.1em 0 0.18em; overflow: visible;
+  }
+  #sigpath { will-change: stroke-dashoffset; }
+
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+  .panel { position: absolute; will-change: transform; visibility: hidden; }
+
+  #flash { position: fixed; inset: 0; background: var(--lime); opacity: 0; pointer-events: none; z-index: 50; }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none;
+    opacity: 0.06; mix-blend-mode: overlay; z-index: 60;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  #progress {
+    position: fixed; left: 0; bottom: 0; height: 3px; width: 100%;
+    transform: scaleX(0); transform-origin: left;
+    background: linear-gradient(90deg, var(--violet), var(--cyan), var(--lime));
+    z-index: 70;
+  }
+
+  .ui {
+    position: fixed; font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    z-index: 80; color: #7b8398;
+  }
+  #brand { top: 22px; left: 24px; }
+  #replay {
+    bottom: 20px; right: 22px; background: transparent;
+    border: 1.5px solid #2a3142; border-radius: 999px;
+    padding: 9px 18px; cursor: pointer; color: #9aa3b8;
+    transition: color .2s, border-color .2s, background .2s;
+  }
+  #replay:hover { color: var(--ink); background: var(--lime); border-color: var(--lime); }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="gridbg"></div>
+    <div class="blob" id="blobA"></div>
+    <div class="blob" id="blobB"></div>
+    <div class="blob" id="blobC"></div>
+
+    <!-- Scene 1 : kicker intro -->
+    <div class="scene" id="s1">
+      <div class="line"><span class="kicker">Independent&nbsp;&nbsp;Studio</span></div>
+      <div class="line"><span class="word">we</span><span class="word lime">&nbsp;make</span></div>
+      <div class="line"><span class="word stroke">MOTION</span></div>
+    </div>
+
+    <!-- Scene 2 : workflow pipeline -->
+    <div class="scene" id="flowScene">
+      <div class="step s-brief" id="st1"><div class="ico">📋</div><div class="lbl">Brief</div></div>
+      <div class="arrow" id="ar1"><div class="fill"></div></div>
+      <div class="step s-create" id="st2"><div class="ico">✦</div><div class="lbl">Create</div></div>
+      <div class="arrow" id="ar2"><div class="fill"></div></div>
+      <div class="step s-deliver" id="st3"><div class="ico">🚀</div><div class="lbl">Deliver</div></div>
+    </div>
+
+    <!-- Scene 3 : rate counter -->
+    <div class="scene" id="rateScene">
+      <div class="ratebox">
+        <div class="rate-kicker">Day Rate</div>
+        <div class="rate-num"><span class="cur">$</span><span id="rateVal">0</span></div>
+        <div class="rate-sub">booked &amp; delivered on time</div>
+      </div>
+    </div>
+
+    <!-- Scene 4 : checklist -->
+    <div class="scene" id="checkScene">
+      <div class="checklist">
+        <div class="check-item" id="ck1"><div class="checkbox"><div class="tick"></div></div><div class="check-label">Storyboard approved</div></div>
+        <div class="check-item" id="ck2"><div class="checkbox"><div class="tick"></div></div><div class="check-label">Animation locked</div></div>
+        <div class="check-item" id="ck3"><div class="checkbox"><div class="tick"></div></div><div class="check-label">Final render exported</div></div>
+        <div class="check-item" id="ck4"><div class="checkbox"><div class="tick"></div></div><div class="check-label">Delivered to client</div></div>
+      </div>
+    </div>
+
+    <!-- Scene 5 : bridge -->
+    <div class="scene" id="s5">
+      <div class="line"><span class="word cyan">your</span></div>
+      <div class="line"><span class="word">STUDIO</span></div>
+    </div>
+
+    <!-- Scene 6 : finale — business-card sign-off -->
+    <div class="scene" id="s6">
+      <div class="bizcard" id="bizcard">
+        <svg class="cardframe" id="cardframe" viewBox="0 0 600 360" preserveAspectRatio="none" aria-hidden="true">
+          <rect x="2" y="2" width="596" height="356" rx="14" ry="14" fill="none"
+                stroke="var(--line)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <div class="card-tag" id="cardTagTop"><span class="dotmark"></span>Available&nbsp;for&nbsp;work</div>
+        <div class="line"><span class="kicker">Freelance&nbsp;&nbsp;Motion&nbsp;&nbsp;Skills</span></div>
+        <div class="line"><span class="word">FREELANCE</span></div>
+        <div class="line"><span class="word lime">MOTION</span></div>
+        <svg class="sigwrap" id="sigwrap" viewBox="0 0 320 70" aria-hidden="true">
+          <path id="sigpath" d="M10,46 C30,16 44,16 50,40 C56,62 64,62 78,30 C90,4 104,8 110,40 C118,72 132,58 150,34 C166,12 188,18 196,42 C206,72 232,52 250,30 C268,10 296,14 310,34"
+                fill="none" stroke="var(--cyan)" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="line brandline"><span class="word brandmark">iart<span class="lime">.</span>ai</span></div>
+        <div class="card-tag card-tag-foot" id="cardTagFoot">© iart.ai &nbsp;·&nbsp; studio sign-off</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fx">
+    <div class="panel" id="p1"></div>
+    <div class="panel" id="p2"></div>
+    <div class="panel" id="p3"></div>
+    <div class="panel" id="p4"></div>
+  </div>
+
+  <div id="flash"></div>
+  <div class="grain"></div>
+  <div id="progress"></div>
+  <div class="ui" id="brand">◆ iart.ai</div>
+  <button class="ui" id="replay">↻ Replay</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+  function splitChars(word) {
+    const text = word.textContent;
+    word.textContent = '';
+    const chars = [];
+    for (const ch of text) {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.innerHTML = (ch === ' ') ? '&nbsp;' : ch;
+      word.appendChild(span);
+      if (ch !== ' ') chars.push(span);
+    }
+    return chars;
+  }
+  document.querySelectorAll('.word:not(.brandmark)').forEach(splitChars);
+
+  function splitBrand(el) {
+    const html = el.innerHTML;
+    el.innerHTML = '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.childNodes.forEach(node => {
+      const isDot = node.nodeType === 1;
+      for (const ch of node.textContent) {
+        const span = document.createElement('span');
+        span.className = 'char' + (isDot ? ' lime' : '');
+        span.textContent = ch;
+        el.appendChild(span);
+      }
+    });
+  }
+  document.querySelectorAll('.brandmark').forEach(splitBrand);
+
+  const charsOf = (sel) => gsap.utils.toArray(sel + ' .char');
+
+  gsap.set('.scene', { autoAlpha: 0 });
+  gsap.set('.arrow .fill', { scaleX: 0 });
+  gsap.set('.tick', { scale: 0 });
+
+  // prep self-drawing strokes (card frame + signature)
+  const cardRect = document.querySelector('#cardframe rect');
+  const cardLen = cardRect ? cardRect.getTotalLength() : 0;
+  gsap.set(cardRect, { strokeDasharray: cardLen, strokeDashoffset: cardLen });
+  const sigPath = document.getElementById('sigpath');
+  const sigLen = sigPath ? sigPath.getTotalLength() : 0;
+  gsap.set(sigPath, { strokeDasharray: sigLen, strokeDashoffset: sigLen });
+
+  gsap.to('#blobA', { xPercent: 14, yPercent: 16, duration: 9,  repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#blobB', { xPercent: -14, yPercent: -12, duration: 11, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#blobC', { xPercent: -18, yPercent: 14, duration: 8,  repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  function build() {
+    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+
+    tl.fromTo('#progress', { scaleX: 0 }, { scaleX: 1, duration: 8.6, ease: 'none' }, 0);
+
+    // ===== SCENE 1 (0.0 – 1.4) =====
+    tl.set('#s1', { autoAlpha: 1 }, 0)
+      .from('#s1 .kicker', { yPercent: 100, opacity: 0, duration: 0.5 }, 0.05)
+      .from(charsOf('#s1'), {
+        yPercent: 120, opacity: 0, rotateX: -90,
+        stagger: { each: 0.03, from: 'start' }, duration: 0.55
+      }, 0.18)
+      // TRANSITION A — IMPLODE
+      .to(charsOf('#s1').concat(gsap.utils.toArray('#s1 .kicker')), {
+        scale: 0, rotation: 120, opacity: 0, filter: 'blur(6px)',
+        stagger: { each: 0.02, from: 'edges' }, duration: 0.45, ease: 'power3.in'
+      }, 1.05)
+      .set('#s1', { autoAlpha: 0 });
+
+    // TRANSITION (whip-pan blur) into workflow
+    tl.to('#stage', { x: -90, filter: 'blur(7px)', duration: 0.16, ease: 'power2.in' }, 1.34)
+      .set('#stage', { x: 100 }, 1.5)
+      .to('#stage', { x: 0, filter: 'blur(0px)', duration: 0.34, ease: 'power3.out' }, 1.5);
+
+    // ===== WORKFLOW SCENE (1.5 – 3.2) BRIEF → CREATE → DELIVER =====
+    tl.set('#flowScene', { autoAlpha: 1 }, 1.5)
+      .from('#st1', { x: -50, scale: 0.7, opacity: 0, duration: 0.45, ease: 'back.out(1.7)' }, 1.55)
+      .from('#ar1', { opacity: 0, duration: 0.2 }, 1.9)
+      .to('#ar1 .fill', { scaleX: 1, duration: 0.3, ease: 'power2.inOut' }, 1.95)
+      .from('#st2', { y: 40, scale: 0.7, opacity: 0, duration: 0.45, ease: 'back.out(1.7)' }, 2.1)
+      .from('#ar2', { opacity: 0, duration: 0.2 }, 2.45)
+      .to('#ar2 .fill', { scaleX: 1, duration: 0.3, ease: 'power2.inOut' }, 2.5)
+      .from('#st3', { x: 50, scale: 0.7, opacity: 0, duration: 0.45, ease: 'back.out(1.7)' }, 2.65)
+      // pulse each step in sequence
+      .to('#st1', { y: -8, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 2.95)
+      .to('#st2', { y: -8, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 3.05)
+      .to('#st3', { y: -8, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 3.15);
+
+    // exit flow
+    tl.to('#flowScene', { scale: 0.8, opacity: 0, filter: 'blur(7px)', duration: 0.35, ease: 'power3.in' }, 3.3)
+      .set('#flowScene', { autoAlpha: 0 });
+
+    // TRANSITION B — VENETIAN SHUTTER
+    const blinds = ['#p1','#p2','#p3','#p4'];
+    const blindColors = ['var(--ink)','var(--violet)','var(--cyan)','var(--ink)'];
+    gsap.set(blinds, {
+      visibility: 'visible', left: 0, width: '100%', height: '25.2%',
+      top: (i) => (i * 25) + '%',
+      backgroundColor: (i) => blindColors[i],
+      scaleY: 0, transformOrigin: 'top center'
+    });
+    tl.to(blinds, { scaleY: 1, duration: 0.22, stagger: 0.045, ease: 'power2.in' }, 3.35)
+      .set(blinds, { transformOrigin: 'bottom center' }, 3.65)
+      .to(blinds, { scaleY: 0, duration: 0.28, stagger: 0.045, ease: 'power2.out' }, 3.68)
+      .set(blinds, { visibility: 'hidden' }, 4.0);
+
+    // ===== RATE SCENE (3.6 – 4.7) counter ticks up =====
+    tl.set('#rateScene', { autoAlpha: 1 }, 3.6)
+      .from('.ratebox', { scale: 0.85, y: 24, opacity: 0, duration: 0.5, ease: 'back.out(1.4)' }, 3.6)
+      .from('.rate-kicker', { y: 10, opacity: 0, duration: 0.35 }, 3.75);
+    const rateObj = { v: 0 };
+    tl.to(rateObj, {
+        v: 1200, duration: 1.0, ease: 'power2.out',
+        onUpdate: () => { document.getElementById('rateVal').textContent = Math.round(rateObj.v).toLocaleString(); }
+      }, 3.85)
+      .from('.rate-sub', { opacity: 0, y: 8, duration: 0.4 }, 4.5)
+      .to('.rate-num', { scale: 1.08, duration: 0.3, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 4.7);
+
+    // exit rate
+    tl.to('#rateScene', { scale: 0.82, opacity: 0, filter: 'blur(7px)', duration: 0.35, ease: 'power3.in' }, 4.95)
+      .set('#rateScene', { autoAlpha: 0 });
+
+    // TRANSITION C — COLOR BAND SWEEP up
+    const bands = ['#p1','#p2','#p3'];
+    const bandColors = ['var(--cyan)','var(--ink)','var(--violet)'];
+    gsap.set(bands, {
+      visibility: 'visible', left: '-5%', width: '110%', height: '120%',
+      top: 0, skewY: -6,
+      backgroundColor: (i) => bandColors[i],
+      yPercent: 130
+    });
+    tl.to(bands, { yPercent: -130, duration: 0.5, stagger: 0.06, ease: 'power3.inOut' }, 5.0)
+      .set(bands, { visibility: 'hidden' }, 5.55);
+
+    // ===== CHECKLIST SCENE (5.05 – 6.2) items tick off =====
+    tl.set('#checkScene', { autoAlpha: 1 }, 5.05)
+      .from('.checklist', { scale: 0.9, y: 20, opacity: 0, duration: 0.45, ease: 'back.out(1.4)' }, 5.05);
+    const items = ['#ck1','#ck2','#ck3','#ck4'];
+    items.forEach((id, i) => {
+      const at = 5.2 + i * 0.22;
+      tl.from(id, { x: -24, opacity: 0, duration: 0.32, ease: 'power3.out' }, at)
+        .to(id + ' .tick', { scale: 1, duration: 0.3, ease: 'back.out(3)' }, at + 0.12)
+        .to(id + ' .checkbox', { borderColor: 'var(--lime)', duration: 0.2 }, at + 0.12)
+        .to(id + ' .check-label', { color: 'var(--muted)', duration: 0.25 }, at + 0.18);
+    });
+
+    // exit checklist
+    tl.to('#checkScene', { scale: 0.84, opacity: 0, filter: 'blur(7px)', duration: 0.32, ease: 'power3.in' }, 6.2)
+      .set('#checkScene', { autoAlpha: 0 });
+
+    // quick bridge S5 + curtain into finale
+    tl.set('#s5', { autoAlpha: 1 }, 6.25)
+      .from(charsOf('#s5'), {
+        yPercent: 130, opacity: 0, skewY: 8,
+        stagger: { each: 0.025, from: 'center' }, duration: 0.4
+      }, 6.3)
+      .to(charsOf('#s5'), {
+        opacity: 0, yPercent: -70, scale: 0.6,
+        stagger: { each: 0.012, from: 'edges' }, duration: 0.28, ease: 'power3.in'
+      }, 6.6)
+      .set('#s5', { autoAlpha: 0 });
+
+    // TRANSITION D — CURTAIN part to unveil brand
+    gsap.set('#p1', { visibility: 'visible', top: 0, left: 0,    width: '50.5%', height: '100%', backgroundColor: 'var(--ink)', xPercent: -100 });
+    gsap.set('#p2', { visibility: 'visible', top: 0, left: '50%', width: '50.5%', height: '100%', backgroundColor: 'var(--ink)', xPercent: 100 });
+    tl.to(['#p1','#p2'], { xPercent: 0, duration: 0.26, ease: 'power3.in' }, 6.55)
+      .to('#p1', { xPercent: -100, duration: 0.4, ease: 'power4.out' }, 6.85)
+      .to('#p2', { xPercent: 100, duration: 0.4, ease: 'power4.out' }, 6.85)
+      .set(['#p1','#p2'], { visibility: 'hidden' }, 7.25);
+
+    // ===== SCENE 6 (6.8 – 7.8) finale — business-card sign-off =====
+    tl.set('#s6', { autoAlpha: 1 }, 6.8)
+      // card lands + frame draws its border
+      .from('#bizcard', { scale: 0.88, y: 22, opacity: 0, duration: 0.5, ease: 'back.out(1.4)' }, 6.8)
+      .to(cardRect, { strokeDashoffset: 0, duration: 0.85, ease: 'power2.inOut' }, 6.86)
+      .from('#cardTagTop', { y: -10, opacity: 0, duration: 0.4 }, 6.95)
+      // wordmark lockup
+      .from('#s6 .kicker', { yPercent: 100, opacity: 0, duration: 0.5 }, 7.0)
+      .from(gsap.utils.toArray('#s6 .word:not(.brandmark) .char'), {
+        yPercent: 115, rotateX: -85, opacity: 0,
+        stagger: { each: 0.03, from: 'start' }, duration: 0.55, ease: 'back.out(1.6)'
+      }, 7.06)
+      // handwritten signature writes itself under the wordmark
+      .to(sigPath, { strokeDashoffset: 0, duration: 0.75, ease: 'power1.inOut' }, 7.35)
+      // brand signature
+      .from('#s6 .brandmark .char', {
+        yPercent: 115, opacity: 0,
+        stagger: { each: 0.05, from: 'start' }, duration: 0.55, ease: 'back.out(1.8)'
+      }, 7.55)
+      .from('#s6 .brandmark .lime', { scale: 0, duration: 0.45, ease: 'back.out(3)' }, 7.82)
+      .from('#cardTagFoot', { opacity: 0, y: 8, duration: 0.4 }, 7.7)
+      .to('#s6 .brandmark .lime', { scale: 1.3, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 7.5)
+      .to('#bizcard', { scale: 1.02, duration: 1.0, ease: 'sine.inOut' }, 7.6);
+
+    tl.to('#flash', { opacity: 0.3, duration: 0.06 }, 6.8)
+      .to('#flash', { opacity: 0, duration: 0.3 }, 6.86);
+
+    tl.to({}, { duration: 0.5 });
+    return tl;
+  }
+
+  let master = build();
+  document.getElementById('replay').addEventListener('click', () => master.restart());
+</script>
+</body>
+</html>

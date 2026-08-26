@@ -1,0 +1,22 @@
+{
+  "name": "motion-design-skills",
+  "version": "0.1.0",
+  "description": "Motion design fundamentals, engines, and brand elements as installable skills for AI coding agents — timing, typography, color, composition, After Effects, Remotion, logos, and backgrounds.",
+  "author": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "homepage": "https://iart.ai",
+  "repository": "https://github.com/iart-ai/motion-design-skills",
+  "license": "MIT",
+  "keywords": [
+    "motion-design",
+    "motion-graphics",
+    "after-effects",
+    "remotion",
+    "animation-principles",
+    "logo-animation",
+    "motion-background",
+    "claude-skill"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "freelance-motion-skills",
+  "version": "0.1.0",
+  "description": "The freelance motion design toolkit for AI coding agents — brief, price, manage revisions, deliver, and document brand motion without the back-office guesswork.",
+  "author": {
+    "name": "iart.ai",
+    "url": "https://iart.ai"
+  },
+  "homepage": "https://iart.ai",
+  "repository": "https://github.com/iart-ai/freelance-motion-skills",
+  "license": "MIT",
+  "keywords": [
+    "freelance-motion",
+    "motion-design",
+    "creative-brief",
+    "pricing",
+    "client-revisions",
+    "video-delivery",
+    "brand-guidelines",
+    "claude-skill"
+  ]
+}
