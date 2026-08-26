@@ -7,4 +7,4 @@
 - [x] Validate capability profile requirements and regular expressions at startup.
 - [x] Add regression coverage for each review finding.
 - [x] Run full QA, installed self-check, package verification, and structural analysis.
-- [ ] Publish the reviewed patch as v0.3.1.
+- [x] Publish the reviewed patch as v0.3.1.

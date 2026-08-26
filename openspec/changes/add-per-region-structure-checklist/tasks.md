@@ -6,9 +6,8 @@
 - [x] Require `breaksFrom` on every region row; accept `none`, reject blank.
 - [x] Add the `composition` block to `reference-evidence.schema.json` with the contradiction check.
 - [x] Require at least two regions before the checklist applies.
-- [ ] Reject `as above` and `same as previous` as region descriptions. `reference-spec.md` and
-      `qa-checklist.md` forbid them and a test asserts the spec says so, but the `composition` block
-      carries no contents field and nothing parses the `reference.md` table, so no code rejects
-      anything. This is documented, not enforced.
+- [x] Reject `as above` and `same as previous` as region descriptions through the per-region `contents`
+      field and validator; identical independent descriptions remain valid, while partial contents
+      adoption and neighbour back-references fail closed.
 - [x] Bind graybox comparison regions to these ids once the graybox gate lands.
 - [x] Run focused tests, full tests, and package QA.

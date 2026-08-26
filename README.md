@@ -37,7 +37,7 @@
 4. 支持网站克隆、设计系统合成、动效设计，每一步都有证据。
 5. 通过门禁系统确保设计质量，不达标就拦住。
 
-当前 `0.9.0-beta.4` 测试版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
+当前 `0.9.0` 正式版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
 可安装、可验证的前端工具架：
 
 - 需求、`DESIGN.md`、`MOTION.md` 与 OpenSpec 变更生命周期；
@@ -223,6 +223,30 @@ stack；它仍需源码、symbol、contract、token、键盘、焦点、状态�
 `page-ready` 同时声明 `scope: prototype | production`，prototype 证据不能满足 production target。
 截图必须是能完整解码且实际字节 hash 匹配的 PNG。普通 hash binding 只能发现 artifact 不匹配、
 过期或串用，不能证明 receipt 没有人为伪造；可信 producer、签名和 CI attestation 留给 artifact v2。
+
+### Component-first Artifact V2 与 Design Skill layer
+
+v1 Gate 通过后，可以用 v2 artifact 把同一个 target、snapshot、policy 和五个阶段 receipt 串起来：
+
+```bash
+# 从 v1 aggregate 迁移；必须显式提供 target snapshot digest
+node skill/scripts/designer-pipeline.cjs component-first-v2 migrate \
+  --root ../my-project --artifact component-first.json \
+  --snapshot sha256:<64-hex> --json
+
+# 检查 receipt 链；上游、target 或 policy 变化会返回 blocked/stale
+node skill/scripts/designer-pipeline.cjs component-first-v2 check \
+  --root ../my-project --artifact component-first-v2.json --json
+
+# 路由和读取单一 Design Skill manifest
+node skill/scripts/designer-pipeline.cjs design-skill route \
+  --root . --query "make three prototype directions" --json
+node skill/scripts/designer-pipeline.cjs design-skill manifest \
+  --root . --skill design.prototype --json
+```
+
+`design.prototype` 只产生隔离 prototype；selection receipt、Component Conformance 和 Visual
+Acceptance 必须分开记录。production promotion 只生成显式 handoff，不会由 Design Skill 直接写入目标项目。
 
 ```bash
 # Web 应用 UI：优先返回 React Bits Pro，保留许可证审查

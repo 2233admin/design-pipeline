@@ -2,7 +2,7 @@
 
 All notable changes to Design Pipeline are documented here.
 
-## Unreleased
+## [0.9.0] - 2026-08-26
 
 ### Added
 
@@ -20,6 +20,10 @@ All notable changes to Design Pipeline are documented here.
 - Added `reference resolve` so a pending source that later lands gets path, dimensions, hash, and
   `resolvedAt` from the file instead of a hand-edited measurement.
 - Bound a ready job route to toolchain and execution through an optional hash-checked job plan.
+- Added `component-first-gate.v2` target/snapshot/policy binding, chained stale-aware stage receipts,
+  explicit prototype selection and production promotion receipts, and separate visual acceptance.
+- Added the initial manifest-driven `design-skill` layer with bounded prototype, review, audit, and
+  library-selection routes plus explicit target-write handoffs.
 
 ## [0.9.0-beta.5] - 2026-08-26
 
@@ -539,3 +543,4 @@ All notable changes to Design Pipeline are documented here.
 [0.9.0-beta.3]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.2...v0.9.0-beta.3
 [0.9.0-beta.4]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.3...v0.9.0-beta.4
 [0.9.0-beta.5]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.4...v0.9.0-beta.5
+[0.9.0]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.5...v0.9.0

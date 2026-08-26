@@ -16,4 +16,7 @@ Global accessibility/component/evidence baselines remain separate from project-s
 profiles. Library-specific skills declare package semver and source digest, returning
 `stale_or_inapplicable` outside that range.
 
-No skill runner or manifest schema is implemented by this planning change.
+The initial manifest registry and runner are implemented by `skill/scripts/design-skill-core.cjs`.
+The four registered routes are `design.prototype`, `design.review`, `design.audit`, and
+`design.pick-library`. Prototype output is isolated and selection-gated; promotion returns a
+hash-bound Change B handoff whose target write remains an explicit executor concern.

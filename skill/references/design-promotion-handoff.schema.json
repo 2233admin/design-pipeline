@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pipeline.local/schemas/design-promotion-handoff.schema.json",
+  "title": "Design Promotion Handoff V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "targetWrite", "selectionReceiptHash", "promotionReceipt"],
+  "properties": {
+    "schema": { "const": "design-promotion-handoff.v1" },
+    "status": { "const": "ready-for-explicit-target-write" },
+    "targetWrite": { "const": "blocked-until-explicit-executor" },
+    "selectionReceiptHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "promotionReceipt": { "$ref": "component-first-artifact-v2.schema.json#/$defs/promotion" }
+  }
+}

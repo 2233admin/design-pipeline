@@ -23,6 +23,8 @@ The table below is the catalog map the dispatcher points at, not a list of requi
 | Capability | Primary routes | Use when |
 | --- | --- | --- |
 | Full product-design capability surface | `references/impeccable-product-design.json`, `impeccable`, design-synthesis module, interface discipline, design-system routes | Any product-design request; use the command map to select the stage, artifact, and evidence rather than treating Impeccable as a skin |
+| UX research method selection | `references/ux-research-methods.md` | A design decision needs the right attitudinal/behavioral, qualitative/quantitative, context, or product-phase method; match claims to evidence and limitations |
+| AI interaction and trust patterns | `references/ai-interaction-patterns.md` | An AI surface needs input, wayfinding, disclosure, caveats, consent, provenance, control, recovery, accessibility, or reduced-motion decisions |
 | Requirements to reusable product design | design-synthesis module, `grill-with-docs`, visual direction/design-system skills, Wayfinder host when oversized | The project lacks a suitable DESIGN.md or needs a new product-specific design system |
 | Interface quality and change-scoped UI review | Built-in `interface-discipline.md`: `better-interface`, six domain skills, and `interface-review` | Any product UI, flow, shared component/token change, or interface review; full coverage is the default and quick coverage is limited to narrow repairs |
 | Design technique and workflow discovery | Built-in `mengto-skills.md` plus `mengto search` over the complete pinned source tree; `kage-scroll-world.md` for the Kage clean-room delta | A visual, motion, reference, WebGL, asset, or game task can reuse a specific procedural playbook before inventing another workflow |
@@ -34,6 +36,7 @@ The table below is the catalog map the dispatcher points at, not a list of requi
 | Design system and brand | `design-system`, `brand`, `brandkit`, `ui-styling` | Defining reusable tokens, components, state variants, and brand rules |
 | Visual assets | `imagegen-frontend-web`, `imagegen-frontend-mobile`, image generation tools | A website, portfolio, campaign, or product surface needs real bitmap assets or visual references |
 | Motion language and audit | `design-motion-principles`, `animation-vocabulary`, `review-animations`, `apple-design`, built-in `iart-motion-skills.md` plus `iart route` | Writing `motion.md`, defining timing/easing, or reviewing implemented motion |
+| Animation opportunity and review | `references/animation-opportunity-and-review.md` plus existing `MOTION.md`, motion primitives, and `motion.md` | Screening non-trivial motion before runtime selection, naming vocabulary/curve, then reviewing the rendered surface with evidence |
 | Runtime animation | CSS, `animejs`, GSAP skill set, React View Transitions, automatic iart web-animation/WebGL playbooks | Implementing DOM/SVG choreography with the smallest fitting runtime |
 | Motion graphics and HTML video | `iart route` plus HyperFrames runtime; Remotion/Manim/AE only when named | TikTok/Reels, explainers, kinetic titles, or programmatic video; route is selection, not a second renderer |
 | Graphics and game runtime selection | `graphics-runtime-routing.md`, `graphics-runtime-catalog.json`, existing project adapter | Selecting a stable capability family before choosing a 2D, 3D, data, geospatial, GPU, game, or narrative runtime |
@@ -48,6 +51,9 @@ The table below is the catalog map the dispatcher points at, not a list of requi
 Figma and Sites are runtime/plugin surfaces. Their absence is not an install-time failure for the standalone skill package.
 
 ## Runtime Animation Decision
+
+For non-trivial motion, complete the opportunity screen and vocabulary/curve decision in
+`animation-opportunity-and-review.md` before choosing a runtime.
 
 | Candidate | Prefer when | Avoid when |
 | --- | --- | --- |
@@ -158,3 +164,7 @@ repository license, so it remains a curation candidate with no automatic install
 - Phaser v4 documentation: https://docs.phaser.io/phaser/concepts/game
 - Phaser v4 releases: https://phaser.io/download/phaser4
 - Phaser Game Agent MCP: https://phaser.io/news/2026/07/phaser-game-agent-mcp-setup
+- `tommyjepsen/awesome-ux-skills`: https://github.com/tommyjepsen/awesome-ux-skills
+- `jakubkrehel/skills`: https://github.com/jakubkrehel/skills
+- `nextlevelbuilder/ui-ux-pro-max-skill`: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+- `victorzhang016-code/victor-design`: https://github.com/victorzhang016-code/victor-design
