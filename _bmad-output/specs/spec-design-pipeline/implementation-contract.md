@@ -98,4 +98,15 @@ task > project > user > defaults
 
 ## 7. Operational baseline
 
-当前已验证默认值：同步最多 500 页、并发 8、单请求超时 20 秒。response-byte cap、lock timeout、retention 和 retry budget 在 open questions 解决前不得被实现者各自发明；离线模式禁止网络，fixture 模式允许测试本地 host，external-read 必须显式启用并 fail closed。
+当前已验证默认值：同步最多 500 页、并发 8、单请求超时 20 秒。v1 冻结：
+
+- 内容 hash 字段名固定为 `contentSha256`；`contentHash` 不是合法别名。
+- 资源 URL 字段名固定为 `url`；`provenance.sourceUrl` 记录抓取地址。
+- 条目准入：`reference-only`、`review-required`、`blocked`、`invalid`。DesignMD 内容不得进入 executable `ready`。
+- 同步 envelope：`ready`、`partial`、`blocked`、`invalid`、`recovered`。
+- 退出码：`ready` → 0，`invalid` → 1，其余 envelope 状态 → 2。
+- response-byte cap：2_000_000。5xx 最多 3 次，重试间隔 250ms × attempt。重定向最多 5 跳，每跳重做 URL/origin/userinfo 校验。
+- robots.txt：`User-agent: *` 的 `Disallow` 生效；文件缺失当允许；抓取失败记入 errors，同步不得变成 `ready`。
+- stale：上一份条目本轮未出现且其 URL 在本轮 errors 中。disappeared：上一份条目本轮未出现且 URL 未失败。
+- 相同输入的 diff 必须为空变化集，且 snapshot hash 稳定。
+- 离线模式禁止网络；fixture 模式允许测试本地 host；external-read 必须显式启用并 fail closed。

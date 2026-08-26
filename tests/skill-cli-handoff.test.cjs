@@ -36,6 +36,7 @@ test("SKILL front-door commands are present in the public CLI contract", () => {
     ["prism", "route"],
     ["prism", "search"],
     ["holosticker", "inspect"],
+    ["designmd", "verify"],
     ["component", "resolve"],
     ["toolchain", "resolve"],
     ["execution", "route"],

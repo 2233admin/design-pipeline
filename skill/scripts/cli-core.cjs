@@ -65,7 +65,13 @@ const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } 
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
 const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
 const { run: runAdaptation } = require("./adaptation-core.cjs");
-const { readPersistedCatalog, searchCatalog: searchDesignMdCatalog, validateCatalog: validateDesignMdCatalog } = require("./designmd-core.cjs");
+const {
+  admitEntry,
+  exitCodeForStatus: designMdExitCode,
+  readPersistedCatalog,
+  searchCatalog: searchDesignMdCatalog,
+  verifyPersistedCatalog,
+} = require("./designmd-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
@@ -680,7 +686,26 @@ function toolchainCommand(parsed, root, action) {
 function designMdCommand(parsed, root, action) {
   if (action === "sync") {
     const kernel = runKernel("designmd-sync.cjs", legacyArgs(parsed, 2), root);
-    return { result: { status: kernelStatusLabel(kernel.exitCode, "complete"), sync: kernel.value }, exitCode: kernel.exitCode };
+    const sync = kernel.value || {};
+    const status = ENVELOPE_STATUSES_SAFE(sync.status) ? sync.status : kernelStatusLabel(kernel.exitCode, "ready");
+    return { result: { status, sync }, exitCode: kernel.exitCode };
+  }
+  if (action === "verify") {
+    const verified = verifyPersistedCatalog(artifact(parsed, root, "--catalog"));
+    return {
+      result: {
+        status: verified.status,
+        source: verified.source || null,
+        entries: verified.entries || 0,
+        pages: verified.pages || 0,
+        errors: verified.errors || [],
+        snapshotHash: verified.snapshotHash || null,
+        previousSnapshotHash: verified.previousSnapshotHash || null,
+        nextAction: verified.nextAction,
+        ...(verified.message ? { message: verified.message } : {}),
+      },
+      exitCode: designMdExitCode(verified.status),
+    };
   }
   const catalog = designMdCatalog(parsed, root);
   if (action === "search") {
@@ -695,13 +720,21 @@ function designMdCommand(parsed, root, action) {
     const id = requireOption(parsed, "--id");
     const entry = catalog.entries.find((candidate) => candidate.id === id);
     if (!entry) fail("designmd", `entry not found: ${id}`, { code: "ENTRY_NOT_FOUND" });
-    return { result: { status: "ready", entry }, exitCode: 0 };
-  }
-  if (action === "verify") {
-    validateDesignMdCatalog(catalog);
-    return { result: { status: "ready", source: catalog.source, entries: catalog.entries.length, pages: catalog.fetchedPages, errors: catalog.errors }, exitCode: catalog.errors.length ? 2 : 0 };
+    return {
+      result: {
+        status: "ready",
+        entry,
+        admission: entry.status,
+        executableReady: admitEntry(entry),
+      },
+      exitCode: 0,
+    };
   }
   fail("cli", `unknown designmd action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function ENVELOPE_STATUSES_SAFE(status) {
+  return ["ready", "partial", "blocked", "invalid", "recovered"].includes(status);
 }
 
 function executionCommand(parsed, root, action) {
