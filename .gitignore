@@ -14,6 +14,7 @@ NUL
 .orca/
 .serena/
 .design-pipeline/
+.gsd/
 .gstack/
 .mcp.json
 .omx/
