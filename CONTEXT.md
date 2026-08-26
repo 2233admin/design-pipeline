@@ -20,6 +20,11 @@ Task-driven identification and evaluation of current external tools, libraries, 
 providers as candidates rather than automatic dependencies or design authority.
 _Avoid_: Dependency updating, permanent catalog expansion
 
+**Job Dispatcher**:
+Stage 0 classification of a brief into exactly one primary job from `job-registry.json`. New
+capabilities register as jobs; they do not add mandatory catalog searches.
+_Avoid_: Peer Stage 0 catalog crawl, one CLI door per feature
+
 **User Collaboration Skill**:
 Versioned cross-project guidance for how Adaptive Orchestration works with one user, including
 confirmed communication, decision, evidence, and delivery preferences. It cannot weaken the

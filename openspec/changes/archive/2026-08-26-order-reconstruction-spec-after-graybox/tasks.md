@@ -7,5 +7,5 @@
 - [x] Require a `Cause` column entry describing an observation, not an intention.
 - [x] Accept an empty reconciliation table; reject an absent section.
 - [x] Add the Spec reconciliation row to `qa-checklist.md`.
-- [ ] Verify the reconciliation gate against the archived `jst-hud-clock` run as a regression fixture.
+- [x] Verify the reconciliation gate against the archived `jst-hud-clock` run as a regression fixture.
 - [x] Run focused tests, full tests, and package QA.

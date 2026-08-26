@@ -151,9 +151,10 @@ rectification, camera calibration, landmark error, and the fidelity receipt; ask
 say so. When no path is available, record `source.availability: pending` with `pendingReason` and
 `requestedFrom`, leave `path`, `width`, `height`, and `sha256` null, and continue. Absent
 `availability` means `resolved`, and a resolved source requires all four values. Never invent a
-path, a dimension, or a hash. When a pending source later lands, set `availability: resolved`, fill
-all four values, record `resolvedAt`, and keep `requestedFrom` and `requestedAt` so a run that began
-pending stays identifiable afterwards.
+path, a dimension, or a hash. When a pending source later lands, run `designer-pipeline reference resolve --path "<file>"`.
+It sets `availability: resolved`, fills path, width, height, and sha256 from the landed PNG,
+records `resolvedAt`, strips `pendingReason`, and keeps `requestedFrom` and `requestedAt` so a run
+that began pending stays identifiable afterwards. Do not invent those four values by hand.
 
 Absent and invalid are different. An absent `availability` field means `resolved`, and so does an
 absent `reference-evidence.json`, so documents written before the pending state existed keep their

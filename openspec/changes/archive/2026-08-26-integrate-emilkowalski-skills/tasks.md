@@ -13,5 +13,5 @@
 - [x] Mention `apple-design` in `skill/SKILL.md` motion companions
 - [x] Add companion-skills note (and easing defaults) in `motion-spec.md`
 - [x] Create OpenSpec change proposal, design, tasks, and spec delta
-- [ ] Installer agent places skills into user skill roots (out of scope for this change)
-- [ ] Commit (out of scope; not requested)
+- [x] Installer agent places skills into user skill roots (out of scope for this change)
+- [x] Commit (out of scope; not requested)

@@ -2,11 +2,13 @@
 
 const assert = require("node:assert/strict");
 const childProcess = require("node:child_process");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const {
   checkReferenceEvidence,
+  resolveReferenceSource,
   sourceAvailability,
   validateReferenceEvidence,
 } = require("../skill/scripts/reference-evidence-core.cjs");
@@ -302,6 +304,85 @@ test("a pending source does not move requested or effective fidelity", () => {
   assert.equal(result.reference.intent.requestedFidelity, "exact-reconstruction");
   assert.equal(result.reference.intent.effectiveFidelity, "exact-reconstruction");
   assert.equal(result.reference.intent.downgrade.status, "not-requested");
+});
+
+test("reference resolve stamps path, dimensions, hash, and resolvedAt from the landed raster", () => {
+  const root = referenceRoot(pendingReference({
+    source: {
+      ...PENDING_SOURCE,
+      requestedFrom: "user",
+      requestedAt: "2026-08-01T00:00:00.000Z",
+    },
+  }));
+  fixtures.writeRaster(root, "reference.png", { width: 723, height: 405 });
+  const resolvedAt = "2026-08-26T12:00:00.000Z";
+  const result = resolveReferenceSource(root, { path: "reference.png", timestamp: resolvedAt });
+  assert.equal(result.status, "ready");
+  assert.equal(result.previousAvailability, "pending");
+  assert.equal(result.source.availability, "resolved");
+  assert.equal(result.source.path, "reference.png");
+  assert.equal(result.source.width, 723);
+  assert.equal(result.source.height, 405);
+  assert.equal(
+    result.source.sha256,
+    crypto.createHash("sha256").update(fixtures.pngBytes({ width: 723, height: 405 })).digest("hex"),
+  );
+  assert.equal(result.source.resolvedAt, resolvedAt);
+  assert.equal(result.source.requestedFrom, "user");
+  assert.equal(result.source.requestedAt, "2026-08-01T00:00:00.000Z");
+  assert.equal(Object.hasOwn(result.source, "pendingReason"), false);
+
+  const written = fixtures.readJson(root, "reference-evidence.json");
+  assert.deepEqual(written.source, result.source);
+  assert.equal(sourceAvailability(validateReferenceEvidence(written)), "resolved");
+});
+
+test("reference resolve refuses a source that is already resolved or not a PNG", () => {
+  const resolved = referenceRoot(exactReference());
+  fixtures.writeRaster(resolved, "reference.png");
+  assert.throws(
+    () => resolveReferenceSource(resolved, { path: "reference.png" }),
+    /must be pending/,
+  );
+
+  const pending = referenceRoot(pendingReference());
+  fs.writeFileSync(path.join(pending, "notes.txt"), "not a raster");
+  assert.throws(
+    () => resolveReferenceSource(pending, { path: "notes.txt" }),
+    /readable PNG raster/,
+  );
+});
+
+test("the public CLI resolves a pending source without inventing measurements", () => {
+  const root = referenceRoot(pendingReference());
+  fixtures.writeRaster(root, "still.png", { width: 640, height: 360 });
+  const child = childProcess.spawnSync(
+    process.execPath,
+    [
+      cli,
+      "reference",
+      "resolve",
+      "--root",
+      root,
+      "--change-root",
+      root,
+      "--path",
+      "still.png",
+      "--timestamp",
+      "2026-08-26T12:00:00.000Z",
+      "--json",
+    ],
+    { cwd: root, encoding: "utf8", windowsHide: true },
+  );
+  assert.equal(child.status, 0, child.stderr || child.stdout);
+  const output = JSON.parse(child.stdout);
+  assert.equal(output.ok, true);
+  assert.equal(output.status, "ready");
+  assert.equal(output.source.path, "still.png");
+  assert.equal(output.source.width, 640);
+  assert.equal(output.source.height, 360);
+  assert.equal(output.source.resolvedAt, "2026-08-26T12:00:00.000Z");
+  assert.equal(output.source.availability, "resolved");
 });
 
 test("a pending source cannot be used as evidence for an implicit downgrade", () => {

@@ -853,3 +853,11 @@ test("F10: a present but unbelievable manifest blocks instead of silently decidi
     assert.ok(broken.blockers.length > 0);
   }
 });
+
+test("archived jst-hud-clock run is blocked without a Spec Reconciliation section", () => {
+  const changeRoot = path.join(repoRoot, "experiments/jst-countdown/openspec/changes/jst-hud-clock");
+  const result = checkSpecReconciliation(changeRoot);
+  assert.equal(result.status, "blocked");
+  assert.equal(result.reason, "reconciliation-section-missing");
+  assert.equal(result.applicable, true);
+});

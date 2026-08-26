@@ -40,3 +40,13 @@ on disk, and SHALL distinguish that state from having no reference at all.
 - **AND** `intent.requestedFidelity` is `exact-reconstruction`
 - **THEN** `intent.effectiveFidelity` SHALL remain `exact-reconstruction`
 - **AND** `intent.downgrade.status` SHALL remain `not-requested`.
+
+#### Scenario: A pending source later lands
+
+- **WHEN** `source.availability` is `pending`
+- **AND** the user supplies a contained PNG path
+- **THEN** `designer-pipeline reference resolve` SHALL set `availability` to `resolved`
+- **AND** it SHALL fill `path`, `width`, `height`, and `sha256` from the file
+- **AND** it SHALL record `resolvedAt`
+- **AND** it SHALL keep `requestedFrom` and `requestedAt`
+- **AND** it SHALL NOT invent measurements by hand.

@@ -4,11 +4,19 @@ Route by the design capability the change needs, then use installed skills as im
 
 ## Routing Order
 
-1. Preserve the target repo's existing framework, design system, animation runtime, and delivery surface.
-2. Identify the capability: evidence, direction, system, assets, motion, runtime animation, framework integration, or QA.
-3. Select the smallest companion set that covers the capability.
-4. Do not add two overlapping runtime libraries only to gain skills.
-5. Record missing or stale companion coverage in `qa.md` and continue with official documentation plus the built-in pipeline gate.
+1. Classify the brief with `designer-pipeline route --query "<brief>" --json`. The job registry
+   `references/job-registry.json` is the Stage 0 extension point. A new capability is a job, not
+   another mandatory catalog search.
+2. Open only the primary knowledge door from that result. Kernel commands in `next` always run.
+   Secondaries stay reference-only.
+3. Preserve the target repo's existing framework, design system, animation runtime, and delivery surface.
+4. Identify the capability: evidence, direction, system, assets, motion, runtime animation, framework integration, or QA.
+5. Select the smallest companion set that covers the capability.
+6. Do not add two overlapping runtime libraries only to gain skills.
+7. Record missing or stale companion coverage in `qa.md` and continue with official documentation plus the built-in pipeline gate.
+
+Do not treat MengTo, Prism, Astryx, shadcnio, DesignMD, and holosticker as peer Stage 0 searches.
+The table below is the catalog map the dispatcher points at, not a list of required searches.
 
 ## Capability Map
 

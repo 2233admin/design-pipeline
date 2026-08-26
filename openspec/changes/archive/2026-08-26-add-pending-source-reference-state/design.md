@@ -26,8 +26,7 @@ Conditional requirements:
 - `availability: pending` requires `pendingReason` and `requestedFrom`, allows null `path`,
   `width`, `height`, `sha256`, and forbids `resolvedAt`.
 - `resolvedAt` present implies `availability: resolved` and records that the run began pending. The
-  graybox stage now reads it; nothing writes it. See `resolvedAt: Reader Shipped, Writer Missing`
-  below.
+  graybox stage reads it; `reference resolve` writes it.
 
 Existing v2 documents with no `availability` field default to `resolved`, so nothing already written
 becomes invalid.
@@ -61,7 +60,7 @@ different evidence.
 A document can be valid and unmeasurable. A stage can be ready while the aggregate gate is blocked.
 Neither implies the others. Freshness - was the evidence captured after the thing it claims to have
 measured? - is a fourth question, answered from the timestamps rather than from the document or the
-disk, and it is answered in `resolvedAt: Reader Shipped, Writer Missing` below.
+disk, and it is answered in `resolvedAt: Reader And Writer` below.
 
 Two readers open `reference-evidence.json`, and they fail differently on purpose. The reference
 contract is strict: an out-of-enum `source.availability`, a `source` that is not an object, or an
@@ -132,7 +131,7 @@ state is "something is known to be missing and has been asked for".
 - `intent.requestedFidelity` remains whatever the user asked for. A pending source is not a
   downgrade trigger, and `intent.downgrade.status` stays `not-requested`.
 
-## resolvedAt: Reader Shipped, Writer Missing
+## resolvedAt: Reader And Writer
 
 The field is kept, and this section is what it is kept against. The half of the gap this section
 described as hypothetical - "reader, when built" - is now built. The other half is not.
@@ -176,19 +175,14 @@ capture timestamp any carrier in this contract records; `rectification.artifact`
 cannot be checked for freshness at all. Closing that needs a new timestamp field plus the matching
 change in `reconstruction-contract.cjs`, and is not in this change.
 
-### The writer, still missing
+### The writer
 
-No script stamps the field. `designer-pipeline` exposes only `check` verbs, so the writer remains
-the agent hand-editing `reference-evidence.json` per the source-availability rule in
-`reference-spec.md`. The consequence is exact and worth stating rather than glossing: the reader is
-honest about every document that records `resolvedAt`, and silent about every document that should
-have and did not. Nothing detects the omission, because a source that always had its raster and a
-source that landed late with no timestamp are the same document.
-
-Writer, when built: the transition from `pending` to `resolved` is the one moment the value can be
-known, so it belongs to whatever performs that transition. The tool shape would be a
-`designer-pipeline reference resolve` verb that fills `path`, `width`, `height`, `sha256` from the
-landed file and stamps `resolvedAt`, keeping `requestedFrom` and `requestedAt`.
+`designer-pipeline reference resolve --path <file>` is the transition. It refuses any document that
+is not `pending`, reads the contained PNG, fills `path`, `width`, `height`, and `sha256` from those
+bytes, stamps `resolvedAt`, strips `pendingReason`, and keeps `requestedFrom` and `requestedAt`.
+Agents do not invent those four values by hand. A document that should have been resolved and was
+not still looks like a source that always had its raster; the verb exists so that omission is no
+longer the only path.
 
 The alternative was to delete the field and its promises from the proposal. It was rejected: the
 field is already shipped in `reference-evidence.schema.json` and validated, with a test asserting

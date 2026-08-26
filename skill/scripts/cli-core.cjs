@@ -15,7 +15,7 @@ const {
   writeNewChange,
 } = require("./pipeline-state-core.cjs");
 const { checkScene } = require("./scene-runtime-core.cjs");
-const { checkReferenceEvidence } = require("./reference-evidence-core.cjs");
+const { checkReferenceEvidence, resolveReferenceSource } = require("./reference-evidence-core.cjs");
 const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
@@ -60,6 +60,7 @@ const {
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
 const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
+const { routeJob } = require("./job-route-core.cjs");
 const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker-core.cjs");
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
@@ -84,7 +85,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--outcome", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
+  "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id",
 ]);
@@ -269,8 +270,9 @@ function publicHelp() {
     "",
     "Commands:",
     "  doctor | status",
+    "  route",
     "  change init|resume|advance|migrate|repair",
-    "  foundation check | direction check | playground check | reference check | reconstruction check | scene check",
+    "  foundation check | direction check | playground check | reference check|resolve | reconstruction check | scene check",
     "  component-first check|stack|components|playground|page | high-fidelity check",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
@@ -530,6 +532,16 @@ function spatialCommand(parsed, root, command) {
       ? 3
       : 2;
   return { result, exitCode };
+}
+
+function referenceResolveCommand(parsed, root) {
+  const changeRoot = changeRootFrom(parsed, root);
+  const result = resolveReferenceSource(changeRoot, {
+    path: requireOption(parsed, "--path"),
+    ...(option(parsed, "--artifact") ? { artifact: option(parsed, "--artifact") } : {}),
+    ...(option(parsed, "--timestamp") ? { timestamp: option(parsed, "--timestamp") } : {}),
+  });
+  return { result, exitCode: 0 };
 }
 
 function benchmarkFeedback(root, result) {
@@ -982,6 +994,15 @@ function prismCommand(parsed, action) {
   fail("cli", `unknown prism action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+function jobRouteCommand(parsed, root) {
+  const registryPath = option(parsed, "--registry");
+  const result = routeJob({
+    query: requireOption(parsed, "--query"),
+    ...(registryPath ? { registryFile: contained(root, registryPath, "--registry") } : {}),
+  });
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
 function holostickerCommand(parsed, action) {
   if (action === "inspect") {
     return {
@@ -1104,6 +1125,7 @@ function sourceAddCommand() {
 const COMMANDS = {
   doctor: { run: doctorCommand },
   status: { run: ({ parsed, root }) => ({ result: statusCommand(parsed, root), exitCode: 0 }) },
+  route: { run: ({ parsed, root }) => jobRouteCommand(parsed, root) },
   change: { run: ({ parsed, root, action }) => changeCommand(parsed, root, action) },
   evidence: { run: ({ parsed, root, action }) => evidenceCommand(parsed, root, action) },
   verify: { run: ({ parsed, root, action }) => verifyCommand(parsed, root, action) },
@@ -1125,7 +1147,12 @@ const COMMANDS = {
   direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },
   playground: { actions: { check: { run: ({ parsed, root }) => playgroundCommand(parsed, root) } } },
   reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
-  reference: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
+  reference: {
+    actions: {
+      check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) },
+      resolve: { run: ({ parsed, root }) => referenceResolveCommand(parsed, root) },
+    },
+  },
   reconstruction: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   scene: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   tokens: { actions: { check: { required: ["--artifact"], run: tokensCheckCommand } } },
@@ -1203,7 +1230,7 @@ function dispatch(argv) {
     fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
   }
   const [command, action] = parsed.positionals;
-  if (action && ["doctor", "status"].includes(command)) {
+  if (action && ["doctor", "status", "route"].includes(command)) {
     fail("cli", `${command} does not accept an action`, { code: "UNKNOWN_ARGUMENT" });
   }
   const root = rootFrom(parsed);

@@ -4,6 +4,14 @@ All notable changes to Design Pipeline are documented here.
 
 ## Unreleased
 
+### Added
+
+- Added a versioned job registry and public `route` command so Stage 0 classifies one primary job
+  before opening a knowledge catalog. New capabilities register as jobs rather than as another
+  mandatory search.
+- Added `reference resolve` so a pending source that later lands gets path, dimensions, hash, and
+  `resolvedAt` from the file instead of a hand-edited measurement.
+
 ## [0.9.0-beta.4] - 2026-08-15
 
 ### Added

@@ -8,9 +8,12 @@ const {
   assertObject,
   assertString,
   assertStringArray,
+  canonicalJson,
   fail,
+  pngDimensions,
   readJson,
   resolveInside,
+  sha256,
 } = require("./contract-utils.cjs");
 const {
   DOWNGRADE_STATUSES,
@@ -747,6 +750,69 @@ function checkReferenceEvidence(changeRoot, options = {}) {
   return grayboxOnlyResult(stage, artifact, reference);
 }
 
+function atomicWriteJson(file, value) {
+  const temporary = `${file}.${process.pid}.${process.hrtime.bigint()}.tmp`;
+  fs.writeFileSync(temporary, canonicalJson(value));
+  fs.renameSync(temporary, file);
+}
+
+function posixInside(root, target) {
+  return path.relative(root, target).split(path.sep).join("/");
+}
+
+function resolveReferenceSource(changeRoot, options = {}) {
+  const root = fs.realpathSync(path.resolve(changeRoot));
+  const relative = options.artifact || DEFAULT_REFERENCE_ARTIFACT;
+  const artifact = resolveInside(root, relative, "reference evidence", {
+    scope: SCOPE,
+    mustExist: true,
+  });
+  const reference = validateReferenceEvidence(readJson(artifact, SCOPE));
+  if (sourceAvailability(reference) !== PENDING_AVAILABILITY) {
+    fail(SCOPE, "source.availability must be pending before it can be resolved");
+  }
+  if (typeof options.path !== "string" || !options.path.trim()) {
+    fail(SCOPE, "source path is required");
+  }
+  const sourceFile = resolveInside(root, options.path, "reference source", {
+    scope: SCOPE,
+    mustExist: true,
+  });
+  const real = fs.realpathSync(sourceFile);
+  resolveInside(root, real, "reference source", { scope: SCOPE });
+  if (!fs.statSync(real).isFile()) fail(SCOPE, "reference source must be a regular file");
+  const bytes = fs.readFileSync(real);
+  const dimensions = pngDimensions(bytes);
+  if (!dimensions) fail(SCOPE, "reference source must be a readable PNG raster");
+  const resolvedAt = options.timestamp || new Date().toISOString();
+  assertTimestamp(resolvedAt, "source.resolvedAt", SCOPE);
+
+  const nextSource = {
+    kind: reference.source.kind,
+    ...(Object.hasOwn(reference.source, "requestedFrom")
+      ? { requestedFrom: reference.source.requestedFrom }
+      : {}),
+    ...(Object.hasOwn(reference.source, "requestedAt")
+      ? { requestedAt: reference.source.requestedAt }
+      : {}),
+    availability: "resolved",
+    path: posixInside(root, real),
+    width: dimensions.width,
+    height: dimensions.height,
+    sha256: sha256(bytes),
+    resolvedAt,
+  };
+  const next = { ...reference, source: nextSource };
+  validateReferenceEvidence(next);
+  atomicWriteJson(artifact, next);
+  return {
+    status: "ready",
+    previousAvailability: PENDING_AVAILABILITY,
+    source: nextSource,
+    artifact: relative,
+  };
+}
+
 module.exports = {
   BLOCKED_REASONS,
   CAMERA_MODELS,
@@ -773,6 +839,7 @@ module.exports = {
   SOURCE_KINDS,
   THREE_D_ARTIFACTS,
   checkReferenceEvidence,
+  resolveReferenceSource,
   sourceAvailability,
   validateComposition,
   validateGraybox,

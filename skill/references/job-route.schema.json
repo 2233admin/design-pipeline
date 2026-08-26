@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/job-route.v1.json",
+  "title": "Job Route Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "query", "job", "primaryKnowledge", "secondaries", "kernel", "next", "ambiguous", "candidates", "registrySha256"],
+  "properties": {
+    "schema": { "const": "design-pipeline.job-route.v1" },
+    "status": { "enum": ["ready", "needs-clarification", "blocked"] },
+    "query": { "type": "string", "minLength": 1 },
+    "job": { "type": ["string", "null"] },
+    "confidence": { "enum": ["none", "low", "medium", "high"] },
+    "primaryKnowledge": { "type": ["object", "null"] },
+    "secondaries": { "type": "array" },
+    "kernel": { "type": "array" },
+    "next": { "type": "array" },
+    "ambiguous": { "type": "boolean" },
+    "candidates": { "type": "array" },
+    "instruction": { "type": "string" },
+    "registrySha256": { "type": "string", "minLength": 64, "maxLength": 64 }
+  }
+}

@@ -375,6 +375,7 @@ node skill/scripts/evaluate-anti-slop.cjs \
 
 ```bash
 node skill/scripts/designer-pipeline.cjs doctor --root . --json
+node skill/scripts/designer-pipeline.cjs route --root . --query "clone this landing page" --json
 node skill/scripts/designer-pipeline.cjs toolchain resolve --root . --artifact toolchain-request.json --json
 node skill/scripts/designer-pipeline.cjs status --root . --change-root openspec/changes/example --json
 node skill/scripts/designer-pipeline.cjs playground check --root . --change-root openspec/changes/example --stage integration --json

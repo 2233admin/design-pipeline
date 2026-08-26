@@ -113,6 +113,7 @@ try {
   const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
   for (const args of [
     ["doctor", "--root", repoRoot, "--json"],
+    ["route", "--root", repoRoot, "--query", "clone this landing page", "--json"],
     ["foundation", "check", "--root", repoRoot, "--project-root", repoRoot, "--json"],
     ["status", "--root", repoRoot, "--change-root", "openspec/changes/archive/2026-08-23-complete-executable-pipeline-p0-p3", "--json"],
     ["adapter", "audit", "--root", repoRoot, "--json"],

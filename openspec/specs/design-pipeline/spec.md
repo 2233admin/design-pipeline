@@ -2083,8 +2083,95 @@ treat it as grounds to change requested fidelity.
 - **AND** requested fidelity SHALL remain `exact-reconstruction`
 - **AND** a fidelity downgrade SHALL require explicit user approval recorded in the downgrade field.
 
+#### Scenario: A pending source later lands
+
+- **WHEN** `source.availability` is `pending`
+- **AND** the user supplies a contained PNG path
+- **THEN** `designer-pipeline reference resolve` SHALL set `availability` to `resolved`
+- **AND** it SHALL fill `path`, `width`, `height`, and `sha256` from the file
+- **AND** it SHALL record `resolvedAt`
+- **AND** it SHALL keep `requestedFrom` and `requestedAt`.
+
 #### Scenario: The run is reported
 
 - **WHEN** a run completes with a pending source
 - **THEN** the final report SHALL name the action that unlocks the measured gates.
+
+### Requirement: Stage 0 dispatches through one job registry
+
+The pipeline SHALL classify each brief into exactly one primary job from a versioned job registry
+before opening a knowledge catalog. A new capability SHALL be added by registering a job, not by
+adding another mandatory Stage 0 search.
+
+#### Scenario: A clone brief is dispatched
+
+- **WHEN** the brief asks to clone, rebuild, or 1:1 replicate a live page
+- **THEN** `designer-pipeline route` SHALL select the website-clone job as the only primary
+- **AND** other catalogs SHALL remain secondary or unused
+
+#### Scenario: Two exclusive jobs tie
+
+- **WHEN** an explicit job and another explicit job of equal score and priority both match
+- **THEN** the route SHALL report `needs-clarification`
+- **AND** it SHALL NOT pick a primary or search every catalog
+
+#### Scenario: A new capability is registered
+
+- **WHEN** a valid job object is added to the job registry
+- **THEN** matching briefs SHALL route to that job without changing dispatcher source
+- **AND** an invalid registry SHALL fail closed
+
+#### Scenario: Kernel commands stay attached
+
+- **WHEN** a route is `ready`
+- **THEN** the result SHALL include foundation and toolchain kernel steps
+- **AND** knowledge-catalog hits SHALL NOT become executable ready by being selected
+
+### Requirement: Unmeasurable references are recorded, not omitted
+
+The pipeline SHALL accept a schema-valid reference contract whose source is known but not resolvable
+on disk, and SHALL distinguish that state from having no reference at all.
+
+#### Scenario: The reference is supplied in conversation
+
+- **WHEN** the user supplies a reference image that is not written to the repository
+- **THEN** `reference-evidence.json` SHALL record `source.availability` as `pending`
+- **AND** it SHALL record `pendingReason` and `requestedFrom`
+- **AND** `sha256`, `width`, `height`, and `path` MAY be null
+- **AND** route, classification, spatial cues, fidelity intent, required artifacts, and approval
+  SHALL still be recorded.
+
+#### Scenario: A pending source is checked
+
+- **WHEN** `source.availability` is `pending`
+- **AND** the contract is otherwise valid and approved
+- **THEN** `designer-pipeline reference check` SHALL report `blocked` with reason `source-pending`
+- **AND** the result SHALL NOT be reported as a contract failure.
+
+### Requirement: A reconstruction spec is written against a render, not a reading
+
+For a `primary-target` reference, the pipeline SHALL produce the graybox capture before change
+`design.md` is authored.
+
+#### Scenario: A primary-target reconstruction begins
+
+- **WHEN** reference role is `primary-target`
+- **THEN** the graybox capture SHALL be produced before change `design.md`
+- **AND** `design.md` SHALL cite the capture it was written against.
+
+### Requirement: Specified and implemented values are reconciled
+
+Every change with a reference SHALL record the difference between the values written in
+`design.md` and the values the implementation actually used.
+
+#### Scenario: Reconciliation is absent
+
+- **WHEN** a change has a reference
+- **AND** `design.md` contains no reconciliation section
+- **THEN** the gate review SHALL report `blocked`.
+
+#### Scenario: The spec survived unchanged
+
+- **WHEN** no specified value changed during implementation
+- **THEN** an empty reconciliation table SHALL be a valid result.
 

@@ -30,6 +30,7 @@
     "adaptation.test.cjs",
     "direction-preview.test.cjs",
     "cli-routing.test.cjs",
+    "job-route.test.cjs",
     "designmd-ingestion.test.cjs",
     "playground.test.cjs",
     "designer-pipeline-cli.test.cjs",

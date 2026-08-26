@@ -1,0 +1,90 @@
+{
+  "schema": "design-pipeline.job-registry.v1",
+  "version": "1",
+  "jobs": [
+    {
+      "id": "website-clone",
+      "activation": "explicit",
+      "priority": 80,
+      "keywords": ["clone", "cloning", "rebuild", "replicate", "reverse engineer", "1:1", "复刻", "克隆", "仿站"],
+      "primaryKnowledge": { "id": "website-cloning", "command": "toolchain", "action": "resolve", "admission": "ready" },
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "holosticker",
+      "activation": "explicit",
+      "priority": 80,
+      "keywords": ["holosticker", "holofoil", "die-cut", "holographic sticker", "全息贴纸", "全息"],
+      "primaryKnowledge": { "id": "holosticker", "command": "holosticker", "action": "inspect", "admission": "review" },
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "graphics-runtime",
+      "activation": "explicit",
+      "priority": 60,
+      "keywords": ["pixijs", "pixi.js", "phaser", "webgpu", "babylon", "playcanvas", "three.js", "threejs", "webgl", "粒子"],
+      "primaryKnowledge": { "id": "graphics-runtime", "command": "toolchain", "action": "resolve", "admission": "ready" },
+      "secondaries": [
+        { "id": "mengto", "command": "mengto", "action": "search", "admission": "inert" }
+      ],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "designmd-ingest",
+      "activation": "explicit",
+      "priority": 70,
+      "keywords": ["designmd", "designmd.directory", "design.md directory"],
+      "primaryKnowledge": { "id": "designmd", "command": "designmd", "action": "sync", "admission": "reference-only" },
+      "secondaries": [
+        { "id": "prism", "command": "prism", "action": "route", "admission": "inert" }
+      ],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "shadcn-pattern",
+      "activation": "explicit",
+      "priority": 50,
+      "keywords": ["shadcnio", "react bits", "react-bits", "smoothui"],
+      "primaryKnowledge": { "id": "shadcnio", "command": "shadcnio", "action": "search", "admission": "review" },
+      "secondaries": [
+        { "id": "astryx", "command": "design-system", "action": "search", "admission": "reference-only" }
+      ],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "technique",
+      "activation": "scored",
+      "priority": 40,
+      "keywords": ["mengto", "gsap", "scrolltrigger", "anime.js", "playbook", "lenis", "动效手法"],
+      "primaryKnowledge": { "id": "mengto", "command": "mengto", "action": "search", "admission": "inert" },
+      "secondaries": [
+        { "id": "prism", "command": "prism", "action": "route", "admission": "inert" }
+      ],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "component",
+      "activation": "scored",
+      "priority": 40,
+      "keywords": ["data table", "datagrid", "dropdown", "combobox", "component library", "组件", "数据表", "分页"],
+      "primaryKnowledge": { "id": "astryx", "command": "component", "action": "decompose", "admission": "reference-only" },
+      "secondaries": [
+        { "id": "prism", "command": "prism", "action": "route", "admission": "inert" }
+      ],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "product-design",
+      "activation": "default",
+      "priority": 0,
+      "keywords": ["design dna", "design system", "token", "原型", "设计系统", "可访问性"],
+      "primaryKnowledge": { "id": "prism", "command": "prism", "action": "route", "admission": "inert" },
+      "secondaries": [
+        { "id": "astryx", "command": "design-system", "action": "search", "admission": "reference-only" }
+      ],
+      "kernel": ["foundation", "toolchain"]
+    }
+  ]
+}

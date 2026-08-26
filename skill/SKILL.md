@@ -205,7 +205,9 @@ unavailable file, a schedule, and implementation convenience are not approval.
    camera calibration, landmark error, and the fidelity receipt.
 2. When the user cannot or will not supply a path, record `source.availability: pending` with
    `pendingReason` and `requestedFrom` in `reference-evidence.json`, then continue. Do not block the
-   remaining work, and never write a fabricated path, dimension, or hash.
+   remaining work, and never write a fabricated path, dimension, or hash. When the raster later
+   lands, run `designer-pipeline reference resolve --path "<file>" --json` instead of hand-editing
+   measurements.
 3. Read `references/reference-spec.md` and `references/reconstruction-spec.md` completely.
 4. Record the image as `role: primary-target`, with both requested and effective fidelity set to
    `exact-reconstruction` in `reference-evidence.json` v2. A reference is inspiration only when the
@@ -246,7 +248,8 @@ unavailable file, a schedule, and implementation convenience are not approval.
     or `--stage graybox` run, or a bare `stages.graybox` reading lifted out of any result - may be
     cited as evidence for `verified`.
 15. Report the unlock action whenever the source is still pending: supplying the source file path
-    enables rectification, camera calibration, landmark error, and the fidelity receipt.
+    and running `designer-pipeline reference resolve --path "<file>" --json` stamps `resolvedAt`
+    and unlocks rectification, camera calibration, landmark error, and the fidelity receipt.
 
 ## Website Cloning Module
 
@@ -354,7 +357,12 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).
 - `vercel-react-view-transitions`: React and Next.js view-transition implementation patterns.
 
-Choose companions by capability, not by the presence of a familiar skill name. Read `references/capability-routing.md` when the change crosses evidence capture, design systems, assets, motion runtimes, editable design handoff, or hosted delivery. For 2D, 3D, data visualization, geospatial, GPU, game, or narrative surfaces, also read `references/graphics-runtime-routing.md` and select a capability family before selecting an adapter.
+Choose companions by capability, not by the presence of a familiar skill name. Classify the brief
+with `designer-pipeline route` first. Read `references/capability-routing.md` and
+`references/job-registry.json` when the change crosses evidence capture, design systems, assets,
+motion runtimes, editable design handoff, or hosted delivery. For 2D, 3D, data visualization,
+geospatial, GPU, game, or narrative surfaces, also read `references/graphics-runtime-routing.md`
+and select a capability family before selecting an adapter.
 
 For product UI, flows, design-system work, user-visible UI changes, or interface reviews, always
 apply the bundled interface discipline in `references/interface-discipline.md`. It is present in
@@ -362,8 +370,13 @@ the package and does not require a global skill installation. Start with its `be
 router, use full coverage unless a narrow repair qualifies for quick coverage, and use its
 change-scoped review protocol for changed UI.
 
-For visual direction, web technique, motion, WebGL, reference analysis, asset, or game work, search
-the complete bundled MengTo library before inventing a workflow:
+Catalog CLIs are escape hatches. Open them only when `designer-pipeline route` selects that catalog
+as the primary knowledge door, or when a listed secondary is needed as reference. Do not search
+MengTo, Prism, Astryx, shadcnio, DesignMD, and holosticker as peer Stage 0 searches.
+
+For visual direction, web technique, motion, WebGL, reference analysis, asset, or game work, when
+the job dispatcher selects MengTo as primary, search the bundled library before inventing a
+workflow:
 
 ```bash
 designer-pipeline mengto search --query "<capability or brief>" --json
@@ -378,7 +391,8 @@ as automatic project authority. The activation and adaptation rules live in
 normal side-effect authority.
 
 For product-design intake, Design DNA, token governance, design-corpus learning, or handoff work,
-route through the bundled Prism System layer before loading a broad recipe set:
+when the job dispatcher selects Prism as primary, route through the bundled Prism System layer
+before loading a broad recipe set:
 
 ```bash
 designer-pipeline prism route --query "<design request>" --json
@@ -391,7 +405,8 @@ design tokens, catalogs, adapters, evidence, `DESIGN.md`, and `MOTION.md`; never
 Prism runtime or treat upstream autonomy metadata as side-effect authority.
 
 For an explicit holographic sticker, holofoil, die-cut, pointer-tilt, peel, or matching export
-request, inspect the bundled implementation before creating another shader or geometry path:
+request, when the job dispatcher selects holosticker as primary, inspect the bundled
+implementation before creating another shader or geometry path:
 
 ```bash
 designer-pipeline holosticker inspect --capability "<capability>" --json
@@ -436,6 +451,18 @@ If a companion skill is missing, continue with the same gate manually and note t
 ## Stage 0: Repo Read
 
 Before writing design artifacts or code:
+
+- Classify the brief into exactly one primary job before opening a knowledge catalog:
+
+```bash
+designer-pipeline route --query "<brief>" --json
+```
+
+  Open only the returned primary knowledge door. Kernel steps in `next` always run. Secondaries
+  stay reference-only and do not become a second primary. Do not search every catalog. Add a new
+  capability by registering a job in `references/job-registry.json`, not by adding another
+  mandatory Stage 0 search. Status `needs-clarification` asks one question that distinguishes the
+  top jobs; it does not pick a primary.
 
 - For HTML video, reels, motion graphics, captions, overlays, slideshows, explainers, voiceovers,
   or Remotion ports, route through `references/hyperframes.md` before choosing a runtime. HyperFrames
@@ -520,7 +547,8 @@ Before writing design artifacts or code:
   calibration, landmark error, and the fidelity receipt. When no path arrives, record
   `source.availability: pending` with `pendingReason` and `requestedFrom` and report it now. A
   pending source surfaces at Stage 0, not at gate review. Asking for the path after the artifacts
-  already exist is the defect this step exists to prevent.
+  already exist is the defect this step exists to prevent. When the file later lands, run
+  `designer-pipeline reference resolve --path "<file>" --json`; do not invent a hash by hand.
 - Then, when visual references influence the change, create `reference.md` and normative
   `reference-evidence.json` from `references/reference-spec.md`. Record object dimensionality,
   camera model, interaction model, and output surface separately before selecting `2d`, `2.5d`,

@@ -31,6 +31,8 @@ function git(root, ...args) {
 test("SKILL front-door commands are present in the public CLI contract", () => {
   assert.match(skill, /Use the public CLI for the complete lifecycle/);
   const help = run(["help"]).output.help;
+  assert.match(skill, /designer-pipeline route --query/);
+  assert.match(help, /^ {2}route$/m);
   for (const [command, action] of [
     ["mengto", "search"],
     ["prism", "route"],
@@ -40,6 +42,7 @@ test("SKILL front-door commands are present in the public CLI contract", () => {
     ["component", "resolve"],
     ["toolchain", "resolve"],
     ["execution", "route"],
+    ["reference", "resolve"],
   ]) {
     assert.match(skill, new RegExp(`(?:designer-pipeline\\s+)?${command}\\s+${action}`), `${command} ${action} is missing from SKILL.md`);
     assert.match(help, new RegExp(`\\b${command}[^\\n]*\\b${action}\\b`), `${command} ${action} is missing from public help`);
@@ -47,6 +50,12 @@ test("SKILL front-door commands are present in the public CLI contract", () => {
 });
 
 test("SKILL front doors hand off to local CLI routes without MCP or external services", () => {
+  const dispatched = run(["route", "--root", repoRoot, "--query", "clone this landing page 1:1"]);
+  assert.equal(dispatched.status, 0, dispatched.stderr || dispatched.stdout);
+  assert.equal(dispatched.output.ok, true);
+  assert.equal(dispatched.output.job, "website-clone");
+  assert.equal(dispatched.output.ambiguous, false);
+
   const prism = run(["prism", "route", "--root", repoRoot, "--query", "检查这个界面的可访问性和对比度"]);
   assert.equal(prism.status, 0, prism.stderr || prism.stdout);
   assert.equal(prism.output.ok, true);
