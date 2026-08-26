@@ -5,6 +5,9 @@ coverage/
 dist/
 tmp/
 temp/
+NUL
+.orca/
+.serena/
 .design-pipeline/
 .gstack/
 .mcp.json
