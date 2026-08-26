@@ -65,6 +65,7 @@ const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } 
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
 const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
 const { run: runAdaptation } = require("./adaptation-core.cjs");
+const { readPersistedCatalog, searchCatalog: searchDesignMdCatalog, validateCatalog: validateDesignMdCatalog } = require("./designmd-core.cjs");
 const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
@@ -79,7 +80,7 @@ const KNOWN_OPTIONS = new Set([
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
   "--outcome", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
-  "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash",
+  "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id",
 ]);
 
 function parseArgs(argv) {
@@ -272,6 +273,11 @@ function publicHelp() {
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
     "  component decompose|providers|resolve|inventory|bind|decide|verify",
+    "  mengto search|verify",
+    "  shadcnio search|verify",
+    "  prism search|route|verify",
+    "  holosticker inspect|verify",
+    "  designmd sync|search|inspect|verify",
     "  toolchain resolve|probe|receipt-check",
     "  execution route|prepare|finalize",
     "  benchmark brief|evaluate",
@@ -624,6 +630,10 @@ function designSystemCatalog(parsed, root) {
   return bundledDesignSystemCatalog();
 }
 
+function designMdCatalog(parsed, root) {
+  return readPersistedCatalog(artifact(parsed, root, "--catalog"));
+}
+
 function componentSourceCatalog(parsed, root) {
   if (option(parsed, "--catalog")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--catalog"), "component source catalog"));
   if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "component source snapshot"));
@@ -665,6 +675,33 @@ function toolchainCommand(parsed, root, action) {
     return { result, exitCode: result.status === "blocked" ? 2 : 0 };
   }
   fail("cli", `unknown toolchain action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function designMdCommand(parsed, root, action) {
+  if (action === "sync") {
+    const kernel = runKernel("designmd-sync.cjs", legacyArgs(parsed, 2), root);
+    return { result: { status: kernelStatusLabel(kernel.exitCode, "complete"), sync: kernel.value }, exitCode: kernel.exitCode };
+  }
+  const catalog = designMdCatalog(parsed, root);
+  if (action === "search") {
+    const results = searchDesignMdCatalog(catalog, {
+      query: option(parsed, "--query", ""),
+      ...(option(parsed, "--kind") ? { kind: option(parsed, "--kind") } : {}),
+      ...(option(parsed, "--limit") ? { limit: Number(option(parsed, "--limit")) } : {}),
+    });
+    return { result: { status: "ready", source: catalog.source, count: results.length, results }, exitCode: 0 };
+  }
+  if (action === "inspect") {
+    const id = requireOption(parsed, "--id");
+    const entry = catalog.entries.find((candidate) => candidate.id === id);
+    if (!entry) fail("designmd", `entry not found: ${id}`, { code: "ENTRY_NOT_FOUND" });
+    return { result: { status: "ready", entry }, exitCode: 0 };
+  }
+  if (action === "verify") {
+    validateDesignMdCatalog(catalog);
+    return { result: { status: "ready", source: catalog.source, entries: catalog.entries.length, pages: catalog.fetchedPages, errors: catalog.errors }, exitCode: catalog.errors.length ? 2 : 0 };
+  }
+  fail("cli", `unknown designmd action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
 function executionCommand(parsed, root, action) {
@@ -1046,6 +1083,7 @@ const COMMANDS = {
   shadcnio: { run: ({ parsed, action }) => shadcnioCommand(parsed, action) },
   prism: { run: ({ parsed, action }) => prismCommand(parsed, action) },
   holosticker: { run: ({ parsed, action }) => holostickerCommand(parsed, action) },
+  designmd: { run: ({ parsed, root, action }) => designMdCommand(parsed, root, action) },
   toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
   execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },

@@ -29,6 +29,8 @@
     "design-tool-port.test.cjs",
     "adaptation.test.cjs",
     "direction-preview.test.cjs",
+    "cli-routing.test.cjs",
+    "designmd-ingestion.test.cjs",
     "playground.test.cjs",
     "designer-pipeline-cli.test.cjs",
     "evidence-receipt.test.cjs",
@@ -63,6 +65,7 @@
     "victor-design-guidance.test.cjs",
     "visual-style-signals.test.cjs",
     "web-evidence-adapter.test.cjs",
-    "website-cloning-init.test.cjs"
+    "website-cloning-init.test.cjs",
+    "skill-cli-handoff.test.cjs"
   ]
 }

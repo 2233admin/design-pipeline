@@ -62,6 +62,8 @@
     "scripts/vite-devtools-adapter.cjs",
     "scripts/execution-target-core.cjs",
     "scripts/design-system-provider-core.cjs",
+    "scripts/designmd-core.cjs",
+    "scripts/designmd-sync.cjs",
     "scripts/capture-web-evidence.cjs",
     "scripts/audit-adapters.cjs",
     "scripts/evaluate-adapter-intake.cjs",

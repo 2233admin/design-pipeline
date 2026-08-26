@@ -87,6 +87,23 @@ Use the public CLI for the complete lifecycle:
 - `design-system decide` records `reference`, `adopt`, `substitute`, or `custom`; runtime use
   requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
 
+DesignMD Directory is an ingestible local knowledge source for five resource kinds: skills,
+templates, design examples, guides, and tools. Sync it into an inert, hash-bound snapshot before
+routing any result:
+
+- `designer-pipeline designmd sync --output-root .design-pipeline/designmd --json` crawls the
+  DesignMD hubs and writes `designmd-catalog.json` plus local content snapshots.
+- `designer-pipeline designmd search --catalog .design-pipeline/designmd/designmd-catalog.json
+  --kind skill --query "accessibility" --json` searches the local snapshot.
+- `designer-pipeline designmd inspect --catalog .design-pipeline/designmd/designmd-catalog.json
+  --id designmd:skill:a11y-audit --json` reads one entry and its provenance.
+- `designer-pipeline designmd verify --catalog .design-pipeline/designmd/designmd-catalog.json
+  --json` checks content hashes and snapshot structure.
+
+Fetched DesignMD content is reference-only until its source, license, revision, and project fit are
+reviewed. Never execute remote page content or install an upstream package during sync; route a
+verified entry through `prism`, `design-system`, or a governed tool adapter instead.
+
 Resolve reusable component behavior before selecting a library:
 
 - `component decompose` converts a multilingual brief into framework-neutral capability IR and
