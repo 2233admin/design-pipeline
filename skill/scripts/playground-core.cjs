@@ -429,6 +429,11 @@ function blockedResult(reason, blocker, details = {}) {
   return { status: "blocked", reason, reasons: [reason], blockers: [blocker], ...details };
 }
 
+function changeIdForRoot(root) {
+  const name = path.basename(root);
+  return /^\d{4}-\d{2}-\d{2}-(.+)$/.exec(name)?.[1] || name;
+}
+
 function checkPlayground(changeRoot, options = {}) {
   const root = fs.realpathSync(path.resolve(changeRoot));
   const stage = options.stage || "build";
@@ -443,7 +448,7 @@ function checkPlayground(changeRoot, options = {}) {
   assertKeys(receipt, ["schema", "changeId", "applicability", "surface", "selection", "verification", "integration"], ["schema", "changeId", "applicability", "surface", "selection", "verification", "integration"], "receipt", "playground");
   if (receipt.schema !== SCHEMA) fail("playground", `unsupported schema ${String(receipt.schema)}`);
   assertString(receipt.changeId, "changeId", "playground");
-  if (receipt.changeId !== path.basename(root)) fail("playground", "changeId must match the change-root directory name");
+  if (receipt.changeId !== changeIdForRoot(root)) fail("playground", "changeId must match the change-root directory name");
   assertKeys(receipt.applicability, ["status", "reason", "rationale"], ["status", "reason", "rationale"], "applicability", "playground");
   assertString(receipt.applicability.rationale, "applicability.rationale", "playground");
   assertEnum(receipt.applicability.status, ["required", "waived"], "applicability.status", "playground");

@@ -4,9 +4,7 @@
 
 Define the durable, design-first contracts used to plan, implement, validate, package, and improve
 the design pipeline without making optional tools or hosted integrations part of the core runtime.
-
 ## Requirements
-
 ### Requirement: Design-first scope
 
 The pipeline SHALL optimize for design outcomes and SHALL NOT become a general-purpose skill marketplace.
@@ -1122,4 +1120,971 @@ behavior, and unchanged repository status.
 - **WHEN** a required resource is missing or invalid
 - **THEN** packaging SHALL fail without corrupting the prior artifacts
 - **AND** no source-tree mutation SHALL be introduced by QA.
+
+### Requirement: Contribution standards
+
+The repository SHALL document how contributors propose changes, validate changes, and handle external skill intake.
+
+#### Scenario: Contributor proposes an external skill
+
+- **WHEN** a contributor proposes a new external skill source
+- **THEN** the contribution SHALL classify it using the curation policy outcomes before it can be accepted.
+
+### Requirement: Security guidance
+
+The repository SHALL document that secrets and private data must not be written into pipeline artifacts or QA evidence.
+
+#### Scenario: Agent state captures a run
+
+- **WHEN** `state.json`, `events.jsonl`, or `handoff.md` are written
+- **THEN** they SHALL NOT include secrets, tokens, cookies, private credentials, or raw proprietary data.
+
+### Requirement: Component requirements are framework-agnostic before provider selection
+
+The pipeline SHALL express component behavior as governed capabilities and dependency closure before
+selecting a framework or library provider.
+
+#### Scenario: A user requests a selectable data table
+
+- **WHEN** a brief requests filtering, sorting, pagination, and multiple selection
+- **THEN** the inventory SHALL include those data and selection capabilities
+- **AND** it SHALL add required keyboard, focus, ARIA, loading, empty, and error behavior.
+
+### Requirement: Component providers are replaceable and non-mutating
+
+Provider discovery SHALL inspect only existing project metadata. Resolution SHALL distinguish
+project-owned, installed, and candidate routes and SHALL NOT install packages or rewrite project
+configuration.
+
+#### Scenario: Vuetify0 is installed in a Vue project
+
+- **WHEN** Vuetify0 covers a requested capability
+- **THEN** it SHALL be preferred over a project-owned custom implementation
+- **AND** uncovered states SHALL retain an explicit fallback rather than being reported as covered.
+
+#### Scenario: A compatible provider is not installed
+
+- **WHEN** it is explicitly preferred
+- **THEN** the route SHALL record that adoption is required
+- **AND** resolution SHALL NOT execute a package manager.
+
+### Requirement: Component verification is behavior- and evidence-based
+
+Verification SHALL be bound to the exact resolution hash. Every required behavior check SHALL pass
+with non-empty evidence before the result can be verified.
+
+#### Scenario: A component looks correct but has no keyboard evidence
+
+- **WHEN** the required keyboard check is absent, missing, or failed
+- **THEN** component verification SHALL remain blocked
+- **AND** framework source code or a static screenshot SHALL NOT fill the missing evidence.
+
+### Requirement: DESIGN.md synthesis is requirement-driven
+
+The pipeline SHALL synthesize a project-specific `DESIGN.md` from product intent, repository
+constraints, and attributed evidence instead of copying a library template.
+
+#### Scenario: A user provides a template example
+
+- **WHEN** the template is registered as synthesis input
+- **THEN** it SHALL have an inspiration-only evidence role and SHALL NOT override product
+  requirements or the existing target system implicitly.
+
+### Requirement: unresolved product decisions are interactive
+
+The pipeline SHALL route material ambiguity through a grill-with-docs gate and persist its evidence.
+
+#### Scenario: grill evidence is missing
+
+- **WHEN** a run attempts scope assessment
+- **THEN** the transition SHALL fail closed and preserve the current state.
+
+### Requirement: oversized efforts use a real Wayfinder handoff
+
+The pipeline SHALL calculate scope against an explicit budget and require a configured host map for
+oversized efforts.
+
+#### Scenario: scope exceeds the session budget
+
+- **WHEN** the deterministic scope score exceeds the budget
+- **THEN** the run SHALL record scope surprise, request Wayfinder, and SHALL NOT fabricate a local
+  issue map.
+
+### Requirement: synthesis resumes into implementation
+
+The pipeline SHALL validate the generated `DESIGN.md` and transition the active change back into the
+normal implementation phase.
+
+#### Scenario: a valid project DESIGN.md is accepted
+
+- **WHEN** its structure and provenance satisfy the synthesis gate
+- **THEN** state, events, handoff, and tasks SHALL point to implementation as the next action.
+
+### Requirement: change design and product design remain distinct
+
+The pipeline SHALL keep lowercase change `design.md` and project-root `DESIGN.md` as separate linked
+artifacts.
+
+#### Scenario: both files exist
+
+- **WHEN** another agent resumes the run
+- **THEN** the handoff SHALL identify which file defines the current change and which defines
+  reusable product identity.
+
+### Requirement: Structural proof precedes optical treatment on every route
+
+The pipeline SHALL require a layout-only graybox capture and a recorded structural comparison before
+materials, glow, bloom, depth of field, scanlines, or cinematic grading are authored, on every route
+and in every fidelity mode.
+
+#### Scenario: A flat or planar reference route
+
+- **WHEN** the selected route is `2d` or `2.5d`
+- **AND** a `reference-evidence.json` exists for the change
+- **THEN** `designer-pipeline reconstruction check --stage graybox` SHALL be required
+- **AND** it SHALL report `blocked` until a graybox capture and structural comparison exist
+- **AND** optical treatment SHALL NOT be authored while it reports `blocked`.
+
+#### Scenario: The source raster is unavailable
+
+- **WHEN** the reference source is not a resolvable file
+- **AND** the measured geometry stage therefore cannot run
+- **THEN** the graybox stage SHALL still be required
+- **AND** its comparison mode SHALL be recorded as `qualitative`
+- **AND** a `qualitative` graybox SHALL NOT be accepted as fidelity evidence.
+
+#### Scenario: A capture claims suppression without a declared mode
+
+- **WHEN** a graybox capture is submitted
+- **AND** the change declares no runtime graybox mode that disables emissive, optical, and texture
+  layers
+- **THEN** the graybox stage SHALL report `blocked`.
+
+### Requirement: Reconstruction stages are reported independently
+
+The pipeline SHALL report the graybox, geometry, and final stages as separate results and SHALL NOT
+infer one stage's status from another.
+
+#### Scenario: Geometry is blocked but graybox passed
+
+- **WHEN** the geometry stage is `blocked` on a missing source raster
+- **AND** the graybox stage is `ready`
+- **THEN** the reported result SHALL show both statuses separately
+- **AND** the change SHALL be permitted to continue into optical treatment.
+
+#### Scenario: Both stages are blocked
+
+- **WHEN** the geometry stage is `blocked` on a missing source raster
+- **AND** the graybox stage is also `blocked`
+- **THEN** `qa.md` SHALL record the graybox blocker as a process gap rather than an environmental
+  limitation.
+
+### Requirement: Website-cloning intent routes to a focused module
+
+The pipeline SHALL route requests to clone, reproduce, rebuild, or reverse-engineer one or more live websites to a progressively disclosed website-cloning module.
+
+#### Scenario: User supplies one live URL
+
+- **WHEN** the user asks to clone a live web page
+- **THEN** the pipeline SHALL use the website-cloning protocol while preserving the target project's framework and the existing design-pipeline gates.
+
+### Requirement: Website-cloning runs are resumable and target-isolated
+
+The pipeline SHALL initialize website-cloning runs inside the active OpenSpec change and SHALL isolate each normalized URL under a stable target id.
+
+#### Scenario: User supplies multiple URLs
+
+- **WHEN** a run is initialized with multiple distinct URLs
+- **THEN** each URL SHALL have an isolated research, evidence, and asset tree under the same change.
+
+#### Scenario: An interrupted run resumes
+
+- **WHEN** another agent resumes an initialized website-cloning run
+- **THEN** it SHALL read the change state, recent events, handoff, and website-cloning manifest before continuing from recorded next actions.
+
+### Requirement: Extraction precedes bounded implementation
+
+The pipeline SHALL capture the target's interaction model, exact relevant styles, real content, assets, responsive behavior, and component specification before dispatching implementation for that component.
+
+#### Scenario: A stateful section is prepared for implementation
+
+- **WHEN** a section changes on scroll, click, hover, time, or viewport width
+- **THEN** its component specification SHALL record triggers, states, transitions, content, assets, and responsive behavior before a builder starts.
+
+### Requirement: Website-cloning completion uses existing quality gates
+
+The pipeline SHALL require build evidence, desktop/mobile visual comparison, interaction verification, accessibility, motion, responsive, engineering, and headless-state gates before declaring a clone complete.
+
+#### Scenario: Visual appearance matches but interaction differs
+
+- **WHEN** the clone passes a static screenshot comparison but uses a different interaction model
+- **THEN** the run SHALL remain incomplete and SHALL record a repair action.
+
+### Requirement: Website-cloning integration remains provider-neutral
+
+The distributable module SHALL NOT require the upstream Next.js scaffold, Redis cache, a specific browser provider, or a specific builder runtime.
+
+#### Scenario: Preferred browser provider is unavailable
+
+- **WHEN** a website-cloning run cannot access a capable browser tool
+- **THEN** it SHALL record a blocker and a resumable next action without producing fabricated extraction evidence.
+
+### Requirement: Website-cloning uses capture, build, and evidence ports
+
+The pipeline SHALL expose machine-readable Browser, Builder, and Evidence port capability contracts behind the URL-first interface.
+
+#### Scenario: Exact fidelity is requested
+
+- **WHEN** the run is configured for exact fidelity
+- **THEN** BrowserPort SHALL capture measured observations, BuilderPort SHALL build only from complete component contracts, and EvidencePort SHALL independently compare the result.
+
+#### Scenario: A required port capability is missing
+
+- **WHEN** no adapter can provide a required exact-mode capability
+- **THEN** the run SHALL be blocked and SHALL NOT claim pixel-perfect or 1:1 output; `fidelity-limited` is reserved for measured mismatches.
+
+#### Scenario: Completion is evaluated
+
+- **WHEN** the EvidencePort report is submitted to the bundled evaluator
+- **THEN** the evaluator SHALL require successful probes and all required capabilities for every port, SHALL distinguish missing measurements from measured mismatches, and SHALL be the only bundled command that marks the run complete.
+
+#### Scenario: A reference replaces primary behavior
+
+- **WHEN** a reference target intentionally supplies an interaction that differs from the primary target
+- **THEN** the run SHALL use an adaptive mixed contract, record the mapping in machine-readable form, verify every required mapped state, and SHALL NOT claim global 1:1 fidelity.
+
+### Requirement: Repository QA validates distributable skill metadata
+
+The repository QA SHALL fail when `skill/SKILL.md` is missing valid `name` or `description` frontmatter.
+
+#### Scenario: Skill frontmatter is missing
+
+- **WHEN** `node scripts/qa.cjs` runs
+- **THEN** it SHALL report a failure for missing or invalid `skill/SKILL.md` frontmatter.
+
+### Requirement: Repository QA validates skill references
+
+The repository QA SHALL check that referenced `references/*` and `scripts/*` files exist.
+
+#### Scenario: Referenced skill file is missing
+
+- **WHEN** a skill document references a missing file
+- **THEN** `node scripts/qa.cjs` SHALL fail and report the missing reference.
+
+### Requirement: Local install script uses `CODEX_SKILLS_DIR` as a skills root
+
+The local install script SHALL interpret `CODEX_SKILLS_DIR` as the directory containing skill folders.
+
+#### Scenario: User installs to a temporary skills root
+
+- **WHEN** `CODEX_SKILLS_DIR=/tmp/skills node scripts/install-local.cjs` runs
+- **THEN** the skill SHALL be installed to `/tmp/skills/design-pipeline`.
+
+### Requirement: Repository distributes the skill under `skill/`
+
+The repository SHALL place the distributable Codex skill under `skill/`.
+
+#### Scenario: User installs from repository
+
+- **WHEN** a user copies `skill/*` into their Codex skill root
+- **THEN** `design-pipeline` SHALL be installable without copying `openspec/`.
+
+### Requirement: Repository includes OpenSpec source of truth
+
+The repository SHALL include `openspec/project.md`, `openspec/specs/`, and `openspec/changes/`.
+
+#### Scenario: Maintainer reviews project direction
+
+- **WHEN** a maintainer needs the durable product contract
+- **THEN** they SHALL read `openspec/specs/design-pipeline/spec.md`.
+
+### Requirement: Executable control plane
+
+The pipeline SHALL expose versioned machine contracts and deterministic CLI validators for state,
+Scene Runtime, evidence, motion/component states, tokens/UI IR/source maps, benchmarks, adapters,
+design-tool receipts, intake, and style signals.
+
+#### Scenario: Optional integration availability is unknown
+
+- **WHEN** a requested host adapter is not explicitly configured and cannot be successfully probed
+- **THEN** the pipeline SHALL return `unknown`
+- **AND** it SHALL NOT resolve ambient modules, download dependencies, fabricate evidence, or claim
+  installed support.
+
+#### Scenario: Optional integration is configured but unavailable
+
+- **WHEN** a requested host adapter is explicitly configured and its probe confirms that it cannot
+  execute
+- **THEN** the pipeline SHALL return `blocked`
+- **AND** it SHALL NOT resolve ambient modules, download dependencies, fabricate evidence, or claim
+  installed support.
+
+#### Scenario: Existing state is resumed
+
+- **WHEN** either supported v1 state dialect is read
+- **THEN** status SHALL be inspectable without mutation
+- **AND** mutation SHALL require deterministic explicit migration with crash-safe write semantics.
+
+### Requirement: Component-first conformance has layered deterministic boundaries
+
+The pipeline SHALL expose synchronous `checkComponentFirstGate()` and aggregate/stage CLI commands
+through a thin facade. Filesystem, path, hash, PNG, and existing-core work SHALL occur only in
+adapters. Stack/runtime, component contract, Playground, page usage, and evidence gates SHALL be
+pure, SHALL NOT import one another, and SHALL return one versioned GateResult shape. The
+orchestrator SHALL resolve context once and the serializers SHALL contain no domain decisions.
+
+#### Scenario: Independent requirements fail
+
+- **WHEN** multiple independently evaluable component-first requirements are unmet
+- **THEN** every independent finding SHALL be collected in stable gate and reason-code order
+- **AND** invalid SHALL take precedence over blocked, and blocked over passed
+- **AND** an invalid dependency SHALL mark only dependent work `not_evaluated`.
+
+### Requirement: Component-first v1 preserves explicit component and readiness semantics
+
+The v1 policy SHALL require the five baseline roles `action`, `form-control`, `selection`,
+`overlay`, and `feedback`, while keeping route-specific page requirements separate. Component
+origin SHALL be modeled independently from runtime stack. A project-owned component SHALL NOT pass
+without source, symbol, contract, token, keyboard, focus, state, Playground, and page-use evidence.
+Readiness SHALL contain both level and prototype/production scope.
+
+#### Scenario: Prototype evidence is evaluated for a production target
+
+- **WHEN** a sandbox reaches `page-ready` with `scope: prototype`
+- **AND** the target requires production readiness
+- **THEN** the page gate SHALL remain blocked
+- **AND** it SHALL NOT reinterpret the prototype receipt as production evidence.
+
+### Requirement: Component-first evidence is externally produced and byte-verified
+
+Component-first gates SHALL NOT execute a browser or target project. An adapter SHALL read external
+evidence, verify contained paths and actual byte hashes, and fully decode PNG screenshots before a
+pure gate evaluates them. Hash binding SHALL be documented as mismatch/staleness protection, not
+producer authenticity.
+
+#### Scenario: A file only has a PNG suffix
+
+- **WHEN** screenshot bytes cannot be completely decoded as PNG
+- **THEN** the evidence gate SHALL return invalid with a stable reason code
+- **AND** the aggregate SHALL exit `1` without browser execution or state mutation.
+
+### Requirement: Component-first stage commands are read-only compatibility surfaces
+
+The CLI SHALL provide `component-first check|stack|components|playground|page` and SHALL keep
+`high-fidelity check` as an aggregate delegation alias. Stage JSON SHALL use
+`component-first-stage-result.v1`. Exit codes SHALL be `0` passed, `1` invalid, and `2` blocked.
+
+#### Scenario: A stage is blocked
+
+- **WHEN** a valid stage input lacks required conformance evidence
+- **THEN** the command SHALL write its versioned result to stdout and exit `2`
+- **AND** it SHALL NOT write pipeline state, generate browser evidence, or install dependencies.
+
+### Requirement: Project design foundation is mandatory
+
+The pipeline SHALL require a reusable project `DESIGN.md` before any implementation stage begins.
+
+#### Scenario: Foundation is missing
+
+- **WHEN** a pipeline run cannot find project `DESIGN.md`
+- **THEN** it SHALL report `synthesis-required`
+- **AND** route through requirements-driven synthesis before implementation
+
+#### Scenario: Foundation is invalid
+
+- **WHEN** project `DESIGN.md` lacks required structure or source decisions
+- **THEN** the pipeline SHALL fail closed
+- **AND** SHALL NOT treat change-level lowercase `design.md` as a substitute
+
+#### Scenario: Foundation is ready
+
+- **WHEN** project `DESIGN.md` passes structure, provenance, and containment validation
+- **THEN** the pipeline MAY continue into implementation
+- **AND** change artifacts SHALL link or specialize the project foundation
+
+### Requirement: Website-cloning completion preserves declared implementation authority
+
+The pipeline SHALL require a machine-readable implementation-authority contract before a website-cloning evaluator can mark a run complete. The contract SHALL identify the normative target, enumerate allowed implementation differences and protected invariants, and declare the required interaction evidence environment.
+
+#### Scenario: A local template and a content source have different authority
+
+- **WHEN** the user designates one target as the component, topology, responsive, or motion authority and another target as a content source
+- **THEN** the manifest SHALL identify the template target as implementation authority
+- **AND** the evaluator SHALL block completion when that target is absent, demoted, or contradicted by verification evidence.
+
+#### Scenario: Adaptive fidelity permits only named differences
+
+- **WHEN** an implementation-authority contract allows copy, route, palette, or asset differences
+- **THEN** verification SHALL enumerate observed differences and protected invariants
+- **AND** the evaluator SHALL classify an unapproved difference or unverified invariant as a measured fidelity mismatch rather than silently accepting adaptive mode.
+
+#### Scenario: Actual-browser interaction evidence is required
+
+- **WHEN** the implementation-authority contract requires an actual-browser replay
+- **THEN** verification SHALL record the interaction environment, replay result, and evidence paths
+- **AND** headless, simulated-event-only, or missing replay evidence SHALL keep the run blocked.
+
+### Requirement: Companion self-check covers the design profile
+
+The design-pipeline self-check MUST detect the full companion set when installed via the team `design` profile:
+
+**Visual taste**
+
+- `frontend-design`
+- `design-taste-frontend`
+- `ui-ux-pro-max`
+- `web-design-guidelines`
+- `emil-design-eng`
+
+**Motion design**
+
+- `design-motion-principles` (source: `kylezantos/design-motion-principles`)
+- `animation-vocabulary`
+- `review-animations`
+- `apple-design`
+- `vercel-react-view-transitions`
+
+**Animation implementation**
+
+- All `gsap-*` skills from `greensock/gsap-skills`
+- `animejs` from `BowTiedSwan/animejs-skills`
+
+**React / Next.js**
+
+- `vercel-react-best-practices`
+- `vercel-composition-patterns`
+- `next-dev-loop`
+- `next-cache-components-adoption`
+- `next-cache-components-optimizer`
+
+**Matt Pocock**
+
+- `codebase-design`
+- `grill-with-docs`
+- `implement`
+- `matt-tdd` (local rename of `tdd`)
+- `matt-code-review` (local rename of `code-review`)
+
+Missing optional companions remain fallback-safe; missing required `design-pipeline` skill still fails the check.
+
+#### Scenario: The full design profile is installed
+
+- **WHEN** self-check runs with every companion listed above installed
+- **THEN** it SHALL detect every companion in its corresponding capability group
+- **AND** the required core pipeline check SHALL pass.
+
+#### Scenario: An optional companion is missing
+
+- **WHEN** one or more optional companions are unavailable
+- **THEN** self-check SHALL report `WARN`, identify the missing capability or marker, preserve the
+  documented fallback, and remain usable
+- **AND** a missing required `design-pipeline` skill SHALL still fail the check.
+
+### Requirement: Reference classification separates geometry, camera, interaction, and output
+
+The pipeline SHALL record object dimensionality, camera model, interaction model, and output surface
+as separate decisions before implementation.
+
+#### Scenario: Fixed-camera cinematic 3D
+
+- **WHEN** a reference contains authored 3D geometry under a fixed perspective camera
+- **AND** the final surface exposes no camera navigation
+- **THEN** the route SHALL remain 3D
+- **AND** the runtime family SHALL be `fixed-camera-cinematic-3d`
+
+### Requirement: Spatial evidence is machine-checkable
+
+The pipeline SHALL validate a `reference-evidence.json` artifact and reject a 2D classification when
+multiple strong spatial cues are recorded.
+
+#### Scenario: Spatially contradictory 2D route
+
+- **WHEN** at least two of thickness, occlusion, contact shadows, bevel highlights, perspective
+  convergence, or depth of field are present
+- **AND** the selected route or object dimensionality is 2D
+- **THEN** reference validation SHALL fail with a spatial-route contradiction
+
+### Requirement: Reference approval blocks implementation
+
+The pipeline SHALL report schema-valid reference evidence as blocked until explicit approval is
+recorded.
+
+#### Scenario: Approval is pending
+
+- **WHEN** reference evidence is valid
+- **AND** approval status is `pending`
+- **THEN** `reference check` SHALL exit with blocked status
+
+### Requirement: 3D work proves geometry before polish
+
+Every 3D route SHALL declare `reference.md`, `scene.json`, `3d.md`, and `graybox.png`.
+
+#### Scenario: Graybox evidence is absent
+
+- **WHEN** a 3D route omits `graybox.png`
+- **THEN** reference validation SHALL fail before material and optical polish
+
+### Requirement: Design-system snapshots normalize as inert data
+
+The pipeline SHALL accept `design-pipeline.design-system-snapshot.v1` artifacts and normalize them
+into deterministic `design-pipeline.design-system-catalog.v1` artifacts without executing snapshot
+content or mutating the input.
+
+#### Scenario: The same supplied snapshot is normalized twice
+
+- **WHEN** the same valid snapshot is normalized twice
+- **THEN** both catalogs SHALL have the same canonical ordering, namespaced IDs, provenance, entry
+  hashes, and serialized content
+- **AND** the source snapshot SHALL remain unchanged.
+
+#### Scenario: Snapshot content is unsafe
+
+- **WHEN** a snapshot contains an unknown schema, executable value, cycle, prototype-pollution key,
+  absolute path, parent traversal, duplicate namespaced ID, or invalid provenance
+- **THEN** normalization SHALL fail closed
+- **AND** no catalog SHALL be published.
+
+### Requirement: Catalog search is pure and provider-neutral
+
+`design-system search` SHALL filter a validated catalog by query, kind, category, and status without
+mutating, executing, installing, or re-ranking entries by bundled-provider identity.
+
+#### Scenario: An Agent searches a supplied catalog
+
+- **WHEN** the Agent supplies a valid catalog and any supported search filters
+- **THEN** the command SHALL return deterministic matching entries
+- **AND** it SHALL NOT contact a provider, modify the catalog, or copy results into the UI pattern
+  catalog.
+
+### Requirement: Provider acquisition is explicit and locally bounded
+
+`design-system acquire` SHALL invoke only the bundled read-only provider translator over an explicit
+contained provider CLI path, or a caller-selected local adapter within the explicit working root,
+through a supported provider profile/API version, and SHALL publish results only below the explicit
+output root.
+
+#### Scenario: The bundled Astryx translator is selected
+
+- **WHEN** the caller supplies `--provider astryx`, an existing root-contained
+  `--provider-cli-path`, a supported `--api-version`, and a contained `--output-root`
+- **THEN** the bundled adapter SHALL translate only read-only manifest, component, docs, template,
+  and hook JSON commands from the local Astryx CLI
+- **AND** it SHALL validate provider identity, license, versioned JSON envelopes, content hashes,
+  losses, and failures in a provider receipt.
+
+#### Scenario: A reviewed custom adapter is supplied
+
+- **WHEN** the caller supplies a root-contained `--adapter-path` instead of the bundled translator
+- **THEN** the custom adapter SHALL be subject to the same command allowlist, envelope validation,
+  timeout, output, provenance, and containment gates.
+
+#### Scenario: Acquisition is not explicitly authorized
+
+- **WHEN** neither a usable contained provider CLI path nor a custom local adapter is supplied, a
+  path escapes the working root, the API version is unknown, the command is mutating, or canary is
+  not explicitly allowed
+- **THEN** acquisition SHALL fail closed
+- **AND** it SHALL NOT discover an ambient executable, install a package, fetch a remote resource,
+  or publish a partial successful snapshot.
+
+#### Scenario: Provider documentation contains executable modules
+
+- **WHEN** Astryx or another provider exposes `.doc.mjs`, integration, template, hook, codemod, or
+  other executable modules
+- **THEN** the Design Pipeline kernel SHALL treat them as non-executable provider content
+- **AND** it SHALL NOT import or evaluate them to build the catalog.
+
+### Requirement: Astryx is an optional attributed candidate profile
+
+The built-in Astryx profile SHALL record official source identity, repository, MIT license,
+supported provider API, compatibility constraints, and deny-by-default canary policy, but SHALL NOT
+make Astryx a dependency or default project runtime.
+
+#### Scenario: Astryx is absent
+
+- **WHEN** Astryx is not installed or a local adapter is unavailable
+- **THEN** `design-system profiles` SHALL still expose the candidate metadata
+- **AND** the pinned inert snapshot, supplied-snapshot, requirements-only, project-owned, and custom
+  workflows SHALL remain available
+- **AND** the pinned snapshot SHALL NOT be described as a live view of local or upstream state.
+
+#### Scenario: Profile license conflicts with adapter output
+
+- **WHEN** an adapter reports a license or provider identity that conflicts with the selected
+  profile
+- **THEN** acquisition SHALL fail
+- **AND** the output SHALL NOT be eligible for adoption.
+
+### Requirement: Token projection preserves provenance and loss
+
+`design-system project-tokens` SHALL project representable provider tokens into
+`design-pipeline.design-tokens.v1` and SHALL return a
+`design-pipeline.design-system-token-projection.v1` artifact with explicit loss.
+
+#### Scenario: Token semantics are not fully representable
+
+- **WHEN** a token type, semantic role, mode, or normalized path cannot be mapped without ambiguity
+- **THEN** the projection SHALL record a `review` or `blocked` loss with code, path, and message
+- **AND** it SHALL NOT invent semantic certainty or report `ready` while blocking loss remains.
+
+#### Scenario: A projected token is representable
+
+- **WHEN** source value, type, semantic role, and modes can be represented safely
+- **THEN** the projection SHALL preserve source identity, license, source hash, and representable
+  mode metadata
+- **AND** the emitted token artifact SHALL pass the existing token validator before `ready`.
+
+### Requirement: Runtime use is an explicit four-mode decision
+
+`design-system decide` SHALL record exactly one of `reference`, `adopt`, `substitute`, or `custom`
+in `design-pipeline.design-system-decision.v1` with selected, rejected, rationale, and evidence
+fields.
+
+#### Scenario: A project already owns a design system
+
+- **WHEN** the project has an existing design system or an authoritative `DESIGN.md` decision
+- **THEN** the project-owned system SHALL remain the governing project authority
+- **AND** `reference` MAY select provider evidence alongside that authority
+- **AND** `adopt` or `substitute` MAY select a candidate only when the mode is explicit and all
+  compatibility, intake, status, canary, and provenance gates pass.
+
+#### Scenario: Adoption is requested
+
+- **WHEN** `adopt` is requested
+- **THEN** the candidate SHALL require compatible project runtime constraints and admissible intake
+  evidence
+- **AND** an incompatible, unverified, or unapproved-canary candidate SHALL be rejected with
+  evidence.
+
+#### Scenario: No candidate is eligible
+
+- **WHEN** no candidate satisfies the selected mode, status, compatibility, intake, and canary
+  constraints
+- **THEN** the decision SHALL be `blocked`
+- **AND** it SHALL NOT silently select Astryx or downgrade the requested mode.
+
+### Requirement: Project design and motion foundations remain authoritative
+
+Provider snapshots, catalogs, token projections, decisions, and benchmark results SHALL be
+attributed evidence and SHALL NOT overwrite or supersede validated project `DESIGN.md` or
+`MOTION.md`.
+
+#### Scenario: Provider guidance conflicts with a project foundation
+
+- **WHEN** provider docs, templates, tokens, or examples conflict with a validated project
+  foundation
+- **THEN** the project foundation SHALL remain authoritative
+- **AND** the conflict SHALL be rejected, substituted, or recorded for review rather than applied
+  implicitly.
+
+### Requirement: The design-system CLI is Agent-discoverable and write-explicit
+
+The public CLI help SHALL expose
+`design-system profiles|normalize|acquire|search|project-tokens|decide` with stable JSON
+envelopes, exit semantics, and the documented flag surface.
+
+#### Scenario: A transform command omits write authority
+
+- **WHEN** normalize, token projection, or decision receives `--output` without `--write`
+- **THEN** the command SHALL return the validated artifact without writing it
+- **AND** no existing file SHALL be modified.
+
+#### Scenario: A write is explicit
+
+- **WHEN** `--write` and a contained output path are both supplied
+- **THEN** the command MAY publish the validated artifact atomically
+- **AND** an escaping path or unsafe parent SHALL fail before replacement.
+
+### Requirement: Benchmark v2 enforces candidate-neutral fairness
+
+`benchmark evaluate` SHALL accept v1 inputs for compatibility and SHALL admit a v2 manifest only
+when it affirms same prompts, same environment class, evaluator blindness, hidden expected answers,
+fresh context, and representative delivery.
+
+#### Scenario: All candidates receive equivalent evaluation
+
+- **WHEN** Astryx, another provider, a substitute, and a custom system are compared
+- **THEN** the same required scenarios, thresholds, evidence rules, environment class, and evaluator
+  SHALL apply to every candidate
+- **AND** bundled-profile identity SHALL NOT add score or admission privilege.
+
+#### Scenario: Fairness is invalid
+
+- **WHEN** any required v2 fairness condition is false, missing, or contradicted by evidence
+- **THEN** evaluation SHALL NOT report `passed`
+- **AND** the result SHALL preserve fairness validation and invalid reasons.
+
+#### Scenario: Aggregate score hides a required failure
+
+- **WHEN** an aggregate score passes but a required scenario fails or lacks evidence
+- **THEN** the benchmark SHALL remain `failed` or `blocked` respectively
+- **AND** canary results SHALL not be mixed into stable admission without explicit allowance.
+
+### Requirement: Provider provenance and licenses remain auditable
+
+Snapshots, catalog entries, provider receipts, token projections, and decisions SHALL preserve the
+available source, provider version, license, attribution, and content-hash evidence needed to audit
+their origin.
+
+#### Scenario: Attribution is incomplete
+
+- **WHEN** required source or license provenance is missing, conflicting, or unverifiable
+- **THEN** normalization or acquisition SHALL fail, or the candidate SHALL remain ineligible for
+  adoption
+- **AND** a built-in profile SHALL NOT be treated as a license grant for unrelated third-party
+  content.
+
+### Requirement: Provider data cannot gain global instruction authority
+
+The design-system workflow SHALL NOT inject provider content into `AGENTS.md` or another global
+Agent instruction file.
+
+#### Scenario: Provider content suggests instruction installation
+
+- **WHEN** a provider manifest, document, template, hook, or adapter output requests instruction
+  injection
+- **THEN** the request SHALL be ignored or rejected
+- **AND** provider discovery SHALL remain limited to the public CLI help and profile output.
+
+### Requirement: Bundled Holosticker preserves executable capability boundaries
+
+The pipeline SHALL ship every tracked file from one pinned, MIT-attributed `jal-co/holosticker`
+revision as a byte-verified offline implementation source. It SHALL expose the holographic
+material, die-cut mask, pointer tilt, peel/layers, static export, animated export, React component
+export, and Studio settings as separately selectable capability slices.
+
+#### Scenario: A holographic sticker is requested
+
+- **WHEN** a change explicitly needs holographic foil, a die-cut sticker, pointer tilt, or peel
+  behavior
+- **THEN** the pipeline SHALL route the minimum matching local source files through the
+  `scene-renderer-3d` family and project-pinned `threejs` adapter
+- **AND** it SHALL require `scene.json`, `3d.md`, `motion.md`, accessible controls or static parity,
+  reduced-motion behavior, cleanup ownership, performance budgets, and real-browser evidence.
+
+#### Scenario: An optional output is not requested
+
+- **WHEN** the selected capability does not require GIF/video, GLB, React component export, upload,
+  or the full Studio UI
+- **THEN** the pipeline SHALL not copy those modules or add their dependencies
+- **AND** it SHALL preserve the target project's existing framework, controls, and Three.js
+  version when they satisfy the contract.
+
+#### Scenario: The bundled source snapshot drifts
+
+- **WHEN** any tracked upstream file is missing, added, or byte-altered
+- **THEN** deterministic verification SHALL block on file count, byte count, canonical tree hash,
+  or missing capability source
+- **AND** a valid update SHALL change revision, Git tree, version, inventory, attribution, and hash
+  together.
+
+### Requirement: Bundled interface discipline
+
+The pipeline SHALL ship a complete, pinned, license-attributed interface-discipline source snapshot
+as a core package resource. It SHALL apply that protocol to product UI, flows, shared
+component/token changes, and interface reviews without depending on globally installed skills or
+network access.
+
+#### Scenario: Fresh standalone installation reviews UI
+
+- **WHEN** a user installs only `design-pipeline` and starts product UI work
+- **THEN** the package SHALL contain the interface router, six quality-domain skills, and
+  change-scoped review skill with their supporting references
+- **AND** the pipeline SHALL select full coverage by default, allowing quick coverage only for a
+  narrow repair with documented scope.
+
+#### Scenario: Changed UI is reviewed
+
+- **WHEN** a change affects user-visible UI
+- **THEN** Stage 0 SHALL identify affected flows, shared components/tokens, and consumers
+- **AND** Stage 6 SHALL record review scope, domains, evidence, and every finding's
+  `Introduced`, `Regression`, or `Pre-existing` status in `qa.md`.
+
+#### Scenario: Source snapshot is changed
+
+- **WHEN** the bundled interface source is updated or altered
+- **THEN** its source revision, license, import scope, file count, and canonical tree hash SHALL be
+  updated together
+- **AND** a deterministic integrity test SHALL fail for a partial or byte-drifted snapshot.
+
+### Requirement: Layered adaptation preserves frozen methodology and explicit authority
+
+The pipeline SHALL keep the Methodology Kernel frozen during layered adaptation. The Kernel SHALL
+remain the authority for durable method, quality gates, and safety boundaries. Task Session Policy
+SHALL be ephemeral. Project Adaptation Skill and User Collaboration Skill SHALL be external,
+versioned, inspectable artifacts. Effective compatible guidance SHALL resolve in the order current
+task > project > user > defaults, with mutually exclusive values keyed by collaboration dimension
+rather than caller-defined rule id. Project constraints and quality gates SHALL NOT be weakened,
+suppressed, or bypassed by any adaptation layer.
+
+#### Scenario: Conflicting scoped guidance is resolved
+
+- **WHEN** a current task, project skill, user skill, and defaults offer conflicting compatible
+  workflow choices
+- **THEN** the resolver SHALL select the current-task value before project, user, and defaults
+- **AND** it SHALL preserve every applicable project constraint and Kernel quality gate
+- **AND** it SHALL record dropped invalid or unsafe guidance in an inspectable receipt.
+
+#### Scenario: Task guidance expires
+
+- **WHEN** a task ends
+- **THEN** its Task Session Policy SHALL cease to be effective
+- **AND** it SHALL NOT become durable evidence or external-skill guidance without a separately
+  evaluated candidate lifecycle.
+
+### Requirement: Adaptation candidates are bounded, independently evaluated, and strictly promoted
+
+Experience-derived adaptation SHALL create only bounded `add`, `replace`, or `delete` candidates
+against an exact external-skill path, version, and incumbent content hash. Candidate guidance SHALL
+select from a finite contract of collaboration dimensions and SHALL NOT contain free-form behavioral
+instructions. The pipeline SHALL evaluate every candidate independently
+on a held-out set and replay set against the incumbent using a pinned common manifest. It SHALL
+promote only if all required gates pass, evidence is complete, and the predeclared primary metric is
+strictly improved in its declared direction against the incumbent in every required comparison. The pipeline SHALL reject, revert,
+expire, or forget candidates that do not qualify.
+
+#### Scenario: A candidate ties or lacks evidence
+
+- **WHEN** either held-out or replay evaluation ties the incumbent, has partial/unknown evidence,
+  fails a required gate, or shows a required regression
+- **THEN** the candidate SHALL NOT promote
+- **AND** the incumbent SHALL remain effective
+- **AND** the receipt SHALL state the disposition and preserve a rollback/rejection audit record.
+
+#### Scenario: A candidate strictly improves independently
+
+- **WHEN** a bounded candidate passes every required gate and shows strict primary-metric
+  improvement over the incumbent on both independently evaluated held-out and replay sets
+- **THEN** the pipeline MAY create a new immutable external-skill version linked to the evidence
+  receipt
+- **AND** the prior version SHALL remain available for rollback
+- **AND** an interrupted promotion or rollback SHALL deterministically recover from its durable
+  prepare record without exposing mixed ledger and skill state
+- **AND** a live process owner SHALL exclude competing recovery or mutation, while a dead owner's
+  journal SHALL be safely recoverable.
+
+### Requirement: Adaptation is transparent, user-controlled, and non-RL
+
+The pipeline SHALL default to shadow learning: candidates may be recorded and evaluated but SHALL
+NOT change live task behavior. Users SHALL be able to inspect candidate diffs, scope, evidence,
+decision, and rollback target; reject candidates; and request scoped forgetting. The pipeline SHALL
+NOT use reinforcement learning, model-weight training, hidden profiles, inferred personal traits, or
+silent adaptation.
+
+#### Scenario: A candidate is proposed under default settings
+
+- **WHEN** task experience yields an adaptation candidate and the user has not explicitly enabled a
+  reviewed version
+- **THEN** the candidate SHALL remain shadow-only
+- **AND** the current task's effective policy SHALL remain unchanged
+- **AND** the user SHALL be able to review or reject it before any promotion or use.
+
+#### Scenario: A user requests forgetting
+
+- **WHEN** a user requests forgetting for a declared project or user scope
+- **THEN** the pipeline SHALL remove the candidate or version from usable guidance, revoke its live
+  selection, and retain only the minimum non-sensitive tombstone required for audit and prevention
+  of accidental reinstatement
+- **AND** if successor snapshots still contain that guidance, it SHALL require their safe rollback
+  before scrubbing every rolled-back dependent snapshot
+- **AND** it SHALL NOT alter the Methodology Kernel, project constraints, or shipped artifacts.
+
+### Requirement: MengTo skills are completely internalized
+
+The pipeline SHALL ship a complete, pinned, MIT-attributed `MengTo/skills` source tree and a
+machine-readable catalog as core offline package resources.
+
+#### Scenario: A design technique is needed offline
+
+- **WHEN** the user has only the packaged design pipeline and requests a matching visual, motion,
+  reference, WebGL, or game workflow
+- **THEN** local search SHALL return candidates from all bundled skills with exact source paths
+- **AND** the selected source SHALL be adapted through project DESIGN, MOTION, dependency, and QA
+  contracts rather than copied as project authority.
+
+#### Scenario: The upstream snapshot is partial or altered
+
+- **WHEN** a tracked file is missing, added, or byte-drifted
+- **THEN** deterministic verification SHALL block
+- **AND** revision, Git tree, counts, and canonical hash SHALL be updated together for a valid sync.
+
+#### Scenario: A bundled workflow crosses an authority boundary
+
+- **WHEN** a skill involves credentials, paid services, private accounts, publication, social
+  posting, or other external side effects
+- **THEN** bundling SHALL NOT grant authority
+- **AND** the workflow SHALL remain explicit-only and subject to normal host boundaries.
+
+#### Scenario: Kage is used as a scroll-world reference
+
+- **WHEN** a task cites the separately published `MengTo/kage` repository
+- **THEN** the pipeline SHALL route through the bundled `web-design/build-threejs-scroll-worlds`
+  playbook plus the clean-room Kage case study
+- **AND** it SHALL preserve the current repository's no-license boundary by importing no source,
+  font, generated image, foreground artwork, or other project asset.
+
+### Requirement: Bundled shadcnio component index preserves implementation authority
+
+The pipeline SHALL ship the complete reviewed `shadcnio/react-shadcn-components` repository as a
+pinned, MIT-attributed offline resource and expose its README component and hook entries through
+deterministic local search. It SHALL distinguish the bundled index from linked webpage
+implementation code that is not present in the source repository.
+
+#### Scenario: A React component pattern is needed offline
+
+- **WHEN** a change needs an AI-chat, button, hook, or text component pattern
+- **THEN** local search SHALL return matching README entries with their source URLs and local source
+  file
+- **AND** every result SHALL be marked `reference-adaptation` and `review` with implementation
+  license `unverified` until primary source evidence is recorded.
+
+#### Scenario: The bundled source snapshot drifts
+
+- **WHEN** its LICENSE or README is missing, added to, or byte-altered
+- **THEN** deterministic verification SHALL block on file count, byte count, or canonical tree hash
+- **AND** a valid update SHALL change revision, scope, index counts, attribution, and hash together.
+
+#### Scenario: A linked implementation is selected
+
+- **WHEN** a user selects a page linked by the README index
+- **THEN** the pipeline SHALL NOT install dependencies, execute a generator, or copy webpage code
+  solely because it was indexed
+- **AND** it SHALL verify the linked implementation's license, dependencies, accessibility, and
+  target-project fit before adaptation.
+
+### Requirement: Source resolution is requested before reference artifacts are written
+
+The pipeline SHALL resolve the reference source to a file path, or explicitly record it as pending,
+before any reference or reconstruction artifact is authored.
+
+#### Scenario: The reference is not a resolvable file
+
+- **WHEN** a reconstruction request supplies a reference that is not a resolvable file path
+- **THEN** the pipeline SHALL request a file path from the user before writing reference artifacts
+- **AND** the request SHALL state that the path unlocks rectification, camera calibration, landmark
+  error, and the fidelity receipt.
+
+#### Scenario: The user does not supply a path
+
+- **WHEN** the user cannot or does not supply a resolvable path
+- **THEN** the pipeline SHALL record `source.availability` as `pending` and continue
+- **AND** it SHALL NOT block all remaining work.
+
+### Requirement: Missing measurement downgrades the claim, not the request
+
+The pipeline SHALL treat an unavailable source as a limit on the verification claim and SHALL NOT
+treat it as grounds to change requested fidelity.
+
+#### Scenario: Progress pressure meets a missing source
+
+- **WHEN** requested fidelity is `exact-reconstruction`
+- **AND** the source is pending
+- **THEN** the recorded verification claim SHALL be `unverified`
+- **AND** requested fidelity SHALL remain `exact-reconstruction`
+- **AND** a fidelity downgrade SHALL require explicit user approval recorded in the downgrade field.
+
+#### Scenario: The run is reported
+
+- **WHEN** a run completes with a pending source
+- **THEN** the final report SHALL name the action that unlocks the measured gates.
 

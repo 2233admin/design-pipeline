@@ -448,6 +448,18 @@ test("publishes the playground contract, schema, and checker", () => {
   ]) assert.ok(resources.required.includes(resource), resource);
 });
 
+test("accepts archived change roots with their original change id", () => {
+  const archivedRoot = fs.mkdtempSync(path.join(os.tmpdir(), "playground-archive-"));
+  const sourceRoot = path.join(repoRoot, "openspec/changes/archive/2026-08-23-internalize-interactive-design-playgrounds");
+  try {
+    fs.cpSync(sourceRoot, path.join(archivedRoot, "2026-08-23-internalize-interactive-design-playgrounds"), { recursive: true });
+    const result = checkPlayground(path.join(archivedRoot, "2026-08-23-internalize-interactive-design-playgrounds"), { stage: "integration" });
+    assert.equal(result.status, "ready");
+  } finally {
+    fs.rmSync(archivedRoot, { recursive: true, force: true });
+  }
+});
+
 test("packages actionable blueprints for every named playground family", () => {
   const templates = [
     "code-map.md",

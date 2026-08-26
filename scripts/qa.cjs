@@ -114,7 +114,7 @@ try {
   for (const args of [
     ["doctor", "--root", repoRoot, "--json"],
     ["foundation", "check", "--root", repoRoot, "--project-root", repoRoot, "--json"],
-    ["status", "--root", repoRoot, "--change-root", "openspec/changes/complete-executable-pipeline-p0-p3", "--json"],
+    ["status", "--root", repoRoot, "--change-root", "openspec/changes/archive/2026-08-23-complete-executable-pipeline-p0-p3", "--json"],
     ["adapter", "audit", "--root", repoRoot, "--json"],
     ["design-system", "profiles", "--root", repoRoot, "--json"],
     ["design-system", "search", "--root", repoRoot, "--query", "AlertDialog", "--kind", "component", "--limit", "1", "--json"],
@@ -163,7 +163,7 @@ try {
   report(run(process.execPath, installArgs, { echo: false, env: hermeticEnv }).status !== 0, "install replacement requires --replace");
   report(run(process.execPath, [...installArgs, "--replace"], { echo: false, env: hermeticEnv }).status === 0, "explicit contained install replacement");
   report(run(process.execPath, [path.join(installed, "scripts/check-deps.cjs"), "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed dependency self-check");
-  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "playground", "check", "--root", repoRoot, "--change-root", "openspec/changes/internalize-interactive-design-playgrounds", "--stage", "integration", "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed playground contract smoke");
+  report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "playground", "check", "--root", repoRoot, "--change-root", "openspec/changes/archive/2026-08-23-internalize-interactive-design-playgrounds", "--stage", "integration", "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed playground contract smoke");
   const componentFirstSmokeRoot = path.join(tempRoot, "component-first-smoke");
   fs.mkdirSync(componentFirstSmokeRoot, { recursive: true });
   fs.writeFileSync(path.join(componentFirstSmokeRoot, "component-first.json"), `${JSON.stringify({
