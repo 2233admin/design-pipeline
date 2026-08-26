@@ -30,7 +30,7 @@ node skill/scripts/record-feedback.cjs `
   --evidence "<reproducible evidence>"
 ```
 
-Review the generated `.design-pipeline/feedback/drafts/` file before opening an Issue. The script does not publish remotely.
+Review the generated `.design-pipeline/feedback/drafts/` file before opening an Issue. The script does not publish remotely. Use the **Pipeline observation** template and include the `dpf-*` id. Bug reports and skill intake use their own templates; blank issues are disabled.
 
 ## Change Types
 

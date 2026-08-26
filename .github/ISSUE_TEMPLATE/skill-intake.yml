@@ -1,0 +1,69 @@
+name: Skill intake
+description: Propose an external design, frontend, or motion skill source. Do not add a repo just because it exists.
+title: "Skill intake: "
+labels:
+  - skill-intake
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read `skill/references/curation-policy.md` first. Intake classifies a source; it does not install or execute it.
+  - type: input
+    id: source
+    attributes:
+      label: Source URL
+    validations:
+      required: true
+  - type: input
+    id: author
+    attributes:
+      label: Author or organization
+    validations:
+      required: true
+  - type: dropdown
+    id: capability
+    attributes:
+      label: Design capability
+      options:
+        - visual-taste
+        - ux
+        - design-system
+        - motion-design
+        - animation-implementation
+        - frontend-engineering
+        - qa
+        - artifact-lifecycle
+        - compatibility
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it belongs
+      description: What design outcome it improves that the current companions do not cover.
+    validations:
+      required: true
+  - type: textarea
+    id: overlap
+    attributes:
+      label: Overlap with existing skills
+      description: Name the closest bundled companions and what would stay distinct.
+    validations:
+      required: true
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: Proposed outcome
+      options:
+        - accepted
+        - accepted-optional
+        - rejected-duplicate
+        - rejected-out-of-scope
+        - watchlist
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: License, maintenance, and a redacted example of the capability. No install scripts as authority.

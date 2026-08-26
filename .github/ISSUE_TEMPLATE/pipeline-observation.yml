@@ -1,5 +1,5 @@
 name: Pipeline observation
-description: Report a design-pipeline bug, companion gap, or missing capability.
+description: Report a pipeline bug, companion gap, or missing capability after recording a local dpf-* draft.
 title: "[pipeline] "
 labels:
   - pipeline-observation
@@ -7,6 +7,8 @@ body:
   - type: markdown
     attributes:
       value: |
+        Record first with `node skill/scripts/record-feedback.cjs`, then paste the redacted `dpf-*` id.
+        Classify the brief with `designer-pipeline route --query "<brief>" --json` before assuming a catalog miss.
         Remove private paths, credentials, authenticated URLs, and proprietary source before submitting.
   - type: dropdown
     id: kind

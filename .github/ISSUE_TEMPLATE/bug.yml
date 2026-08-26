@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a problem with the pipeline CLI, schemas, gates, or packaged skill.
+title: "Bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Remove private paths, credentials, authenticated URLs, and proprietary source before submitting.
+        Prefer `designer-pipeline <command> --json` output over a screenshot of a terminal.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What broke, and what a correct run would have done.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the JSON error envelope or exit code when a CLI command failed.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Smallest command sequence. Use --json.
+      value: |
+        ```bash
+        node scripts/qa.cjs
+        ```
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node version (22+), and how the skill is installed.
+      placeholder: Windows 11, Node 22.x, local skill/
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Redacted receipts, hashes, or QA output. No secrets.
