@@ -130,7 +130,7 @@ function validateRequest(request) {
   assertKeys(
     request,
     ["schema", "id", "toolchainPlanSha256", "preferredMode", "isolation", "slices"],
-    ["schema", "id", "toolchainPlanSha256", "preferredMode", "isolation", "branch", "routeId", "slices"],
+    ["schema", "id", "toolchainPlanSha256", "preferredMode", "isolation", "branch", "routeId", "slices", "jobPlanSha256"],
     "request",
     "execution target",
   );
@@ -141,8 +141,17 @@ function validateRequest(request) {
   assertEnum(request.isolation, ["optional", "required"], "isolation", "execution target");
   if (request.branch !== undefined) validateBranch(request.branch);
   if (request.routeId !== undefined) assertString(request.routeId, "routeId", "execution target");
+  if (request.jobPlanSha256 !== undefined) validateHash(request.jobPlanSha256, "jobPlanSha256");
   validateSlices(request.slices);
   return request;
+}
+
+function bindExecutionJobPlan(request, toolchainPlan) {
+  const requestHash = request.jobPlanSha256;
+  const planHash = toolchainPlan?.jobPlanSha256;
+  if (!requestHash && !planHash) return;
+  if (!requestHash || !planHash) invalid("jobPlanSha256 must be present on both the execution request and the toolchain plan");
+  if (requestHash !== planHash) invalid("jobPlanSha256 does not match the toolchain plan");
 }
 
 function worktreeRoot(projectRoot, id, base) {
@@ -160,6 +169,7 @@ function selectedMode(request, repo) {
 
 function resolveExecutionTarget(request, options = {}) {
   validateRequest(request);
+  bindExecutionJobPlan(request, options.toolchainPlan);
   const repo = repository(options.projectRoot || process.cwd());
   if (request.routeId !== undefined && !options.toolchainPlan) invalid("routeId requires a toolchain plan");
   if (options.toolchainPlan) {

@@ -452,17 +452,20 @@ If a companion skill is missing, continue with the same gate manually and note t
 
 Before writing design artifacts or code:
 
-- Classify the brief into exactly one primary job before opening a knowledge catalog:
+- Classify the brief into exactly one primary job, then persist the plan before opening a catalog:
 
 ```bash
-designer-pipeline route --query "<brief>" --json
+designer-pipeline route --query "<brief>" --write --output job-plan.json --json
 ```
 
   Open only the returned primary knowledge door. Kernel steps in `next` always run. Secondaries
   stay reference-only and do not become a second primary. Do not search every catalog. Add a new
   capability by registering a job in `references/job-registry.json`, not by adding another
   mandatory Stage 0 search. Status `needs-clarification` asks one question that distinguishes the
-  top jobs; it does not pick a primary.
+  top jobs; it does not pick a primary or write a plan. Put `jobPlanSha256` and `jobPlanPath` on
+  the toolchain request, and the same `jobPlanSha256` on the execution request. Job id and
+  toolchain `primaryRouteId` are different identifiers. Plan presence does not make an `inert`
+  or `reference-only` catalog executable-ready.
 
 - For HTML video, reels, motion graphics, captions, overlays, slideshows, explainers, voiceovers,
   or Remotion ports, route through `references/hyperframes.md` before choosing a runtime. HyperFrames
@@ -495,7 +498,8 @@ designer-pipeline route --query "<brief>" --json
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
-- Write `toolchain-request.json`, then run `designer-pipeline toolchain resolve --artifact
+- Write `toolchain-request.json` that includes `jobPlanSha256` and `jobPlanPath` from the Stage 0
+  job plan, then run `designer-pipeline toolchain resolve --artifact
   toolchain-request.json --write --output toolchain-plan.json`. This is mandatory for every
   frontend change, including a project-owned `none` UI-library choice. The request records the
   framework, current and requested stack, brief, capabilities, and any graphics family or adapter.
@@ -506,8 +510,9 @@ designer-pipeline route --query "<brief>" --json
   selected external runtime. Probes are read-only and registry-owned; they never install or update
   a package. Record every invocation as `design-pipeline.toolchain-receipt.v1`, binding the plan
   hash, actual tool version, command, exit code, artifacts, hashes, and linked evidence receipts.
-- Before BuilderPort work, write `execution-request.json` with the toolchain plan hash plus explicit
-  slice owner and literal project-relative scope, then run `designer-pipeline execution route` and
+- Before BuilderPort work, write `execution-request.json` with the toolchain plan hash, the same
+  `jobPlanSha256` as the toolchain plan, plus explicit slice owner and literal project-relative
+  scope, then run `designer-pipeline execution route` and
   `execution prepare`. `auto` routes one clean slice in place, multiple clean slices sequentially,
   and dirty or isolation-required work to a `codex/*` worktree. Finalize with a structured outcome.
   A successful worktree must be committed, clean, and in scope before it is removed; failures,

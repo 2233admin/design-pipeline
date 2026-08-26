@@ -17,6 +17,9 @@
       "items": { "type": "string", "minLength": 1 }
     },
     "context": { "type": "object" },
+    "jobId": { "type": "string", "minLength": 1 },
+    "jobPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "jobPlanPath": { "type": "string", "minLength": 1 },
     "graphics": {
       "type": "object",
       "additionalProperties": false,

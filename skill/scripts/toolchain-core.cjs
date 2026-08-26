@@ -6,6 +6,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { validateRegistry } = require("./adapter-core.cjs");
 const { resolveFrontendStack } = require("./frontend-stack-core.cjs");
+const { bindJobPlan } = require("./job-route-core.cjs");
 const {
   assertEnum,
   assertKeys,
@@ -32,7 +33,7 @@ function validateRequest(request) {
   assertKeys(
     request,
     ["schema", "framework", "brief"],
-    ["schema", "framework", "brief", "existing", "requested", "capabilities", "graphics", "context"],
+    ["schema", "framework", "brief", "existing", "requested", "capabilities", "graphics", "context", "jobId", "jobPlanSha256", "jobPlanPath"],
     "request",
     "toolchain",
   );
@@ -49,6 +50,9 @@ function validateRequest(request) {
     if (request.graphics.family !== undefined) assertString(request.graphics.family, "graphics.family", "toolchain");
     if (request.graphics.adapter !== undefined) assertString(request.graphics.adapter, "graphics.adapter", "toolchain");
   }
+  if (request.jobId !== undefined) assertString(request.jobId, "jobId", "toolchain");
+  if (request.jobPlanPath !== undefined) assertString(request.jobPlanPath, "jobPlanPath", "toolchain");
+  if (request.jobPlanSha256 !== undefined && !/^[a-f0-9]{64}$/.test(request.jobPlanSha256)) invalid("jobPlanSha256 must be SHA-256");
   return request;
 }
 
@@ -172,8 +176,9 @@ function graphicsStages(adapter) {
   };
 }
 
-function resolveToolchain(request, sources) {
+function resolveToolchain(request, sources, options = {}) {
   validateRequest(request);
+  const jobPlan = bindJobPlan(request, options.jobPlan);
   const { frontendRegistry, skillCatalog, adapterRegistry, graphicsCatalog } = sources;
   validateRegistry(adapterRegistry, graphicsCatalog);
   const frontend = resolveFrontendStack(frontendRequest(request), frontendRegistry, skillCatalog);
@@ -213,6 +218,7 @@ function resolveToolchain(request, sources) {
       adapterRegistry: sha256(canonicalJson(adapterRegistry)),
       graphicsCatalog: sha256(canonicalJson(graphicsCatalog)),
     },
+    ...(jobPlan ? { jobId: jobPlan.jobId, jobPlanSha256: jobPlan.planSha256 } : {}),
   };
   return sortValue(plan);
 }

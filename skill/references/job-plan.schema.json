@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2233admin/design-pipeline/schema/job-plan.v1.json",
+  "title": "Job Route Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "query",
+    "jobId",
+    "registrySha256",
+    "routeSha256",
+    "primaryKnowledge",
+    "secondaries",
+    "admission",
+    "kernel",
+    "next",
+    "planSha256"
+  ],
+  "properties": {
+    "schema": { "const": "design-pipeline.job-plan.v1" },
+    "query": { "type": "string", "minLength": 1 },
+    "jobId": { "type": "string", "minLength": 1 },
+    "registrySha256": { "type": "string", "minLength": 64, "maxLength": 64 },
+    "routeSha256": { "type": "string", "minLength": 64, "maxLength": 64 },
+    "primaryKnowledge": { "type": "object" },
+    "secondaries": { "type": "array" },
+    "admission": { "enum": ["ready", "review", "reference-only", "inert"] },
+    "kernel": { "type": "array" },
+    "next": { "type": "array" },
+    "planSha256": { "type": "string", "minLength": 64, "maxLength": 64 }
+  }
+}

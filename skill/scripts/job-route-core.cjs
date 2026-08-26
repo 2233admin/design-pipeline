@@ -6,6 +6,8 @@ const { canonicalJson, fail, isObject, sha256, sortValue } = require("./contract
 
 const SCHEMA = "design-pipeline.job-registry.v1";
 const ROUTE_SCHEMA = "design-pipeline.job-route.v1";
+const PLAN_SCHEMA = "design-pipeline.job-plan.v1";
+const SHA256 = /^[a-f0-9]{64}$/;
 const ACTIVATIONS = new Set(["explicit", "scored", "default"]);
 const ADMISSIONS = new Set(["ready", "review", "reference-only", "inert"]);
 const KERNEL_STEPS = Object.freeze([
@@ -162,4 +164,70 @@ function routeJob(options = {}) {
   return readyResult(query, { job: defaultJob, score: 0, matchedKeywords: [], priority: defaultJob.priority }, registrySha, "low");
 }
 
-module.exports = { KERNEL_STEPS, ROUTE_SCHEMA, SCHEMA, loadJobRegistry, routeJob, validateJobRegistry };
+function planBody(route) {
+  if (!isObject(route) || route.schema !== ROUTE_SCHEMA) invalid("unsupported job route schema");
+  if (route.status !== "ready") invalid("only a ready route can be written as a job plan");
+  if (typeof route.job !== "string" || !route.job.trim()) invalid("ready route has no job");
+  if (!isObject(route.primaryKnowledge) || !ADMISSIONS.has(route.primaryKnowledge.admission)) {
+    invalid("ready route has no frozen admission");
+  }
+  return sortValue({
+    schema: PLAN_SCHEMA,
+    query: route.query,
+    jobId: route.job,
+    registrySha256: route.registrySha256,
+    routeSha256: sha256(canonicalJson(route)),
+    primaryKnowledge: route.primaryKnowledge,
+    secondaries: route.secondaries,
+    admission: route.primaryKnowledge.admission,
+    kernel: route.kernel,
+    next: route.next,
+  });
+}
+
+function buildJobPlan(route) {
+  const body = planBody(route);
+  return sortValue({ ...body, planSha256: sha256(canonicalJson(body)) });
+}
+
+function validateJobPlan(plan) {
+  if (!isObject(plan) || plan.schema !== PLAN_SCHEMA) invalid("unsupported job plan schema");
+  if (typeof plan.query !== "string" || !plan.query.trim()) invalid("job plan query is invalid");
+  if (typeof plan.jobId !== "string" || !plan.jobId.trim()) invalid("job plan jobId is invalid");
+  for (const field of ["registrySha256", "routeSha256", "planSha256"]) {
+    if (!SHA256.test(plan[field] || "")) invalid(`job plan ${field} is invalid`);
+  }
+  if (!isObject(plan.primaryKnowledge)) invalid("job plan primaryKnowledge is invalid");
+  if (!ADMISSIONS.has(plan.admission)) invalid("job plan admission is invalid");
+  if (plan.admission !== plan.primaryKnowledge.admission) invalid("job plan admission does not match primary knowledge");
+  if (!Array.isArray(plan.secondaries) || !Array.isArray(plan.kernel) || !Array.isArray(plan.next)) {
+    invalid("job plan steps are invalid");
+  }
+  const { planSha256, ...body } = plan;
+  if (planSha256 !== sha256(canonicalJson(sortValue(body)))) invalid("job plan hash does not match contents");
+  return plan;
+}
+
+function bindJobPlan(request = {}, plan) {
+  const hasBind = Boolean(request.jobPlanSha256 || request.jobId || request.jobPlanPath);
+  if (!hasBind) return null;
+  if (!request.jobPlanSha256) invalid("jobPlanSha256 is required when binding a job plan");
+  if (!plan) invalid("job plan is required when jobPlanSha256 is set");
+  const valid = validateJobPlan(plan);
+  if (request.jobPlanSha256 !== valid.planSha256) invalid("jobPlanSha256 does not match the job plan");
+  if (request.jobId && request.jobId !== valid.jobId) invalid("jobId does not match the job plan");
+  return valid;
+}
+
+module.exports = {
+  KERNEL_STEPS,
+  PLAN_SCHEMA,
+  ROUTE_SCHEMA,
+  SCHEMA,
+  bindJobPlan,
+  buildJobPlan,
+  loadJobRegistry,
+  routeJob,
+  validateJobPlan,
+  validateJobRegistry,
+};

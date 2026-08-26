@@ -8,6 +8,7 @@ const { spawnSync } = require("node:child_process");
 const test = require("node:test");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { resolveToolchain } = require("../skill/scripts/toolchain-core.cjs");
+const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs");
 const {
   finalizeExecutionTarget,
   prepareExecutionTarget,
@@ -149,6 +150,41 @@ test("dirty or isolated routes select worktree while unsafe explicit modes fail 
   const unsafe = resolveExecutionTarget(request({ preferredMode: "in-place" }), { projectRoot: root, worktreeBase });
   assert.equal(unsafe.status, "blocked");
   assert.ok(unsafe.blockers.some((item) => item.includes("dirty")));
+});
+
+test("execution requires the same job plan hash as the toolchain plan", (t) => {
+  const { root, worktreeBase } = repository(t);
+  const jobPlan = buildJobPlan(routeJob({ query: "clone this landing page" }));
+  const toolchain = resolveToolchain({
+    schema: "design-pipeline.toolchain-request.v1",
+    framework: "react",
+    brief: "clone this landing page",
+    requested: { styling: "none", uiLibrary: "none" },
+    jobPlanSha256: jobPlan.planSha256,
+  }, toolchainSources, { jobPlan });
+  const bound = request({
+    toolchainPlanSha256: sha256(canonicalJson(toolchain)),
+    routeId: toolchain.primaryRouteId,
+    slices: [{ id: "ui", owner: toolchain.primaryRouteId, scope: ["src/"] }],
+    jobPlanSha256: jobPlan.planSha256,
+  });
+  const matched = resolveExecutionTarget(bound, { projectRoot: root, worktreeBase, toolchainPlan: toolchain });
+  assert.equal(matched.status, "ready");
+
+  assert.throws(
+    () => resolveExecutionTarget({ ...bound, jobPlanSha256: undefined }, { projectRoot: root, worktreeBase, toolchainPlan: toolchain }),
+    /both the execution request and the toolchain plan/,
+  );
+  assert.throws(
+    () => resolveExecutionTarget({ ...bound, jobPlanSha256: "b".repeat(64) }, { projectRoot: root, worktreeBase, toolchainPlan: toolchain }),
+    /does not match the toolchain plan/,
+  );
+});
+
+test("execution without a job plan keeps current behavior", (t) => {
+  const { root, worktreeBase } = repository(t);
+  const result = resolveExecutionTarget(request(), { projectRoot: root, worktreeBase });
+  assert.equal(result.status, "ready");
 });
 
 test("scope and branch validation rejects traversal, overlap, and non-agent branches", (t) => {

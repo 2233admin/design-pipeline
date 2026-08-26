@@ -32,7 +32,8 @@ test("SKILL front-door commands are present in the public CLI contract", () => {
   assert.match(skill, /Use the public CLI for the complete lifecycle/);
   const help = run(["help"]).output.help;
   assert.match(skill, /designer-pipeline route --query/);
-  assert.match(help, /^ {2}route$/m);
+  assert.match(skill, /--write --output job-plan\.json/);
+  assert.match(help, /^ {2}route --query/m);
   for (const [command, action] of [
     ["mengto", "search"],
     ["prism", "route"],
@@ -55,6 +56,31 @@ test("SKILL front doors hand off to local CLI routes without MCP or external ser
   assert.equal(dispatched.output.ok, true);
   assert.equal(dispatched.output.job, "website-clone");
   assert.equal(dispatched.output.ambiguous, false);
+
+  const planRoot = fs.mkdtempSync(path.join(os.tmpdir(), "skill-cli-job-plan-"));
+  try {
+    const planned = run(["route", "--root", planRoot, "--query", "clone this landing page 1:1", "--write", "--output", "job-plan.json"]);
+    assert.equal(planned.status, 0, planned.stderr || planned.stdout);
+    assert.equal(planned.output.planSha256.length, 64);
+    assert.equal(fs.existsSync(path.join(planRoot, "job-plan.json")), true);
+
+    writeJson(path.join(planRoot, "toolchain-request.json"), {
+      schema: "design-pipeline.toolchain-request.v1",
+      framework: "react",
+      brief: "clone this landing page 1:1",
+      requested: { styling: "none", uiLibrary: "none" },
+      jobId: "website-clone",
+      jobPlanSha256: planned.output.planSha256,
+      jobPlanPath: "job-plan.json",
+    });
+    const bound = run(["toolchain", "resolve", "--root", planRoot, "--artifact", "toolchain-request.json"]);
+    assert.equal(bound.status, 0, bound.stderr || bound.stdout);
+    assert.equal(bound.output.plan.jobId, "website-clone");
+    assert.equal(bound.output.plan.jobPlanSha256, planned.output.planSha256);
+    assert.notEqual(bound.output.plan.primaryRouteId, bound.output.plan.jobId);
+  } finally {
+    fs.rmSync(planRoot, { recursive: true, force: true });
+  }
 
   const prism = run(["prism", "route", "--root", repoRoot, "--query", "检查这个界面的可访问性和对比度"]);
   assert.equal(prism.status, 0, prism.stderr || prism.stdout);

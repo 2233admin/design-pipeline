@@ -8,6 +8,7 @@ const path = require("node:path");
 const test = require("node:test");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("../skill/scripts/toolchain-core.cjs");
+const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs");
 
 const references = path.resolve(__dirname, "../skill/references");
 const read = (name) => JSON.parse(fs.readFileSync(path.join(references, name), "utf8"));
@@ -77,6 +78,45 @@ test("trusted probes report actual availability without mutating the target proj
   assert.equal(calls.length, 1);
   assert.equal(calls[0].command, "python");
   assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").version, "xy=0.0.6;reflex=0.8.0");
+});
+
+test("toolchain resolve binds a matching job plan without copying the job id", () => {
+  const jobPlan = buildJobPlan(routeJob({ query: "clone this landing page" }));
+  const plan = resolveToolchain(request({
+    framework: "react",
+    brief: "clone this landing page",
+    requested: { styling: "none", uiLibrary: "none" },
+    graphics: undefined,
+    jobId: jobPlan.jobId,
+    jobPlanSha256: jobPlan.planSha256,
+    jobPlanPath: "job-plan.json",
+  }), sources, { jobPlan });
+  assert.equal(plan.status, "ready");
+  assert.equal(plan.jobId, "website-clone");
+  assert.equal(plan.jobPlanSha256, jobPlan.planSha256);
+  assert.notEqual(plan.primaryRouteId, plan.jobId);
+});
+
+test("toolchain resolve omits job binding when no plan is supplied", () => {
+  const plan = resolveToolchain(request(), sources);
+  assert.equal(Object.hasOwn(plan, "jobId"), false);
+  assert.equal(Object.hasOwn(plan, "jobPlanSha256"), false);
+});
+
+test("toolchain resolve rejects a drifted job plan", () => {
+  const jobPlan = buildJobPlan(routeJob({ query: "clone this landing page" }));
+  assert.throws(
+    () => resolveToolchain(request({ jobPlanSha256: "a".repeat(64) }), sources, { jobPlan }),
+    /does not match the job plan/,
+  );
+  assert.throws(
+    () => resolveToolchain(request({ jobPlanSha256: jobPlan.planSha256, jobId: "technique" }), sources, { jobPlan }),
+    /jobId does not match/,
+  );
+  assert.throws(
+    () => resolveToolchain(request({ jobPlanSha256: jobPlan.planSha256 }), sources, { jobPlan: { ...jobPlan, schema: "nope" } }),
+    /unsupported job plan schema/,
+  );
 });
 
 test("failed probes block with one actionable root-cause line", () => {

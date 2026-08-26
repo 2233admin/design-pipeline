@@ -11,11 +11,15 @@ const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
 const packageResources = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/package-resources.json"), "utf8"));
 const bundledRegistry = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/job-registry.json"), "utf8"));
+const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const {
   KERNEL_STEPS,
+  PLAN_SCHEMA,
   ROUTE_SCHEMA,
+  buildJobPlan,
   loadJobRegistry,
   routeJob,
+  validateJobPlan,
   validateJobRegistry,
 } = require("../skill/scripts/job-route-core.cjs");
 
@@ -59,6 +63,7 @@ test("packages the job registry, schemas, and dispatcher core", () => {
     "references/job-registry.json",
     "references/job-registry.schema.json",
     "references/job-route.schema.json",
+    "references/job-plan.schema.json",
   ]) assert.ok(packageResources.required.includes(resource), resource);
 });
 
@@ -189,6 +194,42 @@ test("CLI routes a newly registered job without changing dispatcher code", () =>
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.equal(result.output.job, "voice-over");
     assert.equal(result.output.primaryKnowledge.id, "hyperframes");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a ready route writes a stable job plan and freezes admission", () => {
+  const route = routeJob({ query: "gsap scrolltrigger playbook" });
+  const plan = buildJobPlan(route);
+  assert.equal(plan.schema, PLAN_SCHEMA);
+  assert.equal(plan.jobId, "technique");
+  assert.equal(plan.admission, "inert");
+  assert.equal(plan.admission, plan.primaryKnowledge.admission);
+  const { planSha256, ...body } = plan;
+  assert.equal(planSha256, sha256(canonicalJson(body)));
+  assert.equal(buildJobPlan(route).planSha256, planSha256);
+  assert.deepEqual(validateJobPlan(plan), plan);
+});
+
+test("clarification and blocked routes cannot be written as a job plan", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-job-plan-"));
+  try {
+    const output = path.join(root, "job-plan.json");
+    const clarify = run(["route", "--root", root, "--query", "clone this holosticker", "--write", "--output", "job-plan.json"]);
+    assert.equal(clarify.status, 1);
+    assert.equal(clarify.output.ok, false);
+    assert.match(clarify.output.error.message, /only a ready route/);
+    assert.equal(fs.existsSync(output), false);
+
+    const ready = run(["route", "--root", root, "--query", "clone this landing page", "--write", "--output", "job-plan.json"]);
+    assert.equal(ready.status, 0, ready.stderr || ready.stdout);
+    assert.equal(ready.output.planSha256.length, 64);
+    const written = JSON.parse(fs.readFileSync(output, "utf8"));
+    assert.equal(written.schema, PLAN_SCHEMA);
+    assert.equal(written.jobId, "website-clone");
+    assert.equal(written.planSha256, ready.output.planSha256);
+    assert.equal(written.admission, written.primaryKnowledge.admission);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

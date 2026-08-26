@@ -11,6 +11,7 @@ All notable changes to Design Pipeline are documented here.
   mandatory search.
 - Added `reference resolve` so a pending source that later lands gets path, dimensions, hash, and
   `resolvedAt` from the file instead of a hand-edited measurement.
+- Bound a ready job route to toolchain and execution through an optional hash-checked job plan.
 
 ## [0.9.0-beta.4] - 2026-08-15
 

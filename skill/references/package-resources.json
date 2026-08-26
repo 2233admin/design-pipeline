@@ -254,6 +254,7 @@
     "references/visual-style-signals.json",
     "references/job-registry.json",
     "references/job-registry.schema.json",
-    "references/job-route.schema.json"
+    "references/job-route.schema.json",
+    "references/job-plan.schema.json"
   ]
 }

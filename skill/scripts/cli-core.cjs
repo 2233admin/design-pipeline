@@ -60,7 +60,7 @@ const {
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
 const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
-const { routeJob } = require("./job-route-core.cjs");
+const { buildJobPlan, routeJob } = require("./job-route-core.cjs");
 const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker-core.cjs");
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
 const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
@@ -270,7 +270,7 @@ function publicHelp() {
     "",
     "Commands:",
     "  doctor | status",
-    "  route",
+    "  route --query [--write --output]",
     "  change init|resume|advance|migrate|repair",
     "  foundation check | direction check | playground check | reference check|resolve | reconstruction check | scene check",
     "  component-first check|stack|components|playground|page | high-fidelity check",
@@ -676,7 +676,10 @@ function toolchainSources() {
 function toolchainCommand(parsed, root, action) {
   if (["resolve", "probe"].includes(action)) {
     const request = readJson(artifact(parsed, root, "--artifact"), "toolchain request");
-    const plan = resolveToolchain(request, toolchainSources());
+    const jobPlan = request.jobPlanPath
+      ? readJson(contained(root, request.jobPlanPath, "job plan"), "job plan")
+      : null;
+    const plan = resolveToolchain(request, toolchainSources(), { jobPlan });
     const result = action === "probe" ? probeToolchain(plan, { projectRoot: root }) : plan;
     const output = writeResult(parsed, root, result);
     return { result: { status: result.status, [action === "probe" ? "probe" : "plan"]: result, ...(output ? { output } : {}) }, exitCode: result.status === "blocked" ? 2 : 0 };
@@ -1000,7 +1003,17 @@ function jobRouteCommand(parsed, root) {
     query: requireOption(parsed, "--query"),
     ...(registryPath ? { registryFile: contained(root, registryPath, "--registry") } : {}),
   });
-  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+  let output = null;
+  let planSha256 = null;
+  if (option(parsed, "--write") === true) {
+    const plan = buildJobPlan(result);
+    output = writeResult(parsed, root, plan);
+    planSha256 = plan.planSha256;
+  }
+  return {
+    result: { ...result, ...(output ? { output, planSha256 } : {}) },
+    exitCode: result.status === "ready" ? 0 : 2,
+  };
 }
 
 function holostickerCommand(parsed, action) {

@@ -23,6 +23,8 @@
     "blockers": { "type": "array", "items": { "type": "string" } },
     "reviews": { "type": "array", "items": { "type": "string" } },
     "evidence": { "type": "array", "items": { "type": "string" } },
+    "jobId": { "type": "string", "minLength": 1 },
+    "jobPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "sourceHashes": {
       "type": "object",
       "additionalProperties": false,
