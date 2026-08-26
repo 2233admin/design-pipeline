@@ -57,6 +57,7 @@
     "publication-bridge.test.cjs",
     "record-feedback.test.cjs",
     "reference-evidence.test.cjs",
+    "source-governance.test.cjs",
     "reconstruction.test.cjs",
     "round-two-findings.test.cjs",
     "scene-runtime.test.cjs",
