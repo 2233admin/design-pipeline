@@ -93,8 +93,13 @@ function requestedCapabilities(request, styling) {
 
 function routeTools(request, registry, capabilities, skillCatalog) {
   const brief = String(request.brief || "").toLowerCase();
+  const baselineCapabilities = new Set(["design-workflow", "friction-logging"]);
   const tools = registry.tools.filter((tool) => tool.activation === "always" || tool.capabilities.some((capability) => capabilities.includes(capability)) || (tool.keywords || []).some((term) => brief.includes(term)));
-  const routes = tools.map((tool) => ({
+  const routed = tools.map((tool) => ({
+    tool,
+    explicit: (tool.keywords || []).some((term) => brief.includes(term)) || tool.capabilities.some((capability) => capabilities.includes(capability) && !baselineCapabilities.has(capability)),
+  }));
+  const routes = routed.map(({ tool }) => ({
     id: tool.id, mode: tool.mode, status: tool.status, capabilities: tool.capabilities.filter((item) => capabilities.includes(item)), source: tool.source,
     ...(tool.revision ? { revision: tool.revision } : {}), ...(tool.reviewedAt ? { reviewedAt: tool.reviewedAt } : {}),
     ...(tool.license ? { license: tool.license } : {}), ...(tool.licenseUrl ? { licenseUrl: tool.licenseUrl } : {}),
@@ -104,12 +109,13 @@ function routeTools(request, registry, capabilities, skillCatalog) {
     ...(tool.constraints ? { constraints: tool.constraints } : {}), ...(tool.fallback ? { fallback: tool.fallback } : {}),
     ...(tool.lifecycle ? { lifecycle: tool.lifecycle } : {}),
   }));
-  const ranked = routes.sort((left, right) => {
+  const ranked = routes.map((route, index) => ({ route, explicit: routed[index].explicit })).sort((left, right) => {
+    const specificity = (value) => value.explicit ? 1000 : 0;
     const readiness = (value) => value.status === "ready" && !value.requiresLicense ? 100 : 0;
     const activation = (value) => value.mode === "project-owned" ? 20 : value.mode === "platform" ? 10 : 0;
-    return readiness(right) + activation(right) - readiness(left) - activation(left) || left.id.localeCompare(right.id);
-  });
-  const primaryRoute = ranked.find((route) => route.status === "ready" && !route.requiresLicense) || ranked[0] || null;
+    return specificity(right) + readiness(right.route) + activation(right.route) - specificity(left) - readiness(left.route) - activation(left.route) || left.route.id.localeCompare(right.route.id);
+  }).map(({ route }) => route);
+  const primaryRoute = ranked[0] || null;
   const recommendedSkills = [...new Set(capabilities.flatMap((capability) => skillCatalog.routes[capability] || []))].sort();
   return { routes: sortValue(ranked), primaryRoute, recommendedSkills };
 }
@@ -146,6 +152,9 @@ function resolveFrontendStack(request, registry, skillCatalog) {
   const routingContext = request.context === undefined
     ? null
     : resolvePolicy(request.context);
+  if (toolRouting.primaryRoute && (toolRouting.primaryRoute.status !== "ready" || toolRouting.primaryRoute.requiresLicense)) {
+    blockers.push(`${toolRouting.primaryRoute.id} is ${toolRouting.primaryRoute.status || "unverified"} and cannot be the executable primary route`);
+  }
   const status = blockers.length ? "blocked" : "ready";
   return sortValue({
     schema: DECISION_SCHEMA,

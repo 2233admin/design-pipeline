@@ -28,7 +28,7 @@ test("Koboyo is an explicit reviewed icon route, not a shadcn preset or default 
     requested: { styling: "tailwindcss", uiLibrary: "shadcn-ui", shadcnPreset: "nova" },
   }, registry, skills);
   const route = result.toolRoutes.find(({ id }) => id === "koboyo/icons");
-  assert.equal(result.status, "ready");
+  assert.equal(result.status, "blocked");
   assert.ok(route);
   assert.equal(route.status, "review");
   assert.equal(route.endpoint, "https://api.koboyo.com/v1-mcp");
@@ -52,6 +52,7 @@ test("a clone brief routes built-ins, all three upstreams, and complete shadcn p
     capabilities: ["github-issue-sync", "interaction-extraction", "verification"],
   }, registry, skills);
   assert.equal(result.status, "ready");
+  assert.equal(result.primaryRoute.id, "design-pipeline/website-cloning");
   assert.equal(result.selected.styling.id, "tailwindcss");
   assert.equal(result.selected.uiLibrary.id, "shadcn-ui");
   assert.equal(result.selected.shadcnPreset.base, "aria");
@@ -69,7 +70,8 @@ test("HyperFrames route is keyword-triggered for explicit video workflow briefs"
     requested: { styling: "tailwindcss", uiLibrary: "shadcn-ui", shadcnPreset: "nova" },
   }, registry, skills);
   const route = result.toolRoutes.find(({ id }) => id === "heygen-com/hyperframes");
-  assert.equal(result.status, "ready");
+  assert.equal(result.status, "blocked");
+  assert.equal(result.primaryRoute.id, "heygen-com/hyperframes");
   assert.ok(route);
   assert.equal(route.status, "review");
   assert.equal(route.mode, "governed-candidate");

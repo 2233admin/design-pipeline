@@ -28,11 +28,12 @@ test("SmoothUI and React Bits are discoverable as reference-adaptation component
   assert.ok(entry.alignment.cleanup.includes("clear interval"));
 });
 
-test("explicit source briefs expose governed tool routes without changing the default stack", () => {
+test("explicit source briefs promote governed review routes and block execution", () => {
   validateRegistry(registry);
   for (const [brief, id] of [["Use SmoothUI animated components", "SmoothUI/components"], ["Use React Bits DecryptedText", "DavidHDev/react-bits"]]) {
     const result = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "react", brief, requested: {} }, registry, skills);
-    assert.equal(result.status, "ready");
+    assert.equal(result.status, "blocked");
+    assert.equal(result.primaryRoute.id, id);
     assert.ok(result.toolRoutes.some((route) => route.id === id && route.status === "review"));
   }
   const ordinary = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "react", brief: "Build a dashboard", requested: {} }, registry, skills);

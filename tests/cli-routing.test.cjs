@@ -62,7 +62,7 @@ test("中文能力分解保留表格、筛选、分页和状态能力", () => {
   }
 });
 
-test("主路由优先项目 ready 来源，用户上下文保持有限且可审计", () => {
+test("主路由优先具体能力来源，用户上下文保持有限且可审计", () => {
   const result = resolveFrontendStack({
     schema: "design-pipeline.frontend-stack-request.v1",
     framework: "react",
@@ -75,7 +75,7 @@ test("主路由优先项目 ready 来源，用户上下文保持有限且可审�
       gates: [],
     },
   }, registry, skills);
-  assert.equal(result.primaryRoute.id, "design-pipeline/core");
+  assert.equal(result.primaryRoute.id, "design-pipeline/website-cloning");
   assert.equal(result.routingContext.rules[0].dimension, "question-sequencing");
   assert.equal(result.routingContext.rules[0].layer, "task");
   assert.equal(result.routingContext.constraints[0].id, "accessibility");
