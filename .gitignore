@@ -1,6 +1,9 @@
 node_modules/
 __pycache__/
 .DS_Store
+*.exe
+tools/agx-api-relay/
+tools/ccswitch-bridge/
 *.log
 coverage/
 dist/
