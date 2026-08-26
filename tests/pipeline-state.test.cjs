@@ -58,9 +58,13 @@ test("both observed v1 dialects migrate deterministically without ambient time",
 
 test("every repository change state is readable and has deterministic v2 migration", () => {
   const changes = path.resolve(__dirname, "../openspec/changes");
-  const files = fs.readdirSync(changes, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(changes, entry.name, "state.json")))
-    .map((entry) => path.join(changes, entry.name, "state.json"));
+  function stateFiles(directory) {
+    return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+      const target = path.join(directory, entry.name);
+      return entry.isDirectory() ? stateFiles(target) : entry.name === "state.json" ? [target] : [];
+    });
+  }
+  const files = stateFiles(changes);
   assert.ok(files.length >= 9);
   for (const file of files) {
     const state = JSON.parse(fs.readFileSync(file, "utf8"));
