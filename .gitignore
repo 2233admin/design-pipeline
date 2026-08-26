@@ -21,3 +21,11 @@ NUL
 .repowise/
 .understand-anything/
 .sentrux/baseline*.json
+
+# The project-local Claude Code router is source-controlled; other local
+# Claude skill links remain machine-local and ignored by the host policy.
+!.claude/
+!.claude/skills/
+.claude/skills/eli5/
+!.claude/skills/design-pipeline/
+!.claude/skills/design-pipeline/SKILL.md

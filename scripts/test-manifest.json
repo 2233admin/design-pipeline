@@ -73,6 +73,7 @@
     "visual-style-signals.test.cjs",
     "web-evidence-adapter.test.cjs",
     "website-cloning-init.test.cjs",
-    "skill-cli-handoff.test.cjs"
+    "skill-cli-handoff.test.cjs",
+    "claude-code-surface.test.cjs"
   ]
 }
