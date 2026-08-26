@@ -32,7 +32,7 @@ function validateRequest(request) {
   assertKeys(
     request,
     ["schema", "framework", "brief"],
-    ["schema", "framework", "brief", "existing", "requested", "capabilities", "graphics"],
+    ["schema", "framework", "brief", "existing", "requested", "capabilities", "graphics", "context"],
     "request",
     "toolchain",
   );
@@ -42,6 +42,7 @@ function validateRequest(request) {
   if (request.existing !== undefined) assertObject(request.existing, "existing", "toolchain");
   if (request.requested !== undefined) assertObject(request.requested, "requested", "toolchain");
   if (request.capabilities !== undefined) assertStringArray(request.capabilities, "capabilities", "toolchain", { unique: true });
+  if (request.context !== undefined) assertObject(request.context, "context", "toolchain");
   if (request.graphics !== undefined) {
     assertKeys(request.graphics, [], ["family", "adapter"], "graphics", "toolchain");
     if (request.graphics.family === undefined && request.graphics.adapter === undefined) invalid("graphics requires family or adapter");
@@ -59,6 +60,7 @@ function frontendRequest(request) {
     ...(request.existing ? { existing: request.existing } : {}),
     ...(request.requested ? { requested: request.requested } : {}),
     ...(request.capabilities ? { capabilities: request.capabilities } : {}),
+    ...(request.context !== undefined ? { context: request.context } : {}),
   };
 }
 
@@ -97,6 +99,7 @@ function selectGraphics(request, registry, catalog, blockers) {
 
 function frontendStages(route) {
   const lifecycle = route.lifecycle;
+  const governedReview = route.status !== "ready";
   return {
     tool: {
       id: route.id,
@@ -104,7 +107,12 @@ function frontendStages(route) {
       mode: route.mode,
       status: route.status,
     },
-    probe: lifecycle?.probe ? {
+    probe: governedReview ? {
+      toolId: route.id,
+      kind: "governed-review",
+      status: "review",
+      command: null,
+    } : lifecycle?.probe ? {
       toolId: route.id,
       status: "pending",
       ...lifecycle.probe,
@@ -114,7 +122,14 @@ function frontendStages(route) {
       status: route.status === "ready" ? "available" : "review",
       command: null,
     },
-    invocation: lifecycle?.invoke ? {
+    invocation: governedReview ? {
+      toolId: route.id,
+      kind: "governed-review",
+      owner: "agent",
+      target: route.id,
+      status: "review",
+      command: null,
+    } : lifecycle?.invoke ? {
       toolId: route.id,
       ...lifecycle.invoke,
     } : {
@@ -174,6 +189,8 @@ function resolveToolchain(request, sources) {
     brief: request.brief,
     styling: frontend.selected.styling,
     uiLibrary: frontend.selected.uiLibrary,
+    primaryRouteId: frontend.primaryRoute?.id || null,
+    routingContext: frontend.routingContext || null,
     graphics: graphicsAdapter
       ? {
           id: graphicsAdapter.id,
@@ -225,6 +242,7 @@ function probeToolchain(plan, options = {}) {
   const runner = options.runner || spawnSync;
   const results = plan.probes.map((probe) => {
     if (probe.kind === "catalog") return { toolId: probe.toolId, status: probe.status, version: null, message: "catalog route resolved" };
+    if (probe.kind === "governed-review") return { toolId: probe.toolId, status: "review", version: null, message: "review route was not probed" };
     if (!Array.isArray(probe.command) || !probe.command.length) return { toolId: probe.toolId, status: "unavailable", version: null, message: "no trusted probe command" };
     const child = runner(probe.command[0], probe.command.slice(1), {
       cwd: projectRoot,

@@ -130,7 +130,7 @@ function validateRequest(request) {
   assertKeys(
     request,
     ["schema", "id", "toolchainPlanSha256", "preferredMode", "isolation", "slices"],
-    ["schema", "id", "toolchainPlanSha256", "preferredMode", "isolation", "branch", "slices"],
+    ["schema", "id", "toolchainPlanSha256", "preferredMode", "isolation", "branch", "routeId", "slices"],
     "request",
     "execution target",
   );
@@ -140,6 +140,7 @@ function validateRequest(request) {
   assertEnum(request.preferredMode, MODES, "preferredMode", "execution target");
   assertEnum(request.isolation, ["optional", "required"], "isolation", "execution target");
   if (request.branch !== undefined) validateBranch(request.branch);
+  if (request.routeId !== undefined) assertString(request.routeId, "routeId", "execution target");
   validateSlices(request.slices);
   return request;
 }
@@ -160,11 +161,17 @@ function selectedMode(request, repo) {
 function resolveExecutionTarget(request, options = {}) {
   validateRequest(request);
   const repo = repository(options.projectRoot || process.cwd());
+  if (request.routeId !== undefined && !options.toolchainPlan) invalid("routeId requires a toolchain plan");
   if (options.toolchainPlan) {
     if (options.toolchainPlan.schema !== "design-pipeline.toolchain-plan.v1" || !["ready", "blocked"].includes(options.toolchainPlan.status)) {
       invalid("toolchain plan has an unsupported schema or status");
     }
     if (request.toolchainPlanSha256 !== sha256(canonicalJson(options.toolchainPlan))) invalid("toolchainPlanSha256 does not match the toolchain plan");
+    if (request.routeId !== undefined) {
+      if (request.routeId !== options.toolchainPlan.primaryRouteId) invalid("routeId does not match the toolchain primary route");
+      if (request.slices.some((slice) => slice.owner !== request.routeId)) invalid("execution slice owner is not authorized by the selected route");
+    }
+    if (request.routeId === undefined && options.toolchainPlan.primaryRouteId) invalid("routeId is required when a toolchain primary route is present");
   }
   const mode = selectedMode(request, repo);
   const blockers = [];
@@ -180,6 +187,7 @@ function resolveExecutionTarget(request, options = {}) {
     status: blockers.length ? "blocked" : "ready",
     id: request.id,
     toolchainPlanSha256: request.toolchainPlanSha256,
+    ...(request.routeId ? { routeId: request.routeId } : {}),
     mode,
     projectRoot: repo.root,
     executionRoot,
@@ -195,7 +203,7 @@ function resolveExecutionTarget(request, options = {}) {
 
 function validatePlan(plan, options = {}) {
   const required = ["schema", "status", "id", "toolchainPlanSha256", "mode", "projectRoot", "executionRoot", "branch", "baseBranch", "baseHead", "dirtyAtResolution", "slices", "cleanup", "blockers"];
-  assertKeys(plan, required, required, "plan", "execution target");
+  assertKeys(plan, required, [...required, "routeId"], "plan", "execution target");
   if (plan.schema !== PLAN_SCHEMA) invalid("unsupported execution plan schema");
   assertEnum(plan.status, ["ready", "blocked"], "status", "execution target");
   validateId(plan.id);
@@ -205,6 +213,7 @@ function validatePlan(plan, options = {}) {
   assertString(plan.executionRoot, "executionRoot", "execution target");
   if (plan.mode === "worktree") validateBranch(plan.branch);
   else assertString(plan.branch, "branch", "execution target");
+  if (plan.routeId !== undefined) assertString(plan.routeId, "routeId", "execution target");
   assertString(plan.baseBranch, "baseBranch", "execution target");
   if (!/^[a-f0-9]{40,64}$/.test(plan.baseHead || "")) invalid("baseHead must be a Git object id");
   if (typeof plan.dirtyAtResolution !== "boolean") invalid("dirtyAtResolution must be boolean");

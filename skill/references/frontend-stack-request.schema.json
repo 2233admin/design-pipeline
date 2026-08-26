@@ -11,6 +11,7 @@
     "brief": { "type": "string", "minLength": 1 },
     "existing": { "type": "object" },
     "requested": { "type": "object" },
-    "capabilities": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+    "capabilities": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "context": { "type": "object" }
   }
 }

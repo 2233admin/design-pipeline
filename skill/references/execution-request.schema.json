@@ -11,6 +11,7 @@
     "toolchainPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "preferredMode": { "enum": ["auto", "in-place", "worktree", "sequential"] },
     "isolation": { "enum": ["optional", "required"] },
+    "routeId": { "type": "string", "minLength": 1 },
     "branch": { "type": "string", "pattern": "^codex/[a-z0-9][a-z0-9._/-]{0,100}$" },
     "slices": {
       "type": "array",

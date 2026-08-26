@@ -211,12 +211,12 @@ function routePrismRequest({ query, manifestFile = defaultManifest }) {
   const ambiguous = top.score === 0 || top.score === second.score;
   return {
     schema: "design-pipeline.prism-system-route.v1",
-    status: top.score === 0 ? "needs-clarification" : "ready",
+    status: top.score === 0 || ambiguous ? "needs-clarification" : "ready",
     query,
-    route: top.score === 0 ? null : top.route.id,
+    route: top.score === 0 || ambiguous ? null : top.route.id,
     confidence: top.score === 0 ? "none" : ambiguous ? "low" : top.score >= 3 ? "high" : "medium",
     ambiguous,
-    sequence: top.score === 0 ? [] : top.route.sequence,
+    sequence: top.score === 0 || ambiguous ? [] : top.route.sequence,
     candidates: scored.map(({ route, score, matchedKeywords }) => ({ id: route.id, score, matchedKeywords })),
     instruction: ambiguous ? "Use project context to resolve the top candidates; ask one concise question only if the choice changes the work." : "Load Design DNA first, then run the narrow sequence through the native pipeline stages.",
   };

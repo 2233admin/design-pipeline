@@ -11,12 +11,11 @@ function catalog() {
   return normalizeSnapshot(JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8")));
 }
 
-test("routes web app UI to the strongest recorded block source and keeps license review visible", () => {
+test("routes web app UI to a ready local source before licensed references", () => {
   const result = routeComponents({ catalog: catalog(), brief: "SaaS dashboard app UI", platform: "web" });
-  assert.equal(result.status, "review");
-  assert.equal(result.routes.find((route) => route.capability === "app-ui").selected.id, "frontend-component-sources:component:reactbits-pro/app-ui");
-  assert.equal(result.routes.find((route) => route.capability === "app-ui").selected.requiresLicense, true);
-  assert.match(result.next, /license|authority/i);
+  assert.equal(result.status, "ready");
+  assert.equal(result.routes.find((route) => route.capability === "app-ui").selected.id, "frontend-component-sources:component:smoothui/components");
+  assert.equal(result.routes.find((route) => route.capability === "app-ui").selected.requiresLicense, undefined);
 });
 
 test("routes Expo numeric content through the native package and web numeric content through the platform fallback", () => {

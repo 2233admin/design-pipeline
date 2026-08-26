@@ -4,7 +4,7 @@
   "title": "Unified Frontend Toolchain Plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "status", "framework", "brief", "styling", "uiLibrary", "graphics", "tools", "probes", "invocations", "verification", "recommendedSkills", "blockers", "reviews", "evidence", "sourceHashes"],
+  "required": ["schema", "status", "framework", "brief", "styling", "uiLibrary", "graphics", "primaryRouteId", "tools", "probes", "invocations", "verification", "recommendedSkills", "blockers", "reviews", "evidence", "sourceHashes"],
   "properties": {
     "schema": { "const": "design-pipeline.toolchain-plan.v1" },
     "status": { "enum": ["ready", "blocked"] },
@@ -13,6 +13,8 @@
     "styling": { "type": "object" },
     "uiLibrary": { "type": "object" },
     "graphics": { "type": ["object", "null"] },
+    "primaryRouteId": { "type": ["string", "null"] },
+    "routingContext": { "type": ["object", "null"] },
     "tools": { "type": "array", "items": { "type": "object" } },
     "probes": { "type": "array", "items": { "type": "object" } },
     "invocations": { "type": "array", "items": { "type": "object" } },

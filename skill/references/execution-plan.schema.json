@@ -10,6 +10,7 @@
     "status": { "enum": ["ready", "blocked"] },
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$" },
     "toolchainPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "routeId": { "type": "string", "minLength": 1 },
     "mode": { "enum": ["in-place", "worktree", "sequential"] },
     "projectRoot": { "type": "string", "minLength": 1 },
     "executionRoot": { "type": "string", "minLength": 1 },

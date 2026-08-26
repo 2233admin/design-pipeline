@@ -75,7 +75,8 @@ function modeScore(mode) {
 
 function candidateScore(entry, capability) {
   const route = entry.routing;
-  return (route.capabilities.includes(capability) ? 100 : 0) + evidenceScore(route.evidenceStatus) + modeScore(route.mode);
+  const readiness = implementationStatus(entry) === "ready" ? 50 : 0;
+  return (route.capabilities.includes(capability) ? 100 : 0) + readiness + evidenceScore(route.evidenceStatus) + modeScore(route.mode);
 }
 
 function implementationStatus(entry) {

@@ -181,9 +181,10 @@ function resolveComponentCapabilities(request, projectRoot, capabilityRegistry, 
   }
   const byId = capabilityMap(capabilityRegistry);
   const requiredChecks = [...new Set(capabilities.flatMap((id) => byId.get(id).verification))].sort();
+  const reviewRoutes = routes.filter((route) => route.status === "review" || route.status === "experimental");
   const base = {
     schema: RESOLUTION_SCHEMA,
-    status: missing.length || capabilities.length === 0 ? "blocked" : "ready",
+    status: missing.length || capabilities.length === 0 ? "blocked" : reviewRoutes.length ? "review" : "ready",
     framework: request.framework,
     brief: request.brief || null,
     capabilities,
@@ -191,6 +192,7 @@ function resolveComponentCapabilities(request, projectRoot, capabilityRegistry, 
     requiredChecks,
     missingCapabilities: missing,
     blockers: capabilities.length === 0 ? ["no component capabilities were requested"] : missing.map((id) => `no provider covers ${id}`),
+    reviews: reviewRoutes.map((route) => `${route.provider} is ${route.status} for ${route.capability}`),
     registryHashes: { capabilities: sha256(canonicalJson(capabilityRegistry)), providers: sha256(canonicalJson(providerRegistry)) },
     constraints: ["resolution never installs packages or rewrites project configuration", "candidate providers require an explicit adoption decision"],
   };

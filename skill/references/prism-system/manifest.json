@@ -34,17 +34,17 @@
   "routes": [
     {
       "id": "prototype",
-      "keywords": ["prototype", "mock", "mockup", "quick", "first pass", "explore", "try ", "idea", "sketch", "rough"],
+      "keywords": ["prototype", "mock", "mockup", "quick", "first pass", "explore", "try ", "idea", "sketch", "rough", "原型", "样稿", "草图", "快速尝试"],
       "sequence": ["design/foundation/design-dna.md", "design/agents/prototyping-agent.md"]
     },
     {
       "id": "ui-craft",
-      "keywords": ["critique", "check", "review", "is this", "tokens", "spacing", "contrast", "accessibility", "a11y", "states", "audit", "fix", "polish", "improve", "frame", "score"],
+      "keywords": ["critique", "check", "review", "is this", "tokens", "spacing", "contrast", "accessibility", "a11y", "states", "audit", "fix", "polish", "improve", "frame", "score", "检查", "审查", "对比度", "可访问性", "无障碍", "修复", "打磨"],
       "sequence": ["design/foundation/design-dna.md", "design/ui/design-critique.md", "design/ui/a11y-check.md", "design/ui/content-style-check.md", "design/ui/token-mapping-audit.md"]
     },
     {
       "id": "new-experience",
-      "keywords": ["new ", "design a", "flow", "journey", "create", "experience", "page type", "onboarding", "paywall", "feature"],
+      "keywords": ["new ", "design a", "flow", "journey", "create", "experience", "page type", "onboarding", "paywall", "feature", "设计", "流程", "体验", "新功能", "创建"],
       "sequence": ["design/foundation/design-dna.md", "design/ux/experience-principles.md", "design/ux/flow-design.md", "design/ux/page-templates.md", "design/ui/design-critique.md", "design/handoff/handoff-flow.md"]
     },
     {

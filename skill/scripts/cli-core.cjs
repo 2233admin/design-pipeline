@@ -1128,7 +1128,13 @@ function dispatch(argv) {
   if (option(parsed, "--help") === true || option(parsed, "-h") === true || !parsed.positionals.length || parsed.positionals[0] === "help") {
     return { result: { status: "help", help: publicHelp() }, exitCode: 0, json };
   }
+  if (parsed.positionals.length > 2) {
+    fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
+  }
   const [command, action] = parsed.positionals;
+  if (action && ["doctor", "status"].includes(command)) {
+    fail("cli", `${command} does not accept an action`, { code: "UNKNOWN_ARGUMENT" });
+  }
   const root = rootFrom(parsed);
   const entry = resolveCommand(command, action);
   if (!entry) fail("cli", `unknown command: ${[command, action].filter(Boolean).join(" ")}`, { code: "UNKNOWN_COMMAND" });

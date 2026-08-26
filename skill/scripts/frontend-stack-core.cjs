@@ -1,6 +1,7 @@
 "use strict";
 
 const { canonicalJson, fail, isObject, sha256, sortValue } = require("./contract-utils.cjs");
+const { resolvePolicy } = require("./adaptation-core.cjs");
 
 const REGISTRY_SCHEMA = "design-pipeline.frontend-stack-registry.v1";
 const REQUEST_SCHEMA = "design-pipeline.frontend-stack-request.v1";
@@ -33,6 +34,7 @@ function validateRegistry(registry) {
     if (!["always", "capability", "keyword"].includes(tool.activation)) invalid(`tool ${tool.id} has an invalid activation`);
     if (tool.activation === "keyword") strings(tool.keywords, `tools.${tool.id}.keywords`, false);
     for (const key of ["mode", "status", "source"]) if (typeof tool[key] !== "string" || !tool[key].trim()) invalid(`tool ${tool.id} has an invalid ${key}`);
+    if (tool.requiresLicense !== undefined && typeof tool.requiresLicense !== "boolean") invalid(`tool ${tool.id} has an invalid requiresLicense`);
   }
   if (registry.styling.map(({ id }) => id).sort().join("|") !== REQUIRED_STYLING.join("|")) invalid("styling options do not match the governed set");
   if (registry.uiLibraries.map(({ id }) => id).sort().join("|") !== REQUIRED_UI.join("|")) invalid("UI libraries do not match the governed set");
@@ -96,22 +98,30 @@ function routeTools(request, registry, capabilities, skillCatalog) {
     id: tool.id, mode: tool.mode, status: tool.status, capabilities: tool.capabilities.filter((item) => capabilities.includes(item)), source: tool.source,
     ...(tool.revision ? { revision: tool.revision } : {}), ...(tool.reviewedAt ? { reviewedAt: tool.reviewedAt } : {}),
     ...(tool.license ? { license: tool.license } : {}), ...(tool.licenseUrl ? { licenseUrl: tool.licenseUrl } : {}),
+    ...(tool.requiresLicense !== undefined ? { requiresLicense: tool.requiresLicense } : {}),
     ...(tool.endpoint ? { endpoint: tool.endpoint } : {}), ...(tool.interfaces ? { interfaces: tool.interfaces } : {}),
     ...(tool.readOnlyTools ? { readOnlyTools: tool.readOnlyTools } : {}), ...(tool.requirements ? { requirements: tool.requirements } : {}),
     ...(tool.constraints ? { constraints: tool.constraints } : {}), ...(tool.fallback ? { fallback: tool.fallback } : {}),
     ...(tool.lifecycle ? { lifecycle: tool.lifecycle } : {}),
   }));
+  const ranked = routes.sort((left, right) => {
+    const readiness = (value) => value.status === "ready" && !value.requiresLicense ? 100 : 0;
+    const activation = (value) => value.mode === "project-owned" ? 20 : value.mode === "platform" ? 10 : 0;
+    return readiness(right) + activation(right) - readiness(left) - activation(left) || left.id.localeCompare(right.id);
+  });
+  const primaryRoute = ranked.find((route) => route.status === "ready" && !route.requiresLicense) || ranked[0] || null;
   const recommendedSkills = [...new Set(capabilities.flatMap((capability) => skillCatalog.routes[capability] || []))].sort();
-  return { routes: sortValue(routes), recommendedSkills };
+  return { routes: sortValue(ranked), primaryRoute, recommendedSkills };
 }
 
 function resolveFrontendStack(request, registry, skillCatalog) {
   validateRegistry(registry);
   if (!isObject(request) || request.schema !== REQUEST_SCHEMA) invalid("unsupported request");
-  const extras = Object.keys(request).filter((key) => !["schema", "framework", "brief", "existing", "requested", "capabilities"].includes(key));
+  const extras = Object.keys(request).filter((key) => !["schema", "framework", "brief", "existing", "requested", "capabilities", "context"].includes(key));
   if (extras.length) invalid(`request has unsupported properties: ${extras.join(", ")}`);
   if (typeof request.framework !== "string" || !request.framework.trim()) invalid("framework is required");
   if (typeof request.brief !== "string" || !request.brief.trim()) invalid("brief is required");
+  if (request.context !== undefined && !isObject(request.context)) invalid("context must be an object");
   const framework = request.framework.trim().toLowerCase();
   if (!FRAMEWORKS.has(framework)) invalid(`unsupported framework ${framework}`);
   const wanted = request.requested || {};
@@ -130,6 +140,12 @@ function resolveFrontendStack(request, registry, skillCatalog) {
   if (!isObject(skillCatalog) || skillCatalog.schema !== "design-pipeline.skill-catalog.v1" || Object.values(skillCatalog.categories || {}).flat().length !== skillCatalog.count || skillCatalog.count !== 127) invalid("MengTo skill catalog is invalid");
   const capabilities = requestedCapabilities(request, styling);
   const toolRouting = routeTools(request, registry, capabilities, skillCatalog);
+  const routeReviews = toolRouting.routes
+    .filter((route) => route.status !== "ready")
+    .map((route) => `${route.id} is ${route.status}`);
+  const routingContext = request.context === undefined
+    ? null
+    : resolvePolicy(request.context);
   const status = blockers.length ? "blocked" : "ready";
   return sortValue({
     schema: DECISION_SCHEMA,
@@ -142,10 +158,12 @@ function resolveFrontendStack(request, registry, skillCatalog) {
       ...(shadcnPreset ? { shadcnPreset } : {}),
     },
     capabilities,
+    primaryRoute: toolRouting.primaryRoute,
     toolRoutes: toolRouting.routes,
     recommendedSkills: toolRouting.recommendedSkills,
+    ...(routingContext ? { routingContext } : {}),
     blockers,
-    reviews,
+    reviews: [...reviews, ...routeReviews],
     evidence: [`registry:${registry.reviewedAt}`, `mengto:${skillCatalog.revision}`, ...toolRouting.routes.map((tool) => `tool:${tool.id}@${tool.revision || tool.source}`)],
   });
 }

@@ -57,10 +57,11 @@ test("resolution prefers installed framework providers and preserves project fal
   const vueRoot = project({ dependencies: { "@vuetify/v0": "1.0.0" } });
   const request = { schema: "design-pipeline.component-resolution-request.v1", framework: "vue", brief: "筛选、分页和多选的数据表格" };
   const installed = resolveComponentCapabilities(request, vueRoot, capabilities, providers);
-  assert.equal(installed.status, "ready");
+  assert.equal(installed.status, "review");
   assert.equal(installed.routes.find(({ capability }) => capability === "data.pagination").provider, "vuetify0");
   assert.equal(installed.routes.find(({ capability }) => capability === "state.loading").provider, "project-dom");
   assert.equal(installed.missingCapabilities.length, 0);
+  assert.ok(installed.reviews.some((value) => value.includes("vuetify0") && value.includes("review") && value.includes("data.pagination")));
 
   const plain = resolveComponentCapabilities(request, project(), capabilities, providers);
   assert.ok(plain.routes.every(({ provider }) => provider === "project-dom"));
@@ -133,12 +134,12 @@ test("inventory exposes project components without inventing capabilities", () =
 });
 
 test("binding plan maps resolution routes to framework bindings without generating source", () => {
-  const root = project({ dependencies: { "@vuetify/v0": "1.0.0" } });
+  const root = project();
   const resolution = resolveComponentCapabilities({ schema: "design-pipeline.component-resolution-request.v1", framework: "vue", capabilities: ["data.pagination"] }, root, capabilities, providers);
   const inventory = inventoryProjectComponents(root, "vue");
   const plan = bindComponentResolution(resolution, inventory, providers);
   assert.equal(plan.schema, "design-pipeline.component-binding-plan.v1");
-  assert.equal(plan.bindings.find(({ capability }) => capability === "data.pagination").binding, "vue-composable");
+  assert.equal(plan.bindings.find(({ capability }) => capability === "data.pagination").binding, "project-component");
   assert.equal(plan.generatedFiles.length, 0);
 });
 

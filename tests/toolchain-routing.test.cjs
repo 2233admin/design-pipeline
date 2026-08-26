@@ -30,13 +30,23 @@ function request(overrides = {}) {
 }
 
 test("Reflex and XY resolve into one executable toolchain plan", () => {
-  const plan = resolveToolchain(request(), sources);
+  const plan = resolveToolchain(request({
+    context: {
+      schema: "design-pipeline.adaptation-policy-input.v1",
+      task: [{ id: "questions", dimension: "question-sequencing", value: "one-at-a-time" }],
+      constraints: [{ id: "accessibility" }],
+      gates: [],
+    },
+  }), sources);
   assert.equal(plan.status, "ready");
   assert.equal(plan.framework, "reflex");
   assert.equal(plan.styling.id, "tailwindcss");
   assert.equal(plan.graphics.id, "reflex-xy");
   assert.equal(plan.graphics.guide, "references/xy-charting.md");
+  assert.equal(plan.primaryRouteId, "design-pipeline/core");
+  assert.equal(plan.routingContext.rules[0].dimension, "question-sequencing");
   assert.ok(plan.tools.some(({ id }) => id === "reflex-xy"));
+  assert.equal(plan.tools[0].id, plan.primaryRouteId);
   assert.deepEqual(plan.probes.find(({ toolId }) => toolId === "reflex-xy").command.slice(0, 2), ["python", "-c"]);
   assert.deepEqual(plan.invocations.find(({ toolId }) => toolId === "reflex-xy").command, ["reflex", "run"]);
   assert.ok(plan.verification.find(({ toolId }) => toolId === "reflex-xy").evidenceTypes.includes("static-export"));
@@ -92,9 +102,11 @@ test("Vite DevTools routes its project-local probe and evidence contract", () =>
   const probe = plan.probes.find(({ toolId }) => toolId === "vitejs/devtools");
   const invocation = plan.invocations.find(({ toolId }) => toolId === "vitejs/devtools");
   const verification = plan.verification.find(({ toolId }) => toolId === "vitejs/devtools");
-  assert.deepEqual(probe.command.slice(0, 2), ["node", "-e"]);
+  assert.equal(probe.status, "review");
+  assert.equal(probe.command, null);
   assert.equal(invocation.owner, "agent");
-  assert.deepEqual(invocation.command.slice(0, 2), ["vite-devtools", "--root"]);
+  assert.equal(invocation.status, "review");
+  assert.equal(invocation.command, null);
   assert.ok(verification.evidenceTypes.includes("mounted-integrations"));
 });
 

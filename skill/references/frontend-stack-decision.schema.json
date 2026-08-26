@@ -4,7 +4,7 @@
   "title": "Frontend Stack And Tool Routing Decision",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "status", "framework", "registryHash", "selected", "capabilities", "toolRoutes", "recommendedSkills", "blockers", "reviews", "evidence"],
+  "required": ["schema", "status", "framework", "registryHash", "selected", "capabilities", "primaryRoute", "toolRoutes", "recommendedSkills", "blockers", "reviews", "evidence"],
   "properties": {
     "schema": { "const": "design-pipeline.frontend-stack-decision.v1" },
     "status": { "enum": ["ready", "blocked"] },
@@ -12,10 +12,12 @@
     "registryHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "selected": { "type": "object" },
     "capabilities": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "primaryRoute": { "type": ["object", "null"] },
     "toolRoutes": { "type": "array", "items": { "type": "object" } },
     "recommendedSkills": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "blockers": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "reviews": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "routingContext": { "type": "object" },
     "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 } }
   }
 }

@@ -117,7 +117,7 @@ test("auto routing keeps one clean React slice in place and sequences multiple o
 test("React and website-cloning toolchain plans feed the same execution router", (t) => {
   const { root, worktreeBase } = repository(t);
   const reactToolchain = resolvedToolchain("Build a React settings page");
-  const react = resolveExecutionTarget(request({ toolchainPlanSha256: sha256(canonicalJson(reactToolchain)) }), {
+  const react = resolveExecutionTarget(request({ toolchainPlanSha256: sha256(canonicalJson(reactToolchain)), routeId: reactToolchain.primaryRouteId, slices: [{ id: "ui", owner: reactToolchain.primaryRouteId, scope: ["src/"] }] }), {
     projectRoot: root,
     worktreeBase,
     toolchainPlan: reactToolchain,
@@ -130,6 +130,8 @@ test("React and website-cloning toolchain plans feed the same execution router",
     id: "website-clone-chain",
     toolchainPlanSha256: sha256(canonicalJson(cloneToolchain)),
     isolation: "required",
+    routeId: cloneToolchain.primaryRouteId,
+    slices: [{ id: "ui", owner: cloneToolchain.primaryRouteId, scope: ["src/"] }],
   }), { projectRoot: root, worktreeBase, toolchainPlan: cloneToolchain });
   assert.equal(clone.mode, "worktree");
 });
@@ -232,7 +234,11 @@ test("CLI routes, prepares, and finalizes a React execution with bound receipts"
   const { root } = repository(t);
   const artifactRoot = path.join(root, ".design-pipeline");
   const toolchain = resolvedToolchain("Build a React settings page");
-  const executionRequest = request({ toolchainPlanSha256: sha256(canonicalJson(toolchain)) });
+  const executionRequest = request({
+    toolchainPlanSha256: sha256(canonicalJson(toolchain)),
+    routeId: toolchain.primaryRouteId,
+    slices: [{ id: "ui", owner: toolchain.primaryRouteId, scope: ["src/"] }],
+  });
   writeJson(path.join(artifactRoot, "toolchain-plan.json"), toolchain);
   writeJson(path.join(artifactRoot, "execution-request.json"), executionRequest);
 
