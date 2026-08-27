@@ -172,6 +172,10 @@ node skill/scripts/check-motion-foundation.cjs --project-root . --json
 
 组件库不直接变成项目依赖。流水线先把需求拆成稳定的行为能力，再按项目框架、已有依赖、
 来源证据、接入方式和许可证选路；没有授权的远程库只会得到 `review`，不会被静默复制。
+当前内置的用户策展参考来源包括 `Beautiful UI`、`beUI`、`Rare UI`、`Transitions.dev`、
+`shadcn/ui`、`Shadcnblocks`、`Magic UI`、`Aceternity UI` 和 `AI SDK Elements`。
+它们记录在 `skill/references/component-source-catalog.json` 中，作为可搜索的灵感与组件来源；
+这些条目不是已安装依赖，实际接入前仍需核对源码、许可证、依赖、SSR/客户端边界和无障碍行为。
 
 ```bash
 # 与框架无关地分解表格能力，并自动补齐键盘、焦点、ARIA 和完整状态

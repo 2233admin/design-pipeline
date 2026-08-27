@@ -109,6 +109,215 @@
       }
     },
     {
+      "id": "beui/reference-library",
+      "name": { "en": "beUI animated component library", "zh": "beUI 动效组件库" },
+      "category": "animated-ui",
+      "status": "stable",
+      "description": "Reference source for animated React and Next.js components built around Motion, Tailwind CSS, and shadcn-style copy-paste delivery.",
+      "routing": {
+        "capabilities": ["animated-react-components", "animated-ui", "app-ui", "button", "card", "dialog", "drawer", "navigation", "tabs", "text-animation", "transition"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "fallback": "Keep project-owned semantic DOM, tokens, and motion rules; adopt only the measured interaction."
+      },
+      "alignment": {
+        "framework": "React",
+        "styling": ["Tailwind CSS", "shadcn/ui-compatible"],
+        "motion": ["Motion"],
+        "delivery": "Reference only; verify source license and dependencies before copying."
+      },
+      "provenance": {
+        "source": "beUI",
+        "url": "https://beui.dev/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
+      "id": "rareui/reference-library",
+      "name": { "en": "Rare UI animated component library", "zh": "Rare UI 动效组件库" },
+      "category": "animated-ui",
+      "status": "stable",
+      "description": "Reference source for distinctive animated React components delivered as copy-paste or shadcn registry entries.",
+      "routing": {
+        "capabilities": ["animated-react-components", "animated-ui", "app-ui", "button", "card", "form", "interactive-card", "text-animation", "transition"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "fallback": "Keep project-owned semantic DOM, tokens, and motion rules; adopt only the measured interaction."
+      },
+      "alignment": {
+        "framework": "React",
+        "styling": ["Tailwind CSS", "shadcn/ui-compatible"],
+        "motion": ["Motion"],
+        "delivery": "Reference only; verify source license and dependencies before copying."
+      },
+      "provenance": {
+        "source": "Rare UI",
+        "url": "https://rareui.com/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
+      "id": "transitions/reference-library",
+      "name": { "en": "Transitions.dev UI transition library", "zh": "Transitions.dev UI 过渡库" },
+      "category": "motion",
+      "status": "stable",
+      "description": "Reference source for copy-paste CSS and web UI transitions covering content, layout, navigation, and state changes.",
+      "routing": {
+        "capabilities": ["animated-ui", "card", "dialog", "loading-state", "numeric-content-transition", "tabs", "text-animation", "transition"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "fallback": "Use project motion primitives and semantic state changes; verify reduced-motion behavior before adapting a transition."
+      },
+      "alignment": {
+        "framework": "web platform",
+        "styling": ["CSS"],
+        "motion": ["CSS transitions", "Web Animations"],
+        "delivery": "Reference only; verify source license and dependencies before copying."
+      },
+      "provenance": {
+        "source": "Transitions.dev",
+        "url": "https://transitions.dev/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
+      "id": "shadcn/ui",
+      "name": { "en": "shadcn/ui component primitives", "zh": "shadcn/ui 组件基元" },
+      "category": "component-library",
+      "status": "stable",
+      "description": "Reference source for accessible, composable React components and project-owned shadcn/ui source installation.",
+      "routing": {
+        "capabilities": ["app-ui", "avatar", "badge", "button", "card", "data-table", "dialog", "form", "navigation", "select", "tabs", "text-input", "toast-notification", "tooltip"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "fallback": "Prefer project-owned primitives and existing tokens; use shadcn/ui patterns only after checking the target stack and source license."
+      },
+      "alignment": {
+        "framework": "React",
+        "styling": ["Tailwind CSS"],
+        "motion": ["CSS", "Web Animations"],
+        "delivery": "Reference only; generated source becomes project-owned after explicit adoption."
+      },
+      "provenance": {
+        "source": "shadcn/ui",
+        "url": "https://ui.shadcn.com/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
+      "id": "shadcnblocks/reference-library",
+      "name": { "en": "Shadcnblocks UI blocks", "zh": "Shadcnblocks UI 区块库" },
+      "category": "page-block",
+      "status": "stable",
+      "description": "Reference source for shadcn/ui-compatible landing-page, application, and marketing blocks.",
+      "routing": {
+        "capabilities": ["app-shell", "app-ui", "cta", "data-table", "faq", "features", "hero", "navigation", "page-block", "pricing", "stats"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "requiresLicense": true,
+        "fallback": "Use project-owned layout primitives and tokens; treat premium blocks as review-only until project authority confirms the license."
+      },
+      "alignment": {
+        "framework": "React",
+        "styling": ["Tailwind CSS", "shadcn/ui-compatible"],
+        "motion": ["CSS", "Web Animations"],
+        "delivery": "Reference only; premium source requires explicit license review."
+      },
+      "provenance": {
+        "source": "Shadcnblocks",
+        "url": "https://shadcnblocks.com/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
+      "id": "magicui/reference-library",
+      "name": { "en": "Magic UI animated components", "zh": "Magic UI 动效组件库" },
+      "category": "animated-ui",
+      "status": "stable",
+      "description": "Reference source for animated React components, effects, and landing-page blocks built for Tailwind CSS and shadcn/ui.",
+      "routing": {
+        "capabilities": ["animated-background", "animated-ui", "app-ui", "button", "card", "cta", "features", "hero", "page-block", "text-animation", "transition"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "fallback": "Keep project-owned semantic structure and motion budget; adapt only the named visual effect after source review."
+      },
+      "alignment": {
+        "framework": "React",
+        "styling": ["Tailwind CSS", "shadcn/ui-compatible"],
+        "motion": ["Motion"],
+        "delivery": "Reference only; verify source license and dependencies before copying."
+      },
+      "provenance": {
+        "source": "Magic UI",
+        "url": "https://magicui.design/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
+      "id": "aceternity/reference-library",
+      "name": { "en": "Aceternity UI effects and components", "zh": "Aceternity UI 特效组件库" },
+      "category": "animated-ui",
+      "status": "stable",
+      "description": "Reference source for animated React components, visual effects, and landing-page sections.",
+      "routing": {
+        "capabilities": ["animated-background", "animated-ui", "button", "card", "features", "hero", "interactive-card", "page-block", "text-animation", "transition"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "fallback": "Keep project-owned semantic DOM and tokens; replace visual effects with the simplest compatible implementation when needed."
+      },
+      "alignment": {
+        "framework": "React",
+        "styling": ["Tailwind CSS"],
+        "motion": ["Motion", "CSS"],
+        "delivery": "Reference only; verify source license, dependencies, and reduced-motion behavior before copying."
+      },
+      "provenance": {
+        "source": "Aceternity UI",
+        "url": "https://ui.aceternity.com/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
+      "id": "ai-sdk-elements/reference-library",
+      "name": { "en": "AI SDK Elements", "zh": "AI SDK Elements AI 组件库" },
+      "category": "ai-ui",
+      "status": "stable",
+      "description": "Reference source for composable AI-native chat, code, voice, workflow, and agent interface components built on shadcn/ui.",
+      "routing": {
+        "capabilities": ["ai-chat", "ai-native-ui", "app-ui", "code-block", "conversation", "prompt-input", "streaming-ui", "tool-call", "voice-ui", "workflow"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "user-provided",
+        "fallback": "Keep model calls, permissions, and semantic status content project-owned; adapt only presentational components after validating the AI SDK boundary."
+      },
+      "alignment": {
+        "framework": "React",
+        "styling": ["Tailwind CSS", "shadcn/ui-compatible"],
+        "motion": ["CSS", "Web Animations"],
+        "delivery": "Reference only; verify AI SDK version, dependencies, source license, and server/client boundaries."
+      },
+      "provenance": {
+        "source": "AI SDK Elements",
+        "url": "https://elements.ai-sdk.dev/",
+        "license": "unverified",
+        "attribution": "User-provided reference; metadata only"
+      }
+    },
+    {
       "id": "expo-content-transition/numeric-text",
       "name": { "en": "NumericText", "zh": "原生数字文本过渡" },
       "category": "motion",
