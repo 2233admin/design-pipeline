@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "eli5": {
+      "source": "anthropics/claude-plugins-community",
+      "sourceType": "github",
+      "skillPath": "eli5/skills/eli5/SKILL.md",
+      "computedHash": "00a3cf12b740f2b08e6c5fb0cf67e51fae4c197aabe1de863eae3c44ed6f33ea"
+    }
+  }
+}

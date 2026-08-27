@@ -233,7 +233,15 @@ const CAPABILITY_TERMS = Object.freeze({
   "text-animation": ["text animation", "animated text", "scramble text", "reveal text", "glitch text", "typewriter text", "文字动画"],
   transition: ["transition", "page transition", "scene transition", "过渡"],
   "numeric-content-transition": ["numeric text", "numeric", "counter", "animated number", "count up", "ticker", "changing number"],
-  "numeric-text": ["numeric text", "number text", "rolling digits", "numeric"], "animated-stat": ["animated stat", "animated metric", "live counter", "stat"]
+  "numeric-text": ["numeric text", "number text", "rolling digits", "numeric"], "animated-stat": ["animated stat", "animated metric", "live counter", "stat"],
+  "ai-chat": ["ai chat", "chat interface", "chatbot", "AI 对话", "聊天界面", "对话界面"],
+  "ai-native-ui": ["ai-native", "ai native", "ai ui", "AI UI", "AI interface"],
+  conversation: ["conversation", "chat conversation", "message list", "对话"],
+  "prompt-input": ["prompt input", "prompt composer", "提示输入"],
+  "streaming-ui": ["streaming ui", "streaming response", "流式界面", "流式响应"],
+  "tool-call": ["tool call", "tool invocation", "tool result", "工具调用"],
+  "voice-ui": ["voice ui", "voice input", "voice agent", "语音界面", "语音输入"],
+  workflow: ["workflow", "workflow ui", "agent workflow", "工作流"],
 });
 
 const TERM_TO_CAPABILITY = new Map();

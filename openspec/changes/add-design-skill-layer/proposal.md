@@ -12,7 +12,12 @@ browser, dependency, or promotion authority and must never replace deterministic
 - Start with `design.prototype`, `design.review`, `design.audit`, and `design.pick-library`.
 - Keep prototype work isolated and require a selection receipt before any future promotion.
 
+## Implementation Status
+
+Implemented in `skill/scripts/design-skill-core.cjs` and exposed through the `design-skill` CLI.
+The layer consumes Change B receipts and never performs a production target write itself.
+
 ## Dependency
 
-This change is design-only until Change A establishes gates and Change B establishes strict target,
-snapshot, and promotion receipts.
+Change A is the archived v1 Gate implementation and Change B is the completed
+`design-component-first-artifact-v2` receipt contract.

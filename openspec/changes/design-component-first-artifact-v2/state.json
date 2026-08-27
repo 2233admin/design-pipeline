@@ -1,22 +1,28 @@
 {
   "blockers": [],
   "changeId": "design-component-first-artifact-v2",
-  "evidence": [],
+  "evidence": [
+    "change-a:archive/2026-08-23-decouple-component-first-gate/handoff.md",
+    "component-first-v2-core.cjs",
+    "component-first-artifact-v2.schema.json",
+    "tests/component-first-v2.test.cjs",
+    "focused-tests:9-pass",
+    "tests:561-pass",
+    "package-qa:passed"
+  ],
   "extensions": {},
   "foundations": {
     "design": null,
     "motion": null
   },
-  "lastEventSeq": 0,
+  "lastEventSeq": 5,
   "migration": null,
-  "nextActions": [
-    "schedule-artifact-v2-implementation"
-  ],
-  "phase": "brief",
+  "nextActions": [],
+  "phase": "release-readiness",
   "registryVersion": "design-pipeline.phases.v2",
-  "revision": 0,
+  "revision": 5,
   "sceneRuntime": null,
   "schema": "design-pipeline.state.v2",
-  "status": "initialized",
-  "updatedAt": "2026-08-15T04:00:00.000Z"
+  "status": "complete",
+  "updatedAt": "2026-08-26T20:30:00.000Z"
 }

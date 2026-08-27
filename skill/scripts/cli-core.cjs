@@ -21,6 +21,19 @@ const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
 const { checkPlayground } = require("./playground-core.cjs");
 const { checkComponentFirstGate, checkComponentFirstStage } = require("./component-first-core.cjs");
+const {
+  checkV2Artifact,
+  migrateV1ToV2,
+  promotionReceipt,
+  selectionReceipt,
+} = require("./component-first-v2-core.cjs");
+const {
+  manifests: designSkillManifests,
+  promotePrototype,
+  routeDesignSkill,
+  runDesignSkill,
+  selectPrototype,
+} = require("./design-skill-core.cjs");
 const { exitCodeForStatus: componentFirstExitCode } = require("./component-first/orchestration/aggregate-result.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
@@ -84,12 +97,12 @@ const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
   "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root",
-  "--design-file", "--design-foundation", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
+  "--design-file", "--design-foundation", "--effect", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
-  "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id",
+  "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--selection", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id",
 ]);
 
 function parseArgs(argv) {
@@ -294,6 +307,8 @@ function publicHelp() {
     "  change init|resume|advance|migrate|repair",
     "  foundation check | direction check | playground check | reference check|resolve | reconstruction check | scene check",
     "  component-first check|stack|components|playground|page | high-fidelity check",
+    "  component-first-v2 check|migrate|select|promote",
+    "  design-skill route|manifest|run|select|promote",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
@@ -1144,6 +1159,85 @@ function componentFirstCommand(parsed, root, action) {
   return { result: componentFirstCliResult(result), exitCode: componentFirstExitCode(result.status) };
 }
 
+function writeOptionalJson(parsed, root, value) {
+  if (option(parsed, "--write") !== true) return null;
+  return atomicWriteProviderJson(root, requireOption(parsed, "--output"), value);
+}
+
+function componentFirstV2Command(parsed, root, action) {
+  if (action === "migrate") {
+    const input = readJson(artifact(parsed, root, "--artifact"), "component-first v1 artifact");
+    const result = migrateV1ToV2(input, { snapshotDigest: requireOption(parsed, "--snapshot") });
+    const output = writeOptionalJson(parsed, root, result);
+    return { result: { status: "migrated", artifact: result, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  const input = readJson(artifact(parsed, root, "--artifact"), "component-first v2 artifact");
+  if (action === "check") {
+    const result = checkV2Artifact(input, { projectRoot: root });
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "select") {
+    const selection = selectionReceipt(readJson(artifact(parsed, root, "--selection"), "component-first selection"));
+    if (selection.targetIdentityDigest !== input.target.targetIdentityDigest || selection.snapshotDigest !== input.target.snapshotDigest || selection.policyDigest !== input.policy.digest) {
+      return { result: { status: "blocked", reason: "selection is stale for the current target snapshot or policy" }, exitCode: 2 };
+    }
+    const result = { ...input, selection };
+    const output = writeOptionalJson(parsed, root, result);
+    return { result: { status: "selected", artifact: result, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "promote") {
+    if (option(parsed, "--approve") !== true || !option(parsed, "--approval")) fail("cli", "promotion requires --approve and --approval", { code: "APPROVAL_REQUIRED" });
+    const conformance = checkV2Artifact(input, { projectRoot: root });
+    if (conformance.status !== "passed") return { result: { status: "blocked", reason: "component conformance must pass before promotion", conformance }, exitCode: 2 };
+    const promotionInput = readJson(artifact(parsed, root, "--promotion"), "component-first promotion");
+    const promotion = promotionReceipt({
+      ...promotionInput,
+      targetIdentityDigest: input.target.targetIdentityDigest,
+      snapshotDigest: input.target.snapshotDigest,
+      policyDigest: input.policy.digest,
+      componentConformanceStatus: conformance.conformance,
+      visualAcceptanceStatus: input.visualAcceptance?.status || "not-evaluated",
+      approvedBy: option(parsed, "--approval"),
+    });
+    if (!input.selection || input.selection.receiptHash !== promotion.selectionReceiptHash) return { result: { status: "blocked", reason: "promotion requires the current selection receipt" }, exitCode: 2 };
+    if ((input.promotions || []).some((item) => item.selectionReceiptHash === promotion.selectionReceiptHash)) return { result: { status: "blocked", reason: "selection receipt was already promoted" }, exitCode: 2 };
+    const result = { ...input, promotions: [...(input.promotions || []), promotion] };
+    const output = writeOptionalJson(parsed, root, result);
+    return { result: { status: "promoted", artifact: result, promotion, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  fail("cli", `unknown component-first-v2 action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function designSkillCommand(parsed, root, action) {
+  if (action === "route") return { result: routeDesignSkill(requireOption(parsed, "--query")), exitCode: 0 };
+  if (action === "manifest") {
+    const skill = requireOption(parsed, "--skill");
+    const manifest = designSkillManifests()[skill];
+    if (!manifest) fail("cli", `unknown design skill ${skill}`, { code: "UNKNOWN_SKILL" });
+    return { result: { status: "ready", manifest }, exitCode: 0 };
+  }
+  if (action === "run") {
+    const result = runDesignSkill(requireOption(parsed, "--skill"), readJson(artifact(parsed, root, "--artifact"), "design skill input"), { effects: option(parsed, "--effect") ? [option(parsed, "--effect")] : undefined });
+    const output = writeOptionalJson(parsed, root, result.result);
+    return { result: { status: "complete", ...result, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "select") {
+    const prototypeSet = readJson(artifact(parsed, root, "--artifact"), "prototype set");
+    const selection = selectPrototype(prototypeSet, readJson(artifact(parsed, root, "--selection"), "prototype selection"));
+    const output = writeOptionalJson(parsed, root, selection);
+    return { result: { status: "selected", ...selection, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "promote") {
+    const v2 = readJson(artifact(parsed, root, "--artifact"), "component-first v2 artifact");
+    const selection = readJson(artifact(parsed, root, "--selection"), "prototype selection");
+    const input = readJson(artifact(parsed, root, "--promotion"), "promotion input");
+    const handoff = promotePrototype(v2, selection, { ...input, selectionReceiptHash: selection.receiptHash || selection.selectionReceipt?.receiptHash, options: { projectRoot: root } });
+    const output = writeOptionalJson(parsed, root, handoff);
+    return { result: { status: handoff.status, handoff, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  fail("cli", `unknown design-skill action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
 function highFidelityCommand(parsed, root, action) {
   if (action !== "check") fail("cli", `unknown high-fidelity action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
   return componentFirstCommand(parsed, root, "check");
@@ -1219,6 +1313,8 @@ const COMMANDS = {
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
   component: { run: ({ parsed, root, action }) => componentCommand(parsed, root, action) },
   "component-first": { run: ({ parsed, root, action }) => componentFirstCommand(parsed, root, action) },
+  "component-first-v2": { run: ({ parsed, root, action }) => componentFirstV2Command(parsed, root, action) },
+  "design-skill": { run: ({ parsed, root, action }) => designSkillCommand(parsed, root, action) },
   "high-fidelity": { run: ({ parsed, root, action }) => highFidelityCommand(parsed, root, action) },
   mengto: { run: ({ parsed, action }) => mengToCommand(parsed, action) },
   shadcnio: { run: ({ parsed, action }) => shadcnioCommand(parsed, action) },

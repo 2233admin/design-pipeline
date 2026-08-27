@@ -18,6 +18,8 @@
     "component-first-boundaries.test.cjs",
     "component-first-gates.test.cjs",
     "component-first.test.cjs",
+    "component-first-v2.test.cjs",
+    "design-skill-layer.test.cjs",
     "component-source-routing.test.cjs",
     "component-routing.test.cjs",
     "composition-structure.test.cjs",
@@ -47,6 +49,7 @@
     "interface-discipline.test.cjs",
     "interoperability.test.cjs",
     "mengto-skills.test.cjs",
+    "animation-opportunity-reference.test.cjs",
     "motion-foundation.test.cjs",
     "motion-verification.test.cjs",
     "palette-foundation.test.cjs",
@@ -70,6 +73,7 @@
     "visual-style-signals.test.cjs",
     "web-evidence-adapter.test.cjs",
     "website-cloning-init.test.cjs",
-    "skill-cli-handoff.test.cjs"
+    "skill-cli-handoff.test.cjs",
+    "claude-code-surface.test.cjs"
   ]
 }

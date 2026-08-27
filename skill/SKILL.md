@@ -31,6 +31,16 @@ shaping, design authority, experience quality, and implementation evidence. `hoo
 capabilities, not visual themes. Do not claim coverage from the command name alone: use the mapped
 artifact and evidence fields as the acceptance contract.
 
+## UX Research and AI Interaction Contract
+
+Treat research and AI interaction as decision-and-evidence work, not generic capability checklists.
+Read `references/ux-research-methods.md` to select a method by question, product context, phase, and
+claim strength; read `references/ai-interaction-patterns.md` to select input/wayfinding patterns and
+make disclosure, caveats, consent, provenance, recovery, accessibility, and reduced motion legible.
+Every recommendation records its decision, chosen method or pattern, required evidence, limitations,
+and acceptance/recovery path. Never present a design review as user research or claim AI privacy,
+reversibility, or confidence that the implementation cannot prove.
+
 ## Project DESIGN.md Invariant
 
 Every target project must have one reusable project `DESIGN.md` before implementation begins.
@@ -130,6 +140,10 @@ Run component conformance through the layered v1 gate after those artifacts exis
   run a target project, or install dependencies.
 - `high-fidelity check` is a v1 delegation alias. A passing component-first result is not a
   visual-acceptance result.
+- `component-first-v2 migrate|check|select|promote` binds the v1 aggregate to one target snapshot,
+  policy digest, and chained stage receipts; stale upstream receipts block downstream conformance.
+- `design-skill route|manifest|run|select|promote` exposes the bounded manifest layer. Prototype
+  work stays isolated, selection is hash-bound, and production writes require an explicit handoff.
 - Model `project-owned` as `componentOrigin`, never as a runtime stack. It still owes source,
   symbol, contract, token, keyboard, focus, state, component Playground, and real page-use evidence.
 - A `page-ready` result always carries `scope: prototype | production`; prototype scope cannot
@@ -325,6 +339,7 @@ Project motion foundation reference: `references/motion-foundation.md`.
 Machine-readable motion foundation schema: `references/motion-foundation.schema.json`.
 Motion primitive registry: `references/motion-primitives.json`.
 Motion spec reference: `references/motion-spec.md`.
+Animation opportunity and review reference: `references/animation-opportunity-and-review.md`.
 Reference evidence and spatial-routing spec: `references/reference-spec.md`.
 Change visual/screen-space design spec: `references/design-spec.md`.
 Change 3D world spec: `references/3d-spec.md`.
@@ -356,6 +371,7 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `emil-design-eng`: design-engineering judgment for animation and interaction polish.
 - `animation-vocabulary`: translate vague motion intent into precise timing, easing, choreography, and behavior language.
 - `review-animations`: strict post-implementation animation review.
+- `references/animation-opportunity-and-review.md`: project-owned gate for screening opportunities before implementation, naming vocabulary/curves, and recording review evidence.
 - `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).
 - `vercel-react-view-transitions`: React and Next.js view-transition implementation patterns.
 
@@ -588,6 +604,9 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
   implementation.
 - Check for project `MOTION.md`. If it is missing or incompatible with the requested interaction
   language, synthesize it from product requirements and `references/motion-foundation.md`.
+- When the brief includes non-trivial motion, read `references/animation-opportunity-and-review.md`
+  and complete its opportunity screen before selecting a runtime. Keep `prototype` on its existing
+  route; do not turn platform-specific or library-specific companions into default web capabilities.
 - Run `node <design-pipeline>/scripts/check-motion-foundation.cjs --project-root . --json`.
   Status `synthesis-required` is the mandatory route into motion-foundation synthesis; only
   `ready` unlocks implementation.
@@ -788,8 +807,9 @@ Create `tasks.md` with a checkbox list grouped by implementation surface:
 - Components
 - States
 - Playground build, selection, and purpose-aware integration when required
-- Motion
-- Motion spec
+- Motion opportunity screen and static-alternative decision
+- Motion vocabulary, curve, runtime, and spec
+- Motion review and evidence capture
 - Scene/runtime spec when required
 - Accessibility
 - Responsive QA
@@ -904,6 +924,9 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
   changed UI has an `interface-review` scope, consumer expansion, removed-signal inspection where
   applicable, and `Introduced` / `Regression` / `Pre-existing` status for every finding in `qa.md`.
 - Motion gate: interaction feedback is intentional, not decorative, and has reduced-motion fallback.
+- Animation opportunity/review gate: non-trivial motion passed the frequency, purpose, function, and
+  budget screen before implementation; its vocabulary/curve/runtime decision and actual-surface
+  review evidence are recorded, including interruption, performance, accessibility, and cleanup.
 - Motion foundation gate: project `MOTION.md` is `ready`, its hash is recorded, and selected
   primitive IDs exist in the bundled registry.
 - Motion spec gate: `motion.md` exists for any non-trivial motion and includes trigger, purpose, timing, easing, choreography, interruption behavior, implementation library, performance budget, and reduced-motion fallback.

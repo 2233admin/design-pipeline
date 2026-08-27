@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pipeline.local/schemas/design-skill-manifest.schema.json",
+  "title": "Design Skill Manifest V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "version", "effects", "inputSchema", "outputSchema", "policyReferences", "humanGates", "handoffSchema", "versionApplicability"],
+  "properties": {
+    "schema": { "const": "design-pipeline.design-skill-manifest.v1" },
+    "id": { "type": "string", "pattern": "^design\\.[a-z-]+$" },
+    "version": { "const": 1 },
+    "effects": { "type": "array", "uniqueItems": true, "items": { "enum": ["reference-only", "repository-read", "artifact-write", "plan-write", "sandbox-write", "target-write", "browser-execute", "dependency-install", "external-execute"] } },
+    "inputSchema": { "type": "string", "minLength": 1 },
+    "outputSchema": { "type": "string", "minLength": 1 },
+    "policyReferences": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "humanGates": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "handoffSchema": { "type": "string", "minLength": 1 },
+    "versionApplicability": { "type": "string", "minLength": 1 }
+  }
+}

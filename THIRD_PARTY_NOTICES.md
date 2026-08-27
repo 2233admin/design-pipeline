@@ -25,6 +25,10 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   https://reactbits.dev/text-animations/decrypted-text and https://github.com/DavidHDev/react-bits,
   MIT + Commons Clause. The pipeline stores the DecryptedText behavioral and accessibility
   contract only; it does not redistribute the component library itself.
+- User-curated component references: Beautiful UI, beUI, Rare UI, Transitions.dev, shadcn/ui,
+  Shadcnblocks, Magic UI, Aceternity UI, and AI SDK Elements. The catalog stores URL, routing,
+  and compatibility metadata only; no upstream source code, runtime, or dependency is bundled.
+  Licenses and usage terms remain unverified and the respective upstream sites are authoritative.
 - `reflex-dev/xy`, reviewed release `v0.0.6` at commit
   `55b8b61e432842995dc0b581113b0998a70a052d`, Apache-2.0. The pipeline bundles only routing and
   integration guidance; no XY Python, Rust, WebGL, or Reflex runtime code is redistributed.

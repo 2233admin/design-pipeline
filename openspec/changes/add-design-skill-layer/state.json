@@ -1,22 +1,30 @@
 {
   "blockers": [],
   "changeId": "add-design-skill-layer",
-  "evidence": [],
+  "evidence": [
+    "change-a:archive/2026-08-23-decouple-component-first-gate/handoff.md",
+    "change-b:design-component-first-artifact-v2/handoff.md",
+    "design-skill-core.cjs",
+    "design-skill-manifest.schema.json",
+    "design-promotion-handoff.schema.json",
+    "tests/design-skill-layer.test.cjs",
+    "focused-tests:9-pass",
+    "tests:561-pass",
+    "package-qa:passed"
+  ],
   "extensions": {},
   "foundations": {
     "design": null,
     "motion": null
   },
-  "lastEventSeq": 0,
+  "lastEventSeq": 5,
   "migration": null,
-  "nextActions": [
-    "wait-for-change-b"
-  ],
-  "phase": "brief",
+  "nextActions": [],
+  "phase": "release-readiness",
   "registryVersion": "design-pipeline.phases.v2",
-  "revision": 0,
+  "revision": 5,
   "sceneRuntime": null,
   "schema": "design-pipeline.state.v2",
-  "status": "initialized",
-  "updatedAt": "2026-08-15T04:00:00.000Z"
+  "status": "complete",
+  "updatedAt": "2026-08-26T20:30:00.000Z"
 }

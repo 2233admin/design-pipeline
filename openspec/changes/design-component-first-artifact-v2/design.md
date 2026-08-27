@@ -10,4 +10,9 @@ The planned receipts are `stack-runtime-receipt.v2`, `component-contract-receipt
 `component-first-gate.v2`. Visual comparison, typography, density, spacing, motion, accessibility,
 golden screenshots, and human/model approval belong to a separate Visual Acceptance Gate.
 
-No schema or runtime code is introduced by this planning change.
+The v2 contract is implemented by `skill/scripts/component-first-v2-core.cjs`. Migration consumes a
+`component-first-gate.v1` result and requires an explicit `sha256:<digest>` target snapshot. Every
+stage receipt carries target identity, snapshot, policy, input, parent receipt hashes, and its own
+receipt hash. Selection and promotion receipts are separate, hash-bound artifacts; promotion can
+only move a prototype to production after passed component conformance, while visual acceptance is
+reported independently and is never inferred.
