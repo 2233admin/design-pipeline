@@ -4,6 +4,8 @@
   "generated": ["PACKAGE.json", "scripts/install-local.cjs"],
   "required": [
     "SKILL.md",
+    "evals/evals.json",
+    "scripts/validate-evals.cjs",
     "scripts/designer-pipeline.cjs",
     "scripts/cli-core.cjs",
     "scripts/component-first-core.cjs",
@@ -196,6 +198,8 @@
     "references/reference-spec.md",
     "references/reconstruction-spec.md",
     "references/design-spec.md",
+    "references/anti-slop-review.md",
+    "references/impeccable-contract.md",
     "references/plain-language.md",
     "references/cjk-typography.md",
     "references/direction-preview.md",
@@ -272,6 +276,10 @@
     "references/job-registry.json",
     "references/job-registry.schema.json",
     "references/job-route.schema.json",
-    "references/job-plan.schema.json"
+    "references/job-plan.schema.json",
+    "references/pipeline-method.md",
+    "references/feature-routes.md",
+    "references/stages.md",
+    "references/lifecycle.md"
   ]
 }

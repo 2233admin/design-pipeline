@@ -8,6 +8,27 @@
       "priority": 80,
       "keywords": ["clone", "cloning", "rebuild", "replicate", "reverse engineer", "1:1", "复刻", "克隆", "仿站"],
       "primaryKnowledge": { "id": "website-cloning", "command": "toolchain", "action": "resolve", "admission": "ready" },
+      "routeContracts": ["website-cloning"],
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "reference-reconstruction",
+      "activation": "explicit",
+      "priority": 85,
+      "keywords": ["reference reconstruction", "pixel-accurate", "pixel accurate", "graybox", "灰盒", "截图重建", "参考图重建", "像素级"],
+      "primaryKnowledge": { "id": "reference-reconstruction", "command": "reference", "action": "resolve", "admission": "ready" },
+      "routeContracts": ["reference-reconstruction"],
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
+      "id": "dynamic-web-verification",
+      "activation": "explicit",
+      "priority": 75,
+      "keywords": ["dynamic web", "browser evidence", "networkidle", "runtime readiness", "动态页面验证", "浏览器证据", "异步数据页面"],
+      "primaryKnowledge": { "id": "dynamic-web-verification", "command": "evidence", "action": "capture", "admission": "ready" },
+      "routeContracts": ["dynamic-web-verification"],
       "secondaries": [],
       "kernel": ["foundation", "toolchain"]
     },
@@ -67,8 +88,9 @@
       "id": "technique",
       "activation": "scored",
       "priority": 40,
-      "keywords": ["mengto", "gsap", "scrolltrigger", "anime.js", "playbook", "lenis", "动效手法"],
+      "keywords": ["mengto", "gsap", "scrolltrigger", "anime.js", "playbook", "lenis", "animation", "animations", "motion design", "reduced motion", "动效", "动画", "动效手法"],
       "primaryKnowledge": { "id": "mengto", "command": "mengto", "action": "search", "admission": "inert" },
+      "routeContracts": ["motion-graphics"],
       "secondaries": [
         { "id": "prism", "command": "prism", "action": "route", "admission": "inert" },
         { "id": "iart", "command": "iart", "action": "route", "admission": "inert" }
@@ -81,6 +103,7 @@
       "priority": 40,
       "keywords": ["data table", "datagrid", "dropdown", "combobox", "component library", "组件", "数据表", "分页"],
       "primaryKnowledge": { "id": "astryx", "command": "component", "action": "decompose", "admission": "reference-only" },
+      "routeContracts": ["component-first"],
       "secondaries": [
         { "id": "prism", "command": "prism", "action": "route", "admission": "inert" }
       ],
@@ -92,6 +115,7 @@
       "priority": 0,
       "keywords": ["design dna", "design system", "token", "原型", "设计系统", "可访问性"],
       "primaryKnowledge": { "id": "prism", "command": "prism", "action": "route", "admission": "inert" },
+      "routeContracts": ["design-synthesis", "product-foundation", "feedback-loop"],
       "secondaries": [
         { "id": "astryx", "command": "design-system", "action": "search", "admission": "reference-only" }
       ],

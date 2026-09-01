@@ -11,6 +11,13 @@ const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs")
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
 const skill = fs.readFileSync(path.join(repoRoot, "skill/SKILL.md"), "utf8");
+const routedReferences = [
+  "skill/references/pipeline-method.md",
+  "skill/references/feature-routes.md",
+  "skill/references/stages.md",
+  "skill/references/lifecycle.md",
+].map((relative) => fs.readFileSync(path.join(repoRoot, relative), "utf8"));
+const publicContract = [skill, ...routedReferences].join("\n");
 
 function run(args, cwd = repoRoot) {
   const child = spawnSync(process.execPath, [cli, ...args, "--json"], { cwd, encoding: "utf8", windowsHide: true });
@@ -29,10 +36,10 @@ function git(root, ...args) {
 }
 
 test("SKILL front-door commands are present in the public CLI contract", () => {
-  assert.match(skill, /Use the public CLI for the complete lifecycle/);
+  assert.match(publicContract, /Use the public CLI for the complete lifecycle/);
   const help = run(["help"]).output.help;
-  assert.match(skill, /designer-pipeline route --query/);
-  assert.match(skill, /--write --output job-plan\.json/);
+  assert.match(publicContract, /designer-pipeline route --query/);
+  assert.match(publicContract, /--write --output job-plan\.json/);
   assert.match(help, /^ {2}route --query/m);
   for (const [command, action] of [
     ["mengto", "search"],
@@ -47,7 +54,7 @@ test("SKILL front-door commands are present in the public CLI contract", () => {
     ["execution", "route"],
     ["reference", "resolve"],
   ]) {
-    assert.match(skill, new RegExp(`(?:designer-pipeline\\s+)?${command}\\s+${action}`), `${command} ${action} is missing from SKILL.md`);
+    assert.match(publicContract, new RegExp(`(?:designer-pipeline\\s+)?${command}\\s+${action}`), `${command} ${action} is missing from routed contract`);
     assert.match(help, new RegExp(`\\b${command}[^\\n]*\\b${action}\\b`), `${command} ${action} is missing from public help`);
   }
 });

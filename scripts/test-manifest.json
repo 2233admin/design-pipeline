@@ -75,6 +75,7 @@
     "web-evidence-adapter.test.cjs",
     "website-cloning-init.test.cjs",
     "skill-cli-handoff.test.cjs",
-    "claude-code-surface.test.cjs"
+    "claude-code-surface.test.cjs",
+    "skill-evals.test.cjs"
   ]
 }
