@@ -14,6 +14,10 @@ const {
   validateState,
   writeNewChange,
 } = require("./pipeline-state-core.cjs");
+const { compileDesignPlan, validatePlan } = require("./plan-core.cjs");
+const { validateArtifactMetadata } = require("./artifact-core.cjs");
+const { checkInteractionStateCoverage } = require("./gate-core.cjs");
+const { explainBlock, packageChange, readPlan, resume: resumeControl, runTo } = require("./control-runtime-core.cjs");
 const { checkScene } = require("./scene-runtime-core.cjs");
 const { checkReferenceEvidence, resolveReferenceSource } = require("./reference-evidence-core.cjs");
 const { checkReconstruction } = require("./reconstruction-core.cjs");
@@ -88,7 +92,7 @@ const {
   searchCatalog: searchDesignMdCatalog,
   verifyPersistedCatalog,
 } = require("./designmd-core.cjs");
-const { fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
+const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
 const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
@@ -96,13 +100,13 @@ const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--constructi
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
-  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root",
-  "--design-file", "--design-foundation", "--effect", "--evidence-root", "--expected-sha256", "--failpoint", "--feedback-root", "--graphics-catalog",
+  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root", "--expected-sha256", "--failpoint",
+  "--design-file", "--design-foundation", "--effect", "--evidence-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
-  "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--selection", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id",
+  "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--selection", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
 
 function parseArgs(argv) {
@@ -303,16 +307,22 @@ function publicHelp() {
     "",
     "Commands:",
     "  doctor | status",
+    "  plan --manifest <file> --output <file>",
+    "  run --plan <file> --to <phase>",
+    "  resume --change-root <dir>",
+    "  explain-block --change-root <dir>",
+    "  package --change-root <dir> --output <file>",
     "  route --query [--write --output]",
     "  change init|resume|advance|migrate|repair",
     "  foundation check | direction check | playground check | reference check|resolve | reconstruction check | scene check",
-    "  component-first check|stack|components|playground|page | high-fidelity check",
+    "  component-first check|stack|components|playground|page",
+    "  high-fidelity check",
     "  component-first-v2 check|migrate|select|promote",
     "  design-skill route|manifest|run|select|promote",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
-    "  verify motion|components",
+    "  verify motion|components | --gate <gate> --artifact <file>",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
     "  component decompose|providers|resolve|inventory|bind|decide|verify",
@@ -398,8 +408,51 @@ function statusCommand(parsed, root) {
     if (!fs.existsSync(eventsFile)) fail("cli", `events are missing: ${eventsFile}`, { code: "EVENTS_MISSING" });
     consistency = inspectConsistency(state, fs.readFileSync(eventsFile, "utf8"));
   }
-  return { status: state.status, phase: state.phase || state.stage, stateSchema: state.schema, migrationRequired: state.schema !== "design-pipeline.state.v2", stateSha256: sha256(fs.readFileSync(stateFile)), consistency: consistency?.status || null, changeRoot };
+  return { status: state.status, phase: state.phase || state.stage, stateSchema: state.schema, migrationRequired: state.schema !== "design-pipeline.state.v2", stateSha256: sha256(fs.readFileSync(stateFile)), consistency: consistency?.status || null, control: state.extensions?.control || null, changeRoot };
 }
+function planCommand(parsed, root) {
+  const manifestFile = artifact(parsed, root, "--manifest");
+  const outputFile = contained(root, requireOption(parsed, "--output"), "--output", false);
+  const plan = compileDesignPlan(readJson(manifestFile, "intent manifest"));
+  if (plan.status === "blocked") return { result: plan, exitCode: 2 };
+  fs.mkdirSync(path.dirname(outputFile), { recursive: true });
+  fs.writeFileSync(outputFile, canonicalJson(plan));
+  return { result: { status: "ready", plan, output: outputFile }, exitCode: 0 };
+}
+
+function controlChangeRoot(parsed, root, planFile = null) {
+  if (option(parsed, "--change-root")) return changeRootFrom(parsed, root);
+  if (planFile) return contained(root, path.dirname(planFile), "--change-root");
+  fail("cli", "--change-root is required", { code: "OPTION_REQUIRED" });
+}
+
+function runControlCommand(parsed, root) {
+  const planFile = artifact(parsed, root, "--plan");
+  const changeRoot = controlChangeRoot(parsed, root, planFile);
+  const result = runTo(planFile, changeRoot, option(parsed, "--to"), { timestamp: timestamp(parsed) });
+  return { result, exitCode: result.status === "blocked" ? 2 : 0 };
+}
+
+function resumeControlCommand(parsed, root) {
+  const changeRoot = changeRootFrom(parsed, root);
+  const planFile = option(parsed, "--plan") ? artifact(parsed, root, "--plan") : null;
+  const result = resumeControl(changeRoot, { planFile: planFile || undefined, timestamp: timestamp(parsed) });
+  return { result, exitCode: result.status === "blocked" ? 2 : 0 };
+}
+
+function explainBlockCommand(parsed, root) {
+  return { result: explainBlock(changeRootFrom(parsed, root)), exitCode: 0 };
+}
+
+function packageCommand(parsed, root) {
+  const changeRoot = changeRootFrom(parsed, root);
+  const outputFile = contained(root, requireOption(parsed, "--output"), "--output", false);
+  const planFile = option(parsed, "--plan") ? artifact(parsed, root, "--plan") : undefined;
+  const result = packageChange(changeRoot, outputFile, { planFile });
+  if (result.status === "blocked") return { result, exitCode: 2 };
+  return { result: { ...result, output: outputFile }, exitCode: 0 };
+}
+
 
 function changeCommand(parsed, root, action) {
   if (action === "resume") return { result: statusCommand(parsed, root), exitCode: 0 };
@@ -625,6 +678,16 @@ function evidenceCommand(parsed, root, action) {
 }
 
 function verifyCommand(parsed, root, action) {
+  const gate = option(parsed, "--gate");
+  if (gate) {
+    const file = artifact(parsed, root, "--artifact");
+    let result;
+    if (gate === "state-coverage" || gate === "interaction-states") result = checkInteractionStateCoverage(readJson(file, "interaction state matrix"));
+    else if (gate === "artifact") result = validateArtifactMetadata(readJson(file, "artifact metadata"), { changeRoot: option(parsed, "--change-root") ? changeRootFrom(parsed, root) : root, requireFile: true });
+    else if (gate === "plan") result = { status: "passed", plan: validatePlan(readJson(file, "design plan")) };
+    else fail("cli", `unknown verify gate ${gate}`, { code: "UNKNOWN_GATE" });
+    return { result, exitCode: result.status === "passed" || result.status === "ready" ? 0 : result.status === "fidelity-limited" ? 3 : 2 };
+  }
   if (action === "motion") {
     const file = artifact(parsed, root, "--receipt");
     const result = evaluateMotion(readJson(file, "motion evidence"));
@@ -1305,6 +1368,11 @@ function sourceAddCommand() {
 const COMMANDS = {
   doctor: { run: doctorCommand },
   status: { run: ({ parsed, root }) => ({ result: statusCommand(parsed, root), exitCode: 0 }) },
+  plan: { run: ({ parsed, root }) => planCommand(parsed, root) },
+  run: { run: ({ parsed, root }) => runControlCommand(parsed, root) },
+  resume: { run: ({ parsed, root }) => resumeControlCommand(parsed, root) },
+  "explain-block": { run: ({ parsed, root }) => explainBlockCommand(parsed, root) },
+  package: { run: ({ parsed, root }) => packageCommand(parsed, root) },
   route: { run: ({ parsed, root }) => jobRouteCommand(parsed, root) },
   change: { run: ({ parsed, root, action }) => changeCommand(parsed, root, action) },
   evidence: { run: ({ parsed, root, action }) => evidenceCommand(parsed, root, action) },
@@ -1413,7 +1481,7 @@ function dispatch(argv) {
     fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
   }
   const [command, action] = parsed.positionals;
-  if (action && ["doctor", "status", "route"].includes(command)) {
+  if (action && ["doctor", "status", "route", "plan", "run", "resume", "explain-block", "package"].includes(command)) {
     fail("cli", `${command} does not accept an action`, { code: "UNKNOWN_ARGUMENT" });
   }
   const root = rootFrom(parsed);

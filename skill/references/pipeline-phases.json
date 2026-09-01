@@ -1,6 +1,7 @@
 {
   "schema": "design-pipeline.phase-registry.v1",
   "current": "design-pipeline.phases.v2",
+  "currentControl": "design-pipeline.control.v1",
   "registries": {
     "design-pipeline.phases.v1": {
       "compatibility": "read-only",
@@ -22,6 +23,24 @@
         "release-readiness": ["archive"],
         "archive": []
       }
+    },
+    "design-pipeline.control.v1": {
+      "compatibility": "read-write",
+      "phases": [
+        {"id": "intent", "depends_on": [], "inputs": ["manifest.json"], "outputs": ["intent/normalized-manifest.json"], "gates": ["intent"], "invalidates": ["structure", "evidence", "direction-synthesis", "direction-lock", "foundations", "component-routing", "anchor-screen", "critical-flows", "interaction-states", "implementation", "runtime-verification", "package"]},
+        {"id": "structure", "depends_on": ["intent"], "inputs": ["intent/normalized-manifest.json"], "outputs": ["structure/screen-inventory.json", "structure/state-matrix.json"], "gates": ["structure", "state-coverage"], "invalidates": ["component-routing", "anchor-screen", "critical-flows", "interaction-states", "implementation", "runtime-verification", "package"]},
+        {"id": "evidence", "depends_on": ["intent"], "inputs": ["manifest.json"], "outputs": ["evidence/reference-index.json"], "gates": ["evidence"], "invalidates": []},
+        {"id": "direction-synthesis", "depends_on": ["evidence", "structure"], "inputs": ["evidence/reference-index.json", "structure/screen-inventory.json"], "outputs": ["direction/candidates.json"], "gates": ["direction-synthesis"], "invalidates": ["direction-lock", "foundations", "component-routing", "anchor-screen", "critical-flows", "interaction-states", "implementation", "runtime-verification", "package"]},
+        {"id": "direction-lock", "depends_on": ["direction-synthesis"], "inputs": ["direction/candidates.json"], "outputs": ["direction/lock.json"], "gates": ["direction-lock"], "invalidates": ["foundations", "component-routing", "anchor-screen", "critical-flows", "interaction-states", "implementation", "runtime-verification", "package"]},
+        {"id": "foundations", "depends_on": ["direction-lock"], "inputs": ["direction/lock.json"], "outputs": ["foundations/design-tokens.json"], "gates": ["foundations"], "invalidates": ["anchor-screen", "critical-flows", "interaction-states", "implementation", "runtime-verification", "package"]},
+        {"id": "component-routing", "depends_on": ["structure", "foundations"], "inputs": ["structure/screen-inventory.json", "foundations/design-tokens.json"], "outputs": ["components/routing.json"], "gates": ["component-routing"], "invalidates": ["anchor-screen", "critical-flows", "interaction-states", "implementation", "runtime-verification", "package"]},
+        {"id": "anchor-screen", "depends_on": ["component-routing"], "inputs": ["components/routing.json"], "outputs": ["anchor/anchor-screen.json"], "gates": ["anchor-screen"], "invalidates": ["critical-flows", "interaction-states", "implementation", "runtime-verification", "package"]},
+        {"id": "critical-flows", "depends_on": ["anchor-screen"], "inputs": ["anchor/anchor-screen.json"], "outputs": ["flows/critical-flows.json"], "gates": ["critical-flows"], "invalidates": ["interaction-states", "implementation", "runtime-verification", "package"]},
+        {"id": "interaction-states", "depends_on": ["critical-flows"], "inputs": ["flows/critical-flows.json"], "outputs": ["states/interaction-matrix.json"], "gates": ["state-coverage"], "invalidates": ["implementation", "runtime-verification", "package"]},
+        {"id": "implementation", "depends_on": ["anchor-screen", "critical-flows", "interaction-states"], "inputs": ["anchor/anchor-screen.json", "flows/critical-flows.json", "states/interaction-matrix.json"], "outputs": ["implementation/implementation-receipt.json"], "gates": ["implementation"], "invalidates": ["runtime-verification", "package"]},
+        {"id": "runtime-verification", "depends_on": ["implementation"], "inputs": ["implementation/implementation-receipt.json"], "outputs": ["verification/runtime-receipt.json"], "gates": ["runtime-verification"], "invalidates": ["package"]},
+        {"id": "package", "depends_on": ["runtime-verification"], "inputs": ["verification/runtime-receipt.json"], "outputs": ["package/package-manifest.json"], "gates": ["package"], "invalidates": []}
+      ]
     }
   }
 }

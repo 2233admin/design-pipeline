@@ -32,6 +32,7 @@
     "adaptation.test.cjs",
     "direction-preview.test.cjs",
     "cli-routing.test.cjs",
+    "design-control-runtime.test.cjs",
     "job-route.test.cjs",
     "designmd-ingestion.test.cjs",
     "design-md-source.test.cjs",
