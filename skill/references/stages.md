@@ -137,7 +137,17 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
 - Resolve the surface mode (`Persuade`, `Operate`, `Read`, or `Experience`) and whether the work is
   an extension, refinement, or redesign before choosing a visual direction.
 
-## Stage 1: Brief
+## Stage 1: Guided Design Intake
+
+The guided first-wave flow is:
+
+```text
+ordinary-language input → DesignBrief confirmation → directions → Surface templates → adaptation review → tasks
+```
+
+The live design panel is the reviewable projection, not the chat transcript. The first wave is
+limited to project-contained Web and Mobile evidence and metadata; it does not claim screenshot,
+URL, visual embedding, or Game support.
 
 Create or update `brief.md` with:
 

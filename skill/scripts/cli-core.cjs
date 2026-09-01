@@ -48,6 +48,30 @@ const { evaluateIntake, validateDesignToolReceipt, validateRegistry, validateSty
 const { checkDesignFoundation } = require("./design-synthesis-core.cjs");
 const { checkMotionFoundation } = require("./motion-foundation-core.cjs");
 const {
+  createSurface,
+  resolveSurfaceProfile,
+  validateSurfaceProfile,
+} = require("./surface-profile-core.cjs");
+const {
+  applyIntakeAnswer,
+  confirmDesignBrief,
+  createDesignBrief,
+  nextIntakeQuestion,
+  validateDesignBrief,
+} = require("./guided-design-intake-core.cjs");
+const {
+  searchRegionTemplates,
+  validateRegionTemplateCatalog,
+} = require("./region-template-core.cjs");
+const {
+  approveAdaptationPlan,
+  canCreateTasks,
+  createAdaptationPlan,
+  createSelectionReceipt,
+  reviewAdaptationPlan,
+  validateSelectionReceipt,
+} = require("./surface-design-artifacts-core.cjs");
+const {
   decomposeCapabilities,
   normalizeDesignSystemSnapshot,
   searchCapabilities,
@@ -63,6 +87,7 @@ const {
   loadProfiles,
 } = require("./design-system-provider-core.cjs");
 const { routeComponents } = require("./component-route-core.cjs");
+const { buildComponentFitMatrix, createDirectionLock, validateComponentFitMatrix } = require("./component-fit-core.cjs");
 const {
   decomposeComponentBrief,
   inventoryProjectComponents,
@@ -100,15 +125,14 @@ const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--constructi
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
-  "--action", "--adapter-path", "--api-version", "--artifact", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root", "--expected-sha256", "--failpoint",
+  "--action", "--adapter-path", "--api-version", "--artifact", "--answer", "--approval", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root", "--context", "--expected-sha256", "--failpoint",
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--root", "--route", "--severity", "--sidecar", "--skill",
-  "--scope", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
-  "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--selection", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
+  "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
+  "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
+  "--state", "--experience", "--rules", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--approval", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
-
 function parseArgs(argv) {
   const positionals = [];
   const options = new Map();
@@ -306,6 +330,16 @@ function publicHelp() {
     "Designer Pipeline CLI",
     "",
     "Commands:",
+    "  surface validate --artifact <file> --json",
+    "  intake start --artifact <file> --json",
+    "  intake answer --artifact <file> --answer <file> --json",
+    "  intake confirm --artifact <file> --json",
+    "  template inventory --catalog <file> --json",
+    "  template search --catalog <file> --surface <file> --request <file> --json",
+    "  template select --selection <file> --json",
+    "  template adapt --receipt <file> --context <file> --json",
+    "  template review --plan <file> --review <file> --json",
+    "  template approve --plan <file> --approval <file> --json",
     "  doctor | status",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
@@ -1306,6 +1340,223 @@ function highFidelityCommand(parsed, root, action) {
   return componentFirstCommand(parsed, root, "check");
 }
 
+function surfaceCommand(parsed, root) {
+  const input = readJson(artifact(parsed, root, "--artifact"), "surface");
+  const surface = Object.hasOwn(input, "projectId") || Object.hasOwn(input, "surfaceId")
+    ? createSurface(input)
+    : validateSurfaceProfile(input);
+  const profile = Object.hasOwn(input, "projectId") || Object.hasOwn(input, "surfaceId")
+    ? resolveSurfaceProfile(surface)
+    : surface;
+  const output = writeResult(parsed, root, surface);
+  return { result: { status: "valid", surface, profile, ...(output ? { output } : {}) }, exitCode: 0 };
+}
+
+function intakeQuestion(brief, source) {
+  return nextIntakeQuestion(brief, source.evidence && typeof source.evidence === "object" ? source.evidence : {});
+}
+
+function intakeCommand(parsed, root, action) {
+  if (action === "start") {
+    const source = readJson(artifact(parsed, root, "--artifact"), "DesignBrief input");
+    const brief = createDesignBrief(source);
+    const question = intakeQuestion(brief, source);
+    const output = writeResult(parsed, root, brief);
+    return { result: { status: brief.status, brief, question, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "answer") {
+    const brief = readJson(artifact(parsed, root, "--artifact"), "DesignBrief");
+    const answer = readJson(artifact(parsed, root, "--answer"), "intake answer");
+    const next = applyIntakeAnswer(brief, answer);
+    const question = nextIntakeQuestion(next, next.evidence);
+    const output = writeResult(parsed, root, next);
+    return { result: { status: next.status, brief: next, question, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "confirm") {
+    const brief = readJson(artifact(parsed, root, "--artifact"), "DesignBrief");
+    try {
+      const confirmed = confirmDesignBrief(brief);
+      const output = writeResult(parsed, root, confirmed);
+      return { result: { status: confirmed.status, brief: confirmed, ...(output ? { output } : {}) }, exitCode: 0 };
+    } catch (error) {
+      if (/cannot confirm without/i.test(error.message)) {
+        return { result: { status: "blocked", reason: error.message }, exitCode: 2 };
+      }
+      throw error;
+    }
+  }
+  fail("cli", `unknown intake action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function confirmedBriefFrom(value) {
+  const brief = value?.brief || value?.designBrief;
+  if (brief === undefined) return null;
+  const checked = validateDesignBrief(brief);
+  if (checked.status !== "user_confirmed") {
+    return { blocked: { status: "blocked", reason: `DesignBrief is ${checked.status}; user confirmation is required` } };
+  }
+  return checked;
+}
+function templateSelectionCommand(parsed, root) {
+  const input = readJson(artifact(parsed, root, "--selection"), "template selection");
+  const brief = confirmedBriefFrom(input);
+  if (!brief) return { result: { status: "blocked", reason: "a confirmed DesignBrief is required before template selection" }, exitCode: 2 };
+  if (brief.blocked) return { result: brief.blocked, exitCode: 2 };
+
+  const surface = input.surface || input.surfaceBinding || brief.surface?.value;
+  if (!surface) return { result: { status: "blocked", reason: "a Surface is required before template selection" }, exitCode: 2 };
+  if (surface.platform === "game") {
+    return { result: { status: "blocked", reason: "Game is reserved and unavailable for first-wave template selection" }, exitCode: 2 };
+  }
+  for (const [key, expected] of [["projectId", brief.projectId], ["surfaceId", brief.surfaceId]]) {
+    if (input[key] !== undefined && input[key] !== expected) {
+      return { result: { status: "blocked", reason: `${key} does not match the confirmed DesignBrief` }, exitCode: 2 };
+    }
+    if (surface[key] !== undefined && surface[key] !== expected) {
+      return { result: { status: "blocked", reason: `Surface ${key} does not match the confirmed DesignBrief` }, exitCode: 2 };
+    }
+  }
+  const briefSurface = brief.surface?.value;
+  if (briefSurface && [["platform", briefSurface.platform], ["framework", briefSurface.framework], ["profileVersion", briefSurface.profileVersion]].some(([key, expected]) => surface[key] !== undefined && surface[key] !== expected)) {
+    return { result: { status: "blocked", reason: "Surface binding does not match the confirmed DesignBrief" }, exitCode: 2 };
+  }
+  const aliases = [input.directionLockSnapshot, input.directionLock].filter((value) => value !== undefined);
+  if (aliases.length > 1 && aliases.some((value) => canonicalJson(value) !== canonicalJson(aliases[0]))) {
+    return { result: { status: "blocked", reason: "direction-lock aliases do not agree" }, exitCode: 2 };
+  }
+  const lock = aliases[0] || surface.directionLock;
+  if (surface.directionLock !== undefined && canonicalJson(lock) !== canonicalJson(surface.directionLock)) {
+    return { result: { status: "blocked", reason: "direction lock does not match the Surface binding" }, exitCode: 2 };
+  }
+  const changeRoot = option(parsed, "--change-root")
+    ? changeRootFrom(parsed, root)
+    : null;
+  let preview;
+  let previewProof;
+  let previewArtifactSha256;
+  if (changeRoot) {
+    preview = checkDirectionPreview(changeRoot, { stage: "selection" });
+    if (preview.status !== "ready") return { result: { status: "blocked", reason: preview.reason || "direction preview selection is invalid", preview }, exitCode: 2 };
+    const artifact = readJson(preview.artifact, "direction preview");
+    previewArtifactSha256 = sha256(fs.readFileSync(preview.artifact));
+    previewProof = {
+      artifact,
+      artifactSha256: previewArtifactSha256,
+      contentHash: sha256(canonicalJson(artifact)),
+      directionLockSnapshot: lock,
+      changeRoot,
+    };
+  } else {
+    previewProof = input.directionPreview || input.directionPreviewSelection || input.validatedDirectionPreview;
+    const artifact = previewProof?.artifact || previewProof?.previewArtifact || previewProof?.receipt || (
+      previewProof?.schema === "design-pipeline.direction-preview.v1"
+        ? Object.fromEntries(["schema", "changeId", "applicability", "comparison", "directions", "decision"].map((key) => [key, previewProof[key]]))
+        : null
+    );
+    if (!artifact) fail("cli", "direction preview artifact is required");
+    preview = checkDirectionPreview(null, { receipt: artifact, stage: "selection" });
+    previewArtifactSha256 = previewProof.artifactSha256 || previewProof.previewArtifactSha256 || previewProof.bindingHash;
+  }
+  if (!lock || lock.previewArtifactSha256 !== previewArtifactSha256) {
+    return { result: { status: "blocked", reason: "direction lock is not bound to the validated direction-preview artifact", preview }, exitCode: 2 };
+  }
+  const selectedDirectionId = previewProof.artifact?.decision?.selectedDirectionId
+    || previewProof.previewArtifact?.decision?.selectedDirectionId
+    || previewProof.receipt?.decision?.selectedDirectionId
+    || previewProof.decision?.selectedDirectionId;
+  if (selectedDirectionId !== lock.directionId) {
+    return { result: { status: "blocked", reason: "direction lock does not match the selected direction preview", preview }, exitCode: 2 };
+  }
+
+  const selectionInput = {
+    ...input,
+    projectId: brief.projectId,
+    surfaceId: brief.surfaceId,
+    surface,
+    directionLockSnapshot: lock,
+    directionPreview: previewProof,
+  };
+  const receipt = createSelectionReceipt(selectionInput);
+  const output = writeResult(parsed, root, receipt);
+  return { result: { status: "selected", receipt, ...(output ? { output } : {}) }, exitCode: 0 };
+}
+
+function templateCommand(parsed, root, action) {
+  if (action === "inventory") {
+    const catalogArtifact = readJson(artifact(parsed, root, "--catalog"), "region-template catalog");
+    const catalog = validateRegionTemplateCatalog(catalogArtifact.catalog || catalogArtifact);
+    const output = writeResult(parsed, root, catalog);
+    return { result: { status: "ready", catalog, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "search") {
+    const catalogArtifact = readJson(artifact(parsed, root, "--catalog"), "region-template catalog");
+    const catalog = catalogArtifact.catalog || catalogArtifact;
+    const surfaceArtifact = readJson(artifact(parsed, root, "--surface"), "Surface");
+    const surface = surfaceArtifact.surface || surfaceArtifact;
+    const request = readJson(artifact(parsed, root, "--request"), "region-template request");
+    if (surface.platform === "game") {
+      return { result: { status: "blocked", matches: [], rejected: [], query: request, surfaceBinding: null, reason: "Game is reserved and unavailable for first-wave template search" }, exitCode: 2 };
+    }
+    const result = searchRegionTemplates(catalog, { ...request, surfaceBinding: surface, referenceRoot: root });
+    const output = writeResult(parsed, root, result);
+    return { result: { ...result, ...(output ? { output } : {}) }, exitCode: ["blocked", "source-invalid", "source-unavailable"].includes(result.status) ? 2 : 0 };
+  }
+  if (action === "select") return templateSelectionCommand(parsed, root);
+  if (action === "adapt") {
+    const receiptArtifact = readJson(artifact(parsed, root, "--receipt"), "SelectionReceipt");
+    const receipt = receiptArtifact.receipt || receiptArtifact;
+    const context = readJson(artifact(parsed, root, "--context"), "adaptation context");
+    if (context.brief !== undefined) {
+      const brief = confirmedBriefFrom(context);
+      if (!brief) return { result: { status: "blocked", reason: "a confirmed DesignBrief is required before template adaptation" }, exitCode: 2 };
+      if (brief.blocked) return { result: brief.blocked, exitCode: 2 };
+    }
+    const surface = context.surface?.surface || context.surface;
+    if (context.platform !== undefined && !["web", "mobile"].includes(context.platform)) {
+      if (context.platform === "game") {
+        return { result: { status: "blocked", reason: "Game is reserved and unavailable for first-wave template adaptation" }, exitCode: 2 };
+      }
+      fail("adaptation-plan", `platform ${context.platform} is unavailable for first-wave template adaptation`);
+    }
+    if (context.platform !== undefined && surface && context.platform !== surface.platform) {
+      fail("adaptation-plan", "context platform does not match Surface platform");
+    }
+    const normalizedContext = surface && context.surface !== surface ? { ...context, surface } : { ...context };
+    if (!normalizedContext.componentFitMatrix && normalizedContext.componentFitRequest) {
+      normalizedContext.componentFitMatrix = buildComponentFitMatrix({
+        ...normalizedContext.componentFitRequest,
+        directionLock: receipt.directionLockSnapshot,
+      });
+    }
+    if (normalizedContext.componentFitMatrix && !normalizedContext.componentFitBinding) {
+      normalizedContext.componentFitBinding = {
+        region: receipt.region,
+        matrixHash: normalizedContext.componentFitMatrix.matrixHash,
+      };
+    }
+    const plan = createAdaptationPlan(receipt, normalizedContext);
+    const output = writeResult(parsed, root, plan);
+    return { result: { status: plan.status, plan, taskGate: canCreateTasks(plan), ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "review") {
+    const planArtifact = readJson(artifact(parsed, root, "--plan"), "AdaptationPlan");
+    const plan = planArtifact.plan || planArtifact;
+    const review = readJson(artifact(parsed, root, "--review"), "adaptation review");
+    const revised = reviewAdaptationPlan(plan, review);
+    const output = writeResult(parsed, root, revised);
+    return { result: { status: revised.status, plan: revised, taskGate: canCreateTasks(revised), ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "approve") {
+    const planArtifact = readJson(artifact(parsed, root, "--plan"), "AdaptationPlan");
+    const plan = planArtifact.plan || planArtifact;
+    const approval = readJson(artifact(parsed, root, "--approval"), "adaptation approval");
+    const approved = approveAdaptationPlan(plan, approval);
+    const output = writeResult(parsed, root, approved);
+    return { result: { status: approved.status, plan: approved, taskGate: canCreateTasks(approved), ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  fail("cli", `unknown template action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
 function adaptationCommand(parsed, root, action) {
   if (action === "resolve") {
     const result = runAdaptation(root, action, { state: option(parsed, "--state"), input: readJson(artifact(parsed, root, "--artifact"), "adaptation policy input") });
@@ -1358,6 +1609,7 @@ function sourceAddCommand() {
   fail("cli", "source add is intentionally deferred; record an attributed source-evidence artifact instead", { code: "COMMAND_DEFERRED" });
 }
 
+
 // Command registry. A top-level entry either carries `run` (the command owns its own subcommand
 // routing and accepts any action) or `actions` (an exact `command action` path; anything else is an
 // unknown command). Leaf entries declare their artifact options as data:
@@ -1366,6 +1618,24 @@ function sourceAddCommand() {
 // Options resolved by `changeRootFrom`/`contained` stay inside their handler because their
 // containment rules, not plain presence, decide the failure.
 const COMMANDS = {
+  surface: { actions: { validate: { required: ["--artifact"], run: ({ parsed, root }) => surfaceCommand(parsed, root) } } },
+  intake: {
+    actions: {
+      start: { required: ["--artifact"], run: ({ parsed, root }) => intakeCommand(parsed, root, "start") },
+      answer: { required: ["--artifact", "--answer"], run: ({ parsed, root }) => intakeCommand(parsed, root, "answer") },
+      confirm: { required: ["--artifact"], run: ({ parsed, root }) => intakeCommand(parsed, root, "confirm") },
+    },
+  },
+  template: {
+    actions: {
+      inventory: { required: ["--catalog"], run: ({ parsed, root }) => templateCommand(parsed, root, "inventory") },
+      search: { required: ["--catalog", "--surface", "--request"], run: ({ parsed, root }) => templateCommand(parsed, root, "search") },
+      select: { required: ["--selection"], run: ({ parsed, root }) => templateCommand(parsed, root, "select") },
+      adapt: { required: ["--receipt", "--context"], run: ({ parsed, root }) => templateCommand(parsed, root, "adapt") },
+      review: { required: ["--plan", "--review"], run: ({ parsed, root }) => templateCommand(parsed, root, "review") },
+      approve: { required: ["--plan", "--approval"], run: ({ parsed, root }) => templateCommand(parsed, root, "approve") },
+    },
+  },
   doctor: { run: doctorCommand },
   status: { run: ({ parsed, root }) => ({ result: statusCommand(parsed, root), exitCode: 0 }) },
   plan: { run: ({ parsed, root }) => planCommand(parsed, root) },

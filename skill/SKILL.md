@@ -57,8 +57,8 @@ Detailed stage instructions live in `references/stages.md`.
 
 ```text
 0 Repo Read      route, dependencies, foundations, stack, references
-1 Brief          goal, audience, mode, surface, constraints, real content, acceptance
-2 Directions     comparable candidates, signature, preview evidence, selection
+1 Guided Design Intake  ordinary-language input → DesignBrief confirmation → directions
+2 Directions     comparable candidates, signature, preview evidence, selection, direction lock
 3 Design Spec    design.md, motion.md, scene/3d contracts when applicable
 4 Tasks          independently verifiable implementation surfaces
 5 Implementation existing patterns, approved artifacts, bounded runtime work
@@ -119,6 +119,25 @@ designer-pipeline reconstruction check --stage final --change-root <change-root>
 designer-pipeline playground check --stage integration --change-root <change-root> --json
 designer-pipeline scene check --change-root <change-root> --json
 ```
+
+For the first-wave guided multi-surface flow, use these commands:
+
+```bash
+designer-pipeline surface validate --artifact surface.json --json
+designer-pipeline intake start --artifact input.json --json
+designer-pipeline intake answer --artifact brief.json --answer answer.json --json
+designer-pipeline intake confirm --artifact brief.json --json
+designer-pipeline template inventory --catalog catalog.json --json
+designer-pipeline template search --catalog catalog.json --surface surface.json --request request.json --json
+designer-pipeline template select --selection selection.json --json
+designer-pipeline template adapt --receipt receipt.json --context context.json --json
+designer-pipeline template review --plan plan.json --review review.json --json
+designer-pipeline template approve --plan plan.json --approval approval.json --json
+```
+
+The live design panel is the reviewable projection of this flow, not the chat transcript.
+The first wave supports project-contained Web and Mobile evidence and metadata; it does not claim
+screenshot, URL, visual embedding, or Game support.
 For pipeline control and hash-bound artifacts, use the `plan`, `run`, `resume`, `verify`, `status`, `explain-block`, and `package` commands exposed by the current CLI. Read `references/pipeline-method.md` for the state, artifact, and invalidation contract.
 
 ## Specialist and Catalog Routing

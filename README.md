@@ -111,6 +111,33 @@ node skill/scripts/check-design-foundation.cjs --project-root . --json
 
 `ready` 解锁实现。`synthesis-required` 需要补充设计。`invalid` 需要修复。
 
+## 引导式多 Surface 流程
+
+普通用户可以从一句话开始，并逐个回答四个核心问题（`audience.json`、`primary-actions.json`、
+`surface.json`、`success-criteria.json` 各保存一个回答对象）：
+
+```bash
+node skill/scripts/designer-pipeline.cjs intake start --artifact input.json --write --output brief-inferred.json --json
+node skill/scripts/designer-pipeline.cjs intake answer --artifact brief-inferred.json --answer audience.json --write --output brief-audience.json --json
+node skill/scripts/designer-pipeline.cjs intake answer --artifact brief-audience.json --answer primary-actions.json --write --output brief-actions.json --json
+node skill/scripts/designer-pipeline.cjs intake answer --artifact brief-actions.json --answer surface.json --write --output brief-surface.json --json
+node skill/scripts/designer-pipeline.cjs intake answer --artifact brief-surface.json --answer success-criteria.json --write --output brief-proposed.json --json
+node skill/scripts/designer-pipeline.cjs intake confirm --artifact brief-proposed.json --write --output brief.json --json
+```
+
+熟悉合同的专家可以走快速路径，先验证 Surface，再检索并审阅模板：
+
+```bash
+node skill/scripts/designer-pipeline.cjs surface validate --artifact surface.json --json
+node skill/scripts/designer-pipeline.cjs template search --catalog catalog.json --surface surface.json --request request.json --json
+node skill/scripts/designer-pipeline.cjs template select --selection selection.json --write --output receipt.json --json
+node skill/scripts/designer-pipeline.cjs template adapt --receipt receipt.json --context context.json --write --output plan.json --json
+node skill/scripts/designer-pipeline.cjs template review --plan plan.json --review review.json --write --output reviewed-plan.json --json
+node skill/scripts/designer-pipeline.cjs template approve --plan reviewed-plan.json --approval approval.json --write --output approved-plan.json --json
+```
+
+首轮只覆盖项目内的 Web 与 Mobile 证据和元数据，不承诺截图、URL、视觉嵌入或 Game 支持。
+
 ## 核心功能
 
 ### 可视化方向预览与中文排版

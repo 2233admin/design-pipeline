@@ -157,12 +157,13 @@ function blockedResult(reason, blocker, details = {}) {
 }
 
 function checkDirectionPreview(changeRoot, options = {}) {
-  const root = fs.realpathSync(path.resolve(changeRoot));
+  const receiptInput = options.receipt;
+  const root = receiptInput && changeRoot ? fs.realpathSync(path.resolve(changeRoot)) : receiptInput ? null : fs.realpathSync(path.resolve(changeRoot));
   const stage = options.stage || "preview";
   assertEnum(stage, ["preview", "selection"], "stage", "direction preview");
   const artifactName = options.artifact || "direction-preview.json";
-  const artifactPath = resolveInside(root, artifactName, "direction preview receipt", { scope: "direction preview" });
-  if (!fs.existsSync(artifactPath) || !fs.statSync(artifactPath).isFile()) {
+  const artifactPath = receiptInput ? null : resolveInside(root, artifactName, "direction preview receipt", { scope: "direction preview" });
+  if (!receiptInput && (!fs.existsSync(artifactPath) || !fs.statSync(artifactPath).isFile())) {
     return blockedResult(
       "direction-preview-missing",
       `change ${artifactName} does not exist; record required or waived applicability before selecting a direction`,
@@ -170,7 +171,7 @@ function checkDirectionPreview(changeRoot, options = {}) {
     );
   }
 
-  const receipt = readJson(artifactPath, "direction preview");
+  const receipt = receiptInput || readJson(artifactPath, "direction preview");
   assertKeys(
     receipt,
     ["schema", "changeId", "applicability", "comparison", "directions", "decision"],
@@ -180,7 +181,7 @@ function checkDirectionPreview(changeRoot, options = {}) {
   );
   if (receipt.schema !== SCHEMA) fail("direction preview", `unsupported schema ${String(receipt.schema)}`);
   assertString(receipt.changeId, "changeId", "direction preview");
-  if (receipt.changeId !== path.basename(root)) fail("direction preview", "changeId must match the change-root directory name");
+  if (root && receipt.changeId !== path.basename(root)) fail("direction preview", "changeId must match the change-root directory name");
   assertKeys(
     receipt.applicability,
     ["status", "reason"],
@@ -237,17 +238,23 @@ function checkDirectionPreview(changeRoot, options = {}) {
 
   const blockers = [];
   const reasons = [];
-  readBoundArtifact(root, receipt.comparison.brief, "comparison brief", blockers, reasons);
-  const indexArtifact = readBoundArtifact(root, receipt.comparison.index, "comparison index", blockers, reasons);
-  for (const direction of receipt.directions) {
-    readBoundArtifact(
-      root,
-      direction.screenshot,
-      `direction ${direction.id} screenshot`,
-      blockers,
-      reasons,
-      receipt.comparison.viewport,
-    );
+  const indexArtifact = root
+    ? (() => {
+      readBoundArtifact(root, receipt.comparison.brief, "comparison brief", blockers, reasons);
+      return readBoundArtifact(root, receipt.comparison.index, "comparison index", blockers, reasons);
+    })()
+    : { content: null };
+  if (root) {
+    for (const direction of receipt.directions) {
+      readBoundArtifact(
+        root,
+        direction.screenshot,
+        `direction ${direction.id} screenshot`,
+        blockers,
+        reasons,
+        receipt.comparison.viewport,
+      );
+    }
   }
 
   if (indexArtifact.content !== null) {

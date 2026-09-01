@@ -76,6 +76,11 @@
     "website-cloning-init.test.cjs",
     "skill-cli-handoff.test.cjs",
     "claude-code-surface.test.cjs",
-    "skill-evals.test.cjs"
+    "skill-evals.test.cjs",
+    "guided-multi-surface-cli.test.cjs",
+    "surface-profile.test.cjs",
+    "guided-design-intake.test.cjs",
+    "region-template.test.cjs",
+    "surface-design-artifacts.test.cjs"
   ]
 }
