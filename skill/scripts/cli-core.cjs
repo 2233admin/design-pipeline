@@ -195,6 +195,15 @@ function contained(root, raw, label, mustExist = true) {
   }
   return target;
 }
+function assertNoSymlinkPath(root, target, label) {
+  const relative = path.relative(root, target);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) fail("cli", `${label} must stay inside --root`, { code: "PATH_ESCAPE" });
+  let current = root;
+  for (const segment of relative.split(path.sep).filter(Boolean)) {
+    current = path.join(current, segment);
+    if (fs.lstatSync(current).isSymbolicLink()) fail("cli", `${label} cannot traverse a symlink`, { code: "PATH_ESCAPE" });
+  }
+}
 
 function changeRootFrom(parsed, root, options = {}) {
   const raw = option(parsed, "--change-root");
@@ -449,10 +458,21 @@ function statusCommand(parsed, root) {
 function planCommand(parsed, root) {
   const manifestFile = artifact(parsed, root, "--manifest");
   const outputFile = contained(root, requireOption(parsed, "--output"), "--output", false);
+  if (path.resolve(outputFile) === path.resolve(manifestFile)) fail("cli", "--output must differ from --manifest", { code: "OUTPUT_COLLISION" });
+  if (new Set(["state.json", "events.jsonl", "handoff.md"]).has(path.basename(outputFile))) fail("cli", "--output names a protected control artifact", { code: "OUTPUT_COLLISION" });
+  if (fs.existsSync(outputFile)) fail("cli", `--output already exists: ${outputFile}`, { code: "OUTPUT_COLLISION" });
+  const outputParent = path.dirname(outputFile);
+  fs.mkdirSync(outputParent, { recursive: true });
+  assertNoSymlinkPath(root, outputParent, "--output");
+  resolveInside(root, fs.realpathSync(outputParent), "--output", { scope: "cli" });
   const plan = compileDesignPlan(readJson(manifestFile, "intent manifest"));
   if (plan.status === "blocked") return { result: plan, exitCode: 2 };
-  fs.mkdirSync(path.dirname(outputFile), { recursive: true });
-  fs.writeFileSync(outputFile, canonicalJson(plan));
+  const fd = fs.openSync(outputFile, "wx");
+  try {
+    fs.writeFileSync(fd, canonicalJson(plan));
+  } finally {
+    fs.closeSync(fd);
+  }
   return { result: { status: "ready", plan, output: outputFile }, exitCode: 0 };
 }
 
@@ -1311,6 +1331,13 @@ function componentFirstV2Command(parsed, root, action) {
   }
   if (action === "select") {
     const selection = selectionReceipt(readJson(artifact(parsed, root, "--selection"), "component-first selection"));
+    if (!selection.prototypeSetSnapshot) return { result: { status: "blocked", reason: "selection requires filesystem-backed prototype set provenance" }, exitCode: 2 };
+    try {
+      const verified = selectPrototype(selection.prototypeSetSnapshot, selection, { projectRoot: root });
+      if (verified.receiptHash !== selection.receiptHash) return { result: { status: "blocked", reason: "selection prototype provenance is stale" }, exitCode: 2 };
+    } catch (error) {
+      return { result: { status: "blocked", reason: error.message }, exitCode: 2 };
+    }
     if (selection.targetIdentityDigest !== input.target.targetIdentityDigest || selection.snapshotDigest !== input.target.snapshotDigest || selection.policyDigest !== input.policy.digest) {
       return { result: { status: "blocked", reason: "selection is stale for the current target snapshot or policy" }, exitCode: 2 };
     }
@@ -1322,6 +1349,13 @@ function componentFirstV2Command(parsed, root, action) {
     if (option(parsed, "--approve") !== true || !option(parsed, "--approval")) fail("cli", "promotion requires --approve and --approval", { code: "APPROVAL_REQUIRED" });
     const conformance = checkV2Artifact(input, { projectRoot: root });
     if (conformance.status !== "passed") return { result: { status: "blocked", reason: "component conformance must pass before promotion", conformance }, exitCode: 2 };
+    if (!input.selection?.prototypeSetSnapshot) return { result: { status: "blocked", reason: "promotion requires filesystem-backed prototype set provenance" }, exitCode: 2 };
+    try {
+      const verified = selectPrototype(input.selection.prototypeSetSnapshot, input.selection, { projectRoot: root });
+      if (verified.receiptHash !== input.selection.receiptHash) return { result: { status: "blocked", reason: "promotion prototype provenance is stale" }, exitCode: 2 };
+    } catch (error) {
+      return { result: { status: "blocked", reason: error.message }, exitCode: 2 };
+    }
     const promotionInput = readJson(artifact(parsed, root, "--promotion"), "component-first promotion");
     const promotion = promotionReceipt({
       ...promotionInput,
@@ -1465,44 +1499,44 @@ function templateSelectionCommand(parsed, root) {
   if (surface.directionLock !== undefined && canonicalJson(lock) !== canonicalJson(surface.directionLock)) {
     return { result: { status: "blocked", reason: "direction lock does not match the Surface binding" }, exitCode: 2 };
   }
+  const requestedPreview = input.directionPreview || input.directionPreviewSelection || input.validatedDirectionPreview;
+  if (!requestedPreview || typeof requestedPreview.changeRoot !== "string" || !requestedPreview.changeRoot.trim()) {
+    return { result: { status: "blocked", reason: "a filesystem-bound direction preview proof is required before template selection" }, exitCode: 2 };
+  }
+  const requestedChangeRoot = requestedPreview.changeRoot;
   const changeRoot = option(parsed, "--change-root")
     ? changeRootFrom(parsed, root)
-    : null;
+    : contained(root, requestedChangeRoot, "--change-root");
   let preview;
   let previewProof;
   let previewArtifactSha256;
-  if (changeRoot) {
-    preview = checkDirectionPreview(changeRoot, { stage: "selection" });
-    if (preview.status !== "ready") return { result: { status: "blocked", reason: preview.reason || "direction preview selection is invalid", preview }, exitCode: 2 };
-    const artifact = readJson(preview.artifact, "direction preview");
-    previewArtifactSha256 = sha256(fs.readFileSync(preview.artifact));
-    previewProof = {
-      artifact,
-      artifactSha256: previewArtifactSha256,
-      contentHash: sha256(canonicalJson(artifact)),
-      directionLockSnapshot: lock,
-      changeRoot,
-    };
-  } else {
-    const suppliedPreview = input.directionPreview || input.directionPreviewSelection || input.validatedDirectionPreview;
-    if (suppliedPreview?.changeRoot !== undefined) {
-      return { result: { status: "blocked", reason: "direction preview changeRoot is not accepted without --change-root" }, exitCode: 2 };
+  preview = checkDirectionPreview(changeRoot, { stage: "selection" });
+  if (preview.status !== "ready") return { result: { status: "blocked", reason: preview.reason || "direction preview selection is invalid", preview }, exitCode: 2 };
+  const previewArtifact = readJson(preview.artifact, "direction preview");
+  previewArtifactSha256 = sha256(fs.readFileSync(preview.artifact));
+  previewProof = {
+    artifact: previewArtifact,
+    artifactSha256: previewArtifactSha256,
+    contentHash: sha256(canonicalJson(previewArtifact)),
+    directionLockSnapshot: lock,
+    changeRoot,
+  };
+  const previewAliases = [input.directionPreview, input.directionPreviewSelection, input.validatedDirectionPreview].filter((value) => value !== undefined);
+  for (const supplied of previewAliases) {
+    let suppliedChangeRoot;
+    try {
+      suppliedChangeRoot = contained(root, supplied?.changeRoot, "--change-root");
+    } catch {
+      suppliedChangeRoot = null;
     }
-    const artifact = suppliedPreview?.artifact || suppliedPreview?.previewArtifact || suppliedPreview?.receipt || (
-      suppliedPreview?.schema === "design-pipeline.direction-preview.v1"
-        ? Object.fromEntries(["schema", "changeId", "applicability", "comparison", "directions", "decision"].map((key) => [key, suppliedPreview[key]]))
-        : null
-    );
-    if (!artifact) fail("cli", "direction preview artifact is required");
-    preview = checkDirectionPreview(null, { receipt: artifact, stage: "selection" });
-    previewArtifactSha256 = suppliedPreview.artifactSha256 || suppliedPreview.previewArtifactSha256 || suppliedPreview.bindingHash;
-    const contentHash = suppliedPreview.contentHash || suppliedPreview.previewContentHash || suppliedPreview.previewArtifactContentHash;
-    previewProof = {
-      artifact,
-      artifactSha256: previewArtifactSha256,
-      contentHash,
-      directionLockSnapshot: suppliedPreview.directionLockSnapshot || suppliedPreview.selectedLockSnapshot || suppliedPreview.lock || lock,
-    };
+    const suppliedArtifact = supplied?.artifact || supplied?.previewArtifact || supplied?.receipt;
+    const suppliedArtifactSha256 = supplied?.artifactSha256 || supplied?.previewArtifactSha256 || supplied?.bindingHash;
+    const suppliedContentHash = supplied?.contentHash || supplied?.previewContentHash;
+    if (!supplied || suppliedChangeRoot !== changeRoot || canonicalJson(suppliedArtifact) !== canonicalJson(previewArtifact)
+      || suppliedArtifactSha256 !== previewArtifactSha256
+      || suppliedContentHash !== previewProof.contentHash) {
+      return { result: { status: "blocked", reason: "provided direction preview does not match the filesystem-bound artifact", preview }, exitCode: 2 };
+    }
   }
   if (!lock || lock.previewArtifactSha256 !== previewArtifactSha256) {
     return { result: { status: "blocked", reason: "direction lock is not bound to the validated direction-preview artifact", preview }, exitCode: 2 };
@@ -1527,6 +1561,12 @@ function templateSelectionCommand(parsed, root) {
   const output = writeResult(parsed, root, receipt);
   return { result: { status: "selected", receipt, ...(output ? { output } : {}) }, exitCode: 0 };
 }
+function requireTemplatePreviewRoot(receipt, root) {
+  const preview = receipt?.directionPreview || receipt?.directionPreviewSnapshot;
+  if (!preview || typeof preview.changeRoot !== "string" || !preview.changeRoot.trim()) fail("adaptation-plan", "selection receipt preview changeRoot is required", { code: "PREVIEW_ROOT_REQUIRED" });
+  contained(root, preview.changeRoot, "--change-root");
+}
+
 
 function templateCommand(parsed, root, action) {
   if (action === "inventory") {
@@ -1552,6 +1592,7 @@ function templateCommand(parsed, root, action) {
   if (action === "adapt") {
     const receiptArtifact = readJson(artifact(parsed, root, "--receipt"), "SelectionReceipt");
     const receipt = receiptArtifact.receipt || receiptArtifact;
+    requireTemplatePreviewRoot(receipt, root);
     const context = readJson(artifact(parsed, root, "--context"), "adaptation context");
     if (context.brief !== undefined) {
       const brief = confirmedBriefFrom(context);
@@ -1583,23 +1624,25 @@ function templateCommand(parsed, root, action) {
     }
     const plan = createAdaptationPlan(receipt, normalizedContext);
     const output = writeResult(parsed, root, plan);
-    return { result: { status: plan.status, plan, taskGate: canCreateTasks(plan), ...(output ? { output } : {}) }, exitCode: 0 };
+    return { result: { status: plan.status, plan, taskGate: canCreateTasks(plan, { requirePreviewRoot: true, projectRoot: root }), ...(output ? { output } : {}) }, exitCode: 0 };
   }
   if (action === "review") {
     const planArtifact = readJson(artifact(parsed, root, "--plan"), "AdaptationPlan");
     const plan = planArtifact.plan || planArtifact;
+    requireTemplatePreviewRoot(plan.selectionReceipt || plan, root);
     const review = readJson(artifact(parsed, root, "--review"), "adaptation review");
     const revised = reviewAdaptationPlan(plan, review);
     const output = writeResult(parsed, root, revised);
-    return { result: { status: revised.status, plan: revised, taskGate: canCreateTasks(revised), ...(output ? { output } : {}) }, exitCode: 0 };
+    return { result: { status: revised.status, plan: revised, taskGate: canCreateTasks(revised, { requirePreviewRoot: true, projectRoot: root }), ...(output ? { output } : {}) }, exitCode: 0 };
   }
   if (action === "approve") {
     const planArtifact = readJson(artifact(parsed, root, "--plan"), "AdaptationPlan");
     const plan = planArtifact.plan || planArtifact;
+    requireTemplatePreviewRoot(plan.selectionReceipt || plan, root);
     const approval = readJson(artifact(parsed, root, "--approval"), "adaptation approval");
-    const approved = approveAdaptationPlan(plan, approval);
+    const approved = approveAdaptationPlan(plan, approval, { requirePreviewRoot: true, projectRoot: root });
     const output = writeResult(parsed, root, approved);
-    return { result: { status: approved.status, plan: approved, taskGate: canCreateTasks(approved), ...(output ? { output } : {}) }, exitCode: 0 };
+    return { result: { status: approved.status, plan: approved, taskGate: canCreateTasks(approved, { requirePreviewRoot: true, projectRoot: root }), ...(output ? { output } : {}) }, exitCode: 0 };
   }
   fail("cli", `unknown template action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }

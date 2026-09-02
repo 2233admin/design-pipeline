@@ -135,6 +135,7 @@ node skill/scripts/designer-pipeline.cjs template adapt --receipt receipt.json -
 node skill/scripts/designer-pipeline.cjs template review --plan plan.json --review review.json --write --output reviewed-plan.json --json
 node skill/scripts/designer-pipeline.cjs template approve --plan reviewed-plan.json --approval approval.json --write --output approved-plan.json --json
 ```
+`template select` 只接受带 `changeRoot` 的方向预览证明，并从该目录重新读取并校验 `direction-preview.json` 及其引用文件；`changeRoot` 必须位于项目根目录内。`approval.json` 必须包含与待审批计划 `contentHash` 相同的 `planContentHash`。
 
 首轮只覆盖项目内的 Web 与 Mobile 证据和元数据，不承诺截图、URL、视觉嵌入或 Game 支持。
 

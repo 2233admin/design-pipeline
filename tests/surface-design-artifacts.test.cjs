@@ -8,56 +8,70 @@ const crypto = require("node:crypto");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const {
   PRECEDENCE,
-  approveAdaptationPlan,
+  approveAdaptationPlan: approveAdaptationPlanCore,
   canCreateTasks,
   createAdaptationPlan,
   createSelectionReceipt,
-  validatePlanShape,
   reviewAdaptationPlan,
+  validatePlanShape,
   validateSelectionReceipt,
 } = require("../skill/scripts/surface-design-artifacts-core.cjs");
 const { buildComponentFitMatrix, createDirectionLock } = require("../skill/scripts/component-fit-core.cjs");
 const { normalizeSnapshot } = require("../skill/scripts/design-system-catalog-core.cjs");
 const componentCatalog = normalizeSnapshot(JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8")));
 const regionCatalog = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/region-template-catalog.json"), "utf8"));
+const { pngBytes } = require("./helpers/reference-fixtures.cjs");
+const directPreviewRoot = fs.mkdtempSync(path.join(require("node:os").tmpdir(), "surface-artifacts-preview-"));
 
-function directionLock() {
+function directionLock(previewArtifactSha256 = "b".repeat(64)) {
   return createDirectionLock({
     directionId: "signal",
     selectionReceiptHash: "a".repeat(64),
-    previewArtifactSha256: "b".repeat(64),
+    previewArtifactSha256,
     constraints: { era: "futurist", density: "dense" },
     visualKeywords: ["smoothui"],
   });
 }
 
 function directionPreview() {
+  const hashBytes = (value) => crypto.createHash("sha256").update(value).digest("hex");
+  const write = (relative, value) => {
+    const file = path.join(directPreviewRoot, relative);
+    fs.writeFileSync(file, value);
+    return { path: relative, sha256: hashBytes(value) };
+  };
   const artifact = {
     schema: "design-pipeline.direction-preview.v1",
-    changeId: "direct-selection",
+    changeId: path.basename(directPreviewRoot),
     applicability: { status: "required", reason: "visual-redesign" },
     comparison: {
-      brief: { path: "brief.md", sha256: "b".repeat(64) },
-      index: { path: "index.html", sha256: "b".repeat(64) },
+      brief: write("brief.md", "# Direct selection\n"),
+      index: write("index.html", '<main data-direction-preview><section data-direction-id="quiet"></section><section data-direction-id="signal"></section></main>'),
       viewport: { width: 1440, height: 900 },
       contentFixtureSha256: "c".repeat(64),
       stateCoverage: ["default", "error"],
     },
     directions: [
-      { id: "quiet", name: "Quiet", thesis: "Quiet thesis", signature: "Quiet signature", axes: { luminance: "light", typeFamily: "serif", color: "monochrome", layout: "editorial", density: "airy", era: "classic", material: "paper" }, screenshot: { path: "quiet.png", sha256: "d".repeat(64) } },
-      { id: "signal", name: "Signal", thesis: "Signal thesis", signature: "Signal signature", axes: { luminance: "dark", typeFamily: "sans", color: "duotone", layout: "grid", density: "dense", era: "futurist", material: "glass" }, screenshot: { path: "signal.png", sha256: "e".repeat(64) } },
+      { id: "quiet", name: "Quiet", thesis: "Quiet thesis", signature: "Quiet signature", axes: { luminance: "light", typeFamily: "serif", color: "monochrome", layout: "editorial", density: "airy", era: "classic", material: "paper" }, screenshot: write("quiet.png", pngBytes({ width: 1440, height: 900 })) },
+      { id: "signal", name: "Signal", thesis: "Signal thesis", signature: "Signal signature", axes: { luminance: "dark", typeFamily: "sans", color: "duotone", layout: "grid", density: "dense", era: "futurist", material: "glass" }, screenshot: write("signal.png", pngBytes({ width: 1440, height: 900 })) },
     ],
     decision: { status: "selected", selectedDirectionId: "signal", rationale: "Signal is selected." },
   };
+  const bytes = Buffer.from(JSON.stringify(artifact));
+  const artifactFile = path.join(directPreviewRoot, "direction-preview.json");
+  fs.writeFileSync(artifactFile, bytes);
+  const artifactSha256 = hashBytes(bytes);
   return {
+    changeRoot: directPreviewRoot,
+    artifactSha256,
+    contentHash: hashBytes(canonicalJson(artifact)),
+    directionLockSnapshot: directionLock(artifactSha256),
     artifact,
-    artifactSha256: "b".repeat(64),
-    contentHash: crypto.createHash("sha256").update(canonicalJson(artifact)).digest("hex"),
-    directionLockSnapshot: directionLock(),
   };
 }
 
 function adoptInput(overrides = {}) {
+  const preview = directionPreview();
   return {
     projectId: "p1",
     surfaceId: "web-admin",
@@ -66,8 +80,8 @@ function adoptInput(overrides = {}) {
     candidate: { id: "project-data-table-web-react", version: "1.0.0", platform: "web", framework: "react" },
     catalog: regionCatalog,
     selectionMode: "adopt",
-    directionLockSnapshot: directionLock(),
-    directionPreview: directionPreview(),
+    directionLockSnapshot: preview.directionLockSnapshot,
+    directionPreview: preview,
     hardGateResults: { license: "pass", provenance: "pass", security: "pass", accessibility: "pass" },
     sourceAndLicenseEvidence: [
       { kind: "license", value: "project-owned", source: "catalog-entry", contentHash: "a".repeat(64), authorization: "project-owned authorization record" },
@@ -76,6 +90,9 @@ function adoptInput(overrides = {}) {
     acceptanceCriteria: ["keyboard navigation works"],
     ...overrides,
   };
+}
+function approveAdaptationPlan(plan, approval = {}) {
+  return approveAdaptationPlanCore(plan, { planContentHash: plan.contentHash, ...approval });
 }
 
 function adaptationContext(receipt, overrides = {}) {
@@ -176,6 +193,20 @@ test("plans preserve precedence and revisions return to review", () => {
   assert.equal(canCreateTasks(revised).allowed, false);
   const approved = approveAdaptationPlan(revised, { reviewer: "user", rationale: "approved after revision" });
   assert.equal(canCreateTasks(approved).allowed, true);
+});
+
+test("persisted adaptation plans retain receipt and component-fit evidence", () => {
+  const receipt = createSelectionReceipt(adoptInput());
+  const plan = createAdaptationPlan(receipt, adaptationContext(receipt));
+  const approved = approveAdaptationPlan(plan, { reviewer: "user", rationale: "approved" });
+  assert.ok(approved.selectionReceipt);
+  assert.ok(approved.componentFitMatrix);
+  const forgedReceipt = { ...approved, selectionReceipt: { ...approved.selectionReceipt, receiptId: "forged-receipt" } };
+  delete forgedReceipt.contentHash;
+  forgedReceipt.contentHash = sha256(canonicalJson(forgedReceipt));
+  const gate = canCreateTasks(forgedReceipt);
+  assert.equal(gate.allowed, false);
+  assert.match(gate.reasons.join(" "), /content hash|selectionReceipt binding|receiptId|stale/i);
 });
 
 test("rejected plans cannot create tasks", () => {

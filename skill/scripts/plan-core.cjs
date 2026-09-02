@@ -151,6 +151,9 @@ function validatePlan(plan, options = {}) {
     const registry = loadControlPhaseRegistry(options.registryFile || DEFAULT_REGISTRY_FILE);
     if (canonicalJson(plan.phases) !== canonicalJson(registry.phases)) fail("design plan", "plan phases do not match the governed control registry");
     const { normalized } = normalizeIntentManifest(plan.manifest);
+    if (plan.mode !== normalized.mode || plan.fidelity !== normalized.fidelity) {
+      fail("design plan", "top-level mode/fidelity do not match the normalized manifest");
+    }
     const expectedInputHash = hashText(canonicalJson({ manifest: normalized, registry: registry.phases }));
     if (plan.input_hash !== expectedInputHash) fail("design plan", "plan input_hash does not match its manifest and governed registry");
     if (plan.plan_id !== `dpp-${sha256(plan.input_hash).slice(0, 20)}`) fail("design plan", "plan_id does not match its input_hash");

@@ -541,6 +541,7 @@ designer-pipeline template adapt --receipt receipt.json --context context.json -
 designer-pipeline template review --plan plan.json --review review.json --json
 designer-pipeline template approve --plan plan.json --approval approval.json --json
 ```
+`template select` requires a `changeRoot` in the direction-preview proof and revalidates `direction-preview.json` plus all referenced files from that contained root. The approval artifact must include `planContentHash` equal to the reviewed plan's `contentHash`.
 
 The live design panel is the reviewable projection of this flow, not the chat transcript.
 The first wave supports project-contained Web and Mobile evidence and metadata; it does not claim

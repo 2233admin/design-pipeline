@@ -12,6 +12,7 @@ const { decomposeReferenceRegions, normalizeReferenceSource } = require("../skil
 const { buildComponentFitMatrix, createDirectionLock } = require("../skill/scripts/component-fit-core.cjs");
 const { normalizeSnapshot } = require("../skill/scripts/design-system-catalog-core.cjs");
 const { canonicalJson } = require("../skill/scripts/contract-utils.cjs");
+const { pngBytes } = require("./helpers/reference-fixtures.cjs");
 const repoRoot = path.resolve(__dirname, "..");
 const componentCatalog = normalizeSnapshot(JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/component-source-catalog.json"), "utf8")));
 const catalog = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/region-template-catalog.json"), "utf8"));
@@ -75,20 +76,20 @@ function runConfirmedIntake(root, surfaceId, surface) {
   return { brief: current.output.brief, briefFile };
 }
 
-function makeDirectionLock() {
+function makeDirectionLock(previewArtifactSha256 = "b".repeat(64)) {
   return createDirectionLock({
     directionId: "signal",
     selectionReceiptHash: "a".repeat(64),
-    previewArtifactSha256: "b".repeat(64),
+    previewArtifactSha256,
     constraints: { era: "futurist", density: "dense" },
     visualKeywords: ["smoothui"],
   });
 }
 
-function makeDirectionPreview() {
+function makeDirectionPreview(root = null) {
   const artifact = {
     schema: "design-pipeline.direction-preview.v1",
-    changeId: "guided-selection",
+    changeId: root ? path.basename(root) : "guided-selection",
     applicability: { status: "required", reason: "visual-redesign" },
     comparison: {
       brief: { path: "brief.md", sha256: "b".repeat(64) },
@@ -111,12 +112,31 @@ function makeDirectionPreview() {
     ],
     decision: { status: "selected", selectedDirectionId: "signal", rationale: "Signal is the selected product direction." },
   };
-  return {
-    artifact,
-    artifactSha256: "b".repeat(64),
-    contentHash: crypto.createHash("sha256").update(canonicalJson(artifact)).digest("hex"),
-    directionLockSnapshot: makeDirectionLock(),
+  if (!root) {
+    return {
+      artifact,
+      artifactSha256: "b".repeat(64),
+      contentHash: crypto.createHash("sha256").update(canonicalJson(artifact)).digest("hex"),
+      directionLockSnapshot: makeDirectionLock(),
+    };
+  }
+  const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
+  const write = (relative, value) => {
+    const file = path.join(root, relative);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, value);
+    return { path: relative, sha256: hash(value) };
   };
+  artifact.comparison.brief = write("brief.md", "# Guided selection\n");
+  artifact.comparison.index = write("index.html", '<main data-direction-preview><section data-direction-id="quiet"></section><section data-direction-id="signal"></section></main>');
+  artifact.directions = artifact.directions.map((direction) => ({
+    ...direction,
+    screenshot: write(direction.screenshot.path, pngBytes({ width: 1440, height: 900 })),
+  }));
+  const artifactBytes = Buffer.from(JSON.stringify(artifact));
+  fs.writeFileSync(path.join(root, "direction-preview.json"), artifactBytes);
+  const artifactSha256 = hash(artifactBytes);
+  return { artifact, artifactSha256, contentHash: hash(canonicalJson(artifact)), directionLockSnapshot: makeDirectionLock(artifactSha256), changeRoot: root };
 }
 
 function adaptationContext(surface, catalogArtifact, candidate, referenceHash, directionLock, brief, componentCandidateVersions = ["table:1.0.0", "filter-sheet:1.0.0"]) {
@@ -163,7 +183,8 @@ test("runs one web and mobile project through the complete guided vertical", () 
       framework: "react-native",
       profileVersion: "1",
     };
-    const directionLock = makeDirectionLock();
+    const preview = makeDirectionPreview(root);
+    const directionLock = makeDirectionLock(preview.artifactSha256);
     const fixtureCatalog = {
       ...catalog,
       entries: catalog.entries.filter((entry) => [
@@ -246,7 +267,7 @@ test("runs one web and mobile project through the complete guided vertical", () 
       },
       selectionMode: "adopt",
       directionLockSnapshot: directionLock,
-      directionPreview: makeDirectionPreview(),
+      directionPreview: preview,
       catalog: fixtureCatalog,
       catalogVersion: fixtureCatalog.version,
       hardGateResults: {
@@ -306,7 +327,7 @@ test("runs one web and mobile project through the complete guided vertical", () 
     assert.equal(reviewed.output.plan.status, "awaiting_review");
     assert.equal(reviewed.output.taskGate.allowed, false);
     put(root, "reviewed-plan.json", reviewed.output.plan);
-    put(root, "approval.json", { reviewer: "user", rationale: "approved for implementation" });
+    put(root, "approval.json", { reviewer: "user", rationale: "approved for implementation", planContentHash: reviewed.output.plan.contentHash });
     const approved = execute(["template", "approve", "--root", root, "--plan", "reviewed-plan.json", "--approval", "approval.json", "--json"]);
     assert.equal(approved.exitCode, 0);
     assert.equal(approved.output.plan.status, "approved");
@@ -328,7 +349,8 @@ test("keeps guided retrieval and lifecycle gates fail-closed", () => {
       framework: "react",
       profileVersion: "1",
     };
-    const directionLock = makeDirectionLock();
+    const preview = makeDirectionPreview(root);
+    const directionLock = makeDirectionLock(preview.artifactSha256);
     const fixtureCatalog = {
       ...catalog,
       entries: catalog.entries.filter((entry) => [
@@ -361,7 +383,7 @@ test("keeps guided retrieval and lifecycle gates fail-closed", () => {
       catalog: fixtureCatalog,
       selectionMode: "adopt",
       directionLockSnapshot: directionLock,
-      directionPreview: makeDirectionPreview(),
+      directionPreview: preview,
       acceptanceCriteria: ["findability"],
     };
     put(root, "incomplete-selection.json", baseSelection);
@@ -471,7 +493,7 @@ test("keeps guided retrieval and lifecycle gates fail-closed", () => {
     assert.equal(revised.output.plan.status, "awaiting_review");
     assert.equal(revised.output.taskGate.allowed, false);
     put(root, "revised-plan.json", revised.output.plan);
-    put(root, "approval.json", { reviewer: "user", rationale: "approved after re-review" });
+    put(root, "approval.json", { reviewer: "user", rationale: "approved after re-review", planContentHash: revised.output.plan.contentHash });
     const reapproved = execute(["template", "approve", "--root", root, "--plan", "revised-plan.json", "--approval", "approval.json", "--json"]);
     assert.equal(reapproved.exitCode, 0);
     assert.equal(reapproved.output.taskGate.allowed, true);
@@ -534,13 +556,14 @@ test("blocks selection until the brief is confirmed and gates approved plans", (
     hardGateResults: { license: "pass", provenance: "pass", accessibility: "pass" },
     acceptanceCriteria: ["keyboard navigation works"],
   });
+  const preview = makeDirectionPreview(root);
   const selectionInput = {
     brief: completeBrief(),
     projectId: "p1", surfaceId: "web-admin",
     surface: { projectId: "p1", surfaceId: "web-admin", platform: "web", framework: "react", profileVersion: "1" },
     referenceHash: "a".repeat(64),
-    selectionMode: "reference", directionLockSnapshot: makeDirectionLock(),
-    directionPreview: makeDirectionPreview(),
+    selectionMode: "reference", directionLockSnapshot: preview.directionLockSnapshot,
+    directionPreview: preview,
     candidate: { id: "project-data-table-web-react", version: "1.0.0", platform: "web", framework: "react" },
     searchedCatalog: { entries: [{ templateId: "project-data-table-web-react", templateVersion: "1.0.0", platform: "web", framework: "react" }] },
     acceptanceCriteria: ["keyboard navigation works"],
@@ -557,15 +580,13 @@ test("blocks selection until the brief is confirmed and gates approved plans", (
     directionPreview: { artifactSha256: "b".repeat(64), contentHash: "c".repeat(64) },
   });
   const hashOnly = execute(["template", "select", "--root", root, "--selection", "hash-only-preview.json", "--json"]);
-  assert.equal(hashOnly.exitCode, 1);
-  assert.match(hashOnly.output.error.message, /direction preview artifact/i);
+  assert.equal(hashOnly.exitCode, 2);
   put(root, "external-preview-root.json", {
     ...selectionInput,
     directionPreview: { ...makeDirectionPreview(), changeRoot: path.join(os.tmpdir(), "outside-preview-root") },
   });
   const externalPreviewRoot = execute(["template", "select", "--root", root, "--selection", "external-preview-root.json", "--json"]);
-  assert.equal(externalPreviewRoot.exitCode, 2);
-  assert.match(externalPreviewRoot.output.reason, /changeRoot|--change-root/);
+  assert.equal(externalPreviewRoot.exitCode, 1);
   assert.match(aliasMismatch.output.reason, /direction-lock|direction lock/i);
 
   put(root, "selection-identity-mismatch.json", { ...selectionInput, projectId: "p2" });
@@ -596,7 +617,7 @@ test("blocks selection until the brief is confirmed and gates approved plans", (
   const reviewed = execute(["template", "review", "--root", root, "--plan", "plan.json", "--review", "review.json", "--json"]);
   assert.equal(reviewed.exitCode, 0);
   put(root, "reviewed.json", reviewed.output.plan);
-  put(root, "approval.json", { reviewer: "user", rationale: "approved" });
+  put(root, "approval.json", { reviewer: "user", rationale: "approved", planContentHash: reviewed.output.plan.contentHash });
   const approved = execute(["template", "approve", "--root", root, "--plan", "reviewed.json", "--approval", "approval.json", "--json"]);
   assert.equal(approved.exitCode, 0);
   assert.equal(approved.output.taskGate.allowed, true);

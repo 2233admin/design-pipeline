@@ -8,11 +8,16 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
 const { checkComponentFirstGate } = require("../skill/scripts/component-first-core.cjs");
-const { migrateV1ToV2 } = require("../skill/scripts/component-first-v2-core.cjs");
+const { migrateV1ToV2, policyDigest, targetDigest } = require("../skill/scripts/component-first-v2-core.cjs");
 const { createComponentFirstFixture, sha256 } = require("./fixtures/component-first-fixture.cjs");
 const { pngBytes } = require("./helpers/reference-fixtures.cjs");
 const { canonicalJson } = require("../skill/scripts/contract-utils.cjs");
 const { enforceEffects, manifests, promotePrototype, routeDesignSkill, runDesignSkill, selectPrototype } = require("../skill/scripts/design-skill-core.cjs");
+function prototypeBinding() {
+  const target = { id: "prototype-preview", root: ".", kind: "prototype", entrypoints: [], routes: [], snapshotDigest: `sha256:${"1".repeat(64)}` };
+  const policy = { id: "component-first-default", version: 1 };
+  return { target, policy, targetIdentityDigest: targetDigest(target), snapshotDigest: target.snapshotDigest, policyDigest: policyDigest(policy) };
+}
 function writePreviewFixture(t) {
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), "design-skill-preview-"));
   const root = path.join(parent, "compare-settings");
@@ -62,14 +67,15 @@ test("public CLI exposes design-skill routing and manifest lookup", () => {
   assert.equal(JSON.parse(manifest.stdout).manifest.outputSchema, "prototype-set.v1");
 });
 
-test("prototype CLI treats awaiting-selection as a successful handoff state", (t) => {
+test("prototype CLI requires target snapshot binding before selection", (t) => {
   const previewRoot = writePreviewFixture(t);
   const projectRoot = path.dirname(previewRoot);
   fs.writeFileSync(path.join(projectRoot, "input.json"), JSON.stringify({ changeRoot: path.basename(previewRoot) }));
   const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
   const result = spawnSync(process.execPath, [cli, "design-skill", "run", "--root", projectRoot, "--skill", "design.prototype", "--artifact", "input.json", "--json"], { cwd: path.resolve(__dirname, ".."), encoding: "utf8" });
-  assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.equal(JSON.parse(result.stdout).status, "awaiting-selection");
+  assert.equal(result.status, 2, result.stderr || result.stdout);
+  assert.equal(JSON.parse(result.stdout).status, "blocked");
+  assert.equal(JSON.parse(result.stdout).result.reason, "prototype-target-binding-required");
 });
 test("prototype route requires a verified direction preview", (t) => {
   assert.throws(
@@ -77,7 +83,8 @@ test("prototype route requires a verified direction preview", (t) => {
     /prototype changeRoot/,
   );
   const root = writePreviewFixture(t);
-  const result = runDesignSkill("design.prototype", { changeRoot: root }, { projectRoot: path.dirname(root) }).result;
+  const binding = prototypeBinding();
+  const result = runDesignSkill("design.prototype", { changeRoot: root, ...binding }, { projectRoot: path.dirname(root) }).result;
   assert.equal(result.schema, "prototype-set.v1");
   assert.equal(result.status, "awaiting-selection");
   assert.equal(result.preview.status, "ready");
@@ -130,9 +137,9 @@ test("selection is hash-bound and promotion returns a target-write handoff", (t)
   const v1 = checkComponentFirstGate(fixture.input, { projectRoot: fixture.projectRoot });
   const v2 = migrateV1ToV2(v1, { snapshotDigest: `sha256:${sha256("skill-layer")}` });
   const previewRoot = writePreviewFixture(t);
-  const prototypeSet = runDesignSkill("design.prototype", { changeRoot: previewRoot, target: { kind: "prototype", root: ".", id: "admin-web", entrypoints: [], routes: [] }, policy: v2.policy }, { projectRoot: path.dirname(previewRoot) }).result;
+  const prototypeSet = runDesignSkill("design.prototype", { changeRoot: previewRoot, target: { ...v2.target }, policy: { ...v1.policy } }, { projectRoot: path.dirname(previewRoot) }).result;
   const selection = selectPrototype(prototypeSet, { selectedPrototypeId: "signal", targetIdentityDigest: v2.target.targetIdentityDigest, snapshotDigest: v2.target.snapshotDigest, policyDigest: v2.policy.digest, approvedBy: "reviewer" }, { projectRoot: path.dirname(previewRoot) });
-  const handoff = promotePrototype(v2, selection, { selectionReceiptHash: selection.receiptHash, sourceKind: "prototype", targetKind: "production", approvedBy: "reviewer" });
+  const handoff = promotePrototype(v2, selection, { selectionReceiptHash: selection.receiptHash, sourceKind: "prototype", targetKind: "production", approvedBy: "reviewer", options: { projectRoot: path.dirname(previewRoot) } });
   assert.equal(handoff.schema, "design-promotion-handoff.v1");
   assert.equal(handoff.targetWrite, "blocked-until-explicit-executor");
   assert.equal(handoff.promotionReceipt.componentConformanceStatus, "passed");
@@ -151,7 +158,7 @@ test("selection is hash-bound and promotion returns a target-write handoff", (t)
   delete forged.prototypeSetHash;
   forged.prototypeSetHash = sha256(canonicalJson(forged));
   assert.throws(
-    () => selectPrototype(forged, { selectedPrototypeId: "signal" }, { projectRoot: path.dirname(previewRoot) }),
+    () => selectPrototype(forged, { selectedPrototypeId: "signal", targetIdentityDigest: v2.target.targetIdentityDigest, snapshotDigest: v2.target.snapshotDigest, policyDigest: v2.policy.digest, approvedBy: "reviewer" }, { projectRoot: path.dirname(previewRoot) }),
     /directions do not match the verified direction preview/,
   );
   assert.throws(() => selectPrototype({ ...prototypeSet, schema: "wrong" }, { selectedPrototypeId: "signal" }), /schema/);

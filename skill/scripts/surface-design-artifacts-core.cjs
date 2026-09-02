@@ -1,5 +1,6 @@
 "use strict";
 
+const fs = require("node:fs");
 const {
   assertEnum,
   assertKeys,
@@ -9,6 +10,8 @@ const {
   canonicalJson,
   fail,
   isObject,
+  resolveInside,
+  readJson,
   sha256,
 } = require("./contract-utils.cjs");
 const { resolveSurfaceProfile, validateSurfaceBinding } = require("./surface-profile-core.cjs");
@@ -38,7 +41,7 @@ const PLAN_ARRAY_FIELDS = [
   "licenseAndProvenanceNotes", "forbiddenCopying", "expectedVisualDifferences", "acceptanceChecks",
 ];
 const PLAN_KEYS = [
-  "schema", "planId", "receiptId", "receiptHash", "surfaceId", "componentFitBinding", ...PLAN_ARRAY_FIELDS, "tokenMappings",
+  "schema", "planId", "receiptId", "receiptHash", "surfaceId", "componentFitBinding", "selectionReceipt", "componentFitMatrix", ...PLAN_ARRAY_FIELDS, "tokenMappings",
   "precedence", "revision", "status", "review", "approval", "revisedFrom", "contentHash",
 ];
 const PLAN_MUTABLE_FIELDS = new Set([...PLAN_ARRAY_FIELDS, "tokenMappings"]);
@@ -142,30 +145,31 @@ function normalizeDirectionPreviewBinding(preview, lock) {
       : null
   );
   assertObject(artifact, "direction preview artifact", "selection-receipt");
-  const checked = checkDirectionPreview(preview.changeRoot || null, {
-    receipt: artifact,
-    stage: "selection",
-  });
+  if (typeof preview.changeRoot !== "string" || !preview.changeRoot.trim()) fail("selection-receipt", "direction preview changeRoot is required for filesystem-bound evidence");
+  const checked = checkDirectionPreview(preview.changeRoot, { stage: "selection" });
   if (checked.status !== "ready" || checked.applicable !== true) {
     fail("selection-receipt", checked.blockers?.[0] || "a validated applicable direction preview selection is required");
   }
   if (!Number.isInteger(checked.directionCount) || checked.directionCount < 2 || checked.directionCount > 3) {
     fail("selection-receipt", "direction preview selection must contain two or three materially differentiated directions");
   }
+  const checkedArtifact = readJson(checked.artifact, "direction preview");
+  if (canonicalJson(artifact) !== canonicalJson(checkedArtifact)) fail("selection-receipt", "direction preview artifact does not match the filesystem-bound artifact");
   const artifactSha256 = preview.artifactSha256 || preview.previewArtifactSha256 || preview.bindingHash;
   assertHash(artifactSha256, "direction preview artifact hash", "selection-receipt");
-  if (artifactSha256 !== lock.previewArtifactSha256) fail("selection-receipt", "direction preview artifact hash does not match direction lock");
+  const checkedArtifactSha256 = sha256(fs.readFileSync(checked.artifact));
+  if (artifactSha256 !== checkedArtifactSha256) fail("selection-receipt", "direction preview artifact hash does not match the filesystem-bound artifact");
   const contentHash = preview.contentHash || preview.previewContentHash || preview.previewArtifactContentHash;
   assertHash(contentHash, "direction preview content hash", "selection-receipt");
-  if (contentHash !== sha256(canonicalJson(artifact))) fail("selection-receipt", "direction preview content hash does not match the preview artifact");
+  if (contentHash !== sha256(canonicalJson(checkedArtifact))) fail("selection-receipt", "direction preview content hash does not match the preview artifact");
   const selectedLock = preview.directionLockSnapshot || preview.selectedLockSnapshot || preview.lock;
   if (!isObject(selectedLock)) fail("selection-receipt", "direction preview selected lock snapshot is required");
   const checkedSelectedLock = validateDirectionLock(selectedLock);
   if (canonicalJson(checkedSelectedLock) !== canonicalJson(lock)) fail("selection-receipt", "direction preview selected lock snapshot does not match direction lock");
-  const selectedDirectionId = artifact.decision?.selectedDirectionId;
+  const selectedDirectionId = checkedArtifact.decision?.selectedDirectionId;
   assertString(selectedDirectionId, "direction preview selectedDirectionId", "selection-receipt");
   if (selectedDirectionId !== lock.directionId) fail("selection-receipt", "direction lock does not match the selected direction preview");
-  return { status: "selected", applicable: true, selectedDirectionId, artifactSha256, contentHash, artifact: clone(artifact), directionLockSnapshot: clone(checkedSelectedLock) };
+  return { status: "selected", applicable: true, selectedDirectionId, artifactSha256, contentHash, changeRoot: preview.changeRoot, artifact: clone(checkedArtifact), directionLockSnapshot: clone(checkedSelectedLock) };
 }
 
 function normalizeSurfaceSnapshot(surface, projectId, surfaceId) {
@@ -419,6 +423,8 @@ function createAdaptationPlan(receipt, context = {}) {
     receiptHash: checkedReceipt.contentHash,
     surfaceId: checkedReceipt.surfaceId,
     componentFitBinding,
+    selectionReceipt: clone(checkedReceipt),
+    componentFitMatrix: clone(context.componentFitMatrix),
     preservedStructure: normalizePlanArray(context.preservedStructure, "preservedStructure", []),
     replacedComponents: normalizePlanArray(context.replacedComponents, "replacedComponents", []),
     platformAdaptations: normalizePlanArray(context.platformAdaptations, "platformAdaptations", [MANDATORY_PLATFORM_ADAPTATION, `Adapt ${platform} layout and interaction behavior without changing the Surface direction lock`], true),
@@ -452,6 +458,19 @@ function validatePlanShape(plan) {
   assertString(plan.componentFitBinding.region, "componentFitBinding.region", scope);
   assertHash(plan.componentFitBinding.matrixHash, "componentFitBinding.matrixHash", scope);
   assertString(plan.componentFitBinding.platform, "componentFitBinding.platform", scope);
+  assertObject(plan.selectionReceipt, "selectionReceipt", scope);
+  const checkedReceipt = validateSelectionReceipt(plan.selectionReceipt);
+  if (checkedReceipt.contentHash !== plan.receiptHash) fail(scope, "selectionReceipt does not match receiptHash");
+  assertObject(plan.componentFitMatrix, "componentFitMatrix", scope);
+  const checkedMatrix = validateComponentFitMatrix(plan.componentFitMatrix, { directionLock: checkedReceipt.directionLockSnapshot });
+  if (checkedMatrix.matrixHash !== plan.componentFitBinding.matrixHash) fail(scope, "componentFitMatrix does not match matrixHash");
+  if (checkedReceipt.receiptId !== plan.receiptId || checkedReceipt.surfaceId !== plan.surfaceId) fail(scope, "selectionReceipt binding is stale");
+  if (checkedMatrix.status !== plan.componentFitBinding.matrixStatus
+    || checkedMatrix.platform !== plan.componentFitBinding.platform
+    || checkedMatrix.framework !== plan.componentFitBinding.framework
+    || plan.componentFitBinding.region !== plan.selectionReceipt.region) {
+    fail(scope, "componentFitMatrix binding is stale");
+  }
   assertString(plan.componentFitBinding.framework, "componentFitBinding.framework", scope);
   assertEnum(plan.componentFitBinding.matrixStatus, ["ready", "review", "blocked"], "componentFitBinding.matrixStatus", scope);
   for (const key of PLAN_ARRAY_FIELDS) {
@@ -514,11 +533,19 @@ function reviewAdaptationPlan(plan, review) {
   return next;
 }
 
-function approveAdaptationPlan(plan, approval) {
+function requirePreviewRootBinding(plan, scope = "adaptation-plan", projectRoot) {
+  const changeRoot = plan.selectionReceipt?.directionPreviewSnapshot?.changeRoot;
+  if (typeof changeRoot !== "string" || !changeRoot.trim()) fail(scope, "selection receipt preview must retain a filesystem-bound changeRoot");
+  if (projectRoot !== undefined) resolveInside(projectRoot, changeRoot, "selection receipt preview changeRoot", { scope, mustExist: true });
+}
+function approveAdaptationPlan(plan, approval, options = {}) {
+  if (options.requirePreviewRoot) requirePreviewRootBinding(plan, "adaptation-plan", options.projectRoot);
   const checked = validatePlanShape(plan);
   assertObject(approval, "approval", "adaptation-plan");
   assertString(approval.reviewer, "reviewer", "adaptation-plan");
   assertString(approval.rationale, "rationale", "adaptation-plan");
+  assertHash(approval.planContentHash, "planContentHash", "adaptation-plan");
+  if (approval.planContentHash !== checked.contentHash) fail("adaptation-plan", "approval is stale for the persisted plan");
   if (!["draft", "awaiting_review", "revised"].includes(checked.status)) fail("adaptation-plan", `cannot approve plan in ${checked.status} state`);
   const next = clone(checked);
   next.status = "approved";
@@ -527,18 +554,32 @@ function approveAdaptationPlan(plan, approval) {
   next.contentHash = hashBody(next, "contentHash");
   return next;
 }
+function approvalBindsPlan(plan) {
+  if (!isObject(plan.approval) || typeof plan.approval.planContentHash !== "string") return false;
+  const candidate = clone(plan);
+  const claimed = candidate.approval.planContentHash;
+  delete candidate.approval;
+  delete candidate.contentHash;
+  for (const status of ["draft", "awaiting_review", "revised"]) {
+    candidate.status = status;
+    if (hashBody(candidate, "contentHash") === claimed) return true;
+  }
+  return false;
+}
 
-function canCreateTasks(plan) {
+function canCreateTasks(plan, options = {}) {
   const reasons = [];
   if (!isObject(plan)) return { allowed: false, reasons: ["adaptation plan is required"] };
   try {
+    if (options.requirePreviewRoot) requirePreviewRootBinding(plan, "adaptation-plan", options.projectRoot);
     const checked = validatePlanShape(plan);
     if (checked.componentFitBinding.matrixStatus !== "ready") reasons.push(`component-fit matrix is ${checked.componentFitBinding.matrixStatus}; task eligibility requires a ready result`);
     if (checked.status !== "approved") reasons.push(`adaptation plan is ${checked.status}; approval is required`);
-    if (!isObject(checked.approval) || typeof checked.approval.reviewer !== "string" || !checked.approval.reviewer.trim() || typeof checked.approval.rationale !== "string" || !checked.approval.rationale.trim()) reasons.push("adaptation plan has no valid approval record");
+    if (!isObject(checked.approval) || typeof checked.approval.reviewer !== "string" || !checked.approval.reviewer.trim() || typeof checked.approval.rationale !== "string" || !checked.approval.rationale.trim() || !approvalBindsPlan(checked)) reasons.push("adaptation plan has no valid approval record");
     if (!checked.receiptHash) reasons.push("selection receipt binding is missing");
   } catch (error) { reasons.push(error.message); }
   return { allowed: reasons.length === 0, reasons };
 }
+
 
 module.exports = { MANDATORY_FORBIDDEN_COPYING, MANDATORY_PLATFORM_ADAPTATION, PLAN_SCHEMA, PLAN_STATUSES, PRECEDENCE, SELECTION_MODES, SELECTION_SCHEMA, approveAdaptationPlan, canCreateTasks, createAdaptationPlan, createSelectionReceipt, reviewAdaptationPlan, validatePlanShape, validateSelectionReceipt };

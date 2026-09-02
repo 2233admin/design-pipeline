@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, isObject, nonEmpty, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
-const { promotionReceipt, selectionReceipt, checkV2Artifact } = require("./component-first-v2-core.cjs");
+const { promotionReceipt, selectionReceipt, checkV2Artifact, policyDigest, targetDigest } = require("./component-first-v2-core.cjs");
 
 const MANIFEST_SCHEMA = "design-pipeline.design-skill-manifest.v1";
 const PROTOTYPE_SCHEMA = "prototype-set.v1";
@@ -22,6 +22,10 @@ function fail(message, code = "CONTRACT_INVALID") { const error = new Error(`des
 function assertObject(value, label) { if (!isObject(value)) fail(`${label} must be an object`); }
 function assertNonEmpty(value, label) { if (!nonEmpty(value)) fail(`${label} must be a non-empty string`); }
 function hash(value) { return sha256(canonicalJson(value)); }
+function derivedPolicyDigest(policy) {
+  const { digest: ignored, ...unsigned } = policy;
+  return policyDigest(unsigned);
+}
 
 function manifests() {
   return Object.fromEntries(Object.entries(ROUTES).map(([id, route]) => [id, {
@@ -71,12 +75,33 @@ function loadDirectionPreview(input, options = {}) {
   assertObject(input, "prototype input");
   assertNonEmpty(input.changeRoot, "prototype changeRoot");
   const projectRoot = options.projectRoot || process.cwd();
-  const changeRoot = resolveInside(projectRoot, input.changeRoot, "prototype changeRoot", { scope: "design.prototype", mustExist: true });
-  const artifact = input.artifact || "direction-preview.json";
-  const artifactPath = resolveInside(changeRoot, artifact, "direction preview artifact", { scope: "design.prototype", mustExist: false });
+  let changeRoot;
+  try {
+    changeRoot = resolveInside(projectRoot, input.changeRoot, "prototype changeRoot");
+  } catch (error) {
+    return {
+      changeRoot: null,
+      artifactPath: null,
+      artifactSha256: null,
+      receipt: null,
+      preview: { status: "blocked", applicable: true, blockers: [error.message || "direction preview is invalid"] },
+    };
+  }
+  let artifactPath;
+  try {
+    artifactPath = resolveInside(changeRoot, input.artifact || "direction-preview.json", "direction preview artifact", { scope: "design.prototype", mustExist: false });
+  } catch (error) {
+    return {
+      changeRoot,
+      artifactPath: null,
+      artifactSha256: null,
+      receipt: null,
+      preview: { status: "blocked", applicable: true, blockers: [error.message || "direction preview is invalid"] },
+    };
+  }
   let preview;
   try {
-    preview = checkDirectionPreview(changeRoot, { artifact, stage: "preview" });
+    preview = checkDirectionPreview(changeRoot, { artifact: input.artifact, stage: "preview" });
   } catch (error) {
     preview = { status: "blocked", applicable: true, blockers: [error.message || "direction preview is invalid"] };
   }
@@ -102,18 +127,34 @@ function loadDirectionPreview(input, options = {}) {
 function runPrototype(input, options = {}) {
   const loaded = loadDirectionPreview(input, options);
   const { receipt, preview } = loaded;
+  const projectRoot = options.projectRoot || process.cwd();
+  const target = input.target || { id: "prototype", root: ".", kind: "prototype", entrypoints: [], routes: [] };
+  const policy = input.policy || { id: "component-first-default", version: 1 };
+  let targetBinding;
+  let targetBindingError = null;
+  try {
+    targetBinding = {
+      targetIdentityDigest: targetDigest(target),
+      snapshotDigest: target.snapshotDigest,
+      policyDigest: policy.digest ? policyDigest(policy) : derivedPolicyDigest(policy),
+    };
+    if (typeof targetBinding.snapshotDigest !== "string" || !/^sha256:[a-f0-9]{64}$/.test(targetBinding.snapshotDigest)) fail("snapshotDigest must be sha256:<64 lowercase hex>");
+  } catch (error) {
+    targetBindingError = error;
+  }
+  for (const key of ["targetIdentityDigest", "snapshotDigest", "policyDigest"]) {
+    if (input[key] !== undefined && targetBinding && input[key] !== targetBinding[key]) fail(`prototype ${key} does not match the bound target or policy`, "TARGET_BINDING_STALE");
+  }
   const previewBinding = {
     status: preview.status,
-    changeRoot: path.relative(options.projectRoot || loaded.changeRoot, loaded.changeRoot).split(path.sep).join("/") || ".",
-    artifact: path.relative(loaded.changeRoot, loaded.artifactPath).split(path.sep).join("/"),
+    changeRoot: loaded.changeRoot ? path.relative(projectRoot, loaded.changeRoot).split(path.sep).join("/") || "." : null,
+    artifact: loaded.changeRoot && loaded.artifactPath ? path.relative(loaded.changeRoot, loaded.artifactPath).split(path.sep).join("/") : null,
     artifactSha256: loaded.artifactSha256,
     viewport: receipt?.comparison?.viewport || null,
     contentFixtureSha256: receipt?.comparison?.contentFixtureSha256 || null,
     stateCoverage: receipt?.comparison?.stateCoverage || [],
   };
   if (preview.status !== "ready" || preview.applicable === false) {
-    const target = input.target || { kind: "sandbox", root: "." };
-    const policy = input.policy || { id: "component-first-default", version: 1 };
     const reason = preview.applicable === false ? "direction-preview-waived" : "direction-preview-required";
     return {
       schema: PROTOTYPE_SCHEMA,
@@ -127,11 +168,25 @@ function runPrototype(input, options = {}) {
       promotion: "blocked-until-preview",
     };
   }
+  if (targetBindingError) {
+    return {
+      schema: PROTOTYPE_SCHEMA,
+      status: "blocked",
+      reason: "prototype-target-binding-required",
+      blockers: [targetBindingError.message || "prototype target binding is incomplete"],
+      target,
+      policy,
+      directions: [],
+      preview: previewBinding,
+      promotion: "blocked-until-target-binding",
+    };
+  }
   const prototypeSet = {
     schema: PROTOTYPE_SCHEMA,
     status: "awaiting-selection",
-    target: input.target || { kind: "sandbox", root: "." },
-    policy: input.policy || { id: "component-first-default", version: 1 },
+    target,
+    policy,
+    targetBinding,
     directions: receipt.directions.map((direction) => ({ ...direction, isolated: true })),
     preview: previewBinding,
     promotion: "blocked-until-selection",
@@ -176,9 +231,29 @@ function selectPrototype(prototypeSet, input, options = {}) {
   if (hash(prototypeBody) !== prototypeSetHash) fail("prototype set hash is stale", "PROTOTYPE_STALE");
   verifyPrototypePreview(prototypeSet, options.projectRoot || process.cwd());
   assertObject(input, "selection");
+  const binding = prototypeSet.targetBinding;
+  assertObject(binding, "prototype target binding");
+  const expectedBinding = {
+    targetIdentityDigest: targetDigest(prototypeSet.target),
+    snapshotDigest: prototypeSet.target.snapshotDigest,
+    policyDigest: policyDigest(prototypeSet.policy),
+  };
+  if (typeof expectedBinding.snapshotDigest !== "string" || !/^sha256:[a-f0-9]{64}$/.test(expectedBinding.snapshotDigest)) fail("prototype target snapshot digest is invalid", "TARGET_BINDING_STALE");
+  for (const key of Object.keys(expectedBinding)) {
+    assertNonEmpty(binding[key], `prototype target binding ${key}`);
+    if (binding[key] !== expectedBinding[key] || input[key] !== expectedBinding[key]) fail(`prototype selection ${key} does not match the prototype set binding`, "SELECTION_STALE");
+  }
   const selected = prototypeSet.directions.find((direction) => direction.id === input.selectedPrototypeId);
   if (!selected) fail("selected prototype does not exist", "SELECTION_INVALID");
-  return selectionReceipt({ prototypeSetHash, selectedPrototypeId: selected.id, targetIdentityDigest: input.targetIdentityDigest, snapshotDigest: input.snapshotDigest, policyDigest: input.policyDigest, approvedBy: input.approvedBy });
+  return selectionReceipt({
+    prototypeSetHash,
+    selectedPrototypeId: selected.id,
+    targetIdentityDigest: input.targetIdentityDigest,
+    snapshotDigest: input.snapshotDigest,
+    policyDigest: input.policyDigest,
+    approvedBy: input.approvedBy,
+    prototypeSetSnapshot: prototypeSet,
+  });
 }
 
 
@@ -209,14 +284,16 @@ function versionApplicable(range, version) {
   return range.startsWith("^") ? aMajor === major && (aMinor > minor || (aMinor === minor && aPatch >= patch)) : aMajor === major && aMinor === minor && aPatch === patch;
 }
 
-
 function promotePrototype(v2Artifact, selection, input) {
   const conformance = checkV2Artifact(v2Artifact, input?.options || {});
   if (conformance.status !== "passed") fail("component conformance must pass before promotion", "CONFORMANCE_REQUIRED");
   const selectionReceiptValue = selection?.selectionReceipt || selection;
   if (!selectionReceiptValue || selectionReceiptValue.receiptHash !== input.selectionReceiptHash) fail("promotion selection does not match the selection receipt", "SELECTION_REQUIRED");
   const checkedSelection = selectionReceipt(selectionReceiptValue);
-  if (checkedSelection.receiptHash !== selectionReceiptValue.receiptHash || checkedSelection.targetIdentityDigest !== v2Artifact.target.targetIdentityDigest || checkedSelection.snapshotDigest !== v2Artifact.target.snapshotDigest || checkedSelection.policyDigest !== v2Artifact.policy.digest) fail("promotion selection is stale for this artifact", "SELECTION_STALE");
+  if (!checkedSelection.prototypeSetSnapshot) fail("promotion requires a filesystem-backed prototype set provenance", "SELECTION_PROVENANCE_REQUIRED");
+  const verifiedSelection = selectPrototype(checkedSelection.prototypeSetSnapshot, checkedSelection, { projectRoot: input?.options?.projectRoot || process.cwd() });
+  if (verifiedSelection.receiptHash !== checkedSelection.receiptHash || verifiedSelection.selectedPrototypeId !== checkedSelection.selectedPrototypeId) fail("promotion prototype provenance is stale", "SELECTION_PROVENANCE_STALE");
+  if (checkedSelection.targetIdentityDigest !== v2Artifact.target.targetIdentityDigest || checkedSelection.snapshotDigest !== v2Artifact.target.snapshotDigest || checkedSelection.policyDigest !== v2Artifact.policy.digest) fail("promotion selection is stale for this artifact", "SELECTION_STALE");
   const promotion = promotionReceipt({ ...input, targetIdentityDigest: v2Artifact.target.targetIdentityDigest, snapshotDigest: v2Artifact.target.snapshotDigest, policyDigest: v2Artifact.policy.digest, componentConformanceStatus: conformance.conformance, visualAcceptanceStatus: v2Artifact.visualAcceptance?.status || "not-evaluated" });
   return { schema: HANDOFF_SCHEMA, status: "ready-for-explicit-target-write", targetWrite: "blocked-until-explicit-executor", selectionReceiptHash: selectionReceiptValue.receiptHash, promotionReceipt: promotion };
 }

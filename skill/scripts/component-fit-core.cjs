@@ -78,10 +78,11 @@ function normalizeProjectInventory(source, fallbackFramework) {
     }
     return sortValue({ ...component, framework });
   }).sort((a, b) => a.id.localeCompare(b.id) || canonicalJson(a).localeCompare(canonicalJson(b)));
-  if (isArray) return { components, array: true };
+  if (isArray) return { components, array: true, status: "ready" };
+  const status = input.status || "ready";
   const document = { ...input, components };
   delete document.componentInventory;
-  return { components, array: false, document: sortValue(document) };
+  return { components, array: false, status, document: sortValue(document) };
 }
 const UNSPECIFIC_LICENSES = new Set(["unverified", "mixed", "unknown", "unspecified", "undisclosed"]);
 
@@ -237,7 +238,7 @@ function projectComponents(normalized) {
     framework: component.framework,
     accessibility: component.accessibility || null,
     provenance: component.provenance,
-    status: component.status || "ready",
+    status: component.status || normalized.status || "ready",
   }));
 }
 
