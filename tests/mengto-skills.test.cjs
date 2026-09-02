@@ -17,7 +17,7 @@ test("bundles the complete pinned MengTo skills source tree", () => {
   assert.deepEqual(manifest.source, {
     repository: "https://github.com/MengTo/skills",
     revision: "3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
-    gitTree: "3b129573b6d0f3d2a81b6b7dd60f853f8eec95b5",
+    gitTree: "d7d6a6b440a85bb183d40311d0506876d09493b3",
     committedAt: "2026-08-11T17:06:55+08:00",
     license: "MIT",
     reviewedAt: "2026-08-12",
@@ -32,8 +32,8 @@ test("bundles the complete pinned MengTo skills source tree", () => {
   });
   assert.equal(manifest.skills.length, 127);
   assert.equal(manifest.snapshot.fileCount, 867);
-  assert.equal(manifest.snapshot.byteCount, 97689112);
-  assert.equal(manifest.snapshot.treeSha256, "dcf14a54a8346746fbd0a602e2b5c7f7e8fd75c8c990adfd46ae369d6ca441fe");
+  assert.equal(manifest.snapshot.byteCount, 94402253);
+  assert.equal(manifest.snapshot.treeSha256, "36db5446edb2ea7be57d282081b4b9602a0e9653661311ed0bd4a7e5f1b70536");
   assert.equal(manifest.snapshot.executableFiles.length, 9);
   assert.equal(manifest.snapshot.objects.length, 867);
   assert.equal(gitTreeId(manifest.snapshot.objects), manifest.source.gitTree);

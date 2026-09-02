@@ -25,7 +25,7 @@ test("bundles the complete pinned Holosticker implementation", () => {
     scope: "complete tracked repository",
   });
   assert.equal(manifest.snapshot.fileCount, 57);
-  assert.equal(manifest.snapshot.byteCount, 3408918);
+  assert.equal(manifest.snapshot.byteCount, 3399931);
   assert.equal(manifest.capabilities.length, 8);
   assert.equal(verifyHolostickerSnapshot(manifestFile).status, "ready");
   for (const resource of [
