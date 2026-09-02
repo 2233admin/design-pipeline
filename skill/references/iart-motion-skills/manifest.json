@@ -197,8 +197,8 @@
   "snapshot": {
     "root": "upstream",
     "fileCount": 342,
-    "byteCount": 69877098,
-    "treeSha256": "10a095a314e7244d6fabb0cb450a9b7facd5be495d3a2b93ffc0c0febe0ca69e",
+    "byteCount": 69269313,
+    "treeSha256": "d68c805b2a6fb7d4366826d7eb290f336358dea710d1a0205433af8c73d6dd05",
     "executableFiles": [
       "ad-video-skills/scripts/contact-sheet.sh",
       "ad-video-skills/scripts/probe-mp4.sh",
@@ -272,6 +272,12 @@
         "size": 4625
       },
       {
+        "path": "ad-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "ad-video-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -284,12 +290,6 @@
         "size": 1514
       },
       {
-        "path": "ad-video-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "ad-video-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -298,8 +298,8 @@
       {
         "path": "ad-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "791585d56dd0e9714b7451fe03b9777b5d3ef636",
-        "size": 5592105
+        "oid": "6aa88bde84706996401df050330e9431cf57c7ef",
+        "size": 5449234
       },
       {
         "path": "ad-video-skills/showcase.html",
@@ -314,6 +314,12 @@
         "size": 0
       },
       {
+        "path": "ad-video-skills/skills/ad-creative-video/SKILL.md",
+        "mode": "100644",
+        "oid": "cfe4a4399108ecdc0ca95b00510c5ec88e467ea2",
+        "size": 10432
+      },
+      {
         "path": "ad-video-skills/skills/ad-creative-video/references/batch-ad-pipeline.md",
         "mode": "100644",
         "oid": "147bcb498145f51e44b1d8ba8131acb947394f51",
@@ -326,22 +332,10 @@
         "size": 4679
       },
       {
-        "path": "ad-video-skills/skills/ad-creative-video/SKILL.md",
-        "mode": "100644",
-        "oid": "cfe4a4399108ecdc0ca95b00510c5ec88e467ea2",
-        "size": 10432
-      },
-      {
         "path": "ad-video-skills/skills/launch-video/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
-      },
-      {
-        "path": "ad-video-skills/skills/launch-video/references/launch-structure.md",
-        "mode": "100644",
-        "oid": "3791fb1f047640913ae653c3efb3d91565765c28",
-        "size": 6052
       },
       {
         "path": "ad-video-skills/skills/launch-video/SKILL.md",
@@ -350,10 +344,22 @@
         "size": 7542
       },
       {
+        "path": "ad-video-skills/skills/launch-video/references/launch-structure.md",
+        "mode": "100644",
+        "oid": "3791fb1f047640913ae653c3efb3d91565765c28",
+        "size": 6052
+      },
+      {
         "path": "ad-video-skills/skills/testimonial-video/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "ad-video-skills/skills/testimonial-video/SKILL.md",
+        "mode": "100644",
+        "oid": "fa81f01437acf5b5d19abd5bcf7385ec35bdcd42",
+        "size": 11000
       },
       {
         "path": "ad-video-skills/skills/testimonial-video/references/batch-and-typography.md",
@@ -366,12 +372,6 @@
         "mode": "100644",
         "oid": "6bb5dd591178be05fd139d1ecca642e60ccc106e",
         "size": 10218
-      },
-      {
-        "path": "ad-video-skills/skills/testimonial-video/SKILL.md",
-        "mode": "100644",
-        "oid": "fa81f01437acf5b5d19abd5bcf7385ec35bdcd42",
-        "size": 11000
       },
       {
         "path": "data-animation-skills/.claude-plugin/marketplace.json",
@@ -398,6 +398,12 @@
         "size": 4762
       },
       {
+        "path": "data-animation-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "data-animation-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -410,12 +416,6 @@
         "size": 1514
       },
       {
-        "path": "data-animation-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "data-animation-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -424,8 +424,8 @@
       {
         "path": "data-animation-skills/showcase.gif",
         "mode": "100644",
-        "oid": "d17f13eb3ae5d18f19deb3028ff0120c6a90cf82",
-        "size": 6786224
+        "oid": "19c89fad6f98ed172fda6e2c59e5e983775b1bad",
+        "size": 6738860
       },
       {
         "path": "data-animation-skills/showcase.html",
@@ -440,22 +440,28 @@
         "size": 0
       },
       {
-        "path": "data-animation-skills/skills/animated-infographic/references/sequenced-infographic.md",
-        "mode": "100644",
-        "oid": "784d4d3c1ef637f99b18d6f0f14ed4702b4e8af4",
-        "size": 12770
-      },
-      {
         "path": "data-animation-skills/skills/animated-infographic/SKILL.md",
         "mode": "100644",
         "oid": "2668695d48331ddba3bc98e18bae6fcff27fa1ea",
         "size": 10710
       },
       {
+        "path": "data-animation-skills/skills/animated-infographic/references/sequenced-infographic.md",
+        "mode": "100644",
+        "oid": "784d4d3c1ef637f99b18d6f0f14ed4702b4e8af4",
+        "size": 12770
+      },
+      {
         "path": "data-animation-skills/skills/chart-animation/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "data-animation-skills/skills/chart-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "e48c85e2c660740abe1e1fe6d41b77534da41875",
+        "size": 10526
       },
       {
         "path": "data-animation-skills/skills/chart-animation/references/bar-chart-race.md",
@@ -470,16 +476,16 @@
         "size": 7528
       },
       {
-        "path": "data-animation-skills/skills/chart-animation/SKILL.md",
-        "mode": "100644",
-        "oid": "e48c85e2c660740abe1e1fe6d41b77534da41875",
-        "size": 10526
-      },
-      {
         "path": "data-animation-skills/skills/presentation-video/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "data-animation-skills/skills/presentation-video/SKILL.md",
+        "mode": "100644",
+        "oid": "116f839e0a39f876e6afdf9b84984a7815d3da5e",
+        "size": 13668
       },
       {
         "path": "data-animation-skills/skills/presentation-video/references/sequencing.md",
@@ -492,12 +498,6 @@
         "mode": "100644",
         "oid": "c6431b7258ef7b001c3d266e4b97daccfd02b41c",
         "size": 7081
-      },
-      {
-        "path": "data-animation-skills/skills/presentation-video/SKILL.md",
-        "mode": "100644",
-        "oid": "116f839e0a39f876e6afdf9b84984a7815d3da5e",
-        "size": 13668
       },
       {
         "path": "ecommerce-video-skills/.claude-plugin/marketplace.json",
@@ -524,6 +524,12 @@
         "size": 4800
       },
       {
+        "path": "ecommerce-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "ecommerce-video-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -536,12 +542,6 @@
         "size": 1514
       },
       {
-        "path": "ecommerce-video-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "ecommerce-video-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -550,8 +550,8 @@
       {
         "path": "ecommerce-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "779529096caea4a51d93f38d20871213e30c83eb",
-        "size": 4007764
+        "oid": "d7359d8f4c5c1ca131d1e3adb339716652d7dc71",
+        "size": 3996715
       },
       {
         "path": "ecommerce-video-skills/showcase.html",
@@ -564,6 +564,12 @@
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "ecommerce-video-skills/skills/photo-slideshow/SKILL.md",
+        "mode": "100644",
+        "oid": "c4eb4e930788311eba2f9430b6cc69cab4fd5a03",
+        "size": 11337
       },
       {
         "path": "ecommerce-video-skills/skills/photo-slideshow/references/aspect-and-layout.md",
@@ -590,16 +596,16 @@
         "size": 3962
       },
       {
-        "path": "ecommerce-video-skills/skills/photo-slideshow/SKILL.md",
-        "mode": "100644",
-        "oid": "c4eb4e930788311eba2f9430b6cc69cab4fd5a03",
-        "size": 11337
-      },
-      {
         "path": "ecommerce-video-skills/skills/product-demo-video/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "ecommerce-video-skills/skills/product-demo-video/SKILL.md",
+        "mode": "100644",
+        "oid": "d732d2e385e6142f5a1268b5e53576d90ce8969f",
+        "size": 12274
       },
       {
         "path": "ecommerce-video-skills/skills/product-demo-video/references/annotation-and-transitions.md",
@@ -614,28 +620,22 @@
         "size": 9801
       },
       {
-        "path": "ecommerce-video-skills/skills/product-demo-video/SKILL.md",
-        "mode": "100644",
-        "oid": "d732d2e385e6142f5a1268b5e53576d90ce8969f",
-        "size": 12274
-      },
-      {
         "path": "ecommerce-video-skills/skills/promo-video/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
       },
       {
-        "path": "ecommerce-video-skills/skills/promo-video/references/promo-components.md",
-        "mode": "100644",
-        "oid": "38e4779b56e0c1e5bd472eaa486c508030fe5d81",
-        "size": 10035
-      },
-      {
         "path": "ecommerce-video-skills/skills/promo-video/SKILL.md",
         "mode": "100644",
         "oid": "2364cc6028bc599ce0c7e55eda5c68c50748865f",
         "size": 11076
+      },
+      {
+        "path": "ecommerce-video-skills/skills/promo-video/references/promo-components.md",
+        "mode": "100644",
+        "oid": "38e4779b56e0c1e5bd472eaa486c508030fe5d81",
+        "size": 10035
       },
       {
         "path": "explainer-video-skills/.claude-plugin/marketplace.json",
@@ -662,6 +662,12 @@
         "size": 5039
       },
       {
+        "path": "explainer-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "explainer-video-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -672,12 +678,6 @@
         "mode": "100755",
         "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
         "size": 1514
-      },
-      {
-        "path": "explainer-video-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
       },
       {
         "path": "explainer-video-skills/scripts/seek-shot.sh",
@@ -704,16 +704,16 @@
         "size": 0
       },
       {
-        "path": "explainer-video-skills/skills/diagram-animation/references/diagram-and-chart-recipes.md",
-        "mode": "100644",
-        "oid": "ed232bb48434e1f32ee608270b2483f805f04ed0",
-        "size": 9273
-      },
-      {
         "path": "explainer-video-skills/skills/diagram-animation/SKILL.md",
         "mode": "100644",
         "oid": "9e57fe0dc0459ff4db5c9cd4675fcf02978ed980",
         "size": 8449
+      },
+      {
+        "path": "explainer-video-skills/skills/diagram-animation/references/diagram-and-chart-recipes.md",
+        "mode": "100644",
+        "oid": "ed232bb48434e1f32ee608270b2483f805f04ed0",
+        "size": 9273
       },
       {
         "path": "explainer-video-skills/skills/explainer-video/README.md",
@@ -722,16 +722,16 @@
         "size": 0
       },
       {
-        "path": "explainer-video-skills/skills/explainer-video/references/script-to-screen-workflow.md",
-        "mode": "100644",
-        "oid": "c7f02d3aae9749f60a0a86615e0e273d659a28ff",
-        "size": 6710
-      },
-      {
         "path": "explainer-video-skills/skills/explainer-video/SKILL.md",
         "mode": "100644",
         "oid": "5855ace8f27c74e4d55201bc764552767e7fea6b",
         "size": 10013
+      },
+      {
+        "path": "explainer-video-skills/skills/explainer-video/references/script-to-screen-workflow.md",
+        "mode": "100644",
+        "oid": "c7f02d3aae9749f60a0a86615e0e273d659a28ff",
+        "size": 6710
       },
       {
         "path": "explainer-video-skills/skills/isometric-animation/README.md",
@@ -740,22 +740,28 @@
         "size": 0
       },
       {
-        "path": "explainer-video-skills/skills/isometric-animation/references/isometric-recipes.md",
-        "mode": "100644",
-        "oid": "2ab2a9eb143bc6e4cbbb34bcfe6ae323f8a14a62",
-        "size": 10320
-      },
-      {
         "path": "explainer-video-skills/skills/isometric-animation/SKILL.md",
         "mode": "100644",
         "oid": "000c63e1c154b55667c873a986294235678fe2ff",
         "size": 11180
       },
       {
+        "path": "explainer-video-skills/skills/isometric-animation/references/isometric-recipes.md",
+        "mode": "100644",
+        "oid": "2ab2a9eb143bc6e4cbbb34bcfe6ae323f8a14a62",
+        "size": 10320
+      },
+      {
         "path": "explainer-video-skills/skills/whiteboard-animation/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "explainer-video-skills/skills/whiteboard-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "7532b0341326f9351cffb8d4ff48415901e4394e",
+        "size": 11744
       },
       {
         "path": "explainer-video-skills/skills/whiteboard-animation/references/draw-on-recipes.md",
@@ -770,16 +776,16 @@
         "size": 5920
       },
       {
-        "path": "explainer-video-skills/skills/whiteboard-animation/SKILL.md",
-        "mode": "100644",
-        "oid": "7532b0341326f9351cffb8d4ff48415901e4394e",
-        "size": 11744
-      },
-      {
         "path": "explainer-video-skills/skills/wrapped-video/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "explainer-video-skills/skills/wrapped-video/SKILL.md",
+        "mode": "100644",
+        "oid": "4675c490ce74bf955e4a95171e316cd8834372aa",
+        "size": 12729
       },
       {
         "path": "explainer-video-skills/skills/wrapped-video/references/batch-pipeline.md",
@@ -798,12 +804,6 @@
         "mode": "100644",
         "oid": "81a86b931697806030c22513ebece4f975242c11",
         "size": 4694
-      },
-      {
-        "path": "explainer-video-skills/skills/wrapped-video/SKILL.md",
-        "mode": "100644",
-        "oid": "4675c490ce74bf955e4a95171e316cd8834372aa",
-        "size": 12729
       },
       {
         "path": "freelance-motion-skills/.claude-plugin/marketplace.json",
@@ -830,6 +830,12 @@
         "size": 5448
       },
       {
+        "path": "freelance-motion-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "freelance-motion-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -842,12 +848,6 @@
         "size": 1514
       },
       {
-        "path": "freelance-motion-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "freelance-motion-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -856,8 +856,8 @@
       {
         "path": "freelance-motion-skills/showcase.gif",
         "mode": "100644",
-        "oid": "763a7dc6610debe1d8098fe9b60b91c1f8e44a03",
-        "size": 3641970
+        "oid": "3d1644dee2274be7b5aed41ba005a94b23969687",
+        "size": 3562659
       },
       {
         "path": "freelance-motion-skills/showcase.html",
@@ -870,6 +870,12 @@
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/brand-motion-guidelines/SKILL.md",
+        "mode": "100644",
+        "oid": "5bc05b3bd0ada9780c151aef4cdddfb7406e8969",
+        "size": 13060
       },
       {
         "path": "freelance-motion-skills/skills/brand-motion-guidelines/references/dos-and-donts.md",
@@ -890,16 +896,16 @@
         "size": 2712
       },
       {
-        "path": "freelance-motion-skills/skills/brand-motion-guidelines/SKILL.md",
-        "mode": "100644",
-        "oid": "5bc05b3bd0ada9780c151aef4cdddfb7406e8969",
-        "size": 13060
-      },
-      {
         "path": "freelance-motion-skills/skills/client-revisions/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/client-revisions/SKILL.md",
+        "mode": "100644",
+        "oid": "8b61680340aa6d83633b6712911946c1ee0901ae",
+        "size": 11518
       },
       {
         "path": "freelance-motion-skills/skills/client-revisions/references/email-templates.md",
@@ -920,16 +926,16 @@
         "size": 2682
       },
       {
-        "path": "freelance-motion-skills/skills/client-revisions/SKILL.md",
-        "mode": "100644",
-        "oid": "8b61680340aa6d83633b6712911946c1ee0901ae",
-        "size": 11518
-      },
-      {
         "path": "freelance-motion-skills/skills/creative-brief/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/creative-brief/SKILL.md",
+        "mode": "100644",
+        "oid": "d83e6b95458e9bd8e50ba4ad4b026e0490cf4ff9",
+        "size": 13331
       },
       {
         "path": "freelance-motion-skills/skills/creative-brief/references/clarifying-questions.md",
@@ -950,16 +956,16 @@
         "size": 3737
       },
       {
-        "path": "freelance-motion-skills/skills/creative-brief/SKILL.md",
-        "mode": "100644",
-        "oid": "d83e6b95458e9bd8e50ba4ad4b026e0490cf4ff9",
-        "size": 13331
-      },
-      {
         "path": "freelance-motion-skills/skills/motion-pricing/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/motion-pricing/SKILL.md",
+        "mode": "100644",
+        "oid": "99bd1fc1973cbfeebdfe6d653441d5e7a925fe81",
+        "size": 12113
       },
       {
         "path": "freelance-motion-skills/skills/motion-pricing/references/quote-template.md",
@@ -980,16 +986,16 @@
         "size": 2185
       },
       {
-        "path": "freelance-motion-skills/skills/motion-pricing/SKILL.md",
-        "mode": "100644",
-        "oid": "99bd1fc1973cbfeebdfe6d653441d5e7a925fe81",
-        "size": 12113
-      },
-      {
         "path": "freelance-motion-skills/skills/video-delivery-specs/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "freelance-motion-skills/skills/video-delivery-specs/SKILL.md",
+        "mode": "100644",
+        "oid": "9db28aa41559590c91fcb031a3882f1bc5581614",
+        "size": 11799
       },
       {
         "path": "freelance-motion-skills/skills/video-delivery-specs/references/platform-specs.md",
@@ -1016,12 +1022,6 @@
         "size": 3701
       },
       {
-        "path": "freelance-motion-skills/skills/video-delivery-specs/SKILL.md",
-        "mode": "100644",
-        "oid": "9db28aa41559590c91fcb031a3882f1bc5581614",
-        "size": 11799
-      },
-      {
         "path": "kinetic-typography-skills/.claude-plugin/marketplace.json",
         "mode": "100644",
         "oid": "5150b584f697acd181ea79cf943487c9ca7f4d3d",
@@ -1046,6 +1046,12 @@
         "size": 4431
       },
       {
+        "path": "kinetic-typography-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "kinetic-typography-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -1056,12 +1062,6 @@
         "mode": "100755",
         "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
         "size": 1514
-      },
-      {
-        "path": "kinetic-typography-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
       },
       {
         "path": "kinetic-typography-skills/scripts/seek-shot.sh",
@@ -1088,16 +1088,16 @@
         "size": 0
       },
       {
-        "path": "kinetic-typography-skills/skills/kinetic-typography/references/reveal-recipes.md",
-        "mode": "100644",
-        "oid": "b7368c831358bda6cfbe0a7a843b51318a09232b",
-        "size": 7224
-      },
-      {
         "path": "kinetic-typography-skills/skills/kinetic-typography/SKILL.md",
         "mode": "100644",
         "oid": "b9608fee2fcfe6c2eae9c9c7517c01923123af61",
         "size": 7793
+      },
+      {
+        "path": "kinetic-typography-skills/skills/kinetic-typography/references/reveal-recipes.md",
+        "mode": "100644",
+        "oid": "b7368c831358bda6cfbe0a7a843b51318a09232b",
+        "size": 7224
       },
       {
         "path": "manim-skills/.claude-plugin/marketplace.json",
@@ -1124,6 +1124,12 @@
         "size": 4511
       },
       {
+        "path": "manim-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "manim-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -1136,12 +1142,6 @@
         "size": 1514
       },
       {
-        "path": "manim-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "manim-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -1150,8 +1150,8 @@
       {
         "path": "manim-skills/showcase.gif",
         "mode": "100644",
-        "oid": "f2e91de1b3b584432a56a2e89817dd2b465f149e",
-        "size": 2645747
+        "oid": "960564d724cae47307b01f18a28fcddd9b49ded7",
+        "size": 2557614
       },
       {
         "path": "manim-skills/showcase.html",
@@ -1164,6 +1164,12 @@
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "manim-skills/skills/manim/SKILL.md",
+        "mode": "100644",
+        "oid": "4e64f3690af397e2c950cbf43058bedefece2ff9",
+        "size": 9866
       },
       {
         "path": "manim-skills/skills/manim/references/3d-and-camera.md",
@@ -1182,12 +1188,6 @@
         "mode": "100644",
         "oid": "8b44a18e136774f8d2fcf54fd5c70274ab673005",
         "size": 2521
-      },
-      {
-        "path": "manim-skills/skills/manim/SKILL.md",
-        "mode": "100644",
-        "oid": "4e64f3690af397e2c950cbf43058bedefece2ff9",
-        "size": 9866
       },
       {
         "path": "map-animation-skills/.claude-plugin/marketplace.json",
@@ -1214,6 +1214,12 @@
         "size": 4614
       },
       {
+        "path": "map-animation-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "map-animation-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -1226,12 +1232,6 @@
         "size": 1514
       },
       {
-        "path": "map-animation-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "map-animation-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -1240,8 +1240,8 @@
       {
         "path": "map-animation-skills/showcase.gif",
         "mode": "100644",
-        "oid": "5020ee5dbb2c50824141b602d0a5da3b78394408",
-        "size": 5342974
+        "oid": "096ef5dc96be6cb1bdb8c30a54ca89bfb67277cc",
+        "size": 5267133
       },
       {
         "path": "map-animation-skills/showcase.html",
@@ -1256,6 +1256,12 @@
         "size": 0
       },
       {
+        "path": "map-animation-skills/skills/map-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "e9d23902bd12257986ba18bb25eada97a5186071",
+        "size": 12821
+      },
+      {
         "path": "map-animation-skills/skills/map-animation/references/earth-studio-to-ae.md",
         "mode": "100644",
         "oid": "5ff7796921cd90c8db83b938cd645ac5eb1c0f57",
@@ -1266,12 +1272,6 @@
         "mode": "100644",
         "oid": "1017105cfa94fdd6ce8e56b5dd6559fba469e2ed",
         "size": 10060
-      },
-      {
-        "path": "map-animation-skills/skills/map-animation/SKILL.md",
-        "mode": "100644",
-        "oid": "e9d23902bd12257986ba18bb25eada97a5186071",
-        "size": 12821
       },
       {
         "path": "motion-design-skills/.claude-plugin/marketplace.json",
@@ -1298,6 +1298,12 @@
         "size": 5499
       },
       {
+        "path": "motion-design-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "motion-design-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -1308,12 +1314,6 @@
         "mode": "100755",
         "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
         "size": 1514
-      },
-      {
-        "path": "motion-design-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
       },
       {
         "path": "motion-design-skills/scripts/seek-shot.sh",
@@ -1338,6 +1338,12 @@
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/after-effects/SKILL.md",
+        "mode": "100644",
+        "oid": "c7f266baccb546ab893153d62c4d80753e40fec4",
+        "size": 7430
       },
       {
         "path": "motion-design-skills/skills/after-effects/references/export-recipes.md",
@@ -1388,16 +1394,16 @@
         "size": 1447
       },
       {
-        "path": "motion-design-skills/skills/after-effects/SKILL.md",
-        "mode": "100644",
-        "oid": "c7f266baccb546ab893153d62c4d80753e40fec4",
-        "size": 7430
-      },
-      {
         "path": "motion-design-skills/skills/animation-principles/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/animation-principles/SKILL.md",
+        "mode": "100644",
+        "oid": "7234e0e4f64d4fbfb67eb56626b379c3a2eb584f",
+        "size": 8527
       },
       {
         "path": "motion-design-skills/skills/animation-principles/references/easing-curves.md",
@@ -1418,22 +1424,10 @@
         "size": 4534
       },
       {
-        "path": "motion-design-skills/skills/animation-principles/SKILL.md",
-        "mode": "100644",
-        "oid": "7234e0e4f64d4fbfb67eb56626b379c3a2eb584f",
-        "size": 8527
-      },
-      {
         "path": "motion-design-skills/skills/beat-sync-editing/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
-      },
-      {
-        "path": "motion-design-skills/skills/beat-sync-editing/references/editing-techniques.md",
-        "mode": "100644",
-        "oid": "cc1ad12eb375f93a0359d57786df50d3a35bf635",
-        "size": 6451
       },
       {
         "path": "motion-design-skills/skills/beat-sync-editing/SKILL.md",
@@ -1442,10 +1436,22 @@
         "size": 13926
       },
       {
+        "path": "motion-design-skills/skills/beat-sync-editing/references/editing-techniques.md",
+        "mode": "100644",
+        "oid": "cc1ad12eb375f93a0359d57786df50d3a35bf635",
+        "size": 6451
+      },
+      {
         "path": "motion-design-skills/skills/color-motion/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "motion-design-skills/skills/color-motion/SKILL.md",
+        "mode": "100644",
+        "oid": "098dc574ad85d466e69b9765c69f56b701f955fe",
+        "size": 11924
       },
       {
         "path": "motion-design-skills/skills/color-motion/references/color-management.md",
@@ -1460,22 +1466,10 @@
         "size": 6804
       },
       {
-        "path": "motion-design-skills/skills/color-motion/SKILL.md",
-        "mode": "100644",
-        "oid": "098dc574ad85d466e69b9765c69f56b701f955fe",
-        "size": 11924
-      },
-      {
         "path": "motion-design-skills/skills/logo-animation/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
-      },
-      {
-        "path": "motion-design-skills/skills/logo-animation/references/logo-patterns.md",
-        "mode": "100644",
-        "oid": "49a4d3025ddfbd1c7413cb90c882319142da8e05",
-        "size": 8083
       },
       {
         "path": "motion-design-skills/skills/logo-animation/SKILL.md",
@@ -1484,16 +1478,16 @@
         "size": 8019
       },
       {
+        "path": "motion-design-skills/skills/logo-animation/references/logo-patterns.md",
+        "mode": "100644",
+        "oid": "49a4d3025ddfbd1c7413cb90c882319142da8e05",
+        "size": 8083
+      },
+      {
         "path": "motion-design-skills/skills/motion-art-direction/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
-      },
-      {
-        "path": "motion-design-skills/skills/motion-art-direction/references/direction-playbook.md",
-        "mode": "100644",
-        "oid": "d01cbd5684c103cff62df6cc38a6530954372c58",
-        "size": 9116
       },
       {
         "path": "motion-design-skills/skills/motion-art-direction/SKILL.md",
@@ -1502,16 +1496,16 @@
         "size": 7581
       },
       {
+        "path": "motion-design-skills/skills/motion-art-direction/references/direction-playbook.md",
+        "mode": "100644",
+        "oid": "d01cbd5684c103cff62df6cc38a6530954372c58",
+        "size": 9116
+      },
+      {
         "path": "motion-design-skills/skills/motion-background/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
-      },
-      {
-        "path": "motion-design-skills/skills/motion-background/references/background-recipes.md",
-        "mode": "100644",
-        "oid": "87ecd70108e7b0a2ee2ef58adaeffff6d9c0da52",
-        "size": 8886
       },
       {
         "path": "motion-design-skills/skills/motion-background/SKILL.md",
@@ -1520,16 +1514,16 @@
         "size": 11954
       },
       {
+        "path": "motion-design-skills/skills/motion-background/references/background-recipes.md",
+        "mode": "100644",
+        "oid": "87ecd70108e7b0a2ee2ef58adaeffff6d9c0da52",
+        "size": 8886
+      },
+      {
         "path": "motion-design-skills/skills/remotion-video/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
-      },
-      {
-        "path": "motion-design-skills/skills/remotion-video/references/api-and-patterns.md",
-        "mode": "100644",
-        "oid": "62419b1f187c2c20631ef7856e3911c9d1debdc7",
-        "size": 7312
       },
       {
         "path": "motion-design-skills/skills/remotion-video/SKILL.md",
@@ -1538,22 +1532,28 @@
         "size": 9226
       },
       {
+        "path": "motion-design-skills/skills/remotion-video/references/api-and-patterns.md",
+        "mode": "100644",
+        "oid": "62419b1f187c2c20631ef7856e3911c9d1debdc7",
+        "size": 7312
+      },
+      {
         "path": "motion-design-skills/skills/shot-composition/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
       },
       {
-        "path": "motion-design-skills/skills/shot-composition/references/camera-and-grids.md",
-        "mode": "100644",
-        "oid": "c2a386520beead0cc933ea98392887aab5318355",
-        "size": 6264
-      },
-      {
         "path": "motion-design-skills/skills/shot-composition/SKILL.md",
         "mode": "100644",
         "oid": "90723872d1284c0da7d7d3fa5e675104d79788b5",
         "size": 12995
+      },
+      {
+        "path": "motion-design-skills/skills/shot-composition/references/camera-and-grids.md",
+        "mode": "100644",
+        "oid": "c2a386520beead0cc933ea98392887aab5318355",
+        "size": 6264
       },
       {
         "path": "motion-skills/LICENSE",
@@ -1586,6 +1586,12 @@
         "size": 3005
       },
       {
+        "path": "motion-skills/tools/verify/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "motion-skills/tools/verify/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -1596,12 +1602,6 @@
         "mode": "100755",
         "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
         "size": 1514
-      },
-      {
-        "path": "motion-skills/tools/verify/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
       },
       {
         "path": "motion-skills/tools/verify/seek-shot.sh",
@@ -1634,6 +1634,12 @@
         "size": 4542
       },
       {
+        "path": "text-message-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "text-message-video-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -1646,12 +1652,6 @@
         "size": 1514
       },
       {
-        "path": "text-message-video-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "text-message-video-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -1660,8 +1660,8 @@
       {
         "path": "text-message-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "928cf2c69c795db8bbd52d56c304a1acb3a365e0",
-        "size": 3588954
+        "oid": "a8d304708940bc0fd3b3016538993cf4f055987d",
+        "size": 3573657
       },
       {
         "path": "text-message-video-skills/showcase.html",
@@ -1676,6 +1676,12 @@
         "size": 0
       },
       {
+        "path": "text-message-video-skills/skills/text-message-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "dd78703a3df658e4deca9db46b0454b057c98e6e",
+        "size": 14346
+      },
+      {
         "path": "text-message-video-skills/skills/text-message-animation/references/bubble-recipes.md",
         "mode": "100644",
         "oid": "548f6180ef85280a5b2a99d4bf1c5db43fcd8fe0",
@@ -1686,12 +1692,6 @@
         "mode": "100644",
         "oid": "6256a50b80fd0fabbb097e3326532ad77503c80e",
         "size": 5447
-      },
-      {
-        "path": "text-message-video-skills/skills/text-message-animation/SKILL.md",
-        "mode": "100644",
-        "oid": "dd78703a3df658e4deca9db46b0454b057c98e6e",
-        "size": 14346
       },
       {
         "path": "tiktok-video-skills/.claude-plugin/marketplace.json",
@@ -1718,6 +1718,12 @@
         "size": 5005
       },
       {
+        "path": "tiktok-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "tiktok-video-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -1730,12 +1736,6 @@
         "size": 1514
       },
       {
-        "path": "tiktok-video-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "tiktok-video-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -1744,8 +1744,8 @@
       {
         "path": "tiktok-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "534d3106bde0a29c3938571e0c75e0701608dff6",
-        "size": 3794665
+        "oid": "e1dcb4c03e30ec30063c4c2e4672415036246435",
+        "size": 3702143
       },
       {
         "path": "tiktok-video-skills/showcase.html",
@@ -1760,22 +1760,28 @@
         "size": 1426
       },
       {
-        "path": "tiktok-video-skills/skills/caption-animation/references/word-timed-captions.md",
-        "mode": "100644",
-        "oid": "3bb9ceb579340cac57a6bef766cc1b057652d75c",
-        "size": 10180
-      },
-      {
         "path": "tiktok-video-skills/skills/caption-animation/SKILL.md",
         "mode": "100644",
         "oid": "f648cbdf7e2bb9b0f96c8537da39ee9c5e0d9908",
         "size": 9937
       },
       {
+        "path": "tiktok-video-skills/skills/caption-animation/references/word-timed-captions.md",
+        "mode": "100644",
+        "oid": "3bb9ceb579340cac57a6bef766cc1b057652d75c",
+        "size": 10180
+      },
+      {
         "path": "tiktok-video-skills/skills/countdown-video/README.md",
         "mode": "100644",
         "oid": "83cc54741f1cd5389f1a162cdf0edbd407aeff8c",
         "size": 1494
+      },
+      {
+        "path": "tiktok-video-skills/skills/countdown-video/SKILL.md",
+        "mode": "100644",
+        "oid": "43b66ababf707df7eae79d3cdab2efadd456563f",
+        "size": 9450
       },
       {
         "path": "tiktok-video-skills/skills/countdown-video/references/countdown-cookbook.md",
@@ -1790,22 +1796,10 @@
         "size": 6083
       },
       {
-        "path": "tiktok-video-skills/skills/countdown-video/SKILL.md",
-        "mode": "100644",
-        "oid": "43b66ababf707df7eae79d3cdab2efadd456563f",
-        "size": 9450
-      },
-      {
         "path": "tiktok-video-skills/skills/lower-thirds/README.md",
         "mode": "100644",
         "oid": "1f3ee500e283ad820d0b2c2730509bca699b7640",
         "size": 1414
-      },
-      {
-        "path": "tiktok-video-skills/skills/lower-thirds/references/lower-third-component.md",
-        "mode": "100644",
-        "oid": "a8f7b548c92a438cfc5d2d846b744f227654905f",
-        "size": 9994
       },
       {
         "path": "tiktok-video-skills/skills/lower-thirds/SKILL.md",
@@ -1814,22 +1808,28 @@
         "size": 9620
       },
       {
+        "path": "tiktok-video-skills/skills/lower-thirds/references/lower-third-component.md",
+        "mode": "100644",
+        "oid": "a8f7b548c92a438cfc5d2d846b744f227654905f",
+        "size": 9994
+      },
+      {
         "path": "tiktok-video-skills/skills/short-form-video/README.md",
         "mode": "100644",
         "oid": "c733aa3f0bcc1ea17d564ec48dbd95ff2d20e657",
         "size": 1377
       },
       {
-        "path": "tiktok-video-skills/skills/short-form-video/references/retention-pacing.md",
-        "mode": "100644",
-        "oid": "2a3ab7bd2ca6d0b77161434985555aee4ffedd72",
-        "size": 9910
-      },
-      {
         "path": "tiktok-video-skills/skills/short-form-video/SKILL.md",
         "mode": "100644",
         "oid": "7bc689429479a7f3364670770429840ba945bc3e",
         "size": 11079
+      },
+      {
+        "path": "tiktok-video-skills/skills/short-form-video/references/retention-pacing.md",
+        "mode": "100644",
+        "oid": "2a3ab7bd2ca6d0b77161434985555aee4ffedd72",
+        "size": 9910
       },
       {
         "path": "web-animation-skills/.claude-plugin/marketplace.json",
@@ -1856,6 +1856,12 @@
         "size": 5568
       },
       {
+        "path": "web-animation-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "web-animation-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -1866,12 +1872,6 @@
         "mode": "100755",
         "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
         "size": 1514
-      },
-      {
-        "path": "web-animation-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
       },
       {
         "path": "web-animation-skills/scripts/seek-shot.sh",
@@ -1898,16 +1898,16 @@
         "size": 0
       },
       {
-        "path": "web-animation-skills/skills/60fps-animation/references/patterns-and-profiling.md",
-        "mode": "100644",
-        "oid": "abf57e562fced069044813b4aa5add06ddb41047",
-        "size": 4806
-      },
-      {
         "path": "web-animation-skills/skills/60fps-animation/SKILL.md",
         "mode": "100644",
         "oid": "99a1c78866a0e8bffc3189625c2db605696ba759",
         "size": 10774
+      },
+      {
+        "path": "web-animation-skills/skills/60fps-animation/references/patterns-and-profiling.md",
+        "mode": "100644",
+        "oid": "abf57e562fced069044813b4aa5add06ddb41047",
+        "size": 4806
       },
       {
         "path": "web-animation-skills/skills/accessible-animation/README.md",
@@ -1916,22 +1916,28 @@
         "size": 0
       },
       {
-        "path": "web-animation-skills/skills/accessible-animation/references/patterns.md",
-        "mode": "100644",
-        "oid": "287c164ec70293a6803d167da1be9bae32ee938d",
-        "size": 6846
-      },
-      {
         "path": "web-animation-skills/skills/accessible-animation/SKILL.md",
         "mode": "100644",
         "oid": "8337a1a01e66b7f2beafbcce6ef11cb71ee0f93a",
         "size": 11775
       },
       {
+        "path": "web-animation-skills/skills/accessible-animation/references/patterns.md",
+        "mode": "100644",
+        "oid": "287c164ec70293a6803d167da1be9bae32ee938d",
+        "size": 6846
+      },
+      {
         "path": "web-animation-skills/skills/ascii-animation/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/ascii-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "839963e7b7d15c6cdc7dac6f5f0070a0ba0847f1",
+        "size": 9219
       },
       {
         "path": "web-animation-skills/skills/ascii-animation/references/rendering.md",
@@ -1946,16 +1952,16 @@
         "size": 2041
       },
       {
-        "path": "web-animation-skills/skills/ascii-animation/SKILL.md",
-        "mode": "100644",
-        "oid": "839963e7b7d15c6cdc7dac6f5f0070a0ba0847f1",
-        "size": 9219
-      },
-      {
         "path": "web-animation-skills/skills/glassmorphism/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/glassmorphism/SKILL.md",
+        "mode": "100644",
+        "oid": "2fff8b24f86578d14cbd73cc8e49b395858bdb46",
+        "size": 11668
       },
       {
         "path": "web-animation-skills/skills/glassmorphism/references/glass-recipes.md",
@@ -1964,10 +1970,16 @@
         "size": 10388
       },
       {
-        "path": "web-animation-skills/skills/glassmorphism/SKILL.md",
+        "path": "web-animation-skills/skills/gsap-web/README.md",
         "mode": "100644",
-        "oid": "2fff8b24f86578d14cbd73cc8e49b395858bdb46",
-        "size": 11668
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/gsap-web/SKILL.md",
+        "mode": "100644",
+        "oid": "a8bc3348335df7655453a4acc7eb7f3dd309d5e1",
+        "size": 12360
       },
       {
         "path": "web-animation-skills/skills/gsap-web/examples/hero-timeline.js",
@@ -1982,12 +1994,6 @@
         "size": 2714
       },
       {
-        "path": "web-animation-skills/skills/gsap-web/README.md",
-        "mode": "100644",
-        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
-        "size": 0
-      },
-      {
         "path": "web-animation-skills/skills/gsap-web/references/scrolltrigger-cookbook.md",
         "mode": "100644",
         "oid": "2f74cb4da753f8a887ffc8ebb537362fd35f2314",
@@ -2000,22 +2006,10 @@
         "size": 10528
       },
       {
-        "path": "web-animation-skills/skills/gsap-web/SKILL.md",
-        "mode": "100644",
-        "oid": "a8bc3348335df7655453a4acc7eb7f3dd309d5e1",
-        "size": 12360
-      },
-      {
         "path": "web-animation-skills/skills/lottie-animation/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
-      },
-      {
-        "path": "web-animation-skills/skills/lottie-animation/references/integration-and-export.md",
-        "mode": "100644",
-        "oid": "0443dea6c85750dac88117ff1572733ec34ff985",
-        "size": 9567
       },
       {
         "path": "web-animation-skills/skills/lottie-animation/SKILL.md",
@@ -2024,10 +2018,22 @@
         "size": 9002
       },
       {
+        "path": "web-animation-skills/skills/lottie-animation/references/integration-and-export.md",
+        "mode": "100644",
+        "oid": "0443dea6c85750dac88117ff1572733ec34ff985",
+        "size": 9567
+      },
+      {
         "path": "web-animation-skills/skills/micro-interaction/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "web-animation-skills/skills/micro-interaction/SKILL.md",
+        "mode": "100644",
+        "oid": "232299482627396565011b61812842ec88ae2ec3",
+        "size": 8634
       },
       {
         "path": "web-animation-skills/skills/micro-interaction/references/css-recipes.md",
@@ -2042,22 +2048,10 @@
         "size": 5950
       },
       {
-        "path": "web-animation-skills/skills/micro-interaction/SKILL.md",
-        "mode": "100644",
-        "oid": "232299482627396565011b61812842ec88ae2ec3",
-        "size": 8634
-      },
-      {
         "path": "web-animation-skills/skills/page-transition-animation/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
-      },
-      {
-        "path": "web-animation-skills/skills/page-transition-animation/references/full-examples.md",
-        "mode": "100644",
-        "oid": "f36576f31a9d79b423c0af98c7fc1087871f2e53",
-        "size": 5366
       },
       {
         "path": "web-animation-skills/skills/page-transition-animation/SKILL.md",
@@ -2066,22 +2060,28 @@
         "size": 12195
       },
       {
+        "path": "web-animation-skills/skills/page-transition-animation/references/full-examples.md",
+        "mode": "100644",
+        "oid": "f36576f31a9d79b423c0af98c7fc1087871f2e53",
+        "size": 5366
+      },
+      {
         "path": "web-animation-skills/skills/svg-animation/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
       },
       {
-        "path": "web-animation-skills/skills/svg-animation/references/svg-techniques.md",
-        "mode": "100644",
-        "oid": "030f530ebaf4001a86e13ddb40487bf21b356dce",
-        "size": 9053
-      },
-      {
         "path": "web-animation-skills/skills/svg-animation/SKILL.md",
         "mode": "100644",
         "oid": "70c9b5cf44aaa83008d46fed8fec9c21777231a9",
         "size": 8622
+      },
+      {
+        "path": "web-animation-skills/skills/svg-animation/references/svg-techniques.md",
+        "mode": "100644",
+        "oid": "030f530ebaf4001a86e13ddb40487bf21b356dce",
+        "size": 9053
       },
       {
         "path": "webgl-animation-skills/.claude-plugin/marketplace.json",
@@ -2108,6 +2108,12 @@
         "size": 4730
       },
       {
+        "path": "webgl-animation-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "webgl-animation-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -2118,12 +2124,6 @@
         "mode": "100755",
         "oid": "5e9d0b3ea4ed5cf8d3471ea2f9c6159276a09273",
         "size": 1514
-      },
-      {
-        "path": "webgl-animation-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
       },
       {
         "path": "webgl-animation-skills/scripts/seek-shot.sh",
@@ -2150,16 +2150,16 @@
         "size": 0
       },
       {
-        "path": "webgl-animation-skills/skills/particle-system/references/particle-recipes.md",
-        "mode": "100644",
-        "oid": "15beccac7985b6b8f99b9e2f33e2fd3bd9472b24",
-        "size": 11097
-      },
-      {
         "path": "webgl-animation-skills/skills/particle-system/SKILL.md",
         "mode": "100644",
         "oid": "819edffebf0134bdb326dcfec02615846ae4dba2",
         "size": 11654
+      },
+      {
+        "path": "webgl-animation-skills/skills/particle-system/references/particle-recipes.md",
+        "mode": "100644",
+        "oid": "15beccac7985b6b8f99b9e2f33e2fd3bd9472b24",
+        "size": 11097
       },
       {
         "path": "webgl-animation-skills/skills/shader-glsl/README.md",
@@ -2168,22 +2168,28 @@
         "size": 0
       },
       {
-        "path": "webgl-animation-skills/skills/shader-glsl/references/glsl-cookbook.md",
-        "mode": "100644",
-        "oid": "7e7741b2ae390e1c425fa9a9db05d55eeb0d8b74",
-        "size": 8190
-      },
-      {
         "path": "webgl-animation-skills/skills/shader-glsl/SKILL.md",
         "mode": "100644",
         "oid": "638fe6e5b8d6120ab736bfaa3d77790a74049b76",
         "size": 10485
       },
       {
+        "path": "webgl-animation-skills/skills/shader-glsl/references/glsl-cookbook.md",
+        "mode": "100644",
+        "oid": "7e7741b2ae390e1c425fa9a9db05d55eeb0d8b74",
+        "size": 8190
+      },
+      {
         "path": "webgl-animation-skills/skills/threejs-animation/README.md",
         "mode": "100644",
         "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "size": 0
+      },
+      {
+        "path": "webgl-animation-skills/skills/threejs-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "108fd0ba2e31f5dcdd5e6ec7c5a402fdf1bc1d6d",
+        "size": 13610
       },
       {
         "path": "webgl-animation-skills/skills/threejs-animation/references/r3f-and-perf.md",
@@ -2196,12 +2202,6 @@
         "mode": "100644",
         "oid": "36803cc939aec9f9d341e713b4b01aa050a26d43",
         "size": 13828
-      },
-      {
-        "path": "webgl-animation-skills/skills/threejs-animation/SKILL.md",
-        "mode": "100644",
-        "oid": "108fd0ba2e31f5dcdd5e6ec7c5a402fdf1bc1d6d",
-        "size": 13610
       },
       {
         "path": "youtube-video-skills/.claude-plugin/marketplace.json",
@@ -2228,6 +2228,12 @@
         "size": 4527
       },
       {
+        "path": "youtube-video-skills/scripts/README.md",
+        "mode": "100644",
+        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
+        "size": 2028
+      },
+      {
         "path": "youtube-video-skills/scripts/contact-sheet.sh",
         "mode": "100755",
         "oid": "d0032c4d920b8e3369898bb754f96c8ed8afe0d9",
@@ -2240,12 +2246,6 @@
         "size": 1514
       },
       {
-        "path": "youtube-video-skills/scripts/README.md",
-        "mode": "100644",
-        "oid": "3b0a78352725fab6bba6f4969abe4f29ef6f5487",
-        "size": 2028
-      },
-      {
         "path": "youtube-video-skills/scripts/seek-shot.sh",
         "mode": "100755",
         "oid": "2020ad13d269aa5b41708ee02d7eabc40b9c3a2d",
@@ -2254,8 +2254,8 @@
       {
         "path": "youtube-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "ecd8c0774e7e98a5ae1d61154062875cb1772c79",
-        "size": 2966294
+        "oid": "ff11135b5a60a2d86dd53327c87cd7afdef73835",
+        "size": 2910897
       },
       {
         "path": "youtube-video-skills/showcase.html",
@@ -2270,16 +2270,16 @@
         "size": 0
       },
       {
-        "path": "youtube-video-skills/skills/audiogram/references/waveform-render.md",
-        "mode": "100644",
-        "oid": "d9f1b6fbce2fc1cce796b1434947235d3b566359",
-        "size": 9998
-      },
-      {
         "path": "youtube-video-skills/skills/audiogram/SKILL.md",
         "mode": "100644",
         "oid": "e6a4cd6ddc5e650a934af9ebf40945489dd71f6a",
         "size": 9697
+      },
+      {
+        "path": "youtube-video-skills/skills/audiogram/references/waveform-render.md",
+        "mode": "100644",
+        "oid": "d9f1b6fbce2fc1cce796b1434947235d3b566359",
+        "size": 9998
       },
       {
         "path": "youtube-video-skills/skills/youtube-intro-outro/README.md",
@@ -2288,16 +2288,16 @@
         "size": 0
       },
       {
-        "path": "youtube-video-skills/skills/youtube-intro-outro/references/intro-outro.md",
-        "mode": "100644",
-        "oid": "393a40741d1141f26150953b76dc3bd26b73527d",
-        "size": 11173
-      },
-      {
         "path": "youtube-video-skills/skills/youtube-intro-outro/SKILL.md",
         "mode": "100644",
         "oid": "8554ac49576931d0177557ee367171e4241c73b9",
         "size": 11296
+      },
+      {
+        "path": "youtube-video-skills/skills/youtube-intro-outro/references/intro-outro.md",
+        "mode": "100644",
+        "oid": "393a40741d1141f26150953b76dc3bd26b73527d",
+        "size": 11173
       }
     ]
   },
