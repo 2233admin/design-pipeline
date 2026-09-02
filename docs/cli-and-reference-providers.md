@@ -17,7 +17,8 @@ Every JSON response uses `design-pipeline.cli-result.v1`. Exit codes are stable:
 
 - `0`: command succeeded and its gate passed;
 - `1`: invalid input, unsafe path, corrupt artifact, or unknown command;
-- `2`: valid command, but continuation is blocked or verification failed.
+- `2`: valid command, but continuation is blocked or verification failed;
+- `3`: measured-fidelity mismatch (`fidelity-limited`).
 
 All project artifacts must resolve below `--root`, including after existing symlinks or Windows
 directory junctions are resolved. No command treats ambient network access or credentials as
@@ -25,27 +26,31 @@ permission to install, publish, or mutate a remote.
 
 ## Command Surface
 
-```text
-doctor
-status
+surface validate
+intake start|answer|confirm
+template inventory|search|select|adapt|review|approve
+doctor|status
+plan|run|resume|explain-block|package|route
 change init|resume|advance|migrate|repair
-foundation check
-component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify
+foundation check|direction check|playground check|reference check|resolve|reconstruction check|scene check
 component-first check|stack|components|playground|page
 high-fidelity check
-scene check
+component-first-v2 check|migrate|select|promote
+design-skill route|manifest|run|select|promote
+reconciliation check
+feedback record|prepare|reconcile
 evidence check|capture
 verify motion|components
-patterns search|audit
-tokens check
-ui-ir check
-design-code-map check
-benchmark evaluate
-adapter audit|intake|receipt-check
-style-signals check
-feedback record|prepare|reconcile
-source audit
-```
+patterns search|audit|tokens check|ui-ir check|design-code-map check
+component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify
+design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide
+mengto search|verify|shadcnio search|verify|prism search|route|verify|holosticker inspect|verify
+designmd sync|search|inspect|verify|iart search|route|verify
+toolchain resolve|probe|receipt-check
+execution route|prepare|finalize
+benchmark brief|evaluate
+adapter audit|intake|receipt-check|style-signals check
+adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget
 
 `component-first` consumes one contained v1 aggregate artifact and returns either
 `component-first-gate.v1` or `component-first-stage-result.v1` inside the normal CLI envelope.

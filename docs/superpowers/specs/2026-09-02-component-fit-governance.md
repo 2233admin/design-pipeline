@@ -7,7 +7,7 @@
 
 ## Context
 
-Design agents and maintainers need a deterministic way to turn an approved visual direction into component decisions without silently selecting one global library. The current worktree contains an unlanded component-fit kernel, CLI wiring, Design Skill preview integration, documentation, and an untracked regression suite. Main contains the guided multi-surface pipeline but not this remaining slice.
+Design agents and maintainers need a deterministic way to turn an approved visual direction into component decisions without silently selecting one global library. The 0.10.0 release contains the component-fit kernel, CLI wiring, Design Skill preview integration, documentation, and regression suite described here. Main contains the guided multi-surface pipeline that this slice extends.
 
 The verified current kernel is `skill/scripts/component-fit-core.cjs`. It defines `direction-lock.v1`, `component-fit-matrix.v1`, six fit dimensions, five decision actions, provider/catalog/project hash bindings, and validation functions. The current CLI changes are in `skill/scripts/cli-core.cjs`; prototype preview enforcement is in `skill/scripts/design-skill-core.cjs`.
 
@@ -21,17 +21,17 @@ The verified current kernel is `skill/scripts/component-fit-core.cjs`. It define
 
 | Surface | Verified state | Remaining action |
 |---|---|---|
-| Component-fit kernel | `skill/scripts/component-fit-core.cjs` exists in the worktree and emits/validates direction locks and fit matrices | Land as part of this slice |
+| Component-fit kernel | `skill/scripts/component-fit-core.cjs` is shipped and emits/validates direction locks and fit matrices | Maintain contract coverage |
 | Public CLI | `component lock`, `component fit`, and `component validate-fit` are wired in `skill/scripts/cli-core.cjs` | Keep commands and exit behavior covered |
 | Design Skill prototype | `design.prototype` reads and validates a project-contained direction preview before producing isolated directions | Preserve fail-closed behavior |
 | Documentation | README, `skill/SKILL.md`, and `skill/references/stages.md` describe the component-fit flow | Keep public contract synchronized |
-| Regression tests | `tests/component-fit-matrix.test.cjs` is present in the worktree and currently passes with the focused Design Skill tests | Keep as the contract suite and add no unrelated cases |
+| Regression tests | `tests/component-fit-matrix.test.cjs` is included and passes with the focused Design Skill tests | Keep as the contract suite and add no unrelated cases |
 
 Focused verification on 2026-09-02: `node --test tests/component-fit-matrix.test.cjs tests/design-skill-layer.test.cjs` produced 15 passing tests, 0 failures, 0 skips.
 
 ## Proposed Change
 
-Land the existing component-fit slice as one coherent contract:
+The component-fit slice is delivered as one coherent contract:
 
 1. Create a hash-bound direction lock from an approved selection receipt and direction preview artifact.
 2. Evaluate every requested capability against every governed catalog/provider/project candidate.
@@ -161,5 +161,5 @@ Revert the component-fit commit and its merge commit. The merged guided multi-su
 ## Assumptions Used For Autonomous Execution
 
 - The primary users are internal design and implementation agents plus maintainers; no public API consumer depends on the new CLI yet.
-- The preserved worktree is the source of truth for the component-fit slice; unrelated dirty changes remain outside scope.
+- The release branch is the source of truth for the component-fit slice; unrelated dirty changes remain outside scope.
 - The existing direction-preview and component-first contracts are the governing upstream inputs.

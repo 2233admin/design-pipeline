@@ -469,7 +469,7 @@ node skill/scripts/designer-pipeline.cjs adaptation check --root . --json
 node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
 ```
 
-退出码：`0` 成功，`1` 无效输入，`2` 被阻止或验证失败。
+退出码：`0` 成功，`1` 无效输入，`2` 被阻止或验证失败，`3` 实测保真度不匹配。
 
 ## OpenSpec 对齐
 
