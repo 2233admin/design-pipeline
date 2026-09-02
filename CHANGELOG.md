@@ -2,6 +2,26 @@
 
 All notable changes to Design Pipeline are documented here.
 
+## [0.10.0] - 2026-09-02
+
+### Added
+
+- You can now take a guided multi-surface design flow from intake through surface profiles, region-template retrieval,
+  direction-preview binding, template selection, adaptation review, and approval handoffs.
+- You can now use evidence-driven design runtime contracts, lifecycle controls, stale-artifact invalidation,
+  replayable evaluations, and public CLI verification and packaging flows.
+- You can now govern component fit with direction locks, per-capability matrices, governed providers,
+  project inventory reuse, foundation coherence, and fail-closed validation.
+- The package now includes curated component-source and DesignMD resource registrations, expanded skill loading and
+  evaluation coverage, and new Claude Code project-surface guidance.
+
+### Security
+
+- Persisted artifact metadata is now bound to the file hash, persisted control plans are restricted to the
+  governed runnable registry, untrusted preview roots are rejected, and interaction-state declaration parsing
+  is hardened.
+
+
 ## [0.9.0] - 2026-08-26
 
 ### Added

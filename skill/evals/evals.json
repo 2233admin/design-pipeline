@@ -1,0 +1,104 @@
+{
+  "schema": "design-pipeline.skill-evals.v1",
+  "version": 1,
+  "source": {
+    "upstream": [
+      "https://raw.githubusercontent.com/anthropics/skills/main/skills/frontend-design/SKILL.md",
+      "https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/SKILL.md",
+      "https://raw.githubusercontent.com/anthropics/skills/main/skills/webapp-testing/SKILL.md"
+    ],
+    "policy": "Project contracts are authoritative; upstream skills provide reviewed principles only."
+  },
+  "cases": [
+    {
+      "id": "new-dashboard-direction",
+      "name": "新建数据看板方向",
+      "prompt": "为面向运营团队的深色实时风控看板设计两套视觉方向，保留真实数据状态和键盘可用性。",
+      "expectedRoute": "design-synthesis",
+      "expectedJob": "product-design",
+      "expectedState": "ready",
+      "requiredSignals": ["subject", "audience", "single-job", "signature", "critique", "responsive", "reduced-motion"],
+      "requiredArtifacts": ["job-plan.json", "design.md", "motion.md", "qa.md"]
+    },
+    {
+      "id": "reference-reconstruction",
+      "name": "参考图重建",
+      "prompt": "执行一个 pixel-accurate reference reconstruction：根据一张已提供的 1440x900 产品截图重建首屏，先完成灰盒对比，再实现光学细节。",
+      "expectedRoute": "reference-reconstruction",
+      "expectedJob": "reference-reconstruction",
+      "expectedState": "ready",
+      "requiredSignals": ["source-resolution", "graybox", "geometry", "fidelity-receipt"],
+      "requiredArtifacts": ["reference.md", "reference-evidence.json", "graybox.png", "design.md"]
+    },
+    {
+      "id": "website-clone",
+      "name": "网站克隆",
+      "prompt": "克隆一个可访问的营销页面，保留品牌识别、响应式结构和核心交互，不复制不必要的实现细节。",
+      "expectedRoute": "website-cloning",
+      "expectedJob": "website-clone",
+      "expectedState": "ready",
+      "requiredSignals": ["target-manifest", "palette-evidence", "foundations", "measured-evaluation"],
+      "requiredArtifacts": ["website-cloning.json", "reference.md", "design.md", "qa.md"]
+    },
+    {
+      "id": "component-first",
+      "name": "组件优先实现",
+      "prompt": "为一个 React 设置页选择或实现可复用的表单组件，覆盖 focus、pressed、disabled、error、loading 和移动端状态。",
+      "expectedRoute": "component-first",
+      "expectedJob": "component",
+      "expectedState": "ready",
+      "requiredSignals": ["capability-inventory", "provider-route", "state-matrix", "behavioral-evidence"],
+      "requiredArtifacts": ["capability-inventory.json", "components.json", "evidence.json"]
+    },
+    {
+      "id": "motion-and-graphics",
+      "name": "动效与图形运行时",
+      "prompt": "为一个带轻量 GSAP 背景动效的产品首页制定运行时方案，要求可中断、支持 reduced motion、可清理且满足性能预算。",
+      "expectedRoute": "motion-graphics",
+      "expectedJob": "technique",
+      "expectedState": "ready",
+      "requiredSignals": ["runtime-ownership", "motion-spec", "reduced-motion", "cleanup", "performance-budget"],
+      "requiredArtifacts": ["motion.md", "motion.json", "qa.md"]
+    },
+    {
+      "id": "dynamic-browser-evidence",
+      "name": "动态页面验证",
+      "prompt": "执行 dynamic web verification：验证一个需要异步数据的页面，等待运行时就绪和 networkidle，执行核心交互，并收集 DOM、截图、控制台、可访问性、网络和性能证据。",
+      "expectedRoute": "dynamic-web-verification",
+      "expectedJob": "dynamic-web-verification",
+      "expectedState": "ready",
+      "requiredSignals": ["runtime-ready", "networkidle", "dom", "screenshot", "console", "accessibility", "network", "performance"],
+      "requiredArtifacts": ["evidence.json", "page.html", "page.png", "console.json", "network.json", "accessibility.json", "performance.json"]
+    },
+    {
+      "id": "product-foundation",
+      "name": "产品基础",
+      "prompt": "为一个需求驱动的运营工具建立产品基础，明确受众、核心任务、可复用 DESIGN.md 和验证决策。",
+      "expectedRoute": "product-foundation",
+      "expectedJob": "product-design",
+      "expectedState": "ready",
+      "requiredSignals": ["audience", "single-job", "design-foundation", "decision-evidence", "validation"],
+      "requiredArtifacts": ["design.md", "decision.md", "qa.md"]
+    },
+    {
+      "id": "feedback-loop",
+      "name": "反馈闭环",
+      "prompt": "记录一个设计流水线缺失能力，生成脱敏反馈观察、回归测试和明确的发布授权边界。",
+      "expectedRoute": "feedback-loop",
+      "expectedJob": "product-design",
+      "expectedState": "ready",
+      "requiredSignals": ["redacted-feedback", "regression-test", "publication-authority"],
+      "requiredArtifacts": ["feedback.md", "regression.test.cjs", "handoff.md"]
+    },
+    {
+      "id": "blocked-reference-source",
+      "name": "缺失参考源阻断",
+      "prompt": "对一个 pixel-accurate reference reconstruction 任务先记录缺失的参考文件，保持 pending/blocked，并写出提供文件后才能执行的解锁动作。",
+      "expectedRoute": "reference-reconstruction",
+      "expectedJob": "reference-reconstruction",
+      "expectedState": "blocked",
+      "requiredSignals": ["source-pending", "blocked", "unlock-action", "fail-closed"],
+      "requiredArtifacts": ["reference-evidence.json", "explain-block.md", "handoff.md"]
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 
 const path = require("node:path");
 const { canonicalJson, isObject, resolveInside, sha256 } = require("./contract-utils.cjs");
+const { loadComponentFirstPolicy } = require("./component-first/policies/policy-loader.cjs");
 
 const ARTIFACT_SCHEMA = "component-first-gate.v2";
 const STAGE_SCHEMA = "component-first-stage-receipt.v2";
@@ -43,9 +44,15 @@ function targetIdentity(target) {
 function targetDigest(target) { return sha256(canonicalJson(targetIdentity(target))); }
 function policyDigest(policy) {
   assertObject(policy, "policy");
-  if (typeof policy.id !== "string" || !policy.id || !Number.isInteger(policy.version)) fail("policy identity is invalid");
-  if (policy.digest !== undefined) assertHash(policy.digest, "policy.digest");
-  return policy.digest || sha256(canonicalJson({ id: policy.id, version: policy.version, additionalComponentRoles: policy.additionalComponentRoles || [], pageRequirements: policy.pageRequirements || {} }));
+  const { digest: supplied, ...unsigned } = policy;
+  const computed = unsigned.id === "component-first-default" && unsigned.version === 1
+    ? loadComponentFirstPolicy(unsigned).digest
+    : sha256(canonicalJson(unsigned));
+  if (supplied !== undefined) {
+    assertHash(supplied, "policy.digest");
+    if (supplied !== computed) fail("policy.digest does not match policy contents", { code: "POLICY_STALE" });
+  }
+  return computed;
 }
 
 function snapshotDigest(value) {
@@ -80,7 +87,7 @@ function createV2Artifact(v1, options = {}) {
   const target = { ...v1.target, ...(options.snapshotDigest ? { snapshotDigest: options.snapshotDigest } : {}) };
   targetIdentity(target);
   if (target.snapshotDigest !== null && target.snapshotDigest !== undefined) snapshotDigest(target.snapshotDigest);
-  const policy = { ...v1.policy };
+  const { digest: ignored, ...policy } = { ...v1.policy };
   policyDigest(policy);
   const byStage = new Map((v1.stages || []).map((stage) => [stage.stage, stage]));
   const receipts = {};
@@ -90,7 +97,7 @@ function createV2Artifact(v1, options = {}) {
   return {
     schema: ARTIFACT_SCHEMA,
     target: { ...target, targetIdentityDigest: targetDigest(target) },
-    policy: { id: policy.id, version: policy.version, digest: policyDigest(policy) },
+    policy: { ...policy, digest: policyDigest(policy) },
     receipts,
     visualAcceptance: { schema: VISUAL_SCHEMA, status: "not-evaluated", reason: "component-conformance-does-not-imply-visual-acceptance" },
     selection: null,
@@ -125,7 +132,18 @@ function selectionReceipt(input) {
   assertHash(input.targetIdentityDigest, "selection.targetIdentityDigest");
   assertDigest(input.snapshotDigest, "selection.snapshotDigest");
   assertHash(input.policyDigest, "selection.policyDigest");
-  const body = { schema: SELECTION_SCHEMA, status: "selected", prototypeSetHash: input.prototypeSetHash, selectedPrototypeId: input.selectedPrototypeId, targetIdentityDigest: input.targetIdentityDigest, snapshotDigest: input.snapshotDigest, policyDigest: input.policyDigest, approvedBy: input.approvedBy };
+  if (input.prototypeSetSnapshot !== undefined) assertObject(input.prototypeSetSnapshot, "selection.prototypeSetSnapshot");
+  const body = {
+    schema: SELECTION_SCHEMA,
+    status: "selected",
+    prototypeSetHash: input.prototypeSetHash,
+    selectedPrototypeId: input.selectedPrototypeId,
+    targetIdentityDigest: input.targetIdentityDigest,
+    snapshotDigest: input.snapshotDigest,
+    policyDigest: input.policyDigest,
+    approvedBy: input.approvedBy,
+    ...(input.prototypeSetSnapshot !== undefined ? { prototypeSetSnapshot: input.prototypeSetSnapshot } : {}),
+  };
   return { ...body, receiptHash: receiptHash(body) };
 }
 

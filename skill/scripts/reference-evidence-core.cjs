@@ -760,6 +760,32 @@ function posixInside(root, target) {
   return path.relative(root, target).split(path.sep).join("/");
 }
 
+// Shared by reference carriers that need byte identity without changing the
+// reconstruction source-kind contract. The caller owns the interpretation of
+// the bytes (for example PNG dimensions or HTML parsing).
+function resolveContainedReference(rootInput, rawPath, label = "reference source") {
+  const root = fs.realpathSync(path.resolve(rootInput));
+  const target = resolveInside(root, rawPath, label, {
+    scope: SCOPE,
+    mustExist: true,
+  });
+  const real = fs.realpathSync(target);
+  resolveInside(root, real, label, { scope: SCOPE });
+  if (!fs.statSync(real).isFile()) fail(SCOPE, `${label} must be a regular file`);
+  const bytes = fs.readFileSync(real);
+  return {
+    root,
+    path: real,
+    relativePath: posixInside(root, real),
+    bytes,
+    sha256: sha256(bytes),
+  };
+}
+
+function referenceFileHash(file) {
+  return sha256(fs.readFileSync(file));
+}
+
 function resolveReferenceSource(changeRoot, options = {}) {
   const root = fs.realpathSync(path.resolve(changeRoot));
   const relative = options.artifact || DEFAULT_REFERENCE_ARTIFACT;
@@ -774,14 +800,8 @@ function resolveReferenceSource(changeRoot, options = {}) {
   if (typeof options.path !== "string" || !options.path.trim()) {
     fail(SCOPE, "source path is required");
   }
-  const sourceFile = resolveInside(root, options.path, "reference source", {
-    scope: SCOPE,
-    mustExist: true,
-  });
-  const real = fs.realpathSync(sourceFile);
-  resolveInside(root, real, "reference source", { scope: SCOPE });
-  if (!fs.statSync(real).isFile()) fail(SCOPE, "reference source must be a regular file");
-  const bytes = fs.readFileSync(real);
+  const resolved = resolveContainedReference(root, options.path);
+  const { path: real, bytes } = resolved;
   const dimensions = pngDimensions(bytes);
   if (!dimensions) fail(SCOPE, "reference source must be a readable PNG raster");
   const resolvedAt = options.timestamp || new Date().toISOString();
@@ -799,7 +819,7 @@ function resolveReferenceSource(changeRoot, options = {}) {
     path: posixInside(root, real),
     width: dimensions.width,
     height: dimensions.height,
-    sha256: sha256(bytes),
+    sha256: resolved.sha256,
     resolvedAt,
   };
   const next = { ...reference, source: nextSource };
@@ -840,6 +860,8 @@ module.exports = {
   THREE_D_ARTIFACTS,
   checkReferenceEvidence,
   resolveReferenceSource,
+  resolveContainedReference,
+  referenceFileHash,
   sourceAvailability,
   validateComposition,
   validateGraybox,

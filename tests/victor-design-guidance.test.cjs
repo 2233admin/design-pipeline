@@ -10,14 +10,16 @@ const read = (relative) => fs.readFileSync(path.join(repoRoot, relative), "utf8"
 
 test("routes the subject-first Victor design guidance", () => {
   const pipeline = read("skill/SKILL.md");
+  const stages = read("skill/references/stages.md");
   const antiSlop = read("skill/references/anti-slop-review.md");
   const copy = read("skill/references/plain-language.md");
   const feedback = read("skill/references/feedback-loop.md");
+  const routedGuidance = `${pipeline}\n${stages}`;
 
-  assert.match(pipeline, /Form sanity backstop/);
-  assert.match(pipeline, /reader action/);
-  assert.match(pipeline, /single.?canvas/);
-  assert.match(pipeline, /subject, audience task, and viewing context/);
+  assert.match(routedGuidance, /Form sanity backstop/);
+  assert.match(routedGuidance, /reader action/);
+  assert.match(routedGuidance, /single.?canvas/);
+  assert.match(routedGuidance, /subject, audience task, and viewing context/);
   assert.match(antiSlop, /Two-sided craft check/);
   assert.match(antiSlop, /Cause\/effect test/);
   assert.match(copy, /Source-shaped copy/);

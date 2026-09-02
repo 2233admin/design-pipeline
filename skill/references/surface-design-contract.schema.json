@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "design-pipeline.surface-design-contract.v1",
+  "title": "Guided multi-surface design pipeline contract",
+  "description": "Versioned records shared by project, surface, intake, retrieval, selection, and adaptation stages.",
+  "oneOf": [
+    { "$ref": "#/$defs/project" },
+    { "$ref": "#/$defs/surface" },
+    { "$ref": "#/$defs/platformProfile" },
+    { "$ref": "#/$defs/designBrief" },
+    { "$ref": "#/$defs/referenceSource" },
+    { "$ref": "#/$defs/regionTemplate" },
+    { "$ref": "#/$defs/selectionReceipt" },
+    { "$ref": "#/$defs/adaptationPlan" }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/text" },
+      "uniqueItems": true
+    },
+    "evidenceEntry": {
+      "type": "object",
+      "required": ["kind", "value", "source", "contentHash"],
+      "properties": {
+        "kind": { "enum": ["license", "provenance"] },
+        "value": { "$ref": "#/$defs/text" },
+        "source": { "$ref": "#/$defs/text" },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "authorization": { "$ref": "#/$defs/text" },
+        "attribution": { "$ref": "#/$defs/text" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "license" } }, "required": ["kind"] },
+          "then": { "required": ["authorization"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "provenance" } }, "required": ["kind"] },
+          "then": { "required": ["attribution"] }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "sourceFact": {
+      "type": "object",
+      "required": ["value", "source"],
+      "properties": {
+        "value": {},
+        "source": { "enum": ["known", "user", "agent"] }
+      },
+      "additionalProperties": false
+    },
+    "textFact": {
+      "allOf": [
+        { "$ref": "#/$defs/sourceFact" },
+        { "properties": { "value": { "$ref": "#/$defs/text" } } }
+      ]
+    },
+    "listFact": {
+      "allOf": [
+        { "$ref": "#/$defs/sourceFact" },
+        { "properties": { "value": { "$ref": "#/$defs/stringList" } } }
+      ]
+    },
+    "surfaceFact": {
+      "allOf": [
+        { "$ref": "#/$defs/sourceFact" },
+        { "properties": { "value": { "$ref": "#/$defs/record" } } }
+      ]
+    },
+    "project": {
+      "type": "object",
+      "required": ["schema", "projectId"],
+      "properties": {
+        "schema": { "const": "design-pipeline.project.v1" },
+        "projectId": { "$ref": "#/$defs/id" },
+        "name": { "$ref": "#/$defs/text" },
+        "domain": { "$ref": "#/$defs/text" },
+        "brand": { "$ref": "#/$defs/record" },
+        "assets": { "$ref": "#/$defs/stringList" },
+        "designTokens": { "$ref": "#/$defs/record" },
+        "provenance": { "$ref": "#/$defs/record" },
+        "referencePolicies": { "$ref": "#/$defs/record" },
+        "surfaces": { "type": "array", "items": { "$ref": "#/$defs/surface" }, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    },
+    "surface": {
+      "type": "object",
+      "required": ["schema", "projectId", "surfaceId", "platform", "framework", "profileVersion"],
+      "properties": {
+        "schema": { "const": "design-pipeline.surface.v1" },
+        "projectId": { "$ref": "#/$defs/id" },
+        "surfaceId": { "$ref": "#/$defs/id" },
+        "platform": { "enum": ["web", "mobile", "game"] },
+        "framework": { "$ref": "#/$defs/text" },
+        "profileId": { "$ref": "#/$defs/id" },
+        "profileVersion": { "enum": ["1"] },
+        "directionLock": { "$ref": "#/$defs/record" },
+        "catalogScope": { "$ref": "#/$defs/record" },
+        "acceptanceProfile": { "$ref": "#/$defs/record" },
+        "status": { "enum": ["active", "archived"] }
+      },
+      "additionalProperties": false
+    },
+    "platformProfile": {
+      "type": "object",
+      "required": ["schema", "profileId", "version", "platform", "gates", "status", "firstWaveRetrieval"],
+      "properties": {
+        "schema": { "const": "design-pipeline.platform-profile.v1" },
+        "profileId": { "$ref": "#/$defs/id" },
+        "version": { "enum": ["1"] },
+        "platform": { "enum": ["web", "mobile", "game"] },
+        "gates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "responsive-layout",
+              "dom-semantics",
+              "keyboard-pointer-input",
+              "accessibility",
+              "browser-runtime",
+              "touch-targets",
+              "safe-areas",
+              "navigation-back-stack",
+              "gesture-behavior",
+              "weak-network-states",
+              "device-variation"
+            ]
+          }
+        },
+        "status": { "enum": ["active", "reserved"] },
+        "firstWaveRetrieval": { "type": "boolean" },
+        "frameworks": { "$ref": "#/$defs/stringList" },
+        "capabilities": { "$ref": "#/$defs/stringList" },
+        "interactionModel": { "$ref": "#/$defs/record" },
+        "accessibilityRequirements": { "$ref": "#/$defs/stringList" },
+        "performanceBudget": { "$ref": "#/$defs/record" },
+        "frameworkConstraints": { "$ref": "#/$defs/record" },
+        "taskGenerationTemplate": { "$ref": "#/$defs/text" },
+        "acceptanceChecks": { "$ref": "#/$defs/stringList" }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "platform": { "const": "game" } }, "required": ["platform"] },
+          "then": {
+            "properties": {
+              "profileId": { "const": "game" },
+              "status": { "const": "reserved" },
+              "gates": { "maxItems": 0 },
+              "firstWaveRetrieval": { "const": false }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "platform": { "enum": ["web", "mobile"] } }, "required": ["platform"] },
+          "then": {
+            "properties": {
+              "status": { "const": "active" },
+              "firstWaveRetrieval": { "const": true }
+            }
+          }
+        }
+      ]
+    },
+    "designBrief": {
+      "type": "object",
+      "required": ["schema", "briefId", "projectId", "surfaceId", "status", "uncertainties"],
+      "properties": {
+        "schema": { "const": "design-pipeline.design-brief.v1" },
+        "briefId": { "$ref": "#/$defs/id" },
+        "projectId": { "$ref": "#/$defs/id" },
+        "surfaceId": { "$ref": "#/$defs/id" },
+        "input": { "$ref": "#/$defs/text" },
+        "evidence": {
+          "type": "object",
+          "required": ["kind", "detailDepth", "coveredFields"],
+          "properties": {
+            "kind": { "enum": ["ordinary_idea", "screenshot", "visual_reference", "existing_page", "local_html", "structured_brief"] },
+            "detailDepth": { "enum": ["deep", "focused", "minimal"] },
+            "coveredFields": { "$ref": "#/$defs/stringList" }
+          },
+          "additionalProperties": false
+        },
+        "surface": { "$ref": "#/$defs/surfaceFact" },
+        "audience": { "$ref": "#/$defs/textFact" },
+        "userProblem": { "$ref": "#/$defs/textFact" },
+        "usageContext": { "$ref": "#/$defs/textFact" },
+        "primaryActions": { "$ref": "#/$defs/listFact" },
+        "contentAndDataDensity": { "$ref": "#/$defs/textFact" },
+        "brandAndStyleConstraints": { "$ref": "#/$defs/listFact" },
+        "platformConstraints": { "$ref": "#/$defs/listFact" },
+        "referenceIds": { "$ref": "#/$defs/listFact" },
+        "references": { "$ref": "#/$defs/listFact" },
+        "successCriteria": { "$ref": "#/$defs/listFact" },
+        "assumptions": { "$ref": "#/$defs/listFact" },
+        "uncertainties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["field", "reason", "status"],
+            "properties": {
+              "field": { "$ref": "#/$defs/text" },
+              "reason": { "$ref": "#/$defs/text" },
+              "status": { "enum": ["unresolved", "skipped", "agent_suggested"] }
+            },
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        },
+        "status": { "enum": ["empty", "inferred", "clarifying", "proposed", "user_confirmed", "stale"] }
+      },
+      "additionalProperties": false
+    },
+    "referenceSource": {
+      "type": "object",
+      "required": ["schema", "referenceId", "sourceKind", "pathOrProjectRef", "contentHash", "capturedAt", "provenance", "licenseState", "allowedDerivations", "parseStatus"],
+      "properties": {
+        "schema": { "const": "design-pipeline.reference-source.v1" },
+        "referenceId": { "$ref": "#/$defs/id" },
+        "sourceKind": { "enum": ["project_page", "local_html"] },
+        "pathOrProjectRef": { "$ref": "#/$defs/text" },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "provenance": { "$ref": "#/$defs/record" },
+        "licenseState": { "$ref": "#/$defs/text" },
+        "allowedDerivations": { "$ref": "#/$defs/stringList" },
+        "parseStatus": { "enum": ["pending", "parsed", "blocked", "unavailable", "invalid"] }
+      },
+      "additionalProperties": false
+    },
+    "regionTemplate": {
+      "type": "object",
+      "required": ["schema", "templateId", "templateVersion", "regionKind", "capabilities", "layoutTraits", "componentsUsed", "framework", "platform", "license", "provenance", "adaptationBoundary", "catalogStatus"],
+      "properties": {
+        "schema": { "const": "design-pipeline.region-template.v1" },
+        "templateId": { "$ref": "#/$defs/id" },
+        "templateVersion": { "$ref": "#/$defs/text" },
+        "regionKind": { "$ref": "#/$defs/id" },
+        "capabilities": { "$ref": "#/$defs/stringList" },
+        "layoutTraits": { "$ref": "#/$defs/stringList" },
+        "componentsUsed": { "$ref": "#/$defs/stringList" },
+        "framework": { "$ref": "#/$defs/text" },
+        "platform": { "enum": ["web", "mobile", "game", "agnostic"] },
+        "license": { "$ref": "#/$defs/text" },
+        "provenance": { "$ref": "#/$defs/record" },
+        "adaptationBoundary": { "$ref": "#/$defs/stringList" },
+        "catalogStatus": { "enum": ["candidate", "active", "deprecated", "blocked"] },
+        "accessibility": {}
+      },
+      "additionalProperties": false
+    },
+    "selectionReceipt": {
+      "type": "object",
+      "required": ["schema", "receiptId", "projectId", "surfaceId", "referenceHash", "region", "candidateTemplateVersion", "candidatePlatform", "candidateFramework", "componentCandidateVersions", "selectionMode", "selectionReason", "sourceAndLicenseEvidence", "directionLockSnapshot", "directionPreviewSnapshot", "technicalConstraints", "hardGateResults", "allowedChanges", "forbiddenChanges", "expectedDifferences", "acceptanceCriteria", "createdAt", "surfaceBindingSnapshot", "contentHash"],
+      "properties": {
+        "schema": { "const": "design-pipeline.selection-receipt.v1" },
+        "receiptId": { "$ref": "#/$defs/id" },
+        "projectId": { "$ref": "#/$defs/id" },
+        "surfaceId": { "$ref": "#/$defs/id" },
+        "referenceHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "region": { "$ref": "#/$defs/id" },
+        "candidateTemplateVersion": { "$ref": "#/$defs/text" },
+        "candidatePlatform": { "$ref": "#/$defs/text" },
+        "candidateFramework": { "$ref": "#/$defs/text" },
+        "componentCandidateVersions": { "$ref": "#/$defs/stringList" },
+        "selectionMode": { "enum": ["adopt", "reference"] },
+        "selectionReason": { "$ref": "#/$defs/text" },
+        "sourceAndLicenseEvidence": { "type": "array", "items": { "$ref": "#/$defs/evidenceEntry" }, "uniqueItems": true },
+        "directionLockSnapshot": { "$ref": "#/$defs/record" },
+        "directionPreviewSnapshot": {
+          "type": "object",
+          "required": ["status", "applicable", "selectedDirectionId", "artifactSha256", "contentHash", "artifact", "directionLockSnapshot"],
+          "properties": {
+            "status": { "const": "selected" },
+            "applicable": { "const": true },
+            "selectedDirectionId": { "$ref": "#/$defs/text" },
+            "artifactSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "artifact": { "type": "object" },
+            "directionLockSnapshot": { "$ref": "#/$defs/record" }
+          },
+          "additionalProperties": false
+        },
+        "technicalConstraints": { "$ref": "#/$defs/stringList" },
+        "hardGateResults": { "$ref": "#/$defs/record" },
+        "allowedChanges": { "$ref": "#/$defs/stringList" },
+        "forbiddenChanges": { "$ref": "#/$defs/stringList" },
+        "expectedDifferences": { "$ref": "#/$defs/stringList" },
+        "acceptanceCriteria": { "$ref": "#/$defs/stringList" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "catalogVersion": { "$ref": "#/$defs/text" },
+        "surfaceBindingSnapshot": {
+          "type": "object",
+          "required": ["projectId", "surfaceId", "platform", "framework", "profileVersion", "profileId"],
+          "properties": {
+            "projectId": { "$ref": "#/$defs/id" },
+            "surfaceId": { "$ref": "#/$defs/id" },
+            "platform": { "enum": ["web", "mobile", "game"] },
+            "framework": { "$ref": "#/$defs/text" },
+            "profileVersion": { "enum": ["1"] },
+            "profileId": { "$ref": "#/$defs/id" }
+          },
+          "additionalProperties": false
+        },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "selectionMode": { "const": "adopt" } }, "required": ["selectionMode"] },
+          "then": { "properties": { "sourceAndLicenseEvidence": { "minItems": 2 } } }
+        }
+      ]
+    },
+    "adaptationPlan": {
+      "type": "object",
+      "required": ["schema", "planId", "receiptId", "receiptHash", "surfaceId", "componentFitBinding", "preservedStructure", "replacedComponents", "platformAdaptations", "tokenMappings", "accessibilityChanges", "licenseAndProvenanceNotes", "forbiddenCopying", "expectedVisualDifferences", "acceptanceChecks", "precedence", "revision", "status", "contentHash"],
+      "properties": {
+        "schema": { "const": "design-pipeline.adaptation-plan.v1" },
+        "planId": { "$ref": "#/$defs/id" },
+        "receiptId": { "$ref": "#/$defs/id" },
+        "receiptHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "surfaceId": { "$ref": "#/$defs/id" },
+        "componentFitBinding": {
+          "type": "object",
+          "required": ["region", "matrixHash", "platform", "framework"],
+          "properties": {
+            "region": { "$ref": "#/$defs/id" },
+            "matrixHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "platform": { "enum": ["web", "mobile", "game"] },
+            "framework": { "$ref": "#/$defs/text" },
+            "matrixStatus": { "enum": ["ready", "review", "blocked"] }
+          },
+          "additionalProperties": false
+        },
+        "preservedStructure": { "$ref": "#/$defs/stringList" },
+        "replacedComponents": { "$ref": "#/$defs/stringList" },
+        "platformAdaptations": { "allOf": [{ "$ref": "#/$defs/stringList" }, { "minItems": 2 }, { "contains": { "const": "respect-surface-platform-constraints" } }] },
+        "tokenMappings": { "$ref": "#/$defs/record" },
+        "accessibilityChanges": { "$ref": "#/$defs/stringList" },
+        "licenseAndProvenanceNotes": { "$ref": "#/$defs/stringList" },
+        "forbiddenCopying": { "allOf": [{ "$ref": "#/$defs/stringList" }, { "minItems": 1 }, { "contains": { "const": "do-not-copy-source-or-protected-content" } }] },
+        "expectedVisualDifferences": { "$ref": "#/$defs/stringList" },
+        "acceptanceChecks": { "allOf": [{ "$ref": "#/$defs/stringList" }, { "minItems": 1 }] },
+        "precedence": { "$ref": "#/$defs/stringList" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "status": { "enum": ["draft", "awaiting_review", "revised", "approved", "rejected"] },
+        "review": { "$ref": "#/$defs/record" },
+        "approval": { "$ref": "#/$defs/record" },
+        "revisedFrom": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

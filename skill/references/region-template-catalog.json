@@ -1,0 +1,84 @@
+{
+  "schema": "design-pipeline.region-template-catalog.v1",
+  "version": "1",
+  "entries": [
+    {
+      "schema": "design-pipeline.region-template.v1",
+      "templateId": "project-data-table-web-react",
+      "templateVersion": "1.0.0",
+      "regionKind": "data-table",
+      "capabilities": ["search", "filter", "sort"],
+      "layoutTraits": ["dense", "responsive", "accessible"],
+      "componentsUsed": ["semantic-table", "table-toolbar"],
+      "framework": "react",
+      "platform": "web",
+      "license": "project-owned",
+      "provenance": {
+        "source": "project-fixture",
+        "owner": "design-pipeline",
+        "reference": "task-3-fixture"
+      },
+      "adaptationBoundary": ["preserve-column-order", "preserve-filter-capabilities", "replace-project-data"],
+      "catalogStatus": "active",
+      "accessibility": true
+    },
+    {
+      "schema": "design-pipeline.region-template.v1",
+      "templateId": "project-dashboard-header-web-react",
+      "templateVersion": "1.0.0",
+      "regionKind": "header",
+      "capabilities": ["navigation"],
+      "layoutTraits": ["responsive", "accessible"],
+      "componentsUsed": ["semantic-nav", "skip-link"],
+      "framework": "react",
+      "platform": "web",
+      "license": "project-owned",
+      "provenance": {
+        "source": "project-fixture",
+        "owner": "design-pipeline",
+        "reference": "task-3-fixture"
+      },
+      "adaptationBoundary": ["preserve-navigation-order", "replace-brand-content"],
+      "catalogStatus": "active",
+      "accessibility": true
+    },
+    {
+      "schema": "design-pipeline.region-template.v1",
+      "templateId": "project-data-table-mobile-react-native",
+      "templateVersion": "1.0.0",
+      "regionKind": "data-table",
+      "capabilities": ["search", "filter", "sort"],
+      "layoutTraits": ["dense", "touch-friendly", "accessible"],
+      "componentsUsed": ["virtualized-list", "filter-sheet"],
+      "framework": "react-native",
+      "platform": "mobile",
+      "license": "project-owned",
+      "provenance": {
+        "source": "project-fixture",
+        "owner": "design-pipeline",
+        "reference": "task-3-fixture"
+      },
+      "adaptationBoundary": ["preserve-filter-capabilities", "replace-native-controls"],
+      "catalogStatus": "candidate",
+      "accessibility": true
+    },
+    {
+      "schema": "design-pipeline.region-template.v1",
+      "templateId": "attributed-data-table-web-vue",
+      "templateVersion": "1.0.0",
+      "regionKind": "data-table",
+      "capabilities": ["search", "filter"],
+      "layoutTraits": ["dense", "responsive"],
+      "componentsUsed": ["data-grid"],
+      "framework": "vue",
+      "platform": "web",
+      "license": "MIT",
+      "provenance": {
+        "source": "explicitly-attributed-fixture",
+        "attribution": "design-pipeline test fixture"
+      },
+      "adaptationBoundary": ["preserve-data-contract", "replace-grid-runtime"],
+      "catalogStatus": "candidate"
+    }
+  ]
+}

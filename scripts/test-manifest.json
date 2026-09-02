@@ -14,6 +14,7 @@
     "coderabbit-findings.test.cjs",
     "coderabbit-round-two.test.cjs",
     "component-state-matrix.test.cjs",
+    "component-fit-matrix.test.cjs",
     "component-capability.test.cjs",
     "component-first-boundaries.test.cjs",
     "component-first-gates.test.cjs",
@@ -32,6 +33,7 @@
     "adaptation.test.cjs",
     "direction-preview.test.cjs",
     "cli-routing.test.cjs",
+    "design-control-runtime.test.cjs",
     "job-route.test.cjs",
     "designmd-ingestion.test.cjs",
     "design-md-source.test.cjs",
@@ -74,6 +76,12 @@
     "web-evidence-adapter.test.cjs",
     "website-cloning-init.test.cjs",
     "skill-cli-handoff.test.cjs",
-    "claude-code-surface.test.cjs"
+    "claude-code-surface.test.cjs",
+    "skill-evals.test.cjs",
+    "guided-multi-surface-cli.test.cjs",
+    "surface-profile.test.cjs",
+    "guided-design-intake.test.cjs",
+    "region-template.test.cjs",
+    "surface-design-artifacts.test.cjs"
   ]
 }

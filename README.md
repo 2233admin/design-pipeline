@@ -37,7 +37,7 @@
 4. 支持网站克隆、设计系统合成、动效设计，每一步都有证据。
 5. 通过门禁系统确保设计质量，不达标就拦住。
 
-当前 `0.9.0` 正式版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
+当前 `0.10.0` 正式版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
 可安装、可验证的前端工具架：
 
 - 需求、`DESIGN.md`、`MOTION.md` 与 OpenSpec 变更生命周期；
@@ -111,6 +111,34 @@ node skill/scripts/check-design-foundation.cjs --project-root . --json
 
 `ready` 解锁实现。`synthesis-required` 需要补充设计。`invalid` 需要修复。
 
+## 引导式多 Surface 流程
+
+普通用户可以从一句话开始，并逐个回答四个核心问题（`audience.json`、`primary-actions.json`、
+`surface.json`、`success-criteria.json` 各保存一个回答对象）：
+
+```bash
+node skill/scripts/designer-pipeline.cjs intake start --artifact input.json --write --output brief-inferred.json --json
+node skill/scripts/designer-pipeline.cjs intake answer --artifact brief-inferred.json --answer audience.json --write --output brief-audience.json --json
+node skill/scripts/designer-pipeline.cjs intake answer --artifact brief-audience.json --answer primary-actions.json --write --output brief-actions.json --json
+node skill/scripts/designer-pipeline.cjs intake answer --artifact brief-actions.json --answer surface.json --write --output brief-surface.json --json
+node skill/scripts/designer-pipeline.cjs intake answer --artifact brief-surface.json --answer success-criteria.json --write --output brief-proposed.json --json
+node skill/scripts/designer-pipeline.cjs intake confirm --artifact brief-proposed.json --write --output brief.json --json
+```
+
+熟悉合同的专家可以走快速路径，先验证 Surface，再检索并审阅模板：
+
+```bash
+node skill/scripts/designer-pipeline.cjs surface validate --artifact surface.json --json
+node skill/scripts/designer-pipeline.cjs template search --catalog catalog.json --surface surface.json --request request.json --json
+node skill/scripts/designer-pipeline.cjs template select --selection selection.json --write --output receipt.json --json
+node skill/scripts/designer-pipeline.cjs template adapt --receipt receipt.json --context context.json --write --output plan.json --json
+node skill/scripts/designer-pipeline.cjs template review --plan plan.json --review review.json --write --output reviewed-plan.json --json
+node skill/scripts/designer-pipeline.cjs template approve --plan reviewed-plan.json --approval approval.json --write --output approved-plan.json --json
+```
+`template select` 只接受带 `changeRoot` 的方向预览证明，并从该目录重新读取并校验 `direction-preview.json` 及其引用文件；`changeRoot` 必须位于项目根目录内。`approval.json` 必须包含与待审批计划 `contentHash` 相同的 `planContentHash`。
+
+首轮只覆盖项目内的 Web 与 Mobile 证据和元数据，不承诺截图、URL、视觉嵌入或 Game 支持。
+
 ## 核心功能
 
 ### 可视化方向预览与中文排版
@@ -176,6 +204,34 @@ node skill/scripts/check-motion-foundation.cjs --project-root . --json
 `shadcn/ui`、`Shadcnblocks`、`Magic UI`、`Aceternity UI` 和 `AI SDK Elements`。
 它们记录在 `skill/references/component-source-catalog.json` 中，作为可搜索的灵感与组件来源；
 这些条目不是已安装依赖，实际接入前仍需核对源码、许可证、依赖、SSR/客户端边界和无障碍行为。
+组件 Fit 不再按全局“最佳组件库”做单次选择。方向选定后先生成 hash-bound `direction-lock.v1`，再生成
+`component-fit-matrix.v1`。矩阵以能力为粒度保留全部候选和六项门禁：`behavior`、`accessibility`、
+`framework`、`license`、`visualFit`、`provenance`。决策只能是 `reuse`、`adopt`、`substitute`、
+`custom` 或 `blocked`；`reference-only` 来源只能作为适配参考，不能直接变成依赖。多个 foundation
+候选必须显式锁定同一个系统，目录、Provider registry、项目组件清单和方向锁的 hash 漂移都会使矩阵失效。
+
+```bash
+# 从已批准方向和 selection receipt 生成方向锁
+node skill/scripts/designer-pipeline.cjs component lock \
+  --root ../my-project --artifact direction-lock-request.json \
+  --write --output direction-lock.json --json
+
+# 按能力评估全部组件来源，并绑定方向锁、目录和项目组件清单
+node skill/scripts/designer-pipeline.cjs component fit \
+  --root ../my-project --artifact component-fit-request.json \
+  --write --output component-fit-matrix.json --json
+```
+
+验证矩阵自身 hash；同时提供 `--direction-lock`、`--catalog`、`--providers`、`--inventory` 时，
+CLI 还会对当前输入做绑定校验，发现上游漂移即拒绝。
+
+```bash
+node skill/scripts/designer-pipeline.cjs component validate-fit \
+  --root ../my-project --artifact component-fit-matrix.json \
+  --direction-lock direction-lock.json --catalog component-source-catalog.json \
+  --providers component-providers.json --inventory component-inventory.json --json
+```
+
 
 ```bash
 # 与框架无关地分解表格能力，并自动补齐键盘、焦点、ARIA 和完整状态
@@ -249,8 +305,9 @@ node skill/scripts/designer-pipeline.cjs design-skill manifest \
   --root . --skill design.prototype --json
 ```
 
-`design.prototype` 只产生隔离 prototype；selection receipt、Component Conformance 和 Visual
-Acceptance 必须分开记录。production promotion 只生成显式 handoff，不会由 Design Skill 直接写入目标项目。
+`design.prototype` 先消费并验证 `design-pipeline.direction-preview.v1`，只把通过 preview gate 的
+候选复制到隔离 prototype；selection receipt、Component Conformance 和 Visual Acceptance 必须分开记录。
+production promotion 只生成显式 handoff，不会由 Design Skill 直接写入目标项目。
 
 ```bash
 # Web 应用 UI：优先返回 React Bits Pro，保留许可证审查
@@ -412,7 +469,7 @@ node skill/scripts/designer-pipeline.cjs adaptation check --root . --json
 node skill/scripts/designer-pipeline.cjs scene check --root . --change-root openspec/changes/example --json
 ```
 
-退出码：`0` 成功，`1` 无效输入，`2` 被阻止或验证失败。
+退出码：`0` 成功，`1` 无效输入，`2` 被阻止或验证失败，`3` 实测保真度不匹配。
 
 ## OpenSpec 对齐
 

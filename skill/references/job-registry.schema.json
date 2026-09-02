@@ -16,6 +16,11 @@
         "additionalProperties": false,
         "required": ["id", "activation", "priority", "keywords", "primaryKnowledge", "secondaries", "kernel"],
         "properties": {
+          "routeContracts": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
           "id": { "type": "string", "minLength": 1 },
           "activation": { "enum": ["explicit", "scored", "default"] },
           "priority": { "type": "integer", "minimum": 0 },

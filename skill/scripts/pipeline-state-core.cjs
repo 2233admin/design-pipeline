@@ -20,6 +20,8 @@ const STATE_V2 = "design-pipeline.state.v2";
 const V1_SCHEMAS = new Set(["design-pipeline.state.v1", "design-pipeline-state.v1"]);
 const REGISTRY_V2 = "design-pipeline.phases.v2";
 const V2_STATUSES = ["initialized", "planning", "ready", "implementing", "verifying", "complete", "blocked"];
+const CONTROL_PHASE_STATUSES = ["not_started", "running", "ready", "blocked", "synthesis_required", "inconclusive", "stale"];
+const CONTROL_OUTCOMES = ["complete", "blocked", "fidelity_limited", null];
 const PHASE_ALIASES = {
   "stage-0-repo-read": "repo-read",
   "stage-1-brief": "brief",
@@ -75,6 +77,35 @@ function validateFoundation(value, label) {
   }
   if (value.validator !== null) assertString(value.validator, `${label}.validator`, "pipeline state");
 }
+function validateControlProjection(control, label = "extensions.control") {
+  assertKeys(
+    control,
+    ["phaseStatus", "outcome"],
+    ["phaseStatus", "outcome", "currentPhase", "planId", "inputHash", "phases", "blockers", "nextActions", "staleCauses", "artifacts", "gates"],
+    label,
+    "pipeline state",
+  );
+  assertEnum(control.phaseStatus, CONTROL_PHASE_STATUSES, `${label}.phaseStatus`, "pipeline state");
+  assertEnum(control.outcome, CONTROL_OUTCOMES, `${label}.outcome`, "pipeline state");
+  for (const key of ["currentPhase", "planId", "inputHash"]) {
+    if (control[key] !== undefined && control[key] !== null) assertString(control[key], `${label}.${key}`, "pipeline state");
+  }
+  if (control.phases !== undefined && (control.phases === null || typeof control.phases !== "object" || Array.isArray(control.phases))) {
+    fail("pipeline state", `${label}.phases must be an object`);
+  }
+  if (control.blockers !== undefined) assertStringArray(control.blockers, `${label}.blockers`, "pipeline state");
+  if (control.nextActions !== undefined) assertStringArray(control.nextActions, `${label}.nextActions`, "pipeline state");
+  if (control.staleCauses !== undefined && (control.staleCauses === null || typeof control.staleCauses !== "object" || Array.isArray(control.staleCauses))) {
+    fail("pipeline state", `${label}.staleCauses must be an object`);
+  }
+  for (const key of ["artifacts", "gates"]) {
+    if (control[key] !== undefined && (control[key] === null || typeof control[key] !== "object" || Array.isArray(control[key]))) {
+      fail("pipeline state", `${label}.${key} must be an object`);
+    }
+  }
+  return control;
+}
+
 
 function validateV2(state, options = {}) {
   assertKeys(
@@ -104,6 +135,7 @@ function validateV2(state, options = {}) {
   if (!Array.isArray(state.evidence)) fail("pipeline state", "evidence must be an array");
   if (state.migration !== null) assertObject(state.migration, "migration", "pipeline state");
   assertObject(state.extensions, "extensions", "pipeline state");
+  if (state.extensions.control !== undefined) validateControlProjection(state.extensions.control);
   return state;
 }
 
@@ -240,6 +272,11 @@ function createEvent(state, input) {
 }
 
 function createInitialState(input) {
+  const control = input.control || (input.phaseStatus ? {
+    phaseStatus: input.phaseStatus,
+    outcome: input.outcome ?? null,
+    ...(input.controlFields || {}),
+  } : null);
   const state = {
     schema: STATE_V2,
     registryVersion: REGISTRY_V2,
@@ -255,7 +292,7 @@ function createInitialState(input) {
     sceneRuntime: null,
     evidence: [],
     migration: null,
-    extensions: {},
+    extensions: control ? { control } : {},
   };
   validateV2(state);
   return state;
@@ -427,6 +464,9 @@ function advanceChange(stateFile, eventsFile, input) {
       evidence: input.evidence,
       nextActions: input.nextActions,
     });
+    const control = input.control
+      ? { ...(current.state.extensions.control || {}), ...input.control }
+      : current.state.extensions.control;
     const state = {
       ...current.state,
       phase: targetPhase,
@@ -438,6 +478,7 @@ function advanceChange(stateFile, eventsFile, input) {
       nextActions: input.nextActions || [],
       foundations: input.foundations ? { ...current.state.foundations, ...input.foundations } : current.state.foundations,
       evidence: input.evidence?.length ? [...new Set([...current.state.evidence, ...input.evidence])] : current.state.evidence,
+      extensions: input.control ? { ...current.state.extensions, control } : current.state.extensions,
     };
     validateV2(state);
     const history = existingEvents.trimEnd();
@@ -576,6 +617,8 @@ function migrateFile(file, options = {}) {
 }
 
 module.exports = {
+  CONTROL_OUTCOMES,
+  CONTROL_PHASE_STATUSES,
   PHASE_ALIASES,
   REGISTRY_V2,
   STATE_V2,
@@ -596,6 +639,7 @@ module.exports = {
   repairChange,
   repairLegacyEvents,
   requireExpectedState,
+  validateControlProjection,
   validateState,
   validateV1,
   validateV2,
