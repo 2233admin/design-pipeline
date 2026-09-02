@@ -13,8 +13,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
+const { validateReleaseContract, formatReleaseContractResult } = require("./release-contract.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
+const releaseMode = process.env.RELEASE_MODE === "1";
 function parseArgs(argv) {
   const options = {};
   for (let index = 0; index < argv.length; index += 1) {
@@ -397,6 +399,12 @@ function publishArtifacts(tgz, zip) {
 }
 
 function main() {
+  if (releaseMode) {
+    const releaseTag =
+      process.env.GITHUB_REF_TYPE === "tag" ? process.env.GITHUB_REF_NAME : undefined;
+    const contract = validateReleaseContract(repoRoot, { version, tag: releaseTag });
+    if (!contract.ok) fail(formatReleaseContractResult(contract));
+  }
   if (!semverPattern.test(version)) {
     fail(`PACKAGE_VERSION must be valid SemVer: ${version}`);
   }

@@ -5,11 +5,6 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Package version label (without v)"
-        required: true
-        default: "0.0.0"
 
 permissions:
   contents: write
@@ -28,17 +23,17 @@ jobs:
 
       - name: Resolve version
         id: ver
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            version="$REQUESTED_VERSION"
-          else
-            version="${GITHUB_REF_NAME#v}"
-          fi
-          PACKAGE_VERSION="$version" node scripts/package.cjs --help >/dev/null
+          version="$(node -e 'process.stdout.write(require("node:fs").readFileSync("VERSION", "utf8").trim())')"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Validate release contract
+        run: |
+          args=(--version "${{ steps.ver.outputs.version }}" --json)
+          if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
+            args+=(--tag "$GITHUB_REF_NAME")
+          fi
+          node scripts/release-contract.cjs "${args[@]}"
 
       - name: QA
         run: node scripts/qa.cjs
@@ -49,6 +44,7 @@ jobs:
         run: node scripts/package.cjs --output-root dist
         env:
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
+          RELEASE_MODE: "1"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
