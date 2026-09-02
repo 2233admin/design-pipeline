@@ -203,6 +203,34 @@ node skill/scripts/check-motion-foundation.cjs --project-root . --json
 `shadcn/ui`、`Shadcnblocks`、`Magic UI`、`Aceternity UI` 和 `AI SDK Elements`。
 它们记录在 `skill/references/component-source-catalog.json` 中，作为可搜索的灵感与组件来源；
 这些条目不是已安装依赖，实际接入前仍需核对源码、许可证、依赖、SSR/客户端边界和无障碍行为。
+组件 Fit 不再按全局“最佳组件库”做单次选择。方向选定后先生成 hash-bound `direction-lock.v1`，再生成
+`component-fit-matrix.v1`。矩阵以能力为粒度保留全部候选和六项门禁：`behavior`、`accessibility`、
+`framework`、`license`、`visualFit`、`provenance`。决策只能是 `reuse`、`adopt`、`substitute`、
+`custom` 或 `blocked`；`reference-only` 来源只能作为适配参考，不能直接变成依赖。多个 foundation
+候选必须显式锁定同一个系统，目录、Provider registry、项目组件清单和方向锁的 hash 漂移都会使矩阵失效。
+
+```bash
+# 从已批准方向和 selection receipt 生成方向锁
+node skill/scripts/designer-pipeline.cjs component lock \
+  --root ../my-project --artifact direction-lock-request.json \
+  --write --output direction-lock.json --json
+
+# 按能力评估全部组件来源，并绑定方向锁、目录和项目组件清单
+node skill/scripts/designer-pipeline.cjs component fit \
+  --root ../my-project --artifact component-fit-request.json \
+  --write --output component-fit-matrix.json --json
+```
+
+验证矩阵自身 hash；同时提供 `--direction-lock`、`--catalog`、`--providers`、`--inventory` 时，
+CLI 还会对当前输入做绑定校验，发现上游漂移即拒绝。
+
+```bash
+node skill/scripts/designer-pipeline.cjs component validate-fit \
+  --root ../my-project --artifact component-fit-matrix.json \
+  --direction-lock direction-lock.json --catalog component-source-catalog.json \
+  --providers component-providers.json --inventory component-inventory.json --json
+```
+
 
 ```bash
 # 与框架无关地分解表格能力，并自动补齐键盘、焦点、ARIA 和完整状态
@@ -276,8 +304,9 @@ node skill/scripts/designer-pipeline.cjs design-skill manifest \
   --root . --skill design.prototype --json
 ```
 
-`design.prototype` 只产生隔离 prototype；selection receipt、Component Conformance 和 Visual
-Acceptance 必须分开记录。production promotion 只生成显式 handoff，不会由 Design Skill 直接写入目标项目。
+`design.prototype` 先消费并验证 `design-pipeline.direction-preview.v1`，只把通过 preview gate 的
+候选复制到隔离 prototype；selection receipt、Component Conformance 和 Visual Acceptance 必须分开记录。
+production promotion 只生成显式 handoff，不会由 Design Skill 直接写入目标项目。
 
 ```bash
 # Web 应用 UI：优先返回 React Bits Pro，保留许可证审查

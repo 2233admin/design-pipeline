@@ -482,6 +482,7 @@ Before writing design artifacts or code:
 - Check project `DESIGN.md` and `MOTION.md`; route missing or incompatible foundations through synthesis.
 - Resolve the frontend/tool/graphics plan with the governed CLI before invoking an external runtime. Probe first; do not install from a route result.
 - Use the design-system CLI to decompose capabilities and record adoption as `reference`, `adopt`, `substitute`, or `custom`.
+- Run `designer-pipeline component lock` from the approved direction selection, then run `designer-pipeline component fit` for each capability set. The resulting matrix must preserve direction-lock, catalog, project-inventory, and evidence hashes.
 - Initialize or update `state.json`, `events.jsonl`, and `handoff.md` through the existing state tools.
 
 Use `references/stages.md` for the full Stage 0 checklist and the required toolchain/execution commands.
@@ -517,6 +518,9 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
 designer-pipeline toolchain resolve --artifact toolchain-request.json --write --output toolchain-plan.json --json
 designer-pipeline design-system decompose --query "<brief>" --write --output capability-inventory.json --json
 designer-pipeline direction check --stage preview --change-root <change-root> --json
+designer-pipeline component lock --artifact direction-lock-request.json --write --output direction-lock.json --json
+designer-pipeline component fit --artifact component-fit-request.json --write --output component-fit-matrix.json --json
+designer-pipeline component validate-fit --artifact component-fit-matrix.json --json
 designer-pipeline reference check --change-root <change-root> --json
 designer-pipeline reconstruction check --stage final --change-root <change-root> --json
 designer-pipeline playground check --stage integration --change-root <change-root> --json

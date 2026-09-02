@@ -10,7 +10,7 @@ const { createArtifactMetadata, validateArtifactMetadata } = require("../skill/s
 const { invalidateDownstream } = require("../skill/scripts/invalidation-core.cjs");
 const { checkInteractionStateCoverage, APPLICABLE_STATES } = require("../skill/scripts/gate-core.cjs");
 const { createInitialState, validateV2, writeNewChange } = require("../skill/scripts/pipeline-state-core.cjs");
-const { loadArtifacts } = require("../skill/scripts/control-runtime-core.cjs");
+const { loadArtifacts, readPlan } = require("../skill/scripts/control-runtime-core.cjs");
 const { execute } = require("../skill/scripts/cli-core.cjs");
 
 function root() { return fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-control-")); }
@@ -32,12 +32,31 @@ test("plan compilation is deterministic and blocks missing intent", () => {
   assert.equal(blocked.status, "blocked");
   assert.equal(blocked.runnable, false);
   assert.equal(blocked.blockers[0].field, "targetScreen");
+  assert.throws(() => compileDesignPlan(manifest({ mode: 42 })), /mode must be a string/);
+  assert.throws(() => compileDesignPlan(manifest({ fidelity: false })), /fidelity must be a string/);
 });
 
 test("plan validation rejects cyclic or misordered persisted plans", () => {
   const base = compileDesignPlan(manifest());
   assert.throws(() => validatePlan({ ...base, phases: [{ ...base.phases[1], depends_on: [base.phases[0].id] }, base.phases[0], ...base.phases.slice(2)] }), /follow dependency/);
   assert.throws(() => validatePlan({ ...base, phases: base.phases.map((phase) => phase.id === "intent" ? { ...phase, depends_on: ["package"] } : phase) }), /cycle|follow dependency|unknown phase/);
+});
+
+test("persisted control plans must remain governed and runnable", () => {
+  const changeRoot = root();
+  const plan = compileDesignPlan(manifest());
+  const planFile = path.join(changeRoot, "plan.json");
+  fs.writeFileSync(planFile, JSON.stringify(plan));
+  assert.equal(readPlan(planFile).plan_id, plan.plan_id);
+  const forged = {
+    ...plan,
+    plan_id: "attacker",
+    input_hash: "sha256:" + "0".repeat(64),
+    manifest: undefined,
+    phases: [{ id: "fake", depends_on: [], inputs: [], outputs: [], gates: [] }],
+  };
+  fs.writeFileSync(planFile, JSON.stringify(forged));
+  assert.throws(() => readPlan(planFile), /runnable plan|registry|input_hash|phase/i);
 });
 
 test("artifact metadata validates contained hashes and reports drift", () => {
@@ -49,6 +68,7 @@ test("artifact metadata validates contained hashes and reports drift", () => {
   fs.writeFileSync(file, "changed\n");
   assert.equal(validateArtifactMetadata(metadata, { changeRoot }).status, "stale");
   assert.throws(() => createArtifactMetadata({ ...metadata, path: "../outside.json" }, { changeRoot, requireFile: false }), /outside|contained|stay inside/);
+  assert.throws(() => createArtifactMetadata({ ...metadata, artifact_hash: "sha256:" + "0".repeat(64) }, { changeRoot }), /does not match.*artifact file/i);
 });
 
 test("runtime reloads persisted artifact maps", () => {

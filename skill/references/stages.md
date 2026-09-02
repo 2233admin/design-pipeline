@@ -90,6 +90,8 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
 - Search the design-system catalog when reusable component, hook, template, documentation, or token
   knowledge could prevent reinvention. Record the adoption mode instead of silently importing a
   candidate system.
+- After a direction is selected, create a hash-valid `direction-lock.v1` with the selected preview and direction constraints. Run `designer-pipeline component fit` against the normalized component catalog and project inventory. The matrix evaluates `behavior`, `accessibility`, `framework`, `license`, `visualFit`, and `provenance` per capability; it may reuse project components, adopt verified providers, substitute platform/reference behavior, or block for custom implementation.
+- Never select one library globally for unrelated capabilities. A foundation candidate must be explicitly locked when more than one passes. Reference-only sources remain evidence and adaptation inputs, not direct dependencies. A `review` dimension is not an adoption approval.
 - Run `designer-pipeline design-system decide` with both the ready `frontendStackDecision` and the
   complete `capabilityInventory` embedded in the request, or reference their contained artifact
   paths with `frontendStackDecisionPath` and `capabilityInventoryPath`. A non-custom decision

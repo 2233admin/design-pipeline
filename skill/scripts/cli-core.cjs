@@ -74,6 +74,7 @@ const {
 const {
   decomposeCapabilities,
   normalizeDesignSystemSnapshot,
+  validateCatalog,
   searchCapabilities,
   searchDesignSystemCatalog,
 } = require("./design-system-catalog-core.cjs");
@@ -129,6 +130,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
+  "--direction-lock", "--providers",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
@@ -358,8 +360,8 @@ function publicHelp() {
     "  evidence check|capture",
     "  verify motion|components | --gate <gate> --artifact <file>",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
+    "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
-    "  component decompose|providers|resolve|inventory|bind|decide|verify",
     "  mengto search|verify",
     "  shadcnio search|verify",
     "  prism search|route|verify",
@@ -718,7 +720,7 @@ function verifyCommand(parsed, root, action) {
     let result;
     if (gate === "state-coverage" || gate === "interaction-states") result = checkInteractionStateCoverage(readJson(file, "interaction state matrix"));
     else if (gate === "artifact") result = validateArtifactMetadata(readJson(file, "artifact metadata"), { changeRoot: option(parsed, "--change-root") ? changeRootFrom(parsed, root) : root, requireFile: true });
-    else if (gate === "plan") result = { status: "passed", plan: validatePlan(readJson(file, "design plan")) };
+    else if (gate === "plan") result = { status: "passed", plan: validatePlan(readJson(file, "design plan"), { requireRunnable: true }) };
     else fail("cli", `unknown verify gate ${gate}`, { code: "UNKNOWN_GATE" });
     return { result, exitCode: result.status === "passed" || result.status === "ready" ? 0 : result.status === "fidelity-limited" ? 3 : 2 };
   }
@@ -786,7 +788,10 @@ function designMdCatalog(parsed, root) {
 }
 
 function componentSourceCatalog(parsed, root) {
-  if (option(parsed, "--catalog")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--catalog"), "component source catalog"));
+  if (option(parsed, "--catalog")) {
+    const catalog = readJson(artifact(parsed, root, "--catalog"), "component source catalog");
+    return catalog.schema === "design-pipeline.design-system-catalog.v1" ? validateCatalog(catalog) : normalizeDesignSystemSnapshot(catalog);
+  }
   if (option(parsed, "--snapshot")) return normalizeDesignSystemSnapshot(readJson(artifact(parsed, root, "--snapshot"), "component source snapshot"));
   return bundledComponentSourceCatalog();
 }
@@ -1097,6 +1102,37 @@ function componentCommand(parsed, root, action) {
     const output = writeResult(parsed, root, plan);
     return { result: { status: plan.status, plan, ...(output ? { output } : {}) }, exitCode: 0 };
   }
+  if (action === "lock") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "direction lock request");
+    const lock = createDirectionLock(request);
+    const output = writeResult(parsed, root, lock);
+    return { result: { status: lock.status, lock, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
+  if (action === "fit") {
+    const request = readJson(artifact(parsed, root, "--artifact"), "component fit request");
+    if (option(parsed, "--catalog")) request.catalog = componentSourceCatalog(parsed, root);
+    else if (!request.catalog) request.catalog = componentSourceCatalog(parsed, root);
+    if (option(parsed, "--providers")) request.providers = readJson(artifact(parsed, root, "--providers"), "component provider registry");
+    else if (!request.providers) request.providers = providers;
+    if (option(parsed, "--inventory")) request.project = readJson(artifact(parsed, root, "--inventory"), "component inventory");
+    if (option(parsed, "--framework")) request.framework = option(parsed, "--framework");
+    if (option(parsed, "--platform")) request.platform = option(parsed, "--platform");
+    request.capabilityRegistry = capabilities;
+    const matrix = buildComponentFitMatrix(request);
+    const output = writeResult(parsed, root, matrix);
+    return { result: { status: matrix.status, matrix, ...(output ? { output } : {}) }, exitCode: matrix.status === "ready" ? 0 : 2 };
+  }
+  if (action === "validate-fit") {
+    const matrix = readJson(artifact(parsed, root, "--artifact"), "component fit matrix");
+    const validation = validateComponentFitMatrix(matrix, {
+      ...(option(parsed, "--direction-lock") ? { directionLock: readJson(artifact(parsed, root, "--direction-lock"), "direction lock") } : {}),
+      ...(option(parsed, "--catalog") ? { catalog: componentSourceCatalog(parsed, root) } : {}),
+      ...(option(parsed, "--providers") ? { providers: readJson(artifact(parsed, root, "--providers"), "component provider registry") } : {}),
+      ...(option(parsed, "--inventory") ? { project: readJson(artifact(parsed, root, "--inventory"), "component inventory") } : {}),
+    });
+    const output = writeResult(parsed, root, validation);
+    return { result: { status: "valid", matrix: validation, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
   if (action === "decide") {
     const plan = readJson(artifact(parsed, root, "--artifact"), "component binding plan");
     const inventory = readJson(artifact(parsed, root, "--inventory"), "component inventory");
@@ -1314,13 +1350,14 @@ function designSkillCommand(parsed, root, action) {
     return { result: { status: "ready", manifest }, exitCode: 0 };
   }
   if (action === "run") {
-    const result = runDesignSkill(requireOption(parsed, "--skill"), readJson(artifact(parsed, root, "--artifact"), "design skill input"), { effects: option(parsed, "--effect") ? [option(parsed, "--effect")] : undefined });
+    const result = runDesignSkill(requireOption(parsed, "--skill"), readJson(artifact(parsed, root, "--artifact"), "design skill input"), { projectRoot: root, effects: option(parsed, "--effect") ? [option(parsed, "--effect")] : undefined });
+    const status = result.result?.status || "complete";
     const output = writeOptionalJson(parsed, root, result.result);
-    return { result: { status: "complete", ...result, ...(output ? { output } : {}) }, exitCode: 0 };
+    return { result: { status, ...result, ...(output ? { output } : {}) }, exitCode: ["complete", "selected", "awaiting-selection"].includes(status) ? 0 : 2 };
   }
   if (action === "select") {
     const prototypeSet = readJson(artifact(parsed, root, "--artifact"), "prototype set");
-    const selection = selectPrototype(prototypeSet, readJson(artifact(parsed, root, "--selection"), "prototype selection"));
+    const selection = selectPrototype(prototypeSet, readJson(artifact(parsed, root, "--selection"), "prototype selection"), { projectRoot: root });
     const output = writeOptionalJson(parsed, root, selection);
     return { result: { status: "selected", ...selection, ...(output ? { output } : {}) }, exitCode: 0 };
   }
@@ -1447,15 +1484,25 @@ function templateSelectionCommand(parsed, root) {
       changeRoot,
     };
   } else {
-    previewProof = input.directionPreview || input.directionPreviewSelection || input.validatedDirectionPreview;
-    const artifact = previewProof?.artifact || previewProof?.previewArtifact || previewProof?.receipt || (
-      previewProof?.schema === "design-pipeline.direction-preview.v1"
-        ? Object.fromEntries(["schema", "changeId", "applicability", "comparison", "directions", "decision"].map((key) => [key, previewProof[key]]))
+    const suppliedPreview = input.directionPreview || input.directionPreviewSelection || input.validatedDirectionPreview;
+    if (suppliedPreview?.changeRoot !== undefined) {
+      return { result: { status: "blocked", reason: "direction preview changeRoot is not accepted without --change-root" }, exitCode: 2 };
+    }
+    const artifact = suppliedPreview?.artifact || suppliedPreview?.previewArtifact || suppliedPreview?.receipt || (
+      suppliedPreview?.schema === "design-pipeline.direction-preview.v1"
+        ? Object.fromEntries(["schema", "changeId", "applicability", "comparison", "directions", "decision"].map((key) => [key, suppliedPreview[key]]))
         : null
     );
     if (!artifact) fail("cli", "direction preview artifact is required");
     preview = checkDirectionPreview(null, { receipt: artifact, stage: "selection" });
-    previewArtifactSha256 = previewProof.artifactSha256 || previewProof.previewArtifactSha256 || previewProof.bindingHash;
+    previewArtifactSha256 = suppliedPreview.artifactSha256 || suppliedPreview.previewArtifactSha256 || suppliedPreview.bindingHash;
+    const contentHash = suppliedPreview.contentHash || suppliedPreview.previewContentHash || suppliedPreview.previewArtifactContentHash;
+    previewProof = {
+      artifact,
+      artifactSha256: previewArtifactSha256,
+      contentHash,
+      directionLockSnapshot: suppliedPreview.directionLockSnapshot || suppliedPreview.selectedLockSnapshot || suppliedPreview.lock || lock,
+    };
   }
   if (!lock || lock.previewArtifactSha256 !== previewArtifactSha256) {
     return { result: { status: "blocked", reason: "direction lock is not bound to the validated direction-preview artifact", preview }, exitCode: 2 };

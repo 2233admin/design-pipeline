@@ -10,16 +10,25 @@ function normalizeState(state) { return String(state).replaceAll("_", "-"); }
 
 function stateDeclarations(entry) {
   const raw = entry.states ?? entry.coverage;
-  if (Array.isArray(raw)) return Object.fromEntries(raw.map((state) => [normalizeState(state), { applicable: true, covered: false }]));
-  if (!isObject(raw)) fail("state coverage", "entry.states must be an array or object");
-  const declarations = {};
-  for (const [state, value] of Object.entries(raw)) {
+  const declarations = Object.create(null);
+  const setDeclaration = (state, value) => {
     const key = normalizeState(state);
-    if (isObject(value)) declarations[key] = { ...value, applicable: value.applicable !== false, covered: value.covered === true };
-    else declarations[key] = { applicable: value === true, covered: false };
+    if (["__proto__", "constructor", "prototype"].includes(key)) fail("state coverage", `reserved state key ${key} is not allowed`);
+    declarations[key] = value;
+  };
+  if (Array.isArray(raw)) {
+    raw.forEach((state) => setDeclaration(state, { applicable: true, covered: false }));
+    return declarations;
+  }
+  if (!isObject(raw)) fail("state coverage", "entry.states must be an array or object");
+  for (const [state, value] of Object.entries(raw)) {
+    setDeclaration(state, isObject(value)
+      ? { ...value, applicable: value.applicable !== false, covered: value.covered === true }
+      : { applicable: value === true, covered: false });
   }
   if (isObject(entry.applicability)) for (const [state, value] of Object.entries(entry.applicability)) {
     const key = normalizeState(state);
+    if (["__proto__", "constructor", "prototype"].includes(key)) fail("state coverage", `reserved state key ${key} is not allowed`);
     declarations[key] = { ...(declarations[key] || {}), applicable: value === true || (isObject(value) && value.applicable === true), reason: isObject(value) ? value.reason : undefined };
   }
   return declarations;

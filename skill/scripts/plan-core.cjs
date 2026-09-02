@@ -26,6 +26,11 @@ function firstString(...values) {
 
 function normalizeIntentManifest(manifest) {
   assertObject(manifest, "manifest", "design plan");
+  for (const key of ["mode", "fidelity"]) {
+    if (Object.hasOwn(manifest, key) && typeof manifest[key] !== "string") {
+      fail("design plan", `${key} must be a string`);
+    }
+  }
   const target = isObject(manifest.target) ? manifest.target : {};
   const intent = isObject(manifest.intent) ? manifest.intent : {};
   const normalized = {
@@ -90,7 +95,7 @@ function loadControlPhaseRegistry(registryFile = DEFAULT_REGISTRY_FILE) {
   return { schema: registry.schema, registryId: CONTROL_REGISTRY, phases };
 }
 
-function validatePlan(plan) {
+function validatePlan(plan, options = {}) {
   assertObject(plan, "plan", "design plan");
   for (const key of ["schema", "schema_version", "plan_id", "input_hash", "mode", "fidelity", "phases"]) {
     if (!Object.hasOwn(plan, key)) fail("design plan", `plan is missing ${key}`);
@@ -137,6 +142,19 @@ function validatePlan(plan) {
     visited.add(id);
   }
   for (const phase of plan.phases) visit(phase.id);
+  if (options.requireRunnable) {
+    for (const key of ["status", "runnable", "registry", "manifest"]) {
+      if (!Object.hasOwn(plan, key)) fail("design plan", `runnable plan is missing ${key}`);
+    }
+    if (plan.status !== "ready" || plan.runnable !== true) fail("design plan", "only a ready runnable plan may be executed");
+    if (plan.registry !== CONTROL_REGISTRY) fail("design plan", `registry must be ${CONTROL_REGISTRY}`);
+    const registry = loadControlPhaseRegistry(options.registryFile || DEFAULT_REGISTRY_FILE);
+    if (canonicalJson(plan.phases) !== canonicalJson(registry.phases)) fail("design plan", "plan phases do not match the governed control registry");
+    const { normalized } = normalizeIntentManifest(plan.manifest);
+    const expectedInputHash = hashText(canonicalJson({ manifest: normalized, registry: registry.phases }));
+    if (plan.input_hash !== expectedInputHash) fail("design plan", "plan input_hash does not match its manifest and governed registry");
+    if (plan.plan_id !== `dpp-${sha256(plan.input_hash).slice(0, 20)}`) fail("design plan", "plan_id does not match its input_hash");
+  }
   return plan;
 }
 

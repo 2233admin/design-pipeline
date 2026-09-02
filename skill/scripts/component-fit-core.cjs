@@ -15,6 +15,74 @@ const FRAMEWORKS = new Set(["agnostic", "react", "vue", "nuxt", "svelte", "solid
 const HASH = /^[a-f0-9]{64}$/;
 const PROVIDER_REGISTRY_KEYS = new Set(["schema", "version", "reviewedAt", "providers"]);
 const PROVIDER_KEYS = new Set(["id", "label", "frameworks", "interfaces", "capabilities", "packages", "mode", "status", "source"]);
+const PROJECT_INVENTORY_KEYS = new Set(["schema", "status", "framework", "projectRoot", "declarationFile", "components", "componentInventory"]);
+const PROJECT_COMPONENT_KEYS = new Set(["id", "file", "framework", "capabilities", "provenance", "accessibility", "status"]);
+const PROJECT_COMPONENT_STATUSES = new Set(["ready", "review", "blocked"]);
+
+function assertFramework(value, label) {
+  assertString(value, label);
+  if (!FRAMEWORKS.has(value)) fail("component-fit", `${label} has an unsupported framework`);
+}
+
+function normalizeProjectInventory(source, fallbackFramework) {
+  const input = source === undefined || source === null ? {} : source;
+  const isArray = Array.isArray(input);
+  if (!isArray) assertObject(input, "project component inventory");
+  if (!isArray && Object.keys(input).some((key) => !PROJECT_INVENTORY_KEYS.has(key))) {
+    fail("component-fit", "project component inventory contains unsupported fields");
+  }
+  if (!isArray && input.schema !== undefined && input.schema !== "design-pipeline.component-inventory.v1") {
+    fail("component-fit", "project component inventory schema is unsupported");
+  }
+  const governed = !isArray && input.schema !== undefined;
+  if (governed) {
+    if (input.status !== "ready") fail("component-fit", "project component inventory status must be ready");
+    if (!Object.hasOwn(input, "framework") || !Object.hasOwn(input, "projectRoot") || !Object.hasOwn(input, "declarationFile") || !Object.hasOwn(input, "components")) {
+      fail("component-fit", "project component inventory is missing required fields");
+    }
+  } else if (!isArray && input.status !== undefined && !PROJECT_COMPONENT_STATUSES.has(input.status)) {
+    fail("component-fit", "project component inventory status is invalid");
+  }
+  const inheritedFramework = !isArray && input.framework !== undefined ? input.framework : fallbackFramework;
+  if (!isArray && input.projectRoot !== undefined) assertString(input.projectRoot, "project component inventory projectRoot");
+  if (!isArray && input.declarationFile !== undefined && input.declarationFile !== null) assertString(input.declarationFile, "project component inventory declarationFile");
+  if (!isArray && input.components !== undefined && input.componentInventory !== undefined) {
+    fail("component-fit", "project component inventory cannot define both components and componentInventory");
+  }
+  const inventory = isArray ? input : input.componentInventory ?? input.components ?? [];
+  if (governed) assertFramework(inheritedFramework, "project component inventory framework");
+  else if (inventory.length && inheritedFramework !== undefined && inheritedFramework !== null) assertFramework(inheritedFramework, "project component inventory framework");
+  const seen = new Set();
+  const components = inventory.map((component, index) => {
+    assertObject(component, `project component ${index}`);
+    if (Object.keys(component).some((key) => !PROJECT_COMPONENT_KEYS.has(key))) {
+      fail("component-fit", `project component ${index} contains unsupported fields`);
+    }
+    assertString(component.id, `project component ${index}.id`);
+    if (seen.has(component.id)) fail("component-fit", `duplicate project component ${component.id}`);
+    seen.add(component.id);
+    if (component.file !== undefined) assertString(component.file, `project component ${component.id}.file`);
+    const framework = component.framework ?? inheritedFramework;
+    assertFramework(framework, `project component ${component.id}.framework`);
+    assertStringArray(component.capabilities, `project component ${component.id}.capabilities`, { unique: true });
+    assertString(component.provenance, `project component ${component.id}.provenance`);
+    if (component.accessibility !== undefined
+      && typeof component.accessibility !== "boolean"
+      && typeof component.accessibility !== "string"
+      && !isObject(component.accessibility)
+      && !Array.isArray(component.accessibility)) {
+      fail("component-fit", `project component ${component.id}.accessibility is invalid`);
+    }
+    if (component.status !== undefined && !PROJECT_COMPONENT_STATUSES.has(component.status)) {
+      fail("component-fit", `project component ${component.id}.status is invalid`);
+    }
+    return sortValue({ ...component, framework });
+  }).sort((a, b) => a.id.localeCompare(b.id) || canonicalJson(a).localeCompare(canonicalJson(b)));
+  if (isArray) return { components, array: true };
+  const document = { ...input, components };
+  delete document.componentInventory;
+  return { components, array: false, document: sortValue(document) };
+}
 const UNSPECIFIC_LICENSES = new Set(["unverified", "mixed", "unknown", "unspecified", "undisclosed"]);
 
 function assertObject(value, label) {
@@ -127,23 +195,27 @@ function evidenceStatus(entry) {
   return entry.routing?.evidenceStatus || "unverified";
 }
 
+function hasAccessibilitySignal(value) {
+  if (value === true) return true;
+  if (typeof value !== "string") return false;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized || /\b(?:not|no|never|unverified|unsupported|inaccessible|failed|fail|missing|none)\b/.test(normalized)) return false;
+  return /verified|accessible|keyboard|focus|aria|reduced[- ]motion/.test(normalized);
+}
 function hasAccessibleSignal(entry) {
   const explicit = entry.alignment?.accessibility;
-  if (explicit === true || (typeof explicit === "string" && /verified|accessible|keyboard|focus|aria|reduced[- ]motion/i.test(explicit))) return true;
+  if (explicit !== undefined) return hasAccessibilitySignal(explicit);
   const values = [
     entry.alignment?.quality,
     entry.routing?.fallback,
     entry.routing?.description,
     ...(entry.componentInventory || []).flatMap((item) => Object.values(item)),
   ];
-  const haystack = JSON.stringify(values).toLowerCase();
-  return ["accessible", "keyboard", "focus", "reducedmotion", "reduced-motion", "aria"].some((term) => haystack.includes(term));
+  return values.some((value) => hasAccessibilitySignal(typeof value === "string" ? value : JSON.stringify(value)));
 }
-
 function candidateKeywords(entry) {
   return JSON.stringify({ name: entry.name, category: entry.category, routing: entry.routing, alignment: entry.alignment }).toLowerCase();
 }
-
 function visualFitStatus(entry, directionLock) {
   const id = entry.id;
   if (directionLock.rejectedSources?.includes(id)) return { status: "fail", reason: "direction lock rejects this source" };
@@ -157,6 +229,20 @@ function visualFitStatus(entry, directionLock) {
     return { status: "pass", reason: "source metadata matches a locked visual keyword" };
   }
   return { status: "review", reason: "visual fit requires comparison against the locked direction" };
+}
+function projectComponents(normalized) {
+  return normalized.components.map((component) => ({
+    id: component.id,
+    capabilities: [...component.capabilities].sort(),
+    framework: component.framework,
+    accessibility: component.accessibility || null,
+    provenance: component.provenance,
+    status: component.status || "ready",
+  }));
+}
+
+function projectInventoryDocument(normalized) {
+  return normalized.array ? normalized.components : normalized.document;
 }
 
 function fitDimension(entry, capability, dimension, request, directionLock) {
@@ -180,7 +266,7 @@ function fitDimension(entry, capability, dimension, request, directionLock) {
     return { status: "review", reason: "accessibility behavior requires implementation verification" };
   }
   if (dimension === "license") {
-    const license = typeof entry.provenance?.license === "string" ? entry.provenance.license.toLowerCase() : null;
+    const license = typeof entry.provenance?.license === "string" ? entry.provenance.license.trim().toLowerCase() : null;
     if (entry.routing?.requiresLicense || (license && UNSPECIFIC_LICENSES.has(license))) return { status: "review", reason: "license or commercial terms require project review" };
     if (!nonEmpty(entry.provenance?.license)) return { status: "fail", reason: "source has no license declaration" };
     return { status: "pass", reason: "source license is declared" };
@@ -205,28 +291,6 @@ function candidateStatus(dimensions) {
 }
 
 
-function projectComponents(input) {
-  const inventory = input.project?.componentInventory || input.project?.components || [];
-  if (!Array.isArray(inventory)) fail("component-fit", "project.componentInventory must be an array");
-  return inventory.filter(isObject).map((component) => ({
-    id: component.id,
-    capabilities: Array.isArray(component.capabilities) ? [...component.capabilities].sort() : [],
-    framework: component.framework || input.framework || null,
-    accessibility: component.accessibility || null,
-    provenance: component.provenance || "unverified",
-  })).filter((component) => nonEmpty(component.id))
-    .sort((a, b) => a.id.localeCompare(b.id) || canonicalJson(a).localeCompare(canonicalJson(b)));
-}
-function projectInventoryDocument(source) {
-  const inventory = Array.isArray(source) ? source : source?.componentInventory || source?.components || [];
-  if (!Array.isArray(inventory) || !inventory.every(isObject)) fail("component-fit", "project component inventory must contain objects");
-  const components = inventory.map((component) => sortValue(component))
-    .sort((a, b) => String(a.id || "").localeCompare(String(b.id || "")) || canonicalJson(a).localeCompare(canonicalJson(b)));
-  if (Array.isArray(source)) return components;
-  const document = { ...source, components };
-  delete document.componentInventory;
-  return sortValue(document);
-}
 
 function projectCandidate(component, capability, request, directionLock) {
   const pseudoEntry = {
@@ -242,7 +306,12 @@ function projectCandidate(component, capability, request, directionLock) {
   dimensions.provenance = component.provenance === "project-declared"
     ? { status: "pass", reason: "project component capability is explicitly declared" }
     : { status: "review", reason: "project component capability declaration is missing" };
-  const status = candidateStatus(dimensions);
+  const computedStatus = candidateStatus(dimensions);
+  const status = component.status === "blocked"
+    ? "blocked"
+    : component.status === "review" && computedStatus === "ready"
+      ? "review"
+      : computedStatus;
   return { id: pseudoEntry.id, source: "project", name: component.id, role: "project-owned", status, dimensions, entry: pseudoEntry };
 }
 function summarizeCandidate(entry, capability, request, directionLock) {
@@ -277,7 +346,7 @@ function providerCandidates(providers, capability, request, directionLock) {
         platforms: [request.platform],
       },
       provenance: {
-        license: provider.mode === "project-owned" ? "project-owned" : provider.license || (provider.status === "ready" ? "registry-governed" : "unverified"),
+        license: provider.mode === "project-owned" ? "project-owned" : provider.license || null,
         source: provider.source || provider.id,
         url: provider.source || null,
       },
@@ -319,7 +388,19 @@ function providerCandidates(providers, capability, request, directionLock) {
 function candidateDecision(candidates, capability, directionLock) {
   const ready = candidates.filter((candidate) => candidate.status === "ready");
   if (!ready.length) {
-    return { capability, action: candidates.length ? "blocked" : "custom", candidate: null, reason: candidates.length ? "no candidate passes all fit dimensions" : "no catalog or project candidate declares this capability", blockers: candidates.flatMap((candidate) => Object.entries(candidate.dimensions).filter(([, value]) => value.status === "fail").map(([dimension, value]) => ({ candidate: candidate.id, dimension, reason: value.reason }))) };
+    const hasCandidates = candidates.length > 0;
+    const blockers = candidates.flatMap((candidate) => Object.entries(candidate.dimensions)
+      .filter(([, value]) => value.status === "fail")
+      .map(([dimension, value]) => ({ candidate: candidate.id, dimension, reason: value.reason })));
+    return {
+      capability,
+      action: hasCandidates ? "blocked" : "custom",
+      candidate: null,
+      reason: hasCandidates
+        ? "no candidate passes all fit dimensions"
+        : "no catalog or project candidate declares this capability",
+      blockers,
+    };
   }
   const reusable = ready.find((candidate) => candidate.role === "project-owned");
   if (reusable) return { capability, action: "reuse", candidate: reusable.id, reason: "project-owned component passes the fit gates", blockers: [] };
@@ -335,8 +416,12 @@ function candidateDecision(candidates, capability, directionLock) {
   }
   const preferred = directionLock.foundationId ? ready.find((candidate) => candidate.id === directionLock.foundationId) : null;
   const selected = preferred || foundation[0] || ready[0];
-  const action = selected.role === "platform-fallback" ? "substitute" : selected.role === "reference-only" ? "substitute" : "adopt";
-  return { capability, action, candidate: selected.id, reason: action === "adopt" ? "candidate passes all fit gates" : "candidate is a fallback/reference and must remain project-owned", blockers: [] };
+  let action = "adopt";
+  if (selected.role === "platform-fallback" || selected.role === "reference-only") action = "substitute";
+  const reason = action === "adopt"
+    ? "candidate passes all fit gates"
+    : "candidate is a fallback/reference and must remain project-owned";
+  return { capability, action, candidate: selected.id, reason, blockers: [] };
 }
 
 function providerEntries(input) {
@@ -394,6 +479,14 @@ function normalizedProviderDocument(source, providers) {
 function normalizedCatalogDocument(catalog) {
   return sortValue({ ...catalog, entries: [...catalog.entries].sort((a, b) => a.id.localeCompare(b.id)) });
 }
+function validateComponentCatalogRouting(catalog) {
+  for (const entry of catalog.entries) {
+    if (entry.routing !== undefined) assertObject(entry.routing, `catalog entry ${entry.id}.routing`);
+    for (const key of ["capabilities", "platforms"]) {
+      if (entry.routing?.[key] !== undefined) assertStringArray(entry.routing[key], `catalog entry ${entry.id}.routing.${key}`, { unique: true });
+    }
+  }
+}
 
 function buildComponentFitMatrix(input) {
   assertObject(input, "component fit request");
@@ -402,14 +495,18 @@ function buildComponentFitMatrix(input) {
   const catalog = input.catalog?.schema === "design-pipeline.design-system-catalog.v1"
     ? validateCatalog(input.catalog)
     : normalizeDesignSystemSnapshot(input.catalog);
+  validateComponentCatalogRouting(catalog);
   const providers = providerEntries(input);
   const providerDocument = normalizedProviderDocument(input.providers || [], providers);
   assertStringArray(input.capabilities, "capabilities", { unique: true });
   const capabilities = [...new Set(input.capabilities)].sort();
   if (!capabilities.length) fail("component-fit", "capabilities must not be empty");
-  const request = { framework: input.framework || input.project?.framework || null, platform: input.platform || "web", project: input.project || {} };
-  const project = projectComponents(input);
-  const projectInventory = projectInventoryDocument(input.project || {});
+  assertString(input.framework, "component fit framework");
+  if (input.platform !== undefined) assertString(input.platform, "component fit platform");
+  const request = { framework: input.framework, platform: input.platform || "web", project: input.project || {} };
+  const normalizedProject = normalizeProjectInventory(input.project, request.framework);
+  const project = projectComponents(normalizedProject);
+  const projectInventory = projectInventoryDocument(normalizedProject);
   const entries = catalog.entries.filter((entry) => entry.kind === "component" && (!request.platform || !entryPlatforms(entry).length || entryPlatforms(entry).includes(request.platform)));
   const rows = capabilities.map((capability) => {
     const candidates = [
@@ -420,26 +517,53 @@ function buildComponentFitMatrix(input) {
     const decision = candidateDecision(candidates, capability, directionLock);
     return { capability, candidates, decision };
   });
+  const foundationCandidates = [...new Set(rows.flatMap((row) => row.candidates.filter((candidate) => candidate.role === "foundation").map((candidate) => candidate.id)))].sort();
+  const foundationReadyCandidates = [...new Set(rows.flatMap((row) => row.candidates.filter((candidate) => candidate.role === "foundation" && candidate.status === "ready").map((candidate) => candidate.id)))].sort();
+  const foundationUnknown = directionLock.foundationId && !foundationCandidates.includes(directionLock.foundationId);
+  const foundationAmbiguous = foundationReadyCandidates.length > 1 && !directionLock.foundationId;
+  if (foundationAmbiguous) {
+    const blockers = foundationReadyCandidates.map((candidate) => ({ candidate, dimension: "foundation", reason: "foundation coherence requires an explicit choice" }));
+    for (const row of rows) {
+      row.decision = {
+        capability: row.capability,
+        action: "blocked",
+        candidate: null,
+        reason: "multiple ready foundation sources require one explicit lock",
+        blockers,
+      };
+    }
+  }
   const decisions = rows.map((row) => row.decision);
   const hasBlocked = decisions.some((decision) => decision.action === "blocked");
   const hasCustom = decisions.some((decision) => decision.action === "custom");
   const hasSubstitute = decisions.some((decision) => decision.action === "substitute");
-  const foundationCandidates = [...new Set(rows.flatMap((row) => row.candidates.filter((candidate) => candidate.role === "foundation").map((candidate) => candidate.id)))].sort();
-  const foundationReadyCandidates = [...new Set(rows.flatMap((row) => row.candidates.filter((candidate) => candidate.role === "foundation" && candidate.status === "ready").map((candidate) => candidate.id)))].sort();
-  const foundationCatalogCandidates = entries.filter((entry) => classifyRole(entry) === "foundation").map((entry) => entry.id).sort();
   const foundationSelection = directionLock.foundationId || (foundationReadyCandidates.length === 1 ? foundationReadyCandidates[0] : null);
-  const foundationUnknown = directionLock.foundationId && !foundationCatalogCandidates.includes(directionLock.foundationId);
-  const foundationAmbiguous = foundationReadyCandidates.length > 1 && !directionLock.foundationId;
-  const status = hasBlocked || hasCustom || foundationUnknown || foundationAmbiguous ? "blocked" : hasSubstitute ? "review" : "ready";
+  const foundationSelectionNotReady = Boolean(foundationSelection && !foundationReadyCandidates.includes(foundationSelection));
+  let status = "ready";
+  if (hasBlocked || hasCustom || foundationUnknown || foundationAmbiguous || foundationSelectionNotReady) {
+    status = "blocked";
+  } else if (hasSubstitute) {
+    status = "review";
+  }
+  let foundationCoherence = "requires-selection";
+  let foundationBlocker = null;
+  if (foundationUnknown) {
+    foundationCoherence = "blocked";
+    foundationBlocker = { candidate: directionLock.foundationId, reason: "direction lock names an unknown foundation source" };
+  } else if (foundationAmbiguous) {
+    foundationCoherence = "blocked";
+    foundationBlocker = { candidates: foundationReadyCandidates, reason: "multiple ready foundation sources require one explicit lock" };
+  } else if (foundationSelectionNotReady) {
+    foundationCoherence = "blocked";
+    foundationBlocker = { candidate: foundationSelection, reason: "selected foundation source is not ready" };
+  } else if (foundationSelection) {
+    foundationCoherence = "locked";
+  }
   const foundation = {
     candidates: foundationCandidates,
     selected: foundationSelection,
-    coherence: foundationUnknown || foundationAmbiguous ? "blocked" : foundationSelection ? "locked" : "requires-selection",
-    blocker: foundationUnknown
-      ? { candidate: directionLock.foundationId, reason: "direction lock names an unknown foundation source" }
-      : foundationAmbiguous
-        ? { candidates: foundationReadyCandidates, reason: "multiple ready foundation sources require one explicit lock" }
-        : null,
+    coherence: foundationCoherence,
+    blocker: foundationBlocker,
   };
   const body = sortValue({
     schema: FIT_SCHEMA,
@@ -469,10 +593,44 @@ function buildComponentFitMatrix(input) {
   });
   return sortValue({ ...body, matrixHash: sha256(canonicalJson(body)) });
 }
+function validateDecisionCandidate(decision, candidate, label, selectedFoundation) {
+  if (["reuse", "adopt", "substitute"].includes(decision.action) && !candidate) {
+    fail("component-fit", `${label} references an unknown candidate`);
+  }
+  if (decision.action === "reuse" && candidate.role !== "project-owned") fail("component-fit", `${label} reuse requires a project-owned candidate`);
+  if (decision.action === "adopt" && ["project-owned", "reference-only", "platform-fallback"].includes(candidate.role)) {
+    fail("component-fit", `${label} adopt is invalid for candidate role ${candidate.role}`);
+  }
+  if (decision.action === "adopt" && candidate.role === "foundation" && selectedFoundation !== null && candidate.id !== selectedFoundation) {
+    fail("component-fit", `${label} adopt conflicts with the selected foundation`);
+  }
+  if (decision.action === "substitute" && !["reference-only", "platform-fallback"].includes(candidate.role)) {
+    fail("component-fit", `${label} substitute requires a reference or platform fallback`);
+  }
+  if (["reuse", "adopt", "substitute"].includes(decision.action) && candidate.status !== "ready") {
+    fail("component-fit", `${label} decision requires a ready candidate`);
+  }
+}
+function deriveFoundationState(rows, selected) {
+  const candidates = [...new Set(rows.flatMap((row) => row.candidates.filter((candidate) => candidate.role === "foundation").map((candidate) => candidate.id)))].sort();
+  const readyCandidates = [...new Set(rows.flatMap((row) => row.candidates.filter((candidate) => candidate.role === "foundation" && candidate.status === "ready").map((candidate) => candidate.id)))].sort();
+  const unknownSelection = selected !== null && !candidates.includes(selected);
+  const invalidSelection = selected !== null && !readyCandidates.includes(selected);
+  const ambiguous = readyCandidates.length > 1 && selected === null;
+  const missingSelection = readyCandidates.length === 1 && selected === null;
+  const blocked = unknownSelection || invalidSelection || ambiguous || missingSelection;
+  return {
+    candidates,
+    selected,
+    coherence: blocked ? "blocked" : selected ? "locked" : "requires-selection",
+    blocked,
+  };
+}
 function validateMatrixShape(matrix) {
   if (matrix.schema !== FIT_SCHEMA || matrix.version !== 1 || !["ready", "review", "blocked"].includes(matrix.status)) fail("component-fit", "component fit matrix header is invalid");
   for (const [key, label] of [["catalogHash", "matrix.catalogHash"], ["providerHash", "matrix.providerHash"], ["projectHash", "matrix.projectHash"], ["matrixHash", "matrix.matrixHash"]]) assertHash(matrix[key], label);
-  if (!nonEmpty(matrix.platform) || (matrix.framework !== null && !nonEmpty(matrix.framework))) fail("component-fit", "matrix platform/framework is invalid");
+  assertString(matrix.platform, "matrix.platform");
+  assertString(matrix.framework, "matrix.framework");
   assertObject(matrix.directionLock, "matrix.directionLock");
   assertString(matrix.directionLock.directionId, "matrix.directionLock.directionId");
   assertHash(matrix.directionLock.directionLockHash, "matrix.directionLock.directionLockHash");
@@ -482,6 +640,7 @@ function validateMatrixShape(matrix) {
   if (matrix.foundation.selected !== null) assertString(matrix.foundation.selected, "matrix.foundation.selected");
   if (!["locked", "requires-selection", "blocked"].includes(matrix.foundation.coherence)) fail("component-fit", "matrix.foundation.coherence is invalid");
   assertStringArray(matrix.capabilities, "matrix.capabilities", { unique: true });
+  if (!matrix.capabilities.length) fail("component-fit", "matrix.capabilities must not be empty");
   if (!Array.isArray(matrix.rows) || matrix.rows.length !== matrix.capabilities.length) fail("component-fit", "matrix.rows must cover every capability");
   const seenCapabilities = new Set();
   const rowsByCapability = new Map();
@@ -493,19 +652,26 @@ function validateMatrixShape(matrix) {
     rowsByCapability.set(row.capability, row);
     if (!Array.isArray(row.candidates)) fail("component-fit", `matrix row ${row.capability} candidates must be an array`);
     const candidateIds = new Set();
+    const candidatesById = new Map();
     for (const candidate of row.candidates) {
       assertObject(candidate, "matrix candidate");
       assertString(candidate.id, "matrix candidate.id");
       if (candidateIds.has(candidate.id)) fail("component-fit", `duplicate matrix candidate ${candidate.id}`);
       candidateIds.add(candidate.id);
+      candidatesById.set(candidate.id, candidate);
       if (!ROLES.has(candidate.role) || !["ready", "review", "blocked"].includes(candidate.status)) fail("component-fit", "matrix candidate role/status is invalid");
       assertObject(candidate.dimensions, "matrix candidate.dimensions");
+      if (Object.keys(candidate.dimensions).length !== DIMENSIONS.length || DIMENSIONS.some((dimension) => !Object.hasOwn(candidate.dimensions, dimension))) {
+        fail("component-fit", `matrix candidate ${candidate.id} dimensions are invalid`);
+      }
       for (const dimension of DIMENSIONS) {
         if (!DIMENSION_STATUSES.has(candidate.dimensions[dimension]?.status)) fail("component-fit", `matrix candidate ${candidate.id} has invalid ${dimension} status`);
       }
+      if (candidate.status !== candidateStatus(candidate.dimensions)) fail("component-fit", `matrix candidate ${candidate.id} status contradicts its dimension statuses`);
     }
     assertObject(row.decision, `matrix row ${row.capability} decision`);
     validateMatrixDecision(row.decision, row.capability, candidateIds, `matrix row ${row.capability} decision`);
+    validateDecisionCandidate(row.decision, candidatesById.get(row.decision.candidate), `matrix row ${row.capability} decision`, matrix.foundation.selected);
   }
   if (seenCapabilities.size !== matrix.capabilities.length || matrix.capabilities.some((capability) => !seenCapabilities.has(capability))) fail("component-fit", "matrix rows do not match capabilities");
   if (!Array.isArray(matrix.decisions) || matrix.decisions.length !== matrix.rows.length) fail("component-fit", "matrix.decisions must cover every capability");
@@ -516,9 +682,21 @@ function validateMatrixShape(matrix) {
     if (!row || seenDecisions.has(decision.capability)) fail("component-fit", "matrix decisions do not match rows");
     seenDecisions.add(decision.capability);
     const candidateIds = new Set(row.candidates.map((candidate) => candidate.id));
+    const candidate = row.candidates.find((item) => item.id === decision.candidate);
     validateMatrixDecision(decision, decision.capability, candidateIds, "matrix decision");
-    if (decision.action !== row.decision.action || decision.candidate !== row.decision.candidate) fail("component-fit", `matrix decision ${decision.capability} disagrees with row decision`);
+    validateDecisionCandidate(decision, candidate, "matrix decision", matrix.foundation.selected);
+    if (canonicalJson(decision) !== canonicalJson(row.decision)) fail("component-fit", `matrix decision ${decision.capability} disagrees with row decision`);
   }
+  const foundationState = deriveFoundationState(matrix.rows, matrix.foundation.selected);
+  if (canonicalJson(matrix.foundation.candidates) !== canonicalJson(foundationState.candidates)
+    || matrix.foundation.coherence !== foundationState.coherence) {
+    fail("component-fit", "matrix foundation state contradicts candidates");
+  }
+  const hasBlocked = matrix.decisions.some((decision) => decision.action === "blocked");
+  const hasCustom = matrix.decisions.some((decision) => decision.action === "custom");
+  const hasSubstitute = matrix.decisions.some((decision) => decision.action === "substitute");
+  const expectedStatus = foundationState.blocked || hasBlocked || hasCustom ? "blocked" : hasSubstitute ? "review" : "ready";
+  if (matrix.status !== expectedStatus) fail("component-fit", "matrix status contradicts rows and foundation");
   assertStringArray(matrix.constraints, "matrix.constraints", { unique: true });
 }
 function validateMatrixDecision(decision, capability, candidateIds, label) {
@@ -553,8 +731,9 @@ function validateComponentFitMatrix(matrix, options = {}) {
     if (sha256(canonicalJson(normalizedProviderDocument(options.providers, providers))) !== matrix.providerHash) fail("component-fit", "component fit matrix provider binding is stale");
   }
   if (options.project) {
-    const normalizedProject = projectInventoryDocument(options.project);
-    if (sha256(canonicalJson(normalizedProject)) !== matrix.projectHash) fail("component-fit", "component fit matrix project binding is stale");
+    const normalizedProject = normalizeProjectInventory(options.project, matrix.framework);
+    const projectInventory = projectInventoryDocument(normalizedProject);
+    if (sha256(canonicalJson(projectInventory)) !== matrix.projectHash) fail("component-fit", "component fit matrix project binding is stale");
   }
   return sortValue(matrix);
 }

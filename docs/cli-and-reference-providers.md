@@ -30,6 +30,7 @@ doctor
 status
 change init|resume|advance|migrate|repair
 foundation check
+component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify
 component-first check|stack|components|playground|page
 high-fidelity check
 scene check
@@ -52,6 +53,13 @@ Stage commands are read-only. `high-fidelity check` delegates to the v1 componen
 aggregate for compatibility; it does not claim that typography, layout, motion, or visual fidelity
 passed. Browser evidence is produced externally, then path/hash/PNG-decoded by adapters before pure
 gates evaluate it. Hash binding prevents mismatch and stale reuse but is not producer attestation.
+`component lock` creates a hash-bound `direction-lock.v1` from an approved direction selection.
+`component fit` evaluates every requested capability against project components, the governed provider
+registry, and the inert component-source catalog. It records behavior, accessibility, framework,
+license, visual-fit, and provenance statuses per candidate, then emits only `reuse`, `adopt`,
+`substitute`, `custom`, or `blocked` decisions. `component validate-fit` always checks the matrix
+self-hash; pass `--direction-lock`, `--catalog`, `--providers`, and `--inventory` to check current
+upstream bindings as well.
 
 `source add` is intentionally deferred until an attributed provider contract exists. It returns a
 stable `COMMAND_DEFERRED` error rather than performing an implicit fetch.

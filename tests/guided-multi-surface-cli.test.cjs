@@ -559,6 +559,13 @@ test("blocks selection until the brief is confirmed and gates approved plans", (
   const hashOnly = execute(["template", "select", "--root", root, "--selection", "hash-only-preview.json", "--json"]);
   assert.equal(hashOnly.exitCode, 1);
   assert.match(hashOnly.output.error.message, /direction preview artifact/i);
+  put(root, "external-preview-root.json", {
+    ...selectionInput,
+    directionPreview: { ...makeDirectionPreview(), changeRoot: path.join(os.tmpdir(), "outside-preview-root") },
+  });
+  const externalPreviewRoot = execute(["template", "select", "--root", root, "--selection", "external-preview-root.json", "--json"]);
+  assert.equal(externalPreviewRoot.exitCode, 2);
+  assert.match(externalPreviewRoot.output.reason, /changeRoot|--change-root/);
   assert.match(aliasMismatch.output.reason, /direction-lock|direction lock/i);
 
   put(root, "selection-identity-mismatch.json", { ...selectionInput, projectId: "p2" });

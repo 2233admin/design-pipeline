@@ -61,8 +61,13 @@ function createArtifactMetadata(input, options = {}) {
   if (Number.isNaN(new Date(input.created_at).getTime())) fail("artifact", "created_at must be a valid date-time");
   const root = path.resolve(options.changeRoot || process.cwd());
   const file = artifactPath(root, input.path, { mustExist: options.requireFile !== false });
-  const artifactHash = input.artifact_hash || hashArtifactFile(file);
-  if (!validHash(artifactHash)) fail("artifact", "artifact_hash must be sha256 and the artifact file must exist");
+  const actualArtifactHash = hashArtifactFile(file);
+  if (!validHash(actualArtifactHash)) fail("artifact", "artifact_hash must be sha256 and the artifact file must exist");
+  if (input.artifact_hash !== undefined) {
+    if (!validHash(input.artifact_hash)) fail("artifact", "artifact_hash must be sha256");
+    if (input.artifact_hash.toLowerCase() !== actualArtifactHash.toLowerCase()) fail("artifact", "artifact_hash does not match the artifact file");
+  }
+  const artifactHash = actualArtifactHash;
   const metadata = {
     schema: ARTIFACT_SCHEMA,
     schema_version: 1,
@@ -77,7 +82,7 @@ function createArtifactMetadata(input, options = {}) {
   if (input.required !== undefined) metadata.required = input.required === true;
   if (input.stale_cause) metadata.stale_cause = input.stale_cause;
   if (input.reason) metadata.reason = input.reason;
-  validateArtifactMetadata(metadata, { changeRoot: root, requireFile: options.requireFile !== false, checkHash: false });
+  validateArtifactMetadata(metadata, { changeRoot: root, requireFile: options.requireFile !== false, checkHash: true });
   return metadata;
 }
 

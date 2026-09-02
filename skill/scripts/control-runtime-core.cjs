@@ -25,7 +25,7 @@ function readState(changeRoot) {
 
 function readPlan(planFile) {
   const plan = readJson(planFile, "design plan");
-  validatePlan(plan);
+  validatePlan(plan, { requireRunnable: true });
   return plan;
 }
 

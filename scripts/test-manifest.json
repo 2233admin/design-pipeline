@@ -14,6 +14,7 @@
     "coderabbit-findings.test.cjs",
     "coderabbit-round-two.test.cjs",
     "component-state-matrix.test.cjs",
+    "component-fit-matrix.test.cjs",
     "component-capability.test.cjs",
     "component-first-boundaries.test.cjs",
     "component-first-gates.test.cjs",

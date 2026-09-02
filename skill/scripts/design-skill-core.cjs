@@ -1,12 +1,16 @@
 "use strict";
 
-const { canonicalJson, isObject, nonEmpty, sha256 } = require("./contract-utils.cjs");
+const fs = require("node:fs");
+const path = require("node:path");
+const { canonicalJson, isObject, nonEmpty, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
+const { checkDirectionPreview } = require("./direction-preview-core.cjs");
 const { promotionReceipt, selectionReceipt, checkV2Artifact } = require("./component-first-v2-core.cjs");
 
 const MANIFEST_SCHEMA = "design-pipeline.design-skill-manifest.v1";
 const PROTOTYPE_SCHEMA = "prototype-set.v1";
 const HANDOFF_SCHEMA = "design-promotion-handoff.v1";
 const EFFECTS = new Set(["reference-only", "repository-read", "artifact-write", "plan-write", "sandbox-write", "target-write", "browser-execute", "dependency-install", "external-execute"]);
+const SHA256 = /^[0-9a-f]{64}$/;
 const ROUTES = Object.freeze({
   "design.prototype": { effects: ["reference-only", "repository-read", "sandbox-write", "plan-write"], outputSchema: PROTOTYPE_SCHEMA, handoffSchema: "component-first-selection-receipt.v1", gate: "human-selection", versionApplicability: "not-applicable" },
   "design.review": { effects: ["reference-only", "repository-read", "plan-write"], outputSchema: "review-report.v1", handoffSchema: "review-report.v1", gate: "human-review", versionApplicability: "not-applicable" },
@@ -63,14 +67,120 @@ function enforceEffects(manifest, requestedEffects = manifest.effects) {
   return { status: "allowed", effects: requestedEffects };
 }
 
-function runPrototype(input) {
+function loadDirectionPreview(input, options = {}) {
   assertObject(input, "prototype input");
-  if (!Array.isArray(input.directions) || input.directions.length < 3) fail("design.prototype requires at least three directions");
-  const ids = input.directions.map((direction) => { assertObject(direction, "direction"); assertNonEmpty(direction.id, "direction.id"); return direction.id; });
-  if (new Set(ids).size !== ids.length) fail("prototype directions must have distinct ids");
-  const prototypeSet = { schema: PROTOTYPE_SCHEMA, status: "awaiting-selection", target: input.target || { kind: "sandbox", root: "." }, policy: input.policy || { id: "component-first-default", version: 1 }, directions: input.directions.map((direction) => ({ ...direction, isolated: true })) };
-  return { ...prototypeSet, prototypeSetHash: hash(prototypeSet), promotion: "blocked-until-selection" };
+  assertNonEmpty(input.changeRoot, "prototype changeRoot");
+  const projectRoot = options.projectRoot || process.cwd();
+  const changeRoot = resolveInside(projectRoot, input.changeRoot, "prototype changeRoot", { scope: "design.prototype", mustExist: true });
+  const artifact = input.artifact || "direction-preview.json";
+  const artifactPath = resolveInside(changeRoot, artifact, "direction preview artifact", { scope: "design.prototype", mustExist: false });
+  let preview;
+  try {
+    preview = checkDirectionPreview(changeRoot, { artifact, stage: "preview" });
+  } catch (error) {
+    preview = { status: "blocked", applicable: true, blockers: [error.message || "direction preview is invalid"] };
+  }
+  let ready = preview.status === "ready";
+  let receipt = null;
+  if (ready) {
+    try {
+      receipt = readJson(artifactPath, "direction preview");
+    } catch (error) {
+      preview = { status: "blocked", applicable: true, blockers: [error.message || "direction preview is invalid"] };
+      ready = false;
+    }
+  }
+  return {
+    changeRoot,
+    artifactPath,
+    artifactSha256: ready ? sha256(fs.readFileSync(artifactPath)) : null,
+    receipt,
+    preview,
+  };
 }
+
+function runPrototype(input, options = {}) {
+  const loaded = loadDirectionPreview(input, options);
+  const { receipt, preview } = loaded;
+  const previewBinding = {
+    status: preview.status,
+    changeRoot: path.relative(options.projectRoot || loaded.changeRoot, loaded.changeRoot).split(path.sep).join("/") || ".",
+    artifact: path.relative(loaded.changeRoot, loaded.artifactPath).split(path.sep).join("/"),
+    artifactSha256: loaded.artifactSha256,
+    viewport: receipt?.comparison?.viewport || null,
+    contentFixtureSha256: receipt?.comparison?.contentFixtureSha256 || null,
+    stateCoverage: receipt?.comparison?.stateCoverage || [],
+  };
+  if (preview.status !== "ready" || preview.applicable === false) {
+    const target = input.target || { kind: "sandbox", root: "." };
+    const policy = input.policy || { id: "component-first-default", version: 1 };
+    const reason = preview.applicable === false ? "direction-preview-waived" : "direction-preview-required";
+    return {
+      schema: PROTOTYPE_SCHEMA,
+      status: "blocked",
+      reason,
+      blockers: preview.blockers.length ? preview.blockers : ["design.prototype requires an applicable direction preview with candidates"],
+      target,
+      policy,
+      directions: [],
+      preview: previewBinding,
+      promotion: "blocked-until-preview",
+    };
+  }
+  const prototypeSet = {
+    schema: PROTOTYPE_SCHEMA,
+    status: "awaiting-selection",
+    target: input.target || { kind: "sandbox", root: "." },
+    policy: input.policy || { id: "component-first-default", version: 1 },
+    directions: receipt.directions.map((direction) => ({ ...direction, isolated: true })),
+    preview: previewBinding,
+    promotion: "blocked-until-selection",
+  };
+  return { ...prototypeSet, prototypeSetHash: hash(prototypeSet) };
+}
+
+function runDesignSkill(skill, input, options = {}) {
+  const manifest = manifests()[skill];
+  if (!manifest) fail(`unknown skill ${String(skill)}`, "UNKNOWN_SKILL");
+  enforceEffects(manifest, options.effects || manifest.effects);
+  if (skill === "design.prototype") return { manifest, result: runPrototype(input, options) };
+  if (skill === "design.review") return { manifest, result: runReview(input, "review") };
+  if (skill === "design.audit") return { manifest, result: runReview(input, "audit") };
+  return { manifest, result: runLibraryPicker(input) };
+}
+
+function verifyPrototypePreview(prototypeSet, projectRoot) {
+  const binding = prototypeSet.preview;
+  assertNonEmpty(binding.changeRoot, "prototype preview changeRoot");
+  assertNonEmpty(binding.artifact, "prototype preview artifact");
+  const loaded = loadDirectionPreview({ changeRoot: binding.changeRoot, artifact: binding.artifact }, { projectRoot });
+  if (loaded.preview.status !== "ready" || loaded.artifactSha256 !== binding.artifactSha256 || !loaded.receipt) {
+    fail("prototype set direction preview is stale or unverified", "DIRECTION_PREVIEW_STALE");
+  }
+  const expectedDirections = loaded.receipt.directions.map((direction) => ({ ...direction, isolated: true }));
+  if (canonicalJson(expectedDirections) !== canonicalJson(prototypeSet.directions)) {
+    fail("prototype set directions do not match the verified direction preview", "DIRECTION_PREVIEW_STALE");
+  }
+}
+
+function selectPrototype(prototypeSet, input, options = {}) {
+  assertObject(prototypeSet, "prototype set");
+  if (prototypeSet.schema !== PROTOTYPE_SCHEMA || prototypeSet.status !== "awaiting-selection" || !Array.isArray(prototypeSet.directions)) {
+    fail("prototype set schema, status, or directions are invalid", "PROTOTYPE_INVALID");
+  }
+  if (!isObject(prototypeSet.preview) || prototypeSet.preview.status !== "ready" || !SHA256.test(prototypeSet.preview.artifactSha256 || "")) {
+    fail("prototype selection requires a ready direction preview", "DIRECTION_PREVIEW_REQUIRED");
+  }
+  if (!SHA256.test(prototypeSet.prototypeSetHash || "")) fail("prototype set hash is invalid", "PROTOTYPE_HASH_INVALID");
+  const { prototypeSetHash, ...prototypeBody } = prototypeSet;
+  if (hash(prototypeBody) !== prototypeSetHash) fail("prototype set hash is stale", "PROTOTYPE_STALE");
+  verifyPrototypePreview(prototypeSet, options.projectRoot || process.cwd());
+  assertObject(input, "selection");
+  const selected = prototypeSet.directions.find((direction) => direction.id === input.selectedPrototypeId);
+  if (!selected) fail("selected prototype does not exist", "SELECTION_INVALID");
+  return selectionReceipt({ prototypeSetHash, selectedPrototypeId: selected.id, targetIdentityDigest: input.targetIdentityDigest, snapshotDigest: input.snapshotDigest, policyDigest: input.policyDigest, approvedBy: input.approvedBy });
+}
+
 
 function runReview(input, kind) {
   assertObject(input, `${kind} input`);
@@ -99,24 +209,6 @@ function versionApplicable(range, version) {
   return range.startsWith("^") ? aMajor === major && (aMinor > minor || (aMinor === minor && aPatch >= patch)) : aMajor === major && aMinor === minor && aPatch === patch;
 }
 
-function runDesignSkill(skill, input, options = {}) {
-  const manifest = manifests()[skill];
-  if (!manifest) fail(`unknown skill ${String(skill)}`, "UNKNOWN_SKILL");
-  enforceEffects(manifest, options.effects || manifest.effects);
-  if (skill === "design.prototype") return { manifest, result: runPrototype(input) };
-  if (skill === "design.review") return { manifest, result: runReview(input, "review") };
-  if (skill === "design.audit") return { manifest, result: runReview(input, "audit") };
-  return { manifest, result: runLibraryPicker(input) };
-}
-
-function selectPrototype(prototypeSet, input) {
-  assertObject(prototypeSet, "prototype set");
-  if (prototypeSet.schema !== PROTOTYPE_SCHEMA || prototypeSet.status !== "awaiting-selection") fail("prototype set is not selectable");
-  assertObject(input, "selection");
-  const selected = prototypeSet.directions.find((direction) => direction.id === input.selectedPrototypeId);
-  if (!selected) fail("selected prototype does not exist", "SELECTION_INVALID");
-  return selectionReceipt({ prototypeSetHash: prototypeSet.prototypeSetHash, selectedPrototypeId: selected.id, targetIdentityDigest: input.targetIdentityDigest, snapshotDigest: input.snapshotDigest, policyDigest: input.policyDigest, approvedBy: input.approvedBy });
-}
 
 function promotePrototype(v2Artifact, selection, input) {
   const conformance = checkV2Artifact(v2Artifact, input?.options || {});
