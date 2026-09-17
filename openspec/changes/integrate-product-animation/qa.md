@@ -74,4 +74,8 @@ Review批修后的最新MP4另由主控通过file://正常速重播至20秒ended
 
 DESIGN/MOTION foundation checkers 均 ready；单一 paused timeline，`window.film` API 保留。三个 JSON 使用现有 route/toolchain CLI 按20秒 brief 刷新；jobPlanSha256 为 `049f30bb12828c861924cbe2953538b29a0a05d60f7302605f33d7eeba13582b`。toolchain resolve 返回预期 exit 2 / `blocked`：HyperFrames 为 catalog review，未伪造准入。
 
-共享 pipeline 与旧滚动 showcase 未编辑；无外部发布、真实交易或依赖升级。切片freeze后，主控于2026-09-17T14:59:16Z运行根`node scripts/qa.cjs`：668/668测试、82个文件、11/11 installed-package smoke、可重现包及工作树status byte-identical全部通过；本轮日志摘要和SHA在`evidence/qa-task.json`。`openspec validate integrate-product-animation --strict` exit 0。目的树同步前24个用户文件hash及status均与本轮baseline一致。目的树同步后检查另行记录，旧历史集成结果不冒充本轮结果。CERE-482仍等待用户视觉接受。
+共享 pipeline 与旧滚动 showcase 未编辑；无外部发布、真实交易或依赖升级。切片freeze后，主控于2026-09-17T14:59:16Z运行根`node scripts/qa.cjs`：668/668测试、82个文件、11/11 installed-package smoke、可重现包及status byte-identical全部通过；摘要和日志SHA在`evidence/qa-task.json`。`openspec validate integrate-product-animation --strict` exit 0。
+
+实现提交`733c8e9`已ff-only同步osprey，2026-09-17T15:02:18Z目的树QA通过714/714测试（84文件）及11/11 installed smoke，见`evidence/qa-osprey.json`。本轮同步后的24个原用户文件hash和status byte-identical，见`evidence/osprey-before.json`与`osprey-preserved.json`。目的树MP4 SHA与上述最终成片一致；file:// watch实际加载duration20、seekable[0,20]，seek18后播放至20 ended且无媒体错误。
+
+Multica CERE-482已追加本轮实施/验证证据并补记遗漏，保持in_progress等待用户视觉接受；不因本地提交或规格制作done关闭票。此后仅收口文档与回执，不改已验证影片源码、播放器或MP4。

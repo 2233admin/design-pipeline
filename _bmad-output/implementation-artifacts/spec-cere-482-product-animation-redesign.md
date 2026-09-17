@@ -2,7 +2,7 @@
 title: CERE-482 产品动画返工
 type: bugfix
 created: 2026-09-17
-status: in-review
+status: done
 baseline_commit: a96d588a4770e09902e9c7a0c28951d7ae83f15c
 review_loop_iteration: 0
 context: []
@@ -60,7 +60,9 @@ context: []
 
 ## Verification
 
-目标目录`npm run lint/check/render/verify`均exit 0：最终receipt为2026-09-17T14:56:30.688Z，H.264、20秒、600帧。主控原速完整观看0→20 ended、零掉帧；最终MP4 SHA256为`f258e4184ef372842ae34d6311af3eb3533cf6c92d068b415d0c19d7e0a09414`。技术通过不等于用户视觉接受，后者仍pending；OMP及含混开关未验收。最终根`node scripts/qa.cjs`通过668/668测试与11/11已安装CLI smoke；严格OpenSpec校验exit 0。osprey同步后证据待本地集成完成回填。
+目标目录lint、check、render、verify均exit 0：最终receipt为2026-09-17T14:56:30.688Z，H.264、20秒、600帧。主控原速完整观看0→20 ended、零掉帧；最终MP4 SHA256为`f258e4184ef372842ae34d6311af3eb3533cf6c92d068b415d0c19d7e0a09414`。源根QA为668/668测试与11/11已安装CLI smoke；严格OpenSpec校验exit 0。实现提交`733c8e9`快进同步osprey后，该树QA为714/714与11/11通过；24个原用户文件hash及status byte-identical，成片SHA相同，离线watch实际seek18并播放至20 ended。证据见OpenSpec的`evidence/qa-task.json`、`qa-osprey.json`和`osprey-preserved.json`。
+
+本规格done仅指已批准制作与技术验证完成；用户视觉接受仍pending，Multica CERE-482保持in_progress，OMP及含混开关未验收。冻结块保留批准前意图原文，不作为当前执行状态。无story_key，跳过sprint-status同步。
 
 ## Suggested Review Order
 

@@ -35,6 +35,8 @@ review批修还包括原生控件末态安全区、播放器真实失败/恢复�
 
 ## 集成与收尾归属
 
-工作树 `D:/projects/design-pipeline/product-animation-integration`；目的树 `D:/projects/design-pipeline/osprey`。旧历史集成 SHA/旧 24 文件保留证据不能证明本轮新状态；主控负责最终根 QA、严格 OpenSpec 校验、实时目的树用户文件保全证据、提交/集成决策及既有 Multica CERE-482 的更新。实现切片不执行这些跨工作树操作。
+工作树`D:/projects/design-pipeline/product-animation-integration`，目的树`D:/projects/design-pipeline/osprey`。实现提交`733c8e9`已ff-only集成；源根QA668/668、目的树QA714/714，两树11/11安装CLI smoke通过，严格OpenSpec有效。新证据在本change的`evidence/qa-task.json`、`qa-osprey.json`、`osprey-before.json`、`osprey-preserved.json`。目的树24个用户文件hash与status均保持原样；其完整MP4哈希与最终receipt一致，离线watch已实测加载、seek18及播放到20 ended。
 
-无 reset、clean、discard、顺手提交用户修改。主控必须依据 live 状态保留所有无关 dirty/untracked 文件。任务状态留在现有 Multica，不另开票。KB 无新通用结论可写；本轮只修作品与目标证据，不把审美失败包装成新治理基础设施。
+无reset、clean、discard、外部push或顺手提交用户修改。Multica CERE-482已补实施/验证记录，保持in_progress。规格done仅表示本次获批制作完成，不代表用户视觉接受或OMP/含混开关功能验收。下一步先看完整片并收用户反馈，不回到共享pipeline或第二参考项目。
+
+服务器Range和GSAP thenable摩擦已在目标README/QA记录；本机rhizome无sources registry，crux降级无命中，因此未冒选KB落点或新建治理设施。

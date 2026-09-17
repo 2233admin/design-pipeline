@@ -12,5 +12,5 @@ Old integration checkmarks belong to the rejected 24-second film. Their original
 - [x] Coordinator watches the complete encoded 20-second film through ended; record observations separately from technical proof.
 - [x] Update target design/motion/story/readme and OpenSpec contracts/QA/handoff without changing shared pipeline or user showcase.
 - [x] Main agent runs final repository QA and strict OpenSpec validation after all slices freeze.
-- [ ] Main agent records live osprey preservation/integration evidence and updates existing Multica CERE-482.
+- [x] Main agent records live osprey preservation/integration evidence and updates existing Multica CERE-482.
 - [ ] Receive explicit user visual acceptance; until then do not mark CERE-482 done.
