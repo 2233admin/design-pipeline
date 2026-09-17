@@ -1,5 +1,11 @@
 # Product animation verification
 
+> **User rejection, 2026-09-17:** “这个效果肯定是不对的，做的跟 PPT 一样”.
+> Visual acceptance is NOT passed. Earlier self-review scores and completion language below are
+> historical agent assessments, superseded by this feedback. Technical measurements remain valid
+> for the existing file only. Resume from [HANDOFF.md](HANDOFF.md); the product-animation outcome
+> needs redesign, not merely further fade/slide polish.
+
 Trace: CERE-482. Change: `integrate-product-animation` (active, awaiting principal review).
 
 ## Identity

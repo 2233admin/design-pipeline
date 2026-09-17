@@ -1,5 +1,7 @@
 # Tasks
 
+- [ ] Rework the visual direction after the user rejected the current film as PPT-like; see HANDOFF.md. Technical completion below does not constitute visual acceptance.
+
 - [x] Inspect osprey state, existing contracts, and CERE-482.
 - [x] Integrate routing commit into task worktree.
 - [x] Persist bound video route and new target foundations/storyboard.
