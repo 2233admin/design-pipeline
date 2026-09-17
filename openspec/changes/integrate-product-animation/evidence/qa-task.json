@@ -1,0 +1,21 @@
+{
+  "command": "node scripts/qa.cjs",
+  "cwd": "D:\\projects\\design-pipeline\\product-animation-integration",
+  "exitCode": 0,
+  "summary": [
+    "ℹ tests 668",
+    "ℹ pass 668",
+    "ℹ fail 0",
+    "OK repository tests (82 files)",
+    "OK reproducible design-pipeline-skill.tgz",
+    "OK reproducible design-pipeline-skill.zip",
+    "OK reproducible checksums.txt",
+    "ℹ tests 11",
+    "ℹ pass 11",
+    "ℹ fail 0",
+    "OK installed-package public CLI smoke",
+    "OK QA leaves repository status byte-identical"
+  ],
+  "logSha256": "26fb79e9eeaf020c6f5a551d5a0c9e32a7904ec2a36557453f39f08ace3aec43",
+  "recordedAt": "2026-09-17T12:41:14.463Z"
+}

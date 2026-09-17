@@ -73,3 +73,27 @@ plausible duration.
 Keep the CLI version pinned for reproducibility. A latest-version upgrade probe may be run before a
 render-affecting command, but a dependency bump is a separate, explicit change and must be followed
 by `npx hyperframes check`.
+
+## Product-animation delivery proof
+
+A `product-launch-video` is a finite, self-playing sequence of scenes and transitions. A scroll
+webpage, scroll recording, or collection of stills cannot satisfy that deliverable. Keep the
+composition paused and seekable for the renderer; put real-time playback in a separate preview
+host so browser input never becomes the film's clock.
+
+Prove delivery on the encoded file: decode it completely, inspect scene holds and transition
+frames, and play it in a browser without scrolling or clicking. Record duration, dimensions,
+frame rate, playback advancement, and artifact hashes. Automated layout/contrast checks do not
+replace visual inspection: text may overlap during a transition even when a checker passes.
+For normalized SVG paths, preserve fractional stroke offsets (for example through an attribute
+tween); inspect intermediate progress so pixel rounding cannot turn a reveal into a step.
+
+Route selection and executable admission are separate. A catalog entry marked `review` remains
+blocked as an executable primary route, even if Stage 0 selects it correctly. When a user has
+authorized a target-local integration, document use of this reference fallback, pin the local
+runtime, and retain its actual lint/check/render evidence. Do not relabel the shared registry
+`ready` based on a single film.
+
+The repository's `experiments/openalice-product-animation/` contains a bounded worked example,
+an offline MP4 player, a deterministic composition, and a playback verifier. See its README for
+commands and limitations. It is a repository example, not a runtime bundled in the portable skill.

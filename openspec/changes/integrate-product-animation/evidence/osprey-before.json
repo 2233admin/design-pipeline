@@ -1,0 +1,31 @@
+{
+  "target": "D:\\projects\\design-pipeline\\osprey",
+  "head": "e688ec8e03b5185122943adbc0ded79c69d43484",
+  "status": " M scripts/test-manifest.json\n M skill/references/package-resources.json\n M skill/scripts/benchmark-core.cjs\n M skill/scripts/cli-core.cjs\n M skill/scripts/evaluate-benchmark.cjs\n?? _bmad-output/party-mode/memories/installed/.memlog.md\n?? experiments/openalice-showcase/DESIGN.md\n?? experiments/openalice-showcase/MOTION.md\n?? experiments/openalice-showcase/index.html\n?? experiments/openalice-showcase/scroll-capture.webm\n?? experiments/openalice-showcase/toolchain-plan.json\n?? experiments/openalice-showcase/toolchain-request.json\n?? openspec/changes/add-design-quality-baseline/design.md\n?? openspec/changes/add-design-quality-baseline/proposal.md\n?? openspec/changes/add-design-quality-baseline/specs/design-pipeline/spec.md\n?? openspec/changes/add-design-quality-baseline/tasks.md\n?? openspec/changes/openalice-showcase-timeline-runtime/design.md\n?? openspec/changes/openalice-showcase-timeline-runtime/proposal.md\n?? openspec/changes/openalice-showcase-timeline-runtime/specs/design-pipeline/spec.md\n?? openspec/changes/openalice-showcase-timeline-runtime/tasks.md\n?? skill/scripts/fidelity-metrics-core.cjs\n?? skill/scripts/judgment-core.cjs\n?? tests/design-quality-baseline.test.cjs\n?? tests/design-quality-judgment.test.cjs\n",
+  "hashes": {
+    "_bmad-output/party-mode/memories/installed/.memlog.md": "9e7082696f821479031a89daa4f6a24c22721deec5864b9153b0ae38b2e56c9f",
+    "experiments/openalice-showcase/DESIGN.md": "83bb666b37a563e57a86f4e50f49d4bb2bdd9b5dd72ae5ddd15d347cc8854ac6",
+    "experiments/openalice-showcase/MOTION.md": "b7fc968992db18aff54ee14f390a79fab35bb28869fc0413dd81fe7338b242ea",
+    "experiments/openalice-showcase/index.html": "2d2931e480bb541afe7e71920400545f6cc3a254144f0b5ea8fef88d9407a78f",
+    "experiments/openalice-showcase/scroll-capture.webm": "3950e29d275fee8af9bf61ff352351d3a93a775516e942b13bc4ea33a7f8a1f8",
+    "experiments/openalice-showcase/toolchain-plan.json": "9d8620bd79cc667257fb1c7da34aac08d885c59ecfc5ccc5890cade52c22b66a",
+    "experiments/openalice-showcase/toolchain-request.json": "268fe3d2d0143544751308d05e51e75e24ff1d6362fdf2d75e277fafe76604d3",
+    "openspec/changes/add-design-quality-baseline/design.md": "114de8c05097d75eb26b1830b2b4b30b8aa6aa9ce07c718b59473b078d961da6",
+    "openspec/changes/add-design-quality-baseline/proposal.md": "42d9726ee00c59acf5c5effb34a22a2d6d929d58fc007a03ab5bfc3e107a3104",
+    "openspec/changes/add-design-quality-baseline/specs/design-pipeline/spec.md": "fe54e8127900bbfe927b8c5cbd5ceb6b4646e6bc56110afb89b1a0628754b71d",
+    "openspec/changes/add-design-quality-baseline/tasks.md": "7b98b10a8991404f6263ba4822db31065885b28977ae1887a988c0c81b06e9e5",
+    "openspec/changes/openalice-showcase-timeline-runtime/design.md": "c5f7b314eb02237b4f589ef8d1699a59b73aeb8079506ddc50d7c3c658935203",
+    "openspec/changes/openalice-showcase-timeline-runtime/proposal.md": "fd630fb9a29a60064172eb2d0ce873ca65d174c55239b729db2870460970ead4",
+    "openspec/changes/openalice-showcase-timeline-runtime/specs/design-pipeline/spec.md": "9cfe53ef8a2d8f1c1d6d74ab3e5257deb118af7fd318512e6506677224682ddd",
+    "openspec/changes/openalice-showcase-timeline-runtime/tasks.md": "aba793bd3a845bd040f04b2c7448be14e224187b8a84cc836cc1e95e6511896c",
+    "scripts/test-manifest.json": "73f20574858890092e86ed0ccfc5a606a1240febe4c514121e6b1910ccdd5c56",
+    "skill/references/package-resources.json": "070a16fee89bea0aeb42c52f3aab27efd5059862e24629c9a173d3de556bbabe",
+    "skill/scripts/benchmark-core.cjs": "b15c4297929408655b7e52252354f0ab82b5eab80e61af7ddad04bb0ac6dcb59",
+    "skill/scripts/cli-core.cjs": "9c83b8a0aa7624d5172964755f59037ffafa80926c07580e6acb0d65afd0f2c8",
+    "skill/scripts/evaluate-benchmark.cjs": "5a4e87bbcc22778538de0530fce91ffc79776f2c704c4e9984cccb50909e6dd2",
+    "skill/scripts/fidelity-metrics-core.cjs": "c7ab86a60bd652bc236d4a613c9ad3dd0fa69d5325c6335047312ae8d3b9de68",
+    "skill/scripts/judgment-core.cjs": "577dcfe209f021a7ca667aac835ff88ecb32852ed67e342541e46155ce7cd63b",
+    "tests/design-quality-baseline.test.cjs": "945d8931106aab6f2bf8a134f11f78567945fa5c244d0b108016112c24ae9794",
+    "tests/design-quality-judgment.test.cjs": "9f68b54c9abe30c8f290b3ef32db137c08529a7a930583d62a76f5690ee85600"
+  }
+}

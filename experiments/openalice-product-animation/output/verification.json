@@ -1,0 +1,256 @@
+{
+  "schema": "openalice.product-film-evidence.v1",
+  "recordedAt": "2026-09-17T12:40:08.535Z",
+  "status": "passed",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "30/1",
+        "duration": "24.000000",
+        "nb_frames": "720"
+      }
+    ],
+    "format": {
+      "duration": "24.000000",
+      "size": "1670480"
+    }
+  },
+  "fullDecode": true,
+  "frameTimes": [
+    0,
+    2,
+    4.3,
+    6.5,
+    9.3,
+    11.5,
+    14.3,
+    16.5,
+    18.3,
+    21,
+    23.966
+  ],
+  "autonomousPreview": {
+    "inputEventsBeforeEnd": 0,
+    "samples": [
+      {
+        "time": 2.031,
+        "scene": 0,
+        "scrollY": 0,
+        "scrollHeight": 720,
+        "viewportHeight": 720,
+        "pending": "AWAITING APPROVAL"
+      },
+      {
+        "time": 6.531,
+        "scene": 1,
+        "scrollY": 0,
+        "scrollHeight": 720,
+        "viewportHeight": 720,
+        "pending": "AWAITING APPROVAL"
+      },
+      {
+        "time": 11.532,
+        "scene": 2,
+        "scrollY": 0,
+        "scrollHeight": 720,
+        "viewportHeight": 720,
+        "pending": "AWAITING APPROVAL"
+      },
+      {
+        "time": 16.531,
+        "scene": 3,
+        "scrollY": 0,
+        "scrollHeight": 720,
+        "viewportHeight": 720,
+        "pending": "AWAITING APPROVAL"
+      },
+      {
+        "time": 21.031,
+        "scene": 4,
+        "scrollY": 0,
+        "scrollHeight": 720,
+        "viewportHeight": 720,
+        "pending": "AWAITING APPROVAL"
+      },
+      {
+        "time": 24,
+        "scene": 4,
+        "scrollY": 0,
+        "scrollHeight": 720,
+        "viewportHeight": 720,
+        "pending": "AWAITING APPROVAL"
+      }
+    ]
+  },
+  "keyboardPauseReplay": true,
+  "sceneStepping": true,
+  "deterministicSeek": {
+    "before": "9df0d4fd1b7bb0a7def64ae157590985e4aff2006a9357c840539e8058c217fc",
+    "after": "9df0d4fd1b7bb0a7def64ae157590985e4aff2006a9357c840539e8058c217fc"
+  },
+  "seamAndProgress": {
+    "seams": [
+      {
+        "time": 4.1,
+        "visible": 1
+      },
+      {
+        "time": 4.22,
+        "visible": 0
+      },
+      {
+        "time": 4.3,
+        "visible": 1
+      },
+      {
+        "time": 4.5,
+        "visible": 1
+      },
+      {
+        "time": 9.1,
+        "visible": 1
+      },
+      {
+        "time": 9.22,
+        "visible": 0
+      },
+      {
+        "time": 9.3,
+        "visible": 1
+      },
+      {
+        "time": 9.5,
+        "visible": 1
+      },
+      {
+        "time": 14.1,
+        "visible": 1
+      },
+      {
+        "time": 14.22,
+        "visible": 0
+      },
+      {
+        "time": 14.3,
+        "visible": 1
+      },
+      {
+        "time": 14.5,
+        "visible": 1
+      },
+      {
+        "time": 18.1,
+        "visible": 1
+      },
+      {
+        "time": 18.22,
+        "visible": 0
+      },
+      {
+        "time": 18.3,
+        "visible": 1
+      },
+      {
+        "time": 18.5,
+        "visible": 1
+      }
+    ],
+    "progress": [
+      {
+        "time": 2,
+        "offset": 0.916667
+      },
+      {
+        "time": 12,
+        "offset": 0.5
+      },
+      {
+        "time": 22,
+        "offset": 0.083333
+      }
+    ]
+  },
+  "reducedMotion": true,
+  "mobileOverflow": false,
+  "encodedPlayback": {
+    "ended": true,
+    "currentTime": 24,
+    "duration": 24,
+    "width": 1280,
+    "height": 720,
+    "quality": {
+      "totalVideoFrames": 720,
+      "droppedVideoFrames": 0
+    },
+    "samples": [
+      {
+        "time": 0.033333,
+        "presentedFrames": 2
+      },
+      {
+        "time": 2.066667,
+        "presentedFrames": 63
+      },
+      {
+        "time": 4.066667,
+        "presentedFrames": 123
+      },
+      {
+        "time": 6.066667,
+        "presentedFrames": 183
+      },
+      {
+        "time": 8.066667,
+        "presentedFrames": 243
+      },
+      {
+        "time": 10.066667,
+        "presentedFrames": 303
+      },
+      {
+        "time": 12.066667,
+        "presentedFrames": 363
+      },
+      {
+        "time": 14.066667,
+        "presentedFrames": 423
+      },
+      {
+        "time": 16.1,
+        "presentedFrames": 484
+      },
+      {
+        "time": 18.1,
+        "presentedFrames": 544
+      },
+      {
+        "time": 20.1,
+        "presentedFrames": 604
+      },
+      {
+        "time": 22.1,
+        "presentedFrames": 664
+      }
+    ]
+  },
+  "errors": [],
+  "remoteRequests": [],
+  "hashes": {
+    "index.html": "0fbf5b96f0605dfb9f3c5bc80355c105ed2865db66ddbc329a1dd85b8dacd5db",
+    "preview.html": "684904a165c702cdcf8615cc37b4b42c6e0742146a43c5fb2ff5c5a45fba10b3",
+    "watch.html": "d49afa00a9326867785218aef8ff806731a3bc0aa54f4a6a5918455b8cd9f957",
+    "DESIGN.md": "ce47c296718a22e9d734a6d444de515753bfc02b742d2e5f9897855a62c3f076",
+    "MOTION.md": "268291ae107dc524cd5529a4c23f57e75094ec08504e6b3de92c4c61167bbd76",
+    "STORYBOARD.md": "c476cf1338a7fec8493a72a611007039e5d8fb03b073545a1568279db814207b",
+    "job-plan.json": "6e6bef2a1b7cd60faf4e33990d3a0832f63c6f4f9c67d4240f4b46829c0ee8c6",
+    "toolchain-request.json": "845cd7adaadd031ac8321636870099429d4e1341f5de554145a2bc49b24c4f60",
+    "toolchain-plan.json": "582025d7c61ea456afc3ea7a8afa70918a6013ca64efc7d3b003ff73fca2acd1",
+    "package-lock.json": "632b4ae01247a8069608733e2e08ecd411e7e9a476c6a653cd18fa8c3200224c",
+    "output/openalice.mp4": "6a8c7886207907ae63e627622e7932e3878ac5441c3febd98cb53e12697e8764"
+  }
+}

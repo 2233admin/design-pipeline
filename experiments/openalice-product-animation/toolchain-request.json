@@ -1,0 +1,11 @@
+{
+  "schema": "design-pipeline.toolchain-request.v1",
+  "framework": "agnostic",
+  "brief": "Create an HTML product showcase video for OpenAlice with a self-playing 24-second timeline, scenes and transitions, ending at human approval pending.",
+  "jobId": "motion-graphics",
+  "jobPlanSha256": "249ca8f810800cc8f43dbebf42835b70a304b7b9c5508042195b7b1dace00657",
+  "jobPlanPath": "experiments/openalice-product-animation/job-plan.json",
+  "deliverableForm": "product-launch-video",
+  "capabilities": ["html-video", "video-production"],
+  "requested": {"styling": "none", "uiLibrary": "none"}
+}
