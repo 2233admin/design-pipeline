@@ -1,67 +1,93 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenAlice — Research moves. You decide.</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAlice — Research leaves a trace</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0a0d12;color:#eef2f8;font-family:"Segoe UI",Arial,sans-serif}
-#openalice{position:relative;width:1280px;height:720px;overflow:hidden}
-.backdrop{position:absolute;inset:0;background:#0a0d12}.grid{position:absolute;inset:0;background-image:linear-gradient(#18212c 1px,transparent 1px),linear-gradient(90deg,#18212c 1px,transparent 1px);background-size:80px 80px;opacity:.22}
-.masthead{position:absolute;top:34px;left:64px;right:64px;display:flex;align-items:center;justify-content:space-between;font-size:18px;letter-spacing:.03em}.brand{font-weight:650;font-size:25px;letter-spacing:-.04em}.brand i{display:inline-block;width:13px;height:13px;border:2px solid #81d6b3;border-radius:50%;margin-right:12px}.meta{font:16px Consolas,monospace;color:#a9b6c9}.scene{position:absolute;inset:112px 64px 126px;opacity:0}.scene:first-of-type{opacity:1}.eyebrow{color:#81d6b3;font:17px Consolas,monospace;letter-spacing:.1em;margin:0 0 18px}h1,h2,p{margin:0}h1{font-size:88px;font-weight:550;letter-spacing:-.065em;line-height:1.04}h2{font-size:62px;font-weight:550;letter-spacing:-.05em;line-height:1.08}.muted{color:#a9b6c9}.subtitle{font-size:25px;line-height:1.5;margin-top:22px;max-width:570px}.split{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;height:100%}.accent{color:#81d6b3}.panel{background:#111721;border:1px solid #354356;border-radius:12px;overflow:hidden}.bar{padding:17px 24px;border-bottom:1px solid #354356;font:17px Consolas,monospace;color:#a9b6c9}.panel-content{padding:24px}.question{font-size:28px;line-height:1.4;padding:25px 30px;border-left:3px solid #81d6b3;background:#111721;margin-top:27px;width:840px}.intro-line{font:20px Consolas,monospace;color:#a9b6c9;margin-top:25px}.agent-map{position:relative;height:350px}.agent-map svg{position:absolute;inset:0;width:100%;height:100%}.agent{position:absolute;left:0;width:204px;height:62px;padding:17px 20px;background:#111721;border:1px solid #354356;border-radius:8px;font-size:22px}.a1{top:36px}.a2{top:144px}.a3{top:252px}.alice{position:absolute;right:0;top:132px;width:145px;height:88px;border:1px solid #81d6b3;border-radius:10px;background:#122720;display:grid;place-items:center;font:27px Consolas,monospace}.local{position:absolute;bottom:-27px;right:0;font:18px Consolas,monospace;color:#a9b6c9}.commit{display:flex;align-items:center;gap:18px;padding:19px 0;border-bottom:1px solid #293748;font-size:22px}.commit:last-child{border-bottom:0}.node{width:13px;height:13px;border:2px solid #81d6b3;border-radius:50%;flex-shrink:0}.hash{font:17px Consolas,monospace;color:#81d6b3}.commit small{display:block;font:17px Consolas,monospace;color:#a9b6c9;margin-top:6px}.commit-label{font-size:20px}.issue{display:flex;gap:20px;align-items:center;padding:25px 0;font-size:23px}.issue+.issue{border-top:1px solid #354356}.step{width:40px;height:40px;display:grid;place-items:center;border:1px solid #7aa2d8;border-radius:50%;color:#7aa2d8;font:19px Consolas,monospace}.issue small{display:block;font-size:18px;color:#a9b6c9;margin-top:5px}.end{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;height:100%}.gate-panel{border:1px solid #e8b64c;background:#17170f;border-radius:12px;padding:32px}.gate-label{font:17px Consolas,monospace;color:#e8b64c;letter-spacing:.06em;margin-bottom:24px}.lock{display:flex;gap:15px;align-items:center;font-size:30px;margin-bottom:19px}.lock svg{width:26px;height:32px;flex-shrink:0}.gate-copy{font-size:22px;line-height:1.5;color:#c9c7b7}.boundary{margin:27px 0;height:1px;background:#706032}.pending{display:inline-block;color:#e8b64c;border:1px solid #a98a41;border-radius:6px;padding:11px 16px;font:18px Consolas,monospace}.end-note{font:17px Consolas,monospace;color:#a9b6c9;margin-top:23px}.footer{position:absolute;bottom:35px;left:64px;right:64px}.spine{width:1152px;height:20px;display:block}.chapters{display:flex;justify-content:space-between;font:16px Consolas,monospace;color:#a9b6c9;margin-top:12px}.disclaimer{position:absolute;top:76px;right:64px;font:15px Consolas,monospace;color:#a9b6c9}
+*{box-sizing:border-box}html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0a0d12;color:#f3eee5;font-family:"Segoe UI",Arial,sans-serif}
+#openalice{position:relative;width:1280px;height:720px;overflow:hidden}.backdrop{position:absolute;inset:0;background:radial-gradient(ellipse at 45% 40%,#1b2a2e,#0a0d12 75%)}
+p,h1{margin:0}a{color:inherit;text-decoration:none}.mono{font-family:Consolas,monospace}.masthead{position:absolute;z-index:10;left:48px;right:48px;top:28px;display:flex;justify-content:space-between;align-items:center}.brand{font-size:25px;font-weight:650;letter-spacing:-.04em}.brand:before{content:"";display:inline-block;width:12px;height:12px;border:2px solid #81d6b3;border-radius:50%;margin-right:10px}.note{font-size:15px;color:#b4bdc7}
+#desk{position:absolute;inset:0;transform-origin:0 0}#workspace{position:absolute;left:62px;top:112px;width:790px;height:524px}.workspace-label{position:absolute;left:16px;top:0;font-size:18px;color:#b4bdc7}#session-research{position:absolute;right:28px;top:2px;font-size:16px;color:#b4bdc7}
+#research{position:absolute;z-index:3;left:14px;top:48px;width:748px;height:350px}
+.paper-shell{position:absolute;inset:0;background:#182329;border:1px solid #53666c;border-radius:4px;box-shadow:0 18px 55px #0006}
+.document-context{position:absolute;inset:0}.filebar{position:absolute;top:20px;left:28px;right:28px;display:flex;justify-content:space-between;font-size:17px;color:#b4bdc7}.saved{color:#81d6b3}h1{position:absolute;top:62px;left:28px;font-size:29px;font-weight:550;letter-spacing:-.03em}.question{position:absolute;top:106px;left:28px;font-size:19px;color:#b4bdc7}
+#evidence{position:absolute;z-index:4;left:28px;top:155px;width:500px;height:174px;transform-origin:0 0}
+#finding{padding-left:18px;border-left:3px solid #81d6b3}.metric-label{font-size:19px;line-height:1.2;color:#81d6b3}.metric-number{font-size:47px;font-weight:550;letter-spacing:-.045em;line-height:1.1;margin-top:7px}.metric-change{font-size:23px;color:#f3eee5;margin-top:6px}
+#citation{margin-top:17px;color:#81d6b3;font-size:16px;white-space:nowrap}
+.version{position:absolute;top:410px;width:260px;height:138px;z-index:1;transform-origin:0 0}
+.snapshot{position:absolute;width:748px;height:350px;transform:scale(.3476);transform-origin:0 0;background:#182329;border:2px solid #697c80;border-radius:4px;overflow:hidden;box-shadow:0 12px 40px #0008}
+.snapshot .paper-shell{box-shadow:none}.snapshot .document-context{opacity:1}.snapshot .filebar{font-size:23px}.snapshot .saved{display:none}
+.snapshot .evidence-copy{position:absolute;left:28px;top:155px;width:680px}.snapshot .citation-copy{margin-top:17px;color:#81d6b3;font-size:16px}.snapshot .finding-copy{padding-left:18px;border-left:3px solid #81d6b3}.snapshot .question{font-size:23px}
+.version-name{position:absolute;top:130px;left:0;font-size:17px;color:#b4bdc7}.version-name em{font-style:normal;color:#81d6b3}#version-original{left:36px}#version-saved{left:344px}
+#inbox{position:absolute;left:920px;top:138px;width:292px;z-index:5}.inbox-label{font-size:18px;color:#b4bdc7;letter-spacing:.05em;margin-bottom:24px}#inbox-report{position:relative;border-left:1px solid #6c8f83;padding-left:24px;height:440px}.report-title{font-size:27px}.report-topic{font-size:18px;color:#b4bdc7;margin-top:9px;line-height:1.4}.attachment-preview{position:absolute;left:24px;top:115px;width:260px;height:123px;transform-origin:0 0}.attachment{position:absolute;left:24px;top:257px;font-size:20px;color:#81d6b3}.return-session{position:absolute;left:24px;top:294px;font-size:16px;color:#c7d4cf}.reference-note{position:absolute;left:24px;top:333px;font-size:16px;color:#b4bdc7;line-height:1.4}
+#reference-link{position:absolute;inset:0;width:1280px;height:720px;pointer-events:none;z-index:2}.disclaimer{position:absolute;left:48px;bottom:20px;color:#b4bdc7;font-size:15px}
+#review-boundary{position:absolute;left:170px;right:170px;bottom:210px;display:flex;justify-content:space-between;border-top:1px solid #80693f;padding-top:12px;color:#e8b64c;font-size:27px;opacity:0}#review-boundary span:last-child{font-size:23px}
 </style>
 <script src="node_modules/gsap/dist/gsap.min.js"></script>
 </head>
 <body>
-<main id="openalice" data-composition-id="openalice" data-start="0" data-duration="24" data-width="1280" data-height="720" data-fps="30">
- <div class="backdrop"></div><div class="grid"></div>
- <header class="masthead"><span class="brand"><i></i>OpenAlice</span><span class="meta">LOCAL-FIRST / AGENT-POWERED RESEARCH</span></header>
- <p class="disclaimer">Illustrative workflow · not live product footage</p>
- <section id="s0" class="scene" aria-label="A question becomes a workflow">
-  <p class="eyebrow intro-item">01 / FROM QUESTION TO CONTEXT</p>
-  <h1>Research moves.<br><span class="accent">You decide.</span></h1>
-  <div class="question intro-item">“What changed — and what should I investigate?”</div>
-  <p class="intro-line intro-item">Your agents. Your research. Your machine.</p>
+<main id="openalice" data-composition-id="openalice" data-start="0" data-duration="20" data-width="1280" data-height="720" data-fps="30">
+<div class="backdrop"></div>
+<header class="masthead"><span class="brand">OpenAlice</span><span class="note">Illustrative research workflow · not live product UI</span></header>
+<div id="desk">
+ <section id="workspace" aria-label="Workspace retains the original research and saved versions">
+  <p class="workspace-label mono">WORKSPACE / nvidia-fy2025</p><p id="session-research" class="mono">Session: research-01</p>
+  <article id="research" aria-label="Original research.md">
+   <div class="paper-shell"></div>
+   <div class="document-context"><div class="filebar mono"><span>research.md</span><span id="save-status" class="saved">Saved locally</span></div><h1>NVIDIA / FY2025 research</h1><p class="question">What changed in data-center revenue?</p></div>
+   <div id="evidence"><div id="finding"><p class="metric-label">Data Center revenue / FY2025</p><p class="metric-number">$115.2B <span style="font-size:.4em;color:#81d6b3">[1]</span></p><p class="metric-change">+142% year over year</p></div><p id="citation"><span data-source="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025">[1] NVIDIA earnings release · 26 Feb 2025</span></p></div>
+  </article>
+  <div id="version-original" class="version" aria-label="Retained version 01"><div class="version-name mono">v01 / Question</div></div>
+  <div id="version-saved" class="version" aria-label="Saved version 02"><div class="version-name mono"><em>v02 / Source added</em></div></div>
  </section>
- <section id="s1" class="scene" aria-label="Bring your own agents">
-  <div class="split"><div><p class="eyebrow">02 / CONNECT</p><h2>Bring the agents<br>you already use.</h2><p class="subtitle muted">One place to connect your tools<br>to market research.</p></div>
-   <div class="agent-map"><svg viewBox="0 0 554 350" aria-hidden="true"><g fill="none" stroke="#7aa2d8" stroke-width="2"><path class="wire" d="M204 67 H280 Q305 67 305 92 V151 Q305 176 330 176 H409" pathLength="1"/><path class="wire" d="M204 175 H409" pathLength="1"/><path class="wire" d="M204 283 H280 Q305 283 305 258 V201 Q305 176 330 176 H409" pathLength="1"/></g></svg><div class="agent a1">Claude Code</div><div class="agent a2">Codex</div><div class="agent a3">Pi / OpenCode</div><div class="alice">ALICE</div><div class="local">workspace: ~/.openalice</div></div>
-  </div>
- </section>
- <section id="s2" class="scene" aria-label="Research with a history">
-  <div class="split"><div><p class="eyebrow">03 / WORKSPACES</p><h2>Every finding.<br>A traceable step.</h2><p class="subtitle muted">Research stays on disk.<br>The decision trail stays in Git.</p></div><div class="panel research-panel"><div class="bar">WORKSPACE / market-research</div><div class="panel-content"><div class="commit"><i class="node"></i><div><span class="hash">a1c09e</span><p class="commit-label">Collect the evidence</p><small>sources / notes / context</small></div></div><div class="commit"><i class="node"></i><div><span class="hash">b72f04</span><p class="commit-label">Compare the thesis</p><small>assumptions / alternatives</small></div></div><div class="commit"><i class="node"></i><div><span class="hash">c8e213</span><p class="commit-label">Save the research</p><small>inspectable / versioned / local</small></div></div></div></div></div>
- </section>
- <section id="s3" class="scene" aria-label="Keep recurring research moving">
-  <div class="split"><div><p class="eyebrow">04 / ISSUES → INBOX</p><h2>Keep the work<br>moving.</h2><p class="subtitle muted">Schedule the investigation.<br>Return to the findings.</p></div><div class="panel"><div class="bar">RECURRING RESEARCH / illustrative</div><div class="panel-content"><div class="issue"><span class="step">1</span><div>Issue scheduled<small>Review the watchlist</small></div></div><div class="issue"><span class="step">2</span><div>Research collected<small>Agent works in a Workspace</small></div></div><div class="issue"><span class="step">3</span><div>Findings in your Inbox<small>Ready for your review</small></div></div></div></div></div>
- </section>
- <section id="s4" class="scene" aria-label="Human approval remains pending">
-  <div class="end"><div><p class="eyebrow">05 / THE HUMAN BOUNDARY</p><h2>Agents research.<br><span class="accent">You authorize.</span></h2><p class="subtitle muted">Trading as Git.<br>A decision you can inspect.</p><p class="end-note">OpenAlice / local-first / open source</p></div><div class="gate-panel"><p class="gate-label">UNIFIED TRADING ACCOUNT</p><div class="lock"><svg viewBox="0 0 26 32" fill="none" stroke="#e8b64c" stroke-width="2" aria-hidden="true"><path d="M6 13 V8 a7 7 0 0 1 14 0 v5"/><rect x="2" y="13" width="22" height="17" rx="3"/><path d="M13 19 v5"/></svg>Human approval required</div><p class="gate-copy">Research can advance.<br>Execution waits for your decision.</p><div class="boundary"></div><span class="pending">AWAITING APPROVAL</span><p class="end-note">Execution is beta · no trade is placed</p></div></div>
- </section>
- <footer class="footer"><svg class="spine" viewBox="0 0 1152 20" aria-hidden="true"><path d="M0 10 H1152" stroke="#354356" stroke-width="2"/><path id="progress" d="M0 10 H1152" stroke="#81d6b3" stroke-width="3" pathLength="1"/></svg><div class="chapters"><span>QUESTION</span><span>AGENTS</span><span>RESEARCH</span><span>ROUTINE</span><span>YOUR DECISION</span></div></footer>
+ <svg id="reference-link" viewBox="0 0 1280 720" aria-hidden="true"><path id="report-link" d="M824 340 H884 Q900 340 900 324 V297 H944" stroke="#81d6b3" stroke-width="2" fill="none" pathLength="1"/></svg>
+ <aside id="inbox" aria-label="Inbox receives a linked report"><p class="inbox-label mono">INBOX</p><article id="inbox-report"><p class="report-title">Report ready</p><p class="report-topic">NVIDIA / FY2025<br>Source added to research</p><div class="attachment-preview" aria-hidden="true"></div><span class="attachment" data-reference="research">↗ research.md · attachment</span><span class="return-session" data-reference="session-research">↗ Session: research-01</span><p class="reference-note">Linked report. Original stays<br>in your workspace.</p></article></aside>
+</div>
+<p class="disclaimer">Historical source · illustrative file and version layout</p>
+<footer id="review-boundary"><span>Ready for your review</span><span>No trade placed</span></footer>
 </main>
 <script>
+// Saved versions and the Inbox attachment reproduce this research, not generic cards.
+function snapshot(target, withFinding) {
+ const copy = document.querySelector('#research').cloneNode(true);
+ copy.removeAttribute('id'); copy.className = 'snapshot'; copy.removeAttribute('aria-label'); copy.setAttribute('aria-hidden', 'true');
+ // Saved thumbnails intentionally emerge from behind the opaque original; primary text is never exempted.
+ copy.setAttribute('data-layout-allow-occlusion', 'true');
+ copy.querySelectorAll('[id]').forEach(node => { const id = node.id; node.removeAttribute('id'); if (id === 'evidence') node.className = 'evidence-copy'; if (id === 'finding') node.className = 'finding-copy'; if (id === 'citation') node.className = 'citation-copy'; });
+ if (!withFinding) copy.querySelector('.evidence-copy').remove();
+ document.querySelector(target).prepend(copy);
+}
+snapshot('#version-original', false); snapshot('#version-saved', true); snapshot('.attachment-preview', true);
 window.__timelines = window.__timelines || {};
 const timeline = gsap.timeline({ paused: true });
 window.__timelines.openalice = timeline;
-gsap.set('.scene', { opacity: 0 });
-gsap.set('#s0', { opacity: 1 });
-gsap.set('#progress, .wire', { attr: { 'stroke-dasharray': 1, 'stroke-dashoffset': 1 } });
-timeline.from('.intro-item', { opacity: 0, y: 18, stagger: 0.12, duration: 0.55, ease: 'power2.out' }, 0);
-const starts = [0, 4, 9, 14, 18];
-starts.slice(1).forEach((start, i) => {
- timeline.to('#s' + i, { opacity: 0, x: -55, duration: 0.22, ease: 'power2.in' }, start);
- timeline.fromTo('#s' + (i+1), { opacity: 0, x: 55 }, { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out', immediateRender: false }, start + 0.22);
-});
-timeline.from('.agent', { opacity: 0, x: -22, stagger: 0.22, duration: 0.45, ease: 'power2.out' }, 4.7);
-timeline.to('.wire', { attr: { 'stroke-dashoffset': 0 }, stagger: 0.16, duration: 0.6, ease: 'power2.inOut' }, 5.1);
-timeline.from('.alice, .local', { opacity: 0, y: 12, stagger: 0.2, duration: 0.45 }, 5.7);
-timeline.from('.commit', { opacity: 0, y: 22, stagger: 0.45, duration: 0.45, ease: 'power2.out' }, 9.75);
-timeline.from('.issue', { opacity: 0, x: 25, stagger: 0.35, duration: 0.45, ease: 'power2.out' }, 14.65);
-timeline.from('.gate-panel', { opacity: 0, y: 24, duration: 0.7, ease: 'power2.out' }, 18.8);
-timeline.from('.pending', { opacity: 0, duration: 0.55 }, 19.8);
-timeline.to('#progress', { attr: { 'stroke-dashoffset': 0 }, duration: 24, ease: 'none' }, 0);
-timeline.seek(0).pause();
-window.film = { duration: 24, starts, timeline, sceneAt: t => starts.filter(s => t >= s).length - 1 };
+const duration = Number(document.querySelector('#openalice').dataset.duration);
+const starts = [0, 3, 7, 10.5, 15, 17];
+gsap.set('#desk', { scale: 1.12, x: -20, y: -15 });
+gsap.set('#evidence', { x: 280, y: -80, scale: 1.38, opacity: 0 });
+gsap.set('#save-status, .workspace-label, #session-research, #inbox', { opacity: 0 });
+gsap.set('.version', { opacity: 0, y: -265, x: 90, scale: 1.25 });
+gsap.set('.version-name', { opacity: 0 });
+gsap.set('#report-link', { opacity: 0, attr: { 'stroke-dasharray': 1, 'stroke-dashoffset': 1 } });
+gsap.set('.attachment-preview', { x: -370, y: 90, scale: 0.65 });
+timeline.to('#research > .document-context h1, #research > .document-context .question', { opacity: 0, duration: 0.25 }, 2.75);
+timeline.to('#evidence', { opacity: 1, duration: 0.35 }, 3);
+timeline.to('#evidence', { x: 0, y: 0, scale: 1, duration: 1.6, ease: 'power2.inOut' }, 3.7);
+timeline.to('#research > .document-context h1, #research > .document-context .question', { opacity: 1, duration: 0.4 }, 4.9);
+timeline.set('.version', { opacity: 1 }, 7);
+timeline.to('#desk', { scale: 1, x: 0, y: 0, duration: 1.15, ease: 'power2.inOut' }, 7);
+timeline.to('#version-original', { x: 0, y: 0, scale: 1, duration: 0.9, ease: 'power2.inOut' }, 7);
+timeline.to('#version-saved', { x: 0, y: 0, scale: 1, duration: 0.9, ease: 'power2.inOut' }, 7.35);
+timeline.to('.version-name, #save-status, .workspace-label, #session-research', { opacity: 1, duration: 0.35 }, 7.8);
+timeline.to('#inbox', { opacity: 1, duration: 0.3 }, 10.5);
+timeline.set('#report-link', { opacity: 1 }, 10.5);
+timeline.to('#report-link', { attr: { 'stroke-dashoffset': 0 }, duration: 0.9, ease: 'power2.inOut' }, 10.5);
+timeline.to('.attachment-preview', { x: 0, y: 0, scale: 1, duration: 1.2, ease: 'power2.inOut' }, 10.5);
+timeline.to('#desk', { scale: 0.67, x: 170, y: 0, duration: 0.7, ease: 'power2.inOut' }, 16.3);
+timeline.to('.disclaimer', { opacity: 0, duration: 0.3 }, 16.7);
+timeline.to('#review-boundary', { opacity: 1, duration: 0.5 }, 17);
+timeline.to({}, { duration: 0.01 }, duration - 0.01);
+window.film = { duration, starts, timeline, sceneAt(time) { let index = 0; starts.forEach((start, i) => { if (time >= start) index = i; }); return index; } };
+timeline.pause(0);
 </script>
-</body>
-</html>
+</body></html>

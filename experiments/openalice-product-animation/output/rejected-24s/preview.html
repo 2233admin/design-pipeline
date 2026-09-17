@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OpenAlice — 24-second product film</title>
+<style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#070a0e;color:#eef2f8;font:16px "Segoe UI",sans-serif}main{max-width:1280px;margin:auto}h1{font-size:22px;font-weight:500}#stage{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0a0d12}iframe{border:0;width:1280px;height:720px;transform-origin:top left}nav{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px}button,a{font:inherit;color:#eef2f8;background:#182332;border:1px solid #59708b;border-radius:5px;padding:12px 16px;min-height:44px;text-decoration:none}button{cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #81d6b3;outline-offset:3px}#status{color:#c1cbd9;margin-left:auto}p{color:#a9b6c9;line-height:1.6}summary{cursor:pointer;padding:12px 0}li{margin:8px 0}video{width:100%;display:block;margin-top:24px}</style></head>
+<body><main><h1>OpenAlice — Research moves. You decide.</h1><div id="stage"><iframe id="film" src="index.html" title="Animated OpenAlice product film"></iframe></div><nav aria-label="Film playback"><button id="toggle">Pause</button><button id="replay">Replay</button><button id="previous">Previous scene</button><button id="next">Next scene</button><span id="status" role="timer">0.0 / 24.0s</span></nav><p id="motion-note">A self-playing, silent 24-second film. The illustrated trade remains awaiting approval.</p><p><a href="output/openalice.mp4">Open rendered MP4</a></p><details><summary>Read the film transcript</summary><ol><li>Research moves. You decide. Your agents, your research, your machine.</li><li>Connect Claude Code, Codex, Pi or OpenCode to market research.</li><li>Keep research on disk and its decision trail in Git.</li><li>Schedule recurring Issues and return to findings in your Inbox.</li><li>Agents research. You authorize. Execution is beta and remains awaiting human approval; no trade is placed.</li></ol></details></main>
+<script>
+const frame = document.querySelector('#film'), stage = document.querySelector('#stage');
+const toggle = document.querySelector('#toggle'), status = document.querySelector('#status');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+const resize = new ResizeObserver(() => frame.style.transform = `scale(${stage.clientWidth / 1280})`);resize.observe(stage);
+let film;
+function update(){if(!film)return;status.textContent=`${film.timeline.time().toFixed(1)} / 24.0s`;toggle.textContent=film.timeline.paused() || film.timeline.time()>=24?'Play':'Pause';}
+function preference(){if(!film)return;if(reduce.matches){film.timeline.pause(23);document.querySelector('#motion-note').textContent='Reduced motion: static overview. Step through scenes, or choose Play to watch the film.';}update();}
+frame.addEventListener('load',()=>{film=frame.contentWindow.film;film.timeline.eventCallback('onUpdate',update);film.timeline.eventCallback('onComplete',update);if(reduce.matches)preference();else film.timeline.play(0);update();});
+toggle.onclick=()=>{if(film.timeline.time()>=24)film.timeline.restart();else if(film.timeline.paused())film.timeline.play();else film.timeline.pause();update();};
+document.querySelector('#replay').onclick=()=>{film.timeline.restart();update();};
+function step(direction){const current=film.sceneAt(film.timeline.time());const target=Math.max(0,Math.min(4,current+direction));film.timeline.pause(film.starts[target]+2.5);update();}
+document.querySelector('#previous').onclick=()=>step(-1);document.querySelector('#next').onclick=()=>step(1);
+reduce.addEventListener('change',preference);
+addEventListener('pagehide',()=>{if(film){film.timeline.pause();film.timeline.eventCallback('onUpdate',null);film.timeline.eventCallback('onComplete',null);}resize.disconnect();reduce.removeEventListener('change',preference);},{once:true});
+</script></body></html>

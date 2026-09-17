@@ -1,0 +1,764 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 20,
+    "findings": [
+      {
+        "code": "content_overlap",
+        "severity": "warning",
+        "time": 2.75,
+        "selector": "#research > div:nth-of-type(2) > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 96.48,
+          "top": 282.92,
+          "right": 457.16,
+          "bottom": 308.68,
+          "width": 360.68,
+          "height": 25.76
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "What changed in data-center revenue?",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 96.48,
+          "y": 282.92,
+          "width": 360.68,
+          "height": 25.76
+        },
+        "firstSeen": 2.75,
+        "lastSeen": 2.875,
+        "occurrences": 2,
+        "heldMs": 125
+      },
+      {
+        "code": "content_overlap",
+        "severity": "warning",
+        "time": 3,
+        "selector": "#finding > p:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.36,
+          "top": 365.97,
+          "right": 311.14,
+          "bottom": 429.33,
+          "width": 190.78,
+          "height": 63.36
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1)",
+        "text": "$115.2B [1]",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.36,
+          "y": 365.97,
+          "width": 190.78,
+          "height": 63.36
+        },
+        "firstSeen": 3,
+        "lastSeen": 3.125,
+        "occurrences": 2,
+        "heldMs": 125
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 2.75,
+        "selector": "#research > div:nth-of-type(2) > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 96.48,
+          "top": 282.92,
+          "right": 457.16,
+          "bottom": 308.68,
+          "width": 360.68,
+          "height": 25.76
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "text": "What changed in data-center revenue?",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 96.48,
+          "y": 282.92,
+          "width": 360.68,
+          "height": 25.76
+        },
+        "firstSeen": 2.75,
+        "lastSeen": 2.75,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 2.875,
+        "selector": "#finding > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.06,
+          "top": 336.39,
+          "right": 402.77,
+          "bottom": 362.12,
+          "width": 282.71,
+          "height": 25.73
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1)",
+        "text": "Data Center revenue / FY2025",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.06,
+          "y": 336.39,
+          "width": 282.71,
+          "height": 25.73
+        },
+        "firstSeen": 2.875,
+        "lastSeen": 2.875,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 189.62,
+          "top": 325.67,
+          "right": 260.77,
+          "bottom": 339.73,
+          "width": 71.15,
+          "height": 14.06
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "research.md",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 189.62,
+          "y": 325.67,
+          "width": 71.15,
+          "height": 14.06
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 189.62,
+          "top": 345.35,
+          "right": 339.2,
+          "bottom": 361.75,
+          "width": 149.58,
+          "height": 16.4
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "NVIDIA / FY2025 research",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 189.62,
+          "y": 345.35,
+          "width": 149.58,
+          "height": 16.4
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 189.62,
+          "top": 365.97,
+          "right": 372.32,
+          "bottom": 379.09,
+          "width": 182.69,
+          "height": 13.12
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "What changed in data-center revenue?",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 189.62,
+          "y": 365.97,
+          "width": 182.69,
+          "height": 13.12
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-saved > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 547.21,
+          "top": 282.35,
+          "right": 620.53,
+          "bottom": 296.83,
+          "width": 73.32,
+          "height": 14.49
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "research.md",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 547.21,
+          "y": 282.35,
+          "width": 73.32,
+          "height": 14.49
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-saved > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 547.21,
+          "top": 302.63,
+          "right": 701.36,
+          "bottom": 319.53,
+          "width": 154.14,
+          "height": 16.9
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "NVIDIA / FY2025 research",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 547.21,
+          "y": 302.63,
+          "width": 154.14,
+          "height": 16.9
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-saved > article:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 547.21,
+          "top": 323.88,
+          "right": 735.48,
+          "bottom": 337.4,
+          "width": 188.27,
+          "height": 13.52
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "What changed in data-center revenue?",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 547.21,
+          "y": 323.88,
+          "width": 188.27,
+          "height": 13.52
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-saved > article:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > p:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 557.35,
+          "top": 347.06,
+          "right": 679.43,
+          "bottom": 358.17,
+          "width": 122.07,
+          "height": 11.11
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "Data Center revenue / FY2025",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 557.35,
+          "y": 347.06,
+          "width": 122.07,
+          "height": 11.11
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-saved > article:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > p:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 557.35,
+          "top": 360.48,
+          "right": 640.25,
+          "bottom": 388.01,
+          "width": 82.89,
+          "height": 27.53
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "$115.2B",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 557.35,
+          "y": 360.48,
+          "width": 82.89,
+          "height": 27.53
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-saved > article:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > p:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 640.25,
+          "top": 373.52,
+          "right": 647.31,
+          "bottom": 384.63,
+          "width": 7.06,
+          "height": 11.11
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "[1]",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 640.25,
+          "y": 373.52,
+          "width": 7.06,
+          "height": 11.11
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-saved > article:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > p:nth-of-type(3)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 557.35,
+          "top": 389.79,
+          "right": 661.77,
+          "bottom": 403.32,
+          "width": 104.41,
+          "height": 13.52
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "+142% year over year",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 557.35,
+          "y": 389.79,
+          "width": 104.41,
+          "height": 13.52
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 3,
+        "selector": "#version-saved > article:nth-of-type(1) > div:nth-of-type(3) > p:nth-of-type(1) > a:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 547.21,
+          "top": 411.53,
+          "right": 689.16,
+          "bottom": 420.7,
+          "width": 141.95,
+          "height": 9.18
+        },
+        "containerSelector": "#research > div:nth-of-type(1)",
+        "text": "[1] NVIDIA earnings release · 26 Feb 2025",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 547.21,
+          "y": 411.53,
+          "width": 141.95,
+          "height": 9.18
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 3,
+        "selector": "#finding > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.36,
+          "top": 335.08,
+          "right": 401.31,
+          "bottom": 360.64,
+          "width": 280.95,
+          "height": 25.56
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "Data Center revenue / FY2025",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.36,
+          "y": 335.08,
+          "width": 280.95,
+          "height": 25.56
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 3,
+        "selector": "#finding > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.36,
+          "top": 335.08,
+          "right": 401.31,
+          "bottom": 360.64,
+          "width": 280.95,
+          "height": 25.56
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "text": "Data Center revenue / FY2025",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.36,
+          "y": 335.08,
+          "width": 280.95,
+          "height": 25.56
+        },
+        "firstSeen": 3,
+        "lastSeen": 3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 3.125,
+        "selector": "#finding > p:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.84,
+          "top": 363.43,
+          "right": 309.61,
+          "bottom": 426.12,
+          "width": 188.77,
+          "height": 62.69
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "$115.2B [1]",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.84,
+          "y": 363.43,
+          "width": 188.77,
+          "height": 62.69
+        },
+        "firstSeen": 3.125,
+        "lastSeen": 3.125,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 3.125,
+        "selector": "#finding > p:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.84,
+          "top": 363.43,
+          "right": 309.61,
+          "bottom": 426.12,
+          "width": 188.77,
+          "height": 62.69
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "text": "$115.2B [1]",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.84,
+          "y": 363.43,
+          "width": 188.77,
+          "height": 62.69
+        },
+        "firstSeen": 3.125,
+        "lastSeen": 3.125,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 3.125,
+        "selector": "#finding > p:nth-of-type(3)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.84,
+          "top": 430.18,
+          "right": 358.62,
+          "bottom": 460.97,
+          "width": 237.78,
+          "height": 30.79
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1)",
+        "text": "+142% year over year",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.84,
+          "y": 430.18,
+          "width": 237.78,
+          "height": 30.79
+        },
+        "firstSeen": 3.125,
+        "lastSeen": 3.125,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 3.25,
+        "selector": "#citation > a:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 99.48,
+          "top": 470.73,
+          "right": 414.59,
+          "bottom": 491.1,
+          "width": 315.11,
+          "height": 20.37
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "[1] NVIDIA earnings release · 26 Feb 2025",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 99.48,
+          "y": 470.73,
+          "width": 315.11,
+          "height": 20.37
+        },
+        "firstSeen": 3.25,
+        "lastSeen": 3.25,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 5,
+        "selector": "div.attachment-preview",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": 629.81,
+          "top": 376.67,
+          "right": 812.31,
+          "bottom": 463,
+          "width": 182.49,
+          "height": 86.33
+        },
+        "containerSelector": "#inbox-report",
+        "text": "research.md NVIDIA / FY2025 research What changed in data-center revenue? Data Center revenue / FY2025 $115.2B [1] +142% year over year [1] NVIDIA earnings release · 26 Feb 2025",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 920,
+          "top": 185,
+          "right": 1212,
+          "bottom": 625,
+          "width": 292,
+          "height": 440
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 629.81,
+          "y": 376.67,
+          "width": 182.49,
+          "height": 86.33
+        },
+        "firstSeen": 5,
+        "lastSeen": 5,
+        "occurrences": 1,
+        "heldMs": 0
+      }
+    ],
+    "duration": 7.5,
+    "samples": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      7.467
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 22,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0,
+      2,
+      4,
+      6,
+      7.467
+    ],
+    "checked": 114,
+    "passed": 114
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.46",
+    "latestVersion": "0.8.46",
+    "updateAvailable": false
+  }
+}

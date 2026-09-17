@@ -1,0 +1,41 @@
+{
+  "admission": "inert",
+  "deliverableForm": "product-launch-video",
+  "jobId": "motion-graphics",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": true,
+      "role": "primary"
+    }
+  ],
+  "planSha256": "249ca8f810800cc8f43dbebf42835b70a304b7b9c5508042195b7b1dace00657",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "iart",
+    "id": "iart"
+  },
+  "query": "Create an HTML product showcase video for OpenAlice with a self-playing 24-second timeline, scenes and transitions, ending at human approval pending.",
+  "registrySha256": "6722b06d9f9a37fd64eebfe68ec8831724664b15089d679f1dad6bfff1a56b9e",
+  "routeSha256": "186b0f6426f982c63ee533027f0d03b872a39dcb6e77f3954c51f431cb03bf5c",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": []
+}

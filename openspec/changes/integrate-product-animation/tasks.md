@@ -1,14 +1,16 @@
-# Tasks
+# Product animation redesign acceptance
 
-- [ ] Rework the visual direction after the user rejected the current film as PPT-like; see HANDOFF.md. Technical completion below does not constitute visual acceptance.
+Old integration checkmarks belong to the rejected 24-second film. Their original file is preserved in `experiments/openalice-product-animation/output/rejected-24s/tasks.md`; they are not evidence for this redesign.
 
-- [x] Inspect osprey state, existing contracts, and CERE-482.
-- [x] Integrate routing commit into task worktree.
-- [x] Persist bound video route and new target foundations/storyboard.
-- [x] Implement deterministic timed composition and autonomous preview.
-- [x] Render actual video; inspect decoded scenes and transitions.
-- [x] Verify no-input playback, controls, reduced motion, and video decoding.
-- [x] Decide on pipeline improvements from observed evidence.
-- [x] Run required repository QA and OpenSpec validation.
-- [x] Integrate into osprey and prove user-file preservation.
-- [x] Update CERE-482 with identity, evidence, and limitations (comment 01a0af8a-d610-78ff-b770-bb46bab10069; retain in_review).
+- [x] Preserve the rejected old MP4, source and verification lineage before rerendering.
+- [x] Apply the approved single-research-object direction; retain original research, concrete source, saved versions and Inbox references.
+- [x] Render and watch the 7.5-second direction sample at normal speed before full expansion; coordinator precheck passed, not user acceptance.
+- [x] Deliver the complete 20-second encoded film, ending Ready for your review / No trade placed.
+- [x] Refresh job-plan/toolchain-request/toolchain-plan via existing CLI and keep shared admission blocked.
+- [x] Run target lint/check/render and both foundation checks; retain raw findings and explain intentional thumbnail layering.
+- [x] Complete current target verification receipt: decode, actual playback, provenance, seek, controls, reduced motion and lifecycle.
+- [x] Coordinator watches the complete encoded 20-second film through ended; record observations separately from technical proof.
+- [x] Update target design/motion/story/readme and OpenSpec contracts/QA/handoff without changing shared pipeline or user showcase.
+- [x] Main agent runs final repository QA and strict OpenSpec validation after all slices freeze.
+- [ ] Main agent records live osprey preservation/integration evidence and updates existing Multica CERE-482.
+- [ ] Receive explicit user visual acceptance; until then do not mark CERE-482 done.

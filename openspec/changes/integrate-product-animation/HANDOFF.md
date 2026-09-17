@@ -1,75 +1,40 @@
-# 新 session 交接：当前效果被用户否定，需要重新做产品动画
+# CERE-482 产品动画重设计交接
 
-## 最高优先级：用户最新纠正
+## 当前交付与接受边界
 
-用户原话（2026-09-17）：**“这个效果肯定是不对的，做的跟 PPT 一样”**。用户要求换新 session 交接。
+实施依据：`_bmad-output/implementation-artifacts/spec-cere-482-product-animation-redesign.md`。用户已选定单一研究对象连续变化方向；主控正常速观看 7.5 秒样片后放行扩为 **20 秒完整片**。主控预检、技术检查和用户视觉接受是三件事；**不得因技术通过把 CERE-482 标 done，也不得声称用户满意**。
 
-随后用户补充原话：**“而且这个根本就不能满足通知较为第三的开关，然后我开发新 Session，我想通过 OMP 去开发咱们这个任务”**。
-明确偏好：新 session 通过 **OMP** 推进本任务。OMP 的确切工具/流程，以及“通知较为第三的开关”所指的功能或要求，当前尚未明确，已经向用户提出澄清。新 session 必须优先接收后续澄清；不得擅自解释 OMP 的缩写、替换为其他工作流，或将无法识别的“开关”要求丢弃/标为满足。
+当前成片入口：`experiments/openalice-product-animation/watch.html`，视频 `output/openalice.mp4`。`preview.html` 是可控的 authored timeline，不是成片替代物。最新技术证据和验收限制见 [qa.md](qa.md)。正常速完整观看必须覆盖问题建立、证据落入、保存抽版本、Inbox 附件关联和最终人审边界。
 
-**当前视觉效果未验收，原始产品动画目标未完成。** 上一 session 的“做完了”仅对代码集成与技术验证成立，不能作为产品效果完成的结论。此前 qa.md 的自评和“无视觉 blockers”被此次用户反馈取代。不要以已有测试、自动播放或已合入 osprey 为由维护旧方案。
+## 不可丢失的用户反馈
 
-## 原始目标与仍有效的边界
+2026-09-17 用户否定旧片：**“这个效果肯定是不对的，做的跟 PPT 一样”**。旧 24 秒五面板片与源码、证据现存于 `experiments/openalice-product-animation/output/rejected-24s/`，不要将它当风格标杆或把旧 receipt 计入新片验证。`user-rejection-comment.md` 与旧 handoff 的归档保留原话和历史身份。
 
-把缺失的产品动画能力接入 osprey，实际产出有自主时间线、场景和转场的短产品动画，观看实际成片后再优化 pipeline。不得停留在滚动网页、静态 mock，**也不得把自动翻页式 PPT 当作产品动画交付**。
+当前实现只服从已确认 SPEC；本轮运行宿主为 OMP。原始 OMP / “通知较为第三的开关”要求仍未完全澄清，未被擅自解释成新功能，也不声称相关功能验收已满足。未新增其他 PM 体系。
 
-保留 osprey 的所有无关 dirty/untracked 用户工作；不 reset、clean、discard、覆盖或顺手提交。遵守 CLAUDE.md、openspec/project.md、相关 change contracts；仓库变更后运行 `node scripts/qa.cjs`。任务状态只更新现有 Multica **CERE-482**，不要重复开票或标 done。
+## 新片具体变化
 
-## 当前代码与身份
+- 始终一个原始 `research.md`；同一 `$115.2B` / `[1]` 内容从近景落正文，之后来源留驻。
+- 指标明确是 NVIDIA **Data Center revenue / FY2025**，来源为 NVIDIA Newsroom 2025-02-26 历史公告，不是公司总收入、实时数据或预测。
+- v01 保留问题、v02 保留新增证据：缩略复制真实正文，从原纸面背后抽出，不是标题卡替换。
+- Inbox 接收报告附件引用并关联 `Session: research-01`；原文和版本仍在 workspace。
+- 终点是 `Ready for your review` / `No trade placed`，没有审批、自动提单或交易。
+- 文件名、版本标签、Session ID 和空间布局都是概念示意，非实拍产品 UI 声称。
 
-- 当前 worktree：`D:/projects/design-pipeline/product-animation-integration`，分支 `product-animation-integration`。
-- 目标 worktree：`D:/projects/design-pipeline/osprey`，分支 `osprey`。
-- 交接记录前两分支均为 `037d31e`。
-- `472a4514dd9d1e7fb64c39e7972349f300b71ce7`：Stage 0 绑定与视频交付形态路由修复，已合入两分支。
-- `5fe0b31ef9cf38b376e110c2609ed0b5a8a84c4e`：当前被否定样片与技术验证。
-- `037d31e`：集成 QA 与文件保留证据。
-- 旧 session/thread：`01a0af45-0f67-7392-b5f5-ae6f54242f36`；terminal `term_61f17fb1-11b9-4d46-9176-e8e166957529`。
+7.5 秒通过样片的源、视频和检查在 `output/sample-approved/`；`watch.html?sample=1` 可复看。之前样片 `sample-v1-overlap.mp4` 和 `sample-v2-panel-rejected.mp4` 保留作为反例，不覆盖历史失败。
 
-## 先看什么
+## 复现与来源约束
 
-1. 本交接及 CERE-482 最新评论，以用户纠正为准。
-2. `experiments/openalice-product-animation/watch.html` / `output/openalice.mp4`：**失败样片**，不要当风格标杆。
-3. `experiments/openalice-product-animation/index.html`、STORYBOARD.md、DESIGN.md、MOTION.md：当前固定横版、大标题配面板、五段轮换的方案。需要允许重做，不是已批准设计。
-4. `openspec/changes/integrate-product-animation/qa.md`：仅其中技术实测仍有效；视觉结论已经撤回。
-5. `evidence/osprey-before.json`：原有 24 个用户文件及哈希；开始前重新核对 live 状态，不假定用户没有新增修改。
+目标目录运行 `npm run lint`、`npm run check`、`npm run render`、`npm run verify`。依赖 HyperFrames 0.8.46、GSAP 3.15.0、Playwright 1.62.0；FFmpeg/ffprobe。源码注册唯一同步 paused timeline，并导出 `window.film` 的 duration/starts/timeline/sceneAt；预览独立驱动时钟。不得恢复旧五场景或固定 24 秒断言。
 
-## 为什么偏了（本 session 的诊断，不是用户新给的设计规范）
+画内引用已改为noninteractive文字，不能Tab进入或导航iframe；真实来源链接只在框外transcript打开新标签。`watch.html`+MP4可离线file://打开；iframe preview必须HTTP。README的Python命令只推荐preview，因该server无Range不用于MP4末帧seek验收；末帧证据使用file://与verify既有Range server。
 
-把“有有限时间线、输出视频、场景能自动切换”误当成了“产品动画质量达标”。实际上采用大标题、卡片、分行信息，依靠淡出和滑入切页；主要内容在每页静态停留。虽然有少量连接线和条目动画，整体运动叙事仍像 PPT。源画面检查只修了标题重叠和进度跳变，没有挑战场景组织方式本身。
+review批修还包括原生控件末态安全区、播放器真实失败/恢复提示、版本与Inbox内容mutation回归，以及真实运动区间的编码帧；详细当前结果见qa.md和verification.json。哈希仅证明当前文件身份，不是独立渲染来源认证。
 
-## 新 session 应推进的下一步
+三个路由 JSON 已按 20 秒 brief 重新绑定；toolchain 的 `blocked/review` 保持真实。目标本地 fallback 不构成 shared catalog 准入。共享 pipeline、原 `openalice-showcase`、其他 OpenSpec changes 和无关用户工作不在本轮重设计编辑范围。
 
-- 首先实际观看失败样片，简明指出哪些表现造成 PPT 感。不要再次只读源码/截图就宣布动画质量通过。
-- 重新建立视觉方向和运动叙事：探索产品对象之间连续的关系、状态变化、空间/视角与构图变化；让运动解释产品机制，而不是依靠标题与卡片切换讲述。以上是待验证方向，**不是用户已批准某种 3D、镜头或特效风格**。
-- 若缺少明确风格参照，提出最少但关键的方向问题或提供可观看的运动参考；不要让用户重述已经明确的“不像 PPT”。
-- 可以先渲染一段能验证新方向的连贯运动片段；它只验证方向，不能取代最终完整短片交付。不要一次性再铺满五个类似页面后才发现方向不对。
-- 更新当前 OpenSpec/目标设计与运动文档，再做完整成片。真实视频检查要覆盖整体节奏与连续运动，技术测试与视觉接受分别记录。未获得支持前不宣称用户满意。
-- 在作品效果成立前，暂停继续优化共享 pipeline、准入体系、指标或流程文档。现有路由修复与可用渲染工具可以复用。
+## 集成与收尾归属
 
-## 可复用的技术基础（不是视觉验收）
+工作树 `D:/projects/design-pipeline/product-animation-integration`；目的树 `D:/projects/design-pipeline/osprey`。旧历史集成 SHA/旧 24 文件保留证据不能证明本轮新状态；主控负责最终根 QA、严格 OpenSpec 校验、实时目的树用户文件保全证据、提交/集成决策及既有 Multica CERE-482 的更新。实现切片不执行这些跨工作树操作。
 
-目标独立依赖：HyperFrames 0.8.46、GSAP 3.15.0、Playwright 1.62.0；FFmpeg/ffprobe 已可用。
-
-在 `experiments/openalice-product-animation`：
-
-```sh
-npm ci --no-audit --no-fund
-npm run lint
-npm run check
-npm run render
-npm run verify
-```
-
-当前任务 worktree 已安装 node_modules；osprey 不保证已安装，watch.html/MP4 无需安装即可看。
-`index.html` 是渲染器控制的 paused GSAP timeline；`preview.html` 单独驱动预览；`watch.html` 播放实际 MP4。
-`run.cjs` 封装渲染与检查，`verify.cjs` 测量播放、解码、seek、控制、减弱动态效果并输出证据。重做画面后要相应更新场景、时长、选择器和断言，不能沿用陈旧 receipt。
-
-上一版技术证据：24 秒、1280×720、30fps、720 帧，原生视频 0 丢帧；task QA 668/668、osprey QA 714/714；原有 24 文件字节保留。**这些结果不能证明产品动画效果正确。**
-
-Stage 0 正确识别 motion-graphics / product-launch-video，但共享 HyperFrames 目录仍为 review，toolchain-plan 如实 blocked。之前按用户授权与已有 reference fallback 验证目标本地运行时，未做全局准入。不要偷偷修改状态为 ready。
-
-## 用户文件与产品语义
-
-`experiments/openalice-showcase/` 是用户原有滚动网页；`add-design-quality-baseline`、`openalice-showcase-timeline-runtime` 及其相关源文件也属原有工作。失败动画的新目录可以重新设计，但不能覆盖旧目录。
-
-OpenAlice 内容来自之前样片记录的产品事实；未复制产品源码、截图或品牌素材。交易审批边界仍有效：表现研究到决策的过程，不把画面自动推进画成未经人工批准的真实自动交易。是否继续原有英语文案、无声、24 秒、五场景、横版等均是上个 agent 的实现选择，不是不可变的用户要求。
+无 reset、clean、discard、顺手提交用户修改。主控必须依据 live 状态保留所有无关 dirty/untracked 文件。任务状态留在现有 Multica，不另开票。KB 无新通用结论可写；本轮只修作品与目标证据，不把审美失败包装成新治理基础设施。

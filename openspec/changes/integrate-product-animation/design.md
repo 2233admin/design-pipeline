@@ -1,23 +1,21 @@
-# Design
+# CERE-482 产品动画返工设计
 
-## Delivery and integration
+实施依据：`_bmad-output/implementation-artifacts/spec-cere-482-product-animation-redesign.md`。Checkpoint1 已获用户批准制作，最终视觉接受 pending；不改变冻结意图。
 
-An original 24-second, 1280×720, 30 fps silent product film about OpenAlice. Five timed scenes: question / connect existing agents / accumulate research in Git / recurring work / human approval boundary. One deterministic paused GSAP timeline, registered for HyperFrames frame seeking. A separate preview driver owns autonomous playback outside the renderer. No scrolling, clicking, network data, or user approval is needed to advance the film. The illustrated trade remains awaiting approval throughout.
+## 决定
 
-Reuse the old sample's product facts and restrained palette; do not copy its scroll runtime or modify its user-owned foundations. New target foundations declare a video delivery format and timed scenes. Product UI is an original schematic, not a screenshot or claim of exact product fidelity. No return metrics or live prices.
+采用“研究留下痕迹”，取代被否定的五面板 24 秒轮播。单研究：NVIDIA FY2025 数据中心历史收入。官方 2025-02-26 earnings release 的 Data Center 段支持 $115.2B / +142% year over year；不据此推导买卖或前瞻结论。
 
-## Evidence
+先给正文近景，局部引入带来源摘录；保存触发同一 desk 拉出，原 research.md 与 v01/v02 留驻；随后 Inbox 增加 report/attachment reference，引用原 Session research-01，不搬走原文件。片尾仅 Ready for your review / No trade placed，不添加交易提案或审批。
 
-Persist Stage 0 job-plan and toolchain hash binding. Pin the rendering dependencies in the target package. Run HyperFrames lint/check/render, inspect decoded film frames at scene holds and transitions, verify ffprobe metadata and full decode, and play the resulting video in Chromium without input while recording time/scene changes. Exercise reduced motion and keyboard preview controls separately. Run `node scripts/qa.cjs` in the task worktree and integrated osprey.
+## 实施与门禁
 
-## Preservation
+先独立输出7.5秒关键样片：同一来源进入 → 真实版本缩略留驻 → Inbox 引用。主控正常速实播复述通过后，已扩同一表达为20秒完整片；完整片也已由主控正常速看至ended通过预检。具体观看时钟见qa.md，用户最终视觉接受仍pending。
 
-Before integration, snapshot dirty tracked and all untracked osprey file hashes and status. Verify the same files retain identical bytes after fast-forward integration. Additive target paths avoid collisions. Do not stash, reset, clean, or rewrite the user's files.
+保留一个 paused、可倒 seek 的 GSAP timeline 及 window.film 公共接口。新 verifier 按实际 duration 验证，不沿用 24 秒/720 帧/五 scene/awaiting approval 断言。preview/watch 保留暂停、重播、reduced motion、解码播放证据。
 
-## Pipeline improvement order
+## 证据与边界
 
-First establish the output film and actual runtime evidence. Only then add narrowly justified reusable guidance; no speculative gate system, metrics framework, or unrelated optimization.
+首次新 render 之前，旧片及原实现/JSON/验证证据完整复制到 `experiments/openalice-product-animation/output/rejected-24s/`，preservation.json 记录 34 个文件 hash；旧 MP4 SHA256 为 6a8c7886207907ae63e627622e7932e3878ac5441c3febd98cb53e12697e8764。此目录只作被否定反例，不是当前验收证据。
 
-## Local runtime decision
-
-Stage 0 is ready and preserves the video form. Toolchain resolution correctly selects HyperFrames but reports `blocked`: its catalog entry is a governed candidate under review, not a generally admitted executable adapter. Preserve that truthful report. The user explicitly authorizes this dedicated capability integration and video render. For this bounded target, use the entry's documented `references/hyperframes.md` fallback with the project's motion/evidence gates, pin the local CLI and validate it through actual lint/check/render. This is target-local qualification, not global catalog promotion or a claim that toolchain resolution is ready. The inert iart product-demo playbook supplies pacing only; its returned family is motion-graphics/runtime hyperframes, adapted through this target's MOTION.md.
+brief 变化经既有 route/toolchain CLI 刷新 hash lineage，不自行计算替代CLI hash。沿用 HyperFrames 0.8.46 本地 fallback；shared catalog/toolchain 仍 blocked。无 remote publish、交易、共享 pipeline 修改、未批准 commit/merge。本轮使用OMP执行；含混开关未被擅自解释成新功能或声称满足。主控负责 Multica、根 QA 与最终集成；实现不触碰 osprey 工作区。

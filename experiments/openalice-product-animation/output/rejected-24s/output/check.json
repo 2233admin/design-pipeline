@@ -1,0 +1,174 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 3,
+    "findings": [
+      {
+        "code": "connector_orphan",
+        "severity": "info",
+        "time": 4.3,
+        "selector": "path.wire",
+        "message": "Connector shaft is visible while both endpoints are not on stage.",
+        "rect": {
+          "left": 894.16,
+          "top": 245,
+          "right": 1099.16,
+          "bottom": 354,
+          "width": 205,
+          "height": 109
+        },
+        "containerSelector": "div.agent-map > svg:nth-of-type(1)",
+        "fixHint": "Show the shaft only after both ends are on, and hide it with the earlier exit. Do not give the line its own clock.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 894.16,
+          "y": 245,
+          "width": 205,
+          "height": 109
+        },
+        "firstSeen": 4.3,
+        "lastSeen": 4.3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "connector_orphan",
+        "severity": "info",
+        "time": 4.3,
+        "selector": "path.wire",
+        "message": "Connector shaft is visible while both endpoints are not on stage.",
+        "rect": {
+          "left": 894.16,
+          "top": 353,
+          "right": 1099.16,
+          "bottom": 353,
+          "width": 205,
+          "height": 0
+        },
+        "containerSelector": "div.agent-map > svg:nth-of-type(1)",
+        "fixHint": "Show the shaft only after both ends are on, and hide it with the earlier exit. Do not give the line its own clock.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 894.16,
+          "y": 353,
+          "width": 205,
+          "height": 0
+        },
+        "firstSeen": 4.3,
+        "lastSeen": 4.3,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "connector_orphan",
+        "severity": "info",
+        "time": 4.3,
+        "selector": "path.wire",
+        "message": "Connector shaft is visible while both endpoints are not on stage.",
+        "rect": {
+          "left": 894.16,
+          "top": 354,
+          "right": 1099.16,
+          "bottom": 461,
+          "width": 205,
+          "height": 107
+        },
+        "containerSelector": "div.agent-map > svg:nth-of-type(1)",
+        "fixHint": "Show the shaft only after both ends are on, and hide it with the earlier exit. Do not give the line its own clock.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 894.16,
+          "y": 354,
+          "width": 205,
+          "height": 107
+        },
+        "firstSeen": 4.3,
+        "lastSeen": 4.3,
+        "occurrences": 1,
+        "heldMs": 0
+      }
+    ],
+    "duration": 24,
+    "samples": [
+      0,
+      2,
+      4.3,
+      6.5,
+      9.3,
+      11.5,
+      14.3,
+      16.5,
+      18.3,
+      21,
+      23.96
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 3,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0,
+      4.3,
+      11.5,
+      16.5,
+      23.96
+    ],
+    "checked": 81,
+    "passed": 81
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.46",
+    "latestVersion": "0.8.46",
+    "updateAvailable": false
+  }
+}

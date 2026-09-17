@@ -16,6 +16,6 @@
     "OK installed-package public CLI smoke",
     "OK QA leaves repository status byte-identical"
   ],
-  "logSha256": "201270f6a831ffffe15f65f3d1e51effef927a296b53599e60228122b0cce722",
-  "recordedAt": "2026-09-17T13:34:18.319Z"
+  "logSha256": "60a20e090f5c03d88c8b71b78f7b07a9c0a71bafac1631c24cbd58887fbc4ed2",
+  "recordedAt": "2026-09-17T14:59:16.475Z"
 }

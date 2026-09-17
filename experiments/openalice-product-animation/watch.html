@@ -1,3 +1,81 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Watch OpenAlice — Research moves. You decide.</title><style>*{box-sizing:border-box}body{margin:0;background:#070a0e;color:#eef2f8;font:16px "Segoe UI",sans-serif}main{max-width:1280px;margin:auto;padding:24px}h1{font-size:24px;font-weight:500}video{display:block;width:100%;aspect-ratio:16/9;background:#0a0d12}p,li{color:#b5c2d3;line-height:1.6}a{color:#81d6b3}summary{cursor:pointer;padding:12px 0}a:focus-visible,summary:focus-visible{outline:3px solid #81d6b3;outline-offset:4px}</style></head>
-<body><main><h1>OpenAlice — Research moves. You decide.</h1><video id="encoded" src="output/openalice.mp4" poster="output/frame-09.png" muted playsinline controls preload="auto" aria-label="24-second OpenAlice product film"></video><p id="playback-note">24 seconds · silent · original illustrative workflow. Execution stays awaiting human approval.</p><p><a href="output/openalice.mp4" download>Download MP4</a> · <a href="preview.html">Open timeline preview (requires npm ci)</a></p><details><summary>Film transcript</summary><ol><li>Research moves. You decide. Your agents, your research, your machine.</li><li>Bring Claude Code, Codex, Pi or OpenCode into your research workflow.</li><li>Research stays on disk. The decision trail stays in Git.</li><li>Schedule recurring investigations and return to findings in your Inbox.</li><li>Agents research. You authorize. Execution is beta. Approval remains pending; no trade is placed.</li></ol></details></main><script>const video=document.querySelector('#encoded');const reduced=matchMedia('(prefers-reduced-motion: reduce)');if(!reduced.matches)video.play().catch(()=>document.querySelector('#playback-note').textContent='Press Play to watch the 24-second silent film.');else document.querySelector('#playback-note').textContent='Reduced motion: playback is paused. Press Play when ready.';addEventListener('pagehide',()=>video.pause(),{once:true});</script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watch OpenAlice — Research leaves a trace</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#070a0e;color:#eef2f8;font:16px "Segoe UI",sans-serif}main{max-width:1280px;margin:auto;padding:24px}h1{font-size:24px;font-weight:500}video{display:block;width:100%;aspect-ratio:16/9;background:#0a0d12}p,li{color:#b5c2d3;line-height:1.6}a{color:#81d6b3;overflow-wrap:anywhere}summary{cursor:pointer;padding:12px 0}a:focus-visible,summary:focus-visible,video:focus-visible{outline:3px solid #81d6b3;outline-offset:4px}@media(max-width:600px){main{padding:12px}}
+</style>
+</head>
+<body>
+<main>
+<h1>OpenAlice — Research leaves a trace.</h1>
+<video id="encoded" muted playsinline controls preload="auto" aria-label="OpenAlice research film"></video>
+<p id="playback-note">Loading the silent film. The research stays in its Workspace; the Inbox receives a reference.</p>
+<p><a id="download" href="output/openalice.mp4" download>Download full MP4</a> · <a href="preview.html">Open timeline preview (requires npm ci)</a></p>
+<noscript><p><a href="output/openalice.mp4">Open the full rendered MP4</a>. JavaScript is required for this player.</p></noscript>
+<details><summary>Film transcript</summary>
+<ol>
+<li>One research question stays open in its original Workspace and Session: what changed in NVIDIA’s data-center business in FY2025?</li>
+<li>A finding enters that same research document: NVIDIA reported FY2025 data-center revenue of $115.2 billion, up 142% year over year. The attribution remains beside it: <a href="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025" target="_blank" rel="noopener noreferrer">NVIDIA’s official results, February 26, 2025</a>. This is a research finding, not an investment conclusion.</li>
+<li>A saved version is added alongside the original version. The original research remains in its Workspace.</li>
+<li>An Inbox report references the research document and its original Session. The report does not move or replace the research.</li>
+<li>The full film ends with “Ready for your review” and “No trade placed.” Human review is the boundary; no trade or approval request is created.</li>
+</ol>
+<p>Source insertion, version thumbnails and camera movement are illustrative expressions, not claims about existing product UI interactions. The optional short sample shows only the source → saved versions → Inbox reference sequence, not the complete film.</p>
+</details>
+</main>
+<script>
+const video = document.querySelector('#encoded'), note = document.querySelector('#playback-note');
+const sample = new URLSearchParams(location.search).get('sample') === '1';
+const mediaPath = sample ? 'output/sample-7.5s.mp4' : 'output/openalice.mp4';
+const download = document.querySelector('#download');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+let autoplayBlocked = false, mediaFailure = false;
+video.src = mediaPath;
+video.setAttribute('aria-label', sample ? 'OpenAlice short research sample' : 'OpenAlice full research film');
+download.href = mediaPath;
+download.textContent = sample ? 'Download sample MP4' : 'Download full MP4';
+function describe(){
+  if(mediaFailure || video.error){
+    note.textContent = `The ${sample ? 'sample' : 'full film'} is unavailable. Render ${mediaPath}; no other film has been substituted.`;
+    return;
+  }
+  const duration = Number.isFinite(video.duration) ? `${video.duration.toFixed(1)} seconds · ` : '';
+  const atEnd = !video.seeking && Number.isFinite(video.duration) && video.currentTime === video.duration;
+  const endingSeekable = Array.from({length:video.seekable.length}, (_, index) => video.seekable.end(index)).some(end => end >= video.duration);
+  let motion = autoplayBlocked ? 'Use Play to start the film.' : 'Silent native video playback.';
+  if(reduce.matches){
+    motion = video.paused ? `Reduced motion: ${atEnd ? 'paused ending' : 'paused'}. Use the video controls to play or seek manually.` : 'Reduced motion preference: playing by your choice. Use the video controls to pause.';
+    if(video.paused && !atEnd && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA && !endingSeekable)motion = 'Reduced motion: paused. This server does not support seeking to the ending. Download the MP4 and open it locally.';
+  }
+  note.textContent = `${duration}${sample ? 'Short sample, not the complete film' : 'Full film'} · ${motion} Original research stays in its Workspace; the Inbox receives a reference. ${sample ? 'Source → versions → Inbox.' : 'Ready for your review. No trade placed.'}`;
+}
+function preference(){
+  if(reduce.matches){video.pause();if(!mediaFailure && !video.error && Number.isFinite(video.duration))video.currentTime = video.duration;}
+  describe();
+}
+video.addEventListener('loadedmetadata',async()=>{
+  preference();
+  if(!reduce.matches){try{await video.play();}catch{autoplayBlocked = true;describe();}}
+});
+video.addEventListener('canplay',()=>{
+  if(!video.error && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA){
+    const recovering = mediaFailure;mediaFailure = false;
+    if(recovering)preference();else describe();
+  }
+});
+video.addEventListener('playing',()=>{
+  if(!video.error && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA){mediaFailure = false;autoplayBlocked = false;describe();}
+});
+video.addEventListener('error',()=>{mediaFailure = true;describe();});
+video.addEventListener('seeked',describe);
+video.addEventListener('pause',describe);
+video.addEventListener('progress',describe);
+reduce.addEventListener('change',preference);
+addEventListener('pagehide',()=>{video.pause();reduce.removeEventListener('change',preference);});
+addEventListener('pageshow',event=>{if(event.persisted){reduce.addEventListener('change',preference);preference();}});
+</script>
+</body>
+</html>

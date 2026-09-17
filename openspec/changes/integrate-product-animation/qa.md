@@ -1,115 +1,77 @@
-# Product animation verification
+# CERE-482 产品动画重设计验证
 
-> **User rejection, 2026-09-17:** “这个效果肯定是不对的，做的跟 PPT 一样”.
-> Visual acceptance is NOT passed. Earlier self-review scores and completion language below are
-> historical agent assessments, superseded by this feedback. Technical measurements remain valid
-> for the existing file only. Resume from [HANDOFF.md](HANDOFF.md); the product-animation outcome
-> needs redesign, not merely further fade/slide polish.
+## 结论边界
 
-Trace: CERE-482. Change: `integrate-product-animation` (active, awaiting principal review).
+旧 24 秒片被用户明确否定为“跟 PPT 一样”。旧自评分数和通过语句均不适用于新片；旧源码、视频、技术回执及 QA/HANDOFF/tasks 已保存在 `experiments/openalice-product-animation/output/rejected-24s/`。本轮的完整片为 **20 秒单研究对象连续变化**。技术完成、主控观看预检、用户视觉接受分别记录；**用户视觉接受仍待明确反馈，不能标 done**。
 
-## Identity
+实施契约：`_bmad-output/implementation-artifacts/spec-cere-482-product-animation-redesign.md`。当前目标：`experiments/openalice-product-animation/`。播放入口 `watch.html`；authored timeline 入口 `preview.html`。
 
-- Worktree: `D:/projects/design-pipeline/product-animation-integration`
-- Branch: `product-animation-integration`
-- Codex session/thread: `01a0af45-0f67-7392-b5f5-ae6f54242f36`
-- Orca terminal: `term_61f17fb1-11b9-4d46-9176-e8e166957529`
-- Routing baseline integrated: `472a4514dd9d1e7fb64c39e7972349f300b71ce7`
-- Destination: `D:/projects/design-pipeline/osprey`, branch `osprey`.
+## 方向样片的真实观看门槛
 
-## Actual film
+7.5 秒样片首先经历两次修订：`sample-v1-overlap.mp4` 有文字重叠，`sample-v2-panel-rejected.mp4` 仍偏面板/PPT。通过版本保存在 `output/sample-approved/`，包含源 HTML、视频和检查回执。
 
-`experiments/openalice-product-animation/output/openalice.mp4`: H.264, 1280×720, 30 fps, exactly
-24.000 seconds / 720 frames, 1,670,480 bytes. Silent original product graphics, five autonomous
-scenes and four transitions. Native playback page: `watch.html`; authored timeline: `preview.html`.
-The film ends with AWAITING APPROVAL and never depicts a submitted trade.
+主控以正常速度实播通过样片后才放行20秒扩片。首次加载期间的 play 被 loadedmetadata pause 打断，time 0 / 8帧不计证据；readyState 4 后重新 play，实际时钟采样 **0.874 → 1.918 → 2.924 → 3.929 → 4.948 → 6.020 → 7.289 → 7.5，ended**。主控观察：
 
-The machine receipt is `experiments/openalice-product-animation/output/verification.json`:
+1. 同一 `$115.2B` / `[1]` 来源内容从近景落入正文；指标明确 `Data Center revenue / FY2025`。
+2. v01 空研究/v02 带证据的真实内容缩略从原纸面抽出，原件留驻。
+3. 4.95 秒附件缩略由原研究区域迁向 Inbox，6.02 秒引用关系成立，workspace 原件仍在。
+4. 正常速度能区分上述因果事件，无关键叠字。
 
-- Full FFmpeg decode succeeded.
-- Zero-input preview samples advanced through scenes 0, 1, 2, 3, 4 and ended at 24s; composition
-  scrollY stayed zero and its document height equalled the fixed viewport height.
-- Actual MP4 autoplay in Chromium reached ended/currentTime 24; 720 total video frames and zero
-  dropped frames. Native requestVideoFrameCallback samples prove media-clock progression.
-- Keyboard replay and pause, previous/next scenes, deterministic backward seeking, reduced-motion
-  static overview, and 390px preview overflow checks passed. No page/console errors or remote requests.
-- Sixteen transition-seam samples have at most one visible title scene. SVG progress at 2, 12,
-  and 22 seconds matches continuous fractional offsets.
-- Receipt binds source, foundation, story, route, dependency lock, and MP4 hashes.
+这是**主控扩片预检，不是用户视觉接受**。完整片另需正常速从问题建立看到20秒结束，不能只看关键帧。
 
-## Visual inspection of the actual encoded file
+## 完整片主控观察
 
-Inspected decoded MP4 frames at 0, 2, 4.3, 6.5, 9.3, 11.5, 14.3, 16.5, 18.3, 21, and 23.966 seconds,
-including the contact sheet, full-size research scene, and native encoded-video playback capture.
-Also inspected the reduced-motion mobile preview capture. Evidence is in `output/frame-*.png`,
-`contact-sheet.png`, `encoded-playing.png`, and `preview-reduced-mobile.png`.
+完整20秒片主控正常速实播已通过预检：采样 **2.206 / 4.531 / 6.849 / 9.212 / 11.570 / 13.926 / 16.285 / 18.652 / 20 ended**，全程 droppedVideoFrames=0。主控看到问题建立→同证据落正文→v01/v02留存→附件移交Inbox→17–20秒人review边界；没有旧五章切页、关键叠字或交易误示。此为主控观察，仍不是用户视觉接受。
 
-First rendered review found two **Introduced** defects despite a green automated check: overlapping
-outgoing/incoming headlines, and CSS pixel rounding turning normalized SVG progress into a step.
-One repair batch made exits precede entrances, animated SVG attributes rather than rounded CSS
-values, and made the opening headline visible at frame zero. Re-rendered and inspected the final
-encoded frames: titles are distinct, the research trail advances continuously, and final approval
-copy remains visible. No unresolved observed visual blockers. This is sampled-frame visual review
-plus full automated playback/decode, not a claim of watching every frame by eye.
+Review批修后的最新MP4另由主控通过file://正常速重播至20秒ended、0drop，确认收紧末态在原生ended controls显示时两句人审边界不重叠。此仍是主控预检，不替代用户视觉接受。
 
-HyperFrames `check.json` passes runtime/layout/contrast with zero errors/warnings. Three informational
-`connector_orphan` findings at 4.3s concern the geometric boxes of fully trimmed paths before their
-endpoints enter; the actual decoded 4.3s frame shows no connector shafts. Its motion-assertion pass
-is disabled; the separate playback and seam assertions above provide motion evidence.
+## 当前技术证据
 
-## Design gates and limitations
+目标目录 `npm run lint`、`npm run check`、`npm run render`、`npm run verify` 全部 exit 0。Review批修后最终 verification 记录于 **2026-09-17T14:56:30.688Z**：H.264 / 1280×720 / 30fps / 20秒 / 600帧，FFmpeg完整解码成功；自动预览经过全部六个时间区间；原生媒体播放 ended20，600 frames / 0 dropped。
 
-- Target DESIGN.md and MOTION.md checkers: ready. Primitive: reveal.trim-line. Product signature:
-  research accumulates along a Git trail and stops at the human boundary.
-- Motion opportunity: a once-per-view film uses staged disclosure to explain a product sequence;
-  24-second budget, no perpetual or input-driven motion. Cleanup pauses the preview on pagehide.
-- Interface review scope: standalone film, preview controls, and native MP4 player. Existing scroll
-  sample and unrelated user files are excluded consumers. No removed interaction signals.
-- Accessibility: readable final holds, transcript, keyboard controls, native media controls,
-  reduced-motion initial state, no flashes, 81/81 contrast samples passed. Small-screen film text
-  scales with 16:9; portrait editorial redesign is outside scope and the transcript remains readable.
-- Visual taste 4/5, clarity 4/5, accessibility 4/5, responsiveness 3/5 (landscape film), motion 4/5,
-  engineering fit 4/5, performance risk 5/5 (no external assets, 0 dropped native video frames).
-- No screenshot reconstruction/fidelity claim, reference-evidence carrier, persistent spatial
-  scene, interactive Playground, or adaptive-skill promotion applies.
-- Route selects motion-graphics/product-launch-video and preserves plan hash. Shared toolchain
-  admission remains blocked/review, recorded honestly; this user-authorized local runtime uses the
-  documented fallback and does not globally admit the catalog candidate.
-- No audio, portrait export, real market data, real trading, or remote publication.
+601个帧时点的DOM观测保持原件身份及归属；finding与citation从3.333秒、v01从7.467秒、v02从7.833秒、Inbox从10.8秒可见后持续留驻。倒seek像素hash一致；键盘replay/pause、逐段跳转、iframe reload/pagehide清理、reduced-motion末态与手动导航、390px无横溢均通过，浏览器错误/远端请求为零。
 
-## Repository and integration
+最终 MP4 SHA256：`f258e4184ef372842ae34d6311af3eb3533cf6c92d068b415d0c19d7e0a09414`。验证器首轮因ready谓词返回paused GSAP thenable而超时；改为Boolean就绪值、seek不返回thenable后完整重跑。批修后另纠正透明footer截获hit-test的观测器问题：过滤实际不可见的命中层，不放宽来源时序断言；finding/citation仍同时3.333秒可见，截图佐证。未吞异常或修改影片来配合断言。
 
-Task worktree `node scripts/qa.cjs`: 668/668 tests across 82 files; installed-package CLI smoke
-11/11; reproducible archives/checksums; repository status byte-identical. Exact summary and log
-digest: `evidence/qa-task.json`. The earlier run failed only the status-invariance check because
-evidence files were being created concurrently; the successful rerun froze edits during QA.
+- `output/lint.json`：HyperFrames lint。
+- `output/check.json` / `check.log`：运行时、布局和对比度原始结果。
+- `output/render.log`：实际编码结果，生成 `output/openalice.mp4`。
+- `output/verification.json`：当前源/文档/路由/锁文件/视频哈希，以及解码、真实媒体时钟、控制与连续性实测；由 `npm run verify` 生成，不能复用24秒旧 receipt。
+- `output/frame-*.png`、`contact-sheet.png`、`encoded-playing.png`：当前 MP4 解码帧/原生播放证据。
+- `output/transition-source-contact-sheet.png`：3–5.3秒来源运动；`transition-versions-contact-sheet.png`：7–8.25秒版本抽出；`transition-inbox-contact-sheet.png`：10.5–11.7秒附件生成。每段7个实际编码帧，具体时间写入receipt的transitionFrames，未用DOM截图替代。
 
-Strict OpenSpec validation passed for both `integrate-product-animation` and
-`stage0-job-plan-binding`. `git diff --check` passed.
+### 布局检查的范围和保留警告
 
-Before integration, captured all 24 pre-existing modified/untracked osprey file hashes and exact
-porcelain status in `evidence/osprey-before.json`. Fast-forward integrated code commit
-`5fe0b31ef9cf38b376e110c2609ed0b5a8a84c4e` (including routing commit 472a451) into osprey. All 24 file
-hashes and exact dirty/untracked porcelain status remain identical; see `evidence/osprey-preserved.json`.
-No reset, clean, stash, discard, or unrelated staging was used.
+当前 HyperFrames check 为 `ok: true`，layout **0 errors / 2 warnings / 7 info**，contrast **104/104 passed**，runtime 无错误。Motion assertion detector 明确 disabled，不能把该行当成运动验证；另由 verifier 提供。
 
-Integrated osprey `node scripts/qa.cjs`: **714/714 tests across 84 files**, installed-package CLI
-smoke **11/11**, reproducible artifacts, and byte-identical repository status. Exit 0; exact summary
-and log digest: `evidence/qa-osprey.json`. This includes osprey's existing uncommitted quality work.
+| 时间 / 对象 | 原始发现 | 判断与观察依据 |
+| --- | --- | --- |
+| 7–8秒，v02快照文件名 | 原先 text_occluded：副本从原件背后抽出时被原件遮住 | 这是样片已通过的背后抽出动作。只在 aria-hidden 的实际内容快照上声明 `data-layout-allow-occlusion`；原研究、原来源、Inbox可读文字无豁免。8秒浏览器画面可见v02正在露出且原件完整。 |
+| 7–7.25秒，原研究问题与 v01 副本文件名 | 保留 content_overlap warning | 几何投影相交，但副本在不透明原研究下方；7.2秒浏览器画面只有前方正文可读，没有两份字混合。 |
+| 7.125–7.25秒，原指标标签与 v01 副本问题 | 保留 content_overlap warning | 同一抽出动作的几何相交，副本仍在纸面背后；原指标/来源未被遮。未添加 allow-overlap，也未过滤报告。 |
 
-The MP4 in osprey and the verified task worktree share SHA-256
-`6a8c7886207907ae63e627622e7932e3878ac5441c3febd98cb53e12697e8764`.
-The final follow-up commit contains closeout documentation and these integration receipts only.
+检查期间曾因长行工具输出截断而在等价CSS清理中丢失版本定位后缀；检查失败，停止该轮并恢复完整声明、拆成短行，随后重新执行全套目标路径。该失败不被视为成功证据。
 
-## Pipeline refinement and closeout
+### Review修复：原生控件与交互边界
 
-Only after actual film inspection, expanded the existing HyperFrames reference with encoded-file
-proof, separate preview/render clocks, transition-frame inspection, fractional SVG progress,
-and truthful distinction between routing and executable admission. Added no new global gate or
-runtime dependency to the portable skill. The example's scripts make reproduction and proof local.
+17–20秒保持同一desk并收紧末态，为原生控件预留底部210作者像素。实现侧在Chromium实际file:// watch测试：390px首次reduced motion到time20/paused；正常暂停19.9；桌面从19.5播放到ended20。以上均让native controls显示后拍摄，末尾两句未被控件遮住，原研究/版本/Inbox可辨认。证据：`output/native-reduced-mobile.png`、`native-paused-mobile.png`、`native-ended-desktop.png`。这是所测Chromium表面，不声称所有移动浏览器均一致；横版小字缩放仍由框外transcript补充。
 
-PM: evidence appended to existing CERE-482, comment `01a0af8a-d610-78ff-b770-bb46bab10069`; retained
-in_review, no duplicate issue. Docs: source contracts, target README,
-storyboard, and this report. KB: no duplicate knowledge note; the reusable contract lives in the
-repository reference, while task state belongs in Multica. Git: only task-owned files are staged;
-the destination user's work is not staged. The active change remains reviewable rather than archived.
+实际Python8767服务不支持Range：buffered为[0,20]而seekable为[0,0]，设置currentTime20仍回0。它只用于iframepreview/顺序播放，不作为seek/reduced末帧证据；file:// watch与verify既有Range server可验证末帧。播放器须依据实际时间描述paused状态，不能把无Range的time0称作ending。
+
+哈希记录当前文件身份，不独立认证渲染输入输出来源；该pre-existing限制未新增receipt系统。实际render日志、完整解码及MP4正常速观看是本次证据。
+
+播放器与缩略消费者断言的scoped负向验证已通过：分别在内存删除`#version-saved .evidence-copy`与`.attachment-preview .snapshot`，新断言各自拒绝，恢复后通过。断言要求settled v01保留问题但无后增证据，v02和Inbox缩略可见且含同研究的finding及来源，而非仅检查外框。
+
+播放器内存路由验证覆盖：404/cross-origin/file:// iframe错误提示、控件禁用及恢复；t0 Tab不进入画面；真实source新标签点击（本地拦截外站）不改变父film；MP4404后切reduced仍显示错误，实际canplay才恢复；手动seek1不被强制重置；模拟ready4/seekable[0,0]/paused0时提示下载/本地打开且不重试；首次play拒绝后真实playing清除autoplay提示。
+
+## 产品语义与出处
+
+历史来源：[NVIDIA FY2025 earnings release，2025-02-26](https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025)：Data Center全年收入115.2B美元，同比增长142%。它不是总公司收入或预测。版本、文件名、Session ID和外观是示意。
+
+原研究、source/citation、保存版本出现后保持原身份；Inbox 是引用原文件与原Session的报告附件，而非搬移原件。画内引用是不可聚焦、不可导航的影片文字，真正来源链接留在框外transcript。片尾严格 `Ready for your review` / `No trade placed`。不存在投资建议、审批流或自动交易动作。
+
+## 契约、范围与集成
+
+DESIGN/MOTION foundation checkers 均 ready；单一 paused timeline，`window.film` API 保留。三个 JSON 使用现有 route/toolchain CLI 按20秒 brief 刷新；jobPlanSha256 为 `049f30bb12828c861924cbe2953538b29a0a05d60f7302605f33d7eeba13582b`。toolchain resolve 返回预期 exit 2 / `blocked`：HyperFrames 为 catalog review，未伪造准入。
+
+共享 pipeline 与旧滚动 showcase 未编辑；无外部发布、真实交易或依赖升级。切片freeze后，主控于2026-09-17T14:59:16Z运行根`node scripts/qa.cjs`：668/668测试、82个文件、11/11 installed-package smoke、可重现包及工作树status byte-identical全部通过；本轮日志摘要和SHA在`evidence/qa-task.json`。`openspec validate integrate-product-animation --strict` exit 0。目的树同步前24个用户文件hash及status均与本轮baseline一致。目的树同步后检查另行记录，旧历史集成结果不冒充本轮结果。CERE-482仍等待用户视觉接受。

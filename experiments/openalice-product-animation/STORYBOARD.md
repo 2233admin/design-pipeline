@@ -1,13 +1,29 @@
-# OpenAlice — Research moves. You decide
+# OpenAlice — 研究留下痕迹
 
-24 seconds · 1280×720 · 30 fps · silent · original illustrative product graphics.
+1280×720 / 30fps / 横版无声。只有一个 NVIDIA FY2025 数据中心研究，历史来源 NVIDIA Newsroom 2025-02-26。
 
-| Time | Scene | Action and hold |
-| --- | --- | --- |
-| 0–4 | A question becomes a workflow | Strong OpenAlice title, question card slides into a short research path. Hold from 1.0s. |
-| 4–9 | Bring your own agents | Three labelled agents join ALICE over drawn connectors; local storage remains visible. Hold from 6.0s. |
-| 9–14 | Research with a history | Three Git research rows accumulate sequentially. A shared spine connects each artifact. Hold from 11.3s. |
-| 14–18 | Keep the work moving | Scheduled issue becomes research delivered to Inbox; no execution depicted. Hold from 15.8s. |
-| 18–24 | You own the decision | Research arrives at an amber human boundary. Pending approval remains closed. Closing copy settles by 20.4s and holds to the end. |
+## 先行样片：7.5 秒
 
-Every scene transition uses a 0.22s exit followed by a 0.4s entrance; titles never overlap. The opening headline is visible on the first frame. Footnote throughout: illustrative workflow. Final caution: execution is beta. No source screenshots, source code, audio, third-party images, financial performance claims, or external data.
+| 时间 | 同一对象上的动作 |
+| --- | --- |
+| 0–0.8 | 来源数值近景作为焦点；同一研究纸面作为可认出的目的地留在背景，不先展示完整工具面板。 |
+| 0.8–2.7 | 同一证据 DOM（Data Center revenue / FY2025、数值、[1]来源）位移缩放落入正文，不复制两份交叉淡化。 |
+| 2.7–4.7 | 从主纸面背后抽出带真实正文内容的 v01/v02 缩略；保存动作同步拉镜，原 research.md 留驻。 |
+| 4.7–7.5 | 新的报告附件缩略沿引用线生成在 Inbox，关联 Session research-01；原研究及版本不移动走。 |
+
+主控已正常速实播通过：同一来源进入、真实版本缩略留驻、Inbox 附件引用原件及 Session 均可辨认，无关键叠字；此为扩片预检，不是用户视觉接受。
+
+## 样片通过后扩为20秒完整片
+
+主控已确认20秒取代拟26秒，避免静态结果撑时长。
+
+| 时间 | 动作与留白 |
+| --- | --- |
+| 0–3 | 原研究纸面建立问题；未写入证据，尚无保存版本或 Inbox 报告。 |
+| 3–7 | 同一证据落入正文并保留来源，供正常速度阅读。 |
+| 7–10.5 | 保存抽出正文缩略，同步拉镜，原研究与 v01/v02 留驻。 |
+| 10.5–15 | 沿引用关系生成 Inbox 报告附件，关联原 Session，原研究保留。 |
+| 15–17 | 阅读完整引用关系，不增加新模块。 |
+| 17–20 | Ready for your review / No trade placed，约3秒片尾结束。 |
+
+样片不是整片，命令成功不是视觉接受。所有对象运动和版本外观是概念示意，非现有产品 UI 交互声称。
