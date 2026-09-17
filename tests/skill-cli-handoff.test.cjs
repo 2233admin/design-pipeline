@@ -81,12 +81,39 @@ test("SKILL front doors hand off to local CLI routes without MCP or external ser
       jobId: "website-clone",
       jobPlanSha256: planned.output.planSha256,
       jobPlanPath: "job-plan.json",
+      deliverableForm: dispatched.output.deliverableForm,
     });
     const bound = run(["toolchain", "resolve", "--root", planRoot, "--artifact", "toolchain-request.json"]);
     assert.equal(bound.status, 0, bound.stderr || bound.stdout);
     assert.equal(bound.output.plan.jobId, "website-clone");
     assert.equal(bound.output.plan.jobPlanSha256, planned.output.planSha256);
     assert.notEqual(bound.output.plan.primaryRouteId, bound.output.plan.jobId);
+    const validRequest = JSON.parse(fs.readFileSync(path.join(planRoot, "toolchain-request.json"), "utf8"));
+    const planPath = path.join(planRoot, "job-plan.json");
+    const originalPlan = JSON.parse(fs.readFileSync(planPath, "utf8"));
+    writeJson(planPath, { ...originalPlan, query: "Build a stale settings page" });
+    for (const action of ["resolve", "probe"]) {
+      const stale = run(["toolchain", action, "--root", planRoot, "--artifact", "toolchain-request.json"]);
+      assert.equal(stale.status, 1, stale.stderr || stale.stdout);
+      assert.equal(stale.output.ok, false);
+      assert.match(stale.output.error.message, /job plan hash does not match contents/);
+    }
+    writeJson(planPath, originalPlan);
+    const { jobId, jobPlanSha256, jobPlanPath, deliverableForm, ...unbound } = validRequest;
+    for (const action of ["resolve", "probe"]) {
+      for (const [request, error] of [
+        [unbound, /missing Stage 0 binding/],
+        [{ ...validRequest, jobPlanPath: "missing.json" }, /job plan/],
+        [{ ...validRequest, jobPlanSha256: "a".repeat(64) }, /does not match/],
+        [{ ...validRequest, brief: "制作滚动叙事页面" }, /deliverable-form conflict/],
+      ]) {
+        writeJson(path.join(planRoot, "rejected-request.json"), request);
+        const rejected = run(["toolchain", action, "--root", planRoot, "--artifact", "rejected-request.json"]);
+        assert.equal(rejected.status, 1, rejected.stdout);
+        assert.equal(rejected.output.ok, false);
+        assert.match(rejected.output.error.message, error);
+      }
+    }
   } finally {
     fs.rmSync(planRoot, { recursive: true, force: true });
   }
@@ -117,7 +144,14 @@ test("SKILL toolchain handoff reaches execution route and rejects a tossed owner
     git(root, "add", ".");
     git(root, "commit", "-m", "fixture");
 
+    const routedJob = run(["route", "--root", root, "--query", "Build a React settings page", "--write", "--output", "job-plan.json"]);
+    assert.equal(routedJob.status, 0, routedJob.stderr || routedJob.stdout);
+    const jobPlan = JSON.parse(fs.readFileSync(path.join(root, "job-plan.json"), "utf8"));
     writeJson(path.join(root, "toolchain-request.json"), {
+      jobId: jobPlan.jobId,
+      jobPlanSha256: jobPlan.planSha256,
+      jobPlanPath: "job-plan.json",
+      deliverableForm: jobPlan.deliverableForm,
       schema: "design-pipeline.toolchain-request.v1",
       framework: "react",
       brief: "Build a React settings page",
@@ -133,6 +167,7 @@ test("SKILL toolchain handoff reaches execution route and rejects a tossed owner
       schema: "design-pipeline.execution-request.v1",
       id: "skill-handoff",
       toolchainPlanSha256: planHash,
+      jobPlanSha256: plan.jobPlanSha256,
       preferredMode: "auto",
       isolation: "optional",
       routeId: plan.primaryRouteId,

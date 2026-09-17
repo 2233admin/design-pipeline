@@ -475,7 +475,7 @@ If a companion skill is missing, continue with the same gate manually and note t
 
 Before writing design artifacts or code:
 
-- Persist the route job plan and bind `jobPlanSha256`/`jobPlanPath` to later toolchain and execution requests.
+- Persist the original-query route job plan. Bind its `jobId`, `jobPlanSha256`, `jobPlanPath`, and `deliverableForm` to toolchain requests; carry the same hash to execution requests.
 - Run `node <design-pipeline>/scripts/check-deps.cjs` from the target project root.
 - Identify framework, styling system, component library, routing, design tokens, test surface, and existing UI patterns.
 - Resolve visual sources to file paths before writing source-bound evidence. If unavailable, record `source.availability: pending`, its reason, and the unlock action; never invent paths, dimensions, or hashes.
@@ -573,8 +573,11 @@ The full extraction targets are in `references/pipeline-method.md`, `references/
   stay reference-only and do not become a second primary. Do not search every catalog. Add a new
   capability by registering a job in `references/job-registry.json`, not by adding another
   mandatory Stage 0 search. Status `needs-clarification` asks one question that distinguishes the
-  top jobs; it does not pick a primary or write a plan. Put `jobPlanSha256` and `jobPlanPath` on
-  the toolchain request, and the same `jobPlanSha256` on the execution request. Job id and
+  top jobs; it does not pick a primary or write a plan. Copy `jobId`, `deliverableForm`,
+  and the actual `planSha256` as `jobPlanSha256` into the toolchain request, with `jobPlanPath`
+  pointing to that plan. Preserve the original query as the brief; do not restate a video as a page.
+  Missing/partial binding, invalid plan hashes, and form conflicts fail closed in resolve and probe.
+  Carry the same `jobPlanSha256` on the execution request. Job id and
   toolchain `primaryRouteId` are different identifiers. Plan presence does not make an `inert`
   or `reference-only` catalog executable-ready.
 
@@ -609,8 +612,9 @@ The full extraction targets are in `references/pipeline-method.md`, `references/
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
-- Write `toolchain-request.json` that includes `jobPlanSha256` and `jobPlanPath` from the Stage 0
-  job plan, then run `designer-pipeline toolchain resolve --artifact
+- Write `toolchain-request.json` that includes `jobId`, `deliverableForm`, `jobPlanSha256`,
+  and `jobPlanPath` from the persisted Stage 0 plan, preserving its query as the brief. Then run
+  `designer-pipeline toolchain resolve --artifact
   toolchain-request.json --write --output toolchain-plan.json`. This is mandatory for every
   frontend change, including a project-owned `none` UI-library choice. The request records the
   framework, current and requested stack, brief, capabilities, and any graphics family or adapter.

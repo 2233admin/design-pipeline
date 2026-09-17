@@ -124,6 +124,7 @@ test("equal explicit score and priority needs clarification instead of a silent 
   const result = routeJob({ query: "clone this holosticker" });
   assert.equal(result.status, "needs-clarification");
   assert.equal(result.job, null);
+  assert.equal(result.deliverableForm, "ui-motion");
   assert.equal(result.ambiguous, true);
   assert.equal(result.primaryKnowledge, null);
   assert.deepEqual(result.next, []);
@@ -178,6 +179,7 @@ test("public CLI routes ready briefs, clarifies ties, and rejects an extra actio
   assert.equal(clarify.output.ok, true);
   assert.equal(clarify.output.status, "needs-clarification");
   assert.equal(clarify.output.job, null);
+  assert.equal(clarify.output.deliverableForm, "ui-motion");
 
   const invalid = run(["route", "search", "--root", repoRoot, "--query", "clone this landing page"]);
   assert.equal(invalid.status, 1);
@@ -242,4 +244,73 @@ test("clarification and blocked routes cannot be written as a job plan", () => {
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("page product language does not imply a video job or form", () => {
+  for (const query of [
+    "Build a product showcase landing page",
+    "Create a product demo page",
+    "Design a product launch website",
+    "Make a product dashboard",
+  ]) {
+    const result = routeJob({ query });
+    assert.equal(result.job, "product-design", query);
+    assert.equal(result.deliverableForm, "ui-motion", query);
+    assert.equal(result.primaryKnowledge.id, "prism", query);
+  }
+  const ordinary = routeJob({ query: "Add subtle hover animation" });
+  assert.notEqual(ordinary.job, "motion-graphics", "ordinary hover must not select the video job");
+  assert.equal(ordinary.deliverableForm, "ui-motion");
+});
+
+test("product video variants select motion-graphics and product-launch-video", () => {
+  for (const query of [
+    "Create an HTML product launch video",
+    "Create a product demo video",
+    "Create a product showcase video",
+    "Create a product showcase animation",
+    "Create a product promotional video",
+    "制作 HTML 产品发布宣传视频",
+    "制作产品推广视频",
+    "制作产品宣传展示动画",
+    "制作产品宣传动画",
+    "制作宣传片",
+  ]) {
+    const result = routeJob({ query });
+    assert.equal(result.status, "ready", query);
+    assert.equal(result.job, "motion-graphics", query);
+    assert.equal(result.deliverableForm, "product-launch-video", query);
+  }
+});
+
+test("job plans reject missing or blank route queries before classification", () => {
+  const route = routeJob({ query: "Build a settings page" });
+  for (const query of [undefined, null, 42, "", "   "]) {
+    assert.throws(() => buildJobPlan({ ...route, query }), /ready route query is invalid/);
+  }
+});
+
+test("deliverable forms are derived from query and protected by the plan hash", () => {
+  const forms = [
+    ["Create an HTML product launch video", "product-launch-video"],
+    ["制作 HTML 产品发布宣传视频", "product-launch-video"],
+    ["Create a kinetic typography video", "motion-graphics-video"],
+    ["Build a scrollytelling page", "scrollytelling-page"],
+    ["制作滚动叙事页面", "scrollytelling-page"],
+    ["Build an interactive page", "interactive-page"],
+    ["制作交互页面", "interactive-page"],
+    ["Add subtle hover animation", "ui-motion"],
+  ];
+  for (const [query, form] of forms) {
+    const route = routeJob({ query });
+    assert.equal(route.deliverableForm, form);
+    const plan = buildJobPlan(route);
+    assert.equal(plan.query, query);
+    assert.equal(validateJobPlan(plan).deliverableForm, form);
+    assert.throws(() => validateJobPlan({ ...plan, query: query + " changed" }), /hash does not match/);
+    assert.throws(() => validateJobPlan({ ...plan, deliverableForm: form === "ui-motion" ? "interactive-page" : "ui-motion" }), /hash does not match/);
+  }
+  const plan = buildJobPlan(routeJob({ query: "HTML product launch video" }));
+  const { planSha256, ...body } = { ...plan, deliverableForm: "scrollytelling-page" };
+  assert.throws(() => validateJobPlan({ ...body, planSha256: sha256(canonicalJson(body)) }), /deliverable-form conflict/);
 });

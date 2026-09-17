@@ -144,7 +144,7 @@
       "id": "heygen-com/hyperframes",
       "capabilities": ["video-production", "html-video", "hyperframes"],
       "activation": "keyword",
-      "keywords": ["/hyperframes", "hyperframes", "video", "reel", "motion graphic", "animated explainer", "title card", "slideshow", "subtitle", "captions", "voiceover", "remotion"],
+      "keywords": ["/hyperframes", "hyperframes", "video", "reel", "motion graphic", "animated explainer", "title card", "slideshow", "subtitle", "captions", "voiceover", "remotion", "product video", "product launch video", "product launch animation", "product-launch-video", "product demo video", "product demo animation", "product showcase video", "product showcase animation", "product promotional video", "product promotional animation", "product promo video", "product promo animation", "promotional video", "promo video", "launch video", "短视频", "片头", "产品发布视频", "产品发布宣传视频", "产品推广视频", "产品宣传视频", "产品宣传展示动画", "产品宣传动画", "产品推广动画", "产品展示视频", "产品展示动画", "产品演示视频", "产品介绍视频", "宣传片"],
       "mode": "governed-candidate",
       "status": "review",
       "source": "https://github.com/heygen-com/hyperframes",

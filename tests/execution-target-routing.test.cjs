@@ -65,12 +65,17 @@ function runCli(root, args) {
 }
 
 function resolvedToolchain(brief) {
+  const jobPlan = buildJobPlan(routeJob({ query: brief }));
   return resolveToolchain({
+    jobId: jobPlan.jobId,
+    jobPlanSha256: jobPlan.planSha256,
+    jobPlanPath: "job-plan.json",
+    deliverableForm: jobPlan.deliverableForm,
     schema: "design-pipeline.toolchain-request.v1",
     framework: "react",
     brief,
     requested: { styling: "tailwindcss", uiLibrary: "shadcn" },
-  }, toolchainSources);
+  }, toolchainSources, { jobPlan });
 }
 
 function request(overrides = {}) {
@@ -118,7 +123,7 @@ test("auto routing keeps one clean React slice in place and sequences multiple o
 test("React and website-cloning toolchain plans feed the same execution router", (t) => {
   const { root, worktreeBase } = repository(t);
   const reactToolchain = resolvedToolchain("Build a React settings page");
-  const react = resolveExecutionTarget(request({ toolchainPlanSha256: sha256(canonicalJson(reactToolchain)), routeId: reactToolchain.primaryRouteId, slices: [{ id: "ui", owner: reactToolchain.primaryRouteId, scope: ["src/"] }] }), {
+  const react = resolveExecutionTarget(request({ jobPlanSha256: reactToolchain.jobPlanSha256, toolchainPlanSha256: sha256(canonicalJson(reactToolchain)), routeId: reactToolchain.primaryRouteId, slices: [{ id: "ui", owner: reactToolchain.primaryRouteId, scope: ["src/"] }] }), {
     projectRoot: root,
     worktreeBase,
     toolchainPlan: reactToolchain,
@@ -130,6 +135,7 @@ test("React and website-cloning toolchain plans feed the same execution router",
   const clone = resolveExecutionTarget(request({
     id: "website-clone-chain",
     toolchainPlanSha256: sha256(canonicalJson(cloneToolchain)),
+    jobPlanSha256: cloneToolchain.jobPlanSha256,
     isolation: "required",
     routeId: cloneToolchain.primaryRouteId,
     slices: [{ id: "ui", owner: cloneToolchain.primaryRouteId, scope: ["src/"] }],
@@ -160,6 +166,9 @@ test("execution requires the same job plan hash as the toolchain plan", (t) => {
     framework: "react",
     brief: "clone this landing page",
     requested: { styling: "none", uiLibrary: "none" },
+    jobId: jobPlan.jobId,
+    jobPlanPath: "job-plan.json",
+    deliverableForm: jobPlan.deliverableForm,
     jobPlanSha256: jobPlan.planSha256,
   }, toolchainSources, { jobPlan });
   const bound = request({
@@ -271,6 +280,7 @@ test("CLI routes, prepares, and finalizes a React execution with bound receipts"
   const artifactRoot = path.join(root, ".design-pipeline");
   const toolchain = resolvedToolchain("Build a React settings page");
   const executionRequest = request({
+    jobPlanSha256: toolchain.jobPlanSha256,
     toolchainPlanSha256: sha256(canonicalJson(toolchain)),
     routeId: toolchain.primaryRouteId,
     slices: [{ id: "ui", owner: toolchain.primaryRouteId, scope: ["src/"] }],

@@ -473,15 +473,34 @@ node skill/scripts/evaluate-website-clone.cjs \
 `toolchain resolve` 将框架、样式、组件库、外部工具和图形运行时合并成一份可执行计划。
 管线只负责选择、探测、调用描述和验收契约；依赖仍由目标项目安装和固定版本。
 
-```json
-{
-  "schema": "design-pipeline.toolchain-request.v1",
-  "framework": "reflex",
-  "brief": "Reflex analytics page with an XY chart",
-  "requested": { "styling": "tailwindcss", "uiLibrary": "none" },
-  "graphics": { "family": "vector-data" }
-}
+先用原始用户 query 生成 Stage 0 计划，再从实际计划复制绑定字段；不要手填假哈希或把视频改写为页面。
+旧的无绑定请求和没有 deliverableForm 的计划必须重新生成，没有兼容旁路。
+
+```bash
+node skill/scripts/designer-pipeline.cjs route --root . \
+  --query "Reflex analytics page with an XY chart" --write --output job-plan.json --json
 ```
+
+用 Node.js 从计划生成 toolchain-request.json：
+
+```javascript
+const fs = require("node:fs");
+const plan = JSON.parse(fs.readFileSync("job-plan.json", "utf8"));
+fs.writeFileSync("toolchain-request.json", JSON.stringify({
+  schema: "design-pipeline.toolchain-request.v1",
+  framework: "reflex",
+  brief: plan.query,
+  jobId: plan.jobId,
+  jobPlanSha256: plan.planSha256,
+  jobPlanPath: "job-plan.json",
+  deliverableForm: plan.deliverableForm,
+  requested: { styling: "tailwindcss", uiLibrary: "none" },
+  graphics: { family: "vector-data" }
+}, null, 2));
+```
+
+resolve 和 probe 都会拒绝缺失/部分绑定、计划读取失败、哈希漂移和交付形态冲突。
+执行请求继续携带 toolchain plan 中的同一 jobPlanSha256。
 
 ```bash
 node skill/scripts/designer-pipeline.cjs toolchain resolve \

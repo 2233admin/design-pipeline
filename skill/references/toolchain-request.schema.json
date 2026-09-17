@@ -4,11 +4,15 @@
   "title": "Unified Frontend Toolchain Request",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "framework", "brief"],
+  "required": ["schema", "framework", "brief", "jobId", "jobPlanSha256", "jobPlanPath", "deliverableForm"],
   "properties": {
     "schema": { "const": "design-pipeline.toolchain-request.v1" },
     "framework": { "enum": ["react", "svelte", "vue", "solid", "reflex", "agnostic"] },
     "brief": { "type": "string", "minLength": 1 },
+    "jobId": { "type": "string", "minLength": 1 },
+    "jobPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "jobPlanPath": { "type": "string", "minLength": 1 },
+    "deliverableForm": { "enum": ["product-launch-video", "motion-graphics-video", "scrollytelling-page", "interactive-page", "ui-motion"] },
     "existing": { "type": "object" },
     "requested": { "type": "object" },
     "capabilities": {
@@ -17,9 +21,6 @@
       "items": { "type": "string", "minLength": 1 }
     },
     "context": { "type": "object" },
-    "jobId": { "type": "string", "minLength": 1 },
-    "jobPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "jobPlanPath": { "type": "string", "minLength": 1 },
     "graphics": {
       "type": "object",
       "additionalProperties": false,

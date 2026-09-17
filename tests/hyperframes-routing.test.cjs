@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const { resolveFrontendStack, validateRegistry } = require("../skill/scripts/frontend-stack-core.cjs");
+const { routeJob } = require("../skill/scripts/job-route-core.cjs");
 
 const root = path.resolve(__dirname, "..");
 const references = path.join(root, "skill", "references");
@@ -45,4 +46,21 @@ test("bundled HyperFrames reference preserves the official authoring and verific
     "npx hyperframes check",
     "render only after approval",
   ]) assert.match(reference, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+});
+
+test("English and Chinese product showcases select the existing HyperFrames route", () => {
+  for (const brief of ["Create an HTML product showcase video", "制作 HTML 产品发布宣传视频"]) {
+    const result = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "agnostic", brief }, registry, skills);
+    assert.ok(result.toolRoutes.some(({ id }) => id === "heygen-com/hyperframes"));
+  }
+});
+
+test("product showcase animation keeps Stage 0 and HyperFrames aligned", () => {
+  for (const query of ["Create a product showcase animation", "产品宣传展示动画", "产品宣传动画"]) {
+    const stage0 = routeJob({ query });
+    assert.equal(stage0.job, "motion-graphics", query);
+    assert.equal(stage0.deliverableForm, "product-launch-video", query);
+    const frontend = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "agnostic", brief: query }, registry, skills);
+    assert.ok(frontend.toolRoutes.some(({ id }) => id === "heygen-com/hyperframes"), query);
+  }
 });

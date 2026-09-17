@@ -6,7 +6,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { validateRegistry } = require("./adapter-core.cjs");
 const { resolveFrontendStack } = require("./frontend-stack-core.cjs");
-const { bindJobPlan } = require("./job-route-core.cjs");
+const { bindJobPlan, classifyDeliverableForm, DELIVERABLE_FORMS } = require("./job-route-core.cjs");
 const {
   assertEnum,
   assertKeys,
@@ -30,16 +30,24 @@ const RUNNABLE_SUPPORT = new Set(["native", "generic-workflow", "companion"]);
 function invalid(message) { fail("toolchain", message); }
 
 function validateRequest(request) {
+  if (!request || typeof request !== "object") invalid("request must be an object");
+  if (request.schema !== REQUEST_SCHEMA) invalid("unsupported request schema");
+  const missing = ["jobId", "jobPlanSha256", "jobPlanPath", "deliverableForm"].filter((field) => !request[field]);
+  if (missing.length) invalid(`missing Stage 0 binding: ${missing.join(", ")}`);
   assertKeys(
     request,
-    ["schema", "framework", "brief"],
-    ["schema", "framework", "brief", "existing", "requested", "capabilities", "graphics", "context", "jobId", "jobPlanSha256", "jobPlanPath"],
+    ["schema", "framework", "brief", "jobId", "jobPlanSha256", "jobPlanPath", "deliverableForm"],
+    ["schema", "framework", "brief", "existing", "requested", "capabilities", "graphics", "context", "jobId", "jobPlanSha256", "jobPlanPath", "deliverableForm"],
     "request",
     "toolchain",
   );
-  if (request.schema !== REQUEST_SCHEMA) invalid("unsupported request schema");
   assertString(request.framework, "framework", "toolchain");
   assertString(request.brief, "brief", "toolchain");
+  assertString(request.jobId, "jobId", "toolchain");
+  assertString(request.jobPlanPath, "jobPlanPath", "toolchain");
+  assertString(request.deliverableForm, "deliverableForm", "toolchain");
+  if (!DELIVERABLE_FORMS.includes(request.deliverableForm)) invalid("deliverableForm is invalid");
+  if (!/^[a-f0-9]{64}$/.test(request.jobPlanSha256)) invalid("jobPlanSha256 must be SHA-256");
   if (request.existing !== undefined) assertObject(request.existing, "existing", "toolchain");
   if (request.requested !== undefined) assertObject(request.requested, "requested", "toolchain");
   if (request.capabilities !== undefined) assertStringArray(request.capabilities, "capabilities", "toolchain", { unique: true });
@@ -50,9 +58,6 @@ function validateRequest(request) {
     if (request.graphics.family !== undefined) assertString(request.graphics.family, "graphics.family", "toolchain");
     if (request.graphics.adapter !== undefined) assertString(request.graphics.adapter, "graphics.adapter", "toolchain");
   }
-  if (request.jobId !== undefined) assertString(request.jobId, "jobId", "toolchain");
-  if (request.jobPlanPath !== undefined) assertString(request.jobPlanPath, "jobPlanPath", "toolchain");
-  if (request.jobPlanSha256 !== undefined && !/^[a-f0-9]{64}$/.test(request.jobPlanSha256)) invalid("jobPlanSha256 must be SHA-256");
   return request;
 }
 
@@ -179,6 +184,9 @@ function graphicsStages(adapter) {
 function resolveToolchain(request, sources, options = {}) {
   validateRequest(request);
   const jobPlan = bindJobPlan(request, options.jobPlan);
+  const classifiedForm = classifyDeliverableForm(request.brief);
+  if (classifiedForm !== request.deliverableForm) invalid(`deliverable-form conflict: brief classified as ${classifiedForm}, request declares ${request.deliverableForm}`);
+
   const { frontendRegistry, skillCatalog, adapterRegistry, graphicsCatalog } = sources;
   validateRegistry(adapterRegistry, graphicsCatalog);
   const frontend = resolveFrontendStack(frontendRequest(request), frontendRegistry, skillCatalog);
@@ -190,6 +198,7 @@ function resolveToolchain(request, sources, options = {}) {
   const plan = {
     schema: PLAN_SCHEMA,
     status: blockers.length ? "blocked" : "ready",
+    deliverableForm: request.deliverableForm,
     framework: frontend.framework,
     brief: request.brief,
     styling: frontend.selected.styling,
@@ -218,7 +227,8 @@ function resolveToolchain(request, sources, options = {}) {
       adapterRegistry: sha256(canonicalJson(adapterRegistry)),
       graphicsCatalog: sha256(canonicalJson(graphicsCatalog)),
     },
-    ...(jobPlan ? { jobId: jobPlan.jobId, jobPlanSha256: jobPlan.planSha256 } : {}),
+    jobId: jobPlan.jobId,
+    jobPlanSha256: jobPlan.planSha256,
   };
   return sortValue(plan);
 }

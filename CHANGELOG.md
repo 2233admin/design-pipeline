@@ -2,6 +2,15 @@
 
 All notable changes to Design Pipeline are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- Toolchain resolve/probe now require a complete Stage 0 job-plan binding and reject stale hashes
+  or deliverable-form conflicts. Regenerate older plans from the original query before resolving.
+- English and Chinese HTML product-promotion briefs select the existing motion-graphics and
+  HyperFrames routes; ordinary hover motion remains outside the video route.
+
 ## [0.10.0] - 2026-09-02
 
 ### Added
