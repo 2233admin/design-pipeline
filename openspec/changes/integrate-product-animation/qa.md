@@ -82,8 +82,18 @@ Strict OpenSpec validation passed for both `integrate-product-animation` and
 `stage0-job-plan-binding`. `git diff --check` passed.
 
 Before integration, captured all 24 pre-existing modified/untracked osprey file hashes and exact
-porcelain status in `evidence/osprey-before.json`. Destination integration and QA are pending in
-this initial report; the final receipt will record their actual outcomes.
+porcelain status in `evidence/osprey-before.json`. Fast-forward integrated code commit
+`5fe0b31ef9cf38b376e110c2609ed0b5a8a84c4e` (including routing commit 472a451) into osprey. All 24 file
+hashes and exact dirty/untracked porcelain status remain identical; see `evidence/osprey-preserved.json`.
+No reset, clean, stash, discard, or unrelated staging was used.
+
+Integrated osprey `node scripts/qa.cjs`: **714/714 tests across 84 files**, installed-package CLI
+smoke **11/11**, reproducible artifacts, and byte-identical repository status. Exit 0; exact summary
+and log digest: `evidence/qa-osprey.json`. This includes osprey's existing uncommitted quality work.
+
+The MP4 in osprey and the verified task worktree share SHA-256
+`6a8c7886207907ae63e627622e7932e3878ac5441c3febd98cb53e12697e8764`.
+The final follow-up commit contains closeout documentation and these integration receipts only.
 
 ## Pipeline refinement and closeout
 
@@ -92,7 +102,8 @@ proof, separate preview/render clocks, transition-frame inspection, fractional S
 and truthful distinction between routing and executable admission. Added no new global gate or
 runtime dependency to the portable skill. The example's scripts make reproduction and proof local.
 
-PM: append evidence to existing CERE-482; no duplicate issue. Docs: source contracts, target README,
+PM: evidence appended to existing CERE-482, comment `01a0af8a-d610-78ff-b770-bb46bab10069`; retained
+in_review, no duplicate issue. Docs: source contracts, target README,
 storyboard, and this report. KB: no duplicate knowledge note; the reusable contract lives in the
 repository reference, while task state belongs in Multica. Git: only task-owned files are staged;
 the destination user's work is not staged. The active change remains reviewable rather than archived.

@@ -1,0 +1,21 @@
+{
+  "command": "node scripts/qa.cjs",
+  "cwd": "D:\\projects\\design-pipeline\\osprey",
+  "exitCode": 0,
+  "summary": [
+    "ℹ tests 714",
+    "ℹ pass 714",
+    "ℹ fail 0",
+    "OK repository tests (84 files)",
+    "OK reproducible design-pipeline-skill.tgz",
+    "OK reproducible design-pipeline-skill.zip",
+    "OK reproducible checksums.txt",
+    "ℹ tests 11",
+    "ℹ pass 11",
+    "ℹ fail 0",
+    "OK installed-package public CLI smoke",
+    "OK QA leaves repository status byte-identical"
+  ],
+  "logSha256": "62ac782d261ee59e85ed28ec385ef7c74716a706ce3706dbf0b8d50b7aa738e9",
+  "recordedAt": "2026-09-17T12:48:55.039Z"
+}

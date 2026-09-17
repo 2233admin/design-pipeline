@@ -8,5 +8,5 @@
 - [x] Verify no-input playback, controls, reduced motion, and video decoding.
 - [x] Decide on pipeline improvements from observed evidence.
 - [x] Run required repository QA and OpenSpec validation.
-- [ ] Integrate into osprey and prove user-file preservation.
-- [ ] Update CERE-482 with identity, evidence, and limitations.
+- [x] Integrate into osprey and prove user-file preservation.
+- [x] Update CERE-482 with identity, evidence, and limitations (comment 01a0af8a-d610-78ff-b770-bb46bab10069; retain in_review).
