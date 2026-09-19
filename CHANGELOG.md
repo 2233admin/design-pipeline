@@ -2,7 +2,7 @@
 
 All notable changes to Design Pipeline are documented here.
 
-## [Unreleased]
+## [0.11.0-beta.1] - 2026-09-19
 
 ### Fixed
 
@@ -574,3 +574,4 @@ All notable changes to Design Pipeline are documented here.
 [0.9.0-beta.5]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.4...v0.9.0-beta.5
 [0.9.0]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.5...v0.9.0
 [0.10.0]: https://github.com/2233admin/design-pipeline/compare/v0.9.0...v0.10.0
+[0.11.0-beta.1]: https://github.com/2233admin/design-pipeline/compare/v0.10.0...v0.11.0-beta.1
