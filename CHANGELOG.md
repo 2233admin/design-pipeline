@@ -2,6 +2,32 @@
 
 All notable changes to Design Pipeline are documented here.
 
+## [Unreleased]
+
+### Added
+
+- A reference-led, 32-second SeedController HTML promotional film with existing project footage,
+  graphic annotations, canvas transitions and an original synchronized score. Earlier motion
+  studies are retained as comparisons, with user-rejected directions explicitly identified.
+
+- Product promotional films now have an automatically reached creative direction contract:
+  product actions, shot handoffs, an early moving proof, and uninterrupted creative review,
+  separate from runtime checks. Ordinary Chinese promotional-animation wording is recognized.
+
+- Motion receipts can record rapid-input, reverse, unmount, and reduced-motion lifecycle checks,
+  with optional resize and route-change scenarios. `verify motion --require-lifecycle` requires
+  complete scenario coverage; legacy receipts explicitly report timing-only coverage.
+
+### Fixed
+
+- Product-film direction now starts with inspected moving references and available footage, and
+  includes music/sound planning by default. Silent rough passes and unreviewed audio remain partial
+  evidence; continuity or runtime checks alone cannot satisfy audiovisual creative acceptance.
+
+- The motion receipt JSON Schema now declares all accepted fields. Motion validation rejects
+  placeholder interruption declarations, zero cadence/budgets, and unordered or out-of-range
+  frame timestamps.
+
 ## [0.11.0-beta.1] - 2026-09-19
 
 ### Fixed

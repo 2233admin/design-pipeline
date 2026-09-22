@@ -56,11 +56,32 @@ test("English and Chinese product showcases select the existing HyperFrames rout
 });
 
 test("product showcase animation keeps Stage 0 and HyperFrames aligned", () => {
-  for (const query of ["Create a product showcase animation", "产品宣传展示动画", "产品宣传动画"]) {
+  for (const query of [
+    "Create a product showcase animation", "产品宣传展示动画", "产品宣传动画",
+    "给我们的画布做一个宣传动画", "HTML 宣传动画，宣传我们的画布项目",
+    "做一个推广动画", "Make a promotional animation for our canvas",
+  ]) {
     const stage0 = routeJob({ query });
     assert.equal(stage0.job, "motion-graphics", query);
     assert.equal(stage0.deliverableForm, "product-launch-video", query);
     const frontend = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "agnostic", brief: query }, registry, skills);
     assert.ok(frontend.toolRoutes.some(({ id }) => id === "heygen-com/hyperframes"), query);
+  }
+});
+
+test("product film direction is reachable from authoring entry points and included in the package", () => {
+  for (const file of ["../SKILL.md", "stages.md", "hyperframes.md"]) {
+    assert.ok(fs.readFileSync(path.join(references, file), "utf8").includes("references/product-film-direction.md"), file);
+  }
+  const resources = JSON.parse(fs.readFileSync(path.join(references, "package-resources.json"), "utf8"));
+  assert.ok(resources.required.includes("references/product-film-direction.md"));
+  assert.ok(fs.existsSync(path.join(references, "product-film-direction.md")));
+});
+
+test("ordinary UI and marketing pages retain their delivery intent", () => {
+  for (const query of ["给画布节点增加连接动画", "制作产品宣传页面", "Build a marketing page with hover animation"]) {
+    assert.notEqual(routeJob({ query }).deliverableForm, "product-launch-video", query);
+    const result = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "agnostic", brief: query }, registry, skills);
+    assert.equal(result.toolRoutes.some(({ id }) => id === "heygen-com/hyperframes"), false, query);
   }
 });

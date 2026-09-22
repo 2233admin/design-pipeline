@@ -80,7 +80,7 @@ function classifyDeliverableForm(query) {
   const text = fold(query);
   if (/scrollytelling|scroll[- ]driven|scrolling narrative|scroll page|滚动叙事|滚动页面|滚动故事/.test(text)) return "scrollytelling-page";
   if (/interactive (?:page|website|web)|互动页面|交互页面/.test(text)) return "interactive-page";
-  const productVideo = /\bproduct(?:[- ](?:launch|demo|showcase|promo(?:tional)?|intro|overview))?[- ](?:video|film|reel|animation)\b|\b(?:promotional|promo|launch)\s+video\b|产品(?:发布|推广|宣传展示|宣传|展示|演示|介绍)(?:宣传)?(?:短视频|视频|动画|片)|宣传片/.test(text);
+  const productVideo = /\bproduct(?:[- ](?:launch|demo|showcase|promo(?:tional)?|intro|overview))?[- ](?:video|film|reel|animation)\b|\b(?:promotional|promo|launch)\s+(?:video|animation)\b|产品(?:发布|推广|宣传展示|宣传|展示|演示|介绍)(?:宣传)?(?:短视频|视频|动画|片)|宣传片|宣传动画|推广动画/.test(text);
   if (productVideo) return "product-launch-video";
   if (/\bvideo\b|\bfilms?\b|\breels?\b|motion graphics?|animated explainer|short-form|短视频|片头|视频|宣传片/.test(text)) return "motion-graphics-video";
   return "ui-motion";

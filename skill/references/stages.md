@@ -4,6 +4,11 @@ This reference contains detailed stage instructions moved out of the front door.
 
 ## Stage 0: Repo Read
 
+For product promotional films/animations (`product-launch-video`), including HTML previews,
+read `references/product-film-direction.md` before storyboard or template selection. Inspect moving
+references and existing assets, plan sound and picture, then apply its audiovisual proof and creative
+review in addition to runtime QA; the user need not name film techniques or separately request music.
+
 Before writing design artifacts or code:
 
 - Classify the brief into exactly one primary job, then persist the plan before opening a catalog:

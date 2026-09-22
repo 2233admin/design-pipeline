@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#08090b"><title>SeedController — 从想法，到作品</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="masthead"><a href="#" class="wordmark"><span class="mark" aria-hidden="true">[s]</span> SeedController</a><span class="edition">A CANVAS FOR WHAT'S NEXT</span><span class="film-tag">概念宣传演示 / 01</span></header>
+  <main id="seed-film" class="film" data-composition-id="seed-film" data-start="0" data-duration="40" data-width="1600" data-height="900" aria-label="SeedController 宣传动画，四十秒，字幕文稿位于播放器下方">
+    <div class="composition">
+      <div class="scene intro-scene" id="intro" aria-hidden="true">
+        <div class="scene-index">001 / THE SPARK</div>
+        <div class="intro-copy"><p class="overline intro-kicker">EVERYTHING STARTS SOMEWHERE.</p><h1><span class="line"><span class="intro-line">从一个</span></span><span class="line"><span class="intro-line">想法开始<span class="silver">。</span></span></h1><p class="intro-note">一个字符。一个念头。一个新的可能。</p></div>
+        <pre class="seed-art" id="seed-art"></pre><div class="seed-caption">{ idea: <span>infinite</span> }</div>
+        <div class="film-corner">SEEDCONTROLLER <span>·</span> A CREATIVE WORKSPACE</div>
+      </div>
+      <div class="scene canvas-scene" id="canvas-scene" aria-hidden="true">
+        <div class="canvas-grid"></div><div class="scene-index">002 / THE SPACE</div>
+        <div class="canvas-heading"><p class="overline">ROOM FOR EVERY POSSIBILITY.</p><h2>给灵感，<br>一整张画布。</h2><p>素材、提示词、生成结果。自由相连。</p></div>
+        <div class="canvas-camera">
+          <div class="float-node node-reference"><div class="node-bar"><span>[ IMG ]</span> 参考素材 <span>↗</span></div><img src="assets/landscape.png" alt=""><div class="node-foot">山海之间 / reference_01</div></div>
+          <div class="float-node node-thought"><div class="node-bar"><span>[ TXT ]</span> 提示词</div><p>晨光穿过峡谷。<br>镜头缓缓向前。<br>想象，继续延伸<span class="cursor-char">_</span></p><div class="node-foot">PROMPT / 001</div></div>
+          <div class="float-node node-ascii"><div class="node-bar"><span>[ FRAME ]</span> 构图草稿</div><pre class="landscape-ascii" data-landscape="small"></pre><div class="node-foot">COMPOSITION / 16:9</div></div>
+          <div class="float-node node-result"><div class="node-bar"><span>[ VIDEO ]</span> 视频节点 <span>▷</span></div><div class="result-crop"><img src="assets/landscape.png" alt=""></div><div class="node-foot">让静止，开始流动。</div></div>
+          <div class="canvas-coordinate coord-one">+ 1280, 720</div><div class="canvas-coordinate coord-two">+ 0, 0</div>
+        </div>
+        <div class="canvas-toolbar"><span>＋</span><span>↖</span><span>▧</span><span>⌘</span><i></i><b>无限画布</b></div>
+      </div>
+      <div class="scene workflow-scene" id="workflow" aria-hidden="true">
+        <div class="scene-index">003 / THE CONNECTION</div>
+        <div class="workflow-heading"><p class="overline">YOUR PROCESS. CONNECTED.</p><h2>连接。生成。<span class="silver">继续想象。</span></h2></div>
+        <div class="workflow-camera">
+          <svg class="connections" viewBox="0 0 1400 490" aria-hidden="true"><path id="edge-a" d="M300 99.5 C420 99.5 365 239 490 239"/><path id="edge-b" d="M300 364.5 C420 364.5 365 239 490 239"/><path id="edge-c" d="M850 239 C910 239 930 239 1000 239"/></svg>
+          <div class="flow-node flow-prompt"><div class="node-bar">[ 01 ] 提示词</div><p>以山海为灵感，<br>构建一段电影感镜头。</p><span class="port out-port"></span></div>
+          <div class="flow-node flow-ref"><div class="node-bar">[ 02 ] 参考素材</div><div class="flow-image"><img src="assets/landscape.png" alt=""></div><span class="port out-port"></span></div>
+          <div class="flow-node flow-imagegen"><div class="node-bar">[ 03 ] 图像生成 <span>✳</span></div><div class="generated-image"><pre class="landscape-ascii" data-landscape="medium"></pre><img class="image-resolve" src="assets/landscape.png" alt=""></div><div class="node-foot">把参考，变成新的画面。</div><span class="port in-port"></span><span class="port out-port"></span></div>
+          <div class="flow-node flow-videogen"><div class="node-bar">[ 04 ] 视频生成 <span>▷</span></div><div class="generated-video"><img src="assets/landscape.png" alt=""><span class="video-play">▷</span><div class="film-strip"></div></div><div class="node-foot">让画面，成为一段叙事。</div><span class="port in-port"></span></div>
+        </div>
+        <p class="workflow-bottom">参考素材 → 图像生成 → 视频生成 <span>你的创作路径，由你连接。</span></p>
+      </div>
+      <div class="scene agent-scene" id="agent-scene" aria-hidden="true">
+        <div class="scene-index">004 / THE COLLABORATOR</div>
+        <div class="agent-heading"><p class="overline">MEET YOUR CREATIVE AGENT.</p><h2>一句话。<br><span>铺开工作流。</span></h2><p>用自然语言，生成和修改画布计划。</p></div>
+        <div class="agent-window"><div class="agent-top"><span class="agent-star">✳</span> Canvas Agent <span class="agent-status">WORKFLOW PLANNING</span></div><div class="prompt-bubble"><span class="prompt-typed">用这张参考图，规划三个电影感分镜。</span><span class="prompt-caret">|</span></div><div class="agent-reply"><span>↳</span><p>先建立参考，再展开镜头。<br><strong>创作计划，已铺开。</strong></p></div><div class="mini-plan"><div><span>01 / WIDE</span><div class="plan-image"><img src="assets/landscape.png" alt=""></div><b>建立场景</b></div><i>→</i><div><span>02 / MOVE</span><div class="plan-image"><img src="assets/landscape.png" alt=""></div><b>向前推进</b></div><i>→</i><div><span>03 / DETAIL</span><div class="plan-image"><img src="assets/landscape.png" alt=""></div><b>发现细节</b></div></div><div class="agent-window-foot">[ 3 个分镜 ] <span>由你决定，下一步创作。</span></div></div>
+      </div>
+      <div class="scene reveal-scene" id="reveal-scene" aria-hidden="true"><img class="reveal-image" src="assets/landscape.png" alt=""><pre id="reveal-ascii"></pre><div class="reveal-shade"></div><div class="reveal-copy"><p class="overline">IMAGINATION, MADE VISIBLE.</p><h2>让想象，<br>有了画面。</h2></div><span class="reveal-caption">从结构，到色彩。从想法，到作品。</span></div>
+      <div class="scene end-scene" id="end-scene" aria-hidden="true"><div class="end-glow"></div><pre class="end-ascii" id="end-ascii"></pre><div class="end-content"><span class="end-symbol">[s]</span><h2>SeedController<span>_</span></h2><p>把想象，连接成作品。</p><div class="end-features"><span>节点画布</span><i>+</i><span>图像与视频</span><i>+</i><span>Agent 编排</span></div><span class="end-bottom">YOUR NEXT IDEA STARTS HERE.</span></div></div>
+      <div class="frame-label" aria-hidden="true"><span>SEEDCONTROLLER</span><span id="scene-label">THE SPARK</span></div>
+    </div>
+    <noscript><div class="fallback">SeedController · 把想象，连接成作品。<br>请启用 JavaScript 播放宣传动画。</div></noscript>
+  </main>
+  <section class="player" aria-label="动画播放控制"><button id="play" type="button" aria-label="暂停">Ⅱ</button><button id="restart" type="button" aria-label="从头播放">↺</button><span class="time" id="time">00:00</span><label class="seek-label"><span class="sr-only">播放进度</span><input id="seek" type="range" min="0" max="40" step="0.1" value="0" aria-label="播放进度"></label><span class="time">00:40</span><button id="fullscreen" type="button" aria-label="全屏播放">⛶</button></section>
+  <section class="below"><div class="film-description"><span class="overline">SEEDCONTROLLER / PRODUCT FILM</span><h3>从字符，到一个完整的创作世界。</h3><p>ASCII 勾勒想法，色彩呈现作品。</p></div><nav class="chapters" aria-label="影片章节"><button data-time="3">01<span>灵感</span></button><button data-time="10">02<span>画布</span></button><button data-time="20">03<span>连接</span></button><button data-time="28.5">04<span>Agent</span></button><button data-time="33.5">05<span>成形</span></button><button data-time="38">06<span>品牌</span></button></nav></section>
+  <details class="transcript"><summary>影片文稿与说明</summary><p>从一个想法开始。给灵感，一整张画布。连接素材与提示词，组织图像和视频生成工作流。通过自然语言，让 Agent 生成和修改画布计划。把想象，连接成作品。</p><p>这是一支功能概念宣传片，画布以设计化场景呈现；示意素材专为本片生成，不是一次真实产品生成任务的录屏。本版为无声 HTML 动画。</p></details>
+  <script src="vendor/gsap.min.js"></script><script src="film.js"></script>
+</body>
+</html>

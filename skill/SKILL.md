@@ -1,6 +1,6 @@
 ---
 name: design-pipeline
-description: OpenSpec-style design development pipeline for visual direction, UX research, website cloning and reverse-engineering, interaction polish, frontend implementation, and evidence-backed QA. Use for product UI, marketing pages, dashboards, live-page references, pixel-accurate rebuilds, design reviews, and frontend work that must avoid generic AI-looking output.
+description: OpenSpec-style design development pipeline for visual direction, UX research, website cloning and reverse-engineering, interaction polish, frontend implementation, and evidence-backed QA. Use for product UI, marketing pages, product promotional animations and HTML films, dashboards, live-page references, pixel-accurate rebuilds, design reviews, and frontend work that must avoid generic AI-looking output.
 ---
 
 # Frontend Design Pipeline
@@ -18,6 +18,10 @@ This is the project front door. It routes UI work to the smallest relevant workf
 
 3. Read only the returned primary knowledge door. Treat secondaries as reference-only.
 4. Read the matching workflow in `references/stages.md` and the route-specific contract listed below.
+   For product promotional films/animations (`product-launch-video`), read
+   `references/product-film-direction.md`: inspect moving references and existing assets, then
+   plan sound and picture before storyboard or template selection. This also applies to HTML
+   previews and ordinary-language requests without motion-design terminology.
 5. Create or update the OpenSpec change artifacts before implementation.
 6. Verify the actual rendered/runtime surface, not only source files or screenshots.
 

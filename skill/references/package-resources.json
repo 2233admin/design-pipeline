@@ -257,6 +257,7 @@
     "references/frontend-stack-request.schema.json",
     "references/frontend-stack-registry.json",
     "references/hyperframes.md",
+    "references/product-film-direction.md",
     "references/vite-devtools.md",
     "references/toolchain-request.schema.json",
     "references/toolchain-plan.schema.json",

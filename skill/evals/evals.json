@@ -61,6 +61,26 @@
       "requiredArtifacts": ["motion.md", "motion.json", "qa.md"]
     },
     {
+      "id": "ordinary-product-film-reference-and-sound",
+      "name": "普通宣传动画请求自动研究动态参考与声音",
+      "prompt": "给我们的画布做一个宣传动画，用 HTML 页面播放，让人想用它。",
+      "expectedRoute": "motion-graphics",
+      "expectedJob": "motion-graphics",
+      "expectedState": "ready",
+      "requiredSignals": ["moving-reference-search", "timestamped-reference-observations", "asset-inventory", "product-adaptation", "music-direction", "audiovisual-proof", "reference-comparison", "user-acceptance-separate"],
+      "requiredArtifacts": ["job-plan.json", "reference.md", "sound.md", "storyboard.md", "qa.md"]
+    },
+    {
+      "id": "existing-footage-film-revision",
+      "name": "依据成片参考与现成视频修正宣传方向",
+      "prompt": "这版宣传动画不是我想要的感觉。参考链接里的成片，我已经做好了视频素材，也需要配乐。先按这个感觉重新做宣传片。",
+      "expectedRoute": "motion-graphics",
+      "expectedJob": "motion-graphics",
+      "expectedState": "ready",
+      "requiredSignals": ["reopen-rejected-direction", "supplied-reference-inspected", "existing-footage-inventory", "observed-versus-inferred", "sound-source-and-audition-status", "audiovisual-proof", "no-silent-final-substitution"],
+      "requiredArtifacts": ["job-plan.json", "reference.md", "sound.md", "storyboard.md", "qa.md"]
+    },
+    {
       "id": "dynamic-browser-evidence",
       "name": "动态页面验证",
       "prompt": "执行 dynamic web verification：验证一个需要异步数据的页面，等待运行时就绪和 networkidle，执行核心交互，并收集 DOM、截图、控制台、可访问性、网络和性能证据。",

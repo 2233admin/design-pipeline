@@ -121,7 +121,7 @@ const {
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
 const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -368,6 +368,7 @@ function publicHelp() {
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
     "  verify motion|components | --gate <gate> --artifact <file>",
+    "    verify motion --receipt <file> [--require-lifecycle]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
@@ -746,7 +747,7 @@ function verifyCommand(parsed, root, action) {
   }
   if (action === "motion") {
     const file = artifact(parsed, root, "--receipt");
-    const result = evaluateMotion(readJson(file, "motion evidence"));
+    const result = evaluateMotion(readJson(file, "motion evidence"), { requireLifecycle: option(parsed, "--require-lifecycle") === true });
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "components") {
