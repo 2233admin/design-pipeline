@@ -44,9 +44,10 @@ All notable changes to Design Pipeline are documented here.
   real input (`pointer-sweep`, `wheel`, `click`) and samples the target every animation frame, then
   reports `dead-interaction`, `no-settle`, `rest-drift`, `linear-response` (warning), `opacity-only`
   and `external-request`, each with a one-line fix, as `design-pipeline.interaction-result.v1` next
-  to the probe. Measurement is receipt-free: a dead or linear interaction now fails on what the
-  browser recorded, not on what an agent reported. The gate records itself as `interaction` through
-  the workflow state.
+  to the probe. Measurement is receipt-free: a dead, unsettled or drifting interaction fails on what
+  the browser recorded rather than on what an agent reported, and a linear response is reported as a
+  warning from the same measurement. The gate records itself as `interaction` through the workflow
+  state.
 - `response.spring-settle` motion primitive (port-motion-web-interaction, brief w6): registered in
   `motion-primitives.json` with stiffness, dampingRatio, mass, restValue and overshootLimit
   parameters, pointer/state/scroll drivers, and `provenance.kind: idea` crediting
