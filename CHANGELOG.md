@@ -4,6 +4,12 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- `node scripts/qa.cjs` now points `TEMP`, `TMP` and `TMPDIR` inside its own temporary root, so
+  test scratch directories are removed with it. Before, every run left thousands of directories
+  and a 0.33 GB install copy in the system temp folder; on 2026-09-28 this filled drive C.
+
 ### Added
 
 - Provenance records for the reference skills motion-web (CC BY-NC 4.0, re-reviewed at `5f4e40f1`)
