@@ -129,8 +129,10 @@ test("a target that does not come back to rest drifts; 0.99 px of drift does not
   assert.equal(drifted.metrics.restDriftPx, 64);
   assert.match(drifted.findings[0].message, /64\.00 px from the pre-input box/);
 
+  // The return here is a one-frame snap, which is not a spring; expect "linear" so the case
+  // isolates the drift threshold.
   const returned = recording().map((sample, index) => (index >= 15 ? moveTo(sample, 200.99) : sample));
-  const result = evaluate(returned, { expect: { returnsToRest: true } });
+  const result = evaluate(returned, { expect: { returnsToRest: true, response: "linear" } });
   assert.equal(result.metrics.restDriftPx, 0.99);
   assert.deepEqual(codes(result), []);
 });
@@ -290,4 +292,24 @@ test("a probe the capture never recorded is a contract error", () => {
   const empty = fixture();
   empty.capture.probes[0].samples = [];
   assert.throws(() => evaluateProbeFile(empty.document, empty.capture), /recorded no samples/);
+});
+
+// A hover or tilt returns to rest, so its net travel is about zero. Overshoot is then the swing past
+// rest after the largest excursion, and a constant-speed out-and-back is not a spring even when
+// uneven frame spacing jitters its speed a little.
+const outAndBack = (xs) => [200, 200, 200, ...xs, ...Array.from({ length: 20 - 3 - xs.length }, () => 200)];
+test("return-to-rest motion: a swing past rest is a spring, a jittery constant-speed out-and-back is not", () => {
+  const spring = positions(recording(), outAndBack([220, 245, 262, 266, 255, 232, 206, 188, 186, 193, 199]));
+  const springResult = evaluate(spring, { expect: { returnsToRest: true } });
+  assert.deepEqual(codes(springResult), []);
+  assert.equal(springResult.metrics.overshootBasis, "excursion");
+  assert.equal(springResult.metrics.overshootPx, 14);
+
+  // 10 px per frame out and back, with timestamps jittered by up to 2 ms.
+  const linear = positions(recording(), outAndBack([210, 220, 230, 240, 250, 240, 230, 220, 210]));
+  const gaps = Array.from({ length: 19 }, (_, index) => 16 + [0, 2, -1, 1, -2][index % 5]);
+  const linearResult = evaluate(retime(linear, gaps), { expect: { returnsToRest: true, settleWithinMs: 150 } });
+  assert.deepEqual(codes(linearResult), ["linear-response"]);
+  assert.equal(linearResult.metrics.overshootPx, 0);
+  assert.match(linearResult.findings[0].message, /of 50.00 px excursion/);
 });

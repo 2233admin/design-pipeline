@@ -28,6 +28,11 @@ const MOVE_EPS_PX = 0.5;
 const REST_TOLERANCE_PX = 1;
 const OPACITY_EPS = 0.01;
 const OVERSHOOT_RATIO = 0.02;
+// A speed profile has an acceleration and a deceleration phase when its smoothed peak clearly
+// exceeds its typical (median) speed. Constant-speed motion in a real browser jitters by a few
+// percent from uneven frame spacing and rounding, which a bare "peak not at either end" test reads
+// as easing; 1.25 keeps that jitter out while any ease-in-out over three or more frames clears it.
+const PEAK_TO_MEDIAN = 1.25;
 const MAX_LISTED_URLS = 20;
 // A recording shorter than this cannot carry a pre/input/post story at all: the harness failed.
 const MIN_SAMPLES = 5;
@@ -202,19 +207,28 @@ function lastIndexOfPhase(frames, phase) {
 // the interaction with still frames (200 ms of "pre", then the settle tail), and those would
 // otherwise put the peak in the interior for every motion, including a constant-speed one. Speed
 // itself is displacement over elapsed time, never per frame index: real frame spacing is uneven.
-function movingSpeeds(steps) {
+function movingSteps(steps) {
   let first = 0;
   while (first < steps.length && steps[first].displacement <= MOVE_EPS_PX) first += 1;
   let last = steps.length - 1;
   while (last >= first && steps[last].displacement <= MOVE_EPS_PX) last -= 1;
-  return steps.slice(first, last + 1).map((step) => (step.dt > 0 ? step.displacement / step.dt : 0));
+  return steps.slice(first, last + 1);
 }
 
-function peaksInInterior(speeds) {
-  if (speeds.length < 3) return false;
+// Each speed is averaged with its neighbours (total displacement over total time), so a single
+// short frame cannot fake a peak.
+function hasSpeedPeak(steps) {
+  if (steps.length < 3) return false;
+  const smoothed = steps.map((_, index) => {
+    const window = steps.slice(Math.max(0, index - 1), index + 2);
+    const time = window.reduce((sum, step) => sum + step.dt, 0);
+    return time > 0 ? window.reduce((sum, step) => sum + step.displacement, 0) / time : 0;
+  });
   let peak = 0;
-  for (let index = 1; index < speeds.length; index += 1) if (speeds[index] > speeds[peak]) peak = index;
-  return peak > 0 && peak < speeds.length - 1;
+  for (let index = 1; index < smoothed.length; index += 1) if (smoothed[index] > smoothed[peak]) peak = index;
+  const sorted = [...smoothed].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  return peak > 0 && peak < smoothed.length - 1 && smoothed[peak] >= PEAK_TO_MEDIAN * median;
 }
 
 // `data:`, `blob:` and `about:` are not network fetches from another origin, so they never count as
@@ -273,14 +287,29 @@ function evaluateSamples(probe, samples, requests = []) {
   const steps = positions.slice(1).map((position, index) => ({ displacement: Math.abs(position - positions[index]), dt: frames[index + 1].t - frames[index].t }));
 
   let peakDisplacementPx = 0;
-  let overshootPx = 0;
   let maxFrameDeltaPx = 0;
   let opacityDeltaMax = 0;
   for (let index = 0; index < frames.length; index += 1) {
     peakDisplacementPx = Math.max(peakDisplacementPx, Math.abs(positions[index] - restPosition));
-    overshootPx = Math.max(overshootPx, direction * (positions[index] - finalPosition));
     maxFrameDeltaPx = Math.max(maxFrameDeltaPx, deltas[index]);
     opacityDeltaMax = Math.max(opacityDeltaMax, Math.abs(frames[index].opacity - frames[0].opacity));
+  }
+
+  // Overshoot. A move-to interaction (the target ends away from rest) overshoots past its final
+  // position, measured against the net travel. An interaction that returns to rest has almost no
+  // net travel, so it is measured against its largest excursion instead: how far it swings past
+  // rest on the other side after that excursion.
+  let peakIndex = restIndex;
+  for (let index = 0; index < frames.length; index += 1) if (Math.abs(positions[index] - restPosition) > Math.abs(positions[peakIndex] - restPosition)) peakIndex = index;
+  const excursion = positions[peakIndex] - restPosition;
+  const returnsNearRest = travelPx < 0.5 * Math.abs(excursion);
+  const overshootBasis = returnsNearRest ? "excursion" : "travel";
+  const basisPx = returnsNearRest ? Math.abs(excursion) : travelPx;
+  let overshootPx = 0;
+  if (returnsNearRest) {
+    for (let index = peakIndex + 1; index < frames.length; index += 1) overshootPx = Math.max(overshootPx, -Math.sign(excursion) * (positions[index] - restPosition));
+  } else {
+    for (let index = 0; index < frames.length; index += 1) overshootPx = Math.max(overshootPx, direction * (positions[index] - finalPosition));
   }
 
   // Settle: the earliest post-input frame from which no later frame moves more than 0.5 px.
@@ -317,8 +346,9 @@ function evaluateSamples(probe, samples, requests = []) {
     mainAxis,
     travelPx: round(travelPx),
     peakDisplacementPx: round(peakDisplacementPx),
-    overshootPx: round(Math.max(overshootPx, 0)),
-    overshootRatio: travelPx > 0 ? round(Math.max(overshootPx, 0) / travelPx) : 0,
+    overshootPx: round(overshootPx),
+    overshootRatio: basisPx > 0 ? round(overshootPx / basisPx) : 0,
+    overshootBasis,
     settleMs: settleMs === null ? null : round(settleMs),
     restDriftPx: round(restDriftPx),
     maxFrameDeltaPx: round(maxFrameDeltaPx),
@@ -342,11 +372,11 @@ function evaluateSamples(probe, samples, requests = []) {
     add("rest-drift", "error", `the final box sits ${px(restDriftPx)} px from the pre-input box (limit ${REST_TOLERANCE_PX} px)`);
   }
   if (expectation.response === "spring") {
-    const moving = movingSpeeds(steps);
-    const springLike = (travelPx > 0 && overshootPx > OVERSHOOT_RATIO * travelPx) || peaksInInterior(moving);
+    const moving = movingSteps(steps);
+    const springLike = (basisPx > 0 && overshootPx > OVERSHOOT_RATIO * basisPx) || hasSpeedPeak(moving);
     if (moving.length > 0 && !springLike) {
-      const shape = moving.length < 3 ? "the motion happens in a single step" : "peak speed sits at the first or last moving frame instead of rising and falling";
-      add("linear-response", "warning", `expected a spring: overshoot is ${px(Math.max(overshootPx, 0))} px of ${px(travelPx)} px travel (needs more than ${OVERSHOOT_RATIO * 100}%) and ${shape}`);
+      const shape = moving.length < 3 ? "the motion happens in a single step" : `the smoothed speed never rises to ${PEAK_TO_MEDIAN}x its median and falls again`;
+      add("linear-response", "warning", `expected a spring: overshoot is ${px(overshootPx)} px of ${px(basisPx)} px ${overshootBasis} (needs more than ${OVERSHOOT_RATIO * 100}%) and ${shape}`);
     }
   }
   if (opacityDeltaMax > OPACITY_EPS && !boxChanged && !transformChanged) {
