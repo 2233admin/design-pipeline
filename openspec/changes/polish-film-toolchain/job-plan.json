@@ -1,0 +1,41 @@
+{
+  "admission": "inert",
+  "deliverableForm": "product-launch-video",
+  "jobId": "motion-graphics",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": true,
+      "role": "primary"
+    }
+  ],
+  "planSha256": "04fe4a68729708512f8df9298045d41b0008b3bf4cdc8a6211b5e497b7c6928d",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "iart",
+    "id": "iart"
+  },
+  "query": "打磨宣传片工具链：一键脚手架、时间轴自动采集、带修复建议的宣传动画检查",
+  "registrySha256": "fe12e43bc11e5b795d36bb476a1019b3803b1310300e7271b73aa94cb726b17c",
+  "routeSha256": "6a7990170d7dce9df0911fd9e530647e0ae94d1f8108269b0eb6b0d57a69d1c0",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": []
+}

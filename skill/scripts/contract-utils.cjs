@@ -33,7 +33,7 @@ function assertKeys(value, required, allowed, label, scope) {
     if (!Object.hasOwn(value, key)) fail(scope, `${label} is missing ${key}`);
   }
   const extras = Object.keys(value).filter((key) => !allowed.includes(key));
-  if (extras.length) fail(scope, `${label} has unsupported properties: ${extras.join(", ")}`);
+  if (extras.length) fail(scope, `${label} has unsupported properties: ${extras.join(", ")}; allowed: ${allowed.join(", ")}`);
 }
 
 function assertString(value, label, scope) {
@@ -53,7 +53,7 @@ function assertStringArray(value, label, scope, options = {}) {
 }
 
 function assertEnum(value, allowed, label, scope) {
-  if (!allowed.includes(value)) fail(scope, `${label} has invalid value ${String(value)}`);
+  if (!allowed.includes(value)) fail(scope, `${label} has invalid value ${String(value)}; allowed: ${allowed.join(", ")}`);
 }
 
 function pathInside(root, target) {
@@ -82,6 +82,7 @@ function resolveInside(root, raw, label, options = {}) {
 
 function readJson(file, scope = "json") {
   let parsed;
+  if (!fs.existsSync(file)) fail(scope, `file not found: ${file}; check the path or create it first`, { code: "JSON_PARSE" });
   try {
     parsed = JSON.parse(fs.readFileSync(file, "utf8"));
   } catch (error) {

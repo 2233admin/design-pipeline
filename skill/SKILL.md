@@ -1,6 +1,6 @@
 ---
 name: design-pipeline
-description: OpenSpec-style design development pipeline for visual direction, UX research, website cloning and reverse-engineering, interaction polish, frontend implementation, and evidence-backed QA. Use for product UI, marketing pages, product promotional animations and HTML films, dashboards, live-page references, pixel-accurate rebuilds, design reviews, and frontend work that must avoid generic AI-looking output.
+description: Code-carried art and design literacy for agents, as an OpenSpec-style design pipeline for visual direction, composition, motion and promotional film, UX research, website cloning and reverse-engineering, interaction polish, frontend implementation, and evidence-backed QA. Use for product UI, marketing pages, product promotional animations and HTML films, dashboards, live-page references, pixel-accurate rebuilds, design reviews, and frontend work that must avoid generic AI-looking output.
 ---
 
 # Frontend Design Pipeline
@@ -22,9 +22,9 @@ This is the project front door. It routes UI work to the smallest relevant workf
    `references/product-film-direction.md`: inspect moving references and existing assets, then
    plan sound and picture before storyboard or template selection. This also applies to HTML
    previews and ordinary-language requests without motion-design terminology.
-   Gate the storyboard with `verify film-storyboard`, build beats from
-   `references/film-choreography/`, check the probed timeline with `verify film-timeline`,
-   and collect render evidence with `verify film-render`.
+   Shortest path: `film scaffold --output <dir>`, edit `storyboard.json` and `index.html`,
+   `npx hyperframes render --output out.mp4`, then `film check --project-root <dir>` and apply
+   each finding's `fix` until it passes. Single gates: `verify film-storyboard|film-timeline|film-render`.
 5. Create or update the OpenSpec change artifacts before implementation.
 6. Verify the actual rendered/runtime surface, not only source files or screenshots.
 

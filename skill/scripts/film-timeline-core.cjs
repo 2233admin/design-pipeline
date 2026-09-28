@@ -7,6 +7,7 @@
 
 const { assertKeys, assertString, fail } = require("./contract-utils.cjs");
 const { checkStoryboard } = require("./film-core.cjs");
+const { withFix } = require("./film-hints.cjs");
 
 const TIMELINE_SCHEMA = "design-pipeline.film-timeline.v1";
 const SCOPE = "film timeline";
@@ -44,7 +45,7 @@ function checkTimeline(timeline, board, options = {}) {
   validateTimeline(timeline);
   const storyboard = checkStoryboard(board, options);
   const findings = [];
-  const add = (code, message, beatId) => findings.push(beatId ? { code, beatId, message } : { code, message });
+  const add = (code, message, beatId) => findings.push(withFix("timeline", beatId ? { code, beatId, message } : { code, message }));
 
   if (Math.abs(timeline.durationSec - board.durationSec) > FRAME_TOLERANCE_SEC) add("duration-mismatch", `timeline is ${timeline.durationSec}s, storyboard declares ${board.durationSec}s`);
   for (const tween of timeline.tweens) {
