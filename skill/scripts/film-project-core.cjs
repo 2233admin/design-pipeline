@@ -12,6 +12,7 @@ const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
+const { checkAudio } = require("./audio-core.cjs");
 
 const CHECK_SCHEMA = "design-pipeline.film-check.v1";
 const refs = path.join(__dirname, "../references/film-choreography");
@@ -135,6 +136,10 @@ function checkFilmProject(dir, options = {}) {
   if (video) {
     const result = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence") });
     steps.push({ gate: "render", status: result.status, video: path.relative(root, video), findings: result.findings, contactSheet: result.contactSheet && path.join("evidence", result.contactSheet.sheet), audio: result.audio, cuts: result.cuts });
+    if (board.sound.mode !== "silent" || result.audio.present) {
+      const audio = checkAudio(video, { storyboard: board, target: options.audioTarget || "web" });
+      steps.push({ gate: "audio", status: audio.status, findings: audio.findings, metrics: audio.metrics });
+    }
     // Composition of each beat's midpoint frame: errors fail, warnings are review prompts.
     const frames = (result.contactSheet ? result.contactSheet.frames : []).map((frame) => {
       const check = checkComposition(decodePng(fs.readFileSync(path.join(root, "evidence", frame.file)), frame.file), { profile: "frame", allow: options.allowComposition || [] });

@@ -30,6 +30,8 @@
     "scripts/composition-core.cjs",
     "scripts/capture-composition.cjs",
     "references/composition-gate.md",
+    "scripts/audio-core.cjs",
+    "references/audio-gate.md",
     "scripts/component-first-core.cjs",
     "scripts/component-first-v2-core.cjs",
     "scripts/design-skill-core.cjs",
