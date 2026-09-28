@@ -21,6 +21,7 @@ const HANDOFFS = ["open", "continuation", "match-cut", "morph", "camera-carry", 
 const CUT_HANDOFFS = new Set(["hard-cut", "match-cut"]);
 const CARRIED_HANDOFFS = new Set(["continuation", "morph", "camera-carry"]);
 const DETACHED_HANDOFFS = new Set(["reset", "dissolve"]);
+const NAMED_CARRY_HANDOFFS = new Set(["continuation", "morph", "camera-carry", "match-cut"]);
 const SURFACE_MOTION = new Set(["fade", "fade-in", "fade-out", "opacity", "scale", "scale-in", "scale-out", "zoom", "ken-burns", "slide-in", "slide-out", "blur-in", "blur-out"]);
 const CUE_KINDS = ["entry", "exit", "downbeat", "accent", "riser", "impact", "voiceover", "silence"];
 const PLACEHOLDER = /^(tbd|todo|n\/?a|none|-|\.\.\.|placeholder)$/i;
@@ -83,7 +84,7 @@ function validateShape(board) {
   const beatIds = new Set();
   for (const [index, beat] of board.beats.entries()) {
     const label = `beats[${index}]`;
-    assertKeys(beat, ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion"], ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion", "choreography", "block", "arc", "soundCues", "note"], label, SCOPE);
+    assertKeys(beat, ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion"], ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion", "choreography", "block", "arc", "soundCues", "note", "carrier", "holdSec"], label, SCOPE);
     if (beat.arc !== undefined) assertEnum(beat.arc, ["anticipate-act-settle"], `${label}.arc`, SCOPE);
     real(beat.id, `${label}.id`);
     if (beatIds.has(beat.id)) fail(SCOPE, `${label} duplicates ${beat.id}`);
@@ -95,6 +96,10 @@ function validateShape(board) {
     assertKeys(beat.transformation, ["kind"], ["kind", "from", "to"], `${label}.transformation`, SCOPE);
     assertEnum(beat.transformation.kind, TRANSFORMATIONS, `${label}.transformation.kind`, SCOPE);
     assertEnum(beat.handoff, HANDOFFS, `${label}.handoff`, SCOPE);
+    if (beat.holdSec !== undefined) {
+      const beatLength = beat.endSec - beat.startSec;
+      if (typeof beat.holdSec !== "number" || !Number.isFinite(beat.holdSec) || beat.holdSec <= 0 || beat.holdSec > beatLength) fail(SCOPE, `${label}.holdSec must be greater than 0 and at most the beat length (${beatLength}s)`);
+    }
     if (!Array.isArray(beat.motion) || beat.motion.length === 0 || beat.motion.some((entry) => typeof entry !== "string" || !entry.trim())) fail(SCOPE, `${label}.motion must be a non-empty string array`);
     if (beat.soundCues !== undefined) {
       if (!Array.isArray(beat.soundCues)) fail(SCOPE, `${label}.soundCues must be an array`);
@@ -106,6 +111,7 @@ function validateShape(board) {
 function checkStoryboard(board, options = {}) {
   validateShape(board);
   const choreography = options.choreographyIds || loadChoreographyIds();
+  const filmRhythm = options.filmRhythm !== false;
   const findings = [];
   const add = (code, message, beatId) => findings.push(withFix("storyboard", beatId ? { code, beatId, message } : { code, message }));
   const beats = board.beats;
@@ -122,6 +128,13 @@ function checkStoryboard(board, options = {}) {
   if (Math.abs(last.endSec - total) > FRAME_TOLERANCE_SEC) add("timeline-open-end", `last beat ends at ${last.endSec}s, film declares ${total}s`, last.id);
   if (beats[0].handoff !== "open") add("handoff-first", "first beat handoff must be open", beats[0].id);
   for (const beat of beats.slice(1)) if (beat.handoff === "open") add("handoff-open-midfilm", "only the first beat may use handoff open", beat.id);
+
+  // A carried boundary must name what survives it: what continues, morphs or carries across.
+  for (const beat of beats) {
+    if (!NAMED_CARRY_HANDOFFS.has(beat.handoff)) continue;
+    const carrier = typeof beat.carrier === "string" ? beat.carrier.trim() : "";
+    if (!carrier || PLACEHOLDER.test(carrier)) add("carrier-unnamed", "carried handoff must name what survives the boundary and what it becomes", beat.id);
+  }
 
   // Every action beat demonstrates the product and changes its subject.
   const actionBeats = beats.filter((beat) => beat.role === "action");
@@ -143,6 +156,18 @@ function checkStoryboard(board, options = {}) {
   for (let index = 1; index < beats.length; index += 1) {
     if (beats[index].role !== "action" && beats[index - 1].role !== "action") add("hold-chain", "consecutive holds stall the film", beats[index].id);
   }
+
+  // Rhythm: very uneven beat lengths read as intentional pacing; near-equal beats read as a
+  // slideshow even when every boundary is carried. Rest: a film this long needs one still moment.
+  const beatLengths = beats.map((beat) => beat.endSec - beat.startSec);
+  const shortestLen = Math.min(...beatLengths);
+  const longestLen = Math.max(...beatLengths);
+  const rawCadenceRatio = shortestLen > 0 ? longestLen / shortestLen : null;
+  const cadenceRatio = rawCadenceRatio === null ? null : Number(rawCadenceRatio.toFixed(2));
+  if (filmRhythm && beats.length >= 4 && rawCadenceRatio !== null && rawCadenceRatio < 3) add("uniform-cadence", `beat lengths span ${shortestLen}s-${longestLen}s (ratio ${cadenceRatio.toFixed(2)}); make the longest beat at least 3x the shortest`);
+  const restSec = Number((holds.reduce((sum, beat) => sum + (beat.endSec - beat.startSec), 0) + beats.reduce((sum, beat) => sum + (beat.holdSec || 0), 0)).toFixed(2));
+  const hasHoldSec = beats.some((beat) => (beat.holdSec || 0) >= 0.3);
+  if (filmRhythm && total >= 8 && holds.length === 0 && !hasHoldSec) add("no-rest", `film is ${total}s with no title/brand hold and no beat holding still for at least 0.3s`);
 
   // Slideshow detector: detached handoffs between panels that only fade/scale.
   const transitions = beats.slice(1);
@@ -175,6 +200,8 @@ function checkStoryboard(board, options = {}) {
       detachedHandoffShare: transitions.length ? Number((detached.length / transitions.length).toFixed(3)) : 0,
       surfaceOnlyActionBeats: actionBeats.filter(surfaceOnly).length,
       plannedCutsSec: cutsPlanned,
+      cadenceRatio,
+      restSec,
     },
     creativeAcceptance: "not-assessed",
   };

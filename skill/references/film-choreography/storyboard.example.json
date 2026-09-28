@@ -18,7 +18,7 @@
       { "id": "music-in", "atSec": 0, "kind": "entry", "note": "soft pad under the typing" },
       { "id": "connect-tick", "atSec": 2.4, "kind": "accent", "note": "click as the edge snaps" },
       { "id": "drop-1", "atSec": 5, "kind": "downbeat", "note": "beat drop as the image blooms" },
-      { "id": "strip-hit", "atSec": 8.2, "kind": "impact", "note": "hit as frame lands in strip" },
+      { "id": "strip-hit", "atSec": 8.8, "kind": "impact", "note": "hit as frame lands in strip" },
       { "id": "music-out", "atSec": 12, "kind": "exit", "note": "ring out under logo" }
     ]
   },
@@ -26,7 +26,7 @@
     {
       "id": "type-prompt",
       "startSec": 0,
-      "endSec": 2.4,
+      "endSec": 1.6,
       "role": "action",
       "subject": "prompt node",
       "productAction": "User types a prompt into a canvas node",
@@ -38,39 +38,42 @@
     },
     {
       "id": "connect-edge",
-      "startSec": 2.4,
-      "endSec": 5,
+      "startSec": 1.6,
+      "endSec": 3.8,
       "role": "action",
       "subject": "edge from prompt to image node",
       "productAction": "User drags an edge from the prompt to a new image node",
       "transformation": { "kind": "state-change", "from": "isolated prompt", "to": "connected graph" },
       "handoff": "continuation",
+      "carrier": "the prompt node's edge handle stretches into the new image node",
       "motion": ["cursor-travel", "edge-draw"],
       "choreography": "ui-demo",
       "soundCues": ["connect-tick"]
     },
     {
       "id": "image-bloom",
-      "startSec": 5,
-      "endSec": 8.2,
+      "startSec": 3.8,
+      "endSec": 8.8,
       "role": "action",
       "subject": "image node",
       "productAction": "The image node renders the generated picture",
       "transformation": { "kind": "morph", "from": "placeholder tile", "to": "finished image" },
       "handoff": "camera-carry",
+      "carrier": "the camera stays on the image node as its placeholder tile fills in",
       "motion": ["camera-push", "clip-reveal"],
       "choreography": "camera-push",
       "soundCues": ["drop-1"]
     },
     {
       "id": "into-storyboard",
-      "startSec": 8.2,
+      "startSec": 8.8,
       "endSec": 10.6,
       "role": "action",
       "subject": "generated image",
       "productAction": "The image drops into the storyboard strip as frame 3",
       "transformation": { "kind": "morph", "from": "canvas node", "to": "storyboard frame" },
       "handoff": "morph",
+      "carrier": "the finished image node shrinks and becomes storyboard frame 3",
       "motion": ["continuous-morph"],
       "choreography": "continuous-morph",
       "soundCues": ["strip-hit"]
@@ -84,6 +87,8 @@
       "productAction": "Logo resolves over the finished storyboard",
       "transformation": { "kind": "none" },
       "handoff": "continuation",
+      "carrier": "the finished strip settles under the logo as it fades in",
+      "holdSec": 0.6,
       "motion": ["fade-in"],
       "soundCues": ["music-out"]
     }

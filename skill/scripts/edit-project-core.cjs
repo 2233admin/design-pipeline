@@ -89,7 +89,10 @@ function checkProject(root, options = {}) {
   const video = path.join(root, options.output || path.join("renders", "edit.mp4"));
   if (fs.existsSync(video)) {
     const board = storyboardFromEdit(edit, analysis.music);
-    const render = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence") });
+    // Edits get their own rhythm checks (monotone-rhythm, shot-too-long) tuned to music-driven
+    // cutting; the storyboard's cadence and rest rules assume freeform choreography and would
+    // fight them, so the derived storyboard skips filmRhythm here.
+    const render = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence"), filmRhythm: false });
     // A planned cut the scene detector cannot see joins two near-identical shots: it does not read.
     const hints = require("./edit-core.cjs").HINTS;
     const invisible = render.cuts.missedSec.map((at) => ({ code: "cut-not-visible", severity: "warn", message: `the cut at ${at}s is not visible in the render`, fix: hints["cut-not-visible"] }));

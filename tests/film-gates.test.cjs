@@ -88,6 +88,79 @@ test("malformed storyboards are rejected as contract errors", () => {
   assert.throws(() => checkStoryboard({ ...example(), grammar: "slideshow" }), /grammar/);
 });
 
+test("carried handoffs must name what survives the boundary", () => {
+  assert.ok(!codes(checkStoryboard(example())).includes("carrier-unnamed"));
+  const missing = example();
+  delete missing.beats[1].carrier;
+  const failing = checkStoryboard(missing);
+  assert.ok(codes(failing).includes("carrier-unnamed"));
+  const finding = failing.findings.find((f) => f.code === "carrier-unnamed");
+  assert.equal(finding.beatId, missing.beats[1].id);
+  assert.ok(finding.fix);
+  const placeholder = example();
+  placeholder.beats[2].carrier = "TBD";
+  assert.ok(codes(checkStoryboard(placeholder)).includes("carrier-unnamed"));
+});
+
+test("uniform-cadence fails near-equal beat lengths and passes uneven ones", () => {
+  const golden = checkStoryboard(example());
+  assert.ok(!codes(golden).includes("uniform-cadence"));
+  assert.equal(golden.metrics.cadenceRatio, 3.57);
+  const uniform = example();
+  let t = 0;
+  for (const beat of uniform.beats) { beat.startSec = t; t += 2.4; beat.endSec = t; }
+  const result = checkStoryboard(uniform);
+  assert.ok(codes(result).includes("uniform-cadence"));
+  assert.ok(result.findings.find((f) => f.code === "uniform-cadence").fix);
+  assert.equal(result.metrics.cadenceRatio, 1);
+});
+
+test("uniform-cadence uses the raw ratio, not a rounded-to-2-decimals one, at the boundary", () => {
+  const board = example();
+  const lens = [1, 1, 1, 2.996];
+  let t = 0;
+  board.beats = board.beats.slice(0, 4).map((beat, index) => {
+    const startSec = t;
+    t += lens[index];
+    const { soundCues: _soundCues, ...rest } = beat;
+    return { ...rest, startSec, endSec: t };
+  });
+  board.durationSec = t;
+  const result = checkStoryboard(board);
+  assert.ok(codes(result).includes("uniform-cadence"), JSON.stringify(result.metrics));
+  assert.ok(Math.abs(result.metrics.cadenceRatio - 3) < 0.01, result.metrics.cadenceRatio);
+});
+
+test("no-rest fails a film with no hold or stillness, and passes with a hold role or holdSec", () => {
+  const golden = checkStoryboard(example());
+  assert.ok(!codes(golden).includes("no-rest"));
+  assert.equal(golden.metrics.restSec, 2);
+  const noRest = example();
+  noRest.beats[4].role = "action";
+  noRest.beats[4].transformation = { kind: "state-change", from: "finished strip", to: "logo mark" };
+  noRest.beats[4].motion = ["kinetic-type"];
+  delete noRest.beats[4].holdSec;
+  const result = checkStoryboard(noRest);
+  assert.ok(codes(result).includes("no-rest"));
+  assert.ok(result.findings.find((f) => f.code === "no-rest").fix);
+  assert.equal(result.metrics.restSec, 0);
+  const withHoldSec = JSON.parse(JSON.stringify(noRest));
+  withHoldSec.beats[3].holdSec = 0.3;
+  const passing = checkStoryboard(withHoldSec);
+  assert.equal(passing.status, "passed", JSON.stringify(passing.findings));
+  assert.ok(!codes(passing).includes("no-rest"));
+  assert.equal(passing.metrics.restSec, 0.3);
+});
+
+test("holdSec outside the beat's own range is a contract error", () => {
+  const tooLong = example();
+  tooLong.beats[4].holdSec = 5;
+  assert.throws(() => checkStoryboard(tooLong), /holdSec/);
+  const notPositive = example();
+  notPositive.beats[4].holdSec = 0;
+  assert.throws(() => checkStoryboard(notPositive), /holdSec/);
+});
+
 test("choreography registry and module agree and patterns only tween seek-safe properties", () => {
   const registry = JSON.parse(fs.readFileSync(path.join(refs, "registry.json"), "utf8"));
   assert.deepEqual(registry.patterns.map((entry) => entry.id).sort(), Object.keys(patterns).sort());
@@ -189,6 +262,7 @@ function cutBoard() {
   board.beats[3].handoff = "hard-cut";
   board.beats[2].startSec = 6; board.beats[1].endSec = 6;
   board.beats[3].startSec = 9; board.beats[2].endSec = 9;
+  board.beats[3].endSec = 9.3; board.beats[4].startSec = 9.3;
   board.beats[1].startSec = 3; board.beats[0].endSec = 3;
   board.beats[1].handoff = "hard-cut";
   board.sound.cues = board.sound.cues.map((cue) => ({ ...cue, atSec: Math.min(cue.atSec, 12) }));

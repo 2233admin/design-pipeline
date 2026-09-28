@@ -76,7 +76,7 @@ test("film check uses the capture hook, writes timeline.json, and aggregates fix
   try {
     scaffoldFilm(dir);
     const probed = JSON.parse(fs.readFileSync(path.join(refs, "timeline.example.json"), "utf8"));
-    probed.tweens = probed.tweens.filter((tween) => tween.startSec + tween.durationSec <= 5 || tween.startSec >= 8.2);
+    probed.tweens = probed.tweens.filter((tween) => tween.startSec + tween.durationSec <= 3.8 || tween.startSec >= 8.8);
     const result = checkFilmProject(dir, { capture: () => probed });
     assert.ok(fs.existsSync(path.join(dir, "timeline.json")));
     const timeline = result.steps.find((step) => step.gate === "timeline");
