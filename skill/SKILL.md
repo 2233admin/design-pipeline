@@ -22,6 +22,8 @@ This is the project front door. It routes UI work to the smallest relevant workf
    `references/product-film-direction.md`: inspect moving references and existing assets, then
    plan sound and picture before storyboard or template selection. This also applies to HTML
    previews and ordinary-language requests without motion-design terminology.
+   Gate the storyboard with `verify film-storyboard`, build beats from
+   `references/film-choreography/`, and collect render evidence with `verify film-render`.
 5. Create or update the OpenSpec change artifacts before implementation.
 6. Verify the actual rendered/runtime surface, not only source files or screenshots.
 

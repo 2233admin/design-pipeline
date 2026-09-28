@@ -6,6 +6,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Product-film gates: `verify film-storyboard` checks a structured `storyboard.json` for open
+  timelines, missing product actions, surface-only motion, slideshow handoffs and unbound sound;
+  `verify film-render` reports duration, scene cuts against planned handoffs, cut/audio-onset
+  alignment and a per-beat contact sheet; `references/film-choreography/` ships seek-safe GSAP
+  patterns. None of these grant creative acceptance.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.
