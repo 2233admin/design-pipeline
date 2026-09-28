@@ -102,6 +102,17 @@ test("a tail that keeps moving at the deadline fails to settle; 0.49 px per fram
   assert.match(moving.findings[0].message, /0\.51 px per frame at the 160 ms settle deadline/);
 });
 
+test("movement on the frame that crosses the deadline is what counts, not the frame before it", () => {
+  // Budget 156 ms puts the deadline at 300 ms, between the 288 ms and 304 ms frames. The capture
+  // stops on the first frame at or after the deadline, so 304 ms is the frame that measures the
+  // deadline; reading the quiet 288 ms frame instead would report this still-travelling card as
+  // settled.
+  const samples = recording().map((sample, index, all) => (index === all.length - 1 ? moveTo(sample, 266) : sample));
+  const result = evaluate(samples, { expect: { settleWithinMs: 156 } });
+  assert.deepEqual(codes(result), ["no-settle"]);
+  assert.match(result.findings[0].message, /2\.00 px per frame at the 156 ms settle deadline/);
+});
+
 test("a second wobble after a quiet deadline still counts as no-settle", () => {
   // Budget 80 ms: the card is quiet at the 224 ms deadline, moves again, and only comes to rest at
   // 272 ms. The deadline frame alone would call this settled; metrics.settleMs does not.
@@ -189,7 +200,7 @@ test("requests to another origin are reported with their URLs", () => {
   const fileProbe = evaluate(recording(), { requests: ["file:///C:/site/index.html", "http://127.0.0.1:53123/a.css"], pageOrigin: "file:" });
   assert.deepEqual(fileProbe.findings[0].urls, ["http://127.0.0.1:53123/a.css"]);
 
-  const many = Array.from({ length: 25 }, (unused, index) => `https://cdn.example.com/chunk-${index}.js`);
+  const many = Array.from({ length: 25 }, (_unused, index) => `https://cdn.example.com/chunk-${index}.js`);
   const capped = evaluate(recording(), { requests: many });
   assert.equal(capped.findings[0].urls.length, 20);
   assert.match(capped.findings[0].message, /25 requests/);
@@ -241,6 +252,11 @@ test("validateProbeFile rejects broken probe documents with the reason", () => {
   assert.throws(withDoc((doc) => { doc.probes[0].dwellMs = 10; }), /unsupported properties: dwellMs/);
   assert.throws(withDoc((doc) => { doc.viewport = { width: 9000, height: 800 }; }), /viewport\.width must be a positive integer of at most 4096/);
   assert.throws(withDoc((doc) => { doc.probes = []; }), /probes must be a non-empty array/);
+  // A wheel gesture no capture could deliver: 600 steps 1 s apart is ten minutes, and the CLI kills
+  // the capture kernel at 60 s. A probe that can only ever produce a kernel error is refused here.
+  const wheel = (steps, intervalMs) => withDoc((doc) => { doc.probes[0].input = { kind: "wheel", deltaY: 1200, steps, intervalMs }; });
+  assert.throws(wheel(600, 1000), /turns the wheel for 600000 ms .*the limit is 5000 ms/);
+  assert.doesNotThrow(wheel(50, 100));
 });
 
 test("nested paths and http URLs are accepted", () => {

@@ -320,6 +320,28 @@ function craftChecks(board, motion, add) {
   }
 }
 
+// A panel swap on a calm background changes a large block of pixels in one 10 fps step and
+// almost nothing around it; continuous motion spreads its change over many steps. The step at the
+// boundary must stand out from both its window (1 s either side) and its immediate neighbours.
+// Calibration: a 400x300 card swapped on a 1280x720 dark stage changes about 13% in one step; a
+// camera move over a gradient changes a similar share every step and is not flagged.
+const REPLACEMENT_MIN_SHARE = 0.02;
+const REPLACEMENT_RATIO = 4;
+function instantReplacement(motion, atSec) {
+  const at = motion.filter((sample) => Math.abs(sample.atSec - atSec) <= 0.15);
+  if (!at.length) return null;
+  const peak = at.reduce((best, sample) => (sample.share > best.share ? sample : best));
+  const window = motion.filter((sample) => Math.abs(sample.atSec - atSec) <= 1 && !at.includes(sample)).map((sample) => sample.share).sort((a, b) => a - b);
+  const typical = window.length ? window[Math.floor(window.length / 2)] : 0;
+  const index = motion.indexOf(peak);
+  const neighbours = [motion[index - 1], motion[index + 1]].filter(Boolean).map((sample) => sample.share);
+  const isolated = neighbours.every((share) => peak.share >= REPLACEMENT_RATIO * share || share < REPLACEMENT_MIN_SHARE / 2);
+  if (peak.share >= REPLACEMENT_MIN_SHARE && peak.share >= REPLACEMENT_RATIO * Math.max(typical, FROZEN_SHARE) && isolated) {
+    return { share: Number(peak.share.toFixed(4)), typical: Number(typical.toFixed(4)) };
+  }
+  return null;
+}
+
 function nearest(list, value) {
   let best = Infinity;
   for (const item of list) best = Math.min(best, Math.abs(item - value));
@@ -371,13 +393,6 @@ function evaluateFilmRender(board, video, options = {}) {
   const unplanned = cuts.filter((at) => nearest(board.beats.map((beat) => beat.startSec), at) > cutTolerance);
   if (planned.length && missed.length / planned.length > 0.5) add("planned-cuts-missing", `${missed.length}/${planned.length} planned cuts not found in render`);
 
-  // Continuity carried by the storyboard (not match-cut, which is a cut by design) must not
-  // render as a hard scene cut at its planned boundary.
-  for (const beat of board.beats.slice(1)) {
-    if (!CARRIED_HANDOFFS.has(beat.handoff)) continue;
-    if (nearest(cuts, beat.startSec) <= cutTolerance) add("carry-cut", `planned ${beat.handoff} at ${beat.startSec}s renders as a scene cut`, "error", beat.id);
-  }
-
   let audio = { present: media.hasAudio, onsets: 0, cutsOnOnset: null };
   if (board.sound.mode === "scored" && !media.hasAudio) add("audio-missing", "storyboard is scored but render has no audio stream; audiovisual acceptance is incomplete");
   if (media.hasAudio) {
@@ -388,6 +403,23 @@ function evaluateFilmRender(board, video, options = {}) {
   }
 
   const motion = motionProfile(video, tools);
+  // Continuity carried by the storyboard (not match-cut, which is a cut by design) must not render
+  // as a cut at its planned boundary: either a full-frame scene change, or a panel that swaps in a
+  // single frame on an otherwise calm background, which the scene detector misses.
+  const carryBreaks = [];
+  for (const beat of board.beats.slice(1)) {
+    if (!CARRIED_HANDOFFS.has(beat.handoff)) continue;
+    if (nearest(cuts, beat.startSec) <= cutTolerance) {
+      carryBreaks.push({ beatId: beat.id, atSec: beat.startSec, kind: "scene-cut" });
+      add("carry-cut", `planned ${beat.handoff} at ${beat.startSec}s renders as a scene cut`, "error", beat.id);
+      continue;
+    }
+    const swap = instantReplacement(motion, beat.startSec);
+    if (swap) {
+      carryBreaks.push({ beatId: beat.id, atSec: beat.startSec, kind: "instant-replacement", changedShare: swap.share, typicalShare: swap.typical });
+      add("carry-cut", `planned ${beat.handoff} at ${beat.startSec}s renders as an instant replacement: ${(swap.share * 100).toFixed(1)}% of the frame changes in one step against a typical ${(swap.typical * 100).toFixed(2)}%`, "error", beat.id);
+    }
+  }
   const stillCount = motion.filter((sample) => sample.share < FROZEN_SHARE).length;
   const stillness = { stillShare: motion.length ? Number((stillCount / motion.length).toFixed(3)) : 0 };
   const beatMotion = board.beats.map((beat) => {
@@ -413,6 +445,7 @@ function evaluateFilmRender(board, video, options = {}) {
     audio,
     motion: beatMotion,
     stillness,
+    carryBreaks,
     contactSheet: sheet,
     creativeAcceptance: "not-assessed",
     limits: "Objective signals only: scene-change cuts, energy-flux onsets, per-beat pixel motion and midpoint frames. Creative review of comprehension, continuity, rhythm and identity remains a separate qa.md record.",

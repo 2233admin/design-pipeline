@@ -103,6 +103,11 @@ function validateInput(input, label) {
     if (typeof input.deltaY !== "number" || !Number.isFinite(input.deltaY)) fail(SCOPE, `${label}.deltaY must be a finite number`);
     if (!Number.isInteger(input.steps) || input.steps < 1 || input.steps > 600) fail(SCOPE, `${label}.steps must be an integer between 1 and 600`);
     numberBetween(input.intervalMs, `${label}.intervalMs`, 1, 1000);
+    // A wheel gesture is bounded like a pointer sweep's durationMs. Without this, steps x intervalMs
+    // reaches ten minutes, which no capture can deliver: the CLI kills the capture kernel at 60 s,
+    // so such a probe is contract-valid and yet can only ever produce a kernel error.
+    const wheelMs = input.steps * input.intervalMs;
+    if (wheelMs > MAX_DURATION_MS) fail(SCOPE, `${label} turns the wheel for ${wheelMs} ms (steps x intervalMs); the limit is ${MAX_DURATION_MS} ms, the same budget a pointer sweep has`);
     return;
   }
   assertKeys(input, ["kind", "at"], ["kind", "at"], label, SCOPE);
@@ -293,10 +298,14 @@ function evaluateSamples(probe, samples, requests = []) {
     fail(SCOPE, `probe ${probe.id} stopped recording at ${round(frames[last].t)} ms, before the ${round(deadlineMs)} ms settle deadline; the recording is truncated and cannot show whether the motion settled`);
   }
 
-  // The last delta at or before the deadline is the best evidence of whether the target was still
-  // moving when the budget ran out.
+  // Movement "at the deadline" is the step that lands on or crosses it — the capture's last frame is
+  // the first one at or after the deadline, so stopping one step earlier would judge the motion a
+  // frame too soon and pass a target that is still travelling when the budget runs out.
   let deadlineDelta = deltas[1];
-  for (let index = 1; index < frames.length; index += 1) if (frames[index].t <= deadlineMs) deadlineDelta = deltas[index];
+  for (let index = 1; index < frames.length; index += 1) {
+    deadlineDelta = deltas[index];
+    if (frames[index].t >= deadlineMs) break;
+  }
 
   const restDriftPx = Math.max(...BOX_KEYS.map((key) => Math.abs(frames[last].box[key] - frames[restIndex].box[key])));
   const boxChanged = BOX_KEYS.some((key) => span(frames.map((frame) => frame.box[key])) > MOVE_EPS_PX);
