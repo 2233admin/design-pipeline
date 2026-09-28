@@ -109,3 +109,21 @@ test("CLI film scaffold and capture-timeline give actionable errors", () => {
     assert.match(capture.stdout, /npm i hyperframes|puppeteer-core/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0;
+
+test("film check reviews each beat frame's composition after render", { skip: !hasFfmpeg && "ffmpeg not installed" }, () => {
+  const dir = tmp();
+  try {
+    scaffoldFilm(dir);
+    fs.rmSync(path.join(dir, "index.html"));
+    // A flat single-color render: every beat frame is blank, which the composition gate must fail.
+    const run = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=c=0x101418:s=320x180:r=30:d=12", "-f", "lavfi", "-i", "sine=f=220:d=12", "-shortest", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", path.join(dir, "out.mp4")], { windowsHide: true, encoding: "utf8" });
+    assert.equal(run.status, 0, run.stderr);
+    const result = checkFilmProject(dir);
+    const composition = result.steps.find((step) => step.gate === "composition");
+    assert.equal(composition.status, "failed");
+    assert.equal(composition.frames.length, 5);
+    assert.ok(result.fixes.some((fix) => fix.gate === "composition" && fix.code === "blank-frame" && fix.severity === "error" && fix.beatId));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});

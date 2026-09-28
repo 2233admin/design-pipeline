@@ -10,6 +10,8 @@ const path = require("node:path");
 const { fail, readJson } = require("./contract-utils.cjs");
 const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
+const { checkComposition } = require("./composition-core.cjs");
+const { decodePng } = require("./png-core.cjs");
 
 const CHECK_SCHEMA = "design-pipeline.film-check.v1";
 const refs = path.join(__dirname, "../references/film-choreography");
@@ -133,13 +135,19 @@ function checkFilmProject(dir, options = {}) {
   if (video) {
     const result = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence") });
     steps.push({ gate: "render", status: result.status, video: path.relative(root, video), findings: result.findings, contactSheet: result.contactSheet && path.join("evidence", result.contactSheet.sheet), audio: result.audio, cuts: result.cuts });
+    // Composition of each beat's midpoint frame: errors fail, warnings are review prompts.
+    const frames = (result.contactSheet ? result.contactSheet.frames : []).map((frame) => {
+      const check = checkComposition(decodePng(fs.readFileSync(path.join(root, "evidence", frame.file)), frame.file), { profile: "frame", allow: options.allowComposition || [] });
+      return { beatId: frame.beatId, atSec: frame.atSec, status: check.status, findings: check.findings.map((finding) => ({ ...finding, beatId: frame.beatId })) };
+    });
+    if (frames.length) steps.push({ gate: "composition", status: frames.some((frame) => frame.status === "failed") ? "failed" : "passed", findings: frames.flatMap((frame) => frame.findings), frames: frames.map(({ beatId, atSec, status }) => ({ beatId, atSec, status })) });
   } else {
     steps.push({ gate: "render", status: "skipped", reason: "no out.mp4 or renders/*.mp4", next: "Run `npx hyperframes render --output out.mp4`, then re-run `film check`." });
   }
 
   const failed = steps.some((step) => step.status === "failed");
   const skipped = steps.some((step) => step.status === "skipped");
-  const fixes = steps.flatMap((step) => (step.findings || []).map((finding) => ({ gate: step.gate, code: finding.code, ...(finding.beatId ? { beatId: finding.beatId } : {}), fix: finding.fix })));
+  const fixes = steps.flatMap((step) => (step.findings || []).map((finding) => ({ gate: step.gate, code: finding.code, ...(finding.severity ? { severity: finding.severity } : {}), ...(finding.beatId ? { beatId: finding.beatId } : {}), fix: finding.fix })));
   return {
     schema: CHECK_SCHEMA,
     id: board.id,

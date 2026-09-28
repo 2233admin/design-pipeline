@@ -19,6 +19,11 @@ All notable changes to Design Pipeline are documented here.
   headless timeline capture through the HyperFrames browser stack, and an aggregate film check
   whose findings each carry a concrete `fix`. Contract errors now list allowed values, and CLI
   help documents previously missing flags.
+- Composition gate: `verify composition` measures a rendered PNG (blank or washed-out frames,
+  weak subject separation, off-balance weight, dead bands, competing focal points, clutter,
+  palette sprawl, edge crowding) and, with `composition capture` elements, WCAG text contrast,
+  off-canvas text, near-miss alignment and flat type hierarchy. Dependency-free PNG decoding.
+  `film check` applies it to every beat frame.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.

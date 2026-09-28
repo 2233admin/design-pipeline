@@ -73,4 +73,4 @@ async function captureTimeline(compositionFile, options = {}) {
   }
 }
 
-module.exports = { captureTimeline };
+module.exports = { captureTimeline, resolveChrome, resolvePuppeteer };
