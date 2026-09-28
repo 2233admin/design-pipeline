@@ -141,6 +141,19 @@ repeats, action beats with no tween or only opacity/scale, and planned continuat
 camera-carry handoffs that no animated subject carries across the boundary. Ambient targets
 animated across most of the film do not count as carrying a handoff.
 
+## Carry and rhythm
+
+Scenes that fully replace each other read as a slideshow even when the timing is polished; the
+film has no reason to feel like one piece rather than three unrelated ones. Name what survives
+every carried boundary (the storyboard's `carrier`) so a handoff is a real transformation, not a
+claimed one. One camera that keeps moving through the piece, instead of resetting to a new static
+setup at each beat, is what ties separate actions into a single continuous take. Vary beat lengths
+a lot rather than cutting on a metronome, and hold at least one beat still (`holdSec`) in longer
+films so the eye has somewhere to land — without a rest, every move reads at the same weight and
+none of them lands. This idea is adapted, in our own words, from the reference skill recorded at
+`references/reference-skill-onetake.md` (ideas only; its PolyForm Noncommercial source contributes
+no code, text or assets here).
+
 ## 4. Prove the sound and picture before extending the film
 
 Build a representative 6–10 second passage using the chosen footage/material and sound direction.

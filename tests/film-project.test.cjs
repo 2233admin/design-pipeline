@@ -65,7 +65,7 @@ test("film check reports skipped gates with the command that unblocks them", () 
     fs.rmSync(path.join(dir, "index.html"));
     const result = checkFilmProject(dir);
     assert.equal(result.status, "incomplete");
-    assert.deepEqual(result.steps.map((step) => [step.gate, step.status]), [["storyboard", "passed"], ["timeline", "skipped"], ["render", "skipped"]]);
+    assert.deepEqual(result.steps.map((step) => [step.gate, step.status]), [["storyboard", "passed"], ["timeline", "skipped"], ["render", "skipped"], ["check", "passed"]]);
     assert.match(result.next, /hyperframes render/);
     assert.equal(result.creativeAcceptance, "not-assessed");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }

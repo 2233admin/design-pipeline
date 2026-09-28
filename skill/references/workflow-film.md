@@ -20,15 +20,22 @@ reproduced and cannot be skipped. Otherwise the user may decline references
 
 ## concepts
 
-Write `concepts.md` with three cards whose central ideas differ: central idea, what carries
-attention between beats, look, tools in one line (for example "3D shot in Blender, score in
-Strudel"), and any missing license. Render one key frame per card. The user picks one
-(`decide --stage concept --choice 1|2|3`).
+Write `concepts.md` with three cards whose central ideas differ, not the same scenes retold three
+ways. Each card starts with the central idea as one sentence about the picture ("one dot becomes
+every screen of the app"), then what carries attention between beats, look, tools in one line (for
+example "3D shot in Blender, score in Strudel"), and any missing license. Render one key frame per
+card. The user picks one (`decide --stage concept --choice 1|2|3`).
 
 ## plan
 
 - `film scaffold --output .` starts a passing `storyboard.json` and a composition.
 - Fill the beats from the chosen concept; patterns: `film-choreography/`.
+- Carry: every beat whose handoff is `continuation`, `morph`, `camera-carry` or `match-cut` names
+  a `carrier` — what survives the boundary and what it becomes ("prompt bar opens into the app
+  window"). A claimed carry with nothing named for it to carry is a placeholder, not a plan.
+- Rhythm: near-equal beat lengths read as a metronome, not a film; in a film of four or more beats,
+  the longest should run at least 3x the shortest. A film of 8 s or more needs a rest — a hold
+  beat, or any beat with `holdSec` of at least 0.3 s — or nothing on screen ever lands.
 - `verify film-storyboard --storyboard storyboard.json` must pass. Editing the storyboard later
   reopens this stage until the gate passes again.
 
