@@ -136,3 +136,18 @@ test("film-eval measures systems through the film gates and benchmark evaluate r
     assert.equal(load(path.join(dir, "measurements.json")).measurements.claude["repair-slideshow"].score, 1);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test("a one-take subject animated by a chain of actions stays a subject, not an ambient target", () => {
+  const boundaries = board().beats.slice(1).map((beat) => beat.startSec);
+  const edges = [0, ...boundaries, 12];
+  const tweens = [{ targets: ["#bg"], startSec: 0, durationSec: 12, props: ["x"] }];
+  // One action per beat on the same element, each overlapping the next boundary slightly.
+  for (let index = 0; index < edges.length - 1; index += 1) {
+    const start = Math.max(0, edges[index] - 0.1);
+    const end = Math.min(12, edges[index + 1] + 0.1);
+    tweens.push({ targets: ["#hero"], startSec: start, durationSec: Number((end - start).toFixed(3)), props: ["x", "y", "rotation"] });
+  }
+  const result = checkTimeline({ schema: "design-pipeline.film-timeline.v1", compositionId: "main", durationSec: 12, tweens }, board());
+  assert.deepEqual(result.metrics.ambientTargets, ["#bg"], "only the single long drift is ambient");
+  assert.ok(!codes(result).includes("handoff-not-carried"), JSON.stringify(result.findings));
+});
