@@ -9,6 +9,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { assertEnum, assertKeys, assertString, fail } = require("./contract-utils.cjs");
+const { withFix } = require("./film-hints.cjs");
 
 const STORYBOARD_SCHEMA = "design-pipeline.film-storyboard.v1";
 const RENDER_SCHEMA = "design-pipeline.film-render-evidence.v1";
@@ -92,7 +93,7 @@ function checkStoryboard(board, options = {}) {
   validateShape(board);
   const choreography = options.choreographyIds || loadChoreographyIds();
   const findings = [];
-  const add = (code, message, beatId) => findings.push(beatId ? { code, beatId, message } : { code, message });
+  const add = (code, message, beatId) => findings.push(withFix("storyboard", beatId ? { code, beatId, message } : { code, message }));
   const beats = board.beats;
   const total = board.durationSec;
 
@@ -246,7 +247,7 @@ function evaluateFilmRender(board, video, options = {}) {
   if (!fs.existsSync(video) || fs.statSync(video).size === 0) fail("film render", "video file is missing or empty");
   const media = probe(video, tools);
   const findings = [];
-  const add = (code, message) => findings.push({ code, message });
+  const add = (code, message) => findings.push(withFix("render", { code, message }));
 
   const durationDelta = Number((media.durationSec - board.durationSec).toFixed(3));
   if (Math.abs(durationDelta) > 0.5) add("duration-mismatch", `render is ${media.durationSec}s, storyboard declares ${board.durationSec}s`);

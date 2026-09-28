@@ -15,6 +15,10 @@ All notable changes to Design Pipeline are documented here.
   storyboard: layout tweens, infinite repeats, static or fade-only action beats, and uncarried
   continuity handoffs. `film-eval measure` scores per-model film runs through the film gates into
   benchmark v2 measurements; `skill/evals/film/` ships the cross-model film benchmark.
+- `film scaffold`, `film capture-timeline` and `film check`: one-command film project setup,
+  headless timeline capture through the HyperFrames browser stack, and an aggregate film check
+  whose findings each carry a concrete `fix`. Contract errors now list allowed values, and CLI
+  help documents previously missing flags.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.

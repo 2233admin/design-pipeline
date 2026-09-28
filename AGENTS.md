@@ -22,7 +22,7 @@ Design-first frontend workflow shipped as a packaged agent skill. Node.js Common
 
 - Verify with `node scripts/qa.cjs`; never bare `node --test`, which discovers nested upstream fixtures.
 - Add each new test file to `scripts/test-manifest.json`, or QA never runs it.
-- Add each new shipped file under `skill/` to `skill/references/package-resources.json`, or the installed package omits it.
+- List each load-bearing new file under `skill/` in `required` of `skill/references/package-resources.json`; packaging ships all of `skill/`, and the list only makes packaging fail when a listed file goes missing.
 - Film render tests need `ffmpeg` and `ffprobe` on PATH and skip without them.
 
 ## Conventions that differ from defaults

@@ -84,6 +84,12 @@ mechanically cutting every beat. The examples above illustrate fields, not a reu
 Completion: every beat has an action and handoff; major claims have a visible demonstration;
 the sequence includes development and payoff; music/sound cues are planned alongside the picture.
 
+Start a project with `designer-pipeline film scaffold --output <dir>`: it writes a passing example
+`storyboard.json`, an `index.html` whose script has one commented call per beat, the choreography
+and probe libraries, and reference/sound/qa notes. `designer-pipeline film check --project-root <dir>`
+runs every gate the project's files allow, captures `timeline.json` from `index.html` in headless
+Chrome (reusing the HyperFrames install), and gives each finding a concrete `fix`.
+
 Record the storyboard as `storyboard.json` (`design-pipeline.film-storyboard.v1`; start from
 `references/film-choreography/storyboard.example.json`) and run
 `designer-pipeline verify film-storyboard --storyboard storyboard.json` before building scenes.

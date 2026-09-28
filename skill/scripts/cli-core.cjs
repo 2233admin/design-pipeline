@@ -44,6 +44,7 @@ const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core
 const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { measureFilmBenchmark } = require("./film-eval-core.cjs");
+const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
 const { createDeveloperBrief, evaluateBenchmark } = require("./benchmark-core.cjs");
 const { recordObservation } = require("./record-feedback.cjs");
@@ -133,7 +134,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
@@ -354,7 +355,7 @@ function publicHelp() {
     "  template adapt --receipt <file> --context <file> --json",
     "  template review --plan <file> --review <file> --json",
     "  template approve --plan <file> --approval <file> --json",
-    "  doctor | status",
+    "  doctor | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
     "  resume --change-root <dir>",
@@ -362,19 +363,23 @@ function publicHelp() {
     "  package --change-root <dir> --output <file>",
     "  route --query [--write --output]",
     "  change init|resume|advance|migrate|repair",
-    "  foundation check | direction check | playground check | reference check|resolve | reconstruction check | scene check",
+    "  foundation check [--kind design|motion|all] | direction check | playground check | reference check|resolve | reconstruction check | scene check",
     "  component-first check|stack|components|playground|page",
     "  high-fidelity check",
     "  component-first-v2 check|migrate|select|promote",
     "  design-skill route|manifest|run|select|promote",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
-    "  evidence check|capture",
-    "  verify motion|components|film-storyboard|film-timeline|film-render | --gate <gate> --artifact <file>",
+    "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url>",
+    "  verify motion|components|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
+    "    verify components --matrix <file> [--evidence-root <dir>] [--require-files]",
     "    verify motion --receipt <file> [--require-lifecycle]",
     "    verify film-storyboard --storyboard <storyboard.json>",
     "    verify film-timeline --storyboard <storyboard.json> --timeline <timeline.json>",
     "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
+    "  film scaffold --output <dir> [--replace]",
+    "  film capture-timeline --composition <index.html> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
+    "  film check --project-root <dir>   (runs storyboard, timeline and render gates; each finding carries a fix)",
     "  film-eval measure --manifest <benchmark.json> --runs <runs-dir> [--output <measurements.json>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
@@ -387,14 +392,15 @@ function publicHelp() {
     "  iart search|route|verify",
     "  toolchain resolve|probe|receipt-check",
     "  execution route|prepare|finalize",
-    "  benchmark brief|evaluate",
+    "  benchmark brief --manifest <file> | benchmark evaluate --manifest <file> --measurements <file> [--record-feedback]",
+    "  source audit",
     "  adapter audit|intake|receipt-check | style-signals check",
     "  adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget",
     "    propose: --experience --evidence-hash --scope --proposer --skill --target-version --evaluation-manifest-sha256 --primary-metric --metric-direction --construction-fixture --rules",
     "    rule shape: { op, id, rule: { dimension, value, appliesTo?, excludes?, expiresAt? } }; each skill has at most one rule per dimension; see references/adaptation-contract.schema.json",
     "    evaluate: --candidate --replay --held-out --evaluator; promote: --candidate --receipt --skill --approve --approval",
     "",
-    "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked, 3 measured fidelity mismatch.",
+    "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked or gate failed, 3 measured fidelity mismatch.",
   ].join("\n");
 }
 
@@ -739,6 +745,14 @@ function evidenceCommand(parsed, root, action) {
     return { result: { status: kernelStatusLabel(kernel.exitCode, "captured"), receipt: kernel.value }, exitCode: kernel.exitCode };
   }
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+function filmCapture(parsed, root, composition) {
+  const args = ["--composition", composition];
+  for (const flag of ["--composition-id", "--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
+  const kernel = runKernel("capture-film-timeline.cjs", args, root);
+  if (!kernel.value || !kernel.value.timeline) fail("film capture", "capture kernel returned no timeline", { code: "KERNEL_FAILED" });
+  return kernel.value.timeline;
 }
 
 function verifyCommand(parsed, root, action) {
@@ -1801,6 +1815,31 @@ const COMMANDS = {
     },
   },
   "design-code-map": { actions: { check: { required: ["--artifact"], run: designCodeMapCheckCommand } } },
+  film: {
+    actions: {
+      scaffold: {
+        required: ["--output"],
+        run: ({ parsed, root }) => ({ result: scaffoldFilm(contained(root, option(parsed, "--output"), "--output", false), { replace: option(parsed, "--replace") === true }), exitCode: 0 }),
+      },
+      "capture-timeline": {
+        required: ["--composition"],
+        run: ({ parsed, root }) => {
+          const timeline = filmCapture(parsed, root, contained(root, option(parsed, "--composition"), "--composition"));
+          if (option(parsed, "--output")) fs.writeFileSync(contained(root, option(parsed, "--output"), "--output", false), `${JSON.stringify(timeline, null, 2)}
+`);
+          return { result: { status: "captured", timeline }, exitCode: 0 };
+        },
+      },
+      check: {
+        required: ["--project-root"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const result = checkFilmProject(project, { capture: (composition) => filmCapture(parsed, root, composition) });
+          return { result, exitCode: result.status === "passed" ? 0 : 2 };
+        },
+      },
+    },
+  },
   "film-eval": {
     actions: {
       measure: {
