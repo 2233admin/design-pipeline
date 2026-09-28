@@ -35,6 +35,13 @@ All notable changes to Design Pipeline are documented here.
   (`carrier`), rhythm (`holdSec`, beat-length variety) and why a continuous camera and real
   stillness keep a film from reading as a slideshow, crediting `reference-skill-onetake.md` as the
   idea's source (ideas only).
+- `response.spring-settle` motion primitive (port-motion-web-interaction, brief w6): registered in
+  `motion-primitives.json` with stiffness, dampingRatio, mass, restValue and overshootLimit
+  parameters, pointer/state/scroll drivers, and `provenance.kind: idea` crediting
+  `reference-skill-motion-web.md` (ideas only, `codeCopied: false`). New
+  `references/web-motion.md` guide covers motion-as-material, spring-damper parameters and typical
+  UI ranges, a from-scratch semi-implicit-Euler spring integrator, stepped motion as a deliberate
+  style, self-contained pages, and how `verify interaction` measures all of it.
 
 ### Changed
 

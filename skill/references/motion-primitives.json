@@ -177,6 +177,30 @@
         "codeCopied": false,
         "redistributionAllowed": false
       }
+    },
+    {
+      "id": "response.spring-settle",
+      "family": "response",
+      "intent": "Drive a position, rotation, or scale channel toward a rest value through a spring-damper response with explicit stiffness, damping, and mass.",
+      "renderSurfaces": ["css", "svg", "canvas", "webgl"],
+      "channels": ["position.x", "position.y", "rotation", "scale"],
+      "parameters": ["stiffness", "dampingRatio", "mass", "restValue", "overshootLimit"],
+      "drivers": ["pointer", "state", "scroll"],
+      "runtimeCapabilities": {
+        "css": "degraded",
+        "waapi": "degraded",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Jump directly to restValue, or replace the spring with a short critically damped move.",
+      "provenance": {
+        "kind": "idea",
+        "source": "skill/references/reference-skill-motion-web.md",
+        "license": "CC-BY-NC-4.0",
+        "adopted": "The idea that interactive responses have mass, damping, and overshoot rather than settling linearly to a target.",
+        "rejected": "All upstream code, text, and solver implementations.",
+        "codeCopied": false
+      }
     }
   ]
 }
