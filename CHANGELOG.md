@@ -28,6 +28,14 @@ All notable changes to Design Pipeline are documented here.
   (`carrier`), rhythm (`holdSec`, beat-length variety) and why a continuous camera and real
   stillness keep a film from reading as a slideshow, crediting `reference-skill-onetake.md` as the
   idea's source (ideas only).
+- Measured interaction probe (port-motion-web-interaction, brief w4): `verify interaction --probe
+  interaction.json` loads the page in the headless Chrome stack film capture already uses, drives
+  real input (`pointer-sweep`, `wheel`, `click`) and samples the target every animation frame, then
+  reports `dead-interaction`, `no-settle`, `rest-drift`, `linear-response` (warning), `opacity-only`
+  and `external-request`, each with a one-line fix, as `design-pipeline.interaction-result.v1` next
+  to the probe. Measurement is receipt-free: a dead or linear interaction now fails on what the
+  browser recorded, not on what an agent reported. The gate records itself as `interaction` through
+  the workflow state.
 
 ### Changed
 
