@@ -347,3 +347,13 @@ test("primitive registry parses with unique ids and clean-room provenance", () =
     assert.ok(primitive.reducedMotion.length > 0);
   }
 });
+
+test("response.spring-settle primitive is registered with clean-room idea provenance", () => {
+  const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+  const primitive = registry.primitives.find((entry) => entry.id === "response.spring-settle");
+  assert.ok(primitive, "response.spring-settle must exist in the registry");
+  assert.equal(primitive.family, "response");
+  assert.equal(primitive.provenance.codeCopied, false);
+  assert.equal(primitive.provenance.kind, "idea");
+  assert.match(primitive.provenance.source, /reference-skill-motion-web\.md$/);
+});
