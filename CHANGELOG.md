@@ -4,6 +4,16 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Workflow step 2 (`split-film-edit-workflows`): the `film` and `edit` sub-workflows have their own
+  stage modules (`skill/scripts/workflows/`) and guides (`references/workflow-film.md`,
+  `references/workflow-edit.md`); every film and edit `next` action carries `guide`.
+- A recorded gate result counts only while it is newer than the files it checked: editing
+  `storyboard.json` or `edit.json`, or re-rendering a draft, reopens the stage.
+- Replicate mode: a film cannot waive its reference study (`decide --stage reference --answer
+  none` is refused), and an edit gains a `reference` stage before cutting.
+
 ## [0.12.0-beta.1] - 2026-09-28
 
 ### Changed

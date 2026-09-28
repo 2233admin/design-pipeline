@@ -19,64 +19,9 @@ const TIERS = ["quick", "standard", "full"];
 const MODES = ["brief", "replicate", "freeform"];
 const CLI = "designer-pipeline";
 
-const exists = (root, rel) => fs.existsSync(path.join(root, rel));
-const newestRender = (root) => ["out.mp4", path.join("renders", "edit.mp4")].find((rel) => exists(root, rel)) || (exists(root, "renders") ? (fs.readdirSync(path.join(root, "renders")).find((name) => name.endsWith(".mp4")) ? "renders" : null) : null);
-const gatePassed = (state, gate) => Boolean(state.gates && state.gates[gate] && state.gates[gate].status === "passed" && state.gates[gate].at >= (state.gates[gate].inputsAt || 0));
-
-// Each stage: id, finished(state, root) -> boolean, action(state, root) -> action object.
-const INTAKE = {
-  id: "intake",
-  finished: (state, root) => exists(root, "brief.md"),
-  action: () => ({
-    type: "ask",
-    question: "Answer in one reply; \"default\" accepts every recommendation.",
-    questions: [
-      { id: "product", ask: "What is the product and the one thing the viewer should understand?", recommended: "Take it from the conversation so far." },
-      { id: "audience", ask: "Who watches it and where (site hero, social, launch event)?", recommended: "Product website hero, general audience." },
-      { id: "duration", ask: "How long?", recommended: "15-30 s for a promo, 30-60 s for an edit." },
-      { id: "assets", ask: "Which footage, screenshots, models, logos or music can be used, and are they licensed for this use?", recommended: "Only material you own; missing pieces are generated." },
-    ],
-    record: `${CLI} decide --project-root . --stage intake --answer "<the user's reply>"`,
-    why: "Only facts that change the result are asked; style comes from references and judgment.",
-  }),
-};
-const REFERENCE = {
-  id: "reference",
-  finished: (state, root) => exists(root, "reference.md") || state.decisions?.reference === "none",
-  action: () => ({ type: "run", command: "Study 1-3 moving references and write reference.md (observed timings, cuts, rests, sound; what to transfer). See references/product-film-direction.md section 1.", why: "Direction comes from watched references, not from a familiar template.", then: `Or, if the user gave no references and wants none: ${CLI} decide --project-root . --stage reference --answer none` }),
-};
-const CONCEPTS = {
-  id: "concepts",
-  finished: (state) => Boolean(state.decisions?.concept),
-  action: (state, root) => (exists(root, "concepts.md")
-    ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose carrier best demonstrates the product action.", record: `${CLI} decide --project-root . --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "The first of two human decisions." }
-    : { type: "run", command: "Write concepts.md: three cards whose central ideas differ. Each card: central idea, what carries attention between beats, look, tools (one line), and any missing license. Render one key frame per card.", why: "Divergence before convergence; the user picks one." }),
-};
-const REVIEW = {
-  id: "review",
-  finished: (state) => (state.decisions?.drafts || []).some((draft) => draft.verdict === "accept"),
-  action: (state) => ({ type: "ask", question: "Accept this draft, or reject it with one sentence on what is wrong?", show: ["the draft video", "evidence/contact-sheet.png", "the gate summary"], recommended: "Accept if nothing reads wrong at full speed.", record: `${CLI} decide --project-root . --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The second human decision${(state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : ""}.` }),
-};
-
-function filmStages(tier) {
-  const plan = { id: "plan", finished: (state, root) => exists(root, "storyboard.json") && gatePassed(state, "storyboard"), action: (state, root) => (exists(root, "storyboard.json") ? { type: "run", command: `${CLI} verify film-storyboard --storyboard storyboard.json`, why: "The storyboard gate must pass before building.", record: "fix each finding, then run next again" } : { type: "run", command: `${CLI} film scaffold --output .`, why: "Start from a passing storyboard and a composition with one call per beat." }) };
-  const build = { id: "build", finished: (state, root) => Boolean(newestRender(root)), action: () => ({ type: "run", command: "Build index.html from the storyboard beats (film-choreography patterns, HyperFrames blocks via film blocks, Blender shots via film blender, score via film score), then: npx hyperframes render --output out.mp4", why: "Pick the lowest-rung tool that reaches each beat." }) };
-  const check = { id: "check", finished: (state) => gatePassed(state, "film"), action: () => ({ type: "run", command: `${CLI} film check --project-root .`, why: "Every error gate must pass before anyone sees the draft; apply each finding's fix and rerun." }) };
-  const deliver = { id: "deliver", finished: (state) => Boolean(state.decisions?.delivered), action: () => ({ type: "run", command: `Render the final quality (npx hyperframes render --quality high --output final.mp4), then: ${CLI} decide --project-root . --stage deliver --answer final.mp4`, why: "Drafts are cheap; the final render happens once, after acceptance." }) };
-  if (tier === "quick") return [plan, build, check];
-  return [INTAKE, REFERENCE, CONCEPTS, plan, build, check, REVIEW, deliver];
-}
-
-function editStages(tier) {
-  const analyze = { id: "analyze", finished: (state, root) => exists(root, path.join("edit", "analysis.json")), action: (state, root) => (exists(root, "sources") ? { type: "run", command: `${CLI} film-edit analyze --project-root . --audio <music file>`, why: "Beat grid and footage shots first; record footage licenses in sources/licenses.json." } : { type: "run", command: "Put the footage in sources/ and the music in assets/, with sources/licenses.json", why: "An edit starts from real footage and music." }) };
-  const style = { id: "style", finished: (state) => tier === "quick" || Boolean(state.decisions?.concept), action: () => ({ type: "ask", question: "MAD (fast, energy-driven cuts) or PV (readable shots on phrases)?", recommended: "mad for fan edits and hype, pv for product and music videos.", record: `${CLI} decide --project-root . --stage concept --choice mad|pv`, why: "The first of two human decisions for an edit." }) };
-  const cut = { id: "cut", finished: (state, root) => exists(root, "edit.json"), action: (state) => ({ type: "run", command: `${CLI} film-edit auto --project-root . --style ${state.decisions?.concept || "mad"}`, why: "Shots placed on the beat grid; adjust edit.json by hand afterwards." }) };
-  const render = { id: "render", finished: (state, root) => exists(root, path.join("renders", "edit.mp4")), action: () => ({ type: "run", command: `${CLI} film-edit render --project-root .`, why: "Assemble the draft." }) };
-  const check = { id: "check", finished: (state) => gatePassed(state, "edit"), action: () => ({ type: "run", command: `${CLI} film-edit check --project-root .`, why: "Every error gate must pass before anyone sees the draft." }) };
-  const deliver = { id: "deliver", finished: (state) => Boolean(state.decisions?.delivered), action: () => ({ type: "run", command: `${CLI} decide --project-root . --stage deliver --answer renders/edit.mp4`, why: "Record the delivered file." }) };
-  if (tier === "quick") return [analyze, cut, render, check];
-  return [INTAKE, analyze, style, cut, render, check, REVIEW, deliver];
-}
+// Sub-workflows by deliverable (Q5, Q7): film and edit have their own stage modules and guides.
+const { INTAKE } = require("./workflows/shared.cjs");
+const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs") };
 
 function codeStages(deliverable, tier) {
   const guide = deliverable === "web" ? "references/pipeline-reference.md (motion and web sections)" : "references/pipeline-reference.md";
@@ -85,8 +30,8 @@ function codeStages(deliverable, tier) {
 }
 
 function stagesFor(state) {
-  if (state.deliverable === "film") return filmStages(state.tier);
-  if (state.deliverable === "edit") return editStages(state.tier);
+  const sub = SUB_WORKFLOWS[state.deliverable];
+  if (sub) return sub.stages(state);
   return codeStages(state.deliverable, state.tier);
 }
 
@@ -130,7 +75,8 @@ function nextAction(root) {
     const action = stage.action(state, root);
     const directed = state.director && action.type === "ask" && ["concepts", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
-    return { ...action, ...directed, ...rules, stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? action.question : action.command}` };
+    const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
+    return { ...action, ...guide, ...directed, ...rules, stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? action.question : action.command}` };
   }
   return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
 }
@@ -145,7 +91,9 @@ function decide(root, options = {}) {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
     fs.writeFileSync(path.join(root, "brief.md"), `# Brief\n\n${options.answer}\n`);
   } else if (stage === "reference") {
-    state.decisions.reference = options.answer || "none";
+    const answer = options.answer || "none";
+    if (answer === "none" && state.mode === "replicate") fail("workflow", "replicate mode cannot skip the reference. Fix: write reference.md from the reference you are reproducing");
+    state.decisions.reference = answer;
   } else if (stage === "concept") {
     if (!options.choice) fail("workflow", "--choice is required: the concept number, or mad/pv for an edit");
     state.decisions.concept = String(options.choice);

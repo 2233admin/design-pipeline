@@ -50,7 +50,8 @@ give no direction. Choose the tier yourself from the request size; the user can 
 
 ## Where the details are
 
-Read only what the current step needs.
+Read only what the current step needs. For `film` and `edit`, each `next` action names its
+`guide` section: `references/workflow-film.md`, `references/workflow-edit.md`.
 
 - Film direction and storyboards: `references/product-film-direction.md`,
   `references/film-choreography/` (patterns, timeline probe, example storyboard)

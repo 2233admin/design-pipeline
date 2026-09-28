@@ -119,3 +119,59 @@ test("CLI next and decide drive the workflow and gates report back", () => {
   assert.equal(run("next").stage, "build", "verify film-storyboard recorded its pass in the state");
   assert.equal(run("decide", "--stage", "deliver", "--answer", "x").status, "recorded");
 });
+
+test("film and edit actions name a guide section that exists for every stage", () => {
+  for (const deliverable of ["film", "edit"]) {
+    const guide = fs.readFileSync(path.join(__dirname, `../skill/references/workflow-${deliverable}.md`), "utf8");
+    for (const tier of ["quick", "standard"]) {
+      for (const mode of ["brief", "replicate"]) {
+        const { stages } = require(`../skill/scripts/workflows/${deliverable}.cjs`);
+        for (const stage of stages({ deliverable, tier, mode })) {
+          assert.match(guide, new RegExp(`^## ${stage.id}$`, "m"), `${deliverable} guide lacks ## ${stage.id}`);
+        }
+      }
+    }
+  }
+  const dir = tmp();
+  initState(dir, { deliverable: "edit", tier: "quick" });
+  assert.equal(nextAction(dir).guide, "references/workflow-edit.md#analyze");
+  const ui = tmp();
+  initState(ui, { deliverable: "ui", tier: "quick" });
+  assert.equal(nextAction(ui).guide, undefined);
+});
+
+test("a gate result goes stale when its inputs change", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "film", tier: "quick" });
+  touch(dir, "storyboard.json", "{}");
+  recordGate(dir, "storyboard", "passed");
+  touch(dir, "out.mp4");
+  recordGate(dir, "film", "passed");
+  assert.equal(nextAction(dir).type, "done");
+  const later = new Date(Date.now() + 60_000);
+  fs.utimesSync(path.join(dir, "out.mp4"), later, later);
+  assert.equal(nextAction(dir).stage, "check", "a re-rendered draft must be checked again");
+  fs.utimesSync(path.join(dir, "storyboard.json"), later, later);
+  assert.equal(nextAction(dir).stage, "plan", "an edited storyboard must pass its gate again");
+});
+
+test("replicate mode requires the reference study", () => {
+  const film = tmp();
+  initState(film, { deliverable: "film", tier: "standard", mode: "replicate" });
+  decide(film, { stage: "intake", answer: "default" });
+  const ref = nextAction(film);
+  assert.equal(ref.stage, "reference");
+  assert.equal(ref.then, undefined, "no waiver is offered");
+  assert.throws(() => decide(film, { stage: "reference", answer: "none" }), /replicate mode cannot skip/);
+  touch(film, "reference.md");
+  assert.equal(nextAction(film).stage, "concepts");
+  const quick = tmp();
+  initState(quick, { deliverable: "film", tier: "quick", mode: "replicate" });
+  assert.equal(nextAction(quick).stage, "reference");
+  const edit = tmp();
+  initState(edit, { deliverable: "edit", tier: "quick", mode: "replicate" });
+  touch(edit, "edit/analysis.json", "{}");
+  assert.equal(nextAction(edit).stage, "reference");
+  touch(edit, "reference.md");
+  assert.equal(nextAction(edit).stage, "cut");
+});
