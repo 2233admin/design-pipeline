@@ -47,6 +47,8 @@ const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { scoreFilm } = require("./score-project-core.cjs");
+const { renderBlenderShot } = require("./blender-project-core.cjs");
+const { listTemplates } = require("./blender-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
 const { checkAudio, masterAudio } = require("./audio-core.cjs");
@@ -139,7 +141,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
@@ -388,6 +390,7 @@ function publicHelp() {
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     "  film scaffold --output <dir> [--replace]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
+    "  film blender (lists templates) | film blender --project-root <dir> --template product-turntable [--params params.json] [--engine eevee|cycles] [--output renders/shot.mp4] [--audio score.wav] [--blender <exe>]",
     "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
     "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
     "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
@@ -1853,6 +1856,19 @@ const COMMANDS = {
           if (option(parsed, "--output")) fs.writeFileSync(contained(root, option(parsed, "--output"), "--output", false), `${JSON.stringify(timeline, null, 2)}
 `);
           return { result: { status: "captured", timeline }, exitCode: 0 };
+        },
+      },
+      blender: {
+        required: [],
+        run: ({ parsed, root }) => {
+          if (!option(parsed, "--template")) {
+            return { result: { status: "templates", templates: listTemplates().map(({ id, use, grammar, params }) => ({ id, use, grammar, params })), next: "Render one with --project-root <dir> --template <id> [--params params.json]." }, exitCode: 0 };
+          }
+          if (!option(parsed, "--project-root")) fail("cli", "--project-root is required to render", { code: "OPTION_REQUIRED" });
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const params = option(parsed, "--params") ? readJson(contained(root, option(parsed, "--params"), "--params"), "blender params") : {};
+          const result = renderBlenderShot(project, { template: option(parsed, "--template"), params, engine: option(parsed, "--engine"), blender: option(parsed, "--blender"), output: option(parsed, "--output"), audio: option(parsed, "--audio") });
+          return { result, exitCode: result.composition.some((frame) => frame.status === "failed") ? 2 : 0 };
         },
       },
       score: {

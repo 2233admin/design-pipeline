@@ -29,7 +29,7 @@ This is the project front door. It routes UI work to the smallest relevant workf
 6. Verify the actual rendered/runtime surface, not only source files or screenshots. For any
    rendered layout, poster, screen or frame, run the composition gate (`references/composition-gate.md`);
    for any soundtrack, run the audio gate (`references/audio-gate.md`); to compose one as code,
-   use `references/film-score.md`.
+   use `references/film-score.md`; for real 3D product shots, use `references/film-blender.md`.
 
 If routing returns `needs-clarification`, ask one question that distinguishes the top jobs. Do not choose a primary route by guesswork.
 

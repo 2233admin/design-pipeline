@@ -47,6 +47,11 @@ All notable changes to Design Pipeline are documented here.
   Procedural beats are sampled at start, middle and end for composition. HyperFrames capture now
   waits for the timeline to register, resolves the preview project by directory, and a failed
   capture can no longer pass on a stale timeline.json.
+- Blender adapter: `film blender` renders a parameterized template (`product-turntable`) headless
+  with EEVEE or Cycles, encodes the film, converts Blender keyframes into timeline.json for the
+  timeline gate, bakes per-frame camera and product motion for three.js blocks, and checks
+  composition on key frames. Poly Haven HDRIs (CC0) download by id with md5 verification. Blender
+  (GPL) is used as an external program; the template scripts are MIT.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.
