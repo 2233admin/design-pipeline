@@ -48,4 +48,4 @@ The terminal session plays at 1.3x (from 4.15 s of the capture), so the agent's 
 
 ## User acceptance
 
-Pending.
+Accepted by the user on 2026-09-29, as sent, with no changes requested.

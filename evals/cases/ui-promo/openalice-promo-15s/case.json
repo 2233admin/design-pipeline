@@ -6,8 +6,14 @@
   "brief": "Make a 15-second UI promo for OpenAlice, an AI trading agent that runs on your own machine: its agent researches in its own workspace, files findings to an Inbox, and sits next to your portfolio. Use the real interface (its demo mode) rather than mock screens. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4 with a scored soundtrack.",
   "product": "OpenAlice (TraderAlice/OpenAlice, AGPL-3.0) in its UI demo mode: Ask Alice, the aapl-q1 workspace's recorded agent session, the Inbox report it pushes, and the portfolio",
   "author": "claude-opus-5-5",
-  "status": "candidate",
-  "approval": null,
+  "status": "approved",
+  "approval": {
+    "verdict": "accept",
+    "by": "user",
+    "date": "2026-09-29",
+    "note": "Accepted as sent; the hash is of the exact file the user watched.",
+    "renderSha256": "5f729c72e263808531a4a06525b319353264b92ccd97794f4c24e87bcbdc21fa"
+  },
   "golden": {
     "storyboard": "storyboard.json",
     "timeline": "timeline.json",

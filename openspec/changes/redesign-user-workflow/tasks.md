@@ -18,5 +18,5 @@
 - [ ] 3 Concept and review stages; two-brief comparison round.
 - [ ] 4 `film reference analyze`.
 - [ ] 5 motion-web and onetake idea port (provenance pinned by `pin-film-reference-provenance`; next review due 2026-10-28).
-- [ ] 6 Case library with golden cases (in progress: product PV and logo sting accepted in `add-golden-case-library`; UI promo and explainer in `add-ui-promo-and-explainer-cases`; MAD needs a footage source).
+- [ ] 6 Case library with golden cases (in progress: product PV and logo sting accepted in `add-golden-case-library`; UI promo and explainer accepted in `add-ui-promo-and-explainer-cases`; MAD needs a footage source).
 - [ ] 7 Full comparison evaluation.

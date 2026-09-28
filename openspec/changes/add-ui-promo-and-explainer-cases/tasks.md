@@ -7,4 +7,4 @@
 - [x] Render gate: count a step between two still neighbours as an instant replacement; add a unit test.
 - [x] Tests: the new deliverable types are present, and captures are declared and never tracked.
 - [x] Run `node evals/cases/verify.cjs --render` and `node scripts/qa.cjs`.
-- [ ] The user watches both renders and accepts or rejects each.
+- [x] The user accepted both renders on 2026-09-29; `approval` records the sha256 of each watched file.

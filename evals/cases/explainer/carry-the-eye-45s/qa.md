@@ -30,4 +30,4 @@ render counter-example `swap-on-boundary` is caught (`carry-cut`).
 
 ## User acceptance
 
-Pending.
+Accepted by the user on 2026-09-29, as sent, with no changes requested.

@@ -6,8 +6,14 @@
   "brief": "Make a 45-second explainer, with captions and music and no voice-over, that teaches one motion-craft rule: give every cut something that carries the eye across it. Show the problem, the kinds of carry, and a before/after, and end on design-pipeline, which checks the rule. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4 with a scored soundtrack.",
   "product": "the carry rule in references/product-film-direction.md (Carry and rhythm) and the storyboard's handoff and carrier fields; design-pipeline's carrier-unnamed and handoff-not-carried checks",
   "author": "claude-opus-5-5",
-  "status": "candidate",
-  "approval": null,
+  "status": "approved",
+  "approval": {
+    "verdict": "accept",
+    "by": "user",
+    "date": "2026-09-29",
+    "note": "Accepted as sent; the hash is of the exact file the user watched.",
+    "renderSha256": "59a5604e8ccc29326472f60fc6e1ba950cce7afa86b5742e66f7f353e206b9db"
+  },
   "golden": {
     "storyboard": "storyboard.json",
     "timeline": "timeline.json",
