@@ -111,10 +111,13 @@ test("carryContinuity: a boundary is carried only when neither gate that ran fla
   // evidence at all carryScore itself is null.
   assert.deepEqual(noGates, { carryScore: null, carriedBoundaries: 3, plannedCarriedBoundaries: 3 });
 
-  // Timeline breaks "continue", render breaks "morph"; "carry" is clean on both -> 1/3 survive.
+  // Render reports carry-cut on 2 of the 3 planned carried boundaries ("continue" and "morph");
+  // "carry" is clean -> 1/3 survive, matching the brief's "3 planned, 2 cut" case.
   const steps = [
-    { gate: "timeline", status: "passed", findings: [{ code: "handoff-not-carried", severity: "error", beatId: "continue", message: "x" }] },
-    { gate: "render", status: "passed", findings: [{ code: "carry-cut", severity: "error", beatId: "morph", message: "x" }] },
+    { gate: "render", status: "passed", findings: [
+      { code: "carry-cut", severity: "error", beatId: "continue", message: "x" },
+      { code: "carry-cut", severity: "error", beatId: "morph", message: "x" },
+    ] },
   ];
   const broken = carryContinuity(board, steps);
   assert.deepEqual(broken, { carryScore: 0.333, carriedBoundaries: 1, plannedCarriedBoundaries: 3 });
