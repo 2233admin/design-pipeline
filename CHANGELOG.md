@@ -9,6 +9,11 @@ All notable changes to Design Pipeline are documented here.
 - Provenance records for the reference skills motion-web (CC BY-NC 4.0, re-reviewed at `5f4e40f1`)
   and onetake (PolyForm Noncommercial 1.0.0, pinned at `36072d36`): ideas only, no upstream code,
   text or assets. Repository QA fails once a record is older than its 30-day review window.
+- Render and check continuity (port-onetake-continuity, brief w2): `evaluateFilmRender` adds
+  `carry-cut` when a detected scene cut lands on a planned continuation, morph or camera-carry
+  boundary (match-cut stays exempt) and reports `stillness.stillShare`; `film check` computes
+  `carryScore` over planned carried boundaries from the timeline and render gates and fails with
+  `low-carry` below 0.6 across at least 3 such boundaries.
 
 ### Changed
 
