@@ -61,8 +61,16 @@ const statusBefore = statusBytes();
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-hermetic-qa-"));
 const isolatedHome = path.join(tempRoot, "home");
 fs.mkdirSync(isolatedHome, { recursive: true });
+// Tests create scratch directories under os.tmpdir(); point it inside tempRoot so the finally
+// block removes them. Without this every QA run left thousands of directories (and a 0.33 GB
+// install copy) in the system temp folder.
+const isolatedTmp = path.join(tempRoot, "tmp");
+fs.mkdirSync(isolatedTmp, { recursive: true });
 const hermeticEnv = {
   ...process.env,
+  TMPDIR: isolatedTmp,
+  TEMP: isolatedTmp,
+  TMP: isolatedTmp,
   HOME: isolatedHome,
   USERPROFILE: isolatedHome,
   CODEX_HOME: path.join(isolatedHome, ".codex"),
