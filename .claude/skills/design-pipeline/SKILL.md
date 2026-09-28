@@ -18,7 +18,7 @@ complete packaged workflow remains in `skill/SKILL.md`.
 </essential_principles>
 
 <quick_start>
-1. Read `CLAUDE.md` and the relevant OpenSpec change.
+1. Read `AGENTS.md` and the relevant OpenSpec change.
 2. Read `skill/SKILL.md`, then load only the referenced section needed for the request.
 3. Use `node skill/scripts/designer-pipeline.cjs <command>` for pipeline operations.
 4. Finish with `node scripts/qa.cjs` and report any remaining stale or blocked receipt.
@@ -47,7 +47,7 @@ stay inside their declared target and temporary roots.
 
 <reference_guides>
 - Full workflow and route catalog: `skill/SKILL.md`
-- Project rules: `CLAUDE.md`
+- Project rules: `AGENTS.md`
 - Change contracts: `openspec/changes/`
 - Test manifest: `scripts/test-manifest.json`
 </reference_guides>

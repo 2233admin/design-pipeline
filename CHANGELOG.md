@@ -11,6 +11,10 @@ All notable changes to Design Pipeline are documented here.
   `verify film-render` reports duration, scene cuts against planned handoffs, cut/audio-onset
   alignment and a per-beat contact sheet; `references/film-choreography/` ships seek-safe GSAP
   patterns. None of these grant creative acceptance.
+- `verify film-timeline` checks a probed GSAP timeline (`timeline-probe.js`) against its
+  storyboard: layout tweens, infinite repeats, static or fade-only action beats, and uncarried
+  continuity handoffs. `film-eval measure` scores per-model film runs through the film gates into
+  benchmark v2 measurements; `skill/evals/film/` ships the cross-model film benchmark.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.
