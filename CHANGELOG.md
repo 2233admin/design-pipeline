@@ -6,6 +6,13 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- The timeline gate no longer treats a one-take subject as ambient background. An element counts as
+  ambient only when one long tween (at least half the film) drives it, such as a drifting
+  background. Before, a subject carried through a continuous film by a chain of actions covered
+  more than 60% of the runtime, was excluded, and every carried handoff failed.
+- `carry-cut` also catches a panel swapped in one frame on a carried boundary. The scene detector misses
+  it when the panel covers little of the frame; found on a rendered 5-card slideshow demo, where
+  all four swaps passed the render gate. The render result lists `carryBreaks` with their kind.
 - `node scripts/qa.cjs` now points `TEMP`, `TMP` and `TMPDIR` inside its own temporary root, so
   test scratch directories are removed with it. Before, every run left thousands of directories
   and a 0.33 GB install copy in the system temp folder; on 2026-09-28 this filled drive C.
