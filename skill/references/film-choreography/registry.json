@@ -35,9 +35,9 @@
       "grammar": ["continuous-transformation", "product-demonstration", "combination"],
       "transformation": "camera-move",
       "handoff": "camera-carry",
-      "required": ["camera", "subject", "path", "lead", "rest", "at"],
+      "required": ["stage", "subject", "path", "lead", "rest", "at"],
       "optional": ["duration", "ease"],
-      "use": "Camera stays a step ahead of the subject along a path and holds perfectly still through the rest; ties consecutive beats into one continuous take instead of a cut."
+      "use": "The stage (world container) compensates for the subject's next position, arriving first, then holds perfectly still through the rest; ties consecutive beats into one continuous take instead of a cut."
     },
     {
       "id": "kinetic-type",

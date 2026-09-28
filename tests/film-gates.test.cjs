@@ -96,7 +96,7 @@ test("choreography registry and module agree and patterns only tween seek-safe p
     "continuous-morph": { from: "#a", to: "#b", delta: { x: 10, y: 0, scale: 2 } },
     "match-cut": { from: "#a", to: "#b" },
     "camera-push": { stage: "#w", focus: { x: 10, y: 5 } },
-    "camera-follow": { camera: "#cam", subject: "#s", path: [{ x: 10, y: 20 }], lead: { x: 4, y: -6 }, rest: 0.5 },
+    "camera-follow": { stage: "#w", subject: "#s", path: [{ x: 10, y: 20 }], lead: { x: 4, y: -6 }, rest: 0.5 },
     "kinetic-type": { words: ".w", target: "#t", count: 3 },
     "ui-demo": { cursor: "#c", path: [{ x: 1, y: 2 }], result: "#r" },
     "assembly": { pieces: ".p", offsets: [{ x: 5, y: 5, rotation: 3 }] },
@@ -121,6 +121,29 @@ test("choreography registry and module agree and patterns only tween seek-safe p
     assert.equal(JSON.stringify(again, (k, v) => (typeof v === "function" ? String(v) : v)), JSON.stringify(calls, (k, v) => (typeof v === "function" ? String(v) : v)), `${id} is deterministic`);
   }
   assert.throws(() => patterns["match-cut"]({}, { from: "#a", at: 0 }), /missing option to/);
+});
+
+test("camera-follow: the stage leads the subject to the negated lead point and holds through the rest", () => {
+  const calls = [];
+  const tl = new Proxy({}, { get: (_, method) => (...callArgs) => { calls.push({ method, callArgs }); return tl; } });
+  const path = [{ x: 10, y: 20 }, { x: 30, y: -5 }];
+  const end = patterns["camera-follow"](tl, { stage: "#w", subject: "#s", path, lead: { x: 4, y: -6 }, rest: 0.5, duration: 0.8, at: 1 });
+  const stageCalls = calls.filter((call) => call.callArgs[0] === "#w");
+  const subjectCalls = calls.filter((call) => call.callArgs[0] === "#s");
+  assert.equal(stageCalls.length, 2, "one stage tween per path point");
+  assert.equal(subjectCalls.length, 2, "one subject tween per path point");
+  assert.deepEqual(
+    stageCalls.map((call) => [call.callArgs[1].x, call.callArgs[1].y]),
+    path.map((point) => [-(point.x + 4), -(point.y - 6)]),
+    "the stage moves to the negated point plus lead",
+  );
+  stageCalls.forEach((call, index) => {
+    assert.ok(call.callArgs[1].duration < subjectCalls[index].callArgs[1].duration, "the stage tween is shorter than the subject's");
+    assert.equal(call.callArgs[2], subjectCalls[index].callArgs[2], "the stage and subject start together, so the stage lands first");
+  });
+  const rest = calls[calls.length - 1];
+  assert.equal(rest.callArgs[1].duration, 0.5, "the rest is a scheduled no-op tween");
+  assert.equal(rest.callArgs[2] + rest.callArgs[1].duration, end, "the returned handoff time includes the rest");
 });
 
 const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0 && spawnSync("ffprobe", ["-version"], { windowsHide: true }).status === 0;
