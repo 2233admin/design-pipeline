@@ -52,6 +52,12 @@ All notable changes to Design Pipeline are documented here.
   timeline gate, bakes per-frame camera and product motion for three.js blocks, and checks
   composition on key frames. Poly Haven HDRIs (CC0) download by id with md5 verification. Blender
   (GPL) is used as an external program; the template scripts are MIT.
+- Music-led editing (PV, MAD): `film-edit analyze` tracks the beat grid, downbeats and bar energy
+  of any track (or uses a Strudel score grid) and splits footage into candidate shots with motion
+  peaks; `film-edit auto` places shots on the grid in `mad` or `pv` style; `film-edit render`
+  assembles with ffmpeg (speed, flash, freeze, zoom-punch); `film-edit check` enforces cuts on the
+  grid, rhythm, reuse, speed and footage licensing, and runs the render, audio and composition
+  gates through a derived storyboard.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.

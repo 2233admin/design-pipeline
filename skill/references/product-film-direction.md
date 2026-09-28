@@ -114,6 +114,9 @@ Motion craft rules the gates check:
   (`missing-settle`).
 - Procedurally driven beats are sampled at their start, middle and end for the composition gate.
 
+When the film is assembled from existing footage cut to music (PV, MAD, beat montage), use
+`references/film-edit.md` instead of building beats as compositions.
+
 For a real 3D product shot (lighting, materials, depth of field), render it with Blender via
 `references/film-blender.md` and host the clip at its beat; its keyframes feed the timeline gate.
 
