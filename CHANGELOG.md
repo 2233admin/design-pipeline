@@ -39,6 +39,15 @@ All notable changes to Design Pipeline are documented here.
   (`carrier`), rhythm (`holdSec`, beat-length variety) and why a continuous camera and real
   stillness keep a film from reading as a slideshow, crediting `reference-skill-onetake.md` as the
   idea's source (ideas only).
+- Measured interaction probe (port-motion-web-interaction, brief w4): `verify interaction --probe
+  interaction.json` loads the page in the headless Chrome stack film capture already uses, drives
+  real input (`pointer-sweep`, `wheel`, `click`) and samples the target every animation frame, then
+  reports `dead-interaction`, `no-settle`, `rest-drift`, `linear-response` (warning), `opacity-only`
+  and `external-request`, each with a one-line fix, as `design-pipeline.interaction-result.v1` next
+  to the probe. Measurement is receipt-free: a dead, unsettled or drifting interaction fails on what
+  the browser recorded rather than on what an agent reported, and a linear response is reported as a
+  warning from the same measurement. The gate records itself as `interaction` through the workflow
+  state.
 - `response.spring-settle` motion primitive (port-motion-web-interaction, brief w6): registered in
   `motion-primitives.json` with stiffness, dampingRatio, mass, restValue and overshootLimit
   parameters, pointer/state/scroll drivers, and `provenance.kind: idea` crediting
@@ -180,7 +189,6 @@ All notable changes to Design Pipeline are documented here.
 - Persisted artifact metadata is now bound to the file hash, persisted control plans are restricted to the
   governed runnable registry, untrusted preview roots are rejected, and interaction-state declaration parsing
   is hardened.
-
 
 ## [0.9.0] - 2026-08-26
 
