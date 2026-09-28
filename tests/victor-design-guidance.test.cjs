@@ -9,7 +9,7 @@ const repoRoot = path.resolve(__dirname, "..");
 const read = (relative) => fs.readFileSync(path.join(repoRoot, relative), "utf8");
 
 test("routes the subject-first Victor design guidance", () => {
-  const pipeline = read("skill/SKILL.md");
+  const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();
   const stages = read("skill/references/stages.md");
   const antiSlop = read("skill/references/anti-slop-review.md");
   const copy = read("skill/references/plain-language.md");

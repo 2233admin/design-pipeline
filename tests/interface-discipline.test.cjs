@@ -64,7 +64,7 @@ test("bundles the complete pinned interface-discipline source snapshot", () => {
 
 test("publishes the bundle as a built-in pipeline protocol", () => {
   const protocol = fs.readFileSync(path.join(disciplineRoot, "../interface-discipline.md"), "utf8");
-  const pipeline = fs.readFileSync(path.join(__dirname, "../skill/SKILL.md"), "utf8");
+  const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();
   assert.match(protocol, /not an\noptional companion/);
   assert.match(protocol, /Introduced` \/ `Regression` \/ `Pre-existing/);
   assert.match(pipeline, /references\/interface-discipline\.md/);

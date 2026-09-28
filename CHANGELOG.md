@@ -4,6 +4,18 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Workflow redesign (step 1 of `redesign-user-workflow`): `skill/SKILL.md` is now a 3.6 KB front
+  door. `designer-pipeline next` reads `.design-pipeline/state.json` and returns one action at a
+  time (`run`, `ask` or `done`); `designer-pipeline decide` records the two user decisions
+  (concept pick, draft verdict) plus intake, reference and delivery. Deliverables `film`, `edit`,
+  `web`, `ui`; tiers `quick`, `standard`, `full` (OpenSpec only at `full` and for this repository).
+  Rejections become project rules returned by `next`. Checks report back into the state.
+- Migration: the previous `skill/SKILL.md` content moved unchanged to
+  `skill/references/pipeline-reference.md` and is routed from the front door. Every CLI command
+  still works. Agents that read stage contracts from `SKILL.md` should read that reference.
+
 ### Added
 
 - Product-film gates: `verify film-storyboard` checks a structured `storyboard.json` for open

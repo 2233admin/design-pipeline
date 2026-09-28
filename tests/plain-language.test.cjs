@@ -12,7 +12,7 @@ test("packages and routes the direct plain-language contract with a scope guard"
   const resources = JSON.parse(read("skill/references/package-resources.json"));
   assert.ok(resources.required.includes("references/plain-language.md"));
 
-  const pipeline = read("skill/SKILL.md");
+  const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();
   const contract = read("skill/references/plain-language.md");
   const qa = read("skill/references/qa-checklist.md");
   assert.match(pipeline, /references\/plain-language\.md/);

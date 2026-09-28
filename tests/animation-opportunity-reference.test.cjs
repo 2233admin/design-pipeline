@@ -9,7 +9,7 @@ const repoRoot = path.resolve(__dirname, "..");
 const read = (relative) => fs.readFileSync(path.join(repoRoot, relative), "utf8");
 
 test("documents the governed animation opportunity and review route", () => {
-  const pipeline = read("skill/SKILL.md");
+  const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();
   const routing = read("skill/references/capability-routing.md");
   const reference = read("skill/references/animation-opportunity-and-review.md");
 

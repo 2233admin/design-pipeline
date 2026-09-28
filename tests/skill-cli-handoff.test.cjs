@@ -10,7 +10,7 @@ const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs")
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
-const skill = fs.readFileSync(path.join(repoRoot, "skill/SKILL.md"), "utf8");
+const skill = require("./helpers/skill-surface.cjs").readSkillSurface();
 const routedReferences = [
   "skill/references/pipeline-method.md",
   "skill/references/feature-routes.md",
