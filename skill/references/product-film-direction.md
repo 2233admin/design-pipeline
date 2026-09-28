@@ -114,6 +114,9 @@ Motion craft rules the gates check:
   (`missing-settle`).
 - Procedurally driven beats are sampled at their start, middle and end for the composition gate.
 
+For a real 3D product shot (lighting, materials, depth of field), render it with Blender via
+`references/film-blender.md` and host the clip at its beat; its keyframes feed the timeline gate.
+
 Before authoring 3D, WebGL, shader, device-mockup or camera-move beats, search the HyperFrames
 catalog: `designer-pipeline film blocks --project-root <dir> --query "<the beat's action>" [--tag 3d]`.
 Name the chosen block in the beat's `block` field and install it with the printed command; the

@@ -445,3 +445,11 @@ LICENSE.
 `@strudel/mini`, `@strudel/tonal`, `@strudel/webaudio` and `superdough` into the user's film
 project under `.design-pipeline/strudel` on first use. design-pipeline does not include, modify
 or redistribute Strudel code; it invokes the installed copy in a separate browser process.
+
+## Blender and Poly Haven (used at runtime, not distributed)
+
+`film blender` runs the user's own Blender installation (https://www.blender.org, GPL-2.0-or-later)
+as an external program with MIT-licensed template scripts from this package. When a template is
+given a Poly Haven HDRI id, the HDRI is downloaded from https://polyhaven.com (CC0) into the
+user's project and verified against the published md5. Neither Blender nor Poly Haven assets are
+included in this package.

@@ -62,6 +62,7 @@
     "film-catalog-3d.test.cjs",
     "film-score.test.cjs",
     "film-motion-rules.test.cjs",
+    "film-blender.test.cjs",
     "palette-foundation.test.cjs",
     "package-release.test.cjs",
     "pending-source.test.cjs",

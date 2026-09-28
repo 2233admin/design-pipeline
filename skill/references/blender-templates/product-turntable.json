@@ -1,0 +1,24 @@
+{
+  "id": "product-turntable",
+  "script": "product-turntable.py",
+  "engine": "BLENDER_EEVEE",
+  "use": "Hero shot of one product: it turns on a studio floor while the camera pushes in or orbits. Use for launch films, product reveals and feature intros.",
+  "grammar": ["product-demonstration", "continuous-transformation"],
+  "params": {
+    "model": { "type": "file", "default": "", "description": "Product model (.glb, .gltf, .obj or .fbx). Empty uses the placeholder shape." },
+    "shape": { "type": "enum", "values": ["rounded-box", "cylinder", "sphere", "phone"], "default": "rounded-box", "description": "Placeholder shape when no model is given." },
+    "color": { "type": "color", "default": "#ff7a45", "description": "Product base color." },
+    "roughness": { "type": "number", "min": 0, "max": 1, "default": 0.3, "description": "0 glossy to 1 matte." },
+    "metallic": { "type": "number", "min": 0, "max": 1, "default": 0, "description": "0 plastic to 1 metal." },
+    "background": { "type": "color", "default": "#0e1116", "description": "Studio background and floor tint." },
+    "durationSec": { "type": "number", "min": 1, "max": 60, "default": 4, "description": "Shot length in seconds." },
+    "fps": { "type": "number", "min": 12, "max": 60, "default": 30, "description": "Frames per second." },
+    "width": { "type": "number", "min": 160, "max": 3840, "default": 1280, "description": "Frame width in pixels." },
+    "height": { "type": "number", "min": 90, "max": 2160, "default": 720, "description": "Frame height in pixels." },
+    "turnDegrees": { "type": "number", "min": 0, "max": 720, "default": 45, "description": "How far the product turns; it ends a quarter of this past front-facing, in a three-quarter hero pose." },
+    "cameraMove": { "type": "enum", "values": ["push", "orbit", "static"], "default": "push", "description": "push moves toward the product; orbit circles it; static holds." },
+    "ease": { "type": "enum", "values": ["ease-in-out", "ease-out", "linear"], "default": "ease-in-out", "description": "Keyframe easing for camera and product." },
+    "hdri": { "type": "string", "default": "studio", "description": "\"studio\" for built-in three-point lighting, or a Poly Haven HDRI id (CC0), e.g. studio_small_09, downloaded on first use." },
+    "samples": { "type": "number", "min": 1, "max": 256, "default": 32, "description": "Render samples (quality vs time)." }
+  }
+}

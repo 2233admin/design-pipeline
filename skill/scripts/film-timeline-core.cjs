@@ -85,14 +85,17 @@ function checkTimeline(timeline, board, options = {}) {
   }
   // Linear easing on a moving element reads as mechanical; opacity and drivers are exempt.
   const LINEAR = /^(none|linear|power0(\.\w+)?)$/i;
-  const linear = timeline.tweens.filter((tween) => !tween.driver && tween.durationSec > 0.3 && LINEAR.test(tween.ease || "") && tween.props.some((prop) => /^(x|y|xPercent|yPercent|scale|scaleX|scaleY|rotation|rotate|z|rotationX|rotationY)$/.test(prop)));
+  const linear = timeline.tweens.filter((tween) => !tween.driver && tween.durationSec > 0.3 && LINEAR.test(tween.ease || "") && tween.props.some((prop) => /^(x|y|z|xPercent|yPercent|scale[XYZ]?|rotat(e|ion)[XYZ]?|location[XYZ])$/.test(prop)));
   for (const tween of linear.slice(0, 5)) add("linear-motion", `${tween.targets.join(", ")} moves with ${tween.ease} easing for ${tween.durationSec}s at ${tween.startSec}s`, undefined, "warn");
 
   const perBeat = board.beats.map((beat) => {
-    const tweens = timeline.tweens.filter((tween) => subjects(tween).length > 0 && overlaps(tween, beat.startSec, beat.endSec));
+    // Ambient targets do not count as a beat's subject, unless nothing else moves in the beat
+    // (a single continuous shot, such as a Blender turntable, is all "ambient" by coverage).
+    const own = timeline.tweens.filter((tween) => subjects(tween).length > 0 && overlaps(tween, beat.startSec, beat.endSec));
+    const tweens = own.length ? own : timeline.tweens.filter((tween) => !tween.driver && overlaps(tween, beat.startSec, beat.endSec));
     const animated = tweens.filter((tween) => tween.durationSec > 0);
     const propsUsed = new Set(animated.flatMap((tween) => tween.props));
-    const targets = new Set(animated.flatMap(subjects));
+    const targets = new Set(animated.flatMap((tween) => (own.length ? subjects(tween) : tween.targets)));
     return { beat, tweens: animated, props: [...propsUsed].sort(), targets };
   });
 
