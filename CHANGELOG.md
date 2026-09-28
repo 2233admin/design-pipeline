@@ -4,6 +4,12 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Provenance records for the reference skills motion-web (CC BY-NC 4.0, re-reviewed at `5f4e40f1`)
+  and onetake (PolyForm Noncommercial 1.0.0, pinned at `36072d36`): ideas only, no upstream code,
+  text or assets. Repository QA fails once a record is older than its 30-day review window.
+
 ### Changed
 
 - Workflow step 2 (`split-film-edit-workflows`): the `film` and `edit` sub-workflows have their own

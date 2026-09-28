@@ -17,6 +17,6 @@
 - [x] 2 Split `film` and `edit` sub-workflows.
 - [ ] 3 Concept and review stages; two-brief comparison round.
 - [ ] 4 `film reference analyze`.
-- [ ] 5 motion-web and onetake idea port (provenance before 2026-10-18).
+- [ ] 5 motion-web and onetake idea port (provenance pinned by `pin-film-reference-provenance`; next review due 2026-10-28).
 - [ ] 6 Case library with golden cases.
 - [ ] 7 Full comparison evaluation.
