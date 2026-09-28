@@ -217,3 +217,41 @@ test("the existing audit reports current, drifted, and missing evidence determin
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+// Reference skills studied for ideas only (non-commercial licenses); see
+// openspec/changes/pin-film-reference-provenance.
+const referenceSkills = {
+  "skill/references/reference-skill-motion-web.md": {
+    sourceId: "motion-web-reference-skill",
+    url: "https://github.com/feitangyuan/motion-web/tree/5f4e40f1253e11e28850d08dce28b9b7e4320115",
+    revision: "5f4e40f1253e11e28850d08dce28b9b7e4320115",
+    contentHash: "68945441b0bbd6b79f2849206c019c2c7bc01a13a2bbd5c267c9c3d5c069c1b4",
+    license: "CC-BY-NC-4.0",
+  },
+  "skill/references/reference-skill-onetake.md": {
+    sourceId: "onetake-reference-skill",
+    url: "https://github.com/feitangyuan/onetake/tree/36072d36e777a7de4604eacaa110342f80ae76eb",
+    revision: "36072d36e777a7de4604eacaa110342f80ae76eb",
+    contentHash: "f5d0914ed654dc4dba1d4024394225ed37b6bf17d53d555e675ecdc531a64a18",
+    license: "PolyForm-Noncommercial-1.0.0",
+  },
+};
+
+test("non-commercial reference skills are pinned, ideas-only and fresh", () => {
+  const now = Date.parse(process.env.DESIGN_PIPELINE_NOW || new Date().toISOString());
+  for (const [relativePath, expected] of Object.entries(referenceSkills)) {
+    const metadata = frontmatter(relativePath);
+    assert.equal(metadata.id, expected.sourceId);
+    assert.equal(metadata.url, expected.url);
+    assert.doesNotMatch(metadata.url, /2233admin/, "cite the canonical repository, not a fork");
+    assert.equal(metadata.reviewedRevision, expected.revision);
+    assert.equal(metadata.reviewedContentHash, expected.contentHash);
+    assert.equal(metadata.contentHashScope, "ordered UTF-8 sourceFiles with path-and-newline separators");
+    assert.deepEqual(metadata.sourceFiles.split(", "), ["README.md", "LICENSE"]);
+    assert.equal(metadata.license, expected.license);
+    assert.equal(metadata.codeCopied, "false");
+    assert.match(metadata.useBoundary, /reference-only; ideas only/);
+    const due = Date.parse(metadata.reviewedAt) + Number(metadata.freshnessDays) * 86_400_000;
+    assert.ok(now <= due, `${relativePath} review expired on ${new Date(due).toISOString().slice(0, 10)}: re-review the upstream revision, hash and license, then update reviewedAt`);
+  }
+});
