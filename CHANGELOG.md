@@ -6,6 +6,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Workflow gates allow 50 ms of clock skew between a gate's record time and its input files'
+  times. On a loaded Windows host a file written just before the gate could carry a later
+  time, reopen the stage it had just passed, and fail `a gate result goes stale when its
+  inputs change` at random.
 - The timeline gate no longer treats a one-take subject as ambient background. An element counts as
   ambient only when one long tween (at least half the film) drives it, such as a drifting
   background. Before, a subject carried through a continuous film by a chain of actions covered

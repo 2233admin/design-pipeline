@@ -155,6 +155,23 @@ test("a gate result goes stale when its inputs change", () => {
   assert.equal(nextAction(dir).stage, "plan", "an edited storyboard must pass its gate again");
 });
 
+test("a file written a few milliseconds after its gate still counts; a later edit does not", () => {
+  // File times and Date.now() come from different clocks, so a loaded host can stamp an input a few
+  // milliseconds after the gate that checked it.
+  const dir = tmp();
+  initState(dir, { deliverable: "film", tier: "quick" });
+  touch(dir, "storyboard.json", "{}");
+  recordGate(dir, "storyboard", "passed");
+  touch(dir, "out.mp4");
+  recordGate(dir, "film", "passed");
+  const skewed = new Date(Date.now() + 20);
+  fs.utimesSync(path.join(dir, "out.mp4"), skewed, skewed);
+  assert.equal(nextAction(dir).type, "done");
+  const edited = new Date(Date.now() + 1000);
+  fs.utimesSync(path.join(dir, "out.mp4"), edited, edited);
+  assert.equal(nextAction(dir).stage, "check");
+});
+
 test("replicate mode requires the reference study", () => {
   const film = tmp();
   initState(film, { deliverable: "film", tier: "standard", mode: "replicate" });
