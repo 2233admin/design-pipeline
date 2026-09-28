@@ -12,10 +12,16 @@
 
 先独立输出7.5秒关键样片：同一来源进入 → 真实版本缩略留驻 → Inbox 引用。主控正常速实播复述通过后，已扩同一表达为20秒完整片；完整片也已由主控正常速看至ended通过预检。具体观看时钟见qa.md，用户最终视觉接受仍pending。
 
-保留一个 paused、可倒 seek 的 GSAP timeline 及 window.film 公共接口。新 verifier 按实际 duration 验证，不沿用 24 秒/720 帧/五 scene/awaiting approval 断言。preview/watch 保留暂停、重播、reduced motion、解码播放证据。
+采用一个项目自有 Authored Motion Graph，保留一个 paused、可倒 seek 的 GSAP timeline 及 window.film 公共接口。Graph 声明 semantic beats、shared anchors、purpose、from/to 和 bounded spring 参数；编译器只生成现有 timeline track，不创建第二 runtime。新 verifier 按实际 duration 验证，不沿用 24 秒/720 帧/五 scene/awaiting approval 断言。preview/watch 保留暂停、重播、reduced motion、解码播放证据。
 
 ## 证据与边界
 
 首次新 render 之前，旧片及原实现/JSON/验证证据完整复制到 `experiments/openalice-product-animation/output/rejected-24s/`，preservation.json 记录 34 个文件 hash；旧 MP4 SHA256 为 6a8c7886207907ae63e627622e7932e3878ac5441c3febd98cb53e12697e8764。此目录只作被否定反例，不是当前验收证据。
 
 brief 变化经既有 route/toolchain CLI 刷新 hash lineage，不自行计算替代CLI hash。沿用 HyperFrames 0.8.46 本地 fallback；shared catalog/toolchain 仍 blocked。无 remote publish、交易、共享 pipeline 修改、未批准 commit/merge。本轮使用OMP执行；含混开关未被擅自解释成新功能或声称满足。主控负责 Multica、根 QA 与最终集成；实现不触碰 osprey 工作区。
+
+## 研究后方法调整
+
+motion-web 的可迁移部分不是其七个案例的 runtime，而是“先声明 motion job/renderer/状态边界，再用针对用户抱怨的 oracle 验证”的工作方式。本轮因此改为证据血缘图：改变空间隐喻和 beat progression，同时复用既有 DOM 语义对象、HyperFrames、GSAP、Playwright、FFmpeg 与 evidence lineage。
+
+不得把本次 graph implementation 描述成 motion-web 兼容实现；上游代码、案例、资产、prompt、workflow 与可识别皮层均未复制。

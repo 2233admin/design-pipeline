@@ -1,0 +1,18 @@
+{
+  "targetPlatform": "web",
+  "primaryTask": "Prove a DOM plus Canvas product panel through the public motion pipeline",
+  "targetScreen": "Signal Board panel",
+  "mode": "greenfield",
+  "fidelity": "adaptive",
+  "animationLineage": "native-chain.json",
+  "animationLineageRoots": {
+    "workspaceRoot": "docs/walkthroughs/fixtures/generic-panel/lineage-work/design-pipeline-animation-latch-paper-nxYcut/companion",
+    "artifactRoot": "docs/walkthroughs/fixtures/generic-panel/lineage-work/design-pipeline-animation-latch-paper-nxYcut/artifacts",
+    "evidenceRoot": "docs/walkthroughs/fixtures/generic-panel/lineage-work/design-pipeline-animation-latch-paper-nxYcut/project/evidence"
+  },
+  "animationLineageRootHashes": {
+    "workspaceRoot": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "artifactRoot": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "evidenceRoot": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

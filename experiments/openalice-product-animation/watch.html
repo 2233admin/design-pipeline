@@ -23,7 +23,7 @@
 <li>An Inbox report references the research document and its original Session. The report does not move or replace the research.</li>
 <li>The full film ends with “Ready for your review” and “No trade placed.” Human review is the boundary; no trade or approval request is created.</li>
 </ol>
-<p>Source insertion, version thumbnails and camera movement are illustrative expressions, not claims about existing product UI interactions. The optional short sample shows only the source → saved versions → Inbox reference sequence, not the complete film.</p>
+<p>Source insertion, version thumbnails and camera movement are illustrative expressions, not claims about existing product UI interactions. The optional short sample deterministically retimes the same six-beat source → extract → retain → reference → inspect → review composition into 7.5 seconds; it is a derivative, not a replacement for the full film.</p>
 </details>
 </main>
 <script>
@@ -50,7 +50,7 @@ function describe(){
     motion = video.paused ? `Reduced motion: ${atEnd ? 'paused ending' : 'paused'}. Use the video controls to play or seek manually.` : 'Reduced motion preference: playing by your choice. Use the video controls to pause.';
     if(video.paused && !atEnd && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA && !endingSeekable)motion = 'Reduced motion: paused. This server does not support seeking to the ending. Download the MP4 and open it locally.';
   }
-  note.textContent = `${duration}${sample ? 'Short sample, not the complete film' : 'Full film'} · ${motion} Original research stays in its Workspace; the Inbox receives a reference. ${sample ? 'Source → versions → Inbox.' : 'Ready for your review. No trade placed.'}`;
+  note.textContent = duration + (sample ? 'Short six-beat derivative, not the complete-duration film' : 'Full film') + ' · ' + motion + ' Original research stays in its Workspace; the Inbox receives a reference. ' + (sample ? 'Source → extract → retain → reference → inspect → review.' : 'Ready for your review. No trade placed.');
 }
 function preference(){
   if(reduce.matches){video.pause();if(!mediaFailure && !video.error && Number.isFinite(video.duration))video.currentTime = video.duration;}

@@ -56,7 +56,7 @@ reversibility, or confidence that the implementation cannot prove.
 | `reference-reconstruction` | Exact image or pixel-accurate reconstruction | `references/feature-routes.md`, `references/reference-spec.md`, `references/reconstruction-spec.md` | resolved source, graybox, geometry, final fidelity receipt |
 | `website-cloning` | Live-page clone or reverse-engineering | `references/feature-routes.md`, `references/website-cloning.md`, `references/deepclonewebsite.md` | target manifest, palette evidence, foundations, measured clone evaluation |
 | `component-first` | Component or design-system selection | `references/companion-skills.md`, `references/capability-routing.md`, `references/component-capabilities.md`, `references/pipeline-method.md` | capability inventory, provider route, behavioral evidence, conformance |
-| `motion-graphics` | Motion, animation, WebGL, game, or graphics | `references/capability-routing.md`, `references/animation-opportunity-and-review.md`, `references/stages.md` | runtime ownership, motion spec, reduced motion, performance and cleanup |
+| `motion-graphics` | Motion, animation, WebGL, game, or graphics | `references/capability-routing.md`, `references/animation-opportunity-and-review.md`, `references/motion-first-capability.md`, `references/stages.md` | Animation Job/MotionGraph ownership, input trace and probes, reduced motion, performance/cleanup, lineage-gated package |
 | `dynamic-web-verification` | Dynamic web verification | `references/stages.md`, `adapters/playwright.cjs`, `references/qa-checklist.md` | runtime readiness, `networkidle`, DOM, screenshot, console, accessibility, network, performance |
 | `product-foundation` | Requirements-driven product foundation | `references/design-synthesis.md` | reusable `DESIGN.md`, decision evidence, validation |
 | `feedback-loop` | Pipeline bug, missing capability, or reusable gap | `references/feedback-loop.md`, `references/lifecycle.md` | redacted local feedback, regression test, explicit publication authority |
@@ -331,6 +331,7 @@ Machine-readable motion foundation schema: `references/motion-foundation.schema.
 Motion primitive registry: `references/motion-primitives.json`.
 Motion spec reference: `references/motion-spec.md`.
 Animation opportunity and review reference: `references/animation-opportunity-and-review.md`.
+Motion-first capability reference: `references/motion-first-capability.md`; use it for bounded physical response, shared anchors, renderer choice, and deterministic authored-time evidence.
 Reference evidence and spatial-routing spec: `references/reference-spec.md`.
 Change visual/screen-space design spec: `references/design-spec.md`.
 Change 3D world spec: `references/3d-spec.md`.
@@ -363,6 +364,7 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `animation-vocabulary`: translate vague motion intent into precise timing, easing, choreography, and behavior language.
 - `review-animations`: strict post-implementation animation review.
 - `references/animation-opportunity-and-review.md`: project-owned gate for screening opportunities before implementation, naming vocabulary/curves, and recording review evidence.
+- `references/motion-first-capability.md`: project-owned extension for material/physical response, semantic continuity, surface selection, and offline-safe evidence; it does not add a runtime or public route.
 - `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).
 - `vercel-react-view-transitions`: React and Next.js view-transition implementation patterns.
 
@@ -548,6 +550,39 @@ The first wave supports project-contained Web and Mobile evidence and metadata; 
 screenshot, URL, visual embedding, or Game support.
 For pipeline control and hash-bound artifacts, use the `plan`, `run`, `resume`, `verify`, `status`, `explain-block`, and `package` commands exposed by the current CLI. Read `references/pipeline-method.md` for the state, artifact, and invalidation contract.
 
+### Motion-graphics runtime and evidence front door
+
+The existing `motion-graphics` route is also the public front door for authored animation
+runtime proof; it does not require a new route or a private module import. A non-trivial motion
+change declares one **Animation Job** containing a semantic **MotionGraph**, deterministic input
+trace, lifecycle adapter, renderer/skin binding, reduced-motion substitution, and performance
+budgets. The graph names the moving subject, purpose, anchors, tracks, and bounded response
+parameters. The input trace records seed, viewport/DPR, reduced-motion mode, and replayable
+keyboard/pointer/touch/drag events. Runtime probes cover authored-time seek/reset/settle and
+deterministic fixed-step samples; lifecycle probes cover cleanup and idempotent disposal.
+
+Use the public command sequence (from the target root) after the receipt and gate artifacts exist:
+
+```bash
+designer-pipeline verify motion --receipt motion-verification.json --json
+designer-pipeline verify --gate <gate> --artifact <gate-receipt.json> --json
+designer-pipeline package --change-root <change-root> --output package/animation-package.json --json
+```
+
+The motion receipt must bind the Animation Job, MotionGraph, deterministic inputs, performance
+budgets, lifecycle adapter, and sampled frames. Its native capture/evidence binding carries the
+execution receipt id and plan hash, composition receipt id/hash, source-admission receipt id and
+content hash, selected route id, and toolchain plan hash. The gate command remains separate from
+Visual Acceptance: a passed motion evidence check proves the declared runtime/evidence contract,
+not visual taste or product acceptance.
+
+When a plan declares animation lineage, `package` validates the native receipt chain before
+writing the package. Supply declared workspace, artifact, and evidence roots with
+`--workspace-root`, `--artifact-root`, and `--evidence-root` when the plan does not carry
+them. A blocked or incomplete lineage is reported as blocked; do not replace it with a screenshot
+or a hand-written success claim. If no real target capture can be produced, use an explicitly
+labelled fixture-style native chain and report that limitation in the walkthrough.
+
 ## Specialist and Catalog Routing
 
 - `impeccable` supplies the project design-detector vocabulary when installed; the bundled `references/interface-discipline.md` remains the fallback.
@@ -687,9 +722,8 @@ The full extraction targets are in `references/pipeline-method.md`, `references/
   implementation.
 - Check for project `MOTION.md`. If it is missing or incompatible with the requested interaction
   language, synthesize it from product requirements and `references/motion-foundation.md`.
-- When the brief includes non-trivial motion, read `references/animation-opportunity-and-review.md`
-  and complete its opportunity screen before selecting a runtime. Keep `prototype` on its existing
-  route; do not turn platform-specific or library-specific companions into default web capabilities.
+- When the brief includes non-trivial motion, read `references/animation-opportunity-and-review.md` and complete its opportunity screen before selecting a runtime. Keep `prototype` on its existing route; do not turn platform-specific or library-specific companions into default web capabilities.
+- When the motion needs a spring-like response, shared-element continuity, trace, camera, or material behavior, also read `references/motion-first-capability.md`; compile physical behavior to authored time for seekable/offline output and keep the existing motion route.
 - Run `node <design-pipeline>/scripts/check-motion-foundation.cjs --project-root . --json`.
   Status `synthesis-required` is the mandatory route into motion-foundation synthesis; only
   `ready` unlocks implementation.

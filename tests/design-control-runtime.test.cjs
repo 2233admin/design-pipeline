@@ -36,6 +36,14 @@ test("plan compilation is deterministic and blocks missing intent", () => {
   assert.throws(() => compileDesignPlan(manifest({ fidelity: false })), /fidelity must be a string/);
 });
 
+test("animation lineage declaration swaps invalidate the governed plan hash", () => {
+  const roots = { workspaceRoot: ".lineage/workspace", artifactRoot: ".lineage/artifacts", evidenceRoot: ".lineage/evidence" };
+  const rootHashes = { workspaceRoot: "sha256:" + "1".repeat(64), artifactRoot: "sha256:" + "2".repeat(64), evidenceRoot: "sha256:" + "3".repeat(64) };
+  const first = compileDesignPlan(manifest({ animationLineage: "lineage-a.json", animationLineageRoots: roots, animationLineageRootHashes: rootHashes }));
+  const swapped = compileDesignPlan(manifest({ animationLineage: "lineage-b.json", animationLineageRoots: roots, animationLineageRootHashes: rootHashes }));
+  assert.notEqual(first.input_hash, swapped.input_hash);
+  assert.throws(() => validatePlan({ ...first, manifest: { ...first.manifest, animationLineage: "lineage-b.json" } }, { requireRunnable: true }), /input_hash/);
+});
 test("plan validation rejects cyclic or misordered persisted plans", () => {
   const base = compileDesignPlan(manifest());
   assert.throws(() => validatePlan({ ...base, phases: [{ ...base.phases[1], depends_on: [base.phases[0].id] }, base.phases[0], ...base.phases.slice(2)] }), /follow dependency/);

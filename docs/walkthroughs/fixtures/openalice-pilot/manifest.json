@@ -1,0 +1,18 @@
+{
+  "targetPlatform": "web",
+  "primaryTask": "Prove the existing OpenAlice product animation route through the public motion pipeline",
+  "targetScreen": "OpenAlice research continuity film",
+  "mode": "rebuild",
+  "fidelity": "adaptive",
+  "animationLineage": "native-chain.json",
+  "animationLineageRoots": {
+    "workspaceRoot": "docs/walkthroughs/fixtures/openalice-pilot/lineage-work/design-pipeline-animation-rail-glass-hEhrij/companion",
+    "artifactRoot": "docs/walkthroughs/fixtures/openalice-pilot/lineage-work/design-pipeline-animation-rail-glass-hEhrij/artifacts",
+    "evidenceRoot": "docs/walkthroughs/fixtures/openalice-pilot/lineage-work/design-pipeline-animation-rail-glass-hEhrij/project/evidence"
+  },
+  "animationLineageRootHashes": {
+    "workspaceRoot": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "artifactRoot": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "evidenceRoot": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

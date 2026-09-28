@@ -17,8 +17,8 @@ sourceMeta:
 
 This project-owned reference turns motion intent into a bounded design decision and an evidence-backed
 review. It distills the supplied Emil motion skills without installing or copying their upstream skill
-files. Use it with `references/motion-foundation.md` and `references/motion-spec.md`; the foundation and
-change spec remain authoritative for project primitives and detailed fields.
+files. Use it with `references/motion-foundation.md`, `references/motion-first-capability.md`, and
+`references/motion-spec.md`; the foundation and change spec remain authoritative for project primitives and detailed fields.
 
 Source concepts: `improve-animations`, `find-animation-opportunities`, `animation-vocabulary`, and
 `review-animations` from [emilkowalski/skills](https://github.com/emilkowalski/skills/tree/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7). This reference

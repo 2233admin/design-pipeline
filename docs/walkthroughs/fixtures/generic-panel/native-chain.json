@@ -1,0 +1,649 @@
+{
+  "source": {
+    "kind": "local",
+    "identity": "fixture://latch-paper",
+    "revision": "revision-latch-paper",
+    "contentHash": "ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb"
+  },
+  "sourceAdmission": {
+    "id": "admission-latch-paper",
+    "receiptId": "admission-latch-paper",
+    "status": "admitted",
+    "contentHash": "sha256:0d8fee8d7e1d2f63cf10f2e2dae0dcfd9acf259ed292e5f702bb3c56d92141d0",
+    "receipt": {
+      "schema": "design-pipeline.source-admission.v1",
+      "id": "admission-latch-paper",
+      "receiptId": "admission-latch-paper",
+      "source": {
+        "kind": "local",
+        "identity": "fixture://latch-paper",
+        "revision": "revision-latch-paper",
+        "contentHash": "ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb"
+      },
+      "provenance": {
+        "status": "verified",
+        "evidence": [
+          "fixture-source"
+        ]
+      },
+      "license": {
+        "status": "verified",
+        "evidence": [
+          "fixture-license"
+        ]
+      },
+      "status": "admitted",
+      "admission": "admitted",
+      "promotion": {
+        "status": "governed",
+        "deployProfileId": "deploy-latch-paper",
+        "executionTargetId": "execution-latch-paper",
+        "sourceContentHash": "ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb"
+      },
+      "routeId": "native-animation-route",
+      "toolchainPlanSha256": "242dcd1fd16871809ff40a0d60b4a8609de08dfd83c4caf2fa9a9811084f3e89"
+    }
+  },
+  "admittedSnapshot": {
+    "id": "snapshot-latch-paper",
+    "receiptId": "snapshot-latch-paper",
+    "status": "ready",
+    "contentHash": "sha256:0c423a613a42832c31f23145ff7bb8f23b36afedf55de4f1f6e39352936077c6",
+    "receipt": {
+      "schema": "design-pipeline.admitted-source-snapshot.v1",
+      "id": "snapshot-latch-paper",
+      "receiptId": "snapshot-latch-paper",
+      "status": "ready",
+      "admissionReceiptId": "admission-latch-paper",
+      "source": {
+        "kind": "local",
+        "identity": "fixture://latch-paper",
+        "revision": "revision-latch-paper",
+        "contentHash": "ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb"
+      },
+      "companionWorkspaceRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\companion",
+      "materializedPath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\companion\\materialized",
+      "sourceRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\source",
+      "targetRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\snapshot-target",
+      "sourceTreeHash": "0114478f32def6b217cdc821d1c09adc008fa08d63020f35525ffb3e0c715b73",
+      "targetTreeHash": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "snapshotContentHash": "0114478f32def6b217cdc821d1c09adc008fa08d63020f35525ffb3e0c715b73",
+      "sourceMutation": false,
+      "targetMutation": false,
+      "companionWorkspacePolicy": {
+        "schema": "design-pipeline.companion-workspace-policy.v1",
+        "retentionWindowMs": 86400000,
+        "maxSnapshots": 3,
+        "disposeOnFailure": true,
+        "recoveryFromPartialStaging": "remove-staging-preserve-published"
+      },
+      "companionWorkspacePolicyHash": "sha256:c25cf9afb70a32fd1fe33ef3f1992df02e725ea94c52d4f06a1670cbefd79773",
+      "contentHash": "sha256:87ceb5852df96152dde702eb6337571b644c7f5c88d8acc3a0ee00ffb8ba6c4c"
+    }
+  },
+  "executionTarget": {
+    "id": "execution-latch-paper",
+    "receiptId": "execution-latch-paper",
+    "status": "complete",
+    "contentHash": "sha256:f9747666386eab573edbe43d0cacd5170f9de68a04475bcf99d66459d76f7f85",
+    "receipt": {
+      "blockers": [],
+      "changedFiles": [
+        "README.txt"
+      ],
+      "cleanup": {
+        "action": "removed",
+        "reason": "complete-clean-in-scope"
+      },
+      "completedAt": "2026-09-18T18:25:07.903Z",
+      "evidenceReceipts": [],
+      "executionPlanSha256": "cd9bc3136a58477157e469f22bedb40db8f9a18e8260dc15cf1c8a77986457ce",
+      "id": "execution-latch-paper",
+      "invocation": {
+        "command": [
+          "fixture",
+          "animation"
+        ],
+        "exitCode": 0
+      },
+      "mode": "worktree",
+      "notes": [
+        "native fixture execution"
+      ],
+      "outOfScope": [],
+      "routeId": "native-animation-route",
+      "schema": "design-pipeline.execution-receipt.v1",
+      "sourceAdmissionReceiptId": "admission-latch-paper",
+      "sourceContentHash": "ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb",
+      "startedAt": "2026-09-18T18:25:06.903Z",
+      "status": "complete",
+      "target": {
+        "baseHead": "db0cbdcd340428849e1a45ffc6b82781ceb28ffb",
+        "branch": "codex/execution-execution-latch-paper",
+        "executionRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\worktrees\\910bf206ce3e\\execution-latch-paper",
+        "finalHead": "432cf61c5c514b1805d57d41a427f0fe64e72373",
+        "projectRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\project"
+      },
+      "toolchainPlanSha256": "242dcd1fd16871809ff40a0d60b4a8609de08dfd83c4caf2fa9a9811084f3e89"
+    },
+    "plan": {
+      "baseBranch": "main",
+      "baseHead": "db0cbdcd340428849e1a45ffc6b82781ceb28ffb",
+      "blockers": [],
+      "branch": "codex/execution-execution-latch-paper",
+      "cleanup": {
+        "onComplete": "remove-if-clean",
+        "onFailure": "retain"
+      },
+      "dirtyAtResolution": false,
+      "executionRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\worktrees\\910bf206ce3e\\execution-latch-paper",
+      "id": "execution-latch-paper",
+      "mode": "worktree",
+      "projectRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\project",
+      "routeId": "native-animation-route",
+      "schema": "design-pipeline.execution-plan.v1",
+      "slices": [
+        {
+          "id": "animation",
+          "owner": "native-animation-route",
+          "scope": [
+            "README.txt"
+          ]
+        }
+      ],
+      "status": "ready",
+      "toolchainPlanSha256": "242dcd1fd16871809ff40a0d60b4a8609de08dfd83c4caf2fa9a9811084f3e89"
+    },
+    "state": {
+      "baseHead": "db0cbdcd340428849e1a45ffc6b82781ceb28ffb",
+      "branch": "codex/execution-execution-latch-paper",
+      "executionPlanSha256": "cd9bc3136a58477157e469f22bedb40db8f9a18e8260dc15cf1c8a77986457ce",
+      "executionRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\worktrees\\910bf206ce3e\\execution-latch-paper",
+      "id": "execution-latch-paper",
+      "mode": "worktree",
+      "projectRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\project",
+      "schema": "design-pipeline.execution-state.v1",
+      "startedAt": "2026-09-18T18:25:06.903Z",
+      "toolchainPlanSha256": "242dcd1fd16871809ff40a0d60b4a8609de08dfd83c4caf2fa9a9811084f3e89",
+      "worktreeCreated": true
+    },
+    "outcome": {
+      "schema": "design-pipeline.execution-outcome.v1",
+      "status": "complete",
+      "invocation": {
+        "command": [
+          "fixture",
+          "animation"
+        ],
+        "exitCode": 0
+      },
+      "completedAt": "2026-09-18T18:25:07.903Z",
+      "evidenceReceipts": [],
+      "notes": [
+        "native fixture execution"
+      ]
+    },
+    "toolchainPlan": {
+      "schema": "design-pipeline.toolchain-plan.v1",
+      "status": "ready",
+      "primaryRouteId": "native-animation-route",
+      "tools": [
+        {
+          "id": "native-animation-route",
+          "source": "fixture",
+          "mode": "native",
+          "status": "ready"
+        }
+      ]
+    }
+  },
+  "deployProfile": {
+    "id": "deploy-latch-paper",
+    "receiptId": "deploy-receipt-latch-paper",
+    "status": "ready",
+    "contentHash": "sha256:304fcb2066fb5660d957200f9948dda94d28533d179f8e529b688b82f591edd7",
+    "upstreamReceiptId": "execution-latch-paper",
+    "receipt": {
+      "schema": "design-pipeline.deploy-profile.v1",
+      "id": "deploy-latch-paper",
+      "receiptId": "deploy-receipt-latch-paper",
+      "status": "ready",
+      "executionTarget": {
+        "id": "execution-latch-paper",
+        "receiptId": "execution-latch-paper"
+      },
+      "sourceAdmissionReceiptId": "admission-latch-paper",
+      "sourceContentHash": "ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb",
+      "routeId": "native-animation-route",
+      "toolchainPlanSha256": "242dcd1fd16871809ff40a0d60b4a8609de08dfd83c4caf2fa9a9811084f3e89",
+      "source": {
+        "root": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\source",
+        "allowlist": [
+          "animation-source.txt"
+        ],
+        "exclude": []
+      },
+      "target": {
+        "root": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\artifacts",
+        "allowlist": [
+          "runtime.js",
+          "final.js"
+        ],
+        "exclude": []
+      },
+      "operations": {
+        "commands": [],
+        "lifecycleHooks": [],
+        "packageScripts": []
+      },
+      "sandbox": {
+        "workspaceRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\companion",
+        "mode": "contained",
+        "network": {
+          "mode": "none",
+          "hosts": []
+        }
+      },
+      "contentHash": "sha256:b99c2840b1db088254fb829217800fe94b65f1582e12443452125002c7af30bb"
+    }
+  },
+  "runtimeOrStaticArtifact": {
+    "id": "runtime",
+    "receiptId": "runtime-receipt",
+    "status": "ready",
+    "contentHash": "sha256:eef96455ed86be65dff92c52f392bdd8f9a9cd20a7b04bfcf5de3792e5f30f57",
+    "upstreamReceiptId": "deploy-receipt-latch-paper",
+    "receipt": {
+      "schema": "design-pipeline.artifact.v1",
+      "schema_version": 1,
+      "path": "runtime.js",
+      "producer": "native-animation-runtime",
+      "input_hashes": {
+        "admission": "sha256:0d8fee8d7e1d2f63cf10f2e2dae0dcfd9acf259ed292e5f702bb3c56d92141d0",
+        "admittedSnapshot": "sha256:0c423a613a42832c31f23145ff7bb8f23b36afedf55de4f1f6e39352936077c6",
+        "deployProfile": "sha256:304fcb2066fb5660d957200f9948dda94d28533d179f8e529b688b82f591edd7",
+        "executionReceipt": "sha256:f9747666386eab573edbe43d0cacd5170f9de68a04475bcf99d66459d76f7f85",
+        "source": "sha256:ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb"
+      },
+      "artifact_hash": "sha256:4cf70e524259c63e4591dbfcfdcbfc2f63ba2901fd93ff9d9cc3ba2aa72bceaa",
+      "dependencies": [
+        "motion-native"
+      ],
+      "created_at": "2026-09-18T00:00:00.000Z",
+      "status": "ready",
+      "required": true
+    }
+  },
+  "composition": {
+    "id": "composition-latch-paper",
+    "receiptId": "composition-receipt-latch-paper",
+    "status": "ready",
+    "contentHash": "sha256:85056972aeeb63bc6454bf2658c865bfc3f48a41d8a2047c1be791daf3c2f406",
+    "upstreamReceiptId": "runtime-receipt",
+    "receipt": {
+      "schema": "design-pipeline.dynamic-design-composition.v1",
+      "id": "composition-latch-paper",
+      "receiptId": "composition-receipt-latch-paper",
+      "status": "ready",
+      "renderer": {
+        "kind": "dom",
+        "adapterId": "fixture-adapter"
+      },
+      "scene": {
+        "id": "fixture-scene",
+        "subject": "panel",
+        "elements": [
+          "panel"
+        ]
+      },
+      "motion": {
+        "channels": [
+          "progress"
+        ],
+        "interactions": [
+          {
+            "id": "open",
+            "type": "transition",
+            "trigger": "panel opens"
+          }
+        ],
+        "reducedMotion": "instant opacity state change"
+      },
+      "evidenceRefs": [
+        {
+          "id": "runtime",
+          "receiptId": "runtime-receipt",
+          "contentHash": "sha256:eef96455ed86be65dff92c52f392bdd8f9a9cd20a7b04bfcf5de3792e5f30f57"
+        }
+      ],
+      "contentHash": "sha256:b3db73e09ae18a849b515aba13592ad8cdd13e9d02ef86e399ee1fddbabddbcd"
+    }
+  },
+  "capture": {
+    "id": "capture-native",
+    "receiptId": "capture-native",
+    "status": "complete",
+    "contentHash": "sha256:2c73f3bba7792d47d90f61a51198c4b736e580e59d941c390d7e8736433a98fc",
+    "upstreamReceiptId": "execution-latch-paper",
+    "receipt": {
+      "schema": "design-pipeline.evidence-receipt.v1",
+      "id": "capture-native",
+      "status": "complete",
+      "executionReceiptId": "execution-latch-paper",
+      "executionPlanSha256": "cd9bc3136a58477157e469f22bedb40db8f9a18e8260dc15cf1c8a77986457ce",
+      "compositionReceiptId": "composition-latch-paper",
+      "compositionReceiptHash": "sha256:85056972aeeb63bc6454bf2658c865bfc3f48a41d8a2047c1be791daf3c2f406",
+      "sourceAdmissionReceiptId": "admission-latch-paper",
+      "sourceContentHash": "ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb",
+      "routeId": "native-animation-route",
+      "toolchainPlanSha256": "242dcd1fd16871809ff40a0d60b4a8609de08dfd83c4caf2fa9a9811084f3e89",
+      "adapter": {
+        "id": "fixture-adapter",
+        "version": "1",
+        "availability": "available",
+        "probe": {
+          "ok": true,
+          "message": "ready"
+        }
+      },
+      "target": {
+        "url": "https://example.com/",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        }
+      },
+      "capturedAt": "2026-09-18T00:00:00.000Z",
+      "artifacts": {
+        "screenshot": "screenshot.txt",
+        "trace": "trace.txt",
+        "dom": "dom.txt",
+        "console": "console.txt",
+        "network": "network.txt",
+        "accessibility": "accessibility.txt",
+        "performance": "performance.txt"
+      },
+      "hashes": {
+        "screenshot": "684e1ec2e0cb416161aaca5c844bec78ee88c8b940c20bb107b22e3aa7973137",
+        "trace": "ea4f8e5663bf24ef621b5f3bfe0f251e1f9d63d25cfdab35a3ff33ac277d8cc6",
+        "dom": "f94930b688bb862daa7cadfef9b3d757a73146d384e2d49bce1602dc562614c8",
+        "console": "eb0b8cca2931c66961a090aefc2fa8a15f064957937f8b3f1041c9d8f71d6be2",
+        "network": "37e48922ed4e00f48d385ec6d593d9b72b8e80634d0f336178340e9153602f1d",
+        "accessibility": "eb220fc3f89557b8f731b37a1611560bcfcab31557844a923fed964859241a57",
+        "performance": "4cab62e134aeb01974c0134f6d31d72fc01a21c863ab2e3022c64178df3b763a"
+      },
+      "redaction": {
+        "status": "not-required",
+        "notes": []
+      }
+    }
+  },
+  "existingGateReceipt": {
+    "id": "motion-native",
+    "receiptId": "motion-native",
+    "status": "passed",
+    "contentHash": "sha256:f3ae5eb9f499854914c7385dbfaf79c736c66f96e8592ed84b00f2b9c6c65e74",
+    "upstreamReceiptId": "capture-native",
+    "receipt": {
+      "schema": "design-pipeline.motion-verification.v1",
+      "id": "motion-native",
+      "primitiveId": "panel-enter",
+      "trigger": "panel opens",
+      "purpose": "preserve spatial continuity and expose hierarchy",
+      "durationMs": 240,
+      "toleranceMs": 20,
+      "observedDurationMs": 248,
+      "frameCadenceMs": 16.67,
+      "interruption": "reverses from current progress",
+      "reducedMotion": "instant opacity state change",
+      "longFrames": [
+        {
+          "atMs": 120,
+          "durationMs": 18
+        }
+      ],
+      "maxLongFrameMs": 24,
+      "captureId": "capture-native",
+      "deterministic": true,
+      "animationJob": {
+        "schema": "design-pipeline.animation-job.v1",
+        "id": "fixture-job",
+        "motionGraph": {
+          "schema": "design-pipeline.motion-graph.v1",
+          "id": "fixture-graph",
+          "durationMs": 1000,
+          "tracks": [
+            {
+              "id": "progress",
+              "subject": "panel",
+              "property": "progress",
+              "from": 0,
+              "to": 1,
+              "startMs": 0,
+              "durationMs": 1000
+            }
+          ],
+          "responses": [],
+          "semanticCarrier": "panel",
+          "reducedMotion": {
+            "mode": "resting-state",
+            "description": "show the authored resting state"
+          }
+        },
+        "deterministic": {
+          "seed": 7,
+          "input": {
+            "mode": "preview"
+          },
+          "viewport": {
+            "width": 320,
+            "height": 240
+          },
+          "dpr": 1,
+          "reducedMotion": false
+        },
+        "mechanism": {
+          "purpose": "continuity",
+          "subject": "panel",
+          "channels": [
+            "progress"
+          ]
+        },
+        "skin": {
+          "tokens": {
+            "accent": "blue"
+          }
+        },
+        "renderer": {
+          "kind": "dom",
+          "adapterId": "fixture-lifecycle"
+        },
+        "lifecycle": {
+          "schema": "design-pipeline.animation-lifecycle-adapter.v1",
+          "id": "fixture-lifecycle",
+          "renderer": "dom",
+          "operations": {
+            "init": true,
+            "resize": true,
+            "update": true,
+            "render": true,
+            "dispose": true
+          },
+          "ownership": {
+            "owner": "motion-evidence",
+            "resources": [
+              {
+                "id": "frame-loop",
+                "kind": "frame-loop",
+                "owner": "motion-evidence",
+                "disposable": true
+              }
+            ]
+          },
+          "containment": {
+            "root": "#root",
+            "boundary": "job-owned"
+          },
+          "cleanup": {
+            "observable": true,
+            "checks": [
+              "frame loop released"
+            ]
+          }
+        },
+        "budgets": {
+          "object": {
+            "applicable": true,
+            "max": 10
+          },
+          "particle": {
+            "applicable": false
+          },
+          "texture": {
+            "applicable": false
+          },
+          "frame": {
+            "applicable": true,
+            "maxMs": 16.7,
+            "targetFps": 60,
+            "maxLongFrames": 3,
+            "maxInputLatencyMs": 100,
+            "maxCpuMs": 8
+          }
+        }
+      },
+      "motionGraph": {
+        "schema": "design-pipeline.motion-graph.v1",
+        "id": "fixture-graph",
+        "durationMs": 1000,
+        "tracks": [
+          {
+            "id": "progress",
+            "subject": "panel",
+            "property": "progress",
+            "from": 0,
+            "to": 1,
+            "startMs": 0,
+            "durationMs": 1000
+          }
+        ],
+        "responses": [],
+        "semanticCarrier": "panel",
+        "reducedMotion": {
+          "mode": "resting-state",
+          "description": "show the authored resting state"
+        }
+      },
+      "deterministicInputs": {
+        "seed": 7,
+        "input": {
+          "mode": "preview"
+        },
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "dpr": 1,
+        "reducedMotion": false
+      },
+      "performanceBudgets": {
+        "object": {
+          "applicable": true,
+          "max": 10
+        },
+        "particle": {
+          "applicable": false
+        },
+        "texture": {
+          "applicable": false
+        },
+        "frame": {
+          "applicable": true,
+          "maxMs": 16.7,
+          "targetFps": 60,
+          "maxLongFrames": 3,
+          "maxInputLatencyMs": 100,
+          "maxCpuMs": 8
+        }
+      },
+      "lifecycleAdapter": {
+        "schema": "design-pipeline.animation-lifecycle-adapter.v1",
+        "id": "fixture-lifecycle",
+        "renderer": "dom",
+        "operations": {
+          "init": true,
+          "resize": true,
+          "update": true,
+          "render": true,
+          "dispose": true
+        },
+        "ownership": {
+          "owner": "motion-evidence",
+          "resources": [
+            {
+              "id": "frame-loop",
+              "kind": "frame-loop",
+              "owner": "motion-evidence",
+              "disposable": true
+            }
+          ]
+        },
+        "containment": {
+          "root": "#root",
+          "boundary": "job-owned"
+        },
+        "cleanup": {
+          "observable": true,
+          "checks": [
+            "frame loop released"
+          ]
+        }
+      },
+      "sampledFrames": [
+        {
+          "timeMs": 0,
+          "stateHash": "start"
+        },
+        {
+          "timeMs": 1000,
+          "stateHash": "end"
+        }
+      ]
+    }
+  },
+  "finalArtifact": {
+    "id": "final.js",
+    "receiptId": "final-receipt",
+    "status": "ready",
+    "contentHash": "sha256:ca7f0d13b4fd582e93b6c1c3f1d22ed0f119adb9a6158b14d9d342f9598eddd3",
+    "upstreamReceiptId": "motion-native",
+    "receipt": {
+      "schema": "design-pipeline.artifact.v1",
+      "schema_version": 1,
+      "path": "final.js",
+      "producer": "native-animation-final",
+      "input_hashes": {
+        "capture": "sha256:2c73f3bba7792d47d90f61a51198c4b736e580e59d941c390d7e8736433a98fc",
+        "composition": "sha256:85056972aeeb63bc6454bf2658c865bfc3f48a41d8a2047c1be791daf3c2f406",
+        "gate": "sha256:f3ae5eb9f499854914c7385dbfaf79c736c66f96e8592ed84b00f2b9c6c65e74",
+        "runtime": "sha256:4cf70e524259c63e4591dbfcfdcbfc2f63ba2901fd93ff9d9cc3ba2aa72bceaa",
+        "source": "sha256:ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb"
+      },
+      "artifact_hash": "sha256:657596ef49f973c6ab6ff1999a73583089f1b6508a5972af9eb2b607aecd8af0",
+      "dependencies": [
+        "runtime-receipt",
+        "composition-receipt-latch-paper",
+        "capture-native",
+        "motion-native"
+      ],
+      "created_at": "2026-09-18T00:00:00.000Z",
+      "status": "ready",
+      "required": true
+    }
+  },
+  "validationOptions": {
+    "workspaceRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\companion",
+    "artifactRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\artifacts",
+    "evidenceRoot": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\design-pipeline-animation-latch-paper-xwJerZ\\project\\evidence"
+  }
+}

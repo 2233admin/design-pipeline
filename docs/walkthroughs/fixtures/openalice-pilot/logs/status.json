@@ -1,0 +1,6 @@
+{
+  "command": "node skill/scripts/designer-pipeline.cjs status --root docs/walkthroughs/fixtures/openalice-pilot --change-root openspec/changes/openalice-pilot --json",
+  "exitCode": 0,
+  "stdout": "{\"status\":\"initialized\",\"phase\":\"repo-read\",\"stateSchema\":\"design-pipeline.state.v2\",\"migrationRequired\":false,\"stateSha256\":\"e28bb21f9cd71f19525c90904e91aa73255a795aac096d4138d744845a4ac6c9\",\"consistency\":\"consistent\",\"control\":null,\"changeRoot\":\"D:\\\\projects\\\\design-pipeline\\\\product-animation-integration\\\\docs\\\\walkthroughs\\\\fixtures\\\\openalice-pilot\\\\openspec\\\\changes\\\\openalice-pilot\",\"schema\":\"design-pipeline.cli-result.v1\",\"ok\":true}\n",
+  "stderr": ""
+}

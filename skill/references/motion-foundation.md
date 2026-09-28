@@ -58,6 +58,8 @@ channels, not library syntax. The initial registry covers:
 
 - transform: orbit;
 - reveal: trim line;
+- response: spring settle;
+- continuity: shared anchor;
 - distortion: fractal noise and turbulent displacement;
 - procedural paths: rose curve, Lissajous curve, and hypotrochoid.
 
@@ -94,6 +96,10 @@ for choreography they materially simplify. PixiJS is an optional 2D rendering ad
 scene, object count, particle field, filter, shader, or Canvas/WebGL/WebGPU requirement justifies a
 dedicated renderer. Canvas, PixiJS, SVG filters, WebGL, and WebGPU require an explicit performance,
 accessibility, lifecycle, and fallback owner.
+
+`response.spring-settle` and `continuity.shared-anchor` are authored semantic contracts. A live
+input loop may feed them, but offline output must compile from authored time and a bounded state;
+reduced motion resolves to a discrete state or the final anchor rather than a hidden loop.
 
 ## Evidence And Provenance
 

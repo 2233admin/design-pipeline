@@ -17,7 +17,8 @@ const ARTIFACT_KEYS = ["screenshot", "trace", "dom", "console", "network", "acce
 
 function validateReceipt(receipt, options = {}) {
   const rootKeys = ["schema", "id", "status", "adapter", "target", "capturedAt", "artifacts", "hashes", "redaction"];
-  assertKeys(receipt, rootKeys, rootKeys, "receipt", "evidence");
+  const linkageKeys = ["executionReceiptId", "executionPlanSha256", "compositionReceiptId", "compositionReceiptHash", "sourceAdmissionReceiptId", "sourceContentHash", "routeId", "toolchainPlanSha256"];
+  assertKeys(receipt, rootKeys, [...rootKeys, ...linkageKeys], "receipt", "evidence");
   if (receipt.schema !== SCHEMA) fail("evidence", `schema must be ${SCHEMA}`);
   assertString(receipt.id, "id", "evidence");
   assertEnum(receipt.status, ["complete", "partial", "blocked", "unknown"], "status", "evidence");
@@ -25,9 +26,33 @@ function validateReceipt(receipt, options = {}) {
   assertString(receipt.adapter.id, "adapter.id", "evidence");
   assertString(receipt.adapter.version, "adapter.version", "evidence");
   assertEnum(receipt.adapter.availability, ["available", "unavailable", "blocked", "unknown"], "adapter.availability", "evidence");
-  assertObject(receipt.adapter.probe, "adapter.probe", "evidence");
+  assertKeys(receipt.adapter.probe, ["ok", "message"], ["ok", "message"], "adapter.probe", "evidence");
   if (typeof receipt.adapter.probe.ok !== "boolean") fail("evidence", "adapter.probe.ok must be boolean");
   assertString(receipt.adapter.probe.message, "adapter.probe.message", "evidence");
+  if (receipt.executionReceiptId !== undefined || receipt.executionPlanSha256 !== undefined) {
+    assertString(receipt.executionReceiptId, "executionReceiptId", "evidence");
+    if (!/^[a-f0-9]{64}$/.test(receipt.executionPlanSha256 || "")) fail("evidence", "executionPlanSha256 must be SHA-256");
+  }
+  if (receipt.compositionReceiptId !== undefined || receipt.compositionReceiptHash !== undefined) {
+    assertString(receipt.compositionReceiptId, "compositionReceiptId", "evidence");
+    if (!/^sha256:[a-f0-9]{64}$/.test(receipt.compositionReceiptHash || "")) fail("evidence", "compositionReceiptHash must be a sha256:<digest> value");
+  }
+  if (receipt.sourceAdmissionReceiptId !== undefined || receipt.sourceContentHash !== undefined) {
+    assertString(receipt.sourceAdmissionReceiptId, "sourceAdmissionReceiptId", "evidence");
+    if (!/^[a-f0-9]{64}$/.test(receipt.sourceContentHash || "")) fail("evidence", "sourceContentHash must be SHA-256");
+  }
+  if (receipt.routeId !== undefined || receipt.toolchainPlanSha256 !== undefined) {
+    assertString(receipt.routeId, "routeId", "evidence");
+    if (!/^[a-f0-9]{64}$/.test(receipt.toolchainPlanSha256 || "")) fail("evidence", "toolchainPlanSha256 must be SHA-256");
+  }
+  if (options.expectedRouteId && receipt.routeId !== options.expectedRouteId) fail("evidence", "routeId does not match the execution target");
+  if (options.expectedToolchainPlanSha256 && receipt.toolchainPlanSha256 !== options.expectedToolchainPlanSha256) fail("evidence", "toolchainPlanSha256 does not match the execution target");
+  if (options.expectedExecutionPlanSha256 && receipt.executionPlanSha256 !== options.expectedExecutionPlanSha256) fail("evidence", "executionPlanSha256 does not match the execution target");
+  if (options.expectedCompositionReceiptId && receipt.compositionReceiptId !== options.expectedCompositionReceiptId) fail("evidence", "compositionReceiptId does not match the composition");
+  if (options.expectedCompositionReceiptHash && receipt.compositionReceiptHash !== options.expectedCompositionReceiptHash) fail("evidence", "compositionReceiptHash does not match the composition");
+  if (options.expectedSourceAdmissionReceiptId && receipt.sourceAdmissionReceiptId !== options.expectedSourceAdmissionReceiptId) fail("evidence", "sourceAdmissionReceiptId does not match the admitted source");
+  if (options.expectedSourceContentHash && receipt.sourceContentHash !== options.expectedSourceContentHash) fail("evidence", "sourceContentHash does not match the admitted source");
+  if (options.expectedExecutionPlanSha256 && receipt.executionPlanSha256 !== options.expectedExecutionPlanSha256) fail("evidence", "executionPlanSha256 does not match the execution target");
   assertKeys(receipt.target, ["url", "viewport"], ["url", "viewport"], "target", "evidence");
   let url;
   try { url = new URL(receipt.target.url); } catch { fail("evidence", "target.url must be a URL"); }

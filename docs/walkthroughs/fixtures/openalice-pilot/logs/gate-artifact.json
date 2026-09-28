@@ -1,0 +1,6 @@
+{
+  "command": "node skill/scripts/designer-pipeline.cjs verify --gate artifact --artifact docs/walkthroughs/fixtures/openalice-pilot/runtime-artifact.json --change-root docs/walkthroughs/fixtures/openalice-pilot/lineage-work/design-pipeline-animation-rail-glass-hEhrij/artifacts --root . --json",
+  "exitCode": 0,
+  "stdout": "{\"status\":\"ready\",\"path\":\"runtime.js\",\"metadata\":{\"schema\":\"design-pipeline.artifact.v1\",\"schema_version\":1,\"path\":\"runtime.js\",\"producer\":\"native-animation-runtime\",\"input_hashes\":{\"admission\":\"sha256:01974a9e43fb1d8c1376517b41900f9b4bc48ab53d59a09fbc6ef5b2171ff60a\",\"admittedSnapshot\":\"sha256:da41dde2fb971dcbad68cc52e4c7eb421e4de1b89090f646a4debbc1202690c1\",\"deployProfile\":\"sha256:6f05295954ece45f51173717cf4bf2d63b4b5939e02542d69a054ec2b866d391\",\"executionReceipt\":\"sha256:f8b79cfdadba3b2451038a3b877bd9059d21595c2a4b65d84bfecd8a095436da\",\"source\":\"sha256:73134701abbf03f66c16a630ce8277b12d84330e6bdd5a77bb742131985860f6\"},\"artifact_hash\":\"sha256:da45a0715849505a013a64f647cfaf929b41a7ff4c808e5d6c2a5ee1858e5858\",\"dependencies\":[\"motion-native\"],\"created_at\":\"2026-09-18T00:00:00.000Z\",\"status\":\"ready\",\"required\":true},\"schema\":\"design-pipeline.cli-result.v1\",\"ok\":true}\n",
+  "stderr": ""
+}

@@ -4,10 +4,10 @@ type: architecture-spine
 purpose: build-substrate
 altitude: feature
 paradigm: invariant-first layered pipeline with ports-and-adapters boundaries
-scope: DesignMD resource ingestion, design-tool intake, user context, adaptive routing, toolchain handoff, and execution evidence
+scope: DesignMD resource ingestion, design-tool intake, user context, adaptive routing, capability-domain handoff, toolchain execution, motion composition, and final-artifact evidence
 status: final
 created: 2026-08-23
-updated: 2026-08-23
+updated: 2026-09-18
 binds: [UJ-1, UJ-2, UJ-3, FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7, FR-8, FR-9, FR-10, SM-1, SM-2, SM-3, SM-4, SM-5]
 sources:
   - _bmad-output/planning-artifacts/prds/prd-design-pipeline-2026-08-23/prd.md
@@ -17,6 +17,9 @@ sources:
   - skill/scripts/adapter-core.cjs
   - skill/scripts/frontend-stack-core.cjs
   - skill/scripts/toolchain-core.cjs
+  - _bmad-output/research/motion-web-approach-analysis.md
+  - openspec/changes/extend-motion-first-capability/reference-boundary.md
+  - openspec/changes/admit-external-source-dynamic-design/proposal.md
 companions: []
 ---
 
@@ -144,6 +147,37 @@ The existing code already provides the local catalog shape, bounded page/concurr
 - **Prevents:** disappeared or changed resources remaining silently routable, and operators being unable to distinguish a clean sync from a partial refresh
 - **Rule:** A sync compares the candidate against the previous valid snapshot and emits `added`, `changed`, `disappeared`, `failed`, and `stale` sets with previous/current snapshot hashes. A disappeared or stale entry cannot be admitted as `ready` until a fresh valid source record exists.
 
+### AD-18 — Capability-domain authority boundaries [ADOPTED]
+
+- **Binds:** Intake/Provenance, Deploy/Runtime, Dynamic Design, Capture, Probe/Gate, and Package/Publish; all cross-domain handoffs
+- **Prevents:** capability domains cloning one another's ownership, bypassing an existing gate, or allowing a reference fixture to become an undeclared runtime dependency
+- **Rule:** Intake/Provenance owns source identity, admission, and provenance; Deploy/Runtime owns approved target materialization and runtime/static-artifact availability; Dynamic Design owns motion/interaction composition; Capture owns observation; Probe/Gate owns evidence-backed readiness decisions; Package/Publish owns final-artifact assembly and publication. Cross-domain handoffs use the existing execution-target, route, toolchain, and receipt authorities. The researched `motion-web` revision is a reviewed reference/parity fixture only: it is not a dependency, runtime, namespace, or copied code.
+
+### AD-19 — Governed promotion to an isolated executable snapshot [ADOPTED]
+
+- **Binds:** AD-2, AD-5, AD-8, AD-14, and AD-15; Intake/Provenance and Deploy/Runtime
+- **Prevents:** treating an external repository or untrusted source as executable, or running arbitrary repository commands outside declared containment
+- **Rule:** An external source remains `reference-only` until an explicit governed promotion records its pinned revision/content hash, provenance and license status, admission decision, declared deploy profile, and allowlisted sandbox boundary. Deploy/Runtime may materialize only the promoted source as an isolated executable snapshot inside that sandbox; it may not execute arbitrary commands from the source repository. Promotion remains subject to the existing execution-target, toolchain, receipt, and Probe/Gate authorities; without promotion the source remains inert.
+
+### AD-20 — Dynamic Design owns composition, not execution [ADOPTED]
+
+- **Binds:** Dynamic Design; AD-7, AD-9, AD-13, AD-15, and the Deploy/Runtime boundary
+- **Prevents:** a motion/interaction composer silently becoming a source hydrator, builder, runtime launcher, or publisher
+- **Rule:** Dynamic Design consumes a governed live endpoint or a built static artifact and emits a structured motion/interaction composition plus references to its evidence. It does not clone sources, build artifacts, start runtimes, or publish final artifacts. Those responsibilities remain with Intake/Provenance, Deploy/Runtime, and Package/Publish, with existing route, toolchain, execution-target, and receipt identities binding the handoff.
+
+### AD-21 — Capture, Probe/Gate, and Publish preserve final-artifact lineage [ADOPTED]
+
+- **Binds:** Capture, Probe/Gate, and Package/Publish; AD-9, AD-11, AD-12, AD-15, and AD-18
+- **Prevents:** a final artifact detached from stable source identity: a VCS-backed source must bind its VCS commit/revision, while a source without an applicable VCS must use a pinned revision/content hash; also prevents detachment from the executable target, composition, capture, or gate evidence, or a downstream authority rewriting upstream identity
+- **Rule:** Capture owns rendered observation; Probe/Gate owns verification, evidence, and readiness status; Package/Publish owns final-artifact assembly and publication. End-to-end lineage SHALL resolve from stable source identity—VCS-backed sources SHALL bind their VCS commit/revision; when no applicable VCS exists, sources SHALL use a pinned revision/content hash—through the admitted snapshot, execution target/deploy profile, runtime or static artifact, Dynamic Design composition, capture, and Probe/Gate receipt to the final artifact, retaining source/artifact hashes and the existing execution-target, toolchain, and receipt identities. Package/Publish may publish only an artifact with complete lineage and the required gate outcome.
+
+### AD-22 — Promoted-source companion workspace boundary [ADOPTED]
+
+- **Binds:** Deploy/Runtime; AD-5, AD-9, AD-14, AD-19, and AD-21
+- **Prevents:** promoted-source workspaces writing back into their source location, mutating the target tree, or escaping the execution-target and deploy-profile boundary
+- **Rule:** Deploy/Runtime owns a disposable/companion workspace for each promoted external source. The workspace MUST be outside both the source tree and the target tree, bound to the execution-target and declared deploy profile, and isolated and contained. It MUST NOT write back, push, or commit to the source location, and MUST NOT mutate the target tree. Workspace lifecycle, cleanup, and retention policy MUST be explicit; their concrete policy remains deferred to bmad-spec.
+
+
 ```mermaid
 flowchart LR
     S["DesignMD / local exports / project files"] --> I["Ingestion ports"]
@@ -165,6 +199,18 @@ flowchart LR
 | Naming | Stable IDs use uppercase prefixes (`AD-`, `FR-`, `UJ-`, `SM-`); CLI commands use kebab-case; persisted JSON keys use camelCase; files use lower-kebab-case where new names are needed. |
 | Data and formats | JSON envelopes are versioned, deterministically serialized, and SHA-256 addressed where content identity matters. Timestamps are ISO 8601. URLs are canonicalized before deduplication. |
 | Status | Domain status and process exit class are separate. Use `ready`, `review`, `blocked`, `invalid`, `partial`, `recovered`, `agent-owned`, `manual`, and `fidelity-mismatch` with no implicit downgrade; publish one mapping table for every CLI command. |
+
+| Schema-local status mapping | Top-level status |
+| --- | --- |
+| source admission: `reference-only` | `manual` |
+| source admission: `admitted` | `ready` |
+| source admission: `review-required` | `review` |
+| source admission: `governed` | `ready` |
+| deploy profile / Dynamic Design composition: `ready` | `ready` |
+| deploy profile / Dynamic Design composition: `blocked` | `blocked` |
+| deploy profile / Dynamic Design composition: `review-required` | `review` |
+| companion workspace: `disposed`, `already-disposed`, `pruned`, `recovered`, `already-recovered`, `disposed-after-failure` | `recovered` |
+| companion workspace: `unchanged` | `ready` |
 | State and mutation | Snapshots publish atomically; adaptation state is versioned and its history is append-like; a new policy or artifact version is explicit. No remote writeback is part of the runtime contract. |
 | Security | Validate trust-boundary input, enforce project-root containment, reject symlink escape, avoid credential capture, and keep remote content inert until explicit admission. |
 | Testing | Every adapter and route has hermetic fixture tests; handoff tests assert owner and hash equality; recovery tests assert last-known-good preservation; live network tests remain supplemental. |
@@ -230,6 +276,7 @@ flowchart TD
 | FR-7: artifact normalization | normalized artifact and receipt contracts | AD-2, AD-5, AD-6, AD-9 |
 | UJ-3 / FR-8: route selection and handoff | `frontend-stack-core.cjs`, `toolchain-core.cjs`, CLI | AD-7, AD-8, AD-9, AD-10, AD-13 |
 | User/project/task context | adaptation policy and route context | AD-10, AD-11 |
+| Capability-domain authority and final-artifact lineage | Intake/Provenance, Deploy/Runtime, Dynamic Design, Capture, Probe/Gate, and Package/Publish | AD-18, AD-19, AD-20, AD-21, AD-22; existing execution-target, route, toolchain, and receipt authorities |
 | SM-1 through SM-5: verification | hermetic tests, receipts, recovery probes, and future importer fixtures | AD-4, AD-8, AD-9, AD-12, AD-15 |
 
 ## Deferred
@@ -243,3 +290,7 @@ flowchart TD
 - Generic source-port contract: keep the first implementation DesignMD-specific, but bmad-spec must name the minimum port fields (`sourceId`, discovery policy, fetch policy, normalized entries, status, revision, and diff receipt) before a second source is added.
 - Remote cache/ETag optimization and live crawl observability: add after robots, URL safety, response-byte limits, and bounded correctness are covered by hermetic tests.
 - CLI status/exit mapping and executable-versus-agent readiness: freeze the shared table and one end-to-end `ready` lifecycle in bmad-spec before claiming full Skill → CLI → toolchain execution.
+- Capability-domain authority ports, promotion evidence, and the allowlisted sandbox/deploy-profile boundary: freeze in bmad-spec without introducing a second gate system or permitting arbitrary commands from an external repository.
+- Dynamic Design's live-endpoint/static-artifact input boundary and structured composition/evidence handoff: freeze in bmad-spec while keeping clone/build/start/publish outside Dynamic Design.
+- Capture → Probe/Gate → Package/Publish lineage and final-artifact release conditions: freeze in bmad-spec by reusing the existing execution-target, toolchain, and receipt authorities.
+- Promoted-source companion workspace lifecycle, cleanup, retention, disposal, and recovery policy: frozen in bmad-spec/OpenSpec change `admit-external-source-dynamic-design`; implemented by the hash-bound companion-workspace policy/receipt contract and owner APIs in `skill/scripts/admitted-source-snapshot-core.cjs`; AD-22 text remains unchanged.

@@ -223,7 +223,6 @@ function validatePlan(plan, options = {}) {
   assertString(plan.executionRoot, "executionRoot", "execution target");
   if (plan.mode === "worktree") validateBranch(plan.branch);
   else assertString(plan.branch, "branch", "execution target");
-  if (plan.routeId !== undefined) assertString(plan.routeId, "routeId", "execution target");
   assertString(plan.baseBranch, "baseBranch", "execution target");
   if (!/^[a-f0-9]{40,64}$/.test(plan.baseHead || "")) invalid("baseHead must be a Git object id");
   if (typeof plan.dirtyAtResolution !== "boolean") invalid("dirtyAtResolution must be boolean");
@@ -250,7 +249,7 @@ function prepareExecutionTarget(plan, options = {}) {
   if (plan.status !== "ready") invalid("cannot prepare a blocked execution plan", { code: "BLOCKED" });
   if (repo.head !== plan.baseHead) invalid("repository HEAD changed after routing", { code: "BLOCKED" });
   if (plan.mode !== "worktree") {
-    if (repo.branch !== plan.branch) invalid("repository branch changed after routing", { code: "BLOCKED" });
+    if (repo.branch !== plan.branch) invalid("repository branch changed after prepare", { code: "BLOCKED" });
     if (repo.dirty) invalid(`${plan.mode} cannot start from a dirty repository`, { code: "BLOCKED" });
     return sortValue({
       schema: STATE_SCHEMA,
@@ -318,6 +317,84 @@ function validateOutcome(outcome, state) {
   assertStringArray(outcome.notes, "outcome.notes", "execution target");
 }
 
+function validateExecutionReceipt(receipt, options = {}) {
+  const required = ["schema", "id", "status", "executionPlanSha256", "toolchainPlanSha256", "mode", "target", "invocation", "changedFiles", "outOfScope", "startedAt", "completedAt", "evidenceReceipts", "notes", "blockers", "cleanup"];
+  const lineageKeys = ["sourceAdmissionReceiptId", "sourceContentHash", "routeId", "toolchainId"];
+  assertKeys(receipt, required, [...required, ...lineageKeys], "execution receipt", "execution target");
+  if (receipt.schema !== RECEIPT_SCHEMA) invalid("unsupported execution receipt schema");
+  validateId(receipt.id);
+  assertEnum(receipt.status, ["complete", "failed", "blocked"], "status", "execution target");
+  validateHash(receipt.executionPlanSha256, "executionPlanSha256");
+  validateHash(receipt.toolchainPlanSha256, "toolchainPlanSha256");
+  if (options.toolchainPlan !== undefined) {
+    if (!options.toolchainPlan || typeof options.toolchainPlan !== "object" || Array.isArray(options.toolchainPlan)) invalid("toolchainPlan must be a native object");
+    if (options.toolchainPlan.schema !== "design-pipeline.toolchain-plan.v1" || options.toolchainPlan.status !== "ready") invalid("toolchainPlan must be a ready native authority");
+    if (sha256(canonicalJson(options.toolchainPlan)) !== receipt.toolchainPlanSha256) invalid("toolchainPlan canonical hash does not match the execution receipt");
+  }
+  assertKeys(receipt.target, ["projectRoot", "executionRoot", "branch", "baseHead", "finalHead"], ["projectRoot", "executionRoot", "branch", "baseHead", "finalHead"], "target", "execution target");
+  assertString(receipt.target.projectRoot, "target.projectRoot", "execution target");
+  assertString(receipt.target.executionRoot, "target.executionRoot", "execution target");
+  assertString(receipt.target.branch, "target.branch", "execution target");
+  if (!/^[a-f0-9]{40,64}$/.test(receipt.target.baseHead || "")) invalid("target.baseHead must be a Git object id");
+  if (!/^[a-f0-9]{40,64}$/.test(receipt.target.finalHead || "")) invalid("target.finalHead must be a Git object id");
+  assertKeys(receipt.invocation, ["command", "exitCode"], ["command", "exitCode"], "invocation", "execution target");
+  assertStringArray(receipt.invocation.command, "invocation.command", "execution target", { min: 1 });
+  if (!Number.isInteger(receipt.invocation.exitCode)) invalid("invocation.exitCode must be an integer");
+  assertStringArray(receipt.changedFiles, "changedFiles", "execution target", { unique: true });
+  assertStringArray(receipt.outOfScope, "outOfScope", "execution target", { unique: true });
+  for (const file of [...receipt.changedFiles, ...receipt.outOfScope]) validateScope(file, "execution receipt file");
+  assertStringArray(receipt.evidenceReceipts, "evidenceReceipts", "execution target");
+  assertStringArray(receipt.notes, "notes", "execution target");
+  assertStringArray(receipt.blockers, "blockers", "execution target");
+  if (!Number.isFinite(Date.parse(receipt.startedAt)) || !Number.isFinite(Date.parse(receipt.completedAt)) || Date.parse(receipt.completedAt) < Date.parse(receipt.startedAt)) invalid("completedAt must be a date-time after startedAt");
+  assertKeys(receipt.cleanup, ["action", "reason"], ["action", "reason"], "cleanup", "execution target");
+  assertEnum(receipt.cleanup.action, ["removed", "retained", "not-applicable"], "cleanup.action", "execution target");
+  if (receipt.sourceAdmissionReceiptId !== undefined || receipt.sourceContentHash !== undefined) {
+    assertString(receipt.sourceAdmissionReceiptId, "sourceAdmissionReceiptId", "execution target");
+    validateHash(receipt.sourceContentHash, "sourceContentHash");
+  }
+  if (receipt.routeId !== undefined) assertString(receipt.routeId, "routeId", "execution target");
+  if (receipt.toolchainId !== undefined) assertString(receipt.toolchainId, "toolchainId", "execution target");
+  if (receipt.status === "blocked" && receipt.blockers.length === 0) invalid("blocked execution requires blockers explaining the block");
+  if (receipt.status === "complete") {
+    if (receipt.invocation.exitCode !== 0) invalid("complete execution requires invocation.exitCode 0");
+    if (receipt.blockers.length) invalid("complete execution cannot contain blockers");
+    if (receipt.outOfScope.length) invalid("complete execution cannot contain outOfScope files");
+    if (!receipt.changedFiles.length && !receipt.evidenceReceipts.length) invalid("complete execution requires changed files or evidence receipts");
+  }
+  if (options.requireLineageBindings && (!options.plan || !options.state || !options.outcome)) invalid("lineage execution receipt requires native plan, state, and outcome payloads");
+  if (options.requireLineageBindings && (!receipt.sourceAdmissionReceiptId || !receipt.sourceContentHash || !receipt.routeId)) invalid("lineage execution receipt requires source and route bindings");
+  if (options.sourceAdmissionReceiptId && receipt.sourceAdmissionReceiptId !== options.sourceAdmissionReceiptId) invalid("sourceAdmissionReceiptId does not match the admitted snapshot");
+  if (options.sourceContentHash && receipt.sourceContentHash !== options.sourceContentHash) invalid("sourceContentHash does not match the admitted source");
+  if (options.routeId && receipt.routeId !== options.routeId) invalid("routeId does not match the native route");
+  if (options.toolchainId && receipt.toolchainId !== options.toolchainId) invalid("toolchainId does not match the native toolchain authority");
+  if (options.toolchainPlanSha256 && receipt.toolchainPlanSha256 !== options.toolchainPlanSha256) invalid("toolchainPlanSha256 does not match the native toolchain authority");
+  if (options.outcome !== undefined) {
+    if (!options.state) invalid("outcome validation requires an execution state");
+    validateOutcome(options.outcome, options.state);
+    if (canonicalJson(receipt.invocation) !== canonicalJson(options.outcome.invocation)) invalid("receipt invocation does not match the execution outcome");
+    if (Date.parse(receipt.completedAt) !== Date.parse(options.outcome.completedAt)) invalid("receipt completedAt does not match the execution outcome");
+    if (canonicalJson(receipt.evidenceReceipts) !== canonicalJson(options.outcome.evidenceReceipts)) invalid("receipt evidenceReceipts do not match the execution outcome");
+    if (canonicalJson(receipt.notes) !== canonicalJson(options.outcome.notes)) invalid("receipt notes do not match the execution outcome");
+    if (options.outcome.status === "complete" && !["complete", "blocked"].includes(receipt.status)) invalid("complete native outcome cannot produce a failed receipt");
+  }
+  if (options.state !== undefined && options.plan === undefined) invalid("execution state validation requires an execution plan");
+  if (options.plan !== undefined) {
+    const planValidationOptions = { ...options, projectRoot: options.projectRoot || options.plan.projectRoot, worktreeBase: options.worktreeBase || (options.plan.mode === "worktree" ? path.dirname(path.dirname(options.plan.executionRoot)) : undefined) };
+    const planResult = validatePlan(options.plan, planValidationOptions);
+    const plan = planResult && planResult.plan ? planResult.plan : planResult;
+    if (!plan || typeof plan !== "object") invalid("validated execution plan is missing");
+    if (receipt.id !== plan.id) invalid("receipt.id does not match the execution plan");
+    if (receipt.executionPlanSha256 !== sha256(canonicalJson(plan))) invalid("receipt.executionPlanSha256 does not match the execution plan");
+    if (receipt.toolchainPlanSha256 !== plan.toolchainPlanSha256) invalid("receipt.toolchainPlanSha256 does not match the execution plan");
+    if (receipt.mode !== plan.mode || receipt.target.projectRoot !== plan.projectRoot || receipt.target.executionRoot !== plan.executionRoot || receipt.target.branch !== plan.branch || receipt.target.baseHead !== plan.baseHead) invalid("receipt target does not match the execution plan");
+    if (plan.routeId && receipt.routeId !== plan.routeId) invalid("receipt routeId does not match the execution plan");
+    if (options.state !== undefined) validateState(options.state, plan);
+    return { status: receipt.status, receipt, plan };
+  }
+  return { status: receipt.status, receipt };
+}
+
 function commonGitDirectory(root) {
   const raw = git(root, "rev-parse", "--git-common-dir").trim();
   return fs.realpathSync(path.resolve(root, raw));
@@ -343,6 +420,13 @@ function finalizeExecutionTarget(plan, state, outcome, options = {}) {
   validatePlan(plan, options);
   validateState(state, plan);
   validateOutcome(outcome, state);
+  const hasSourceAdmissionBinding = options.sourceAdmissionReceiptId !== undefined || options.sourceContentHash !== undefined;
+  if (options.requireLineageBindings === true && !hasSourceAdmissionBinding) invalid("lineage execution finalization requires sourceAdmissionReceiptId and sourceContentHash");
+  if (hasSourceAdmissionBinding) {
+    assertString(options.sourceAdmissionReceiptId, "sourceAdmissionReceiptId", "execution target");
+    validateHash(options.sourceContentHash, "sourceContentHash");
+  }
+  const lineageMode = options.requireLineageBindings === true || hasSourceAdmissionBinding;
   const target = repository(state.executionRoot);
   if (!samePath(commonGitDirectory(state.projectRoot), commonGitDirectory(state.executionRoot))) invalid("execution target is not registered to the project repository");
   const files = changedFiles(state.executionRoot, state.baseHead);
@@ -364,10 +448,27 @@ function finalizeExecutionTarget(plan, state, outcome, options = {}) {
       cleanup = { action: "retained", reason: "cleanup-failed" };
     }
   }
-  return sortValue({
+  let producerBinding = hasSourceAdmissionBinding ? { sourceAdmissionReceiptId: options.sourceAdmissionReceiptId, sourceContentHash: options.sourceContentHash } : {};
+  if (lineageMode) {
+    const routeId = options.routeId || plan.routeId;
+    assertString(routeId, "routeId", "execution target");
+    if (plan.routeId && routeId !== plan.routeId) invalid("routeId does not match the execution plan");
+    if (options.toolchainPlanSha256 && options.toolchainPlanSha256 !== state.toolchainPlanSha256) invalid("toolchainPlanSha256 does not match the validated toolchain authority");
+    if (options.toolchainPlan !== undefined) {
+      if (!options.toolchainPlan || typeof options.toolchainPlan !== "object" || Array.isArray(options.toolchainPlan)) invalid("toolchainPlan authority must be a native object");
+      if (options.toolchainPlan.schema !== "design-pipeline.toolchain-plan.v1" || options.toolchainPlan.status !== "ready") invalid("toolchainPlan authority must be ready");
+      if (sha256(canonicalJson(options.toolchainPlan)) !== state.toolchainPlanSha256) invalid("toolchainPlan authority hash does not match the execution plan");
+    }
+    const toolchainId = options.toolchainId;
+    if (toolchainId !== undefined) assertString(toolchainId, "toolchainId", "execution target");
+    producerBinding = { ...producerBinding, routeId, ...(toolchainId ? { toolchainId } : {}) };
+  }
+  if (!lineageMode && plan.routeId) producerBinding = { ...producerBinding, routeId: plan.routeId };
+  const receipt = sortValue({
     schema: RECEIPT_SCHEMA,
     id: plan.id,
     status,
+    ...producerBinding,
     executionPlanSha256: state.executionPlanSha256,
     toolchainPlanSha256: state.toolchainPlanSha256,
     mode: state.mode,
@@ -388,6 +489,8 @@ function finalizeExecutionTarget(plan, state, outcome, options = {}) {
     blockers,
     cleanup,
   });
+  validateExecutionReceipt(receipt, { plan, state, outcome, requireLineageBindings: options.requireLineageBindings === true, sourceAdmissionReceiptId: options.sourceAdmissionReceiptId, sourceContentHash: options.sourceContentHash, routeId: receipt.routeId, toolchainPlanSha256: state.toolchainPlanSha256, toolchainPlan: options.toolchainPlan, projectRoot: options.projectRoot, worktreeBase: options.worktreeBase });
+  return receipt;
 }
 
 module.exports = {
@@ -399,5 +502,6 @@ module.exports = {
   finalizeExecutionTarget,
   prepareExecutionTarget,
   resolveExecutionTarget,
+  validateExecutionReceipt,
   validateRequest,
 };

@@ -1,0 +1,24 @@
+{
+  "schema": "openalice.sample-retime.v1",
+  "source": {
+    "path": "index.html",
+    "sha256": "c066f15c1dd300f6c8d669485ac5154b4bf0416dbc5911b05acc66b4323207d3",
+    "duration": 20
+  },
+  "retime": {
+    "duration": 7.5,
+    "composition": ".openalice-sample-17656-93a9cfcd-e7eb-405a-9099-3cc7cae70455.html"
+  },
+  "output": {
+    "path": "output/sample-7.5s.mp4",
+    "sha256": "55fb4b9b3519cc3eb4b9ab67543e914a618c31375d66402adc059c0829c024f2"
+  },
+  "temporary": {
+    "created": true,
+    "removed": true
+  },
+  "result": {
+    "mode": "render",
+    "exitCode": 0
+  }
+}

@@ -129,7 +129,7 @@ const KNOWN_OPTIONS = new Set([
   "--action", "--adapter-path", "--api-version", "--artifact", "--answer", "--approval", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root", "--context", "--expected-sha256", "--failpoint",
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
-  "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
+  "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root", "--workspace-root", "--artifact-root",
   "--direction-lock", "--providers",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
@@ -212,6 +212,21 @@ function changeRootFrom(parsed, root, options = {}) {
     fail("cli", "--change-root is required", { code: "OPTION_REQUIRED" });
   }
   return contained(root, raw, "--change-root", options.mustExist !== false);
+}
+
+function packageLineageValidation(parsed, root, plan) {
+  const declaration = plan.animationLineage || plan.animation_lineage || plan.manifest?.animationLineage || plan.manifest?.animation_lineage;
+  if (declaration === undefined) return {};
+  const declaredRoots = plan.animationLineageRoots || plan.animation_lineage_roots || plan.manifest?.animationLineageRoots || plan.manifest?.animation_lineage_roots || plan.animationLineage?.roots;
+  const resolveRoot = (flag, key) => {
+    const raw = option(parsed, flag) || declaredRoots?.[key];
+    return raw ? contained(root, raw, flag, true) : undefined;
+  };
+  return {
+    workspaceRoot: resolveRoot("--workspace-root", "workspaceRoot"),
+    artifactRoot: resolveRoot("--artifact-root", "artifactRoot"),
+    evidenceRoot: resolveRoot("--evidence-root", "evidenceRoot"),
+  };
 }
 
 function artifact(parsed, root, flag, fallback, mustExist = true) {
@@ -503,8 +518,10 @@ function explainBlockCommand(parsed, root) {
 function packageCommand(parsed, root) {
   const changeRoot = changeRootFrom(parsed, root);
   const outputFile = contained(root, requireOption(parsed, "--output"), "--output", false);
-  const planFile = option(parsed, "--plan") ? artifact(parsed, root, "--plan") : undefined;
-  const result = packageChange(changeRoot, outputFile, { planFile });
+  const planFile = option(parsed, "--plan") ? artifact(parsed, root, "--plan") : path.join(changeRoot, "plan.json");
+  const plan = readPlan(planFile);
+  const lineageValidation = packageLineageValidation(parsed, root, plan);
+  const result = packageChange(changeRoot, outputFile, { planFile, lineageValidation });
   if (result.status === "blocked") return { result, exitCode: 2 };
   return { result: { ...result, output: outputFile }, exitCode: 0 };
 }

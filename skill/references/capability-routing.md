@@ -37,6 +37,7 @@ The table below is the catalog map the dispatcher points at, not a list of requi
 | Visual assets | `imagegen-frontend-web`, `imagegen-frontend-mobile`, image generation tools | A website, portfolio, campaign, or product surface needs real bitmap assets or visual references |
 | Motion language and audit | `design-motion-principles`, `animation-vocabulary`, `review-animations`, `apple-design`, built-in `iart-motion-skills.md` plus `iart route` | Writing `motion.md`, defining timing/easing, or reviewing implemented motion |
 | Animation opportunity and review | `references/animation-opportunity-and-review.md` plus existing `MOTION.md`, motion primitives, and `motion.md` | Screening non-trivial motion before runtime selection, naming vocabulary/curve, then reviewing the rendered surface with evidence |
+| Motion-first physical response | `references/motion-first-capability.md` plus `response.spring-settle` and `continuity.shared-anchor` | Choosing bounded physical response, semantic continuity, renderer ownership, authored-time determinism, and evidence without adding a runtime |
 | Runtime animation | CSS, `animejs`, GSAP skill set, React View Transitions, automatic iart web-animation/WebGL playbooks | Implementing DOM/SVG choreography with the smallest fitting runtime |
 | Motion graphics and HTML video | `iart route` plus HyperFrames runtime; Remotion/Manim/AE only when named | TikTok/Reels, explainers, kinetic titles, or programmatic video; route is selection, not a second renderer |
 | Graphics and game runtime selection | `graphics-runtime-routing.md`, `graphics-runtime-catalog.json`, existing project adapter | Selecting a stable capability family before choosing a 2D, 3D, data, geospatial, GPU, game, or narrative runtime |
@@ -54,6 +55,9 @@ Figma and Sites are runtime/plugin surfaces. Their absence is not an install-tim
 
 For non-trivial motion, complete the opportunity screen and vocabulary/curve decision in
 `animation-opportunity-and-review.md` before choosing a runtime.
+For spring-like response, shared-element continuity, trace, camera, or material behavior, also read
+`motion-first-capability.md`; select the smallest existing adapter and compile offline output from
+authored time. This extends the existing route; it is not a parallel runtime or public route.
 
 | Candidate | Prefer when | Avoid when |
 | --- | --- | --- |

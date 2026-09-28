@@ -256,10 +256,55 @@ function explainBlock(changeRoot) {
   return { status, phase, outcome: control.outcome ?? null, blockers, nextActions: control.nextActions || [] };
 }
 
+function declaredAnimationLineage(plan, changeRoot) {
+  const declaration = plan.animationLineage || plan.animation_lineage || plan.manifest?.animationLineage || plan.manifest?.animation_lineage;
+  if (declaration === undefined) return null;
+  if (typeof declaration === "string") {
+    const file = resolveInside(changeRoot, declaration, "animation lineage", { scope: "control runtime", mustExist: true });
+    return readJson(file, "animation lineage");
+  }
+  return declaration;
+}
+
+function validateDeclaredAnimationLineage(plan, changeRoot, options) {
+  const lineage = declaredAnimationLineage(plan, changeRoot);
+  if (lineage === null) return null;
+  const { validateEvidenceChain } = require("./animation-verification-core.cjs");
+  const validation = options.lineageValidation || {};
+  const result = validateEvidenceChain(lineage, {
+    ...validation,
+    artifactRoot: validation.artifactRoot || options.artifactRoot,
+    evidenceRoot: validation.evidenceRoot || options.evidenceRoot,
+    workspaceRoot: validation.workspaceRoot || options.workspaceRoot,
+  });
+  if (result.status !== "passed") return { status: "blocked", blockers: (result.blockers || ["animation lineage validation did not pass"]).map((message) => ({ code: "ANIMATION_LINEAGE_BLOCKED", message })) };
+  return { status: "passed", lineage: result };
+}
+
+function animationLineageBindings(declaredLineage) {
+  if (!declaredLineage) return null;
+  const chain = declaredLineage.lineage?.references;
+  if (!chain) return null;
+  const native = {};
+  for (const key of ["sourceAdmission", "admittedSnapshot", "executionTarget", "deployProfile", "runtimeOrStaticArtifact", "composition", "capture", "existingGateReceipt", "finalArtifact"]) {
+    const receipt = chain[key]?.receipt;
+    if (receipt && typeof receipt === "object") native[key] = `sha256:${sha256(canonicalJson(receipt))}`;
+  }
+  return {
+    status: declaredLineage.status,
+    lineageHash: `sha256:${sha256(canonicalJson(chain))}`,
+    sourceContentHash: chain.source?.contentHash,
+    nativeReceiptHashes: native,
+    finalArtifact: { id: chain.finalArtifact.id, receiptId: chain.finalArtifact.receiptId, contentHash: chain.finalArtifact.contentHash },
+  };
+}
+
 function packageChange(changeRoot, outputFile, options = {}) {
   const change = readState(changeRoot);
   const planFile = options.planFile || path.join(changeRoot, "plan.json");
   const plan = readPlan(planFile);
+  const declaredLineage = validateDeclaredAnimationLineage(plan, changeRoot, options);
+  if (declaredLineage?.status === "blocked") return { status: "blocked", blockers: declaredLineage.blockers, included: [] };
   const artifacts = loadArtifacts(changeRoot, change.state);
   const index = artifactByPath(artifacts);
   const required = [...new Set(plan.phases.flatMap((phase) => phase.outputs).filter((output) => !output.startsWith("package/")))];
@@ -284,6 +329,7 @@ function packageChange(changeRoot, outputFile, options = {}) {
     }
   }
   if (failures.length) return { status: "blocked", blockers: failures, included: [] };
+  const lineageBinding = animationLineageBindings(declaredLineage);
   const output = {
     schema: PACKAGE_SCHEMA,
     schema_version: 1,
@@ -291,6 +337,7 @@ function packageChange(changeRoot, outputFile, options = {}) {
     input_hash: plan.input_hash,
     artifacts: included,
     status: "complete",
+    ...(lineageBinding ? { animationLineage: lineageBinding } : {}),
   };
   if (outputFile) {
     const target = path.resolve(outputFile);

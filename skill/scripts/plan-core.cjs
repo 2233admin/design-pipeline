@@ -24,6 +24,25 @@ function firstString(...values) {
   return values.find((value) => typeof value === "string" && value.trim())?.trim() || null;
 }
 
+function normalizeAnimationLineage(manifest) {
+  const declaration = manifest.animationLineage ?? manifest.animation_lineage;
+  const roots = manifest.animationLineageRoots ?? manifest.animation_lineage_roots ?? (isObject(declaration) ? declaration.roots : undefined);
+  const rootHashes = manifest.animationLineageRootHashes ?? manifest.animation_lineage_root_hashes ?? (isObject(declaration) ? declaration.rootHashes : undefined);
+  if (declaration === undefined && roots === undefined && rootHashes === undefined) return {};
+  if (declaration === undefined) fail("design plan", "animation lineage roots require an animationLineage declaration");
+  if (!isObject(roots)) fail("design plan", "animation lineage declaration requires root identities");
+  if (!isObject(rootHashes)) fail("design plan", "animation lineage declaration requires root hashes");
+  const normalizedRoots = {};
+  const normalizedHashes = {};
+  for (const key of ["workspaceRoot", "artifactRoot", "evidenceRoot"]) {
+    assertString(roots[key], `animationLineageRoots.${key}`, "design plan");
+    if (!/^sha256:[a-f0-9]{64}$/i.test(rootHashes[key] || "")) fail("design plan", `animationLineageRootHashes.${key} must be a sha256:<digest> value`);
+    normalizedRoots[key] = roots[key].trim();
+    normalizedHashes[key] = rootHashes[key].toLowerCase();
+  }
+  return { animationLineage: typeof declaration === "string" ? declaration.trim() : declaration, animationLineageRoots: normalizedRoots, animationLineageRootHashes: normalizedHashes };
+}
+
 function normalizeIntentManifest(manifest) {
   assertObject(manifest, "manifest", "design plan");
   for (const key of ["mode", "fidelity"]) {
@@ -33,6 +52,7 @@ function normalizeIntentManifest(manifest) {
   }
   const target = isObject(manifest.target) ? manifest.target : {};
   const intent = isObject(manifest.intent) ? manifest.intent : {};
+  const lineage = normalizeAnimationLineage(manifest);
   const normalized = {
     targetPlatform: firstString(manifest.targetPlatform, manifest.platform, target.platform),
     primaryTask: firstString(manifest.primaryTask, manifest.task, intent.primaryTask),
@@ -40,6 +60,7 @@ function normalizeIntentManifest(manifest) {
     mode: firstString(manifest.mode) || "greenfield",
     fidelity: firstString(manifest.fidelity) || "adaptive",
     brandPreference: firstString(manifest.brandPreference, manifest.brand, manifest.designLanguage),
+    ...lineage,
   };
   assertEnum(normalized.mode, MODES, "mode", "design plan");
   assertEnum(normalized.fidelity, FIDELITIES, "fidelity", "design plan");

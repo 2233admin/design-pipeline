@@ -32,6 +32,12 @@ Segoe UI/system sans；Consolas 元数据。研究题目 29px，证据数值 47p
 
 画内来源和附件是不可聚焦、不可导航的影片文字；真实来源链接留在播放器框外。片尾收紧同一desk，让人审边界位于原生视频控件上方安全区，不覆盖正文或移走原件。
 
+## Motion Implementation
+
+本轮改为“证据血缘图”而不是研究面板之间的镜头巡游：原 research.md 固定在左侧，证据 trace 沿一条共享路径经过 SOURCE → RETAIN → REFERENCE，版本从同一来源分支，Inbox 作为引用终点出现。原始 DOM 研究对象不移动；移动的是 aria-hidden 的视觉 trace 和保留态缩略。
+
+Authored Motion Graph 先声明 beat、subject、anchor、purpose、from/to 与 response 参数，再由一个 paused GSAP timeline 编译为 HyperFrames 可 seek 的时间轨。物理感是有界解析 spring 采样，不使用墙钟、随机数或交互历史作为离线真值。
+
 ## Do's and Don'ts
 
 局部变化用位置和标记共同说明，不只用颜色。原文件和保存版本出现后不消失。不得添加交易审批、粒子、五面板、含混 OMP 或开关主张。技术验证与视觉接受分开。

@@ -1,0 +1,6 @@
+{
+  "command": "node skill/scripts/designer-pipeline.cjs status --root experiments/openalice-product-animation --change-root . --json",
+  "exitCode": 1,
+  "stdout": "{\"schema\":\"design-pipeline.cli-result.v1\",\"ok\":false,\"error\":{\"code\":\"JSON_PARSE\",\"message\":\"pipeline state: cannot parse D:\\\\projects\\\\design-pipeline\\\\product-animation-integration\\\\experiments\\\\openalice-product-animation\\\\state.json: ENOENT: no such file or directory, open 'D:\\\\projects\\\\design-pipeline\\\\product-animation-integration\\\\experiments\\\\openalice-product-animation\\\\state.json'\",\"details\":{\"code\":\"JSON_PARSE\"}}}\n",
+  "stderr": ""
+}

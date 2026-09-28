@@ -1,0 +1,185 @@
+{
+  "blockers": [
+    "heygen-com/hyperframes is review and cannot be the executable primary route"
+  ],
+  "brief": "Create a 20-second HTML OpenAlice product showcase video after the approved 7.5-second direction sample: one NVIDIA FY2025 research document gains a cited Data Center revenue finding, retains workspace versions, and creates an Inbox report attachment linked to its original Session. End with Ready for your review and No trade placed.",
+  "deliverableForm": "product-launch-video",
+  "evidence": [
+    "registry:2026-08-14",
+    "mengto:3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+    "tool:heygen-com/hyperframes@0e4da52c8222b8d18a1211b34f2fb3bd0f7e79ee",
+    "tool:design-pipeline/core@bundled",
+    "tool:design-pipeline/feedback-loop@bundled",
+    "tool:MengTo/skills@3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+    "tool:wevm/frog@702c4eadefe175a208290a99c36e7f4ac1390e53"
+  ],
+  "framework": "agnostic",
+  "graphics": null,
+  "invocations": [
+    {
+      "command": null,
+      "kind": "governed-review",
+      "owner": "agent",
+      "status": "review",
+      "target": "heygen-com/hyperframes",
+      "toolId": "heygen-com/hyperframes"
+    },
+    {
+      "command": null,
+      "kind": "agent-route",
+      "owner": "agent",
+      "target": "design-pipeline/core",
+      "toolId": "design-pipeline/core"
+    },
+    {
+      "command": null,
+      "kind": "agent-route",
+      "owner": "agent",
+      "target": "design-pipeline/feedback-loop",
+      "toolId": "design-pipeline/feedback-loop"
+    },
+    {
+      "command": null,
+      "kind": "agent-route",
+      "owner": "agent",
+      "target": "MengTo/skills",
+      "toolId": "MengTo/skills"
+    },
+    {
+      "command": null,
+      "kind": "governed-review",
+      "owner": "agent",
+      "status": "review",
+      "target": "wevm/frog",
+      "toolId": "wevm/frog"
+    }
+  ],
+  "jobId": "motion-graphics",
+  "jobPlanSha256": "049f30bb12828c861924cbe2953538b29a0a05d60f7302605f33d7eeba13582b",
+  "primaryRouteId": "heygen-com/hyperframes",
+  "probes": [
+    {
+      "command": null,
+      "kind": "governed-review",
+      "status": "review",
+      "toolId": "heygen-com/hyperframes"
+    },
+    {
+      "command": null,
+      "kind": "catalog",
+      "status": "available",
+      "toolId": "design-pipeline/core"
+    },
+    {
+      "command": null,
+      "kind": "catalog",
+      "status": "available",
+      "toolId": "design-pipeline/feedback-loop"
+    },
+    {
+      "command": null,
+      "kind": "catalog",
+      "status": "available",
+      "toolId": "MengTo/skills"
+    },
+    {
+      "command": null,
+      "kind": "governed-review",
+      "status": "review",
+      "toolId": "wevm/frog"
+    }
+  ],
+  "recommendedSkills": [],
+  "reviews": [
+    "heygen-com/hyperframes is review",
+    "wevm/frog is review"
+  ],
+  "routingContext": null,
+  "schema": "design-pipeline.toolchain-plan.v1",
+  "sourceHashes": {
+    "adapterRegistry": "00cfdb3b60c4388c248103164e340a39dc16719ff85367cd4586ece4649c729d",
+    "frontendRegistry": "972c897938f556b43b4a59c050688a17c2aca5fd086369bdfe6cf7e3bb7859eb",
+    "graphicsCatalog": "9baabd9656a05cf7ebf3a95399e11e348db50422ca068f7b00abee0caf1bc090"
+  },
+  "status": "blocked",
+  "styling": {
+    "id": "none",
+    "label": "None"
+  },
+  "tools": [
+    {
+      "id": "heygen-com/hyperframes",
+      "mode": "governed-candidate",
+      "source": "frontend-stack",
+      "status": "review"
+    },
+    {
+      "id": "design-pipeline/core",
+      "mode": "project-owned",
+      "source": "frontend-stack",
+      "status": "ready"
+    },
+    {
+      "id": "design-pipeline/feedback-loop",
+      "mode": "project-owned",
+      "source": "frontend-stack",
+      "status": "ready"
+    },
+    {
+      "id": "MengTo/skills",
+      "mode": "bundled-index",
+      "source": "frontend-stack",
+      "status": "ready"
+    },
+    {
+      "id": "wevm/frog",
+      "mode": "governed-candidate",
+      "source": "frontend-stack",
+      "status": "review"
+    }
+  ],
+  "uiLibrary": {
+    "id": "none",
+    "label": "None",
+    "license": "project",
+    "source": "project-owned"
+  },
+  "verification": [
+    {
+      "evidenceTypes": [
+        "video-production",
+        "html-video"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "heygen-com/hyperframes"
+    },
+    {
+      "evidenceTypes": [
+        "design-workflow"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "design-pipeline/core"
+    },
+    {
+      "evidenceTypes": [
+        "friction-logging"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "design-pipeline/feedback-loop"
+    },
+    {
+      "evidenceTypes": [
+        "design-workflow"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "MengTo/skills"
+    },
+    {
+      "evidenceTypes": [
+        "friction-logging"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "wevm/frog"
+    }
+  ]
+}

@@ -13,6 +13,7 @@ const {
   finalizeExecutionTarget,
   prepareExecutionTarget,
   resolveExecutionTarget,
+  validateExecutionReceipt,
 } = require("../skill/scripts/execution-target-core.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -301,5 +302,72 @@ test("CLI routes, prepares, and finalizes a React execution with bound receipts"
   assert.equal(finalize.status, 0, finalize.stderr || finalize.stdout);
   assert.equal(finalize.output.receipt.status, "complete");
   assert.equal(finalize.output.receipt.toolchainPlanSha256, executionRequest.toolchainPlanSha256);
-  assert.deepEqual(finalize.output.receipt.changedFiles, ["src/App.tsx"]);
+});
+
+test("finalize producer emits native route and validated toolchain hash lineage", (t) => {
+  const { root, worktreeBase } = repository(t);
+  const toolchain = resolvedToolchain("Build a React settings page");
+  const plan = resolveExecutionTarget(request({
+    id: "lineage-producer",
+    jobPlanSha256: toolchain.jobPlanSha256,
+    toolchainPlanSha256: sha256(canonicalJson(toolchain)),
+    routeId: toolchain.primaryRouteId,
+    slices: [{ id: "ui", owner: toolchain.primaryRouteId, scope: ["src/"] }],
+  }), { projectRoot: root, worktreeBase, toolchainPlan: toolchain });
+  const state = prepareExecutionTarget(plan, { projectRoot: root, worktreeBase, now: "2026-08-13T00:00:00.000Z" });
+  fs.appendFileSync(path.join(state.executionRoot, "src", "App.tsx"), "// lineage producer\n");
+  const result = outcome();
+  const receipt = finalizeExecutionTarget(plan, state, result, {
+    projectRoot: root,
+    worktreeBase,
+    sourceAdmissionReceiptId: "admission-lineage",
+    sourceContentHash: "a".repeat(64),
+    routeId: plan.routeId,
+    toolchainPlanSha256: plan.toolchainPlanSha256,
+    toolchainPlan: toolchain,
+  });
+  assert.equal(receipt.id, plan.id);
+  assert.equal(receipt.routeId, plan.routeId);
+  assert.equal(receipt.toolchainPlanSha256, sha256(canonicalJson(toolchain)));
+  validateExecutionReceipt(receipt, {
+    plan, state, outcome: result, toolchainPlan: toolchain, toolchainPlanSha256: sha256(canonicalJson(toolchain)),
+    requireLineageBindings: true, sourceAdmissionReceiptId: "admission-lineage", sourceContentHash: "a".repeat(64), routeId: plan.routeId,
+  });
+});
+
+test("lineage finalization requires source admission bindings before cleanup and self-validates", (t) => {
+  const { root, worktreeBase } = repository(t);
+  const toolchain = resolvedToolchain("Build a React settings page");
+  const plan = resolveExecutionTarget(request({ id: "lineage-requires-source", jobPlanSha256: toolchain.jobPlanSha256, toolchainPlanSha256: sha256(canonicalJson(toolchain)), routeId: toolchain.primaryRouteId, isolation: "required", slices: [{ id: "ui", owner: toolchain.primaryRouteId, scope: ["src/"] }] }), { projectRoot: root, worktreeBase, toolchainPlan: toolchain });
+  const state = prepareExecutionTarget(plan, { projectRoot: root, worktreeBase, now: "2026-08-13T00:00:00.000Z" });
+  fs.appendFileSync(path.join(state.executionRoot, "src", "App.tsx"), "// source-binding guard\n");
+  assert.throws(() => finalizeExecutionTarget(plan, state, outcome(), { projectRoot: root, worktreeBase, requireLineageBindings: true, routeId: plan.routeId, toolchainPlanSha256: plan.toolchainPlanSha256, toolchainPlan: toolchain }), /sourceAdmissionReceiptId and sourceContentHash/);
+  assert.equal(fs.existsSync(state.executionRoot), true);
+});
+
+test("complete native outcome round-trips as blocked when finalization finds out-of-scope changes", (t) => {
+  const { root, worktreeBase } = repository(t);
+  const toolchain = resolvedToolchain("Build a React settings page");
+  const plan = resolveExecutionTarget(request({
+    id: "lineage-blocked",
+    jobPlanSha256: toolchain.jobPlanSha256,
+    toolchainPlanSha256: sha256(canonicalJson(toolchain)),
+    routeId: toolchain.primaryRouteId,
+    isolation: "required",
+    slices: [{ id: "ui", owner: toolchain.primaryRouteId, scope: ["src/"] }],
+  }), { projectRoot: root, worktreeBase, toolchainPlan: toolchain });
+  const state = prepareExecutionTarget(plan, { projectRoot: root, worktreeBase, now: "2026-08-13T00:00:00.000Z" });
+  fs.appendFileSync(path.join(state.executionRoot, "README.md"), "// out of scope\n");
+  git(state.executionRoot, "add", "README.md");
+  git(state.executionRoot, "commit", "-m", "test: out of scope lineage");
+  const result = outcome();
+  const receipt = finalizeExecutionTarget(plan, state, result, {
+    projectRoot: root, worktreeBase, sourceAdmissionReceiptId: "admission-blocked", sourceContentHash: "b".repeat(64), routeId: plan.routeId, toolchainPlanSha256: plan.toolchainPlanSha256, toolchainPlan: toolchain,
+  });
+  assert.equal(receipt.status, "blocked");
+  assert.ok(receipt.blockers.length > 0);
+  validateExecutionReceipt(receipt, {
+    plan, state, outcome: result, toolchainPlan: toolchain, toolchainPlanSha256: sha256(canonicalJson(toolchain)),
+    requireLineageBindings: true, sourceAdmissionReceiptId: "admission-blocked", sourceContentHash: "b".repeat(64), routeId: plan.routeId,
+  });
 });

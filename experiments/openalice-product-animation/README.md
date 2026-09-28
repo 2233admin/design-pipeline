@@ -2,7 +2,9 @@
 
 Open **[watch.html](watch.html)** for the actual encoded film. The [MP4](output/openalice.mp4) is a silent **20-second, 1280×720, 30 fps** research-workflow illustration, not captured product UI or a real transaction. One research document gains a cited finding, keeps its source and saved versions, and sends an attachment reference to Inbox without moving the original. It ends with **Ready for your review / No trade placed**.
 
-The 7.5-second direction sample passed the coordinator's normal-speed playback precheck before expansion. This is **not user visual acceptance**. The rejected 24-second five-panel film is preserved in `output/rejected-24s/`; its receipts do not validate the redesign. The approved direction source, video and checks are preserved in `output/sample-approved/`. `watch.html?sample=1` plays the retained sample, not the complete delivery.
+`watch.html?sample=1` plays `output/sample-7.5s.mp4`: a deterministic, target-local **7.5-second derivative** of the same canonical composition, retaining all six beats: orient → extract → retain → reference → inspect → review. It is not the canonical 20-second delivery.
+
+`output/sample-approved/` preserves the historical direction source, video and checks; it is not a derivative input, current receipt, or approval proxy. The rejected film in `output/rejected-24s/` remains historical, and `baseline/optimization-before-final/` remains frozen. Do not overwrite these archives or the baseline. **Component Conformance is not Visual Acceptance; human visual acceptance remains pending.**
 
 ## Reproduce
 
@@ -14,10 +16,15 @@ npx playwright install chromium
 npm run lint
 npm run check
 npm run render
+npm run render -- --sample
 npm run verify
 ```
 
-Serve this folder over HTTP for the iframe timeline preview (the command below was exercised locally; it is not the full MP4 seek/reduced-motion acceptance server):
+`npm run render` produces the canonical 20-second `output/openalice.mp4`; `npm run render -- --sample` produces `output/sample-7.5s.mp4` and `output/sample-retime.json` from the current `index.html`. `npm run verify` requires both rendered videos and the sample receipt. If rendering or verification fails, inspect the corresponding logs and receipt result; do not substitute archived output or treat an older receipt as current proof.
+
+`--sample` is supported only by `render`. `npm run lint -- --sample` and `npm run check -- --sample` fail before changing files rather than silently checking the canonical film. Run ordinary `npm run lint` / `npm run check` for the canonical composition; `npm run verify` checks the rendered derivative.
+
+Serve this folder over HTTP for the iframe timeline preview (this is not the full MP4 seek/reduced-motion acceptance server):
 
 ```sh
 python -m http.server 8767 --bind 127.0.0.1
@@ -25,20 +32,26 @@ python -m http.server 8767 --bind 127.0.0.1
 
 Open `http://127.0.0.1:8767/preview.html` for the controllable timeline. Direct `file://` opening supports `watch.html` with its sibling MP4 and is the offline delivery entrypoint, but does not support the cross-document iframe preview. Python HTTP serving supports sequential video playback but does not supply byte ranges here: Chromium can report buffered `[0,20]` and seekable `[0,0]`, so it cannot prove seek/reduced-motion ending. For those checks use local `watch.html` or a Range-capable server such as the verifier’s existing local server.
 
-Pinned dependencies: HyperFrames 0.8.46, GSAP 3.15.0, Playwright 1.62.0. `run.cjs` disables telemetry, retains raw tool logs, and derives duration from the composition. `HYPERFRAMES_BROWSER_PATH` can select Chromium. The archived sample cannot accidentally be overwritten by rendering the full film with `--sample`.
+Pinned dependencies: HyperFrames 0.8.46, GSAP 3.15.0, Playwright 1.62.0. `run.cjs` disables telemetry, retains raw tool logs, and derives duration from the composition. Optionally set `HYPERFRAMES_BROWSER_PATH` to a supported local Chromium executable; otherwise the runner uses Playwright's installed Chromium. The sample render retimes a temporary composition and removes it in a `finally` cleanup path, without reading or writing `output/sample-approved/`.
 
 [preview.html](preview.html) drives the authored timeline after dependency installation. Pause/replay and previous/next beat controls remain outside the rendered frame. Reduced motion opens a static ending with explicit playback available. The MP4 player also respects reduced motion; browser autoplay policy may require pressing Play after the media loads. Both players use the actual duration, not a fixed scene count.
 
 The composition is noninteractive film artwork: its citation and Inbox references are text, never focusable navigation. Use the real source link in the surrounding transcript outside the video/iframe. Ending framing reserves native-control space; portrait viewing still scales the landscape detail, so the full text remains available in the transcript.
 
+## Motion implementation
+
+The current film uses an authored evidence-lineage graph rather than a panel-to-panel tour. The original research remains the semantic source; a bounded trace moves through SOURCE, RETAIN and REFERENCE anchors, then lands in Inbox. The graph compiles to the existing paused GSAP/HyperFrames timeline and keeps the public `window.film` and `window.__timelines.openalice` contracts. The graph stays lexical; a target-local verifier-only seam is not a public integration API. No second motion runtime is introduced.
+
 ## Evidence and boundaries
 
-- `output/lint.json`, `check.json`, `render.log`: current tool receipts. Layout warnings remain inspectable; thumbnail copies intentionally emerge behind the opaque original, and only those decorative snapshots declare allowed occlusion. Primary text is not exempted. HyperFrames motion assertions are disabled; the verifier separately exercises motion.
-- `output/verification.json`: duration/frame metadata, full decode, normal-speed preview and actual MP4 playback, object identity and visible provenance at every encoded-frame timestamp, deterministic backward seek, keyboard controls, reduced motion, mobile layout, lifecycle cleanup, errors, and source/video hashes.
-- `output/contact-sheet.png`, `frame-*.png`, `encoded-playing.png`: decoded MP4/actual native-playback evidence, not substitutes for watching the film at normal speed.
-- `../../openspec/changes/integrate-product-animation/qa.md`: technical results and visual-acceptance boundary.
+- `output/lint.json`, `check.json`, `render.log`, `sample-render.log`: tool receipts/logs generated by reproduction. Layout warnings remain inspectable; thumbnail copies intentionally emerge behind the opaque original, and only those decorative snapshots declare allowed occlusion. Primary text is not exempted. HyperFrames motion assertions are disabled; the verifier separately exercises motion.
+- `output/sample-retime.json`: binds the canonical source path/SHA256 and 20-second duration, the 7.5-second derivative duration, output path/SHA256, temporary-artifact creation/removal, and result mode/exit code. A failed render can leave a null output hash; receipt existence alone is not success.
+- `output/verification.json`: the current-run polish contract requires accurate sequential decoding with ordered frame references covering SOURCE, extraction, RETAIN, REFERENCE, Inbox, inspect/review and ending—not approximate keyframe seeking. It binds sample SHA256 and verifier result to decoded evidence and separate normal-speed playback evidence: real wall-clock samples, `playbackRate === 1`, and a native `ended` event. Canonical duration/frame metadata, full decode, preview/MP4 playback, provenance, deterministic seek, keyboard controls, reduced motion, mobile layout, cleanup, errors and hashes remain part of verification.
+- Four review surfaces—desktop, mobile, reduced motion, and native controls visible—require distinct current-run captures with viewport, runtime state, path and hash metadata in `verification.json`. Both **Ready for your review** and **No trade placed** must remain unobscured above the bottom **210 authored pixels** reserved for native controls.
+- Ordered `output/polish-*-frame-*.png` references and the four-surface captures are review evidence, not substitutes for watching the film at normal speed or human Visual Acceptance. Historical captures cannot stand in for a current-run receipt.
+- [Polish evidence contract](../../openspec/changes/polish-product-animation-evidence/specs/design-pipeline/spec.md): current requirements. The completed `integrate-product-animation` change and its QA remain historical, not current polish authority.
 
-Receipt hashes identify the current files; they are not independent certification that a particular input generated a video. Actual render logs, complete decode and normal-speed MP4 playback are the evidence used here.
+Receipt hashes identify files; they are not independent certification that a particular input generated a video. Review the current render logs, complete decode and normal-speed MP4 playback alongside the receipts. These instructions define reproduction and evidence requirements, not a claim that checks have passed or that the visuals are accepted.
 
 The concrete historical fact is **NVIDIA Data Center FY2025 revenue $115.2 billion, +142% year over year**, from the [NVIDIA earnings release dated 26 February 2025](https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025). It is not total company revenue or a forecast. Filename, version labels, Session identifier and layout are illustrative. No product source, screenshots, or remote assets are copied; no trade is proposed, approved or executed.
 

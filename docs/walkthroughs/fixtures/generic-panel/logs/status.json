@@ -1,0 +1,6 @@
+{
+  "command": "node skill/scripts/designer-pipeline.cjs status --root docs/walkthroughs/fixtures/generic-panel --change-root openspec/changes/generic-panel --json",
+  "exitCode": 0,
+  "stdout": "{\"status\":\"initialized\",\"phase\":\"repo-read\",\"stateSchema\":\"design-pipeline.state.v2\",\"migrationRequired\":false,\"stateSha256\":\"2c9bc1acac5bbc4745c91ebc0d6ae847daf1ace1b5bd64fd8ff7f70f6272d964\",\"consistency\":\"consistent\",\"control\":null,\"changeRoot\":\"D:\\\\projects\\\\design-pipeline\\\\product-animation-integration\\\\docs\\\\walkthroughs\\\\fixtures\\\\generic-panel\\\\openspec\\\\changes\\\\generic-panel\",\"schema\":\"design-pipeline.cli-result.v1\",\"ok\":true}\n",
+  "stderr": ""
+}

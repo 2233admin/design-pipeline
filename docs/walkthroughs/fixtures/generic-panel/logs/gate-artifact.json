@@ -1,0 +1,6 @@
+{
+  "command": "node skill/scripts/designer-pipeline.cjs verify --gate artifact --artifact docs/walkthroughs/fixtures/generic-panel/runtime-artifact.json --change-root docs/walkthroughs/fixtures/generic-panel/lineage-work/design-pipeline-animation-latch-paper-nxYcut/artifacts --root . --json",
+  "exitCode": 0,
+  "stdout": "{\"status\":\"ready\",\"path\":\"runtime.js\",\"metadata\":{\"schema\":\"design-pipeline.artifact.v1\",\"schema_version\":1,\"path\":\"runtime.js\",\"producer\":\"native-animation-runtime\",\"input_hashes\":{\"admission\":\"sha256:0d8fee8d7e1d2f63cf10f2e2dae0dcfd9acf259ed292e5f702bb3c56d92141d0\",\"admittedSnapshot\":\"sha256:6302d89b53c2c0e9f734e33c7a5beae477a962e614da57e850fba502bcf61033\",\"deployProfile\":\"sha256:fba9d3a8d25406c8de55ab9818d4541f8ea854efa97a74058566feed5c01f6f8\",\"executionReceipt\":\"sha256:efae668a75d8c6cd101e1b6763526af6a17e750492aa7efd375efc03edc55303\",\"source\":\"sha256:ee88a5b2fd7d8e1658e3ff5a9a92c8d6f608b86569c696e491c2fdaea4a366eb\"},\"artifact_hash\":\"sha256:fbafaf8b9cd3051265f8420d5b831b3854f51663ebb86ac0d32127aa9ce5aa73\",\"dependencies\":[\"motion-native\"],\"created_at\":\"2026-09-18T00:00:00.000Z\",\"status\":\"ready\",\"required\":true},\"schema\":\"design-pipeline.cli-result.v1\",\"ok\":true}\n",
+  "stderr": ""
+}

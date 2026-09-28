@@ -8,7 +8,7 @@ const { validateReceipt } = require("./evidence-core.cjs");
 const { fail, jsonResult, pathInside } = require("./contract-utils.cjs");
 
 function parseArgs(argv) {
-  const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module"]);
+  const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module", "--execution-receipt-id", "--execution-plan-sha256", "--composition-receipt-id", "--composition-receipt-hash", "--source-admission-receipt-id", "--source-content-hash", "--route-id", "--toolchain-plan-sha256"]);
   const result = {};
   for (let index = 0; index < argv.length; index += 1) {
     const name = argv[index];
@@ -68,6 +68,22 @@ function optionalModule(projectRoot, raw) {
   return real;
 }
 
+function captureLineage(options) {
+  const names = ["--execution-receipt-id", "--execution-plan-sha256", "--composition-receipt-id", "--composition-receipt-hash", "--source-admission-receipt-id", "--source-content-hash", "--route-id", "--toolchain-plan-sha256"];
+  const present = names.filter((name) => options[name] !== undefined);
+  if (!present.length) return {};
+  if (present.length !== names.length) fail("evidence capture", "lineage bindings must be supplied as a complete group");
+  if (!/^[a-f0-9]{64}$/.test(options["--execution-plan-sha256"])) fail("evidence capture", "--execution-plan-sha256 must be SHA-256");
+  if (!/^sha256:[a-f0-9]{64}$/.test(options["--composition-receipt-hash"])) fail("evidence capture", "--composition-receipt-hash must be sha256:<digest>");
+  for (const name of ["--source-content-hash", "--toolchain-plan-sha256"]) if (!/^[a-f0-9]{64}$/.test(options[name])) fail("evidence capture", `${name} must be SHA-256`);
+  return {
+    executionReceiptId: options["--execution-receipt-id"], executionPlanSha256: options["--execution-plan-sha256"],
+    compositionReceiptId: options["--composition-receipt-id"], compositionReceiptHash: options["--composition-receipt-hash"],
+    sourceAdmissionReceiptId: options["--source-admission-receipt-id"], sourceContentHash: options["--source-content-hash"],
+    routeId: options["--route-id"], toolchainPlanSha256: options["--toolchain-plan-sha256"],
+  };
+}
+
 function capture(options) {
   const projectRoot = fs.realpathSync(path.resolve(options["--project-root"] || process.cwd()));
   const adapterPath = fs.realpathSync(path.resolve(required(options, "--adapter-path")));
@@ -78,13 +94,13 @@ function capture(options) {
   const timeout = positiveInteger(options["--timeout-ms"] || 30000, "--timeout-ms", 300000);
   const url = validatedUrl(required(options, "--url"));
   const playwrightModule = optionalModule(projectRoot, options["--playwright-module"]);
+  const lineage = captureLineage(options);
   const stage = `${outputRoot}.tmp-${process.pid}`;
-  if (fs.existsSync(stage)) fail("evidence capture", `stale capture stage exists: ${stage}`);
   fs.mkdirSync(path.dirname(outputRoot), { recursive: true });
   if (!pathInside(projectRoot, fs.realpathSync(path.dirname(outputRoot)))) fail("evidence capture", "--output-root parent resolves outside --project-root");
   fs.mkdirSync(stage);
   try {
-    const request = { schema: "design-pipeline.web-evidence-request.v1", url, viewport: { width, height }, outputRoot: stage };
+    const request = { schema: "design-pipeline.web-evidence-request.v1", url, viewport: { width, height }, outputRoot: stage, ...lineage };
     const env = {
       PATH: process.env.PATH || "",
       SYSTEMROOT: process.env.SYSTEMROOT || "",
@@ -98,7 +114,10 @@ function capture(options) {
     if (child.status !== 0) fail("evidence capture", `adapter exited ${child.status}: ${(child.stderr || "").trim()}`, { code: "ADAPTER_FAILED" });
     let parsed;
     try { parsed = JSON.parse(child.stdout); } catch (error) { fail("evidence capture", `adapter returned invalid JSON: ${error.message}`, { code: "ADAPTER_FAILED" }); }
-    const receipt = validateReceipt(parsed, { evidenceRoot: stage, requireFiles: true });
+    const receipt = validateReceipt(parsed, {
+      evidenceRoot: stage, requireFiles: true,
+      ...(lineage.executionReceiptId ? { expectedExecutionReceiptId: lineage.executionReceiptId, expectedExecutionPlanSha256: lineage.executionPlanSha256, expectedCompositionReceiptId: lineage.compositionReceiptId, expectedCompositionReceiptHash: lineage.compositionReceiptHash, expectedSourceAdmissionReceiptId: lineage.sourceAdmissionReceiptId, expectedSourceContentHash: lineage.sourceContentHash, expectedRouteId: lineage.routeId, expectedToolchainPlanSha256: lineage.toolchainPlanSha256 } : {}),
+    });
     if (receipt.target.url !== url || receipt.target.viewport.width !== width || receipt.target.viewport.height !== height) {
       fail("evidence capture", "adapter receipt target does not match the capture request", { code: "ADAPTER_FAILED" });
     }

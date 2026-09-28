@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAlice — Research leaves a trace</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0a0d12;color:#f3eee5;font-family:"Segoe UI",Arial,sans-serif}
+#openalice{position:relative;width:1280px;height:720px;overflow:hidden}.backdrop{position:absolute;inset:0;background:radial-gradient(ellipse at 45% 40%,#1b2a2e,#0a0d12 75%)}
+p,h1{margin:0}a{color:inherit;text-decoration:none}.mono{font-family:Consolas,monospace}.masthead{position:absolute;z-index:10;left:48px;right:48px;top:28px;display:flex;justify-content:space-between;align-items:center}.brand{font-size:25px;font-weight:650;letter-spacing:-.04em}.brand:before{content:"";display:inline-block;width:12px;height:12px;border:2px solid #81d6b3;border-radius:50%;margin-right:10px}.note{font-size:15px;color:#b4bdc7}
+#desk{position:absolute;inset:0;transform-origin:0 0}#workspace{position:absolute;left:62px;top:112px;width:790px;height:524px}.workspace-label{position:absolute;left:16px;top:0;font-size:18px;color:#b4bdc7}#session-research{position:absolute;right:28px;top:2px;font-size:16px;color:#b4bdc7}
+#research{position:absolute;z-index:3;left:14px;top:48px;width:748px;height:350px}
+.paper-shell{position:absolute;inset:0;background:#182329;border:1px solid #53666c;border-radius:4px;box-shadow:0 18px 55px #0006}
+.document-context{position:absolute;inset:0}.filebar{position:absolute;top:20px;left:28px;right:28px;display:flex;justify-content:space-between;font-size:17px;color:#b4bdc7}.saved{color:#81d6b3}h1{position:absolute;top:62px;left:28px;font-size:29px;font-weight:550;letter-spacing:-.03em}.question{position:absolute;top:106px;left:28px;font-size:19px;color:#b4bdc7}
+#evidence{position:absolute;z-index:4;left:28px;top:155px;width:500px;height:174px;transform-origin:0 0}
+#finding{padding-left:18px;border-left:3px solid #81d6b3}.metric-label{font-size:19px;line-height:1.2;color:#81d6b3}.metric-number{font-size:47px;font-weight:550;letter-spacing:-.045em;line-height:1.1;margin-top:7px}.metric-change{font-size:23px;color:#f3eee5;margin-top:6px}
+#citation{margin-top:17px;color:#81d6b3;font-size:16px;white-space:nowrap}
+.version{position:absolute;top:410px;width:260px;height:138px;z-index:1;transform-origin:0 0}
+.snapshot{position:absolute;width:748px;height:350px;transform:scale(.3476);transform-origin:0 0;background:#182329;border:2px solid #697c80;border-radius:4px;overflow:hidden;box-shadow:0 12px 40px #0008}
+.snapshot .paper-shell{box-shadow:none}.snapshot .document-context{opacity:1}.snapshot .filebar{font-size:23px}.snapshot .saved{display:none}
+.snapshot .evidence-copy{position:absolute;left:28px;top:155px;width:680px}.snapshot .citation-copy{margin-top:17px;color:#81d6b3;font-size:16px}.snapshot .finding-copy{padding-left:18px;border-left:3px solid #81d6b3}.snapshot .question{font-size:23px}
+.version-name{position:absolute;top:130px;left:0;font-size:17px;color:#b4bdc7}.version-name em{font-style:normal;color:#81d6b3}#version-original{left:36px}#version-saved{left:344px}
+#inbox{position:absolute;left:920px;top:138px;width:292px;z-index:5}.inbox-label{font-size:18px;color:#b4bdc7;letter-spacing:.05em;margin-bottom:24px}#inbox-report{position:relative;border-left:1px solid #6c8f83;padding-left:24px;height:440px}.report-title{font-size:27px}.report-topic{font-size:18px;color:#b4bdc7;margin-top:9px;line-height:1.4}.attachment-preview{position:absolute;left:24px;top:115px;width:260px;height:123px;transform-origin:0 0}.attachment{position:absolute;left:24px;top:257px;font-size:20px;color:#81d6b3}.return-session{position:absolute;left:24px;top:294px;font-size:16px;color:#c7d4cf}.reference-note{position:absolute;left:24px;top:333px;font-size:16px;color:#b4bdc7;line-height:1.4}
+#reference-link{position:absolute;inset:0;width:1280px;height:720px;pointer-events:none;z-index:2}.disclaimer{position:absolute;left:48px;bottom:20px;color:#b4bdc7;font-size:15px}
+#review-boundary{position:absolute;left:170px;right:170px;bottom:210px;display:flex;justify-content:space-between;border-top:1px solid #80693f;padding-top:12px;color:#e8b64c;font-size:27px;opacity:0}#review-boundary span:last-child{font-size:23px}
+</style>
+<script src="node_modules/gsap/dist/gsap.min.js"></script>
+</head>
+<body>
+<main id="openalice" data-composition-id="openalice" data-start="0" data-duration="20" data-width="1280" data-height="720" data-fps="30">
+<div class="backdrop"></div>
+<header class="masthead"><span class="brand">OpenAlice</span><span class="note">Illustrative research workflow · not live product UI</span></header>
+<div id="desk">
+ <section id="workspace" aria-label="Workspace retains the original research and saved versions">
+  <p class="workspace-label mono">WORKSPACE / nvidia-fy2025</p><p id="session-research" class="mono">Session: research-01</p>
+  <article id="research" aria-label="Original research.md">
+   <div class="paper-shell"></div>
+   <div class="document-context"><div class="filebar mono"><span>research.md</span><span id="save-status" class="saved">Saved locally</span></div><h1>NVIDIA / FY2025 research</h1><p class="question">What changed in data-center revenue?</p></div>
+   <div id="evidence"><div id="finding"><p class="metric-label">Data Center revenue / FY2025</p><p class="metric-number">$115.2B <span style="font-size:.4em;color:#81d6b3">[1]</span></p><p class="metric-change">+142% year over year</p></div><p id="citation"><span data-source="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025">[1] NVIDIA earnings release · 26 Feb 2025</span></p></div>
+  </article>
+  <div id="version-original" class="version" aria-label="Retained version 01"><div class="version-name mono">v01 / Question</div></div>
+  <div id="version-saved" class="version" aria-label="Saved version 02"><div class="version-name mono"><em>v02 / Source added</em></div></div>
+ </section>
+ <svg id="reference-link" viewBox="0 0 1280 720" aria-hidden="true"><path id="report-link" d="M824 340 H884 Q900 340 900 324 V297 H944" stroke="#81d6b3" stroke-width="2" fill="none" pathLength="1"/></svg>
+ <aside id="inbox" aria-label="Inbox receives a linked report"><p class="inbox-label mono">INBOX</p><article id="inbox-report"><p class="report-title">Report ready</p><p class="report-topic">NVIDIA / FY2025<br>Source added to research</p><div class="attachment-preview" aria-hidden="true"></div><span class="attachment" data-reference="research">↗ research.md · attachment</span><span class="return-session" data-reference="session-research">↗ Session: research-01</span><p class="reference-note">Linked report. Original stays<br>in your workspace.</p></article></aside>
+</div>
+<p class="disclaimer">Historical source · illustrative file and version layout</p>
+<footer id="review-boundary"><span>Ready for your review</span><span>No trade placed</span></footer>
+</main>
+<script>
+// Saved versions and the Inbox attachment reproduce this research, not generic cards.
+function snapshot(target, withFinding) {
+ const copy = document.querySelector('#research').cloneNode(true);
+ copy.removeAttribute('id'); copy.className = 'snapshot'; copy.removeAttribute('aria-label'); copy.setAttribute('aria-hidden', 'true');
+ // Saved thumbnails intentionally emerge from behind the opaque original; primary text is never exempted.
+ copy.setAttribute('data-layout-allow-occlusion', 'true');
+ copy.querySelectorAll('[id]').forEach(node => { const id = node.id; node.removeAttribute('id'); if (id === 'evidence') node.className = 'evidence-copy'; if (id === 'finding') node.className = 'finding-copy'; if (id === 'citation') node.className = 'citation-copy'; });
+ if (!withFinding) copy.querySelector('.evidence-copy').remove();
+ document.querySelector(target).prepend(copy);
+}
+snapshot('#version-original', false); snapshot('#version-saved', true); snapshot('.attachment-preview', true);
+window.__timelines = window.__timelines || {};
+const timeline = gsap.timeline({ paused: true });
+window.__timelines.openalice = timeline;
+const duration = Number(document.querySelector('#openalice').dataset.duration);
+const starts = [0, 3, 7, 10.5, 15, 17];
+gsap.set('#desk', { scale: 1.12, x: -20, y: -15 });
+gsap.set('#evidence', { x: 280, y: -80, scale: 1.38, opacity: 0 });
+gsap.set('#save-status, .workspace-label, #session-research, #inbox', { opacity: 0 });
+gsap.set('.version', { opacity: 0, y: -265, x: 90, scale: 1.25 });
+gsap.set('.version-name', { opacity: 0 });
+gsap.set('#report-link', { opacity: 0, attr: { 'stroke-dasharray': 1, 'stroke-dashoffset': 1 } });
+gsap.set('.attachment-preview', { x: -370, y: 90, scale: 0.65 });
+timeline.to('#research > .document-context h1, #research > .document-context .question', { opacity: 0, duration: 0.25 }, 2.75);
+timeline.to('#evidence', { opacity: 1, duration: 0.35 }, 3);
+timeline.to('#evidence', { x: 0, y: 0, scale: 1, duration: 1.6, ease: 'power2.inOut' }, 3.7);
+timeline.to('#research > .document-context h1, #research > .document-context .question', { opacity: 1, duration: 0.4 }, 4.9);
+timeline.set('.version', { opacity: 1 }, 7);
+timeline.to('#desk', { scale: 1, x: 0, y: 0, duration: 1.15, ease: 'power2.inOut' }, 7);
+timeline.to('#version-original', { x: 0, y: 0, scale: 1, duration: 0.9, ease: 'power2.inOut' }, 7);
+timeline.to('#version-saved', { x: 0, y: 0, scale: 1, duration: 0.9, ease: 'power2.inOut' }, 7.35);
+timeline.to('.version-name, #save-status, .workspace-label, #session-research', { opacity: 1, duration: 0.35 }, 7.8);
+timeline.to('#inbox', { opacity: 1, duration: 0.3 }, 10.5);
+timeline.set('#report-link', { opacity: 1 }, 10.5);
+timeline.to('#report-link', { attr: { 'stroke-dashoffset': 0 }, duration: 0.9, ease: 'power2.inOut' }, 10.5);
+timeline.to('.attachment-preview', { x: 0, y: 0, scale: 1, duration: 1.2, ease: 'power2.inOut' }, 10.5);
+timeline.to('#desk', { scale: 0.67, x: 170, y: 0, duration: 0.7, ease: 'power2.inOut' }, 16.3);
+timeline.to('.disclaimer', { opacity: 0, duration: 0.3 }, 16.7);
+timeline.to('#review-boundary', { opacity: 1, duration: 0.5 }, 17);
+timeline.to({}, { duration: 0.01 }, duration - 0.01);
+window.film = { duration, starts, timeline, sceneAt(time) { let index = 0; starts.forEach((start, i) => { if (time >= start) index = i; }); return index; } };
+timeline.pause(0);
+</script>
+</body></html>

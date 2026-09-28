@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAlice — Research leaves a trace</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:24px;background:#070a0e;color:#eef2f8;font:16px "Segoe UI",sans-serif}main{max-width:1280px;margin:auto}h1{font-size:22px;font-weight:500}#stage{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0a0d12}iframe{border:0;width:1280px;height:720px;transform-origin:top left}nav{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px}button,a{font:inherit;color:#eef2f8;background:#182332;border:1px solid #59708b;border-radius:5px;padding:12px 16px;min-height:44px;text-decoration:none}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #81d6b3;outline-offset:3px}#status{color:#c1cbd9;margin-left:auto}p,li{color:#b5c2d3;line-height:1.6}summary{cursor:pointer;padding:12px 0}details a{padding:0;border:0;background:none;color:#81d6b3;text-decoration:underline;overflow-wrap:anywhere}@media(max-width:600px){body{padding:12px}#status{width:100%;margin-left:0}button{flex:1}}
+</style>
+</head>
+<body>
+<main>
+<h1>OpenAlice — Research leaves a trace.</h1>
+<div id="stage"><iframe id="film" src="index.html" tabindex="-1" title="OpenAlice: one research document, from source to review"></iframe></div>
+<nav aria-label="Film playback">
+<button id="toggle" disabled>Play</button><button id="replay" disabled>Replay</button><button id="previous" disabled>Previous step</button><button id="next" disabled>Next step</button><span id="status" role="timer">Loading timeline…</span>
+</nav>
+<p id="motion-note">A silent, illustrative research workflow. The original research stays in its Workspace; the Inbox receives a reference, not the original file.</p>
+<p><a href="watch.html">Watch the full rendered film</a></p>
+<details><summary>Read the film transcript</summary>
+<ol>
+<li>One research question stays open in its original Workspace and Session: what changed in NVIDIA’s data-center business in FY2025?</li>
+<li>A finding is added to that same research document: NVIDIA reported FY2025 data-center revenue of $115.2 billion, up 142% year over year. Its source attribution remains beside the finding: <a href="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025" target="_blank" rel="noopener noreferrer">NVIDIA’s official results, February 26, 2025</a>. This is a research finding, not an investment conclusion.</li>
+<li>Saving adds a new version. Both the original and saved version remain visible; the research has not moved out of its Workspace.</li>
+<li>An Inbox report arrives with references to the research document and its original Session. It does not replace or relocate the original research.</li>
+<li>The full film closes with “Ready for your review” and “No trade placed.” The next step is human review, not a trade or an approval request.</li>
+</ol>
+<p>Source insertion, version thumbnails and camera movement are illustrative expressions, not claims about existing product UI interactions.</p>
+</details>
+</main>
+<script>
+const frame = document.querySelector('#film'), stage = document.querySelector('#stage');
+const toggle = document.querySelector('#toggle'), status = document.querySelector('#status');
+const previous = document.querySelector('#previous'), next = document.querySelector('#next');
+const replay = document.querySelector('#replay'), note = document.querySelector('#motion-note');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+let film, compositionWidth = 1280;
+function scale(){frame.style.transform = `scale(${stage.clientWidth / compositionWidth})`;}
+const resize = new ResizeObserver(scale);
+resize.observe(stage);
+function update(){
+  if(!film)return;
+  const time = film.timeline.time(), current = film.sceneAt(time);
+  status.textContent = `${time.toFixed(1)} / ${film.duration.toFixed(1)}s · Step ${current + 1} of ${film.starts.length}`;
+  toggle.textContent = film.timeline.paused() || time >= film.duration ? 'Play' : 'Pause';
+  previous.disabled = current <= 0;
+  next.disabled = current >= film.starts.length - 1;
+}
+function preference(){
+  if(!film)return;
+  if(reduce.matches)film.timeline.pause(film.duration);
+  note.textContent = reduce.matches
+    ? 'Reduced motion: a static ending. Use Previous step or Next step to inspect the research trail; Play and Replay start motion only when you choose them.'
+    : `A silent, ${film.duration.toFixed(1)}-second illustrative research workflow. The original research stays in its Workspace; the Inbox receives a reference.`;
+  update();
+}
+function detach(){
+  if(!film)return;
+  film.timeline.pause();
+  film.timeline.eventCallback('onUpdate', null);
+  film.timeline.eventCallback('onComplete', null);
+}
+function attach(){
+  film.timeline.eventCallback('onUpdate', update);
+  film.timeline.eventCallback('onComplete', update);
+}
+function unavailable(message){
+  detach();film = undefined;
+  toggle.disabled = replay.disabled = previous.disabled = next.disabled = true;
+  status.textContent = 'Timeline unavailable.';
+  note.textContent = message;
+}
+frame.addEventListener('load',()=>{
+  detach();film = undefined;
+  toggle.disabled = replay.disabled = previous.disabled = next.disabled = true;
+  try {
+    const loadedFilm = frame.contentWindow.film;
+    if(!loadedFilm?.timeline)throw new Error('The composition did not initialize. Check index.html and install its local dependencies with npm ci, then reload.');
+    const composition = frame.contentDocument.querySelector('#openalice');
+    compositionWidth = Number(composition.dataset.width);
+    frame.style.width = `${compositionWidth}px`;
+    frame.style.height = `${composition.dataset.height}px`;
+    stage.style.aspectRatio = `${compositionWidth} / ${composition.dataset.height}`;
+    film = loadedFilm;scale();attach();
+    toggle.disabled = replay.disabled = false;
+    preference();
+    if(!reduce.matches)film.timeline.play(0);
+    update();
+  } catch(error) {
+    const guidance = location.protocol === 'file:'
+      ? 'This browser cannot initialize the local-file preview. Serve this directory over HTTP and open preview.html from that server.'
+      : error.name === 'SecurityError'
+        ? 'The composition cannot be accessed from this origin. Serve preview.html and index.html from the same HTTP origin, then reload.'
+        : `Unable to initialize the timeline. ${error.message} Use the HTTP-served preview rather than opening a local file.`;
+    unavailable(guidance);
+  }
+});
+frame.addEventListener('error',()=>unavailable('The composition failed to load. Check that index.html is reachable from the same HTTP server, then reload.'));
+toggle.addEventListener('click',()=>{
+  if(film.timeline.time() >= film.duration)film.timeline.restart();
+  else if(film.timeline.paused())film.timeline.play();
+  else film.timeline.pause();
+  update();
+});
+replay.addEventListener('click',()=>{film.timeline.restart();update();});
+function step(direction){
+  const target = Math.max(0, Math.min(film.starts.length - 1, film.sceneAt(film.timeline.time()) + direction));
+  const start = film.starts[target], end = film.starts[target + 1] ?? film.duration;
+  // Inspect the settled state within this interval, never spill into the next step.
+  film.timeline.pause(target === film.starts.length - 1 ? film.duration : start + (end - start) * .85);
+  update();
+}
+previous.addEventListener('click',()=>step(-1));
+next.addEventListener('click',()=>step(1));
+reduce.addEventListener('change',preference);
+addEventListener('pagehide',()=>{detach();resize.disconnect();reduce.removeEventListener('change',preference);});
+addEventListener('pageshow',event=>{
+  if(event.persisted && film){resize.observe(stage);attach();reduce.addEventListener('change',preference);preference();}
+});
+</script>
+</body>
+</html>

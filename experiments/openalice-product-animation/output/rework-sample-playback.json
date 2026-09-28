@@ -1,0 +1,95 @@
+{
+  "metadata": {
+    "duration": 7.5,
+    "readyState": 4
+  },
+  "playback": {
+    "ended": true,
+    "error": null,
+    "finalTime": 7.5,
+    "duration": 7.5,
+    "paused": true,
+    "samples": [
+      {
+        "time": 2.789494,
+        "rate": 1
+      },
+      {
+        "time": 3.039374,
+        "rate": 1
+      },
+      {
+        "time": 3.289506,
+        "rate": 1
+      },
+      {
+        "time": 3.53985,
+        "rate": 1
+      },
+      {
+        "time": 3.789086,
+        "rate": 1
+      },
+      {
+        "time": 4.039616,
+        "rate": 1
+      },
+      {
+        "time": 4.289575,
+        "rate": 1
+      },
+      {
+        "time": 4.538767,
+        "rate": 1
+      },
+      {
+        "time": 4.788621,
+        "rate": 1
+      },
+      {
+        "time": 5.039141,
+        "rate": 1
+      },
+      {
+        "time": 5.289566,
+        "rate": 1
+      },
+      {
+        "time": 5.539363,
+        "rate": 1
+      },
+      {
+        "time": 5.789503,
+        "rate": 1
+      },
+      {
+        "time": 6.03961,
+        "rate": 1
+      },
+      {
+        "time": 6.288883,
+        "rate": 1
+      },
+      {
+        "time": 6.539935,
+        "rate": 1
+      },
+      {
+        "time": 6.789611,
+        "rate": 1
+      },
+      {
+        "time": 7.039054,
+        "rate": 1
+      },
+      {
+        "time": 7.289401,
+        "rate": 1
+      }
+    ]
+  },
+  "playbackRate": 1,
+  "monotonic": true,
+  "normalSpeed": true,
+  "ok": true
+}

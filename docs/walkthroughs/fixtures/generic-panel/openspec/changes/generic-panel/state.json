@@ -1,0 +1,20 @@
+{
+  "blockers": [],
+  "changeId": "generic-panel",
+  "evidence": [],
+  "extensions": {},
+  "foundations": {
+    "design": null,
+    "motion": null
+  },
+  "lastEventSeq": 0,
+  "migration": null,
+  "nextActions": [],
+  "phase": "repo-read",
+  "registryVersion": "design-pipeline.phases.v2",
+  "revision": 0,
+  "sceneRuntime": null,
+  "schema": "design-pipeline.state.v2",
+  "status": "initialized",
+  "updatedAt": "2026-09-18T18:27:54.070Z"
+}

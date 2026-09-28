@@ -1,0 +1,17 @@
+{
+  "schema": "design-pipeline.toolchain-request.v1",
+  "framework": "agnostic",
+  "brief": "Create a 20-second HTML OpenAlice product showcase video after the approved 7.5-second direction sample: one NVIDIA FY2025 research document gains a cited Data Center revenue finding, retains workspace versions, and creates an Inbox report attachment linked to its original Session. End with Ready for your review and No trade placed.",
+  "jobId": "motion-graphics",
+  "jobPlanSha256": "049f30bb12828c861924cbe2953538b29a0a05d60f7302605f33d7eeba13582b",
+  "jobPlanPath": "experiments/openalice-product-animation/job-plan.json",
+  "deliverableForm": "product-launch-video",
+  "capabilities": [
+    "html-video",
+    "video-production"
+  ],
+  "requested": {
+    "styling": "none",
+    "uiLibrary": "none"
+  }
+}

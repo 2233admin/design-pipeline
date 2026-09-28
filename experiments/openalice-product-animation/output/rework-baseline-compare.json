@@ -1,0 +1,21 @@
+{
+  "schema": "openalice.rework-baseline-compare.v1",
+  "baseline": {
+    "path": "output/sample-approved/sample-7.5s.mp4",
+    "sha256": "c768d8f2d74e9ca261d7a8bde0c5900b8cf6294cd5e2b7dd14dc2cf2aa740d57",
+    "duration": 7.5,
+    "role": "frozen approved direction sample; preserved, not overwritten"
+  },
+  "candidate": {
+    "path": "output/openalice.mp4",
+    "sha256": "b91d61a3d1fb4bff171a839ba420f47b7dd0c9ff7cda046852b2f4191f0cf3dc",
+    "duration": 20,
+    "role": "new evidence-lineage composition"
+  },
+  "comparison": {
+    "hashesDiffer": true,
+    "durationsDiffer": true,
+    "decision": "candidate is a new authored composition; baseline remains intact",
+    "visualAcceptance": "pending user feedback"
+  }
+}

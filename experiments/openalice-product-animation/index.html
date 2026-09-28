@@ -20,8 +20,37 @@ p,h1{margin:0}a{color:inherit;text-decoration:none}.mono{font-family:Consolas,mo
 .snapshot .evidence-copy{position:absolute;left:28px;top:155px;width:680px}.snapshot .citation-copy{margin-top:17px;color:#81d6b3;font-size:16px}.snapshot .finding-copy{padding-left:18px;border-left:3px solid #81d6b3}.snapshot .question{font-size:23px}
 .version-name{position:absolute;top:130px;left:0;font-size:17px;color:#b4bdc7}.version-name em{font-style:normal;color:#81d6b3}#version-original{left:36px}#version-saved{left:344px}
 #inbox{position:absolute;left:920px;top:138px;width:292px;z-index:5}.inbox-label{font-size:18px;color:#b4bdc7;letter-spacing:.05em;margin-bottom:24px}#inbox-report{position:relative;border-left:1px solid #6c8f83;padding-left:24px;height:440px}.report-title{font-size:27px}.report-topic{font-size:18px;color:#b4bdc7;margin-top:9px;line-height:1.4}.attachment-preview{position:absolute;left:24px;top:115px;width:260px;height:123px;transform-origin:0 0}.attachment{position:absolute;left:24px;top:257px;font-size:20px;color:#81d6b3}.return-session{position:absolute;left:24px;top:294px;font-size:16px;color:#c7d4cf}.reference-note{position:absolute;left:24px;top:333px;font-size:16px;color:#b4bdc7;line-height:1.4}
-#reference-link{position:absolute;inset:0;width:1280px;height:720px;pointer-events:none;z-index:2}.disclaimer{position:absolute;left:48px;bottom:20px;color:#b4bdc7;font-size:15px}
-#review-boundary{position:absolute;left:170px;right:170px;bottom:210px;display:flex;justify-content:space-between;border-top:1px solid #80693f;padding-top:12px;color:#e8b64c;font-size:27px;opacity:0}#review-boundary span:last-child{font-size:23px}
+#reference-link{position:absolute;inset:0;width:1280px;height:720px;pointer-events:none;z-index:2}.disclaimer{position:absolute;left:74px;bottom:14px;color:#b4bdc7;font-size:13px}
+#review-boundary{position:absolute;left:90px;right:90px;bottom:210px;display:flex;justify-content:space-between;border-top:1px solid #80693f;padding-top:10px;color:#e8b64c;font-size:25px;opacity:0}#review-boundary span:last-child{font-size:21px}
+/* The second composition is an evidence-lineage map, not a panel-to-panel tour. */
+#workspace{left:74px;top:126px;width:490px;height:510px}
+#research{left:0;top:58px;width:430px;height:310px}
+#session-research{left:16px;right:auto;top:25px;font-size:13px}
+#research .paper-shell{box-shadow:0 20px 60px #0009}
+#evidence{width:390px}
+.metric-number{font-size:42px}
+.version{top:376px;width:180px;height:102px}
+.version .snapshot{transform:scale(.235);box-shadow:0 10px 28px #0009}
+.version-name{top:96px;font-size:14px}
+#version-original{left:0}
+#version-saved{left:200px}
+#inbox{left:850px;top:154px;width:330px}
+#inbox-report{border:1px solid #6c8f83;border-radius:4px;background:#101b1f;padding-left:24px;height:374px;box-shadow:0 20px 55px #0007}
+.attachment-preview{top:96px}.attachment-preview .snapshot{transform:scale(.235)}
+.attachment{top:244px}
+.return-session{top:281px}
+.reference-note{top:318px}
+#reference-link{z-index:1}
+#lineage-map{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0}
+.lineage-title{position:absolute;left:536px;top:108px;color:#b4bdc7;font-size:14px;letter-spacing:.16em}
+.lineage-node{position:absolute;padding:8px 11px;border:1px solid #53666c;border-radius:999px;color:#b4bdc7;background:#101b1fcc;font-size:12px;letter-spacing:.12em}
+#lineage-source{left:458px;top:420px}
+#lineage-retain{left:610px;top:160px}
+#lineage-reference{left:710px;top:520px}
+#evidence-trace{position:absolute;left:0;top:0;width:160px;height:62px;padding:10px 12px;border-left:3px solid #81d6b3;border-radius:3px;background:#182329eF;box-shadow:0 14px 35px #0008;opacity:0}
+.trace-metric{display:block;color:#81d6b3;font:600 22px/1 Consolas,monospace}
+.trace-label{display:block;margin-top:7px;color:#f3eee5;font-size:10px}
+#report-link{opacity:0}
 </style>
 <script src="node_modules/gsap/dist/gsap.min.js"></script>
 </head>
@@ -40,53 +69,128 @@ p,h1{margin:0}a{color:inherit;text-decoration:none}.mono{font-family:Consolas,mo
   <div id="version-original" class="version" aria-label="Retained version 01"><div class="version-name mono">v01 / Question</div></div>
   <div id="version-saved" class="version" aria-label="Saved version 02"><div class="version-name mono"><em>v02 / Source added</em></div></div>
  </section>
- <svg id="reference-link" viewBox="0 0 1280 720" aria-hidden="true"><path id="report-link" d="M824 340 H884 Q900 340 900 324 V297 H944" stroke="#81d6b3" stroke-width="2" fill="none" pathLength="1"/></svg>
+ <section id="lineage-map" aria-hidden="true">
+  <p class="lineage-title mono">EVIDENCE LINEAGE</p>
+  <span id="lineage-source" class="lineage-node">SOURCE</span>
+  <span id="lineage-retain" class="lineage-node">RETAIN</span>
+  <span id="lineage-reference" class="lineage-node">REFERENCE</span>
+  <div id="evidence-trace"><span class="trace-metric">+142%</span><span class="trace-label">Data Center / FY2025</span></div>
+ </section>
+ <svg id="reference-link" viewBox="0 0 1280 720" aria-hidden="true"><path id="report-link" d="M500 392 C570 230 650 468 740 320 S850 250 1010 300" stroke="#81d6b3" stroke-width="2" fill="none" pathLength="1"/></svg>
  <aside id="inbox" aria-label="Inbox receives a linked report"><p class="inbox-label mono">INBOX</p><article id="inbox-report"><p class="report-title">Report ready</p><p class="report-topic">NVIDIA / FY2025<br>Source added to research</p><div class="attachment-preview" aria-hidden="true"></div><span class="attachment" data-reference="research">↗ research.md · attachment</span><span class="return-session" data-reference="session-research">↗ Session: research-01</span><p class="reference-note">Linked report. Original stays<br>in your workspace.</p></article></aside>
 </div>
 <p class="disclaimer">Historical source · illustrative file and version layout</p>
 <footer id="review-boundary"><span>Ready for your review</span><span>No trade placed</span></footer>
 </main>
 <script>
-// Saved versions and the Inbox attachment reproduce this research, not generic cards.
+// The authored motion graph is a causal evidence map; GSAP only executes its compiled tracks.
 function snapshot(target, withFinding) {
  const copy = document.querySelector('#research').cloneNode(true);
  copy.removeAttribute('id'); copy.className = 'snapshot'; copy.removeAttribute('aria-label'); copy.setAttribute('aria-hidden', 'true');
- // Saved thumbnails intentionally emerge from behind the opaque original; primary text is never exempted.
+ // Saved thumbnails are retained states, not replacement panels; primary text is never exempted.
  copy.setAttribute('data-layout-allow-occlusion', 'true');
  copy.querySelectorAll('[id]').forEach(node => { const id = node.id; node.removeAttribute('id'); if (id === 'evidence') node.className = 'evidence-copy'; if (id === 'finding') node.className = 'finding-copy'; if (id === 'citation') node.className = 'citation-copy'; });
  if (!withFinding) copy.querySelector('.evidence-copy').remove();
  document.querySelector(target).prepend(copy);
 }
 snapshot('#version-original', false); snapshot('#version-saved', true); snapshot('.attachment-preview', true);
+
 window.__timelines = window.__timelines || {};
+const duration = Number(document.querySelector('#openalice').dataset.duration);
+const canonicalDuration = 20, retimeScale = duration / canonicalDuration;
+const starts = [0, 2.5, 6.2, 9.5, 13.5, 16.5].map(start => start * retimeScale);
+const motionGraph = {
+ schema: 'design-pipeline.motion-graph.v1',
+ owner: 'authored-time',
+ renderer: 'gsap/HyperFrames',
+ composition: 'evidence-lineage-map',
+ duration,
+ starts,
+ initial: [
+  { target: '#desk', vars: { scale: 1, x: 0, y: 0 } },
+  { target: '#lineage-map', vars: { opacity: 0 } },
+  { target: '.lineage-title, #lineage-source, #lineage-retain, #lineage-reference', vars: { opacity: 0 } },
+  { target: '#evidence-trace', vars: { x: 455, y: 330, scale: 0.75, opacity: 0 } },
+  { target: '.version', vars: { opacity: 0, y: 120, x: 0, scale: 0.92 } },
+  { target: '.version-name', vars: { opacity: 0 } },
+  { target: '#save-status, .workspace-label, #session-research, #inbox', vars: { opacity: 0 } },
+  { target: '#report-link', vars: { opacity: 0, attr: { 'stroke-dasharray': 1, 'stroke-dashoffset': 1 } } },
+  { target: '#inbox .attachment, #inbox .return-session, #inbox .reference-note', vars: { opacity: 0 } },
+  { target: '.attachment-preview', vars: { x: -120, y: 170, scale: 0.75 } },
+  { target: '.disclaimer', vars: { opacity: 1 } },
+  { target: '#review-boundary', vars: { opacity: 0 } },
+ ],
+ beats: [
+  { id: 'orient', start: 0, end: 2.5, purpose: 'establish the source as the stable origin' },
+  { id: 'extract', start: 2.5, end: 6.2, purpose: 'carry one cited finding along a shared anchor' },
+  { id: 'retain', start: 6.2, end: 9.5, purpose: 'branch retained versions from the source' },
+  { id: 'reference', start: 9.5, end: 13.5, purpose: 'deliver an Inbox reference without moving the source' },
+  { id: 'inspect', start: 13.5, end: 16.5, purpose: 'hold the complete evidence lineage' },
+  { id: 'review', start: 16.5, end: 20, purpose: 'reserve the human review boundary' },
+ ],
+ tracks: [
+  { id: 'map-reveal', target: '#lineage-map', start: 0.35, duration: 0.55, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'lineage-title', target: '.lineage-title', start: 0.55, duration: 0.3, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'source-node', target: '#lineage-source', start: 0.8, duration: 0.3, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'source-focus', target: '#evidence', start: 1.1, duration: 0.35, vars: { scale: 1.04 }, ease: 'power1.out' },
+  { id: 'source-focus-release', target: '#evidence', start: 1.45, duration: 0.35, vars: { scale: 1 }, ease: 'power1.in' },
+  { id: 'trace-appear', target: '#evidence-trace', start: 2.5, duration: 0.25, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'trace-to-retain', target: '#evidence-trace', start: 2.5, duration: 3.7, from: { x: 455, y: 330, scale: 0.75 }, to: { x: 585, y: 224, scale: 1 }, response: { primitive: 'response.spring-settle', stiffness: 24, damping: 7.5, initialVelocity: 0, settleThreshold: 0.01, segments: 22 } },
+  { id: 'retain-node', target: '#lineage-retain', start: 6.2, duration: 0.3, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'versions-enter', target: '.version', start: 6.2, type: 'set', vars: { opacity: 1 } },
+  { id: 'version-original-settle', target: '#version-original', start: 6.2, duration: 1.05, from: { x: 0, y: 120, scale: 0.92 }, to: { x: 0, y: 0, scale: 1 }, response: { primitive: 'response.spring-settle', stiffness: 24, damping: 7.5, initialVelocity: 0, settleThreshold: 0.01, segments: 18 } },
+  { id: 'version-saved-settle', target: '#version-saved', start: 6.55, duration: 1.05, from: { x: 0, y: 120, scale: 0.92 }, to: { x: 0, y: 0, scale: 1 }, response: { primitive: 'response.spring-settle', stiffness: 24, damping: 7.5, initialVelocity: 0, settleThreshold: 0.01, segments: 18 } },
+  { id: 'save-labels', target: '.version-name, #save-status, .workspace-label, #session-research', start: 7.8, duration: 0.35, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'inbox-reveal', target: '#inbox', start: 9.5, duration: 0.35, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'reference-node', target: '#lineage-reference', start: 9.5, duration: 0.3, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'reference-line', target: '#report-link', start: 9.5, type: 'set', vars: { opacity: 1 } },
+  { id: 'reference-trace', target: '#report-link', start: 9.5, duration: 1.35, vars: { attr: { 'stroke-dashoffset': 0 } }, ease: 'power1.inOut' },
+  { id: 'trace-to-reference', target: '#evidence-trace', start: 9.5, duration: 1.5, from: { x: 585, y: 224, scale: 1 }, to: { x: 680, y: 360, scale: 0.9 }, response: { primitive: 'response.spring-settle', stiffness: 24, damping: 7.5, initialVelocity: 0, settleThreshold: 0.01, segments: 16 } },
+  { id: 'attachment-settle', target: '.attachment-preview', start: 10, duration: 1.25, from: { x: -120, y: 170, scale: 0.75 }, to: { x: 0, y: 0, scale: 1 }, response: { primitive: 'response.spring-settle', stiffness: 24, damping: 7.5, initialVelocity: 0, settleThreshold: 0.01, segments: 18 } },
+  { id: 'inbox-labels', target: '#inbox .attachment, #inbox .return-session, #inbox .reference-note', start: 13.5, duration: 0.35, vars: { opacity: 1 }, ease: 'power1.out' },
+  { id: 'review-camera', target: '#desk', start: 16.5, duration: 0.8, from: { scale: 1, x: 0, y: 0 }, to: { scale: 0.78, x: 80, y: -30 }, response: { primitive: 'response.spring-settle', stiffness: 24, damping: 7.5, initialVelocity: 0, settleThreshold: 0.01, segments: 14 } },
+  { id: 'disclaimer-hide', target: '.disclaimer', start: 16.9, duration: 0.3, vars: { opacity: 0 }, ease: 'power1.in' },
+  { id: 'review-boundary', target: '#review-boundary', start: 17.1, duration: 0.5, vars: { opacity: 1 }, ease: 'power1.out' },
+ ],
+};
+if (retimeScale !== 1) {
+ motionGraph.beats = motionGraph.beats.map(beat => ({ ...beat, start: beat.start * retimeScale, end: beat.end * retimeScale }));
+ motionGraph.tracks = motionGraph.tracks.map(track => ({ ...track, start: track.start * retimeScale, ...(track.duration === undefined ? {} : { duration: track.duration * retimeScale }) }));
+}
+
+function springProgress(progress, response) {
+ const t = Math.max(0, Math.min(1, progress));
+ if (t === 0) return 0;
+ if (t === 1) return 1;
+ const omega = Math.sqrt(response.stiffness);
+ const zeta = response.damping / (2 * omega);
+ const dampedOmega = omega * Math.sqrt(Math.max(0.001, 1 - zeta * zeta));
+ const envelope = Math.exp(-zeta * omega * t);
+ const phase = dampedOmega * t;
+ const correction = ((zeta * omega) - response.initialVelocity) / dampedOmega;
+ return 1 - envelope * (Math.cos(phase) + correction * Math.sin(phase));
+}
+function interpolate(from, to, progress) {
+ return Object.fromEntries(Object.keys(to).map(key => [key, from[key] + (to[key] - from[key]) * progress]));
+}
+function compileTrack(timeline, track) {
+ if (track.type === 'set') { timeline.set(track.target, track.vars, track.start); return; }
+ if (track.response?.primitive === 'response.spring-settle') {
+  const segments = track.response.segments;
+  for (let index = 1; index <= segments; index += 1) {
+   const progress = springProgress(index / segments, track.response);
+   timeline.to(track.target, { ...interpolate(track.from, track.to, progress), duration: track.duration / segments, ease: 'none' }, track.start + ((index - 1) * track.duration) / segments);
+  }
+  return;
+ }
+ timeline.to(track.target, { ...track.vars, duration: track.duration, ease: track.ease }, track.start);
+}
 const timeline = gsap.timeline({ paused: true });
 window.__timelines.openalice = timeline;
-const duration = Number(document.querySelector('#openalice').dataset.duration);
-const starts = [0, 3, 7, 10.5, 15, 17];
-gsap.set('#desk', { scale: 1.12, x: -20, y: -15 });
-gsap.set('#evidence', { x: 280, y: -80, scale: 1.38, opacity: 0 });
-gsap.set('#save-status, .workspace-label, #session-research, #inbox', { opacity: 0 });
-gsap.set('.version', { opacity: 0, y: -265, x: 90, scale: 1.25 });
-gsap.set('.version-name', { opacity: 0 });
-gsap.set('#report-link', { opacity: 0, attr: { 'stroke-dasharray': 1, 'stroke-dashoffset': 1 } });
-gsap.set('.attachment-preview', { x: -370, y: 90, scale: 0.65 });
-timeline.to('#research > .document-context h1, #research > .document-context .question', { opacity: 0, duration: 0.25 }, 2.75);
-timeline.to('#evidence', { opacity: 1, duration: 0.35 }, 3);
-timeline.to('#evidence', { x: 0, y: 0, scale: 1, duration: 1.6, ease: 'power2.inOut' }, 3.7);
-timeline.to('#research > .document-context h1, #research > .document-context .question', { opacity: 1, duration: 0.4 }, 4.9);
-timeline.set('.version', { opacity: 1 }, 7);
-timeline.to('#desk', { scale: 1, x: 0, y: 0, duration: 1.15, ease: 'power2.inOut' }, 7);
-timeline.to('#version-original', { x: 0, y: 0, scale: 1, duration: 0.9, ease: 'power2.inOut' }, 7);
-timeline.to('#version-saved', { x: 0, y: 0, scale: 1, duration: 0.9, ease: 'power2.inOut' }, 7.35);
-timeline.to('.version-name, #save-status, .workspace-label, #session-research', { opacity: 1, duration: 0.35 }, 7.8);
-timeline.to('#inbox', { opacity: 1, duration: 0.3 }, 10.5);
-timeline.set('#report-link', { opacity: 1 }, 10.5);
-timeline.to('#report-link', { attr: { 'stroke-dashoffset': 0 }, duration: 0.9, ease: 'power2.inOut' }, 10.5);
-timeline.to('.attachment-preview', { x: 0, y: 0, scale: 1, duration: 1.2, ease: 'power2.inOut' }, 10.5);
-timeline.to('#desk', { scale: 0.67, x: 170, y: 0, duration: 0.7, ease: 'power2.inOut' }, 16.3);
-timeline.to('.disclaimer', { opacity: 0, duration: 0.3 }, 16.7);
-timeline.to('#review-boundary', { opacity: 1, duration: 0.5 }, 17);
+motionGraph.initial.forEach(({ target, vars }) => gsap.set(target, vars));
+motionGraph.tracks.forEach(track => compileTrack(timeline, track));
 timeline.to({}, { duration: 0.01 }, duration - 0.01);
+if (window.__openaliceVerifier === true) Object.defineProperty(window, '__openaliceTestHook', { value: Object.freeze({ motionGraph, springProgress }), enumerable: false, configurable: true });
 window.film = { duration, starts, timeline, sceneAt(time) { let index = 0; starts.forEach((start, i) => { if (time >= start) index = i; }); return index; } };
 timeline.pause(0);
 </script>

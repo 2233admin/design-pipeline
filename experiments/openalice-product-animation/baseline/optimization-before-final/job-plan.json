@@ -1,0 +1,41 @@
+{
+  "admission": "inert",
+  "deliverableForm": "product-launch-video",
+  "jobId": "motion-graphics",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": true,
+      "role": "primary"
+    }
+  ],
+  "planSha256": "049f30bb12828c861924cbe2953538b29a0a05d60f7302605f33d7eeba13582b",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "iart",
+    "id": "iart"
+  },
+  "query": "Create a 20-second HTML OpenAlice product showcase video after the approved 7.5-second direction sample: one NVIDIA FY2025 research document gains a cited Data Center revenue finding, retains workspace versions, and creates an Inbox report attachment linked to its original Session. End with Ready for your review and No trade placed.",
+  "registrySha256": "6722b06d9f9a37fd64eebfe68ec8831724664b15089d679f1dad6bfff1a56b9e",
+  "routeSha256": "ede94c508dd6ad5032ef56b930a2b0dcfbfeef306cb61d501717783b9a773f0d",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": []
+}

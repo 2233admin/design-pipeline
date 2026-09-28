@@ -29,4 +29,12 @@ A product-animation integration SHALL preserve product-launch-video through Stag
 - **WHEN** redesign outputs are rendered
 - **THEN** the rejected old film and evidence SHALL already be preserved separately.
 - **AND** old receipts SHALL not be reused as current evidence, toolchain blocked SHALL remain blocked, and user-owned osprey work SHALL remain unchanged.
-- **AND** technical proof, main-reviewer semantic pass and final user acceptance SHALL remain distinct.
+- **AND** the motion implementation SHALL declare semantic beats, shared anchors, renderer ownership and bounded response parameters in a project-owned authored graph.
+- **AND** a graph track SHALL compile to the existing paused seekable timeline without depending on wall-clock time, unseeded randomness or input history.
+
+#### Scenario: Evidence-lineage choreography
+
+- **WHEN** the complete film is sampled at its declared beat boundaries
+- **THEN** the original research SHALL remain the semantic source while the visual trace moves through SOURCE, RETAIN and REFERENCE anchors.
+- **AND** retained versions and Inbox reference SHALL appear as connected states rather than replacing the source with separate full-screen panels.
+- **AND** the technical comparison SHALL remain separate from user visual acceptance.

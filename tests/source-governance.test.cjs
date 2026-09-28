@@ -112,6 +112,21 @@ test("reference files carry one fixed source evidence shape", () => {
   }
 });
 
+test("motion-first capability pins its inspected source provenance", () => {
+  const relativePath = "skill/references/motion-first-capability.md";
+  const metadata = frontmatter(relativePath);
+  assert.equal(metadata.url, "https://github.com/feitangyuan/motion-web/tree/5f4e40f1253e11e28850d08dce28b9b7e4320115");
+  assert.equal(metadata.reviewedRevision, "5f4e40f1253e11e28850d08dce28b9b7e4320115");
+  assert.equal(metadata.reviewedContentHash, "68945441b0bbd6b79f2849206c019c2c7bc01a13a2bbd5c267c9c3d5c069c1b4");
+  assert.equal(metadata.contentHashScope, "ordered UTF-8 sourceFiles with path-and-newline separators");
+  assert.deepEqual(metadata.sourceFiles.split(", "), ["README.md", "LICENSE"]);
+  assert.equal(metadata.reviewedAt, "2026-09-18T00:00:00.000Z");
+  assert.equal(metadata.freshnessDays, "30");
+  assert.equal(metadata.license, "CC-BY-NC-4.0");
+  assert.equal(metadata.codeCopied, "false");
+  assert.match(metadata.useBoundary, /reference-only/i);
+});
+
 test("tracked companion sources expose the same baseline metadata", () => {
   const registry = JSON.parse(read("skill/references/companion-capabilities.json"));
   for (const [profileId, sourceId] of Object.entries(auditedProfiles)) {

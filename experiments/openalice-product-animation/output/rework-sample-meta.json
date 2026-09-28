@@ -1,0 +1,20 @@
+{
+  "duration": 7.5,
+  "composition": "evidence-lineage-map",
+  "source": "temporary duration override of the new authored graph",
+  "retiming": {
+    "scale": 0.375,
+    "trackDurations": "preserved-except-trace-to-retain",
+    "traceToRetain": [
+      0.9375,
+      3.5625
+    ],
+    "traceToReference": [
+      3.5625,
+      5.0625
+    ]
+  },
+  "normalSpeedPrecheck": "passed; see rework-sample-playback.json",
+  "renderSettings": {"workers": 1, "forceScreenshot": true, "staticFrameDedup": false, "fastCapture": false},
+  "artifact": "output/rework-sample-7.5s.mp4"
+}

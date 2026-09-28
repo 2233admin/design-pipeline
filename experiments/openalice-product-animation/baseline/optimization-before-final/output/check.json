@@ -1,0 +1,369 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 7,
+    "findings": [
+      {
+        "code": "content_overlap",
+        "severity": "warning",
+        "time": 7,
+        "selector": "#research > div:nth-of-type(2) > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 96.48,
+          "top": 282.92,
+          "right": 457.15,
+          "bottom": 308.68,
+          "width": 360.67,
+          "height": 25.76
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "What changed in data-center revenue?",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 96.48,
+          "y": 282.92,
+          "width": 360.67,
+          "height": 25.76
+        },
+        "firstSeen": 7,
+        "lastSeen": 7.25,
+        "occurrences": 3,
+        "heldMs": 250
+      },
+      {
+        "code": "content_overlap",
+        "severity": "warning",
+        "time": 7.125,
+        "selector": "#finding > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.02,
+          "top": 336.63,
+          "right": 403.04,
+          "bottom": 362.38,
+          "width": 283.02,
+          "height": 25.75
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1)",
+        "text": "Data Center revenue / FY2025",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.02,
+          "y": 336.63,
+          "width": 283.02,
+          "height": 25.75
+        },
+        "firstSeen": 7.125,
+        "lastSeen": 7.25,
+        "occurrences": 2,
+        "heldMs": 125
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 7,
+        "selector": "#research > div:nth-of-type(2) > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 96.48,
+          "top": 282.92,
+          "right": 457.15,
+          "bottom": 308.68,
+          "width": 360.67,
+          "height": 25.76
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "text": "What changed in data-center revenue?",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 96.48,
+          "y": 282.92,
+          "width": 360.67,
+          "height": 25.76
+        },
+        "firstSeen": 7,
+        "lastSeen": 7,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 7.25,
+        "selector": "#finding > p:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.17,
+          "top": 335.93,
+          "right": 402.25,
+          "bottom": 361.59,
+          "width": 282.08,
+          "height": 25.66
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "text": "Data Center revenue / FY2025",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.17,
+          "y": 335.93,
+          "width": 282.08,
+          "height": 25.66
+        },
+        "firstSeen": 7.25,
+        "lastSeen": 7.25,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 7.375,
+        "selector": "#finding > p:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.64,
+          "top": 364.43,
+          "right": 310.2,
+          "bottom": 427.38,
+          "width": 189.56,
+          "height": 62.95
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "$115.2B [1]",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.64,
+          "y": 364.43,
+          "width": 189.56,
+          "height": 62.95
+        },
+        "firstSeen": 7.375,
+        "lastSeen": 7.375,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 7.375,
+        "selector": "#finding > p:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.64,
+          "top": 364.43,
+          "right": 310.2,
+          "bottom": 427.38,
+          "width": 189.56,
+          "height": 62.95
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "text": "$115.2B [1]",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.64,
+          "y": 364.43,
+          "width": 189.56,
+          "height": 62.95
+        },
+        "firstSeen": 7.375,
+        "lastSeen": 7.375,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 7.375,
+        "selector": "#finding > p:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 120.64,
+          "top": 364.43,
+          "right": 310.2,
+          "bottom": 427.38,
+          "width": 189.56,
+          "height": 62.95
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1)",
+        "text": "$115.2B [1]",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.64,
+          "y": 364.43,
+          "width": 189.56,
+          "height": 62.95
+        },
+        "firstSeen": 7.375,
+        "lastSeen": 7.375,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 7.375,
+        "selector": "#finding > p:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 310.2,
+          "top": 394.24,
+          "right": 326.35,
+          "bottom": 419.65,
+          "width": 16.15,
+          "height": 25.41
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1)",
+        "text": "[1]",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 310.2,
+          "y": 394.24,
+          "width": 16.15,
+          "height": 25.41
+        },
+        "firstSeen": 7.375,
+        "lastSeen": 7.375,
+        "occurrences": 1,
+        "heldMs": 0
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 7.5,
+        "selector": "#citation > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 98.95,
+          "top": 473.44,
+          "right": 416.53,
+          "bottom": 493.97,
+          "width": 317.58,
+          "height": 20.53
+        },
+        "containerSelector": "#version-original > article:nth-of-type(1) > div:nth-of-type(2) > h1:nth-of-type(1)",
+        "text": "[1] NVIDIA earnings release · 26 Feb 2025",
+        "fixHint": "Give each block its own zone, or mark intentional layering with data-layout-allow-overlap.",
+        "dataAttributes": {
+          "data-source": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 98.95,
+          "y": 473.44,
+          "width": 317.58,
+          "height": 20.53
+        },
+        "firstSeen": 7.5,
+        "lastSeen": 7.5,
+        "occurrences": 1,
+        "heldMs": 0
+      }
+    ],
+    "duration": 20,
+    "samples": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      19.967
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 9,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0,
+      5,
+      10,
+      15,
+      19.967
+    ],
+    "checked": 104,
+    "passed": 104
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.46",
+    "latestVersion": "0.8.46",
+    "updateAvailable": false
+  }
+}

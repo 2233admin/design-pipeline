@@ -1,0 +1,17 @@
+{
+  "name": "openalice-product-animation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CERE-482: autonomous OpenAlice product film",
+  "scripts": {
+    "lint": "node run.cjs lint",
+    "check": "node run.cjs check",
+    "render": "node run.cjs render",
+    "verify": "node verify.cjs"
+  },
+  "devDependencies": {
+    "gsap": "3.15.0",
+    "hyperframes": "0.8.46",
+    "playwright": "1.62.0"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline.motion-primitives.v1",
-  "updatedAt": "2026-07-20",
+  "updatedAt": "2026-09-18",
   "implementationPolicy": {
     "mode": "clean-room",
     "codeCopied": false,
@@ -176,6 +176,54 @@
         "rejected": "Repository JavaScript, DOM structure, styling, and render loop.",
         "codeCopied": false,
         "redistributionAllowed": false
+      }
+    },
+    {
+      "id": "response.spring-settle",
+      "family": "response",
+      "intent": "Move a semantic subject toward a target with a bounded damped response and explicit settle state.",
+      "renderSurfaces": ["css", "svg", "canvas", "webgl"],
+      "channels": ["position.x", "position.y", "rotation", "scale", "opacity", "velocity"],
+      "parameters": ["target", "mass", "stiffness", "damping", "initialVelocity", "settleThreshold", "duration"],
+      "drivers": ["time", "state", "input"],
+      "runtimeCapabilities": {
+        "css": "degraded",
+        "waapi": "degraded",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Render the target state immediately while preserving the state change and feedback.",
+      "provenance": {
+        "kind": "reference-only-capability-distillation",
+        "source": "https://github.com/feitangyuan/motion-web",
+        "license": "CC-BY-NC-4.0",
+        "adopted": "A bounded physical-response category with explicit material and settle parameters.",
+        "rejected": "Upstream source, assets, fonts, copy, cases, prompts, CLI, tests, and runtime implementation.",
+        "codeCopied": false
+      }
+    },
+    {
+      "id": "continuity.shared-anchor",
+      "family": "continuity",
+      "intent": "Preserve a semantic subject and its spatial origin while a state or route changes.",
+      "renderSurfaces": ["css", "svg", "canvas", "webgl"],
+      "channels": ["anchor.x", "anchor.y", "scale", "opacity", "semanticIdentity"],
+      "parameters": ["subjectId", "fromAnchor", "toAnchor", "origin", "duration", "interruptPolicy"],
+      "drivers": ["time", "state", "route"],
+      "runtimeCapabilities": {
+        "css": "supported",
+        "waapi": "supported",
+        "animejs": "supported",
+        "gsap": "supported"
+      },
+      "reducedMotion": "Keep the subject in the destination state and preserve semantic order, focus, and labeling.",
+      "provenance": {
+        "kind": "reference-only-capability-distillation",
+        "source": "https://github.com/feitangyuan/motion-web",
+        "license": "CC-BY-NC-4.0",
+        "adopted": "A continuity category that treats object identity and spatial anchoring as motion semantics.",
+        "rejected": "Upstream source, assets, fonts, copy, cases, prompts, CLI, tests, and runtime implementation.",
+        "codeCopied": false
       }
     }
   ]
