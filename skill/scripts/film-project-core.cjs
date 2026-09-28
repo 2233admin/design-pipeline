@@ -142,24 +142,30 @@ function checkFilmProject(dir, options = {}) {
       if (preview && preview.started && preview.stop) preview.stop();
     }
   }
-  if (!timeline && fs.existsSync(timelineFile)) { timeline = readJson(timelineFile, "film timeline"); timelineNote = timelineNote ? `${timelineNote}; used existing timeline.json` : "existing timeline.json"; }
+  // A capture that failed falls back to the previous timeline.json, which may no longer match
+  // the composition: the step is marked stale and the check cannot pass on it.
+  let stale = false;
+  if (!timeline && fs.existsSync(timelineFile)) { stale = Boolean(timelineNote); timeline = readJson(timelineFile, "film timeline"); timelineNote = timelineNote ? `${timelineNote}; used existing timeline.json` : "existing timeline.json"; }
   if (timeline) {
     const result = checkTimeline(timeline, board);
-    steps.push({ gate: "timeline", status: result.status, source: timelineNote, findings: result.findings, metrics: { carriedHandoffs: result.metrics.carriedHandoffs, proceduralBeats: result.metrics.proceduralBeats, proceduralHandoffs: result.metrics.proceduralHandoffs } });
+    steps.push({ gate: "timeline", status: result.status, ...(stale ? { stale: true, next: "Fix the capture error above and re-run film check; this result comes from an old timeline.json." } : {}), source: timelineNote, findings: result.findings, metrics: { carriedHandoffs: result.metrics.carriedHandoffs, proceduralBeats: result.metrics.proceduralBeats, proceduralHandoffs: result.metrics.proceduralHandoffs } });
   } else {
     steps.push({ gate: "timeline", status: "skipped", reason: timelineNote || "no index.html or timeline.json", next: "Build index.html, then re-run `film check` to capture timeline.json." });
   }
 
   const video = newestRender(root);
   if (video) {
-    const result = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence") });
+    // Procedurally driven beats are sampled at their start and end too (progress 0, 0.5, 1).
+    const procedural = (steps.find((step) => step.gate === "timeline")?.metrics?.proceduralBeats) || [];
+    const extraSamples = Object.fromEntries(procedural.map((id) => [id, [0.05, 0.95]]));
+    const result = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence"), extraSamples });
     steps.push({ gate: "render", status: result.status, video: path.relative(root, video), findings: result.findings, motion: result.motion, contactSheet: result.contactSheet && path.join("evidence", result.contactSheet.sheet), audio: result.audio, cuts: result.cuts });
     if (board.sound.mode !== "silent" || result.audio.present) {
       const audio = checkAudio(video, { storyboard: board, target: options.audioTarget || "web" });
       steps.push({ gate: "audio", status: audio.status, findings: audio.findings, metrics: audio.metrics });
     }
     // Composition of each beat's midpoint frame: errors fail, warnings are review prompts.
-    const frames = (result.contactSheet ? result.contactSheet.frames : []).map((frame) => {
+    const frames = (result.contactSheet ? [...result.contactSheet.frames, ...result.contactSheet.extras] : []).map((frame) => {
       const check = checkComposition(decodePng(fs.readFileSync(path.join(root, "evidence", frame.file)), frame.file), { profile: "frame", allow: options.allowComposition || [] });
       return { beatId: frame.beatId, atSec: frame.atSec, status: check.status, findings: check.findings.map((finding) => ({ ...finding, beatId: frame.beatId })) };
     });
@@ -169,7 +175,7 @@ function checkFilmProject(dir, options = {}) {
   }
 
   const failed = steps.some((step) => step.status === "failed");
-  const skipped = steps.some((step) => step.status === "skipped");
+  const skipped = steps.some((step) => step.status === "skipped" || step.stale);
   const fixes = steps.flatMap((step) => (step.findings || []).map((finding) => ({ gate: step.gate, code: finding.code, ...(finding.severity ? { severity: finding.severity } : {}), ...(finding.beatId ? { beatId: finding.beatId } : {}), fix: finding.fix })));
   return {
     schema: CHECK_SCHEMA,

@@ -100,6 +100,20 @@ transformation, surface-only motion (fade/scale/slide of a panel), reset/dissolv
 handoffs, dominant or chained holds, and scored films whose sound is not bound to beats. Passing
 it removes known failure shapes; it is not creative acceptance.
 
+Motion craft rules the gates check:
+
+- One time source per property. Two tweens must not drive the same property of the same element
+  at overlapping times (`property-conflict`); hand off, merge into keyframes, or animate a parent.
+- Moving elements ease. Linear easing on a travelling element longer than 0.3 s warns
+  (`linear-motion`); keep linear for constant mechanical motion only.
+- Declare how the film ends with `endState`: `rest` must finish on its opening frame
+  (`rest-drift`), `loop` must not jump from the last frame to the first (`loop-seam-jump`), `free`
+  (default) may end anywhere.
+- Mark character-like actions with `arc: "anticipate-act-settle"`; the render gate warns when the
+  beat starts at full speed (`missing-anticipation`) or ends at full speed or stops dead
+  (`missing-settle`).
+- Procedurally driven beats are sampled at their start, middle and end for the composition gate.
+
 Before authoring 3D, WebGL, shader, device-mockup or camera-move beats, search the HyperFrames
 catalog: `designer-pipeline film blocks --project-root <dir> --query "<the beat's action>" [--tag 3d]`.
 Name the chosen block in the beat's `block` field and install it with the printed command; the
