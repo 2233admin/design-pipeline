@@ -15,8 +15,8 @@ const codes = (result) => result.findings.map((finding) => finding.code);
 const tmp = (prefix) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 
 // A 12s, 5-beat board: a title hold and an opener, then three carried boundaries (continuation,
-// camera-carry) at 3/6/9s. A 0-1s title-hold and a 1-3s reset opener give the board real rest
-// and an uneven cadence (1/2/3/3/3s, ratio 3) without moving the carried boundaries or cuts.
+// morph or camera-carry) at 3/6/9s. A 0-1s title-hold and a 1-3s reset opener give the board real
+// rest and an uneven cadence (1/2/3/3/3s, ratio 3) without moving the carried boundaries or cuts.
 // `handoffAt9` lets a case swap the last boundary to match-cut.
 function carryBoard(handoffAt9 = "camera-carry") {
   return {
