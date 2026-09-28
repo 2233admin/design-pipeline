@@ -98,6 +98,14 @@ Build beats from `references/film-choreography/patterns.js` where a registered p
 its handoff time; chain beats by passing that time on. Name the pattern in the beat's
 `choreography` field. Author new motion only when no pattern expresses the planned action.
 
+After building the composition, serialize its timeline with
+`references/film-choreography/timeline-probe.js` (`FilmTimelineProbe.probe(window.__timelines.main, "main")`)
+into `timeline.json` and run `designer-pipeline verify film-timeline --storyboard storyboard.json
+--timeline timeline.json`. It checks what the code actually animates: layout tweens, infinite
+repeats, action beats with no tween or only opacity/scale, and planned continuation, morph and
+camera-carry handoffs that no animated subject carries across the boundary. Ambient targets
+animated across most of the film do not count as carrying a handoff.
+
 ## 4. Prove the sound and picture before extending the film
 
 Build a representative 6–10 second passage using the chosen footage/material and sound direction.

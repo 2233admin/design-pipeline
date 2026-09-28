@@ -1,0 +1,73 @@
+{
+  "schema": "design-pipeline.benchmark-manifest.v2",
+  "id": "film-promo-v1",
+  "candidateSystem": "codex",
+  "systems": [
+    "claude",
+    "codex",
+    "omp"
+  ],
+  "systemChannels": {
+    "claude": "stable",
+    "codex": "stable",
+    "omp": "stable"
+  },
+  "fairness": {
+    "samePrompts": true,
+    "sameEnvironmentClass": true,
+    "evaluatorBlind": true,
+    "expectedAnswersHidden": true,
+    "freshContext": true,
+    "representativeDelivery": true
+  },
+  "requiredDimensions": [
+    "motion"
+  ],
+  "scenarios": [
+    {
+      "id": "canvas-launch",
+      "operation": "generate",
+      "dimension": "motion",
+      "required": true,
+      "threshold": 0.75,
+      "evidenceType": "film-gates",
+      "prompt": "Make a 12-second promotional film for a node-canvas app where a typed prompt connects to a generated image and the image drops into a storyboard strip. Use the design-pipeline skill. Deliver storyboard.json, timeline.json (probe the composition with references/film-choreography/timeline-probe.js) and out.mp4 with a scored soundtrack.",
+      "privateExpectations": [
+        "storyboard gate passes",
+        "every action beat has a non-fade transformation",
+        "continuation/morph handoffs are carried by a shared subject",
+        "planned cuts appear in the render",
+        "scored render has audio"
+      ]
+    },
+    {
+      "id": "cli-launch",
+      "operation": "generate",
+      "dimension": "motion",
+      "required": true,
+      "threshold": 0.75,
+      "evidenceType": "film-gates",
+      "prompt": "Make a 15-second launch film for a developer CLI that turns a messy log into a clean report with one command. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4; silent delivery is acceptable only if you record why.",
+      "privateExpectations": [
+        "product action shows the command producing the report",
+        "no entrance-hold-exit panel sequence",
+        "holds under 25% of runtime",
+        "timeline closes at declared duration"
+      ]
+    },
+    {
+      "id": "repair-slideshow",
+      "operation": "repair",
+      "dimension": "motion",
+      "required": true,
+      "threshold": 0.7,
+      "evidenceType": "film-gates",
+      "prompt": "The storyboard at skill/evals/film/slideshow.storyboard.json is a fade-in/hold/fade-out slideshow for the same canvas product. Repair it into a film that demonstrates the product, then build and render it. Deliver storyboard.json, timeline.json and out.mp4.",
+      "privateExpectations": [
+        "slideshow-handoffs and surface-only findings resolved",
+        "at least half of handoffs carried or cut on accents",
+        "render duration matches storyboard"
+      ]
+    }
+  ]
+}

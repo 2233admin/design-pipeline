@@ -42,6 +42,8 @@ const { exitCodeForStatus: componentFirstExitCode } = require("./component-first
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
+const { checkTimeline } = require("./film-timeline-core.cjs");
+const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
 const { createDeveloperBrief, evaluateBenchmark } = require("./benchmark-core.cjs");
 const { recordObservation } = require("./record-feedback.cjs");
@@ -131,7 +133,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
@@ -368,10 +370,12 @@ function publicHelp() {
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
-    "  verify motion|components|film-storyboard|film-render | --gate <gate> --artifact <file>",
+    "  verify motion|components|film-storyboard|film-timeline|film-render | --gate <gate> --artifact <file>",
     "    verify motion --receipt <file> [--require-lifecycle]",
     "    verify film-storyboard --storyboard <storyboard.json>",
+    "    verify film-timeline --storyboard <storyboard.json> --timeline <timeline.json>",
     "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
+    "  film-eval measure --manifest <benchmark.json> --runs <runs-dir> [--output <measurements.json>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
@@ -755,6 +759,11 @@ function verifyCommand(parsed, root, action) {
   }
   if (action === "film-storyboard") {
     const result = checkStoryboard(readJson(artifact(parsed, root, "--storyboard"), "film storyboard"));
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "film-timeline") {
+    const board = readJson(artifact(parsed, root, "--storyboard"), "film storyboard");
+    const result = checkTimeline(readJson(artifact(parsed, root, "--timeline"), "film timeline"), board);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "film-render") {
@@ -1792,6 +1801,24 @@ const COMMANDS = {
     },
   },
   "design-code-map": { actions: { check: { required: ["--artifact"], run: designCodeMapCheckCommand } } },
+  "film-eval": {
+    actions: {
+      measure: {
+        required: ["--manifest", "--runs"],
+        run: ({ parsed, root, file }) => {
+          const runs = contained(root, option(parsed, "--runs"), "--runs");
+          const measurements = measureFilmBenchmark(readJson(file("--manifest"), "benchmark manifest"), runs);
+          if (option(parsed, "--output")) {
+            const out = contained(root, option(parsed, "--output"), "--output", false);
+            fs.mkdirSync(path.dirname(out), { recursive: true });
+            fs.writeFileSync(out, `${JSON.stringify(measurements, null, 2)}
+`);
+          }
+          return { result: { status: "measured", measurements }, exitCode: 0 };
+        },
+      },
+    },
+  },
   benchmark: {
     actions: {
       brief: {

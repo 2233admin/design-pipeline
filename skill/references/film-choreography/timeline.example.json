@@ -1,0 +1,336 @@
+{
+  "schema": "design-pipeline.film-timeline.v1",
+  "compositionId": "main",
+  "durationSec": 12,
+  "tweens": [
+    {
+      "targets": [
+        "#word1",
+        "#word2",
+        "#word3"
+      ],
+      "startSec": 0.2,
+      "durationSec": 0.66,
+      "props": [
+        "opacity",
+        "rotation",
+        "yPercent"
+      ],
+      "from": {
+        "yPercent": 100,
+        "rotation": 4,
+        "opacity": 0
+      },
+      "to": {
+        "yPercent": 0,
+        "rotation": 0,
+        "opacity": 1
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#word1",
+        "#word2",
+        "#word3"
+      ],
+      "startSec": 1.16,
+      "durationSec": 0.49,
+      "props": [
+        "opacity",
+        "scale",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "scale": 0.4,
+        "y": 0,
+        "opacity": 0
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#prompt"
+      ],
+      "startSec": 1.41,
+      "durationSec": 0.55,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {
+        "scale": 0.6,
+        "opacity": 0
+      },
+      "to": {
+        "scale": 1,
+        "opacity": 1
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#prompt"
+      ],
+      "startSec": 1.9,
+      "durationSec": 0.6,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": -40
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#cursor"
+      ],
+      "startSec": 2.4,
+      "durationSec": 0.7,
+      "props": [
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 120,
+        "y": 40
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#prompt"
+      ],
+      "startSec": 2.4,
+      "durationSec": 0.5,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": -80
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#cursor"
+      ],
+      "startSec": 3.1,
+      "durationSec": 0.7,
+      "props": [
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 320,
+        "y": 60
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#cursor"
+      ],
+      "startSec": 3.8,
+      "durationSec": 0.12,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 0.82
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#cursor"
+      ],
+      "startSec": 3.92,
+      "durationSec": 0.12,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#edge"
+      ],
+      "startSec": 3.92,
+      "durationSec": 0.6,
+      "props": [
+        "clipPath"
+      ],
+      "from": {
+        "clipPath": "inset(0% 100% 0% 0%)"
+      },
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 4.7,
+      "durationSec": 1.2,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -320,
+        "y": 64,
+        "scale": 1.6
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#image"
+      ],
+      "startSec": 5,
+      "durationSec": 1.4,
+      "props": [
+        "clipPath"
+      ],
+      "from": {
+        "clipPath": "inset(100% 0% 0% 0%)"
+      },
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#image"
+      ],
+      "startSec": 6.4,
+      "durationSec": 1.6,
+      "props": [
+        "rotation",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "rotation": 0,
+        "y": -10
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#image"
+      ],
+      "startSec": 8,
+      "durationSec": 1.2,
+      "props": [
+        "opacity",
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "opacity": 1
+      },
+      "to": {
+        "x": 200,
+        "y": 300,
+        "scale": 0.4,
+        "opacity": 0
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#frame3"
+      ],
+      "startSec": 8,
+      "durationSec": 1.2,
+      "props": [
+        "opacity",
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {
+        "x": -200,
+        "y": -300,
+        "scale": 2.5,
+        "opacity": 0
+      },
+      "to": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "opacity": 1
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#strip"
+      ],
+      "startSec": 9.2,
+      "durationSec": 2.2,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": -60
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#logo"
+      ],
+      "startSec": 10.8,
+      "durationSec": 0.8,
+      "props": [
+        "opacity"
+      ],
+      "from": {
+        "opacity": 0
+      },
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0
+    },
+    {
+      "targets": [
+        "#logo"
+      ],
+      "startSec": 11.6,
+      "durationSec": 0.4,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0
+    }
+  ]
+}

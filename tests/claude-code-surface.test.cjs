@@ -9,7 +9,10 @@ const repoRoot = path.resolve(__dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 
 test("project exposes a valid Claude Code instruction and skill surface", () => {
-  const instructions = read("CLAUDE.md");
+  const claude = read("CLAUDE.md");
+  const instructions = read("AGENTS.md");
+  assert.match(claude, /^@AGENTS\.md$/m, "CLAUDE.md imports the shared AGENTS.md instructions");
+  assert.match(instructions, /<!-- bmad:context -->[\s\S]*<!-- \/bmad:context -->/, "AGENTS.md carries the managed context block");
   const skill = read(".claude/skills/design-pipeline/SKILL.md");
   const frontmatter = skill.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   const body = frontmatter ? skill.slice(frontmatter[0].length) : "";
