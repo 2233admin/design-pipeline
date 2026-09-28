@@ -34,8 +34,8 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   a `carrier` — what survives the boundary and what it becomes ("prompt bar opens into the app
   window"). A claimed carry with nothing named for it to carry is a placeholder, not a plan.
 - Rhythm: near-equal beat lengths read as a metronome, not a film; in a film of four or more beats,
-  the longest should run at least 3x the shortest. A film of 8 s or more needs a rest — a hold beat,
-  or any beat with `holdSec` set — or nothing on screen ever lands.
+  the longest should run at least 3x the shortest. A film of 8 s or more needs a rest — a hold
+  beat, or any beat with `holdSec` of at least 0.3 s — or nothing on screen ever lands.
 - `verify film-storyboard --storyboard storyboard.json` must pass. Editing the storyboard later
   reopens this stage until the gate passes again.
 
