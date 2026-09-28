@@ -107,10 +107,35 @@
     return at + duration;
   }
 
+  // Camera follow: `stage` is the world container, exactly as in camera-push. The subject moves
+  // to each path point inside it; the stage compensates by the negated point plus a small `lead`
+  // offset, so the subject settles centered in frame. The stage's tween is shorter than the
+  // subject's and starts at the same time, so the view arrives first and the subject settles into
+  // an already-framed shot. After the path, an explicit no-op tween holds for `rest` seconds so
+  // the hold is part of the scheduled timeline, and the returned handoff time includes it.
+  // Seek-safe: no repeats, transforms only, eases that accelerate in and settle out.
+  function cameraFollow(tl, options) {
+    const normalized = { at: 0, ...options };
+    need(normalized, ["stage", "subject", "path", "lead", "rest"], "camera-follow");
+    const { stage, subject, path, at, lead, rest, duration = 0.8, ease = "power2.inOut" } = normalized;
+    if (!Array.isArray(path) || path.length === 0) throw new Error("camera-follow: path must list one or more {x,y} points");
+    if (!lead || typeof lead.x !== "number" || typeof lead.y !== "number") throw new Error("camera-follow: lead must be a small {x,y} offset");
+    if (typeof rest !== "number" || rest < 0) throw new Error("camera-follow: rest must be a non-negative number of seconds");
+    let t = at;
+    for (const point of path) {
+      tl.to(stage, { x: -(point.x + lead.x), y: -(point.y + lead.y), duration: duration * 0.6, ease }, t);
+      tl.to(subject, { x: point.x, y: point.y, duration, ease }, t);
+      t += duration;
+    }
+    tl.to({}, { duration: rest }, t);
+    return t + rest;
+  }
+
   return {
     "continuous-morph": continuousMorph,
     "match-cut": matchCut,
     "camera-push": cameraPush,
+    "camera-follow": cameraFollow,
     "kinetic-type": kineticType,
     "ui-demo": uiDemo,
     "assembly": assembly,
