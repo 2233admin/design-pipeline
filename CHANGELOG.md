@@ -14,6 +14,14 @@ All notable changes to Design Pipeline are documented here.
   boundary (match-cut stays exempt) and reports `stillness.stillShare`; `film check` computes
   `carryScore` over planned carried boundaries from the timeline and render gates and fails with
   `low-carry` below 0.6 across at least 3 such boundaries.
+- `camera-follow` choreography pattern (`skill/references/film-choreography/patterns.js`,
+  `registry.json`): the camera tracks a small offset ahead of its subject and lands first at each
+  path point, then holds perfectly still through an explicit rest; seek-safe, transforms only, no
+  infinite repeats. Concept cards now lead with the central idea as one sentence about the picture,
+  not a list of scenes; `workflow-film.md` and `product-film-direction.md` document carry
+  (`carrier`), rhythm (`holdSec`, beat-length variety) and why a continuous camera and real
+  stillness keep a film from reading as a slideshow, crediting `reference-skill-onetake.md` as the
+  idea's source (ideas only).
 
 ### Changed
 
