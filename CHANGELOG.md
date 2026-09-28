@@ -4,22 +4,32 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
-### Fixed
+## [0.12.0-beta.1] - 2026-09-29
 
-- Workflow gates allow 50 ms of clock skew between a gate's record time and its input files'
-  times. On a loaded Windows host a file written just before the gate could carry a later
-  time, reopen the stage it had just passed, and fail `a gate result goes stale when its
-  inputs change` at random.
-- The timeline gate no longer treats a one-take subject as ambient background. An element counts as
-  ambient only when one long tween (at least half the film) drives it, such as a drifting
-  background. Before, a subject carried through a continuous film by a chain of actions covered
-  more than 60% of the runtime, was excluded, and every carried handoff failed.
-- `carry-cut` also catches a panel swapped in one frame on a carried boundary. The scene detector misses
-  it when the panel covers little of the frame; found on a rendered 5-card slideshow demo, where
-  all four swaps passed the render gate. The render result lists `carryBreaks` with their kind.
-- `node scripts/qa.cjs` now points `TEMP`, `TMP` and `TMPDIR` inside its own temporary root, so
-  test scratch directories are removed with it. Before, every run left thousands of directories
-  and a 0.33 GB install copy in the system temp folder; on 2026-09-28 this filled drive C.
+### Changed
+
+- Workflow step 2 (`split-film-edit-workflows`): the `film` and `edit` sub-workflows have their own
+  stage modules (`skill/scripts/workflows/`) and guides (`references/workflow-film.md`,
+  `references/workflow-edit.md`); every film and edit `next` action carries `guide`.
+- A recorded gate result counts only while it is newer than the files it checked: editing
+  `storyboard.json` or `edit.json`, or re-rendering a draft, reopens the stage.
+- Replicate mode: a film cannot waive its reference study (`decide --stage reference --answer
+  none` is refused), and an edit gains a `reference` stage before cutting.
+- Storyboard gate (`checkStoryboard`): a beat whose `handoff` is `continuation`, `morph`,
+  `camera-carry` or `match-cut` must name a `carrier` (`carrier-unnamed`); `uniform-cadence` fails
+  boards of 4+ beats whose longest beat is under 3x the shortest; `no-rest` fails films of 8s+
+  with no title/brand hold and no beat's `holdSec` at least 0.3s. Metrics gain `cadenceRatio` and
+  `restSec`. A `{ filmRhythm: false }` option (used for storyboards derived from an edit) turns
+  the cadence and rest rules off without affecting `carrier-unnamed`.
+- Workflow redesign (step 1 of `redesign-user-workflow`): `skill/SKILL.md` is now a 3.6 KB front
+  door. `designer-pipeline next` reads `.design-pipeline/state.json` and returns one action at a
+  time (`run`, `ask` or `done`); `designer-pipeline decide` records the two user decisions
+  (concept pick, draft verdict) plus intake, reference and delivery. Deliverables `film`, `edit`,
+  `web`, `ui`; tiers `quick`, `standard`, `full` (OpenSpec only at `full` and for this repository).
+  Rejections become project rules returned by `next`. Checks report back into the state.
+- Migration: the previous `skill/SKILL.md` content moved unchanged to
+  `skill/references/pipeline-reference.md` and is routed from the front door. Every CLI command
+  still works. Agents that read stage contracts from `SKILL.md` should read that reference.
 
 ### Added
 
@@ -59,39 +69,6 @@ All notable changes to Design Pipeline are documented here.
   `references/web-motion.md` guide covers motion-as-material, spring-damper parameters and typical
   UI ranges, a from-scratch semi-implicit-Euler spring integrator, stepped motion as a deliberate
   style, self-contained pages, and how `verify interaction` measures all of it.
-
-### Changed
-
-- Workflow step 2 (`split-film-edit-workflows`): the `film` and `edit` sub-workflows have their own
-  stage modules (`skill/scripts/workflows/`) and guides (`references/workflow-film.md`,
-  `references/workflow-edit.md`); every film and edit `next` action carries `guide`.
-- A recorded gate result counts only while it is newer than the files it checked: editing
-  `storyboard.json` or `edit.json`, or re-rendering a draft, reopens the stage.
-- Replicate mode: a film cannot waive its reference study (`decide --stage reference --answer
-  none` is refused), and an edit gains a `reference` stage before cutting.
-- Storyboard gate (`checkStoryboard`): a beat whose `handoff` is `continuation`, `morph`,
-  `camera-carry` or `match-cut` must name a `carrier` (`carrier-unnamed`); `uniform-cadence` fails
-  boards of 4+ beats whose longest beat is under 3x the shortest; `no-rest` fails films of 8s+
-  with no title/brand hold and no beat's `holdSec` at least 0.3s. Metrics gain `cadenceRatio` and
-  `restSec`. A `{ filmRhythm: false }` option (used for storyboards derived from an edit) turns
-  the cadence and rest rules off without affecting `carrier-unnamed`.
-
-## [0.12.0-beta.1] - 2026-09-28
-
-### Changed
-
-- Workflow redesign (step 1 of `redesign-user-workflow`): `skill/SKILL.md` is now a 3.6 KB front
-  door. `designer-pipeline next` reads `.design-pipeline/state.json` and returns one action at a
-  time (`run`, `ask` or `done`); `designer-pipeline decide` records the two user decisions
-  (concept pick, draft verdict) plus intake, reference and delivery. Deliverables `film`, `edit`,
-  `web`, `ui`; tiers `quick`, `standard`, `full` (OpenSpec only at `full` and for this repository).
-  Rejections become project rules returned by `next`. Checks report back into the state.
-- Migration: the previous `skill/SKILL.md` content moved unchanged to
-  `skill/references/pipeline-reference.md` and is routed from the front door. Every CLI command
-  still works. Agents that read stage contracts from `SKILL.md` should read that reference.
-
-### Added
-
 - Product-film gates: `verify film-storyboard` checks a structured `storyboard.json` for open
   timelines, missing product actions, surface-only motion, slideshow handoffs and unbound sound;
   `verify film-render` reports duration, scene cuts against planned handoffs, cut/audio-onset
@@ -158,6 +135,20 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Workflow gates allow 50 ms of clock skew between a gate's record time and its input files'
+  times. On a loaded Windows host a file written just before the gate could carry a later
+  time, reopen the stage it had just passed, and fail `a gate result goes stale when its
+  inputs change` at random.
+- The timeline gate no longer treats a one-take subject as ambient background. An element counts as
+  ambient only when one long tween (at least half the film) drives it, such as a drifting
+  background. Before, a subject carried through a continuous film by a chain of actions covered
+  more than 60% of the runtime, was excluded, and every carried handoff failed.
+- `carry-cut` also catches a panel swapped in one frame on a carried boundary. The scene detector misses
+  it when the panel covers little of the frame; found on a rendered 5-card slideshow demo, where
+  all four swaps passed the render gate. The render result lists `carryBreaks` with their kind.
+- `node scripts/qa.cjs` now points `TEMP`, `TMP` and `TMPDIR` inside its own temporary root, so
+  test scratch directories are removed with it. Before, every run left thousands of directories
+  and a 0.33 GB install copy in the system temp folder; on 2026-09-28 this filled drive C.
 - Product-film direction now starts with inspected moving references and available footage, and
   includes music/sound planning by default. Silent rough passes and unreviewed audio remain partial
   evidence; continuity or runtime checks alone cannot satisfy audiovisual creative acceptance.
