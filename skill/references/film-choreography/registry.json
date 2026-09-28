@@ -1,0 +1,70 @@
+{
+  "schema": "design-pipeline.film-choreography.v1",
+  "runtime": "gsap",
+  "module": "patterns.js",
+  "patterns": [
+    {
+      "id": "continuous-morph",
+      "grammar": ["continuous-transformation", "product-demonstration"],
+      "transformation": "morph",
+      "handoff": "morph",
+      "required": ["from", "to", "at"],
+      "optional": ["duration", "delta", "ease"],
+      "use": "One product object becomes the next (prompt node becomes image node). Keeps the eye on one subject across the handoff."
+    },
+    {
+      "id": "match-cut",
+      "grammar": ["match-cut-montage", "footage-led"],
+      "transformation": "match-cut",
+      "handoff": "match-cut",
+      "required": ["from", "to", "at"],
+      "optional": ["push", "settle", "fill"],
+      "use": "Hard cut between two subjects sharing silhouette or position; land the cut on a sound accent."
+    },
+    {
+      "id": "camera-push",
+      "grammar": ["continuous-transformation", "product-demonstration", "combination"],
+      "transformation": "camera-move",
+      "handoff": "camera-carry",
+      "required": ["stage", "focus", "at"],
+      "optional": ["duration", "scale", "ease"],
+      "use": "Move the world toward the next product detail instead of swapping panels. Stage is the world container."
+    },
+    {
+      "id": "kinetic-type",
+      "grammar": ["kinetic-type", "combination"],
+      "transformation": "type-to-object",
+      "handoff": "continuation",
+      "required": ["words", "at"],
+      "optional": ["stagger", "duration", "rise", "target", "targetOffsetY", "count"],
+      "use": "Words arrive on the beat; with target set, the words collapse into the object they name."
+    },
+    {
+      "id": "ui-demo",
+      "grammar": ["product-demonstration"],
+      "transformation": "state-change",
+      "handoff": "continuation",
+      "required": ["cursor", "path", "result", "at"],
+      "optional": ["travel", "press"],
+      "use": "Cursor travels, presses, product state changes. The proof action for software products."
+    },
+    {
+      "id": "assembly",
+      "grammar": ["continuous-transformation", "combination"],
+      "transformation": "assembly",
+      "handoff": "continuation",
+      "required": ["pieces", "offsets", "at"],
+      "optional": ["duration", "stagger"],
+      "use": "Scattered parts converge into the finished surface. Offsets are fixed data, never random."
+    },
+    {
+      "id": "reveal-in-context",
+      "grammar": ["footage-led", "product-demonstration", "combination"],
+      "transformation": "reveal-in-context",
+      "handoff": "continuation",
+      "required": ["subject", "at"],
+      "optional": ["duration", "direction"],
+      "use": "Wipe exposes the product inside the scene where it is used, not on an empty card."
+    }
+  ]
+}

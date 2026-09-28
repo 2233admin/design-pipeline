@@ -41,6 +41,7 @@ const {
 const { exitCodeForStatus: componentFirstExitCode } = require("./component-first/orchestration/aggregate-result.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
+const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
 const { createDeveloperBrief, evaluateBenchmark } = require("./benchmark-core.cjs");
 const { recordObservation } = require("./record-feedback.cjs");
@@ -130,7 +131,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--direction-lock", "--providers",
+  "--direction-lock", "--providers", "--storyboard", "--video",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
@@ -367,8 +368,10 @@ function publicHelp() {
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check|capture",
-    "  verify motion|components | --gate <gate> --artifact <file>",
+    "  verify motion|components|film-storyboard|film-render | --gate <gate> --artifact <file>",
     "    verify motion --receipt <file> [--require-lifecycle]",
+    "    verify film-storyboard --storyboard <storyboard.json>",
+    "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
@@ -748,6 +751,17 @@ function verifyCommand(parsed, root, action) {
   if (action === "motion") {
     const file = artifact(parsed, root, "--receipt");
     const result = evaluateMotion(readJson(file, "motion evidence"), { requireLifecycle: option(parsed, "--require-lifecycle") === true });
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "film-storyboard") {
+    const result = checkStoryboard(readJson(artifact(parsed, root, "--storyboard"), "film storyboard"));
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "film-render") {
+    const board = readJson(artifact(parsed, root, "--storyboard"), "film storyboard");
+    const video = artifact(parsed, root, "--video");
+    const outDir = option(parsed, "--output") ? contained(root, option(parsed, "--output"), "--output", false) : null;
+    const result = evaluateFilmRender(board, video, { outDir });
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "components") {

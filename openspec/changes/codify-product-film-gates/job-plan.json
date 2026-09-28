@@ -1,0 +1,41 @@
+{
+  "admission": "inert",
+  "deliverableForm": "product-launch-video",
+  "jobId": "motion-graphics",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": true,
+      "role": "primary"
+    }
+  ],
+  "planSha256": "ba827982270a191e78ad071124cc4409a7261a17f9eaac1191c5cdab71a68598",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "iart",
+    "id": "iart"
+  },
+  "query": "为产品宣传片增加分镜检查、成片证据和编舞模板，让其他模型也能做宣传动画 PV",
+  "registrySha256": "fe12e43bc11e5b795d36bb476a1019b3803b1310300e7271b73aa94cb726b17c",
+  "routeSha256": "881c03775200b016bfb54db6eb54dd29120a1c1a579ec5d3f843e39ed23de4c1",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": []
+}

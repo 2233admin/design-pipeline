@@ -84,6 +84,20 @@ mechanically cutting every beat. The examples above illustrate fields, not a reu
 Completion: every beat has an action and handoff; major claims have a visible demonstration;
 the sequence includes development and payoff; music/sound cues are planned alongside the picture.
 
+Record the storyboard as `storyboard.json` (`design-pipeline.film-storyboard.v1`; start from
+`references/film-choreography/storyboard.example.json`) and run
+`designer-pipeline verify film-storyboard --storyboard storyboard.json` before building scenes.
+The gate rejects open timelines, action beats without a named product action or before → after
+transformation, surface-only motion (fade/scale/slide of a panel), reset/dissolve slideshow
+handoffs, dominant or chained holds, and scored films whose sound is not bound to beats. Passing
+it removes known failure shapes; it is not creative acceptance.
+
+Build beats from `references/film-choreography/patterns.js` where a registered pattern fits
+(`continuous-morph`, `match-cut`, `camera-push`, `kinetic-type`, `ui-demo`, `assembly`,
+`reveal-in-context`). Each pattern appends seek-safe GSAP tweens at an absolute time and returns
+its handoff time; chain beats by passing that time on. Name the pattern in the beat's
+`choreography` field. Author new motion only when no pattern expresses the planned action.
+
 ## 4. Prove the sound and picture before extending the film
 
 Build a representative 6–10 second passage using the chosen footage/material and sound direction.
@@ -106,6 +120,13 @@ a mandatory user approval checkpoint. User rejection reopens direction before fu
 **Technical review:** follow the selected runtime's checks for timeline duration, deterministic
 seeking, assets, layout, playback, sound activation, audio/video synchronization, accessibility and
 console errors. Report checks not performed.
+
+After render, run `designer-pipeline verify film-render --storyboard storyboard.json --video out.mp4
+--output qa/film-evidence`. It measures duration against the storyboard, detects scene cuts and
+compares them with planned `hard-cut`/`match-cut` handoffs, measures how many cuts land on audio
+onsets, and writes one midpoint frame per beat plus `contact-sheet.png`. Review the contact sheet
+beside the storyboard in the creative review; a model that cannot watch video still sees each
+beat's actual frame. These are objective signals only and do not replace watching the film.
 
 **Creative review:** watch the complete film uninterrupted at intended speed, then inspect the
 handoffs. In `qa.md`, record timestamps and observations for:

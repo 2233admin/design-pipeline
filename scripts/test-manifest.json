@@ -54,6 +54,7 @@
     "animation-opportunity-reference.test.cjs",
     "motion-foundation.test.cjs",
     "motion-verification.test.cjs",
+    "film-gates.test.cjs",
     "palette-foundation.test.cjs",
     "package-release.test.cjs",
     "pending-source.test.cjs",
