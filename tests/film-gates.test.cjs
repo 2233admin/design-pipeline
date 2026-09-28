@@ -146,6 +146,15 @@ test("camera-follow: the stage leads the subject to the negated lead point and h
   assert.equal(rest.callArgs[2] + rest.callArgs[1].duration, end, "the returned handoff time includes the rest");
 });
 
+test("camera-follow: at is optional and defaults to 0", () => {
+  const calls = [];
+  const tl = new Proxy({}, { get: (_, method) => (...callArgs) => { calls.push({ method, callArgs }); return tl; } });
+  const path = [{ x: 10, y: 20 }, { x: 30, y: -5 }];
+  const end = patterns["camera-follow"](tl, { stage: "#w", subject: "#s", path, lead: { x: 0, y: 0 }, rest: 0.5, duration: 0.8 });
+  assert.equal(end, path.length * 0.8 + 0.5, "the handoff time is measured from an implicit at of 0");
+  assert.equal(calls[0].callArgs[2], 0, "the first tween is positioned at 0, not undefined");
+});
+
 const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0 && spawnSync("ffprobe", ["-version"], { windowsHide: true }).status === 0;
 
 function synthesize(dir, { audio = true, cuts = [3, 6, 9] } = {}) {
