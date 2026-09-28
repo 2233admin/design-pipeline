@@ -4,6 +4,11 @@ This reference contains detailed stage instructions moved out of the front door.
 
 ## Stage 0: Repo Read
 
+For product promotional films/animations (`product-launch-video`), including HTML previews,
+read `references/product-film-direction.md` before storyboard or template selection. Inspect moving
+references and existing assets, plan sound and picture, then apply its audiovisual proof and creative
+review in addition to runtime QA; the user need not name film techniques or separately request music.
+
 Before writing design artifacts or code:
 
 - Classify the brief into exactly one primary job, then persist the plan before opening a catalog:
@@ -16,10 +21,13 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
   stay reference-only and do not become a second primary. Do not search every catalog. Add a new
   capability by registering a job in `references/job-registry.json`, not by adding another
   mandatory Stage 0 search. Status `needs-clarification` asks one question that distinguishes the
-  top jobs; it does not pick a primary or write a plan. Put `jobPlanSha256` and `jobPlanPath` on
-  the toolchain request, and the same `jobPlanSha256` on the execution request. Job id and
-  toolchain `primaryRouteId` are different identifiers. Plan presence does not make an `inert`
-  or `reference-only` catalog executable-ready.
+  top jobs; it does not pick a primary or write a plan. A ready plan has four mandatory binding
+  fields: `jobId`, `jobPlanSha256`, `jobPlanPath`, and `deliverableForm`. Copy all four fields
+  from that persisted plan onto the toolchain request; its `deliverableForm` must match the plan
+  and its brief must independently classify to the same form. Put the same `jobPlanSha256` on the
+  execution request. All four binding fields are required. Job id and toolchain
+  `primaryRouteId` are different identifiers. Plan presence does not make an `inert` or
+  `reference-only` catalog executable-ready.
 
 - For HTML video, reels, motion graphics, captions, overlays, slideshows, explainers, voiceovers,
   or Remotion ports, route through `references/hyperframes.md` before choosing a runtime. HyperFrames
@@ -52,8 +60,9 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
-- Write `toolchain-request.json` that includes `jobPlanSha256` and `jobPlanPath` from the Stage 0
-  job plan, then run `designer-pipeline toolchain resolve --artifact
+- Write `toolchain-request.json` with the complete Stage 0 binding copied from the persisted job
+  plan: `jobId`, `jobPlanSha256`, `jobPlanPath`, and `deliverableForm`. The brief must remain
+  independently consistent with that form. Then run `designer-pipeline toolchain resolve --artifact
   toolchain-request.json --write --output toolchain-plan.json`. This is mandatory for every
   frontend change, including a project-owned `none` UI-library choice. The request records the
   framework, current and requested stack, brief, capabilities, and any graphics family or adapter.

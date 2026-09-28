@@ -177,13 +177,19 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.equal(stack.status, 0, stack.stderr || stack.stdout);
   assert.ok(stack.output.decision.toolRoutes.some(({ id }) => id === "hi5jeff/deepclonewebsite"));
 
-  writeJson(path.join(root, "toolchain-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "reflex", brief: "Reflex dashboard with an XY chart", requested: { styling: "tailwindcss", uiLibrary: "none" }, graphics: { family: "vector-data" } });
+  const route = run(["route", "--root", root, "--query", "Reflex dashboard with an XY chart", "--write", "--output", "job-plan.json"]);
+  assert.equal(route.status, 0, route.stderr || route.stdout);
+  const jobPlan = JSON.parse(fs.readFileSync(path.join(root, "job-plan.json"), "utf8"));
+  writeJson(path.join(root, "toolchain-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "reflex", brief: jobPlan.query, jobId: jobPlan.jobId, jobPlanSha256: jobPlan.planSha256, jobPlanPath: "job-plan.json", deliverableForm: jobPlan.deliverableForm, requested: { styling: "tailwindcss", uiLibrary: "none" }, graphics: { family: "vector-data" } });
   const toolchain = run(["toolchain", "resolve", "--root", root, "--artifact", "toolchain-request.json", "--write", "--output", "toolchain-plan.json"]);
   assert.equal(toolchain.status, 0, toolchain.stderr || toolchain.stdout);
   assert.equal(toolchain.output.plan.graphics.id, "reflex-xy");
   assert.deepEqual(toolchain.output.plan.invocations.find(({ toolId }) => toolId === "reflex-xy").command, ["reflex", "run"]);
 
-  writeJson(path.join(root, "toolchain-probe-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "react", brief: "Plain React settings page", requested: { styling: "scss", uiLibrary: "none" } });
+  const probeRoute = run(["route", "--root", root, "--query", "Plain React settings page", "--write", "--output", "probe-job-plan.json"]);
+  assert.equal(probeRoute.status, 0, probeRoute.stderr || probeRoute.stdout);
+  const probeJob = JSON.parse(fs.readFileSync(path.join(root, "probe-job-plan.json"), "utf8"));
+  writeJson(path.join(root, "toolchain-probe-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "react", brief: probeJob.query, jobId: probeJob.jobId, jobPlanSha256: probeJob.planSha256, jobPlanPath: "probe-job-plan.json", deliverableForm: probeJob.deliverableForm, requested: { styling: "scss", uiLibrary: "none" } });
   const probe = run(["toolchain", "probe", "--root", root, "--artifact", "toolchain-probe-request.json"]);
   assert.equal(probe.status, 0, probe.stderr || probe.stdout);
   assert.equal(probe.output.probe.status, "ready");

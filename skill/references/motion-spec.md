@@ -185,6 +185,46 @@ their absence must be stated rather than replaced with guessed measurements.
 
 ## QA Scenarios
 
+### Executable receipt validation
+
+Validate `motion-verification.json` using:
+
+```bash
+designer-pipeline verify motion --receipt motion-verification.json --require-lifecycle --json
+```
+
+The standalone `scripts/evaluate-motion-evidence.cjs` accepts the same receipt and lifecycle flag.
+The v1 schema accepts legacy timing receipts. Without `--require-lifecycle`, a legacy receipt
+returns `coverage: timing-only`; it does not demonstrate lifecycle testing. With the flag,
+missing lifecycle evidence fails. A supplied lifecycle array is always validated in full and
+returns `coverage: timing-and-lifecycle` only when valid.
+
+Add a `lifecycle` array with one entry per `rapid-input`, `reverse`, `unmount`, and `reduced-motion`.
+`resize` and `route-change` are additional supported scenarios. Each passed entry has this shape:
+
+```json
+{
+  "scenario": "unmount",
+  "status": "passed",
+  "expected": "No animation callbacks or observers remain after removal",
+  "observed": "The captured trace shows no callbacks after removal",
+  "captureId": "unmount-trace-1"
+}
+```
+
+Only `reverse` can use `status: not-applicable`, replacing expected/observed/captureId with a
+non-empty `reason`. Other scenarios must pass. Duplicate, missing, failed, or unknown scenarios
+are rejected. Use actual observations; the example is a shape, not evidence.
+
+Frame cadence and frame budgets must be positive. Long-frame start timestamps are milliseconds
+from the start of the observed interval, ordered and no later than `observedDurationMs`.
+Zero-duration state changes remain valid; do not invent frames for them. Runtime validation
+also checks duration drift and per-frame budgets, which JSON Schema alone cannot compare.
+
+This evaluator checks producer-supplied assertions and capture identifiers. It does not run a
+browser, resolve capture files, authenticate evidence, or prove visual quality. Keep the real
+trace, reduced-motion, focus, and cleanup observations in the change's QA evidence.
+
 | Scenario | Expected result | Evidence |
 | --- | --- | --- |
 | Repeated rapid interaction |  |  |

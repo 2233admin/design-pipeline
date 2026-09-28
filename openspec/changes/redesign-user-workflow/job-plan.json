@@ -1,0 +1,54 @@
+{
+  "admission": "inert",
+  "deliverableForm": "ui-motion",
+  "jobId": "product-design",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "prism",
+      "required": true,
+      "role": "primary"
+    },
+    {
+      "action": "search",
+      "command": "design-system",
+      "required": false,
+      "role": "secondary"
+    }
+  ],
+  "planSha256": "1666bae855530b21d164bcec08c3fae8d13ae716eb5b88248c850808eb373a45",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "prism",
+    "id": "prism"
+  },
+  "query": "重新设计用户工作流：统一入口、next 单步推进、状态文件、轻重分级",
+  "registrySha256": "fe12e43bc11e5b795d36bb476a1019b3803b1310300e7271b73aa94cb726b17c",
+  "routeSha256": "25df481f5b9546958c04e4ab727b346ad2888eb2eef3e0918cb70fedeba3e5fc",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": [
+    {
+      "action": "search",
+      "admission": "reference-only",
+      "command": "design-system",
+      "id": "astryx"
+    }
+  ]
+}

@@ -79,7 +79,7 @@ test("bundles the pinned deepclonewebsite feature slice", () => {
 test("integrates the feature slice as a strict passive protocol", () => {
   const protocol = fs.readFileSync(path.join(referenceRoot, "../deepclonewebsite.md"), "utf8");
   const cloning = fs.readFileSync(path.join(referenceRoot, "../website-cloning.md"), "utf8");
-  const pipeline = fs.readFileSync(path.join(repoRoot, "skill", "SKILL.md"), "utf8");
+  const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();
 
   assert.equal(manifest.boundary.passiveReferenceOnly, true);
   assert.equal(manifest.boundary.addsRuntimeDependency, false);

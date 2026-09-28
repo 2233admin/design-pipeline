@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0d10"><title>SeedController — 想象，自有联系</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><a href="#" class="brand"><span>[s]</span> SeedController</a><span class="edition">FIELD NOTES — A FILM ABOUT CONNECTION</span><span>FILM / 03</span></header>
+  <main id="field-film" data-composition-id="field-film" data-start="0" data-duration="32" data-width="1600" data-height="900" aria-label="SeedController 宣传片，32秒，含配乐">
+    <canvas id="screen" width="1600" height="900" role="img" aria-label="城市、夜间骑行与月下钢琴的动态作品镜头，通过局部标记和连线展开为创作画布，最后回到 SeedController 品牌。"></canvas>
+    <div id="start-layer"><button id="start" disabled><span class="play-icon">▷</span><span id="start-text">正在准备影片</span><span class="start-note">00:32 / 建议开启声音</span></button><p id="load-message" role="status">正在载入画面与配乐…</p></div>
+    <noscript><p>请启用 JavaScript 播放影片。SeedController，把想象连接成作品。</p></noscript>
+  </main>
+  <section class="player" aria-label="影片控制"><button id="play" disabled aria-label="播放影片">播放</button><button id="restart" disabled aria-label="从头播放">↺</button><span id="time">00:00</span><input id="seek" type="range" min="0" max="32" step="0.1" value="0" aria-label="播放进度" disabled><span>00:32</span><span class="divider"></span><button id="mute" aria-label="静音" aria-pressed="false">声音 开</button><input id="volume" type="range" min="0" max="1" step="0.05" value="0.8" aria-label="音量"><button id="fullscreen" aria-label="全屏播放">⛶</button></section>
+  <section class="description"><div><p class="eyebrow">SEEDCONTROLLER / FIELD NOTES</p><h1>想象，自有联系。</h1></div><p>把灵感、镜头与创作路径，放在同一张画布。<br>每个想法，都有继续生长的空间。</p><span class="duration">32″<small>影像 · 画布 · 声音</small></span></section>
+  <details><summary>影片文稿与素材说明</summary><p>想象，正在发生。从一段灵感，到一个世界。连接素材与提示词，通过画布组织作品，用自然语言展开创作计划。SeedController，把想象，连接成作品。</p><p>本片使用 SeedController 项目现有的城市废墟、夜间骑行、月下钢琴视频，配以为本片编排的原创电子器乐。画布为宣传概念演绎，不是一次真实生成任务的录屏。风格参考《SEAM》的镜头质感与图形叠加方式。</p></details>
+  <div class="media-pool" aria-hidden="true"><video id="city" preload="auto" muted playsinline src="assets/city-ruins.mp4"></video><video id="night" preload="auto" muted playsinline src="assets/night-ride.mp4"></video><video id="moon" preload="auto" muted playsinline src="assets/moon-piano.mp4"></video><audio id="score" preload="auto" src="assets/field-notes-score.wav"></audio></div>
+  <script src="vendor/gsap.min.js"></script><script src="film.js"></script>
+</body>
+</html>

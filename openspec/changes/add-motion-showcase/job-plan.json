@@ -1,0 +1,41 @@
+{
+  "admission": "inert",
+  "deliverableForm": "ui-motion",
+  "jobId": "motion-graphics",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": true,
+      "role": "primary"
+    }
+  ],
+  "planSha256": "0b106499c9bd82b932d8de9b9714ff0af5fab08cb38898be34b8de6884961414",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "iart",
+    "id": "iart"
+  },
+  "query": "HTML animation showcase with orbital graphics kinetic typography and scroll reveals",
+  "registrySha256": "6722b06d9f9a37fd64eebfe68ec8831724664b15089d679f1dad6bfff1a56b9e",
+  "routeSha256": "b1000c9a008fee1351eb8fcf451ba11d9a25940f9cf51e5e02c443ca8ed71694",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": []
+}

@@ -1,0 +1,66 @@
+{
+  "admission": "inert",
+  "deliverableForm": "ui-motion",
+  "jobId": "technique",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "search",
+      "command": "mengto",
+      "required": true,
+      "role": "primary"
+    },
+    {
+      "action": "route",
+      "command": "prism",
+      "required": false,
+      "role": "secondary"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": false,
+      "role": "secondary"
+    }
+  ],
+  "planSha256": "d46926426408973cdae5f7dfd11c473d1d3becddb370b26d8d75a2d9badf234e",
+  "primaryKnowledge": {
+    "action": "search",
+    "admission": "inert",
+    "command": "mengto",
+    "id": "mengto"
+  },
+  "query": "Repair animation motion verification receipts, reduced motion interruption and cleanup evidence in design-pipeline beta",
+  "registrySha256": "6722b06d9f9a37fd64eebfe68ec8831724664b15089d679f1dad6bfff1a56b9e",
+  "routeSha256": "4f1a9feb3590be03448e1ca7366ca1add5fd9971d9e593e4b2e17c3b832527b2",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": [
+    {
+      "action": "route",
+      "admission": "inert",
+      "command": "prism",
+      "id": "prism"
+    },
+    {
+      "action": "route",
+      "admission": "inert",
+      "command": "iart",
+      "id": "iart"
+    }
+  ]
+}

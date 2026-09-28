@@ -1,0 +1,66 @@
+{
+  "admission": "inert",
+  "deliverableForm": "ui-motion",
+  "jobId": "technique",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "search",
+      "command": "mengto",
+      "required": true,
+      "role": "primary"
+    },
+    {
+      "action": "route",
+      "command": "prism",
+      "required": false,
+      "role": "secondary"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": false,
+      "role": "secondary"
+    }
+  ],
+  "planSha256": "6ec98e7c1e42892a9ac31a4138ed2c49ac862b9e915cca3142a311533f56925c",
+  "primaryKnowledge": {
+    "action": "search",
+    "admission": "inert",
+    "command": "mengto",
+    "id": "mengto"
+  },
+  "query": "动效手艺规则：单一时间源、缓动、结束回到原位、循环接缝、预备和回弹",
+  "registrySha256": "fe12e43bc11e5b795d36bb476a1019b3803b1310300e7271b73aa94cb726b17c",
+  "routeSha256": "60c91924e04f203d7ae0996d28e87dd915ab3dbeba315dee16d131dbd25f5685",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": [
+    {
+      "action": "route",
+      "admission": "inert",
+      "command": "prism",
+      "id": "prism"
+    },
+    {
+      "action": "route",
+      "admission": "inert",
+      "command": "iart",
+      "id": "iart"
+    }
+  ]
+}

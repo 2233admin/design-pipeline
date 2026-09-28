@@ -23,16 +23,16 @@ function makeReleaseFixture(version, changelogVersions = [version]) {
 }
 
 test("release contract accepts matching VERSION, changelog, and tag", () => {
-  const result = validateReleaseContract(repoRoot, { version: "0.10.0", tag: "v0.10.0" });
+  const result = validateReleaseContract(repoRoot, { version: "0.12.0-beta.1", tag: "v0.12.0-beta.1" });
   assert.deepEqual(result, {
     ok: true,
-    version: "0.10.0",
-    declaredVersion: "0.10.0",
-    tag: "v0.10.0",
+    version: "0.12.0-beta.1",
+    declaredVersion: "0.12.0-beta.1",
+    tag: "v0.12.0-beta.1",
     changelogEntryCount: 1,
     errors: [],
   });
-  assert.equal(formatReleaseContractResult(result), "OK release contract: v0.10.0");
+  assert.equal(formatReleaseContractResult(result), "OK release contract: v0.12.0-beta.1");
 });
 
 test("release contract reports requested-version, tag, duplicate, and missing-entry failures", () => {
@@ -61,15 +61,15 @@ test("release contract reports requested-version, tag, duplicate, and missing-en
 test("release contract CLI emits deterministic JSON and exits on failure", () => {
   const result = spawnSync(
     process.execPath,
-    [path.join(repoRoot, "scripts", "release-contract.cjs"), "--version", "0.10.0", "--tag", "v0.10.0", "--json"],
+    [path.join(repoRoot, "scripts", "release-contract.cjs"), "--version", "0.12.0-beta.1", "--tag", "v0.12.0-beta.1", "--json"],
     { cwd: repoRoot, encoding: "utf8" },
   );
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout), {
     ok: true,
-    version: "0.10.0",
-    declaredVersion: "0.10.0",
-    tag: "v0.10.0",
+    version: "0.12.0-beta.1",
+    declaredVersion: "0.12.0-beta.1",
+    tag: "v0.12.0-beta.1",
     changelogEntryCount: 1,
     errors: [],
   });
@@ -153,10 +153,10 @@ test("release-mode package ignores v-prefixed branch names as tags", () => {
       encoding: "utf8",
       env: {
         ...process.env,
-        PACKAGE_VERSION: "0.10.0",
+        PACKAGE_VERSION: "0.12.0-beta.1",
         RELEASE_MODE: "1",
         GITHUB_REF_TYPE: "branch",
-        GITHUB_REF_NAME: "v0.10.0",
+        GITHUB_REF_NAME: "v0.12.0-beta.1",
       },
     },
   );

@@ -1,0 +1,41 @@
+{
+  "admission": "inert",
+  "deliverableForm": "product-launch-video",
+  "jobId": "motion-graphics",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": true,
+      "role": "primary"
+    }
+  ],
+  "planSha256": "ec9b862aada098c3ac9e459eaf74c33e225335812a7631c1ff9cb4e193db66ec",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "iart",
+    "id": "iart"
+  },
+  "query": "宣传片时间轴检查与跨模型宣传动画评测",
+  "registrySha256": "fe12e43bc11e5b795d36bb476a1019b3803b1310300e7271b73aa94cb726b17c",
+  "routeSha256": "c4fe56aa9af42da9cbd7ecb68bbd12ed029e68b40ea44885a3d0fd19bd696a90",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": []
+}

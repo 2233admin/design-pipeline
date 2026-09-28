@@ -10,6 +10,13 @@ const PLAN_SCHEMA = "design-pipeline.job-plan.v1";
 const SHA256 = /^[a-f0-9]{64}$/;
 const ACTIVATIONS = new Set(["explicit", "scored", "default"]);
 const ADMISSIONS = new Set(["ready", "review", "reference-only", "inert"]);
+const DELIVERABLE_FORMS = Object.freeze([
+  "product-launch-video",
+  "motion-graphics-video",
+  "scrollytelling-page",
+  "interactive-page",
+  "ui-motion",
+]);
 const KERNEL_STEPS = Object.freeze([
   { command: "foundation", action: "check" },
   { command: "toolchain", action: "resolve" },
@@ -69,6 +76,16 @@ function fold(text) {
   return String(text).toLocaleLowerCase("en-US");
 }
 
+function classifyDeliverableForm(query) {
+  const text = fold(query);
+  if (/scrollytelling|scroll[- ]driven|scrolling narrative|scroll page|滚动叙事|滚动页面|滚动故事/.test(text)) return "scrollytelling-page";
+  if (/interactive (?:page|website|web)|互动页面|交互页面/.test(text)) return "interactive-page";
+  const productVideo = /\bproduct(?:[- ](?:launch|demo|showcase|promo(?:tional)?|intro|overview))?[- ](?:video|film|reel|animation)\b|\b(?:promotional|promo|launch)\s+(?:video|animation)\b|产品(?:发布|推广|宣传展示|宣传|展示|演示|介绍)(?:宣传)?(?:短视频|视频|动画|片)|宣传片|宣传动画|推广动画/.test(text);
+  if (productVideo) return "product-launch-video";
+  if (/\bvideo\b|\bfilms?\b|\breels?\b|motion graphics?|animated explainer|short-form|短视频|片头|视频|宣传片/.test(text)) return "motion-graphics-video";
+  return "ui-motion";
+}
+
 function scoreJob(job, text) {
   const matchedKeywords = job.keywords.filter((keyword) => text.includes(fold(keyword)));
   return { job, score: matchedKeywords.length, matchedKeywords, priority: job.priority };
@@ -104,6 +121,7 @@ function readyResult(query, hit, registrySha, confidence) {
     schema: ROUTE_SCHEMA,
     status: "ready",
     query,
+    deliverableForm: classifyDeliverableForm(query),
     job: job.id,
     confidence,
     primaryKnowledge: job.primaryKnowledge,
@@ -122,6 +140,7 @@ function clarifyResult(query, hits, registrySha) {
     schema: ROUTE_SCHEMA,
     status: "needs-clarification",
     query,
+    deliverableForm: classifyDeliverableForm(query),
     job: null,
     confidence: hits[0]?.score ? "low" : "none",
     primaryKnowledge: null,
@@ -168,12 +187,16 @@ function planBody(route) {
   if (!isObject(route) || route.schema !== ROUTE_SCHEMA) invalid("unsupported job route schema");
   if (route.status !== "ready") invalid("only a ready route can be written as a job plan");
   if (typeof route.job !== "string" || !route.job.trim()) invalid("ready route has no job");
+  if (typeof route.query !== "string" || !route.query.trim()) invalid("ready route query is invalid");
+  if (!DELIVERABLE_FORMS.includes(route.deliverableForm)) invalid("ready route deliverableForm is invalid");
+  if (classifyDeliverableForm(route.query) !== route.deliverableForm) invalid("deliverable-form conflict: route query does not match its form");
   if (!isObject(route.primaryKnowledge) || !ADMISSIONS.has(route.primaryKnowledge.admission)) {
     invalid("ready route has no frozen admission");
   }
   return sortValue({
     schema: PLAN_SCHEMA,
     query: route.query,
+    deliverableForm: route.deliverableForm,
     jobId: route.job,
     registrySha256: route.registrySha256,
     routeSha256: sha256(canonicalJson(route)),
@@ -194,6 +217,7 @@ function validateJobPlan(plan) {
   if (!isObject(plan) || plan.schema !== PLAN_SCHEMA) invalid("unsupported job plan schema");
   if (typeof plan.query !== "string" || !plan.query.trim()) invalid("job plan query is invalid");
   if (typeof plan.jobId !== "string" || !plan.jobId.trim()) invalid("job plan jobId is invalid");
+  if (!DELIVERABLE_FORMS.includes(plan.deliverableForm)) invalid("job plan deliverableForm is invalid");
   for (const field of ["registrySha256", "routeSha256", "planSha256"]) {
     if (!SHA256.test(plan[field] || "")) invalid(`job plan ${field} is invalid`);
   }
@@ -205,25 +229,29 @@ function validateJobPlan(plan) {
   }
   const { planSha256, ...body } = plan;
   if (planSha256 !== sha256(canonicalJson(sortValue(body)))) invalid("job plan hash does not match contents");
+  if (classifyDeliverableForm(plan.query) !== plan.deliverableForm) invalid("deliverable-form conflict: job plan query does not match its form");
   return plan;
 }
 
 function bindJobPlan(request = {}, plan) {
-  const hasBind = Boolean(request.jobPlanSha256 || request.jobId || request.jobPlanPath);
-  if (!hasBind) return null;
-  if (!request.jobPlanSha256) invalid("jobPlanSha256 is required when binding a job plan");
-  if (!plan) invalid("job plan is required when jobPlanSha256 is set");
+  const missing = ["jobId", "jobPlanSha256", "jobPlanPath"].filter((field) => !request[field]);
+  if (missing.length) invalid(`missing Stage 0 binding: ${missing.join(", ")}`);
+  if (!plan) invalid("job plan is required for Stage 0 binding");
   const valid = validateJobPlan(plan);
   if (request.jobPlanSha256 !== valid.planSha256) invalid("jobPlanSha256 does not match the job plan");
-  if (request.jobId && request.jobId !== valid.jobId) invalid("jobId does not match the job plan");
+  if (request.jobId !== valid.jobId) invalid("jobId does not match the job plan");
+  if (request.deliverableForm !== undefined && request.deliverableForm !== valid.deliverableForm) invalid("deliverable-form conflict: request does not match the job plan");
+  if (request.brief !== undefined && classifyDeliverableForm(request.brief) !== valid.deliverableForm) invalid("deliverable-form conflict: brief does not match the job plan");
   return valid;
 }
 
 module.exports = {
   KERNEL_STEPS,
+  DELIVERABLE_FORMS,
   PLAN_SCHEMA,
   ROUTE_SCHEMA,
   SCHEMA,
+  classifyDeliverableForm,
   bindJobPlan,
   buildJobPlan,
   loadJobRegistry,

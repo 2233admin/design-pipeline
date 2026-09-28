@@ -20,7 +20,13 @@ const sources = {
 };
 
 function request(overrides = {}) {
+  const brief = overrides.brief || "Build a Reflex analytics page with an interactive XY chart";
+  const jobPlan = buildJobPlan(routeJob({ query: brief }));
   return {
+    jobId: jobPlan.jobId,
+    jobPlanSha256: jobPlan.planSha256,
+    jobPlanPath: "job-plan.json",
+    deliverableForm: jobPlan.deliverableForm,
     schema: "design-pipeline.toolchain-request.v1",
     framework: "reflex",
     brief: "Build a Reflex analytics page with an interactive XY chart",
@@ -38,7 +44,7 @@ test("Reflex and XY resolve into one executable toolchain plan", () => {
       constraints: [{ id: "accessibility" }],
       gates: [],
     },
-  }), sources);
+  }), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
   assert.equal(plan.status, "ready");
   assert.equal(plan.framework, "reflex");
   assert.equal(plan.styling.id, "tailwindcss");
@@ -54,18 +60,18 @@ test("Reflex and XY resolve into one executable toolchain plan", () => {
 });
 
 test("toolchain resolution fails closed for incompatible or catalog-only graphics routes", () => {
-  const incompatible = resolveToolchain(request({ framework: "react", graphics: { adapter: "reflex-xy" } }), sources);
+  const incompatible = resolveToolchain(request({ framework: "react", graphics: { adapter: "reflex-xy" } }), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
   assert.equal(incompatible.status, "blocked");
   assert.ok(incompatible.blockers.includes("reflex-xy requires framework reflex or agnostic"));
 
-  const referenceOnly = resolveToolchain(request({ graphics: { adapter: "apache-echarts" } }), sources);
+  const referenceOnly = resolveToolchain(request({ graphics: { adapter: "apache-echarts" } }), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
   assert.equal(referenceOnly.status, "blocked");
   assert.ok(referenceOnly.blockers.some((item) => item.includes("reference-only")));
   assert.ok(referenceOnly.blockers.some((item) => item.includes("lifecycle")));
 });
 
 test("trusted probes report actual availability without mutating the target project", () => {
-  const plan = resolveToolchain(request(), sources);
+  const plan = resolveToolchain(request(), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
   const calls = [];
   const result = probeToolchain(plan, {
     projectRoot: path.resolve(__dirname, ".."),
@@ -97,10 +103,14 @@ test("toolchain resolve binds a matching job plan without copying the job id", (
   assert.notEqual(plan.primaryRouteId, plan.jobId);
 });
 
-test("toolchain resolve omits job binding when no plan is supplied", () => {
-  const plan = resolveToolchain(request(), sources);
-  assert.equal(Object.hasOwn(plan, "jobId"), false);
-  assert.equal(Object.hasOwn(plan, "jobPlanSha256"), false);
+test("toolchain resolve rejects missing and partial Stage 0 binding", () => {
+  const bound = request();
+  const jobPlan = buildJobPlan(routeJob({ query: bound.brief }));
+  const { jobId, jobPlanSha256, jobPlanPath, deliverableForm, ...unbound } = bound;
+  for (const fields of [{}, { jobId }, { jobPlanSha256 }, { jobPlanPath }, { jobId, jobPlanSha256, jobPlanPath }]) {
+    assert.throws(() => resolveToolchain({ ...unbound, ...fields }, sources, { jobPlan }), /missing Stage 0 binding/);
+  }
+  assert.throws(() => resolveToolchain(bound, sources), /job plan is required/);
 });
 
 test("toolchain resolve rejects a drifted job plan", () => {
@@ -120,7 +130,7 @@ test("toolchain resolve rejects a drifted job plan", () => {
 });
 
 test("failed probes block with one actionable root-cause line", () => {
-  const plan = resolveToolchain(request(), sources);
+  const plan = resolveToolchain(request(), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
   const result = probeToolchain(plan, {
     projectRoot: path.resolve(__dirname, ".."),
     runner() {
@@ -138,7 +148,7 @@ test("Vite DevTools routes its project-local probe and evidence contract", () =>
     brief: "Use Vite DevTools to inspect the plugin graph",
     requested: { styling: "none", uiLibrary: "none" },
     graphics: undefined,
-  }), sources);
+  }), sources, { jobPlan: buildJobPlan(routeJob({ query: request({ brief: "Use Vite DevTools to inspect the plugin graph" }).brief })) });
   const probe = plan.probes.find(({ toolId }) => toolId === "vitejs/devtools");
   const invocation = plan.invocations.find(({ toolId }) => toolId === "vitejs/devtools");
   const verification = plan.verification.find(({ toolId }) => toolId === "vitejs/devtools");
@@ -152,7 +162,7 @@ test("Vite DevTools routes its project-local probe and evidence contract", () =>
 
 test("tool invocation receipts bind the plan, command, artifacts, and hashes", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "toolchain-receipt-"));
-  const plan = resolveToolchain(request(), sources);
+  const plan = resolveToolchain(request(), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
   const artifact = path.join(root, "chart.svg");
   fs.writeFileSync(artifact, "<svg></svg>");
   const receipt = {
@@ -176,4 +186,21 @@ test("tool invocation receipts bind the plan, command, artifacts, and hashes", (
   });
   receipt.artifacts[0].sha256 = "0".repeat(64);
   assert.throws(() => validateToolchainReceipt(receipt, { evidenceRoot: root, requireFiles: true, plan }), /hash mismatch/);
+});
+
+test("product video binding rejects rewritten page briefs in either language", () => {
+  for (const query of ["Create an HTML product launch video", "制作 HTML 产品发布宣传视频"]) {
+    const jobPlan = buildJobPlan(routeJob({ query }));
+    const input = request({ brief: query, framework: "agnostic", graphics: undefined });
+    const plan = resolveToolchain(input, sources, { jobPlan });
+    assert.equal(plan.jobId, "motion-graphics");
+    assert.equal(plan.jobPlanSha256, jobPlan.planSha256);
+    assert.equal(plan.deliverableForm, "product-launch-video");
+    assert.ok(plan.tools.some(({ id }) => id === "heygen-com/hyperframes"));
+    for (const brief of ["Build a scrollytelling page", "制作滚动叙事页面", "Build an interactive page", "制作交互页面"]) {
+      assert.throws(() => resolveToolchain({ ...input, brief }, sources, { jobPlan }), /deliverable-form conflict/);
+      const rewritten = buildJobPlan(routeJob({ query: brief }));
+      assert.throws(() => resolveToolchain({ ...input, brief, deliverableForm: rewritten.deliverableForm }, sources, { jobPlan }), /deliverable-form conflict/);
+    }
+  }
 });

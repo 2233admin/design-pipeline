@@ -176,7 +176,7 @@ test("publishes the CJK and preview contracts as package resources", () => {
     "scripts/direction-preview-core.cjs",
   ]) assert.ok(resources.required.includes(resource), resource);
 
-  const pipeline = fs.readFileSync(path.join(repoRoot, "skill/SKILL.md"), "utf8");
+  const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();
   const cjk = fs.readFileSync(path.join(repoRoot, "skill/references/cjk-typography.md"), "utf8");
   assert.match(pipeline, /direction check --stage preview/);
   assert.match(pipeline, /references\/cjk-typography\.md/);

@@ -13,7 +13,7 @@ const manifestPath = path.join(repoRoot, "skill", "evals", "evals.json");
 const validatorPath = path.join(repoRoot, "skill", "scripts", "validate-evals.cjs");
 const cliPath = path.join(repoRoot, "skill", "scripts", "designer-pipeline.cjs");
 const manifest = loadManifest(manifestPath);
-const frontDoor = fs.readFileSync(path.join(repoRoot, "skill", "SKILL.md"), "utf8");
+const frontDoor = require("./helpers/skill-surface.cjs").readSkillSurface();
 
 function runValidator(file) {
   return spawnSync(process.execPath, [validatorPath, file], {

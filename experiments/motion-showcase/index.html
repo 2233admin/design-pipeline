@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f2ed">
+  <title>Motion Studies — Design Pipeline</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">跳至内容</a>
+  <header class="header wrap">
+    <a class="brand" href="#" aria-label="Design Pipeline 首页"><span class="brand-symbol" aria-hidden="true">dp<span>✳</span></span><span>DESIGN<br>PIPELINE</span></a>
+    <nav aria-label="展示导航"><a href="#orbit">轨迹</a><a href="#type">节奏</a><a href="#layers">层次</a></nav>
+    <button id="pause" type="button" aria-pressed="false"><span class="pause-icon" aria-hidden="true">Ⅱ</span><span class="pause-label">暂停动画</span></button>
+  </header>
+  <main id="main">
+    <section class="hero wrap" id="orbit" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> MOTION STUDIES / VOL. 01</p>
+        <h1 id="hero-title">好的设计，<br>有自己的<br><span class="title-last">节奏<span class="title-star" aria-hidden="true">✳</span>。</span></h1>
+        <p class="intro">从一条轨迹，到整个页面。<br>让形状、文字与空间，开始对话。</p>
+        <a class="explore" href="#type">向下探索 <span aria-hidden="true">↘</span></a>
+        <div class="hero-foot"><span>DESIGNED TO MOVE.</span><span>01 — 03</span></div>
+      </div>
+      <div class="orbit-stage" role="img" aria-label="蓝色空间内，白色球体周围的绿色和橙色卫星沿椭圆轨道运行">
+        <div class="stage-top"><span>STUDY 01</span><span>ORBITAL PLAY ↗</span></div>
+        <div class="axis axis-x"></div><div class="axis axis-y"></div>
+        <span class="stage-cross cross-one">+</span><span class="stage-cross cross-two">+</span>
+        <div class="orbital-system" aria-hidden="true">
+          <div class="track track-back"></div>
+          <div class="planet-shadow"></div><div class="planet"></div>
+          <div class="orbit-plane"><div class="orbit-spinner"><i class="satellite satellite-lime"></i><i class="satellite satellite-orange"></i></div></div>
+          <div class="track track-front"></div>
+          <div class="orbit-plane plane-two"><div class="orbit-spinner spinner-two"><i class="satellite satellite-small"></i></div></div>
+        </div>
+        <span class="orbit-word" aria-hidden="true">in motion.</span>
+        <div class="stage-bottom"><span>每一次靠近，都有迹可循。</span><span class="coordinate">↗ 360°</span></div>
+      </div>
+    </section>
+    <div class="section-caption wrap"><span>三个片段，一种流动的语言。</span><span>SCROLL TO DISCOVER <span aria-hidden="true">↓</span></span></div>
+    <section class="type-study" id="type" aria-labelledby="type-title">
+      <div class="wrap study-heading"><p class="eyebrow">02 / KINETIC TYPE</p><h2 id="type-title">文字，也有律动。</h2><p>让信息前进，让视线停留。</p></div>
+      <div class="type-window" aria-hidden="true"><div class="type-line line-one"><span>FORM <i>✳</i> FLOW <i>✳</i> FEEL <i>✳</i>&nbsp;</span><span>FORM <i>✳</i> FLOW <i>✳</i> FEEL <i>✳</i>&nbsp;</span></div><div class="type-line line-two"><span>保持好奇 · 持续流动 ·&nbsp;</span><span>保持好奇 · 持续流动 ·&nbsp;</span></div></div>
+      <div class="wrap type-footer"><span>FORM → FLOW → FEEL</span><span>有秩序，也有一点意外。 <span aria-hidden="true">✳</span></span></div>
+    </section>
+    <section class="layers-study wrap" id="layers" aria-labelledby="layers-title">
+      <div class="layers-copy"><p class="eyebrow">03 / SPATIAL COMPOSITION</p><h2 id="layers-title">把平面，<br>展开成空间。</h2><p>滚动让层次浮现。<br>移动鼠标，让视角跟随你。</p><span class="small-note"><span aria-hidden="true">↗</span> 在画面中探索，换个角度看。</span></div>
+      <div class="poster" role="img" aria-label="空间构成动画：四个平面依次展开，鼠标移动可改变视角">
+        <div class="poster-meta"><span>DEPTH / 003</span><span aria-hidden="true">✳</span></div>
+        <div class="poster-art" aria-hidden="true"><div class="sheets"><div class="sheet sheet-back"></div><div class="sheet sheet-mid"></div><div class="sheet sheet-front"></div><div class="sheet sheet-top"><span>MAKE<br>ROOM<br>FOR<br><em>PLAY.</em></span><i>↗</i></div></div></div>
+        <div class="poster-foot"><span>换个角度，发现新的可能。</span><span>01 / ∞</span></div>
+      </div>
+    </section>
+    <section class="closing wrap"><p>不止让页面动起来。</p><h2>让每一帧，<span>都有表达。</span></h2><a href="#orbit" class="back-link">再看一遍 <span aria-hidden="true">↗</span></a></section>
+  </main>
+  <footer class="wrap"><span>DESIGN PIPELINE <span aria-hidden="true">✳</span> MOTION STUDIES</span><span>独立 HTML 动效展示 · 2026</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>

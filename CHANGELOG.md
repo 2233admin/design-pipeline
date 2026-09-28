@@ -2,6 +2,170 @@
 
 All notable changes to Design Pipeline are documented here.
 
+## [Unreleased]
+
+## [0.12.0-beta.1] - 2026-09-29
+
+### Changed
+
+- Workflow step 2 (`split-film-edit-workflows`): the `film` and `edit` sub-workflows have their own
+  stage modules (`skill/scripts/workflows/`) and guides (`references/workflow-film.md`,
+  `references/workflow-edit.md`); every film and edit `next` action carries `guide`.
+- A recorded gate result counts only while it is newer than the files it checked: editing
+  `storyboard.json` or `edit.json`, or re-rendering a draft, reopens the stage.
+- Replicate mode: a film cannot waive its reference study (`decide --stage reference --answer
+  none` is refused), and an edit gains a `reference` stage before cutting.
+- Storyboard gate (`checkStoryboard`): a beat whose `handoff` is `continuation`, `morph`,
+  `camera-carry` or `match-cut` must name a `carrier` (`carrier-unnamed`); `uniform-cadence` fails
+  boards of 4+ beats whose longest beat is under 3x the shortest; `no-rest` fails films of 8s+
+  with no title/brand hold and no beat's `holdSec` at least 0.3s. Metrics gain `cadenceRatio` and
+  `restSec`. A `{ filmRhythm: false }` option (used for storyboards derived from an edit) turns
+  the cadence and rest rules off without affecting `carrier-unnamed`.
+- Workflow redesign (step 1 of `redesign-user-workflow`): `skill/SKILL.md` is now a 3.6 KB front
+  door. `designer-pipeline next` reads `.design-pipeline/state.json` and returns one action at a
+  time (`run`, `ask` or `done`); `designer-pipeline decide` records the two user decisions
+  (concept pick, draft verdict) plus intake, reference and delivery. Deliverables `film`, `edit`,
+  `web`, `ui`; tiers `quick`, `standard`, `full` (OpenSpec only at `full` and for this repository).
+  Rejections become project rules returned by `next`. Checks report back into the state.
+- Migration: the previous `skill/SKILL.md` content moved unchanged to
+  `skill/references/pipeline-reference.md` and is routed from the front door. Every CLI command
+  still works. Agents that read stage contracts from `SKILL.md` should read that reference.
+
+### Added
+
+- `web` deliverables get their own sub-workflow (`workflows/web.cjs`, guide
+  `references/workflow-web.md`): build, then a `probe` stage that routes to
+  `verify interaction --probe interaction.json` and reopens when the page or probe file changes.
+  A rejected draft also clears the `interaction` gate. `ui` keeps the single work stage.
+- Provenance records for the reference skills motion-web (CC BY-NC 4.0, re-reviewed at `5f4e40f1`)
+  and onetake (PolyForm Noncommercial 1.0.0, pinned at `36072d36`): ideas only, no upstream code,
+  text or assets. Repository QA fails once a record is older than its 30-day review window.
+- Render and check continuity (port-onetake-continuity, brief w2): `evaluateFilmRender` adds
+  `carry-cut` when a detected scene cut lands on a planned continuation, morph or camera-carry
+  boundary (match-cut stays exempt) and reports `stillness.stillShare`; `film check` computes
+  `carryScore` over planned carried boundaries from the timeline and render gates and fails with
+  `low-carry` below 0.6 across at least 3 such boundaries.
+- `camera-follow` choreography pattern (`skill/references/film-choreography/patterns.js`,
+  `registry.json`): the camera tracks a small offset ahead of its subject and lands first at each
+  path point, then holds perfectly still through an explicit rest; seek-safe, transforms only, no
+  infinite repeats. Concept cards now lead with the central idea as one sentence about the picture,
+  not a list of scenes; `workflow-film.md` and `product-film-direction.md` document carry
+  (`carrier`), rhythm (`holdSec`, beat-length variety) and why a continuous camera and real
+  stillness keep a film from reading as a slideshow, crediting `reference-skill-onetake.md` as the
+  idea's source (ideas only).
+- Measured interaction probe (port-motion-web-interaction, brief w4): `verify interaction --probe
+  interaction.json` loads the page in the headless Chrome stack film capture already uses, drives
+  real input (`pointer-sweep`, `wheel`, `click`) and samples the target every animation frame, then
+  reports `dead-interaction`, `no-settle`, `rest-drift`, `linear-response` (warning), `opacity-only`
+  and `external-request`, each with a one-line fix, as `design-pipeline.interaction-result.v1` next
+  to the probe. Measurement is receipt-free: a dead, unsettled or drifting interaction fails on what
+  the browser recorded rather than on what an agent reported, and a linear response is reported as a
+  warning from the same measurement. The gate records itself as `interaction` through the workflow
+  state.
+- `response.spring-settle` motion primitive (port-motion-web-interaction, brief w6): registered in
+  `motion-primitives.json` with stiffness, dampingRatio, mass, restValue and overshootLimit
+  parameters, pointer/state/scroll drivers, and `provenance.kind: idea` crediting
+  `reference-skill-motion-web.md` (ideas only, `codeCopied: false`). New
+  `references/web-motion.md` guide covers motion-as-material, spring-damper parameters and typical
+  UI ranges, a from-scratch semi-implicit-Euler spring integrator, stepped motion as a deliberate
+  style, self-contained pages, and how `verify interaction` measures all of it.
+- Product-film gates: `verify film-storyboard` checks a structured `storyboard.json` for open
+  timelines, missing product actions, surface-only motion, slideshow handoffs and unbound sound;
+  `verify film-render` reports duration, scene cuts against planned handoffs, cut/audio-onset
+  alignment and a per-beat contact sheet; `references/film-choreography/` ships seek-safe GSAP
+  patterns. None of these grant creative acceptance.
+- `verify film-timeline` checks a probed GSAP timeline (`timeline-probe.js`) against its
+  storyboard: layout tweens, infinite repeats, static or fade-only action beats, and uncarried
+  continuity handoffs. `film-eval measure` scores per-model film runs through the film gates into
+  benchmark v2 measurements; `skill/evals/film/` ships the cross-model film benchmark.
+- `film scaffold`, `film capture-timeline` and `film check`: one-command film project setup,
+  headless timeline capture through the HyperFrames browser stack, and an aggregate film check
+  whose findings each carry a concrete `fix`. Contract errors now list allowed values, and CLI
+  help documents previously missing flags.
+- Composition gate: `verify composition` measures a rendered PNG (blank or washed-out frames,
+  weak subject separation, off-balance weight, dead bands, competing focal points, clutter,
+  palette sprawl, edge crowding) and, with `composition capture` elements, WCAG text contrast,
+  off-canvas text, near-miss alignment and flat type hierarchy. Dependency-free PNG decoding.
+  `film check` applies it to every beat frame.
+- Audio gate: `verify audio` measures EBU R128 loudness against web, podcast or broadcast
+  targets, true peak, flat-top clipping, unplanned silence, abrupt endings, music entry/exit
+  against storyboard cues, and recorded licensing (`sound.usage`, `sound.assets`).
+  `audio master` performs two-pass loudness normalization with optional fade-out and reports
+  when it had to compress. `film check` runs the gate on the rendered film.
+- HyperFrames catalog bridge: `film blocks` searches the cached block catalog (3D, WebGL, shader,
+  camera and device blocks) and storyboard beats may name a `block`, which the storyboard gate
+  verifies and the scaffold hosts. `film check` captures HyperFrames projects through the preview
+  runtime so nested blocks load; raw-file capture now fails loudly instead of returning an empty
+  timeline. The probe tags proxy "driver" tweens, and the render gate adds per-beat pixel motion
+  with a `render-static-beat` finding, so procedural, 3D and footage beats are judged from pixels.
+- `film score` composes the soundtrack as a Strudel pattern (templates `punchy-launch`,
+  `calm-build`, `tech-pulse`, or an edited `score.strudel.js`), renders it offline to WAV in
+  headless Chrome, exports the pattern's exact event grid, checks cuts and accent cues against it,
+  and records the score's license. Strudel (AGPL-3.0) is installed into the film project on first
+  use and never bundled; only built-in synth sounds are enabled.
+- Motion craft rules: the timeline gate reports two tweens driving one property at once
+  (`property-conflict`) and warns on linear easing for travelling elements (`linear-motion`); the
+  storyboard gains `endState` (rest, loop, free) and beat `arc` (anticipate-act-settle), checked
+  from rendered pixels (`rest-drift`, `loop-seam-jump`, `missing-anticipation`, `missing-settle`).
+  Procedural beats are sampled at start, middle and end for composition. HyperFrames capture now
+  waits for the timeline to register, resolves the preview project by directory, and a failed
+  capture can no longer pass on a stale timeline.json.
+- Blender adapter: `film blender` renders a parameterized template (`product-turntable`) headless
+  with EEVEE or Cycles, encodes the film, converts Blender keyframes into timeline.json for the
+  timeline gate, bakes per-frame camera and product motion for three.js blocks, and checks
+  composition on key frames. Poly Haven HDRIs (CC0) download by id with md5 verification. Blender
+  (GPL) is used as an external program; the template scripts are MIT.
+- Music-led editing (PV, MAD): `film-edit analyze` tracks the beat grid, downbeats and bar energy
+  of any track (or uses a Strudel score grid) and splits footage into candidate shots with motion
+  peaks; `film-edit auto` places shots on the grid in `mad` or `pv` style; `film-edit render`
+  assembles with ffmpeg (speed, flash, freeze, zoom-punch); `film-edit check` enforces cuts on the
+  grid, rhythm, reuse, speed and footage licensing, and runs the render, audio and composition
+  gates through a derived storyboard.
+- A reference-led, 32-second SeedController HTML promotional film with existing project footage,
+  graphic annotations, canvas transitions and an original synchronized score. Earlier motion
+  studies are retained as comparisons, with user-rejected directions explicitly identified.
+
+- Product promotional films now have an automatically reached creative direction contract:
+  product actions, shot handoffs, an early moving proof, and uninterrupted creative review,
+  separate from runtime checks. Ordinary Chinese promotional-animation wording is recognized.
+
+- Motion receipts can record rapid-input, reverse, unmount, and reduced-motion lifecycle checks,
+  with optional resize and route-change scenarios. `verify motion --require-lifecycle` requires
+  complete scenario coverage; legacy receipts explicitly report timing-only coverage.
+
+### Fixed
+
+- Workflow gates allow 50 ms of clock skew between a gate's record time and its input files'
+  times. On a loaded Windows host a file written just before the gate could carry a later
+  time, reopen the stage it had just passed, and fail `a gate result goes stale when its
+  inputs change` at random.
+- The timeline gate no longer treats a one-take subject as ambient background. An element counts as
+  ambient only when one long tween (at least half the film) drives it, such as a drifting
+  background. Before, a subject carried through a continuous film by a chain of actions covered
+  more than 60% of the runtime, was excluded, and every carried handoff failed.
+- `carry-cut` also catches a panel swapped in one frame on a carried boundary. The scene detector misses
+  it when the panel covers little of the frame; found on a rendered 5-card slideshow demo, where
+  all four swaps passed the render gate. The render result lists `carryBreaks` with their kind.
+- `node scripts/qa.cjs` now points `TEMP`, `TMP` and `TMPDIR` inside its own temporary root, so
+  test scratch directories are removed with it. Before, every run left thousands of directories
+  and a 0.33 GB install copy in the system temp folder; on 2026-09-28 this filled drive C.
+- Product-film direction now starts with inspected moving references and available footage, and
+  includes music/sound planning by default. Silent rough passes and unreviewed audio remain partial
+  evidence; continuity or runtime checks alone cannot satisfy audiovisual creative acceptance.
+
+- The motion receipt JSON Schema now declares all accepted fields. Motion validation rejects
+  placeholder interruption declarations, zero cadence/budgets, and unordered or out-of-range
+  frame timestamps.
+
+## [0.11.0-beta.1] - 2026-09-19
+
+### Fixed
+
+- Toolchain resolve/probe now require a complete Stage 0 job-plan binding and reject stale hashes
+  or deliverable-form conflicts. Regenerate older plans from the original query before resolving.
+- English and Chinese HTML product-promotion briefs select the existing motion-graphics and
+  HyperFrames routes; ordinary hover motion remains outside the video route.
+
 ## [0.10.0] - 2026-09-02
 
 ### Added
@@ -20,7 +184,6 @@ All notable changes to Design Pipeline are documented here.
 - Persisted artifact metadata is now bound to the file hash, persisted control plans are restricted to the
   governed runnable registry, untrusted preview roots are rejected, and interaction-state declaration parsing
   is hardened.
-
 
 ## [0.9.0] - 2026-08-26
 
@@ -565,3 +728,4 @@ All notable changes to Design Pipeline are documented here.
 [0.9.0-beta.5]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.4...v0.9.0-beta.5
 [0.9.0]: https://github.com/2233admin/design-pipeline/compare/v0.9.0-beta.5...v0.9.0
 [0.10.0]: https://github.com/2233admin/design-pipeline/compare/v0.9.0...v0.10.0
+[0.11.0-beta.1]: https://github.com/2233admin/design-pipeline/compare/v0.10.0...v0.11.0-beta.1

@@ -1,0 +1,41 @@
+{
+  "admission": "inert",
+  "deliverableForm": "product-launch-video",
+  "jobId": "motion-graphics",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": true,
+      "role": "primary"
+    }
+  ],
+  "planSha256": "6c790cccf21dd1208e2d9612b4448d8e070a050fe925dae5372d532ee3b8746f",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "iart",
+    "id": "iart"
+  },
+  "query": "给我们的画布做一个宣传动画",
+  "registrySha256": "3baa8bc76bd6f1c8d1d9315e52c25f8fc26c8b4c78026aebfee45cdf1828057f",
+  "routeSha256": "c91352b015a7733e859c78c32941458185382b45b615388231f9089457735982",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": []
+}

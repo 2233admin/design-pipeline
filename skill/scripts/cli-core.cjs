@@ -41,6 +41,20 @@ const {
 const { exitCodeForStatus: componentFirstExitCode } = require("./component-first/orchestration/aggregate-result.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
+const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
+const { checkTimeline } = require("./film-timeline-core.cjs");
+const { measureFilmBenchmark } = require("./film-eval-core.cjs");
+const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
+const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
+const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
+const { scoreFilm } = require("./score-project-core.cjs");
+const { renderBlenderShot } = require("./blender-project-core.cjs");
+const { listTemplates } = require("./blender-core.cjs");
+const editProject = require("./edit-project-core.cjs");
+const workflow = require("./workflow-core.cjs");
+const { checkComposition } = require("./composition-core.cjs");
+const { decodePng } = require("./png-core.cjs");
+const { checkAudio, masterAudio } = require("./audio-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
 const { createDeveloperBrief, evaluateBenchmark } = require("./benchmark-core.cjs");
 const { recordObservation } = require("./record-feedback.cjs");
@@ -121,7 +135,7 @@ const {
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
 const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -130,8 +144,8 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--direction-lock", "--providers",
-  "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict",
+  "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
@@ -351,7 +365,7 @@ function publicHelp() {
     "  template adapt --receipt <file> --context <file> --json",
     "  template review --plan <file> --review <file> --json",
     "  template approve --plan <file> --approval <file> --json",
-    "  doctor | status",
+    "  doctor | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
     "  resume --change-root <dir>",
@@ -359,15 +373,38 @@ function publicHelp() {
     "  package --change-root <dir> --output <file>",
     "  route --query [--write --output]",
     "  change init|resume|advance|migrate|repair",
-    "  foundation check | direction check | playground check | reference check|resolve | reconstruction check | scene check",
+    "  foundation check [--kind design|motion|all] | direction check | playground check | reference check|resolve | reconstruction check | scene check",
     "  component-first check|stack|components|playground|page",
     "  high-fidelity check",
     "  component-first-v2 check|migrate|select|promote",
     "  design-skill route|manifest|run|select|promote",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
-    "  evidence check|capture",
-    "  verify motion|components | --gate <gate> --artifact <file>",
+    "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url>",
+    "  verify motion|components|audio|composition|interaction|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
+    "    verify components --matrix <file> [--evidence-root <dir>] [--require-files]",
+    "    verify motion --receipt <file> [--require-lifecycle]",
+    "    verify audio --audio <wav|mp3|mp4> [--storyboard <storyboard.json>] [--target web|podcast|broadcast]",
+    "    verify composition --image <png> [--elements <elements.json>] [--profile ui|poster|frame] [--allow code,code]",
+    "    verify film-storyboard --storyboard <storyboard.json>",
+    "    verify film-timeline --storyboard <storyboard.json> --timeline <timeline.json>",
+    "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
+    "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>]",
+    "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
+    "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
+    "  film scaffold --output <dir> [--replace]",
+    "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
+    "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>]   (one next step)",
+    "  decide --project-root . --stage intake|reference|concept|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
+    "  film blender (lists templates) | film blender --project-root <dir> --template product-turntable [--params params.json] [--engine eevee|cycles] [--output renders/shot.mp4] [--audio score.wav] [--blender <exe>]",
+    "  film-edit analyze --project-root <dir> --audio <music> [--sources sources]   (beat grid + footage shots)",
+    "  film-edit auto --project-root <dir> --style mad|pv [--duration <sec>] [--width 1280 --height 720] [--replace]",
+    "  film-edit render|check --project-root <dir> [--output renders/edit.mp4]",
+    "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
+    "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
+    "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
+    "  film check --project-root <dir>   (runs storyboard, timeline and render gates; each finding carries a fix)",
+    "  film-eval measure --manifest <benchmark.json> --runs <runs-dir> [--output <measurements.json>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
     "  design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide",
@@ -379,14 +416,15 @@ function publicHelp() {
     "  iart search|route|verify",
     "  toolchain resolve|probe|receipt-check",
     "  execution route|prepare|finalize",
-    "  benchmark brief|evaluate",
+    "  benchmark brief --manifest <file> | benchmark evaluate --manifest <file> --measurements <file> [--record-feedback]",
+    "  source audit",
     "  adapter audit|intake|receipt-check | style-signals check",
     "  adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget",
     "    propose: --experience --evidence-hash --scope --proposer --skill --target-version --evaluation-manifest-sha256 --primary-metric --metric-direction --construction-fixture --rules",
     "    rule shape: { op, id, rule: { dimension, value, appliesTo?, excludes?, expiresAt? } }; each skill has at most one rule per dimension; see references/adaptation-contract.schema.json",
     "    evaluate: --candidate --replay --held-out --evaluator; promote: --candidate --receipt --skill --approve --approval",
     "",
-    "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked, 3 measured fidelity mismatch.",
+    "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked or gate failed, 3 measured fidelity mismatch.",
   ].join("\n");
 }
 
@@ -733,6 +771,14 @@ function evidenceCommand(parsed, root, action) {
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+function filmCapture(parsed, root, composition, url) {
+  const args = url ? ["--url", url] : ["--composition", composition];
+  for (const flag of ["--composition-id", "--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
+  const kernel = runKernel("capture-film-timeline.cjs", args, root);
+  if (!kernel.value || !kernel.value.timeline) fail("film capture", "capture kernel returned no timeline", { code: "KERNEL_FAILED" });
+  return kernel.value.timeline;
+}
+
 function verifyCommand(parsed, root, action) {
   const gate = option(parsed, "--gate");
   if (gate) {
@@ -746,13 +792,62 @@ function verifyCommand(parsed, root, action) {
   }
   if (action === "motion") {
     const file = artifact(parsed, root, "--receipt");
-    const result = evaluateMotion(readJson(file, "motion evidence"));
+    const result = evaluateMotion(readJson(file, "motion evidence"), { requireLifecycle: option(parsed, "--require-lifecycle") === true });
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "film-storyboard") {
+    const storyboardFile = artifact(parsed, root, "--storyboard");
+    const result = checkStoryboard(readJson(storyboardFile, "film storyboard"));
+    workflow.recordGate(path.dirname(storyboardFile), "storyboard", result.status);
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "audio") {
+    const board = option(parsed, "--storyboard") ? readJson(artifact(parsed, root, "--storyboard"), "film storyboard") : null;
+    const result = checkAudio(artifact(parsed, root, "--audio"), { storyboard: board, target: option(parsed, "--target", "web") });
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "composition") {
+    const image = artifact(parsed, root, "--image");
+    const elements = option(parsed, "--elements") ? readJson(artifact(parsed, root, "--elements"), "composition elements") : null;
+    const allow = option(parsed, "--allow") ? String(option(parsed, "--allow")).split(",").map((code) => code.trim()).filter(Boolean) : [];
+    const result = checkComposition(decodePng(fs.readFileSync(image), path.basename(image)), { profile: option(parsed, "--profile", "ui"), elements, allow });
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "film-timeline") {
+    const board = readJson(artifact(parsed, root, "--storyboard"), "film storyboard");
+    const result = checkTimeline(readJson(artifact(parsed, root, "--timeline"), "film timeline"), board);
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "film-render") {
+    const board = readJson(artifact(parsed, root, "--storyboard"), "film storyboard");
+    const video = artifact(parsed, root, "--video");
+    const outDir = option(parsed, "--output") ? contained(root, option(parsed, "--output"), "--output", false) : null;
+    const result = evaluateFilmRender(board, video, { outDir });
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "components") {
     const file = artifact(parsed, root, "--matrix");
     const evidenceRoot = contained(root, option(parsed, "--evidence-root", path.dirname(file)), "--evidence-root");
     const result = checkComponentMatrix(readJson(file, "component states"), { evidenceRoot, requireFiles: option(parsed, "--require-files") === true });
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "interaction") {
+    // The probe file and the destination are resolved before the kernel spawns anything: a malformed
+    // probe or an --output outside --root is a contract error the caller can fix without Chrome ever
+    // being involved.
+    const probeFile = artifact(parsed, root, "--probe");
+    const doc = validateProbeFile(readJson(probeFile, "interaction probe"));
+    const outDir = option(parsed, "--output") ? contained(root, option(parsed, "--output"), "--output", false) : path.join(path.dirname(probeFile), "evidence");
+    const args = ["--probe", probeFile];
+    for (const flag of ["--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
+    const kernel = runKernel("capture-interaction.cjs", args, root);
+    // A measurement that never happened is a failed measurement, never a failed gate: this aborts
+    // with a contract error rather than turning an absent recording into a gate verdict.
+    if (!kernel.value || !kernel.value.capture) fail("interaction capture", "capture kernel returned no capture", { code: "KERNEL_FAILED" });
+    const result = evaluateProbeFile(doc, kernel.value.capture);
+    fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(path.join(outDir, "interaction.json"), `${JSON.stringify(result, null, 2)}\n`);
+    workflow.recordGate(path.dirname(probeFile), "interaction", result.status);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   fail("cli", `unknown verify action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
@@ -1777,6 +1872,142 @@ const COMMANDS = {
     },
   },
   "design-code-map": { actions: { check: { required: ["--artifact"], run: designCodeMapCheckCommand } } },
+  film: {
+    actions: {
+      scaffold: {
+        required: ["--output"],
+        run: ({ parsed, root }) => ({ result: scaffoldFilm(contained(root, option(parsed, "--output"), "--output", false), { replace: option(parsed, "--replace") === true }), exitCode: 0 }),
+      },
+      "capture-timeline": {
+        required: [],
+        run: ({ parsed, root }) => {
+          if (!option(parsed, "--composition") && !option(parsed, "--url")) fail("cli", "--composition <index.html> or --url <preview url> is required", { code: "OPTION_REQUIRED" });
+          const timeline = filmCapture(parsed, root, option(parsed, "--composition") ? contained(root, option(parsed, "--composition"), "--composition") : null, option(parsed, "--url"));
+          if (option(parsed, "--output")) fs.writeFileSync(contained(root, option(parsed, "--output"), "--output", false), `${JSON.stringify(timeline, null, 2)}
+`);
+          return { result: { status: "captured", timeline }, exitCode: 0 };
+        },
+      },
+      blender: {
+        required: [],
+        run: ({ parsed, root }) => {
+          if (!option(parsed, "--template")) {
+            return { result: { status: "templates", templates: listTemplates().map(({ id, use, grammar, params }) => ({ id, use, grammar, params })), next: "Render one with --project-root <dir> --template <id> [--params params.json]." }, exitCode: 0 };
+          }
+          if (!option(parsed, "--project-root")) fail("cli", "--project-root is required to render", { code: "OPTION_REQUIRED" });
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const params = option(parsed, "--params") ? readJson(contained(root, option(parsed, "--params"), "--params"), "blender params") : {};
+          const result = renderBlenderShot(project, { template: option(parsed, "--template"), params, engine: option(parsed, "--engine"), blender: option(parsed, "--blender"), output: option(parsed, "--output"), audio: option(parsed, "--audio") });
+          return { result, exitCode: result.composition.some((frame) => frame.status === "failed") ? 2 : 0 };
+        },
+      },
+      score: {
+        required: ["--project-root"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const result = scoreFilm(project, {
+            template: option(parsed, "--template"),
+            pattern: option(parsed, "--pattern"),
+            bpm: option(parsed, "--bpm") ? Number(option(parsed, "--bpm")) : undefined,
+            key: option(parsed, "--key"),
+            output: option(parsed, "--output"),
+            replace: option(parsed, "--replace") === true,
+            write: option(parsed, "--write") === true,
+            render: (args) => runKernel("render-score.cjs", [...args, ...["--chrome", "--puppeteer-module"].flatMap((flag) => (option(parsed, flag) ? [flag, option(parsed, flag)] : []))], root).value,
+          });
+          return { result, exitCode: result.alignment.status === "passed" ? 0 : 2 };
+        },
+      },
+      blocks: {
+        required: ["--project-root"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const catalog = loadCatalog(project, { refresh: option(parsed, "--refresh") === true });
+          const results = searchBlocks(catalog.items, option(parsed, "--query", ""), { tag: option(parsed, "--tag"), type: option(parsed, "--type"), limit: option(parsed, "--limit") ? Number(option(parsed, "--limit")) : 10 });
+          return { result: { status: "found", catalogSize: catalog.items.length, cached: catalog.cached, results, next: "Name the chosen block in the beat's `block` field, run its install command, and host it at the beat's time." }, exitCode: 0 };
+        },
+      },
+      check: {
+        required: ["--project-root"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const result = checkFilmProject(project, { capture: (composition, url) => filmCapture(parsed, root, composition, url), preview: option(parsed, "--url") ? () => ({ url: option(parsed, "--url"), started: false }) : undefined });
+          workflow.recordGate(project, "film", result.status);
+          return { result, exitCode: result.status === "passed" ? 0 : 2 };
+        },
+      },
+    },
+  },
+  audio: {
+    actions: {
+      master: {
+        required: ["--input", "--output"],
+        run: ({ parsed, root }) => ({
+          result: masterAudio(contained(root, option(parsed, "--input"), "--input"), contained(root, option(parsed, "--output"), "--output", false), { target: option(parsed, "--target", "web"), fadeOutSec: option(parsed, "--fade-out") ? Number(option(parsed, "--fade-out")) : 0 }),
+          exitCode: 0,
+        }),
+      },
+    },
+  },
+  composition: {
+    actions: {
+      capture: {
+        required: ["--output"],
+        run: ({ parsed, root }) => {
+          const args = ["--output", contained(root, option(parsed, "--output"), "--output", false)];
+          if (option(parsed, "--composition")) args.push("--composition", contained(root, option(parsed, "--composition"), "--composition"));
+          for (const flag of ["--url", "--width", "--height", "--seek", "--chrome", "--puppeteer-module"]) if (option(parsed, flag) !== null) args.push(flag, String(option(parsed, flag)));
+          const kernel = runKernel("capture-composition.cjs", args, root);
+          return { result: kernel.value, exitCode: 0 };
+        },
+      },
+    },
+  },
+  next: {
+    run: ({ parsed, root }) => {
+      const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
+      if (option(parsed, "--deliverable")) workflow.initState(project, { deliverable: option(parsed, "--deliverable"), tier: option(parsed, "--tier"), mode: option(parsed, "--mode"), director: option(parsed, "--director"), replace: option(parsed, "--replace") === true });
+      return { result: workflow.nextAction(project), exitCode: 0 };
+    },
+  },
+  decide: {
+    run: ({ parsed, root }) => {
+      const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
+      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer") }), exitCode: 0 };
+    },
+  },
+  "film-edit": {
+    actions: Object.fromEntries(["analyze", "auto", "render", "check"].map((name) => [name, {
+      required: ["--project-root"],
+      run: ({ parsed, root }) => {
+        const project = contained(root, option(parsed, "--project-root"), "--project-root");
+        const num = (flag) => (option(parsed, flag) ? Number(option(parsed, flag)) : undefined);
+        const opts = { music: option(parsed, "--audio"), sources: option(parsed, "--sources"), style: option(parsed, "--style"), durationSec: num("--duration"), width: num("--width"), height: num("--height"), replace: option(parsed, "--replace") === true, output: option(parsed, "--output") };
+        const result = { analyze: editProject.analyzeProject, auto: editProject.autoProject, render: editProject.renderProject, check: editProject.checkProject }[name](project, opts);
+        if (name === "check") workflow.recordGate(project, "edit", result.status);
+        const failed = name === "check" ? result.status !== "passed" : name === "auto" ? result.check.status !== "passed" : false;
+        return { result, exitCode: failed ? 2 : 0 };
+      },
+    }])),
+  },
+  "film-eval": {
+    actions: {
+      measure: {
+        required: ["--manifest", "--runs"],
+        run: ({ parsed, root, file }) => {
+          const runs = contained(root, option(parsed, "--runs"), "--runs");
+          const measurements = measureFilmBenchmark(readJson(file("--manifest"), "benchmark manifest"), runs);
+          if (option(parsed, "--output")) {
+            const out = contained(root, option(parsed, "--output"), "--output", false);
+            fs.mkdirSync(path.dirname(out), { recursive: true });
+            fs.writeFileSync(out, `${JSON.stringify(measurements, null, 2)}
+`);
+          }
+          return { result: { status: "measured", measurements }, exitCode: 0 };
+        },
+      },
+    },
+  },
   benchmark: {
     actions: {
       brief: {

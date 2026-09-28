@@ -1,0 +1,54 @@
+{
+  "admission": "inert",
+  "deliverableForm": "ui-motion",
+  "jobId": "product-design",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "prism",
+      "required": true,
+      "role": "primary"
+    },
+    {
+      "action": "search",
+      "command": "design-system",
+      "required": false,
+      "role": "secondary"
+    }
+  ],
+  "planSha256": "6ebbd029b5daea57e2d66326c5fcb1f4ef4dcbedd23bb81bfd21c8d663b83063",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "prism",
+    "id": "prism"
+  },
+  "query": "按音乐节拍剪辑素材做 PV 和 MAD 卡点混剪",
+  "registrySha256": "fe12e43bc11e5b795d36bb476a1019b3803b1310300e7271b73aa94cb726b17c",
+  "routeSha256": "5981f369a759f809b3ccdc3a2f261a53501a91199350e6b92b4872cce3dc76ec",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": [
+    {
+      "action": "search",
+      "admission": "reference-only",
+      "command": "design-system",
+      "id": "astryx"
+    }
+  ]
+}

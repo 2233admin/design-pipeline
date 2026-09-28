@@ -21,15 +21,23 @@ For a fresh video request, route once:
 3. Captions on unchanged footage: `embedded-captions`.
 4. Designed overlays on unchanged footage: `talking-head-recut`.
 5. Beat-driven music video: `music-to-video`.
-6. Short unnarrated motion-first unit: `motion-graphics`.
-7. PR explanation: `pr-to-video`.
-8. Product or website showcase: `product-launch-video`.
+6. Product or website promotional film/animation: `product-launch-video`.
+7. Other short unnarrated motion-first unit: `motion-graphics`.
+8. PR explanation: `pr-to-video`.
 9. Topic or article explainer: `faceless-explainer`.
 10. Otherwise: `general-video`.
 
+For product promotion, apply `references/product-film-direction.md` before choosing a template or
+authoring a storyboard, including when the user asks only for an HTML preview. Its reference and
+asset study plus sound direction precede film construction. This project-owned
+creative contract complements the upstream runtime contract below. Technical checks and creative
+review are separate outcomes; ordinary promotional wording is sufficient to activate both.
+
 Existing project state wins over fresh routing. An existing `BRIEF.md`, `hyperframes.json`, or
 `STORYBOARD.md` resumes the recorded workflow. An explicit inspect, check, preview, render, publish,
-or batch-render request performs only that operation.
+or batch-render request performs only that operation. When the user requests a creative revision,
+reassess the recorded storyboard against the product-film contract rather than preserving a failed
+structure solely because it already exists.
 
 ## Composition contract
 
