@@ -19,20 +19,20 @@ const TIERS = ["quick", "standard", "full"];
 const MODES = ["brief", "replicate", "freeform"];
 const CLI = "designer-pipeline";
 
-// Sub-workflows by deliverable (Q5, Q7): film and edit have their own stage modules and guides.
+// Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
+// guides.
 const { INTAKE } = require("./workflows/shared.cjs");
-const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs") };
+const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 
-function codeStages(deliverable, tier) {
-  const guide = deliverable === "web" ? "references/pipeline-reference.md (motion and web sections)" : "references/pipeline-reference.md";
-  const work = { id: "work", finished: (state) => Boolean(state.decisions?.delivered), action: () => ({ type: "run", command: tier === "full" ? `Open an OpenSpec change under openspec/changes/<id>/ and follow ${guide}; when verified: ${CLI} decide --project-root . --stage deliver --answer <evidence>` : `Follow ${guide} at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing), verify the rendered surface, then: ${CLI} decide --project-root . --stage deliver --answer <evidence>`, why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates." }) };
+function codeStages(tier) {
+  const work = { id: "work", finished: (state) => Boolean(state.decisions?.delivered), action: () => ({ type: "run", command: tier === "full" ? `Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md; when verified: ${CLI} decide --project-root . --stage deliver --answer <evidence>` : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing), verify the rendered surface, then: ${CLI} decide --project-root . --stage deliver --answer <evidence>`, why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates." }) };
   return tier === "quick" ? [work] : [INTAKE, work];
 }
 
 function stagesFor(state) {
   const sub = SUB_WORKFLOWS[state.deliverable];
   if (sub) return sub.stages(state);
-  return codeStages(state.deliverable, state.tier);
+  return codeStages(state.tier);
 }
 
 function readState(root) {
@@ -105,7 +105,7 @@ function decide(root, options = {}) {
     if (options.verdict === "reject") {
       state.rules = [...(state.rules || []), { text: options.answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
       // A rejected draft must be rebuilt and rechecked.
-      state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit"].includes(gate)));
+      state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
     }
   } else if (stage === "deliver") {
     state.decisions.delivered = options.answer || true;
