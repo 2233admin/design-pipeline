@@ -46,6 +46,7 @@ const { checkTimeline } = require("./film-timeline-core.cjs");
 const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
+const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
 const { scoreFilm } = require("./score-project-core.cjs");
 const { renderBlenderShot } = require("./blender-project-core.cjs");
 const { listTemplates } = require("./blender-core.cjs");
@@ -144,7 +145,7 @@ const KNOWN_OPTIONS = new Set([
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
   "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict",
-  "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
+  "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
@@ -380,7 +381,7 @@ function publicHelp() {
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url>",
-    "  verify motion|components|audio|composition|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
+    "  verify motion|components|audio|composition|interaction|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
     "    verify components --matrix <file> [--evidence-root <dir>] [--require-files]",
     "    verify motion --receipt <file> [--require-lifecycle]",
     "    verify audio --audio <wav|mp3|mp4> [--storyboard <storyboard.json>] [--target web|podcast|broadcast]",
@@ -388,6 +389,7 @@ function publicHelp() {
     "    verify film-storyboard --storyboard <storyboard.json>",
     "    verify film-timeline --storyboard <storyboard.json> --timeline <timeline.json>",
     "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
+    "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>]",
     "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     "  film scaffold --output <dir> [--replace]",
@@ -827,6 +829,25 @@ function verifyCommand(parsed, root, action) {
     const file = artifact(parsed, root, "--matrix");
     const evidenceRoot = contained(root, option(parsed, "--evidence-root", path.dirname(file)), "--evidence-root");
     const result = checkComponentMatrix(readJson(file, "component states"), { evidenceRoot, requireFiles: option(parsed, "--require-files") === true });
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "interaction") {
+    // The probe file and the destination are resolved before the kernel spawns anything: a malformed
+    // probe or an --output outside --root is a contract error the caller can fix without Chrome ever
+    // being involved.
+    const probeFile = artifact(parsed, root, "--probe");
+    const doc = validateProbeFile(readJson(probeFile, "interaction probe"));
+    const outDir = option(parsed, "--output") ? contained(root, option(parsed, "--output"), "--output", false) : path.join(path.dirname(probeFile), "evidence");
+    const args = ["--probe", probeFile];
+    for (const flag of ["--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
+    const kernel = runKernel("capture-interaction.cjs", args, root);
+    // A measurement that never happened is a failed measurement, never a failed gate: this aborts
+    // with a contract error rather than turning an absent recording into a gate verdict.
+    if (!kernel.value || !kernel.value.capture) fail("interaction capture", "capture kernel returned no capture", { code: "KERNEL_FAILED" });
+    const result = evaluateProbeFile(doc, kernel.value.capture);
+    fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(path.join(outDir, "interaction.json"), `${JSON.stringify(result, null, 2)}\n`);
+    workflow.recordGate(path.dirname(probeFile), "interaction", result.status);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   fail("cli", `unknown verify action ${String(action)}`, { code: "UNKNOWN_COMMAND" });

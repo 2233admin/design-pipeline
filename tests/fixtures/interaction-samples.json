@@ -1,0 +1,50 @@
+{
+  "note": "Canonical recording shape for the interaction probe. `document` is a fully specified probe document (no field left to a default) and `capture` is one clean recording of a card that follows the pointer with a spring-like settle: the card leaves rest at frame 48 ms, overshoots its final x by 4.9 px and is quiet from 240 ms onward. interaction-core's evaluator consumes exactly this shape; interaction-capture-core produces exactly this shape. Both test files assert against this file so the two layers cannot drift apart.",
+  "document": {
+    "schema": "design-pipeline.interaction-probe.v1",
+    "id": "sample-card",
+    "url": "index.html",
+    "viewport": { "width": 1280, "height": 800 },
+    "probes": [
+      {
+        "id": "card-follows-pointer",
+        "target": "#card",
+        "input": { "kind": "pointer-sweep", "from": [200, 400], "to": [1080, 400], "durationMs": 96 },
+        "expect": { "responds": true, "settleWithinMs": 160, "returnsToRest": false, "response": "spring" }
+      }
+    ]
+  },
+  "capture": {
+    "schema": "design-pipeline.interaction-capture.v1",
+    "url": "http://127.0.0.1:53123/index.html",
+    "pageOrigin": "http://127.0.0.1:53123",
+    "probes": [
+      {
+        "id": "card-follows-pointer",
+        "requests": ["http://127.0.0.1:53123/index.html", "http://127.0.0.1:53123/card.css"],
+        "samples": [
+          { "t": 0, "phase": "pre", "box": { "x": 200, "y": 300, "width": 320, "height": 200 }, "transform": "none", "opacity": 1 },
+          { "t": 16, "phase": "pre", "box": { "x": 200, "y": 300, "width": 320, "height": 200 }, "transform": "none", "opacity": 1 },
+          { "t": 32, "phase": "pre", "box": { "x": 200, "y": 300, "width": 320, "height": 200 }, "transform": "none", "opacity": 1 },
+          { "t": 48, "phase": "input", "box": { "x": 206, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 6, 0)", "opacity": 1 },
+          { "t": 64, "phase": "input", "box": { "x": 218, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 18, 0)", "opacity": 1 },
+          { "t": 80, "phase": "input", "box": { "x": 234, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 34, 0)", "opacity": 1 },
+          { "t": 96, "phase": "input", "box": { "x": 248, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 48, 0)", "opacity": 1 },
+          { "t": 112, "phase": "input", "box": { "x": 258, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 58, 0)", "opacity": 1 },
+          { "t": 128, "phase": "input", "box": { "x": 263, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 63, 0)", "opacity": 1 },
+          { "t": 144, "phase": "input", "box": { "x": 266, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 66, 0)", "opacity": 1 },
+          { "t": 160, "phase": "post", "box": { "x": 268.4, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 68.4, 0)", "opacity": 1 },
+          { "t": 176, "phase": "post", "box": { "x": 268.9, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 68.9, 0)", "opacity": 1 },
+          { "t": 192, "phase": "post", "box": { "x": 267.5, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 67.5, 0)", "opacity": 1 },
+          { "t": 208, "phase": "post", "box": { "x": 265.8, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 65.8, 0)", "opacity": 1 },
+          { "t": 224, "phase": "post", "box": { "x": 264.7, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 64.7, 0)", "opacity": 1 },
+          { "t": 240, "phase": "post", "box": { "x": 264.2, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 64.2, 0)", "opacity": 1 },
+          { "t": 256, "phase": "post", "box": { "x": 264.05, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 64.05, 0)", "opacity": 1 },
+          { "t": 272, "phase": "post", "box": { "x": 264, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 64, 0)", "opacity": 1 },
+          { "t": 288, "phase": "post", "box": { "x": 264, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 64, 0)", "opacity": 1 },
+          { "t": 304, "phase": "post", "box": { "x": 264, "y": 300, "width": 320, "height": 200 }, "transform": "matrix(1, 0, 0, 1, 64, 0)", "opacity": 1 }
+        ]
+      }
+    ]
+  }
+}
