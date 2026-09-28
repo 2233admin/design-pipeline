@@ -147,3 +147,26 @@ test("film check: low-carry fires on a project with 3 carried boundaries of whic
     assert.ok(result.fixes.some((fix) => fix.gate === "check" && fix.code === "low-carry"));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+// A panel swap on a calm stage: a 60x40 card changes colour in one frame at each carried boundary.
+// It covers too little of the frame for the scene detector, so only the one-step spike can see it.
+function synthesizePanelSwaps(dir, name) {
+  const file = path.join(dir, name);
+  const card = (color, from, to) => `drawbox=x=50:y=25:w=60:h=40:color=${color}:t=fill:enable='between(t,${from},${to})'`;
+  const graph = `color=c=0x0b0d12:s=160x90:r=30:d=12,${card("red", 0, 3)},${card("blue", 3, 6)},${card("green", 6, 9)},${card("yellow", 9, 12)}`;
+  const result = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", graph, "-c:v", "libx264", "-pix_fmt", "yuv420p", file], { windowsHide: true, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  return file;
+}
+
+test("a panel swapped in one frame on a carried boundary gives carry-cut even without a scene cut", { skip }, () => {
+  const dir = tmp("film-carry-swap-");
+  try {
+    const video = synthesizePanelSwaps(dir, "swaps.mp4");
+    const result = evaluateFilmRender(carryBoard("match-cut"), video);
+    assert.deepEqual(result.cuts.detectedSec.filter((at) => [3, 6].some((b) => Math.abs(at - b) < 0.2)), [], "the scene detector does not see these swaps");
+    const breaks = result.carryBreaks.filter((entry) => entry.kind === "instant-replacement").map((entry) => entry.beatId).sort();
+    assert.deepEqual(breaks, ["continue", "morph"], JSON.stringify(result.carryBreaks));
+    assert.ok(result.findings.filter((finding) => finding.code === "carry-cut").every((finding) => /instant replacement/.test(finding.message) && finding.fix));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
