@@ -81,7 +81,7 @@ function validateShape(board) {
   const beatIds = new Set();
   for (const [index, beat] of board.beats.entries()) {
     const label = `beats[${index}]`;
-    assertKeys(beat, ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion"], ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion", "choreography", "soundCues", "note"], label, SCOPE);
+    assertKeys(beat, ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion"], ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion", "choreography", "block", "soundCues", "note"], label, SCOPE);
     real(beat.id, `${label}.id`);
     if (beatIds.has(beat.id)) fail(SCOPE, `${label} duplicates ${beat.id}`);
     beatIds.add(beat.id);
@@ -130,6 +130,7 @@ function checkStoryboard(board, options = {}) {
     else if (beat.transformation.kind !== "footage" && (!beat.transformation.from || !beat.transformation.to)) add("transformation-endpoints", "transformation must name from and to states", beat.id);
     if (surfaceOnly(beat)) add("surface-only-motion", `motion ${JSON.stringify(beat.motion)} only changes opacity/scale/position of a panel`, beat.id);
     if (beat.choreography !== undefined && !choreography.has(beat.choreography)) add("choreography-unknown", `unknown choreography ${beat.choreography}`, beat.id);
+    if (beat.block !== undefined && options.blockNames && !options.blockNames.has(beat.block)) add("block-unknown", `unknown HyperFrames block ${beat.block}`, beat.id);
   }
 
   // Holds are allowed for pacing but must not dominate or chain.
@@ -228,6 +229,28 @@ function detectOnsets(video, tools) {
   return onsets;
 }
 
+// Runtime-agnostic motion evidence: share of pixels that change between consecutive 10 fps
+// frames at 160x90. It sees motion the GSAP probe cannot (3D, shader, canvas, Blender, footage).
+// Calibration: a frozen clip measures 0.000%; the smallest real motion in a HyperFrames demo
+// (a fading logo) measured 0.086%.
+const MOTION_FPS = 10;
+const MOTION_W = 160;
+const MOTION_H = 90;
+const FROZEN_SHARE = 0.0002;
+
+function motionProfile(video, tools) {
+  const { stdout } = run(tools.ffmpeg, ["-hide_banner", "-loglevel", "error", "-i", video, "-an", "-vf", `fps=${MOTION_FPS},scale=${MOTION_W}:${MOTION_H},format=gray`, "-f", "rawvideo", "-"], { binary: true });
+  const size = MOTION_W * MOTION_H;
+  const frames = Math.floor(stdout.length / size);
+  const shares = [];
+  for (let i = 1; i < frames; i += 1) {
+    let changed = 0;
+    for (let p = 0; p < size; p += 1) if (Math.abs(stdout[i * size + p] - stdout[(i - 1) * size + p]) > 4) changed += 1;
+    shares.push({ atSec: i / MOTION_FPS, share: changed / size });
+  }
+  return shares;
+}
+
 function nearest(list, value) {
   let best = Infinity;
   for (const item of list) best = Math.min(best, Math.abs(item - value));
@@ -278,6 +301,17 @@ function evaluateFilmRender(board, video, options = {}) {
     if (board.sound.mode === "scored" && cuts.length >= 3 && aligned / cuts.length < 0.3) add("cuts-off-beat", `${aligned}/${cuts.length} cuts land within ${syncTolerance}s of an audio onset`);
   }
 
+  const motion = motionProfile(video, tools);
+  const beatMotion = board.beats.map((beat) => {
+    const inside = motion.filter((sample) => sample.atSec > beat.startSec && sample.atSec <= beat.endSec);
+    const share = inside.length ? inside.reduce((sum, sample) => sum + sample.share, 0) / inside.length : 0;
+    return { beatId: beat.id, role: beat.role, changedShare: Number(share.toFixed(5)) };
+  });
+  for (const entry of beatMotion) {
+    const beat = board.beats.find((candidate) => candidate.id === entry.beatId);
+    if (entry.role === "action" && beat.endSec - beat.startSec >= 0.5 && entry.changedShare < FROZEN_SHARE) add("render-static-beat", `action beat ${entry.beatId} is frozen in the render (${(entry.changedShare * 100).toFixed(3)}% of pixels change per frame)`);
+  }
+
   const sheet = options.outDir ? contactSheet(video, board.beats, options.outDir, tools) : null;
   return {
     schema: RENDER_SCHEMA,
@@ -288,9 +322,10 @@ function evaluateFilmRender(board, video, options = {}) {
     media: { durationSec: media.durationSec, durationDeltaSec: durationDelta, fps: Number(media.fps.toFixed(3)) },
     cuts: { detectedSec: cuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
     audio,
+    motion: beatMotion,
     contactSheet: sheet,
     creativeAcceptance: "not-assessed",
-    limits: "Objective signals only: scene-change cuts, energy-flux onsets and midpoint frames. Creative review of comprehension, continuity, rhythm and identity remains a separate qa.md record.",
+    limits: "Objective signals only: scene-change cuts, energy-flux onsets, per-beat pixel motion and midpoint frames. Creative review of comprehension, continuity, rhythm and identity remains a separate qa.md record.",
   };
 }
 

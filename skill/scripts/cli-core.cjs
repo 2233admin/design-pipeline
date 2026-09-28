@@ -45,6 +45,7 @@ const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
+const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
 const { checkAudio, masterAudio } = require("./audio-core.cjs");
@@ -128,7 +129,7 @@ const {
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
 const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -137,7 +138,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
@@ -385,7 +386,8 @@ function publicHelp() {
     "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     "  film scaffold --output <dir> [--replace]",
-    "  film capture-timeline --composition <index.html> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
+    "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
+    "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
     "  film check --project-root <dir>   (runs storyboard, timeline and render gates; each finding carries a fix)",
     "  film-eval measure --manifest <benchmark.json> --runs <runs-dir> [--output <measurements.json>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
@@ -754,8 +756,8 @@ function evidenceCommand(parsed, root, action) {
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
-function filmCapture(parsed, root, composition) {
-  const args = ["--composition", composition];
+function filmCapture(parsed, root, composition, url) {
+  const args = url ? ["--url", url] : ["--composition", composition];
   for (const flag of ["--composition-id", "--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
   const kernel = runKernel("capture-film-timeline.cjs", args, root);
   if (!kernel.value || !kernel.value.timeline) fail("film capture", "capture kernel returned no timeline", { code: "KERNEL_FAILED" });
@@ -1841,19 +1843,29 @@ const COMMANDS = {
         run: ({ parsed, root }) => ({ result: scaffoldFilm(contained(root, option(parsed, "--output"), "--output", false), { replace: option(parsed, "--replace") === true }), exitCode: 0 }),
       },
       "capture-timeline": {
-        required: ["--composition"],
+        required: [],
         run: ({ parsed, root }) => {
-          const timeline = filmCapture(parsed, root, contained(root, option(parsed, "--composition"), "--composition"));
+          if (!option(parsed, "--composition") && !option(parsed, "--url")) fail("cli", "--composition <index.html> or --url <preview url> is required", { code: "OPTION_REQUIRED" });
+          const timeline = filmCapture(parsed, root, option(parsed, "--composition") ? contained(root, option(parsed, "--composition"), "--composition") : null, option(parsed, "--url"));
           if (option(parsed, "--output")) fs.writeFileSync(contained(root, option(parsed, "--output"), "--output", false), `${JSON.stringify(timeline, null, 2)}
 `);
           return { result: { status: "captured", timeline }, exitCode: 0 };
+        },
+      },
+      blocks: {
+        required: ["--project-root"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const catalog = loadCatalog(project, { refresh: option(parsed, "--refresh") === true });
+          const results = searchBlocks(catalog.items, option(parsed, "--query", ""), { tag: option(parsed, "--tag"), type: option(parsed, "--type"), limit: option(parsed, "--limit") ? Number(option(parsed, "--limit")) : 10 });
+          return { result: { status: "found", catalogSize: catalog.items.length, cached: catalog.cached, results, next: "Name the chosen block in the beat's `block` field, run its install command, and host it at the beat's time." }, exitCode: 0 };
         },
       },
       check: {
         required: ["--project-root"],
         run: ({ parsed, root }) => {
           const project = contained(root, option(parsed, "--project-root"), "--project-root");
-          const result = checkFilmProject(project, { capture: (composition) => filmCapture(parsed, root, composition) });
+          const result = checkFilmProject(project, { capture: (composition, url) => filmCapture(parsed, root, composition, url), preview: option(parsed, "--url") ? () => ({ url: option(parsed, "--url"), started: false }) : undefined });
           return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },
       },

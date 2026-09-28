@@ -59,6 +59,7 @@
     "film-project.test.cjs",
     "composition-gate.test.cjs",
     "audio-gate.test.cjs",
+    "film-catalog-3d.test.cjs",
     "palette-foundation.test.cjs",
     "package-release.test.cjs",
     "pending-source.test.cjs",

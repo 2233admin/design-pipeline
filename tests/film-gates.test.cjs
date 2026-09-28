@@ -130,7 +130,9 @@ function synthesize(dir, { audio = true, cuts = [3, 6, 9] } = {}) {
   const inputs = [];
   const filters = [];
   colors.forEach((color, index) => {
-    inputs.push("-f", "lavfi", "-i", `color=c=${color}:s=160x90:r=30:d=${bounds[index + 1] - bounds[index]}`);
+    // Each scene has a moving box: frozen action beats now fail the render motion check.
+    const d = bounds[index + 1] - bounds[index];
+    inputs.push("-f", "lavfi", "-i", `color=c=${color}:s=160x90:r=30:d=${d}[bg];color=c=white:s=20x20:r=30:d=${d}[b];[bg][b]overlay=x='mod(t*60,140)':y=30`);
     filters.push(`[${index}:v]`);
   });
   const args = ["-hide_banner", "-loglevel", "error", "-y", ...inputs];

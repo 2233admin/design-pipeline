@@ -32,6 +32,7 @@
     "references/composition-gate.md",
     "scripts/audio-core.cjs",
     "references/audio-gate.md",
+    "scripts/film-blocks-core.cjs",
     "scripts/component-first-core.cjs",
     "scripts/component-first-v2-core.cjs",
     "scripts/design-skill-core.cjs",
