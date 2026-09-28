@@ -75,8 +75,11 @@ test("probe flattens nested timelines with absolute times and strips control var
 const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0;
 
 function synthesize(file) {
-  const cuts = [3, 6, 9];
-  const inputs = ["red", "blue", "green", "yellow"].flatMap((color) => ["-f", "lavfi", "-i", `color=c=${color}:s=160x90:r=30:d=3[bg];color=c=white:s=20x20:r=30:d=3[b];[bg][b]overlay=x='mod(t*60,140)':y=30`]);
+  // Segment durations (not equal 3s/3s/3s/3s) so the actual scene cuts at 2/5/8s land clear of
+  // the golden storyboard's carried-boundary beat starts (1.6/3.8/8.8/10.6s).
+  const durations = [2, 3, 3, 4];
+  const cuts = [2, 5, 8];
+  const inputs = ["red", "blue", "green", "yellow"].flatMap((color, index) => ["-f", "lavfi", "-i", `color=c=${color}:s=160x90:r=30:d=${durations[index]}[bg];color=c=white:s=20x20:r=30:d=${durations[index]}[b];[bg][b]overlay=x='mod(t*60,140)':y=30`]);
   const clicks = cuts.map((at) => `between(t,${at},${at + 0.03})*0.9*sin(2*PI*1000*t)`).join("+");
   const run = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", ...inputs, "-f", "lavfi", "-i", `aevalsrc='0.01*sin(2*PI*220*t)+${clicks}':s=8000:d=12`,
     "-filter_complex", "[0:v][1:v][2:v][3:v]concat=n=4:v=1:a=0[v]", "-map", "[v]", "-map", "4:a", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", file], { windowsHide: true, encoding: "utf8" });

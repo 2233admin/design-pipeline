@@ -21,7 +21,7 @@ const HANDOFFS = ["open", "continuation", "match-cut", "morph", "camera-carry", 
 const CUT_HANDOFFS = new Set(["hard-cut", "match-cut"]);
 const CARRIED_HANDOFFS = new Set(["continuation", "morph", "camera-carry"]);
 const DETACHED_HANDOFFS = new Set(["reset", "dissolve"]);
-const CARRIED_HANDOFFS = new Set(["continuation", "morph", "camera-carry", "match-cut"]);
+const NAMED_CARRY_HANDOFFS = new Set(["continuation", "morph", "camera-carry", "match-cut"]);
 const SURFACE_MOTION = new Set(["fade", "fade-in", "fade-out", "opacity", "scale", "scale-in", "scale-out", "zoom", "ken-burns", "slide-in", "slide-out", "blur-in", "blur-out"]);
 const CUE_KINDS = ["entry", "exit", "downbeat", "accent", "riser", "impact", "voiceover", "silence"];
 const PLACEHOLDER = /^(tbd|todo|n\/?a|none|-|\.\.\.|placeholder)$/i;
@@ -131,7 +131,7 @@ function checkStoryboard(board, options = {}) {
 
   // A carried boundary must name what survives it: what continues, morphs or carries across.
   for (const beat of beats) {
-    if (!CARRIED_HANDOFFS.has(beat.handoff)) continue;
+    if (!NAMED_CARRY_HANDOFFS.has(beat.handoff)) continue;
     const carrier = typeof beat.carrier === "string" ? beat.carrier.trim() : "";
     if (!carrier || PLACEHOLDER.test(carrier)) add("carrier-unnamed", "carried handoff must name what survives the boundary and what it becomes", beat.id);
   }

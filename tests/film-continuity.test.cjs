@@ -14,18 +14,21 @@ const { TIMELINE_SCHEMA } = require("../skill/scripts/film-timeline-core.cjs");
 const codes = (result) => result.findings.map((finding) => finding.code);
 const tmp = (prefix) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 
-// A 12s, 4-beat board: open, then three carried boundaries (continuation, morph or
-// camera-carry) at 3/6/9s. `handoffAt9` lets a case swap the last boundary to match-cut.
+// A 12s, 5-beat board: a title hold and an opener, then three carried boundaries (continuation,
+// camera-carry) at 3/6/9s. A 0-1s title-hold and a 1-3s reset opener give the board real rest
+// and an uneven cadence (1/2/3/3/3s, ratio 3) without moving the carried boundaries or cuts.
+// `handoffAt9` lets a case swap the last boundary to match-cut.
 function carryBoard(handoffAt9 = "camera-carry") {
   return {
     schema: "design-pipeline.film-storyboard.v1", id: "carry-render-test", durationSec: 12, grammar: "product-demonstration",
     benefit: "One shape becomes the next.", proofAction: "A shape travels, morphs and carries the camera across the film.",
     sound: { mode: "silent", reason: "carry test" },
     beats: [
-      { id: "open", startSec: 0, endSec: 3, role: "action", subject: "shape", productAction: "Shape appears and starts moving", transformation: { kind: "state-change", from: "off", to: "on" }, handoff: "open", motion: ["travel"] },
-      { id: "continue", startSec: 3, endSec: 6, role: "action", subject: "shape", productAction: "Shape keeps traveling", transformation: { kind: "state-change", from: "left", to: "right" }, handoff: "continuation", motion: ["travel"] },
-      { id: "morph", startSec: 6, endSec: 9, role: "action", subject: "shape", productAction: "Shape morphs into the next form", transformation: { kind: "morph", from: "circle", to: "square" }, handoff: "morph", motion: ["continuous-morph"] },
-      { id: "carry", startSec: 9, endSec: 12, role: "action", subject: "shape", productAction: "Shape resolves", transformation: { kind: "state-change", from: "moving", to: "settled" }, handoff: handoffAt9, motion: ["travel"] },
+      { id: "title", startSec: 0, endSec: 1, role: "title-hold", subject: "title card", productAction: "Title card holds before the shape appears", transformation: { kind: "none" }, handoff: "open", motion: ["fade-in"] },
+      { id: "appear", startSec: 1, endSec: 3, role: "action", subject: "shape", productAction: "Shape appears and starts moving", transformation: { kind: "state-change", from: "off", to: "on" }, handoff: "reset", motion: ["travel"] },
+      { id: "continue", startSec: 3, endSec: 6, role: "action", subject: "shape", productAction: "Shape keeps traveling", transformation: { kind: "state-change", from: "left", to: "right" }, handoff: "continuation", carrier: "the shape keeps moving across the boundary", motion: ["travel"] },
+      { id: "morph", startSec: 6, endSec: 9, role: "action", subject: "shape", productAction: "Shape morphs into the next form", transformation: { kind: "morph", from: "circle", to: "square" }, handoff: "morph", carrier: "the circle morphs into the square", motion: ["continuous-morph"] },
+      { id: "carry", startSec: 9, endSec: 12, role: "action", subject: "shape", productAction: "Shape resolves", transformation: { kind: "state-change", from: "moving", to: "settled" }, handoff: handoffAt9, carrier: "the shape settles into its resting form", motion: ["travel"] },
     ],
   };
 }
