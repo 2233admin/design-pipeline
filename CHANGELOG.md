@@ -9,8 +9,8 @@ All notable changes to Design Pipeline are documented here.
 - Golden case library (`evals/cases/`, step 6 of `redesign-user-workflow`; change
   `add-golden-case-library`). Each case (`design-pipeline.golden-case.v1`) holds a golden film, the
   rules behind its choices, and counter-examples that the gates must catch. First candidates, both
-  for design-pipeline itself: a 20 s software product film and a 4 s logo sting. They await the
-  user's review. `node evals/cases/verify.cjs [--render]` checks the library; repository QA runs
+  for design-pipeline itself: a 20 s software product film and a 4 s logo sting, both accepted by
+  the user. `node evals/cases/verify.cjs [--render]` checks the library; repository QA runs
   the static part. The library stays outside the package so models under evaluation cannot see
   the answers.
 

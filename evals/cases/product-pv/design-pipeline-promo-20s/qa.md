@@ -38,4 +38,4 @@ case.json (`reviewedWarnings`).
 
 ## User acceptance
 
-Pending.
+Accepted by the user on 2026-09-29, both films as sent, with no changes requested.

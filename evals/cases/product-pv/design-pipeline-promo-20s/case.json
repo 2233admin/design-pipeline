@@ -6,8 +6,14 @@
   "brief": "Make a 20-second promotional film for design-pipeline (this repository): an agent skill that lets any capable model produce art-literate UI, motion and promotional films, because its gates, templates and evals are written in code. Show the product doing its job. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4 with a scored soundtrack.",
   "product": "design-pipeline (this repository): designer-pipeline next returns one action; film check runs the film gates and gives every finding a fix; film-eval compares models on the same gates",
   "author": "claude-opus-5-5",
-  "status": "candidate",
-  "approval": null,
+  "status": "approved",
+  "approval": {
+    "verdict": "accept",
+    "by": "user",
+    "date": "2026-09-29",
+    "note": "Accepted as sent. The file the user watched was later overwritten by verification renders of the same sources (commit 392f07f); renders are not byte-identical, so this hash names that re-render.",
+    "renderSha256": "7b569e1c1db47b2111b642af9e46726adddae1befbaf0749db9ed0ee3b1ab85e"
+  },
   "golden": {
     "storyboard": "storyboard.json",
     "timeline": "timeline.json",

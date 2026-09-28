@@ -9,5 +9,5 @@
 - [x] `film score`: remove the download folder on failure too.
 - [x] `tests/golden-cases.test.cjs` in the test manifest; CHANGELOG [Unreleased].
 - [x] `node evals/cases/verify.cjs --render` and `node scripts/qa.cjs`.
-- [ ] User watches both renders and accepts or rejects each; record `approval` with the render's sha256.
+- [x] User accepted both renders on 2026-09-29; `approval` recorded with each render's sha256.
 - [ ] Later rounds: MAD, UI promo and explainer cases.
