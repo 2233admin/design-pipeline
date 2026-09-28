@@ -4,6 +4,8 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+## [0.12.0-beta.1] - 2026-09-28
+
 ### Changed
 
 - Workflow redesign (step 1 of `redesign-user-workflow`): `skill/SKILL.md` is now a 3.6 KB front
