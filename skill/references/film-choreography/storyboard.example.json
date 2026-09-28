@@ -10,6 +10,10 @@
   "sound": {
     "mode": "scored",
     "source": "user-licensed track 'Lift' (auditioned, see sound.md)",
+    "usage": "commercial",
+    "assets": [
+      { "id": "lift", "license": "user-owned commercial license", "commercialUse": true, "file": "assets/score.wav" }
+    ],
     "cues": [
       { "id": "music-in", "atSec": 0, "kind": "entry", "note": "soft pad under the typing" },
       { "id": "connect-tick", "atSec": 2.4, "kind": "accent", "note": "click as the edge snaps" },

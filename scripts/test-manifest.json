@@ -58,6 +58,7 @@
     "film-timeline-eval.test.cjs",
     "film-project.test.cjs",
     "composition-gate.test.cjs",
+    "audio-gate.test.cjs",
     "palette-foundation.test.cjs",
     "package-release.test.cjs",
     "pending-source.test.cjs",

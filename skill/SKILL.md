@@ -27,7 +27,8 @@ This is the project front door. It routes UI work to the smallest relevant workf
    each finding's `fix` until it passes. Single gates: `verify film-storyboard|film-timeline|film-render`.
 5. Create or update the OpenSpec change artifacts before implementation.
 6. Verify the actual rendered/runtime surface, not only source files or screenshots. For any
-   rendered layout, poster, screen or frame, run the composition gate (`references/composition-gate.md`).
+   rendered layout, poster, screen or frame, run the composition gate (`references/composition-gate.md`);
+   for any soundtrack, run the audio gate (`references/audio-gate.md`).
 
 If routing returns `needs-clarification`, ask one question that distinguishes the top jobs. Do not choose a primary route by guesswork.
 

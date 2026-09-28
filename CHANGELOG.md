@@ -24,6 +24,11 @@ All notable changes to Design Pipeline are documented here.
   palette sprawl, edge crowding) and, with `composition capture` elements, WCAG text contrast,
   off-canvas text, near-miss alignment and flat type hierarchy. Dependency-free PNG decoding.
   `film check` applies it to every beat frame.
+- Audio gate: `verify audio` measures EBU R128 loudness against web, podcast or broadcast
+  targets, true peak, flat-top clipping, unplanned silence, abrupt endings, music entry/exit
+  against storyboard cues, and recorded licensing (`sound.usage`, `sound.assets`).
+  `audio master` performs two-pass loudness normalization with optional fade-out and reports
+  when it had to compress. `film check` runs the gate on the rendered film.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.

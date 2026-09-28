@@ -49,7 +49,18 @@ function validateShape(board) {
   real(board.proofAction, "proofAction");
   if (board.reference !== undefined) real(board.reference, "reference");
   const sound = board.sound;
-  assertKeys(sound, ["mode"], ["mode", "reason", "source", "cues"], "sound", SCOPE);
+  assertKeys(sound, ["mode"], ["mode", "reason", "source", "cues", "usage", "assets"], "sound", SCOPE);
+  if (sound.usage !== undefined) assertEnum(sound.usage, ["commercial", "personal", "internal"], "sound.usage", SCOPE);
+  if (sound.assets !== undefined) {
+    if (!Array.isArray(sound.assets)) fail(SCOPE, "sound.assets must be an array");
+    for (const [index, asset] of sound.assets.entries()) {
+      const label = `sound.assets[${index}]`;
+      assertKeys(asset, ["id", "license", "commercialUse"], ["id", "license", "commercialUse", "file", "source"], label, SCOPE);
+      real(asset.id, `${label}.id`);
+      real(asset.license, `${label}.license`);
+      if (typeof asset.commercialUse !== "boolean") fail(SCOPE, `${label}.commercialUse must be true or false`);
+    }
+  }
   assertEnum(sound.mode, ["scored", "silent", "pending"], "sound.mode", SCOPE);
   if (sound.mode !== "scored") real(sound.reason, "sound.reason");
   if (sound.mode === "scored") real(sound.source, "sound.source");

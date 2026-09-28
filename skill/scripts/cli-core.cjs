@@ -47,6 +47,7 @@ const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
+const { checkAudio, masterAudio } = require("./audio-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
 const { createDeveloperBrief, evaluateBenchmark } = require("./benchmark-core.cjs");
 const { recordObservation } = require("./record-feedback.cjs");
@@ -136,7 +137,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
@@ -373,13 +374,15 @@ function publicHelp() {
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url>",
-    "  verify motion|components|composition|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
+    "  verify motion|components|audio|composition|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
     "    verify components --matrix <file> [--evidence-root <dir>] [--require-files]",
     "    verify motion --receipt <file> [--require-lifecycle]",
+    "    verify audio --audio <wav|mp3|mp4> [--storyboard <storyboard.json>] [--target web|podcast|broadcast]",
     "    verify composition --image <png> [--elements <elements.json>] [--profile ui|poster|frame] [--allow code,code]",
     "    verify film-storyboard --storyboard <storyboard.json>",
     "    verify film-timeline --storyboard <storyboard.json> --timeline <timeline.json>",
     "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
+    "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     "  film scaffold --output <dir> [--replace]",
     "  film capture-timeline --composition <index.html> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
@@ -777,6 +780,11 @@ function verifyCommand(parsed, root, action) {
   }
   if (action === "film-storyboard") {
     const result = checkStoryboard(readJson(artifact(parsed, root, "--storyboard"), "film storyboard"));
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "audio") {
+    const board = option(parsed, "--storyboard") ? readJson(artifact(parsed, root, "--storyboard"), "film storyboard") : null;
+    const result = checkAudio(artifact(parsed, root, "--audio"), { storyboard: board, target: option(parsed, "--target", "web") });
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "composition") {
@@ -1848,6 +1856,17 @@ const COMMANDS = {
           const result = checkFilmProject(project, { capture: (composition) => filmCapture(parsed, root, composition) });
           return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },
+      },
+    },
+  },
+  audio: {
+    actions: {
+      master: {
+        required: ["--input", "--output"],
+        run: ({ parsed, root }) => ({
+          result: masterAudio(contained(root, option(parsed, "--input"), "--input"), contained(root, option(parsed, "--output"), "--output", false), { target: option(parsed, "--target", "web"), fadeOutSec: option(parsed, "--fade-out") ? Number(option(parsed, "--fade-out")) : 0 }),
+          exitCode: 0,
+        }),
       },
     },
   },
