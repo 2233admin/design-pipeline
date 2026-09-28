@@ -47,6 +47,10 @@ const HINTS = {
     "missing-anticipation": "Add a short wind-up before the main action (a small counter-move or squash for 10-20% of the beat) so the viewer sees it coming.",
     "missing-settle": "Ease the action out: overshoot slightly and settle (back.out, elastic.out) or decelerate into the final pose instead of stopping dead.",
     "render-static-beat": "Nothing moves on screen during this action beat. Check that its block or tweens actually run in the render (seek, data-start, a procedural driver reading the timeline), or give the beat a visible action.",
+    "carry-cut": "The render shows a hard scene change where the storyboard planned continuation, morph or camera-carry. Keep one animated subject on screen through the boundary (see the timeline handoff-not-carried fix), or change the handoff to hard-cut/match-cut if a cut is intended.",
+  },
+  check: {
+    "low-carry": "Too many planned carried boundaries (continuation, morph, camera-carry) are not surviving as continuity. Fix each flagged beat: add a carrier that spans the boundary in the composition (timeline handoff-not-carried) and remove any hard scene cut at that beat's startSec (render carry-cut).",
   },
 };
 

@@ -62,6 +62,7 @@
     "film-catalog-3d.test.cjs",
     "film-score.test.cjs",
     "film-motion-rules.test.cjs",
+    "film-continuity.test.cjs",
     "film-blender.test.cjs",
     "film-edit.test.cjs",
     "workflow-next.test.cjs",

@@ -16,9 +16,29 @@ const { hyperframesPreview } = require("./film-capture-core.cjs");
 const { blockNames } = require("./film-blocks-core.cjs");
 const { checkGridAlignment } = require("./score-core.cjs");
 const { checkAudio } = require("./audio-core.cjs");
+const { withFix } = require("./film-hints.cjs");
 
 const CHECK_SCHEMA = "design-pipeline.film-check.v1";
 const refs = path.join(__dirname, "../references/film-choreography");
+const CARRIED_HANDOFFS = new Set(["continuation", "morph", "camera-carry"]);
+
+// carryScore: over the planned carried boundaries (not the first beat, not match-cut, which is a
+// cut by design), the share that neither gate reported broken. A gate that did not run cannot
+// veto a boundary; if neither ran there is nothing to score.
+function carryContinuity(board, steps) {
+  const timelineStep = steps.find((step) => step.gate === "timeline");
+  const renderStep = steps.find((step) => step.gate === "render");
+  const timelineRan = Boolean(timelineStep && timelineStep.findings);
+  const renderRan = Boolean(renderStep && renderStep.findings);
+  const planned = board.beats.slice(1).filter((beat) => CARRIED_HANDOFFS.has(beat.handoff));
+  const carried = planned.filter((beat) => {
+    const timelineOk = !timelineRan || !timelineStep.findings.some((finding) => finding.code === "handoff-not-carried" && finding.beatId === beat.id);
+    const renderOk = !renderRan || !renderStep.findings.some((finding) => finding.code === "carry-cut" && finding.beatId === beat.id);
+    return timelineOk && renderOk;
+  }).length;
+  const carryScore = (timelineRan || renderRan) && planned.length ? Number((carried / planned.length).toFixed(3)) : null;
+  return { carryScore, carriedBoundaries: carried, plannedCarriedBoundaries: planned.length };
+}
 
 const CALLS = {
   "continuous-morph": (at) => `P["continuous-morph"](tl, { from: "#FROM", to: "#TO", delta: { x: 0, y: 0, scale: 1 }, at: ${at} });`,
@@ -178,6 +198,13 @@ function checkFilmProject(dir, options = {}) {
     steps.push({ gate: "render", status: "skipped", reason: "no out.mp4 or renders/*.mp4", next: "Run `npx hyperframes render --output out.mp4`, then re-run `film check`." });
   }
 
+  const continuity = carryContinuity(board, steps);
+  const continuityFindings = [];
+  if (continuity.plannedCarriedBoundaries >= 3 && continuity.carryScore !== null && continuity.carryScore < 0.6) {
+    continuityFindings.push(withFix("check", { code: "low-carry", severity: "error", message: `carryScore ${continuity.carryScore}: only ${continuity.carriedBoundaries}/${continuity.plannedCarriedBoundaries} planned carried boundaries survive as continuity (need at least 0.6)` }));
+  }
+  steps.push({ gate: "check", status: continuityFindings.length ? "failed" : "passed", metrics: continuity, findings: continuityFindings });
+
   const failed = steps.some((step) => step.status === "failed");
   const skipped = steps.some((step) => step.status === "skipped" || step.stale);
   const fixes = steps.flatMap((step) => (step.findings || []).map((finding) => ({ gate: step.gate, code: finding.code, ...(finding.severity ? { severity: finding.severity } : {}), ...(finding.beatId ? { beatId: finding.beatId } : {}), fix: finding.fix })));
@@ -192,4 +219,4 @@ function checkFilmProject(dir, options = {}) {
   };
 }
 
-module.exports = { CHECK_SCHEMA, checkFilmProject, compositionHtml, scaffoldFilm };
+module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, scaffoldFilm };

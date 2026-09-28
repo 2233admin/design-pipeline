@@ -19,6 +19,7 @@ const BEAT_ROLES = ["action", "title-hold", "brand-hold"];
 const TRANSFORMATIONS = ["morph", "state-change", "reveal-in-context", "camera-move", "match-cut", "type-to-object", "data-update", "assembly", "footage", "none"];
 const HANDOFFS = ["open", "continuation", "match-cut", "morph", "camera-carry", "hard-cut", "dissolve", "reset"];
 const CUT_HANDOFFS = new Set(["hard-cut", "match-cut"]);
+const CARRIED_HANDOFFS = new Set(["continuation", "morph", "camera-carry"]);
 const DETACHED_HANDOFFS = new Set(["reset", "dissolve"]);
 const SURFACE_MOTION = new Set(["fade", "fade-in", "fade-out", "opacity", "scale", "scale-in", "scale-out", "zoom", "ken-burns", "slide-in", "slide-out", "blur-in", "blur-out"]);
 const CUE_KINDS = ["entry", "exit", "downbeat", "accent", "riser", "impact", "voiceover", "silence"];
@@ -343,6 +344,13 @@ function evaluateFilmRender(board, video, options = {}) {
   const unplanned = cuts.filter((at) => nearest(board.beats.map((beat) => beat.startSec), at) > cutTolerance);
   if (planned.length && missed.length / planned.length > 0.5) add("planned-cuts-missing", `${missed.length}/${planned.length} planned cuts not found in render`);
 
+  // Continuity carried by the storyboard (not match-cut, which is a cut by design) must not
+  // render as a hard scene cut at its planned boundary.
+  for (const beat of board.beats.slice(1)) {
+    if (!CARRIED_HANDOFFS.has(beat.handoff)) continue;
+    if (nearest(cuts, beat.startSec) <= cutTolerance) add("carry-cut", `planned ${beat.handoff} at ${beat.startSec}s renders as a scene cut`, "error", beat.id);
+  }
+
   let audio = { present: media.hasAudio, onsets: 0, cutsOnOnset: null };
   if (board.sound.mode === "scored" && !media.hasAudio) add("audio-missing", "storyboard is scored but render has no audio stream; audiovisual acceptance is incomplete");
   if (media.hasAudio) {
@@ -353,6 +361,8 @@ function evaluateFilmRender(board, video, options = {}) {
   }
 
   const motion = motionProfile(video, tools);
+  const stillCount = motion.filter((sample) => sample.share < FROZEN_SHARE).length;
+  const stillness = { stillShare: motion.length ? Number((stillCount / motion.length).toFixed(3)) : 0 };
   const beatMotion = board.beats.map((beat) => {
     const inside = motion.filter((sample) => sample.atSec > beat.startSec && sample.atSec <= beat.endSec);
     const share = inside.length ? inside.reduce((sum, sample) => sum + sample.share, 0) / inside.length : 0;
@@ -375,6 +385,7 @@ function evaluateFilmRender(board, video, options = {}) {
     cuts: { detectedSec: cuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
     audio,
     motion: beatMotion,
+    stillness,
     contactSheet: sheet,
     creativeAcceptance: "not-assessed",
     limits: "Objective signals only: scene-change cuts, energy-flux onsets, per-beat pixel motion and midpoint frames. Creative review of comprehension, continuity, rhythm and identity remains a separate qa.md record.",
