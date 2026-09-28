@@ -1,0 +1,8 @@
+# Rendered and regenerated outputs. Sources (storyboard, composition, score pattern, score grid,
+# captured timeline) are committed; `node evals/cases/verify.cjs --render` rebuilds the rest.
+.work/
+*/*/out.mp4
+*/*/renders/
+*/*/evidence/
+*/*/assets/*.wav
+package-lock.json

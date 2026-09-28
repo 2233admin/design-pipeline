@@ -4,6 +4,25 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Golden case library (`evals/cases/`, step 6 of `redesign-user-workflow`; change
+  `add-golden-case-library`). Each case (`design-pipeline.golden-case.v1`) holds a golden film, the
+  rules behind its choices, and counter-examples that the gates must catch. First candidates, both
+  for design-pipeline itself: a 20 s software product film and a 4 s logo sting, both accepted by
+  the user. `node evals/cases/verify.cjs [--render]` checks the library; repository QA runs
+  the static part. The library stays outside the package so models under evaluation cannot see
+  the answers.
+
+### Fixed
+
+- Render gate: a planned cut also counts when one 10 fps step replaces a block of the frame (the
+  detector `carry-cut` uses). Dark, desaturated cuts could fall under the scene threshold and fail
+  `planned-cuts-missing` while clearly present. Reported as `cuts.pixelCutsSec`.
+- Timeline gate: tweens that only animate opacity no longer carry a planned continuation, morph or
+  camera-carry handoff; overlapping fades (a dissolve) now give `handoff-not-carried`.
+- `film score` removes its temporary download folder when a render fails.
+
 ## [0.12.0-beta.1] - 2026-09-29
 
 ### Changed
