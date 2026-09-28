@@ -94,10 +94,14 @@ test("edit check reports each rule with a fix", () => {
   for (const code of Object.keys(HINTS)) assert.ok(HINTS[code].length > 30, code);
 });
 
-test("the storyboard derived from an edit passes the storyboard gate", () => {
+test("the storyboard derived from an edit passes the storyboard gate only with filmRhythm off", () => {
   const edit = autoEdit(music(), sources(), { style: "mad" });
   const board = storyboardFromEdit(edit, music());
-  assert.equal(checkStoryboard(board).status, "passed", JSON.stringify(checkStoryboard(board).findings));
+  const strict = checkStoryboard(board);
+  assert.equal(strict.status, "failed");
+  assert.ok(codes(strict).includes("no-rest"), "a continuous music-cut edit has no title/brand hold or holdSec");
+  const result = checkStoryboard(board, { filmRhythm: false });
+  assert.equal(result.status, "passed", JSON.stringify(result.findings));
   assert.equal(board.beats.length, edit.clips.length);
   assert.ok(board.beats.slice(1).every((beat) => beat.handoff === "hard-cut"));
 });
@@ -122,7 +126,12 @@ test("film edit end to end: analyze, auto, render and check generated footage", 
     assert.ok(fs.statSync(path.join(dir, "renders", "edit.mp4")).size > 0);
     const check = checkProject(dir, {});
     assert.deepEqual(check.steps.map((step) => step.gate), ["edit", "render", "audio", "composition"]);
-    assert.ok(check.steps.find((step) => step.gate === "render").cuts.detectedSec.length >= 3, "cuts are visible in the render");
+    const renderStep = check.steps.find((step) => step.gate === "render");
+    assert.ok(renderStep.cuts.detectedSec.length >= 3, "cuts are visible in the render");
+    // A continuous music-cut edit has no title/brand hold; without edit-project-core forwarding
+    // filmRhythm: false to evaluateFilmRender, the derived storyboard's no-rest finding would
+    // fail this step even though the render itself is clean.
+    assert.equal(renderStep.status, "passed", JSON.stringify(renderStep));
     assert.equal(check.creativeAcceptance, "not-assessed");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

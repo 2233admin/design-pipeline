@@ -11,6 +11,7 @@ const HINTS = {
     "beat-empty": "Give the beat a positive duration (endSec > startSec) or delete it.",
     "handoff-first": "Set the first beat's handoff to \"open\".",
     "handoff-open-midfilm": "Replace \"open\" with how attention arrives from the previous beat: continuation, morph, camera-carry, match-cut or hard-cut.",
+    "carrier-unnamed": "Name what survives this boundary and what it becomes in the beat's carrier field (\"the prompt bar opens into the app window\").",
     "no-product-action": "Add at least one beat with role \"action\" that shows the product doing its job.",
     "action-missing": "Write productAction as the visible thing the product does in this beat (\"cursor drags the edge to the image node\").",
     "transformation-missing": "Pick what visibly changes in the subject: state-change, morph, reveal-in-context, camera-move, match-cut, type-to-object, data-update or assembly.",
@@ -25,6 +26,8 @@ const HINTS = {
     "cue-outside-film": "Move the cue's atSec inside the film or extend durationSec.",
     "sound-no-entry": "Add a sound cue with kind \"entry\" where the music starts, usually at 0.",
     "sound-unbound": "Bind a cue id in soundCues on at least half of the action beats, on the moment the action lands.",
+    "uniform-cadence": "Vary beat lengths so the longest is at least 3x the shortest; let one beat breathe and cut faster around it.",
+    "no-rest": "Give the film one still moment: a title/brand-hold beat, or set holdSec to at least 0.3 on a beat near the end.",
   },
   timeline: {
     "duration-mismatch": "Make the timeline's total length equal storyboard durationSec; extend the last tween or trim late tweens.",

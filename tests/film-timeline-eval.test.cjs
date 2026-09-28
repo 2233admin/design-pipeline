@@ -50,7 +50,7 @@ test("layout tweens, infinite repeats, static beats and duration drift are repor
   const result = checkTimeline(data, board());
   for (const code of ["layout-tween", "infinite-repeat", "duration-mismatch"]) assert.ok(codes(result).includes(code), code);
   const empty = timeline();
-  empty.tweens = empty.tweens.filter((tween) => tween.startSec + tween.durationSec <= 5 || tween.startSec >= 8.2);
+  empty.tweens = empty.tweens.filter((tween) => tween.startSec + tween.durationSec <= 3.8 || tween.startSec >= 8.8);
   assert.ok(checkTimeline(empty, board()).findings.some((finding) => finding.code === "beat-static" && finding.beatId === "image-bloom"));
 });
 

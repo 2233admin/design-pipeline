@@ -59,7 +59,7 @@ test("grid alignment flags cuts and accent cues off the musical grid with the sn
   board.beats[2].handoff = "hard-cut";
   board.beats[2].startSec = 5.1;
   assert.ok(checkGridAlignment(board, grid).findings.some((f) => f.code === "cut-off-grid" && /5s/.test(f.fix)));
-  const withEvents = summarizeGrid([{ atSec: 2.4, durSec: 0.1, value: { s: "white" } }, { atSec: 8.2, durSec: 0.1, value: { s: "white" } }], { bpm: 120, cps: 0.5, durationSec: 12 });
+  const withEvents = summarizeGrid([{ atSec: 2.4, durSec: 0.1, value: { s: "white" } }, { atSec: 8.8, durSec: 0.1, value: { s: "white" } }], { bpm: 120, cps: 0.5, durationSec: 12 });
   board.beats[2].handoff = "camera-carry";
   board.beats[2].startSec = 5;
   assert.equal(checkGridAlignment(board, withEvents).status, "passed", "an event on the cue counts even off the beat");
@@ -69,7 +69,7 @@ test("film score writes the pattern, grid and license record, and refuses to ove
   const dir = tmp();
   try {
     scaffoldFilm(dir);
-    const result = scoreFilm(dir, { template: "punchy-launch", bpm: 120, write: true, ensure: fakeEnsure, render: fakeRender([2.4, 8.2]) });
+    const result = scoreFilm(dir, { template: "punchy-launch", bpm: 120, write: true, ensure: fakeEnsure, render: fakeRender([2.4, 8.8]) });
     assert.equal(result.status, "scored");
     assert.equal(result.alignment.status, "passed");
     assert.ok(fs.existsSync(path.join(dir, "score.strudel.js")));

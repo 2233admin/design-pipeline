@@ -19,6 +19,12 @@ All notable changes to Design Pipeline are documented here.
   `storyboard.json` or `edit.json`, or re-rendering a draft, reopens the stage.
 - Replicate mode: a film cannot waive its reference study (`decide --stage reference --answer
   none` is refused), and an edit gains a `reference` stage before cutting.
+- Storyboard gate (`checkStoryboard`): a beat whose `handoff` is `continuation`, `morph`,
+  `camera-carry` or `match-cut` must name a `carrier` (`carrier-unnamed`); `uniform-cadence` fails
+  boards of 4+ beats whose longest beat is under 3x the shortest; `no-rest` fails films of 8s+
+  with no title/brand hold and no beat's `holdSec` at least 0.3s. Metrics gain `cadenceRatio` and
+  `restSec`. A `{ filmRhythm: false }` option (used for storyboards derived from an edit) turns
+  the cadence and rest rules off without affecting `carrier-unnamed`.
 
 ## [0.12.0-beta.1] - 2026-09-28
 
