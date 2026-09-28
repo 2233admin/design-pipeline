@@ -17,7 +17,10 @@ from its public README only and restated here; the implementation is independent
 ## Render and check (brief w2)
 
 - `carry-cut` (error): a detected scene cut within the cut tolerance of a boundary whose handoff is
-  continuation, morph or camera-carry. (match-cut is a cut by design and is exempt.)
+  continuation, morph or camera-carry. (match-cut is a cut by design and is exempt.) Also when
+  the 10 fps motion step at the boundary changes at least 2% of the frame, at least 4x its 1 s
+  window median and its immediate neighbours: a panel swapped in one frame that the scene
+  detector misses (supervisor follow-up after the demo render).
 - `stillShare`: share of 10 fps motion samples below the frozen threshold, reported in the render
   result. Reported, not gated, until calibrated on cases.
 - `carryScore` in `film check`: over planned carried boundaries (excluding match-cut), the share that
