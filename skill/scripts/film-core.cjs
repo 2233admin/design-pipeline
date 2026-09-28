@@ -381,4 +381,4 @@ function evaluateFilmRender(board, video, options = {}) {
   };
 }
 
-module.exports = { STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, evaluateFilmRender, detectOnsets };
+module.exports = { STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, motionProfile, probe, run };
