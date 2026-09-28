@@ -19,6 +19,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- `web` deliverables get their own sub-workflow (`workflows/web.cjs`, guide
+  `references/workflow-web.md`): build, then a `probe` stage that routes to
+  `verify interaction --probe interaction.json` and reopens when the page or probe file changes.
+  A rejected draft also clears the `interaction` gate. `ui` keeps the single work stage.
 - Provenance records for the reference skills motion-web (CC BY-NC 4.0, re-reviewed at `5f4e40f1`)
   and onetake (PolyForm Noncommercial 1.0.0, pinned at `36072d36`): ideas only, no upstream code,
   text or assets. Repository QA fails once a record is older than its 30-day review window.

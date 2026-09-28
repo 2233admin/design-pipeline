@@ -82,12 +82,12 @@ test("edit asks mad or pv as its first decision and routes to film-edit commands
   assert.match(nextAction(dir).command, /film-edit auto .*--style pv/);
 });
 
-test("ui and web use OpenSpec only at the full tier", () => {
+test("ui uses OpenSpec only at the full tier", () => {
   const quick = tmp();
   initState(quick, { deliverable: "ui", tier: "quick" });
   assert.doesNotMatch(nextAction(quick).command, /OpenSpec change/);
   const full = tmp();
-  initState(full, { deliverable: "web", tier: "full" });
+  initState(full, { deliverable: "ui", tier: "full" });
   decide(full, { stage: "intake", answer: "default" });
   assert.match(nextAction(full).command, /OpenSpec change/);
 });
@@ -120,8 +120,8 @@ test("CLI next and decide drive the workflow and gates report back", () => {
   assert.equal(run("decide", "--stage", "deliver", "--answer", "x").status, "recorded");
 });
 
-test("film and edit actions name a guide section that exists for every stage", () => {
-  for (const deliverable of ["film", "edit"]) {
+test("film, edit and web actions name a guide section that exists for every stage", () => {
+  for (const deliverable of ["film", "edit", "web"]) {
     const guide = fs.readFileSync(path.join(__dirname, `../skill/references/workflow-${deliverable}.md`), "utf8");
     for (const tier of ["quick", "standard"]) {
       for (const mode of ["brief", "replicate"]) {
@@ -174,4 +174,81 @@ test("replicate mode requires the reference study", () => {
   assert.equal(nextAction(edit).stage, "reference");
   touch(edit, "reference.md");
   assert.equal(nextAction(edit).stage, "cut");
+});
+
+test("web quick walks build then probe; standard adds intake, reference, concepts, review, deliver; full opens OpenSpec at build", () => {
+  const quick = tmp();
+  initState(quick, { deliverable: "web", tier: "quick" });
+  assert.equal(nextAction(quick).stage, "build");
+  assert.equal(nextAction(quick).remaining, 2);
+  touch(quick, "index.html");
+  assert.equal(nextAction(quick).stage, "probe");
+
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  const stage = () => nextAction(dir).stage;
+  assert.equal(stage(), "intake");
+  decide(dir, { stage: "intake", answer: "default" });
+  assert.equal(stage(), "reference");
+  decide(dir, { stage: "reference", answer: "none" });
+  assert.equal(nextAction(dir).type, "run", "concepts must be written before the user is asked");
+  touch(dir, "concepts.md");
+  assert.equal(nextAction(dir).type, "ask");
+  decide(dir, { stage: "concept", choice: 2 });
+  assert.equal(stage(), "build");
+  assert.doesNotMatch(nextAction(dir).command, /OpenSpec change/);
+  touch(dir, "index.html");
+  assert.equal(stage(), "probe");
+
+  const full = tmp();
+  initState(full, { deliverable: "web", tier: "full" });
+  decide(full, { stage: "intake", answer: "default" });
+  decide(full, { stage: "reference", answer: "none" });
+  touch(full, "concepts.md");
+  decide(full, { stage: "concept", choice: 1 });
+  assert.match(nextAction(full).command, /OpenSpec change/);
+});
+
+test("probe asks to write interaction.json when missing, then routes to verify interaction", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "quick" });
+  touch(dir, "index.html");
+  const missing = nextAction(dir);
+  assert.equal(missing.stage, "probe");
+  assert.match(missing.command, /interaction\.json/);
+  assert.doesNotMatch(missing.command, /verify interaction/);
+  touch(dir, "interaction.json", "{}");
+  assert.match(nextAction(dir).command, /verify interaction --probe interaction\.json/);
+  recordGate(dir, "interaction", "failed");
+  assert.equal(nextAction(dir).stage, "probe", "a failed interaction gate keeps probe open");
+  recordGate(dir, "interaction", "passed");
+  assert.equal(nextAction(dir).type, "done");
+});
+
+test("a passed interaction gate goes stale when index.html changes", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "quick" });
+  touch(dir, "index.html");
+  touch(dir, "interaction.json", "{}");
+  recordGate(dir, "interaction", "passed");
+  assert.equal(nextAction(dir).type, "done");
+  const later = new Date(Date.now() + 60_000);
+  fs.utimesSync(path.join(dir, "index.html"), later, later);
+  assert.equal(nextAction(dir).stage, "probe", "a rebuilt page must be probed again");
+});
+
+test("a rejected web draft reopens probe", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "default" });
+  decide(dir, { stage: "reference", answer: "none" });
+  touch(dir, "concepts.md");
+  decide(dir, { stage: "concept", choice: 1 });
+  touch(dir, "index.html");
+  touch(dir, "interaction.json", "{}");
+  recordGate(dir, "interaction", "passed");
+  const review = nextAction(dir);
+  assert.equal(review.stage, "review");
+  decide(dir, { stage: "review", verdict: "reject", answer: "The hero tilt snaps instead of easing." });
+  assert.equal(nextAction(dir).stage, "probe", "a rejection reopens probe");
 });
