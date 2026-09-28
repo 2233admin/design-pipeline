@@ -1,12 +1,13 @@
 ---
 name: design-pipeline
-description: Routes design-first frontend work through this repository's OpenSpec, design evidence, component-first gates, and CLI contracts. Use when changing this repository or applying its design pipeline to a target project.
+description: Routes work on this repository and applies its pipeline to target projects - promotional films, PV/MAD edits, 3D shots, scores, motion websites, product UI and design systems - through the front door's `next` loop, gates and OpenSpec contracts.
 ---
 
 <objective>
 Apply the repository's design-first workflow without bypassing its evidence,
 receipt, gate, and release contracts. This file is a Claude Code router; the
-complete packaged workflow remains in `skill/SKILL.md`.
+packaged front door is `skill/SKILL.md`, which drives user projects one `next` step at a time;
+its full stage contracts live in `skill/references/pipeline-reference.md`.
 </objective>
 
 <essential_principles>
@@ -19,15 +20,17 @@ complete packaged workflow remains in `skill/SKILL.md`.
 
 <quick_start>
 1. Read `AGENTS.md` and the relevant OpenSpec change.
-2. Read `skill/SKILL.md`, then load only the referenced section needed for the request.
-3. Use `node skill/scripts/designer-pipeline.cjs <command>` for pipeline operations.
+2. For a user deliverable, read `skill/SKILL.md` and loop on `node skill/scripts/designer-pipeline.cjs next --project-root <project>`.
+3. For repository work, load only the reference the change touches and use `node skill/scripts/designer-pipeline.cjs <command>`.
 4. Finish with `node scripts/qa.cjs` and report any remaining stale or blocked receipt.
 </quick_start>
 
 <intake>
 Classify the request from its explicit context; ask only if the route is genuinely ambiguous:
 
-- design, reconstruction, or motion → read `skill/SKILL.md` and the design/motion contracts;
+- promo film, explainer, logo sting, 3D shot, score → `next` with `--deliverable film` (`skill/references/product-film-direction.md`);
+- PV, MAD, beat montage from footage → `next` with `--deliverable edit` (`skill/references/film-edit.md`);
+- design, reconstruction, motion pages or UI → `next` with `--deliverable web` or `ui` (`skill/references/pipeline-reference.md`);
 - component-first, gate, receipt, or promotion → read the component-first OpenSpec change and matching tests;
 - repository implementation or bug fix → read `openspec/project.md`, then proposal, tasks, and specs;
 - release or packaging → read `CONTRIBUTING.md`, run the QA entrypoint, and verify package artifacts.
@@ -46,7 +49,9 @@ stay inside their declared target and temporary roots.
 </validation>
 
 <reference_guides>
-- Full workflow and route catalog: `skill/SKILL.md`
+- Front door and `next` loop: `skill/SKILL.md`
+- Stage contracts and route catalog: `skill/references/pipeline-reference.md`
+- Workflow design decisions: `openspec/changes/redesign-user-workflow/design.md`
 - Project rules: `AGENTS.md`
 - Change contracts: `openspec/changes/`
 - Test manifest: `scripts/test-manifest.json`

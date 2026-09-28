@@ -50,6 +50,7 @@ const { scoreFilm } = require("./score-project-core.cjs");
 const { renderBlenderShot } = require("./blender-project-core.cjs");
 const { listTemplates } = require("./blender-core.cjs");
 const editProject = require("./edit-project-core.cjs");
+const workflow = require("./workflow-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
 const { checkAudio, masterAudio } = require("./audio-core.cjs");
@@ -142,7 +143,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict",
   "--outcome", "--path", "--plan", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
@@ -391,6 +392,8 @@ function publicHelp() {
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     "  film scaffold --output <dir> [--replace]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
+    "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>]   (one next step)",
+    "  decide --project-root . --stage intake|reference|concept|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
     "  film blender (lists templates) | film blender --project-root <dir> --template product-turntable [--params params.json] [--engine eevee|cycles] [--output renders/shot.mp4] [--audio score.wav] [--blender <exe>]",
     "  film-edit analyze --project-root <dir> --audio <music> [--sources sources]   (beat grid + footage shots)",
     "  film-edit auto --project-root <dir> --style mad|pv [--duration <sec>] [--width 1280 --height 720] [--replace]",
@@ -791,7 +794,9 @@ function verifyCommand(parsed, root, action) {
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "film-storyboard") {
-    const result = checkStoryboard(readJson(artifact(parsed, root, "--storyboard"), "film storyboard"));
+    const storyboardFile = artifact(parsed, root, "--storyboard");
+    const result = checkStoryboard(readJson(storyboardFile, "film storyboard"));
+    workflow.recordGate(path.dirname(storyboardFile), "storyboard", result.status);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "audio") {
@@ -1906,6 +1911,7 @@ const COMMANDS = {
         run: ({ parsed, root }) => {
           const project = contained(root, option(parsed, "--project-root"), "--project-root");
           const result = checkFilmProject(project, { capture: (composition, url) => filmCapture(parsed, root, composition, url), preview: option(parsed, "--url") ? () => ({ url: option(parsed, "--url"), started: false }) : undefined });
+          workflow.recordGate(project, "film", result.status);
           return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },
       },
@@ -1936,6 +1942,19 @@ const COMMANDS = {
       },
     },
   },
+  next: {
+    run: ({ parsed, root }) => {
+      const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
+      if (option(parsed, "--deliverable")) workflow.initState(project, { deliverable: option(parsed, "--deliverable"), tier: option(parsed, "--tier"), mode: option(parsed, "--mode"), director: option(parsed, "--director"), replace: option(parsed, "--replace") === true });
+      return { result: workflow.nextAction(project), exitCode: 0 };
+    },
+  },
+  decide: {
+    run: ({ parsed, root }) => {
+      const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
+      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer") }), exitCode: 0 };
+    },
+  },
   "film-edit": {
     actions: Object.fromEntries(["analyze", "auto", "render", "check"].map((name) => [name, {
       required: ["--project-root"],
@@ -1944,6 +1963,7 @@ const COMMANDS = {
         const num = (flag) => (option(parsed, flag) ? Number(option(parsed, flag)) : undefined);
         const opts = { music: option(parsed, "--audio"), sources: option(parsed, "--sources"), style: option(parsed, "--style"), durationSec: num("--duration"), width: num("--width"), height: num("--height"), replace: option(parsed, "--replace") === true, output: option(parsed, "--output") };
         const result = { analyze: editProject.analyzeProject, auto: editProject.autoProject, render: editProject.renderProject, check: editProject.checkProject }[name](project, opts);
+        if (name === "check") workflow.recordGate(project, "edit", result.status);
         const failed = name === "check" ? result.status !== "passed" : name === "auto" ? result.check.status !== "passed" : false;
         return { result, exitCode: failed ? 2 : 0 };
       },

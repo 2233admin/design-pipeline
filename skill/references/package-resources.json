@@ -45,6 +45,8 @@
     "scripts/edit-core.cjs",
     "scripts/edit-project-core.cjs",
     "references/film-edit.md",
+    "references/pipeline-reference.md",
+    "scripts/workflow-core.cjs",
     "scripts/component-first-core.cjs",
     "scripts/component-first-v2-core.cjs",
     "scripts/design-skill-core.cjs",

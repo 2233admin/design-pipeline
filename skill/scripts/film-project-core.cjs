@@ -88,13 +88,17 @@ function scaffoldFilm(dir, options = {}) {
     "lib/timeline-probe.js": fs.readFileSync(path.join(refs, "timeline-probe.js"), "utf8"),
     ...NOTES,
   };
+  // Notes the workflow may already have written (reference.md in the reference stage) are kept;
+  // only the storyboard, composition and libraries are refused without --replace.
+  const kept = Object.keys(NOTES).filter((name) => fs.existsSync(path.join(target, name)));
+  for (const name of kept) delete files[name];
   const existing = Object.keys(files).filter((name) => fs.existsSync(path.join(target, name)));
   if (existing.length && !options.replace) fail("film scaffold", `refusing to overwrite ${existing.join(", ")} in ${target}. Fix: choose an empty --output directory, or pass --replace to overwrite these files`, { code: "OUTPUT_EXISTS" });
   for (const [name, content] of Object.entries(files)) {
     fs.mkdirSync(path.dirname(path.join(target, name)), { recursive: true });
     fs.writeFileSync(path.join(target, name), content);
   }
-  return { status: "scaffolded", root: target, files: Object.keys(files), next: NOTES["FILM.md"].split("\n").filter((line) => /^\d\./.test(line)) };
+  return { status: "scaffolded", root: target, files: Object.keys(files), kept, next: NOTES["FILM.md"].split("\n").filter((line) => /^\d\./.test(line)) };
 }
 
 function newestRender(dir) {
