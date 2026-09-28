@@ -8,7 +8,7 @@ const { captureTimeline } = require("./film-capture-core.cjs");
 const { fail, jsonResult } = require("./contract-utils.cjs");
 
 function parseArgs(argv) {
-  const allowed = new Set(["--composition", "--composition-id", "--chrome", "--puppeteer-module", "--timeout-ms"]);
+  const allowed = new Set(["--composition", "--url", "--composition-id", "--chrome", "--puppeteer-module", "--timeout-ms"]);
   const result = {};
   for (let index = 0; index < argv.length; index += 2) {
     const name = argv[index];
@@ -17,7 +17,7 @@ function parseArgs(argv) {
     if (!value || value.startsWith("--")) fail("film capture", `${name} requires a value`);
     result[name] = value;
   }
-  if (!result["--composition"]) fail("film capture", "--composition is required (path to the HyperFrames index.html)");
+  if (!result["--composition"] && !result["--url"]) fail("film capture", "--composition <index.html> or --url <preview url> is required");
   return result;
 }
 
@@ -25,6 +25,7 @@ function parseArgs(argv) {
   try {
     const options = parseArgs(process.argv.slice(2));
     const timeline = await captureTimeline(options["--composition"], {
+      url: options["--url"],
       compositionId: options["--composition-id"],
       chrome: options["--chrome"],
       puppeteerModule: options["--puppeteer-module"],

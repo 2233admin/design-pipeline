@@ -99,6 +99,13 @@ transformation, surface-only motion (fade/scale/slide of a panel), reset/dissolv
 handoffs, dominant or chained holds, and scored films whose sound is not bound to beats. Passing
 it removes known failure shapes; it is not creative acceptance.
 
+Before authoring 3D, WebGL, shader, device-mockup or camera-move beats, search the HyperFrames
+catalog: `designer-pipeline film blocks --project-root <dir> --query "<the beat's action>" [--tag 3d]`.
+Name the chosen block in the beat's `block` field and install it with the printed command; the
+scaffold then hosts it at the beat's time. Procedural blocks drive their motion from a proxy
+tween, so `film check` captures the timeline through the HyperFrames preview runtime and judges
+those beats from rendered pixel motion instead of tween properties.
+
 Build beats from `references/film-choreography/patterns.js` where a registered pattern fits
 (`continuous-morph`, `match-cut`, `camera-push`, `kinetic-type`, `ui-demo`, `assembly`,
 `reveal-in-context`). Each pattern appends seek-safe GSAP tweens at an absolute time and returns

@@ -36,6 +36,11 @@
     return "object";
   }
 
+  function isDriver(tween) {
+    const targets = tween.targets ? tween.targets() : [];
+    return targets.length > 0 && targets.every((target) => !(target && (target.nodeType === 1 || typeof target === "string")));
+  }
+
   function props(vars) {
     const names = new Set();
     for (const key of Object.keys(vars || {})) if (!CONTROL.has(key)) names.add(key);
@@ -60,6 +65,9 @@
         from: Object.fromEntries(Object.keys(startAt).filter((key) => !CONTROL.has(key)).map((key) => [key, startAt[key]]).filter(([, value]) => typeof value !== "function")),
         to: Object.fromEntries(Object.keys(vars).filter((key) => !CONTROL.has(key)).map((key) => [key, vars[key]]).filter(([, value]) => typeof value !== "function" && typeof value !== "object")),
         repeat: typeof child.repeat === "function" ? child.repeat() : vars.repeat || 0,
+        // A driver tween animates a plain object (a progress value read by procedural, 3D or
+        // shader code), not a DOM element, so its properties say nothing about the subject.
+        ...(isDriver(child) ? { driver: true } : {}),
       });
     }
     return out;

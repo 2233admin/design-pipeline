@@ -12,6 +12,8 @@ const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
+const { hyperframesPreview } = require("./film-capture-core.cjs");
+const { blockNames } = require("./film-blocks-core.cjs");
 const { checkAudio } = require("./audio-core.cjs");
 
 const CHECK_SCHEMA = "design-pipeline.film-check.v1";
@@ -29,7 +31,9 @@ const CALLS = {
 
 function compositionHtml(board) {
   const beats = board.beats.map((beat) => {
-    const call = beat.choreography && CALLS[beat.choreography] ? CALLS[beat.choreography](beat.startSec) : `// Author motion that turns "${beat.transformation.from || "?"}" into "${beat.transformation.to || "?"}".`;
+    const call = beat.block
+      ? `// Block ${beat.block}: run \`npx hyperframes add ${beat.block}\`, then host it in #world as\n      // <div data-composition-id="${beat.block}" data-composition-src="compositions/${beat.block}.html" data-start="${beat.startSec}" data-duration="${Number((beat.endSec - beat.startSec).toFixed(3))}" data-width="1920" data-height="1080"></div>`
+      : beat.choreography && CALLS[beat.choreography] ? CALLS[beat.choreography](beat.startSec) : `// Author motion that turns "${beat.transformation.from || "?"}" into "${beat.transformation.to || "?"}".`;
     return `      // ${beat.startSec}-${beat.endSec}s ${beat.id} (${beat.role}, handoff ${beat.handoff}): ${beat.productAction}\n      ${call}`;
   }).join("\n");
   return `<!doctype html>
@@ -108,7 +112,7 @@ function checkFilmProject(dir, options = {}) {
   const storyboardFile = path.join(root, "storyboard.json");
   if (!fs.existsSync(storyboardFile)) fail("film check", `no storyboard.json in ${root}. Fix: run \`designer-pipeline film scaffold --output ${dir}\` or write storyboard.json first`, { code: "INPUT_MISSING" });
   const board = readJson(storyboardFile, "film storyboard");
-  const storyboard = checkStoryboard(board);
+  const storyboard = checkStoryboard(board, { blockNames: blockNames(root) || undefined });
   steps.push({ gate: "storyboard", status: storyboard.status, findings: storyboard.findings });
 
   const timelineFile = path.join(root, "timeline.json");
@@ -116,18 +120,24 @@ function checkFilmProject(dir, options = {}) {
   let timeline = null;
   let timelineNote = null;
   if (fs.existsSync(composition) && options.capture) {
+    // HyperFrames projects are captured through the preview runtime so nested blocks load.
+    const isHyperframes = fs.existsSync(path.join(root, "hyperframes.json"));
+    let preview = null;
     try {
-      timeline = options.capture(composition);
+      if (isHyperframes) preview = (options.preview || ((dir) => hyperframesPreview(dir)))(root);
+      timeline = options.capture(composition, preview ? preview.url : undefined);
       fs.writeFileSync(timelineFile, `${JSON.stringify(timeline, null, 2)}\n`);
-      timelineNote = "captured from index.html";
+      timelineNote = preview ? "captured through the HyperFrames preview runtime" : "captured from index.html";
     } catch (error) {
       timelineNote = `capture failed: ${error.message}`;
+    } finally {
+      if (preview && preview.started && preview.stop) preview.stop();
     }
   }
   if (!timeline && fs.existsSync(timelineFile)) { timeline = readJson(timelineFile, "film timeline"); timelineNote = timelineNote ? `${timelineNote}; used existing timeline.json` : "existing timeline.json"; }
   if (timeline) {
     const result = checkTimeline(timeline, board);
-    steps.push({ gate: "timeline", status: result.status, source: timelineNote, findings: result.findings, metrics: { carriedHandoffs: result.metrics.carriedHandoffs } });
+    steps.push({ gate: "timeline", status: result.status, source: timelineNote, findings: result.findings, metrics: { carriedHandoffs: result.metrics.carriedHandoffs, proceduralBeats: result.metrics.proceduralBeats, proceduralHandoffs: result.metrics.proceduralHandoffs } });
   } else {
     steps.push({ gate: "timeline", status: "skipped", reason: timelineNote || "no index.html or timeline.json", next: "Build index.html, then re-run `film check` to capture timeline.json." });
   }
@@ -135,7 +145,7 @@ function checkFilmProject(dir, options = {}) {
   const video = newestRender(root);
   if (video) {
     const result = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence") });
-    steps.push({ gate: "render", status: result.status, video: path.relative(root, video), findings: result.findings, contactSheet: result.contactSheet && path.join("evidence", result.contactSheet.sheet), audio: result.audio, cuts: result.cuts });
+    steps.push({ gate: "render", status: result.status, video: path.relative(root, video), findings: result.findings, motion: result.motion, contactSheet: result.contactSheet && path.join("evidence", result.contactSheet.sheet), audio: result.audio, cuts: result.cuts });
     if (board.sound.mode !== "silent" || result.audio.present) {
       const audio = checkAudio(video, { storyboard: board, target: options.audioTarget || "web" });
       steps.push({ gate: "audio", status: audio.status, findings: audio.findings, metrics: audio.metrics });

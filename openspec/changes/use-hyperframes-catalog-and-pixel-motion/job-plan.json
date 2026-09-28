@@ -1,0 +1,41 @@
+{
+  "admission": "inert",
+  "deliverableForm": "product-launch-video",
+  "jobId": "motion-graphics",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "iart",
+      "required": true,
+      "role": "primary"
+    }
+  ],
+  "planSha256": "9abb377ff84c5836f19688f3bd24c049e50806fb7d6b378c5d21ea1765ffd3eb",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "iart",
+    "id": "iart"
+  },
+  "query": "复用 HyperFrames 3D 区块做宣传片，并用像素运动检查程序化动画",
+  "registrySha256": "fe12e43bc11e5b795d36bb476a1019b3803b1310300e7271b73aa94cb726b17c",
+  "routeSha256": "6686018b772039b3264f7ac7cb27b439c28be0c659897a1a63e96a783dacc490",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": []
+}

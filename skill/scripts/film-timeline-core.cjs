@@ -25,7 +25,7 @@ function validateTimeline(timeline) {
   if (!Array.isArray(timeline.tweens)) fail(SCOPE, "tweens must be an array");
   for (const [index, tween] of timeline.tweens.entries()) {
     const label = `tweens[${index}]`;
-    assertKeys(tween, ["targets", "startSec", "durationSec", "props"], ["targets", "startSec", "durationSec", "props", "from", "to", "repeat"], label, SCOPE);
+    assertKeys(tween, ["targets", "startSec", "durationSec", "props"], ["targets", "startSec", "durationSec", "props", "from", "to", "repeat", "driver"], label, SCOPE);
     if (!Array.isArray(tween.targets) || tween.targets.some((target) => typeof target !== "string")) fail(SCOPE, `${label}.targets must be a string array`);
     if (!Array.isArray(tween.props) || tween.props.some((prop) => typeof prop !== "string")) fail(SCOPE, `${label}.props must be a string array`);
     for (const key of ["startSec", "durationSec"]) {
@@ -59,7 +59,7 @@ function checkTimeline(timeline, board, options = {}) {
   const coverage = new Map();
   for (const tween of timeline.tweens) for (const target of tween.targets) coverage.set(target, (coverage.get(target) || 0) + tween.durationSec);
   const ambient = new Set([...coverage].filter(([, total]) => total / timeline.durationSec > 0.6).map(([target]) => target));
-  const subjects = (tween) => tween.targets.filter((target) => !ambient.has(target));
+  const subjects = (tween) => (tween.driver ? [] : tween.targets.filter((target) => !ambient.has(target)));
   const perBeat = board.beats.map((beat) => {
     const tweens = timeline.tweens.filter((tween) => subjects(tween).length > 0 && overlaps(tween, beat.startSec, beat.endSec));
     const animated = tweens.filter((tween) => tween.durationSec > 0);
@@ -68,14 +68,19 @@ function checkTimeline(timeline, board, options = {}) {
     return { beat, tweens: animated, props: [...propsUsed].sort(), targets };
   });
 
+  const drivers = timeline.tweens.filter((tween) => tween.driver && tween.durationSec > 0);
+  const drivenBeats = new Set(board.beats.filter((beat) => drivers.some((tween) => overlaps(tween, beat.startSec, beat.endSec))).map((beat) => beat.id));
   for (const { beat, tweens, props } of perBeat) {
     if (beat.role !== "action") continue;
+    // Procedurally driven beats (3D, shader, canvas) are judged from rendered pixels instead.
+    if (tweens.length === 0 && drivenBeats.has(beat.id)) continue;
     if (tweens.length === 0) add("beat-static", "action beat has no animated tween", beat.id);
     else if (props.every((prop) => FADE_PROPS.has(prop))) add("beat-fade-only", `action beat only animates ${props.join(", ")}`, beat.id);
   }
 
   // Continuity: a carried handoff needs one subject animated on both sides of the boundary.
   let carried = 0;
+  let proceduralHandoffs = 0;
   let carriedPlanned = 0;
   for (let index = 1; index < board.beats.length; index += 1) {
     const beat = board.beats[index];
@@ -86,7 +91,9 @@ function checkTimeline(timeline, board, options = {}) {
     const after = timeline.tweens.filter((tween) => tween.durationSec > 0 && overlaps(tween, boundary, boundary + BOUNDARY_WINDOW_SEC)).flatMap(subjects);
     const shared = after.filter((target) => before.has(target));
     const spanning = timeline.tweens.some((tween) => tween.durationSec > 0 && tween.startSec < boundary && tween.startSec + tween.durationSec > boundary && subjects(tween).length > 0);
+    const procedural = drivers.some((tween) => tween.startSec < boundary && tween.startSec + tween.durationSec > boundary) && !before.size && !after.length;
     if (shared.length || spanning) carried += 1;
+    else if (procedural) proceduralHandoffs += 1;
     else add("handoff-not-carried", `planned ${beat.handoff} handoff at ${boundary}s but no animated subject spans or continues across it`, beat.id);
   }
 
@@ -103,7 +110,9 @@ function checkTimeline(timeline, board, options = {}) {
       staticActionBeats: actionBeats.filter(({ tweens }) => tweens.length === 0).length,
       fadeOnlyActionBeats: actionBeats.filter(({ tweens, props }) => tweens.length && props.every((prop) => FADE_PROPS.has(prop))).length,
       ambientTargets: [...ambient].sort(),
-      carriedHandoffs: carriedPlanned ? Number((carried / carriedPlanned).toFixed(3)) : null,
+      proceduralBeats: [...drivenBeats].filter((id) => !perBeat.find((entry) => entry.beat.id === id).tweens.length),
+      carriedHandoffs: carriedPlanned ? Number((carried / Math.max(1, carriedPlanned - proceduralHandoffs)).toFixed(3)) : null,
+      proceduralHandoffs,
       beats: perBeat.map(({ beat, tweens, props, targets }) => ({ id: beat.id, tweens: tweens.length, props, targets: [...targets].sort() })),
     },
     creativeAcceptance: "not-assessed",

@@ -29,6 +29,12 @@ All notable changes to Design Pipeline are documented here.
   against storyboard cues, and recorded licensing (`sound.usage`, `sound.assets`).
   `audio master` performs two-pass loudness normalization with optional fade-out and reports
   when it had to compress. `film check` runs the gate on the rendered film.
+- HyperFrames catalog bridge: `film blocks` searches the cached block catalog (3D, WebGL, shader,
+  camera and device blocks) and storyboard beats may name a `block`, which the storyboard gate
+  verifies and the scaffold hosts. `film check` captures HyperFrames projects through the preview
+  runtime so nested blocks load; raw-file capture now fails loudly instead of returning an empty
+  timeline. The probe tags proxy "driver" tweens, and the render gate adds per-beat pixel motion
+  with a `render-static-beat` finding, so procedural, 3D and footage beats are judged from pixels.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.

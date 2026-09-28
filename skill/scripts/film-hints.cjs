@@ -17,6 +17,7 @@ const HINTS = {
     "transformation-endpoints": "Fill transformation.from and transformation.to with the subject's state before and after the beat.",
     "surface-only-motion": "Replace fade/scale/slide with motion that changes the subject; start from a registered choreography such as continuous-morph, ui-demo or camera-push.",
     "choreography-unknown": "Use an id from references/film-choreography/registry.json, or remove the choreography field and describe the motion.",
+    "block-unknown": "Use a block name from `designer-pipeline film blocks --query <action>` (the HyperFrames catalog), or remove the block field.",
     "hold-dominant": "Shorten title/brand holds to under 25% of the runtime and give that time to action beats.",
     "hold-chain": "Merge consecutive holds into one, or put an action beat between them.",
     "slideshow-handoffs": "Change most reset/dissolve handoffs to continuation, morph or camera-carry so one subject carries attention between beats.",
@@ -39,6 +40,7 @@ const HINTS = {
     "planned-cuts-missing": "Make the planned hard-cut/match-cut boundaries visible cuts in the composition, or change those handoffs in the storyboard.",
     "audio-missing": "Add the score as an <audio data-start data-duration> element in the composition and re-render, or set sound.mode to silent with a reason.",
     "cuts-off-beat": "Move cut times onto the music's accents (npx hyperframes beats), or move the accents onto the cuts.",
+    "render-static-beat": "Nothing moves on screen during this action beat. Check that its block or tweens actually run in the render (seek, data-start, a procedural driver reading the timeline), or give the beat a visible action.",
   },
 };
 
