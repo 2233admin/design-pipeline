@@ -14,7 +14,7 @@
 
 ## Later steps (separate changes)
 
-- [ ] 2 Split `film` and `edit` sub-workflows.
+- [x] 2 Split `film` and `edit` sub-workflows.
 - [ ] 3 Concept and review stages; two-brief comparison round.
 - [ ] 4 `film reference analyze`.
 - [ ] 5 motion-web and onetake idea port (provenance before 2026-10-18).
