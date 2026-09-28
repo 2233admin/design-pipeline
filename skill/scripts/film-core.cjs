@@ -325,8 +325,12 @@ function craftChecks(board, motion, add) {
 // boundary must stand out from both its window (1 s either side) and its immediate neighbours.
 // Calibration: a 400x300 card swapped on a 1280x720 dark stage changes about 13% in one step; a
 // camera move over a gradient changes a similar share every step and is not flagged.
+// A step whose two neighbours are both still (under a tenth of it) is a cut even when camera moves
+// fill the rest of the window: a golden case's match cut changed 27% of the frame against 0.6% and
+// 0.0% either side, while its 2 s window had a 16% median from the moves around the holds.
 const REPLACEMENT_MIN_SHARE = 0.02;
 const REPLACEMENT_RATIO = 4;
+const STILL_NEIGHBOUR_RATIO = 10;
 function instantReplacement(motion, atSec) {
   const at = motion.filter((sample) => Math.abs(sample.atSec - atSec) <= 0.15);
   if (!at.length) return null;
@@ -336,7 +340,8 @@ function instantReplacement(motion, atSec) {
   const index = motion.indexOf(peak);
   const neighbours = [motion[index - 1], motion[index + 1]].filter(Boolean).map((sample) => sample.share);
   const isolated = neighbours.every((share) => peak.share >= REPLACEMENT_RATIO * share || share < REPLACEMENT_MIN_SHARE / 2);
-  if (peak.share >= REPLACEMENT_MIN_SHARE && peak.share >= REPLACEMENT_RATIO * Math.max(typical, FROZEN_SHARE) && isolated) {
+  const betweenStills = neighbours.length === 2 && neighbours.every((share) => STILL_NEIGHBOUR_RATIO * share < peak.share);
+  if (peak.share >= REPLACEMENT_MIN_SHARE && (peak.share >= REPLACEMENT_RATIO * Math.max(typical, FROZEN_SHARE) || betweenStills) && isolated) {
     return { share: Number(peak.share.toFixed(4)), typical: Number(typical.toFixed(4)) };
   }
   return null;
@@ -458,4 +463,4 @@ function evaluateFilmRender(board, video, options = {}) {
   };
 }
 
-module.exports = { STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, motionProfile, probe, run };
+module.exports = { STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, run };

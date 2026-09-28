@@ -40,6 +40,16 @@ function cli(commandArgs, allowed) {
   return JSON.parse(run(process.execPath, [CLI, ...commandArgs], REPO, allowed));
 }
 
+// Interface captures a case declares: regenerate them with the case's capture script when missing.
+function ensureCaptures(dir, spec) {
+  const captures = spec.golden.captures;
+  if (!captures) return;
+  const missing = captures.files.filter((file) => !fs.existsSync(path.join(dir, captures.dir, file)));
+  if (!missing.length) return;
+  if (!process.env[captures.env]) throw new Error(`${missing.join(", ")} not captured yet. Set ${captures.env} to a ${captures.source.repo} checkout at ${captures.source.commit} and re-run`);
+  run(process.execPath, [path.join(dir, captures.script)], REPO);
+}
+
 // Score (first time only), master and render a case directory to out.mp4.
 function build(dir, spec) {
   const score = spec.golden.score;
@@ -72,6 +82,7 @@ function verifyStatic(loaded) {
 
 function verifyRender(loaded) {
   const { spec, dir } = loaded;
+  ensureCaptures(dir, spec);
   const video = build(dir, spec);
   const sha = crypto.createHash("sha256").update(fs.readFileSync(video)).digest("hex");
   const golden = filmCheck(dir);
@@ -89,6 +100,7 @@ function verifyRender(loaded) {
     for (const file of [spec.golden.storyboard, "score-grid.json"]) if (fs.existsSync(path.join(dir, file))) fs.copyFileSync(path.join(dir, file), path.join(work, file));
     const mastered = path.join(dir, "assets", "score-mastered.wav");
     if (fs.existsSync(mastered)) fs.copyFileSync(mastered, path.join(work, "assets", "score-mastered.wav"));
+    if (spec.golden.captures) fs.cpSync(path.join(dir, spec.golden.captures.dir), path.join(work, spec.golden.captures.dir), { recursive: true });
     let html = fs.readFileSync(path.join(dir, spec.golden.composition), "utf8");
     for (const edit of counter.edits) {
       if (!html.includes(edit.find)) { report(false, `${spec.id} counter ${counter.id} edit anchor exists`, edit.find.slice(0, 60)); continue; }

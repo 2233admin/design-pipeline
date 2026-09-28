@@ -130,6 +130,16 @@ function validateCase(spec, dir) {
     text(golden.score.pattern, "golden.score.pattern");
     if (!(golden.score.bpm >= 40 && golden.score.bpm <= 240)) fail("golden.score.bpm must be 40-240");
   }
+  // Third-party interface captures are regenerated from a pinned source and never committed.
+  if (golden.captures) {
+    const captures = golden.captures;
+    for (const key of ["script", "env", "dir"]) text(captures[key], `golden.captures.${key}`);
+    if (!fs.existsSync(path.join(dir, captures.script))) fail(`golden.captures.script ${captures.script} is missing`);
+    const source = captures.source || {};
+    for (const key of ["repo", "commit", "license"]) text(source[key], `golden.captures.source.${key}`);
+    if (!/^[0-9a-f]{40}$/.test(source.commit)) fail("golden.captures.source.commit must be a full commit sha");
+    if (!Array.isArray(captures.files) || captures.files.length === 0 || captures.files.some((file) => typeof file !== "string" || !file.trim())) fail("golden.captures.files must list the captured files");
+  }
 
   if (!Array.isArray(spec.rules) || spec.rules.length === 0) fail("rules must be a non-empty array");
   const ruleIds = new Set();

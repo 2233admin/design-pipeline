@@ -21,6 +21,7 @@ library serves three purposes:
 evals/cases/
   package.json                  pinned render toolchain (HyperFrames 0.8.84)
   cases.cjs                     load, validate, patch and check cases
+  capture-core.cjs              deterministic 2x UI capture for real-interface cases
   verify.cjs                    command-line verification
   <deliverable-type>/<case-id>/
     case.json                   design-pipeline.golden-case.v1: brief, status, rules, counter-examples
@@ -33,6 +34,24 @@ evals/cases/
 
 Deliverable types: `product-pv`, `logo-sting`, `mad`, `ui-promo`, `explainer`. Renders, audio and
 evidence are regenerated and git-ignored.
+
+## Real product interfaces
+
+A case that shows another product's interface (the `ui-promo` OpenAlice case) declares
+`golden.captures`: a capture script, the environment variable that points at a checkout, the
+source repository, the pinned commit, its license and the captured files. The script rebuilds the
+product's own UI (a demo or seeded mode, never live accounts) and writes `assets/captures/`, which
+is git-ignored: nothing from the product is committed here, and `capture.json` records each file's
+sha256. `verify.cjs --render` runs the script when captures are missing.
+
+`capture-core.cjs` makes those captures reproducible and sharp enough for camera pushes:
+
+- frames are stepped on Chrome's virtual clock and captured at 2x, and requestAnimationFrame
+  receives the virtual `performance.now()`, so replays and timers land on the same frames in
+  every capture;
+- input that makes the page start network requests stalls a paused clock, so typing is captured
+  stop-motion (the page's state is set per frame);
+- video is encoded with a keyframe every 0.5 s, because the renderer seeks every frame.
 
 ## Counter-examples
 

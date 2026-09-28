@@ -1,0 +1,209 @@
+{
+  "schema": "design-pipeline.golden-case.v1",
+  "id": "openalice-promo-15s",
+  "deliverableType": "ui-promo",
+  "workflow": "film",
+  "brief": "Make a 15-second UI promo for OpenAlice, an AI trading agent that runs on your own machine: its agent researches in its own workspace, files findings to an Inbox, and sits next to your portfolio. Use the real interface (its demo mode) rather than mock screens. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4 with a scored soundtrack.",
+  "product": "OpenAlice (TraderAlice/OpenAlice, AGPL-3.0) in its UI demo mode: Ask Alice, the aapl-q1 workspace's recorded agent session, the Inbox report it pushes, and the portfolio",
+  "author": "claude-opus-5-5",
+  "status": "approved",
+  "approval": {
+    "verdict": "accept",
+    "by": "user",
+    "date": "2026-09-29",
+    "note": "Accepted as sent; the hash is of the exact file the user watched.",
+    "renderSha256": "5f729c72e263808531a4a06525b319353264b92ccd97794f4c24e87bcbdc21fa"
+  },
+  "golden": {
+    "storyboard": "storyboard.json",
+    "timeline": "timeline.json",
+    "composition": "index.html",
+    "score": { "pattern": "score.strudel.js", "bpm": 120, "fadeOutSec": 0.8 },
+    "captures": {
+      "script": "capture.cjs",
+      "env": "OPENALICE_DIR",
+      "dir": "assets/captures",
+      "source": { "repo": "TraderAlice/OpenAlice", "commit": "dc193d9fc856b57c793be0179c82a04bbaba1797", "license": "AGPL-3.0" },
+      "files": ["ask.mp4", "terminal.mp4", "inbox.png", "portfolio.png", "alice-full.png"]
+    }
+  },
+  "rules": [
+    {
+      "id": "one-fact-carries-the-cuts",
+      "choice": "Three match cuts, each carried by one piece of the story: the typed question is the line the agent answers, the red +9.1% is the report's table row, the report's AAPL is the portfolio's position.",
+      "rule": "Every cut between product screens is carried by something the viewer already looked at, and the storyboard names it.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["carrier-unnamed"] },
+      "fix": "Pick the element that exists on both screens (a word, a number, a row) and name it as the carrier."
+    },
+    {
+      "id": "match-cut-on-a-still-anchor",
+      "choice": "The camera settles on the anchor before each match cut and holds 0.2-0.4 s after it before moving again.",
+      "rule": "A match cut reads only when the matched element is still at the cut; whipping in or drifting out blurs it into a jump.",
+      "enforcedBy": { "kind": "gate", "gate": "render", "codes": ["planned-cuts-missing"] },
+      "fix": "Ease the camera to a stop on the anchor before the cut and start the next move 0.2 s or more after it."
+    },
+    {
+      "id": "demonstrate-not-tour",
+      "choice": "Every beat shows the product acting on the previous beat's result, not a page of the app.",
+      "rule": "A UI promo that fades from page to page is a feature tour; show one task travelling through the product.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["slideshow-handoffs", "slideshow-pair", "surface-only-motion"] },
+      "fix": "Follow one question from input to result; cut between screens on what they share."
+    },
+    {
+      "id": "uneven-rhythm",
+      "choice": "2, 6, 3, 1.5 and 2.5 s: the agent's research gets the time, the portfolio is a punch, the logo holds.",
+      "rule": "Near-equal screens read as a carousel; the film needs a still moment.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["uniform-cadence", "no-rest"] },
+      "fix": "Give the proof beat the most time, make one beat short, and hold on the end."
+    },
+    {
+      "id": "camera-by-transform",
+      "choice": "The camera moves each capture with x, y and scale from a 0 0 origin, so capture pixels map to screen pixels.",
+      "rule": "Animate transforms, never layout properties.",
+      "enforcedBy": { "kind": "gate", "gate": "timeline", "codes": ["layout-tween"] },
+      "fix": "Replace left/top/width tweens with x, y and scale."
+    },
+    {
+      "id": "real-ui-captured-deterministically",
+      "choice": "Every frame is OpenAlice's own interface in its demo mode, captured at 2x by capture.cjs from a pinned commit: the replay runs on the page's virtual clock, typing is stop-motion, stills are screenshots.",
+      "rule": "A UI promo shows the product's real interface; captures are reproducible from a pinned source.",
+      "enforcedBy": { "kind": "review", "gap": "No gate can tell a real capture from a mock. Provenance lives in capture.json (source commit and file hashes)." },
+      "fix": "Capture the real UI (a demo or seeded mode when there is no safe live data) and record its source."
+    },
+    {
+      "id": "sharp-at-the-zoom",
+      "choice": "Captures are 3840x2160, so the 2.9x push into the terminal is a 1.45x upscale and 13 px terminal text stays sharp.",
+      "rule": "Capture at the resolution the closest camera push needs.",
+      "enforcedBy": { "kind": "review", "gap": "No gate compares a shot's camera scale with its source resolution." },
+      "fix": "Capture at devicePixelRatio 2 or higher when the camera will push past 1.5x."
+    },
+    {
+      "id": "keyframes-for-seeking",
+      "choice": "Captured video is encoded with a keyframe every 0.5 s.",
+      "rule": "Video that the renderer seeks frame by frame needs dense keyframes.",
+      "enforcedBy": { "kind": "review", "gap": "The first render froze inside both video shots (0.00% pixel change per step while the camera moved). HyperFrames printed a sparse-keyframe warning, but film check does not surface it." },
+      "fix": "Encode with -g 15 -keyint_min 15 (or denser) and -movflags +faststart."
+    },
+    {
+      "id": "hold-the-finding",
+      "choice": "The camera arrives on the red +9.1% as it appears and stays on it for 1.5 s before the cut.",
+      "rule": "The one number the story turns on gets reading time.",
+      "enforcedBy": { "kind": "review", "gap": "No gate knows which text is the key fact or how long it stays legible." },
+      "fix": "Land on the key fact early in its beat and hold until the cut."
+    },
+    {
+      "id": "brand-after-the-card-settles",
+      "choice": "The logo and tagline fade in only after the portfolio has shrunk into its card.",
+      "rule": "Text must not land on top of moving UI.",
+      "enforcedBy": { "kind": "review", "gap": "The first cut faded the name in over the still-shrinking portfolio; beat-midpoint frames did not catch it and no gate knows element overlap over time." },
+      "fix": "Start the brand reveal after the carrier has cleared its space."
+    },
+    {
+      "id": "honest-demo",
+      "choice": "Figures are OpenAlice's demo fixtures, the terminal keeps its REPLAY badge, the replay runs at 1.3x (noted in qa.md), and the tagline is OpenAlice's own.",
+      "rule": "A promo claims only what the product shows; demo data stays recognisable as demo data.",
+      "enforcedBy": { "kind": "review", "gap": "Claims and data provenance are not machine-checked." },
+      "fix": "Keep demo labels visible, note speed changes, and use the product's own positioning."
+    }
+  ],
+  "counterExamples": [
+    {
+      "id": "feature-tour",
+      "failureClass": "generic-concept",
+      "rule": "demonstrate-not-tour",
+      "target": "storyboard",
+      "defect": "The same screens as a tour: each page fades and slides in and dissolves into the next.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/0/motion", "value": ["fade-in", "slide-in"] },
+          { "op": "replace", "path": "/beats/1/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/1/motion", "value": ["fade-in", "slide-in"] },
+          { "op": "replace", "path": "/beats/2/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/2/motion", "value": ["fade-in", "slide-in"] },
+          { "op": "replace", "path": "/beats/3/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/3/motion", "value": ["fade-in", "slide-in"] },
+          { "op": "replace", "path": "/beats/4/handoff", "value": "dissolve" }
+        ]
+      },
+      "expect": ["slideshow-handoffs", "slideshow-pair", "surface-only-motion"]
+    },
+    {
+      "id": "unnamed-carriers",
+      "failureClass": "workflow",
+      "rule": "one-fact-carries-the-cuts",
+      "target": "storyboard",
+      "defect": "The match cuts are planned but their carriers are left as tbd.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/1/carrier", "value": "tbd" },
+          { "op": "replace", "path": "/beats/2/carrier", "value": "tbd" },
+          { "op": "replace", "path": "/beats/3/carrier", "value": "tbd" },
+          { "op": "replace", "path": "/beats/4/carrier", "value": "tbd" }
+        ]
+      },
+      "expect": ["carrier-unnamed"]
+    },
+    {
+      "id": "equal-screens",
+      "failureClass": "taste-gap",
+      "rule": "uneven-rhythm",
+      "target": "storyboard",
+      "defect": "Five 3-second screens, the logo animated like the rest, nothing held.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/0/endSec", "value": 3 },
+          { "op": "replace", "path": "/beats/1/startSec", "value": 3 },
+          { "op": "replace", "path": "/beats/1/endSec", "value": 6 },
+          { "op": "replace", "path": "/beats/2/startSec", "value": 6 },
+          { "op": "replace", "path": "/beats/2/endSec", "value": 9 },
+          { "op": "replace", "path": "/beats/3/startSec", "value": 9 },
+          { "op": "replace", "path": "/beats/3/endSec", "value": 12 },
+          { "op": "replace", "path": "/beats/4/startSec", "value": 12 },
+          { "op": "remove", "path": "/beats/4/holdSec" },
+          { "op": "replace", "path": "/beats/4/role", "value": "action" },
+          { "op": "replace", "path": "/beats/4/transformation", "value": { "kind": "state-change", "from": "portfolio", "to": "logo card" } }
+        ]
+      },
+      "expect": ["uniform-cadence", "no-rest"]
+    },
+    {
+      "id": "layout-camera",
+      "failureClass": "tool-misuse",
+      "rule": "camera-by-transform",
+      "target": "timeline",
+      "defect": "The terminal shot's camera move tweens left, top and width.",
+      "patch": {
+        "timeline": [
+          { "op": "update-where", "path": "/tweens", "match": { "targets": ["#shot-term"], "startSec": 2.2 }, "set": { "props": ["left", "top", "width"] } }
+        ]
+      },
+      "expect": ["layout-tween"]
+    },
+    {
+      "id": "whip-cuts",
+      "failureClass": "rough-execution",
+      "rule": "match-cut-on-a-still-anchor",
+      "target": "render",
+      "defect": "The camera accelerates into every match cut and drifts off right after it.",
+      "edits": [
+        { "find": "move(\"#shot-ask\", aim(...ASK_TEXT, 1.8, 380, 540), 1.8, \"sine.inOut\", 0);", "replace": "move(\"#shot-ask\", aim(...ASK_TEXT, 1.8, 380, 540), 2.0, \"power2.in\", 0);" },
+        { "find": "move(\"#shot-term\", aim(760, 380, 1.9), 3.0, \"power2.inOut\", 2.2);", "replace": "move(\"#shot-term\", aim(760, 380, 1.9), 3.2, \"power2.out\", 2.0);" },
+        { "find": "move(\"#shot-term\", aim(...TERM_FIND, 2.9), 1.4, \"sine.inOut\", 6.6);", "replace": "move(\"#shot-term\", aim(...TERM_FIND, 3.3), 1.4, \"power2.in\", 6.6);" },
+        { "find": "move(\"#shot-inbox\", aim(1110, 360, 1.55), 1.5, \"power3.inOut\", 8.2);", "replace": "move(\"#shot-inbox\", aim(1110, 360, 1.55), 1.7, \"power2.out\", 8.0);" },
+        { "find": "move(\"#shot-inbox\", aim(...INBOX_AAPL, 2.6, 960, 640), 0.8, \"power3.inOut\", 9.8);", "replace": "move(\"#shot-inbox\", aim(...INBOX_AAPL, 2.6, 960, 640), 1.3, \"power2.in\", 9.7);" },
+        { "find": "move(\"#shot-port\", aim(960, 700, 1.0), 1.05, \"power3.inOut\", 11.35);", "replace": "move(\"#shot-port\", aim(960, 700, 1.0), 1.4, \"power2.out\", 11.0);" }
+      ],
+      "expect": ["planned-cuts-missing"]
+    }
+  ],
+  "reviewedWarnings": [
+    { "gate": "composition", "code": "weak-separation", "beatId": "ask", "disposition": "OpenAlice's own dark Ask Alice box on its dark page; the typed white question is the subject and reads clearly." },
+    { "gate": "composition", "code": "dead-band", "beatId": "ask", "disposition": "Close on the Ask Alice box: the empty page around it is the product's own home screen." },
+    { "gate": "composition", "code": "dead-band", "beatId": "research", "disposition": "The terminal's output fills from the top; the empty lower pane is where the agent's next lines will appear." },
+    { "gate": "composition", "code": "no-focal-point", "beatId": "report", "disposition": "Pulled back over the report's title and summary on the way to its AAPL; the camera, not a single mass, leads the eye here." },
+    { "gate": "composition", "code": "clutter", "beatId": "report", "disposition": "A real research report is dense text; the camera frames its title and summary rather than simplifying the product." },
+    { "gate": "composition", "code": "dead-band", "beatId": "book", "disposition": "Mid pull-back over the real portfolio: the sidebar third is the product's navigation, not empty design." },
+    { "gate": "composition", "code": "clutter", "beatId": "book", "disposition": "The portfolio's positions table is many small shapes by nature; the beat is 1.5 s and ends on the whole page." },
+    { "gate": "composition", "code": "dead-band", "beatId": "brand", "disposition": "The lockup sits in the middle band with the portfolio card beside it; the empty lower third is deliberate end-card space." }
+  ]
+}

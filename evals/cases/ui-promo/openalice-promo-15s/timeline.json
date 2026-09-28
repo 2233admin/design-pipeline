@@ -1,0 +1,343 @@
+{
+  "schema": "design-pipeline.film-timeline.v1",
+  "compositionId": "main",
+  "durationSec": 15,
+  "tweens": [
+    {
+      "targets": [
+        "#shot-ask"
+      ],
+      "startSec": 0,
+      "durationSec": 1.8,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -840.4000000000001,
+        "y": -318.6,
+        "scale": 1.8
+      },
+      "repeat": 0,
+      "ease": "sine.inOut"
+    },
+    {
+      "targets": [
+        "#cap-ask"
+      ],
+      "startSec": 0.25,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "y": 0
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#cap-ask"
+      ],
+      "startSec": 1.85,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.in"
+    },
+    {
+      "targets": [
+        "#shot-term"
+      ],
+      "startSec": 2.2,
+      "durationSec": 3,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -484,
+        "y": -182,
+        "scale": 1.9
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#cap-term"
+      ],
+      "startSec": 2.4,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "y": 0
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#shot-term"
+      ],
+      "startSec": 5.2,
+      "durationSec": 1.4,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -1322,
+        "y": -748,
+        "scale": 2.8
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#shot-term"
+      ],
+      "startSec": 6.6,
+      "durationSec": 1.4,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -1403.5,
+        "y": -794,
+        "scale": 2.9
+      },
+      "repeat": 0,
+      "ease": "sine.inOut"
+    },
+    {
+      "targets": [
+        "#cap-term"
+      ],
+      "startSec": 7.8,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.in"
+    },
+    {
+      "targets": [
+        "#shot-inbox"
+      ],
+      "startSec": 8.2,
+      "durationSec": 1.5,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -760.5,
+        "y": -18,
+        "scale": 1.55
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#cap-inbox"
+      ],
+      "startSec": 8.35,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "y": 0
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#shot-inbox"
+      ],
+      "startSec": 9.8,
+      "durationSec": 0.8,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -1442.4,
+        "y": -52.89999999999998,
+        "scale": 2.6
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#cap-inbox"
+      ],
+      "startSec": 10.8,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.in"
+    },
+    {
+      "targets": [
+        "#cap-port"
+      ],
+      "startSec": 11.3,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "y": 0
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#shot-port"
+      ],
+      "startSec": 11.35,
+      "durationSec": 1.05,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 0,
+        "y": -160,
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#cap-port"
+      ],
+      "startSec": 12.35,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.in"
+    },
+    {
+      "targets": [
+        "#shot-port"
+      ],
+      "startSec": 12.4,
+      "durationSec": 0.9,
+      "props": [
+        "clipPath",
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 156.8,
+        "y": 246,
+        "scale": 0.42,
+        "clipPath": "inset(160px 0px 160px 0px round 56px)"
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#brand"
+      ],
+      "startSec": 13.05,
+      "durationSec": 0.7,
+      "props": [
+        "opacity",
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "x": 0
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#shot-port"
+      ],
+      "startSec": 13.4,
+      "durationSec": 1.6,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 147.2,
+        "y": 239,
+        "scale": 0.43
+      },
+      "repeat": 0,
+      "ease": "sine.inOut"
+    }
+  ]
+}

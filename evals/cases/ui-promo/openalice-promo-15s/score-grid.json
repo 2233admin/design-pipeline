@@ -1,0 +1,1204 @@
+{
+  "schema": "design-pipeline.score-grid.v1",
+  "bpm": 120,
+  "cps": 0.5,
+  "beatsPerCycle": 4,
+  "durationSec": 15,
+  "beats": [
+    0,
+    0.5,
+    1,
+    1.5,
+    2,
+    2.5,
+    3,
+    3.5,
+    4,
+    4.5,
+    5,
+    5.5,
+    6,
+    6.5,
+    7,
+    7.5,
+    8,
+    8.5,
+    9,
+    9.5,
+    10,
+    10.5,
+    11,
+    11.5,
+    12,
+    12.5,
+    13,
+    13.5,
+    14,
+    14.5,
+    15
+  ],
+  "events": [
+    {
+      "atSec": 0,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c5",
+      "gain": 0.12
+    },
+    {
+      "atSec": 1,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c5",
+      "gain": 0.12
+    },
+    {
+      "atSec": 0.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "e5",
+      "gain": 0.12
+    },
+    {
+      "atSec": 1.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "e5",
+      "gain": 0.12
+    },
+    {
+      "atSec": 0,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "c3",
+      "gain": 0.18
+    },
+    {
+      "atSec": 0,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "g3",
+      "gain": 0.18
+    },
+    {
+      "atSec": 0,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "d4",
+      "gain": 0.18
+    },
+    {
+      "atSec": 2,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 2.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 2.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 2.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 3,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 3.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 3.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 3.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 4,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 4.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 4.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 4.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 5.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 5.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 5.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 6,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 6.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 6.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 6.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 7,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 7.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 7.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 7.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.24
+    },
+    {
+      "atSec": 2,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 2.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 2.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 2.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 2.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 2.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 2.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 2.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 3,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 3.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 3.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 3.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 3.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 3.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 3.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 3.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 4,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 4.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 4.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 4.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 4.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 4.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 4.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 4.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 5.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 5.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 5.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 5.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 5.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 5.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 5.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 6,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 6.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 6.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 6.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 6.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 6.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 6.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 6.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 7,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 7.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 7.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 7.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 7.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 7.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 7.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 7.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.06
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "c3",
+      "gain": 0.16
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "g3",
+      "gain": 0.16
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "d4",
+      "gain": 0.16
+    },
+    {
+      "atSec": 4,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "a2",
+      "gain": 0.16
+    },
+    {
+      "atSec": 4,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "e3",
+      "gain": 0.16
+    },
+    {
+      "atSec": 4,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "c4",
+      "gain": 0.16
+    },
+    {
+      "atSec": 6,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "f2",
+      "gain": 0.16
+    },
+    {
+      "atSec": 6,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "c3",
+      "gain": 0.16
+    },
+    {
+      "atSec": 6,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "a3",
+      "gain": 0.16
+    },
+    {
+      "atSec": 6.5,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "e6",
+      "gain": 0.35
+    },
+    {
+      "atSec": 6.5,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "b6",
+      "gain": 0.35
+    },
+    {
+      "atSec": 8,
+      "durSec": 2,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.6
+    },
+    {
+      "atSec": 8,
+      "durSec": 2,
+      "sound": "white",
+      "note": null,
+      "gain": 0.16
+    },
+    {
+      "atSec": 8,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 8.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 8.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 8.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 9,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 9.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 9.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 9.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 10,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 10.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 10.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 10.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 11,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 11.25,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 11.5,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 11.75,
+      "durSec": 0.25,
+      "sound": "square",
+      "note": "c2",
+      "gain": 0.26
+    },
+    {
+      "atSec": 8,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.17
+    },
+    {
+      "atSec": 10,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "a2",
+      "gain": 0.17
+    },
+    {
+      "atSec": 8.75,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.17
+    },
+    {
+      "atSec": 10.75,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "a2",
+      "gain": 0.17
+    },
+    {
+      "atSec": 9.5,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.17
+    },
+    {
+      "atSec": 11.5,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "a2",
+      "gain": 0.17
+    },
+    {
+      "atSec": 8,
+      "durSec": 0.5,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.5
+    },
+    {
+      "atSec": 10,
+      "durSec": 0.5,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.5
+    },
+    {
+      "atSec": 9,
+      "durSec": 0.5,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.5
+    },
+    {
+      "atSec": 11,
+      "durSec": 0.5,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.5
+    },
+    {
+      "atSec": 8,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 8.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 8.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 8.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 8.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 8.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 8.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 8.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 9,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 9.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 9.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 9.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 9.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 9.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 9.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 9.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 10,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 10.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 10.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 10.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 10.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 10.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 10.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 10.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11.125,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11.25,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11.375,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11.5,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11.625,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11.75,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11.875,
+      "durSec": 0.125,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 11,
+      "durSec": 0.5,
+      "sound": "sawtooth",
+      "note": "g5",
+      "gain": 0.45
+    },
+    {
+      "atSec": 11,
+      "durSec": 0.5,
+      "sound": "sawtooth",
+      "note": "d6",
+      "gain": 0.45
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 1.5,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 1.5,
+      "sound": "sawtooth",
+      "note": "g3",
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 1.5,
+      "sound": "sawtooth",
+      "note": "e4",
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 1.5,
+      "sound": "sawtooth",
+      "note": "b4",
+      "gain": 0.2
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 1.5,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.2
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 1.5,
+      "sound": "sawtooth",
+      "note": "g3",
+      "gain": 0.2
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 1.5,
+      "sound": "sawtooth",
+      "note": "e4",
+      "gain": 0.2
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 1.5,
+      "sound": "sawtooth",
+      "note": "b4",
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 1.5,
+      "sound": "triangle",
+      "note": "c2",
+      "gain": 0.28
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 1.5,
+      "sound": "triangle",
+      "note": "g2",
+      "gain": 0.28
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 1.5,
+      "sound": "triangle",
+      "note": "c2",
+      "gain": 0.28
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 1.5,
+      "sound": "triangle",
+      "note": "g2",
+      "gain": 0.28
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 1.5,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.5
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 1.5,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.5
+    }
+  ]
+}
