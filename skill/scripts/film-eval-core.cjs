@@ -41,7 +41,7 @@ function measureRun(dir, options = {}) {
   else if (!boardOk) { parts.storyboard = 0; evidence.push(board.error); }
   else {
     const result = attempt("storyboard", () => checkStoryboard(board));
-    parts.storyboard = result.status === "error" ? 0 : gateScore(result.findings.length);
+    parts.storyboard = result.status === "error" ? 0 : gateScore(result.findings.filter((finding) => finding.severity !== "warn").length);
     evidence.push(result.status === "error" ? result.error : `storyboard: ${result.status}${result.findings.length ? ` (${result.findings.map((f) => f.code).join(", ")})` : ""}`);
   }
 
@@ -49,7 +49,7 @@ function measureRun(dir, options = {}) {
   if (!boardOk || !fs.existsSync(timelineFile)) { parts.timeline = 0; evidence.push(`timeline: ${boardOk ? "missing timeline.json" : "not checked without a valid storyboard"}`); }
   else {
     const result = attempt("timeline", () => checkTimeline(readJson(timelineFile, "film timeline"), board));
-    parts.timeline = result.status === "error" ? 0 : gateScore(result.findings.length);
+    parts.timeline = result.status === "error" ? 0 : gateScore(result.findings.filter((finding) => finding.severity !== "warn").length);
     evidence.push(result.status === "error" ? result.error : `timeline: ${result.status}${result.findings.length ? ` (${result.findings.map((f) => f.code).join(", ")})` : ""}; carried handoffs ${result.metrics.carriedHandoffs}`);
   }
 
@@ -57,7 +57,7 @@ function measureRun(dir, options = {}) {
   if (!boardOk || !fs.existsSync(video)) { parts.render = 0; evidence.push(`render: ${boardOk ? "missing out.mp4" : "not checked without a valid storyboard"}`); }
   else {
     const result = attempt("render", () => evaluateFilmRender(board, video, { ...options.render, outDir: path.join(dir, "evidence") }));
-    parts.render = result.status === "error" ? 0 : gateScore(result.findings.length);
+    parts.render = result.status === "error" ? 0 : gateScore(result.findings.filter((finding) => finding.severity !== "warn").length);
     evidence.push(result.status === "error" ? result.error : `render: ${result.status}${result.findings.length ? ` (${result.findings.map((f) => f.code).join(", ")})` : ""}; cuts on onsets ${result.audio.cutsOnOnset}`);
   }
 

@@ -65,6 +65,7 @@
         from: Object.fromEntries(Object.keys(startAt).filter((key) => !CONTROL.has(key)).map((key) => [key, startAt[key]]).filter(([, value]) => typeof value !== "function")),
         to: Object.fromEntries(Object.keys(vars).filter((key) => !CONTROL.has(key)).map((key) => [key, vars[key]]).filter(([, value]) => typeof value !== "function" && typeof value !== "object")),
         repeat: typeof child.repeat === "function" ? child.repeat() : vars.repeat || 0,
+        ease: typeof vars.ease === "string" ? vars.ease : vars.ease ? "custom" : "default",
         // A driver tween animates a plain object (a progress value read by procedural, 3D or
         // shader code), not a DOM element, so its properties say nothing about the subject.
         ...(isDriver(child) ? { driver: true } : {}),

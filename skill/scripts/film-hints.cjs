@@ -34,12 +34,18 @@ const HINTS = {
     "beat-static": "Animate the beat's subject during its time range; a registered choreography at the beat's startSec is the shortest fix.",
     "beat-fade-only": "Add motion that changes the subject (position, rotation, clipPath, morph) instead of only opacity/scale.",
     "handoff-not-carried": "Keep one element animating across this boundary: start the next beat's tween on the same element before the boundary, or let a tween span it.",
+    "property-conflict": "Give each property one time source: end the first tween before the second starts, merge them into one tween with keyframes, or animate a parent wrapper for the second motion.",
+    "linear-motion": "Replace linear easing with an ease that accelerates and settles (power2.inOut for travel, power3.out for arrivals); keep linear only for constant mechanical motion.",
   },
   render: {
     "duration-mismatch": "Render the composition whose data-duration equals storyboard durationSec, then re-run film-render.",
     "planned-cuts-missing": "Make the planned hard-cut/match-cut boundaries visible cuts in the composition, or change those handoffs in the storyboard.",
     "audio-missing": "Add the score as an <audio data-start data-duration> element in the composition and re-render, or set sound.mode to silent with a reason.",
     "cuts-off-beat": "Move cut times onto the music's accents (npx hyperframes beats), or move the accents onto the cuts.",
+    "rest-drift": "End every animated element exactly where it started: add a final return tween to the rest values, and check for leftover offsets from stacked tweens.",
+    "loop-seam-jump": "Make the last frame lead into the first: end each motion at its starting pose and velocity, or offset the loop point so both sides match.",
+    "missing-anticipation": "Add a short wind-up before the main action (a small counter-move or squash for 10-20% of the beat) so the viewer sees it coming.",
+    "missing-settle": "Ease the action out: overshoot slightly and settle (back.out, elastic.out) or decelerate into the final pose instead of stopping dead.",
     "render-static-beat": "Nothing moves on screen during this action beat. Check that its block or tweens actually run in the render (seek, data-start, a procedural driver reading the timeline), or give the beat a visible action.",
   },
 };

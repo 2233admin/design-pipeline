@@ -48,20 +48,29 @@ function resolveChrome(explicit) {
   return chrome;
 }
 
-// Nested blocks (data-composition-src) only load under the HyperFrames runtime, which the
-// preview server injects. Returns the built preview URL, starting a background preview when
-// none is running; `started` tells the caller to stop it afterwards.
 // Runs npx without a shell: npm's npx-cli.js through the current node when present (Windows
-// cannot spawn npx.cmd without a shell), otherwise the npx binary.
+// cannot spawn npx.cmd without a shell), otherwise the npx binary. PWD follows cwd because
+// HyperFrames resolves the project from PWD, which a parent shell may have set elsewhere.
 function runNpx(args, options = {}) {
   const cli = path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npx-cli.js");
   const [command, prefix] = fs.existsSync(cli) ? [process.execPath, [cli]] : ["npx", []];
-  return spawnSync(command, [...prefix, ...args], { encoding: "utf8", windowsHide: true, timeout: 180000, maxBuffer: 64 << 20, ...options });
+  const env = { ...process.env, ...(options.cwd ? { PWD: options.cwd } : {}) };
+  return spawnSync(command, [...prefix, ...args], { encoding: "utf8", windowsHide: true, timeout: 180000, maxBuffer: 64 << 20, env, ...options });
 }
 
+function httpJson(url) {
+  const result = spawnSync(process.execPath, ["-e", `require("http").get(${JSON.stringify(url)}, (r) => { let b = ""; r.on("data", (d) => (b += d)); r.on("end", () => process.stdout.write(b)); }).on("error", () => {})`], { encoding: "utf8", timeout: 10000, windowsHide: true });
+  try { return JSON.parse(result.stdout); } catch { return null; }
+}
+
+// Nested blocks (data-composition-src) only load under the HyperFrames runtime, which the
+// preview server injects. Returns the built preview URL, starting a background preview when
+// none is running; `started` tells the caller to stop it afterwards. The project id is looked
+// up from the server by directory rather than trusted from the status output.
 function hyperframesPreview(projectDir, options = {}) {
+  const dir = path.resolve(projectDir);
   const cli = options.cliVersion ? `hyperframes@${options.cliVersion}` : "hyperframes";
-  const call = (args) => runNpx(["--yes", cli, "preview", ...args], { cwd: projectDir, timeout: 120000 });
+  const call = (args) => runNpx(["--yes", cli, "preview", dir, ...args], { cwd: dir, timeout: 120000 });
   const status = () => {
     const out = call(["--status", "--json"]);
     try { return JSON.parse(String(out.stdout).slice(String(out.stdout).indexOf("{"))).result; } catch { return null; }
@@ -73,8 +82,15 @@ function hyperframesPreview(projectDir, options = {}) {
     started = true;
     state = status();
   }
-  if (!state || !state.ready || !state.serverUrl) fail(SCOPE, `could not start a HyperFrames preview in ${projectDir}. Fix: run "npx hyperframes preview --background" there and pass --url <serverUrl>/api/projects/<id>/preview`, { code: "TOOL_FAILED" });
-  return { url: `${state.serverUrl}/api/projects/${encodeURIComponent(state.projectName)}/preview`, started, stop: () => call(["--stop"]) };
+  if (!state || !state.ready || !state.serverUrl) fail(SCOPE, `could not start a HyperFrames preview in ${dir}. Fix: run "npx hyperframes preview --background" there and pass --url <serverUrl>/api/projects/<id>/preview`, { code: "TOOL_FAILED" });
+  const same = (a, b) => path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase();
+  const listed = (httpJson(`${state.serverUrl}/api/projects`) || { projects: [] }).projects.find((project) => same(project.dir, dir));
+  const stop = () => call(["--stop"]);
+  if (!listed) {
+    if (started) stop();
+    fail(SCOPE, `the preview at ${state.serverUrl} does not serve ${dir}. Fix: stop other previews (npx hyperframes preview --kill-all) and re-run`, { code: "TOOL_FAILED" });
+  }
+  return { url: `${state.serverUrl}/api/projects/${encodeURIComponent(listed.id)}/preview`, started, stop };
 }
 
 async function captureTimeline(compositionFile, options = {}) {
@@ -92,7 +108,8 @@ async function captureTimeline(compositionFile, options = {}) {
     await page.goto(options.url || pathToFileURL(file).href, { waitUntil: "networkidle0", timeout: options.timeoutMs || 30000 });
     const nested = await page.evaluate(() => ({ hosts: document.querySelectorAll("[data-composition-src]").length, runtime: Boolean(window.__hyperframes) }));
     if (nested.hosts && !nested.runtime) fail(SCOPE, `${nested.hosts} nested composition(s) (data-composition-src) do not load without the HyperFrames runtime, so their motion would be missing. Fix: capture through the preview server: "designer-pipeline film check" does this automatically for projects with hyperframes.json, or pass --url <serverUrl>/api/projects/<id>/preview`);
-    if (nested.runtime) await page.waitForFunction(() => window.__renderReady === true || window.__playerReady === true, { timeout: 15000 }).catch(() => {});
+    // A cold preview registers timelines after its scenes load; wait for the one we probe.
+    await page.waitForFunction((id) => Boolean(window.__timelines && window.__timelines[id]), { timeout: nested.runtime ? 30000 : 5000 }, compositionId).catch(() => {});
     await page.addScriptTag({ content: fs.readFileSync(PROBE, "utf8") });
     const result = await page.evaluate((id) => {
       const timeline = window.__timelines && window.__timelines[id];

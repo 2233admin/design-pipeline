@@ -39,7 +39,8 @@ function loadChoreographyIds() {
 }
 
 function validateShape(board) {
-  assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats"], "storyboard", SCOPE);
+  assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState"], "storyboard", SCOPE);
+  if (board.endState !== undefined) assertEnum(board.endState, ["free", "rest", "loop"], "endState", SCOPE);
   if (board.schema !== STORYBOARD_SCHEMA) fail(SCOPE, `schema must be ${STORYBOARD_SCHEMA}`);
   real(board.id, "id");
   if (!(board.durationSec > 0)) fail(SCOPE, "durationSec must be positive");
@@ -81,7 +82,8 @@ function validateShape(board) {
   const beatIds = new Set();
   for (const [index, beat] of board.beats.entries()) {
     const label = `beats[${index}]`;
-    assertKeys(beat, ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion"], ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion", "choreography", "block", "soundCues", "note"], label, SCOPE);
+    assertKeys(beat, ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion"], ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion", "choreography", "block", "arc", "soundCues", "note"], label, SCOPE);
+    if (beat.arc !== undefined) assertEnum(beat.arc, ["anticipate-act-settle"], `${label}.arc`, SCOPE);
     real(beat.id, `${label}.id`);
     if (beatIds.has(beat.id)) fail(SCOPE, `${label} duplicates ${beat.id}`);
     beatIds.add(beat.id);
@@ -248,7 +250,46 @@ function motionProfile(video, tools) {
     for (let p = 0; p < size; p += 1) if (Math.abs(stdout[i * size + p] - stdout[(i - 1) * size + p]) > 4) changed += 1;
     shares.push({ atSec: i / MOTION_FPS, share: changed / size });
   }
+  const frameAt = (index) => stdout.subarray(index * size, (index + 1) * size);
+  // Seam uses the per-step threshold; rest drift uses a coarser one because the first (key)
+  // frame and a late frame carry different codec noise: a clip that truly returned and held
+  // measured 0.28% at 32 levels, one that drifted away 5.6%.
+  let seam = 0;
+  let drift = 0;
+  if (frames > 1) for (let p = 0; p < size; p += 1) {
+    const d = Math.abs(frameAt(frames - 1)[p] - frameAt(0)[p]);
+    if (d > 4) seam += 1;
+    if (d > 32) drift += 1;
+  }
+  shares.firstLastShare = frames > 1 ? seam / size : 0;
+  shares.restDriftShare = frames > 1 ? drift / size : 0;
   return shares;
+}
+
+// Motion-craft checks on the pixel motion curve. A settled film returns to its opening frame; a
+// loop's last-to-first step looks like any other step; an anticipate-act-settle beat starts below
+// its peak speed and eases out instead of stopping dead.
+const REST_DRIFT_SHARE = 0.01;
+function craftChecks(board, motion, add) {
+  const steps = motion.map((sample) => sample.share);
+  const sorted = [...steps].sort((a, b) => a - b);
+  const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+  if (board.endState === "rest" && motion.restDriftShare > REST_DRIFT_SHARE) add("rest-drift", `the last frame differs clearly from the first in ${(motion.restDriftShare * 100).toFixed(2)}% of pixels; the film should settle back to its opening state`);
+  if (board.endState === "loop" && motion.firstLastShare > Math.max(3 * median, 0.01)) add("loop-seam-jump", `looping from the last frame to the first changes ${(motion.firstLastShare * 100).toFixed(2)}% of pixels, against a typical step of ${(median * 100).toFixed(2)}%`);
+  for (const beat of board.beats) {
+    if (beat.arc !== "anticipate-act-settle") continue;
+    const inside = motion.filter((sample) => sample.atSec > beat.startSec && sample.atSec <= beat.endSec).map((sample) => sample.share);
+    if (inside.length < 8) continue;
+    const peak = Math.max(...inside);
+    if (peak < FROZEN_SHARE * 5) continue;
+    const edge = Math.max(1, Math.round(inside.length * 0.15));
+    const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
+    if (mean(inside.slice(0, edge)) >= 0.8 * peak) add("missing-anticipation", `beat ${beat.id} starts at ${(100 * mean(inside.slice(0, edge)) / peak).toFixed(0)}% of its peak motion; there is no wind-up before the action`, "warn", beat.id);
+    const tail = inside.slice(-edge);
+    const peakIndex = inside.indexOf(peak);
+    const deadStop = inside.slice(peakIndex + 1).some((value, i) => (i === 0 ? peak : inside[peakIndex + i]) >= 0.8 * peak && value < 0.1 * peak);
+    if (mean(tail) >= 0.8 * peak || deadStop) add("missing-settle", `beat ${beat.id} ${deadStop ? "drops from full motion to still in one frame" : "is still at full motion when it ends"}; ease the action out into a settle`, "warn", beat.id);
+  }
 }
 
 function nearest(list, value) {
@@ -257,7 +298,7 @@ function nearest(list, value) {
   return best;
 }
 
-function contactSheet(video, beats, outDir, tools) {
+function contactSheet(video, beats, outDir, tools, extraSamples = {}) {
   fs.mkdirSync(outDir, { recursive: true });
   const frames = [];
   for (const [index, beat] of beats.entries()) {
@@ -266,11 +307,21 @@ function contactSheet(video, beats, outDir, tools) {
     run(tools.ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-ss", String(atSec), "-i", video, "-frames:v", "1", "-vf", "scale=480:-2", file]);
     frames.push({ beatId: beat.id, atSec, file: path.basename(file) });
   }
+  // Extra samples (e.g. start and end of procedurally driven beats) stay out of the tiled sheet.
+  const extras = [];
+  for (const [index, beat] of beats.entries()) {
+    for (const [n, fraction] of (extraSamples[beat.id] || []).entries()) {
+      const atSec = Number((beat.startSec + (beat.endSec - beat.startSec) * fraction).toFixed(3));
+      const file = path.join(outDir, `beat-${String(index + 1).padStart(3, "0")}-s${n}.png`);
+      run(tools.ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-ss", String(atSec), "-i", video, "-frames:v", "1", "-vf", "scale=480:-2", file]);
+      extras.push({ beatId: beat.id, atSec, file: path.basename(file) });
+    }
+  }
   const columns = Math.min(4, frames.length);
   const rows = Math.ceil(frames.length / columns);
   const sheet = path.join(outDir, "contact-sheet.png");
   run(tools.ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-framerate", "1", "-i", path.join(outDir, "beat-%03d.png"), "-vf", `tile=${columns}x${rows}:padding=8:margin=8`, "-frames:v", "1", sheet]);
-  return { frames, sheet: path.basename(sheet) };
+  return { frames, extras, sheet: path.basename(sheet) };
 }
 
 function evaluateFilmRender(board, video, options = {}) {
@@ -281,7 +332,7 @@ function evaluateFilmRender(board, video, options = {}) {
   if (!fs.existsSync(video) || fs.statSync(video).size === 0) fail("film render", "video file is missing or empty");
   const media = probe(video, tools);
   const findings = [];
-  const add = (code, message) => findings.push(withFix("render", { code, message }));
+  const add = (code, message, severity = "error", beatId) => findings.push(withFix("render", { code, severity, message, ...(beatId ? { beatId } : {}) }));
 
   const durationDelta = Number((media.durationSec - board.durationSec).toFixed(3));
   if (Math.abs(durationDelta) > 0.5) add("duration-mismatch", `render is ${media.durationSec}s, storyboard declares ${board.durationSec}s`);
@@ -311,12 +362,13 @@ function evaluateFilmRender(board, video, options = {}) {
     const beat = board.beats.find((candidate) => candidate.id === entry.beatId);
     if (entry.role === "action" && beat.endSec - beat.startSec >= 0.5 && entry.changedShare < FROZEN_SHARE) add("render-static-beat", `action beat ${entry.beatId} is frozen in the render (${(entry.changedShare * 100).toFixed(3)}% of pixels change per frame)`);
   }
+  craftChecks(board, motion, add);
 
-  const sheet = options.outDir ? contactSheet(video, board.beats, options.outDir, tools) : null;
+  const sheet = options.outDir ? contactSheet(video, board.beats, options.outDir, tools, options.extraSamples || {}) : null;
   return {
     schema: RENDER_SCHEMA,
     id: board.id,
-    status: storyboard.status === "passed" && findings.length === 0 ? "passed" : "failed",
+    status: storyboard.status === "passed" && !findings.some((finding) => finding.severity !== "warn") ? "passed" : "failed",
     storyboard: { status: storyboard.status, findings: storyboard.findings },
     findings,
     media: { durationSec: media.durationSec, durationDeltaSec: durationDelta, fps: Number(media.fps.toFixed(3)) },

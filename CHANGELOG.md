@@ -40,6 +40,13 @@ All notable changes to Design Pipeline are documented here.
   headless Chrome, exports the pattern's exact event grid, checks cuts and accent cues against it,
   and records the score's license. Strudel (AGPL-3.0) is installed into the film project on first
   use and never bundled; only built-in synth sounds are enabled.
+- Motion craft rules: the timeline gate reports two tweens driving one property at once
+  (`property-conflict`) and warns on linear easing for travelling elements (`linear-motion`); the
+  storyboard gains `endState` (rest, loop, free) and beat `arc` (anticipate-act-settle), checked
+  from rendered pixels (`rest-drift`, `loop-seam-jump`, `missing-anticipation`, `missing-settle`).
+  Procedural beats are sampled at start, middle and end for composition. HyperFrames capture now
+  waits for the timeline to register, resolves the preview project by directory, and a failed
+  capture can no longer pass on a stale timeline.json.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.

@@ -25,7 +25,7 @@ function validateTimeline(timeline) {
   if (!Array.isArray(timeline.tweens)) fail(SCOPE, "tweens must be an array");
   for (const [index, tween] of timeline.tweens.entries()) {
     const label = `tweens[${index}]`;
-    assertKeys(tween, ["targets", "startSec", "durationSec", "props"], ["targets", "startSec", "durationSec", "props", "from", "to", "repeat", "driver"], label, SCOPE);
+    assertKeys(tween, ["targets", "startSec", "durationSec", "props"], ["targets", "startSec", "durationSec", "props", "from", "to", "repeat", "driver", "ease"], label, SCOPE);
     if (!Array.isArray(tween.targets) || tween.targets.some((target) => typeof target !== "string")) fail(SCOPE, `${label}.targets must be a string array`);
     if (!Array.isArray(tween.props) || tween.props.some((prop) => typeof prop !== "string")) fail(SCOPE, `${label}.props must be a string array`);
     for (const key of ["startSec", "durationSec"]) {
@@ -45,7 +45,7 @@ function checkTimeline(timeline, board, options = {}) {
   validateTimeline(timeline);
   const storyboard = checkStoryboard(board, options);
   const findings = [];
-  const add = (code, message, beatId) => findings.push(withFix("timeline", beatId ? { code, beatId, message } : { code, message }));
+  const add = (code, message, beatId, severity = "error") => findings.push(withFix("timeline", { code, severity, message, ...(beatId ? { beatId } : {}) }));
 
   if (Math.abs(timeline.durationSec - board.durationSec) > FRAME_TOLERANCE_SEC) add("duration-mismatch", `timeline is ${timeline.durationSec}s, storyboard declares ${board.durationSec}s`);
   for (const tween of timeline.tweens) {
@@ -60,6 +60,34 @@ function checkTimeline(timeline, board, options = {}) {
   for (const tween of timeline.tweens) for (const target of tween.targets) coverage.set(target, (coverage.get(target) || 0) + tween.durationSec);
   const ambient = new Set([...coverage].filter(([, total]) => total / timeline.durationSec > 0.6).map(([target]) => target));
   const subjects = (tween) => (tween.driver ? [] : tween.targets.filter((target) => !ambient.has(target)));
+  // One time source per property: two tweens driving the same property of the same element at
+  // overlapping times fight each other (and stack their easing), so the motion is undefined.
+  const tracks = new Map();
+  for (const tween of timeline.tweens) {
+    if (tween.driver || tween.durationSec <= 0) continue;
+    for (const target of tween.targets) for (const prop of tween.props) {
+      const key = `${target}|${prop}`;
+      if (!tracks.has(key)) tracks.set(key, []);
+      tracks.get(key).push(tween);
+    }
+  }
+  const conflicts = [];
+  for (const [key, list] of tracks) {
+    list.sort((a, b) => a.startSec - b.startSec);
+    for (let i = 1; i < list.length; i += 1) {
+      const previousEnd = list[i - 1].startSec + list[i - 1].durationSec;
+      if (list[i].startSec < previousEnd - 0.001) { conflicts.push({ key, at: list[i].startSec, until: Number(previousEnd.toFixed(3)) }); break; }
+    }
+  }
+  for (const conflict of conflicts.slice(0, 8)) {
+    const [target, prop] = conflict.key.split("|");
+    add("property-conflict", `${target} ${prop} is driven by two tweens between ${conflict.at}s and ${conflict.until}s`);
+  }
+  // Linear easing on a moving element reads as mechanical; opacity and drivers are exempt.
+  const LINEAR = /^(none|linear|power0(\.\w+)?)$/i;
+  const linear = timeline.tweens.filter((tween) => !tween.driver && tween.durationSec > 0.3 && LINEAR.test(tween.ease || "") && tween.props.some((prop) => /^(x|y|xPercent|yPercent|scale|scaleX|scaleY|rotation|rotate|z|rotationX|rotationY)$/.test(prop)));
+  for (const tween of linear.slice(0, 5)) add("linear-motion", `${tween.targets.join(", ")} moves with ${tween.ease} easing for ${tween.durationSec}s at ${tween.startSec}s`, undefined, "warn");
+
   const perBeat = board.beats.map((beat) => {
     const tweens = timeline.tweens.filter((tween) => subjects(tween).length > 0 && overlaps(tween, beat.startSec, beat.endSec));
     const animated = tweens.filter((tween) => tween.durationSec > 0);
@@ -102,7 +130,7 @@ function checkTimeline(timeline, board, options = {}) {
     schema: TIMELINE_SCHEMA,
     id: board.id,
     compositionId: timeline.compositionId,
-    status: storyboard.status === "passed" && findings.length === 0 ? "passed" : "failed",
+    status: storyboard.status === "passed" && !findings.some((finding) => finding.severity !== "warn") ? "passed" : "failed",
     storyboard: { status: storyboard.status, findings: storyboard.findings },
     findings,
     metrics: {

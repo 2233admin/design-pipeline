@@ -84,7 +84,10 @@ test("film check uses the capture hook, writes timeline.json, and aggregates fix
     assert.equal(result.status, "failed");
     assert.ok(result.fixes.some((fix) => fix.code === "beat-static" && fix.beatId === "image-bloom" && fix.fix));
     const failing = checkFilmProject(dir, { capture: () => { throw new Error("no chrome"); } });
-    assert.match(failing.steps.find((step) => step.gate === "timeline").source, /capture failed: no chrome; used existing timeline.json/);
+    const staleStep = failing.steps.find((step) => step.gate === "timeline");
+    assert.match(staleStep.source, /capture failed: no chrome; used existing timeline.json/);
+    assert.equal(staleStep.stale, true);
+    assert.notEqual(failing.status, "passed", "a stale timeline can never make the check pass");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
