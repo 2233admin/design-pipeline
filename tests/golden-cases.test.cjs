@@ -10,9 +10,23 @@ const repoRoot = path.resolve(__dirname, "..");
 const casesRoot = path.join(repoRoot, "evals/cases");
 const cases = listCases(casesRoot).map(loadCase);
 
-test("the library has golden cases for product PV and logo sting", () => {
+test("the library has golden cases for product PV, logo sting, UI promo and explainer", () => {
   const types = new Set(cases.map((entry) => entry.spec.deliverableType));
-  for (const type of ["product-pv", "logo-sting"]) assert.ok(types.has(type), type);
+  for (const type of ["product-pv", "logo-sting", "ui-promo", "explainer"]) assert.ok(types.has(type), type);
+});
+
+test("third-party interface captures are declared with a pinned source and never committed", () => {
+  const { spawnSync } = require("node:child_process");
+  const captured = cases.filter((entry) => entry.spec.golden.captures);
+  assert.ok(captured.length >= 1);
+  for (const entry of captured) {
+    const dir = path.relative(repoRoot, path.join(entry.dir, entry.spec.golden.captures.dir)).split(path.sep).join("/");
+    const tracked = spawnSync("git", ["ls-files", "--", dir], { cwd: repoRoot, encoding: "utf8" });
+    assert.equal(tracked.status, 0, tracked.stderr);
+    assert.equal(tracked.stdout.trim(), "", `${dir} must not be committed`);
+    const ignored = spawnSync("git", ["check-ignore", "-q", `${dir}/${entry.spec.golden.captures.files[0]}`], { cwd: repoRoot });
+    assert.equal(ignored.status, 0, `${dir} must be git-ignored`);
+  }
 });
 
 test("every golden passes the storyboard, score and timeline gates", () => {

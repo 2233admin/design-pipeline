@@ -1,0 +1,184 @@
+{
+  "schema": "design-pipeline.golden-case.v1",
+  "id": "carry-the-eye-45s",
+  "deliverableType": "explainer",
+  "workflow": "film",
+  "brief": "Make a 45-second explainer, with captions and music and no voice-over, that teaches one motion-craft rule: give every cut something that carries the eye across it. Show the problem, the kinds of carry, and a before/after, and end on design-pipeline, which checks the rule. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4 with a scored soundtrack.",
+  "product": "the carry rule in references/product-film-direction.md (Carry and rhythm) and the storyboard's handoff and carrier fields; design-pipeline's carrier-unnamed and handoff-not-carried checks",
+  "author": "claude-opus-5-5",
+  "status": "candidate",
+  "approval": null,
+  "golden": {
+    "storyboard": "storyboard.json",
+    "timeline": "timeline.json",
+    "composition": "index.html",
+    "score": { "pattern": "score.strudel.js", "bpm": 96, "fadeOutSec": 1.2 }
+  },
+  "rules": [
+    {
+      "id": "practice-the-rule",
+      "choice": "The explainer carries its own boundaries: the triangle stays, the gaze marker becomes the full stop, the full stop becomes the dot, the dot becomes the square, the camera travels, the screen shrinks into one of two, the eye path becomes the underline and the underline becomes the mark. The only cut is the match cut it demonstrates.",
+      "rule": "A film that teaches a rule obeys it; every planned carry is built with a subject that moves across the boundary.",
+      "enforcedBy": { "kind": "gate", "gate": "timeline", "codes": ["handoff-not-carried"] },
+      "fix": "Start the carrier's move before the boundary and end it after; do not fade one element out while the next fades in."
+    },
+    {
+      "id": "cuts-inside-beats",
+      "choice": "The shot behind the travelling dot changes a beat after the boundary (15.625 s), never on it.",
+      "rule": "A carried boundary must not render as a cut; cut the background inside a beat, where the subject is already travelling.",
+      "enforcedBy": { "kind": "gate", "gate": "render", "codes": ["carry-cut"] },
+      "fix": "Move the background change off the boundary, or plan that boundary as a match-cut."
+    },
+    {
+      "id": "vary-the-lessons",
+      "choice": "Beats run 2.5 to 10 s: quick problem, quick naming, three 5 s carries, a quick match cut, and a 10 s payoff.",
+      "rule": "Near-equal lessons read as a lecture on a metronome; let the payoff breathe.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["uniform-cadence"] },
+      "fix": "Shorten the set-up beats and give the comparison the longest beat."
+    },
+    {
+      "id": "sound-marks-the-lesson",
+      "choice": "Dull ticks on the gaze jumps, rising blips on each carry, a hit on the match cut, a fuller bed under the payoff.",
+      "rule": "A scored explainer binds its accents to the moments it teaches.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["sound-no-entry", "sound-unbound"] },
+      "fix": "Declare the music entry and bind a cue to each lesson's key moment."
+    },
+    {
+      "id": "one-driver-per-property",
+      "choice": "The left marker's hunting wobble ends before its jump starts.",
+      "rule": "One tween drives a property at a time.",
+      "enforcedBy": { "kind": "gate", "gate": "timeline", "codes": ["property-conflict"] },
+      "fix": "End the previous tween before the next starts on the same property, or merge them into keyframes."
+    },
+    {
+      "id": "show-the-problem-first",
+      "choice": "The film opens on three good shots played as a slideshow, then makes the cost visible: a gaze marker that has to hunt after every cut.",
+      "rule": "An explainer shows the failure before naming the rule, so the rule answers a question the viewer already has.",
+      "enforcedBy": { "kind": "review", "gap": "No gate checks the order of an argument." },
+      "fix": "Open on the problem in its own terms; name the rule only after the viewer has seen it fail."
+    },
+    {
+      "id": "same-content-comparison",
+      "choice": "The payoff plays the same three shapes twice, side by side: hard cuts with a red zig-zag of gaze jumps, and carries with one green path.",
+      "rule": "A before/after keeps the content identical so the only difference is the rule.",
+      "enforcedBy": { "kind": "review", "gap": "No gate compares two halves of a frame." },
+      "fix": "Reuse the opening material for the payoff and change only what the rule changes."
+    },
+    {
+      "id": "name-the-terms",
+      "choice": "Each carry is labelled on screen with the storyboard's own term (continuation, morph, camera-carry, match-cut), and the rule ends on the carrier field that states it.",
+      "rule": "Teach the words the tool uses, so the lesson transfers to the storyboard.",
+      "enforcedBy": { "kind": "review", "gap": "On-screen vocabulary is not checked against the storyboard schema." },
+      "fix": "Label demonstrations with the schema's terms and show the field that records them."
+    },
+    {
+      "id": "measured-type-for-anchors",
+      "choice": "The headline and the rule are monospace, so the full stop and the underline land on positions computed from character widths.",
+      "rule": "Where motion must land on text, lay the text out so its positions are known without measuring at render time.",
+      "enforcedBy": { "kind": "review", "gap": "Measuring proportional text in the composition script is not seek-safe before web fonts load; no gate checks that a mover lands on its target glyph." },
+      "fix": "Use monospace (or fixed boxes) for text that motion must hit, and compute the landing points from the layout."
+    }
+  ],
+  "counterExamples": [
+    {
+      "id": "fade-between-demos",
+      "failureClass": "rough-execution",
+      "rule": "practice-the-rule",
+      "target": "timeline",
+      "defect": "Into the first demonstration the headline fades out while the screen fades in; the full stop never travels.",
+      "patch": {
+        "timeline": [
+          { "op": "remove-where", "path": "/tweens", "match": { "targets": ["#stop"], "startSec": 9.8 } },
+          { "op": "update-where", "path": "/tweens", "match": { "targets": ["#screen"], "startSec": 9.9 }, "set": { "props": ["opacity"] } },
+          { "op": "update-where", "path": "/tweens", "match": { "targets": ["#title"], "startSec": 9.8 }, "set": { "props": ["opacity"] } }
+        ]
+      },
+      "expect": ["handoff-not-carried"]
+    },
+    {
+      "id": "swap-on-boundary",
+      "failureClass": "rough-execution",
+      "rule": "cuts-inside-beats",
+      "target": "render",
+      "defect": "The shot behind the dot changes exactly on the 15 s boundary, where the storyboard claims continuation.",
+      "edits": [
+        { "find": "set(\"#bd-b\", { opacity: 0 }, 15.625);", "replace": "set(\"#bd-b\", { opacity: 0 }, 15.0);" },
+        { "find": "set(\"#bd-c\", { opacity: 1 }, 15.625);", "replace": "set(\"#bd-c\", { opacity: 1 }, 15.0);" }
+      ],
+      "expect": ["carry-cut"]
+    },
+    {
+      "id": "even-lessons",
+      "failureClass": "taste-gap",
+      "rule": "vary-the-lessons",
+      "target": "storyboard",
+      "defect": "Ten equal 4.5 s beats.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/0/endSec", "value": 4.5 },
+          { "op": "replace", "path": "/beats/1/startSec", "value": 4.5 },
+          { "op": "replace", "path": "/beats/1/endSec", "value": 9 },
+          { "op": "replace", "path": "/beats/2/startSec", "value": 9 },
+          { "op": "replace", "path": "/beats/2/endSec", "value": 13.5 },
+          { "op": "replace", "path": "/beats/3/startSec", "value": 13.5 },
+          { "op": "replace", "path": "/beats/3/endSec", "value": 18 },
+          { "op": "replace", "path": "/beats/4/startSec", "value": 18 },
+          { "op": "replace", "path": "/beats/4/endSec", "value": 22.5 },
+          { "op": "replace", "path": "/beats/5/startSec", "value": 22.5 },
+          { "op": "replace", "path": "/beats/5/endSec", "value": 27 },
+          { "op": "replace", "path": "/beats/6/startSec", "value": 27 },
+          { "op": "replace", "path": "/beats/6/endSec", "value": 31.5 },
+          { "op": "replace", "path": "/beats/7/startSec", "value": 31.5 },
+          { "op": "replace", "path": "/beats/7/endSec", "value": 36 },
+          { "op": "replace", "path": "/beats/8/startSec", "value": 36 },
+          { "op": "replace", "path": "/beats/8/endSec", "value": 40.5 },
+          { "op": "replace", "path": "/beats/9/startSec", "value": 40.5 }
+        ]
+      },
+      "expect": ["uniform-cadence"]
+    },
+    {
+      "id": "silent-accents",
+      "failureClass": "workflow",
+      "rule": "sound-marks-the-lesson",
+      "target": "storyboard",
+      "defect": "The music plays but no entry is declared and no lesson is bound to a cue.",
+      "patch": {
+        "storyboard": [
+          { "op": "remove", "path": "/sound/cues/0" },
+          { "op": "remove", "path": "/beats/0/soundCues" },
+          { "op": "remove", "path": "/beats/1/soundCues" },
+          { "op": "remove", "path": "/beats/2/soundCues" },
+          { "op": "remove", "path": "/beats/3/soundCues" },
+          { "op": "remove", "path": "/beats/4/soundCues" },
+          { "op": "remove", "path": "/beats/5/soundCues" },
+          { "op": "remove", "path": "/beats/6/soundCues" },
+          { "op": "remove", "path": "/beats/7/soundCues" },
+          { "op": "remove", "path": "/beats/8/soundCues" },
+          { "op": "remove", "path": "/beats/9/soundCues" }
+        ]
+      },
+      "expect": ["sound-no-entry", "sound-unbound"]
+    },
+    {
+      "id": "overlapping-hunt",
+      "failureClass": "tool-misuse",
+      "rule": "one-driver-per-property",
+      "target": "timeline",
+      "defect": "The left marker's last wobble still runs when its jump starts, so two tweens drive x at once.",
+      "patch": {
+        "timeline": [
+          { "op": "update-where", "path": "/tweens", "match": { "targets": ["#marker-l"], "startSec": 31.1 }, "set": { "durationSec": 0.2 } }
+        ]
+      },
+      "expect": ["property-conflict"]
+    }
+  ],
+  "reviewedWarnings": [
+    { "gate": "composition", "code": "dead-band", "beatId": "name-it", "disposition": "The headline alone in the middle band, over a dimmed screen: the empty top and bottom are deliberate space around the rule's name." },
+    { "gate": "composition", "code": "weak-separation", "beatId": "continuation", "disposition": "The demonstration shots are dark tinted fields so the white dot and the yellow gaze ring are the only bright things; the background is meant to recede." },
+    { "gate": "composition", "code": "weak-separation", "beatId": "morph", "disposition": "Same dark demonstration field; the square and its ring carry the contrast." },
+    { "gate": "composition", "code": "weak-separation", "beatId": "camera-carry", "disposition": "Same dark demonstration fields during the pan; the shapes and the ring carry the contrast." },
+    { "gate": "composition", "code": "no-focal-point", "beatId": "rule", "disposition": "The rule and its storyboard field are read as one statement, top to bottom; the underline marks the rule as the lead line." }
+  ]
+}

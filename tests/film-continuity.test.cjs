@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { evaluateFilmRender } = require("../skill/scripts/film-core.cjs");
+const { evaluateFilmRender, instantReplacement } = require("../skill/scripts/film-core.cjs");
 const { HINTS } = require("../skill/scripts/film-hints.cjs");
 const { carryContinuity, checkFilmProject } = require("../skill/scripts/film-project-core.cjs");
 const { TIMELINE_SCHEMA } = require("../skill/scripts/film-timeline-core.cjs");
@@ -184,4 +184,14 @@ test("a planned cut the scene detector misses still counts when one step replace
     assert.deepEqual(smooth.cuts.pixelCutsSec, []);
     assert.ok(codes(smooth).includes("planned-cuts-missing"), JSON.stringify(smooth.findings));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("a step between two still neighbours is a cut even when camera moves fill its window", () => {
+  // 10 fps profile: fast camera moves, a 0.3 s settle, the cut at 11 s, a 0.3 s hold, moves again.
+  const shares = { 10.6: 0.0005, 10.7: 0, 10.8: 0, 10.9: 0.0057, 11.0: 0.2699, 11.1: 0, 11.2: 0, 11.3: 0.0035 };
+  const profile = (fill) => Array.from({ length: 21 }, (_, i) => { const atSec = Number((10 + i / 10).toFixed(1)); return { atSec, share: shares[atSec] ?? fill }; });
+  assert.ok(instantReplacement(profile(0.18), 11), "cut between stills inside heavy camera motion");
+  // Continuous motion with one larger step is not a cut: its neighbours are not still.
+  const moving = Array.from({ length: 21 }, (_, i) => ({ atSec: Number((10 + i / 10).toFixed(1)), share: i === 10 ? 0.27 : 0.12 }));
+  assert.equal(instantReplacement(moving, 11), null);
 });
