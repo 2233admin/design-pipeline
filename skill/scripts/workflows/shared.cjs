@@ -13,12 +13,16 @@ const exists = (root, rel) => fs.existsSync(path.join(root, rel));
 const mtime = (root, rel) => (exists(root, rel) ? fs.statSync(path.join(root, rel)).mtimeMs : 0);
 
 // A gate result counts only when it passed and is not older than the files it checked, so an
-// edited storyboard or a re-rendered draft reopens its stage.
+// edited storyboard or a re-rendered draft reopens its stage. File times and Date.now() come from
+// different clocks; on a loaded Windows host a file written just before the gate was recorded can
+// carry a time a few milliseconds after it, so the comparison allows CLOCK_SKEW_MS. A real edit
+// comes seconds later and still reopens the stage.
+const CLOCK_SKEW_MS = 50;
 function gatePassed(state, root, gate, inputs = []) {
   const result = state.gates && state.gates[gate];
   if (!result || result.status !== "passed") return false;
   const newest = Math.max(0, ...inputs.filter(Boolean).map((rel) => mtime(root, rel)));
-  return result.at >= Math.floor(newest);
+  return result.at + CLOCK_SKEW_MS >= newest;
 }
 
 const INTAKE = {
