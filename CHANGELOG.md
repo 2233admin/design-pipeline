@@ -35,6 +35,11 @@ All notable changes to Design Pipeline are documented here.
   runtime so nested blocks load; raw-file capture now fails loudly instead of returning an empty
   timeline. The probe tags proxy "driver" tweens, and the render gate adds per-beat pixel motion
   with a `render-static-beat` finding, so procedural, 3D and footage beats are judged from pixels.
+- `film score` composes the soundtrack as a Strudel pattern (templates `punchy-launch`,
+  `calm-build`, `tech-pulse`, or an edited `score.strudel.js`), renders it offline to WAV in
+  headless Chrome, exports the pattern's exact event grid, checks cuts and accent cues against it,
+  and records the score's license. Strudel (AGPL-3.0) is installed into the film project on first
+  use and never bundled; only built-in synth sounds are enabled.
 - A reference-led, 32-second SeedController HTML promotional film with existing project footage,
   graphic annotations, canvas transitions and an original synchronized score. Earlier motion
   studies are retained as comparisons, with user-rejected directions explicitly identified.

@@ -14,6 +14,7 @@ const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
 const { hyperframesPreview } = require("./film-capture-core.cjs");
 const { blockNames } = require("./film-blocks-core.cjs");
+const { checkGridAlignment } = require("./score-core.cjs");
 const { checkAudio } = require("./audio-core.cjs");
 
 const CHECK_SCHEMA = "design-pipeline.film-check.v1";
@@ -114,6 +115,13 @@ function checkFilmProject(dir, options = {}) {
   const board = readJson(storyboardFile, "film storyboard");
   const storyboard = checkStoryboard(board, { blockNames: blockNames(root) || undefined });
   steps.push({ gate: "storyboard", status: storyboard.status, findings: storyboard.findings });
+
+  // A Strudel score exports its exact event grid; cuts and accent cues are checked against it.
+  const gridFile = path.join(root, "score-grid.json");
+  if (fs.existsSync(gridFile)) {
+    const alignment = checkGridAlignment(board, readJson(gridFile, "score grid"));
+    steps.push({ gate: "score", status: alignment.status, findings: alignment.findings, toleranceSec: alignment.toleranceSec });
+  }
 
   const timelineFile = path.join(root, "timeline.json");
   const composition = path.join(root, "index.html");

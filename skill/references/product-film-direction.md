@@ -49,7 +49,8 @@ after references, assets, action and grammar are clear; adapt their choreography
 Explicit decks/presentations use the presentation workflow. Preserve the user's delivery format:
 an HTML film is still a time-based film, with controls outside the composition.
 
-Plan music and sound effects as part of promotional delivery by default. Record reuse rights in
+Plan music and sound effects as part of promotional delivery by default. When no licensed track
+is supplied, compose one as code with `references/film-score.md` and time cuts to its grid. Record reuse rights in
 the storyboard's `sound.assets` and check delivery with `references/audio-gate.md`. Record `sound.md` with
 the intended energy arc, music source/candidate and reuse basis, entry/exit points, audible accents,
 voiceover balance when relevant, and intentional silence. Audition music before calling it selected;

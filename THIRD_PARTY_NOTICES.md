@@ -438,3 +438,10 @@ listed in `skill/references/iart-motion-skills/manifest.json`.
 Catalog search does not execute upstream scripts, install Remotion, Manim, After Effects, or
 ffmpeg, or authorize paid or credentialed generation. Each bundled pack retains its upstream
 LICENSE.
+
+## Strudel (downloaded at runtime, not distributed)
+
+`film score` installs Strudel (https://strudel.cc, AGPL-3.0-or-later) packages `@strudel/core`,
+`@strudel/mini`, `@strudel/tonal`, `@strudel/webaudio` and `superdough` into the user's film
+project under `.design-pipeline/strudel` on first use. design-pipeline does not include, modify
+or redistribute Strudel code; it invokes the installed copy in a separate browser process.
