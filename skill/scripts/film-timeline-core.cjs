@@ -55,10 +55,16 @@ function checkTimeline(timeline, board, options = {}) {
     if (tween.startSec + tween.durationSec > timeline.durationSec + FRAME_TOLERANCE_SEC) add("tween-past-end", `${tween.targets.join(", ")} runs past the film end`);
   }
 
-  // Ambient targets (animated over most of the film, e.g. a drifting background) do not count.
+  // Ambient targets (animated over most of the film by one long tween, e.g. a drifting
+  // background) do not count. A subject carried through a one-take film is also animated most of
+  // the time, but by a chain of separate actions; it stays a subject.
   const coverage = new Map();
-  for (const tween of timeline.tweens) for (const target of tween.targets) coverage.set(target, (coverage.get(target) || 0) + tween.durationSec);
-  const ambient = new Set([...coverage].filter(([, total]) => total / timeline.durationSec > 0.6).map(([target]) => target));
+  const longest = new Map();
+  for (const tween of timeline.tweens) for (const target of tween.targets) {
+    coverage.set(target, (coverage.get(target) || 0) + tween.durationSec);
+    longest.set(target, Math.max(longest.get(target) || 0, tween.durationSec));
+  }
+  const ambient = new Set([...coverage].filter(([target, total]) => total / timeline.durationSec > 0.6 && longest.get(target) / timeline.durationSec >= 0.5).map(([target]) => target));
   const subjects = (tween) => (tween.driver ? [] : tween.targets.filter((target) => !ambient.has(target)));
   // One time source per property: two tweens driving the same property of the same element at
   // overlapping times fight each other (and stack their easing), so the motion is undefined.

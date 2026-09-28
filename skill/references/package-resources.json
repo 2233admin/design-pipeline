@@ -53,6 +53,7 @@
     "scripts/workflows/web.cjs",
     "references/workflow-film.md",
     "references/reference-skill-motion-web.md",
+    "references/web-motion.md",
     "references/reference-skill-onetake.md",
     "references/workflow-edit.md",
     "references/workflow-web.md",
