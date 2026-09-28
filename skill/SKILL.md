@@ -26,7 +26,8 @@ This is the project front door. It routes UI work to the smallest relevant workf
    `npx hyperframes render --output out.mp4`, then `film check --project-root <dir>` and apply
    each finding's `fix` until it passes. Single gates: `verify film-storyboard|film-timeline|film-render`.
 5. Create or update the OpenSpec change artifacts before implementation.
-6. Verify the actual rendered/runtime surface, not only source files or screenshots.
+6. Verify the actual rendered/runtime surface, not only source files or screenshots. For any
+   rendered layout, poster, screen or frame, run the composition gate (`references/composition-gate.md`).
 
 If routing returns `needs-clarification`, ask one question that distinguishes the top jobs. Do not choose a primary route by guesswork.
 

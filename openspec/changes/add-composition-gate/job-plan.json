@@ -1,0 +1,54 @@
+{
+  "admission": "inert",
+  "deliverableForm": "ui-motion",
+  "jobId": "product-design",
+  "kernel": [
+    "foundation",
+    "toolchain"
+  ],
+  "next": [
+    {
+      "action": "check",
+      "command": "foundation",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "resolve",
+      "command": "toolchain",
+      "required": true,
+      "role": "kernel"
+    },
+    {
+      "action": "route",
+      "command": "prism",
+      "required": true,
+      "role": "primary"
+    },
+    {
+      "action": "search",
+      "command": "design-system",
+      "required": false,
+      "role": "secondary"
+    }
+  ],
+  "planSha256": "ccff077985b6712a899a615f2aaf641437a73fe6cb9f5f2c1fc7be9d679798e4",
+  "primaryKnowledge": {
+    "action": "route",
+    "admission": "inert",
+    "command": "prism",
+    "id": "prism"
+  },
+  "query": "静态构图检查：截图测量对比度、视觉重心、留白、对齐和层级",
+  "registrySha256": "fe12e43bc11e5b795d36bb476a1019b3803b1310300e7271b73aa94cb726b17c",
+  "routeSha256": "15f94c4d1aad436ed515ee0ee14beed178c2fec83ec9d8aae311493826d4650f",
+  "schema": "design-pipeline.job-plan.v1",
+  "secondaries": [
+    {
+      "action": "search",
+      "admission": "reference-only",
+      "command": "design-system",
+      "id": "astryx"
+    }
+  ]
+}
