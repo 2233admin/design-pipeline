@@ -1,9 +1,9 @@
 <!-- bmad:context -->
-<!-- Verified 2026-09-28 against e147fc0. Managed by bmad-project-context; edits inside this block are replaced on refresh. Keep anything you want preserved outside the markers. -->
+<!-- Verified 2026-09-28 against b98e2de. Managed by bmad-project-context; edits inside this block are replaced on refresh. Keep anything you want preserved outside the markers. -->
 
 ## design-pipeline
 
-Design-first frontend workflow shipped as a packaged agent skill. Node.js CommonJS with no root `package.json`. Package entry is `skill/SKILL.md`; behavior specs and changes live in `openspec/`.
+Design and film workflow (UI, motion web, product films, PV/MAD edits) shipped as a packaged agent skill. Node.js CommonJS with no root `package.json`. Package entry is `skill/SKILL.md`, a short front door; the full stage contracts live in `skill/references/pipeline-reference.md`; behavior specs and changes live in `openspec/`.
 
 ## Policy
 
@@ -15,7 +15,7 @@ Design-first frontend workflow shipped as a packaged agent skill. Node.js Common
 
 ## Where things are
 
-- CLI: `node skill/scripts/designer-pipeline.cjs <command>`; commands are the `COMMANDS` table in `skill/scripts/cli-core.cjs`.
+- CLI: `node skill/scripts/designer-pipeline.cjs <command>`; `next` reads `.design-pipeline/state.json` and returns one action, `decide` records user decisions; commands are the `COMMANDS` table in `skill/scripts/cli-core.cjs`.
 - Release and versioning rules: `CONTRIBUTING.md`.
 
 ## Running and verifying

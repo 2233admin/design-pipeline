@@ -1,14 +1,14 @@
 # design-pipeline
 
-> 用 AI 做前端 UI，但不跳过设计工作。
+> 让任何够用的模型都做出有美术素养的界面、动效和宣传片。
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Stars](https://img.shields.io/github/stars/2233admin/design-pipeline)
 ![Last Commit](https://img.shields.io/github/last-commit/2233admin/design-pipeline)
 ![Node](https://img.shields.io/badge/Node-22+-339933)
 
-- **一句话**：给 AI Agent 用的前端设计管线，先写设计再写代码。
-- **适合谁**：你用 AI 做前端 UI，但不想让它每次靠猜做设计决策。
+- **一句话**：给 AI Agent 用的美术素养管线：门禁、模板和评测写在代码里，先定方向再动手。
+- **适合谁**：你用 AI 做 UI、动效网站、产品宣传片或 PV/MAD 剪辑，但不想让它每次靠猜做设计决策。
 - **不适合谁**：只要快速原型、不想写任何设计文档的。
 
 <p align="center">
@@ -18,7 +18,7 @@
 <p align="center">
   <code>DESIGN.md</code> + <code>MOTION.md</code> + <code>OpenSpec</code> + <code>门禁系统</code>
   <br>
-  一条给 AI Agent 用的前端设计管线。
+  一条给 AI Agent 用的设计与影片管线。
 </p>
 
 ---
@@ -39,7 +39,9 @@ design-pipeline 提升的是 agent 的整体美术素养：视觉方向、构图
 
 ## 这是什么
 
-`design-pipeline` 是一套给 AI coding agent 用的前端设计工作流。
+`design-pipeline` 是一套给 AI coding agent 用的设计工作流，覆盖四种交付物：影片（`film`）、
+剪辑（`edit`）、网站（`web`）和界面（`ui`）。入口是 `designer-pipeline next`：它读取
+`.design-pipeline/state.json`，每次只返回一个动作；按 `quick` / `standard` / `full` 三档控制流程轻重。
 
 它解决的是一个很具体的问题：Agent 拿到需求以后，经常跳过设计，直接生成代码。界面能跑，但缺乏一致性。下次改动，样式散落各处，动效各自为政，维护变成考古。
 
@@ -51,14 +53,17 @@ design-pipeline 提升的是 agent 的整体美术素养：视觉方向、构图
 4. 支持网站克隆、设计系统合成、动效设计，每一步都有证据。
 5. 通过门禁系统确保设计质量，不达标就拦住。
 
-当前 `0.10.0` 正式版不是单一图表工具集成。它把下面这些能力放进同一个可打包、
-可安装、可验证的前端工具架：
+当前预发布版 `0.12.0-beta.1`（最新正式版仍是 `0.10.0`）把下面这些能力放进同一个可打包、
+可安装、可验证的工具架：
 
 - 需求、`DESIGN.md`、`MOTION.md` 与 OpenSpec 变更生命周期；
 - 前端框架、样式、15 个 UI 库、组件来源和 127 项设计技能索引的统一选择；
 - 网站克隆、方向预览、中文排版、设计系统、动效、组件状态和浏览器证据门禁；
 - DOM、SVG/D3、XY、PixiJS、Phaser、Three.js、Babylon.js、PlayCanvas、WebGPU 等图形路线；
-- 工具环境探测、哈希绑定的调用计划、标准化 receipt、打包和隔离安装验收。
+- 工具环境探测、哈希绑定的调用计划、标准化 receipt、打包和隔离安装验收；
+- 产品宣传片：分镜、GSAP 时间线探针、构图、音频与配乐门禁，Strudel 配乐（AGPL，按需安装、不随包分发）、
+  Blender 适配器（GPL 的 Blender 在外部运行）和 HyperFrames 目录桥接；
+- PV/MAD 音乐驱动剪辑：`film-edit analyze|auto|render|check`，按节拍切点并检查节奏。
 
 目录中的工具不等于已经安装。管线负责选择、探测和验收；目标项目仍然负责固定并安装
 实际运行时。`reflex-xy` 是目前第一个具备完整生命周期合同的外部图形适配器，不代表
@@ -112,7 +117,7 @@ node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root
 
 ## 从 GitHub Release 安装
 
-如果不想克隆仓库，直接下载 `v0.10.0` Release 的资产。需要 Node.js 22 或更新版本。
+如果不想克隆仓库，直接下载最新正式版 `v0.10.0` Release 的资产（预发布版资产在发布后见 Releases 页面）。需要 Node.js 22 或更新版本。
 Release 包的归档根目录是 `design-pipeline/`，包含 `SKILL.md`、`references/`、`scripts/`、
 生成的 `PACKAGE.json` 和安装器；其中包含的参考快照与其他资源解压后约占 **175 MB**。
 压缩包的实际下载大小以 GitHub Release 页面为准。
