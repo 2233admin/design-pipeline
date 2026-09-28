@@ -57,7 +57,7 @@ const CONCEPTS = {
   finished: (state) => Boolean(state.decisions?.concept),
   action: (state, root) => (exists(root, "concepts.md")
     ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose carrier best demonstrates the product action.", record: `${CLI} decide --project-root . --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "The first of two human decisions." }
-    : { type: "run", command: "Write concepts.md: three cards whose central ideas differ. Each card: central idea, what carries attention between beats, look, tools (one line), and any missing license. Render one key frame per card.", why: "Divergence before convergence; the user picks one." }),
+    : { type: "run", command: "Write concepts.md: three cards whose central ideas differ; not the same scenes retold three ways. Each card starts with the central idea as one sentence about the picture (for example 'one dot becomes every screen of the app'), then what carries attention between beats, look, tools (one line), and any missing license. Render one key frame per card.", why: "Divergence before convergence; the user picks one." }),
 };
 
 const REVIEW = {

@@ -107,10 +107,38 @@
     return at + duration;
   }
 
+  // Camera follow: `camera` is the shot's framing element and `subject` is what it tracks; they
+  // are siblings sharing one coordinate space, never parent/child, so neither transform doubles
+  // the other's. Through the path, the camera targets each point plus a small `lead` offset and
+  // gets there first (a shorter tween than the subject's), so it is already framing the spot
+  // before the subject lands exactly on it. Once the path ends, both are pinned still again at
+  // `t + rest`: the timeline position of that final set equals the returned handoff time, so the
+  // hold is a scheduled operation, not only an unexplained gap before the next pattern starts.
+  // Seek-safe: no repeats, transforms only, eases that accelerate in and settle out.
+  function cameraFollow(tl, options) {
+    need(options, ["camera", "subject", "path", "lead", "rest"], "camera-follow");
+    const { camera, subject, path, at, lead, rest, duration = 0.8, ease = "power2.inOut" } = options;
+    if (!Array.isArray(path) || path.length === 0) throw new Error("camera-follow: path must list one or more {x,y} points");
+    if (!lead || typeof lead.x !== "number" || typeof lead.y !== "number") throw new Error("camera-follow: lead must be a small {x,y} offset");
+    if (typeof rest !== "number" || rest < 0) throw new Error("camera-follow: rest must be a non-negative number of seconds");
+    let t = at;
+    for (const point of path) {
+      tl.to(camera, { x: point.x + lead.x, y: point.y + lead.y, duration: duration * 0.6, ease }, t);
+      tl.to(subject, { x: point.x, y: point.y, duration, ease }, t);
+      t += duration;
+    }
+    const last = path[path.length - 1];
+    const end = t + rest;
+    tl.set(camera, { x: last.x + lead.x, y: last.y + lead.y }, end);
+    tl.set(subject, { x: last.x, y: last.y }, end);
+    return end;
+  }
+
   return {
     "continuous-morph": continuousMorph,
     "match-cut": matchCut,
     "camera-push": cameraPush,
+    "camera-follow": cameraFollow,
     "kinetic-type": kineticType,
     "ui-demo": uiDemo,
     "assembly": assembly,

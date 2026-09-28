@@ -9,6 +9,14 @@ All notable changes to Design Pipeline are documented here.
 - Provenance records for the reference skills motion-web (CC BY-NC 4.0, re-reviewed at `5f4e40f1`)
   and onetake (PolyForm Noncommercial 1.0.0, pinned at `36072d36`): ideas only, no upstream code,
   text or assets. Repository QA fails once a record is older than its 30-day review window.
+- `camera-follow` choreography pattern (`skill/references/film-choreography/patterns.js`,
+  `registry.json`): the camera tracks a small offset ahead of its subject and lands first at each
+  path point, then holds perfectly still through an explicit rest; seek-safe, transforms only, no
+  infinite repeats. Concept cards now lead with the central idea as one sentence about the picture,
+  not a list of scenes; `workflow-film.md` and `product-film-direction.md` document carry
+  (`carrier`), rhythm (`holdSec`, beat-length variety) and why a continuous camera and real
+  stillness keep a film from reading as a slideshow, crediting `reference-skill-onetake.md` as the
+  idea's source (ideas only).
 
 ### Changed
 

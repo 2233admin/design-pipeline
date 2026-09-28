@@ -96,6 +96,7 @@ test("choreography registry and module agree and patterns only tween seek-safe p
     "continuous-morph": { from: "#a", to: "#b", delta: { x: 10, y: 0, scale: 2 } },
     "match-cut": { from: "#a", to: "#b" },
     "camera-push": { stage: "#w", focus: { x: 10, y: 5 } },
+    "camera-follow": { camera: "#cam", subject: "#s", path: [{ x: 10, y: 20 }], lead: { x: 4, y: -6 }, rest: 0.5 },
     "kinetic-type": { words: ".w", target: "#t", count: 3 },
     "ui-demo": { cursor: "#c", path: [{ x: 1, y: 2 }], result: "#r" },
     "assembly": { pieces: ".p", offsets: [{ x: 5, y: 5, rotation: 3 }] },

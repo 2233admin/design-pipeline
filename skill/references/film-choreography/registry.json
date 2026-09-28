@@ -31,6 +31,15 @@
       "use": "Move the world toward the next product detail instead of swapping panels. Stage is the world container."
     },
     {
+      "id": "camera-follow",
+      "grammar": ["continuous-transformation", "product-demonstration", "combination"],
+      "transformation": "camera-move",
+      "handoff": "camera-carry",
+      "required": ["camera", "subject", "path", "lead", "rest", "at"],
+      "optional": ["duration", "ease"],
+      "use": "Camera stays a step ahead of the subject along a path and holds perfectly still through the rest; ties consecutive beats into one continuous take instead of a cut."
+    },
+    {
       "id": "kinetic-type",
       "grammar": ["kinetic-type", "combination"],
       "transformation": "type-to-object",
