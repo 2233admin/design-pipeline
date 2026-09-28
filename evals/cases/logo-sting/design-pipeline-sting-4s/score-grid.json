@@ -1,0 +1,104 @@
+{
+  "schema": "design-pipeline.score-grid.v1",
+  "bpm": 120,
+  "cps": 0.5,
+  "beatsPerCycle": 4,
+  "durationSec": 4,
+  "beats": [
+    0,
+    0.5,
+    1,
+    1.5,
+    2,
+    2.5,
+    3,
+    3.5,
+    4
+  ],
+  "events": [
+    {
+      "atSec": 0,
+      "durSec": 2,
+      "sound": "white",
+      "note": null,
+      "gain": 0.09
+    },
+    {
+      "atSec": 0,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "c2",
+      "gain": 0.12
+    },
+    {
+      "atSec": 1,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "e6",
+      "gain": 0.2
+    },
+    {
+      "atSec": 1.5,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "b6",
+      "gain": 0.2
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.55
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.2
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "g3",
+      "gain": 0.2
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "e4",
+      "gain": 0.2
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "b4",
+      "gain": 0.2
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "c2",
+      "gain": 0.3
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "triangle",
+      "note": "g2",
+      "gain": 0.3
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "white",
+      "note": null,
+      "gain": 0.18
+    }
+  ]
+}

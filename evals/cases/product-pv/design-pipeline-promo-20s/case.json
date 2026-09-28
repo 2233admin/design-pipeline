@@ -1,0 +1,238 @@
+{
+  "schema": "design-pipeline.golden-case.v1",
+  "id": "design-pipeline-promo-20s",
+  "deliverableType": "product-pv",
+  "workflow": "film",
+  "brief": "Make a 20-second promotional film for design-pipeline (this repository): an agent skill that lets any capable model produce art-literate UI, motion and promotional films, because its gates, templates and evals are written in code. Show the product doing its job. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4 with a scored soundtrack.",
+  "product": "design-pipeline (this repository): designer-pipeline next returns one action; film check runs the film gates and gives every finding a fix; film-eval compares models on the same gates",
+  "author": "claude-opus-5-5",
+  "status": "candidate",
+  "approval": null,
+  "golden": {
+    "storyboard": "storyboard.json",
+    "timeline": "timeline.json",
+    "composition": "index.html",
+    "score": { "pattern": "score.strudel.js", "bpm": 120, "fadeOutSec": 1 }
+  },
+  "rules": [
+    {
+      "id": "demonstrate-the-real-loop",
+      "choice": "The film is the product's own loop: next returns one action, film scaffold writes five frames, the draft fills them, film check stops it with slideshow-handoffs and its fix, the fix carries one subject through every frame, and the check passes. Commands and the finding text are the product's real output.",
+      "rule": "A software promo demonstrates the product doing its job; feature cards that fade in and out are the slideshow the product exists to stop.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["slideshow-handoffs", "slideshow-pair", "surface-only-motion"] },
+      "fix": "Replace each card with the visible product action behind it and hand attention from action to action."
+    },
+    {
+      "id": "name-every-carrier",
+      "choice": "Every carried boundary names what survives it: the green rule becomes the strip's top edge, the frames fill in place, the camera settles on the dot, the dot comes to rest as the camera pulls back, the strip becomes the middle lane, the lanes flatten into the logo's line.",
+      "rule": "A continuation, morph or camera-carry names its carrier; a claim with nothing named is a placeholder.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["carrier-unnamed"] },
+      "fix": "Write what crosses the boundary and what it becomes, then build that element across it."
+    },
+    {
+      "id": "carry-with-a-moving-subject",
+      "choice": "Each carry is built with an element that moves or transforms across the boundary (camera, rule, card clip, dot, lanes), never with overlapping fades.",
+      "rule": "Opacity alone never carries a handoff; a fade-out overlapping a fade-in is a dissolve.",
+      "enforcedBy": { "kind": "gate", "gate": "timeline", "codes": ["handoff-not-carried"] },
+      "fix": "Start the carrier's move before the boundary and end it after; keep fades for secondary layers."
+    },
+    {
+      "id": "no-jump-on-a-carry",
+      "choice": "Out of the close-up the camera travels to the dot's start in 0.9 s while the dot scales in; nothing snaps at 8 s.",
+      "rule": "A carried boundary must not render as a cut or a one-frame swap.",
+      "enforcedBy": { "kind": "gate", "gate": "render", "codes": ["carry-cut"] },
+      "fix": "Replace the set at the boundary with a camera move that spans it."
+    },
+    {
+      "id": "one-cut-on-the-drop",
+      "choice": "The film has exactly one hard cut, at 6 s, where the music drops and the finding interrupts the draft; the draft greys out on the same frame.",
+      "rule": "Cuts are rare and land on the musical grid; a cut on the drop is punctuation, a cut off the grid is a stumble.",
+      "enforcedBy": { "kind": "gate", "gate": "score", "codes": ["cut-off-grid"] },
+      "fix": "Snap the cut to the nearest beat or musical event (the score gate prints the snap time)."
+    },
+    {
+      "id": "uneven-rhythm-with-rests",
+      "choice": "Beats run 1.5 s to 6 s: fast set-up, the six-second fix as the longest beat, a 0.7 s hold after the pass and a held logo.",
+      "rule": "Near-equal beats read as a metronome; a film of 8 s or more needs a still moment.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["uniform-cadence", "no-rest"] },
+      "fix": "Let the payoff beat run at least 3x the shortest and hold still for at least 0.3 s after it."
+    },
+    {
+      "id": "sound-bound-to-picture",
+      "choice": "The score is written for the cut: typing over a filtered pulse, the drop on the cut, a tick as each join turns green, a chime on the pass and a chord under the logo.",
+      "rule": "A scored film declares its music entry and binds accents to the actions.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["sound-no-entry", "sound-unbound"] },
+      "fix": "Add an entry cue and bind a cue to at least half of the action beats, then score to those cues."
+    },
+    {
+      "id": "status-colour-means-status",
+      "choice": "Green only means passed, red only means a finding, amber only means a fix, as in DESIGN.md. The generic draft is the only other saturated colour, and it greys out when the check stops it.",
+      "rule": "In a product with status semantics, colour in the film carries the same meaning as in the product.",
+      "enforcedBy": { "kind": "review", "gap": "No gate maps colours to meanings; palette-sprawl only counts hue groups." },
+      "fix": "Reserve the status colours for status and desaturate everything the story rejects."
+    },
+    {
+      "id": "honest-claims",
+      "choice": "The lanes are labelled model a, b and c, and the claim is 'same gates for every model', which is what film-eval does. The film does not claim that every model passes or name vendors.",
+      "rule": "Every on-screen claim is something the product demonstrably does.",
+      "enforcedBy": { "kind": "review", "gap": "Claims are not checked against product facts by any gate." },
+      "fix": "Cut or soften any claim that the product's commands or docs cannot show."
+    },
+    {
+      "id": "hud-outside-the-subject",
+      "choice": "The command docks as a small log in the top-left corner, clear of the strip.",
+      "rule": "Caption and log layers never overlap the subject.",
+      "enforcedBy": { "kind": "review", "gap": "A wrong docking offset left the log inside the storyboard strip for 15 s in the first render; the composition gate sees masses, not which layer covers which." },
+      "fix": "Compute docked positions as offsets from the element's own origin, and check a mid-film frame before extending."
+    },
+    {
+      "id": "end-on-the-brand-system",
+      "choice": "The film ends on the logo sting's exact lockup: the merged line becomes the mark's line, two joins become its gates, the travelling dot becomes its dot.",
+      "rule": "A product film resolves into the same brand object as the sting, built from the film's own subject.",
+      "enforcedBy": { "kind": "review", "gap": "No gate compares a film's ending with the brand's sting." },
+      "fix": "Reuse the lockup geometry and morph the film's last subject into it."
+    }
+  ],
+  "counterExamples": [
+    {
+      "id": "slideshow-film",
+      "failureClass": "generic-concept",
+      "rule": "demonstrate-the-real-loop",
+      "target": "storyboard",
+      "defect": "Every beat fades in and out and dissolves into the next: the film becomes the slideshow it is about.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/0/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/1/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/1/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/2/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/2/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/3/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/3/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/4/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/4/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/5/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/6/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/7/handoff", "value": "dissolve" }
+        ]
+      },
+      "expect": ["slideshow-handoffs", "slideshow-pair", "surface-only-motion"]
+    },
+    {
+      "id": "unnamed-carriers",
+      "failureClass": "workflow",
+      "rule": "name-every-carrier",
+      "target": "storyboard",
+      "defect": "The carried handoffs keep their claims but every carrier is left as tbd.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/1/carrier", "value": "tbd" },
+          { "op": "replace", "path": "/beats/2/carrier", "value": "tbd" },
+          { "op": "replace", "path": "/beats/4/carrier", "value": "tbd" },
+          { "op": "replace", "path": "/beats/5/carrier", "value": "tbd" },
+          { "op": "replace", "path": "/beats/6/carrier", "value": "tbd" },
+          { "op": "replace", "path": "/beats/7/carrier", "value": "tbd" }
+        ]
+      },
+      "expect": ["carrier-unnamed"]
+    },
+    {
+      "id": "crossfade-carry",
+      "failureClass": "rough-execution",
+      "rule": "carry-with-a-moving-subject",
+      "target": "timeline",
+      "defect": "The camera-carry into the fix is built as a crossfade: the close-up's finding fades out while the strip's dot and wipe start cold at 8 s.",
+      "patch": {
+        "timeline": [
+          { "op": "remove-where", "path": "/tweens", "match": { "targets": ["#world"], "startSec": 7.7 } },
+          { "op": "remove-where", "path": "/tweens", "match": { "targets": ["#dot"], "startSec": 7.75 } },
+          { "op": "update-where", "path": "/tweens", "match": { "targets": ["#finding"], "startSec": 7.7 }, "set": { "props": ["opacity"] } }
+        ]
+      },
+      "expect": ["handoff-not-carried"]
+    },
+    {
+      "id": "jump-carry",
+      "failureClass": "rough-execution",
+      "rule": "no-jump-on-a-carry",
+      "target": "render",
+      "defect": "At 8 s the camera snaps from the close-up to the dot's start and the dot pops in, in one frame.",
+      "edits": [
+        { "find": "at(\"#world\", { ...focus(400, 540, 1.7), duration: 0.9, ease: \"power2.inOut\" }, 7.7);", "replace": "tl.set(\"#world\", focus(400, 540, 1.7), 8.0);" },
+        { "find": "at(\"#dot\", { scale: 1, duration: 0.4, ease: \"back.out(2)\" }, 7.75);", "replace": "tl.set(\"#dot\", { scale: 1 }, 8.0);" }
+      ],
+      "expect": ["carry-cut"]
+    },
+    {
+      "id": "cut-off-beat",
+      "failureClass": "rough-execution",
+      "rule": "one-cut-on-the-drop",
+      "target": "storyboard",
+      "defect": "The hard cut to the finding lands at 6.2 s, a fifth of a second after the drop.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/2/endSec", "value": 6.2 },
+          { "op": "replace", "path": "/beats/3/startSec", "value": 6.2 }
+        ]
+      },
+      "expect": ["cut-off-grid"]
+    },
+    {
+      "id": "metronome",
+      "failureClass": "taste-gap",
+      "rule": "uneven-rhythm-with-rests",
+      "target": "storyboard",
+      "defect": "Eight equal 2.5 s beats, no held moment, and the logo animated like any other beat.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/0/endSec", "value": 2.5 },
+          { "op": "replace", "path": "/beats/1/startSec", "value": 2.5 },
+          { "op": "replace", "path": "/beats/1/endSec", "value": 5 },
+          { "op": "replace", "path": "/beats/2/startSec", "value": 5 },
+          { "op": "replace", "path": "/beats/2/endSec", "value": 7.5 },
+          { "op": "replace", "path": "/beats/3/startSec", "value": 7.5 },
+          { "op": "replace", "path": "/beats/3/endSec", "value": 10 },
+          { "op": "replace", "path": "/beats/4/startSec", "value": 10 },
+          { "op": "replace", "path": "/beats/4/endSec", "value": 12.5 },
+          { "op": "replace", "path": "/beats/5/startSec", "value": 12.5 },
+          { "op": "replace", "path": "/beats/5/endSec", "value": 15 },
+          { "op": "remove", "path": "/beats/5/holdSec" },
+          { "op": "replace", "path": "/beats/6/startSec", "value": 15 },
+          { "op": "replace", "path": "/beats/6/endSec", "value": 17.5 },
+          { "op": "remove", "path": "/beats/7/holdSec" },
+          { "op": "replace", "path": "/beats/7/role", "value": "action" },
+          { "op": "replace", "path": "/beats/7/transformation", "value": { "kind": "state-change", "from": "three model lanes", "to": "logo lockup" } }
+        ]
+      },
+      "expect": ["uniform-cadence", "no-rest"]
+    },
+    {
+      "id": "unbound-sound",
+      "failureClass": "workflow",
+      "rule": "sound-bound-to-picture",
+      "target": "storyboard",
+      "defect": "The film is scored but declares no music entry and binds no cue to any beat.",
+      "patch": {
+        "storyboard": [
+          { "op": "remove", "path": "/sound/cues/0" },
+          { "op": "remove", "path": "/beats/0/soundCues" },
+          { "op": "remove", "path": "/beats/1/soundCues" },
+          { "op": "remove", "path": "/beats/2/soundCues" },
+          { "op": "remove", "path": "/beats/3/soundCues" },
+          { "op": "remove", "path": "/beats/4/soundCues" },
+          { "op": "remove", "path": "/beats/5/soundCues" },
+          { "op": "remove", "path": "/beats/6/soundCues" },
+          { "op": "remove", "path": "/beats/7/soundCues" }
+        ]
+      },
+      "expect": ["sound-no-entry", "sound-unbound"]
+    }
+  ],
+  "reviewedWarnings": [
+    { "gate": "composition", "code": "no-focal-point", "beatId": "ask", "disposition": "The command and its green caret are one line of text; the pair is the focal point." },
+    { "gate": "composition", "code": "dead-band", "beatId": "draft", "disposition": "Deliberate negative space: the strip is one band and the empty lower third keeps the draft small before the close-up." },
+    { "gate": "composition", "code": "no-focal-point", "beatId": "draft", "disposition": "The five equal cards are the depicted slideshow; their equal weight is the defect the film is about to flag." },
+    { "gate": "composition", "code": "no-focal-point", "beatId": "caught", "disposition": "The two greyed cards frame the red join between them; the join and the red finding carry the focus by hue, not by mass." },
+    { "gate": "composition", "code": "dead-band", "beatId": "carry", "disposition": "One travelling band with the log above it; the empty lower third is negative space that keeps attention on the dot." }
+  ]
+}

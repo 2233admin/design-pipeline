@@ -42,6 +42,24 @@ test("fade-in/fade-out panel timeline fails even behind an ambient background tw
   assert.ok(codes(result).includes("handoff-not-carried"));
 });
 
+test("overlapping crossfades do not carry a planned handoff; one moving subject does", () => {
+  // Each panel fades out across the next boundary while the next panel fades in: a dissolve.
+  const crossfade = slideshowTimeline();
+  for (const tween of crossfade.tweens) if (tween.props[0] === "opacity" && tween.startSec > 0) tween.durationSec = 0.8;
+  const dissolved = checkTimeline(crossfade, board());
+  assert.ok(codes(dissolved).includes("handoff-not-carried"), JSON.stringify(dissolved.findings));
+  // The same fades plus one subject that moves across every boundary carry them.
+  const moving = crossfade;
+  const edges = [0, ...board().beats.slice(1).map((beat) => beat.startSec), 12];
+  for (let index = 0; index < edges.length - 1; index += 1) {
+    const start = Math.max(0, edges[index] - 0.1);
+    const end = Math.min(12, edges[index + 1] + 0.1);
+    moving.tweens.push({ targets: ["#hero"], startSec: start, durationSec: Number((end - start).toFixed(3)), props: ["x", "y"] });
+  }
+  const carried = checkTimeline(moving, board());
+  assert.ok(!codes(carried).includes("handoff-not-carried"), JSON.stringify(carried.findings));
+});
+
 test("layout tweens, infinite repeats, static beats and duration drift are reported", () => {
   const data = timeline();
   data.tweens.push({ targets: ["#card"], startSec: 1, durationSec: 0.5, props: ["width"] });

@@ -1,0 +1,9 @@
+{
+  "name": "design-pipeline-golden-cases",
+  "private": true,
+  "description": "Render toolchain for the golden case library. Pinned so approved renders can be reproduced.",
+  "license": "MIT",
+  "devDependencies": {
+    "hyperframes": "0.8.84"
+  }
+}

@@ -170,3 +170,18 @@ test("a panel swapped in one frame on a carried boundary gives carry-cut even wi
     assert.ok(result.findings.filter((finding) => finding.code === "carry-cut").every((finding) => /instant replacement/.test(finding.message) && finding.fix));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test("a planned cut the scene detector misses still counts when one step replaces a block of the frame", { skip }, () => {
+  const dir = tmp("film-pixel-cut-");
+  try {
+    // carryBoard("match-cut") plans one cut at 9s; the swap there covers 17% of a dark frame.
+    const swaps = evaluateFilmRender(carryBoard("match-cut"), synthesizePanelSwaps(dir, "swaps.mp4"));
+    assert.deepEqual(swaps.cuts.detectedSec.filter((at) => Math.abs(at - 9) < 0.2), [], "the scene detector does not see the swap at 9s");
+    assert.deepEqual(swaps.cuts.pixelCutsSec, [9]);
+    assert.ok(!codes(swaps).includes("planned-cuts-missing"), JSON.stringify(swaps.findings));
+    // Continuous motion has no cut at 9s at all, so the planned cut is still missing.
+    const smooth = evaluateFilmRender(carryBoard("match-cut"), synthesizeContinuous(dir, "smooth.mp4"));
+    assert.deepEqual(smooth.cuts.pixelCutsSec, []);
+    assert.ok(codes(smooth).includes("planned-cuts-missing"), JSON.stringify(smooth.findings));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});

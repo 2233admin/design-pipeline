@@ -388,21 +388,27 @@ function evaluateFilmRender(board, video, options = {}) {
   if (Math.abs(durationDelta) > 0.5) add("duration-mismatch", `render is ${media.durationSec}s, storyboard declares ${board.durationSec}s`);
 
   const cuts = detectCuts(video, tools, options.sceneThreshold ?? 0.3);
+  const motion = motionProfile(video, tools);
   const planned = storyboard.metrics.plannedCutsSec;
-  const missed = planned.filter((at) => nearest(cuts, at) > cutTolerance);
+  // A planned cut is present when the scene detector sees it, or when one step replaces a block of
+  // the frame (the detector carry-cut uses). Dark, desaturated cuts score low on scene change:
+  // a golden case's cut from a wide strip to a greyed close-up changed 34% of the frame in one
+  // step against 0.2% before it, yet scored 0.155 (threshold 0.3).
+  const pixelCuts = planned.filter((at) => nearest(cuts, at) > cutTolerance && instantReplacement(motion, at));
+  const missed = planned.filter((at) => nearest(cuts, at) > cutTolerance && !pixelCuts.includes(at));
   const unplanned = cuts.filter((at) => nearest(board.beats.map((beat) => beat.startSec), at) > cutTolerance);
   if (planned.length && missed.length / planned.length > 0.5) add("planned-cuts-missing", `${missed.length}/${planned.length} planned cuts not found in render`);
+  const allCuts = [...cuts, ...pixelCuts].sort((a, b) => a - b);
 
   let audio = { present: media.hasAudio, onsets: 0, cutsOnOnset: null };
   if (board.sound.mode === "scored" && !media.hasAudio) add("audio-missing", "storyboard is scored but render has no audio stream; audiovisual acceptance is incomplete");
   if (media.hasAudio) {
     const onsets = detectOnsets(video, tools);
-    const aligned = cuts.filter((at) => nearest(onsets, at) <= syncTolerance).length;
-    audio = { present: true, onsets: onsets.length, cutsOnOnset: cuts.length ? Number((aligned / cuts.length).toFixed(3)) : null };
-    if (board.sound.mode === "scored" && cuts.length >= 3 && aligned / cuts.length < 0.3) add("cuts-off-beat", `${aligned}/${cuts.length} cuts land within ${syncTolerance}s of an audio onset`);
+    const aligned = allCuts.filter((at) => nearest(onsets, at) <= syncTolerance).length;
+    audio = { present: true, onsets: onsets.length, cutsOnOnset: allCuts.length ? Number((aligned / allCuts.length).toFixed(3)) : null };
+    if (board.sound.mode === "scored" && allCuts.length >= 3 && aligned / allCuts.length < 0.3) add("cuts-off-beat", `${aligned}/${allCuts.length} cuts land within ${syncTolerance}s of an audio onset`);
   }
 
-  const motion = motionProfile(video, tools);
   // Continuity carried by the storyboard (not match-cut, which is a cut by design) must not render
   // as a cut at its planned boundary: either a full-frame scene change, or a panel that swaps in a
   // single frame on an otherwise calm background, which the scene detector misses.
@@ -441,7 +447,7 @@ function evaluateFilmRender(board, video, options = {}) {
     storyboard: { status: storyboard.status, findings: storyboard.findings },
     findings,
     media: { durationSec: media.durationSec, durationDeltaSec: durationDelta, fps: Number(media.fps.toFixed(3)) },
-    cuts: { detectedSec: cuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
+    cuts: { detectedSec: cuts, pixelCutsSec: pixelCuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
     audio,
     motion: beatMotion,
     stillness,

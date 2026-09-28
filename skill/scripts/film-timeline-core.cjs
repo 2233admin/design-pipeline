@@ -116,6 +116,10 @@ function checkTimeline(timeline, board, options = {}) {
   }
 
   // Continuity: a carried handoff needs one subject animated on both sides of the boundary.
+  // Opacity alone never carries: a panel fading out across the boundary while the next fades in
+  // is a dissolve, however much the two fades overlap.
+  const OPACITY_ONLY = new Set(["opacity", "autoAlpha"]);
+  const carries = (tween) => tween.durationSec > 0 && tween.props.some((prop) => !OPACITY_ONLY.has(prop));
   let carried = 0;
   let proceduralHandoffs = 0;
   let carriedPlanned = 0;
@@ -124,10 +128,10 @@ function checkTimeline(timeline, board, options = {}) {
     if (!CARRIED_HANDOFFS.has(beat.handoff)) continue;
     carriedPlanned += 1;
     const boundary = beat.startSec;
-    const before = new Set(timeline.tweens.filter((tween) => tween.durationSec > 0 && overlaps(tween, boundary - BOUNDARY_WINDOW_SEC, boundary)).flatMap(subjects));
-    const after = timeline.tweens.filter((tween) => tween.durationSec > 0 && overlaps(tween, boundary, boundary + BOUNDARY_WINDOW_SEC)).flatMap(subjects);
+    const before = new Set(timeline.tweens.filter((tween) => carries(tween) && overlaps(tween, boundary - BOUNDARY_WINDOW_SEC, boundary)).flatMap(subjects));
+    const after = timeline.tweens.filter((tween) => carries(tween) && overlaps(tween, boundary, boundary + BOUNDARY_WINDOW_SEC)).flatMap(subjects);
     const shared = after.filter((target) => before.has(target));
-    const spanning = timeline.tweens.some((tween) => tween.durationSec > 0 && tween.startSec < boundary && tween.startSec + tween.durationSec > boundary && subjects(tween).length > 0);
+    const spanning = timeline.tweens.some((tween) => carries(tween) && tween.startSec < boundary && tween.startSec + tween.durationSec > boundary && subjects(tween).length > 0);
     const procedural = drivers.some((tween) => tween.startSec < boundary && tween.startSec + tween.durationSec > boundary) && !before.size && !after.length;
     if (shared.length || spanning) carried += 1;
     else if (procedural) proceduralHandoffs += 1;

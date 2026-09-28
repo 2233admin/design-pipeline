@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0b0c0f; }
+      #root { position: relative; width: 100%; height: 100%; }
+      #bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 50% 50%, #15171c 0%, #0b0c0f 70%); }
+      #world { position: absolute; inset: 0; transform-origin: 50% 50%; }
+      /* The lockup's origin sits on the line's axis; it is centred when x is 0. */
+      #lockup { position: absolute; left: 366px; top: 540px; width: 1188px; height: 0; }
+      #line { position: absolute; left: 0; top: -4px; width: 360px; height: 8px; border-radius: 4px; background: #e8e6e1; transform-origin: 0 50%; }
+      .gate { position: absolute; top: -60px; width: 14px; height: 120px; border-radius: 7px; background: #464b55; }
+      #gate-1 { left: 113px; }
+      #gate-2 { left: 233px; }
+      #ring { position: absolute; left: 364px; top: -16px; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3ecf8e; }
+      #head { position: absolute; left: -16px; top: -16px; width: 32px; height: 32px; border-radius: 50%; background: #e8e6e1; }
+      #word { position: absolute; left: 432px; top: -52px; font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 84px; line-height: 104px; letter-spacing: 0; color: #e8e6e1; white-space: nowrap; }
+      #word .dim { color: #7c818c; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="4" data-width="1920" data-height="1080">
+      <div id="bg"></div>
+      <div id="world" class="clip" data-start="0" data-duration="4" data-track-index="0">
+        <div id="lockup">
+          <div id="line"></div>
+          <div id="gate-1" class="gate"></div>
+          <div id="gate-2" class="gate"></div>
+          <div id="word">design<span class="dim">-</span>pipeline</div>
+          <div id="ring"></div>
+          <div id="head"></div>
+        </div>
+      </div>
+      <audio id="score" src="assets/score-mastered.wav" data-start="0" data-duration="4"></audio>
+    </div>
+    <script>
+      const GREEN = "#3ecf8e";
+      const GLOW = "0 0 28px rgba(62, 207, 142, 0.55)";
+      const LINE_END = 360;
+      const DOT_X = 380;
+      const CENTRE_OFFSET = 396; // moves the mark (0-396px) to the frame centre before the name exists
+      const CLOSE = 1.9; // the camera starts tight on the mark and pulls back as the name arrives
+
+      gsap.set("#lockup", { x: CENTRE_OFFSET });
+      gsap.set("#line", { scaleX: 0 });
+      gsap.set("#world", { scale: CLOSE });
+      gsap.set("#head", { x: 0, scale: 0.25 });
+      gsap.set("#ring", { scale: 1, opacity: 0 });
+      gsap.set("#word", { x: -48, clipPath: "inset(0% 100% 0% 0%)" });
+
+      const tl = gsap.timeline({ paused: true });
+
+      // Camera: tight on the mark while it is checked, pulls back with the name, then breathes.
+      tl.to("#world", { scale: 1.78, duration: 2.0, ease: "sine.inOut" }, 0);
+      tl.to("#world", { scale: 1.0, duration: 0.9, ease: "power3.inOut" }, 2.4);
+      tl.to("#world", { scale: 1.012, duration: 0.7, ease: "sine.out" }, 3.3);
+
+      // 0-2s through-gates: the head eases into each gate, the gate turns green, then lets it go.
+      const legs = [
+        { at: 0.2, until: 1.0, x: 120 },
+        { at: 1.0, until: 1.5, x: 240 },
+        { at: 1.5, until: 2.0, x: DOT_X, ease: "power3.in" },
+      ];
+      for (const leg of legs) {
+        const duration = leg.until - leg.at;
+        const ease = leg.ease || "power2.inOut";
+        tl.to("#head", { x: leg.x, duration, ease }, leg.at);
+        tl.to("#line", { scaleX: Math.min(leg.x, LINE_END) / LINE_END, duration, ease }, leg.at);
+      }
+      for (const [gate, at] of [["#gate-1", 1.0], ["#gate-2", 1.5]]) {
+        tl.to(gate, { backgroundColor: GREEN, boxShadow: GLOW, duration: 0.12, ease: "power2.out" }, at - 0.04);
+        tl.to(gate, { boxShadow: "0 0 0px rgba(62, 207, 142, 0)", duration: 0.5, ease: "power2.out" }, at + 0.12);
+      }
+
+      // 2-2.5s land-as-dot: the head swells into the green dot with one overshoot; a ring marks the hit.
+      tl.to("#head", { scale: 1, duration: 0.45, ease: "back.out(2.4)" }, 2.0);
+      tl.to("#head", { backgroundColor: GREEN, duration: 0.14, ease: "power1.out" }, 2.0);
+      tl.fromTo("#ring", { scale: 1, opacity: 0.85 }, { scale: 3.4, opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, 2.0);
+
+      // 2.4-3.3s name-from-dot: the lockup shifts to centre while the name slides out from behind the dot.
+      // All three share one ease and span, so the revealed name never runs past the frame edge.
+      tl.to("#lockup", { x: 0, duration: 0.9, ease: "power3.inOut" }, 2.4);
+      tl.to("#word", { x: 0, clipPath: "inset(0% 0% 0% 0%)", duration: 0.9, ease: "power3.inOut" }, 2.4);
+      // 3.3-4s: hold on the lockup; only the camera keeps breathing.
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
