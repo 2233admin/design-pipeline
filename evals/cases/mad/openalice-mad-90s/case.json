@@ -6,8 +6,14 @@
   "brief": "Make a 90-second Miku-style MAD (Vocaloid music-video motion graphics) for Alice, the mascot of the OpenAlice trading agent: character-led, with Japanese kinetic lyrics, graphic motion and cuts locked to the beat, and OpenAlice's own interface as material. Study real Vocaloid MVs before designing. No vocals are available; score it with synth-only music. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4.",
   "product": "Alice, OpenAlice's mascot (TraderAlice/OpenAlice): research in a workspace, every trade on record and waiting for the user's approval, 24/7; the pixel-art mascot and the demo-mode interface as material",
   "author": "claude-opus-5-5",
-  "status": "candidate",
-  "approval": null,
+  "status": "approved",
+  "approval": {
+    "verdict": "accept",
+    "by": "user",
+    "date": "2026-09-29",
+    "note": "Accepted as sent; the hash is of the exact file the user watched (the CRF 23 preview of the golden render).",
+    "renderSha256": "1b795d0f07fe0613f340685d2a54d82a0bb9faf5c2b958e843650c62ebef4566"
+  },
   "golden": {
     "storyboard": "storyboard.json",
     "timeline": "timeline.json",

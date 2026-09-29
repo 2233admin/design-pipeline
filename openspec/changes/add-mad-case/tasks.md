@@ -6,4 +6,4 @@
 - [x] `audio master`: codec headroom, transient limiter before a linear gain, measured-output correction; add a unit test.
 - [x] Tests: the MAD type is present, and generated art is declared and never tracked.
 - [x] Run `node evals/cases/verify.cjs --render` and `node scripts/qa.cjs`; the four accepted goldens re-mastered with the new `audio master` still pass.
-- [ ] The user reviews the render; `approval` records the sha256 of the watched file.
+- [x] The user accepted the render on 2026-09-29; `approval` records the sha256 of the watched preview.

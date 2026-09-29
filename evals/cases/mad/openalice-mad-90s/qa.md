@@ -59,5 +59,6 @@ Render counter-examples: `blackout-over-silhouette` is caught by `blank-frame` a
 
 ## User acceptance
 
-Pending: the preview (`openalice-mad-90s-preview.mp4`, CRF 23, sha256
-1b795d0f07fe0613f340685d2a54d82a0bb9faf5c2b958e843650c62ebef4566) was sent on 2026-09-29.
+Accepted by the user on 2026-09-29, as sent, with no changes requested. The watched file was the
+CRF 23 preview (`openalice-mad-90s-preview.mp4`, sha256
+1b795d0f07fe0613f340685d2a54d82a0bb9faf5c2b958e843650c62ebef4566).
