@@ -826,6 +826,9 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
 - User-facing copy follows `references/plain-language.md`: titles name the smallest accurate scope,
   the first useful sentence exposes the consequence or action, and controls name only real actions.
 - Component inventory and states.
+  For a web page, the treatment's section arc becomes Layout grid rows and Component inventory rows,
+  and its style-bible seed feeds project `DESIGN.md` (Colors, Typography, Layout); see
+  `references/web-direction.md` (Treatment, Section briefs).
 - Motion rules and reduced-motion fallback.
 - Accessibility requirements: semantic structure, focus order, keyboard behavior, labels, announcements, contrast.
 - Interface-discipline decisions: selected review scope; layout, type, color, writing, surface,

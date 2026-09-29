@@ -269,3 +269,136 @@ test("a rejected web draft reopens probe", () => {
   decide(dir, { stage: "review", verdict: "reject", answer: "The hero tilt snaps instead of easing." });
   assert.equal(nextAction(dir).stage, "probe", "a rejection reopens probe");
 });
+
+const shared = require("../skill/scripts/workflows/shared.cjs");
+const webStages = require("../skill/scripts/workflows/web.cjs").stages;
+const PROMPT_FIELDS = ["question", "questions", "recommended", "options", "record", "why", "command"];
+const promptOf = (action) => Object.fromEntries(PROMPT_FIELDS.filter((key) => key in action).map((key) => [key, action[key]]));
+
+test("web intake asks product, audience, scope and assets, with no duration or film wording", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  const action = nextAction(dir);
+  assert.equal(action.stage, "intake");
+  assert.equal(action.type, "ask");
+  assert.deepEqual(action.questions.map((question) => question.id), ["product", "audience", "scope", "assets"]);
+  assert.ok(!action.questions.some((question) => question.id === "duration"));
+  assert.doesNotMatch(JSON.stringify(action), /how long|duration|film|promo|video|footage|beat/i);
+  assert.equal(action.record, shared.INTAKE.action().record);
+});
+
+test("web concepts asks for a section arc and a treatment, then keeps the shared choice record", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  touch(dir, "brief.md");
+  decide(dir, { stage: "reference", answer: "none" });
+  const write = nextAction(dir);
+  assert.equal(write.stage, "concepts");
+  assert.equal(write.type, "run");
+  assert.match(write.command, /section/i);
+  assert.match(write.command, /## Treatment/);
+  assert.doesNotMatch(write.command, /between beats|the picture/i);
+  touch(dir, "concepts.md");
+  const choose = nextAction(dir);
+  assert.equal(choose.type, "ask");
+  assert.equal(choose.record, shared.CONCEPTS.action({}, dir).record);
+});
+
+test("film, edit and ui prompts at intake and concepts equal the shared ones", () => {
+  for (const deliverable of ["film", "edit", "ui"]) {
+    const dir = tmp();
+    initState(dir, { deliverable, tier: "standard" });
+    const intake = nextAction(dir);
+    assert.equal(intake.stage, "intake", deliverable);
+    assert.deepEqual(promptOf(intake), promptOf(shared.INTAKE.action()), deliverable);
+    if (deliverable !== "ui") assert.ok(intake.questions.some((question) => question.id === "duration"), `${deliverable} intake keeps the duration question`);
+  }
+
+  const film = tmp();
+  initState(film, { deliverable: "film", tier: "standard" });
+  decide(film, { stage: "intake", answer: "default" });
+  decide(film, { stage: "reference", answer: "none" });
+  const write = nextAction(film);
+  assert.equal(write.stage, "concepts");
+  assert.deepEqual(promptOf(write), promptOf(shared.CONCEPTS.action(readState(film), film)));
+  touch(film, "concepts.md");
+  const choose = nextAction(film);
+  assert.equal(choose.type, "ask");
+  assert.deepEqual(promptOf(choose), promptOf(shared.CONCEPTS.action(readState(film), film)));
+});
+
+test("web stage ids per tier keep their order", () => {
+  assert.deepEqual(webStages({ tier: "quick" }).map((stage) => stage.id), ["build", "probe"]);
+  for (const tier of ["standard", "full"]) {
+    assert.deepEqual(webStages({ tier }).map((stage) => stage.id), ["intake", "reference", "concepts", "build", "probe", "review", "deliver"], tier);
+  }
+});
+
+test("web build at standard and full extends the chosen card with a treatment; quick does not", () => {
+  for (const tier of ["standard", "full"]) {
+    const dir = tmp();
+    initState(dir, { deliverable: "web", tier });
+    decide(dir, { stage: "intake", answer: "default" });
+    decide(dir, { stage: "reference", answer: "none" });
+    touch(dir, "concepts.md");
+    decide(dir, { stage: "concept", choice: 1 });
+    const build = nextAction(dir);
+    assert.equal(build.stage, "build", tier);
+    assert.match(build.command, /## Treatment/, tier);
+    if (tier === "standard") assert.equal(build.remaining, 4, "build, probe, review, deliver");
+  }
+  const quick = tmp();
+  initState(quick, { deliverable: "web", tier: "quick" });
+  const build = nextAction(quick);
+  assert.equal(build.stage, "build");
+  assert.doesNotMatch(build.command, /Treatment/i);
+});
+
+test("web review speaks of the page and keeps the shared decision contract", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "default" });
+  decide(dir, { stage: "reference", answer: "none" });
+  touch(dir, "concepts.md");
+  decide(dir, { stage: "concept", choice: 1 });
+  touch(dir, "index.html");
+  touch(dir, "interaction.json", "{}");
+  recordGate(dir, "interaction", "passed");
+  const action = nextAction(dir);
+  assert.equal(action.stage, "review");
+  assert.equal(action.type, "ask");
+  assert.doesNotMatch(JSON.stringify(action), /video|contact-sheet|footage|beat/i);
+  assert.equal(action.record, shared.REVIEW.action(readState(dir)).record);
+  decide(dir, { stage: "review", verdict: "accept" });
+  assert.equal(nextAction(dir).stage, "deliver", "an accepted verdict finishes web review as before");
+});
+
+test("film and edit review actions equal the shared one", () => {
+  const film = tmp();
+  initState(film, { deliverable: "film", tier: "standard" });
+  decide(film, { stage: "intake", answer: "default" });
+  decide(film, { stage: "reference", answer: "none" });
+  touch(film, "concepts.md");
+  decide(film, { stage: "concept", choice: 1 });
+  touch(film, "storyboard.json");
+  recordGate(film, "storyboard", "passed");
+  touch(film, "out.mp4");
+  recordGate(film, "film", "passed");
+  const filmReview = nextAction(film);
+  assert.equal(filmReview.stage, "review");
+  assert.deepEqual(promptOf(filmReview), promptOf(shared.REVIEW.action(readState(film))));
+  assert.deepEqual(filmReview.show, shared.REVIEW.action(readState(film)).show);
+
+  const edit = tmp();
+  initState(edit, { deliverable: "edit", tier: "standard" });
+  decide(edit, { stage: "intake", answer: "default" });
+  touch(edit, "edit/analysis.json", "{}");
+  decide(edit, { stage: "concept", choice: "pv" });
+  touch(edit, "edit.json", "{}");
+  touch(edit, "renders/edit.mp4");
+  recordGate(edit, "edit", "passed");
+  const editReview = nextAction(edit);
+  assert.equal(editReview.stage, "review");
+  assert.deepEqual(promptOf(editReview), promptOf(shared.REVIEW.action(readState(edit))));
+  assert.deepEqual(editReview.show, shared.REVIEW.action(readState(edit)).show);
+});

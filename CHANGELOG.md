@@ -6,6 +6,13 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- Web `next` prompts (`add-web-treatment-and-section-briefs`): the web intake asks product,
+  audience, scope and assets instead of a duration and no longer uses film wording; web concepts
+  asks for a section arc and a first-viewport frame per card and says the chosen card is extended
+  with `## Treatment`; web build at standard and full writes the treatment first; the web review
+  names the page and the 375x812, 768x1024 and 1440x900 screenshots. Film, edit and ui prompts are
+  unchanged. The `ui` deliverable's intake still asks for a duration.
+
 - Storyboard gate (`strengthen-film-cue-binding-and-song-map`): new warnings `cue-unbound` (a
   declared `downbeat`, `accent`, `impact` or `riser` cue that no beat lists in `soundCues`) and
   `cue-outside-beat` (a bound cue whose `atSec` is outside every binding storyboard beat's scene
@@ -45,6 +52,11 @@ All notable changes to Design Pipeline are documented here.
 - Golden case `canvas-instrument-24s` under `evals/film/music-driven/` and the optional benchmark
   scenario `music-driven-launch` (`required: false`). It is a protocol and fixtures for a blind
   before/after review; it makes no claim of visual improvement.
+- Web treatment and section briefs (`add-web-treatment-and-section-briefs`): `references/web-direction.md`
+  holds a `## Treatment` template under the chosen card of `concepts.md`, a section-brief mapping onto
+  existing artifacts (design.md inventory and layout grid, component-state-matrix, motion.md
+  Interaction Inventory, `interaction.json` probe, direction-preview signature) and review rules W1
+  to W7 as Visual Acceptance guidance. No gate, finding code, receipt or schema is added.
 
 ## [0.12.0-beta.1] - 2026-09-29
 

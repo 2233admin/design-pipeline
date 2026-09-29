@@ -22,14 +22,14 @@ inside this skill (below: `designer-pipeline`).
 First call in a new project: pick the deliverable and tier and pass them to `next`:
 
 | Deliverable | For |
-|---|---|
+| --- | --- |
 | `film` | generated promo, explainer, logo sting, feature demo, 3D product shot |
 | `edit` | PV, MAD, beat montage cut from existing footage and music |
 | `web` | motion-first websites and pages |
 | `ui` | product UI, components, design systems, clones |
 
 | Tier | When | Ceremony |
-|---|---|---|
+| --- | --- | --- |
 | `quick` | one motion, shot, component or fix | build, gates, evidence |
 | `standard` | one whole deliverable | brief, concepts, draft review (two user decisions) |
 | `full` | large or shared work | adds an OpenSpec change and full lineage |
@@ -64,6 +64,7 @@ Read only what the current step needs. For `film`, `edit` and `web`, each `next`
 - Edits (PV, MAD): `references/film-edit.md`
 - UI, web, design systems, website cloning, stage contracts and full-tier work:
   `references/pipeline-reference.md`
+- Web treatment, section briefs and review rules W1-W7: `references/web-direction.md`
 - Every command: `designer-pipeline --help`
 
 ## Always
