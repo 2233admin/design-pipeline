@@ -177,6 +177,9 @@ function checkAudio(file, options = {}) {
   };
 }
 
+const MAX_LIMIT_DB = 10;
+const CODEC_HEADROOM_DB = 1.5;
+
 // Two-pass EBU R128 normalization to a delivery target with an optional fade-out: the repair the
 // loudness, true-peak and abrupt-end findings point to, packaged so an agent does not hand-tune it.
 function masterAudio(input, output, options = {}) {
@@ -186,29 +189,59 @@ function masterAudio(input, output, options = {}) {
   const target = TARGETS[targetName];
   if (!fs.existsSync(input)) fail(SCOPE, `input not found: ${input}`);
   if (!hasAudio(input, tools)) fail(SCOPE, `input has no audio stream: ${input}`);
-  const base = `I=${target.lufs}:TP=${target.truePeak}:LRA=11`;
-  const { stderr } = run(tools, ["-hide_banner", "-nostats", "-i", input, "-vn", "-af", `loudnorm=${base}:print_format=json`, "-f", "null", "-"]);
-  const json = stderr.slice(stderr.lastIndexOf("{"), stderr.lastIndexOf("}") + 1);
-  let measured;
-  try { measured = JSON.parse(json); } catch { fail(SCOPE, "could not read loudnorm measurement from ffmpeg output", { code: "TOOL_FAILED" }); }
-  // loudnorm rejects measurements outside its option ranges (a clipped mix can measure above 0 LUFS).
+  // The master sits CODEC_HEADROOM_DB under the delivery ceiling: encoding the film's AAC track
+  // adds inter-sample peaks (a MAD master at -1.4 dBTP encoded at +0.2 dBFS, and HyperFrames then
+  // attenuated renders by 1.7 dB, below the loudness target, or refused to render).
+  const ceiling = target.truePeak - (options.codecHeadroomDb ?? CODEC_HEADROOM_DB);
+  const base = `I=${target.lufs}:TP=${ceiling}:LRA=11`;
+  const measure = (pre) => {
+    const { stderr } = run(tools, ["-hide_banner", "-nostats", "-i", input, "-vn", "-af", `${pre ? `${pre},` : ""}loudnorm=${base}:print_format=json`, "-f", "null", "-"]);
+    try { return JSON.parse(stderr.slice(stderr.lastIndexOf("{"), stderr.lastIndexOf("}") + 1)); } catch { return fail(SCOPE, "could not read loudnorm measurement from ffmpeg output", { code: "TOOL_FAILED" }); }
+  };
+  const inputMeasured = measure(null);
+  // Headroom: loudnorm reaches the target linearly only when the gain it needs keeps the true peak
+  // under the ceiling. A peaky mix (kicks, hits) fails that, and loudnorm's dynamic fallback then
+  // flattens the arrangement: a MAD's verse, chorus and bridge all came out at the same loudness.
+  // A lookahead limiter first shaves the transients (at most MAX_LIMIT_DB), so the gain stays
+  // linear and the sections keep their levels.
+  // The limiter works on sample peaks, lowers the loudness a little, and loudnorm's resampling
+  // adds inter-sample peaks, so each attempt is rendered and its true peak measured with the same
+  // meter the audio gate uses; a peak over the ceiling adds limiting and renders again.
   const clamp = (value, low, high) => Math.min(high, Math.max(low, Number(value)));
-  const m = { i: clamp(measured.input_i, -99, 0), tp: clamp(measured.input_tp, -99, 99), lra: clamp(measured.input_lra, 0, 99), thresh: clamp(measured.input_thresh, -99, 0), offset: clamp(measured.target_offset, -99, 99) };
-  const filters = [`loudnorm=${base}:measured_I=${m.i}:measured_TP=${m.tp}:measured_LRA=${m.lra}:measured_thresh=${m.thresh}:offset=${m.offset}:linear=true:print_format=json`];
   const fade = Number(options.fadeOutSec || 0);
+  let fadeFilter = null;
   if (fade > 0) {
     const probe = spawnSync(tools.ffprobe, ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", input], { encoding: "utf8", windowsHide: true });
     const duration = Number(probe.stdout.trim());
     if (!(duration > fade)) fail(SCOPE, `fade-out ${fade}s is not shorter than the ${duration}s input`);
-    filters.push(`afade=t=out:st=${(duration - fade).toFixed(3)}:d=${fade}`);
+    fadeFilter = `afade=t=out:st=${(duration - fade).toFixed(3)}:d=${fade}`;
   }
-  const second = run(tools, ["-hide_banner", "-nostats", "-y", "-i", input, "-vn", "-af", filters.join(","), "-ar", String(RATE), output]).stderr;
-  let mode = null;
-  try { mode = JSON.parse(second.slice(second.lastIndexOf("{"), second.lastIndexOf("}") + 1)).normalization_type; } catch { mode = null; }
+  const render = (limitDb) => {
+    const limiter = limitDb > 0 ? `alimiter=limit=${Math.max(0.0625, 10 ** ((Number(inputMeasured.input_tp) - limitDb) / 20)).toFixed(5)}:attack=2:release=60:level=false:latency=true` : null;
+    const measured = limiter ? measure(limiter) : inputMeasured;
+    const m = { i: clamp(measured.input_i, -99, 0), tp: clamp(measured.input_tp, -99, 99), lra: clamp(measured.input_lra, 0, 99), thresh: clamp(measured.input_thresh, -99, 0), offset: clamp(measured.target_offset, -99, 99) };
+    const filters = [...(limiter ? [limiter] : []), `loudnorm=${base}:measured_I=${m.i}:measured_TP=${m.tp}:measured_LRA=${m.lra}:measured_thresh=${m.thresh}:offset=${m.offset}:linear=true:print_format=json`, ...(fadeFilter ? [fadeFilter] : [])];
+    const second = run(tools, ["-hide_banner", "-nostats", "-y", "-i", input, "-vn", "-af", filters.join(","), "-ar", String(RATE), output]).stderr;
+    let normalization = null;
+    try { normalization = JSON.parse(second.slice(second.lastIndexOf("{"), second.lastIndexOf("}") + 1)).normalization_type; } catch { normalization = null; }
+    return { normalization, peak: loudness(output, tools).truePeakDbtp };
+  };
+  const headroom = ceiling - 0.3;
+  const shortfall = Number(inputMeasured.input_tp) + (target.lufs - Number(inputMeasured.input_i)) - headroom;
+  const limiting = options.limit !== false && Number(inputMeasured.input_i) > -70;
+  let limiterDb = limiting && shortfall > 0 ? Number(Math.min(shortfall + 0.2, MAX_LIMIT_DB).toFixed(2)) : 0;
+  let result = render(limiterDb);
+  for (let pass = 0; limiting && pass < 3 && limiterDb < MAX_LIMIT_DB; pass += 1) {
+    const over = result.normalization === "dynamic" ? Math.max(shortfall - limiterDb, 0.5) : result.peak - headroom;
+    if (!(over > 0)) break;
+    limiterDb = Number(Math.min(limiterDb + over + 0.2, MAX_LIMIT_DB).toFixed(2));
+    result = render(limiterDb);
+  }
+  const mode = result.normalization;
   // Dynamic mode means loudnorm could not reach the target linearly (usually the true-peak
   // ceiling) and compressed the mix, flattening accents; the caller should know.
-  const warnings = mode === "dynamic" ? [`loudnorm fell back to dynamic normalization: accents were compressed to reach ${target.lufs} LUFS within ${target.truePeak} dBTP. For punchier hits, lower the peaks in the source mix (limiter on the accents) and master again.`] : [];
-  return { status: "mastered", input, output, target: targetName, normalization: mode || "unknown", measuredInput: { integratedLufs: Number(measured.input_i), truePeakDbtp: Number(measured.input_tp), loudnessRangeLu: Number(measured.input_lra) }, fadeOutSec: fade || 0, warnings };
+  const warnings = mode === "dynamic" ? [`loudnorm fell back to dynamic normalization: accents were compressed to reach ${target.lufs} LUFS within ${ceiling} dBTP, which flattens the arrangement's loud and quiet sections. Lower the peaks in the source mix (softer kicks and hits, more sustained parts) and master again.`] : [];
+  return { status: "mastered", input, output, target: targetName, normalization: mode || "unknown", limiterDb, measuredInput: { integratedLufs: Number(inputMeasured.input_i), truePeakDbtp: Number(inputMeasured.input_tp), loudnessRangeLu: Number(inputMeasured.input_lra) }, fadeOutSec: fade || 0, warnings };
 }
 
 module.exports = { SCHEMA, FIX, TARGETS, checkAudio, masterAudio };

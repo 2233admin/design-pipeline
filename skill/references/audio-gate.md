@@ -19,9 +19,13 @@ at the last frame), `exit-early`, `license-unrecorded`. Every finding carries a 
 Record licensing in the storyboard: `sound.usage` (commercial by default for promotional films)
 and `sound.assets: [{ id, license, commercialUse, file?, source? }]`.
 
-`audio master` applies two-pass EBU R128 loudness normalization and an optional fade-out. When it
-reports `normalization: dynamic`, loudnorm compressed the mix to meet the true-peak ceiling and
-flattened the accents; lower the source peaks and master again if the hits must stay punchy.
+`audio master` applies two-pass EBU R128 loudness normalization and an optional fade-out. It
+masters 1.5 dB under the target's true-peak ceiling, because encoding the film's AAC track adds
+inter-sample peaks. When the gain would push a peaky mix over that ceiling, a lookahead limiter
+first shaves the transients (at most 10 dB, reported as `limiterDb`), so the gain stays linear and
+quiet and loud sections keep their difference. When it still reports `normalization: dynamic`,
+loudnorm compressed the mix and flattened the sections; lower the source peaks (softer kicks,
+more sustained parts) and master again.
 
 `film check` runs this gate on the rendered film. The gate measures delivery; whether the music
 suits the film, the mix balance and the emotional arc stay in creative review.

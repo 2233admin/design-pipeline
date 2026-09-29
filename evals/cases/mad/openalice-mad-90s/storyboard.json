@@ -1,0 +1,123 @@
+{
+  "schema": "design-pipeline.film-storyboard.v1",
+  "id": "openalice-mad-90s",
+  "durationSec": 90,
+  "fps": 24,
+  "grammar": "kinetic-type",
+  "benefit": "A Miku-style MAD for OpenAlice's mascot Alice: the one-person Wall Street who researches, keeps every trade on record and waits for your nod.",
+  "proofAction": "Alice is held on screen like a Vocaloid MV illustration while the lyrics, graphics and OpenAlice's own interface move around her on the 160 BPM grid.",
+  "reference": "reference.md (seven Vocaloid MVs studied in scratch research: Vampire, KING, Hibana, God-ish, Rabbit Hole, Mesmerizer, Telepathy)",
+  "endState": "free",
+  "sound": {
+    "mode": "scored",
+    "source": "Strudel pattern score.strudel.js at 160 BPM",
+    "usage": "internal",
+    "assets": [
+      { "id": "score", "license": "generated with Strudel (AGPL-3.0 tool, not bundled); built-in synth sounds only, no samples", "commercialUse": true, "file": "assets/score.wav", "source": "strudel" }
+    ],
+    "cues": [
+      { "id": "intro-in", "atSec": 0, "kind": "entry", "note": "filtered chords rise under the black intro" },
+      { "id": "reveal", "atSec": 5.625, "kind": "accent", "note": "snare roll ends on the white flash that reveals Alice" },
+      { "id": "verse", "atSec": 6, "kind": "downbeat", "note": "the beat enters under the first lyric cluster" },
+      { "id": "pre", "atSec": 18, "kind": "downbeat", "note": "snares on 2 and 4 as the vertical strips arrive" },
+      { "id": "black", "atSec": 28.5, "kind": "silence", "note": "the band drops out for the black-out line" },
+      { "id": "chorus", "atSec": 30, "kind": "impact", "note": "full kit and the hook on the flash into the chorus" },
+      { "id": "split", "atSec": 42, "kind": "downbeat", "note": "the split screen opens on the second half of the chorus" },
+      { "id": "bridge", "atSec": 54, "kind": "downbeat", "note": "break down to the pad under her silhouette" },
+      { "id": "final", "atSec": 66, "kind": "impact", "note": "the final chorus hits on the flash" },
+      { "id": "outro", "atSec": 84, "kind": "downbeat", "note": "last hit as the text ring starts" },
+      { "id": "out", "atSec": 90, "kind": "exit", "note": "the chord rings out under the end card" }
+    ]
+  },
+  "beats": [
+    {
+      "id": "intro",
+      "startSec": 0,
+      "endSec": 6,
+      "role": "action",
+      "subject": "the ALICE logo ring",
+      "productAction": "A ring of type spins up out of black and bursts into the reveal of Alice",
+      "transformation": { "kind": "type-to-object", "from": "black frame", "to": "Alice revealed under the logo card" },
+      "handoff": "open",
+      "motion": ["ring-spin", "logo-card", "white-flash"],
+      "soundCues": ["intro-in", "reveal"]
+    },
+    {
+      "id": "verse",
+      "startSec": 6,
+      "endSec": 18,
+      "role": "action",
+      "subject": "Alice, held",
+      "productAction": "Alice holds centre frame, blinking and turning to each lyric cluster that appears beside her face",
+      "transformation": { "kind": "state-change", "from": "Alice alone", "to": "four lyric clusters sung around her" },
+      "handoff": "continuation",
+      "carrier": "the revealed Alice stays in the same place while the camera keeps its slow push",
+      "motion": ["held-hero", "part-swap", "lyric-cluster", "slow-push"],
+      "soundCues": ["verse"]
+    },
+    {
+      "id": "pre-chorus",
+      "startSec": 18,
+      "endSec": 30,
+      "role": "action",
+      "subject": "Alice re-cropped",
+      "productAction": "Vertical lyric strips slide in while the camera re-crops Alice to face and eyes, faster each bar, until the black-out line",
+      "transformation": { "kind": "camera-move", "from": "wide Alice", "to": "eyes close-up, then black with one line" },
+      "handoff": "continuation",
+      "carrier": "Alice stays on screen as the camera starts re-cropping her",
+      "motion": ["re-crop", "tategaki", "black-out"],
+      "soundCues": ["pre", "black"]
+    },
+    {
+      "id": "chorus",
+      "startSec": 30,
+      "endSec": 54,
+      "role": "action",
+      "subject": "the hook",
+      "productAction": "Hero words slam in every two bars over Alice, a hook ticker runs, and the second half splits into panels with OpenAlice's interface in the beat panel",
+      "transformation": { "kind": "state-change", "from": "the black-out", "to": "a three-panel split with Alice, the hook and OpenAlice screens" },
+      "handoff": "hard-cut",
+      "motion": ["white-flash", "word-slam", "ticker", "split-panels", "part-swap"],
+      "soundCues": ["chorus", "split"]
+    },
+    {
+      "id": "bridge",
+      "startSec": 54,
+      "endSec": 66,
+      "role": "action",
+      "subject": "her silhouette",
+      "productAction": "Everything drops to black; a white silhouette of Alice holds while one small line at a time appears, then static tears in",
+      "transformation": { "kind": "state-change", "from": "full colour", "to": "white silhouette on black" },
+      "handoff": "hard-cut",
+      "holdSec": 2,
+      "motion": ["silhouette", "small-line", "static-tear"],
+      "soundCues": ["bridge"]
+    },
+    {
+      "id": "final-chorus",
+      "startSec": 66,
+      "endSec": 84,
+      "role": "action",
+      "subject": "a grid of Alices",
+      "productAction": "The peak: a grid of chibi Alices, a hero word every bar, the beat panel strobing on half beats",
+      "transformation": { "kind": "state-change", "from": "silhouette", "to": "a full grid of Alices and hero words" },
+      "handoff": "hard-cut",
+      "motion": ["white-flash", "duplication-grid", "word-slam", "strobe-panel"],
+      "soundCues": ["final"]
+    },
+    {
+      "id": "outro",
+      "startSec": 84,
+      "endSec": 90,
+      "role": "action",
+      "subject": "the text ring",
+      "productAction": "A ring of ALICE text circles her, then the OpenAlice end card resolves",
+      "transformation": { "kind": "state-change", "from": "the grid", "to": "Alice inside a ring, then the end card" },
+      "handoff": "continuation",
+      "carrier": "the centre Alice of the grid stays as the others fall away and the ring closes around her",
+      "holdSec": 1.5,
+      "motion": ["ring-spin", "end-card"],
+      "soundCues": ["outro", "out"]
+    }
+  ]
+}
