@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="lib/patterns.js"></script>
+    <script src="lib/audio-events.js"></script>
+    <script src="lib/score-grid.js"></script>
+    <script src="build.js"></script>
+    <link rel="stylesheet" href="lib/instrument-chrome.css" />
+    <style>
+      /* The film's own layout. Colour, type and metrics come from the --fk- slots (STYLE and GROUND
+         below); nothing here animates, transforms or clips: the timeline owns that. Nodes are chrome
+         frames, wires are chrome meters (the track is the wire, the bar is the signal), ports and the
+         canvas grid are static. */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--fk-ink); }
+      #root { position: relative; width: 100%; height: 100%; }
+      .plate { position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; background: var(--fk-ink); color: var(--fk-text); }
+      .lw-canvas { background-image: repeating-linear-gradient(0deg, var(--fk-rest) 0, var(--fk-rest) 2px, transparent 2px, transparent 40px), repeating-linear-gradient(90deg, var(--fk-rest) 0, var(--fk-rest) 2px, transparent 2px, transparent 40px); }
+      .abs { position: absolute; }
+      .foot { position: absolute; left: 60px; bottom: 56px; }
+
+      .lw-wire .fk-meter__track { background: var(--fk-line); border-radius: 0; }
+      .lw-wire--h { height: 10px; }
+      .lw-wire--v { width: 10px; }
+      .lw-port { width: 28px; height: 28px; border-radius: 50%; background: var(--fk-accent); border: 6px solid var(--fk-ink); }
+      .lw-dash { height: 0; border-top: 4px dashed var(--fk-line); }
+      .lw-ghost { border: 4px dashed var(--fk-line); border-radius: var(--fk-radius); padding: 20px; }
+      .lw-note { line-height: 1.5; }
+
+      .lw-hero-log { --fk-row: 96px; height: calc(var(--fk-row) * 4); font-size: 58px; }
+
+      .lw-gen .fk-cell { aspect-ratio: 4 / 5; }
+      .lw-cells { --fk-cols: 6; }
+      .lw-fill { width: 100%; height: 72px; }
+      .lw-jobs { --fk-row: 44px; height: calc(var(--fk-row) * 7); }
+
+      .lw-hero { font-size: 380px; line-height: 1; margin-top: 12px; }
+      .lw-hero .fk-readout__value { text-align: left; }
+      .lw-row { display: flex; justify-content: center; gap: 24px; height: 680px; }
+      .lw-tall { width: 160px; height: 100%; }
+      .lw-render { --fk-row: 56px; height: calc(var(--fk-row) * 3); font-size: 32px; }
+
+      .lw-strip { --fk-cols: 4; }
+      .lw-trace { height: 240px; }
+
+      .fk-cell .lw-pic { position: absolute; top: 14px; right: 14px; bottom: 14px; left: 14px; overflow: hidden; background: var(--fk-ink); border-radius: calc(var(--fk-radius) * 0.6); }
+      .lw-tile .lw-pic { top: 8px; right: 8px; bottom: 8px; left: 8px; }
+      .lw-pic i { position: absolute; display: block; }
+      .lw-sun { background: var(--fk-accent); }
+      .lw-tower { background: var(--fk-text); }
+      .lw-sea { background: var(--fk-rest); }
+      .fk-cell { position: relative; }
+
+      .lw-mark { position: absolute; left: 0; right: 0; top: 330px; display: flex; flex-direction: column; align-items: center; gap: 36px; }
+      .lw-wordmark { font-size: 300px; letter-spacing: 0.04em; }
+      .lw-rule { width: 1200px; height: 12px; background: var(--fk-accent); }
+      .lw-echo { --fk-cols: 4; position: absolute; left: 540px; top: 90px; width: 840px; }
+      #brand-flash { --fk-text: #ff7a3d; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1920" data-height="1080">
+      <!-- 1  type-on-pad  0-2 s  bar 1  intro: the prompt node's log ticks on the beat; the canvas is still empty -->
+      <section id="plate-intro" class="clip plate lw-canvas" data-start="0" data-duration="2" data-track-index="0">
+        <div id="prompt-frame" class="fk-frame abs" style="left:96px; top:240px; width:1080px; height:490px;"><div class="fk-frame__head">Prompt node</div><div class="fk-frame__body"><div class="fk-log lw-hero-log"><div id="intro-log-col" class="fk-log__col"><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row">&gt; a lighthouse at dusk,</div><div class="fk-log__row">ink wash, wide shot,</div><div class="fk-log__row">slow tide, one small boat</div><div class="fk-log__row">&gt; generate</div></div></div></div></div>
+        <div class="lw-dash abs" style="left:1176px; top:483px; width:160px;"></div>
+        <div class="lw-ghost abs" style="left:1336px; top:335px; width:488px; height:300px;"><div class="fk-label fk-label--dim">Image node</div></div>
+        <div class="lw-port abs" style="left:1162px; top:471px;"></div>
+        <div class="fk-label fk-label--dim foot">01 &middot; Intro &middot; bar 1 &middot; prompt node</div>
+      </section>
+
+      <!-- 2  cells-on-kick  2-10 s  bars 2-5  groove: a node graph. Kick fires the generation node and its input wire, clap routes the queue wire, hats the log wire -->
+      <section id="plate-groove" class="clip plate lw-canvas" data-start="2" data-duration="8" data-track-index="0">
+        <div id="g-prompt" class="fk-frame abs" style="left:60px; top:430px; width:260px; height:240px;"><div class="fk-frame__head">Prompt node</div><div class="fk-frame__body"><div class="fk-label lw-note">a lighthouse<br />at dusk,<br />ink wash</div></div></div>
+        <div class="fk-meter fk-meter--x lw-wire lw-wire--h abs" style="left:320px; top:545px; width:150px;"><div class="fk-meter__track"><div id="w1-bar" class="fk-meter__bar"></div></div></div>
+        <div id="cells-frame" class="fk-frame abs" style="left:470px; top:196px; width:790px; height:708px;"><div class="fk-frame__head">Generation node</div><div class="fk-frame__body"><div class="fk-cells lw-cells lw-gen"><div id="cell0" class="fk-cell"></div><div id="cell1" class="fk-cell"></div><div id="cell2" class="fk-cell"></div><div id="cell3" class="fk-cell"></div><div id="cell4" class="fk-cell"></div><div id="cell5" class="fk-cell"></div><div id="cell6" class="fk-cell"></div><div id="cell7" class="fk-cell"></div><div id="cell8" class="fk-cell"></div><div id="cell9" class="fk-cell"></div><div id="cell10" class="fk-cell"></div><div id="cell11" class="fk-cell"></div><div id="cell12" class="fk-cell"></div><div id="cell13" class="fk-cell"></div><div id="cell14" class="fk-cell"></div><div id="cell15" class="fk-cell"></div><div id="cell16" class="fk-cell"></div><div id="cell17" class="fk-cell"></div><div id="cell18" class="fk-cell"></div><div id="cell19" class="fk-cell"></div><div id="cell20" class="fk-cell"></div><div id="cell21" class="fk-cell"></div><div id="cell22" class="fk-cell"></div><div id="cell23" class="fk-cell"></div></div></div></div>
+        <div class="fk-meter fk-meter--x lw-wire lw-wire--h abs" style="left:1260px; top:325px; width:150px;"><div class="fk-meter__track"><div id="w2-bar" class="fk-meter__bar"></div></div></div>
+        <div class="fk-meter fk-meter--x lw-wire lw-wire--h abs" style="left:1260px; top:765px; width:150px;"><div class="fk-meter__track"><div id="w3-bar" class="fk-meter__bar"></div></div></div>
+        <div id="queue-frame" class="fk-frame abs" style="left:1410px; top:230px; width:450px; height:200px;"><div class="fk-frame__head">Queue node</div><div class="fk-frame__body"><div class="fk-meter fk-meter--x fk-meter--segmented lw-fill"><div class="fk-meter__track"><div id="queue-bar" class="fk-meter__bar"></div></div></div><div class="fk-ticks fk-ticks--x"></div></div></div>
+        <div id="jobs-frame" class="fk-frame abs" style="left:1410px; top:560px; width:450px; height:410px;"><div class="fk-frame__head">Log node</div><div class="fk-frame__body"><div class="fk-log lw-jobs"><div id="jobs-col" class="fk-log__col"><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row">JOB 0001 &middot; CELL 01 &middot; OK</div><div class="fk-log__row">JOB 0002 &middot; CELL 06 &middot; OK</div><div class="fk-log__row">JOB 0003 &middot; CELL 11 &middot; OK</div><div class="fk-log__row">JOB 0004 &middot; CELL 16 &middot; OK</div><div class="fk-log__row">JOB 0005 &middot; CELL 21 &middot; OK</div><div class="fk-log__row">JOB 0006 &middot; CELL 02 &middot; OK</div><div class="fk-log__row">JOB 0007 &middot; CELL 07 &middot; OK</div><div class="fk-log__row">JOB 0008 &middot; CELL 12 &middot; OK</div><div class="fk-log__row">JOB 0009 &middot; CELL 17 &middot; OK</div><div class="fk-log__row">JOB 0010 &middot; CELL 22 &middot; OK</div><div class="fk-log__row">JOB 0011 &middot; CELL 03 &middot; OK</div><div class="fk-log__row">JOB 0012 &middot; CELL 08 &middot; OK</div><div class="fk-log__row">JOB 0013 &middot; CELL 13 &middot; OK</div><div class="fk-log__row">JOB 0014 &middot; CELL 18 &middot; OK</div><div class="fk-log__row">JOB 0015 &middot; CELL 23 &middot; OK</div><div class="fk-log__row">JOB 0016 &middot; CELL 04 &middot; OK</div><div class="fk-log__row">JOB 0017 &middot; CELL 09 &middot; OK</div><div class="fk-log__row">JOB 0018 &middot; CELL 14 &middot; OK</div><div class="fk-log__row">JOB 0019 &middot; CELL 19 &middot; OK</div><div class="fk-log__row">JOB 0020 &middot; CELL 24 &middot; OK</div><div class="fk-log__row">JOB 0021 &middot; CELL 05 &middot; OK</div><div class="fk-log__row">JOB 0022 &middot; CELL 10 &middot; OK</div><div class="fk-log__row">JOB 0023 &middot; CELL 15 &middot; OK</div><div class="fk-log__row">JOB 0024 &middot; CELL 20 &middot; OK</div><div class="fk-log__row">JOB 0025 &middot; CELL 01 &middot; OK</div><div class="fk-log__row">JOB 0026 &middot; CELL 06 &middot; OK</div><div class="fk-log__row">JOB 0027 &middot; CELL 11 &middot; OK</div><div class="fk-log__row">JOB 0028 &middot; CELL 16 &middot; OK</div><div class="fk-log__row">JOB 0029 &middot; CELL 21 &middot; OK</div><div class="fk-log__row">JOB 0030 &middot; CELL 02 &middot; OK</div><div class="fk-log__row">JOB 0031 &middot; CELL 07 &middot; OK</div><div class="fk-log__row">JOB 0032 &middot; CELL 12 &middot; OK</div></div></div></div></div>
+        <div class="lw-port abs" style="left:306px; top:536px;"></div><div class="lw-port abs" style="left:456px; top:536px;"></div><div class="lw-port abs" style="left:1246px; top:316px;"></div><div class="lw-port abs" style="left:1396px; top:316px;"></div><div class="lw-port abs" style="left:1246px; top:756px;"></div><div class="lw-port abs" style="left:1396px; top:756px;"></div>
+        <div class="fk-label fk-label--dim foot">02 &middot; Groove &middot; bars 2-5 &middot; kick / clap / hats</div>
+      </section>
+
+      <!-- 3  countdown-build  10-14 s  bars 6-7  build: the render queue node drains, the last beat holds -->
+      <section id="plate-build" class="clip plate lw-canvas" data-start="10" data-duration="4" data-track-index="0">
+        <div id="eta-frame" class="fk-frame abs" style="left:60px; top:150px; width:1290px; height:520px;"><div class="fk-frame__head">Render queue node / ETA</div><div class="fk-frame__body"><div class="fk-label">Render ETA &middot; seconds</div><div id="count" class="fk-readout fk-readout--display lw-hero"><span id="count-value" class="fk-readout__value">08.00</span></div></div></div>
+        <div class="fk-meter fk-meter--x lw-wire lw-wire--h abs" style="left:1350px; top:295px; width:120px;"><div class="fk-meter__track"><div id="w4-bar" class="fk-meter__bar"></div></div></div>
+        <div id="depth-frame" class="fk-frame abs" style="left:1470px; top:150px; width:390px; height:830px;"><div class="fk-frame__head">Depth node</div><div class="fk-frame__body"><div class="lw-row"><div class="fk-meter fk-meter--segmented lw-tall"><div class="fk-meter__track"><div id="depth-bar" class="fk-meter__bar"></div></div></div><div class="fk-ticks"></div></div></div></div>
+        <div id="render-frame" class="fk-frame abs" style="left:60px; top:710px; width:1290px; height:270px;"><div class="fk-frame__head">Render log node</div><div class="fk-frame__body"><div class="fk-log lw-render"><div id="render-col" class="fk-log__col"><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row"></div><div class="fk-log__row">STEP 1 OF 7 &middot; QUEUED</div><div class="fk-log__row">STEP 2 OF 7 &middot; PLANNED</div><div class="fk-log__row">STEP 3 OF 7 &middot; TRACED</div><div class="fk-log__row">STEP 4 OF 7 &middot; SHADED</div><div class="fk-log__row">STEP 5 OF 7 &middot; COMPOSED</div><div class="fk-log__row">STEP 6 OF 7 &middot; GRADED</div><div class="fk-log__row">STEP 7 OF 7 &middot; READY</div></div></div></div></div>
+        <div class="lw-port abs" style="left:1336px; top:286px;"></div><div class="lw-port abs" style="left:1456px; top:286px;"></div>
+        <div class="fk-label fk-label--dim foot">03 &middot; Build &middot; bars 6-7 &middot; render queue</div>
+      </section>
+
+      <!-- 4  drop-impact  14-20 s  bars 8-10  drop: the finished strip node takes the impact; clap and bass send signal up the wires -->
+      <section id="plate-drop" class="clip plate lw-canvas" data-start="14" data-duration="6" data-track-index="0">
+        <div id="drop-stage" class="fk-stage">
+          <div id="strip-frame" class="fk-frame abs" style="left:96px; top:90px; width:1728px; height:520px;"><div class="fk-frame__head">Storyboard strip node</div><div class="fk-frame__body"><div class="fk-cells lw-strip"><div id="frame0" class="fk-cell"><div class="lw-pic"><i class="lw-sun" style="left:58%; top:20%; width:22%; height:22%; border-radius:50%;"></i><i class="lw-sea" style="left:0%; top:62%; width:100%; height:38%;"></i></div></div><div id="frame1" class="fk-cell"><div class="lw-pic"><i class="lw-sun" style="left:14%; top:14%; width:14%; height:14%; border-radius:50%;"></i><i class="lw-tower" style="left:44%; top:30%; width:10%; height:42%;"></i><i class="lw-tower" style="left:40%; top:24%; width:18%; height:8%;"></i><i class="lw-sea" style="left:0%; top:68%; width:100%; height:32%;"></i></div></div><div id="frame2" class="fk-cell"><div class="lw-pic"><i class="lw-sun" style="left:40%; top:12%; width:20%; height:20%; border-radius:50%;"></i><i class="lw-sea" style="left:0%; top:50%; width:100%; height:10%;"></i><i class="lw-sea" style="left:0%; top:66%; width:100%; height:10%;"></i><i class="lw-sea" style="left:0%; top:82%; width:100%; height:18%;"></i></div></div><div id="frame3" class="fk-cell"><div class="lw-pic"><i class="lw-sun" style="left:70%; top:16%; width:16%; height:16%; border-radius:50%;"></i><i class="lw-tower" style="left:46%; top:34%; width:3%; height:26%;"></i><i class="lw-tower" style="left:30%; top:60%; width:36%; height:8%;"></i><i class="lw-sea" style="left:0%; top:70%; width:100%; height:30%;"></i></div></div></div></div></div>
+          <div class="fk-meter lw-wire lw-wire--v abs" style="left:511px; top:610px; height:160px;"><div class="fk-meter__track"><div id="wa-bar" class="fk-meter__bar"></div></div></div>
+          <div class="fk-meter lw-wire lw-wire--v abs" style="left:1399px; top:610px; height:160px;"><div class="fk-meter__track"><div id="wb-bar" class="fk-meter__bar"></div></div></div>
+          <div id="clap-frame" class="fk-frame abs" style="left:96px; top:770px; width:840px; height:200px;"><div class="fk-frame__head">Throughput node A</div><div class="fk-frame__body"><div class="fk-meter fk-meter--x fk-meter--segmented lw-fill"><div class="fk-meter__track"><div id="clap-bar" class="fk-meter__bar"></div></div></div><div class="fk-ticks fk-ticks--x"></div></div></div>
+          <div id="bass-frame" class="fk-frame abs" style="left:984px; top:770px; width:840px; height:200px;"><div class="fk-frame__head">Throughput node B</div><div class="fk-frame__body"><div class="fk-meter fk-meter--x fk-meter--segmented lw-fill"><div class="fk-meter__track"><div id="bass-bar" class="fk-meter__bar"></div></div></div><div class="fk-ticks fk-ticks--x"></div></div></div>
+          <div class="lw-port abs" style="left:502px; top:596px;"></div><div class="lw-port abs" style="left:502px; top:756px;"></div><div class="lw-port abs" style="left:1390px; top:596px;"></div><div class="lw-port abs" style="left:1390px; top:756px;"></div>
+          <div class="fk-label fk-label--dim foot">04 &middot; Drop &middot; bars 8-10 &middot; storyboard strip</div>
+        </div>
+        <div id="drop-flash" class="fk-flash"></div>
+      </section>
+
+      <!-- 5  break-settle  20-22 s  bar 11  break: drums out; one small node, a pulse travels across, then stillness -->
+      <section id="plate-break" class="clip plate lw-canvas" data-start="20" data-duration="2" data-track-index="0">
+        <div class="lw-dash abs" style="left:0px; top:518px; width:410px;"></div><div class="lw-dash abs" style="left:1510px; top:518px; width:410px;"></div>
+        <div id="trace-frame" class="fk-frame abs" style="left:410px; top:330px; width:1100px; height:380px;"><div class="fk-frame__head">Process trace node</div><div class="fk-frame__body"><div class="fk-scope lw-trace"><div id="trace0" class="fk-scope__col"></div><div id="trace1" class="fk-scope__col"></div><div id="trace2" class="fk-scope__col"></div><div id="trace3" class="fk-scope__col"></div><div id="trace4" class="fk-scope__col"></div><div id="trace5" class="fk-scope__col"></div><div id="trace6" class="fk-scope__col"></div><div id="trace7" class="fk-scope__col"></div><div id="trace8" class="fk-scope__col"></div><div id="trace9" class="fk-scope__col"></div><div id="trace10" class="fk-scope__col"></div><div id="trace11" class="fk-scope__col"></div><div id="trace12" class="fk-scope__col"></div><div id="trace13" class="fk-scope__col"></div><div id="trace14" class="fk-scope__col"></div><div id="trace15" class="fk-scope__col"></div><div id="trace16" class="fk-scope__col"></div><div id="trace17" class="fk-scope__col"></div><div id="trace18" class="fk-scope__col"></div><div id="trace19" class="fk-scope__col"></div><div id="trace20" class="fk-scope__col"></div><div id="trace21" class="fk-scope__col"></div><div id="trace22" class="fk-scope__col"></div><div id="trace23" class="fk-scope__col"></div></div></div></div>
+        <div class="lw-port abs" style="left:396px; top:506px;"></div><div class="lw-port abs" style="left:1496px; top:506px;"></div>
+        <div class="fk-label fk-label--dim foot">05 &middot; Break &middot; bar 11 &middot; process trace</div>
+      </section>
+
+      <!-- 6  brand  22-24 s  bar 12  outro: logo over the finished strip -->
+      <section id="plate-brand" class="clip plate" data-start="22" data-duration="2" data-track-index="0">
+        <div id="brand-stage" class="fk-stage">
+          <div class="fk-cells lw-echo"><div class="fk-cell lw-tile"><div class="lw-pic"><i class="lw-sun" style="left:58%; top:20%; width:22%; height:22%; border-radius:50%;"></i><i class="lw-sea" style="left:0%; top:62%; width:100%; height:38%;"></i></div></div><div class="fk-cell lw-tile"><div class="lw-pic"><i class="lw-sun" style="left:14%; top:14%; width:14%; height:14%; border-radius:50%;"></i><i class="lw-tower" style="left:44%; top:30%; width:10%; height:42%;"></i><i class="lw-tower" style="left:40%; top:24%; width:18%; height:8%;"></i><i class="lw-sea" style="left:0%; top:68%; width:100%; height:32%;"></i></div></div><div class="fk-cell lw-tile"><div class="lw-pic"><i class="lw-sun" style="left:40%; top:12%; width:20%; height:20%; border-radius:50%;"></i><i class="lw-sea" style="left:0%; top:50%; width:100%; height:10%;"></i><i class="lw-sea" style="left:0%; top:66%; width:100%; height:10%;"></i><i class="lw-sea" style="left:0%; top:82%; width:100%; height:18%;"></i></div></div><div class="fk-cell lw-tile"><div class="lw-pic"><i class="lw-sun" style="left:70%; top:16%; width:16%; height:16%; border-radius:50%;"></i><i class="lw-tower" style="left:46%; top:34%; width:3%; height:26%;"></i><i class="lw-tower" style="left:30%; top:60%; width:36%; height:8%;"></i><i class="lw-sea" style="left:0%; top:70%; width:100%; height:30%;"></i></div></div></div>
+          <div class="lw-mark">
+            <div id="wordmark" class="fk-label fk-label--display lw-wordmark">Loomwork</div>
+            <div id="brand-rule" class="lw-rule"></div>
+            <div class="fk-label">The canvas is an instrument.</div>
+          </div>
+          <div class="fk-label fk-label--dim foot">06 &middot; Outro &middot; bar 12 &middot; logo</div>
+        </div>
+        <div id="brand-flash" class="fk-flash"></div>
+      </section>
+
+      <!-- <audio id="score" src="assets/score.wav" data-start="0" data-duration="24"></audio> -->
+    </div>
+    <script>
+      // One style table: the palette has one source. STYLE sets the --fk- slots on the root (the
+      // film's type voices, metrics and its base colours); GROUND re-scopes the colour slots on each
+      // plate, so every hard cut lands on a different ground (R7). The kit calls in build.js take
+      // their colours from GROUND, because GSAP cannot read var(...).
+      const STYLE = {
+        ink: "#101826",
+        line: "#7d89a3",
+        text: "#f4ecd8",
+        rest: "#1b2740",
+        accent: "#f4ecd8",
+        alert: "#ff4d2e",
+        "font-label": "'Segoe UI', 'Helvetica Neue', system-ui, sans-serif",
+        "font-data": "Consolas, 'SF Mono', ui-monospace, monospace",
+        "font-display": "Consolas, 'SF Mono', ui-monospace, monospace",
+        unit: "10px",
+        stroke: "4px",
+        radius: "14px",
+      };
+      const GROUND = {
+        intro: { ink: "#101826", line: "#7d89a3", text: "#f4ecd8", rest: "#1b2740", accent: "#f4ecd8", alert: "#ff4d2e" },
+        groove: { ink: "#f2ead8", line: "#15130f", text: "#15130f", rest: "#ddd2b8", accent: "#2b4bff", alert: "#ff4d2e" },
+        build: { ink: "#15130f", line: "#8a7f68", text: "#f2ead8", rest: "#2a251d", accent: "#ff7a3d", alert: "#ff3b1f" },
+        drop: { ink: "#2b4bff", line: "#f2ead8", text: "#f2ead8", rest: "#1c33b8", accent: "#ffe45c", alert: "#ff4d2e" },
+        break: { ink: "#0c2a2a", line: "#3f7f7a", text: "#d8f0e8", rest: "#123b3a", accent: "#5fe0c0", alert: "#ff4d2e" },
+        brand: { ink: "#f2ead8", line: "#15130f", text: "#15130f", rest: "#ddd2b8", accent: "#ff7a3d", alert: "#ff4d2e" },
+      };
+      for (const key of Object.keys(STYLE)) document.documentElement.style.setProperty("--fk-" + key, STYLE[key]);
+      for (const name of Object.keys(GROUND)) {
+        const plate = document.getElementById("plate-" + name);
+        for (const key of Object.keys(GROUND[name])) plate.style.setProperty("--fk-" + key, GROUND[name][key]);
+      }
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const audio = FilmAudio.fromScoreGrid(); // lib/score-grid.js, written by `designer-pipeline film score`
+      CanvasInstrumentBuild.build(tl, { FilmPatterns: window.FilmPatterns, FilmAudio, audio, GROUND });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

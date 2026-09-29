@@ -23,7 +23,7 @@
     "paused", "reversed", "immediateRender", "lazy", "overwrite", "id", "data", "callbackScope", "inherit",
     "runBackwards", "startAt", "keyframes", "onStart", "onUpdate", "onComplete", "onRepeat", "onReverseComplete",
     "onInterrupt", "onStartParams", "onUpdateParams", "onCompleteParams", "onRepeatParams", "onReverseCompleteParams",
-    "defaults", "smoothChildTiming", "autoRemoveChildren", "parent", "clearProps",
+    "defaults", "smoothChildTiming", "autoRemoveChildren", "parent", "clearProps", "modifiers",
   ]);
 
   function describeTarget(target) {

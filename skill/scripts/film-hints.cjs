@@ -26,6 +26,8 @@ const HINTS = {
     "cue-outside-film": "Move the cue's atSec inside the film or extend durationSec.",
     "sound-no-entry": "Add a sound cue with kind \"entry\" where the music starts, usually at 0.",
     "sound-unbound": "Bind a cue id in soundCues on at least half of the action beats, on the moment the action lands.",
+    "cue-unbound": "Add the cue's id to soundCues on the beat where the hit lands, or delete the cue if the picture does not answer it.",
+    "cue-outside-beat": "Move the cue's atSec inside the bound storyboard beat's startSec-endSec window (the scene, not the music beat grid), or bind the cue to the beat whose window contains atSec.",
     "uniform-cadence": "Vary beat lengths so the longest is at least 3x the shortest; let one beat breathe and cut faster around it.",
     "no-rest": "Give the film one still moment: a title/brand-hold beat, or set holdSec to at least 0.3 on a beat near the end.",
   },
@@ -39,6 +41,8 @@ const HINTS = {
     "handoff-not-carried": "Keep one element animating across this boundary: start the next beat's tween on the same element before the boundary, or let a tween span it.",
     "property-conflict": "Give each property one time source: end the first tween before the second starts, merge them into one tween with keyframes, or animate a parent wrapper for the second motion.",
     "linear-motion": "Replace linear easing with an ease that accelerates and settles (power2.inOut for travel, power3.out for arrivals); keep linear only for constant mechanical motion.",
+    "nondeterministic-source": "Make the source a pure function of the timeline: drive motion from the paused GSAP timeline, derive jitter or noise as hash(seed, frameIndex) (mulberry32 seeded per frame) so it is constant across the shutter interval and identical in preview and export, and remove autoplay so the renderer owns the media clock.",
+    "external-script-unscanned": "Keep the script inside the project (a relative path under the composition root) so `film check` can scan it for nondeterministic sources, fix the path if the file is missing, or, for a minified file, check the unminified source for Math.random, Date.now, performance.now, requestAnimationFrame and timers.",
   },
   render: {
     "duration-mismatch": "Render the composition whose data-duration equals storyboard durationSec, then re-run film-render.",

@@ -4,6 +4,48 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Storyboard gate (`strengthen-film-cue-binding-and-song-map`): new warnings `cue-unbound` (a
+  declared `downbeat`, `accent`, `impact` or `riser` cue that no beat lists in `soundCues`) and
+  `cue-outside-beat` (a bound cue whose `atSec` is outside every binding storyboard beat's scene
+  window, beyond the frame tolerance; not a music-grid check). Storyboard status now
+  ignores `severity: "warn"` findings, like the timeline and render gates; existing findings stay errors. `film scaffold` writes `sound.md` with a
+  song-map table (beat id, window, bars, music event, motion response), and `film-score.md` and
+  `product-film-direction.md` document a music-to-motion vocabulary (downbeat/impact -> hard cut
+  plus flash or zoom-punch, riser -> shorten and accelerate, break/silence -> hold, accent ->
+  tick), cross-referenced from `workflow-film.md`.
+- `film check` timeline step (`harden-film-frame-determinism`): a static scan of `index.html` and
+  `compositions/*.html` reports `nondeterministic-source` with file, line and a fix for
+  `Math.random`, `Date.now`, `performance.now`, `requestAnimationFrame` and autoplaying media
+  (errors) and `setTimeout`/`setInterval` (warnings). Comments and string contents are ignored and
+  a seeded `hash(seed, frameIndex)` passes. Local `<script src>` files are scanned too (reported
+  by their own path and line) when they resolve inside the project root, lexically and through
+  symlinks; root-relative `/js/app.js` resolves against the root; network URLs and
+  drive-letter/UNC/`file:` paths are listed in `unscannedScripts`; a local `*.min.js` is listed
+  and raises the warning `external-script-unscanned`, as does a `src` that escapes the root or is
+  missing.
+  An error fails the step even without a captured timeline; the timeline manifest schema is
+  unchanged. `fixes` entries gain `file` and `line`.
+  `hyperframes.md` gains the `hash(seed, frameIndex)` jitter rule and a beat author contract; the
+  `patterns.js` header states the same rule.
+
+### Added
+
+- Music-driven plate kit (`add-music-driven-plate-kit`): six seek-safe instruments in
+  `film-choreography` (`audio-meter`, `event-scope`, `tick-ticker`, `grid-pulse`,
+  `build-countdown`, `hold-then-hit`) that take plain `{atSec, strength}` hits; the `FilmAudio`
+  adapter (`audio-events.js`) that builds hits from `score-grid.json` or the edit-analysis music
+  block; `film score` also writes `lib/score-grid.js` (`FilmAudio.setGrid(...)`); a neutral
+  instrument chrome (`instrument-chrome.css`, `--fk-*` custom properties) that a film's style
+  table overrides; the timeline probe treats `modifiers` as a control key. `film scaffold` copies
+  the adapter and chrome, writes a `Section` column in `sound.md`, a music-driven section in
+  `qa.md`, and instrument call skeletons. Creative rules R1-R7 are Visual Acceptance guidance
+  (R7 also maps to `planned-cuts-missing`); no gate, finding code or receipt schema is added.
+- Golden case `canvas-instrument-24s` under `evals/film/music-driven/` and the optional benchmark
+  scenario `music-driven-launch` (`required: false`). It is a protocol and fixtures for a blind
+  before/after review; it makes no claim of visual improvement.
+
 ## [0.12.0-beta.1] - 2026-09-29
 
 ### Changed

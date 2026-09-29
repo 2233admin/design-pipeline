@@ -1,0 +1,1131 @@
+{
+  "schema": "design-pipeline.score-grid.v1",
+  "bpm": 120,
+  "cps": 0.5,
+  "beatsPerCycle": 4,
+  "durationSec": 24,
+  "beats": [
+    0,
+    0.5,
+    1,
+    1.5,
+    2,
+    2.5,
+    3,
+    3.5,
+    4,
+    4.5,
+    5,
+    5.5,
+    6,
+    6.5,
+    7,
+    7.5,
+    8,
+    8.5,
+    9,
+    9.5,
+    10,
+    10.5,
+    11,
+    11.5,
+    12,
+    12.5,
+    13,
+    13.5,
+    14,
+    14.5,
+    15,
+    15.5,
+    16,
+    16.5,
+    17,
+    17.5,
+    18,
+    18.5,
+    19,
+    19.5,
+    20,
+    20.5,
+    21,
+    21.5,
+    22,
+    22.5,
+    23,
+    23.5,
+    24
+  ],
+  "events": [
+    {
+      "atSec": 0,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.35
+    },
+    {
+      "atSec": 2,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.35
+    },
+    {
+      "atSec": 2,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 2,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 2.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 2.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 2.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 2.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 2.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 3,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 3,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 3.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 3.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 3.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 3.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 3.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 4,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "a2",
+      "gain": 0.35
+    },
+    {
+      "atSec": 4,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 4,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 4.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 4.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 4.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 4.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 4.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 5.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 5.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 5.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 5.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 5.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 6,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "f2",
+      "gain": 0.35
+    },
+    {
+      "atSec": 6,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 6,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 6.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 6.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 6.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 6.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 6.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 7,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 7,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 7.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 7.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 7.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 7.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 7.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 8,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "g2",
+      "gain": 0.35
+    },
+    {
+      "atSec": 8,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 8,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 8.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 8.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 8.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 8.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 8.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 9,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 9,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 9.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 9.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 9.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 9.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 9.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 10,
+      "durSec": 0.25,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 10,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.35
+    },
+    {
+      "atSec": 10,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "c4",
+      "gain": 0.12
+    },
+    {
+      "atSec": 10.25,
+      "durSec": 0.25,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 10.5,
+      "durSec": 0.25,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 10.5,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "c4",
+      "gain": 0.16
+    },
+    {
+      "atSec": 10.75,
+      "durSec": 0.25,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 11,
+      "durSec": 0.25,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 11,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "c4",
+      "gain": 0.2
+    },
+    {
+      "atSec": 11.25,
+      "durSec": 0.25,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 11.5,
+      "durSec": 0.25,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 11.5,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "c4",
+      "gain": 0.24
+    },
+    {
+      "atSec": 11.75,
+      "durSec": 0.25,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 12,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 12,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.35
+    },
+    {
+      "atSec": 12,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "c4",
+      "gain": 0.28
+    },
+    {
+      "atSec": 12.125,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.25,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.375,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.5,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "c4",
+      "gain": 0.32
+    },
+    {
+      "atSec": 12.625,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.75,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 12.875,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 13,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 13,
+      "durSec": 0.5,
+      "sound": "square",
+      "note": "c4",
+      "gain": 0.36
+    },
+    {
+      "atSec": 13.125,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 13.25,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 13.375,
+      "durSec": 0.125,
+      "sound": "pink",
+      "note": null,
+      "gain": 0.2
+    },
+    {
+      "atSec": 14,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "c2",
+      "gain": 0.45
+    },
+    {
+      "atSec": 14,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "c3",
+      "gain": 0.35
+    },
+    {
+      "atSec": 14,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 14,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 14.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "c2",
+      "gain": 0.45
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 14.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 14.75,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "c2",
+      "gain": 0.45
+    },
+    {
+      "atSec": 14.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 15,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 15,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 15.25,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "c2",
+      "gain": 0.45
+    },
+    {
+      "atSec": 15.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 15.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 15.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 15.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 15.75,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "c2",
+      "gain": 0.45
+    },
+    {
+      "atSec": 15.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 16,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "a1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 16,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "a2",
+      "gain": 0.35
+    },
+    {
+      "atSec": 16,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 16,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 16.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 16.5,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "a1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 16.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 16.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 16.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 16.75,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "a1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 16.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 17,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 17,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 17.25,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "a1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 17.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 17.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 17.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 17.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 17.75,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "a1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 17.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 18,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "f1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 18,
+      "durSec": 2,
+      "sound": "sawtooth",
+      "note": "f2",
+      "gain": 0.35
+    },
+    {
+      "atSec": 18,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 18,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 18.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 18.5,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "f1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 18.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 18.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 18.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 18.75,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "f1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 18.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 19,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 19,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 19.25,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "f1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 19.25,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 19.5,
+      "durSec": 0.25,
+      "sound": "sine",
+      "note": "c1",
+      "gain": 0.7
+    },
+    {
+      "atSec": 19.5,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 19.5,
+      "durSec": 0.5,
+      "sound": "white",
+      "note": null,
+      "gain": 0.25
+    },
+    {
+      "atSec": 19.75,
+      "durSec": 0.25,
+      "sound": "sawtooth",
+      "note": "f1",
+      "gain": 0.45
+    },
+    {
+      "atSec": 19.75,
+      "durSec": 0.25,
+      "sound": "white",
+      "note": null,
+      "gain": 0.12
+    },
+    {
+      "atSec": 20,
+      "durSec": 0.5,
+      "sound": "triangle",
+      "note": "c2",
+      "gain": 0.35
+    },
+    {
+      "atSec": 20.5,
+      "durSec": 0.5,
+      "sound": "triangle",
+      "note": "c2",
+      "gain": 0.55
+    },
+    {
+      "atSec": 22,
+      "durSec": 2,
+      "sound": "square",
+      "note": "c4",
+      "gain": 0.3
+    }
+  ]
+}

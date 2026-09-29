@@ -68,6 +68,25 @@
         "at least half of handoffs carried or cut on accents",
         "render duration matches storyboard"
       ]
+    },
+    {
+      "id": "music-driven-launch",
+      "operation": "generate",
+      "dimension": "motion",
+      "required": false,
+      "threshold": 0.75,
+      "evidenceType": "film-gates",
+      "prompt": "Make a 24-second promotional film for a generic node-canvas app whose concept is that the canvas is an instrument: the picture answers the music. Score it with Strudel at 120 BPM over twelve bars with the sections intro, groove, build, drop, break and outro, and cut the film to those sections. Use the design-pipeline skill. Deliver storyboard.json, timeline.json (probe the composition with references/film-choreography/timeline-probe.js) and out.mp4 with the scored soundtrack.",
+      "privateExpectations": [
+        "storyboard gate passes with no finding, warnings included",
+        "plate lengths clear uniform-cadence (longest at least 3x shortest)",
+        "each plate's instrument is a product object bound to one named sound, not decoration",
+        "instrument tweens come from the kit: property tweens on lanes with no property-conflict",
+        "the build accelerates and holds still before the drop; the drop is a hard cut with impact",
+        "the break stops pumping without freezing",
+        "every planned hard cut is detected in the render",
+        "timeline closes at 24 s"
+      ]
     }
   ]
 }

@@ -174,6 +174,12 @@ test("choreography registry and module agree and patterns only tween seek-safe p
     "ui-demo": { cursor: "#c", path: [{ x: 1, y: 2 }], result: "#r" },
     "assembly": { pieces: ".p", offsets: [{ x: 5, y: 5, rotation: 3 }] },
     "reveal-in-context": { subject: "#s" },
+    "audio-meter": { target: "#m", hits: [{ atSec: 1.5, strength: 0.8 }, { atSec: 2 }], until: 3 },
+    "event-scope": { columns: ["#c0", "#c1"], hits: [{ atSec: 1.5, strength: 0.8 }, { atSec: 2 }], until: 3 },
+    "tick-ticker": { target: "#log", hits: [{ atSec: 1.5 }, { atSec: 2 }], until: 3, rowPx: 24 },
+    "grid-pulse": { cells: ["#g0", "#g1", "#g2", "#g3"], hits: [{ atSec: 1.5 }, { atSec: 2 }], until: 3, rest: "#1e1e1e", lit: "#f5f5f5" },
+    "build-countdown": { target: "#timer", hits: [{ atSec: 1.5 }, { atSec: 2 }], until: 3, format: (value) => value.toFixed(2) },
+    "hold-then-hit": { hit: 2, flash: "#flash", target: "#stage" },
   };
   for (const [id, pattern] of Object.entries(patterns)) {
     const calls = [];
@@ -191,7 +197,7 @@ test("choreography registry and module agree and patterns only tween seek-safe p
     const again = [];
     const tl2 = new Proxy({}, { get: (_, method) => (...callArgs) => { again.push({ method, callArgs }); return tl2; } });
     pattern(tl2, { ...args[id], at: 1 });
-    assert.equal(JSON.stringify(again, (k, v) => (typeof v === "function" ? String(v) : v)), JSON.stringify(calls, (k, v) => (typeof v === "function" ? String(v) : v)), `${id} is deterministic`);
+    assert.equal(JSON.stringify(again, (_k, v) => (typeof v === "function" ? String(v) : v)), JSON.stringify(calls, (_k, v) => (typeof v === "function" ? String(v) : v)), `${id} is deterministic`);
   }
   assert.throws(() => patterns["match-cut"]({}, { from: "#a", at: 0 }), /missing option to/);
 });
@@ -242,7 +248,7 @@ function synthesize(dir, { audio = true, cuts = [3, 6, 9] } = {}) {
     filters.push(`[${index}:v]`);
   });
   const args = ["-hide_banner", "-loglevel", "error", "-y", ...inputs];
-  let graph = `${filters.join("")}concat=n=4:v=1:a=0[v]`;
+  const graph = `${filters.join("")}concat=n=4:v=1:a=0[v]`;
   const map = ["-map", "[v]"];
   if (audio) {
     // Quiet bed with loud clicks exactly on each cut.
@@ -311,4 +317,55 @@ test("CLI verify film-storyboard returns exit 2 for a slideshow", () => {
     const ok = spawnSync(process.execPath, [cli, "verify", "film-storyboard", "--root", dir, "--storyboard", "storyboard.json"], { encoding: "utf8" });
     assert.equal(ok.status, 0, ok.stdout + ok.stderr);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("an accent, downbeat, impact or riser cue that no beat binds warns as cue-unbound", () => {
+  assert.ok(!codes(checkStoryboard(example())).includes("cue-unbound"));
+  const board = example();
+  board.sound.cues.push({ id: "orphan-riser", atSec: 3.2, kind: "riser", note: "build into the bloom" }, { id: "orphan-voice", atSec: 6, kind: "voiceover", note: "line 1" });
+  const result = checkStoryboard(board);
+  const unbound = result.findings.filter((finding) => finding.code === "cue-unbound");
+  assert.equal(unbound.length, 1, "voiceover is not a hit cue");
+  assert.match(unbound[0].message, /orphan-riser/);
+  assert.equal(unbound[0].severity, "warn");
+  assert.ok(unbound[0].fix);
+  assert.equal(result.status, "passed", "a warning alone does not fail the storyboard");
+});
+
+test("a bound cue outside its storyboard beat window warns as cue-outside-beat, within the frame tolerance it does not", () => {
+  const board = example();
+  const tick = board.sound.cues.find((cue) => cue.id === "connect-tick");
+  tick.atSec = 6.2;
+  const result = checkStoryboard(board);
+  const finding = result.findings.find((f) => f.code === "cue-outside-beat");
+  assert.ok(finding, JSON.stringify(result.findings));
+  assert.equal(finding.beatId, "connect-edge");
+  assert.equal(finding.severity, "warn");
+  assert.ok(finding.fix);
+  assert.equal(result.status, "passed");
+  tick.atSec = board.beats[1].endSec + 0.04;
+  assert.ok(!codes(checkStoryboard(board)).includes("cue-outside-beat"));
+  tick.atSec = board.beats[1].endSec + 0.2;
+  assert.ok(codes(checkStoryboard(board)).includes("cue-outside-beat"));
+  const shared = example();
+  shared.beats[2].soundCues = ["drop-1", "connect-tick"];
+  shared.sound.cues.find((cue) => cue.id === "connect-tick").atSec = 6.2;
+  assert.ok(!codes(checkStoryboard(shared)).includes("cue-outside-beat"), "inside one of the beats that bind it");
+});
+
+test("warnings do not hide errors: a warning plus an error still fails", () => {
+  const board = example();
+  board.sound.cues.push({ id: "orphan", atSec: 3.2, kind: "accent", note: "tick" });
+  board.beats[0].startSec = 1;
+  const result = checkStoryboard(board);
+  assert.ok(codes(result).includes("cue-unbound"));
+  assert.ok(codes(result).includes("timeline-open-start"));
+  assert.equal(result.status, "failed");
+});
+
+test("shipped storyboard examples raise no cue findings", () => {
+  for (const file of [path.join(refs, "storyboard.example.json"), path.join(__dirname, "../skill/evals/film/slideshow.storyboard.json")]) {
+    const found = codes(checkStoryboard(JSON.parse(fs.readFileSync(file, "utf8"))));
+    assert.deepEqual(found.filter((code) => code.startsWith("cue-")), [], file);
+  }
 });

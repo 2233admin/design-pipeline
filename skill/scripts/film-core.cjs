@@ -25,6 +25,7 @@ const NAMED_CARRY_HANDOFFS = new Set(["continuation", "morph", "camera-carry", "
 const SURFACE_MOTION = new Set(["fade", "fade-in", "fade-out", "opacity", "scale", "scale-in", "scale-out", "zoom", "ken-burns", "slide-in", "slide-out", "blur-in", "blur-out"]);
 const CUE_KINDS = ["entry", "exit", "downbeat", "accent", "riser", "impact", "voiceover", "silence"];
 const PLACEHOLDER = /^(tbd|todo|n\/?a|none|-|\.\.\.|placeholder)$/i;
+const HIT_CUE_KINDS = new Set(["downbeat", "accent", "riser", "impact"]);
 const FRAME_TOLERANCE_SEC = 0.05;
 const MAX_HOLD_SHARE = 0.25;
 
@@ -113,7 +114,7 @@ function checkStoryboard(board, options = {}) {
   const choreography = options.choreographyIds || loadChoreographyIds();
   const filmRhythm = options.filmRhythm !== false;
   const findings = [];
-  const add = (code, message, beatId) => findings.push(withFix("storyboard", beatId ? { code, beatId, message } : { code, message }));
+  const add = (code, message, beatId, severity) => findings.push(withFix("storyboard", { code, ...(severity ? { severity } : {}), ...(beatId ? { beatId } : {}), message }));
   const beats = board.beats;
   const total = board.durationSec;
 
@@ -186,12 +187,29 @@ function checkStoryboard(board, options = {}) {
     const accented = actionBeats.filter((beat) => (beat.soundCues ?? []).length > 0).length;
     if (actionBeats.length && accented / actionBeats.length < 0.5) add("sound-unbound", `${accented}/${actionBeats.length} action beats bind a sound cue`);
   }
+  // A declared hit that no beat claims, or that lands outside the storyboard beat (scene window,
+  // startSec-endSec) that claims it, is music the storyboard does not answer. Warnings: the cue
+  // list may lead the storyboard while it is drafted. This checks the storyboard's own timeline
+  // consistency only; landing on or off the music's BPM grid is not checked here (an optional
+  // policy, see references/film-score.md), so anticipation, lag and syncopation stay legal as
+  // long as the cue sits inside its scene.
+  const bound = new Map();
+  for (const beat of beats) for (const id of beat.soundCues ?? []) bound.set(id, [...(bound.get(id) ?? []), beat]);
+  for (const cue of cues) {
+    const owners = bound.get(cue.id);
+    if (!owners) {
+      if (HIT_CUE_KINDS.has(cue.kind)) add("cue-unbound", `${cue.kind} cue ${cue.id} at ${cue.atSec}s is declared but no beat lists it in soundCues`, undefined, "warn");
+    } else if (!owners.some((beat) => cue.atSec >= beat.startSec - FRAME_TOLERANCE_SEC && cue.atSec <= beat.endSec + FRAME_TOLERANCE_SEC)) {
+      const spans = owners.map((beat) => `${beat.id} ${beat.startSec}-${beat.endSec}s`).join(", ");
+      add("cue-outside-beat", `cue ${cue.id} at ${cue.atSec}s is bound to storyboard beat ${spans}; the cue is outside that scene window`, owners[0].id, "warn");
+    }
+  }
 
   const cutsPlanned = transitions.filter((beat) => CUT_HANDOFFS.has(beat.handoff)).map((beat) => beat.startSec);
   return {
     schema: STORYBOARD_SCHEMA,
     id: board.id,
-    status: findings.length ? "failed" : "passed",
+    status: findings.some((finding) => finding.severity !== "warn") ? "failed" : "passed",
     findings,
     metrics: {
       beats: beats.length,

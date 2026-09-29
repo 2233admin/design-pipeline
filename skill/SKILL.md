@@ -56,6 +56,8 @@ Read only what the current step needs. For `film`, `edit` and `web`, each `next`
 
 - Film direction and storyboards: `references/product-film-direction.md`,
   `references/film-choreography/` (patterns, timeline probe, example storyboard)
+- Film that answers its music (treatment, instruments, chrome, review rules R1-R7):
+  `references/product-film-direction.md` (Music-driven films), `references/hyperframes.md` (Instrument kit)
 - Film tools: `references/hyperframes.md`, `references/film-blender.md` (3D shots),
   `references/film-score.md` (music as code), `references/audio-gate.md`,
   `references/composition-gate.md`

@@ -29,3 +29,14 @@ evidence writes `evidence/contact-sheet.png` beside the run for human or multimo
 
 Scores measure absence of known failure shapes. They are not creative acceptance; compare the
 contact sheets and watch the films before concluding one model directs better than another.
+
+## Music-driven golden case
+
+`music-driven/` holds `canvas-instrument-24s`, the 24 s golden case of the music-driven plate kit:
+storyboard, score pattern and grid, treatment, song map and a reference composition. The scenario
+`music-driven-launch` in `film-benchmark.json` is `required: false`, so it never blocks the three v1
+scenarios; its gate score is Conformance only. `music-driven/README.md` defines the two arms (the
+skill package before and after the kit, same model and brief), the evidence recorded for both, the
+seven-criterion blind pairwise review with its decision rule, and the steps that need HyperFrames
+and Chrome. Nothing in it is evidence that the kit improves the picture until a full-environment
+run is recorded as Visual Acceptance with a named reviewer.

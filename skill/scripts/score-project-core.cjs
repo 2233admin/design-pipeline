@@ -14,6 +14,7 @@ const { checkGridAlignment, cpsFor, ensureStrudel, scoreFromTemplate, summarizeG
 
 const PATTERN = "score.strudel.js";
 const GRID = "score-grid.json";
+const GRID_SCRIPT = path.join("lib", "score-grid.js");
 
 function scoreFilm(projectDir, options = {}) {
   const root = path.resolve(projectDir);
@@ -47,6 +48,10 @@ function scoreFilm(projectDir, options = {}) {
 
   const grid = summarizeGrid(rendered.events, { bpm: options.bpm, cps, durationSec: board.durationSec });
   fs.writeFileSync(path.join(root, GRID), `${JSON.stringify(grid, null, 2)}\n`);
+  // The composition builds its timeline in one synchronous pass, so it reads the grid through a
+  // script tag: FilmAudio (lib/audio-events.js, loaded first) is the only entry, no second global.
+  fs.mkdirSync(path.join(root, "lib"), { recursive: true });
+  fs.writeFileSync(path.join(root, GRID_SCRIPT), `FilmAudio.setGrid(${JSON.stringify(grid, null, 2)});\n`);
   const alignment = checkGridAlignment(board, grid);
 
   const relative = path.relative(root, output).split(path.sep).join("/");
@@ -67,12 +72,14 @@ function scoreFilm(projectDir, options = {}) {
     bpm: options.bpm,
     events: grid.events.length,
     grid: GRID,
+    gridScript: GRID_SCRIPT.split(path.sep).join("/"),
     alignment,
     asset,
     recorded: Boolean(options.write),
     next: [
       `designer-pipeline audio master --input ${relative} --output ${relative.replace(/\.wav$/, "-mastered.wav")} --target web --fade-out 1`,
       `Host it: <audio src="${relative.replace(/\.wav$/, "-mastered.wav")}" data-start="0" data-duration="${board.durationSec}"></audio>`,
+      'Compose from it: load <script src="lib/audio-events.js"></script> then <script src="lib/score-grid.js"></script> (that order), read it once with FilmAudio.fromScoreGrid(), and feed FilmAudio.hits(audio, { sound, midiMax, ... }) to the audio-bound kit patterns.',
       alignment.findings.length ? "Apply each alignment fix (snap cuts/cues to the grid), then re-run film score." : "Cuts and accent cues sit on the musical grid.",
       options.write ? "Storyboard sound.assets now records the score's license." : "Pass --write to record the score as a licensed asset in the storyboard.",
     ],

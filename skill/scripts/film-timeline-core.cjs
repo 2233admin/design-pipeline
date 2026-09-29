@@ -5,6 +5,8 @@
 // implement. Catches layout tweens, infinite repeats, static or fade-only action beats, and
 // planned continuity handoffs that no animated subject actually carries across the boundary.
 
+const fs = require("node:fs");
+const path = require("node:path");
 const { assertKeys, assertString, fail } = require("./contract-utils.cjs");
 const { checkStoryboard } = require("./film-core.cjs");
 const { withFix } = require("./film-hints.cjs");
@@ -156,4 +158,172 @@ function checkTimeline(timeline, board, options = {}) {
   };
 }
 
-module.exports = { TIMELINE_SCHEMA, checkTimeline };
+// ---------- composition source scan ----------
+
+// Static scan of composition HTML for sources whose value depends on when or where the frame is
+// computed, so the exported frame can differ from the previewed one. Motion must be a pure
+// function of timeline time; jitter must be hash(seed, frameIndex). Seeded generators such as
+// mulberry32 use none of these APIs and pass. Comments and string contents are ignored, and
+// findings keep the original line numbers (every blanking step preserves length and newlines).
+// Limits: only inline scripts and markup of the scanned HTML are read, not files loaded through
+// <script src>; a regex literal containing a quote can confuse the string skipping.
+const SOURCE_RULES = [
+  { pattern: /\bMath\s*\.\s*random\b/g, name: () => "Math.random", why: "an unseeded random value differs on every render", severity: "error" },
+  { pattern: /\bDate\s*\.\s*now\b/g, name: () => "Date.now", why: "the wall clock differs between preview and export", severity: "error" },
+  { pattern: /\bperformance\s*\.\s*now\b/g, name: () => "performance.now", why: "the render-time clock differs between preview and export", severity: "error" },
+  { pattern: /\brequestAnimationFrame\b/g, name: () => "requestAnimationFrame", why: "a frame callback runs on wall time, but the renderer seeks the timeline frame by frame", severity: "error" },
+  { pattern: /\b(setTimeout|setInterval)\b/g, name: (match) => match[1], why: "a wall-clock callback does not fire at the seeked frame time", severity: "warn" },
+];
+
+const blankText = (text) => text.replace(/[^\n]/g, " ");
+
+function blankJs(code) {
+  let out = "";
+  let index = 0;
+  const length = code.length;
+  while (index < length) {
+    const char = code[index];
+    const next = code[index + 1];
+    if (char === "/" && next === "/") {
+      let end = code.indexOf("\n", index);
+      if (end < 0) end = length;
+      out += blankText(code.slice(index, end));
+      index = end;
+    } else if (char === "/" && next === "*") {
+      const close = code.indexOf("*/", index + 2);
+      const end = close < 0 ? length : close + 2;
+      out += blankText(code.slice(index, end));
+      index = end;
+    } else if (char === "\"" || char === "'") {
+      let end = index + 1;
+      while (end < length && code[end] !== char && code[end] !== "\n") end += code[end] === "\\" ? 2 : 1;
+      end = Math.min(end + 1, length);
+      out += blankText(code.slice(index, end));
+      index = end;
+    } else if (char === "`") {
+      out += "`";
+      index += 1;
+      while (index < length && code[index] !== "`") {
+        if (code[index] === "\\") {
+          out += blankText(code.slice(index, index + 2));
+          index += 2;
+        } else if (code[index] === "$" && code[index + 1] === "{") {
+          let depth = 1;
+          let end = index + 2;
+          while (end < length && depth > 0) {
+            if (code[end] === "{") depth += 1;
+            else if (code[end] === "}") depth -= 1;
+            end += 1;
+          }
+          out += `\${${blankJs(code.slice(index + 2, depth === 0 ? end - 1 : end))}${depth === 0 ? "}" : ""}`;
+          index = end;
+        } else {
+          out += blankText(code[index]);
+          index += 1;
+        }
+      }
+      if (index < length) out += "`";
+      index += 1;
+    } else {
+      out += char;
+      index += 1;
+    }
+  }
+  return out;
+}
+
+function prepareSource(html) {
+  const scripts = [];
+  const externals = [];
+  const text = html.replace(/<!--[\s\S]*?-->/g, blankText).replace(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi, (all, attrs, body, offset) => {
+    const type = /\btype\s*=\s*["']?([^"'\s>]+)/i.exec(attrs);
+    const javascript = !type || /javascript|ecmascript|module/i.test(type[1]);
+    if (!javascript) return all.slice(0, 8 + attrs.length) + blankText(body) + all.slice(8 + attrs.length + body.length);
+    const src = /\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs);
+    if (src) externals.push({ src: (src[1] ?? src[2] ?? src[3]).trim(), index: offset });
+    const start = offset + 8 + attrs.length;
+    scripts.push([start, start + body.length]);
+    return all.slice(0, 8 + attrs.length) + blankJs(body) + all.slice(8 + attrs.length + body.length);
+  });
+  let markup = text;
+  for (const [start, end] of scripts) markup = markup.slice(0, start) + blankText(markup.slice(start, end)) + markup.slice(end);
+  markup = markup.replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, blankText);
+  return { text, scripts, externals, markup };
+}
+
+const lineAt = (text, index) => text.slice(0, index).split("\n").length;
+const inside = (rootDir, target) => {
+  const relative = path.relative(rootDir, target);
+  return relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
+};
+const posix = (file) => file.split(path.sep).join("/");
+
+// Where a <script src> lives, if it is a local file inside the project. A root-relative src
+// (/js/app.js) resolves against the project root, the composition's serve root; any other
+// relative src resolves against the HTML file that names it, then the root. Network URLs (any
+// scheme or protocol-relative), filesystem-absolute forms (drive letters, UNC, file:), minified
+// files (listed, with a warning) and anything resolving outside the project root (lexically or through a symlink)
+// are never read.
+function locateScript(root, fromFile, src) {
+  const clean = src.split(/[?#]/)[0].trim();
+  if (!clean) return { skip: "empty src" };
+  if (/^file:/i.test(clean) || /^[a-z]:[\\/]/i.test(clean) || /^\\\\/.test(clean)) return { skip: "filesystem absolute path" };
+  if (/^[a-z][a-z0-9+.-]*:/i.test(clean) || /^[/\\]{2}/.test(clean)) return { skip: "network URL" };
+  if (/\.min\.[cm]?js$/i.test(clean)) return { skip: "minified, not scanned", warn: true };
+  const rootDir = path.resolve(root);
+  const rootRelative = /^[/\\]/.test(clean);
+  const candidates = rootRelative ? [path.resolve(rootDir, `.${clean.replace(/\\/g, "/")}`)] : [...new Set([path.resolve(rootDir, path.dirname(fromFile), clean), path.resolve(rootDir, clean)])];
+  const local = candidates.filter((candidate) => inside(rootDir, candidate));
+  if (!local.length) return { outside: true };
+  const found = local.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
+  if (!found) return { missing: true };
+  const real = fs.realpathSync(found);
+  if (!inside(fs.realpathSync(rootDir), real)) return { outside: true };
+  return { file: real, label: posix(path.relative(rootDir, found)) };
+}
+
+// files: [{ file, html }] with file as the label to report (a path relative to the project root).
+// Returns findings, the local script files that were scanned, and the scripts that were not.
+function scanCompositionSource(files, { root } = {}) {
+  const findings = [];
+  const scriptFiles = [];
+  const unscanned = [];
+  const seen = new Set();
+  const add = (code, message, severity, where) => findings.push(withFix("timeline", { code, severity, message, ...where }));
+  const hits = (code) => SOURCE_RULES.flatMap((rule) => [...code.matchAll(rule.pattern)].map((match) => ({ rule, match })));
+  const report = (file, line, { rule, match }) => add("nondeterministic-source", `${file}:${line} uses ${rule.name(match)}: ${rule.why}`, rule.severity, { file, line });
+  for (const { file, html } of files) {
+    const { text, scripts, externals, markup } = prepareSource(html);
+    for (const [start, end] of scripts) for (const hit of hits(text.slice(start, end))) report(file, lineAt(text, start + hit.match.index), hit);
+    for (const match of markup.matchAll(/<(video|audio)\b[^>]*?\sautoplay(?=[\s=>/])[^>]*>/gi)) {
+      const line = lineAt(markup, match.index);
+      add("nondeterministic-source", `${file}:${line} <${match[1].toLowerCase()}> autoplays: the media clock must be owned by the renderer, not the element`, "error", { file, line });
+    }
+    for (const { src, index } of externals) {
+      const line = lineAt(text, index);
+      const located = root ? locateScript(root, file, src) : { skip: "no project root" };
+      if (located.skip) {
+        unscanned.push({ src, from: file, reason: located.skip });
+        if (located.warn) add("external-script-unscanned", `${file}:${line} <script src="${src}"> is minified and was not scanned; it may be the project's own bundle`, "warn", { file, line });
+      }
+      else if (located.outside || located.missing) {
+        unscanned.push({ src, from: file, reason: located.outside ? "outside project root" : "file not found" });
+        add("external-script-unscanned", `${file}:${line} <script src="${src}"> ${located.outside ? "resolves outside the project root and was not read" : "does not exist in the project, so it could not be scanned"}`, "warn", { file, line });
+      } else if (!seen.has(located.file)) {
+        seen.add(located.file);
+        let code;
+        try { code = blankJs(fs.readFileSync(located.file, "utf8")); } catch (error) {
+          unscanned.push({ src, from: file, reason: `unreadable: ${error.code || error.message}` });
+          add("external-script-unscanned", `${file}:${line} <script src="${src}"> could not be read (${error.code || error.message})`, "warn", { file, line });
+          continue;
+        }
+        scriptFiles.push(located.label);
+        for (const hit of hits(code)) report(located.label, lineAt(code, hit.match.index), hit);
+      }
+    }
+  }
+  findings.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : a.line - b.line));
+  return { findings, scriptFiles, unscanned };
+}
+
+module.exports = { TIMELINE_SCHEMA, checkTimeline, scanCompositionSource };

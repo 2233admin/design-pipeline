@@ -74,6 +74,306 @@
       "required": ["subject", "at"],
       "optional": ["duration", "direction"],
       "use": "Wipe exposes the product inside the scene where it is used, not on an empty card."
+    },
+    {
+      "id": "audio-meter",
+      "kind": "instrument",
+      "grammar": ["combination", "product-demonstration"],
+      "transformation": "data-update",
+      "handoff": "continuation",
+      "animates": ["clipPath"],
+      "audio": "hits: the bar jumps to floor + (1 - floor) * strength on each hit and falls back to floor before the next",
+      "markup": ".fk-meter > .fk-meter__track > .fk-meter__bar; the target is the bar (.fk-meter__bar); .fk-meter--x with axis x",
+      "productRole": "throughput, load, capacity",
+      "required": ["target", "hits", "at", "until"],
+      "optional": ["axis", "floor", "attack", "release", "attackEase", "releaseEase", "fps"],
+      "use": "A product level (queue load, throughput) that bounces on every hit. One lane on one bar; axis y rises from the bottom, x fills from the left."
+    },
+    {
+      "id": "event-scope",
+      "kind": "instrument",
+      "grammar": ["combination", "product-demonstration"],
+      "transformation": "data-update",
+      "handoff": "continuation",
+      "animates": ["clipPath"],
+      "audio": "hits: each column is a meter lane fed the hits shifted by j * travel / N and scaled by decay^j, so a pulse travels across the row; events, not a waveform",
+      "markup": ".fk-scope > .fk-scope__col x N; columns lists one selector per column (.fk-scope__col)",
+      "productRole": "activity or heartbeat of a process",
+      "required": ["columns", "hits", "at", "until"],
+      "optional": ["travel", "decay", "floor", "axis", "attack", "release", "attackEase", "releaseEase", "fps"],
+      "use": "A process trace whose pulses travel across thin bars. Pass one selector per column so every column has its own lane."
+    },
+    {
+      "id": "tick-ticker",
+      "kind": "instrument",
+      "grammar": ["combination", "product-demonstration"],
+      "transformation": "data-update",
+      "handoff": "continuation",
+      "animates": ["y"],
+      "audio": "hits: one row scrolls in per hit, a step of at most step seconds, truncated at the next hit; throws when hits exceed rows",
+      "markup": ".fk-log > .fk-log__col > .fk-log__row x M; the target is the column (.fk-log__col); rowPx equals the log row height custom property",
+      "productRole": "log, feed, event stream",
+      "required": ["target", "hits", "at", "until", "rowPx"],
+      "optional": ["rows", "step", "fps"],
+      "use": "A log or feed that gains one line per hit. The column steps up by rowPx and stays; the frame clips it."
+    },
+    {
+      "id": "grid-pulse",
+      "kind": "instrument",
+      "grammar": ["combination", "product-demonstration"],
+      "transformation": "data-update",
+      "handoff": "continuation",
+      "animates": ["backgroundColor", "scale"],
+      "audio": "hits: per hit the perHit share of cells with the lowest hash(seed + hitIndex, cellIndex) light up and release; one lane per cell; strength is not used",
+      "markup": ".fk-cells > .fk-cell x N; cells lists one selector per cell (.fk-cell)",
+      "productRole": "job, node or cell matrix",
+      "required": ["cells", "hits", "at", "until", "rest", "lit"],
+      "optional": ["perHit", "seed", "peakScale", "attack", "release", "attackEase", "releaseEase", "fps"],
+      "use": "A matrix of jobs, nodes or cells that light on the beat. rest and lit are literal colours from the STYLE table, never var()."
+    },
+    {
+      "id": "build-countdown",
+      "kind": "instrument",
+      "grammar": ["combination", "product-demonstration"],
+      "transformation": "data-update",
+      "handoff": "continuation",
+      "animates": ["innerText", "color"],
+      "audio": "hits (optional): every hit bites a share off the timer; the value is the static text times one minus the share burned; zero from until - freeze, then a no-op hold",
+      "markup": ".fk-readout--display > .fk-readout__value; the static text is the start value written the way format writes it (08.00)",
+      "productRole": "queue, deadline, progress",
+      "required": ["target", "at", "until", "format"],
+      "optional": ["hits", "freeze", "curve", "bite", "textColor", "alert", "fps"],
+      "use": "A timer that accelerates toward the drop. One to tween on innerText with a modifiers formatter; there is no start option, GSAP reads the start from the markup. textColor and alert are literals given together."
+    },
+    {
+      "id": "hold-then-hit",
+      "kind": "instrument",
+      "grammar": ["combination", "product-demonstration"],
+      "transformation": "state-change",
+      "handoff": "hard-cut",
+      "animates": ["opacity", "scale", "x", "y"],
+      "audio": "a cue time: flash of one frame, zoom punch and a shake of one-frame steps at the hit; the caller keeps other instruments still in [hit - freeze, hit) with the adapter quiet option",
+      "markup": ".fk-flash (full-bleed overlay) and .fk-stage (a wrapper no camera pattern drives in the same window)",
+      "productRole": "the moment the product ships or completes",
+      "required": ["hit", "flash", "target"],
+      "optional": ["freeze", "zoom", "shake", "shakeFrames", "seed", "fps"],
+      "use": "The drop: an overlay flash, a zoom punch and a shake at the cue; returns hit + 0.4. With zoom 1 and shakeFrames 0 it is a flash-only accent, which makes a hard cut visible to the scene detector."
     }
-  ]
+  ],
+  "helpers": [
+    {
+      "id": "audio-events",
+      "file": "audio-events.js",
+      "global": "FilmAudio",
+      "api": ["fromScoreGrid", "fromAnalysis", "hits", "beats", "bar", "hash", "setGrid"],
+      "grid": "lib/score-grid.js calls FilmAudio.setGrid(<score-grid.json>); load it after audio-events.js",
+      "use": "Turns a score grid (film score) or an edit-analysis music block into plain data: hits() returns [{ atSec, strength }] for the instruments, beats() beat times, bar(audio, k) the window of bar k (1-based). Not a pattern; it reads the grid so the patterns never do. It throws, naming designer-pipeline film score, when no grid was set."
+    }
+  ],
+  "chrome": {
+    "file": "instrument-chrome.css",
+    "scaffold": "lib/instrument-chrome.css",
+    "prefix": "fk-",
+    "customPropertyPrefix": "--fk-",
+    "use": "Neutral chrome for the instruments: monochrome defaults, no shipped font or image. A film overrides every slot from one STYLE table applied with document.documentElement.style.setProperty(\"--fk-\" + key, value) and passes the same literals to the kit calls. A section re-scopes the slots on its own element.",
+    "properties": [
+      {
+        "name": "--fk-ink",
+        "role": "ground and surface fill",
+        "default": "#111111"
+      },
+      {
+        "name": "--fk-line",
+        "role": "hairlines, ticks, borders",
+        "default": "#707070"
+      },
+      {
+        "name": "--fk-text",
+        "role": "labels, readouts, flash",
+        "default": "#ebebeb"
+      },
+      {
+        "name": "--fk-rest",
+        "role": "unlit cell, meter track",
+        "default": "#1e1e1e"
+      },
+      {
+        "name": "--fk-accent",
+        "role": "lit and active fill",
+        "default": "#f5f5f5"
+      },
+      {
+        "name": "--fk-alert",
+        "role": "escalation tint",
+        "default": "#ffffff"
+      },
+      {
+        "name": "--fk-font-label",
+        "role": "label voice",
+        "default": "system-ui, sans-serif"
+      },
+      {
+        "name": "--fk-font-data",
+        "role": "data and log voice",
+        "default": "ui-monospace, Consolas, monospace"
+      },
+      {
+        "name": "--fk-font-display",
+        "role": "hero readout voice",
+        "default": "var(--fk-font-data)"
+      },
+      {
+        "name": "--fk-unit",
+        "role": "base length",
+        "default": "8px"
+      },
+      {
+        "name": "--fk-stroke",
+        "role": "hairline weight",
+        "default": "2px"
+      },
+      {
+        "name": "--fk-radius",
+        "role": "corner radius",
+        "default": "2px"
+      },
+      {
+        "name": "--fk-row",
+        "role": "log row height, equals rowPx",
+        "default": "24px"
+      },
+      {
+        "name": "--fk-cols",
+        "role": "columns of a cell grid, per instance",
+        "default": "8"
+      }
+    ],
+    "recipes": [
+      {
+        "class": "fk-frame",
+        "role": "hairline rectangle with a header strip",
+        "serves": "every instrument"
+      },
+      {
+        "class": "fk-frame__head",
+        "role": "header strip; its label names the product or concept object",
+        "serves": "every instrument"
+      },
+      {
+        "class": "fk-frame__body",
+        "role": "body of the frame",
+        "serves": "every instrument"
+      },
+      {
+        "class": "fk-label",
+        "role": "tracked uppercase label voice",
+        "serves": "annotation"
+      },
+      {
+        "class": "fk-label--dim",
+        "role": "dim variant of the label",
+        "serves": "annotation"
+      },
+      {
+        "class": "fk-label--display",
+        "role": "large variant for hero readouts",
+        "serves": "annotation"
+      },
+      {
+        "class": "fk-ticks",
+        "role": "tick scale, minor and major, from repeating-linear-gradient",
+        "serves": "audio-meter"
+      },
+      {
+        "class": "fk-ticks--x",
+        "role": "horizontal tick scale",
+        "serves": "audio-meter"
+      },
+      {
+        "class": "fk-readout",
+        "role": "value with tabular numerals and a fixed minimum width",
+        "serves": "build-countdown"
+      },
+      {
+        "class": "fk-readout__value",
+        "role": "the element whose text a counter tweens",
+        "serves": "build-countdown"
+      },
+      {
+        "class": "fk-readout--display",
+        "role": "display size for a hero counter",
+        "serves": "build-countdown"
+      },
+      {
+        "class": "fk-meter",
+        "role": "level meter",
+        "serves": "audio-meter"
+      },
+      {
+        "class": "fk-meter__track",
+        "role": "meter track; the segment mask sits on it",
+        "serves": "audio-meter"
+      },
+      {
+        "class": "fk-meter__bar",
+        "role": "the bar; the tween target",
+        "serves": "audio-meter"
+      },
+      {
+        "class": "fk-meter--segmented",
+        "role": "segment mask on the track",
+        "serves": "audio-meter"
+      },
+      {
+        "class": "fk-meter--x",
+        "role": "horizontal variant",
+        "serves": "audio-meter"
+      },
+      {
+        "class": "fk-scope",
+        "role": "row of thin bars",
+        "serves": "event-scope"
+      },
+      {
+        "class": "fk-scope__col",
+        "role": "one thin bar; one lane each",
+        "serves": "event-scope"
+      },
+      {
+        "class": "fk-log",
+        "role": "clipped window",
+        "serves": "tick-ticker"
+      },
+      {
+        "class": "fk-log__col",
+        "role": "scrolling column; the tween target",
+        "serves": "tick-ticker"
+      },
+      {
+        "class": "fk-log__row",
+        "role": "fixed-height row",
+        "serves": "tick-ticker"
+      },
+      {
+        "class": "fk-cells",
+        "role": "grid of cells",
+        "serves": "grid-pulse"
+      },
+      {
+        "class": "fk-cell",
+        "role": "one cell; one lane each",
+        "serves": "grid-pulse"
+      },
+      {
+        "class": "fk-flash",
+        "role": "full-bleed overlay",
+        "serves": "hold-then-hit"
+      },
+      {
+        "class": "fk-stage",
+        "role": "wrapper that scales and shifts",
+        "serves": "hold-then-hit"
+      }
+    ]
+  }
 }

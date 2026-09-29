@@ -1,0 +1,116 @@
+{
+  "schema": "design-pipeline.film-storyboard.v1",
+  "id": "canvas-instrument-24s",
+  "durationSec": 24,
+  "fps": 30,
+  "grammar": "combination",
+  "benefit": "The canvas is an instrument: every prompt, job and frame answers the beat, and the finished storyboard lands on the drop.",
+  "proofAction": "A typed prompt fires the canvas's generation node and routes signal along its wires to a queue node and a log node, a render countdown drains, and the finished storyboard strip node lands on the drop.",
+  "reference": "Music-driven plate craft of the github.com/bizarro/evangelion treatment, taken as ideas only: one instrument per section, builds that accelerate and freeze, a hard drop, a break that stops. No palette, panel shape, type or imagery is reused.",
+  "sound": {
+    "mode": "scored",
+    "source": "Strudel pattern score.strudel.js at 120 BPM",
+    "usage": "commercial",
+    "assets": [
+      { "id": "score", "license": "generated with Strudel (AGPL-3.0 tool, not bundled); built-in synth sounds only, no samples", "commercialUse": true, "file": "assets/score.wav", "source": "strudel" }
+    ],
+    "cues": [
+      { "id": "music-in", "atSec": 0, "kind": "entry", "note": "sawtooth pad opens bar 1 under the typing" },
+      { "id": "groove-in", "atSec": 2, "kind": "downbeat", "note": "bar 2: kick, clap and hats enter together" },
+      { "id": "build-riser", "atSec": 10, "kind": "riser", "note": "bar 6: snare roll on eighths, then sixteenths in bar 7, last beat silent" },
+      { "id": "drop-1", "atSec": 14, "kind": "impact", "note": "bar 8: full drums and bass land on the downbeat" },
+      { "id": "break-in", "atSec": 20, "kind": "silence", "note": "bar 11: drums out, bass swell in two pulses, then two silent beats" },
+      { "id": "brand-hit", "atSec": 22, "kind": "accent", "note": "bar 12: one square stab as the logo resolves" },
+      { "id": "music-out", "atSec": 24, "kind": "exit", "note": "the stab rings out to the end" }
+    ]
+  },
+  "beats": [
+    {
+      "id": "type-on-pad",
+      "startSec": 0,
+      "endSec": 2,
+      "role": "action",
+      "subject": "prompt node's log",
+      "productAction": "A prompt is typed into a canvas node, one phrase landing on each beat tick under the pad; an image node waits, unconnected, on the empty canvas",
+      "transformation": { "kind": "state-change", "from": "empty prompt node", "to": "prompt node holding a four-line prompt" },
+      "handoff": "open",
+      "motion": ["tick-ticker"],
+      "choreography": "tick-ticker",
+      "soundCues": ["music-in"],
+      "note": "Negative space on purpose: a dark, sparse plate whose only motion is the beat tick. Escalation begins at the groove."
+    },
+    {
+      "id": "cells-on-kick",
+      "startSec": 2,
+      "endSec": 10,
+      "role": "action",
+      "subject": "generation node wired to a queue node and a log node",
+      "productAction": "The canvas renders as a node graph: the generation node's cells light on every kick and the prompt wire flashes with them, the clap routes a signal along the wire to the queue node, the hats along the wire to the log node",
+      "transformation": { "kind": "data-update", "from": "idle node graph: cells at rest, empty queue, empty log", "to": "generation node firing, queue loaded, jobs logged" },
+      "handoff": "hard-cut",
+      "motion": ["grid-pulse", "audio-meter", "tick-ticker"],
+      "choreography": "grid-pulse",
+      "soundCues": ["groove-in"],
+      "note": "Dominant: the generation node. Three signal paths, each bound to a different sound (kick, clap, hats). Ground changes from dark navy to cream so the cut reads."
+    },
+    {
+      "id": "countdown-build",
+      "startSec": 10,
+      "endSec": 14,
+      "role": "action",
+      "subject": "render queue node (ETA) wired to a depth node, with a render log node",
+      "productAction": "The render queue node drains toward zero: its ETA burns faster with every snare-roll hit while the depth node climbs on the pulse along its wire and the log node ticks the beat; the last beat holds still",
+      "transformation": { "kind": "data-update", "from": "render ETA at 08.00 seconds", "to": "render ETA at 00.00, queue clear" },
+      "handoff": "hard-cut",
+      "motion": ["build-countdown", "audio-meter", "tick-ticker"],
+      "choreography": "build-countdown",
+      "soundCues": ["build-riser"],
+      "holdSec": 0.5,
+      "note": "Escalation through rate (eighths then sixteenths), size (the pulse meter climbs) and colour (the countdown tints toward alert). The last beat is silent and still before the drop."
+    },
+    {
+      "id": "drop-impact",
+      "startSec": 14,
+      "endSec": 20,
+      "role": "action",
+      "subject": "storyboard strip node fed by two throughput nodes",
+      "productAction": "On the drop the render finishes: the storyboard strip node shows four finished frames and takes the impact, a frame lights on every kick, and the clap and the bass send signal up the wires from two throughput nodes",
+      "transformation": { "kind": "state-change", "from": "render queue clear, strip not yet shown", "to": "strip node holding four finished frames" },
+      "handoff": "hard-cut",
+      "motion": ["hold-then-hit", "grid-pulse", "audio-meter"],
+      "choreography": "hold-then-hit",
+      "soundCues": ["drop-1"],
+      "note": "Cut accent: the full impact (flash, zoom punch, shake) lands on the downbeat of bar 8. Ground changes from near-black to cobalt."
+    },
+    {
+      "id": "break-settle",
+      "startSec": 20,
+      "endSec": 22,
+      "role": "action",
+      "subject": "process trace node",
+      "productAction": "The finished render settles: two bass-swell pulses travel across the process trace node once and every column returns to rest, the node drifts, and the last 0.6 s holds still before the stab",
+      "transformation": { "kind": "state-change", "from": "queue busy, trace pumping", "to": "queue idle, trace at rest" },
+      "handoff": "hard-cut",
+      "motion": ["event-scope"],
+      "choreography": "event-scope",
+      "soundCues": ["break-in"],
+      "holdSec": 0.6,
+      "note": "Negative space: drums are out, so the picture stops pumping without freezing (a slow drift and one travelling pulse). Ground changes to dark teal."
+    },
+    {
+      "id": "brand",
+      "startSec": 22,
+      "endSec": 24,
+      "role": "brand-hold",
+      "subject": "logo over the finished storyboard strip",
+      "productAction": "The logo resolves over the finished strip, four frames wide, on the closing stab",
+      "transformation": { "kind": "none" },
+      "handoff": "hard-cut",
+      "motion": ["hold-then-hit", "reveal-in-context"],
+      "choreography": "hold-then-hit",
+      "soundCues": ["brand-hit", "music-out"],
+      "holdSec": 0.6,
+      "note": "Cut accent: a flash-only hold-then-hit (zoom 1, no shake) on the stab; the closing rule wipes in and ends the timeline at 24 s."
+    }
+  ]
+}

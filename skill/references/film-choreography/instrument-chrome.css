@@ -1,0 +1,277 @@
+/*
+ * Instrument chrome for the film kit (design-pipeline, film-choreography).
+ *
+ * Original work. Its recipe list adapts ideas only (a framed panel with a header label, a tick
+ * scale, a live readout, a segmented level meter); no code, text, palette or asset is copied from
+ * any other project.
+ *
+ * Neutral by construction: the six colour slots default to greys, so a film that keeps them is
+ * monochrome by choice. A film replaces all of it from ONE style table that it applies to these
+ * custom properties on the root (or on a section element to re-scope a subtree) and passes, as
+ * literal colours, to the kit calls (rest, lit, textColor, alert). The kit cannot read var().
+ *
+ * Kept out on purpose, because the instruments own them or because they fight a seeked timeline:
+ *   - CSS time sources, imports, fonts and images (nothing here depends on anything external);
+ *   - clip-path everywhere; transform on the log column, the stage and the cells; opacity on the
+ *     flash overlay. The kit tweens these, and a CSS start value paired with a tween of the same
+ *     property breaks HyperFrames' seek. The flash rests at whatever hold-then-hit writes at 0 s;
+ *   - every gradient except repeating-linear-gradient (tick scale, segment mask);
+ *   - chamfered panels, hex grids, hazard stripes, scanlines, glow, icons, shipped fonts.
+ *
+ * Class prefix fk-, custom-property prefix --fk-. Documented in registry.json under "chrome".
+ * Size defaults assume 1920 by 1080: label 2.5 units (20px), data 3 units (24px), display 16
+ * units (128px).
+ */
+
+:root {
+  --fk-ink: #111111;
+  --fk-line: #707070;
+  --fk-text: #ebebeb;
+  --fk-rest: #1e1e1e;
+  --fk-accent: #f5f5f5;
+  --fk-alert: #ffffff;
+  --fk-font-label: system-ui, sans-serif;
+  --fk-font-data: ui-monospace, Consolas, monospace;
+  --fk-font-display: var(--fk-font-data);
+  --fk-unit: 8px;
+  --fk-stroke: 2px;
+  --fk-radius: 2px;
+  --fk-row: 24px;
+  --fk-cols: 8;
+}
+
+/* Frame: hairline rectangle with a header strip. The head label names the product or concept object. */
+.fk-frame,
+.fk-frame__head,
+.fk-frame__body,
+.fk-label,
+.fk-ticks,
+.fk-readout,
+.fk-readout__value,
+.fk-meter,
+.fk-meter__track,
+.fk-meter__bar,
+.fk-scope,
+.fk-scope__col,
+.fk-log,
+.fk-log__col,
+.fk-log__row,
+.fk-cells,
+.fk-cell,
+.fk-flash,
+.fk-stage {
+  box-sizing: border-box;
+}
+
+.fk-frame {
+  display: flex;
+  flex-direction: column;
+  background: var(--fk-ink);
+  color: var(--fk-text);
+  border: var(--fk-stroke) solid var(--fk-line);
+  border-radius: var(--fk-radius);
+}
+
+.fk-frame__head {
+  flex: none;
+  padding: var(--fk-unit) calc(var(--fk-unit) * 2);
+  border-bottom: var(--fk-stroke) solid var(--fk-line);
+  font-family: var(--fk-font-label);
+  font-size: calc(var(--fk-unit) * 2.5);
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fk-text);
+}
+
+.fk-frame__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: calc(var(--fk-unit) * 2);
+}
+
+/* Label voice: tracked uppercase; dim variant for annotation; display variant for hero readouts. */
+.fk-label {
+  font-family: var(--fk-font-label);
+  font-size: calc(var(--fk-unit) * 2.5);
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fk-text);
+}
+
+.fk-label--dim {
+  color: var(--fk-line);
+}
+
+.fk-label--display {
+  font-family: var(--fk-font-display);
+  font-size: calc(var(--fk-unit) * 16);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+/* Tick scale: minor every unit, major every fifth, drawn on the right edge of a narrow strip. */
+.fk-ticks {
+  flex: none;
+  width: calc(var(--fk-unit) * 2);
+  height: 100%;
+  background-image:
+    repeating-linear-gradient(to bottom, var(--fk-line) 0, var(--fk-line) var(--fk-stroke), transparent var(--fk-stroke), transparent var(--fk-unit)),
+    repeating-linear-gradient(to bottom, var(--fk-line) 0, var(--fk-line) var(--fk-stroke), transparent var(--fk-stroke), transparent calc(var(--fk-unit) * 5));
+  background-size: 50% 100%, 100% 100%;
+  background-position: right top, right top;
+  background-repeat: no-repeat;
+}
+
+.fk-ticks--x {
+  width: 100%;
+  height: calc(var(--fk-unit) * 2);
+  background-image:
+    repeating-linear-gradient(to right, var(--fk-line) 0, var(--fk-line) var(--fk-stroke), transparent var(--fk-stroke), transparent var(--fk-unit)),
+    repeating-linear-gradient(to right, var(--fk-line) 0, var(--fk-line) var(--fk-stroke), transparent var(--fk-stroke), transparent calc(var(--fk-unit) * 5));
+  background-size: 100% 50%, 100% 100%;
+  background-position: left bottom, left bottom;
+}
+
+/* Readout: tabular numerals and a fixed minimum width so a counting value never shifts its box. */
+.fk-readout {
+  display: inline-block;
+  font-family: var(--fk-font-data);
+  font-size: calc(var(--fk-unit) * 3);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  color: var(--fk-text);
+}
+
+.fk-readout__value {
+  display: inline-block;
+  min-width: 6ch;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fk-readout--display {
+  font-family: var(--fk-font-display);
+  font-size: calc(var(--fk-unit) * 16);
+  line-height: 1;
+}
+
+/* Meter: the bar is the tween target (clip-path is written by audio-meter, never here). */
+.fk-meter {
+  display: block;
+  width: calc(var(--fk-unit) * 6);
+  height: calc(var(--fk-unit) * 30);
+}
+
+.fk-meter__track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--fk-rest);
+  border-radius: var(--fk-radius);
+  overflow: hidden;
+}
+
+.fk-meter__bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--fk-accent);
+}
+
+/* Segment mask: hairline gaps in the ground colour sit above the bar, on the track. */
+.fk-meter--segmented .fk-meter__track::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(to top, transparent 0, transparent calc(var(--fk-unit) * 2 - var(--fk-stroke)), var(--fk-ink) calc(var(--fk-unit) * 2 - var(--fk-stroke)), var(--fk-ink) calc(var(--fk-unit) * 2));
+}
+
+.fk-meter--x {
+  width: calc(var(--fk-unit) * 60);
+  height: calc(var(--fk-unit) * 6);
+}
+
+.fk-meter--x.fk-meter--segmented .fk-meter__track::after {
+  background-image: repeating-linear-gradient(to right, transparent 0, transparent calc(var(--fk-unit) * 2 - var(--fk-stroke)), var(--fk-ink) calc(var(--fk-unit) * 2 - var(--fk-stroke)), var(--fk-ink) calc(var(--fk-unit) * 2));
+}
+
+/* Scope: a row of thin bars; each column is the tween target of its own lane. */
+.fk-scope {
+  display: flex;
+  align-items: stretch;
+  gap: var(--fk-stroke);
+  height: calc(var(--fk-unit) * 20);
+  border-bottom: var(--fk-stroke) solid var(--fk-line);
+}
+
+.fk-scope__col {
+  flex: 1 1 0;
+  min-width: var(--fk-stroke);
+  background: var(--fk-accent);
+}
+
+/* Log: a clipped window, a scrolling column (translated by tick-ticker), fixed-height rows. */
+.fk-log {
+  position: relative;
+  overflow: hidden;
+  height: calc(var(--fk-row) * 6);
+  font-family: var(--fk-font-data);
+  font-size: calc(var(--fk-unit) * 2.5);
+  color: var(--fk-text);
+}
+
+.fk-log__col {
+  display: block;
+}
+
+.fk-log__row {
+  height: var(--fk-row);
+  line-height: calc(var(--fk-row) - var(--fk-stroke));
+  border-bottom: var(--fk-stroke) solid var(--fk-rest);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Cells: a grid whose column count is --fk-cols, set per instance. */
+.fk-cells {
+  display: grid;
+  grid-template-columns: repeat(var(--fk-cols), minmax(0, 1fr));
+  gap: var(--fk-unit);
+}
+
+.fk-cell {
+  aspect-ratio: 1 / 1;
+  background: var(--fk-rest);
+  border-radius: var(--fk-radius);
+}
+
+/* Flash: full-bleed overlay above its stage. No opacity here; hold-then-hit writes it. */
+.fk-flash {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: var(--fk-text);
+}
+
+/* Stage: wrapper that scales and shifts for the zoom punch. No transform here. */
+.fk-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+}

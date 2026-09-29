@@ -26,6 +26,11 @@ every screen of the app"), then what carries attention between beats, look, tool
 example "3D shot in Blender, score in Strudel"), and any missing license. Render one key frame per
 card. The user picks one (`decide --stage concept --choice 1|2|3`).
 
+For a music-led film (the score has events and the concept is that the picture answers them), each
+card also states its instrument premise: which product or concept object plays the music ("the
+canvas is an instrument"). An instrument that represents nothing the product or concept has is
+decoration, and the card is not finished.
+
 ## plan
 
 - `film scaffold --output .` starts a passing `storyboard.json` and a composition.
@@ -36,6 +41,15 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
 - Rhythm: near-equal beat lengths read as a metronome, not a film; in a film of four or more beats,
   the longest should run at least 3x the shortest. A film of 8 s or more needs a rest — a hold
   beat, or any beat with `holdSec` of at least 0.3 s — or nothing on screen ever lands.
+- Music-led film, in this order (`product-film-direction.md`, Music-driven films):
+  1. Write `## Treatment` under the chosen card of `concepts.md`: premise, instrument arc (plate,
+     kit id, the product or concept object it is, the audio role that drives it), style-bible seed
+     (the chrome slots, a ground per section, a must-not-copy line from `reference.md`), motion
+     language, escalation and negative space.
+  2. Fill `sound.md` with the `Section` column and a header for BPM, bar length and the start of bar 1.
+  3. Write one storyboard beat per plate, each plate brief mapped onto existing fields
+     (`subject`, `productAction`, `transformation`, `motion`, `choreography`, `soundCues`, `holdSec`,
+     `note`), and vary plate lengths so the film clears `uniform-cadence`.
 - `verify film-storyboard --storyboard storyboard.json` must pass. Editing the storyboard later
   reopens this stage until the gate passes again.
 
@@ -50,6 +64,14 @@ Pick the lowest-rung tool that reaches each beat:
 | Music as code | `film score --project-root . --bpm <n> --template <name>` | `film-score.md` |
 | Loudness and fades | `audio master --input <audio> --output <wav>` | `audio-gate.md` |
 
+Fill `sound.md`'s song map before binding cues: each music event gets a motion response from the
+vocabulary in `film-score.md`, and each hit cue is bound in a beat's `soundCues`.
+
+Music-led film: build the plates from the six instruments in `film-choreography/registry.json`
+(`hyperframes.md`, kit contract), take their hits from `FilmAudio` (`film-score.md`), and dress
+them with `lib/instrument-chrome.css` and the film's one `STYLE` table. Give every cut a different
+ground or a flash accent so the render gate can see it.
+
 Then render the draft: `npx hyperframes render --output out.mp4`.
 
 ## check
@@ -63,6 +85,12 @@ finding's `fix` and rerun. Frame layout: `composition capture` then `verify comp
 Show the draft video, `evidence/contact-sheet.png` and a one-paragraph gate summary. The user
 accepts, or rejects with one sentence (`decide --stage review --verdict accept|reject`). A
 rejection becomes a project rule that every later `next` returns.
+
+For a music-led film, also fill the music-driven section of `qa.md`: rules R1 to R7, each with the
+field it read (`holdSec`, handoff kind, `cuts.missedSec`, per-beat `changedShare`, the contact
+sheet), and any instrument that is not a product or concept object (`product-film-direction.md`).
+They are Visual Acceptance guidance; only R7 has a gate counterpart, `planned-cuts-missing`. The
+`check` stage above shows the gate findings, and the rules add no finding.
 
 ## deliver
 
