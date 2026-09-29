@@ -50,6 +50,14 @@ function ensureCaptures(dir, spec) {
   run(process.execPath, [path.join(dir, captures.script)], REPO);
 }
 
+// Generated art a case declares: its script calls an image model, so it is never run implicitly.
+function ensureGenerated(dir, spec) {
+  const generated = spec.golden.generated;
+  if (!generated) return;
+  const missing = generated.files.filter((file) => !fs.existsSync(path.join(dir, generated.dir, file)));
+  if (missing.length) throw new Error(`${missing.join(", ")} not generated yet. Run node ${path.relative(REPO, path.join(dir, generated.script))} (${generated.tool}) and re-run`);
+}
+
 // Score (first time only), master and render a case directory to out.mp4.
 function build(dir, spec) {
   const score = spec.golden.score;
@@ -83,6 +91,7 @@ function verifyStatic(loaded) {
 function verifyRender(loaded) {
   const { spec, dir } = loaded;
   ensureCaptures(dir, spec);
+  ensureGenerated(dir, spec);
   const video = build(dir, spec);
   const sha = crypto.createHash("sha256").update(fs.readFileSync(video)).digest("hex");
   const golden = filmCheck(dir);
@@ -100,7 +109,7 @@ function verifyRender(loaded) {
     for (const file of [spec.golden.storyboard, "score-grid.json"]) if (fs.existsSync(path.join(dir, file))) fs.copyFileSync(path.join(dir, file), path.join(work, file));
     const mastered = path.join(dir, "assets", "score-mastered.wav");
     if (fs.existsSync(mastered)) fs.copyFileSync(mastered, path.join(work, "assets", "score-mastered.wav"));
-    if (spec.golden.captures) fs.cpSync(path.join(dir, spec.golden.captures.dir), path.join(work, spec.golden.captures.dir), { recursive: true });
+    for (const assets of [spec.golden.captures, spec.golden.generated].filter(Boolean)) fs.cpSync(path.join(dir, assets.dir), path.join(work, assets.dir), { recursive: true });
     let html = fs.readFileSync(path.join(dir, spec.golden.composition), "utf8");
     for (const edit of counter.edits) {
       if (!html.includes(edit.find)) { report(false, `${spec.id} counter ${counter.id} edit anchor exists`, edit.find.slice(0, 60)); continue; }

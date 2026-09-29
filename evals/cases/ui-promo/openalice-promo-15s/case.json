@@ -200,6 +200,7 @@
     { "gate": "composition", "code": "weak-separation", "beatId": "ask", "disposition": "OpenAlice's own dark Ask Alice box on its dark page; the typed white question is the subject and reads clearly." },
     { "gate": "composition", "code": "dead-band", "beatId": "ask", "disposition": "Close on the Ask Alice box: the empty page around it is the product's own home screen." },
     { "gate": "composition", "code": "dead-band", "beatId": "research", "disposition": "The terminal's output fills from the top; the empty lower pane is where the agent's next lines will appear." },
+    { "gate": "composition", "code": "no-focal-point", "beatId": "research", "disposition": "Borderline (two text masses of 13% and 12%; appeared on a re-render of the unchanged composition): the agent's streaming lines are one reading column, and the camera push leads the eye to the +9.1% row." },
     { "gate": "composition", "code": "no-focal-point", "beatId": "report", "disposition": "Pulled back over the report's title and summary on the way to its AAPL; the camera, not a single mass, leads the eye here." },
     { "gate": "composition", "code": "clutter", "beatId": "report", "disposition": "A real research report is dense text; the camera frames its title and summary rather than simplifying the product." },
     { "gate": "composition", "code": "dead-band", "beatId": "book", "disposition": "Mid pull-back over the real portfolio: the sidebar third is the product's navigation, not empty design." },

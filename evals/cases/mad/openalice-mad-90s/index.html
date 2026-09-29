@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1p:wght@500;800&display=swap" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #07070c; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #07070c; }
+      .layer { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+      .jp { font-family: "M PLUS 1p", sans-serif; font-weight: 800; }
+      .display { font-family: "Dela Gothic One", sans-serif; }
+      .latin { font-family: "Inter", sans-serif; }
+      #field { background: #e5304f; opacity: 0; }
+      #halftone { opacity: 0; background-image: radial-gradient(rgba(20, 26, 58, 0.22) 22%, transparent 24%); background-size: 18px 18px; }
+      .ghost-row { position: absolute; left: -400px; white-space: nowrap; font-size: 150px; line-height: 170px; color: #c21f43; opacity: 0.9; }
+      #shake, #cam { transform-origin: 0 0; }
+      #alice { position: absolute; left: 546px; top: 80px; width: 828px; height: 1242px; }
+      #idle { position: absolute; inset: 0; transform-origin: 50% 90%; }
+      #idle img, #shot-point img { position: absolute; left: 0; top: 0; width: 828px; height: 1242px; opacity: 0; }
+      /* The generated art is cut off by its canvas (hair ends in a straight edge); fade the sides and bottom. */
+      .soft { -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, #000 86%, transparent 100%); -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent 0%, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, #000 86%, transparent 100%); mask-composite: intersect; }
+      #shot-point { position: absolute; left: 546px; top: 80px; width: 828px; height: 1242px; }
+      #facecam { position: absolute; left: 0; top: 0; width: 1920px; height: 1920px; transform-origin: 0 0; opacity: 0; }
+      #facecam img { width: 1920px; height: 1920px; }
+      #grid { opacity: 0; }
+      .grid-row { position: absolute; left: -60px; width: 2040px; height: 300px; display: flex; justify-content: space-around; }
+      .grid-row img { width: 208px; height: 256px; image-rendering: pixelated; }
+      .panel { position: absolute; top: 0; height: 1080px; overflow: hidden; opacity: 0; border-left: 10px solid #141a3a; border-right: 10px solid #141a3a; }
+      #pl { left: 0; width: 640px; background: #e5304f; }
+      #pc { left: 640px; width: 640px; background: #141a3a; }
+      #pr { left: 1280px; width: 640px; background: #ffd400; }
+      .panel img, .panel video { position: absolute; }
+      .cap { position: absolute; left: -640px; top: 0; width: 1920px; height: 1080px; opacity: 0; object-fit: cover; }
+      #sil { position: absolute; left: 546px; top: 80px; width: 828px; height: 1242px; opacity: 0; filter: brightness(0) invert(1); transform-origin: 50% 40%; }
+      .cluster { position: absolute; top: 230px; font-size: 76px; line-height: 100px; color: #fff7f0; text-shadow: 5px 5px 0 #141a3a; white-space: nowrap; }
+      .cluster.L { right: 1230px; text-align: right; }
+      .cluster.R { left: 1250px; text-align: left; }
+      .cluster.small { font-size: 52px; line-height: 70px; top: 760px; }
+      .ch { display: inline-block; }
+      .strip { position: absolute; top: 0; width: 132px; height: 1080px; background: #141a3a; color: #fff7f0; writing-mode: vertical-rl; font-size: 72px; line-height: 132px; text-align: center; padding-top: 70px; }
+      .slam { position: absolute; left: 0; width: 1920px; top: 250px; text-align: center; font-size: 330px; line-height: 400px; color: #ffd400; -webkit-text-stroke: 14px #141a3a; paint-order: stroke fill; opacity: 0; white-space: nowrap; }
+      .slam.long { font-size: 170px; line-height: 220px; top: 330px; }
+      .ticker { position: absolute; left: 0; height: 92px; width: 6000px; background: #141a3a; color: #fff7f0; font-size: 48px; line-height: 92px; white-space: nowrap; }
+      #logo { position: absolute; left: 0; width: 1920px; top: 330px; text-align: center; font-size: 300px; line-height: 360px; color: #fff7f0; text-shadow: 14px 14px 0 #141a3a; opacity: 0; letter-spacing: 10px; }
+      #logo small { display: block; font-family: "Inter", sans-serif; font-weight: 700; font-size: 44px; line-height: 60px; letter-spacing: 6px; text-shadow: 4px 4px 0 #141a3a; }
+      #blackout { background: #07070c; opacity: 0; }
+      .line { position: absolute; left: 0; width: 1920px; text-align: center; color: #fff7f0; font-size: 52px; opacity: 0; }
+      #inbox-card { position: absolute; left: 760px; top: 820px; width: 400px; height: 225px; border-radius: 14px; overflow: hidden; border: 3px solid #fff7f0; opacity: 0; }
+      #inbox-card img { width: 400px; height: 225px; object-fit: cover; object-position: 60% 30%; }
+      #flash { background: #ffffff; opacity: 0; }
+      #static { opacity: 0; mix-blend-mode: screen; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.18) 0 2px, transparent 2px 5px), repeating-linear-gradient(90deg, rgba(0,0,0,0.25) 0 3px, transparent 3px 11px); }
+      #endcard { position: absolute; left: 0; top: 820px; width: 1920px; height: 200px; background: #141a3a; opacity: 0; text-align: center; }
+      #endcard b { display: block; padding-top: 34px; font-size: 76px; line-height: 90px; color: #fff7f0; font-weight: 800; }
+      #endcard i { display: block; font-style: normal; font-size: 34px; color: #ffd400; letter-spacing: 3px; }
+      svg text { font-family: "Dela Gothic One", sans-serif; fill: #fff7f0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="90" data-fps="24" data-width="1920" data-height="1080">
+      <div id="shake" class="layer">
+        <div id="field" class="layer"></div>
+        <div id="ghost" class="layer jp"></div>
+        <div id="halftone" class="layer"></div>
+        <div id="grid" class="layer"></div>
+        <div id="cam" class="layer">
+          <div id="alice"><div id="idle" class="soft">
+            <img id="v-hero" src="assets/generated/hero.png" alt="" />
+            <img id="v-blink" src="assets/generated/blink.png" alt="" />
+            <img id="v-sing" src="assets/generated/sing.png" alt="" />
+            <img id="v-wink" src="assets/generated/wink.png" alt="" />
+            <img id="v-serious" src="assets/generated/serious.png" alt="" />
+          </div></div>
+          <div id="shot-point" class="soft"><img id="v-point" src="assets/generated/point.png" alt="" /></div>
+          <div id="sil-wrap" class="soft" style="position:absolute;left:0;top:0;width:1920px;height:1080px"><img id="sil" src="assets/generated/hero.png" alt="" /></div>
+        </div>
+        <div id="facecam"><img src="assets/generated/face.png" alt="" /></div>
+        <div id="panels" class="layer">
+          <div id="pl" class="panel"><img id="pl-img" src="assets/generated/hero.png" alt="" style="left:-420px;top:-120px;width:1380px;height:2070px" /></div>
+          <div id="pc" class="panel">
+            <img id="cap-inbox" class="cap" src="assets/captures/inbox.png" alt="" />
+            <img id="cap-port" class="cap" src="assets/captures/portfolio.png" alt="" style="object-position:40% 55%" />
+            <div id="cap-term-wrap" class="cap"><video id="cap-term" src="assets/captures/terminal.mp4" data-start="42" data-duration="12" data-media-start="4" muted playsinline style="width:1920px;height:1080px;object-fit:cover"></video></div>
+          </div>
+          <div id="pr" class="panel"><img id="pr-img" src="assets/generated/serious.png" alt="" style="left:-470px;top:-140px;width:1380px;height:2070px" /></div>
+        </div>
+        <div id="type" class="layer"></div>
+        <svg id="rings" class="layer" width="1920" height="1080" viewBox="0 0 1920 1080">
+          <defs>
+            <path id="ring-a" d="M 960 540 m -260 0 a 260 260 0 1 1 520 0 a 260 260 0 1 1 -520 0" />
+            <path id="ring-b" d="M 960 540 m -380 0 a 380 380 0 1 1 760 0 a 380 380 0 1 1 -760 0" />
+            <path id="ring-c" d="M 960 470 m -470 0 a 470 470 0 1 1 940 0 a 470 470 0 1 1 -940 0" />
+          </defs>
+          <g id="g-pulse" opacity="0"><circle cx="960" cy="540" r="120" fill="#e5304f" /><circle cx="960" cy="540" r="168" fill="none" stroke="#ffd400" stroke-width="20" /></g>
+          <g id="g-ring-a" opacity="0"><text font-size="84"><textPath href="#ring-a">ALICE · ALICE · ALICE · ALICE · ALICE ·</textPath></text></g>
+          <g id="g-ring-b" opacity="0"><text font-size="104"><textPath href="#ring-b">アリス · ALICE · アリス · ALICE · アリス · ALICE ·</textPath></text></g>
+          <g id="g-ring-c" opacity="0"><text font-size="64"><textPath href="#ring-c">ALICE · ALICE · ALICE · ALICE · ALICE · ALICE · ALICE · ALICE ·</textPath></text></g>
+        </svg>
+        <div id="logo" class="display">ALICE<small>YOUR ONE-PERSON WALL STREET</small></div>
+      </div>
+      <div id="blackout" class="layer"></div>
+      <div id="bline" class="line jp" style="top:500px">——君だよ</div>
+      <div id="bl1" class="line jp" style="top:900px;font-size:44px">夜が明けたら</div>
+      <div id="bl2" class="line jp" style="top:900px;font-size:44px">レポートが届いてる</div>
+      <div id="inbox-card"><img src="assets/captures/inbox.png" alt="" /></div>
+      <div id="static" class="layer"></div>
+      <div id="endcard" class="latin"><b>OpenAlice</b><i>YOUR ONE-PERSON WALL STREET</i></div>
+      <div id="flash" class="layer"></div>
+      <audio id="score" src="assets/score-mastered.wav" data-start="0" data-duration="90"></audio>
+    </div>
+    <script>
+      // ---------- time: 160 BPM, 1.5 s bars; T(bar, beat) with bar and beat counted from 1 ----------
+      const BAR = 1.5, BEAT = 0.375;
+      const T = (bar, beat = 1) => Number(((bar - 1) * BAR + (beat - 1) * BEAT).toFixed(4));
+      const tl = gsap.timeline({ paused: true });
+      const to = (target, vars, at) => tl.to(target, vars, at);
+      const set = (target, vars, at) => tl.set(target, vars, at);
+      const $ = (id) => document.getElementById(id);
+      let uid = 0;
+
+      // Camera on the hero drawing: put stage point (px, py) at screen (sx, sy) at scale s.
+      const aim = (px, py, s, sx = 960, sy = 540) => ({ x: sx - s * px, y: sy - s * py, scale: s });
+      const FACE = [942, 347], HAND = [789, 387], WIDE = [960, 560];
+      const VARIANTS = ["hero", "blink", "sing", "wink", "serious"];
+      const show = (name, at) => VARIANTS.forEach((v) => set(`#v-${v}`, { opacity: v === name ? 1 : 0 }, at));
+      const blink = (at) => { show("blink", at); show("hero", at + 0.125); };
+      const flash = (at, peak = 1) => { set("#flash", { opacity: peak }, at); to("#flash", { opacity: 0, duration: 0.3, ease: "power2.out" }, at + 0.02); };
+
+      // Lyric cluster beside the face: characters arrive one by one, the cluster lifts away.
+      function cluster(lines, side, at, until, extra = "") {
+        const box = document.createElement("div");
+        box.className = `cluster jp ${side} ${extra}`;
+        box.id = `cl${uid++}`;
+        const chars = [];
+        lines.forEach((line, i) => {
+          if (i) box.appendChild(document.createElement("br"));
+          for (const c of line) { const s = document.createElement("span"); s.className = "ch"; s.id = `c${uid++}`; s.textContent = c; box.appendChild(s); chars.push(s); }
+        });
+        $("type").appendChild(box);
+        gsap.set(chars, { opacity: 0, y: 26 });
+        chars.forEach((c, i) => to(c, { opacity: 1, y: 0, duration: 0.16, ease: "back.out(2.2)" }, at + i * 0.045));
+        to(box, { y: -24, opacity: 0, duration: 0.25, ease: "power2.in" }, until - 0.25);
+      }
+      // Vertical strip that drops in from the top at x.
+      function strip(text, x, at, until) {
+        const s = document.createElement("div");
+        s.className = "strip jp"; s.id = `st${uid++}`; s.style.left = `${x}px`; s.textContent = text;
+        $("type").appendChild(s);
+        gsap.set(s, { yPercent: -100 });
+        to(s, { yPercent: 0, duration: 0.3, ease: "power3.out" }, at);
+        to(s, { yPercent: 100, duration: 0.25, ease: "power3.in" }, until - 0.25);
+      }
+      // Hero word: slams in at full size on its downbeat, the frame kicks, the word lifts off.
+      function slam(word, at, hold = BAR, long = false) {
+        const s = document.createElement("div");
+        s.className = `slam display${long ? " long" : ""}`; s.id = `sl${uid++}`; s.textContent = word;
+        $("type").appendChild(s);
+        gsap.set(s, { scale: 1.9, rotation: -7 });
+        to(s, { opacity: 1, scale: 1, rotation: 0, duration: 0.14, ease: "power4.out" }, at);
+        to(s, { opacity: 0, scale: 0.86, duration: 0.18, ease: "power2.in" }, at + hold - 0.18);
+        kick(at);
+      }
+      // Camera kick: three short shakes of the whole stage.
+      function kick(at, size = 14) {
+        to("#shake", { x: size, duration: 0.04, ease: "power1.out" }, at);
+        to("#shake", { x: -size * 0.6, duration: 0.05, ease: "power1.inOut" }, at + 0.04);
+        to("#shake", { x: 0, duration: 0.07, ease: "power1.inOut" }, at + 0.09);
+      }
+      function ticker(text, y, at, until, direction) {
+        const t = document.createElement("div");
+        t.className = "ticker jp"; t.id = `tk${uid++}`; t.style.top = `${y}px`; t.textContent = `${text}  `.repeat(12);
+        $("type").appendChild(t);
+        gsap.set(t, { x: direction > 0 ? -2200 : 0, opacity: 0 });
+        to(t, { opacity: 1, duration: 0.2, ease: "power1.out" }, at);
+        // A ticker scrolls at a constant speed by design.
+        to(t, { x: direction > 0 ? 0 : -2200, duration: until - at, ease: "none" }, at);
+        to(t, { opacity: 0, duration: 0.15, ease: "power1.in" }, until - 0.15);
+      }
+
+      // ---------- ghost lyrics: dark-red rows of the lyrics drifting behind her ----------
+      const GHOST = ["眠らない相場の海で 君のかわりに目を開けてる", "数字の波を読みながら 静かに答えを書いてるの", "ワンパーソン・ウォールストリート 君がうなずくまで", "調べて 書いて 待ってるの 全部 履歴に残すから"];
+      gsap.set("#ghost", { opacity: 0 });
+      GHOST.forEach((text, i) => {
+        const row = document.createElement("div");
+        row.className = "ghost-row"; row.id = `gr${i}`; row.textContent = `${text}　`.repeat(3); row.style.top = `${40 + i * 260}px`;
+        $("ghost").appendChild(row);
+        gsap.set(row, { x: i % 2 ? -900 : 0 });
+        to(row, { x: i % 2 ? 0 : -900, duration: 48, ease: "sine.inOut" }, T(4, 4));
+      });
+
+      // ---------- intro, bars 1-4: rings spin up out of black, burst, flash reveal ----------
+      // SVG groups rotate about svgOrigin (canvas coordinates); transformOrigin would be bbox-relative.
+      gsap.set(["#g-ring-a", "#g-ring-b"], { svgOrigin: "960 540" });
+      gsap.set("#g-ring-a", { scale: 0.6 });
+      to("#g-ring-a", { opacity: 1, duration: 0.5, ease: "power1.out" }, 0.3);
+      to("#g-ring-a", { rotation: 200, scale: 1.1, duration: 4.4, ease: "power1.inOut" }, 0.3);
+      to("#g-ring-b", { opacity: 1, duration: 0.4, ease: "power1.out" }, T(3));
+      to("#g-ring-b", { rotation: -160, duration: 2.6, ease: "power2.in" }, T(3));
+      // The hook at the centre: a red disc in a yellow ring that pulses on every beat until the reveal.
+      gsap.set("#g-pulse", { svgOrigin: "960 540" });
+      to("#g-pulse", { opacity: 1, duration: 0.3, ease: "power1.out" }, 0.3);
+      for (let bar = 1; bar <= 4; bar += 1) for (let beat = 1; beat <= 4; beat += 1) {
+        if (bar === 4 && beat > 2) continue;
+        to("#g-pulse", { scale: 1.18, duration: 0.06, ease: "power2.out" }, T(bar, beat));
+        to("#g-pulse", { scale: 1, duration: 0.25, ease: "power2.inOut" }, T(bar, beat) + 0.06);
+      }
+      to(["#g-ring-a", "#g-ring-b", "#g-pulse"], { opacity: 0, duration: 0.5, ease: "power2.in" }, T(4, 3));
+      flash(T(4, 4));
+      set(["#field", "#halftone", "#ghost"], { opacity: 1 }, T(4, 4));
+      set("#halftone", { opacity: 0.55 }, T(4, 4));
+      show("hero", T(4, 4));
+      gsap.set("#cam", aim(...WIDE, 0.96));
+      gsap.set("#logo", { scale: 1.7 });
+      to("#logo", { opacity: 1, scale: 1, duration: 0.16, ease: "power4.out" }, T(4, 4));
+      to("#logo", { opacity: 0, scale: 1.15, y: -30, duration: 0.3, ease: "power2.in" }, T(6, 1));
+
+      // ---------- verse, bars 5-12: held hero, clusters alternate, blinks, a slow push ----------
+      to("#cam", { ...aim(...WIDE, 1.05), duration: T(12, 4) - T(4, 4), ease: "sine.inOut" }, T(4, 4));
+      const VERSE = [[["眠らない", "相場の海で"], "L"], [["君のかわりに", "目を開けてる"], "R"], [["数字の波を", "読みながら"], "L"], [["静かに答えを", "書いてるの"], "R"]];
+      VERSE.forEach(([lines, side], i) => {
+        const bar = 5 + i * 2;
+        cluster(lines, side, T(bar), T(bar + 2));
+        show("sing", T(bar)); show("hero", T(bar, 3));
+        to("#idle", { rotation: side === "L" ? -1.6 : 1.6, duration: 0.6, ease: "power2.out" }, T(bar));
+      });
+      [T(6, 3), T(8, 4), T(10, 2), T(12, 2)].forEach(blink);
+      for (let bar = 5; bar < 36; bar += 2) {
+        to("#idle", { scaleY: 1.012, duration: BAR, ease: "sine.inOut" }, T(bar));
+        to("#idle", { scaleY: 1, duration: BAR, ease: "sine.inOut" }, T(bar + 1));
+      }
+
+      // ---------- pre-chorus, bars 13-20: vertical strips, re-crops faster each bar, black-out ----------
+      to("#cam", { ...aim(...FACE, 1.7), duration: 0.6, ease: "power3.inOut" }, T(12, 4) + 0.05);
+      to("#idle", { rotation: 0, duration: 0.6, ease: "power2.out" }, T(13));
+      strip("上がる？　下がる？", 250, T(13), T(15));
+      strip("迷う夜はもう終わり", 1540, T(15), T(17));
+      strip("最後に決めるのは", 250, T(17), T(20));
+      set("#cam", aim(...HAND, 2.1, 760, 560), T(15)); show("wink", T(15));
+      set("#cam", aim(...FACE, 1.9), T(16)); show("hero", T(16));
+      // face.png (shown 1920 px square): eyes sit around y 1240, their midpoint around x 1140.
+      set("#facecam", { opacity: 1, ...aim(1100, 1150, 1.0) }, T(17)); show("serious", T(17));
+      to("#facecam", { ...aim(1100, 1150, 1.12), duration: BAR, ease: "sine.out" }, T(17));
+      set("#facecam", { opacity: 0 }, T(18));
+      set("#cam", aim(...FACE, 2.1), T(18)); show("sing", T(18));
+      set("#facecam", { opacity: 1, ...aim(1140, 1240, 1.3) }, T(19));
+      to("#facecam", { ...aim(1140, 1240, 1.55), duration: BAR, ease: "power2.in" }, T(19));
+      set("#blackout", { opacity: 1 }, T(20));
+      set("#facecam", { opacity: 0 }, T(20));
+      to("#bline", { opacity: 1, duration: 0.25, ease: "power1.out" }, T(20, 2));
+      set("#bline", { opacity: 0 }, T(21));
+
+      // ---------- chorus, bars 21-36: flash, logo, hero words every 2 bars, ticker, split ----------
+      flash(T(21));
+      set("#blackout", { opacity: 0 }, T(21));
+      set("#cam", aim(...WIDE, 1.0), T(21)); show("sing", T(21));
+      ticker("ONE-PERSON WALL STREET ✦ ワンパーソン・ウォールストリート ✦", 36, T(21), T(37), 1);
+      ticker("君がうなずくまで ✦ UNTIL YOU NOD ✦ 君がうなずくまで ✦", 952, T(21), T(37), -1);
+      const CHORUS = [["ワンパーソン・\nウォールストリート", true], ["調査"], ["承認"], ["24H"], ["ALICE"], ["記録"], ["全部"], ["安心"]];
+      const CHORUS_LINES = [null, [["調べて　書いて", "待ってるの"], "R"], [["君が", "うなずくまで"], "L"], [["嵐の夜も", "二十四時間"], "R"], [["アリス　アリス", "見ててあげる"], "L"], [["利確も", "損切りも"], "R"], [["全部", "履歴に残すから"], "L"], [["安心して", "眠っていいよ"], "R"]];
+      CHORUS.forEach(([word, long], i) => {
+        const bar = 21 + i * 2;
+        slam(word.replace("\n", ""), T(bar), long ? BAR * 2 : BAR, Boolean(long));
+        if (CHORUS_LINES[i]) cluster(CHORUS_LINES[i][0], CHORUS_LINES[i][1], T(bar + 1), T(bar + 2), "small");
+      });
+      // Part swaps and shots on the hits.
+      show("hero", T(22)); show("sing", T(23)); show("hero", T(24));
+      set("#shot-point", { opacity: 1 }, T(25)); set("#v-point", { opacity: 1 }, T(25)); set("#alice", { opacity: 0 }, T(25));
+      set("#cam", aim(1000, 520, 1.12), T(25));
+      set(["#shot-point", "#v-point"], { opacity: 0 }, T(27)); set("#alice", { opacity: 1 }, T(27));
+      set("#cam", aim(...FACE, 1.6), T(27)); show("sing", T(27));
+      set("#cam", aim(...WIDE, 1.0), T(28)); show("wink", T(29)); show("hero", T(30));
+      [T(22, 4), T(26, 3), T(28, 4)].forEach(blink);
+      // Bars 29-36: three panels, OpenAlice in the beat panel, a flash on each panel change.
+      set(["#pl", "#pc", "#pr"], { opacity: 1 }, T(29));
+      set("#cap-term-wrap", { opacity: 1 }, T(29));
+      set("#cap-term-wrap", { opacity: 0 }, T(31)); set("#cap-inbox", { opacity: 1 }, T(31));
+      set("#cap-inbox", { opacity: 0 }, T(33)); set("#cap-port", { opacity: 1 }, T(33));
+      set("#cap-port", { opacity: 0 }, T(35)); set("#cap-term-wrap", { opacity: 1 }, T(35));
+      [T(31), T(33), T(35)].forEach((at) => flash(at, 0.6));
+      for (let bar = 29; bar < 37; bar += 1) {
+        to("#pl-img", { y: bar % 2 ? -18 : 0, duration: BAR, ease: "sine.inOut" }, T(bar));
+        to("#pr-img", { y: bar % 2 ? 18 : 0, duration: BAR, ease: "sine.inOut" }, T(bar));
+      }
+
+      // ---------- bridge, bars 37-44: black, white silhouette, one line at a time, static ----------
+      set(["#pl", "#pc", "#pr", "#cap-term-wrap", "#cap-port", "#cap-inbox"], { opacity: 0 }, T(37));
+      // The black is the field itself: a separate black layer would sit over the camera's
+      // stacking context and hide the silhouette inside it.
+      set("#field", { backgroundColor: "#07070c" }, T(37));
+      set(["#ghost", "#halftone"], { opacity: 0 }, T(37));
+      set("#cam", aim(...WIDE, 0.78, 960, 600), T(37));
+      set("#alice", { opacity: 0 }, T(37));
+      set("#sil", { opacity: 1 }, T(37));
+      to("#bl1", { opacity: 1, duration: 0.4, ease: "power1.out" }, T(38));
+      to("#bl1", { opacity: 0, duration: 0.3, ease: "power1.in" }, T(40) - 0.3);
+      to("#bl2", { opacity: 1, duration: 0.4, ease: "power1.out" }, T(41));
+      to("#inbox-card", { opacity: 1, y: -16, duration: 0.5, ease: "power2.out" }, T(41, 3));
+      to(["#bl2", "#inbox-card"], { opacity: 0, duration: 0.3, ease: "power1.in" }, T(43, 3));
+      to("#sil", { scale: 1.06, y: -20, duration: T(44, 3) - T(39), ease: "sine.inOut" }, T(39));
+      for (const [at, o] of [[T(43, 3), 0.5], [T(43, 4), 0], [T(44, 1), 0.7], [T(44, 2), 0.2], [T(44, 3), 0.9], [T(44, 4), 1]]) set("#static", { opacity: o }, at);
+
+      // ---------- final chorus, bars 45-56: grid of chibis, a word every bar, strobing panel ----------
+      set("#static", { opacity: 0 }, T(45));
+      flash(T(45));
+      set("#sil", { opacity: 0 }, T(45));
+      set("#alice", { opacity: 1 }, T(45));
+      set("#cam", aim(...WIDE, 0.92, 960, 600), T(45)); show("sing", T(45));
+      set("#field", { backgroundColor: "#141a3a" }, T(45));
+      set("#ghost", { opacity: 0 }, T(45));
+      for (let r = 0; r < 4; r += 1) {
+        const row = document.createElement("div");
+        row.className = "grid-row"; row.id = `grow${r}`; row.style.top = `${-40 + r * 290}px`;
+        for (let c = 0; c < 8; c += 1) { const img = document.createElement("img"); img.src = "assets/captures/alice-full.png"; img.alt = ""; row.appendChild(img); }
+        $("grid").appendChild(row);
+      }
+      set("#grid", { opacity: 1 }, T(45));
+      for (let bar = 45; bar < 57; bar += 1) for (let beat = 1; beat <= 4; beat += 1) {
+        const at = T(bar, beat);
+        for (let r = 0; r < 4; r += 1) {
+          to(`#grow${r}`, { y: (r + beat) % 2 ? -22 : 0, duration: 0.16, ease: "power2.out" }, at);
+        }
+      }
+      const FINAL = ["ワンパーソン", "ウォール", "ストリート", "取引", "君と", "私の", "アリス", "アリス", "何度でも", "君が", "うなずく", "まで"];
+      FINAL.forEach((word, i) => slam(word, T(45 + i), BAR, word.length > 3));
+      [T(46, 4), T(50, 3), T(54, 2)].forEach(blink);
+      [[49, "wink"], [50, "sing"], [51, "serious"], [52, "sing"], [53, "wink"], [54, "sing"]].forEach(([bar, v]) => show(v, T(bar)));
+      // Bars 53-56: the centre panel strobes OpenAlice screens on half beats (panel only, not a full-frame flash).
+      set("#pc", { opacity: 1 }, T(53));
+      const caps = ["#cap-inbox", "#cap-port", "#cap-term-wrap"];
+      let k = 0;
+      for (let at = T(53); at < T(56, 3) - 0.01; at += BEAT / 2) {
+        caps.forEach((c, j) => set(c, { opacity: j === k % 3 ? 1 : 0 }, Number(at.toFixed(4))));
+        k += 1;
+      }
+      // The panel leaves before the 84 s boundary; switching it off on the boundary rendered as a cut.
+      to("#pc", { opacity: 0, duration: 0.3, ease: "power1.in" }, T(56, 3));
+      set(caps, { opacity: 0 }, T(56, 4) + 0.1);
+
+      // ---------- outro, bars 57-60: the grid falls away, a ring closes around her, end card ----------
+      // After the last bounce (ends T(56, 4) + 0.16) and across the 84 s boundary.
+      for (let r = 0; r < 4; r += 1) to(`#grow${r}`, { y: 1300, duration: 0.8, ease: "power2.in" }, T(56, 4) + 0.18 + r * 0.05);
+      to("#cam", { ...aim(...WIDE, 0.84, 960, 600), duration: 1.2, ease: "power2.inOut" }, T(56, 4));
+      // The colour turns across the 84 s boundary rather than on it: a one-frame full-screen swap
+      // there would render as a cut where the storyboard claims continuation.
+      to("#field", { backgroundColor: "#e5304f", duration: 0.6, ease: "sine.inOut" }, T(56, 4) + 0.1);
+      show("wink", T(57));
+      gsap.set("#g-ring-c", { svgOrigin: "960 470" });
+      to("#g-ring-c", { opacity: 1, duration: 0.4, ease: "power1.out" }, T(57));
+      to("#g-ring-c", { rotation: 90, duration: 90 - T(57), ease: "sine.out" }, T(57));
+      gsap.set("#endcard", { y: 60 });
+      to("#endcard", { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, T(58, 3));
+      show("hero", T(59));
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

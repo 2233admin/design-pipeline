@@ -29,6 +29,7 @@ evals/cases/
     index.html                  the golden composition
     timeline.json               the timeline captured from index.html by `film check`
     score.strudel.js            the score pattern; score-grid.json is its exact event grid
+    capture.cjs generate.cjs    optional: rebuild third-party captures and generated art
     reference.md concepts.md sound.md qa.md   the workflow's records for this film
 ```
 
@@ -52,6 +53,15 @@ sha256. `verify.cjs --render` runs the script when captures are missing.
 - input that makes the page start network requests stalls a paused clock, so typing is captured
   stop-motion (the page's state is set per frame);
 - video is encoded with a keyframe every 0.5 s, because the renderer seeks every frame.
+
+## Generated art
+
+A case whose art is made by an image model (the `mad` Alice case) declares `golden.generated`: the
+generation script, the tool and the generated files. The script records each prompt, its
+reference images, the tool version and the file's sha256 in `assets/generated/generated.json`.
+Image generation is not reproducible and costs model calls, so `verify.cjs --render` never runs
+the script itself: it stops and names the command when files are missing. `assets/generated/` is
+git-ignored.
 
 ## Counter-examples
 
