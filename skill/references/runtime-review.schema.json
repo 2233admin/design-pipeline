@@ -1,0 +1,850 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "runtime-review.schema.json",
+  "title": "离线对象运行观察与开发交接",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Manifest"
+    },
+    {
+      "$ref": "#/$defs/Observation"
+    },
+    {
+      "$ref": "#/$defs/Bundle"
+    },
+    {
+      "$ref": "#/$defs/Projection"
+    },
+    {
+      "$ref": "#/$defs/Record"
+    }
+  ],
+  "$defs": {
+    "Ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\u0000\\\\/:*?\\[\\]{}]+(?:/[^\\u0000\\\\/:*?\\[\\]{}]+)*$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "Identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "designIdentitySha256",
+        "sourceSetSha256",
+        "observationSha256",
+        "targetIdentityDigest",
+        "snapshotDigest",
+        "policyDigest"
+      ],
+      "properties": {
+        "designIdentitySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceSetSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "observationSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "targetIdentityDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "snapshotDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "policyDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "Manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "id",
+        "acceptedDesign",
+        "designIntent",
+        "uiIr",
+        "catalog",
+        "tokens",
+        "codeMap",
+        "componentFirst",
+        "sourceFiles",
+        "runtimeObservation"
+      ],
+      "properties": {
+        "schema": {
+          "const": "design-pipeline.runtime-review-input.v1"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+        },
+        "acceptedDesign": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "artifact"
+          ],
+          "properties": {
+            "kind": {
+              "const": "playground-selection"
+            },
+            "artifact": {
+              "$ref": "#/$defs/Ref"
+            }
+          }
+        },
+        "designIntent": {
+          "$ref": "#/$defs/Ref"
+        },
+        "uiIr": {
+          "$ref": "#/$defs/Ref"
+        },
+        "catalog": {
+          "$ref": "#/$defs/Ref"
+        },
+        "tokens": {
+          "$ref": "#/$defs/Ref"
+        },
+        "codeMap": {
+          "$ref": "#/$defs/Ref"
+        },
+        "componentFirst": {
+          "$ref": "#/$defs/Ref"
+        },
+        "sourceFiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Ref"
+          },
+          "minItems": 1
+        },
+        "runtimeObservation": {
+          "$ref": "#/$defs/Ref"
+        }
+      }
+    },
+    "RuntimeObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "renderedId",
+        "state",
+        "actual",
+        "evidenceKeys"
+      ],
+      "properties": {
+        "renderedId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "actual": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "evidenceKeys": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "screenshot",
+              "trace",
+              "dom",
+              "console",
+              "network",
+              "accessibility",
+              "performance"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "Observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "mode",
+        "dataMode",
+        "capturedAt",
+        "targetIdentityDigest",
+        "snapshotDigest",
+        "policyDigest",
+        "designIdentitySha256",
+        "sourceSetSha256",
+        "evidenceReceipt",
+        "objects"
+      ],
+      "properties": {
+        "schema": {
+          "const": "design-pipeline.runtime-review-observation.v1"
+        },
+        "mode": {
+          "const": "captured"
+        },
+        "dataMode": {
+          "enum": [
+            "fixture",
+            "live",
+            "static",
+            "unknown"
+          ]
+        },
+        "capturedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "targetIdentityDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "snapshotDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "policyDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "designIdentitySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceSetSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evidenceReceipt": {
+          "$ref": "#/$defs/Ref"
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuntimeObject"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "Feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "bundleSha256",
+        "objectId",
+        "designIdentitySha256",
+        "sourceSetSha256",
+        "observationSha256",
+        "targetIdentityDigest",
+        "snapshotDigest",
+        "policyDigest",
+        "category",
+        "actual",
+        "expected",
+        "acceptance"
+      ],
+      "properties": {
+        "schema": {
+          "const": "design-pipeline.runtime-review-feedback.v1"
+        },
+        "bundleSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "designIdentitySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceSetSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "observationSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "targetIdentityDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "snapshotDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "policyDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "category": {
+          "enum": [
+            "component-conformance",
+            "visual-acceptance"
+          ]
+        },
+        "actual": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "expected": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "acceptance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "Mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "renderedId",
+        "sourcePath",
+        "line",
+        "column",
+        "componentId",
+        "tokenRefs",
+        "evidence"
+      ],
+      "properties": {
+        "renderedId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\u0000\\\\/:*?\\[\\]{}]+(?:/[^\\u0000\\\\/:*?\\[\\]{}]+)*$"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "componentId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "tokenRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "LocationStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reasons"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "matched",
+            "unknown"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "Object": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "renderedId",
+        "componentId",
+        "mapping",
+        "sourceStatus",
+        "tokenStatus",
+        "tokenValues",
+        "runtime"
+      ],
+      "properties": {
+        "renderedId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "componentId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "mapping": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Mapping"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceStatus": {
+          "$ref": "#/$defs/LocationStatus"
+        },
+        "tokenStatus": {
+          "$ref": "#/$defs/LocationStatus"
+        },
+        "tokenValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "value"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "value": {}
+            }
+          },
+          "minItems": 0
+        },
+        "runtime": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RuntimeObject"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "path",
+        "sha256",
+        "mediaType",
+        "content"
+      ],
+      "properties": {
+        "key": {
+          "enum": [
+            "screenshot",
+            "trace",
+            "dom",
+            "console",
+            "network",
+            "accessibility",
+            "performance"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\u0000\\\\/:*?\\[\\]{}]+(?:/[^\\u0000\\\\/:*?\\[\\]{}]+)*$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "mediaType": {
+          "enum": [
+            "image/png",
+            "text/plain",
+            "application/octet-stream"
+          ]
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "Finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      }
+    },
+    "ComponentAcceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "scope",
+        "reason"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "blocked",
+            "invalid",
+            "stale"
+          ]
+        },
+        "scope": {
+          "enum": [
+            "captured-lineage",
+            "current-not-verified"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      }
+    },
+    "VisualAcceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "scope",
+        "reason"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "waived",
+            "not-evaluated",
+            "stale",
+            "blocked"
+          ]
+        },
+        "scope": {
+          "enum": [
+            "captured-lineage",
+            "current-not-verified"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      }
+    },
+    "Projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundleSha256",
+        "checkedAt",
+        "identity",
+        "observed",
+        "freshness",
+        "componentConformance",
+        "visualAcceptance",
+        "findings"
+      ],
+      "properties": {
+        "bundleSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "checkedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "identity": {
+          "$ref": "#/$defs/Identity"
+        },
+        "observed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "designIdentitySha256",
+            "sourceSetSha256",
+            "observationSha256"
+          ],
+          "properties": {
+            "designIdentitySha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "sourceSetSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "observationSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "freshness": {
+          "enum": [
+            "matched",
+            "stale",
+            "blocked"
+          ]
+        },
+        "componentConformance": {
+          "$ref": "#/$defs/ComponentAcceptance"
+        },
+        "visualAcceptance": {
+          "$ref": "#/$defs/VisualAcceptance"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "Bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "id",
+        "builtAt",
+        "manifest",
+        "inputs",
+        "identity",
+        "componentFirstBytes",
+        "observation",
+        "evidenceReceiptBytes",
+        "sources",
+        "objects",
+        "evidence",
+        "html",
+        "bundleSha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "design-pipeline.runtime-review.v1"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+        },
+        "builtAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "manifest": {
+          "$ref": "#/$defs/Ref"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Manifest"
+        },
+        "identity": {
+          "$ref": "#/$defs/Identity"
+        },
+        "componentFirstBytes": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "evidenceReceiptBytes": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256",
+              "text"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\u0000\\\\/:*?\\[\\]{}]+(?:/[^\\u0000\\\\/:*?\\[\\]{}]+)*$"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Object"
+          },
+          "minItems": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1
+        },
+        "html": {
+          "$ref": "#/$defs/Ref"
+        },
+        "bundleSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "Record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "feedback",
+        "contextAtRecord",
+        "recordedAt",
+        "lifecycle"
+      ],
+      "properties": {
+        "schema": {
+          "const": "design-pipeline.runtime-review-record.v1"
+        },
+        "feedback": {
+          "$ref": "#/$defs/Feedback"
+        },
+        "contextAtRecord": {
+          "$ref": "#/$defs/Projection"
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lifecycle": {
+          "const": "recorded"
+        }
+      }
+    }
+  }
+}

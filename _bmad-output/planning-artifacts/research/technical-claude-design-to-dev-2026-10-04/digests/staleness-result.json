@@ -1,0 +1,30 @@
+{
+  "today": "2026-10-04",
+  "claims": [
+    {
+      "claim": "[5] Claude Design announcement, historical AI landscape",
+      "class": "landscape_ai",
+      "pub_date": "2026-04-17",
+      "recheck": "2026-07-17",
+      "stale": true
+    },
+    {
+      "claim": "[6] Anthropic live evaluator historical experiment",
+      "class": "landscape_ai",
+      "pub_date": "2026-03-24",
+      "recheck": "2026-06-24",
+      "stale": true
+    },
+    {
+      "claim": "[7] Vercel Preview pattern, last_updated date",
+      "class": "patterns",
+      "pub_date": "2026-09-17",
+      "date_kind": "last_updated",
+      "recheck": "2028-09-17",
+      "stale": false
+    }
+  ],
+  "stale_count": 2,
+  "earliest_recheck": "2026-06-24",
+  "no_window_classes": []
+}

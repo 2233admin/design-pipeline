@@ -1,0 +1,21 @@
+{
+  "derivation": "Latest dated ledger claims ref=5/ref=6/ref=7; ref=7 superseding correction uses current environments.md last_updated2026-09-17 instead of initial2026-02-27, not publication. Duplicate historical unref claims consolidated; indexed Artifacts date superseded by event and excluded. Undated current help remains unknown, not access-date substitution.",
+  "claims": [
+    {
+      "claim": "[5] Claude Design announcement, historical AI landscape",
+      "class": "landscape_ai",
+      "pub_date": "2026-04-17"
+    },
+    {
+      "claim": "[6] Anthropic live evaluator historical experiment",
+      "class": "landscape_ai",
+      "pub_date": "2026-03-24"
+    },
+    {
+      "claim": "[7] Vercel Preview pattern, last_updated date",
+      "class": "patterns",
+      "pub_date": "2026-09-17",
+      "date_kind": "last_updated"
+    }
+  ]
+}

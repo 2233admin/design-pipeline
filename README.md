@@ -246,6 +246,40 @@ design、diff review、document critique 与 game balance 七份默认蓝图；�
 项目可以携带新的 Blueprint，声明自己的交互结构、状态输出、QA 和受允许的集成目标，
 Blueprint 哈希变化会自动使旧浏览器验证失效。
 
+### 对象级 captured runtime review
+
+`runtime-review` 把已选择 Playground prompt、声明源码集与外部 captured observation
+绑定成离线对象页；它不是 live client，也不会替代现有 Component Conformance / Visual Acceptance。
+页面提供 source/token/evidence、actual/expected/acceptance、复制开发 prompt 和导出对象反馈。
+
+```bash
+node skill/scripts/designer-pipeline.cjs runtime-review build --root ../my-project --change-root openspec/changes/example --manifest review-input.json --json
+node skill/scripts/designer-pipeline.cjs runtime-review check --root ../my-project --change-root openspec/changes/example --artifact runtime-review/example/review.json --json
+node skill/scripts/designer-pipeline.cjs runtime-review record --root ../my-project --change-root openspec/changes/example --artifact runtime-review/example/review.json --observation object-feedback.json --json
+node skill/scripts/designer-pipeline.cjs runtime-review --help
+```
+
+`--root` 默认 cwd；changeRoot 必须是 root 内既存目录。manifest/artifact/observation 都相对
+changeRoot，record 的 observation 是页面导出的反馈，不是运行 capture。必须显式指定 action；
+公共 `--help/-h` 可查用法。重复、未知或跨 action 参数会拒绝，没有 `--write`、`--replace`
+或公开的时间注入参数。build 生成 `runtime-review/<manifest.id>/review.json` 与 `index.html`，
+已有目录不覆盖；上例 manifest 的 id 为 example。输入字段见
+[运行 review 合同](skill/references/runtime-review.md) 与对应的两份 schema。
+
+页面默认未核验当前磁盘。将 public check `--json` 的完整 stdout 自行保存，再以本地文件导入；
+要求同 Bundle/identity tuple、`design-pipeline.cli-result.v1`、`ok:true` 和顶层 `context`，
+不接受裸 Projection。built/matched/recorded 退出 0，stale/blocked 退出 2，无效输入退出 1；
+`ok:true` 的 stale/blocked 不是验收通过。check 只读且仅覆盖 checkedAt 时点的声明文件集，
+hash 匹配不证明运行进程使用当前磁盘、也不认证 producer；“声明数据模式”即使为 live，观察仍是 captured。
+
+record 仅保存 `runtime-review/feedback/<feedbackHash>.json` 的本地 Record，不标 resolved/pass，
+不写 target、ledger 或 receipts，不调用 pipeline issue feedback recorder。开发者先读同条 Record/Bundle
+并 check；不匹配先 refresh/rebind，再修改授权 target、重新采集、build/check 并走原核验。
+三身份 design/sourceSet/observation、target/snapshot/policy 和原 receipt lineage 保持独立；新 hash
+不等于问题解决。真实私有内容留在外部 workspace/changeRoot，不提交本工具 repo 的 docs/fixtures。
+页面不联网、自动执行或发布。
+
+
 ### 分层自适应
 
 Design Pipeline 可以从明确纠正和重复使用证据中提出更合适的协作或项目规则，但不会训练

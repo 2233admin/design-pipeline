@@ -169,6 +169,39 @@ inject `AGENTS.md`, copy templates, swizzle components, build themes, or modify 
 part of catalog normalization or acquisition. Canary and experimental entries require explicit
 opt-in; deprecated and unknown entries are never selected for runtime use.
 
+## 对象级运行 review 与开发交接
+
+需要把已选择设计、声明源码集和外部运行观察交给开发者时，读
+`references/runtime-review.md`；输入合同在 `references/runtime-review.schema.json`，
+对象反馈合同在 `references/runtime-review-feedback.schema.json`。
+
+```bash
+designer-pipeline runtime-review build --change-root <dir> --manifest <file> [--root <workspace>] [--json]
+designer-pipeline runtime-review check --change-root <dir> --artifact <review.json> [--root <workspace>] [--json]
+designer-pipeline runtime-review record --change-root <dir> --artifact <review.json> --observation <feedback.json> [--root <workspace>] [--json]
+```
+
+- 必须显式选择 action；公共 `--help/-h` 可看用法。不接受重复、未知、跨 action 参数，
+  不提供 `--write`、`--replace` 或公开的 `now`；`--root` 默认 cwd。
+- `--change-root` 必须是 workspace 内既存目录；三个 file 参数都相对 changeRoot。
+  record 的 `--observation` 指页面导出的对象反馈，不是 runtime capture。
+- build 只写 `runtime-review/<manifest.id>/review.json` 与 `index.html`，已有目录不覆盖。
+  仅接受已选 Playground prompt；UI IR/tokens/code-map 仍是声明输入，不继承设计接受状态。
+- 页面可选对象、查看 source/token/captured evidence，分别填写 Component Conformance 或
+  Visual Acceptance 的 actual/expected/acceptance，复制开发 prompt 或导出反馈；缺失 runtime
+  与 unknown mapping 不冒充 pass。design/sourceSet/observation 三身份不得混用。
+- 页面默认“未核验当前磁盘”；将 public check `--json` 的完整 stdout 保存后手动导入，
+  只接受同 Bundle/identity tuple 的 `design-pipeline.cli-result.v1`、`ok:true` 与顶层
+  `context`，不接受裸 Projection。报告仅说明 checkedAt 时点、声明文件集范围；hash 匹配
+  不认证 producer 或运行进程，声明数据模式即使是 live 也仍属于 captured。
+- built/matched/recorded 退出 0，stale/blocked 退出 2，无效参数/schema/path 退出 1；
+  `ok:true` 不代表验收通过。check 只读；record 仅保存 change-local Record，不调用 pipeline
+  issue feedback recorder，不改 target、ledger 或 receipts，也不标 resolved/pass。
+- 开发者先读同条 Record/Bundle 并 check；不匹配先 refresh/rebind，再改用户授权 target、
+  外部重新采集、build/check，并走原有两类核验。新 hash 不等于反馈解决。真实私有内容应留在
+  外部 workspace/changeRoot，不进入本工具 repo 的 docs/fixtures；页面不联网、自动执行或发布。
+
+
 ## Pipeline Shape
 
 Model the workflow after OpenSpec's lightweight change lifecycle:

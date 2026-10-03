@@ -295,6 +295,10 @@
     "references/pipeline-method.md",
     "references/feature-routes.md",
     "references/stages.md",
+    "references/runtime-review-feedback.schema.json",
+    "references/runtime-review.md",
+    "references/runtime-review.schema.json",
+    "scripts/runtime-review-core.cjs",
     "references/lifecycle.md"
   ]
 }

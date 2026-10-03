@@ -4,7 +4,23 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- 新增 `runtime-review build/check/record`：由已选择 Playground、声明源码集和外部 captured
+  observation 生成离线对象交接页，支持复制开发 prompt、导出反馈及显式本地记录。
+- 分开保留 design/sourceSet/observation 身份和原 target/snapshot/policy/receipt lineage；只读 check
+  给出时间点 freshness，Component Conformance 与 Visual Acceptance 仍独立，record 不标 resolved。
+  captured/hash 匹配不代表 live、当前验收或 producer 认证；公共入口、schema/reference 与负例测试已登记分发。
+
+
 ### Fixed
+
+- 修复 runtime-review 对合法 legacy evidence uppercase hash 的误报漂移，以及 declared source
+  祖先不可读、漂移 Playground 下游缺口、UI IR 自身非法与缺 catalog 并存时的错误分类。
+- 对象反馈完整写入同目录私有临时文件后排他发布；合法竞争 Record 保留历史，partial-write
+  失败不占用最终反馈路径。发布要求 hard link 支持，不提供覆盖式回退或断电 durability 承诺。
+- 异步导入报告采用最新选择，旧读取的成功/失败不再覆盖新结论。renderer 变化后旧 HTML
+  仍保留历史，须新 manifest.id/build/check；不放宽 canonical HTML 完整性 guard。
 
 - Toolchain resolve/probe now require a complete Stage 0 job-plan binding and reject stale hashes
   or deliverable-form conflicts. Regenerate older plans from the original query before resolving.
