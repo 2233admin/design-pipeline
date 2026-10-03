@@ -141,7 +141,7 @@ context:
 - Main 第一轮 final-code `node scripts/qa.cjs` 实际 exit 0，49.12s：仓库 **735/735**、安装包 public CLI **11/11**、reproducible tgz/zip/checksums 与 repository status byte-identical 均 OK。完整原始输出（1628 行）已由工具 C→D MV 保留至 `D:/Temp/runtime-review-main-20261003-1845/qa-after-fixes-full.log`，不再以旧 artifact alias 作为当前保留文件引用。不把旧历史 727 改写成此次计数。
 - Main 已完成 CodeReviewGate：54 原始发现全部 disposition、六方向修复、V10/V11 验证强化、31 preexisting defer 及上述真实 UI/CLI/QA 证据；人类 **CHECKPOINT 2 尚未接受**，OpenSpec status 仍 `in-review`。
 - resolved `sync-sprint-status.md` 的 precondition：`story_key` 未设置，故显式 **skip sprint sync**，未创建 story 或改 sprint-status。
-- 后一次 QA 的 stdout 因 C ENOSPC 保存失败，进程句柄已不可恢复，**无可恢复 exit/footer，不作为通过证据**。最终文档后门禁由 Main 使用已准备的低输出 `D:/Temp/runtime-review-main-20261003-1845/qa-counted-on-data-drive.ps1` 运行同一 `scripts/qa.cjs`（D TEMP），在最终交付中给出 actual 结果；此处不预填未运行结果。本切片未运行核验、stage/commit 或打开 VS Code；选择性本地 commit 由下一 owner 在最终 green 后负责，不自动 push。Multica 仍按上节真实连接失败 blocked，无 KEY/成功 comment。
+- 后一次 QA 的 stdout 因 C ENOSPC 保存失败，进程句柄已不可恢复，**无可恢复 exit/footer，不作为通过证据**。随后 Main 在这些文档小修落盘后使用低输出 `D:/Temp/runtime-review-main-20261003-1845/qa-counted-on-data-drive.ps1` 运行同一 `scripts/qa.cjs`（D TEMP）：实际 **48.84s、1627 行、QA_EXIT_CODE=0**。该结果是已执行快照的事实，不复用被截断的那次输出。选择性本地 commit 由唯一 Git owner 在 Main 最后门禁放行后负责，不自动 push；人类 CHECKPOINT 2 仍未接受。Multica 仍按上节真实连接失败 blocked，无 KEY/成功 comment。
 - KB 收尾缺少工作知识库的 registry/locator 前提：Main 实际 crux/rhizome 多个 declared discovery 未找到工作定位，亦无已知 locator；候选 note 未落盘，不使用 personal fallback，也不把 PM 状态复制为 KB。
 
 ## Suggested Review Order
