@@ -135,6 +135,7 @@
     "scripts/check-style-signals.cjs",
     "adapters/astryx-provider.mjs",
     "adapters/playwright.cjs",
+    "adapters/agent-browser.cjs",
     "references/package-resources.json",
     "references/ai-interaction-patterns.md",
     "references/animation-opportunity-and-review.md",

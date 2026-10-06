@@ -4,6 +4,15 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Web evidence adapter `adapters/agent-browser.cjs` (`add-agent-browser-evidence-adapter`): drives
+  [agent-browser](https://github.com/vercel-labs/agent-browser) to fill every artifact of the
+  evidence receipt — full-page screenshot, gzipped Chrome trace, DOM, console with uncaught page
+  errors, network requests with status codes (headers removed, redaction `applied`), axe-core
+  accessibility and Web Vitals. The receipt is `complete` only when every command succeeded.
+  `evidence capture` gains `--agent-browser <path>` (project-installed) and forwards `--chrome <exe>`.
+
 ## [0.12.0-beta.1] - 2026-09-29
 
 ### Changed
