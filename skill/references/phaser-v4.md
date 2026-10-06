@@ -4,7 +4,9 @@ Use Phaser when a web product needs an integrated 2D game framework: scenes, cam
 audio, physics, asset loading, game objects, time, scale, and game-state lifecycle. Use PixiJS when
 the need is primarily rendering and the project should own the surrounding systems itself.
 
-Reviewed baseline: Phaser 4.2.1 on 2026-07-23. Phaser is MIT licensed.
+Reviewed baseline: Phaser 4.2.1 on 2026-10-07, npm source commit
+`41be1e462bc600064e498cba370bfa8c5c055a22`. This remains the current stable npm release. Phaser is
+MIT licensed; keep the exact version selected by the target project.
 
 ## Selection Boundary
 
@@ -60,6 +62,14 @@ into the canvas only to make it visually consistent.
 Phaser 3 and Phaser 4 APIs and renderer behavior are not interchangeable. Record the installed
 version and verify against version-matched official documentation.
 
+The v4 renderer replaces v3 WebGL pipelines with render nodes. When migrating from v3, review custom
+pipelines and shaders, FX and masks (now filters), tint (`setTintFill()` was removed), lighting,
+DynamicTexture/RenderTexture, Graphics, TileSprite and texture orientation. `BitmapMask`, `Point`,
+`Mesh`, and `Plane` were removed; compressed textures need the v4 Y-axis orientation. Phaser 4.2
+adds Mesh2D, stencil objects, a second tint color, cone lights, and render configuration options;
+4.2.1 includes Scale Manager resize and ESM build fixes. Do not treat the 4.x version match as proof
+that a v3 project is migration-compatible.
+
 The official Phaser Game Agent MCP is an optional credentialed, metered host. It is never required
 for local pipeline use and must not be installed or invoked without explicit authority, cost, and
 data-boundary review.
@@ -80,4 +90,7 @@ and measured low-end performance.
 - Phaser repository: https://github.com/phaserjs/phaser
 - Phaser documentation: https://docs.phaser.io/
 - Phaser 4 releases: https://phaser.io/download/phaser4
+- Phaser 3-to-4 migration overview: https://phaser.io/news/2026/04/migrating-from-phaser-3-to-phaser-4-what-you-need-to-know
+- Phaser 4 rendering concepts: https://phaser.io/tutorials/phaser-4-rendering-concepts
+- Phaser 4.2 release details: https://phaser.io/news/2026/07/phaser-4-2-spine-renderer-mesh2d-stencil
 - Phaser Game Agent MCP: https://phaser.io/news/2026/07/phaser-game-agent-mcp-setup

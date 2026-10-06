@@ -105,6 +105,12 @@ function validateArtifactMetadata(metadata, options = {}) {
   if (Number.isNaN(new Date(metadata.created_at).getTime())) fail("artifact", "created_at must be a valid date-time");
   assertEnum(metadata.status, ARTIFACT_STATUSES, "status", "artifact");
   if (metadata.required !== undefined && typeof metadata.required !== "boolean") fail("artifact", "required must be boolean");
+  if (options.metadataOnly === true) {
+    if (path.win32.isAbsolute(metadata.path) || path.posix.isAbsolute(metadata.path) || /^[a-z]:/i.test(metadata.path) || metadata.path.includes("\0") || metadata.path.replaceAll("\\", "/").split("/").some(part => part === "..")) {
+      fail("artifact", "metadata path must remain relative to its change root", { code: "ARTIFACT_PATH_ESCAPE" });
+    }
+    return { status: metadata.status, path: metadata.path, metadata };
+  }
   const root = path.resolve(options.changeRoot || process.cwd());
   const file = artifactPath(root, metadata.path, { mustExist: false });
   const exists = fs.existsSync(file) && fs.statSync(file).isFile();

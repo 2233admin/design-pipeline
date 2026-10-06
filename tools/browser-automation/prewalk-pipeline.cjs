@@ -13,6 +13,7 @@ const DEFAULT_VIEWPORTS = [
   { width: 768, height: 1024 },
   { width: 390, height: 844 },
 ];
+const PIXELMATCH_OPTIONS = Object.freeze({ threshold: 0.1, includeAA: true, checkerboard: true });
 
 function parseArgs(argv) {
   const [command = "probe", ...rest] = argv;
@@ -364,16 +365,39 @@ function interactionCoverage(reference, implementation) {
   return reference.interactions.filter((item) => implementationInteractions.has(key(item))).length / reference.interactions.length;
 }
 
+function comparePixels(pixelmatch, reference, implementation, diff, width, height, version) {
+  const different = pixelmatch(reference, implementation, diff, width, height, PIXELMATCH_OPTIONS);
+  return {
+    different,
+    metadata: {
+      library: "pixelmatch",
+      version,
+      metric: "OKLab HyAB",
+      options: PIXELMATCH_OPTIONS,
+      thresholdMeaning: "maximum OKLab HyAB distance (1 = black vs white)",
+      countMode: "total mismatched pixels",
+    },
+  };
+}
+
+function pixelmatchPackage() {
+  const actual = JSON.parse(fs.readFileSync(require.resolve("pixelmatch/package.json"), "utf8"));
+  const expected = require("./package.json").dependencies.pixelmatch;
+  if (actual.version !== expected) throw new Error(`pixelmatch ${actual.version} is installed, but ${expected} is declared; run npm ci`);
+  return actual;
+}
+
 async function compare(options) {
   ensureOut(options.out);
   if (!options.url || !options.implementationUrl) throw new Error("--url and --implementation-url are required");
-  const [{ PNG }, pixelmatchModule] = await Promise.all([import("pngjs"), import("pixelmatch")]);
+  const [{ PNG }, pixelmatchModule, packageInfo] = await Promise.all([import("pngjs"), import("pixelmatch"), Promise.resolve(pixelmatchPackage())]);
   const pixelmatch = pixelmatchModule.default;
   const referenceOut = options.referenceDir || path.join(options.out, "reference");
   const implementationOut = path.join(options.out, "implementation");
   if (!options.referenceDir) await capture({ ...options, out: referenceOut });
   await capture({ ...options, url: options.implementationUrl, out: implementationOut });
   const results = [];
+  let pixelComparison;
   for (const viewport of options.viewports) {
     const key = keyFor(viewport);
     const referenceImage = PNG.sync.read(fs.readFileSync(path.join(referenceOut, `full-${key}.png`)));
@@ -383,7 +407,8 @@ async function compare(options) {
     const reference = padImage(referenceImage, width, height, PNG);
     const implementation = padImage(implementationImage, width, height, PNG);
     const diff = new PNG({ width, height });
-    const different = pixelmatch(reference.data, implementation.data, diff.data, width, height, { threshold: 0.1, includeAA: true });
+    const comparison = comparePixels(pixelmatch, reference.data, implementation.data, diff.data, width, height, packageInfo.version);
+    pixelComparison = comparison.metadata;
     fs.writeFileSync(path.join(options.out, `diff-${key}.png`), PNG.sync.write(diff));
     const refObservation = JSON.parse(fs.readFileSync(path.join(referenceOut, `observation-${key}.json`), "utf8"));
     const implObservation = JSON.parse(fs.readFileSync(path.join(implementationOut, `observation-${key}.json`), "utf8"));
@@ -395,7 +420,7 @@ async function compare(options) {
     });
     results.push({
       ...viewport,
-      pixelDifferenceRatio: different / (width * height),
+      pixelDifferenceRatio: comparison.different / (width * height),
       ssim: windowedSsim(reference, implementation),
       maxLayoutDeltaPx: deltas.length ? Math.max(...deltas) : null,
       textCoverage: textCoverage(refObservation.document.text, implObservation.document.text),
@@ -411,12 +436,12 @@ async function compare(options) {
       unresolvedDifferences: [],
     });
   }
-  const report = { schema: "prewalk.pipeline.comparison.v1", referenceUrl: options.url, implementationUrl: options.implementationUrl, viewports: results };
+  const report = { schema: "prewalk.pipeline.comparison.v1", pixelComparison, referenceUrl: options.url, implementationUrl: options.implementationUrl, viewports: results };
   fs.writeFileSync(path.join(options.out, "comparison.json"), `${JSON.stringify(report, null, 2)}\n`);
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 }
 
-function selfTest() {
+async function selfTest() {
   assert.deepEqual(parseViewports("390x844,1440x900"), [{ width: 390, height: 844 }, { width: 1440, height: 900 }]);
   assert.equal(normalizeText(" a\n b  "), "a b");
   assert.equal(textCoverage("alpha beta", "alpha beta gamma"), 1);
@@ -424,6 +449,22 @@ function selfTest() {
   assert.equal(navigationTarget("https://example.com"), "https://example.com");
   const same = { width: 1, height: 1, data: Buffer.alloc(4, 255) };
   assert.equal(windowedSsim(same, same), 1);
+  const [{ default: pixelmatch }, packageInfo] = await Promise.all([import("pixelmatch"), Promise.resolve(pixelmatchPackage())]);
+  const calls = [];
+  const recordingPixelmatch = (...args) => { calls.push(args[5]); return pixelmatch(...args); };
+  const white = Buffer.alloc(16, 255);
+  const blackAndWhite = Buffer.from(white);
+  blackAndWhite.set([0, 0, 0], 0);
+  const unchanged = comparePixels(recordingPixelmatch, white, white, Buffer.alloc(16), 2, 2, packageInfo.version);
+  const changed = comparePixels(recordingPixelmatch, white, blackAndWhite, Buffer.alloc(16), 2, 2, packageInfo.version);
+  assert.equal(unchanged.different, 0, "identical pixels are not counted");
+  assert.equal(changed.different, 1, "a black/white pixel change is counted");
+  assert.strictEqual(changed.metadata.options, calls[1], "the report records the options object passed to pixelmatch");
+  assert.equal(changed.metadata.options.threshold, 0.1);
+  assert.equal(changed.metadata.options.includeAA, true);
+  assert.equal(changed.metadata.options.checkerboard, true);
+  assert.equal(changed.metadata.version, packageInfo.version);
+  assert.equal(changed.metadata.metric, "OKLab HyAB");
   process.stdout.write("OK prewalk pipeline browser adapter self-test\n");
 }
 
@@ -431,7 +472,7 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.command === "capture") await capture(options);
   else if (options.command === "compare") await compare(options);
-  else if (options.command === "self-test") selfTest();
+  else if (options.command === "self-test") await selfTest();
   else throw new Error(`Unknown command: ${options.command}`);
 }
 

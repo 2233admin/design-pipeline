@@ -5,6 +5,7 @@ const test = require("node:test");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const childProcess = require("node:child_process");
 const { spawnSync } = require("node:child_process");
 const { findBlender, listTemplates, probeToTimeline, resolveParams } = require("../skill/scripts/blender-core.cjs");
 const { fetchHdri, renderBlenderShot } = require("../skill/scripts/blender-project-core.cjs");
@@ -61,6 +62,48 @@ test("HDRI ids are validated before any download", () => {
   assert.throws(() => fetchHdri(tmp(), "../etc"), /not a Poly Haven id/);
 });
 
+test("Blender discovery honors configured paths, searches PATH, and exposes selected-tool failures", () => {
+  const dir = tmp();
+  const executableName = process.platform === "win32" ? "blender.exe" : "blender";
+  const explicit = path.join(dir, "explicit", executableName);
+  const env = path.join(dir, "env", executableName);
+  const onPath = path.join(dir, "path", executableName);
+  for (const executable of [explicit, env, onPath]) {
+    fs.mkdirSync(path.dirname(executable), { recursive: true });
+    fs.writeFileSync(executable, "stub");
+  }
+  const previousPath = process.env.PATH;
+  const previousBlenderPath = process.env.BLENDER_PATH;
+  const originalSpawnSync = childProcess.spawnSync;
+  const calls = [];
+  try {
+    process.env.PATH = path.dirname(onPath);
+    process.env.BLENDER_PATH = env;
+    childProcess.spawnSync = (executable) => {
+      calls.push(executable);
+      return { status: 0, stdout: "Blender 4.2.0\n", stderr: "" };
+    };
+    assert.equal(findBlender(explicit).path, explicit);
+    assert.equal(findBlender().path, env);
+    delete process.env.BLENDER_PATH;
+    assert.equal(findBlender().path, onPath);
+
+    calls.length = 0;
+    childProcess.spawnSync = (executable) => {
+      calls.push(executable);
+      return { status: 1, stdout: "", stderr: "injected version failure" };
+    };
+    assert.throws(() => findBlender(explicit), (error) => error.code === "TOOL_FAILED" && /injected version failure/.test(error.message));
+    assert.deepEqual(calls, [explicit], "a selected executable failure does not fall through to another Blender");
+    assert.throws(() => findBlender(path.join(dir, "missing", executableName)), (error) => error.code === "TOOL_FAILED");
+  } finally {
+    childProcess.spawnSync = originalSpawnSync;
+    if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath;
+    if (previousBlenderPath === undefined) delete process.env.BLENDER_PATH; else process.env.BLENDER_PATH = previousBlenderPath;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("film blender renders into the project, converts keyframes and checks frames", () => {
   const dir = tmp();
   try {
@@ -90,10 +133,13 @@ test("film blender renders into the project, converts keyframes and checks frame
 });
 
 let blender = null;
-try { blender = findBlender(); } catch { blender = null; }
-const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0;
+try { blender = findBlender(); } catch (error) { if (error.code !== "TOOL_MISSING") throw error; }
+const ffmpegProbe = spawnSync("ffmpeg", ["-version"], { windowsHide: true });
+if (ffmpegProbe.error && ffmpegProbe.error.code !== "ENOENT") throw ffmpegProbe.error;
+if (!ffmpegProbe.error && ffmpegProbe.status !== 0) throw new Error(`ffmpeg version probe failed with status ${ffmpegProbe.status}`);
+const hasFfmpeg = !ffmpegProbe.error;
 
-test("real Blender renders the turntable headless and deterministically", { skip: (!blender || !hasFfmpeg) && "Blender or ffmpeg not installed" }, () => {
+test("real Blender renders the turntable headless and deterministically", { skip: (!blender || !hasFfmpeg) && "Blender or ffmpeg not detected" }, () => {
   const dir = tmp();
   try {
     const params = { shape: "phone", width: 160, height: 90, durationSec: 1, fps: 12, samples: 4 };
@@ -108,5 +154,10 @@ test("real Blender renders the turntable headless and deterministically", { skip
     const timeline = JSON.parse(fs.readFileSync(path.join(dir, "timeline.json"), "utf8"));
     assert.ok(timeline.tweens.some((t) => t.targets[0] === "#Camera"));
     assert.ok(timeline.tweens.some((t) => t.targets[0] === "#Product" && t.props[0] === "rotationZ"));
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally {
+    const tempRoot = path.resolve(os.tmpdir());
+    const tempDir = path.resolve(dir);
+    assert.ok(tempDir.startsWith(`${tempRoot}${path.sep}`), `refusing to remove a path outside the OS temp directory: ${tempDir}`);
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
 });

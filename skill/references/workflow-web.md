@@ -3,8 +3,9 @@
 Motion-first websites and pages. `designer-pipeline next` names the current stage; read only that
 section. Stage order:
 
-- `quick`: build, probe.
+- `quick` brief/freeform: build, probe; `quick` replicate: reference, build, probe.
 - `standard` and `full`: intake, reference, concepts, build, probe, review, deliver.
+  Replicate keeps the reference direction and omits replacement concepts.
 
 ## intake
 
@@ -13,10 +14,23 @@ reply with `decide --stage intake`.
 
 ## reference
 
+For a local video run `reference analyze-video --path <contained-video> --output <new-dir>`.
+Inspect ordered timed windows, record named target/property/state observations and uncertainties,
+and bind `videoAnalysis` in the existing reference carrier. A note alone does not finish temporal
+observation. Resample uncertain intervals with `--start <sec> --end <sec> --fps 12`; a local range
+does not replace whole-source observation. In an existing project use `project inspect` and trace
+the observed targets to actual renderer/component/material/animation source evidence.
+
 Watch 1-3 moving web references at full speed and write `reference.md`: observed motion, timing,
 easing, structure, and what to transfer. In `replicate` mode the reference is the thing being
 reproduced and cannot be skipped. Otherwise the user may decline references
 (`decide --stage reference --answer none`).
+
+Use `reference-spec.md` for observed regions, invariants and unknowns; for reconstruction read
+`reconstruction-spec.md` and applicable `3d-spec.md`. Record animation observations against timed
+frames when supplied, and mark missing timestamps or uncertain motion. `reference.md` records
+document delivery, not verified understanding. Full reference checks include graybox evidence;
+do not require that aggregate to be ready before building the bounded graybox.
 
 ## concepts
 
@@ -27,10 +41,24 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
 
 ## build
 
-Build `index.html` from the chosen concept. Motion follows `web-motion.md` (spring-damper
+Build `index.html` from the chosen concept, or from the reference and its invariants in replicate
+mode. Motion follows `web-motion.md` (spring-damper
 parameters, stepped motion as a style); design tokens and components come from
 `pipeline-reference.md`. At the `full` tier, open an OpenSpec change under
 `openspec/changes/<id>/` first and build inside it.
+
+Use `tools/README.md` when a bounded visual task needs drawing, image placement, text fitting,
+material techniques or pixel comparison. Load only that tool, preserve the existing DOM/runtime,
+and inspect the resulting surface at its real viewport. Source tools support the chosen direction;
+their example styles, coordinates and characters do not define the product.
+
+Use the task fields in `stages.md#stage-4-tasks`: one visual goal with explicit inputs, scope,
+outputs, checks and repair path. For references, first render bounded structure/occlusion in a
+graybox. Then read complete `reference check`, `reconstruction check` and applicable `scene check`
+results before dependent material, polish or motion; repair the reported prerequisite failures.
+Follow reconstruction's existing permissions: graybox readiness releases optical treatment even
+if geometry is blocked; detail geometry and fidelity claims still require their own readiness.
+Creating files or passing engineering checks does not grant visual acceptance.
 
 ## probe
 

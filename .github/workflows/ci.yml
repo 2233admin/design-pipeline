@@ -17,12 +17,36 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "22"
+          cache: npm
+
+      - name: Install locked workspace dependencies
+        run: npm ci
+
+      - name: Prepare font-subset test runtime
+        run: |
+          python3 -m venv "$RUNNER_TEMP/design-pipeline-fonttools"
+          "$RUNNER_TEMP/design-pipeline-fonttools/bin/python" -m pip install fonttools==4.66.1
+          echo "HUASHU_PYTHON=$RUNNER_TEMP/design-pipeline-fonttools/bin/python" >> "$GITHUB_ENV"
+
+      - name: Prepare browser runtimes
+        run: |
+          npm exec -- playwright install-deps chromium
+          npm run browser:install
+
+      - name: Allow Chrome's sandbox
+        # Ubuntu 23.10+ runners restrict unprivileged user namespaces through AppArmor, so the headless
+        # Chrome the browser tests launch exits with "No usable sandbox!". Lift that restriction here
+        # instead of turning the sandbox off in the tests.
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Validate specifications
+        run: npm run specs:check
 
       - name: Hermetic QA
-        run: node scripts/qa.cjs
+        run: npm test
 
       - name: Package
-        run: node scripts/package.cjs --output-root dist
+        run: npm run package:skill -- --output-root dist
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v7

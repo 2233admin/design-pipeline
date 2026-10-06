@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0b0c0f; }
+      #root { position: relative; width: 100%; height: 100%; }
+      #bg { position: absolute; inset: 0; background: radial-gradient(ellipse 75% 65% at 50% 50%, #15171c 0%, #0b0c0f 72%); }
+      #world { position: absolute; inset: 0; transform-origin: 50% 50%; }
+      #hud { position: absolute; inset: 0; }
+      .mono { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+      .sans { font-family: "Inter", sans-serif; white-space: nowrap; }
+
+      /* Terminal: centred and large in the first beat, then docked as the log. */
+      #term { position: absolute; left: 326px; top: 430px; transform-origin: 0 0; }
+      #cmd { font-size: 88px; line-height: 108px; font-weight: 500; color: #e8e6e1; }
+      #cmd .dim { color: #7c818c; }
+      #caret { position: absolute; left: 0; top: 14px; width: 44px; height: 82px; background: #3ecf8e; }
+      #resp { margin-top: 26px; font-size: 40px; line-height: 52px; color: #c9cbd0; }
+      #resp .ok { color: #3ecf8e; }
+      .log { position: absolute; left: 72px; top: 110px; font-size: 22px; line-height: 30px; color: #c9cbd0; opacity: 0; }
+      .log .ok { color: #3ecf8e; } .log .bad { color: #ef5b5b; } .log .fix { color: #f2b84b; }
+
+      /* Finding panel shown with the hard cut. */
+      #finding { position: absolute; left: 120px; top: 812px; padding-left: 28px; border-left: 6px solid #ef5b5b; }
+      #finding .code { font-size: 52px; line-height: 64px; color: #ef5b5b; font-weight: 600; }
+      #finding .msg { font-size: 30px; line-height: 44px; color: #e8e6e1; }
+      #finding .fixline { font-size: 30px; line-height: 44px; color: #f2b84b; }
+
+      /* Storyboard strip, in world coordinates (1:1 with the screen at camera scale 1). */
+      #rule { position: absolute; left: 154px; top: 638px; width: 1612px; height: 4px; border-radius: 2px; background: #3ecf8e; transform-origin: 50% 50%; }
+      .frame { position: absolute; top: 456px; width: 300px; height: 169px; border-radius: 8px; background: #121418; border: 2px solid #2e323b; overflow: hidden; }
+      .frame .num { position: absolute; left: 12px; top: 8px; font-size: 16px; color: #6b707a; }
+      .ghost { position: absolute; left: 141px; top: 75px; width: 18px; height: 18px; border-radius: 50%; background: #3ecf8e; opacity: 0; }
+      .card { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+      .card span { font-family: "Inter", sans-serif; font-weight: 800; font-size: 46px; color: #ffffff; letter-spacing: -1px; }
+      .join { position: absolute; top: 430px; width: 8px; height: 220px; border-radius: 4px; background: #ef5b5b; opacity: 0; }
+      #trail { position: absolute; left: 140px; top: 538px; width: 1650px; height: 4px; border-radius: 2px; background: #3ecf8e; transform-origin: 0 50%; }
+      #dot { position: absolute; left: -18px; top: 522px; width: 36px; height: 36px; border-radius: 50%; background: #3ecf8e; box-shadow: 0 0 24px rgba(62, 207, 142, 0.45); }
+      #passed { position: absolute; left: 0; width: 1920px; top: 680px; text-align: center; font-size: 40px; color: #3ecf8e; }
+      .lane-label { position: absolute; left: 154px; font-size: 22px; color: #7c818c; }
+      #sweep { position: absolute; left: -2px; top: 150px; width: 4px; height: 780px; border-radius: 2px; background: #3ecf8e; box-shadow: 0 0 22px rgba(62, 207, 142, 0.6); opacity: 0; }
+
+      /* Logo lockup (same geometry as the logo sting case). */
+      #word { position: absolute; left: 798px; top: 488px; font-size: 84px; line-height: 104px; font-weight: 500; color: #e8e6e1; }
+      #word .dim { color: #7c818c; }
+      #tagline { position: absolute; left: 0; width: 1920px; top: 640px; text-align: center; font-size: 36px; color: #8b919c; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="20" data-width="1920" data-height="1080">
+      <div id="bg"></div>
+      <div id="world" class="clip" data-start="0" data-duration="20" data-track-index="0">
+        <div id="rule"></div>
+        <div id="strip"></div>
+        <div id="lanes"></div>
+        <div id="trail"></div>
+        <div id="dot"></div>
+        <div id="passed" class="mono">film check &middot; passed</div>
+        <div id="sweep"></div>
+        <div id="word" class="mono">design<span class="dim">-</span>pipeline</div>
+        <div id="tagline" class="sans">Taste, enforced in code.</div>
+      </div>
+      <div id="hud">
+        <div id="term" class="mono">
+          <div id="cmd"><span class="dim">$ </span>designer-pipeline next</div>
+          <div id="caret"></div>
+          <div id="resp"><span class="ok">&rarr; run</span>&nbsp; designer-pipeline film scaffold --output .</div>
+        </div>
+        <div id="log-scaffolded" class="log mono"><span class="ok">&check;</span> storyboard.json &nbsp;5 beats</div>
+        <div id="log-render" class="log mono"><span class="ok">&rarr; run</span>&nbsp; npx hyperframes render --output out.mp4</div>
+        <div id="log-failed" class="log mono"><span class="bad">&cross; film check</span>&nbsp; slideshow-handoffs</div>
+        <div id="log-fix" class="log mono"><span class="fix">&rarr; fix</span>&nbsp; carry one subject between beats</div>
+        <div id="log-passed" class="log mono"><span class="ok">&check; film check</span>&nbsp; passed</div>
+        <div id="log-models" class="log mono"><span class="ok">&check;</span> same gates for every model</div>
+        <div id="finding" class="mono">
+          <div id="finding-code" class="code">&cross; slideshow-handoffs</div>
+          <div id="finding-msg" class="msg">4/4 handoffs reset or dissolve</div>
+          <div id="finding-fix" class="fixline">fix&nbsp; carry one subject between beats</div>
+        </div>
+      </div>
+      <audio id="score" src="assets/score-mastered.wav" data-start="0" data-duration="20"></audio>
+    </div>
+    <script>
+      // ---------- build the strip and the two extra model lanes (deterministic DOM) ----------
+      const FRAME_X = [154, 482, 810, 1138, 1466];
+      const JOIN_X = [468, 796, 1124, 1452];
+      const DRAFT = [
+        ["FAST.", "linear-gradient(135deg, #7b5cff, #d46bd8)"],
+        ["SMART.", "linear-gradient(135deg, #5a6cff, #b86bf0)"],
+        ["SIMPLE.", "linear-gradient(135deg, #9a5cf5, #f07bb0)"],
+        ["POWERFUL.", "linear-gradient(135deg, #6a4cf0, #c46be0)"],
+        ["NEW.", "linear-gradient(135deg, #8a63ff, #e883c8)"],
+      ];
+      const LANE_DY = { a: -240, c: 240 };
+      const strip = document.getElementById("strip");
+      const lanes = document.getElementById("lanes");
+      function el(parent, tag, id, className, style, html) {
+        const node = document.createElement(tag);
+        if (id) node.id = id;
+        if (className) node.className = className;
+        if (style) node.setAttribute("style", style);
+        if (html) node.innerHTML = html;
+        parent.appendChild(node);
+        return node;
+      }
+      FRAME_X.forEach((x, i) => {
+        const frame = el(strip, "div", `f${i}`, "frame", `left:${x}px`);
+        el(frame, "div", null, "num mono", null, `0${i + 1}`);
+        el(frame, "div", `g${i}`, "ghost");
+        el(frame, "div", `c${i}`, "card", `background:${DRAFT[i][1]}`, `<span id="w${i}">${DRAFT[i][0]}</span>`);
+      });
+      JOIN_X.forEach((x, i) => el(strip, "div", `j${i}`, "join", `left:${x - 4}px`));
+      for (const lane of ["a", "c"]) {
+        const group = el(lanes, "div", `lane-${lane}`, null, "position:absolute;left:0;top:0;width:1920px;height:1080px");
+        el(group, "div", `label-${lane}`, "lane-label mono", `top:${456 + LANE_DY[lane] - 34}px`, `model ${lane}`);
+        FRAME_X.forEach((x, i) => {
+          const frame = el(group, "div", `f${lane}${i}`, "frame", `left:${x}px;top:${456 + LANE_DY[lane]}px`);
+          el(frame, "div", null, "num mono", null, `0${i + 1}`);
+          el(frame, "div", null, "ghost", "opacity:0.55");
+        });
+        el(group, "div", `trail-${lane}`, null, `position:absolute;left:140px;top:${538 + LANE_DY[lane]}px;width:1650px;height:4px;border-radius:2px;background:#3ecf8e;opacity:0.9`);
+        JOIN_X.forEach((x, i) => el(group, "div", `j${lane}${i}`, "join", `left:${x - 4}px;top:${430 + LANE_DY[lane]}px;background:#464b55;opacity:1`));
+      }
+      el(document.getElementById("strip"), "div", "label-b", "lane-label mono", "top:422px;opacity:0", "model b");
+
+      // ---------- timeline ----------
+      const GREEN = "#3ecf8e";
+      const RED = "#ef5b5b";
+      const focus = (px, py, s) => ({ x: -s * (px - 960), y: -s * (py - 540), scale: s });
+      // #term sits at (326, 430); x/y are offsets from there, so the docked log lands at (72, 56).
+      const DOCK = { x: 72 - 326, y: 56 - 430, scale: 0.26 };
+
+      gsap.set("#caret", { x: 0 });
+      gsap.set("#cmd", { clipPath: "inset(0% 100% 0% 0%)" });
+      gsap.set("#resp", { clipPath: "inset(0% 100% 0% 0%)" });
+      gsap.set("#rule", { scaleX: 0 });
+      gsap.set("#strip .frame", { clipPath: "inset(0% 0% 100% 0%)" });
+      gsap.set("#lanes .frame", { clipPath: "inset(0% 0% 0% 0%)" });
+      gsap.set(".card", { clipPath: "inset(0% 100% 0% 0%)" });
+      gsap.set("#trail", { scaleX: 0 });
+      gsap.set("#dot", { x: 140, scale: 0 });
+      gsap.set("#passed", { clipPath: "inset(0% 100% 0% 0%)" });
+      gsap.set("#finding", { opacity: 0 });
+      gsap.set("#finding-code, #finding-msg, #finding-fix", { clipPath: "inset(0% 100% 0% 0%)" });
+      gsap.set("#lane-a", { y: -90, opacity: 0 });
+      gsap.set("#lane-c", { y: 90, opacity: 0 });
+      gsap.set("#word", { x: -48, clipPath: "inset(0% 100% 0% 0%)" });
+      gsap.set("#tagline", { y: 16 });
+
+      const tl = gsap.timeline({ paused: true });
+      const at = (target, vars, time) => tl.to(target, vars, time);
+
+      // Camera (world). One move at a time; the cut at 6s is the only jump.
+      at("#world", { scale: 1.02, duration: 2.0, ease: "sine.inOut" }, 0);
+      at("#world", { scale: 1.0, duration: 1.4, ease: "power2.inOut" }, 2.0);
+      at("#world", { scale: 1.15, duration: 2.0, ease: "sine.inOut" }, 4.0);
+      tl.set("#world", focus(468, 540, 2.3), 6.0);
+      at("#world", { ...focus(700, 540, 2.2), duration: 1.7, ease: "sine.inOut" }, 6.0);
+      at("#world", { ...focus(400, 540, 1.7), duration: 0.9, ease: "power2.inOut" }, 7.7);
+      at("#world", { ...focus(1500, 540, 1.7), duration: 4.6, ease: "sine.inOut" }, 8.6);
+      at("#world", { ...focus(960, 540, 1.0), duration: 1.4, ease: "power3.inOut" }, 13.2);
+      at("#world", { ...focus(960, 540, 0.8), duration: 0.8, ease: "power2.inOut" }, 15.35);
+      at("#world", { ...focus(960, 540, 1.0), duration: 0.8, ease: "power2.inOut" }, 17.35);
+      at("#world", { scale: 1.01, duration: 0.8, ease: "sine.out" }, 19.2);
+
+      // 0-2s ask: the command types on, next returns one action, a green rule underlines it.
+      at("#cmd", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.8, ease: "steps(24)" }, 0.2);
+      at("#caret", { x: 1267, duration: 0.8, ease: "steps(24)" }, 0.2);
+      at("#caret", { opacity: 0, duration: 0.1, ease: "power1.out" }, 1.3);
+      at("#resp", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.3, ease: "power2.out" }, 1.45);
+      at("#rule", { scaleX: 0.36, duration: 0.4, ease: "power2.out" }, 1.5);
+
+      // 2-4s scaffold: the command docks as the log; the rule stretches into the strip's top edge and the frames unroll from it.
+      at("#term", { ...DOCK, duration: 0.8, ease: "power3.inOut" }, 2.0);
+      at("#resp", { opacity: 0, duration: 0.3, ease: "power1.out" }, 2.5);
+      at("#rule", { scaleX: 1, y: -192, duration: 0.7, ease: "power3.inOut" }, 2.0);
+      FRAME_X.forEach((x, i) => at(`#f${i}`, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.6, ease: "power3.out" }, 2.55 + i * 0.09));
+      at("#log-scaffolded", { opacity: 1, duration: 0.2, ease: "power1.out" }, 3.2);
+      at("#rule", { opacity: 0, duration: 0.8, ease: "power1.inOut" }, 3.5);
+
+      // 4-6s draft: the frames fill with a generic five-card draft, which then plays card by card.
+      FRAME_X.forEach((x, i) => at(`#c${i}`, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.55, ease: "power2.out" }, 3.85 + i * 0.12));
+      at("#log-scaffolded", { opacity: 0, duration: 0.15, ease: "power1.out" }, 4.0);
+      at("#log-render", { opacity: 1, duration: 0.2, ease: "power1.out" }, 4.05);
+      FRAME_X.forEach((x, i) => {
+        at(`#w${i}`, { scale: 1.14, duration: 0.14, ease: "power2.out" }, 4.9 + i * 0.2);
+        at(`#w${i}`, { scale: 1.0, duration: 0.16, ease: "power2.in" }, 5.04 + i * 0.2);
+      });
+
+      // 6-8s caught: hard cut to the joins; every join is red and the finding types on with its fix.
+      // The draft is stopped: its cards drop to grey as the red markers appear.
+      FRAME_X.forEach((x, i) => tl.set(`#c${i}`, { filter: "saturate(0.15) brightness(0.5)" }, 6.0));
+      JOIN_X.forEach((x, i) => tl.set(`#j${i}`, { opacity: 1 }, 6.0));
+      tl.set("#finding", { opacity: 1 }, 6.0);
+      at("#log-render", { opacity: 0, duration: 0.1, ease: "power1.out" }, 6.0);
+      at("#log-failed", { opacity: 1, duration: 0.15, ease: "power1.out" }, 6.05);
+      at("#finding-code", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "steps(20)" }, 6.05);
+      at("#finding-msg", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "steps(30)" }, 6.5);
+      at("#finding-fix", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.45, ease: "steps(36)" }, 7.0);
+
+      // 8-14s carry: the dot sets off, stops at each join on the beat, and the draft wipes away behind it.
+      at("#finding", { opacity: 0, y: 24, duration: 0.4, ease: "power2.in" }, 7.7);
+      at("#log-failed", { opacity: 0, duration: 0.15, ease: "power1.out" }, 7.9);
+      at("#log-fix", { opacity: 1, duration: 0.2, ease: "power1.out" }, 8.0);
+      at("#dot", { scale: 1, duration: 0.4, ease: "back.out(2)" }, 7.75);
+      const legs = [140, 468, 796, 1124, 1452, 1790];
+      for (let i = 0; i < 5; i += 1) {
+        const start = 8 + i;
+        at("#dot", { x: legs[i + 1], duration: 1, ease: "power1.inOut" }, start);
+        at("#trail", { scaleX: (legs[i + 1] - 140) / 1650, duration: 1, ease: "power1.inOut" }, start);
+        at(`#c${i}`, { clipPath: "inset(0% 0% 0% 100%)", duration: 1, ease: "power1.inOut" }, start);
+        at(`#g${i}`, { opacity: 0.55, duration: 0.4, ease: "power1.out" }, start + 0.45);
+        if (i < 4) {
+          at(`#j${i}`, { backgroundColor: GREEN, duration: 0.12, ease: "power2.out" }, start + 0.96);
+        }
+      }
+      FRAME_X.forEach((x, i) => at(`#g${i}`, { opacity: 1, scale: 1.25, duration: 0.18, ease: "power2.out" }, 13.05 + (4 - i) * 0.12));
+      FRAME_X.forEach((x, i) => at(`#g${i}`, { opacity: 0.55, scale: 1, duration: 0.3, ease: "power2.inOut" }, 13.23 + (4 - i) * 0.12));
+
+      // 14-15.35s passed: the camera eases back over the finished strip; the check passes; hold.
+      at("#log-fix", { opacity: 0, duration: 0.15, ease: "power1.out" }, 13.95);
+      at("#log-passed", { opacity: 1, duration: 0.2, ease: "power1.out" }, 14.0);
+      at("#passed", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "power2.out" }, 14.05);
+
+      // 15.35-17.35s any-model: two more lanes join; one gate line sweeps all three.
+      at("#passed", { opacity: 0, duration: 0.3, ease: "power1.out" }, 15.35);
+      at("#lane-a", { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 15.35);
+      at("#lane-c", { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 15.45);
+      at("#label-b", { opacity: 1, duration: 0.3, ease: "power1.out" }, 15.6);
+      at("#log-passed", { opacity: 0, duration: 0.15, ease: "power1.out" }, 15.5);
+      at("#log-models", { opacity: 1, duration: 0.2, ease: "power1.out" }, 15.55);
+      const SWEEP_FROM = 60, SWEEP_TO = 1860, SWEEP_AT = 15.95, SWEEP_DUR = 1.2;
+      const sweepEase = gsap.parseEase("power1.inOut");
+      const crossing = (x) => { // time the sweep crosses world x (bisection on the ease)
+        const target = (x - SWEEP_FROM) / (SWEEP_TO - SWEEP_FROM);
+        let lo = 0, hi = 1;
+        for (let n = 0; n < 40; n += 1) { const mid = (lo + hi) / 2; if (sweepEase(mid) < target) lo = mid; else hi = mid; }
+        return SWEEP_AT + lo * SWEEP_DUR;
+      };
+      at("#sweep", { opacity: 1, duration: 0.15, ease: "power1.out" }, SWEEP_AT - 0.1);
+      tl.fromTo("#sweep", { x: SWEEP_FROM }, { x: SWEEP_TO, duration: SWEEP_DUR, ease: "power1.inOut", immediateRender: false }, SWEEP_AT);
+      at("#sweep", { opacity: 0, duration: 0.3, ease: "power1.in" }, SWEEP_AT + SWEEP_DUR - 0.05);
+      JOIN_X.forEach((x, i) => {
+        const t = crossing(x);
+        for (const lane of ["a", "c"]) at(`#j${lane}${i}`, { backgroundColor: GREEN, duration: 0.12, ease: "power2.out" }, t);
+      });
+
+      // 17.35-20s brand: the lanes flatten into one line, which shortens into the logo's line; the name resolves.
+      at("#log-models", { opacity: 0, duration: 0.3, ease: "power1.out" }, 17.35);
+      at("#term", { opacity: 0, duration: 0.3, ease: "power1.out" }, 17.35);
+      at(".frame", { clipPath: "inset(50% 0% 50% 0%)", duration: 0.55, ease: "power3.in" }, 17.35);
+      at(".lane-label", { opacity: 0, duration: 0.25, ease: "power1.out" }, 17.35);
+      at("#lane-a", { y: -LANE_DY.a, duration: 0.6, ease: "power3.inOut" }, 17.5);
+      at("#lane-c", { y: -LANE_DY.c, duration: 0.6, ease: "power3.inOut" }, 17.5);
+      at("#lane-a", { opacity: 0, duration: 0.2, ease: "power1.out" }, 18.0);
+      at("#lane-c", { opacity: 0, duration: 0.2, ease: "power1.out" }, 18.0);
+      // Logo geometry: line 366-726 (8px), gates at 486 and 606 (14 x 120), dot centred at 746.
+      at("#trail", { x: 226, scaleX: 360 / 1650, scaleY: 2, duration: 0.7, ease: "power3.inOut" }, 17.9);
+      at("#j1", { x: 486 - 796, scaleX: 14 / 8, scaleY: 120 / 220, duration: 0.7, ease: "power3.inOut" }, 17.9);
+      at("#j2", { x: 606 - 1124, scaleX: 14 / 8, scaleY: 120 / 220, duration: 0.7, ease: "power3.inOut" }, 17.9);
+      at("#j0", { scaleY: 0, opacity: 0, duration: 0.4, ease: "power2.in" }, 17.9);
+      at("#j3", { scaleY: 0, opacity: 0, duration: 0.4, ease: "power2.in" }, 17.9);
+      at("#dot", { x: 746, scale: 32 / 36, duration: 0.7, ease: "power3.inOut" }, 17.9);
+      at("#word", { x: 0, clipPath: "inset(0% 0% 0% 0%)", duration: 0.7, ease: "power3.out" }, 18.35);
+      at("#tagline", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 18.7);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

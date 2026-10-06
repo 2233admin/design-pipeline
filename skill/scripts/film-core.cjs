@@ -27,6 +27,10 @@ const CUE_KINDS = ["entry", "exit", "downbeat", "accent", "riser", "impact", "vo
 const PLACEHOLDER = /^(tbd|todo|n\/?a|none|-|\.\.\.|placeholder)$/i;
 const FRAME_TOLERANCE_SEC = 0.05;
 const MAX_HOLD_SHARE = 0.25;
+// These are review prompts, not universal laws of animation or editing.
+const RHYTHM_WARNINGS = new Set(["uniform-cadence", "no-rest", "hold-dominant", "hold-chain", "slideshow-handoffs", "sound-unbound"]);
+const MATERIAL_REQUIREMENTS = ["solid-depth", "bevel", "clearcoat", "view-dependent-color", "surface-relief"];
+const RENDER_ROUTES = ["dom", "canvas2d", "css3d", "webgl", "blender", "footage"];
 
 function real(value, label) {
   assertString(value, label, SCOPE);
@@ -41,7 +45,7 @@ function loadChoreographyIds() {
 }
 
 function validateShape(board) {
-  assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState"], "storyboard", SCOPE);
+  assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState", "rendering"], "storyboard", SCOPE);
   if (board.endState !== undefined) assertEnum(board.endState, ["free", "rest", "loop"], "endState", SCOPE);
   if (board.schema !== STORYBOARD_SCHEMA) fail(SCOPE, `schema must be ${STORYBOARD_SCHEMA}`);
   real(board.id, "id");
@@ -51,6 +55,23 @@ function validateShape(board) {
   real(board.benefit, "benefit");
   real(board.proofAction, "proofAction");
   if (board.reference !== undefined) real(board.reference, "reference");
+  if (board.rendering !== undefined) {
+    const rendering = board.rendering;
+    assertKeys(rendering, ["route", "requirements", "reason", "samples"], ["route", "requirements", "reason", "samples"], "rendering", SCOPE);
+    assertEnum(rendering.route, RENDER_ROUTES, "rendering.route", SCOPE);
+    real(rendering.reason, "rendering.reason");
+    if (!Array.isArray(rendering.requirements)) fail(SCOPE, "rendering.requirements must be an array");
+    for (const effect of rendering.requirements) assertEnum(effect, MATERIAL_REQUIREMENTS, "rendering.requirements", SCOPE);
+    if (new Set(rendering.requirements).size !== rendering.requirements.length) fail(SCOPE, "rendering.requirements must not contain duplicates");
+    if (!Array.isArray(rendering.samples)) fail(SCOPE, "rendering.samples must be an array");
+    for (const [index, sample] of rendering.samples.entries()) {
+      const label = `rendering.samples[${index}]`;
+      assertKeys(sample, ["atSec", "purpose"], ["atSec", "purpose"], label, SCOPE);
+      seconds(sample.atSec, `${label}.atSec`);
+      if (sample.atSec > board.durationSec) fail(SCOPE, `${label}.atSec must be within the film`);
+      real(sample.purpose, `${label}.purpose`);
+    }
+  }
   const sound = board.sound;
   assertKeys(sound, ["mode"], ["mode", "reason", "source", "cues", "usage", "assets"], "sound", SCOPE);
   if (sound.usage !== undefined) assertEnum(sound.usage, ["commercial", "personal", "internal"], "sound.usage", SCOPE);
@@ -113,9 +134,20 @@ function checkStoryboard(board, options = {}) {
   const choreography = options.choreographyIds || loadChoreographyIds();
   const filmRhythm = options.filmRhythm !== false;
   const findings = [];
-  const add = (code, message, beatId) => findings.push(withFix("storyboard", beatId ? { code, beatId, message } : { code, message }));
+  const add = (code, message, beatId) => findings.push(withFix("storyboard", { code, message, ...(beatId ? { beatId } : {}), ...(RHYTHM_WARNINGS.has(code) ? { severity: "warn" } : {}) }));
   const beats = board.beats;
   const total = board.durationSec;
+  if (board.rendering) {
+    const { route, requirements, samples } = board.rendering;
+    // These routes preserve real geometry/material response or recorded pixels. A route claim
+    // is planning conformance, never evidence of shader execution or a visual match.
+    if (requirements.length && !["webgl", "blender", "footage"].includes(route)) {
+      add("material-route-incapable", `${route} cannot satisfy required material effects: ${requirements.join(", ")}`);
+    }
+    if (requirements.includes("view-dependent-color") && new Set(samples.map((sample) => sample.atSec)).size < 2) {
+      add("material-angle-samples-missing", "view-dependent color needs at least two distinct inspection times with different reference angles");
+    }
+  }
 
   // Timeline closure: contiguous beats from 0 to durationSec.
   if (Math.abs(beats[0].startSec) > FRAME_TOLERANCE_SEC) add("timeline-open-start", "first beat must start at 0s", beats[0].id);
@@ -149,22 +181,21 @@ function checkStoryboard(board, options = {}) {
     if (beat.block !== undefined && options.blockNames && !options.blockNames.has(beat.block)) add("block-unknown", `unknown HyperFrames block ${beat.block}`, beat.id);
   }
 
-  // Holds are allowed for pacing but must not dominate or chain.
+  // Hold share and chains are review prompts; performance or reading may need stillness.
   const holds = beats.filter((beat) => beat.role !== "action");
   const holdShare = holds.reduce((sum, beat) => sum + (beat.endSec - beat.startSec), 0) / total;
-  if (holdShare > MAX_HOLD_SHARE) add("hold-dominant", `title/brand holds take ${(holdShare * 100).toFixed(0)}% of runtime (max ${MAX_HOLD_SHARE * 100}%)`);
+  if (holdShare > MAX_HOLD_SHARE) add("hold-dominant", `title/brand holds take ${(holdShare * 100).toFixed(0)}% of runtime; review their dramatic or reading purpose`);
   for (let index = 1; index < beats.length; index += 1) {
-    if (beats[index].role !== "action" && beats[index - 1].role !== "action") add("hold-chain", "consecutive holds stall the film", beats[index].id);
+    if (beats[index].role !== "action" && beats[index - 1].role !== "action") add("hold-chain", "consecutive holds: review what each image or pause lets the viewer read", beats[index].id);
   }
 
-  // Rhythm: very uneven beat lengths read as intentional pacing; near-equal beats read as a
-  // slideshow even when every boundary is carried. Rest: a film this long needs one still moment.
+  // Rhythm proxies invite review of repetition and contrast; they do not establish intent.
   const beatLengths = beats.map((beat) => beat.endSec - beat.startSec);
   const shortestLen = Math.min(...beatLengths);
   const longestLen = Math.max(...beatLengths);
   const rawCadenceRatio = shortestLen > 0 ? longestLen / shortestLen : null;
   const cadenceRatio = rawCadenceRatio === null ? null : Number(rawCadenceRatio.toFixed(2));
-  if (filmRhythm && beats.length >= 4 && rawCadenceRatio !== null && rawCadenceRatio < 3) add("uniform-cadence", `beat lengths span ${shortestLen}s-${longestLen}s (ratio ${cadenceRatio.toFixed(2)}); make the longest beat at least 3x the shortest`);
+  if (filmRhythm && beats.length >= 4 && rawCadenceRatio !== null && rawCadenceRatio < 3) add("uniform-cadence", `beat lengths span ${shortestLen}s-${longestLen}s (ratio ${cadenceRatio.toFixed(2)}); review whether the regular pulse serves the intended rhythm`);
   const restSec = Number((holds.reduce((sum, beat) => sum + (beat.endSec - beat.startSec), 0) + beats.reduce((sum, beat) => sum + (beat.holdSec || 0), 0)).toFixed(2));
   const hasHoldSec = beats.some((beat) => (beat.holdSec || 0) >= 0.3);
   if (filmRhythm && total >= 8 && holds.length === 0 && !hasHoldSec) add("no-rest", `film is ${total}s with no title/brand hold and no beat holding still for at least 0.3s`);
@@ -172,7 +203,7 @@ function checkStoryboard(board, options = {}) {
   // Slideshow detector: detached handoffs between panels that only fade/scale.
   const transitions = beats.slice(1);
   const detached = transitions.filter((beat) => DETACHED_HANDOFFS.has(beat.handoff));
-  if (transitions.length >= 2 && detached.length / transitions.length > 0.5) add("slideshow-handoffs", `${detached.length}/${transitions.length} handoffs reset or dissolve; attention never carries between actions`);
+  if (transitions.length >= 2 && detached.length / transitions.length > 0.5) add("slideshow-handoffs", `${detached.length}/${transitions.length} handoffs reset or dissolve; review the intended relation between images`);
   for (let index = 1; index < beats.length; index += 1) {
     const [prev, beat] = [beats[index - 1], beats[index]];
     if (DETACHED_HANDOFFS.has(beat.handoff) && surfaceOnly(beat) && surfaceOnly(prev)) add("slideshow-pair", "entrance-hold-exit panels: both beats are surface-only and joined by reset/dissolve", beat.id);
@@ -191,7 +222,7 @@ function checkStoryboard(board, options = {}) {
   return {
     schema: STORYBOARD_SCHEMA,
     id: board.id,
-    status: findings.length ? "failed" : "passed",
+    status: findings.some((finding) => finding.severity !== "warn") ? "failed" : "passed",
     findings,
     metrics: {
       beats: beats.length,
@@ -212,7 +243,11 @@ function checkStoryboard(board, options = {}) {
 function run(bin, args, options = {}) {
   const result = spawnSync(bin, args, { encoding: options.binary ? "buffer" : "utf8", maxBuffer: 1 << 28, windowsHide: true });
   if (result.error) fail("film render", `${bin} unavailable: ${result.error.message}`, { code: "TOOL_MISSING" });
-  if (result.status !== 0) fail("film render", `${bin} exited ${result.status}: ${String(result.stderr).trim().split("\n").slice(-1)[0]}`, { code: "TOOL_FAILED" });
+  if (result.status !== 0) {
+    const stderr = String(result.stderr || "").trim();
+    const diagnostic = stderr.length > 6144 ? `${stderr.slice(0, 4096)}\n[diagnostic truncated]\n${stderr.slice(-2048)}` : stderr;
+    fail("film render", `${bin} exited ${result.status}: ${diagnostic}`, { code: "TOOL_FAILED", stderrTruncated: stderr.length > 6144 });
+  }
   return result;
 }
 
@@ -325,8 +360,12 @@ function craftChecks(board, motion, add) {
 // boundary must stand out from both its window (1 s either side) and its immediate neighbours.
 // Calibration: a 400x300 card swapped on a 1280x720 dark stage changes about 13% in one step; a
 // camera move over a gradient changes a similar share every step and is not flagged.
+// A step whose two neighbours are both still (under a tenth of it) is a cut even when camera moves
+// fill the rest of the window: a golden case's match cut changed 27% of the frame against 0.6% and
+// 0.0% either side, while its 2 s window had a 16% median from the moves around the holds.
 const REPLACEMENT_MIN_SHARE = 0.02;
 const REPLACEMENT_RATIO = 4;
+const STILL_NEIGHBOUR_RATIO = 10;
 function instantReplacement(motion, atSec) {
   const at = motion.filter((sample) => Math.abs(sample.atSec - atSec) <= 0.15);
   if (!at.length) return null;
@@ -336,7 +375,8 @@ function instantReplacement(motion, atSec) {
   const index = motion.indexOf(peak);
   const neighbours = [motion[index - 1], motion[index + 1]].filter(Boolean).map((sample) => sample.share);
   const isolated = neighbours.every((share) => peak.share >= REPLACEMENT_RATIO * share || share < REPLACEMENT_MIN_SHARE / 2);
-  if (peak.share >= REPLACEMENT_MIN_SHARE && peak.share >= REPLACEMENT_RATIO * Math.max(typical, FROZEN_SHARE) && isolated) {
+  const betweenStills = neighbours.length === 2 && neighbours.every((share) => STILL_NEIGHBOUR_RATIO * share < peak.share);
+  if (peak.share >= REPLACEMENT_MIN_SHARE && (peak.share >= REPLACEMENT_RATIO * Math.max(typical, FROZEN_SHARE) || betweenStills) && isolated) {
     return { share: Number(peak.share.toFixed(4)), typical: Number(typical.toFixed(4)) };
   }
   return null;
@@ -388,21 +428,27 @@ function evaluateFilmRender(board, video, options = {}) {
   if (Math.abs(durationDelta) > 0.5) add("duration-mismatch", `render is ${media.durationSec}s, storyboard declares ${board.durationSec}s`);
 
   const cuts = detectCuts(video, tools, options.sceneThreshold ?? 0.3);
+  const motion = motionProfile(video, tools);
   const planned = storyboard.metrics.plannedCutsSec;
-  const missed = planned.filter((at) => nearest(cuts, at) > cutTolerance);
+  // A planned cut is present when the scene detector sees it, or when one step replaces a block of
+  // the frame (the detector carry-cut uses). Dark, desaturated cuts score low on scene change:
+  // a golden case's cut from a wide strip to a greyed close-up changed 34% of the frame in one
+  // step against 0.2% before it, yet scored 0.155 (threshold 0.3).
+  const pixelCuts = planned.filter((at) => nearest(cuts, at) > cutTolerance && instantReplacement(motion, at));
+  const missed = planned.filter((at) => nearest(cuts, at) > cutTolerance && !pixelCuts.includes(at));
   const unplanned = cuts.filter((at) => nearest(board.beats.map((beat) => beat.startSec), at) > cutTolerance);
   if (planned.length && missed.length / planned.length > 0.5) add("planned-cuts-missing", `${missed.length}/${planned.length} planned cuts not found in render`);
+  const allCuts = [...cuts, ...pixelCuts].sort((a, b) => a - b);
 
   let audio = { present: media.hasAudio, onsets: 0, cutsOnOnset: null };
   if (board.sound.mode === "scored" && !media.hasAudio) add("audio-missing", "storyboard is scored but render has no audio stream; audiovisual acceptance is incomplete");
   if (media.hasAudio) {
     const onsets = detectOnsets(video, tools);
-    const aligned = cuts.filter((at) => nearest(onsets, at) <= syncTolerance).length;
-    audio = { present: true, onsets: onsets.length, cutsOnOnset: cuts.length ? Number((aligned / cuts.length).toFixed(3)) : null };
-    if (board.sound.mode === "scored" && cuts.length >= 3 && aligned / cuts.length < 0.3) add("cuts-off-beat", `${aligned}/${cuts.length} cuts land within ${syncTolerance}s of an audio onset`);
+    const aligned = allCuts.filter((at) => nearest(onsets, at) <= syncTolerance).length;
+    audio = { present: true, onsets: onsets.length, cutsOnOnset: allCuts.length ? Number((aligned / allCuts.length).toFixed(3)) : null };
+    if (board.sound.mode === "scored" && allCuts.length >= 3 && aligned / allCuts.length < 0.3) add("cuts-off-beat", `${aligned}/${allCuts.length} cuts land within ${syncTolerance}s of an audio onset; review phrasing and intentional counterpoint`, "warn");
   }
 
-  const motion = motionProfile(video, tools);
   // Continuity carried by the storyboard (not match-cut, which is a cut by design) must not render
   // as a cut at its planned boundary: either a full-frame scene change, or a panel that swaps in a
   // single frame on an otherwise calm background, which the scene detector misses.
@@ -441,7 +487,7 @@ function evaluateFilmRender(board, video, options = {}) {
     storyboard: { status: storyboard.status, findings: storyboard.findings },
     findings,
     media: { durationSec: media.durationSec, durationDeltaSec: durationDelta, fps: Number(media.fps.toFixed(3)) },
-    cuts: { detectedSec: cuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
+    cuts: { detectedSec: cuts, pixelCutsSec: pixelCuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
     audio,
     motion: beatMotion,
     stillness,
@@ -452,4 +498,4 @@ function evaluateFilmRender(board, video, options = {}) {
   };
 }
 
-module.exports = { STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, motionProfile, probe, run };
+module.exports = { STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, run };

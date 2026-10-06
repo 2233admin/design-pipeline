@@ -7,7 +7,7 @@ const path = require("node:path");
 const test = require("node:test");
 
 const repoRoot = path.join(__dirname, "..");
-const referenceRoot = path.join(repoRoot, "skill", "references", "deepclonewebsite");
+const referenceRoot = path.join(repoRoot, "skill", "vendor", "deepclonewebsite");
 const manifest = JSON.parse(fs.readFileSync(path.join(referenceRoot, "manifest.json"), "utf8"));
 const packageResources = JSON.parse(
   fs.readFileSync(path.join(repoRoot, "skill", "references", "package-resources.json"), "utf8"),
@@ -67,8 +67,8 @@ test("bundles the pinned deepclonewebsite feature slice", () => {
   }
 
   const packaged = packageResources.required
-    .filter((entry) => entry.startsWith("references/deepclonewebsite/upstream/"))
-    .map((entry) => entry.slice("references/deepclonewebsite/upstream/".length))
+    .filter((entry) => entry.startsWith("vendor/deepclonewebsite/upstream/"))
+    .map((entry) => entry.slice("vendor/deepclonewebsite/upstream/".length))
     .sort();
   assert.deepEqual(
     packaged,
@@ -77,8 +77,8 @@ test("bundles the pinned deepclonewebsite feature slice", () => {
 });
 
 test("integrates the feature slice as a strict passive protocol", () => {
-  const protocol = fs.readFileSync(path.join(referenceRoot, "../deepclonewebsite.md"), "utf8");
-  const cloning = fs.readFileSync(path.join(referenceRoot, "../website-cloning.md"), "utf8");
+  const protocol = fs.readFileSync(path.join(repoRoot, "skill/references/deepclonewebsite.md"), "utf8");
+  const cloning = fs.readFileSync(path.join(repoRoot, "skill/references/website-cloning.md"), "utf8");
   const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();
 
   assert.equal(manifest.boundary.passiveReferenceOnly, true);
@@ -90,5 +90,5 @@ test("integrates the feature slice as a strict passive protocol", () => {
   assert.match(cloning, /references\/deepclonewebsite\.md/);
   assert.match(pipeline, /references\/deepclonewebsite\.md/);
   assert.ok(packageResources.required.includes("references/deepclonewebsite.md"));
-  assert.ok(packageResources.required.includes("references/deepclonewebsite/manifest.json"));
+  assert.ok(packageResources.required.includes("vendor/deepclonewebsite/manifest.json"));
 });

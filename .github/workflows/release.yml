@@ -20,6 +20,21 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "22"
+          cache: npm
+
+      - name: Install locked workspace dependencies
+        run: npm ci
+
+      - name: Prepare font-subset test runtime
+        run: |
+          python3 -m venv "$RUNNER_TEMP/design-pipeline-fonttools"
+          "$RUNNER_TEMP/design-pipeline-fonttools/bin/python" -m pip install fonttools==4.66.1
+          echo "HUASHU_PYTHON=$RUNNER_TEMP/design-pipeline-fonttools/bin/python" >> "$GITHUB_ENV"
+
+      - name: Prepare browser runtimes
+        run: |
+          npm exec -- playwright install-deps chromium
+          npm run browser:install
 
       - name: Resolve version
         id: ver
@@ -35,13 +50,16 @@ jobs:
           fi
           node scripts/release-contract.cjs "${args[@]}"
 
+      - name: Validate specifications
+        run: npm run specs:check
+
       - name: QA
-        run: node scripts/qa.cjs
+        run: npm test
         env:
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
 
       - name: Package
-        run: node scripts/package.cjs --output-root dist
+        run: npm run package:skill -- --output-root dist
         env:
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
           RELEASE_MODE: "1"

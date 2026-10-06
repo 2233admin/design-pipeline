@@ -9,7 +9,7 @@ const test = require("node:test");
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
-const manifestFile = path.join(repoRoot, "skill/references/holosticker/manifest.json");
+const manifestFile = path.join(repoRoot, "skill/vendor/holosticker/manifest.json");
 const packageResources = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/package-resources.json"), "utf8"));
 const { inspectHolosticker, loadHolosticker, verifyHolostickerSnapshot } = require("../skill/scripts/holosticker-core.cjs");
 
@@ -31,10 +31,10 @@ test("bundles the complete pinned Holosticker implementation", () => {
   for (const resource of [
     "scripts/holosticker-core.cjs",
     "references/holosticker.md",
-    "references/holosticker/manifest.json",
-    "references/holosticker/upstream/LICENSE",
-    "references/holosticker/upstream/src/lib/settings.ts",
-    "references/holosticker/upstream/src/lib/three-renderer.ts",
+    "vendor/holosticker/manifest.json",
+    "vendor/holosticker/upstream/LICENSE",
+    "vendor/holosticker/upstream/src/lib/settings.ts",
+    "vendor/holosticker/upstream/src/lib/three-renderer.ts",
   ]) assert.ok(packageResources.required.includes(resource), resource);
 });
 

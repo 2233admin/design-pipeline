@@ -9,7 +9,7 @@ const test = require("node:test");
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
-const manifestFile = path.join(repoRoot, "skill/references/prism-system/manifest.json");
+const manifestFile = path.join(repoRoot, "skill/vendor/prism-system/manifest.json");
 const packageResources = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/package-resources.json"), "utf8"));
 const { loadPrismCatalog, routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("../skill/scripts/prism-system-core.cjs");
 
@@ -24,10 +24,10 @@ test("bundles the complete pinned Prism design-skill layer", () => {
   for (const resource of [
     "scripts/prism-system-core.cjs",
     "references/prism-system.md",
-    "references/prism-system/manifest.json",
-    "references/prism-system/upstream/LICENSE",
-    "references/prism-system/upstream/skills/skills.json",
-    "references/prism-system/upstream/skills/skills.extended.json",
+    "vendor/prism-system/manifest.json",
+    "vendor/prism-system/upstream/LICENSE",
+    "vendor/prism-system/upstream/skills/skills.json",
+    "vendor/prism-system/upstream/skills/skills.extended.json",
   ]) assert.ok(packageResources.required.includes(resource), resource);
 });
 

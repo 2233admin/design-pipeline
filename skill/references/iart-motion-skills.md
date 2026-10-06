@@ -6,6 +6,9 @@ resources. The index repository and every pack that includes a LICENSE are bundl
 `generative-illustration-skills` pack is excluded until a LICENSE appears in a reviewed revision.
 
 The overlay defines how the pipeline uses those files. Upstream bytes stay unmodified.
+Upstream examples can reference older runtime URLs (the bundled GSAP web-animation example uses
+3.13.0); treat those versions as snapshot context only. For implementation, use the target project's
+package manifest and lockfile, then consult documentation matching that installed version.
 
 ## Operating Protocol
 

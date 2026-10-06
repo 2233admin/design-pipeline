@@ -56,6 +56,28 @@ test("quiet mix fails loudness and audio master repairs it", { skip }, () => {
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("a peaky mix is limited before a linear gain, so its quiet and loud sections keep their difference", { skip }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
+  try {
+    // 6 s quiet pad, then 6 s louder pad with a sharp click every half second (high crest factor).
+    const expr = "if(lt(t,6),0.03,0.09)*sin(2*PI*220*t)+if(gte(t,6),0.9*exp(-400*mod(t,0.5))*sin(2*PI*60*t),0)";
+    const mix = tone(dir, "peaky.wav", expr, 12);
+    const mastered = masterAudio(mix, path.join(dir, "mastered.wav"), { target: "web" });
+    assert.equal(mastered.normalization, "linear", JSON.stringify(mastered));
+    assert.ok(mastered.limiterDb > 0, JSON.stringify(mastered));
+    const rms = (file, from, to) => {
+      const raw = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-ss", String(from), "-t", String(to - from), "-i", file, "-ac", "1", "-f", "s16le", "-"], { windowsHide: true, maxBuffer: 1 << 26 }).stdout;
+      let sum = 0; for (let i = 0; i + 1 < raw.length; i += 2) { const v = raw.readInt16LE(i) / 32768; sum += v * v; }
+      return 20 * Math.log10(Math.sqrt(sum / (raw.length / 2)));
+    };
+    const before = rms(mix, 7, 11) - rms(mix, 1, 5);
+    const after = rms(path.join(dir, "mastered.wav"), 7, 11) - rms(path.join(dir, "mastered.wav"), 1, 5);
+    assert.ok(after > before - 3, `section difference ${before.toFixed(1)} dB became ${after.toFixed(1)} dB`);
+    // The master leaves codec headroom under the -1 dBTP delivery ceiling.
+    assert.ok(checkAudio(path.join(dir, "mastered.wav")).metrics.truePeakDbtp <= -2.3);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("clipping, true peak and abrupt endings are reported; fade-out removes the abrupt end", { skip }, () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
   try {

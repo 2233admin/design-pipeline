@@ -27,13 +27,14 @@ function parseArgs(argv) {
 (async () => {
   let browser;
   let server;
+  let downloads;
   try {
     const options = parseArgs(process.argv.slice(2));
     const cps = Number(options["--cps"]);
     const duration = Number(options["--duration"]);
     const code = fs.readFileSync(options["--pattern"], "utf8");
     const output = path.resolve(options["--output"]);
-    const downloads = fs.mkdtempSync(path.join(path.dirname(output), ".score-"));
+    downloads = fs.mkdtempSync(path.join(path.dirname(output), ".score-"));
     const puppeteer = resolvePuppeteer(options["--project"], options["--puppeteer-module"]);
     browser = await puppeteer.launch({ executablePath: resolveChrome(options["--chrome"]), headless: true, args: ["--autoplay-policy=no-user-gesture-required"] });
     const page = await browser.newPage();
@@ -70,7 +71,6 @@ function parseArgs(argv) {
     }
     if (!wav) fail("film score", "render produced no WAV within 60 s");
     fs.renameSync(path.join(downloads, wav), output);
-    fs.rmSync(downloads, { recursive: true, force: true });
     const unique = [...new Set(problems)];
     if (unique.length) fail("film score", `pattern rendered with errors: ${unique.slice(0, 4).join(" | ")}. Fix: use synth sounds (sine, triangle, square, sawtooth, white, pink, brown) and note names like c3; samples are not loaded`);
     process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "rendered", output, events }))}\n`);
@@ -80,5 +80,7 @@ function parseArgs(argv) {
   } finally {
     if (browser) await browser.close();
     if (server) server.close();
+    // Also on failure: a failed render must not leave an empty .score-* folder beside the output.
+    if (downloads) fs.rmSync(downloads, { recursive: true, force: true });
   }
 })();

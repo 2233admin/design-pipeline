@@ -1,0 +1,95 @@
+{
+  "schema": "design-pipeline.film-storyboard.v1",
+  "id": "openalice-promo-15s",
+  "durationSec": 15,
+  "fps": 30,
+  "grammar": "product-demonstration",
+  "benefit": "Ask OpenAlice a market question and its agent does the research in its own workspace, files the finding to your Inbox, and keeps it next to your portfolio.",
+  "proofAction": "A question typed into Ask Alice is the one the workspace agent answers; its +9.1% finding is the row in the Inbox report, and the report's AAPL is the position in the portfolio.",
+  "reference": "reference.md (no external moving reference; real OpenAlice demo-mode captures)",
+  "endState": "free",
+  "sound": {
+    "mode": "scored",
+    "source": "Strudel pattern score.strudel.js at 120 BPM",
+    "usage": "internal",
+    "assets": [
+      { "id": "score", "license": "generated with Strudel (AGPL-3.0 tool, not bundled); built-in synth sounds only, no samples", "commercialUse": true, "file": "assets/score.wav", "source": "strudel" }
+    ],
+    "cues": [
+      { "id": "keys-in", "atSec": 0, "kind": "entry", "note": "soft pulse and key ticks under the typing" },
+      { "id": "to-workspace", "atSec": 2, "kind": "downbeat", "note": "bar line on the cut into the workspace" },
+      { "id": "finding", "atSec": 6.5, "kind": "accent", "note": "tick as the +9.1% row appears" },
+      { "id": "to-inbox", "atSec": 8, "kind": "impact", "note": "drop on the cut to the Inbox report" },
+      { "id": "to-book", "atSec": 11, "kind": "accent", "note": "hit on the cut to the portfolio" },
+      { "id": "logo", "atSec": 12.5, "kind": "accent", "note": "chord as the portfolio becomes a card beside the logo" },
+      { "id": "out", "atSec": 15, "kind": "exit", "note": "ring out under the tagline" }
+    ]
+  },
+  "beats": [
+    {
+      "id": "ask",
+      "startSec": 0,
+      "endSec": 2,
+      "role": "action",
+      "subject": "the Ask Alice box",
+      "productAction": "The user types a question about Apple's Q1 earnings into Ask Alice",
+      "transformation": { "kind": "state-change", "from": "empty Ask Alice box", "to": "a typed question" },
+      "handoff": "open",
+      "motion": ["screen-capture", "camera-push"],
+      "soundCues": ["keys-in"]
+    },
+    {
+      "id": "research",
+      "startSec": 2,
+      "endSec": 8,
+      "role": "action",
+      "subject": "the workspace terminal",
+      "productAction": "The agent in the aapl-q1 workspace reads the filing and finds services growth decelerating to +9.1%",
+      "transformation": { "kind": "state-change", "from": "the question", "to": "a three-quarter deceleration with +9.1% in red" },
+      "handoff": "match-cut",
+      "carrier": "the question line: the typed question cuts to the same words at the same size and place in the agent's terminal",
+      "motion": ["screen-capture", "camera-tilt", "camera-push"],
+      "soundCues": ["to-workspace", "finding"]
+    },
+    {
+      "id": "report",
+      "startSec": 8,
+      "endSec": 11,
+      "role": "action",
+      "subject": "the Inbox report",
+      "productAction": "The agent's report sits in the Inbox with the finding and a recommendation",
+      "transformation": { "kind": "reveal-in-context", "from": "the +9.1% row", "to": "the report titled AAPL Q1 — Hidden Deceleration Signal" },
+      "handoff": "match-cut",
+      "carrier": "the red +9.1% in the terminal cuts to the +9.1% row of the report's table at the same size and place",
+      "motion": ["screen-capture", "camera-pull-back", "camera-push"],
+      "soundCues": ["to-inbox"]
+    },
+    {
+      "id": "book",
+      "startSec": 11,
+      "endSec": 12.5,
+      "role": "action",
+      "subject": "the portfolio",
+      "productAction": "The same ticker is a live position in the portfolio",
+      "transformation": { "kind": "reveal-in-context", "from": "the AAPL position row", "to": "the whole portfolio with $315,182.71 total equity" },
+      "handoff": "match-cut",
+      "carrier": "the report title's AAPL cuts to the AAPL position row at the same place",
+      "motion": ["screen-capture", "camera-pull-back"],
+      "soundCues": ["to-book"]
+    },
+    {
+      "id": "brand",
+      "startSec": 12.5,
+      "endSec": 15,
+      "role": "brand-hold",
+      "subject": "the OpenAlice lockup",
+      "productAction": "The portfolio settles as a card beside the OpenAlice logo and tagline",
+      "transformation": { "kind": "none" },
+      "handoff": "camera-carry",
+      "carrier": "the full-screen portfolio keeps pulling back until it is a card beside the logo",
+      "holdSec": 1.2,
+      "motion": ["camera-pull-back", "fade-in"],
+      "soundCues": ["logo", "out"]
+    }
+  ]
+}

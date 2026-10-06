@@ -1,8 +1,10 @@
 # Music-led edits (PV, MAD, beat montage)
 
-PV and MAD are edits of existing footage cut to music: shots land on beats, pacing follows the
-track's energy, accents get flashes or freezes. Use this workflow instead of the storyboard and
-composition workflow whenever the film is assembled from clips.
+PV and MAD describe a broad field of visual direction, not a fixed cutting recipe. Subject action,
+staging, key poses, motifs, compositing, typography and sound can all carry the piece. Read
+`animation-thinking.md` before choosing effects. This CLI handles the assembly of existing clips;
+author generated shots through the film workflow and bring their rendered clips into the edit.
+Narration may be one soundtrack layer without requiring literal one-sentence/one-picture cuts.
 
 ```bash
 designer-pipeline film-edit analyze --project-root <dir> --audio assets/music.wav   # beat grid + footage shots
@@ -23,10 +25,16 @@ replaces beat detection.
   flashes on loud downbeats. `pv`: two, four or eight beats per shot. Shots rotate through sources
   and are trimmed so their motion peak lands just after the cut. Edit `edit.json` by hand
   afterwards; every clip is `{source, inSec, outSec, atSec, durSec, speed?, fx?: [flash, freeze, zoom-punch]}`.
-- `check` findings, each with a `fix`: `timeline-gap`, `timeline-overlap`, `cut-off-grid`,
-  `license-noncommercial`, `source-range` (errors); `shot-too-short`, `shot-too-long`,
+- These `auto` presets are rough assembly aids, not definitions of PV/MAD. Rebuild the phrase
+  around the intended performance, visual relationship and audio; remove unmotivated flashes.
+- `check` findings, each with a `fix`: `timeline-gap`, `timeline-overlap`,
+  `license-noncommercial`, `source-range` (errors); `cut-off-grid`, `shot-too-short`, `shot-too-long`,
   `monotone-rhythm`, `clip-reused`, `speed-extreme`, `cut-not-visible` (warnings). The render,
   audio and composition gates run on the result through a storyboard derived from the edit.
+
+For an off-grid cut, distinguish an accidental offset from an intentional pickup, delayed accent
+or counterpoint. Keep intentional choices and record their timecodes in `qa.md`; inspect source
+motion, camera movement and editing separately before adjusting them together.
 
 The render limits the music to -2.5 dBFS so the AAC-encoded film stays under -1 dBTP. The gates
 check timing, rhythm, licensing and delivery; choosing the right moments and the emotional arc

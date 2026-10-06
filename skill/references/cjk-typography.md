@@ -9,7 +9,13 @@ This contract adapts the Chinese typography guidance reviewed from
 `39dac8238a6ba44a4e39c1f0f6ca641224b01879`. It does not import that skill's visual theme,
 reference-site library, or mandatory four-direction workflow.
 
-## System-Font Default
+## System-Font Default and Project Choice
+
+Use [font sources and selection](../tools/fonts.md) when the visual direction calls for a
+specific family. FontLab and primary sources expand the available choices; source selection,
+real-copy comparison and loading checks belong to the project. The defaults below serve
+unspecified UI work. A deliberately selected, verified custom family can serve body or display
+roles; it is not confined to a small preset palette.
 
 Use a zero-download system stack for CJK body copy and controls unless the project already owns a
 tested font family:
@@ -56,13 +62,17 @@ font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
 
 ## Decorative Font Subsetting
 
-A decorative CJK webfont is allowed only for a short, known heading or when the brief explicitly
-requires calligraphic, historic, or handwritten character. It never becomes the body/UI font.
+Display-oriented CJK faces are usually best for short, known headings. When the brief selects
+calligraphic, historic, handwritten or other custom typography, judge its role using the actual
+copy and reading size. A body/UI choice still needs full language coverage, readable metrics,
+loading and fallback; decorative appearance alone neither approves nor prohibits that use.
 
 When one is justified:
 
-1. Freeze the exact glyph set from the shipped heading and every supported locale.
-2. Produce or request a WOFF2 subset containing only those glyphs. A hosted `text=` request is
+1. Verify the selected font license permits the intended transformation, then freeze the exact
+   glyph set from the shipped static text and every supported locale.
+2. Produce or request a WOFF2 subset containing only those glyphs for a web project; the existing
+   Canvas/font helper produces WOFF1, which can also be used without relabeling it. A hosted `text=` request is
    acceptable only when external font loading is already allowed by project policy and the heading
    is static.
 3. Use `font-display: swap` and retain the system stack as fallback.

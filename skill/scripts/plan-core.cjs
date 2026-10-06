@@ -3,8 +3,10 @@
 const path = require("node:path");
 const {
   assertEnum,
+  assertKeys,
   assertObject,
   assertString,
+  assertStringArray,
   canonicalJson,
   fail,
   isObject,
@@ -19,6 +21,53 @@ const MODES = ["greenfield", "rebuild", "clone"];
 const FIDELITIES = ["exact", "adaptive"];
 
 function hashText(value) { return `sha256:${sha256(value)}`; }
+
+function validateVisualTaskPath(value, label) {
+  assertString(value, label, "design plan");
+  const normalized = value.replaceAll("\\", "/");
+  if (path.posix.isAbsolute(normalized) || path.win32.isAbsolute(value) || /[\u0000-\u001f:]/.test(value)
+      || normalized.split("/").includes("..") || path.posix.normalize(normalized) === "."
+      || ["$plan", "$task"].includes(path.posix.normalize(normalized))) {
+    fail("design plan", `${label} must be a contained relative path`);
+  }
+  return path.posix.normalize(normalized);
+}
+
+function visualTaskPaths(values, label, nonEmpty = true) {
+  if (!Array.isArray(values) || nonEmpty && values.length === 0) fail("design plan", `${label} must be ${nonEmpty ? "non-empty " : ""}relative path arrays`);
+  return values.map((value, index) => validateVisualTaskPath(value, `${label}[${index}]`));
+}
+
+function validateVisualTask(phase, index) {
+  const label = `phases[${index}]`;
+  if (Object.hasOwn(Object.prototype, phase.id)) fail("design plan", `${label}.id is reserved for object prototype records`);
+  assertString(phase.goal, `${label}.goal`, "design plan");
+  const keys = ["target", "property", "references", "scope", "guides", "checks"];
+  assertKeys(phase.visual, keys, [...keys, "review", "sourceObservation"], `${label}.visual`, "design plan");
+  for (const key of ["target", "property"]) assertString(phase.visual[key], `${label}.visual.${key}`, "design plan");
+  const property = phase.visual.property;
+  if (!/^[a-zA-Z][a-zA-Z0-9_.-]*$/.test(property) || ["geometry", "materials", "motion", "component", "page", "all", "implementation"].includes(property.toLowerCase()) || /\.all$/i.test(property)) {
+    fail("design plan", `${label}.visual.property must be an atomic property identifier, not an aggregate stage`);
+  }
+  for (const key of ["references", "scope", "guides", "checks"]) visualTaskPaths(phase.visual[key], `${label}.visual.${key}`);
+  if (phase.visual.review !== undefined && typeof phase.visual.review !== "boolean") fail("design plan", `${label}.visual.review must be boolean`);
+  if (phase.visual.sourceObservation !== undefined) {
+    const binding = phase.visual.sourceObservation, bindingLabel = `${label}.visual.sourceObservation`;
+    const bindingKeys = ["report", "shotId", "observationIds"];
+    assertKeys(binding, bindingKeys, bindingKeys, bindingLabel, "design plan");
+    const report = validateVisualTaskPath(binding.report, `${bindingLabel}.report`);
+    assertString(binding.shotId, `${bindingLabel}.shotId`, "design plan");
+    assertStringArray(binding.observationIds, `${bindingLabel}.observationIds`, "design plan", { min: 1, unique: true });
+    if (!phase.visual.references.some(file => validateVisualTaskPath(file, `${label}.visual.references`) === report)) {
+      fail("design plan", `${bindingLabel}.report must be included in visual.references`);
+    }
+  }
+  visualTaskPaths(phase.inputs, `${label}.inputs`, false);
+  const outputs = visualTaskPaths(phase.outputs, `${label}.outputs`);
+  if (phase.visual.checks.some((file) => outputs.includes(validateVisualTaskPath(file, `${label}.visual.checks`)))) {
+    fail("design plan", `${label}.visual.checks must not overlap task outputs`);
+  }
+}
 
 function firstString(...values) {
   return values.find((value) => typeof value === "string" && value.trim())?.trim() || null;
@@ -120,6 +169,7 @@ function validatePlan(plan, options = {}) {
     if (phase.invalidates !== undefined && (!Array.isArray(phase.invalidates) || !phase.invalidates.every((value) => typeof value === "string" && value.trim()))) {
       fail("design plan", `phases[${index}].invalidates must contain non-empty strings`);
     }
+    if (options.requireVisualTasks || phase.visual !== undefined) validateVisualTask(phase, index);
   }
   const byId = new Map(plan.phases.map((phase) => [phase.id, phase]));
   for (const phase of plan.phases) {
@@ -209,4 +259,5 @@ module.exports = {
   loadControlPhaseRegistry,
   normalizeIntentManifest,
   validatePlan,
+  validateVisualTaskPath,
 };

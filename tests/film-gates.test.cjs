@@ -2,6 +2,11 @@
 
 const assert = require("node:assert/strict");
 const test = require("node:test");
+
+test("media tool errors preserve the first diagnostic rather than only a misleading final line", () => {
+  const { run } = require("../skill/scripts/film-core.cjs");
+  assert.throws(() => run(process.execPath, ["-e", "process.stderr.write('Error while parsing selection expression\\nCannot allocate memory\\n');process.exit(1)"]), /parsing selection expression/);
+});
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -55,20 +60,26 @@ test("action beats need a real transformation and known choreography", () => {
   for (const code of ["transformation-missing", "transformation-endpoints", "choreography-unknown"]) assert.ok(codes(result).includes(code), code);
 });
 
-test("holds cannot dominate or chain", () => {
+test("dominant or chained holds invite review without rejecting deliberate pacing", () => {
   const board = example();
   board.beats[3].role = "title-hold";
   board.beats[3].transformation = { kind: "none" };
   const result = checkStoryboard(board);
   assert.ok(codes(result).includes("hold-dominant"));
   assert.ok(codes(result).includes("hold-chain"));
+  assert.equal(result.status, "passed", JSON.stringify(result.findings));
+  assert.ok(result.findings.every((finding) => finding.severity === "warn"));
 });
 
-test("scored films bind sound to beats; silent films state why", () => {
+test("scored films review sparse accents but still require an entry; silent films state why", () => {
   const board = example();
   for (const beat of board.beats) delete beat.soundCues;
+  const sustained = checkStoryboard(board);
+  assert.equal(sustained.status, "passed", JSON.stringify(sustained.findings));
+  assert.equal(sustained.findings.find((finding) => finding.code === "sound-unbound").severity, "warn");
   board.sound.cues = board.sound.cues.filter((cue) => cue.kind !== "entry");
   const result = checkStoryboard(board);
+  assert.equal(result.status, "failed");
   assert.ok(codes(result).includes("sound-no-entry"));
   assert.ok(codes(result).includes("sound-unbound"));
   const silent = example();
@@ -102,7 +113,7 @@ test("carried handoffs must name what survives the boundary", () => {
   assert.ok(codes(checkStoryboard(placeholder)).includes("carrier-unnamed"));
 });
 
-test("uniform-cadence fails near-equal beat lengths and passes uneven ones", () => {
+test("uniform-cadence warns on near-equal beat lengths without enforcing a creative ratio", () => {
   const golden = checkStoryboard(example());
   assert.ok(!codes(golden).includes("uniform-cadence"));
   assert.equal(golden.metrics.cadenceRatio, 3.57);
@@ -113,6 +124,8 @@ test("uniform-cadence fails near-equal beat lengths and passes uneven ones", () 
   assert.ok(codes(result).includes("uniform-cadence"));
   assert.ok(result.findings.find((f) => f.code === "uniform-cadence").fix);
   assert.equal(result.metrics.cadenceRatio, 1);
+  assert.equal(result.status, "passed", JSON.stringify(result.findings));
+  assert.equal(result.findings.find((f) => f.code === "uniform-cadence").severity, "warn");
 });
 
 test("uniform-cadence uses the raw ratio, not a rounded-to-2-decimals one, at the boundary", () => {
@@ -131,7 +144,7 @@ test("uniform-cadence uses the raw ratio, not a rounded-to-2-decimals one, at th
   assert.ok(Math.abs(result.metrics.cadenceRatio - 3) < 0.01, result.metrics.cadenceRatio);
 });
 
-test("no-rest fails a film with no hold or stillness, and passes with a hold role or holdSec", () => {
+test("no-rest invites review and a declared hold resolves the warning", () => {
   const golden = checkStoryboard(example());
   assert.ok(!codes(golden).includes("no-rest"));
   assert.equal(golden.metrics.restSec, 2);
@@ -144,6 +157,8 @@ test("no-rest fails a film with no hold or stillness, and passes with a hold rol
   assert.ok(codes(result).includes("no-rest"));
   assert.ok(result.findings.find((f) => f.code === "no-rest").fix);
   assert.equal(result.metrics.restSec, 0);
+  assert.equal(result.status, "passed", JSON.stringify(result.findings));
+  assert.equal(result.findings.find((f) => f.code === "no-rest").severity, "warn");
   const withHoldSec = JSON.parse(JSON.stringify(noRest));
   withHoldSec.beats[3].holdSec = 0.3;
   const passing = checkStoryboard(withHoldSec);
@@ -166,6 +181,8 @@ test("choreography registry and module agree and patterns only tween seek-safe p
   assert.deepEqual(registry.patterns.map((entry) => entry.id).sort(), Object.keys(patterns).sort());
   const layout = new Set(["top", "left", "right", "bottom", "width", "height", "display", "visibility", "margin", "padding"]);
   const args = {
+    "draw-on": { paths: [{ getTotalLength: () => 10 }, { getTotalLength: () => 20 }], duration: 1 },
+    "pose-to-pose": { subject: "#s", keys: [{ at: 0, pose: { x: 0, y: 0 } }, { at: 0.8, pose: { x: 20, y: -5 }, ease: "power2.out" }] },
     "continuous-morph": { from: "#a", to: "#b", delta: { x: 10, y: 0, scale: 2 } },
     "match-cut": { from: "#a", to: "#b" },
     "camera-push": { stage: "#w", focus: { x: 10, y: 5 } },
@@ -230,7 +247,7 @@ test("camera-follow: at is optional and defaults to 0", () => {
 
 const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0 && spawnSync("ffprobe", ["-version"], { windowsHide: true }).status === 0;
 
-function synthesize(dir, { audio = true, cuts = [3, 6, 9] } = {}) {
+function synthesize(dir, { audio = true, cuts = [3, 6, 9], accents = cuts } = {}) {
   const colors = ["red", "blue", "green", "yellow"];
   const bounds = [0, ...cuts, 12];
   const inputs = [];
@@ -246,7 +263,7 @@ function synthesize(dir, { audio = true, cuts = [3, 6, 9] } = {}) {
   const map = ["-map", "[v]"];
   if (audio) {
     // Quiet bed with loud clicks exactly on each cut.
-    const clicks = cuts.map((at) => `between(t,${at},${at + 0.03})*0.9*sin(2*PI*1000*t)`).join("+");
+    const clicks = accents.map((at) => `between(t,${at},${at + 0.03})*0.9*sin(2*PI*1000*t)`).join("+") || "0";
     args.push("-f", "lavfi", "-i", `aevalsrc='0.01*sin(2*PI*220*t)+${clicks}':s=8000:d=12`);
     map.push("-map", "4:a");
   }
@@ -297,6 +314,28 @@ test("render evidence flags missing audio and wrong duration for a scored film",
     assert.ok(codes(result).includes("duration-mismatch"));
     assert.equal(result.contactSheet, null);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("off-onset cuts are reviewed, while broken subject action still fails", { skip: !hasFfmpeg && "ffmpeg not installed" }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "film-counterpoint-"));
+  try {
+    const video = synthesize(dir, { accents: [] });
+    const result = evaluateFilmRender(cutBoard(), video);
+    assert.equal(result.findings.find((f) => f.code === "cuts-off-beat")?.severity, "warn");
+    assert.equal(result.status, "passed", JSON.stringify(result.findings));
+    const broken = slideshow();
+    assert.equal(checkStoryboard(broken).status, "failed");
+    assert.ok(codes(checkStoryboard(broken)).includes("surface-only-motion"));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("dissolve share alone is not a veto on an authored montage", () => {
+  const board = example();
+  board.beats.slice(1).forEach((beat) => { beat.handoff = "dissolve"; });
+  const result = checkStoryboard(board);
+  assert.equal(result.findings.find((f) => f.code === "slideshow-handoffs")?.severity, "warn");
+  assert.equal(result.status, "passed", JSON.stringify(result.findings));
+  assert.equal(result.creativeAcceptance, "not-assessed");
 });
 
 test("CLI verify film-storyboard returns exit 2 for a slideshow", () => {

@@ -1,0 +1,2219 @@
+{
+  "schema": "design-pipeline.film-timeline.v1",
+  "compositionId": "main",
+  "durationSec": 20,
+  "tweens": [
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 0,
+      "durationSec": 2,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.02
+      },
+      "repeat": 0,
+      "ease": "sine.inOut"
+    },
+    {
+      "targets": [
+        "#cmd"
+      ],
+      "startSec": 0.2,
+      "durationSec": 0.8,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "steps(24)"
+    },
+    {
+      "targets": [
+        "#caret"
+      ],
+      "startSec": 0.2,
+      "durationSec": 0.8,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 1267
+      },
+      "repeat": 0,
+      "ease": "steps(24)"
+    },
+    {
+      "targets": [
+        "#caret"
+      ],
+      "startSec": 1.3,
+      "durationSec": 0.1,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#resp"
+      ],
+      "startSec": 1.45,
+      "durationSec": 0.3,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#rule"
+      ],
+      "startSec": 1.5,
+      "durationSec": 0.4,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 0.36
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 2,
+      "durationSec": 1.4,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#term"
+      ],
+      "startSec": 2,
+      "durationSec": 0.8,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -254,
+        "y": -374,
+        "scale": 0.26
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#rule"
+      ],
+      "startSec": 2,
+      "durationSec": 0.7,
+      "props": [
+        "scaleX",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 1,
+        "y": -192
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#resp"
+      ],
+      "startSec": 2.5,
+      "durationSec": 0.3,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#f0"
+      ],
+      "startSec": 2.55,
+      "durationSec": 0.6,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#f1"
+      ],
+      "startSec": 2.64,
+      "durationSec": 0.6,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#f2"
+      ],
+      "startSec": 2.73,
+      "durationSec": 0.6,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#f3"
+      ],
+      "startSec": 2.82,
+      "durationSec": 0.6,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#f4"
+      ],
+      "startSec": 2.91,
+      "durationSec": 0.6,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#log-scaffolded"
+      ],
+      "startSec": 3.2,
+      "durationSec": 0.2,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#rule"
+      ],
+      "startSec": 3.5,
+      "durationSec": 0.8,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#c0"
+      ],
+      "startSec": 3.85,
+      "durationSec": 0.55,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#c1"
+      ],
+      "startSec": 3.97,
+      "durationSec": 0.55,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 4,
+      "durationSec": 2,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.15
+      },
+      "repeat": 0,
+      "ease": "sine.inOut"
+    },
+    {
+      "targets": [
+        "#log-scaffolded"
+      ],
+      "startSec": 4,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#log-render"
+      ],
+      "startSec": 4.05,
+      "durationSec": 0.2,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#c2"
+      ],
+      "startSec": 4.09,
+      "durationSec": 0.55,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#c3"
+      ],
+      "startSec": 4.21,
+      "durationSec": 0.55,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#c4"
+      ],
+      "startSec": 4.33,
+      "durationSec": 0.55,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#w0"
+      ],
+      "startSec": 4.9,
+      "durationSec": 0.14,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.14
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#w0"
+      ],
+      "startSec": 5.04,
+      "durationSec": 0.16,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.in"
+    },
+    {
+      "targets": [
+        "#w1"
+      ],
+      "startSec": 5.1,
+      "durationSec": 0.14,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.14
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#w1"
+      ],
+      "startSec": 5.24,
+      "durationSec": 0.16,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.in"
+    },
+    {
+      "targets": [
+        "#w2"
+      ],
+      "startSec": 5.3,
+      "durationSec": 0.14,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.14
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#w2"
+      ],
+      "startSec": 5.44,
+      "durationSec": 0.16,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.in"
+    },
+    {
+      "targets": [
+        "#w3"
+      ],
+      "startSec": 5.5,
+      "durationSec": 0.14,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.14
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#w3"
+      ],
+      "startSec": 5.64,
+      "durationSec": 0.16,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.in"
+    },
+    {
+      "targets": [
+        "#w4"
+      ],
+      "startSec": 5.7,
+      "durationSec": 0.14,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.14
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#w4"
+      ],
+      "startSec": 5.84,
+      "durationSec": 0.16,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.in"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 1131.6,
+        "y": 0,
+        "scale": 2.3
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 6,
+      "durationSec": 1.7,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 572,
+        "y": 0,
+        "scale": 2.2
+      },
+      "repeat": 0,
+      "ease": "sine.inOut"
+    },
+    {
+      "targets": [
+        "#c0"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "filter"
+      ],
+      "from": {},
+      "to": {
+        "filter": "saturate(0.15) brightness(0.5)"
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#c1"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "filter"
+      ],
+      "from": {},
+      "to": {
+        "filter": "saturate(0.15) brightness(0.5)"
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#c2"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "filter"
+      ],
+      "from": {},
+      "to": {
+        "filter": "saturate(0.15) brightness(0.5)"
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#c3"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "filter"
+      ],
+      "from": {},
+      "to": {
+        "filter": "saturate(0.15) brightness(0.5)"
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#c4"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "filter"
+      ],
+      "from": {},
+      "to": {
+        "filter": "saturate(0.15) brightness(0.5)"
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#j0"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#j1"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#j2"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#j3"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#finding"
+      ],
+      "startSec": 6,
+      "durationSec": 0,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "custom"
+    },
+    {
+      "targets": [
+        "#log-render"
+      ],
+      "startSec": 6,
+      "durationSec": 0.1,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#log-failed"
+      ],
+      "startSec": 6.05,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#finding-code"
+      ],
+      "startSec": 6.05,
+      "durationSec": 0.4,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "steps(20)"
+    },
+    {
+      "targets": [
+        "#finding-msg"
+      ],
+      "startSec": 6.5,
+      "durationSec": 0.4,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "steps(30)"
+    },
+    {
+      "targets": [
+        "#finding-fix"
+      ],
+      "startSec": 7,
+      "durationSec": 0.45,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "steps(36)"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 7.7,
+      "durationSec": 0.9,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 952,
+        "y": 0,
+        "scale": 1.7
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#finding"
+      ],
+      "startSec": 7.7,
+      "durationSec": 0.4,
+      "props": [
+        "opacity",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0,
+        "y": 24
+      },
+      "repeat": 0,
+      "ease": "power2.in"
+    },
+    {
+      "targets": [
+        "#dot"
+      ],
+      "startSec": 7.75,
+      "durationSec": 0.4,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "back.out(2)"
+    },
+    {
+      "targets": [
+        "#log-failed"
+      ],
+      "startSec": 7.9,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#log-fix"
+      ],
+      "startSec": 8,
+      "durationSec": 0.2,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#dot"
+      ],
+      "startSec": 8,
+      "durationSec": 1,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 468
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#trail"
+      ],
+      "startSec": 8,
+      "durationSec": 1,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 0.1987878787878788
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#c0"
+      ],
+      "startSec": 8,
+      "durationSec": 1,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 100%)"
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#g0"
+      ],
+      "startSec": 8.45,
+      "durationSec": 0.4,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 8.6,
+      "durationSec": 4.6,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": -918,
+        "y": 0,
+        "scale": 1.7
+      },
+      "repeat": 0,
+      "ease": "sine.inOut"
+    },
+    {
+      "targets": [
+        "#j0"
+      ],
+      "startSec": 8.96,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#dot"
+      ],
+      "startSec": 9,
+      "durationSec": 1,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 796
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#trail"
+      ],
+      "startSec": 9,
+      "durationSec": 1,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 0.3975757575757576
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#c1"
+      ],
+      "startSec": 9,
+      "durationSec": 1,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 100%)"
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#g1"
+      ],
+      "startSec": 9.45,
+      "durationSec": 0.4,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#j1"
+      ],
+      "startSec": 9.96,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#dot"
+      ],
+      "startSec": 10,
+      "durationSec": 1,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 1124
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#trail"
+      ],
+      "startSec": 10,
+      "durationSec": 1,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 0.5963636363636363
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#c2"
+      ],
+      "startSec": 10,
+      "durationSec": 1,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 100%)"
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#g2"
+      ],
+      "startSec": 10.45,
+      "durationSec": 0.4,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#j2"
+      ],
+      "startSec": 10.96,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#dot"
+      ],
+      "startSec": 11,
+      "durationSec": 1,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 1452
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#trail"
+      ],
+      "startSec": 11,
+      "durationSec": 1,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 0.7951515151515152
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#c3"
+      ],
+      "startSec": 11,
+      "durationSec": 1,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 100%)"
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#g3"
+      ],
+      "startSec": 11.45,
+      "durationSec": 0.4,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#j3"
+      ],
+      "startSec": 11.96,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#dot"
+      ],
+      "startSec": 12,
+      "durationSec": 1,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 1790
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#trail"
+      ],
+      "startSec": 12,
+      "durationSec": 1,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 1
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#c4"
+      ],
+      "startSec": 12,
+      "durationSec": 1,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 100%)"
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#g4"
+      ],
+      "startSec": 12.45,
+      "durationSec": 0.4,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#g4"
+      ],
+      "startSec": 13.05,
+      "durationSec": 0.18,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "scale": 1.25
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#g3"
+      ],
+      "startSec": 13.17,
+      "durationSec": 0.18,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "scale": 1.25
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 13.2,
+      "durationSec": 1.4,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 0,
+        "y": 0,
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#g4"
+      ],
+      "startSec": 13.23,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55,
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#g2"
+      ],
+      "startSec": 13.29,
+      "durationSec": 0.18,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "scale": 1.25
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#g3"
+      ],
+      "startSec": 13.35,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55,
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#g1"
+      ],
+      "startSec": 13.41,
+      "durationSec": 0.18,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "scale": 1.25
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#g2"
+      ],
+      "startSec": 13.47,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55,
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#g0"
+      ],
+      "startSec": 13.53,
+      "durationSec": 0.18,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "scale": 1.25
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#g1"
+      ],
+      "startSec": 13.59,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55,
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#g0"
+      ],
+      "startSec": 13.71,
+      "durationSec": 0.3,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0.55,
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#log-fix"
+      ],
+      "startSec": 13.95,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#log-passed"
+      ],
+      "startSec": 14,
+      "durationSec": 0.2,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#passed"
+      ],
+      "startSec": 14.05,
+      "durationSec": 0.4,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 15.35,
+      "durationSec": 0.8,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 0,
+        "y": 0,
+        "scale": 0.8
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#passed"
+      ],
+      "startSec": 15.35,
+      "durationSec": 0.3,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#lane-a"
+      ],
+      "startSec": 15.35,
+      "durationSec": 0.7,
+      "props": [
+        "opacity",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "y": 0,
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#lane-c"
+      ],
+      "startSec": 15.45,
+      "durationSec": 0.7,
+      "props": [
+        "opacity",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "y": 0,
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#log-passed"
+      ],
+      "startSec": 15.5,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#log-models"
+      ],
+      "startSec": 15.55,
+      "durationSec": 0.2,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#label-b"
+      ],
+      "startSec": 15.6,
+      "durationSec": 0.3,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#sweep"
+      ],
+      "startSec": 15.85,
+      "durationSec": 0.15,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#sweep"
+      ],
+      "startSec": 15.95,
+      "durationSec": 1.2,
+      "props": [
+        "x"
+      ],
+      "from": {
+        "x": 60
+      },
+      "to": {
+        "x": 1860
+      },
+      "repeat": 0,
+      "ease": "power1.inOut"
+    },
+    {
+      "targets": [
+        "#ja0"
+      ],
+      "startSec": 16.354,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#jc0"
+      ],
+      "startSec": 16.354,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#ja1"
+      ],
+      "startSec": 16.493,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#jc1"
+      ],
+      "startSec": 16.493,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#ja2"
+      ],
+      "startSec": 16.607,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#jc2"
+      ],
+      "startSec": 16.607,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#ja3"
+      ],
+      "startSec": 16.746,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#jc3"
+      ],
+      "startSec": 16.746,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#sweep"
+      ],
+      "startSec": 17.1,
+      "durationSec": 0.3,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.in"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 17.35,
+      "durationSec": 0.8,
+      "props": [
+        "scale",
+        "x",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "x": 0,
+        "y": 0,
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#log-models"
+      ],
+      "startSec": 17.35,
+      "durationSec": 0.3,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#term"
+      ],
+      "startSec": 17.35,
+      "durationSec": 0.3,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#f0",
+        "#f1",
+        "#f2",
+        "#f3",
+        "#f4",
+        "#fa0",
+        "#fa1",
+        "#fa2",
+        "#fa3",
+        "#fa4",
+        "#fc0",
+        "#fc1",
+        "#fc2",
+        "#fc3",
+        "#fc4"
+      ],
+      "startSec": 17.35,
+      "durationSec": 0.55,
+      "props": [
+        "clipPath"
+      ],
+      "from": {},
+      "to": {
+        "clipPath": "inset(50% 0% 50% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power3.in"
+    },
+    {
+      "targets": [
+        "#label-b",
+        "#label-a",
+        "#label-c"
+      ],
+      "startSec": 17.35,
+      "durationSec": 0.25,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#lane-a"
+      ],
+      "startSec": 17.5,
+      "durationSec": 0.6,
+      "props": [
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "y": 240
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#lane-c"
+      ],
+      "startSec": 17.5,
+      "durationSec": 0.6,
+      "props": [
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "y": -240
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#trail"
+      ],
+      "startSec": 17.9,
+      "durationSec": 0.7,
+      "props": [
+        "scaleX",
+        "scaleY",
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 226,
+        "scaleX": 0.21818181818181817,
+        "scaleY": 2
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#j1"
+      ],
+      "startSec": 17.9,
+      "durationSec": 0.7,
+      "props": [
+        "scaleX",
+        "scaleY",
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": -310,
+        "scaleX": 1.75,
+        "scaleY": 0.5454545454545454
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#j2"
+      ],
+      "startSec": 17.9,
+      "durationSec": 0.7,
+      "props": [
+        "scaleX",
+        "scaleY",
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": -518,
+        "scaleX": 1.75,
+        "scaleY": 0.5454545454545454
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#j0"
+      ],
+      "startSec": 17.9,
+      "durationSec": 0.4,
+      "props": [
+        "opacity",
+        "scaleY"
+      ],
+      "from": {},
+      "to": {
+        "scaleY": 0,
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power2.in"
+    },
+    {
+      "targets": [
+        "#j3"
+      ],
+      "startSec": 17.9,
+      "durationSec": 0.4,
+      "props": [
+        "opacity",
+        "scaleY"
+      ],
+      "from": {},
+      "to": {
+        "scaleY": 0,
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power2.in"
+    },
+    {
+      "targets": [
+        "#dot"
+      ],
+      "startSec": 17.9,
+      "durationSec": 0.7,
+      "props": [
+        "scale",
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 746,
+        "scale": 0.8888888888888888
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#lane-a"
+      ],
+      "startSec": 18,
+      "durationSec": 0.2,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#lane-c"
+      ],
+      "startSec": 18,
+      "durationSec": 0.2,
+      "props": [
+        "opacity"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#word"
+      ],
+      "startSec": 18.35,
+      "durationSec": 0.7,
+      "props": [
+        "clipPath",
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 0,
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power3.out"
+    },
+    {
+      "targets": [
+        "#tagline"
+      ],
+      "startSec": 18.7,
+      "durationSec": 0.5,
+      "props": [
+        "opacity",
+        "y"
+      ],
+      "from": {},
+      "to": {
+        "opacity": 1,
+        "y": 0
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 19.2,
+      "durationSec": 0.8,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.01
+      },
+      "repeat": 0,
+      "ease": "sine.out"
+    }
+  ]
+}

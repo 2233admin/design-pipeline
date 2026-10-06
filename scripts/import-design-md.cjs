@@ -12,7 +12,7 @@ const {
 } = require("./git-tree-snapshot.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
-const destination = path.join(repoRoot, "skill", "references", "design-md");
+const destination = path.join(repoRoot, "skill", "vendor", "design-md");
 const repository = "https://github.com/dimabraven/design-md";
 
 function parseArgs(argv) {

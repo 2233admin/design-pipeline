@@ -4,6 +4,24 @@
   "module": "patterns.js",
   "patterns": [
     {
+      "id": "draw-on",
+      "grammar": ["continuous-transformation", "combination"],
+      "transformation": "reveal-in-context",
+      "handoff": "continuation",
+      "required": ["paths", "at", "duration"],
+      "optional": ["gap"],
+      "use": "Reveal ordered SVG geometry by native arc length within a chosen interval. Pass actual geometry elements; completed strokes remain visible through the caller's chosen hold."
+    },
+    {
+      "id": "pose-to-pose",
+      "grammar": ["continuous-transformation", "product-demonstration", "combination"],
+      "transformation": "state-change",
+      "handoff": "continuation",
+      "required": ["subject", "at", "keys"],
+      "optional": [],
+      "use": "Sequence authored key poses with deliberate timing, spacing, incoming ease and holds. Add breakdown keys wherever the action needs a change of arc, weight or overlap."
+    },
+    {
       "id": "continuous-morph",
       "grammar": ["continuous-transformation", "product-demonstration"],
       "transformation": "morph",

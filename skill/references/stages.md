@@ -1,6 +1,9 @@
 # Stage Workflow Reference
 
-This reference contains detailed stage instructions moved out of the front door.
+These procedures govern complete deliverables routed through `next`/`decide`, within the tier and
+route applicability returned by `next`. Follow its action sequence; these stages do not override a
+quick-tier workflow. Supporting-tool tasks start at `tools/README.md` and finish in their existing
+workflow; they do not inherit unrelated stage, `DESIGN.md`, or `MOTION.md` setup.
 
 ## Stage 0: Repo Read
 
@@ -16,6 +19,10 @@ Before writing design artifacts or code:
 ```bash
 designer-pipeline route --query "<brief>" --write --output job-plan.json --json
 ```
+
+Route readiness is job classification only; it does not establish project or toolchain readiness.
+Carry its persisted plan through the explicit stack-choice, request, resolve, and probe steps below
+before invoking an external runtime.
 
   Open only the returned primary knowledge door. Kernel steps in `next` always run. Secondaries
   stay reference-only and do not become a second primary. Do not search every catalog. Add a new
@@ -60,9 +67,27 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
   transitions, consistency checks, and explicit repair. Do not independently rewrite state and
   event history.
 - Identify the app framework, styling system, component library, routing, existing design tokens, and test/QA surface.
-- Write `toolchain-request.json` with the complete Stage 0 binding copied from the persisted job
-  plan: `jobId`, `jobPlanSha256`, `jobPlanPath`, and `deliverableForm`. The brief must remain
-  independently consistent with that form. Then run `designer-pipeline toolchain resolve --artifact
+- Run `designer-pipeline project inspect --project-root . --query "<brief>" --write --output
+  project-analysis.json` and follow source-backed entry/import/render/material/animation findings.
+  The bounded static index names its unknowns and exclusions; it does not choose a stack or certify
+  repository understanding. For local video references use `reference analyze-video --path <file>
+  --output <new-dir>` and inspect the overview and ordered timed windows before interpreting
+  content. Resample unclear intervals with `--start <sec> --end <sec> --fps 12`; bind the analysis
+  path and hash as `videoAnalysis` in the existing reference evidence. Read the actual generated
+  PNG inputs with a host image tool, not only their paths or viewer HTML. For film reconstruction or
+  subject replacement, turn inspected shots into observed objects and poses, proposed layers and
+  actions, real assets, and explicit gaps in `reference.md`, then adapt the existing storyboard and
+  choreography using `references/product-film-direction.md` and
+  `references/animation-thinking.md`. Frame preparation alone does not mean the video was
+  understood. Video-driven UI/components keep their own task artifacts. See
+  `references/reference-spec.md#video-content-and-project-analysis`.
+- Write explicit project stack choices to `stack-input.json`, including `framework`; for a graphics
+  primary, include `graphics.family` or `graphics.adapter` (or the existing project's `existing.graphics`).
+  Follow route's `handoff`, or run `designer-pipeline toolchain request --plan job-plan.json
+  --artifact stack-input.json --write --output toolchain-request.json`. This binds the plan's
+  original query and four Stage 0 fields without guessing a framework or library; conflicting
+  bindings fail. See `pipeline-reference.md#public-cli-surfaces` for the example. Then run
+  `designer-pipeline toolchain resolve --artifact
   toolchain-request.json --write --output toolchain-plan.json`. This is mandatory for every
   frontend change, including a project-owned `none` UI-library choice. The request records the
   framework, current and requested stack, brief, capabilities, and any graphics family or adapter.
@@ -130,13 +155,21 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
   else is still a stop.
 - When exact static-reference language is present, use reference-evidence v2 and
   `reconstruction.json`; do not silently treat the image as a mood board or style direction.
-- Check for project `DESIGN.md`. If it is missing or materially incompatible with the request, route
-  through the requirements-driven synthesis module before implementation.
+- Check for project `DESIGN.md`. In the standard tier, if it is missing or materially incompatible
+  with the request, route through the requirements-driven synthesis module before implementation.
+  In other tiers, follow `next` and the required foundation gate; do not create a project-wide
+  foundation unless that workflow explicitly returns the synthesis action.
 - Run `node <design-pipeline>/scripts/check-design-foundation.cjs --project-root . --json`.
   Status `synthesis-required` is the mandatory route into synthesis; only `ready` unlocks
   implementation.
-- Check for project `MOTION.md`. If it is missing or incompatible with the requested interaction
-  language, synthesize it from product requirements and `references/motion-foundation.md`.
+- Check for project `MOTION.md`. In the standard tier, if it is missing or incompatible with the
+  requested interaction language, synthesize it from product requirements and
+  `references/motion-foundation.md`. In other tiers, follow `next` and the required foundation
+  gate; do not create a project-wide foundation unless that workflow explicitly returns the
+  synthesis action. Repair or resynthesize an incomplete foundation or one that contains
+  executable procedural definitions. Select stable primitive IDs from
+  `references/motion-primitives.json`; change-level `motion.md`, runtime snippets, and copied
+  showcases do not replace the project foundation.
 - When the brief includes non-trivial motion, read `references/animation-opportunity-and-review.md`
   and complete its opportunity screen before selecting a runtime. Keep `prototype` on its existing
   route; do not turn platform-specific or library-specific companions into default web capabilities.
@@ -147,6 +180,122 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
 - Note constraints such as no external images, single-file HTML, mobile-first, accessibility, or brand rules.
 - Resolve the surface mode (`Persuade`, `Operate`, `Read`, or `Experience`) and whether the work is
   an extension, refinement, or redesign before choosing a visual direction.
+
+### Direction and Copy Rules
+
+- Treat the hero or first viewport as the product thesis, not a generic template slot.
+- Choose palette, typography, layout, and motion from the subject and audience. A named style alone
+  is not a rationale.
+- Spend boldness in one justified signature element; remove decoration that does not improve
+  understanding or action.
+- Use structural markers, labels, and numbering only when they encode true information.
+- Write from the user's side of the screen. Controls name real actions, errors name the fix, empty
+  states direct the next action, and the same action keeps the same name through the flow.
+- Read `references/plain-language.md` for user-facing copy and `references/cjk-typography.md` for
+  CJK or mixed-script surfaces.
+
+### Browser and Evidence Rules
+
+The browser runner is an evidence port, not a source of authority. For dynamic web apps:
+
+1. Start or verify the target runtime and wait for readiness.
+2. Wait for `networkidle` before inspecting dynamic DOM.
+3. Discover selectors from the rendered surface.
+4. Exercise the required interaction and state transitions.
+5. Capture the applicable DOM, screenshot, console, accessibility, network, and performance artifacts.
+6. Bind artifacts to hashes and record missing or degraded capabilities explicitly.
+
+`adapters/playwright.cjs` is the project-owned implementation. A static screenshot cannot replace
+behavioral evidence.
+
+### Public CLI Surfaces
+
+Native implementation subtasks use the existing
+`next --change-root <change> --plan <tasks-plan>` and
+`decide --change-root <change> --choice <task-id> --verdict complete --artifact <metadata.json>`.
+Missing decomposition returns a bounded task; valid decomposition returns one observed property.
+These paths preserve native state/event transactions and existing artifact.v1 lineage; failed or
+stale evidence does not advance. Legacy project-root `next`/`decide` remain deliverable-level
+actions and do not themselves execute the native subtask plan.
+
+Use the public CLI rather than reaching into implementation modules:
+
+```bash
+designer-pipeline route --query "<brief>" --write --output job-plan.json --json
+designer-pipeline toolchain request --plan job-plan.json --artifact stack-input.json --write --output toolchain-request.json --json
+designer-pipeline toolchain resolve --artifact toolchain-request.json --write --output toolchain-plan.json --json
+designer-pipeline design-system decompose --query "<brief>" --write --output capability-inventory.json --json
+designer-pipeline direction check --stage preview --change-root <change-root> --json
+designer-pipeline component lock --artifact direction-lock-request.json --write --output direction-lock.json --json
+designer-pipeline component fit --artifact component-fit-request.json --write --output component-fit-matrix.json --json
+designer-pipeline component validate-fit --artifact component-fit-matrix.json --json
+designer-pipeline reference check --change-root <change-root> --json
+designer-pipeline reconstruction check --stage final --change-root <change-root> --json
+designer-pipeline playground check --stage integration --change-root <change-root> --json
+designer-pipeline scene check --change-root <change-root> --json
+```
+
+`route --write` returns an executable `handoff.argv` and required choices. Create `stack-input.json`
+from project evidence before running it. For example, an explicitly chosen framework-free Three.js
+project can use `{"framework":"agnostic","graphics":{"adapter":"threejs"}}`; agnostic is a
+choice, not a default. Ordinary UI work may omit graphics. Do not pass HTML, Markdown, or route JSON
+as the choices artifact. Preparation validates and binds the existing request; it does not probe or
+install a runtime and grants no component or visual acceptance. Missing framework, conflicting
+bindings, changed plan content, and escaping output paths fail before request delivery.
+
+For the first-wave guided multi-surface flow, use these commands:
+
+```bash
+designer-pipeline surface validate --artifact surface.json --json
+designer-pipeline intake start --artifact input.json --json
+designer-pipeline intake answer --artifact brief.json --answer answer.json --json
+designer-pipeline intake confirm --artifact brief.json --json
+designer-pipeline template inventory --catalog catalog.json --json
+designer-pipeline template search --catalog catalog.json --surface surface.json --request request.json --json
+designer-pipeline template select --selection selection.json --json
+designer-pipeline template adapt --receipt receipt.json --context context.json --json
+designer-pipeline template review --plan plan.json --review review.json --json
+designer-pipeline template approve --plan plan.json --approval approval.json --json
+```
+
+`template select` requires a `changeRoot` in the direction-preview proof and revalidates
+`direction-preview.json` plus all referenced files from that contained root. The approval artifact
+must include `planContentHash` equal to the reviewed plan's `contentHash`.
+
+The live design panel is the reviewable projection of this flow, not the chat transcript. The first
+wave supports project-contained Web and Mobile evidence and metadata; it does not claim screenshot,
+URL, visual embedding, or Game support. For pipeline control and hash-bound artifacts, use the
+current CLI's `plan`, `run`, `resume`, `verify`, `status`, `explain-block`, and `package` commands.
+Read `references/pipeline-method.md` for the state, artifact, and invalidation contract.
+
+### Specialist and Catalog Routing
+
+- `impeccable` supplies project design-detector vocabulary when installed; the bundled
+  `references/interface-discipline.md` remains the fallback.
+- `frontend-design` supplies subject grounding, deliberate visual direction, critique-before-build,
+  and anti-default judgment when installed; project contracts remain authoritative.
+- `design-taste-frontend`, `ui-ux-pro-max`, `web-design-guidelines`, and `emil-design-eng` are
+  capability lenses, not competing pipelines.
+- For React/Next.js, use the governed Vercel/Next.js companions listed in
+  `references/companion-skills.md`.
+- Use `references/capability-routing.md` and `references/job-registry.json` for motion, graphics,
+  data visualization, game, asset, hosted, or design-system capabilities.
+- Catalog commands are escape hatches. Do not search every catalog as peer Stage 0 work or treat
+  inert or reference-only entries as executable dependencies.
+
+### Completion Contract
+
+Before claiming completion, follow `references/lifecycle.md` and `references/qa-checklist.md`:
+
+- report change id, artifact folder, implemented surfaces, and applicable waivers;
+- report foundation, route, browser, motion, accessibility, responsive, and evidence results;
+- state reference-source availability and the unlock action for pending sources;
+- state `verified`, `fidelity-limited`, or `unverified` only from the complete final verification output;
+- record missing companions, fallbacks, feedback drafts, and remaining risks;
+- say whether any remote Issue or PR was published; default: not published.
+
+The full extraction targets are in `references/pipeline-method.md`, `references/feature-routes.md`,
+`references/lifecycle.md`, and this stage guide. Load only what the selected route requires.
 
 ## Stage 1: Guided Design Intake
 
@@ -178,11 +327,12 @@ Keep this short. It is an execution contract, not a product essay.
 ### Form sanity backstop
 
 Before choosing a visual direction, declare the deliverable form from the user's or controller's
-language, then state the reader action in plain terms. Apply the single-canvas counterfactual: if
-the proposed carrier were all the reader received, could it perform that action without the author
-explaining it? If the brief implies a sequence, set, or state flow, do not compress it to one canvas
-for production convenience. Record unresolved form uncertainty in the brief and take the
-least-assumptive path; a model-written concept cannot approve its own form.
+language, then state the reader action in plain terms. No canvas, genre, or character is a default.
+Use the single-canvas counterfactual only to test a proposed carrier: if that were all the reader
+received, could it perform the requested action without the author explaining it? If the brief
+implies a sequence, set, or state flow, do not compress it to one canvas for production convenience.
+Record unresolved form uncertainty in the brief and take the least-assumptive path; a model-written
+concept cannot approve its own form.
 
 When the brief, handoff, or interface copy asks a person to decide or act, read
 `references/plain-language.md`. Put the exact consequence or available action first, then preserve
@@ -343,6 +493,48 @@ is inspectable or navigable.
 
 ## Stage 4: Tasks
 
+Execute visual subtasks through the native `next --change-root <change> --plan <tasks-plan>` entry.
+The implementation-local plan reuses design-plan.v1; each phase adds `goal` and
+`visual: {target, property, references, scope, guides, checks, review?, sourceObservation?}`. Name one observed property,
+not a whole build, with real reference paths and applicable packaged guides. `scope` names editable
+source paths; `outputs` and `visual.checks` name separate immutable per-task evidence paths, so a
+later source edit cannot overwrite an accepted upstream snapshot. The governed phase registry stays
+unchanged; this local plan is not handed to the governed `run` command.
+
+For video references, add `sourceObservation: {report, shotId, observationIds}`. The contained
+`report` path must also appear in `visual.references`; bind only observed records matching this
+task's target and atomic property in that confirmed shot. Historical window-only reports stay
+readable but cannot unlock new video production. `next` returns the resolved shot, observations,
+source and actual frame files as `sourceEvidence`; inspect those pixels before editing. Named
+`guides` must be real local files (including the chosen method entry source), and their bytes,
+the report, source media and selected frames join existing input hashes. Put actual asset files
+in `inputs`; rebuild missing assets in preceding tasks and consume their outputs through
+`depends_on`. Use `goal` to state the observed start/end, method adaptation and known limits.
+
+If a native state does not yet exist, initialize it with the existing
+`change init --change-id <id> --change-root <change> --phase implementation --status implementing`.
+All plan paths resolve inside that change root. Call `next` without a plan to obtain its decomposition
+template. Complete only the current task with `decide --change-root <change> --choice <task-id>
+--verdict complete --artifact <metadata.json>`: the JSON contains artifact.v1 metadata (one object or
+an array) for every declared output and check. Outputs bind the exact returned `inputHashes`;
+checks additionally bind `output:<relative-output-path>` to each current output artifact hash.
+Check reports must contain their real passed checks, not a self-declared file-delivery result.
+`--verdict reject --answer <feedback>` retains the current task and its concrete repair feedback.
+Progress lives only in native state/events; technical completion is separate from Visual Acceptance.
+
+Use `visual.review: true` for the first meaningful visual sample, a direction change or an uncertain
+critical difference. Once its technical evidence passes, `next` returns `ask` / `visual-review`
+with the exact target, property, output and checks. Show the actual frame or clip and ask about
+that property. Only a real owner reply permits `decide ... --verdict accept --artifact <same-metadata.json>`;
+this accepts this task/version, not the whole deliverable. To reopen an already completed target,
+use `--verdict reject --artifact <same-metadata.json> --answer <specific-feedback>`. Keep its old
+evidence; the existing dependency invalidation reopens affected downstream tasks. Changed inputs
+or outputs invalidate prior acceptance. Tasks without review retain automatic technical advancement.
+
+State the intended customer interaction in the goal. Default output presents that experience;
+authoring controls, model records, diagnostics and source links use an explicit inspection/evaluation
+entry. Do not turn the requested component into its development panel.
+
 Create `tasks.md` with a checkbox list grouped by implementation surface:
 
 - Tokens/theme
@@ -360,11 +552,34 @@ Create `tasks.md` with a checkbox list grouped by implementation surface:
 - Interface discipline review for changed UI: scope, selected domains, consumer expansion, and
   finding status classification.
 
-Tasks must be small enough to verify independently. Update checkboxes as implementation proceeds.
+Tasks must be small enough to verify independently. Each visual task names:
+
+- Source/reference region or applicable scene node; visual goal, invariants and explicit dependencies.
+- Inputs and upstream evidence; literal files/regions that may change.
+- Outputs; runtime checks and rendered comparison at the relevant view/time.
+- Failure return step: which observation, geometry, material or motion task to repair, then recheck.
+
+Split goals by observable differences rather than one task for the complete page or scene. Build
+structure and occlusion before dependent material and motion. With references, the first build is
+bounded graybox work; read complete existing reference/reconstruction and applicable scene results
+before dependent polish, honoring the stage-specific permissions in `reconstruction-spec.md`.
+Mark uncertain observations and return to them when comparisons disagree. Update checkboxes only
+against actual outputs and checks; tasks.md existence does not verify decomposition or acceptance.
 
 ## Stage 5: Implementation
 
 Implement directly from `design.md` and `tasks.md`.
+
+For a bounded drawing, image, typography, layout or rendering task, use `tools/README.md` as a
+progressive tool index. Load one relevant guide and implementation; keep the selected project
+runtime and existing evidence contract. Give workers real inputs and a visible goal, and have
+the lead inspect rendered results against the user's direction before claiming visual quality.
+
+When implementation or rendered review exposes a missing design method or capability, use
+[active capability discovery](../tools/open-source-design.md): diagnose the visible shortfall,
+inspect a fitting local or upstream implementation, test a bounded study and integrate the part
+that improves the actual surface. Reuse existing task inputs, source evidence and checks; keep
+unresolved quality gaps visible and preserve the project's direction and renderer.
 
 Rules:
 
@@ -576,3 +791,99 @@ Before claiming completion, write `qa.md` using `references/qa-checklist.md` wit
   provenance, license, maintenance, security, permission, degradation, and admission review.
 
 If a gate cannot be run, record why and use the next-best check.
+
+## Stage 7: Archive
+
+Archive only after required verification has passed and the workflow's owner review has been
+recorded. Completed task checkboxes alone do not authorize archiving.
+
+After completion:
+
+- Keep active artifacts with the code if the repo has no archive convention.
+- If the repo has OpenSpec-style archiving, move completed change notes to the matching archive
+  folder.
+- Update persistent design docs only when the change creates reusable tokens, components, or
+  interaction rules.
+- Link accepted feedback observations to the completed change. Mark them resolved or superseded
+  only after verification evidence exists.
+
+## Feedback and Maintainer Loop
+
+Use `references/feedback-loop.md` whenever a run exposes a pipeline bug, stale companion, missing
+capability, quality gap, documentation gap, or reusable feature request.
+
+For in-progress owner calibration and RSI, follow
+`references/feedback-loop.md#visual-calibration-and-rsi`. Stage 4's existing `visual.review`
+checkpoint binds an actual owner decision to one output version; repair feedback returns to its
+target and invalidates dependents. Deliver the requested customer surface by default, with
+development records behind an explicit inspection/evaluation entry. Apply this workflow to the
+evaluation workbench's own design as well.
+
+The local loop is:
+
+1. Observe during self-check, implementation, or QA.
+2. Normalize, redact, and deduplicate with `scripts/record-feedback.cjs`.
+3. Generate an Issue draft by default; generate a PR draft only when changed files and validation
+   evidence exist.
+4. Review the draft, target remote, privacy boundary, and evidence.
+5. Publish only after explicit user authority through an installed GitHub or ship workflow.
+6. Preserve the regression test and update `companion-capabilities.json` when the durable learning
+   changes compatibility routing.
+
+When modifying `design-pipeline` itself, use this same pipeline and OpenSpec lifecycle. The
+pipeline may improve itself, but it must not silently mutate third-party skills or use ambient
+credentials to create remote artifacts.
+
+## Layered Adaptation Loop
+
+Use `references/adaptation.md` only after the requested artifact or implementation is delivered.
+Capture minimal evidence rather than transcripts. Treat a single acceptance or silence as weak
+evidence; it cannot produce durable guidance. Keep every candidate in shadow mode until a different
+evaluator runs both replay and held-out comparisons and `designer-pipeline adaptation evaluate`
+returns a passing hash-bound receipt.
+
+`Methodology Kernel` and packaged `skill/` resources are release-governed and cannot be adaptation
+targets. `Task Session Policy` expires. Only an external versioned Project Adaptation Skill or User
+Collaboration Skill may be promoted, and promotion requires explicit user approval. Durable rules
+select from the finite collaboration dimensions in the contract; they are never free-form behavior
+instructions. Bind each candidate to the exact external-skill path, incumbent content hash, metric
+direction, manifest, and construction fixtures before evaluation. Promotion and rollback use their
+process-owned, recoverable prepare/commit journal; raw actor and review labels are stored only as
+purpose-separated hashes. Resolve mutually exclusive values by collaboration dimension in the
+order defaults, user, project, current task while carrying constraints and quality gates as
+immutable inputs. Rejection leaves the incumbent unchanged. Roll back before forgetting a promoted
+candidate, then remove its usable content and retain only the non-sensitive tombstone required to
+prevent reinstatement.
+
+## Output Contract
+
+Final responses should report:
+
+- Change id and artifact folder.
+- Project `DESIGN.md` path, input mode, scope score/budget, and Wayfinder map URL when synthesis ran.
+- Implemented surfaces.
+- Playground applicability, selected state/integration status, and accepted prompt path when used.
+- Adaptation applicability, scope, shadow/evaluated/promoted disposition, evidence receipt, and
+  rollback or forgetting status when the layered loop was used.
+- Verification evidence.
+- Reference source availability. When it is `pending`, name the action that unlocks measured gates:
+  supply the source file path, which enables rectification, camera calibration, landmark error, and
+  the fidelity receipt. Requested fidelity stays as the user asked.
+- For every change with `reference-evidence.json`, the verification claim `verified`,
+  `fidelity-limited`, or `unverified`, recorded on one line in `qa.md` under
+  `## Reference And Spatial Routing` and derived from the complete
+  `designer-pipeline reconstruction check --stage final` output. `verified` requires a top-level
+  `ready` status and every reported stage `ready`; `fidelity-limited` requires top-level
+  `fidelity-limited` with no blocked stage; everything else is `unverified`, including a single
+  blocked stage, a pending or unresolvable source, or no `reconstruction.json`. The default command
+  checks geometry only; neither it nor any other stage-scoped result is evidence for `verified`.
+  Missing, unreadable, or incomplete final output is `unverified`. An `unverified` claim is never
+  described as verified, exact, identical, 1:1, pixel-perfect, faithful, or complete. Requested
+  fidelity stays as the user asked.
+- Missing companion skills, if any.
+- Self-check result and chosen fallbacks.
+- Feedback observation ids and local draft paths, when findings were recorded.
+- Anti-slop review status, report path, blockers, warnings, and accepted contextual decisions when
+  that review ran.
+- Whether any remote Issue or PR was published; default is “not published.”
+- Remaining risks or explicit validation gaps.

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Material and movement study</title>
+<style>
+:root{color-scheme:light;--paper:#f2eee5;--ink:#29352f;--accent:#a24832;--rule:#cec9bd}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,sans-serif}
+main{max-width:1120px;margin:auto;padding:clamp(20px,5vw,60px)}h1{font-size:clamp(30px,5vw,54px);line-height:1.08;font-weight:550;letter-spacing:-.035em;margin:12px 0 18px}
+p{max-width:60ch}canvas{width:100%;height:auto;display:block;border:1px solid var(--rule);margin:28px 0 18px}
+label{display:flex;gap:16px;align-items:center;flex-wrap:wrap}input{flex:1;min-width:160px;accent-color:var(--accent)}output{font-variant-numeric:tabular-nums}small{display:block;margin-top:14px}
+</style>
+<main>
+<p>ART MOTION / CALLER-OWNED CANVAS</p>
+<h1>Material changes the movement.</h1>
+<p>A seeded watercolor field and a dry-brush contour. Scrub to compare the same mark at different times. This study uses no character, narration, external asset or playback timer.</p>
+<canvas aria-label="Watercolor shapes and a progressively revealed ink contour" role="img"></canvas>
+<label for="progress">Time <input id="progress" type="range" min="0" max="1" step="0.01" value="0.6"><output for="progress">0.60</output></label>
+<small>Resize the window to rebuild the material at the actual canvas dimensions. The same seed keeps the texture stable.</small>
+</main>
+<script src="huashu-runtime.js"></script>
+<script>
+const canvas = document.querySelector('canvas'), control = document.querySelector('input');
+let runtime;
+function renderStudy(progress) {
+  const width = Math.round(canvas.getBoundingClientRect().width), height = Math.round(width * 0.55);
+  if (!runtime || runtime.width !== width || runtime.height !== height) {
+    runtime?.dispose(); canvas.width = width; canvas.height = height;
+    runtime = HuashuArtMotion.createHuashuRuntime({width, height, seed: 31,
+      createCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;},
+      capabilities:{Path2D,DOMMatrix,DOMPoint}});
+  }
+  const {PAINT: P, MO} = runtime.libraries, c = canvas.getContext('2d');
+  c.reset(); c.fillStyle='#f2eee5'; c.fillRect(0,0,width,height);
+  const t = MO.smooth(progress), x = width*(0.3 + 0.36*t), y = height*0.47;
+  P.watercolor(c,P.ellipsePts(width*.30,height*.52,width*.21,height*.29),'#9aa88a',{layers:5,alpha:.16,seed:11,amp:width*.015});
+  P.watercolor(c,P.ellipsePts(x,y,width*.17,height*.24),'#c58764',{layers:4,alpha:.15,seed:29,amp:width*.012});
+  P.brush(c,[[width*.13,height*.64],[width*.32,height*.27],[width*.52,height*.69],[width*.72,height*.28],[width*.88,height*.5]],{w:Math.max(3,width*.014),seed:53,dry:.65,reveal:progress,col:[41,53,47]});
+  control.value = progress; document.querySelector('output').value=progress.toFixed(2);
+  return {width,height,progress};
+}
+window.renderStudy=renderStudy;
+control.addEventListener('input',()=>renderStudy(Number(control.value)));
+new ResizeObserver(()=>renderStudy(Number(control.value))).observe(canvas);
+renderStudy(Number(control.value));
+</script>
+</html>

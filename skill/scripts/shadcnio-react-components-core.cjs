@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const defaultManifest = path.resolve(__dirname, "../references/shadcnio-react-components/manifest.json");
+const defaultManifest = path.resolve(__dirname, "../vendor/shadcnio-react-components/manifest.json");
 const schema = "design-pipeline.shadcnio-react-components-source.v1";
 const categories = new Map([
   ["React AI Components", "ai"],

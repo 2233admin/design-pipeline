@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const defaultManifest = path.resolve(__dirname, "../references/iart-motion-skills/manifest.json");
+const defaultManifest = path.resolve(__dirname, "../vendor/iart-motion-skills/manifest.json");
 const schema = "design-pipeline.iart-motion-skills-source.v1";
 const searchOverlays = {
   "web-animation-skills/gsap-web": { terms: "scrolltrigger lenis splittext flip pin scrub" },

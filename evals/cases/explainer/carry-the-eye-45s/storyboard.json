@@ -1,0 +1,327 @@
+{
+  "schema": "design-pipeline.film-storyboard.v1",
+  "id": "carry-the-eye-45s",
+  "durationSec": 45,
+  "fps": 30,
+  "grammar": "combination",
+  "benefit": "Viewers learn why a film made of well-timed shots can still feel like a slideshow, and the one rule that fixes it: give every cut something that carries the eye across.",
+  "proofAction": "A gaze marker jumps and searches after every cut of a three-panel slideshow; four carries are shown one by one; the same three panels rebuilt with carries let the marker glide in one path.",
+  "reference": "reference.md (no external moving reference; the rule is the project's own, adapted in its own words from references/reference-skill-onetake.md, ideas only)",
+  "endState": "free",
+  "sound": {
+    "mode": "scored",
+    "source": "Strudel pattern score.strudel.js at 96 BPM",
+    "usage": "commercial",
+    "assets": [
+      {
+        "id": "score",
+        "license": "generated with Strudel (AGPL-3.0 tool, not bundled); built-in synth sounds only, no samples",
+        "commercialUse": true,
+        "file": "assets/score.wav",
+        "source": "strudel"
+      }
+    ],
+    "cues": [
+      {
+        "id": "pad-in",
+        "atSec": 0,
+        "kind": "entry",
+        "note": "a plain pad under the slideshow"
+      },
+      {
+        "id": "jump-1",
+        "atSec": 5,
+        "kind": "accent",
+        "note": "a dull tick as the gaze marker jumps to the circle"
+      },
+      {
+        "id": "jump-2",
+        "atSec": 6.25,
+        "kind": "accent",
+        "note": "a dull tick as the gaze marker jumps to the square"
+      },
+      {
+        "id": "name-it",
+        "atSec": 7.5,
+        "kind": "downbeat",
+        "note": "the pulse starts as the rule is named"
+      },
+      {
+        "id": "carry-1",
+        "atSec": 10,
+        "kind": "accent",
+        "note": "a rising blip as the full stop drops into the screen"
+      },
+      {
+        "id": "carry-2",
+        "atSec": 15,
+        "kind": "accent",
+        "note": "a blip as the dot arrives and starts to become the square"
+      },
+      {
+        "id": "carry-3",
+        "atSec": 20,
+        "kind": "accent",
+        "note": "a blip as the camera travels"
+      },
+      {
+        "id": "cut",
+        "atSec": 25,
+        "kind": "impact",
+        "note": "a hit on the match cut"
+      },
+      {
+        "id": "payoff",
+        "atSec": 27.5,
+        "kind": "downbeat",
+        "note": "the full arrangement under the two screens"
+      },
+      {
+        "id": "rule",
+        "atSec": 37.5,
+        "kind": "downbeat",
+        "note": "the arrangement thins as the rule is written"
+      },
+      {
+        "id": "sign",
+        "atSec": 42.5,
+        "kind": "accent",
+        "note": "a chord under the lockup"
+      },
+      {
+        "id": "out",
+        "atSec": 45,
+        "kind": "exit",
+        "note": "ring out"
+      }
+    ]
+  },
+  "beats": [
+    {
+      "id": "slideshow",
+      "startSec": 0,
+      "endSec": 3.75,
+      "role": "action",
+      "subject": "three shots in a screen",
+      "productAction": "Three well-timed shots play one after another, each dissolving into the next",
+      "transformation": {
+        "kind": "state-change",
+        "from": "a circle shot",
+        "to": "a triangle shot"
+      },
+      "handoff": "open",
+      "motion": [
+        "shot-sequence",
+        "subject-drift",
+        "fade-in",
+        "fade-out"
+      ],
+      "soundCues": [
+        "pad-in"
+      ]
+    },
+    {
+      "id": "search",
+      "startSec": 3.75,
+      "endSec": 7.5,
+      "role": "action",
+      "subject": "the gaze marker",
+      "productAction": "The same shots replay as hard cuts while a gaze marker hunts for each new subject",
+      "transformation": {
+        "kind": "state-change",
+        "from": "gaze on the triangle",
+        "to": "gaze jumped twice, red trails left behind"
+      },
+      "handoff": "continuation",
+      "carrier": "the triangle shot stays on screen while the gaze marker lands on it",
+      "motion": [
+        "marker-wobble",
+        "marker-jump",
+        "trail-draw"
+      ],
+      "soundCues": [
+        "jump-1",
+        "jump-2"
+      ]
+    },
+    {
+      "id": "name-it",
+      "startSec": 7.5,
+      "endSec": 10,
+      "role": "action",
+      "subject": "the headline",
+      "productAction": "The rule is named: Carry the eye.",
+      "transformation": {
+        "kind": "morph",
+        "from": "gaze marker over a dimmed screen",
+        "to": "the full stop of the headline"
+      },
+      "handoff": "morph",
+      "carrier": "the gaze marker flies out of the dimmed screen and shrinks into the headline's full stop",
+      "motion": [
+        "marker-flight",
+        "type-on"
+      ],
+      "soundCues": [
+        "name-it"
+      ]
+    },
+    {
+      "id": "continuation",
+      "startSec": 10,
+      "endSec": 15,
+      "role": "action",
+      "subject": "the travelling dot",
+      "productAction": "Continuation: the dot keeps moving while the shot behind it cuts",
+      "transformation": {
+        "kind": "state-change",
+        "from": "dot on shot A",
+        "to": "dot on shot B"
+      },
+      "handoff": "continuation",
+      "carrier": "the full stop drops out of the sentence and becomes the travelling dot",
+      "motion": [
+        "dot-travel",
+        "backdrop-cut",
+        "marker-follow"
+      ],
+      "soundCues": [
+        "carry-1"
+      ]
+    },
+    {
+      "id": "morph",
+      "startSec": 15,
+      "endSec": 20,
+      "role": "action",
+      "subject": "the dot",
+      "productAction": "Morph: the dot becomes the square that the next shot is about",
+      "transformation": {
+        "kind": "morph",
+        "from": "white dot",
+        "to": "blue square card"
+      },
+      "handoff": "continuation",
+      "carrier": "the travelling dot keeps moving into the next demonstration and arrives where the square will be",
+      "motion": [
+        "shape-morph",
+        "backdrop-cut"
+      ],
+      "soundCues": [
+        "carry-2"
+      ]
+    },
+    {
+      "id": "camera-carry",
+      "startSec": 20,
+      "endSec": 25,
+      "role": "action",
+      "subject": "the camera",
+      "productAction": "Camera-carry: the camera travels through three scenes without resetting",
+      "transformation": {
+        "kind": "camera-move",
+        "from": "square scene",
+        "to": "circle scene"
+      },
+      "handoff": "camera-carry",
+      "carrier": "the square stays in frame as the camera starts to travel",
+      "motion": [
+        "camera-pan",
+        "marker-follow"
+      ],
+      "soundCues": [
+        "carry-3"
+      ]
+    },
+    {
+      "id": "match-cut",
+      "startSec": 25,
+      "endSec": 27.5,
+      "role": "action",
+      "subject": "the circle",
+      "productAction": "Match cut: a hard cut between two circles in the same place",
+      "transformation": {
+        "kind": "match-cut",
+        "from": "circle in the third scene",
+        "to": "sun over a horizon"
+      },
+      "handoff": "match-cut",
+      "carrier": "the coral circle cuts to the sun at the same size and place",
+      "motion": [
+        "hard-cut",
+        "sun-rise"
+      ],
+      "soundCues": [
+        "cut"
+      ]
+    },
+    {
+      "id": "rebuilt",
+      "startSec": 27.5,
+      "endSec": 37.5,
+      "role": "action",
+      "subject": "two screens",
+      "productAction": "The same three shots play side by side: as a slideshow the gaze zig-zags; carried, it follows one path",
+      "transformation": {
+        "kind": "reveal-in-context",
+        "from": "one screen",
+        "to": "a red zig-zag beside a green curve"
+      },
+      "handoff": "camera-carry",
+      "carrier": "the camera pulls back from the sun until its screen is one of two",
+      "motion": [
+        "camera-pull-back",
+        "marker-jump",
+        "path-draw",
+        "shape-morph"
+      ],
+      "soundCues": [
+        "payoff"
+      ]
+    },
+    {
+      "id": "rule",
+      "startSec": 37.5,
+      "endSec": 42.5,
+      "role": "action",
+      "subject": "the rule line",
+      "productAction": "The rule is written with the storyboard field that states it",
+      "transformation": {
+        "kind": "type-to-object",
+        "from": "green eye path",
+        "to": "underlined rule and carrier field"
+      },
+      "handoff": "continuation",
+      "carrier": "the green eye path straightens into the rule's underline",
+      "motion": [
+        "path-straighten",
+        "type-on"
+      ],
+      "soundCues": [
+        "rule"
+      ]
+    },
+    {
+      "id": "sign",
+      "startSec": 42.5,
+      "endSec": 45,
+      "role": "brand-hold",
+      "subject": "the design-pipeline lockup",
+      "productAction": "The underline becomes the design-pipeline mark",
+      "transformation": {
+        "kind": "none"
+      },
+      "handoff": "morph",
+      "carrier": "the underline shortens into the mark's line through two gates",
+      "holdSec": 1.2,
+      "motion": [
+        "path-shorten",
+        "clip-reveal"
+      ],
+      "soundCues": [
+        "sign",
+        "out"
+      ]
+    }
+  ]
+}

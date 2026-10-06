@@ -12,7 +12,7 @@ const {
 } = require("./git-tree-snapshot.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
-const destination = path.join(repoRoot, "skill", "references", "iart-motion-skills");
+const destination = path.join(repoRoot, "skill", "vendor", "iart-motion-skills");
 const org = "https://github.com/iart-ai";
 
 const PACKS = [

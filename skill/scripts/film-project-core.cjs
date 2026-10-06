@@ -48,6 +48,8 @@ const CALLS = {
   "ui-demo": (at) => `P["ui-demo"](tl, { cursor: "#cursor", path: [{ x: 0, y: 0 }], result: "#RESULT", at: ${at} });`,
   "assembly": (at) => `P["assembly"](tl, { pieces: ".piece", offsets: [{ x: -200, y: 80, rotation: -8 }], at: ${at} });`,
   "reveal-in-context": (at) => `P["reveal-in-context"](tl, { subject: "#SUBJECT", at: ${at} });`,
+  "pose-to-pose": (at) => `P["pose-to-pose"](tl, { subject: "#SUBJECT", at: ${at}, keys: [{ at: 0, pose: { x: 0, y: 0 } }, { at: 1, pose: { x: 120, y: -30 } }] });`,
+  "draw-on": (at) => `P["draw-on"](tl, { paths: [...document.querySelectorAll("#DRAWING path")], at: ${at}, duration: 1 });`,
 };
 
 function compositionHtml(board) {
@@ -62,7 +64,7 @@ function compositionHtml(board) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
     <script src="lib/patterns.js"></script>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -91,7 +93,7 @@ ${beats}
 }
 
 const NOTES = {
-  "reference.md": "# Reference\n\n- Primary moving reference (URL/title, role):\n- Observed time ranges (shot scale, motion, cuts, type, sound actually heard):\n- Transfer to this product / keep with the reference:\n- Asset inventory and missing shots:\n- Inspection limits:\n",
+  "reference.md": "# Reference\n\n- Primary moving reference (URL/title, role):\n- Observed time ranges (shot scale, motion, cuts, type, sound actually heard):\n- Transfer to this product / keep with the reference:\n- Geometry and material requirements (solid depth, bevel, glaze, relief, angle-dependent color):\n- Rendering route and material inspection angles (references/film-materials.md):\n- Asset inventory and missing shots:\n- Inspection limits:\n",
   "sound.md": "# Sound\n\n- Energy arc:\n- Music source and reuse basis (auditioned / pending):\n- Entry and exit points:\n- Accents bound to beats (match storyboard soundCues):\n- Intentional silence:\n",
   "qa.md": "# QA\n\n## Technical (film check)\n\n## Creative review (watch uninterrupted at speed)\n\n- Product comprehension:\n- Continuity:\n- Rhythm:\n- Transformation:\n- Identity:\n- Reference fit:\n- Sound:\n\n## User acceptance\n\nPending.\n",
   "FILM.md": "# Film project\n\n1. Fill reference.md and sound.md from real references before editing the storyboard.\n2. Edit storyboard.json, then `designer-pipeline verify film-storyboard --storyboard storyboard.json` until it passes.\n3. Build index.html from the beat comments; replace #FROM/#TO/#SUBJECT/#RESULT with real element ids.\n4. `npx hyperframes check`, then `npx hyperframes render --output out.mp4`.\n5. `designer-pipeline film check --project-root .` captures timeline.json and runs every film gate; follow each finding's `fix`.\n6. Watch the film and write the creative review in qa.md. Gates never grant creative acceptance.\n",
@@ -99,14 +101,21 @@ const NOTES = {
 
 function scaffoldFilm(dir, options = {}) {
   const target = path.resolve(dir);
-  const board = readJson(path.join(refs, "storyboard.example.json"), "film storyboard example");
+  const template = options.template || "default";
+  if (!["default", "motion-study"].includes(template)) fail("film scaffold", `unknown template ${template}; allowed: default, motion-study`, { code: "INVALID_TEMPLATE" });
+  const study = template === "motion-study";
+  const board = readJson(path.join(refs, study ? "motion-study.storyboard.json" : "storyboard.example.json"), "film storyboard example");
   if (options.id) board.id = options.id;
+  const guide = study
+    ? "# Motion study\n\nA four-second silent timing/spacing comparison, not a finished film or an artistic quality benchmark.\n\n1. Preview index.html through the film runtime and compare the two actions at intended speed.\n2. Edit the authored keys to test your intended read; keep the static SVG origin on the parent group.\n3. Scrub forward/backward and step around preparation, contact and recovery.\n4. `npx hyperframes render --output out.mp4`, then `designer-pipeline film check --project-root .`.\n5. Record observations and intentional choices in qa.md; passing gates never grants creative acceptance.\n"
+    : NOTES["FILM.md"];
   const files = {
     "storyboard.json": `${JSON.stringify(board, null, 2)}\n`,
-    "index.html": compositionHtml(board),
+    "index.html": study ? fs.readFileSync(path.join(refs, "motion-study.html"), "utf8") : compositionHtml(board),
     "lib/patterns.js": fs.readFileSync(path.join(refs, "patterns.js"), "utf8"),
     "lib/timeline-probe.js": fs.readFileSync(path.join(refs, "timeline-probe.js"), "utf8"),
     ...NOTES,
+    "FILM.md": guide,
   };
   // Notes the workflow may already have written (reference.md in the reference stage) are kept;
   // only the storyboard, composition and libraries are refused without --replace.
@@ -118,7 +127,7 @@ function scaffoldFilm(dir, options = {}) {
     fs.mkdirSync(path.dirname(path.join(target, name)), { recursive: true });
     fs.writeFileSync(path.join(target, name), content);
   }
-  return { status: "scaffolded", root: target, files: Object.keys(files), kept, next: NOTES["FILM.md"].split("\n").filter((line) => /^\d\./.test(line)) };
+  return { status: "scaffolded", root: target, files: Object.keys(files), kept, next: guide.split("\n").filter((line) => /^\d\./.test(line)) };
 }
 
 function newestRender(dir) {

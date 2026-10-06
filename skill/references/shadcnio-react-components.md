@@ -1,7 +1,7 @@
 # shadcnio/react-shadcn-components index
 
 The complete reviewed upstream repository is bundled at
-`references/shadcnio-react-components/upstream/`: its MIT `LICENSE` and `README.md`. The README
+`vendor/shadcnio-react-components/upstream/`: its MIT `LICENSE` and `README.md`. The README
 indexes 75 React component and hook references across AI, buttons, hooks, and text.
 
 This repository does **not** include the implementation shown on linked `www.shadcn.io` pages.

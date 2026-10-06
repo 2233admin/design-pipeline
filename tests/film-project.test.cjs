@@ -71,6 +71,32 @@ test("film check reports skipped gates with the command that unblocks them", () 
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("CLI motion study scaffolds runnable dependencies and preserves notes on replacement", () => {
+  const dir = tmp();
+  try {
+    const result = spawnSync(process.execPath, [cli, "film", "scaffold", "--root", dir, "--output", "study", "--template", "motion-study"], { encoding: "utf8" });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    const root = path.join(dir, "study");
+    const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+    for (const [, source] of html.matchAll(/<script src="([^"]+)"/g)) {
+      if (!/^https?:/.test(source)) assert.ok(fs.existsSync(path.join(root, source)), source);
+    }
+    assert.ok(html.includes('P["pose-to-pose"](tl'));
+    const board = JSON.parse(fs.readFileSync(path.join(root, "storyboard.json"), "utf8"));
+    assert.equal(board.durationSec, 4);
+    assert.equal(board.sound.mode, "silent");
+    assert.equal(checkStoryboard(board).status, "passed");
+    fs.writeFileSync(path.join(root, "qa.md"), "My observed motion choice.\n");
+    assert.throws(() => scaffoldFilm(root, { template: "motion-study" }), /--replace/);
+    scaffoldFilm(root, { template: "motion-study", replace: true });
+    assert.equal(fs.readFileSync(path.join(root, "qa.md"), "utf8"), "My observed motion choice.\n");
+    const unknown = spawnSync(process.execPath, [cli, "film", "scaffold", "--root", dir, "--output", "unknown", "--template", "narration-only"], { encoding: "utf8" });
+    assert.equal(unknown.status, 1);
+    assert.match(unknown.stdout, /allowed: default, motion-study/);
+    assert.equal(fs.existsSync(path.join(dir, "unknown")), false);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("film check uses the capture hook, writes timeline.json, and aggregates fixes", () => {
   const dir = tmp();
   try {
@@ -106,8 +132,8 @@ test("CLI film scaffold and capture-timeline give actionable errors", () => {
     const again = spawnSync(process.execPath, [cli, "film", "scaffold", "--root", dir, "--output", "promo"], { encoding: "utf8" });
     assert.equal(again.status, 1);
     assert.match(again.stdout, /--replace/);
-    // No puppeteer-core is installed next to this composition, so capture names the fix.
-    const capture = spawnSync(process.execPath, [cli, "film", "capture-timeline", "--root", dir, "--composition", "promo/index.html", "--chrome", process.execPath], { encoding: "utf8" });
+    // An explicit missing module keeps this check hermetic even when NODE_PATH supplies Puppeteer.
+    const capture = spawnSync(process.execPath, [cli, "film", "capture-timeline", "--root", dir, "--composition", "promo/index.html", "--chrome", process.execPath, "--puppeteer-module", path.join(dir, "missing-puppeteer-core.cjs")], { encoding: "utf8" });
     assert.equal(capture.status, 1);
     assert.match(capture.stdout, /npm i hyperframes|puppeteer-core/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }

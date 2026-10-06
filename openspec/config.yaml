@@ -1,1 +1,42 @@
 schema: spec-driven
+
+context: |
+  design-pipeline is an installable agent skill for drawing, images, typography,
+  layout, frontend UI, rendering and animation. It supports bounded tools and
+  complete deliverables; no narration, genre, character or fixed canvas is mandatory.
+  Runtime: Node.js CommonJS, Node 22+. Maintenance requires Node 22.12+.
+  The root package.json/package-lock.json form
+  a private maintenance workspace for evals/cases and tools/browser-automation;
+  they are not required to install or use the packaged skill. skill/SKILL.md is the
+  user entry; skill/scripts/designer-pipeline.cjs is the public CLI.
+  Reuse existing v1 gates, schemas, target resolution and receipt lineage.
+  Technical checks do not grant creative or user acceptance.
+  Preserve unrelated working-tree edits. Raw upstream bundles live in skill/vendor/;
+  maintained helpers live in skill/tools/. Local captures and logs stay in ignored
+  .design-pipeline/. Agent installations and BMAD state are local, not published.
+  Root DESIGN.md follows Google's visual-system format; engineering decisions live
+  in OpenSpec. Repository behavior changes use OpenSpec; downstream supporting tool
+  tasks retain their workflow and only the full deliverable tier requires OpenSpec.
+  Verify with npm test (repository QA plus browser-tool self-tests), never bare
+  node --test. Register new test files in
+  scripts/test-manifest.json and load-bearing skill files in references/package-resources.json.
+  Use the root-workspace OpenSpec CLI through npm exec -- openspec; run npm run specs:check
+  for strict validation.
+  capabilities:check audits existing source evidence and may report UNKNOWN without evidence;
+  sources:check validates locked snapshots. Source import requires an explicitly reviewed
+  revision in a local checkout; never refresh a manifest by rehashing arbitrary source.
+
+rules:
+  proposal:
+    - State the concrete user-visible problem, scope and affected capabilities.
+    - Identify existing tools or contracts to reuse before proposing additions.
+  specs:
+    - Use delta sections, level-three Requirement headings and level-four Scenario headings.
+    - Keep each requirement under 500 characters; put examples and edge cases in WHEN/THEN scenarios.
+    - Preserve public commands, source provenance and evidence invalidation; include rejection cases.
+  design:
+    - Document file ownership, compatibility and migration when paths or artifact shapes change.
+    - Keep visual direction and rendered evidence separate from technical conformance.
+  tasks:
+    - Use numbered checkboxes and name the existing focused checks plus repository QA.
+    - A checked task records performed work, not user acceptance or permission to archive.

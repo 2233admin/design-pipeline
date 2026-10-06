@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0c0d10; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+      #bg { position: absolute; inset: 0; background: radial-gradient(ellipse 75% 65% at 50% 48%, #16181d 0%, #0c0d10 72%); }
+      .mono { font-family: "JetBrains Mono", monospace; white-space: nowrap; }
+      .sans { font-family: "Inter", sans-serif; white-space: nowrap; }
+      .abs { position: absolute; left: 0; top: 0; }
+
+      /* The screen: the film being watched. Local coordinates are 1280 x 720; its centre is (960, 520). */
+      .screen { position: absolute; left: 320px; top: 160px; width: 1280px; height: 720px; border-radius: 16px; overflow: hidden; background: #15171b; border: 2px solid #2b2e35; transform-origin: 50% 50%; }
+      .fill { position: absolute; inset: 0; opacity: 0; }
+      .shape { position: absolute; }
+      .circle { border-radius: 50%; }
+      .tri { clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }
+      .chip { position: absolute; left: 36px; top: 30px; padding: 8px 18px 10px; border-radius: 10px; background: rgba(8, 9, 11, 0.75); border: 1px solid rgba(62, 207, 142, 0.35); color: #3ecf8e; font-size: 28px; opacity: 0; }
+      #bd-a { background: linear-gradient(160deg, #1d2c46 0%, #0f1624 100%); }
+      #bd-b { background: linear-gradient(160deg, #3b2335 0%, #190f1c 100%); }
+      #bd-c { background: linear-gradient(160deg, #1b3432 0%, #0e1a1a 100%); }
+      #bd-d { background: linear-gradient(160deg, #20253a 0%, #11131d 100%); }
+      .card { position: absolute; width: 150px; height: 96px; border-radius: 14px; background: #2c3144; }
+      #canvas { position: absolute; left: 0; top: 0; width: 3840px; height: 720px; opacity: 0; }
+      .scene { position: absolute; top: 0; width: 1280px; height: 720px; }
+      #sun { background: linear-gradient(180deg, #ffb46b 0%, #f07a5a 55%, #7a3f6a 100%); }
+      #horizon { position: absolute; left: 0; right: 0; top: 470px; bottom: 0; background: #2a1d33; }
+
+      .marker { position: absolute; left: -60px; top: -60px; width: 120px; height: 120px; border-radius: 50%; border: 5px solid #ffd166; opacity: 0; }
+      #stop { position: absolute; left: -11px; top: -11px; width: 22px; height: 22px; border-radius: 50%; background: #e8e6e1; opacity: 0; }
+      #trails { position: absolute; left: 0; top: 0; }
+      .jump { stroke: #ef5b5b; stroke-width: 4; stroke-dasharray: 10 10; stroke-linecap: round; opacity: 0; }
+
+      .caption { position: absolute; left: 0; width: 1920px; top: 906px; text-align: center; font-size: 40px; font-weight: 500; color: #d9dbd6; opacity: 0; }
+      #title { position: absolute; left: 456px; top: 380px; font-size: 120px; line-height: 120px; font-weight: 700; color: #f1efea; }
+      #title span { display: inline-block; }
+      #cap3 { top: 612px; font-size: 44px; color: #b9bcc2; }
+      .label { position: absolute; top: 300px; width: 640px; text-align: center; font-size: 30px; opacity: 0; }
+      #lab-l { left: 200px; color: #ef5b5b; }
+      #lab-r { left: 1080px; color: #3ecf8e; }
+      #rule { position: absolute; left: 422px; top: 404px; font-size: 64px; line-height: 72px; font-weight: 700; color: #f1efea; }
+      .code { position: absolute; left: 422px; font-size: 34px; color: #9ea2aa; }
+      .code b { font-weight: 400; color: #3ecf8e; }
+      #code1 { top: 552px; }
+      #code2 { top: 604px; }
+      #note { position: absolute; left: 422px; top: 700px; font-size: 30px; color: #7f848d; opacity: 0; }
+
+      .gate { position: absolute; left: -7px; top: -60px; width: 14px; height: 120px; border-radius: 7px; background: #3ecf8e; }
+      #ldot { position: absolute; left: 730px; top: 524px; width: 32px; height: 32px; border-radius: 50%; background: #3ecf8e; }
+      #lword { position: absolute; left: 798px; top: 488px; font-size: 84px; line-height: 104px; font-weight: 500; color: #e8e6e1; }
+      #lword .dim { color: #7c818c; }
+      #ltag { position: absolute; left: 0; width: 1920px; top: 640px; text-align: center; font-size: 36px; color: #8b919c; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="45" data-width="1920" data-height="1080">
+      <div id="bg"></div>
+
+      <div id="screen-l" class="screen">
+        <div id="l-c1" class="shape circle" style="left:240px;top:160px;width:180px;height:180px;background:#ff7a59;opacity:0"></div>
+        <div id="l-s2" class="shape" style="left:850px;top:380px;width:180px;height:180px;border-radius:24px;background:#5b9cf2;opacity:0"></div>
+        <div id="l-t3" class="shape tri" style="left:280px;top:400px;width:200px;height:200px;background:#a78bfa;opacity:0"></div>
+      </div>
+
+      <div id="screen" class="screen">
+        <div id="bd-a" class="fill"><div class="shape circle" style="left:820px;top:-160px;width:520px;height:520px;background:rgba(120,160,255,0.08)"></div></div>
+        <div id="bd-b" class="fill"><div class="shape" style="left:-80px;top:420px;width:1440px;height:2px;background:rgba(255,200,220,0.14)"></div><div class="shape" style="left:-80px;top:520px;width:1440px;height:2px;background:rgba(255,200,220,0.1)"></div></div>
+        <div id="bd-c" class="fill"><div class="shape circle" style="left:-140px;top:360px;width:560px;height:560px;background:rgba(80,220,200,0.07)"></div></div>
+        <div id="bd-d" class="fill">
+          <div class="card" style="left:120px;top:140px"></div><div class="card" style="left:120px;top:300px"></div>
+          <div class="card" style="left:120px;top:460px"></div><div class="card" style="left:330px;top:140px"></div>
+        </div>
+        <div id="canvas">
+          <div class="scene" style="left:0;background:linear-gradient(160deg,#20253a 0%,#11131d 100%)"></div>
+          <div class="scene" style="left:1280px;background:linear-gradient(160deg,#2b2142 0%,#15101f 100%)"></div>
+          <div class="scene" style="left:2560px;background:linear-gradient(160deg,#3b2a22 0%,#1c130f 100%)"></div>
+          <div id="c-sq" class="shape" style="left:957px;top:277px;width:166px;height:166px;border-radius:23px;background:#5b9cf2"></div>
+          <div id="c-tri" class="shape tri" style="left:1820px;top:260px;width:200px;height:200px;background:#a78bfa"></div>
+          <div id="c-circ" class="shape circle" style="left:2870px;top:270px;width:180px;height:180px;background:#ff7a59"></div>
+        </div>
+        <div id="sun" class="fill"><div id="horizon"></div><div id="sun-disc" class="shape circle" style="left:550px;top:270px;width:180px;height:180px;background:#ff7a59"></div></div>
+        <div id="s1" class="shape circle" style="left:240px;top:160px;width:180px;height:180px;background:#ff7a59;opacity:0"></div>
+        <div id="s2" class="shape" style="left:850px;top:380px;width:180px;height:180px;border-radius:24px;background:#5b9cf2;opacity:0"></div>
+        <div id="s3" class="shape tri" style="left:280px;top:400px;width:200px;height:200px;background:#a78bfa;opacity:0"></div>
+        <div id="r-sub" class="shape" style="left:240px;top:160px;width:180px;height:180px;border-radius:50%;background:#ff7a59;opacity:0;clip-path:polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)"></div>
+        <div id="chip-cont" class="chip mono">continuation</div>
+        <div id="chip-morph" class="chip mono">morph</div>
+        <div id="chip-cam" class="chip mono">camera-carry</div>
+        <div id="chip-match" class="chip mono">match-cut</div>
+      </div>
+
+      <svg id="trails" width="1920" height="1080" viewBox="0 0 1920 1080">
+        <line id="j1" class="jump" x1="700" y1="660" x2="650" y2="410" />
+        <line id="j2" class="jump" x1="650" y1="410" x2="1260" y2="630" />
+        <line id="lj1" class="jump" x1="365" y1="465" x2="670" y2="575" />
+        <line id="lj2" class="jump" x1="670" y1="575" x2="390" y2="590" />
+        <path id="gpath" d="M 1245 465 C 1400 450, 1560 500, 1550 575 C 1540 640, 1330 620, 1270 590" fill="none" stroke="#3ecf8e" stroke-width="5" stroke-linecap="round" />
+        <g id="lockup-gates"><g transform="translate(486 540)"><rect id="g1" x="-7" y="-60" width="14" height="120" rx="7" fill="#3ecf8e" /></g><g transform="translate(606 540)"><rect id="g2" x="-7" y="-60" width="14" height="120" rx="7" fill="#3ecf8e" /></g></g>
+      </svg>
+
+      <div id="marker" class="marker"></div>
+      <div id="marker-l" class="marker"></div>
+      <div id="marker-r" class="marker"></div>
+      <div id="stop"></div>
+      <div id="ldot"></div>
+
+      <div id="title" class="mono"><span id="w1">Carry</span> <span id="w2">the</span> <span id="w3">eye</span></div>
+      <div id="rule" class="mono">Name what crosses every cut.</div>
+      <div id="code1" class="code mono">"handoff": <b>"morph"</b>,</div>
+      <div id="code2" class="code mono">"carrier": <b>"the dot becomes the square"</b></div>
+      <div id="note" class="sans">design-pipeline flags it: carrier-unnamed, handoff-not-carried</div>
+      <div id="lword" class="mono">design<span class="dim">-</span>pipeline</div>
+      <div id="ltag" class="sans">Taste, enforced in code.</div>
+      <div id="lab-l" class="label mono">slideshow</div>
+      <div id="lab-r" class="label mono">carried</div>
+
+      <div id="cap1" class="caption sans">Three well-timed shots.</div>
+      <div id="cap2" class="caption sans">After every cut, the eye has to search.</div>
+      <div id="cap3" class="caption sans">Give every cut one thing that crosses it.</div>
+      <div id="cap4" class="caption sans">The subject keeps moving through the cut.</div>
+      <div id="cap5" class="caption sans">One shape becomes the next subject.</div>
+      <div id="cap6" class="caption sans">The camera keeps moving instead of resetting.</div>
+      <div id="cap7" class="caption sans">Cut between two shapes in the same place.</div>
+      <div id="cap8" class="caption sans">Same three shots. One path for the eye.</div>
+
+      <audio id="score" src="assets/score-mastered.wav" data-start="0" data-duration="45"></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const to = (target, vars, at) => tl.to(target, vars, at);
+      const set = (target, vars, at) => tl.set(target, vars, at);
+      // Screen-local point to stage point for the main screen at scale 1.
+      const P = { c1: [650, 410], s2: [1260, 630], t3: [700, 660] };
+
+      // Initial state.
+      gsap.set(["#w1", "#w2", "#w3"], { clipPath: "inset(0% 100% 0% 0%)" });
+      gsap.set("#title", { opacity: 1 });
+      gsap.set(["#rule", "#code1", "#code2"], { clipPath: "inset(0% 100% 0% 0%)" });
+      gsap.set(["#lword"], { clipPath: "inset(0% 100% 0% 0%)", x: -48 });
+      gsap.set(["#g1", "#g2"], { scaleY: 0, transformOrigin: "50% 50%" });
+      gsap.set("#ldot", { scale: 0 });
+      gsap.set("#screen-l", { scale: 0.5, x: -440, opacity: 0 });
+      gsap.set("#marker", { x: P.t3[0], y: P.t3[1], scale: 0.6 });
+      const gpath = document.getElementById("gpath");
+      const glen = gpath.getTotalLength();
+      gsap.set(gpath, { strokeDasharray: glen, strokeDashoffset: glen });
+
+      // Captions: in and out inside their beats.
+      for (const [id, from, until] of [["#cap1", 0.3, 3.4], ["#cap2", 4.0, 7.3], ["#cap3", 8.6, 9.75], ["#cap4", 11.0, 14.7], ["#cap5", 15.6, 19.6], ["#cap6", 20.4, 24.6], ["#cap7", 25.3, 27.2], ["#cap8", 35.2, 37.2]]) {
+        gsap.set(id, { y: 14 });
+        to(id, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, from);
+        to(id, { opacity: 0, duration: 0.2, ease: "power1.in" }, until);
+      }
+
+      // 0-3.75 slideshow: three shots dissolve into each other; each subject drifts a little.
+      const shot = (id, fadeIn, fadeOut) => {
+        gsap.set(id, { y: 24 });
+        to(id, { opacity: 1, duration: 0.3, ease: "power1.inOut" }, fadeIn);
+        to(id, { y: -12, duration: (fadeOut ?? fadeIn + 1.75) - fadeIn, ease: "sine.inOut" }, fadeIn);
+        if (fadeOut !== undefined) to(id, { opacity: 0, duration: 0.3, ease: "power1.inOut" }, fadeOut - 0.3);
+      };
+      shot("#s1", 0.15, 1.6);
+      shot("#s2", 1.3, 2.75);
+      shot("#s3", 2.45);
+
+      // 3.75-7.5 search: the gaze marker lands on the triangle; the same shots replay as hard cuts
+      // and the marker hunts after each cut before jumping (red trails).
+      to("#marker", { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 3.75);
+      set("#s3", { opacity: 0 }, 4.375);
+      set("#s1", { opacity: 1, y: 0 }, 4.375);
+      const hunt = (from, at) => {
+        to("#marker", { x: from[0] + 14, duration: 0.14, ease: "sine.inOut" }, at);
+        to("#marker", { x: from[0] - 12, duration: 0.18, ease: "sine.inOut" }, at + 0.14);
+        to("#marker", { x: from[0] + 6, duration: 0.16, ease: "sine.inOut" }, at + 0.32);
+        to("#marker", { x: from[0], duration: 0.12, ease: "sine.inOut" }, at + 0.48);
+      };
+      hunt(P.t3, 4.4);
+      to("#marker", { x: P.c1[0], y: P.c1[1], duration: 0.18, ease: "power3.out" }, 5.0);
+      to("#j1", { opacity: 0.9, duration: 0.1, ease: "power1.out" }, 5.0);
+      set("#s1", { opacity: 0 }, 5.625);
+      set("#s2", { opacity: 1, y: 0 }, 5.625);
+      hunt(P.c1, 5.65);
+      to("#marker", { x: P.s2[0], y: P.s2[1], duration: 0.18, ease: "power3.out" }, 6.25);
+      to("#j2", { opacity: 0.9, duration: 0.1, ease: "power1.out" }, 6.25);
+
+      // 7.5-10 name-it: the screen dims; the marker flies out and shrinks into the headline's full stop.
+      to("#screen", { opacity: 0.18, scale: 0.94, duration: 0.6, ease: "power2.inOut" }, 7.3);
+      to(["#j1", "#j2"], { opacity: 0.15, duration: 0.6, ease: "power2.inOut" }, 7.3);
+      to("#marker", { x: 1428, y: 472, scale: 0.2, duration: 0.95, ease: "power3.inOut" }, 7.35);
+      [["#w1", 7.6], ["#w2", 7.85], ["#w3", 8.05]].forEach(([id, at]) => to(id, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.28, ease: "power2.out" }, at));
+      set("#stop", { x: 1428, y: 472 }, 8.25);
+      to("#stop", { opacity: 1, duration: 0.12, ease: "power1.out" }, 8.25);
+      to("#marker", { opacity: 0, duration: 0.15, ease: "power1.out" }, 8.3);
+
+      // 10-15 continuation: the headline lifts away and its full stop drops into the screen, then
+      // travels across it while the shot behind it cuts from A to B at 12.5 s.
+      to("#title", { opacity: 0, y: -40, duration: 0.5, ease: "power2.in" }, 9.8);
+      set(["#s2", "#j1", "#j2"], { opacity: 0 }, 9.9);
+      set("#bd-a", { opacity: 1 }, 9.9);
+      to("#screen", { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" }, 9.9);
+      to("#stop", { x: 480, y: 520, scale: 52 / 22, duration: 1.0, ease: "power2.inOut" }, 9.8);
+      set("#marker", { x: 480, y: 520, scale: 0.7 }, 10.8);
+      to("#marker", { opacity: 1, duration: 0.2, ease: "power1.out" }, 10.8);
+      to("#chip-cont", { opacity: 1, duration: 0.25, ease: "power1.out" }, 10.9);
+      for (const target of ["#stop", "#marker"]) {
+        to(target, { x: 1360, duration: 4.4, ease: "power1.inOut" }, 10.8);
+        to(target, { y: 470, duration: 2.2, ease: "sine.inOut" }, 10.8);
+        to(target, { y: 520, duration: 2.2, ease: "sine.inOut" }, 13.0);
+      }
+      set("#bd-a", { opacity: 0 }, 12.5);
+      set("#bd-b", { opacity: 1 }, 12.5);
+
+      // 15-20 morph: the dot turns into the blue square that the next shot is about.
+      to("#chip-cont", { opacity: 0, duration: 0.2, ease: "power1.in" }, 14.9);
+      set("#stop", { rotation: 45 }, 14.95);
+      // The shot behind the dot changes a beat after the boundary, never on it: a carried
+      // boundary must not render as a cut.
+      set("#bd-b", { opacity: 0 }, 15.625);
+      set("#bd-c", { opacity: 1 }, 15.625);
+      to("#stop", { scale: 166 / 22, borderRadius: "14%", backgroundColor: "#5b9cf2", rotation: 0, duration: 1.4, ease: "power3.inOut" }, 15.2);
+      to("#marker", { scale: 2.2, duration: 1.4, ease: "power3.inOut" }, 15.2);
+      to("#chip-morph", { opacity: 1, duration: 0.25, ease: "power1.out" }, 15.3);
+      set("#bd-c", { opacity: 0 }, 17.5);
+      set("#bd-d", { opacity: 1 }, 17.5);
+
+      // 20-25 camera-carry: the camera travels through three scenes; the marker rides along.
+      to("#chip-morph", { opacity: 0, duration: 0.2, ease: "power1.in" }, 19.6);
+      set("#canvas", { opacity: 1 }, 19.8);
+      set(["#stop", "#bd-d"], { opacity: 0 }, 19.8);
+      to("#canvas", { x: -2320, duration: 5.0, ease: "power2.inOut" }, 19.8);
+      to("#marker", { x: 960, y: 520, scale: 1.7, duration: 5.0, ease: "power2.inOut" }, 19.8);
+      to("#chip-cam", { opacity: 1, duration: 0.25, ease: "power1.out" }, 20.2);
+
+      // 25-27.5 match-cut: a hard cut from the coral circle to the sun in the same place.
+      set("#chip-cam", { opacity: 0 }, 25.0);
+      set("#canvas", { opacity: 0 }, 25.0);
+      set(["#sun", "#chip-match"], { opacity: 1 }, 25.0);
+      to("#sun-disc", { y: -24, duration: 2.0, ease: "sine.inOut" }, 25.25);
+
+      // 27.5-37.5 rebuilt: the camera pulls back until the screen is one of two. Left: the three
+      // shots as a slideshow, gaze zig-zags. Right: the same shots carried, gaze follows one path.
+      to("#marker", { opacity: 0, duration: 0.2, ease: "power1.in" }, 27.2);
+      to("#chip-match", { opacity: 0, duration: 0.2, ease: "power1.in" }, 27.25);
+      to("#screen", { scale: 0.5, x: 440, duration: 1.2, ease: "power3.inOut" }, 27.3);
+      to("#screen-l", { opacity: 1, x: -440, duration: 0.6, ease: "power2.out" }, 27.9);
+      gsap.set("#screen-l", { x: -500 });
+      to(["#lab-l", "#lab-r"], { opacity: 1, duration: 0.4, ease: "power1.out" }, 28.3);
+      set("#sun", { opacity: 0 }, 28.7);
+      set("#r-sub", { opacity: 1 }, 28.7);
+      set("#l-c1", { opacity: 1 }, 28.7);
+      set("#marker-l", { x: 365, y: 465, scale: 0.85 }, 28.7);
+      set("#marker-r", { x: 1245, y: 465, scale: 0.85 }, 28.7);
+      to(["#marker-l", "#marker-r"], { opacity: 1, duration: 0.25, ease: "power1.out" }, 28.8);
+      // Right, carried: circle travels to the square's place and becomes it, then to the triangle's.
+      to("#r-sub", { x: 610, y: 220, borderRadius: "13%", backgroundColor: "#5b9cf2", duration: 1.2, ease: "power2.inOut" }, 30.3);
+      to("#marker-r", { x: 1550, y: 575, duration: 1.2, ease: "power2.inOut" }, 30.3);
+      to(gpath, { strokeDashoffset: glen * 0.48, duration: 1.2, ease: "power2.inOut" }, 30.3);
+      to("#r-sub", { x: 50, y: 250, borderRadius: "0%", backgroundColor: "#a78bfa", clipPath: "polygon(50% 0%, 50% 0%, 100% 100%, 0% 100%)", duration: 1.4, ease: "power2.inOut" }, 32.6);
+      to("#marker-r", { x: 1270, y: 590, duration: 1.4, ease: "power2.inOut" }, 32.6);
+      to(gpath, { strokeDashoffset: 0, duration: 1.4, ease: "power2.inOut" }, 32.6);
+      set(gpath, { strokeDasharray: "none" }, 34.1);
+      // Left, slideshow: hard cuts; the marker hunts, then jumps.
+      const huntL = (x, at) => {
+        to("#marker-l", { x: x + 8, duration: 0.14, ease: "sine.inOut" }, at);
+        to("#marker-l", { x: x - 7, duration: 0.16, ease: "sine.inOut" }, at + 0.14);
+        to("#marker-l", { x, duration: 0.14, ease: "sine.inOut" }, at + 0.3);
+      };
+      set("#l-c1", { opacity: 0 }, 30.8);
+      set("#l-s2", { opacity: 1 }, 30.8);
+      huntL(365, 30.8);
+      to("#marker-l", { x: 670, y: 575, duration: 0.16, ease: "power3.out" }, 31.25);
+      to("#lj1", { opacity: 0.9, duration: 0.1, ease: "power1.out" }, 31.25);
+      set("#l-s2", { opacity: 0 }, 32.6);
+      set("#l-t3", { opacity: 1 }, 32.6);
+      huntL(670, 32.62);
+      to("#marker-l", { x: 390, y: 590, duration: 0.16, ease: "power3.out" }, 33.1);
+      to("#lj2", { opacity: 0.9, duration: 0.1, ease: "power1.out" }, 33.1);
+
+      // 37.5-42.5 rule: everything else leaves; the green path straightens into the rule's underline.
+      to(["#screen", "#screen-l"], { opacity: 0, scale: 0.46, duration: 0.8, ease: "power2.in" }, 37.1);
+      to(["#lab-l", "#lab-r", "#marker-l", "#marker-r", "#lj1", "#lj2"], { opacity: 0, duration: 0.5, ease: "power1.in" }, 37.1);
+      to(gpath, { attr: { d: "M 422.5 492 C 600 492, 800 492, 960 492 C 1120 492, 1320 492, 1497.5 492", "stroke-width": 6 }, duration: 1.0, ease: "power3.inOut" }, 37.3);
+      to("#rule", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.65, ease: "steps(28)" }, 38.3);
+      to("#code1", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "steps(19)" }, 39.0);
+      to("#code2", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.8, ease: "steps(38)" }, 39.6);
+      gsap.set("#note", { y: 12 });
+      to("#note", { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 40.7);
+
+      // 42.5-45 sign: the underline shortens into the design-pipeline mark; the name resolves.
+      to(["#rule", "#code1", "#code2", "#note"], { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" }, 42.2);
+      to(gpath, { attr: { d: "M 366 540 C 480 540, 600 540, 660 540 C 690 540, 710 540, 726 540", "stroke-width": 8, stroke: "#e8e6e1" }, duration: 0.9, ease: "power3.inOut" }, 42.3);
+      to(["#g1", "#g2"], { scaleY: 1, duration: 0.4, ease: "back.out(2)" }, 42.9);
+      to("#ldot", { scale: 1, duration: 0.35, ease: "back.out(2.4)" }, 43.1);
+      to("#lword", { x: 0, clipPath: "inset(0% 0% 0% 0%)", duration: 0.6, ease: "power3.out" }, 43.2);
+      to("#ltag", { opacity: 1, duration: 0.4, ease: "power1.out" }, 43.5);
+      to("#bg", { opacity: 0.8, duration: 1.1, ease: "sine.inOut" }, 43.9);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

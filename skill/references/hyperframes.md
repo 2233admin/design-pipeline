@@ -5,8 +5,9 @@ route usable when the upstream skill tree is absent; the upstream source remains
 new workflow and runtime details.
 
 - Source: https://github.com/heygen-com/hyperframes
-- Reviewed revision: `0e4da52c8222b8d18a1211b34f2fb3bd0f7e79ee`
+- Reviewed release: `hyperframes@0.8.137` at revision `d09e003b17610177b71e340ec0bac95c9dde3e64`
 - License: Apache-2.0
+- Reviewed browser toolchain: Node.js 22.12+ (including Puppeteer's runtime requirement).
 
 ## Select the route
 
@@ -46,8 +47,10 @@ structure solely because it already exists.
 - A standalone root is directly in `<body>`; a sub-composition root is inside `<template>` and its
   host id, inner composition id, and timeline key must match exactly.
 - The root carries a sized box, `data-start="0"`, dimensions, and `data-duration`.
-- Register exactly one synchronous `gsap.timeline({ paused: true })` at
-  `window.__timelines[compositionId]`. The renderer seeks this timeline frame by frame.
+- Register exactly one fully built `gsap.timeline({ paused: true })` at
+  `window.__timelines[compositionId]`. The renderer seeks this timeline frame by frame. Async
+  construction such as waiting for `document.fonts.ready` is supported; register only after the
+  timeline build finishes.
 - Keep IDs unique across the assembled page. Put full-screen fills on a full-bleed child, not the
   composition root.
 
@@ -56,7 +59,8 @@ structure solely because it already exists.
 - No `Date.now`, `performance.now`, render-time clocks, unseeded randomness, network dependence,
   input-state dependence, or infinite repeats.
 - Do not tween `display`, raw `visibility`, or layout properties such as `top`, `left`, `width`,
-  and `height`; use seek-safe transform aliases and the framework's clip lifecycle.
+  and `height`; use seek-safe transform aliases and the framework's clip lifecycle. HyperFrames
+  owns `.clip` visibility, so do not animate `autoAlpha` or `visibility` on the clip itself.
 - Do not pair a CSS initial transform with a GSAP tween of the same property.
 - Prefer GSAP for most choreography. Use another adapter only when the composition needs Lottie,
   Three.js, Anime.js, CSS keyframes, WAAPI, or TypeGPU, and preserve one render-loop owner.

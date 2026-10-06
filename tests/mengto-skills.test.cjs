@@ -8,7 +8,7 @@ const test = require("node:test");
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
-const manifestFile = path.join(repoRoot, "skill/references/mengto-skills/manifest.json");
+const manifestFile = path.join(repoRoot, "skill/vendor/mengto-skills/manifest.json");
 const kageCaseStudyFile = path.join(repoRoot, "skill/references/kage-scroll-world.md");
 const { gitTreeId, loadMengToCatalog, searchMengToSkills, verifyMengToSnapshot } = require("../skill/scripts/mengto-skills-core.cjs");
 
@@ -16,30 +16,36 @@ test("bundles the complete pinned MengTo skills source tree", () => {
   const { manifest } = loadMengToCatalog(manifestFile);
   assert.deepEqual(manifest.source, {
     repository: "https://github.com/MengTo/skills",
-    revision: "3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
-    gitTree: "d7d6a6b440a85bb183d40311d0506876d09493b3",
-    committedAt: "2026-08-11T17:06:55+08:00",
+    revision: "83a47fee32f0b6349bff1fede99257a5ef03dc93",
+    gitTree: "4c231bc88ecbad19627105dcd8a16fd122ddf5e7",
+    committedAt: "2026-10-06T22:20:24+08:00",
     license: "MIT",
-    reviewedAt: "2026-08-12",
+    reviewedAt: "2026-10-07",
     scope: ["**"],
   });
   assert.deepEqual(manifest.categories, {
-    codex: 19,
+    "3d": 16,
+    codex: 20,
+    "game-combat": 6,
     "game-development": 20,
+    illustration: 14,
     media: 2,
-    ui: 1,
-    "web-design": 85,
+    ui: 3,
+    "web-design": 91,
+    workflow: 4,
   });
-  assert.equal(manifest.skills.length, 127);
-  assert.equal(manifest.snapshot.fileCount, 867);
-  assert.equal(manifest.snapshot.byteCount, 94402253);
-  assert.equal(manifest.snapshot.treeSha256, "36db5446edb2ea7be57d282081b4b9602a0e9653661311ed0bd4a7e5f1b70536");
-  assert.equal(manifest.snapshot.executableFiles.length, 9);
-  assert.equal(manifest.snapshot.objects.length, 867);
+  assert.equal(manifest.skills.length, 176);
+  assert.equal(manifest.snapshot.fileCount, 1313);
+  assert.equal(manifest.snapshot.byteCount, 136325371);
+  assert.equal(manifest.snapshot.treeSha256, "856f257256ae8022de29a9518df9adebe1e67043d2d1e5a8b442b4c4b7a9ed4c");
+  assert.equal(manifest.snapshot.executableFiles.length, 26);
+  assert.equal(manifest.snapshot.objects.length, 1313);
+  assert.equal(manifest.skills.find((skill) => skill.id === "workflow/workflow-ship-change").activation, "explicit");
+  assert.equal(manifest.skills.find((skill) => skill.id === "workflow/workflow-threads-manager").activation, "explicit");
   assert.equal(gitTreeId(manifest.snapshot.objects), manifest.source.gitTree);
   const verification = verifyMengToSnapshot(manifestFile);
   assert.equal(verification.status, "ready");
-  assert.equal(verification.executableFiles, 9);
+  assert.equal(verification.executableFiles, 26);
   assert.equal(verification.gitTree, manifest.source.gitTree);
   assert.match(
     fs.readFileSync(path.join(path.dirname(manifestFile), "upstream/LICENSE"), "utf8"),
@@ -61,6 +67,14 @@ test("search routes design playbooks while preserving explicit-only boundaries",
   assert.equal(ship.results[0].id, "game-development/ship-web-games");
   assert.equal(ship.results[0].activation, "explicit");
   assert.ok(ship.results[0].stages.includes("publication"));
+
+  const publish = searchMengToSkills({ query: "ship change publish workflow", limit: 1 });
+  assert.equal(publish.results[0].id, "workflow/workflow-ship-change");
+  assert.equal(publish.results[0].activation, "explicit");
+
+  const particles = searchMengToSkills({ query: "GPU particle trail mouse interaction", limit: 1 });
+  assert.equal(particles.results[0].id, "web-design/build-interactive-particle-trail");
+  assert.equal(particles.results[0].activation, "automatic");
 
   assert.throws(() => searchMengToSkills({ query: "!!!" }), /searchable letters or numbers/);
   assert.throws(() => searchMengToSkills({ query: "blur", limit: "2junk" }), /integer from 1 to 20/);

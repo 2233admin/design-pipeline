@@ -24,6 +24,10 @@ not an implicit waiver.
 
 ## Candidate Set
 
+When the brief needs external references, use [Design sources](../tools/design-sources.md)
+to find specific works and observable mechanisms. Carry selected references into the existing
+reference notes; a gallery entry does not substitute for a rendered candidate or select its style.
+
 For a required preview, render three candidates by default. Two are allowed when product or
 reference constraints leave only two honest directions; use four only when the brief or user asks
 for broader exploration.

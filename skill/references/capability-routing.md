@@ -1,6 +1,9 @@
 # Capability Routing
 
-Route by the design capability the change needs, then use installed skills as implementation lenses. A green folder-presence check does not prove that a companion skill covers the current upstream API.
+Route by the design capability the change needs. Start with the bundled guide or selected local
+source; installed companion skills can add detail. A green folder-presence check does not prove
+that a companion covers the current upstream API, and a missing companion does not remove the
+bundled capability.
 
 ## Routing Order
 
@@ -14,6 +17,11 @@ Route by the design capability the change needs, then use installed skills as im
 5. Select the smallest companion set that covers the capability.
 6. Do not add two overlapping runtime libraries only to gain skills.
 7. Record missing or stale companion coverage in `qa.md` and continue with official documentation plus the built-in pipeline gate.
+
+If the actual visual goal still needs a missing method or implementation, follow
+[active design capability discovery](../tools/open-source-design.md). Search beyond this map,
+inspect the relevant source and test it in the project's renderer. This host research step does
+not turn a candidate into a trusted adapter or add another mandatory Stage 0 catalogue search.
 
 Do not treat MengTo, Prism, Astryx, shadcnio, DesignMD, iart, and holosticker as peer Stage 0 searches.
 The table below is the catalog map the dispatcher points at, not a list of required searches.
@@ -58,12 +66,16 @@ For non-trivial motion, complete the opportunity screen and vocabulary/curve dec
 | Candidate | Prefer when | Avoid when |
 | --- | --- | --- |
 | CSS transitions/keyframes | One-element state feedback, simple enter/exit, no timeline control | The behavior needs orchestration, interruption control, layout transitions, scroll synchronization, or reusable runtime state |
-| Anime.js v4.5 | Modular timelines, layout transitions, text splitting, SVG, draggable interactions, scroll observers, WAAPI, deterministic stagger, or adapter-driven non-DOM targets | The project already standardizes on GSAP and Anime.js adds no unique capability |
-| GSAP | Existing GSAP project, deep timeline choreography, ScrollTrigger, mature plugin workflows, or GSAP-specific framework integration | The task is a small isolated state transition that CSS or an existing runtime already handles |
-| PixiJS v8 | Interactive 2D scenes, sprite or particle fields, filters, custom shaders, Canvas/WebGL/WebGPU rendering, or object counts beyond a practical DOM surface | The surface is primarily semantic text, navigation, forms, ordinary components, a small transition, or true 3D |
-| Phaser v4 | A 2D game needs engine-owned scenes, loop, input, cameras, scaling, audio, physics, and deterministic game-state transitions | The task only needs a renderer, semantic application UI, a small effect, or true 3D |
+| Anime.js 4.5.0 | Modular timelines, layout transitions, text splitting, SVG, draggable interactions, scroll observers, WAAPI, seeded stagger, or non-DOM targets through its built-in Three.js adapter | The project already standardizes on GSAP and Anime.js adds no unique capability |
+| GSAP 3.15.0 | Existing GSAP project, deep timeline choreography, ScrollTrigger, mature plugin workflows, GSAP-specific framework integration, or reverse-direction easing with `easeReverse` | The task is a small isolated state transition that CSS or an existing runtime already handles |
+| PixiJS 8.22.0 | Interactive 2D scenes, sprite or particle fields, filters, custom shaders, Canvas/WebGL/WebGPU rendering, or object counts beyond a practical DOM surface; 8.22.0 includes renderer-resize/nested-filter and keyboard accessibility fixes | The surface is primarily semantic text, navigation, forms, ordinary components, a small transition, or true 3D |
+| Phaser 4.2.1 | A 2D game needs engine-owned scenes, loop, input, cameras, scaling, audio, physics, and deterministic game-state transitions | The task only needs a renderer, semantic application UI, a small effect, or true 3D |
 | React View Transitions | Route/navigation continuity in a compatible React/Next.js surface | It is being used as a general animation engine |
 | Existing project runtime | The repo already has an accepted animation library and it satisfies the motion spec | It cannot meet accessibility, performance, interruption, or fidelity requirements |
+
+For GSAP 3.15.0, `easeReverse` selects an adaptive reverse-direction ease, including when the
+playhead changes direction mid-tween. `yoyoEase` is deprecated but remains backwards-compatible; the
+paused, seekable timeline contract does not change.
 
 Holosticker is a specialized implementation route on top of the existing `threejs` adapter, not a
 new runtime. Read `references/holosticker.md` and select the smallest capability slice. The base
@@ -82,9 +94,34 @@ For 3D, data visualization, geospatial, GPU, editor-canvas, and narrative surfac
 adapter is not an instruction to add that dependency; preserve an accepted existing runtime and
 verify version-matched official documentation first.
 
-## Anime.js v4.5 Profile
+## GSAP implementation without companion installs
 
-Verified against the official Anime.js documentation and v4.5.0 release on 2026-07-19.
+The local [GSAP web playbook](../vendor/iart-motion-skills/upstream/web-animation-skills/skills/gsap-web/SKILL.md)
+already covers timelines, SVG and ScrollTrigger. For scroll integration open only its
+[scroll and cleanup reference](../vendor/iart-motion-skills/upstream/web-animation-skills/skills/gsap-web/references/scrolltrigger-lenis.md).
+Use these through the existing selected source route; no extra catalog pass or global `gsap-*`
+installation is required. Preserve the project lockfile rather than the snapshot's example CDN pin.
+
+- Build a timeline around the intended states and labels. For captured or scrubbed work, pause it
+  and drive one playhead; GSAP timeline positions use seconds. Check the middle frame from a cold
+  start and after seeking backward, not only after normal playback.
+- Scope targets to the mounted component. Revert its `gsap.context()` on teardown. If the project
+  already uses `@gsap/react`, use `useGSAP` and `contextSafe` for handlers that create later tweens;
+  listeners, async work and external loops still need explicit cancellation/removal.
+- Use `gsap.matchMedia()` when breakpoint or reduced-motion changes rebuild the animation; call
+  its `revert()` on teardown. Reduced motion must leave the meaningful state readable.
+- Refresh ScrollTrigger measurements after relevant layout, image or font changes. Keep one
+  scroll/ticker owner; add Lenis only if the target project actually needs it. Verify remount,
+  rapid reversal and resize without accumulating triggers or callbacks.
+
+These maintained decisions are informed by the official
+[GSAP skill suite](https://github.com/greensock/gsap-skills/tree/aed9cfd3277740755f6bfc1155c7aa645403b760)
+and the bundled iart sources. The upstream recommendation to prefer its library is not a project
+selection rule. Plugin-specific APIs still require the selected version's primary documentation.
+
+## Anime.js 4.5.0 Profile
+
+Verified against the official Anime.js documentation and v4.5.0 release on 2026-10-07.
 
 The `animejs` route is no longer limited to small DOM/SVG tweens. Treat it as capable of:
 
@@ -97,13 +134,49 @@ The `animejs` route is no longer limited to small DOM/SVG tweens. Treat it as ca
 - SVG drawing, morphing, and motion paths;
 - `createScope` lifecycle and React cleanup;
 - WAAPI-backed animation;
-- adapters through `registerAdapter()`, including the official Three.js adapter;
-- 3D stagger grids plus deterministic `jitter` and `seed`.
+- custom non-DOM adapters through `registerAdapter()`; the built-in Three.js adapter is imported by
+  side effect from `animejs/adapters/three`;
+- 3D stagger grids plus seeded `jitter` and `from: "random"` ordering for reproducible runs.
 
-When the installed `animejs` companion skill lacks these markers:
+Use this built-in implementation path even when the `animejs` companion is absent:
+
+1. Select only the needed module. Timelines compose action; layout, text, draggable and scroll
+   modules solve different problems and are not prerequisites for a tween. Use `createScope` for
+   component-owned work and revert that scope when the component leaves.
+2. For capture or scrubbing, construct with `createTimeline({ autoplay: false })`, add the tracks
+   before seeking, and pass milliseconds to `timeline.seek(timeMs)`. Call `timeline.revert()` when
+   disposing an independently owned timeline. Keep the rendering loop separate and explicitly owned.
+3. For existing Three.js targets, import `animejs/adapters/three` for its registration side effect,
+   then animate the actual vector/object property. Do not create a second scene or RAF loop just
+   to animate a property. Generic custom adapters use `registerAdapter()` and need their own proof.
+4. If stagger uses `jitter` or `from: "random"`, choose an explicit `seed` and preserve target order.
+   Compare the same target values after cold, forward and reordered seeks; a seed alone does not
+   make frame-accumulating simulation deterministic.
+5. Check interruption and disposal. Layout changes need an actual before/after layout; split text
+   must retain accessible reading order and restore the DOM on cleanup. Verify module-specific
+   methods against the installed version before using them.
+
+A minimal paused track for an already-owned Three.js object is:
+
+```js
+import { createTimeline } from 'animejs';
+import 'animejs/adapters/three';
+
+// object, endX and durationMs belong to the caller's scene and direction.
+const timeline = createTimeline({ autoplay: false });
+timeline.add(object.position, { x: endX, duration: durationMs, ease: 'linear' }, 0);
+timeline.seek(durationMs / 2); // render the existing scene after this seek
+// On teardown: timeline.revert();
+```
+
+The linear curve makes this an interpolation check, not a motion-design default. Review the real
+action with its chosen curve and duration. The basic DOM/Three.js seek and revert path was exercised
+with Anime.js 4.5.0; this does not certify every layout, draggable or custom-adapter combination.
+
+When the installed `animejs` companion skill lacks the current markers:
 
 1. Keep the pipeline run unblocked.
-2. Use the official v4.5 documentation for the missing surface.
+2. Use the bundled path above, then official version-matched documentation for remaining API gaps.
 3. Record `stale companion surface: animejs` and the missing markers in `qa.md`.
 4. Verify imports and behavior in the actual browser/build because Anime.js v3 and v4 APIs are not interchangeable.
 
@@ -119,11 +192,13 @@ When the installed `animejs` companion skill lacks these markers:
 ## PixiJS v8 Profile
 
 Verified against the official `pixijs/pixijs-skills` suite at commit
-`6aae70d76cf410432dd144029c07a1ad4bb12793` on 2026-07-23.
+`83760c6f53462ca9cecd68055041f5a8c94758ce` on 2026-10-07. The review covers the existing companion
+markers and the selected scene/rendering methods in `pixijs-rendering.md`; it does not certify
+every upstream example.
 
 Treat PixiJS as a specialized 2D rendering route, not as the next step after CSS animation. Start
-with `pixijs`, load only the required official sub-skills, and use
-`https://pixijs.download/release/docs/llms.txt` when the suite does not cover an API.
+with the bundled `pixijs-rendering.md`; load a matching official companion only when available
+and useful. Use `https://pixijs.download/release/docs/llms.txt` for remaining API details.
 
 Before implementation, `motion.md` must define:
 

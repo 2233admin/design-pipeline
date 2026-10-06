@@ -1,0 +1,26 @@
+"use strict";
+
+const fs = require("node:fs");
+const path = require("node:path");
+const { assertEnum, fail, resolveInside } = require("../../scripts/contract-utils.cjs");
+
+function scaffoldVisualCraft(root, options) {
+  const template = options.template ?? "visual-craft";
+  assertEnum(template, ["visual-craft", "art-motion"], "template", "composition");
+  if (options.replace) fail("composition", "scaffolding requires a new directory; --replace is not supported");
+  const directory = resolveInside(root, options.output, "--output", { scope: "composition" });
+  if (fs.existsSync(directory)) fail("composition", "output already exists; choose a new directory");
+  const files = template === "art-motion"
+    ? [["../art-motion/study.html", "index.html"], ["../art-motion/huashu-runtime.js", "huashu-runtime.js"], ["../art-motion/clip.example.json", "clip.example.json"], ["LICENSE.huashu-art-motion", "LICENSE.huashu-art-motion"]]
+    : [["study.html", "index.html"], ["canvas.js", "canvas.js"], ["LICENSE.huashu-art-motion", "LICENSE.huashu-art-motion"]];
+  const contents = files.map(([source, destination]) => [destination, fs.readFileSync(path.join(__dirname, source))]);
+  fs.mkdirSync(path.dirname(directory), { recursive: true });
+  fs.mkdirSync(directory);
+  for (const [name, bytes] of contents) fs.writeFileSync(path.join(directory, name), bytes, { flag: "wx" });
+  return {
+    status: "scaffolded", template, directory, entry: path.join(directory, "index.html"),
+    files: contents.map(([name]) => name), creativeAcceptance: "not-assessed",
+  };
+}
+
+module.exports = { scaffoldVisualCraft };

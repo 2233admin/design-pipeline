@@ -45,7 +45,7 @@
       "id": "graphics-runtime",
       "activation": "explicit",
       "priority": 60,
-      "keywords": ["pixijs", "pixi.js", "phaser", "webgpu", "babylon", "playcanvas", "three.js", "threejs", "webgl", "粒子"],
+      "keywords": ["pixijs", "pixi.js", "phaser", "webgpu", "babylon", "playcanvas", "three.js", "threejs", "webgl", "粒子", "vfx", "shader", "glsl", "wgsl", "游戏特效"],
       "primaryKnowledge": { "id": "graphics-runtime", "command": "toolchain", "action": "resolve", "admission": "ready" },
       "secondaries": [
         { "id": "mengto", "command": "mengto", "action": "search", "admission": "inert" },

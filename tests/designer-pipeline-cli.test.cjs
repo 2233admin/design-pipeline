@@ -26,6 +26,42 @@ function writeJson(file, value) {
 
 function sha(file) { return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex"); }
 
+test("installed visual-craft scaffold works outside the skill and preserves authored files", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "visual-craft-install-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const project = path.join(root, "project");
+  fs.mkdirSync(project);
+  const args = ["composition", "scaffold", "--root", project, "--template", "visual-craft", "--output", "art/study"];
+  const result = run(args, root);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(result.output.status, "scaffolded");
+  const directory = path.join(project, "art/study");
+  assert.equal(result.output.entry, path.join(directory, "index.html"));
+  const bundled = path.resolve(path.dirname(cli), "../tools/visual-craft");
+  for (const [source, destination] of [["study.html", "index.html"], ["canvas.js", "canvas.js"], ["LICENSE.huashu-art-motion", "LICENSE.huashu-art-motion"]]) {
+    assert.equal(sha(path.join(directory, destination)), sha(path.join(bundled, source)), destination);
+  }
+  assert.deepEqual(fs.readdirSync(directory).sort(), ["LICENSE.huashu-art-motion", "canvas.js", "index.html"]);
+  assert.deepEqual(fs.readdirSync(project), ["art"]);
+  const kit = require(path.join(directory, "canvas.js"));
+  assert.ok(kit.strokeGeometry([[0, 0], [30, 20]], { width: 5 }).outline.length > 2);
+
+  fs.writeFileSync(path.join(directory, "index.html"), "authored work");
+  for (const extra of [[], ["--replace"]]) {
+    assert.equal(run([...args, ...extra], root).status, 1);
+    assert.equal(fs.readFileSync(path.join(directory, "index.html"), "utf8"), "authored work");
+  }
+  const invoke = (output, template = "visual-craft") => run(["composition", "scaffold", "--root", project, "--output", output, "--template", template], root);
+  assert.equal(invoke("unknown", "fixed-whiteboard").status, 1);
+  assert.equal(fs.existsSync(path.join(project, "unknown")), false);
+  assert.equal(invoke("../escaped").status, 1);
+  assert.equal(fs.existsSync(path.join(root, "escaped")), false);
+  fs.mkdirSync(path.join(root, "outside"));
+  fs.symlinkSync(path.join(root, "outside"), path.join(project, "link"), process.platform === "win32" ? "junction" : "dir");
+  assert.equal(invoke("link/escaped").status, 1);
+  assert.deepEqual(fs.readdirSync(path.join(root, "outside")), []);
+});
+
 function sceneFixture(root) {
   const scene = {
     schema: "design-pipeline.scene-runtime.v1", id: "cli-scene", family: "scene-renderer-2d",

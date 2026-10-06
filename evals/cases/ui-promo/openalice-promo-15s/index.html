@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #07080a; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+      #bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 70% at 50% 50%, #111318 0%, #07080a 75%); }
+      /* Each shot is one real OpenAlice capture (3840 px wide, shown at 1920 css px). The camera
+         moves the shot itself: transform-origin 0 0, so x/y/scale map capture px to screen px. */
+      .shot { position: absolute; left: 0; top: 0; width: 1920px; transform-origin: 0 0; overflow: hidden; }
+      .shot img { display: block; width: 1920px; }
+      /* Videos are laid out at their capture size (3840 x 2160) and scaled by 0.5, so capture css
+         px stay the camera's unit however the renderer sizes video frames. */
+      .shot .half { width: 3840px; height: 2160px; transform: scale(0.5); transform-origin: 0 0; }
+      .shot video { display: block; width: 3840px; height: 2160px; }
+      #shot-ask, #shot-term, #shot-inbox { height: 1080px; }
+      #shot-port { height: 1400px; box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6); }
+      .caption { position: absolute; left: 96px; bottom: 88px; padding: 14px 26px 16px 22px; border-radius: 14px; background: rgba(8, 9, 11, 0.82); border: 1px solid rgba(255, 255, 255, 0.08); font-family: "Inter", sans-serif; font-size: 28px; font-weight: 500; color: #dcdedb; white-space: nowrap; opacity: 0; }
+      .caption i { display: inline-block; width: 12px; height: 12px; margin: 0 16px 4px 0; border-radius: 50%; background: #22c55e; font-style: normal; }
+      #brand { position: absolute; left: 1060px; top: 330px; width: 760px; }
+      #logo { display: block; width: 150px; margin-bottom: 30px; }
+      #name { font-family: "Inter", sans-serif; font-size: 88px; line-height: 96px; font-weight: 700; color: #f2f2f0; letter-spacing: -2px; }
+      #tag { margin-top: 18px; font-family: "Inter", sans-serif; font-size: 36px; color: #9aa0a8; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1920" data-height="1080">
+      <div id="bg"></div>
+      <div id="shot-ask" class="shot clip" data-start="0" data-duration="2">
+        <div class="half"><video id="v-ask" src="assets/captures/ask.mp4" width="3840" height="2160" data-start="0" data-duration="2" data-media-start="0.5" muted playsinline></video></div>
+      </div>
+      <div id="shot-term" class="shot clip" data-start="2" data-duration="6">
+        <div class="half"><video id="v-term" src="assets/captures/terminal.mp4" width="3840" height="2160" data-start="2" data-duration="6" data-media-start="4.15" data-playback-rate="1.3" muted playsinline></video></div>
+      </div>
+      <div id="shot-inbox" class="shot clip" data-start="8" data-duration="3">
+        <img src="assets/captures/inbox.png" alt="" />
+      </div>
+      <div id="shot-port" class="shot clip" data-start="11" data-duration="4">
+        <img src="assets/captures/portfolio.png" alt="" />
+      </div>
+      <div id="brand" class="clip" data-start="12.5" data-duration="2.5">
+        <img id="logo" src="assets/captures/alice-full.png" alt="" />
+        <div id="name">OpenAlice</div>
+        <div id="tag">Your one-person Wall Street.</div>
+      </div>
+      <div id="cap-ask" class="caption"><i></i>Ask Alice.</div>
+      <div id="cap-term" class="caption"><i></i>Its agent does the research.</div>
+      <div id="cap-inbox" class="caption"><i></i>The finding lands in your Inbox.</div>
+      <div id="cap-port" class="caption"><i></i>Next to your portfolio.</div>
+      <audio id="score" src="assets/score-mastered.wav" data-start="0" data-duration="15"></audio>
+    </div>
+    <script>
+      // Camera for a shot: put capture point (px, py) at screen point (sx, sy) at scale s.
+      const aim = (px, py, s, sx = 960, sy = 540) => ({ x: sx - s * px, y: sy - s * py, scale: s });
+      // Match-cut anchors, measured on the captures in css px (see qa.md).
+      const ASK_TEXT = [678, 477];     // first letter of the typed question, 20 px text
+      const TERM_TEXT = [671, 263];    // the same question in the terminal, 13 px text
+      const TERM_FIND = [815, 460];    // red +9.1% in the terminal
+      const INBOX_FIND = [1097, 879.5]; // +9.1% in the report table, 16 px text
+      const INBOX_AAPL = [924, 266.5];  // "AAPL" in the report title, 20 px text
+      const PORT_AAPL = [671.5, 1009.5]; // AAPL position row, 13 px text
+
+      const tl = gsap.timeline({ paused: true });
+      const move = (target, cam, duration, ease, at) => tl.to(target, { ...cam, duration, ease }, at);
+
+      // Match cuts land on a still anchor: the camera settles before each cut and holds for 0.2 s
+      // after it, so the eye reads the same thing in the same place before anything moves again.
+      // 0-2 ask: push in on the Ask Alice box while the question types, landing on the match anchor.
+      gsap.set("#shot-ask", aim(1000, 483, 1.55));
+      move("#shot-ask", aim(...ASK_TEXT, 1.8, 380, 540), 1.8, "sine.inOut", 0);
+
+      // 2-8 research: cut to the same words in the terminal (same place, same cap height), tilt down
+      // with the agent's reads, then push into the red +9.1% as it appears (6.45 s).
+      gsap.set("#shot-term", aim(...TERM_TEXT, 1.8 * 20 / 13, 380, 540));
+      move("#shot-term", aim(760, 380, 1.9), 3.0, "power2.inOut", 2.2);
+      move("#shot-term", aim(...TERM_FIND, 2.8), 1.4, "power2.inOut", 5.2);
+      move("#shot-term", aim(...TERM_FIND, 2.9), 1.4, "sine.inOut", 6.6);
+
+      // 8-11 report: cut to the report's +9.1% row at the same place and cap height, pull back to
+      // the title and summary, then push into the title's AAPL.
+      gsap.set("#shot-inbox", aim(...INBOX_FIND, 2.9 * 13 / 16));
+      move("#shot-inbox", aim(1110, 360, 1.55), 1.5, "power3.inOut", 8.2);
+      move("#shot-inbox", aim(...INBOX_AAPL, 2.6, 960, 640), 0.8, "power3.inOut", 9.8);
+
+      // 11-12.5 book: cut to the AAPL position row, then pull back over the whole portfolio.
+      gsap.set("#shot-port", { ...aim(...PORT_AAPL, 3.0, 960, 640), clipPath: "inset(0px 0px 0px 0px round 0px)" });
+      move("#shot-port", aim(960, 700, 1.0), 1.05, "power3.inOut", 11.35);
+
+      // 12.4-15 brand: the portfolio keeps pulling back into a card beside the logo, then holds.
+      tl.to("#shot-port", { ...aim(960, 700, 0.42, 560, 540), clipPath: "inset(160px 0px 160px 0px round 56px)", duration: 0.9, ease: "power3.inOut" }, 12.4);
+      gsap.set("#brand", { opacity: 0, x: 40 });
+      tl.to("#brand", { opacity: 1, x: 0, duration: 0.7, ease: "power3.out" }, 13.05);
+      tl.to("#shot-port", { ...aim(960, 700, 0.43, 560, 540), duration: 1.6, ease: "sine.inOut" }, 13.4);
+
+      // Captions: one line per beat, in and out inside the beat.
+      for (const [id, from, to] of [["#cap-ask", 0.25, 1.85], ["#cap-term", 2.4, 7.8], ["#cap-inbox", 8.35, 10.8], ["#cap-port", 11.3, 12.35]]) {
+        gsap.set(id, { y: 12 });
+        tl.to(id, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, from);
+        tl.to(id, { opacity: 0, duration: 0.15, ease: "power1.in" }, to);
+      }
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

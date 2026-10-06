@@ -1,5 +1,11 @@
 # Composition gate
 
+For a small drawing study, run `composition scaffold --template visual-craft --output <new-dir>`
+from the project through the installed skill's CLI. It copies a runnable `index.html`, `canvas.js`
+and the license, without starting a film workflow. Existing output is preserved; choose a new
+directory. Read `tools/visual-craft/README.md` for the helper API and `references/installation.md`
+for the installed CLI path.
+
 Measure a rendered frame before claiming a layout, poster, UI screen or film frame is done.
 Works on any PNG: a browser screenshot, a HyperFrames frame, a Blender render.
 
@@ -24,3 +30,8 @@ why in the change's qa record.
 
 The gate measures failure shapes; it does not judge taste. A passing frame still needs creative
 review, and a warning is not proof of a bad design.
+
+For source/candidate inspection use `composition compare --source <reference.png> --image
+<candidate.png> --output <new-dir>`. It preserves equal-size original pixels in a pair and
+creates a difference map with hashes, without returning a quality verdict. See
+`tools/visual-diagnostics/README.md`; this diagnostic does not replace this gate or visual review.
