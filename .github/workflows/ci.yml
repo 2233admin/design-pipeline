@@ -43,7 +43,18 @@ jobs:
         run: npm run specs:check
 
       - name: Hermetic QA
-        run: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$RUNNER_TEMP/qa.log"
+
+      - name: Report QA failures
+        if: failure()
+        shell: bash
+        run: |
+          awk '/^ *(not ok|FAIL) /{ if (name != "") print "::error title=QA::" name "%0A" msg; name=$0; msg=""; n=0; next }
+               name != "" && n < 14 { gsub(/%/, "%25"); msg = msg "%0A" substr($0, 1, 300); n++ }
+               END { if (name != "") print "::error title=QA::" name "%0A" msg }' "$RUNNER_TEMP/qa.log" | head -40
 
       - name: Package
         run: npm run package:skill -- --output-root dist
