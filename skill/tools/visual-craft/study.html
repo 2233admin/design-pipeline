@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual craft: pressure and layout</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; background: #e9e7e1; color: #252824; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    header, main, footer { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+    header { padding: clamp(28px, 6vw, 76px) 0 28px; }
+    .eyebrow { margin: 0 0 10px; color: #62665c; font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { max-width: 18ch; margin: 0; font-size: clamp(2rem, 5.5vw, 4.6rem); line-height: .98; letter-spacing: -.055em; font-weight: 560; }
+    .lede { max-width: 58ch; color: #5c6159; line-height: 1.6; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(250px, .65fr); gap: clamp(20px, 4vw, 48px); align-items: start; padding-bottom: 44px; }
+    .canvas-panel { min-width: 0; }
+    .canvas-stage { width: 100%; aspect-ratio: 1.52; overflow: hidden; border: 1px solid #c9c6bb; border-radius: 8px; background: #f7f3e9; box-shadow: 0 16px 40px #34392c12; }
+    canvas { display: block; width: 100%; height: 100%; }
+    .controls { display: grid; grid-template-columns: auto minmax(80px, 1fr) auto; gap: 12px; align-items: center; margin-top: 16px; }
+    label, output { font-size: .83rem; color: #4d514a; }
+    input[type="range"] { width: 100%; accent-color: #a2452f; }
+    #fit-status { min-height: 1.5em; margin: 12px 0 0; color: #5e5143; font-size: .8rem; }
+    aside { padding-top: 4px; }
+    h2 { margin: 0 0 14px; font-size: 1.15rem; font-weight: 600; }
+    aside p { margin: 0 0 18px; color: #5c6159; font-size: .92rem; line-height: 1.65; }
+    .note { padding-top: 16px; border-top: 1px solid #cbc8be; }
+    footer { padding: 18px 0 30px; border-top: 1px solid #cbc8be; color: #73766d; font-size: .78rem; }
+    @media (max-width: 720px) {
+      header, main, footer { width: min(100% - 28px, 560px); }
+      .layout { grid-template-columns: minmax(0, 1fr); }
+      aside { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; }
+      aside h2 { grid-column: 1 / -1; }
+      .note { padding-top: 0; border: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Canvas study · 01</p>
+    <h1>Pressure gives a line its weight.</h1>
+    <p class="lede">A compact drawing surface, with the reading copy and controls kept as ordinary responsive HTML.</p>
+  </header>
+  <main class="layout">
+    <section class="canvas-panel" aria-labelledby="drawing-title">
+      <h2 id="drawing-title" hidden>Pressure stroke and canvas caption</h2>
+      <div class="canvas-stage">
+        <canvas id="study" aria-label="A pressure-sensitive ink stroke on textured paper, with a measured caption"></canvas>
+      </div>
+      <div class="controls">
+        <label for="progress">Stroke reveal</label>
+        <input id="progress" type="range" min="0" max="1" step="0.01" value="0.76">
+        <output id="progress-value" for="progress">76%</output>
+      </div>
+      <p id="fit-status" role="status" aria-live="polite"></p>
+    </section>
+    <aside aria-label="Study notes">
+      <h2>One mark, two surfaces</h2>
+      <p>The canvas uses arc-length samples and an explicit pressure profile. A fixed seed adds a restrained edge variation, so changing reveal progress does not reshuffle the finished stroke.</p>
+      <p class="note">The paper grain is clipped to its paper shape and stays still across seeks. The caption is measured in Canvas; this explanatory copy remains semantic DOM text.</p>
+    </aside>
+  </main>
+  <footer>Local inputs only. Rendered pixels show technical behavior, not artistic acceptance.</footer>
+  <script src="./canvas.js"></script>
+  <script>
+    (() => {
+      const canvas = document.querySelector("#study");
+      const context = canvas.getContext("2d");
+      const range = document.querySelector("#progress");
+      const value = document.querySelector("#progress-value");
+      const status = document.querySelector("#fit-status");
+      let lastProgress = Number(range.value);
+
+      window.renderStudy = (progress) => {
+        if (typeof progress !== "number" || !Number.isFinite(progress) || progress < 0 || progress > 1) throw new TypeError("progress must be between 0 and 1");
+        lastProgress = progress;
+        range.value = String(progress);
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        if (!(width > 0 && height > 0)) return null;
+        const pixelRatio = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+        const backingWidth = Math.round(width * pixelRatio);
+        const backingHeight = Math.round(height * pixelRatio);
+        if (canvas.width !== backingWidth || canvas.height !== backingHeight) {
+          canvas.width = backingWidth;
+          canvas.height = backingHeight;
+        }
+        context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+        context.clearRect(0, 0, width, height);
+        context.fillStyle = "#f5f0e4";
+        context.fillRect(0, 0, width, height);
+
+        const paper = { x: width * 0.055, y: height * 0.09, width: width * 0.89, height: height * 0.82 };
+        const paperPath = new Path2D();
+        paperPath.rect(paper.x, paper.y, paper.width, paper.height);
+        context.fillStyle = "#fbf8f0";
+        context.fill(paperPath);
+        window.VisualCraft.paperGrain(context, paperPath, paper, { seed: 2471, count: Math.min(700, Math.floor(width * height / 520)), alpha: 0.12, size: 0.7 });
+        context.strokeStyle = "#d5cdbb";
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(width * 0.09, height * 0.7);
+        context.lineTo(width * 0.91, height * 0.7);
+        context.stroke();
+
+        window.VisualCraft.drawBrush(context, [
+          [width * 0.11, height * 0.52], [width * 0.25, height * 0.48], [width * 0.39, height * 0.54],
+          [width * 0.55, height * 0.39], [width * 0.69, height * 0.43], [width * 0.87, height * 0.27],
+        ], { width: Math.min(width, height) * 0.055, spacing: 3, pressures: [0.24, 0.68, 0.48, 0.92, 0.56, 0.12], seed: 41, progress, color: "#a3442e", alpha: 0.96, jitter: 0.055 });
+
+        const fit = window.VisualCraft.fitText(context, "A mark can hold a pause.", { width: width * 0.56, height: height * 0.12 }, { fontFamily: "system-ui, sans-serif", fontWeight: "500", size: Math.min(26, width * 0.052), minFontSize: 12, lineHeight: 1.15 });
+        context.save();
+        context.font = fit.font;
+        context.textBaseline = "top";
+        context.fillStyle = "#363a35";
+        fit.lines.forEach((line, index) => context.fillText(line, width * 0.11, height * 0.75 + index * fit.lineHeightPx));
+        context.restore();
+        value.value = `${Math.round(progress * 100)}%`;
+        value.textContent = value.value;
+        status.textContent = fit.ok ? `Canvas caption fits at ${fit.size}px.` : `Canvas caption overflows at ${fit.size}px minimum (${fit.overflowReasons.join(" and ")}).`;
+        return { width, height, progress, fit: { ok: fit.ok, overflow: fit.overflow, size: fit.size, overflowReasons: fit.overflowReasons } };
+      };
+
+      range.addEventListener("input", () => window.renderStudy(Number(range.value)));
+      window.addEventListener("resize", () => window.renderStudy(lastProgress));
+      window.renderStudy(lastProgress);
+    })();
+  </script>
+</body>
+</html>

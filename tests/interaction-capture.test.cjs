@@ -58,9 +58,11 @@ requestAnimationFrame(tick);
 </script></body></html>`;
 }
 
+// The data: icon stops Chrome from fetching /favicon.ico on its own: it does so on the first load only,
+// so the two probes' request lists would differ by a request the page never made.
 function deadHtml(externalOrigin) {
   return `<!doctype html>
-<html><head><meta charset="utf-8"><title>dead card</title><style>${CARD_CSS}</style></head>
+<html><head><meta charset="utf-8"><title>dead card</title><link rel="icon" href="data:,"><style>${CARD_CSS}</style></head>
 <body><div id="card"></div><img src="${externalOrigin}/remote.png" alt="" width="1" height="1"></body></html>`;
 }
 

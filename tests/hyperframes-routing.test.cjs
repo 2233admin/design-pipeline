@@ -16,7 +16,8 @@ test("HyperFrames is a video route, not an always-on design workflow", () => {
   validateRegistry(registry);
   const route = registry.tools.find((tool) => tool.id === "heygen-com/hyperframes");
   assert.deepEqual(route.capabilities, ["video-production", "html-video", "hyperframes"]);
-  assert.equal(route.revision, "0e4da52c8222b8d18a1211b34f2fb3bd0f7e79ee");
+  assert.equal(route.version, "0.8.137");
+  assert.equal(route.revision, "d09e003b17610177b71e340ec0bac95c9dde3e64");
   assert.equal(route.license, "Apache-2.0");
   assert.equal(route.fallback, "Use references/hyperframes.md with the project's existing motion and evidence gates");
 
@@ -38,10 +39,11 @@ test("HyperFrames is a video route, not an always-on design workflow", () => {
 });
 
 test("bundled HyperFrames reference preserves the official authoring and verification contract", () => {
-  const reference = fs.readFileSync(path.join(references, "hyperframes.md"), "utf8");
+  const reference = fs.readFileSync(path.join(references, "hyperframes.md"), "utf8").replace(/\s+/g, " ");
   for (const marker of [
     "HTML is the source of truth",
-    "exactly one synchronous `gsap.timeline({ paused: true })`",
+    "exactly one fully built `gsap.timeline({ paused: true })`",
+    "register only after the timeline build finishes",
     "No `Date.now`",
     "npx hyperframes check",
     "render only after approval",

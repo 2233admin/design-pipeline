@@ -1,0 +1,45 @@
+{
+  "schema": "design-pipeline.film-storyboard.v1",
+  "id": "motion-intent-comparison-4s",
+  "durationSec": 4,
+  "fps": 30,
+  "grammar": "product-demonstration",
+  "benefit": "A side-by-side study makes timing and spacing choices visible while keeping the travel endpoints fixed.",
+  "proofAction": "Two geometric subjects travel from x=0 to x=680: one at constant spacing, the other through an authored preparation, hold, arc, impact, recoil, and settle.",
+  "reference": "motion-study.html (authored technical comparison; no external visual reference)",
+  "sound": {
+    "mode": "silent",
+    "reason": "This is a technical motion study comparing picture timing and spacing, not a finished audiovisual film."
+  },
+  "rendering": {
+    "route": "dom",
+    "requirements": [],
+    "reason": "Native SVG geometry shows transform timing and spacing; no material rendering is claimed.",
+    "samples": [
+      { "atSec": 0.6, "purpose": "Compare initial direction and the start of anticipation." },
+      { "atSec": 2.5, "purpose": "Inspect the authored subject at contact and recoil." },
+      { "atSec": 3.4, "purpose": "Confirm both subjects finish at the shared endpoint." }
+    ]
+  },
+  "beats": [
+    {
+      "id": "compare-motion-choices",
+      "startSec": 0,
+      "endSec": 4,
+      "role": "action",
+      "subject": "Two geometric subjects in parallel horizontal lanes",
+      "productAction": "Compare constant-spacing travel with one authored pose sequence across the same start and end positions.",
+      "transformation": {
+        "kind": "state-change",
+        "from": "two subjects at x=0 before their motion begins",
+        "to": "one subject arrives at x=680 at constant spacing while the other arrives through preparation, held pose, arc, impact, recoil, and settle"
+      },
+      "handoff": "open",
+      "motion": ["constant-spacing", "pose-to-pose", "delayed-secondary-motion"],
+      "choreography": "pose-to-pose",
+      "arc": "anticipate-act-settle",
+      "holdSec": 0.5,
+      "note": "Both principal subjects use at=0.35s and a 3s action interval, with x endpoints 0 and 680. The lower keys are at relative 0, 0.5, 0.75 (held pose), 1.45, 2.15 (contact deformation), 2.45 (recoil), 2.55, and 3s. A small tail uses the same pose sequence on a separate target at 0.45s and ends at 3.45s. This compares authored choices; it does not score either motion as universally better."
+    }
+  ]
+}

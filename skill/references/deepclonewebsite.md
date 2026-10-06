@@ -3,8 +3,8 @@
 `design-pipeline` ships the reviewed website-cloning feature slice from
 [`hi5jeff/deepclonewebsite`](https://github.com/hi5jeff/deepclonewebsite) as passive source
 evidence. The pinned revision, MIT license, import scope, normalized file count, and canonical
-tree hash live in `references/deepclonewebsite/manifest.json`; the 29 reviewed files are under
-`references/deepclonewebsite/upstream/`.
+tree hash live in `vendor/deepclonewebsite/manifest.json`; the 29 reviewed files are under
+`vendor/deepclonewebsite/upstream/`.
 
 This is not a second cloning runtime. Do not execute the vendored Next.js routes, install its
 Open Lovable dependencies, select its hosted model defaults, or copy the application wholesale.

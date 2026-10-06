@@ -1,0 +1,67 @@
+{
+  "schema": "design-pipeline.film-storyboard.v1",
+  "id": "design-pipeline-sting-4s",
+  "durationSec": 4,
+  "fps": 30,
+  "grammar": "continuous-transformation",
+  "benefit": "design-pipeline checks work at gates before anyone sees it.",
+  "proofAction": "A line stops at two gates, each turns green before it lets the line through, and the line lands as the dot that completes the name.",
+  "reference": "reference.md (no external moving reference; direction from DESIGN.md status semantics)",
+  "endState": "free",
+  "sound": {
+    "mode": "scored",
+    "source": "Strudel pattern score.strudel.js at 120 BPM",
+    "usage": "commercial",
+    "assets": [
+      { "id": "score", "license": "generated with Strudel (AGPL-3.0 tool, not bundled); built-in synth sounds only, no samples", "commercialUse": true, "file": "assets/score.wav", "source": "strudel" }
+    ],
+    "cues": [
+      { "id": "riser-in", "atSec": 0, "kind": "entry", "note": "filtered noise rises under the line's approach" },
+      { "id": "gate-1-tick", "atSec": 1, "kind": "accent", "note": "high tick as the first gate turns green" },
+      { "id": "gate-2-tick", "atSec": 1.5, "kind": "accent", "note": "higher tick as the second gate turns green" },
+      { "id": "land", "atSec": 2, "kind": "impact", "note": "low hit and chord as the line head lands as the dot" },
+      { "id": "ring-out", "atSec": 4, "kind": "exit", "note": "chord rings out under the finished lockup" }
+    ]
+  },
+  "beats": [
+    {
+      "id": "through-gates",
+      "startSec": 0,
+      "endSec": 2,
+      "role": "action",
+      "subject": "the line head travelling through two grey gates",
+      "productAction": "Work travels the pipeline and stops at each gate until the gate passes it",
+      "transformation": { "kind": "state-change", "from": "two grey gates, no line", "to": "a line through two green gates" },
+      "handoff": "open",
+      "motion": ["line-draw", "stop-at-gate", "gate-turns-green"],
+      "soundCues": ["riser-in", "gate-1-tick", "gate-2-tick"]
+    },
+    {
+      "id": "land-as-dot",
+      "startSec": 2,
+      "endSec": 2.5,
+      "role": "action",
+      "subject": "the line head",
+      "productAction": "The checked work arrives as the output",
+      "transformation": { "kind": "morph", "from": "thin line head", "to": "green dot" },
+      "handoff": "morph",
+      "carrier": "the line's leading end swells and rounds off into the green dot",
+      "motion": ["overshoot-settle", "color-change"],
+      "soundCues": ["land"]
+    },
+    {
+      "id": "name-from-dot",
+      "startSec": 2.5,
+      "endSec": 4,
+      "role": "action",
+      "subject": "the wordmark",
+      "productAction": "The name slides out from behind the dot and the lockup centres",
+      "transformation": { "kind": "reveal-in-context", "from": "mark alone at centre", "to": "mark and wordmark lockup at centre" },
+      "handoff": "continuation",
+      "carrier": "the dot stays in place while the wordmark emerges from behind it and the whole lockup shifts to centre",
+      "holdSec": 0.8,
+      "motion": ["clip-reveal", "lockup-shift"],
+      "soundCues": ["ring-out"]
+    }
+  ]
+}

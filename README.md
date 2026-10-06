@@ -7,19 +7,27 @@
 ![Last Commit](https://img.shields.io/github/last-commit/2233admin/design-pipeline)
 ![Node](https://img.shields.io/badge/Node-22+-339933)
 
-- **一句话**：给 AI Agent 用的美术素养管线：门禁、模板和评测写在代码里，先定方向再动手。
-- **适合谁**：你用 AI 做 UI、动效网站、产品宣传片或 PV/MAD 剪辑，但不想让它每次靠猜做设计决策。
-- **不适合谁**：只要快速原型、不想写任何设计文档的。
+- **一句话**：给 AI Agent 用的美术素养工具与工作流：小任务可直接调用工具，完整交付可使用门禁、模板和评测。
+- **适合谁**：你用 AI 做 UI、动效网站、产品宣传片或 PV/MAD 剪辑，希望按任务规模获得可复用的视觉方法和可验证流程。
+- **轻量使用**：安装 `design-pipeline` skill 后，可按需调用其中一个工具，不必先建立完整的 DESIGN/MOTION 项目流程。
 
 <p align="center">
-  <b>先画图纸，再动工。先写设计，再写代码。</b>
+  <b>小任务直接用工具；完整交付先定方向，再按流程实现。</b>
 </p>
 
 <p align="center">
   <code>DESIGN.md</code> + <code>MOTION.md</code> + <code>OpenSpec</code> + <code>门禁系统</code>
   <br>
-  一条给 AI Agent 用的设计与影片管线。
+  面向设计、前端、图形、动效与影片工作的工具和工作流。
 </p>
+
+## 作品案例：珐琅徽章
+
+![珐琅徽章的 WebGL 实时渲染预览](examples/enamel-badge/preview.png)
+
+[在线体验](https://2233admin.github.io/design-pipeline/enamel-badge/) · [源码与运行说明](examples/enamel-badge/)
+
+蓝釉、银色掐丝、虹彩箔片与凸透镜的交互材质研究。由当前会话 Codex 与用户多轮校对完成；运行环境未暴露精确模型 ID。这不是模型一次自动复刻的结果，也不是路径追踪（PT）；用户仍指出玻璃与参考效果存在误差。[制作边界与依赖来源](examples/enamel-badge/README.md)见案例说明。
 
 ---
 
@@ -39,7 +47,7 @@ design-pipeline 提升的是 agent 的整体美术素养：视觉方向、构图
 
 ## 这是什么
 
-`design-pipeline` 是一套给 AI coding agent 用的设计工作流，覆盖四种交付物：影片（`film`）、
+`design-pipeline` 为 AI coding agent 提供可单独调用的视觉工具，也提供完整设计工作流，覆盖四种交付物：影片（`film`）、
 剪辑（`edit`）、网站（`web`）和界面（`ui`）。入口是 `designer-pipeline next`：它读取
 `.design-pipeline/state.json`，每次只返回一个动作；按 `quick` / `standard` / `full` 三档控制流程轻重。
 
@@ -47,11 +55,11 @@ design-pipeline 提升的是 agent 的整体美术素养：视觉方向、构图
 
 所以它做五件事：
 
-1. 用 `designer-pipeline route` 把需求分成一个主任务，再打开对应知识目录。
-2. 在写代码之前，先创建 `DESIGN.md` 和 `MOTION.md`。
-3. 用 OpenSpec 风格的提案 → 实现 → 验证 → 归档生命周期管理变更。
-4. 支持网站克隆、设计系统合成、动效设计，每一步都有证据。
-5. 通过门禁系统确保设计质量，不达标就拦住。
+1. 局部绘图、文字、图像和诊断任务，从[工具索引](skill/tools/README.md)选一项，在项目原有流程中使用。
+2. 完整交付用 `designer-pipeline next` 选择适用工作流，按需读取方法和工具。
+3. 需要项目设计基础时，复用或补齐 `DESIGN.md` 和 `MOTION.md`；下游项目只有 `full` 档要求 OpenSpec。
+4. 网站克隆、设计系统和动效实现保留真实来源、运行证据及用户方向。
+5. 门禁拦截已知技术问题；设计与创作质量通过实际画面、交互和播放验收。
 
 当前预发布版 `0.12.0-beta.1`（最新正式版仍是 `0.10.0`）把下面这些能力放进同一个可打包、
 可安装、可验证的工具架：
@@ -80,7 +88,7 @@ design-pipeline 坐在需求与代码之间，不紧不慢。它把用户场景�
 - `DESIGN.md` 记录视觉系统：色彩、字体、间距、组件架构。
 - `MOTION.md` 记录动效语言：时序、缓动、编排、减弱动效行为。
 - `OpenSpec` 管理生命周期：提案、实现、验证、归档，每一步可追溯。
-- 门禁系统拦截不合格的设计：没有证据，不许动工。
+- 门禁检查适用的技术约束；创作判断和用户验收单独记录。
 
 ## 适合谁
 
@@ -92,28 +100,25 @@ design-pipeline 坐在需求与代码之间，不紧不慢。它把用户场景�
 - 你想让动效有设计语言，不是随机加动画。
 - 你管理多个项目，需要一致的设计工作流。
 
-不适合这些场景：
-
-- 只要快速原型，不关心长期维护。
-- 希望工具自动替你做完所有设计决策。
-- 不想写文档，只想直接生成代码。
+轻量工具适合快速探索；完整工作流更适合需要长期维护、方向一致和验证证据的交付。工具不会替你做完所有设计决策。
 
 这套系统的边界很清楚：它负责把设计决策显性化、可追溯、可验证。真正做设计判断，还是人和 Agent 一起做。
 
 ## 一分钟上手
 
-需要 Node.js 22 或更新版本。
+需要 Node.js 22 或更新版本。下面把当前本地版本安装为 Codex skill，再从目标项目调用工具。其他 agent、标准 `skills add` 和升级方法见 [安装与升级](skill/references/installation.md)。
 
 ```bash
-# 安装到本地 skill 目录
-node scripts/install-local.cjs \
-  --source skill \
-  --root ~/.codex/skills \
-  --target ~/.codex/skills/design-pipeline
+# 在仓库根目录，将当前版本安装到 ~/.codex/skills/design-pipeline
+node scripts/install-local.cjs --source skill --root "$HOME/.codex/skills" --target "$HOME/.codex/skills/design-pipeline"
 
-# 检查环境
-node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .
+# 切换到你的项目目录，使用已安装 skill 的绝对路径并明确项目 root
+cd /path/to/your-project
+node "$HOME/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs" \
+  composition scaffold --root "$PWD" --template visual-craft --output "visual-craft-study"
 ```
+
+Agent 提示示例：“在当前项目里运行 `composition scaffold --template visual-craft --output visual-craft-study`，用复制出的 Canvas helper 做一个可拖动进度、支持乱序重绘的小型绘画与排版 study；保留 DOM 正文语义，渲染后检查不同尺寸和文本溢出。”轻量脚手架只创建新目录中的 study 文件，不初始化影片或工作流状态。仓库内置其他工具见 [工具索引](skill/tools/README.md)。
 
 ## 从 GitHub Release 安装
 
@@ -614,18 +619,59 @@ handoff.md       # 可读恢复说明
 
 ## 仓库布局
 
+项目 [DESIGN.md](DESIGN.md) 遵循 [Google DESIGN.md 格式](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md)；工程决策与验收记录归入 OpenSpec 变更。完整导航见[文档索引](docs/README.md)。
+
 ```text
+DESIGN.md              # 项目视觉语言
+MOTION.md              # 项目动效语言
+package.json           # 维护命令与 npm workspaces
+package-lock.json      # 维护依赖的唯一锁文件
 skill/
   SKILL.md
-  references/          # 设计规范、schema、路由目录
+  references/          # 按需方法、工作流，以及保持兼容路径的 schema/目录数据
   scripts/             # 检查、初始化、评估脚本
+  tools/               # 按需使用的绘图与诊断工具
+  vendor/              # 带版本、许可和哈希的上游源码；不作为自动加载的指令
 openspec/
-  project.md
+  config.yaml          # OpenSpec 项目上下文与各产物规则
   specs/               # 长期行为规格
   changes/             # 进行中的更改
-docs/
-scripts/
+docs/                  # 指南、术语、研究；旧稿归入 archive/
+scripts/               # 仓库 QA、安装与打包
+tests/                 # 程序与合同回归；不代表审美验收
+evals/                 # 比较实际作品的评测与案例
+.design-pipeline/      # 本机生成证据与临时输出，不入库
 ```
+
+### 仓库维护工具链
+
+根目录 `package.json` 和 `package-lock.json` 是 Node.js 22.12+ 的 private npm workspace，统一管理
+OpenSpec、`evals/cases` 与 `tools/browser-automation` 的维护依赖，不随 skill 打包，也不会给使用 skill
+的目标项目加依赖。从仓库根目录统一安装和验证：
+
+```bash
+npm ci
+npm run browser:install
+npm test
+npm run deps:check
+npm run capabilities:check
+npm run sources:check
+npm run specs:check
+npm run package:skill
+```
+
+`npm test` 包装仓库 QA 与浏览器工具 self-test。QA 从忽略的 `.env.local` 读取 `BLENDER_PATH`
+（外部环境变量优先），并把共享浏览器解析器找到的 Chrome 传给隔离 QA；本机路径只写在该
+文件，例如 `BLENDER_PATH=<path-to-blender.exe>`，不要提交真实机器路径。`browser:install` 准备
+Playwright Chromium 与 HyperFrames browser。
+
+`capabilities:check` 审核已有 source-evidence，没有证据会保留 `UNKNOWN`，不会联网刷新能力。
+`sources:check` 校验锁定的来源快照；来源导入需明确选择 revision 和本地 checkout，不能通过重算
+manifest 哈希伪造更新。当前运行时固定 GSAP 3.15.0、HyperFrames 0.8.137、Playwright 1.63.0；
+pixelmatch 已升级到 8.0.0，新比较报告记录版本、OKLab/HyAB 算法与实际选项；旧数值与新算法之间
+需重新校准，旧黄金 HTML 和视频不因工具链刷新而重写或重新审批。命令清单以根
+`package.json` 为准；OpenSpec CLI 也由 workspace 固定，通过 `npm exec -- openspec ...` 调用。
+完整维护流程见 [贡献指南](CONTRIBUTING.md)。
 
 ## 反馈和贡献
 

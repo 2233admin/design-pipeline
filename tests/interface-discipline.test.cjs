@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 
-const disciplineRoot = path.join(__dirname, "../skill/references/interface-discipline");
+const disciplineRoot = path.join(__dirname, "../skill/vendor/interface-discipline");
 const manifest = JSON.parse(fs.readFileSync(path.join(disciplineRoot, "manifest.json"), "utf8"));
 const packageResources = JSON.parse(
   fs.readFileSync(path.join(__dirname, "../skill/references/package-resources.json"), "utf8"),
@@ -52,8 +52,8 @@ test("bundles the complete pinned interface-discipline source snapshot", () => {
   assert.equal(entries.length, manifest.snapshot.fileCount);
   assert.equal(treeSha256, manifest.snapshot.treeSha256);
   const resourcePaths = packageResources.required
-    .filter((entry) => entry.startsWith("references/interface-discipline/upstream/"))
-    .map((entry) => entry.slice("references/interface-discipline/upstream/".length))
+    .filter((entry) => entry.startsWith("vendor/interface-discipline/upstream/"))
+    .map((entry) => entry.slice("vendor/interface-discipline/upstream/".length))
     .sort();
   assert.deepEqual(resourcePaths, collectFiles(sourceRoot).map((entry) => entry.split(path.sep).join("/")).sort());
   assert.match(fs.readFileSync(path.join(sourceRoot, "LICENSE"), "utf8"), /Copyright \(c\) 2026 Jakub Krehel/);
@@ -63,7 +63,7 @@ test("bundles the complete pinned interface-discipline source snapshot", () => {
 });
 
 test("publishes the bundle as a built-in pipeline protocol", () => {
-  const protocol = fs.readFileSync(path.join(disciplineRoot, "../interface-discipline.md"), "utf8");
+  const protocol = fs.readFileSync(path.join(disciplineRoot, "../../references/interface-discipline.md"), "utf8");
   const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();
   assert.match(protocol, /not an\noptional companion/);
   assert.match(protocol, /Introduced` \/ `Regression` \/ `Pre-existing/);

@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const defaultManifest = path.resolve(__dirname, "../references/mengto-skills/manifest.json");
+const defaultManifest = path.resolve(__dirname, "../vendor/mengto-skills/manifest.json");
 const schema = "design-pipeline.mengto-skills-source.v1";
 const searchOverlays = {
   "web-design/build-threejs-scroll-worlds": {
@@ -237,7 +237,7 @@ function searchMengToSkills({ query, category = null, limit = 5, manifestFile = 
       return {
         ...skill,
         skillPath: path.join(loaded.root, skill.path),
-        pipelineReferences: (overlay?.references || []).map((reference) => path.join(loaded.root, "..", reference)),
+        pipelineReferences: (overlay?.references || []).map((reference) => path.resolve(__dirname, "../references", reference)),
       };
     });
   return {

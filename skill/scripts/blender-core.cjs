@@ -10,30 +10,44 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { spawnSync } = require("node:child_process");
+const childProcess = require("node:child_process");
 const { fail } = require("./contract-utils.cjs");
 
 const SCOPE = "film blender";
 const TEMPLATE_DIR = path.join(__dirname, "../references/blender-templates");
 
 function findBlender(explicit) {
-  const candidates = [explicit, process.env.BLENDER_PATH].filter(Boolean);
+  const configured = explicit || process.env.BLENDER_PATH;
+  const candidates = configured ? [configured] : [];
+  if (!configured) {
+    const pathEntries = (process.env.PATH || "").split(path.delimiter).filter(Boolean);
+    candidates.push(...pathEntries.map((entry) => path.join(entry, process.platform === "win32" ? "blender.exe" : "blender")));
+  }
   if (process.platform === "win32") {
     const root = path.join(process.env.ProgramFiles || "C:\\Program Files", "Blender Foundation");
-    if (fs.existsSync(root)) for (const dir of fs.readdirSync(root).sort().reverse()) candidates.push(path.join(root, dir, "blender.exe"));
+    if (!configured && fs.existsSync(root)) for (const dir of fs.readdirSync(root).sort(new Intl.Collator(undefined, { numeric: true }).compare).reverse()) candidates.push(path.join(root, dir, "blender.exe"));
   } else if (process.platform === "darwin") {
-    candidates.push("/Applications/Blender.app/Contents/MacOS/Blender");
-  } else {
+    if (!configured) candidates.push("/Applications/Blender.app/Contents/MacOS/Blender");
+  } else if (!configured) {
     candidates.push("/usr/bin/blender", "/usr/local/bin/blender", path.join(os.homedir(), "blender", "blender"));
   }
   for (const candidate of candidates) {
-    if (!fs.existsSync(candidate)) continue;
+    const executable = path.resolve(candidate);
+    if (!fs.existsSync(executable)) {
+      if (configured) fail(SCOPE, `configured Blender executable was not found: ${executable}. Fix: correct --blender or BLENDER_PATH`, { code: "TOOL_FAILED" });
+      continue;
+    }
     // Blender writes a GPU compatibility cache (.cache/compat.dat) into its working directory.
-    const version = spawnSync(candidate, ["-b", "--factory-startup", "--version"], { cwd: os.tmpdir(), encoding: "utf8", windowsHide: true, timeout: 60000 });
+    const version = childProcess.spawnSync(executable, ["-b", "--factory-startup", "--version"], { cwd: os.tmpdir(), encoding: "utf8", windowsHide: true, timeout: 60000 });
+    if (version.error || version.status !== 0) {
+      const diagnostic = version.error?.message || String(version.stderr || "").trim() || `exited ${version.status ?? version.signal ?? "without a status"}`;
+      fail(SCOPE, `detected Blender executable failed to start or report its version at ${executable}: ${diagnostic}`, { code: "TOOL_FAILED" });
+    }
     const match = String(version.stdout).match(/Blender (\d+)\.(\d+)\.(\d+)/);
-    if (match) return { path: candidate, version: `${match[1]}.${match[2]}.${match[3]}`, major: Number(match[1]), minor: Number(match[2]) };
+    if (!match) fail(SCOPE, `detected Blender executable returned no recognizable version at ${executable}: ${String(version.stdout || version.stderr || "").trim() || "empty output"}`, { code: "TOOL_FAILED" });
+    return { path: executable, version: `${match[1]}.${match[2]}.${match[3]}`, major: Number(match[1]), minor: Number(match[2]) };
   }
-  fail(SCOPE, "Blender not found. Fix: install Blender 4.2 LTS or newer (blender.org), then pass --blender <path to blender executable> or set BLENDER_PATH", { code: "TOOL_MISSING" });
+  fail(SCOPE, "Blender was not detected in PATH or supported platform locations. If already installed, pass --blender <path to blender executable> or set BLENDER_PATH; otherwise install Blender 4.2 LTS or newer", { code: "TOOL_MISSING" });
 }
 
 function listTemplates() {
@@ -89,8 +103,8 @@ function renderTemplate(templateId, params, outDir, options = {}) {
   fs.mkdirSync(frames, { recursive: true });
   const paramsFile = path.join(outDir, "blender-params.json");
   fs.writeFileSync(paramsFile, `${JSON.stringify({ template: template.id, engine: options.engine || template.engine || "BLENDER_EEVEE", ...resolved, ...(options.extra || {}) }, null, 2)}\n`);
-  const run = spawnSync(blender.path, ["-b", "--factory-startup", "-noaudio", "-P", path.join(TEMPLATE_DIR, template.script), "--", paramsFile, frames], { cwd: outDir, encoding: "utf8", windowsHide: true, timeout: options.timeoutMs || 1800000, maxBuffer: 64 << 20 });
-  const log = `${run.stdout || ""}${run.stderr || ""}`;
+  const run = childProcess.spawnSync(blender.path, ["-b", "--factory-startup", "-noaudio", "-P", path.join(TEMPLATE_DIR, template.script), "--", paramsFile, frames], { cwd: outDir, encoding: "utf8", windowsHide: true, timeout: options.timeoutMs || 1800000, maxBuffer: 64 << 20 });
+  const log = `${run.error ? `Blender could not start: ${run.error.message}\n` : ""}${run.stdout || ""}${run.stderr || ""}`;
   fs.writeFileSync(path.join(outDir, "blender.log"), log);
   const error = log.split("\n").find((line) => /Traceback|Error:/.test(line));
   if (run.status !== 0 || error || !fs.existsSync(path.join(frames, "probe.json"))) fail(SCOPE, `Blender render failed${error ? `: ${error.trim()}` : ""}. See ${path.join(outDir, "blender.log")}`, { code: "TOOL_FAILED" });
@@ -104,8 +118,8 @@ function encodeFrames(framesDir, fps, output, options = {}) {
   args.push("-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "16");
   if (options.audio) args.push("-c:a", "aac", "-b:a", "192k");
   args.push(output);
-  const run = spawnSync(options.ffmpeg || "ffmpeg", args, { encoding: "utf8", windowsHide: true, timeout: 600000 });
-  if (run.status !== 0) fail(SCOPE, `ffmpeg could not encode the frames: ${String(run.stderr).trim().split("\n").slice(-1)[0]}`, { code: "TOOL_FAILED" });
+  const run = childProcess.spawnSync(options.ffmpeg || "ffmpeg", args, { encoding: "utf8", windowsHide: true, timeout: 600000 });
+  if (run.error || run.status !== 0) fail(SCOPE, `ffmpeg could not encode the frames: ${run.error?.message || String(run.stderr).trim().split("\n").slice(-1)[0]}`, { code: "TOOL_FAILED" });
   return output;
 }
 

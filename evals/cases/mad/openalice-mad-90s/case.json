@@ -1,0 +1,285 @@
+{
+  "schema": "design-pipeline.golden-case.v1",
+  "id": "openalice-mad-90s",
+  "deliverableType": "mad",
+  "workflow": "film",
+  "brief": "Make a 90-second Miku-style MAD (Vocaloid music-video motion graphics) for Alice, the mascot of the OpenAlice trading agent: character-led, with Japanese kinetic lyrics, graphic motion and cuts locked to the beat, and OpenAlice's own interface as material. Study real Vocaloid MVs before designing. No vocals are available; score it with synth-only music. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4.",
+  "product": "Alice, OpenAlice's mascot (TraderAlice/OpenAlice): research in a workspace, every trade on record and waiting for the user's approval, 24/7; the pixel-art mascot and the demo-mode interface as material",
+  "author": "claude-opus-5-5",
+  "status": "approved",
+  "approval": {
+    "verdict": "accept",
+    "by": "user",
+    "date": "2026-09-29",
+    "note": "Accepted as sent; the hash is of the exact file the user watched (the CRF 23 preview of the golden render).",
+    "renderSha256": "1b795d0f07fe0613f340685d2a54d82a0bb9faf5c2b958e843650c62ebef4566"
+  },
+  "golden": {
+    "storyboard": "storyboard.json",
+    "timeline": "timeline.json",
+    "composition": "index.html",
+    "score": { "pattern": "score.strudel.js", "bpm": 160, "fadeOutSec": 1.5 },
+    "captures": {
+      "script": "capture.cjs",
+      "env": "OPENALICE_DIR",
+      "dir": "assets/captures",
+      "source": { "repo": "TraderAlice/OpenAlice", "commit": "dc193d9fc856b57c793be0179c82a04bbaba1797", "license": "AGPL-3.0" },
+      "files": ["terminal.mp4", "inbox.png", "portfolio.png", "alice-full.png"]
+    },
+    "generated": {
+      "script": "generate.cjs",
+      "dir": "assets/generated",
+      "tool": "ChatGPT image generation through codex-cli 0.155.0",
+      "files": ["hero.png", "blink.png", "sing.png", "wink.png", "serious.png", "point.png", "face.png"]
+    }
+  },
+  "rules": [
+    {
+      "id": "study-references-first",
+      "choice": "Seven official Vocaloid MVs were sampled every 2 s and their visual events counted before anything was designed; the structure, density and techniques come from them (reference.md).",
+      "rule": "For genre work, study 2-3 or more real works of the genre and build from their measured structure; do not invent the grammar.",
+      "enforcedBy": { "kind": "review", "gap": "The first attempt (AI wallpaper-style stills cut to music) was rejected by the user for exactly this. No gate checks that reference.md cites moving references with observations; the workflow's reference stage can still be declined." },
+      "fix": "Run the reference stage: pick works, sample them, record timings, density and techniques, then derive the plan."
+    },
+    {
+      "id": "graphics-move-around-her",
+      "choice": "Alice is held on screen like a Vocaloid MV illustration; her face changes on the beat (blink, sing, wink, serious) while lyrics, strips, slams, tickers and panels move around her.",
+      "rule": "A MAD moves on the beat through type and graphics; panels that fade and dissolve are a lyric slideshow.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["slideshow-handoffs", "slideshow-pair", "surface-only-motion"] },
+      "fix": "Hold the character and move the world around her: part swaps, re-crops, slams and kicks on the grid."
+    },
+    {
+      "id": "density-follows-the-song",
+      "choice": "Visual events per bar rise with the song as in the references: under 0.5 in the verse, 1-2 in the pre-chorus, about 2 in the chorus, 0.3 in the bridge, 4-8 in the final chorus.",
+      "rule": "Edit density is a section-level choice tied to the song's energy, not a constant.",
+      "enforcedBy": { "kind": "review", "gap": "No gate measures visual events per bar per section against a density plan. Candidate: count render steps above a change threshold per section and compare with the storyboard's sections." },
+      "fix": "Write a density target per section before building and count events per bar in the render."
+    },
+    {
+      "id": "sections-vary",
+      "choice": "The TV-size form gives sections of 4, 8, 8, 16, 8, 12 and 4 bars.",
+      "rule": "Sections of equal length read as a loop, not a song.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["uniform-cadence"] },
+      "fix": "Follow a song form: short intro and outro, a long chorus, a short bridge."
+    },
+    {
+      "id": "music-leads-the-picture",
+      "choice": "The score is written first on the 160 BPM grid and every section binds its cues.",
+      "rule": "A MAD declares where the music enters and binds its accents to the picture.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["sound-no-entry", "sound-unbound"] },
+      "fix": "Add the entry cue and bind each section's key hit."
+    },
+    {
+      "id": "hits-on-the-grid",
+      "choice": "Every hard cut, slam and part swap lands on a beat of the score's exact grid (T(bar, beat)).",
+      "rule": "Cuts and hits sit on the musical grid.",
+      "enforcedBy": { "kind": "gate", "gate": "score", "codes": ["cut-off-grid"] },
+      "fix": "Snap the cut to the nearest beat the score gate prints."
+    },
+    {
+      "id": "one-driver-per-property",
+      "choice": "Each camera kick's three shakes follow one another without overlap.",
+      "rule": "One tween drives a property at a time.",
+      "enforcedBy": { "kind": "gate", "gate": "timeline", "codes": ["property-conflict"] },
+      "fix": "End the previous shake before the next starts."
+    },
+    {
+      "id": "silhouette-on-its-own-layer",
+      "choice": "The bridge turns the field itself black so her white silhouette, which lives inside the camera layer, shows.",
+      "rule": "A layer meant to be seen must not sit under a full-screen layer from another stacking context.",
+      "enforcedBy": { "kind": "gate", "gate": "composition", "codes": ["blank-frame"] },
+      "fix": "Change the background colour, or move the element into the same stacking context above the black."
+    },
+    {
+      "id": "no-swap-on-a-carry",
+      "choice": "Into the outro the beat panel fades out half a beat early and the field colour turns across the boundary.",
+      "rule": "A continuation boundary must not render as a full-frame swap.",
+      "enforcedBy": { "kind": "gate", "gate": "render", "codes": ["carry-cut"] },
+      "fix": "Move instant changes off the boundary or turn them into short tweens that span it."
+    },
+    {
+      "id": "three-colour-rule",
+      "choice": "Red field, white type, navy for strips and stroke, and yellow only for hook words; the palette flips to navy for the final chorus and to black for the bridge.",
+      "rule": "One field colour, white type, one dark accent and one colour reserved for the hook.",
+      "enforcedBy": { "kind": "review", "gap": "palette-sprawl only counts hue groups; it cannot tell a reserved hook colour from a stray one." },
+      "fix": "Assign each colour a job and keep it."
+    },
+    {
+      "id": "flash-budget",
+      "choice": "Full-frame flashes only on the reveal, the chorus, the final chorus and three panel changes; the final-chorus strobe is confined to the centre panel.",
+      "rule": "No more than three full-frame flashes per second (WCAG 2.3.1).",
+      "enforcedBy": { "kind": "review", "gap": "No gate counts full-frame luminance flashes per second. Candidate: count steps whose mean luminance jumps more than 20% within one second." },
+      "fix": "Strobe a panel, not the frame, and space full flashes at least a third of a second apart."
+    },
+    {
+      "id": "sections-keep-their-loudness",
+      "choice": "The arrangement is layered so both choruses sit about 6 dB above the verse and the bridge (-12.4 and -12.6 against -18.6 and -18.4 LUFS on the master), and the master keeps that.",
+      "rule": "Mastering must not flatten the song's sections.",
+      "enforcedBy": { "kind": "review", "gap": "The first masters came out flat (verse louder than chorus) because loudnorm fell back to dynamic mode; audio master now limits transients first. No gate compares section loudness with the arrangement." },
+      "fix": "Lower the mix's crest factor (softer kicks, sustained layers) and master with the transient limiter."
+    },
+    {
+      "id": "master-with-codec-headroom",
+      "choice": "The master sits at -2.8 dBTP so the film's AAC track stays under -1 dBTP.",
+      "rule": "Master under the delivery ceiling by the codec's overshoot.",
+      "enforcedBy": { "kind": "review", "gap": "HyperFrames attenuated renders by 1.7 dB (film check then reported loudness-off-target) or refused to render; audio master now keeps 1.5 dB of codec headroom." },
+      "fix": "Master to the target loudness with the true-peak ceiling 1.5 dB under the delivery ceiling."
+    },
+    {
+      "id": "svg-origin",
+      "choice": "The intro and outro text rings rotate about svgOrigin in canvas coordinates.",
+      "rule": "Rotate SVG groups about an explicit canvas point.",
+      "enforcedBy": { "kind": "review", "gap": "Setting transformOrigin as well moved the rings off the frame's centre in two renders; no gate checks that a rotating element stays centred on its target." },
+      "fix": "Use svgOrigin alone for SVG groups."
+    },
+    {
+      "id": "soft-edges-on-generated-art",
+      "choice": "The generated illustrations fade out at the sides and bottom.",
+      "rule": "Generated art cut off by its canvas must not show a straight edge.",
+      "enforcedBy": { "kind": "review", "gap": "The first render showed a vertical cut through her hair; no gate detects a straight alpha edge in a cut-out." },
+      "fix": "Mask the image edges with a gradient, or keep the canvas edge outside the frame."
+    },
+    {
+      "id": "no-colliding-type",
+      "choice": "The logo card appears only in the intro; the chorus opens on the hook slam alone.",
+      "rule": "Two large type elements never land in the same place on the same beat.",
+      "enforcedBy": { "kind": "review", "gap": "The first cut stacked the ALICE logo on the hook slam at 30 s; no gate checks overlapping text over time." },
+      "fix": "Give each hit its own beat or its own zone of the frame."
+    },
+    {
+      "id": "honest-lyrics",
+      "choice": "Every claim in the lyrics is in OpenAlice's README: research in a workspace, every trade in version history, waiting for the user's approval, 24/7.",
+      "rule": "Lyrics in a product MAD claim only what the product does.",
+      "enforcedBy": { "kind": "review", "gap": "Claims are not checked against product facts." },
+      "fix": "Source each claim line from the product's own documentation."
+    }
+  ],
+  "counterExamples": [
+    {
+      "id": "lyric-slideshow",
+      "failureClass": "generic-concept",
+      "rule": "graphics-move-around-her",
+      "target": "storyboard",
+      "defect": "Every section fades in and out and dissolves into the next: lyrics over a picture, a slideshow.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/0/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/1/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/1/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/2/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/2/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/3/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/3/motion", "value": ["fade-in", "fade-out"] },
+          { "op": "replace", "path": "/beats/4/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/5/handoff", "value": "dissolve" },
+          { "op": "replace", "path": "/beats/6/handoff", "value": "dissolve" }
+        ]
+      },
+      "expect": ["slideshow-handoffs", "slideshow-pair", "surface-only-motion"]
+    },
+    {
+      "id": "equal-sections",
+      "failureClass": "taste-gap",
+      "rule": "sections-vary",
+      "target": "storyboard",
+      "defect": "Seven sections of the same length.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/0/endSec", "value": 12.5 },
+          { "op": "replace", "path": "/beats/1/startSec", "value": 12.5 },
+          { "op": "replace", "path": "/beats/1/endSec", "value": 25.5 },
+          { "op": "replace", "path": "/beats/2/startSec", "value": 25.5 },
+          { "op": "replace", "path": "/beats/2/endSec", "value": 38.5 },
+          { "op": "replace", "path": "/beats/3/startSec", "value": 38.5 },
+          { "op": "replace", "path": "/beats/3/endSec", "value": 51.5 },
+          { "op": "replace", "path": "/beats/4/startSec", "value": 51.5 },
+          { "op": "replace", "path": "/beats/4/endSec", "value": 64.5 },
+          { "op": "replace", "path": "/beats/5/startSec", "value": 64.5 },
+          { "op": "replace", "path": "/beats/5/endSec", "value": 77.5 },
+          { "op": "replace", "path": "/beats/6/startSec", "value": 77.5 }
+        ]
+      },
+      "expect": ["uniform-cadence"]
+    },
+    {
+      "id": "unbound-music",
+      "failureClass": "workflow",
+      "rule": "music-leads-the-picture",
+      "target": "storyboard",
+      "defect": "The music plays, but no entry is declared and no section is bound to a cue.",
+      "patch": {
+        "storyboard": [
+          { "op": "remove", "path": "/sound/cues/0" },
+          { "op": "remove", "path": "/beats/0/soundCues" },
+          { "op": "remove", "path": "/beats/1/soundCues" },
+          { "op": "remove", "path": "/beats/2/soundCues" },
+          { "op": "remove", "path": "/beats/3/soundCues" },
+          { "op": "remove", "path": "/beats/4/soundCues" },
+          { "op": "remove", "path": "/beats/5/soundCues" },
+          { "op": "remove", "path": "/beats/6/soundCues" }
+        ]
+      },
+      "expect": ["sound-no-entry", "sound-unbound"]
+    },
+    {
+      "id": "late-chorus-cut",
+      "failureClass": "rough-execution",
+      "rule": "hits-on-the-grid",
+      "target": "storyboard",
+      "defect": "The cut into the chorus lands at 30.28 s, between the eighth notes.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats/2/endSec", "value": 30.28 },
+          { "op": "replace", "path": "/beats/3/startSec", "value": 30.28 }
+        ]
+      },
+      "expect": ["cut-off-grid"]
+    },
+    {
+      "id": "fighting-shakes",
+      "failureClass": "tool-misuse",
+      "rule": "one-driver-per-property",
+      "target": "timeline",
+      "defect": "The first shake of the chorus kick still runs when the second starts.",
+      "patch": {
+        "timeline": [
+          { "op": "update-where", "path": "/tweens", "match": { "targets": ["#shake"], "startSec": 30.04 }, "set": { "durationSec": 0.2 } }
+        ]
+      },
+      "expect": ["property-conflict"]
+    },
+    {
+      "id": "blackout-over-silhouette",
+      "failureClass": "rough-execution",
+      "rule": "silhouette-on-its-own-layer",
+      "target": "render",
+      "defect": "The bridge turns on the full-screen black layer, which sits above the camera's stacking context and hides her silhouette.",
+      "edits": [
+        { "find": "set(\"#field\", { backgroundColor: \"#07070c\" }, T(37));", "replace": "set(\"#field\", { backgroundColor: \"#07070c\" }, T(37)); set(\"#blackout\", { opacity: 1 }, T(37)); set(\"#blackout\", { opacity: 0 }, T(45));" }
+      ],
+      "expect": ["blank-frame"]
+    },
+    {
+      "id": "panel-off-on-boundary",
+      "failureClass": "rough-execution",
+      "rule": "no-swap-on-a-carry",
+      "target": "render",
+      "defect": "The strobing beat panel is switched off in one frame exactly on the 84 s continuation boundary.",
+      "edits": [
+        { "find": "to(\"#pc\", { opacity: 0, duration: 0.3, ease: \"power1.in\" }, T(56, 3));", "replace": "set(\"#pc\", { opacity: 0 }, T(57));" },
+        { "find": "set(caps, { opacity: 0 }, T(56, 4) + 0.1);", "replace": "set(caps, { opacity: 0 }, T(57));" }
+      ],
+      "expect": ["carry-cut"]
+    }
+  ],
+  "reviewedWarnings": [
+    { "gate": "timeline", "code": "linear-motion", "disposition": "The two hook tickers scroll at a constant speed by design, as tickers do in the references (Telepathy, Rabbit Hole)." },
+    { "gate": "composition", "code": "dead-band", "beatId": "intro", "disposition": "Black intro with the pulsing hook at the centre (Mesmerizer's black-spiral-flash intro); the empty sides are the black." },
+    { "gate": "composition", "code": "weak-separation", "beatId": "verse", "disposition": "The dark-red ghost lyrics sit close to the red field on purpose (Vampire's ghost-lyric texture); Alice and the white cluster carry the contrast." },
+    { "gate": "composition", "code": "clutter", "beatId": "verse", "disposition": "The ghost-lyric rows count as many shapes; they are one texture layer." },
+    { "gate": "composition", "code": "no-focal-point", "beatId": "chorus", "disposition": "The three-panel split gives the two Alice panels equal weight by design (Mesmerizer's split screen); the hook slam over the centre is the focus on each hit." },
+    { "gate": "composition", "code": "clutter", "beatId": "chorus", "disposition": "Tickers, panels and a cluster at the chorus midpoint; the chorus is the densest section by plan (about 2 events per bar)." },
+    { "gate": "composition", "code": "dead-band", "beatId": "bridge", "disposition": "The bridge is black with her silhouette in the middle (God-ish's white silhouette on black); the empty sides are the black-out." },
+    { "gate": "composition", "code": "weak-separation", "beatId": "outro", "disposition": "The pixel chibis falling away over the red field are low-contrast texture under the ring and Alice, who carry the contrast." }
+  ]
+}

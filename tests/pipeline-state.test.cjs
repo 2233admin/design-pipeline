@@ -19,6 +19,8 @@ const {
   writeNewChange,
 } = require("../skill/scripts/pipeline-state-core.cjs");
 const { sha256 } = require("../skill/scripts/contract-utils.cjs");
+const { compileDesignPlan, validatePlan } = require("../skill/scripts/plan-core.cjs");
+const { validateArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
 
 function tempChange() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-state-"));
@@ -152,4 +154,154 @@ test("legacy event history requires an explicit attributed repair", () => {
   assert.equal(result.event.type, "state-repair");
   assert.equal(result.state.extensions.legacyEvents.count, 1);
   assert.equal(inspectConsistency(result.state, fs.readFileSync(change.eventsFile, "utf8")).status, "consistent");
+});
+
+function visualPlan() {
+  return {
+    schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: "visual-example",
+    input_hash: "sha256:" + "a".repeat(64), mode: "clone", fidelity: "exact",
+    phases: [{
+      id: "outline", depends_on: [], inputs: ["reference.png"], outputs: ["component.html"], gates: [],
+      goal: "Match the reference outline", visual: {
+        target: "reference/outline", property: "silhouette", references: ["reference.png"],
+        scope: ["component.html"], guides: ["references/reconstruction-spec.md"], checks: ["outline-check.json"], review: true,
+      },
+    }],
+  };
+}
+
+test("visual task plans validate bounded executable details without changing governed plans", () => {
+  const plan = visualPlan();
+  assert.equal(validatePlan(plan, { requireVisualTasks: true }), plan);
+  const governed = compileDesignPlan({ targetPlatform: "web", primaryTask: "settings", targetScreen: "settings" });
+  assert.equal(validatePlan(governed, { requireRunnable: true }), governed);
+  assert.throws(() => validatePlan(governed, { requireVisualTasks: true }), /goal|visual/);
+  for (const property of [["silhouette", "color"], "", null]) {
+    assert.throws(() => validatePlan({ ...plan, phases: [{ ...plan.phases[0], visual: { ...plan.phases[0].visual, property } }] }), /property/);
+  }
+  for (const field of ["references", "scope", "guides", "checks", "inputs", "outputs"]) {
+    for (const unsafe of ["", "../outside.json", "folder/../outside.json", "C:\\outside.json", "C:outside.json", "/outside.json", "\\\\host\\share", ".", "a\u0000b", "$plan", "$task"]) {
+      const phase = structuredClone(plan.phases[0]);
+      if (["inputs", "outputs"].includes(field)) phase[field] = [unsafe]; else phase.visual[field] = [unsafe];
+      assert.throws(() => validatePlan({ ...plan, phases: [phase] }, { requireVisualTasks: true }), /relative|path|non-empty/);
+    }
+  }
+  for (const field of ["references", "scope", "guides", "checks", "outputs"]) {
+    const phase = structuredClone(plan.phases[0]);
+    if (field === "outputs") phase.outputs = []; else phase.visual[field] = [];
+    assert.throws(() => validatePlan({ ...plan, phases: [phase] }, { requireVisualTasks: true }), /empty/);
+  }
+  const phase = structuredClone(plan.phases[0]);
+  phase.visual.review = "yes";
+  assert.throws(() => validatePlan({ ...plan, phases: [phase] }), /review/);
+  delete phase.visual.review;
+  assert.equal(validatePlan({ ...plan, phases: [phase] }, { requireVisualTasks: true }).phases[0], phase);
+  phase.visual.checks = [phase.outputs[0]];
+  assert.throws(() => validatePlan({ ...plan, phases: [phase] }), /overlap|output/);
+  phase.visual.checks = ["outline-check.json"];
+  phase.visual.unused = true;
+  assert.throws(() => validatePlan({ ...plan, phases: [phase] }), /unsupported/);
+});
+
+function visualProgress() {
+  const hash = "sha256:" + "b".repeat(64);
+  return {
+    planHash: hash, planPath: "tasks/visual-plan.json", completed: {
+      outline: { taskHash: hash, inputHashes: { $plan: hash, $task: hash, "reference.png": hash }, artifacts: [{
+        schema: "design-pipeline.artifact.v1", schema_version: 1, path: "versions/outline/component.html", producer: "outline",
+        input_hashes: { $plan: hash }, artifact_hash: hash, dependencies: [], created_at: "2026-07-23T00:00:00.000Z", status: "ready",
+      }], status: "stale" },
+    }, failures: { enamel: "Missing the required runtime comparison" },
+  };
+}
+
+test("visual tasks reject aggregate properties and missing capability entry points", () => {
+  const plan = visualPlan();
+  for (const property of ["轮廓、厚度和倒角", "geometry.all", "surface.ALL", "geometry", "materials", "motion", "component", "page", "all", "implementation", "contour and depth", "geometry/color"]) {
+    const phase = structuredClone(plan.phases[0]); phase.visual.property = property;
+    assert.throws(() => validatePlan({ ...plan, phases: [phase] }, { requireVisualTasks: true }), /property|atomic/);
+  }
+  const phase = structuredClone(plan.phases[0]); phase.visual.guides = [];
+  assert.throws(() => validatePlan({ ...plan, phases: [phase] }, { requireVisualTasks: true }), /guides|non-empty/);
+  for (const property of ["contour", "depth", "structure", "layer.contour", "surface.roughness"]) {
+    assert.equal(validatePlan({ ...plan, phases: [{ ...plan.phases[0], visual: { ...plan.phases[0].visual, property } }] }, { requireVisualTasks: true }).phases[0].visual.property, property);
+  }
+});
+
+test("video visual task source bindings keep the v1 plan and require contained, distinct observations", () => {
+  const plan = visualPlan(), phase = plan.phases[0];
+  phase.visual.references = ["analysis/report.json"];
+  phase.visual.sourceObservation = { report: "analysis/report.json", shotId: "logo-entry", observationIds: ["logo-contour"] };
+  assert.equal(validatePlan(plan, { requireVisualTasks: true }), plan);
+  for (const binding of [
+    null, {}, { report: "../report.json", shotId: "logo-entry", observationIds: ["logo-contour"] },
+    { report: "analysis/report.json", shotId: "", observationIds: ["logo-contour"] },
+    { report: "analysis/report.json", shotId: "logo-entry", observationIds: [] },
+    { report: "analysis/report.json", shotId: "logo-entry", observationIds: ["logo-contour", "logo-contour"] },
+    { report: "other-report.json", shotId: "logo-entry", observationIds: ["logo-contour"] },
+    { report: "analysis/report.json", shotId: "logo-entry", observationIds: ["logo-contour"], inferred: true },
+  ]) {
+    const altered = structuredClone(plan); altered.phases[0].visual.sourceObservation = binding;
+    assert.throws(() => validatePlan(altered, { requireVisualTasks: true }), /sourceObservation|relative|unique|item|included|unsupported/);
+  }
+});
+
+test("visual task ids cannot inherit object prototype records", () => {
+  for (const id of ["constructor", "__proto__", "toString", "hasOwnProperty", "valueOf"]) {
+    const plan = visualPlan(); plan.phases[0].id = id;
+    assert.throws(() => validatePlan(plan, { requireVisualTasks: true }), /reserved|id/);
+    const legacy = structuredClone(plan); delete legacy.phases[0].visual; delete legacy.phases[0].goal;
+    assert.equal(validatePlan(legacy), legacy);
+    const state = createInitialState({ changeId: "reserved-id", timestamp: "2026-07-23T00:00:00.000Z", phase: "implementation" });
+    const progress = visualProgress();
+    progress.completed = { [id]: progress.completed.outline };
+    assert.throws(() => validateV2({ ...state, extensions: { visualTasks: progress } }), /reserved|id/);
+    progress.completed = {}; progress.failures = { [id]: "Needs correction" };
+    assert.throws(() => validateV2({ ...state, extensions: { visualTasks: progress } }), /reserved|id/);
+  }
+});
+
+test("offline artifact validation does not compare historical metadata with current file bytes", () => {
+  const change = tempChange();
+  const metadata = visualProgress().completed.outline.artifacts[0];
+  const target = path.join(change.root, metadata.path);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, "changed current component");
+  assert.equal(validateArtifactMetadata(metadata, { changeRoot: change.root }).status, "stale");
+  assert.equal(validateArtifactMetadata(metadata, { changeRoot: change.root, metadataOnly: true }).status, "ready");
+});
+
+test("native state validates visual progress and preserves historical stale evidence", () => {
+  const state = createInitialState({ changeId: "visual-state", timestamp: "2026-07-23T00:00:00.000Z", phase: "implementation" });
+  const withProgress = (progress) => ({ ...state, extensions: { visualTasks: progress } });
+  assert.equal(validateV2(withProgress(visualProgress())).extensions.visualTasks.completed.outline.status, "stale");
+  for (const alter of [
+    p => { p.planHash = "invalid"; }, p => { p.planPath = "../plan.json"; }, p => { p.completed.outline.taskHash = "invalid"; },
+    p => { p.completed.outline.inputHashes.$task = "invalid"; }, p => { p.completed.outline.inputHashes = []; },
+    p => { p.completed.outline.artifacts = []; }, p => { p.completed.outline.artifacts[0].schema = "new-receipt"; },
+    p => { p.completed.outline.artifacts[0].path = "../outside.html"; }, p => { p.completed.outline.status = "accepted"; },
+    p => { p.failures.enamel = ""; }, p => { p.unused = true; }, p => { p.completed.outline.unused = true; },
+  ]) {
+    const progress = visualProgress(); alter(progress);
+    assert.throws(() => validateV2(withProgress(progress)), /visualTasks|artifact/);
+  }
+});
+
+test("visual progress updates use the existing CAS transaction and retain unrelated extensions", () => {
+  const change = tempChange();
+  const initial = createInitialState({ changeId: "visual-advance", timestamp: "2026-07-23T00:00:00.000Z", phase: "implementation" });
+  initial.extensions.keep = { existing: true };
+  writeNewChange(change.stateFile, change.eventsFile, initial);
+  const firstHash = sha256(fs.readFileSync(change.stateFile));
+  const progress = visualProgress();
+  const updated = advanceChange(change.stateFile, change.eventsFile, { expectedSha256: firstHash, timestamp: "2026-07-23T00:01:00.000Z", summary: "Record bounded task evidence", visualTasks: progress });
+  assert.deepEqual(updated.state.extensions.visualTasks, progress);
+  assert.deepEqual(updated.state.extensions.keep, { existing: true });
+  assert.equal(inspectConsistency(updated.state, fs.readFileSync(change.eventsFile, "utf8")).status, "consistent");
+  assert.throws(() => advanceChange(change.stateFile, change.eventsFile, { expectedSha256: firstHash, timestamp: "2026-07-23T00:02:00.000Z", summary: "stale update", visualTasks: progress }), /does not match/);
+  const before = fs.readFileSync(change.stateFile);
+  const eventsBefore = fs.readFileSync(change.eventsFile);
+  assert.throws(() => advanceChange(change.stateFile, change.eventsFile, { expectedSha256: updated.stateSha256, timestamp: "2026-07-23T00:03:00.000Z", summary: "invalid update", visualTasks: { ...progress, planPath: "../outside.json" } }), /relative|path/);
+  assert.deepEqual(fs.readFileSync(change.stateFile), before);
+  assert.deepEqual(fs.readFileSync(change.eventsFile), eventsBefore);
 });

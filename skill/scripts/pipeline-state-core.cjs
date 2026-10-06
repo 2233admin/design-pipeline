@@ -2,6 +2,8 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { ARTIFACT_STATUSES, validateArtifactMetadata } = require("./artifact-core.cjs");
+const { validateVisualTaskPath } = require("./plan-core.cjs");
 const {
   assertEnum,
   assertKeys,
@@ -106,6 +108,52 @@ function validateControlProjection(control, label = "extensions.control") {
   return control;
 }
 
+function validateVisualTasks(progress) {
+  const label = "extensions.visualTasks";
+  const keys = ["planHash", "planPath", "completed", "failures"];
+  assertKeys(progress, keys, keys, label, "pipeline state");
+  const hash = (value, field) => {
+    if (typeof value !== "string" || !/^sha256:[a-f0-9]{64}$/i.test(value)) fail("pipeline state", `${field} must be sha256`);
+  };
+  hash(progress.planHash, `${label}.planHash`);
+  validateVisualTaskPath(progress.planPath, `${label}.planPath`);
+  assertObject(progress.completed, `${label}.completed`, "pipeline state");
+  assertObject(progress.failures, `${label}.failures`, "pipeline state");
+  for (const [id, record] of Object.entries(progress.completed)) {
+    assertString(id, `${label}.completed id`, "pipeline state");
+    if (Object.hasOwn(Object.prototype, id)) fail("pipeline state", `${label}.completed id is reserved for object prototype records`);
+    const item = `${label}.completed.${id}`;
+    const required = ["taskHash", "inputHashes", "artifacts"];
+    assertKeys(record, required, [...required, "status", "review"], item, "pipeline state");
+    hash(record.taskHash, `${item}.taskHash`);
+    assertObject(record.inputHashes, `${item}.inputHashes`, "pipeline state");
+    for (const [key, value] of Object.entries(record.inputHashes)) {
+      assertString(key, `${item}.inputHashes key`, "pipeline state");
+      hash(value, `${item}.inputHashes.${key}`);
+    }
+    if (!Array.isArray(record.artifacts) || record.artifacts.length === 0) fail("pipeline state", `${item}.artifacts must be a non-empty array`);
+    for (const artifact of record.artifacts) validateArtifactMetadata(artifact, { metadataOnly: true });
+    if (record.status !== undefined) assertEnum(record.status, ARTIFACT_STATUSES, `${item}.status`, "pipeline state");
+    if (record.review !== undefined) {
+      const review = record.review, reviewLabel = `${item}.review`;
+      const keys = ["verdict", "at", "artifactHash", "valid"];
+      assertKeys(review, keys, keys, reviewLabel, "pipeline state");
+      assertEnum(review.verdict, ["accept"], `${reviewLabel}.verdict`, "pipeline state");
+      assertString(review.at, `${reviewLabel}.at`, "pipeline state");
+      const time = Date.parse(review.at);
+      if (!Number.isFinite(time) || new Date(time).toISOString() !== review.at) fail("pipeline state", `${reviewLabel}.at must be an ISO timestamp`);
+      hash(review.artifactHash, `${reviewLabel}.artifactHash`);
+      if (typeof review.valid !== "boolean") fail("pipeline state", `${reviewLabel}.valid must be boolean`);
+    }
+  }
+  for (const [id, reason] of Object.entries(progress.failures)) {
+    assertString(id, `${label}.failures id`, "pipeline state");
+    if (Object.hasOwn(Object.prototype, id)) fail("pipeline state", `${label}.failures id is reserved for object prototype records`);
+    assertString(reason, `${label}.failures.${id}`, "pipeline state");
+  }
+  return progress;
+}
+
 
 function validateV2(state, options = {}) {
   assertKeys(
@@ -136,6 +184,7 @@ function validateV2(state, options = {}) {
   if (state.migration !== null) assertObject(state.migration, "migration", "pipeline state");
   assertObject(state.extensions, "extensions", "pipeline state");
   if (state.extensions.control !== undefined) validateControlProjection(state.extensions.control);
+  if (state.extensions.visualTasks !== undefined) validateVisualTasks(state.extensions.visualTasks);
   return state;
 }
 
@@ -478,7 +527,11 @@ function advanceChange(stateFile, eventsFile, input) {
       nextActions: input.nextActions || [],
       foundations: input.foundations ? { ...current.state.foundations, ...input.foundations } : current.state.foundations,
       evidence: input.evidence?.length ? [...new Set([...current.state.evidence, ...input.evidence])] : current.state.evidence,
-      extensions: input.control ? { ...current.state.extensions, control } : current.state.extensions,
+      extensions: {
+        ...current.state.extensions,
+        ...(input.control ? { control } : {}),
+        ...(input.visualTasks !== undefined ? { visualTasks: input.visualTasks } : {}),
+      },
     };
     validateV2(state);
     const history = existingEvents.trimEnd();

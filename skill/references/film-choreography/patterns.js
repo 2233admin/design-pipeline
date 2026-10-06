@@ -2,8 +2,8 @@
  *
  * Parametric GSAP choreography for HyperFrames compositions. Each pattern appends seek-safe
  * tweens to a paused timeline at an absolute time and returns the time its handoff lands.
- * Patterns only tween transform aliases (x, y, xPercent, yPercent, scale, rotation), opacity
- * and clipPath, never layout properties, never repeat: -1, and never read clocks or randomness,
+ * Patterns only tween transform aliases (x, y, xPercent, yPercent, scale, rotation), opacity,
+ * clipPath, and SVG stroke properties, never layout properties, never repeat: -1, and never read clocks or randomness,
  * so the renderer can seek any frame deterministically.
  *
  * Usage inside a composition (after gsap is loaded):
@@ -23,7 +23,81 @@
     for (const key of keys) {
       if (options[key] === undefined || options[key] === null) throw new Error(`${id}: missing option ${key}`);
     }
-    if (typeof options.at !== "number" || options.at < 0) throw new Error(`${id}: at must be a non-negative number of seconds`);
+    if (typeof options.at !== "number" || !Number.isFinite(options.at) || options.at < 0) throw new Error(`${id}: at must be a finite non-negative number of seconds`);
+  }
+
+  // Native SVG arc lengths allocate one exact reveal window. No callbacks or wall clock:
+  // even a renderer that suppresses seek events gets the same completed ink and hold.
+  function drawOn(tl, options) {
+    need(options, ["paths", "duration"], "draw-on");
+    const { paths, at, duration, gap = 0.08 } = options;
+    if (!Array.isArray(paths) || !paths.length || new Set(paths).size !== paths.length) throw new Error("draw-on: paths must be a non-empty array of distinct SVG geometry elements");
+    if (!Number.isFinite(gap) || gap < 0 || !Number.isFinite(duration) || duration <= gap * (paths.length - 1)) throw new Error("draw-on: duration must leave positive drawing time after pen-lift gaps");
+    const lengths = paths.map((element) => {
+      const length = element && typeof element.getTotalLength === "function" ? element.getTotalLength() : NaN;
+      if (!Number.isFinite(length) || length <= 0) throw new Error("draw-on: each path needs a finite positive SVG length");
+      return length;
+    });
+    const total = lengths.reduce((sum, length) => sum + length, 0);
+    if (!Number.isFinite(total) || !Number.isFinite(at + duration)) throw new Error("draw-on: drawing length and end time must be finite");
+    const inkTime = duration - gap * (paths.length - 1);
+    let t = at;
+    paths.forEach((element, index) => {
+      const length = lengths[index];
+      const strokeTime = inkTime * length / total;
+      tl.set(element, { strokeDasharray: `${length} ${length}`, strokeDashoffset: length, fill: "none", opacity: 0, immediateRender: true }, 0);
+      tl.fromTo(element, { strokeDashoffset: length, opacity: 1 }, { strokeDashoffset: 0, opacity: 1, duration: strokeTime, ease: "none", immediateRender: false }, t);
+      t += strokeTime + gap;
+    });
+    return at + duration;
+  }
+
+  // Authored keys carry the acting: each key's spacing, ease and held pose comes from the animator.
+  // The first pose is established at the sequence start; earlier subject state belongs to its caller.
+  function poseToPose(tl, options) {
+    const id = "pose-to-pose";
+    if (!options || typeof options !== "object" || Array.isArray(options)) throw new Error(`${id}: options must be an object`);
+    const allowedOptions = new Set(["subject", "at", "keys"]);
+    if (Reflect.ownKeys(options).some((key) => typeof key !== "string" || !allowedOptions.has(key))) throw new Error(`${id}: unsupported option properties`);
+    const { subject, at, keys } = options;
+    if (!(typeof subject === "string" && subject.trim()) && !(subject && typeof subject === "object" && subject.nodeType === 1)) {
+      throw new Error(`${id}: subject must be a non-empty selector or DOM element`);
+    }
+    if (!Number.isFinite(at) || at < 0) throw new Error(`${id}: at must be a finite non-negative number of seconds`);
+    if (!Array.isArray(keys) || keys.length < 2) throw new Error(`${id}: keys must contain at least two authored poses`);
+    const properties = new Set(["x", "y", "z", "xPercent", "yPercent", "rotation", "rotationX", "rotationY", "rotationZ", "scale", "scaleX", "scaleY", "scaleZ", "opacity"]);
+    let poseProperties;
+    let previousAt = -1;
+    for (let index = 0; index < keys.length; index += 1) {
+      const key = keys[index];
+      if (!key || typeof key !== "object" || Array.isArray(key)) throw new Error(`${id}: each key must be an object`);
+      const allowedKeyFields = new Set(["at", "pose", "ease", "hold"]);
+      if (Reflect.ownKeys(key).some((field) => typeof field !== "string" || !allowedKeyFields.has(field))) throw new Error(`${id}: unsupported key properties`);
+      if (!Number.isFinite(key.at) || key.at < 0 || (index === 0 ? key.at !== 0 : key.at <= previousAt)) {
+        throw new Error(`${id}: key times must start at 0 and increase strictly`);
+      }
+      if (!key.pose || typeof key.pose !== "object" || Array.isArray(key.pose)) throw new Error(`${id}: each key needs a pose object`);
+      const names = Reflect.ownKeys(key.pose);
+      if (!names.length || names.some((name) => typeof name !== "string" || !properties.has(name))) throw new Error(`${id}: pose properties must use the supported transform and opacity names`);
+      if (names.some((name) => typeof key.pose[name] !== "number" || !Number.isFinite(key.pose[name]))) throw new Error(`${id}: pose values must be finite numbers`);
+      if (index === 0) poseProperties = new Set(names);
+      else if (names.length !== poseProperties.size || names.some((name) => !poseProperties.has(name))) throw new Error(`${id}: every pose must name the same properties`);
+      if (key.ease !== undefined && (typeof key.ease !== "string" || !key.ease.trim())) throw new Error(`${id}: ease must be a non-empty GSAP ease name`);
+      if (key.hold !== undefined && typeof key.hold !== "boolean") throw new Error(`${id}: hold must be boolean`);
+      previousAt = key.at;
+    }
+    if (!Number.isFinite(at + keys[keys.length - 1].at)) throw new Error(`${id}: end time must be finite`);
+
+    tl.set(subject, { ...keys[0].pose, ...(at === 0 ? { immediateRender: true } : {}) }, at);
+    for (let index = 1; index < keys.length; index += 1) {
+      const previous = keys[index - 1];
+      const incoming = keys[index];
+      const start = at + previous.at;
+      const position = at + incoming.at;
+      if (incoming.hold) tl.set(subject, { ...incoming.pose }, position);
+      else tl.fromTo(subject, { ...previous.pose }, { ...incoming.pose, duration: incoming.at - previous.at, ease: incoming.ease || "none", immediateRender: false }, start);
+    }
+    return at + keys[keys.length - 1].at;
   }
 
   // One subject becomes the next: A travels to B's pose while B takes over from A's pose.
@@ -132,6 +206,8 @@
   }
 
   return {
+    "draw-on": drawOn,
+    "pose-to-pose": poseToPose,
     "continuous-morph": continuousMorph,
     "match-cut": matchCut,
     "camera-push": cameraPush,

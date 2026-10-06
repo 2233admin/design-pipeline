@@ -8,8 +8,14 @@ const path = require("node:path");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 const { createComponentFirstFixture } = require("../tests/fixtures/component-first-fixture.cjs");
+const { resolveChrome } = require("../skill/scripts/film-capture-core.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
+const localEnv = path.join(repoRoot, ".env.local");
+if (fs.existsSync(localEnv)) process.loadEnvFile(localEnv);
+let hostChrome;
+try { hostChrome = resolveChrome(); }
+catch (error) { if (error.code !== "TOOL_MISSING") throw error; }
 let failed = false;
 function report(ok, label) { console.log(`${ok ? "OK" : "FAIL"} ${label}`); if (!ok) failed = true; return ok; }
 function run(command, args, options = {}) {
@@ -68,6 +74,7 @@ const isolatedTmp = path.join(tempRoot, "tmp");
 fs.mkdirSync(isolatedTmp, { recursive: true });
 const hermeticEnv = {
   ...process.env,
+  ...(hostChrome ? { PUPPETEER_EXECUTABLE_PATH: hostChrome } : {}),
   TMPDIR: isolatedTmp,
   TEMP: isolatedTmp,
   TMP: isolatedTmp,
@@ -82,8 +89,16 @@ const hermeticEnv = {
 };
 
 try {
-  const requiredRepoFiles = ["README.md", "CHANGELOG.md", "LICENSE", "DESIGN.md", "MOTION.md", "THIRD_PARTY_NOTICES.md", "skill/SKILL.md", "scripts/package.cjs", "scripts/install-local.cjs", "scripts/test-manifest.json", "skill/references/package-resources.json", "openspec/specs/design-pipeline/spec.md"];
+  const requiredRepoFiles = ["package.json", "package-lock.json", "README.md", "CHANGELOG.md", "LICENSE", "DESIGN.md", "MOTION.md", "THIRD_PARTY_NOTICES.md", "skill/SKILL.md", "scripts/package.cjs", "scripts/install-local.cjs", "scripts/test-manifest.json", "skill/references/package-resources.json", "openspec/specs/design-pipeline/spec.md"];
   for (const file of requiredRepoFiles) report(fs.existsSync(path.join(repoRoot, file)), file);
+
+  const rootMarkdown = new Set(["AGENTS.md", "CHANGELOG.md", "CLAUDE.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "DESIGN.md", "MOTION.md", "README.md", "SECURITY.md", "THIRD_PARTY_NOTICES.md"]);
+  const unexpectedRootDocs = fs.readdirSync(repoRoot, { withFileTypes: true }).filter((entry) => entry.isFile() && /\.md$/i.test(entry.name) && !rootMarkdown.has(entry.name)).map((entry) => entry.name);
+  report(unexpectedRootDocs.length === 0, `root Markdown stays limited to entry, foundation and governance documents${unexpectedRootDocs.length ? `: move ${unexpectedRootDocs.join(", ")} into docs/ or the active change` : ""}`);
+
+  const ignoredTracked = run("git", ["ls-files", "--cached", "--ignored", "--exclude-standard", "-z"], { echo: false });
+  const ignoredFiles = (ignoredTracked.stdout || "").split("\0").filter(Boolean);
+  report(ignoredTracked.status === 0 && ignoredFiles.length === 0, `Git index excludes ignored local files${ignoredFiles.length ? `: ${ignoredFiles.join(", ")}` : ""}`);
 
   const skillText = fs.readFileSync(path.join(repoRoot, "skill/SKILL.md"), "utf8");
   const frontmatter = skillText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -138,7 +153,8 @@ try {
   }
 
   const testFiles = testManifest.tests.map((name) => path.join(repoRoot, "tests", name));
-  const tests = run(process.execPath, ["--test", ...testFiles], { env: hermeticEnv });
+  // ponytail: cap subprocess contention at four files; tune only with measured suite timings.
+  const tests = run(process.execPath, ["--test", `--test-concurrency=${Math.min(4, os.availableParallelism())}`, ...testFiles], { env: hermeticEnv });
   report(tests.status === 0, `repository tests (${testManifest.tests.length} files)`);
 
   const packageScript = path.join(repoRoot, "scripts/package.cjs");

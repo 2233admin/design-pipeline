@@ -29,6 +29,30 @@ function blockBoard() {
   };
 }
 
+test("enamel plans reject flat routes and missing angle samples without claiming acceptance", () => {
+  const board = blockBoard();
+  board.rendering = { route: "css3d", requirements: ["solid-depth", "bevel", "clearcoat", "view-dependent-color", "surface-relief"], reason: "Reference enamel has depth and view-dependent reflections.", samples: [{ atSec: 0, purpose: "front" }] };
+  const wrong = checkStoryboard(board);
+  assert.ok(codes(wrong).includes("material-route-incapable"));
+  assert.ok(codes(wrong).includes("material-angle-samples-missing"));
+  assert.match(wrong.findings[0].fix, /WebGL/);
+  for (const route of ["webgl", "blender", "footage"]) {
+    board.rendering.route = route;
+    board.rendering.samples = [{ atSec: 0, purpose: "front" }, { atSec: 2, purpose: "oblique" }];
+    assert.equal(checkStoryboard(board).status, "passed");
+    assert.equal(checkStoryboard(board).creativeAcceptance, "not-assessed");
+  }
+  board.rendering.samples[1].atSec = 0;
+  assert.ok(codes(checkStoryboard(board)).includes("material-angle-samples-missing"));
+  board.rendering.samples[1].atSec = 5;
+  assert.throws(() => checkStoryboard(board), /within the film/);
+  board.rendering.samples[1].atSec = 2;
+  board.rendering.requirements = ["unknown-effect"];
+  assert.throws(() => checkStoryboard(board), /allowed/);
+  delete board.rendering;
+  assert.equal(checkStoryboard(board).status, "passed", "legacy generic storyboards remain valid");
+});
+
 test("probe marks tweens on plain objects as procedural drivers", () => {
   const tween = (targets) => ({ startTime: () => 0, duration: () => 4, targets: () => targets, vars: { u: 1 }, repeat: () => 0 });
   const root = { duration: () => 4, timeScale: () => 1, getChildren: () => [tween([{ u: 0 }]), tween([{ nodeType: 1, id: "card", getAttribute: () => null }])] };

@@ -82,6 +82,44 @@ Before publication:
 
 ## Learning
 
+### Visual calibration and RSI
+
+RSI here is a reviewable loop that improves an artifact and, when a reusable defect is found,
+the tool's guidance or code. It uses existing tasks, feedback and OpenSpec contracts. It does not
+update model weights or prove general aesthetic improvement from one accepted artifact.
+
+1. **Observe:** inspect a real frame or short clip beside the reference. Name the target, one
+   visible property, the difference and any uncertainty; paths and technical passes are not observation.
+2. **Calibrate:** at a meaningful visual decision or uncertain critical difference, set the existing
+   `visual.review: true`. Show that version and ask the owner a concrete question, such as whether
+   the blue glaze should have a broad reflection or small ripples. Record the actual reply against
+   the output metadata. Silence is not acceptance; routine checks do not need a user decision.
+3. **Repair:** change the named property, preserve its invariants, and invoke the applicable
+   capability with real inputs. Keep immutable before/after evidence. The customer sees the intended
+   experience; development controls and records stay in an explicit inspection entry.
+4. **Compare:** use the same view/time and rerun affected checks, then obtain the owner's scoped
+   decision. A rejected completed target returns through existing `decide` and dependency invalidation.
+   Preserve old evidence and decisions; do not fill in user scores or infer acceptance from a gate.
+5. **Improve the tool:** if the cause recurs in decomposition, dispatch, capability selection or
+   guidance, use existing `feedback record --source user|runtime`, make the smallest OpenSpec repair
+   and retain a regression check. Compare old/new tool versions on the frozen case before claiming
+   a measured improvement. One badge does not establish gains across all frontend work.
+
+Select capabilities from the observed difference, loading only the current guide:
+
+| Visible difference | Existing capability | Compare |
+| --- | --- | --- |
+| Contour, thickness, overlap | Reference measurements, reconstruction and real 3D geometry | Locked front and side views |
+| Glaze, metal, foil or reflection | `film-materials.md`, enamel helper, selected renderer's shader and lighting | Separate regions at fixed view/time/light |
+| Pose, timing or motion readability | Animation thinking, motion and choreography guides | Playback plus transition frames |
+| Generic layout or misplaced controls | Existing product workflow, DESIGN and applicable frontend/interface guides | Primary user action and responsive surface |
+
+Record the choices actually executed and their limits. A helper's defaults do not prove a reference
+match. Packaged skill defects follow the maintainer loop below. External project/user preferences
+may use `adaptation record/propose/evaluate/promote` after delivery, retaining independent evaluation
+and explicit promotion approval. That evaluator checks evidence; it does not run models, upgrade
+this packaged tool or authorize silently rewriting installed skills.
+
 After a finding is resolved:
 
 - update `companion-capabilities.json` when the durable fact is compatibility-related;

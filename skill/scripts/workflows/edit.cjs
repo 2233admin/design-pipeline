@@ -22,13 +22,13 @@ const REFERENCE = reference("Watch the reference edit and write reference.md: sh
 const STYLE = {
   id: "style",
   finished: (state) => state.tier === "quick" || Boolean(state.decisions?.concept),
-  action: () => ({ type: "ask", question: "MAD (fast, energy-driven cuts) or PV (readable shots on phrases)?", recommended: "mad for fan edits and hype, pv for product and music videos.", record: `${CLI} decide --project-root . --stage concept --choice mad|pv`, why: "The first of two human decisions for an edit." }),
+  action: () => ({ type: "ask", question: "Which rough-cut starting point fits the direction: MAD or PV?", recommended: "Use the agreed direction; mad starts with shorter cuts, pv with longer shots. These presets do not define the finished visual language.", record: `${CLI} decide --project-root . --stage concept --choice mad|pv`, why: "The first of two human decisions for an edit; preserve an already supplied choice." }),
 };
 
 const CUT = {
   id: "cut",
   finished: (state, root) => exists(root, "edit.json"),
-  action: (state) => ({ type: "run", command: `${CLI} film-edit auto --project-root . --style ${state.decisions?.concept || "mad"}`, why: "Shots placed on the beat grid; adjust edit.json by hand afterwards." }),
+  action: (state) => ({ type: "run", command: `${CLI} film-edit auto --project-root . --style ${state.decisions?.concept || "mad"}`, why: "Rough assembly only. Use references/animation-thinking.md to judge the first phrase's action, motif and sound relationship, then reshape edit.json; the beat grid is not a creative rule." }),
 };
 
 const RENDER = {

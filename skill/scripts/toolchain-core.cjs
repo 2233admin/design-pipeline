@@ -6,7 +6,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { validateRegistry } = require("./adapter-core.cjs");
 const { resolveFrontendStack } = require("./frontend-stack-core.cjs");
-const { bindJobPlan, classifyDeliverableForm, DELIVERABLE_FORMS } = require("./job-route-core.cjs");
+const { bindJobPlan, classifyDeliverableForm, DELIVERABLE_FORMS, validateJobPlan } = require("./job-route-core.cjs");
 const {
   assertEnum,
   assertKeys,
@@ -15,6 +15,7 @@ const {
   assertStringArray,
   canonicalJson,
   fail,
+  nonEmpty,
   pathInside,
   sha256,
   sortValue,
@@ -59,6 +60,32 @@ function validateRequest(request) {
     if (request.graphics.adapter !== undefined) assertString(request.graphics.adapter, "graphics.adapter", "toolchain");
   }
   return request;
+}
+
+function buildToolchainRequest(jobPlan, choices, jobPlanPath) {
+  validateJobPlan(jobPlan);
+  assertObject(choices, "choices", "toolchain");
+  assertString(jobPlanPath, "jobPlanPath", "toolchain");
+  const relativePath = path.posix.normalize(jobPlanPath.replace(/\\/g, "/"));
+  if (path.win32.isAbsolute(jobPlanPath) || /^[a-z]:/i.test(jobPlanPath) || path.posix.isAbsolute(relativePath)
+      || relativePath === "." || relativePath === ".." || relativePath.startsWith("../")) {
+    invalid("jobPlanPath must be a contained relative file path");
+  }
+  const binding = {
+    schema: REQUEST_SCHEMA,
+    brief: jobPlan.query,
+    jobId: jobPlan.jobId,
+    jobPlanSha256: jobPlan.planSha256,
+    jobPlanPath: relativePath,
+    deliverableForm: jobPlan.deliverableForm,
+  };
+  for (const [field, value] of Object.entries(binding)) {
+    if (Object.hasOwn(choices, field) && choices[field] !== value) invalid(`${field} conflict: choices do not match the job plan`);
+  }
+  const request = { ...binding, ...choices };
+  validateRequest(request);
+  bindJobPlan(request, jobPlan);
+  return sortValue(request);
 }
 
 function frontendRequest(request) {
@@ -191,7 +218,12 @@ function resolveToolchain(request, sources, options = {}) {
   validateRegistry(adapterRegistry, graphicsCatalog);
   const frontend = resolveFrontendStack(frontendRequest(request), frontendRegistry, skillCatalog);
   const blockers = [...frontend.blockers];
-  const graphicsAdapter = selectGraphics(request, adapterRegistry, graphicsCatalog, blockers);
+  const wanted = requestedGraphics(request);
+  const missingGraphics = jobPlan.primaryKnowledge.id === "graphics-runtime" && ![wanted?.family, wanted?.adapter].some(nonEmpty);
+  if (missingGraphics) {
+    blockers.push("graphics-runtime requires an explicit graphics family or adapter in graphics or existing.graphics");
+  }
+  const graphicsAdapter = missingGraphics ? null : selectGraphics(request, adapterRegistry, graphicsCatalog, blockers);
   const stages = frontend.toolRoutes.map(frontendStages);
   const graphics = graphicsStages(graphicsAdapter);
   if (graphics) stages.push(graphics);
@@ -328,6 +360,7 @@ module.exports = {
   PROBE_SCHEMA,
   RECEIPT_SCHEMA,
   REQUEST_SCHEMA,
+  buildToolchainRequest,
   probeToolchain,
   resolveToolchain,
   validateRequest,

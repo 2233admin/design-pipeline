@@ -4,6 +4,123 @@ Create `reference.md` before design directions whenever screenshots, films, game
 concept art, diagrams, or other visual references influence the change. The file records observable
 evidence; it must not jump directly from mood words to implementation.
 
+## Video content and project analysis
+
+For a supplied local video, prepare evidence with the executable packaged entry:
+
+```text
+designer-pipeline reference analyze-video --project-root . --path reference/original.mp4 --output evidence/video
+designer-pipeline project inspect --project-root . --query "<requested change>" --write --output .design-pipeline/project-analysis-v1.json
+```
+
+The video must resolve inside the selected root. Keep the original bytes. This creates a report,
+overview, ordered time windows and an observation example, rather than an interpretation. Frame
+`atSec` is the actual decoded presentation timestamp relative to the first decoded frame; it is
+not a guessed frame index divided by nominal fps, nor the requested seek time. Frame ids, byte
+digests and source-frame indices bind the observations. Overview is an index: it cannot establish
+motion. Ordered windows are sampled, not every source frame. Watch the source at full speed when
+your host supports it; report whether that actually happened.
+
+Read one window at a time. Identify its objects/regions, contour and thickness, material versus
+light response, occlusion, camera change versus object motion, labels and start/end states. Add
+one observation per named `target` and `property`, with `startSec`, `endSec`, `startState`,
+`endState`, real `frameIds`, `basis` (`observed`, `inferred`, `unknown`), `description` and
+`uncertainties`. Motion requires multiple ordered frames. Inferred geometry, camera or easing is
+not measurement; keep the uncertainty explicit. Record unknown observations where necessary, but
+unknown or inferred entries do not complete a window. Only an `observed` claim citing local frames
+counts as window coverage; motion requires two distinct times inside each covered window. Whole-clip
+endpoints do not establish motion in the middle. Never fill generated examples as observed facts.
+The existing checker returns `nextActions` with the exact window, report path, frame ids and resample
+arguments; `next` shows the first missing window rather than sending the agent back to generic study.
+Budget failures and local-only reports also carry recovery actions after observations are written.
+This checks evidence structure, not whether the model identified the right objects or motion.
+
+For production, also author `shots` in this same report after inspecting the source. Each entry is
+`{id,startSec,endSec,frameIds,targets:[{target,properties}]}`. Shots have distinct ids, ordered
+contiguous bounds covering the report's sampling interval, ordered local frame ids, and a nonempty
+inventory of named objects and applicable atomic properties such as `geometry.logo-outline` or
+`motion.camera-translation`. A 2s sampling window or a cut candidate is not automatically a shot.
+Every declared target/property needs an `observed` record whose interval and frame ids belong to
+that shot; recording the text outline does not establish camera movement. Static graphics need
+not invent material, lighting or motion requirements. Describe missing assets, representations,
+uncertainties and planned adaptations in `reference.md`; original character art cannot be recovered
+by passing this check. Existing production callers use `checkVideoAnalysis` with
+`requireProduction:true`. Historical reports without `shots` remain inspectable, but do not unlock
+new video production. `nextActions` requests missing shot inventory or a specific shot/target/property
+using the actual PNG inputs, while preserving budget and whole-source recovery actions.
+
+Keep a target's identity stable across windows. Split its visible contour/thickness, surface colour,
+highlight movement, translation and rotation into separate properties when relevant. First describe
+what changes in the pixels; inferred roughness, layer topology, camera cause and easing need their own
+uncertainty. A changing highlight alone does not establish a changing material or object rotation.
+
+For a fast transition, changing highlight, uncertain object count or action boundary, resample
+that interval into a new directory, using actual source frames:
+
+```text
+designer-pipeline reference analyze-video --path reference/original.mp4 --output evidence/video-detail --start 7 --end 8 --fps 24
+```
+
+Cut and motion-change candidates identify places to inspect, not semantic action boundaries.
+Motion peaks use local prominence and bounded selection per 2s window, so a sustained busy opening
+does not determine the threshold for later transitions. Context uses actual source frames at up to
+24fps before, during and after the change, spanning up to 0.4s; higher-fps sources are still sampled.
+Complete candidate sequences take priority over extra overview frames;
+omitted candidate context is named for local resampling. Sampling
+budgets and intervals outside the chosen range remain unobserved. Refine boundaries and timing from
+the ordered evidence before producing implementation tasks. Do not infer an easing curve or complete
+layer topology from sparse frames. Preserve invariants and uncertainties when translating observations
+into the existing `design-plan.v1` visual tasks. Video tasks bind
+`visual.sourceObservation:{report,shotId,observationIds}` and the exact observed target/property;
+the shared resolver validates the actual report, media, frames and shot-local claims at dispatch
+and completion. Bind concrete reusable method entry files through `visual.guides`, describe the
+adaptation and limitations in `goal`, and put actual assets in ordinary task `inputs` or preceding
+task outputs with dependencies. A method guide is not evidence that its method was executed.
+These paths participate in the existing input hashes and downstream invalidation, rather than a
+parallel registry or receipt. Structural readiness still does not grant visual acceptance.
+Use `--max-frames 400` when the default 160-frame budget cannot retain the requested cadence and
+candidate context. The budget is bounded at 400; a still-limited report remains pending. Local detail
+preparation does not replace whole-source coverage or merge itself into an adopted report.
+
+Merge the generated source metadata and `{path, sha256}` descriptor into the existing
+`reference-evidence.json` as `source` and optional `videoAnalysis`. After authoring the observations,
+compute the descriptor's new SHA-256 digest from the actual report bytes using your host's file-hash
+tool; the initial descriptor becomes stale after observations are added. The
+existing `reference check` validates adopted video evidence alongside its original graybox and
+geometry stages. Pending observations, changed source/frame/report bytes or missing windows do not
+become ready. This is structural evidence validation; object recognition and artistic correctness
+still require actual model inspection and human review. Historical carriers without the optional
+block keep their schema compatibility; an active video workflow still requires temporal observation.
+
+For static graybox/calibration comparison, explicitly choose a sampled frame at the relevant
+time. Set `source.kind: image`, `source.path` and `source.sha256` to that frame's actual values,
+with its measured dimensions, while retaining the same `videoAnalysis` report binding. The
+checker verifies that this image belongs to the original video report. The existing PNG geometry
+measurement then remains usable; selecting an image does not erase pending temporal observation
+or prove any other view or animation state. Keep per-task reference snapshots when selecting
+different comparison times so downstream evidence cannot silently move to a different frame.
+
+Project inspection is a bounded static evidence index. Follow its entrypoint and import edges, then
+read the linked component, renderer, material/shader, animation, token and build/test source lines.
+Use `--query` to locate literal source terms such as a visible target's component or material symbol.
+`queryResults.matches` cites actual source lines and `connections` follows resolved imports from an
+entrypoint and to direct dependants/dependencies. This graph does not establish runtime calls or
+semantic ownership. A Chinese phrase is matched literally; use a shorter known name or source symbol
+when no match is found. No match means no evidence in this scope, not proof of absence.
+Every finding carries a relative path, line and file hash. Verify candidate interpretations yourself:
+an import name or keyword does not prove a running renderer. Scripts are listed, never executed.
+Review `unknowns`, excluded paths, unresolved aliases/dynamic imports and exhausted budgets before
+calling the repository understood. Use `--scope <relative-file-or-dir>` for a smaller follow-up.
+The report is an ordinary artifact, with existing artifact.v1 metadata when written; its hashes
+do not substitute for the existing target snapshot or policy identity.
+Write to a new output path for each inspection version; existing files are never overwritten. Keep
+generated reports under `.design-pipeline/` so later source inspection does not scan its own reports.
+
+Connect reference targets to source nodes before implementation: for each observed property,
+record the relevant repository path/symbol, the implementation evidence, the missing capability
+and how to verify the change. Reuse a suitable existing renderer and animation mechanism; leave
+unresolved ownership/alias/runtime facts explicit rather than guessing a new stack.
+
 ## Required Decision
 
 Record four independent decisions before selecting exactly one route:

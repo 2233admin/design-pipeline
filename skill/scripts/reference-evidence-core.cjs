@@ -546,7 +546,7 @@ function validateReferenceEvidence(reference) {
   assertKeys(
     reference,
     rootKeys,
-    [...rootKeys, ...V2_ONLY_ROOT_KEYS, "graybox"],
+    [...rootKeys, ...V2_ONLY_ROOT_KEYS, "graybox", "videoAnalysis"],
     "reference",
     SCOPE,
   );
@@ -554,6 +554,12 @@ function validateReferenceEvidence(reference) {
   if (schema === SCHEMA_V2) validateIntent(reference.intent);
 
   validateSource(reference.source);
+  if (reference.videoAnalysis !== undefined) {
+    if (!["video", "image"].includes(reference.source.kind)) fail(SCOPE, "videoAnalysis requires a video source or its explicitly selected image frame");
+    assertKeys(reference.videoAnalysis, ["path", "sha256"], ["path", "sha256"], "videoAnalysis", SCOPE);
+    assertString(reference.videoAnalysis.path, "videoAnalysis.path", SCOPE);
+    if (!SHA256_PATTERN.test(reference.videoAnalysis.sha256)) fail(SCOPE, "videoAnalysis.sha256 must be SHA-256");
+  }
   validateClassification(reference.classification);
   validateSpatialCues(reference.spatialCues);
 
@@ -740,6 +746,13 @@ function checkReferenceEvidence(changeRoot, options = {}) {
   const reference = validateReferenceEvidence(readJson(artifact, SCOPE));
   const stage = grayboxContext(root, reference, relative);
 
+  if (reference.videoAnalysis) {
+    let video = require("./reference-video-core.cjs").checkVideoAnalysis(root, reference.videoAnalysis, reference.source, { requireProduction: true });
+    if (video.status === "ready" && !video.coverage.fullSource) video = { ...video, status: "pending", reasons: [...video.reasons, "video-source-partially-analyzed"] };
+    stage.summary.video = video;
+    if (video.status !== "ready") return blockedResult({ reason: "video-analysis-incomplete", blocker: JSON.stringify(video) }, stage, artifact, reference);
+  }
+
   for (const gate of [approvalGate(reference), sourceGate(reference)]) {
     if (gate) return blockedResult(gate, stage, artifact, reference);
   }
@@ -802,7 +815,9 @@ function resolveReferenceSource(changeRoot, options = {}) {
   }
   const resolved = resolveContainedReference(root, options.path);
   const { path: real, bytes } = resolved;
-  const dimensions = pngDimensions(bytes);
+  const dimensions = reference.source.kind === "video"
+    ? require("./reference-video-core.cjs").probeVideoSource(root, resolved.relativePath).source
+    : pngDimensions(bytes);
   if (!dimensions) fail(SCOPE, "reference source must be a readable PNG raster");
   const resolvedAt = options.timestamp || new Date().toISOString();
   assertTimestamp(resolvedAt, "source.resolvedAt", SCOPE);

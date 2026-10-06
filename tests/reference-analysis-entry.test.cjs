@@ -1,0 +1,184 @@
+"use strict";
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const test = require("node:test");
+const { spawnSync } = require("node:child_process");
+const { validateReferenceEvidence, checkReferenceEvidence } = require("../skill/scripts/reference-evidence-core.cjs");
+const { initState, nextAction } = require("../skill/scripts/workflow-core.cjs");
+const fixtures = require("./helpers/reference-fixtures.cjs");
+const { sha256 } = require("../skill/scripts/contract-utils.cjs");
+const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
+function root(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reference-analysis-entry-")); t.after(() => { assert.equal(path.dirname(path.resolve(dir)), path.resolve(os.tmpdir())); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
+function reference() { return fixtures.fixedCameraReference({ source: fixtures.resolvedSource({ kind: "video", path: "source.mp4" }), videoAnalysis: { path: "video/report.json", sha256: "a".repeat(64) } }); }
+
+test("the existing reference carrier accepts a video report binding and checks missing temporal evidence", t => {
+  const dir = root(t), ref = reference();
+  assert.equal(validateReferenceEvidence(ref).videoAnalysis.path, "video/report.json");
+  fs.writeFileSync(path.join(dir, "reference-evidence.json"), JSON.stringify(ref));
+  const checked = checkReferenceEvidence(dir);
+  assert.equal(checked.status, "blocked");
+  assert.equal(checked.stages.video.status, "blocked");
+  assert.match(checked.reason, /video/);
+  assert.throws(() => validateReferenceEvidence({ ...ref, source: { ...ref.source, kind: "document" } }), /video/);
+});
+
+test("a written reference note cannot skip video sampling and observation before implementation", t => {
+  const dir = root(t);
+  initState(dir, { deliverable: "ui", tier: "quick", mode: "replicate" });
+  fs.writeFileSync(path.join(dir, "reference.md"), "A guess from one screenshot.");
+  const ref = reference(); delete ref.videoAnalysis;
+  fs.writeFileSync(path.join(dir, "reference-evidence.json"), JSON.stringify(ref));
+  const action = nextAction(dir);
+  assert.equal(action.stage, "reference");
+  assert.match(action.command, /reference analyze-video/);
+  assert.match(action.command, /project inspect/);
+});
+
+test("public project inspection returns source relationships and evidence-bound artifact metadata", t => {
+  const dir = root(t);
+  fs.mkdirSync(path.join(dir, "src"));
+  fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ scripts: { dev: "vite", test: "node --test" }, dependencies: { three: "0.180.0" } }));
+  fs.writeFileSync(path.join(dir, "index.html"), '<script type="module" src="./src/main.js"></script>');
+  fs.writeFileSync(path.join(dir, "src/main.js"), 'import "./surface.glsl";\nconst material = new THREE.ShaderMaterial({});\nrequestAnimationFrame(render);');
+  fs.writeFileSync(path.join(dir, "src/surface.glsl"), 'void main() { gl_FragColor = vec4(1.0); }');
+  const command = spawnSync(process.execPath, [cli, "project", "inspect", "--root", dir, "--write", "--output", "project-analysis.json", "--json"], { encoding: "utf8", windowsHide: true });
+  assert.equal(command.status, 0, command.stderr || command.stdout);
+  const response = JSON.parse(command.stdout), report = response.report;
+  assert.ok(report.dependencies.some(item => item.target === "src/surface.glsl"));
+  assert.ok(report.implementation.some(item => item.kind === "animation"));
+  assert.ok(report.packages.some(item => item.scripts.dev === "vite"));
+  assert.equal(response.metadata.schema, "design-pipeline.artifact.v1");
+  assert.ok(Object.hasOwn(response.metadata.input_hashes, "src/main.js"));
+  assert.equal(response.metadata.path, "project-analysis.json");
+  const before = fs.readFileSync(path.join(dir, "src/main.js"), "utf8");
+  const overwrite = spawnSync(process.execPath, [cli, "project", "inspect", "--root", dir, "--write", "--output", "src/main.js", "--json"], { encoding: "utf8", windowsHide: true });
+  assert.equal(overwrite.status, 1);
+  assert.equal(fs.readFileSync(path.join(dir, "src/main.js"), "utf8"), before);
+  const scopedOverwrite = spawnSync(process.execPath, [cli, "project", "inspect", "--root", dir, "--scope", "src/surface.glsl", "--write", "--output", "src/main.js", "--json"], { encoding: "utf8", windowsHide: true });
+  assert.equal(scopedOverwrite.status, 1, "a source outside the inspected scope must also survive");
+  assert.equal(fs.readFileSync(path.join(dir, "src/main.js"), "utf8"), before);
+});
+
+const mediaAvailable = ["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0);
+test("public video preparation and pending-source resolution preserve real dimensions and partial coverage", { skip: !mediaAvailable }, t => {
+  const dir = root(t);
+  const created = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "testsrc2=size=32x24:rate=10:duration=3", "-threads", "1", "-c:v", "ffv1", path.join(dir, "source.mkv")], { encoding: "utf8", windowsHide: true });
+  assert.equal(created.status, 0, created.stderr);
+  const ref = reference(); delete ref.videoAnalysis;
+  ref.source = { kind: "video", availability: "pending", path: null, width: null, height: null, sha256: null, pendingReason: "Waiting for original video", requestedFrom: "user" };
+  fs.writeFileSync(path.join(dir, "reference-evidence.json"), JSON.stringify(ref));
+  const resolved = spawnSync(process.execPath, [cli, "reference", "resolve", "--root", dir, "--change-root", ".", "--path", "source.mkv", "--json"], { encoding: "utf8", windowsHide: true });
+  assert.equal(resolved.status, 0, resolved.stdout);
+  const bound = JSON.parse(fs.readFileSync(path.join(dir, "reference-evidence.json"), "utf8"));
+  assert.equal(bound.source.width, 32); assert.equal(bound.source.height, 24);
+  assert.equal(bound.source.sha256, sha256(fs.readFileSync(path.join(dir, "source.mkv"))));
+  const prepared = spawnSync(process.execPath, [cli, "reference", "analyze-video", "--root", dir, "--path", "source.mkv", "--output", "video", "--start", "1", "--end", "2", "--fps", "12", "--max-frames", "40", "--json"], { encoding: "utf8", windowsHide: true });
+  assert.equal(prepared.status, 0, prepared.stdout);
+  const result = JSON.parse(prepared.stdout);
+  assert.equal(result.status, "prepared");
+  assert.equal(result.report.sampling.startSec, 1); assert.equal(result.report.sampling.endSec, 2);
+  assert.equal(result.report.sampling.maxFrames, 40);
+  assert.equal(result.report.observations.length, 0);
+  result.report.observations = result.report.segments.map(segment => ({ id: segment.id, target: "main object", property: "motion.translation", startSec: segment.startSec, endSec: segment.endSec, startState: "First sampled state", endState: "Last sampled state", frameIds: segment.frameIds.slice(0, 2), basis: "unknown", description: "Runtime observation remains uncertain", uncertainties: ["Source action is not established"] }));
+  const reportFile = path.join(dir, result.descriptor.path);
+  fs.writeFileSync(reportFile, JSON.stringify(result.report));
+  bound.videoAnalysis = { path: result.descriptor.path, sha256: sha256(fs.readFileSync(reportFile)) };
+  fs.writeFileSync(path.join(dir, "reference-evidence.json"), JSON.stringify(bound));
+  const checked = checkReferenceEvidence(dir);
+  assert.equal(checked.stages.video.status, "pending");
+  assert.equal(checked.stages.video.coverage.fullSource, false);
+  initState(dir, { deliverable: "web", tier: "quick", mode: "replicate" });
+  fs.writeFileSync(path.join(dir, "reference.md"), "Only one interval was observed.");
+  const pendingAction = nextAction(dir);
+  assert.equal(pendingAction.stage, "reference");
+  assert.equal(pendingAction.observation.windowId, result.report.segments[0].id);
+  assert.match(pendingAction.command, /Inspect window-001 \(1–2s\)/);
+  assert.deepEqual(pendingAction.observation.frameIds, result.report.segments[0].frameIds);
+  assert.deepEqual(pendingAction.show, [result.report.segments[0].viewerPath]);
+  const frame = result.report.frames[0];
+  bound.source = { ...bound.source, kind: "image", path: frame.path, sha256: frame.sha256 };
+  assert.equal(validateReferenceEvidence(bound).source.kind, "image", "static geometry can use one explicitly chosen real sampled frame while retaining the video report");
+  fs.writeFileSync(path.join(dir, "reference-evidence.json"), JSON.stringify(bound));
+  assert.equal(require("../skill/scripts/reconstruction-core.cjs").referenceSourceState(dir).raster.ok, true);
+  const checkVideo = require("../skill/scripts/reference-video-core.cjs").checkVideoAnalysis;
+  assert.equal(checkVideo(dir, bound.videoAnalysis, bound.source).status, "pending", "unknown motion cannot complete video observation");
+  assert.equal(checkVideo(dir, bound.videoAnalysis, { ...bound.source, sha256: "b".repeat(64) }).status, "blocked");
+  assert.equal(nextAction(dir).stage, "reference", "a selected image does not erase partial moving-source observation");
+});
+
+test("public film reference carries real PNG inputs and matching guides without replacing its study", { skip: !mediaAvailable }, t => {
+  const dir = root(t);
+  const created = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "testsrc2=size=32x24:rate=10:duration=2", "-threads", "1", "-c:v", "ffv1", path.join(dir, "source.mkv")], { encoding: "utf8", windowsHide: true });
+  assert.equal(created.status, 0, created.stderr);
+  const prepared = spawnSync(process.execPath, [cli, "reference", "analyze-video", "--root", dir, "--path", "source.mkv", "--output", "video", "--json"], { encoding: "utf8", windowsHide: true });
+  assert.equal(prepared.status, 0, prepared.stdout);
+  const result = JSON.parse(prepared.stdout), ref = reference();
+  ref.source = result.report.source; ref.videoAnalysis = result.descriptor;
+  fs.writeFileSync(path.join(dir, "reference-evidence.json"), JSON.stringify(ref));
+  fs.writeFileSync(path.join(dir, "reference.md"), "Source interpretation is pending; prepared windows are not confirmed shots.");
+  const next = spawnSync(process.execPath, [cli, "next", "--root", dir, "--deliverable", "film", "--tier", "quick", "--mode", "replicate", "--json"], { encoding: "utf8", windowsHide: true });
+  assert.equal(next.status, 0, next.stdout);
+  const action = JSON.parse(next.stdout), window = result.report.segments[0];
+  assert.equal(action.stage, "reference");
+  assert.ok(Array.isArray(action.images), "the public reference action needs real PNG inputs, not only frame ids or HTML");
+  assert.deepEqual(action.images.map(image => image.id), window.frameIds);
+  for (const image of action.images) {
+    const source = result.report.frames.find(frame => frame.id === image.id);
+    assert.equal(image.path, path.resolve(dir, source.path));
+    assert.equal(image.relativePath, source.path);
+    assert.equal(image.sha256, sha256(fs.readFileSync(image.path)));
+    for (const key of ["atSec", "sourcePtsSec", "sourceFrameIndex"]) assert.equal(image[key], source[key]);
+    assert.equal(image.width, 32); assert.equal(image.height, 24); assert.equal(image.mimeType, "image/png");
+  }
+  assert.deepEqual(action.observation.source, result.report.source);
+  assert.equal(action.observation.sourceRange.endSec, result.report.durationSec);
+  assert.match(action.study, /Study 1-3 moving references/);
+  assert.ok(action.command.includes(action.study), "the original film study remains alongside the bounded window action");
+  assert.match(action.command, /host.*image.*tool/i);
+  assert.match(action.command, /observed facts/);
+  assert.match(action.command, /proposed production/);
+  assert.ok(action.guides.some(guide => guide.split("#")[0] === "references/animation-thinking.md"));
+  assert.ok(action.guides.some(guide => guide.startsWith("references/product-film-direction.md")));
+  for (const guide of action.guides) assert.equal(fs.existsSync(path.resolve(__dirname, "../skill", guide.split("#")[0])), true, guide);
+  assert.equal(action.observation.semanticAcceptance, undefined, "instructions do not invent semantic approval");
+  const generic = require("../skill/scripts/workflows/shared.cjs").reference("Generic reference study").action({ mode: "replicate" }, dir);
+  assert.equal(generic.guides.some(guide => guide.split("#")[0] === "references/animation-thinking.md"), false, "generic and edit references do not inherit film production instructions");
+  assert.doesNotMatch(generic.command, /proposed production/);
+});
+
+test("all production reference callers reject coarse legacy readiness and request exact missing shot properties", { skip: !mediaAvailable }, t => {
+  const dir = root(t), video = require("../skill/scripts/reference-video-core.cjs"), shared = require("../skill/scripts/workflows/shared.cjs");
+  const created = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "color=blue:s=32x24:r=24:d=1", "-threads", "1", "-c:v", "ffv1", path.join(dir, "source.mkv")], { encoding: "utf8", windowsHide: true });
+  assert.equal(created.status, 0, created.stderr);
+  const prepared = video.analyzeVideo(dir, { path: "source.mkv", output: "video" }), report = prepared.report, ref = reference();
+  ref.source = report.source;
+  report.observations = [{ id: "logo", target: "logo", property: "geometry.contour", startSec: 0, endSec: report.durationSec, frameIds: report.frames.slice(0, 1).map(frame => frame.id), startState: "Visible local contour", endState: "Visible local contour", basis: "observed", description: "Authored contour claim for checker integration, not semantic acceptance.", uncertainties: [] }];
+  const save = () => {
+    const file = path.join(dir, prepared.descriptor.path); fs.writeFileSync(file, JSON.stringify(report));
+    ref.videoAnalysis = { path: prepared.descriptor.path, sha256: sha256(fs.readFileSync(file)) };
+    fs.writeFileSync(path.join(dir, "reference-evidence.json"), JSON.stringify(ref));
+  };
+  save(); fs.writeFileSync(path.join(dir, "reference.md"), "Only a logo observation exists; production inventory is not yet authored.");
+  initState(dir, { deliverable: "web", tier: "quick", mode: "replicate" });
+  assert.equal(video.checkVideoAnalysis(dir, ref.videoAnalysis, ref.source).status, "ready", "historical inspection remains available");
+  const stage = shared.reference("Inspect the original video");
+  assert.equal(stage.finished({ mode: "replicate" }, dir), false, "referenceObserved must opt into production readiness");
+  assert.equal(stage.action({ mode: "replicate" }, dir).observation.kind, "confirm-shots", "reference action must use the same production checker");
+  const checked = checkReferenceEvidence(dir);
+  assert.equal(checked.stages.video.status, "pending", "the reference gate must opt into production readiness");
+  assert.ok(checked.stages.video.reasons.includes("video-production-inventory-missing"));
+  assert.equal(nextAction(dir).stage, "reference");
+  report.shots = [{ id: "opening", startSec: 0, endSec: report.durationSec, frameIds: report.frames.map(frame => frame.id), targets: [{ target: "logo", properties: ["geometry.contour"] }, { target: "camera", properties: ["motion.translation"] }] }];
+  save();
+  const missing = stage.action({ mode: "replicate" }, dir);
+  assert.equal(missing.observation.kind, "observe-shot-property");
+  assert.equal(missing.observation.target, "camera"); assert.equal(missing.observation.property, "motion.translation");
+  assert.deepEqual(missing.images.map(frame => frame.id), report.shots[0].frameIds);
+  assert.match(missing.command, /camera.*motion\.translation/);
+  report.observations.push({ ...report.observations[0], id: "camera", target: "camera", property: "motion.translation", frameIds: report.frames.slice(0, 2).map(frame => frame.id) });
+  save();
+  assert.equal(stage.finished({ mode: "replicate" }, dir), true);
+  assert.equal(checkReferenceEvidence(dir).stages.video.status, "ready");
+});

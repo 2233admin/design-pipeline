@@ -24,9 +24,11 @@ becomes the ease, so linear keys warn), `assets/<template>-motion.json` with cam
 transforms baked per frame for three.js blocks, and a composition check of the first, middle and
 last frames. The scene is built entirely in code; no .blend files.
 
-Blender is GPL and is not part of this package: install Blender 4.2 LTS or newer and pass
-`--blender <path>` or set `BLENDER_PATH` if it is not in the default install location. The
-template scripts in this package are MIT. EEVEE renders are pixel-identical across runs (Blender
+Blender is GPL and is not part of this package: install Blender 4.2 LTS or newer. Discovery checks
+`--blender`, then `BLENDER_PATH`, then PATH and supported platform locations. A configured path
+that is invalid or fails its version probe is reported as a tool failure; only an unsuccessful
+automatic search reports `TOOL_MISSING`. The template scripts in this package are MIT. EEVEE renders
+are pixel-identical across runs (Blender
 stamps render time into PNG metadata, so compare pixels, not bytes).
 
 The gates cannot see set problems such as a visible backdrop edge or an unflattering final angle;

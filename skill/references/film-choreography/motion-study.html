@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>同一段位移，不同的动作意图</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script src="lib/patterns.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; background: #111a25; }
+      body { color: #f4f1e9; font-family: "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; }
+      svg { display: block; width: 1920px; height: 1080px; }
+      text { font-family: inherit; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="4" data-width="1920" data-height="1080">
+      <svg id="world" data-start="0" data-duration="4" data-track-index="0" viewBox="0 0 1920 1080" role="img" aria-labelledby="title description">
+        <title id="title">同一段位移，不同的动作意图</title>
+        <desc id="description">四秒静音动作研究。上下两条横向路径具有相同的起点和终点：上方匀速移动，下方通过预备、停顿、弧线、冲击和回弹表达另一种动作意图。这里比较选择，不给动作打分。</desc>
+        <defs>
+          <linearGradient id="wash" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1c2a37" />
+            <stop offset="1" stop-color="#141d28" />
+          </linearGradient>
+          <filter id="soft-shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="16" />
+          </filter>
+        </defs>
+        <rect width="1920" height="1080" fill="url(#wash)" />
+        <path d="M0 178H1920M0 1000H1920" stroke="#344353" stroke-width="1" />
+
+        <text x="136" y="100" fill="#d8e4df" font-size="20" letter-spacing="4">MOTION STUDY  /  04 SEC  /  SILENT</text>
+        <text x="136" y="166" fill="#f4f1e9" font-size="52" font-weight="650">同一段位移，不同的动作意图</text>
+        <text x="138" y="214" fill="#aab9c1" font-size="23">相同端点与位移区间，让运动的节奏、轨迹和受力变化成为比较对象。</text>
+
+        <rect x="128" y="250" width="1664" height="300" rx="22" fill="#202c38" stroke="#394957" />
+        <text x="176" y="302" fill="#d2dce0" font-size="18" letter-spacing="2">A  /  等距移动</text>
+        <text x="176" y="340" fill="#f4f1e9" font-size="27" font-weight="600">位置匀速变化</text>
+        <text x="1744" y="315" fill="#96a8b3" font-size="18" text-anchor="end">每帧位移相同</text>
+
+        <g opacity="0.42" stroke="#81909a" stroke-width="2" stroke-dasharray="7 12">
+          <path d="M570 410H1250" />
+          <path d="M570 386V435M1250 386V435" />
+        </g>
+        <circle cx="570" cy="410" r="7" fill="#91a3ab" />
+        <circle cx="1250" cy="410" r="7" fill="#91a3ab" />
+        <text x="570" y="470" fill="#aab9c1" font-size="17" text-anchor="middle">x = 0</text>
+        <text x="1250" y="470" fill="#aab9c1" font-size="17" text-anchor="middle">x = 680</text>
+        <ellipse cx="570" cy="433" rx="43" ry="8" fill="#d9a46b" opacity="0.2" filter="url(#soft-shadow)" />
+        <g transform="translate(570 410)">
+          <g id="constant-subject" style="transform-box: fill-box; transform-origin: center;">
+            <rect x="-30" y="-30" width="60" height="60" rx="10" fill="#d9a46b" />
+            <path d="M-16 0H16M7 -9L16 0L7 9" fill="none" stroke="#19232d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          </g>
+        </g>
+
+        <rect x="128" y="574" width="1664" height="352" rx="22" fill="#202c38" stroke="#394957" />
+        <text x="176" y="626" fill="#d2dce0" font-size="18" letter-spacing="2">B  /  经过设计的动作</text>
+        <text x="176" y="664" fill="#f4f1e9" font-size="27" font-weight="600">预备、停顿、弧线、冲击与回弹</text>
+        <text x="1744" y="638" fill="#96a8b3" font-size="18" text-anchor="end">一种可选表达</text>
+
+        <g opacity="0.42" stroke="#81909a" stroke-width="2" stroke-dasharray="7 12">
+          <path d="M570 758H1250" />
+          <path d="M570 734V783M1250 734V783" />
+        </g>
+        <circle cx="570" cy="758" r="7" fill="#91a3ab" />
+        <circle cx="1250" cy="758" r="7" fill="#91a3ab" />
+        <text x="570" y="828" fill="#aab9c1" font-size="17" text-anchor="middle">x = 0</text>
+        <text x="1250" y="828" fill="#aab9c1" font-size="17" text-anchor="middle">x = 680</text>
+        <circle cx="1250" cy="758" r="36" fill="none" stroke="#738694" stroke-width="2" opacity="0.35" />
+        <circle cx="1250" cy="758" r="50" fill="none" stroke="#738694" stroke-width="1" opacity="0.2" />
+        <ellipse cx="570" cy="782" rx="46" ry="9" fill="#a99bf0" opacity="0.23" filter="url(#soft-shadow)" />
+        <g transform="translate(570 758)">
+          <g id="tail" style="transform-box: fill-box; transform-origin: center;">
+            <path d="M-34 0C-55 -8 -66 -1 -79 0M-34 10C-49 6 -57 10 -65 13" fill="none" stroke="#c6c0f7" stroke-width="4" stroke-linecap="round" opacity="0.75" />
+            <circle cx="-86" cy="0" r="4" fill="#c6c0f7" opacity="0.8" />
+          </g>
+        </g>
+        <g transform="translate(570 758)">
+          <g id="authored-subject" style="transform-box: fill-box; transform-origin: center;">
+            <path d="M-30 -24L4 -30L30 -7L22 25L-9 30L-31 7Z" fill="#a99bf0" />
+            <path d="M-9 -8L4 -15L17 -3L10 13L-5 16L-14 4Z" fill="#28283a" opacity="0.78" />
+            <circle cx="11" cy="-8" r="4" fill="#f4f1e9" />
+          </g>
+        </g>
+
+        <g fill="#c2ccd0" font-size="17">
+          <text x="306" y="884" text-anchor="middle">预备</text>
+          <text x="485" y="884" text-anchor="middle">停顿</text>
+          <text x="854" y="884" text-anchor="middle">腾跃</text>
+          <text x="1170" y="884" text-anchor="middle">接触 / 回弹</text>
+        </g>
+        <g fill="#a99bf0">
+          <circle cx="306" cy="858" r="5" />
+          <circle cx="485" cy="858" r="5" />
+          <circle cx="854" cy="858" r="5" />
+          <circle cx="1170" cy="858" r="5" />
+        </g>
+
+        <text x="136" y="976" fill="#d9e0df" font-size="19">共同条件：起点 x = 0 · 终点 x = 680 · 动画段 3 秒 · 起始于 0.35 秒</text>
+        <text x="1784" y="976" fill="#aab9c1" font-size="18" text-anchor="end">比较选择，不给动作打分</text>
+      </svg>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const P = window.FilmPatterns;
+
+      P["pose-to-pose"](tl, {
+        subject: "#constant-subject",
+        at: 0.35,
+        keys: [
+          { at: 0, pose: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 } },
+          { at: 3, pose: { x: 680, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }, ease: "none" },
+        ],
+      });
+
+      P["pose-to-pose"](tl, {
+        subject: "#authored-subject",
+        at: 0.35,
+        keys: [
+          { at: 0, pose: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 } },
+          { at: 0.5, pose: { x: -48, y: 0, scaleX: 0.9, scaleY: 1.12, rotation: -7 }, ease: "power2.in" },
+          { at: 0.75, pose: { x: -48, y: 0, scaleX: 0.9, scaleY: 1.12, rotation: -7 }, hold: true },
+          { at: 1.45, pose: { x: 294, y: -38, scaleX: 1.12, scaleY: 0.92, rotation: 2 }, ease: "power3.in" },
+          { at: 2.15, pose: { x: 718, y: 8, scaleX: 1.26, scaleY: 0.74, rotation: 4 }, ease: "power2.out" },
+          { at: 2.45, pose: { x: 626, y: -7, scaleX: 1.1, scaleY: 0.94, rotation: -2 }, ease: "power2.out" },
+          { at: 2.55, pose: { x: 660, y: 1, scaleX: 1.03, scaleY: 0.98, rotation: 0.5 }, ease: "power2.out" },
+          { at: 3, pose: { x: 680, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }, ease: "power2.out" },
+        ],
+      });
+
+      P["pose-to-pose"](tl, {
+        subject: "#tail",
+        at: 0.45,
+        keys: [
+          { at: 0, pose: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 } },
+          { at: 0.5, pose: { x: -48, y: 0, scaleX: 0.9, scaleY: 1.12, rotation: -7 }, ease: "power2.in" },
+          { at: 0.75, pose: { x: -48, y: 0, scaleX: 0.9, scaleY: 1.12, rotation: -7 }, hold: true },
+          { at: 1.45, pose: { x: 294, y: -38, scaleX: 1.12, scaleY: 0.92, rotation: 2 }, ease: "power3.in" },
+          { at: 2.15, pose: { x: 718, y: 8, scaleX: 1.26, scaleY: 0.74, rotation: 4 }, ease: "power2.out" },
+          { at: 2.45, pose: { x: 626, y: -7, scaleX: 1.1, scaleY: 0.94, rotation: -2 }, ease: "power2.out" },
+          { at: 2.55, pose: { x: 660, y: 1, scaleX: 1.03, scaleY: 0.98, rotation: 0.5 }, ease: "power2.out" },
+          { at: 3, pose: { x: 680, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }, ease: "power2.out" },
+        ],
+      });
+
+      tl.to({}, { duration: 0.55 }, 3.45);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

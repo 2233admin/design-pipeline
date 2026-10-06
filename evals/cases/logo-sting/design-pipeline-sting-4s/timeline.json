@@ -1,0 +1,306 @@
+{
+  "schema": "design-pipeline.film-timeline.v1",
+  "compositionId": "main",
+  "durationSec": 4,
+  "tweens": [
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 0,
+      "durationSec": 2,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.78
+      },
+      "repeat": 0,
+      "ease": "sine.inOut"
+    },
+    {
+      "targets": [
+        "#head"
+      ],
+      "startSec": 0.2,
+      "durationSec": 0.8,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 120
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#line"
+      ],
+      "startSec": 0.2,
+      "durationSec": 0.8,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 0.3333333333333333
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#gate-1"
+      ],
+      "startSec": 0.96,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor",
+        "boxShadow"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e",
+        "boxShadow": "0 0 28px rgba(62, 207, 142, 0.55)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#head"
+      ],
+      "startSec": 1,
+      "durationSec": 0.5,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 240
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#line"
+      ],
+      "startSec": 1,
+      "durationSec": 0.5,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 0.6666666666666666
+      },
+      "repeat": 0,
+      "ease": "power2.inOut"
+    },
+    {
+      "targets": [
+        "#gate-1"
+      ],
+      "startSec": 1.12,
+      "durationSec": 0.5,
+      "props": [
+        "boxShadow"
+      ],
+      "from": {},
+      "to": {
+        "boxShadow": "0 0 0px rgba(62, 207, 142, 0)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#gate-2"
+      ],
+      "startSec": 1.46,
+      "durationSec": 0.12,
+      "props": [
+        "backgroundColor",
+        "boxShadow"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e",
+        "boxShadow": "0 0 28px rgba(62, 207, 142, 0.55)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#head"
+      ],
+      "startSec": 1.5,
+      "durationSec": 0.5,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 380
+      },
+      "repeat": 0,
+      "ease": "power3.in"
+    },
+    {
+      "targets": [
+        "#line"
+      ],
+      "startSec": 1.5,
+      "durationSec": 0.5,
+      "props": [
+        "scaleX"
+      ],
+      "from": {},
+      "to": {
+        "scaleX": 1
+      },
+      "repeat": 0,
+      "ease": "power3.in"
+    },
+    {
+      "targets": [
+        "#gate-2"
+      ],
+      "startSec": 1.62,
+      "durationSec": 0.5,
+      "props": [
+        "boxShadow"
+      ],
+      "from": {},
+      "to": {
+        "boxShadow": "0 0 0px rgba(62, 207, 142, 0)"
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#head"
+      ],
+      "startSec": 2,
+      "durationSec": 0.45,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "back.out(2.4)"
+    },
+    {
+      "targets": [
+        "#head"
+      ],
+      "startSec": 2,
+      "durationSec": 0.14,
+      "props": [
+        "backgroundColor"
+      ],
+      "from": {},
+      "to": {
+        "backgroundColor": "#3ecf8e"
+      },
+      "repeat": 0,
+      "ease": "power1.out"
+    },
+    {
+      "targets": [
+        "#ring"
+      ],
+      "startSec": 2,
+      "durationSec": 0.6,
+      "props": [
+        "opacity",
+        "scale"
+      ],
+      "from": {
+        "scale": 1,
+        "opacity": 0.85
+      },
+      "to": {
+        "scale": 3.4,
+        "opacity": 0
+      },
+      "repeat": 0,
+      "ease": "power2.out"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 2.4,
+      "durationSec": 0.9,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#lockup"
+      ],
+      "startSec": 2.4,
+      "durationSec": 0.9,
+      "props": [
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 0
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#word"
+      ],
+      "startSec": 2.4,
+      "durationSec": 0.9,
+      "props": [
+        "clipPath",
+        "x"
+      ],
+      "from": {},
+      "to": {
+        "x": 0,
+        "clipPath": "inset(0% 0% 0% 0%)"
+      },
+      "repeat": 0,
+      "ease": "power3.inOut"
+    },
+    {
+      "targets": [
+        "#world"
+      ],
+      "startSec": 3.3,
+      "durationSec": 0.7,
+      "props": [
+        "scale"
+      ],
+      "from": {},
+      "to": {
+        "scale": 1.012
+      },
+      "repeat": 0,
+      "ease": "sine.out"
+    }
+  ]
+}

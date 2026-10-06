@@ -1,0 +1,171 @@
+{
+  "schema": "design-pipeline.golden-case.v1",
+  "id": "design-pipeline-sting-4s",
+  "deliverableType": "logo-sting",
+  "workflow": "film",
+  "brief": "Make a 4-second logo sting for design-pipeline, an agent skill whose gates check design and motion work before anyone sees it. Use the design-pipeline skill. Deliver storyboard.json, timeline.json and out.mp4 with a scored sound.",
+  "product": "design-pipeline (this repository); DESIGN.md sets the status colours and monospace identifiers",
+  "author": "claude-opus-5-5",
+  "status": "approved",
+  "approval": {
+    "verdict": "accept",
+    "by": "user",
+    "date": "2026-09-29",
+    "note": "Accepted as sent. The file the user watched was later overwritten by verification renders of the same sources (commit 392f07f); renders are not byte-identical, so this hash names that re-render.",
+    "renderSha256": "9dab41a12fa5507b2459f2e45b62560ebfa08ade24c49d89980cbe4fa83de4dd"
+  },
+  "golden": {
+    "storyboard": "storyboard.json",
+    "timeline": "timeline.json",
+    "composition": "index.html",
+    "score": { "pattern": "score.strudel.js", "bpm": 120, "fadeOutSec": 0.4 }
+  },
+  "rules": [
+    {
+      "id": "mark-carries-the-meaning",
+      "choice": "The mark is the product in one line: work (the line) stops at checks (two gates), each gate turns green, and the checked work lands as the output (the dot). The sting animates that meaning instead of revealing a finished logo.",
+      "rule": "A logo sting animates what the mark means; every beat changes the mark. A logo that fades or scales in and then holds is a title card, not a sting.",
+      "enforcedBy": { "kind": "gate", "gate": "storyboard", "codes": ["surface-only-motion", "transformation-missing", "hold-dominant"] },
+      "fix": "Name the action the mark performs (travels, checks, lands, becomes) and give each beat a from/to change of the mark itself."
+    },
+    {
+      "id": "ease-into-each-check",
+      "choice": "The line head eases into each gate and pauses there while the gate turns green, then accelerates into the landing; the two ticks fall on beats 3 and 4 of the first bar and the landing on the next downbeat.",
+      "rule": "Travelling elements ease; the stop at each check is the rhythm. Accents sit on the musical grid.",
+      "enforcedBy": { "kind": "gate", "gate": "timeline", "codes": ["linear-motion"] },
+      "fix": "Split the travel into legs that end on beats and ease each leg (power2.inOut into a stop, power3.in into an impact)."
+    },
+    {
+      "id": "transforms-not-layout",
+      "choice": "The line grows with scaleX from its left edge and the head moves with x.",
+      "rule": "Animate transforms, never layout properties, so every frame seeks deterministically and nothing reflows.",
+      "enforcedBy": { "kind": "gate", "gate": "timeline", "codes": ["layout-tween"] },
+      "fix": "Replace width/left tweens with scaleX (transform-origin at the growing edge) and x."
+    },
+    {
+      "id": "closed-film",
+      "choice": "Every tween ends inside the 4 s; the lockup holds still for the last 0.7 s while only the camera breathes.",
+      "rule": "A rendered sting has no infinite loops; a shimmer or pulse gets a fixed count that ends before the film does.",
+      "enforcedBy": { "kind": "gate", "gate": "timeline", "codes": ["infinite-repeat"] },
+      "fix": "Give repeating accents a finite repeat that ends before durationSec, or remove them."
+    },
+    {
+      "id": "reveal-without-a-jump",
+      "choice": "The camera pulls back, the lockup slides to centre and the name emerges from behind the dot in one 0.9 s move on one ease.",
+      "rule": "A continuation boundary is one continuous move; the frame must never jump to its next layout.",
+      "enforcedBy": { "kind": "gate", "gate": "render", "codes": ["carry-cut"] },
+      "fix": "Replace sets at the boundary with tweens that start before it and end after it."
+    },
+    {
+      "id": "fill-the-frame-early",
+      "choice": "The camera starts 1.9x close on the mark, so the thin line and gates read as bold shapes, and pulls back only when the name needs the room.",
+      "rule": "A small mark in a large dark frame reads as an empty frame; frame the subject for the moment, not for the final layout.",
+      "enforcedBy": { "kind": "gate", "gate": "composition", "codes": ["blank-frame"] },
+      "fix": "Start close on the subject and pull back when the layout grows; or scale the subject up for the beats where it is alone."
+    },
+    {
+      "id": "name-the-font-family",
+      "choice": "The wordmark sets font-family: \"JetBrains Mono\" explicitly.",
+      "rule": "Declare the typeface with font-family; the renderer embeds its bundled fonts by reading font-family declarations.",
+      "enforcedBy": { "kind": "review", "gap": "The first render used the font shorthand; HyperFrames did not embed JetBrains Mono and the name fell back to Courier New. No gate reads the rendered typeface. Candidate check: flag text styled only through the font shorthand." },
+      "fix": "Split the font shorthand into font-family, font-weight, font-size and line-height."
+    },
+    {
+      "id": "no-early-from-state",
+      "choice": "The landing ring is a fromTo with immediateRender: false, so it stays hidden until 2 s.",
+      "rule": "An element must not appear before its beat.",
+      "enforcedBy": { "kind": "review", "gap": "The first render showed the ring from frame 0 because fromTo renders its from-state when built. The timeline probe does not record from-states that are visible before the tween starts." },
+      "fix": "Pass immediateRender: false on fromTo tweens placed later in the timeline, or set the from-state with tl.set at the tween's start."
+    },
+    {
+      "id": "reveal-inside-the-frame",
+      "choice": "The name's reveal shares the pull-back's span and ease, so the revealed part is always inside the frame.",
+      "rule": "Nothing is cropped by the frame edge mid-transition unless the crop is the idea.",
+      "enforcedBy": { "kind": "review", "gap": "A faster reveal ran ahead of the camera and cut the name off at the right edge around 2.75 s. The composition gate samples beat midpoints only and has no text bounds for rendered frames." },
+      "fix": "Drive coupled moves (camera, layout shift, reveal) from one span and one ease."
+    }
+  ],
+  "counterExamples": [
+    {
+      "id": "fade-and-hold",
+      "failureClass": "generic-concept",
+      "rule": "mark-carries-the-meaning",
+      "target": "storyboard",
+      "defect": "The logo fades and scales in for a second and then holds for three.",
+      "patch": {
+        "storyboard": [
+          { "op": "replace", "path": "/beats", "value": [
+            { "id": "logo-in", "startSec": 0, "endSec": 1, "role": "action", "subject": "the logo lockup", "productAction": "The logo appears", "transformation": { "kind": "none" }, "handoff": "open", "motion": ["fade-in", "scale-in"], "soundCues": ["riser-in", "gate-1-tick"] },
+            { "id": "logo-hold", "startSec": 1, "endSec": 4, "role": "brand-hold", "subject": "the logo lockup", "productAction": "The logo holds", "transformation": { "kind": "none" }, "handoff": "continuation", "carrier": "the logo stays on screen", "motion": ["hold"], "soundCues": ["land", "ring-out"] }
+          ] }
+        ]
+      },
+      "expect": ["surface-only-motion", "transformation-missing", "hold-dominant"]
+    },
+    {
+      "id": "linear-travel",
+      "failureClass": "rough-execution",
+      "rule": "ease-into-each-check",
+      "target": "timeline",
+      "defect": "The line head crosses between the gates at constant speed.",
+      "patch": {
+        "timeline": [
+          { "op": "update-where", "path": "/tweens", "match": { "targets": ["#head"], "startSec": 1, "props": ["x"] }, "set": { "ease": "none" } }
+        ]
+      },
+      "expect": ["linear-motion"]
+    },
+    {
+      "id": "width-tween",
+      "failureClass": "tool-misuse",
+      "rule": "transforms-not-layout",
+      "target": "timeline",
+      "defect": "The line grows by tweening its width.",
+      "patch": {
+        "timeline": [
+          { "op": "update-where", "path": "/tweens", "match": { "targets": ["#line"], "startSec": 0.2 }, "set": { "props": ["width"] } }
+        ]
+      },
+      "expect": ["layout-tween"]
+    },
+    {
+      "id": "forever-shimmer",
+      "failureClass": "tool-misuse",
+      "rule": "closed-film",
+      "target": "timeline",
+      "defect": "The first gate keeps shimmering with repeat: -1.",
+      "patch": {
+        "timeline": [
+          { "op": "add", "path": "/tweens/-", "value": { "targets": ["#gate-1"], "startSec": 1.2, "durationSec": 0.6, "props": ["boxShadow"], "from": {}, "to": {}, "repeat": -1, "ease": "sine.inOut" } }
+        ]
+      },
+      "expect": ["infinite-repeat"]
+    },
+    {
+      "id": "jump-reveal",
+      "failureClass": "rough-execution",
+      "rule": "reveal-without-a-jump",
+      "target": "render",
+      "defect": "At 2.5 s the camera, the lockup and the name jump to their final layout in one frame.",
+      "edits": [
+        { "find": "tl.to(\"#world\", { scale: 1.0, duration: 0.9, ease: \"power3.inOut\" }, 2.4);", "replace": "tl.set(\"#world\", { scale: 1.0 }, 2.5);" },
+        { "find": "tl.to(\"#lockup\", { x: 0, duration: 0.9, ease: \"power3.inOut\" }, 2.4);", "replace": "tl.set(\"#lockup\", { x: 0 }, 2.5);" },
+        { "find": "tl.to(\"#word\", { x: 0, clipPath: \"inset(0% 0% 0% 0%)\", duration: 0.9, ease: \"power3.inOut\" }, 2.4);", "replace": "tl.set(\"#word\", { x: 0, clipPath: \"inset(0% 0% 0% 0%)\" }, 2.5);" }
+      ],
+      "expect": ["carry-cut"]
+    },
+    {
+      "id": "small-in-frame",
+      "failureClass": "taste-gap",
+      "rule": "fill-the-frame-early",
+      "target": "render",
+      "defect": "The camera stays at 1x, so the mark is a thin line in an empty frame for the first two beats.",
+      "edits": [
+        { "find": "const CLOSE = 1.9;", "replace": "const CLOSE = 1.0;" },
+        { "find": "tl.to(\"#world\", { scale: 1.78, duration: 2.0, ease: \"sine.inOut\" }, 0);", "replace": "tl.to(\"#world\", { scale: 1.02, duration: 2.0, ease: \"sine.inOut\" }, 0);" }
+      ],
+      "expect": ["blank-frame"]
+    }
+  ],
+  "reviewedWarnings": []
+}

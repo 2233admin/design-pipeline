@@ -8,7 +8,7 @@ const test = require("node:test");
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
-const manifestFile = path.join(repoRoot, "skill/references/iart-motion-skills/manifest.json");
+const manifestFile = path.join(repoRoot, "skill/vendor/iart-motion-skills/manifest.json");
 const {
   loadIartCatalog,
   routeIartRequest,

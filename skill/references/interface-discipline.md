@@ -6,8 +6,8 @@ optional companion: a clean `design-pipeline` install contains every skill and s
 reference listed below. Do not depend on an ambient global skill installation or network access.
 
 The pinned source, license, file count, and canonical tree hash live in
-`references/interface-discipline/manifest.json`. The byte-preserved source is under
-`references/interface-discipline/upstream/`; update it atomically with its manifest, third-party
+`vendor/interface-discipline/manifest.json`. The byte-preserved source is under
+`vendor/interface-discipline/upstream/`; update it atomically with its manifest, third-party
 notice, and integrity test.
 
 ## Coverage And Ownership

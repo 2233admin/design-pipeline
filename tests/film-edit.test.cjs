@@ -94,16 +94,30 @@ test("edit check reports each rule with a fix", () => {
   for (const code of Object.keys(HINTS)) assert.ok(HINTS[code].length > 30, code);
 });
 
-test("the storyboard derived from an edit passes the storyboard gate only with filmRhythm off", () => {
+test("a music-cut edit can keep deliberate momentum while exposing rhythm warnings", () => {
   const edit = autoEdit(music(), sources(), { style: "mad" });
   const board = storyboardFromEdit(edit, music());
   const strict = checkStoryboard(board);
-  assert.equal(strict.status, "failed");
+  assert.equal(strict.status, "passed");
   assert.ok(codes(strict).includes("no-rest"), "a continuous music-cut edit has no title/brand hold or holdSec");
+  assert.equal(strict.findings.find((f) => f.code === "no-rest").severity, "warn");
   const result = checkStoryboard(board, { filmRhythm: false });
   assert.equal(result.status, "passed", JSON.stringify(result.findings));
   assert.equal(board.beats.length, edit.clips.length);
   assert.ok(board.beats.slice(1).every((beat) => beat.handoff === "hard-cut"));
+});
+
+test("an intentional off-grid cut passes but an actual timeline gap still fails", () => {
+  const edit = autoEdit(music(), sources(), { style: "pv" });
+  edit.clips[0].durSec += 0.2;
+  edit.clips[1].atSec += 0.2;
+  edit.clips[1].durSec -= 0.2;
+  const result = checkEdit(edit, music());
+  assert.equal(result.status, "passed", JSON.stringify(result.findings));
+  assert.equal(result.findings.find((f) => f.code === "cut-off-grid").severity, "warn");
+  edit.clips[1].atSec += 0.1;
+  assert.equal(checkEdit(edit, music()).status, "failed");
+  assert.ok(codes(checkEdit(edit, music())).includes("timeline-gap"));
 });
 
 test("film edit end to end: analyze, auto, render and check generated footage", { skip }, () => {
@@ -128,9 +142,8 @@ test("film edit end to end: analyze, auto, render and check generated footage", 
     assert.deepEqual(check.steps.map((step) => step.gate), ["edit", "render", "audio", "composition"]);
     const renderStep = check.steps.find((step) => step.gate === "render");
     assert.ok(renderStep.cuts.detectedSec.length >= 3, "cuts are visible in the render");
-    // A continuous music-cut edit has no title/brand hold; without edit-project-core forwarding
-    // filmRhythm: false to evaluateFilmRender, the derived storyboard's no-rest finding would
-    // fail this step even though the render itself is clean.
+    // A continuous music-cut edit has no title/brand hold. Picture timing is a review choice;
+    // this render must still pass the structural and pixel checks.
     assert.equal(renderStep.status, "passed", JSON.stringify(renderStep));
     assert.equal(check.creativeAcceptance, "not-assessed");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }

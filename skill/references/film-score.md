@@ -14,9 +14,10 @@ designer-pipeline audio master --input assets/score.wav --output assets/score-ma
   later runs without `--template` render your edited pattern.
 - Output: `assets/score.wav`, and `score-grid.json` with the beat grid and every note/sound
   onset from the pattern (Strudel `queryArc`), not detected from audio.
-- Gate: hard and match cuts, and `downbeat`/`accent`/`impact` cues, must sit within one frame of
-  a beat or event (`cut-off-grid`, `cue-off-grid`, each with the snap time). `film check` runs it
-  whenever `score-grid.json` exists.
+- Gate: declared `downbeat`/`accent`/`impact` cues promise a musical event within one frame
+  (`cue-off-grid` is an error). Hard and match cuts outside that window produce `cut-off-grid`
+  warnings: review the intended anticipation, delay or counterpoint before snapping them.
+  `film check` runs this check whenever `score-grid.json` exists.
 - `--write` records the score in `sound.assets` so the audio gate's license check passes.
 
 Licensing: Strudel is AGPL-3.0-or-later. It is not part of this package. On first use `film score`

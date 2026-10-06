@@ -63,6 +63,12 @@ test("grid alignment flags cuts and accent cues off the musical grid with the sn
   board.beats[2].handoff = "camera-carry";
   board.beats[2].startSec = 5;
   assert.equal(checkGridAlignment(board, withEvents).status, "passed", "an event on the cue counts even off the beat");
+  board.beats[2].handoff = "hard-cut";
+  board.beats[2].startSec = 5.1;
+  const intentionalCut = checkGridAlignment(board, withEvents);
+  assert.equal(intentionalCut.status, "passed", "an off-grid cut can counterpoint an accurately cued score");
+  assert.equal(intentionalCut.findings[0].severity, "warn");
+  assert.equal(checkGridAlignment(board, grid).status, "failed", "a promised accent with no musical event remains a failure");
 });
 
 test("film score writes the pattern, grid and license record, and refuses to overwrite a pattern", () => {

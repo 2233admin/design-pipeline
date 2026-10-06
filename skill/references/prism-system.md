@@ -1,7 +1,7 @@
 # Prism System, internalized
 
 The complete reviewed Prism design-skill layer is bundled at
-`references/prism-system/upstream/skills/`: 107 skills across design, discovery, Figma,
+`vendor/prism-system/upstream/skills/`: 107 skills across design, discovery, Figma,
 foundations, handoff, quality, React, and workflow. The snapshot is pinned to
 `e93f2a3019162f1da19a9a8c3a5db0f1fba48631` and retains the upstream MIT license.
 

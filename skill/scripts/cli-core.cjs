@@ -15,7 +15,7 @@ const {
   writeNewChange,
 } = require("./pipeline-state-core.cjs");
 const { compileDesignPlan, validatePlan } = require("./plan-core.cjs");
-const { validateArtifactMetadata } = require("./artifact-core.cjs");
+const { createArtifactMetadata, validateArtifactMetadata } = require("./artifact-core.cjs");
 const { checkInteractionStateCoverage } = require("./gate-core.cjs");
 const { explainBlock, packageChange, readPlan, resume: resumeControl, runTo } = require("./control-runtime-core.cjs");
 const { checkScene } = require("./scene-runtime-core.cjs");
@@ -45,6 +45,7 @@ const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
+const { scaffoldVisualCraft } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
 const { scoreFilm } = require("./score-project-core.cjs");
@@ -53,6 +54,7 @@ const { listTemplates } = require("./blender-core.cjs");
 const editProject = require("./edit-project-core.cjs");
 const workflow = require("./workflow-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
+const { compareComposition } = require("../tools/visual-diagnostics/diagnostics.cjs");
 const { decodePng } = require("./png-core.cjs");
 const { checkAudio, masterAudio } = require("./audio-core.cjs");
 const { auditPatterns, searchPatterns, validateDesignCodeMap, validateTokens, validateUiIr } = require("./interoperability-core.cjs");
@@ -122,7 +124,7 @@ const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker
 const { inspectDesignMdSource, searchDesignMdSource, verifyDesignMdSource } = require("./design-md-source-core.cjs");
 const { routeIartRequest, searchIartSkills, verifyIartSnapshot } = require("./iart-motion-skills-core.cjs");
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
-const { probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
+const { buildToolchainRequest, probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
 const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
 const { run: runAdaptation } = require("./adaptation-core.cjs");
 const {
@@ -147,6 +149,7 @@ const KNOWN_OPTIONS = new Set([
   "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
+  "--start", "--end", "--fps", "--max-frames",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
 function parseArgs(argv) {
@@ -234,6 +237,10 @@ function artifact(parsed, root, flag, fallback, mustExist = true) {
   return contained(root, raw, flag, mustExist);
 }
 
+function sameFilePath(left, right) {
+  return path.relative(fs.realpathSync(left), fs.existsSync(right) ? fs.realpathSync(right) : right) === "";
+}
+
 function builtIn(name) {
   return path.join(referencesRoot, name);
 }
@@ -276,51 +283,51 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
   }
   let mengto = null;
   try {
-    mengto = verifyMengToSnapshot(path.join(skillRoot, "references", "mengto-skills", "manifest.json"));
-    if (mengto.status !== "ready") missing.push("references/mengto-skills/upstream/**");
+    mengto = verifyMengToSnapshot(path.join(skillRoot, "vendor", "mengto-skills", "manifest.json"));
+    if (mengto.status !== "ready") missing.push("vendor/mengto-skills/upstream/**");
   } catch (error) {
     mengto = { status: "blocked", issues: [error.message] };
-    missing.push("references/mengto-skills/manifest.json");
+    missing.push("vendor/mengto-skills/manifest.json");
   }
   let shadcnio = null;
   try {
-    shadcnio = verifyShadcnioComponentSnapshot(path.join(skillRoot, "references", "shadcnio-react-components", "manifest.json"));
-    if (shadcnio.status !== "ready") missing.push("references/shadcnio-react-components/upstream/**");
+    shadcnio = verifyShadcnioComponentSnapshot(path.join(skillRoot, "vendor", "shadcnio-react-components", "manifest.json"));
+    if (shadcnio.status !== "ready") missing.push("vendor/shadcnio-react-components/upstream/**");
   } catch (error) {
     shadcnio = { status: "blocked", issues: [error.message] };
-    missing.push("references/shadcnio-react-components/manifest.json");
+    missing.push("vendor/shadcnio-react-components/manifest.json");
   }
   let prism = null;
   try {
-    prism = verifyPrismSnapshot(path.join(skillRoot, "references", "prism-system", "manifest.json"));
-    if (prism.status !== "ready") missing.push("references/prism-system/upstream/**");
+    prism = verifyPrismSnapshot(path.join(skillRoot, "vendor", "prism-system", "manifest.json"));
+    if (prism.status !== "ready") missing.push("vendor/prism-system/upstream/**");
   } catch (error) {
     prism = { status: "blocked", issues: [error.message] };
-    missing.push("references/prism-system/manifest.json");
+    missing.push("vendor/prism-system/manifest.json");
   }
   let holosticker = null;
   try {
-    holosticker = verifyHolostickerSnapshot(path.join(skillRoot, "references", "holosticker", "manifest.json"));
-    if (holosticker.status !== "ready") missing.push("references/holosticker/upstream/**");
+    holosticker = verifyHolostickerSnapshot(path.join(skillRoot, "vendor", "holosticker", "manifest.json"));
+    if (holosticker.status !== "ready") missing.push("vendor/holosticker/upstream/**");
   } catch (error) {
     holosticker = { status: "blocked", issues: [error.message] };
-    missing.push("references/holosticker/manifest.json");
+    missing.push("vendor/holosticker/manifest.json");
   }
   let designMdSource = null;
   try {
-    designMdSource = verifyDesignMdSource(path.join(skillRoot, "references", "design-md", "manifest.json"));
-    if (designMdSource.status !== "ready") missing.push("references/design-md/upstream/**");
+    designMdSource = verifyDesignMdSource(path.join(skillRoot, "vendor", "design-md", "manifest.json"));
+    if (designMdSource.status !== "ready") missing.push("vendor/design-md/upstream/**");
   } catch (error) {
     designMdSource = { status: "blocked", issues: [error.message] };
-    missing.push("references/design-md/manifest.json");
+    missing.push("vendor/design-md/manifest.json");
   }
   let iart = null;
   try {
-    iart = verifyIartSnapshot(path.join(skillRoot, "references", "iart-motion-skills", "manifest.json"));
-    if (iart.status !== "ready") missing.push("references/iart-motion-skills/upstream/**");
+    iart = verifyIartSnapshot(path.join(skillRoot, "vendor", "iart-motion-skills", "manifest.json"));
+    if (iart.status !== "ready") missing.push("vendor/iart-motion-skills/upstream/**");
   } catch (error) {
     iart = { status: "blocked", issues: [error.message] };
-    missing.push("references/iart-motion-skills/manifest.json");
+    missing.push("vendor/iart-motion-skills/manifest.json");
   }
   const nodeSupported = Number.parseInt(nodeVersion.split(".")[0], 10) >= 22;
   const registry =
@@ -374,6 +381,8 @@ function publicHelp() {
     "  route --query [--write --output]",
     "  change init|resume|advance|migrate|repair",
     "  foundation check [--kind design|motion|all] | direction check | playground check | reference check|resolve | reconstruction check | scene check",
+    "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400]   (decoded timed windows; observations pending)",
+    "  project inspect [--project-root <dir>] [--scope <relative-dir>] [--query <brief>] [--write --output project-analysis.json]   (read-only source evidence)",
     "  component-first check|stack|components|playground|page",
     "  high-fidelity check",
     "  component-first-v2 check|migrate|select|promote",
@@ -392,7 +401,9 @@ function publicHelp() {
     "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>]",
     "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
-    "  film scaffold --output <dir> [--replace]",
+    "  composition scaffold --output <new-dir> [--template visual-craft]",
+    "  composition compare --source <png> --image <png> --output <new-dir>",
+    "  film scaffold --output <dir> [--template default|motion-study] [--replace]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>]   (one next step)",
     "  decide --project-root . --stage intake|reference|concept|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
@@ -414,6 +425,7 @@ function publicHelp() {
     "  holosticker inspect|verify",
     "  designmd sync|search|inspect|verify",
     "  iart search|route|verify",
+    "  toolchain request --plan <job-plan.json> --artifact <stack-input.json> [--write --output <toolchain-request.json>]",
     "  toolchain resolve|probe|receipt-check",
     "  execution route|prepare|finalize",
     "  benchmark brief --manifest <file> | benchmark evaluate --manifest <file> --measurements <file> [--record-feedback]",
@@ -727,6 +739,24 @@ function referenceResolveCommand(parsed, root) {
   return { result, exitCode: 0 };
 }
 
+function analysisRoot(parsed, root) {
+  return option(parsed, "--change-root") ? changeRootFrom(parsed, root)
+    : option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : root;
+}
+
+function projectInspectCommand(parsed, root) {
+  const project = analysisRoot(parsed, root);
+  const report = require("./project-analysis-core.cjs").inspectProject(project, { query: option(parsed, "--query") || undefined, scope: option(parsed, "--scope") || undefined });
+  let output = null, metadata = null;
+  if (option(parsed, "--write") === true) {
+    const target = contained(project, requireOption(parsed, "--output"), "--output", false);
+    if (fs.existsSync(target)) fail("cli", "project inspection output must use a new path; preserve source files and previous reports", { code: "OPTION_CONFLICT" });
+    output = writeResult(parsed, project, report);
+    metadata = createArtifactMetadata({ path: path.relative(project, target), producer: "project-inspect", input_hashes: Object.fromEntries(report.files.map(file => [file.path, file.hash])), dependencies: report.files.map(file => file.path), created_at: new Date().toISOString() }, { changeRoot: project });
+  }
+  return { result: { status: report.status, report, ...(output ? { output, metadata } : {}) }, exitCode: 0 };
+}
+
 function benchmarkFeedback(root, result) {
   const failing = [...result.failedRequired, ...result.unknownRequired];
   if (!failing.length) return null;
@@ -930,6 +960,21 @@ function toolchainSources() {
 }
 
 function toolchainCommand(parsed, root, action) {
+  if (action === "request") {
+    const planFile = artifact(parsed, root, "--plan");
+    const choicesFile = artifact(parsed, root, "--artifact");
+    const request = buildToolchainRequest(
+      readJson(planFile, "job plan"),
+      readJson(choicesFile, "toolchain choices"),
+      path.relative(root, planFile).split(path.sep).join("/"),
+    );
+    if (option(parsed, "--write") === true) {
+      const target = artifact(parsed, root, "--output", undefined, false);
+      if ([planFile, choicesFile].some((input) => sameFilePath(input, target))) fail("cli", "request output must not overwrite the job plan or choices");
+    }
+    const output = writeResult(parsed, root, request);
+    return { result: { status: "prepared", request, ...(output ? { output } : {}) }, exitCode: 0 };
+  }
   if (["resolve", "probe"].includes(action)) {
     const request = readJson(artifact(parsed, root, "--artifact"), "toolchain request");
     const jobPlan = request.jobPlanPath
@@ -1344,13 +1389,29 @@ function jobRouteCommand(parsed, root) {
   });
   let output = null;
   let planSha256 = null;
+  let handoff = null;
   if (option(parsed, "--write") === true) {
     const plan = buildJobPlan(result);
     output = writeResult(parsed, root, plan);
     planSha256 = plan.planSha256;
+    const [choicesPath, requestPath] = ["stack-input.json", "toolchain-request.json"].map((name) => {
+      let candidate = name;
+      let suffix = 0;
+      while (sameFilePath(output, path.join(root, candidate))) candidate = name.replace(/\.json$/, `.${++suffix}.json`);
+      return candidate;
+    });
+    handoff = {
+      command: "toolchain",
+      action: "request",
+      argv: [process.execPath, path.join(__dirname, "designer-pipeline.cjs"), "toolchain", "request", "--root", root, "--plan", path.relative(root, output).split(path.sep).join("/"), "--artifact", choicesPath, "--write", "--output", requestPath, "--json"],
+      choicesPath,
+      requestPath,
+      requiredInputs: ["framework", ...(plan.primaryKnowledge.id === "graphics-runtime" ? ["graphics.family or graphics.adapter (or existing.graphics)"] : [])],
+      note: `Write explicit project choices first; request preparation does not probe a runtime or grant visual acceptance. Then run toolchain resolve --artifact ${requestPath}.`,
+    };
   }
   return {
-    result: { ...result, ...(output ? { output, planSha256 } : {}) },
+    result: { ...result, ...(output ? { output, planSha256, handoff } : {}) },
     exitCode: result.status === "ready" ? 0 : 2,
   };
 }
@@ -1860,8 +1921,13 @@ const COMMANDS = {
     actions: {
       check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) },
       resolve: { run: ({ parsed, root }) => referenceResolveCommand(parsed, root) },
+      "analyze-video": { required: ["--path", "--output"], run: ({ parsed, root }) => {
+        const result = require("./reference-video-core.cjs").analyzeVideo(analysisRoot(parsed, root), { path: option(parsed, "--path"), output: option(parsed, "--output"), ...(option(parsed, "--start") !== null ? { startSec: Number(option(parsed, "--start")) } : {}), ...(option(parsed, "--end") !== null ? { endSec: Number(option(parsed, "--end")) } : {}), ...(option(parsed, "--fps") !== null ? { sampleFps: Number(option(parsed, "--fps")) } : {}), ...(option(parsed, "--max-frames") !== null ? { maxFrames: Number(option(parsed, "--max-frames")) } : {}) });
+        return { result, exitCode: 0 };
+      } },
     },
   },
+  project: { actions: { inspect: { run: ({ parsed, root }) => projectInspectCommand(parsed, root) } } },
   reconstruction: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   scene: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   tokens: { actions: { check: { required: ["--artifact"], run: tokensCheckCommand } } },
@@ -1879,7 +1945,7 @@ const COMMANDS = {
     actions: {
       scaffold: {
         required: ["--output"],
-        run: ({ parsed, root }) => ({ result: scaffoldFilm(contained(root, option(parsed, "--output"), "--output", false), { replace: option(parsed, "--replace") === true }), exitCode: 0 }),
+        run: ({ parsed, root }) => ({ result: scaffoldFilm(contained(root, option(parsed, "--output"), "--output", false), { template: option(parsed, "--template"), replace: option(parsed, "--replace") === true }), exitCode: 0 }),
       },
       "capture-timeline": {
         required: [],
@@ -1954,6 +2020,20 @@ const COMMANDS = {
   },
   composition: {
     actions: {
+      scaffold: {
+        required: ["--output"],
+        run: ({ parsed, root }) => ({
+          result: scaffoldVisualCraft(root, { output: option(parsed, "--output"), template: option(parsed, "--template"), replace: option(parsed, "--replace") === true }),
+          exitCode: 0,
+        }),
+      },
+      compare: {
+        required: ["--image", "--source", "--output"],
+        run: ({ parsed, root }) => ({
+          result: compareComposition(root, { image: option(parsed, "--image"), source: option(parsed, "--source"), output: option(parsed, "--output") }),
+          exitCode: 0,
+        }),
+      },
       capture: {
         required: ["--output"],
         run: ({ parsed, root }) => {
@@ -1968,6 +2048,11 @@ const COMMANDS = {
   },
   next: {
     run: ({ parsed, root }) => {
+      if (option(parsed, "--change-root")) {
+        if (option(parsed, "--deliverable") || option(parsed, "--replace")) fail("cli", "native visual tasks cannot initialize a legacy workflow", { code: "OPTION_CONFLICT" });
+        const result = workflow.nextVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan") });
+        return { result, exitCode: result.status === "blocked" ? 2 : 0 };
+      }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
       if (option(parsed, "--deliverable")) workflow.initState(project, { deliverable: option(parsed, "--deliverable"), tier: option(parsed, "--tier"), mode: option(parsed, "--mode"), director: option(parsed, "--director"), replace: option(parsed, "--replace") === true });
       return { result: workflow.nextAction(project), exitCode: 0 };
@@ -1975,6 +2060,10 @@ const COMMANDS = {
   },
   decide: {
     run: ({ parsed, root }) => {
+      if (option(parsed, "--change-root")) {
+        const result = workflow.decideVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan"), choice: option(parsed, "--choice"), artifact: option(parsed, "--artifact"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer") });
+        return { result, exitCode: result.status === "blocked" ? 2 : 0 };
+      }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
       return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer") }), exitCode: 0 };
     },

@@ -20,6 +20,11 @@ security, degradation, and benchmark admission.
 
 Model capability can improve implementation quality; it does not replace these contracts.
 
+For drawing, image placement, type fitting, material techniques or visual diagnostics, load
+`tools/README.md` and only the selected helper. These are supporting tools within the selected
+runtime (for example native `canvas-2d`), not another runtime registry or a film requirement.
+Keep interactive text, controls and accessibility in the project's semantic DOM where applicable.
+
 ## Selection Order
 
 1. Identify product profile and primary user loop.
@@ -84,3 +89,33 @@ node skill/scripts/designer-pipeline.cjs adapter audit --root . --json
 New candidates enter through `adapter-intake.schema.json` and `adapter intake`, with pinned source
 revision/hash, license evidence, maintenance evidence, permission/network review, adoption mode,
 update/removal policy, and score provenance. A registry change requires deterministic tests.
+
+## Threejs Project Lifecycle
+
+Reviewed runtime baseline: Three.js 0.186.1, source commit
+`9b4a2ac29c63ccb43fd51c5661f2f873ac2c39b8` (r186), checked 2026-10-07. The r186 migration notes
+that `BufferGeometryUtils.toTrianglesDrawMode()` now mutates its input geometry and that
+`LightProbeGrid`/`LightProbeGridHelper` were renamed to their `WebGL` forms. Clone geometry before
+conversion when the original must remain unchanged. This reviewed baseline does not pin or upgrade
+a target project; verify that project's exact installed version before using an API.
+
+Both `threejs` and `threejs-fixed-camera` use the target project's installed Three.js. Declare an
+exact version in `dependencies.three` or `devDependencies.three` and provide a nonempty
+`package.json#scripts.dev` for that project's development server. The existing toolchain probe
+reads `node_modules/three/package.json`, checks the declared and installed versions match, and
+imports that explicit local package. It never installs a package, searches global modules or
+starts the server. Missing dependencies, version ranges, mismatches, missing dev scripts and
+import errors remain blocked with their concrete cause.
+
+The returned invocation is `npm run dev`, owned by the target project. If the project already has
+a start command, its `dev` script can call that command. The agent must run and record the actual
+invocation before supplying evidence. Package import proves availability only. The plan lists
+scene, screenshot and performance evidence for `design-pipeline.toolchain-receipt.v1`; collect
+those from the real browser, including shader compilation and deterministic sampling where
+required. Receipt structure and file hashes do not prove runtime behavior or visual acceptance.
+
+For an interactive component or VFX, also activate its play/trigger control and capture two
+canvas frames during the active interval. Seeking to different times and observing an idle
+endpoint do not prove playback. With a paused GSAP timeline, `timeline.pause(0)` only resets;
+`timeline.restart()` starts it. Keep that timeline as the animation clock and check reduced-motion
+initialization separately. Visual acceptance remains a separate user review.

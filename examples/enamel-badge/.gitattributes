@@ -1,0 +1,4 @@
+vendor/three/* -text
+licenses/* -text
+lib/postprocessing/* -text
+lib/shaders/* -text

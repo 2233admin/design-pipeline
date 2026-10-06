@@ -120,6 +120,25 @@ test("explicit jobs beat scored jobs, and default catches unmatched briefs", () 
   assert.equal(fallback.primaryKnowledge.id, "prism");
 });
 
+test("game VFX and shader briefs select graphics without a library name", () => {
+  for (const query of [
+    "制作游戏法术 VFX 效果，蓄力、冲击波、火花和消散，GPU shader，可重播和调整强度",
+    "开发游戏特效：蓄力、冲击和消散",
+    "Build a GLSL material editor",
+    "Implement a WGSL compute effect",
+  ]) {
+    const result = routeJob({ query });
+    assert.equal(result.status, "ready", query);
+    assert.equal(result.job, "graphics-runtime", query);
+    assert.equal(result.primaryKnowledge.id, "graphics-runtime", query);
+  }
+  const ordinary = routeJob({ query: "Build a material settings form" });
+  assert.equal(ordinary.job, "product-design");
+  const film = routeJob({ query: "Create a product launch video demonstrating a VFX shader" });
+  assert.equal(film.job, "motion-graphics");
+  assert.equal(film.deliverableForm, "product-launch-video");
+});
+
 test("equal explicit score and priority needs clarification instead of a silent primary", () => {
   const result = routeJob({ query: "clone this holosticker" });
   assert.equal(result.status, "needs-clarification");
@@ -313,4 +332,87 @@ test("deliverable forms are derived from query and protected by the plan hash", 
   const plan = buildJobPlan(routeJob({ query: "HTML product launch video" }));
   const { planSha256, ...body } = { ...plan, deliverableForm: "scrollytelling-page" };
   assert.throws(() => validateJobPlan({ ...body, planSha256: sha256(canonicalJson(body)) }), /deliverable-form conflict/);
+});
+
+test("a persisted route supplies an executable typed toolchain handoff", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-request-handoff-"));
+  try {
+    const routed = run(["route", "--root", root, "--query", "Three.js enamel component with GLSL", "--write", "--output", "job-plan.json"]);
+    assert.equal(routed.status, 0, routed.stdout);
+    assert.equal(routed.output.handoff?.action, "request");
+    assert.deepEqual(routed.output.handoff.requiredInputs, ["framework", "graphics.family or graphics.adapter (or existing.graphics)"]);
+    fs.writeFileSync(path.join(root, "stack-input.json"), JSON.stringify({ framework: "agnostic", graphics: { adapter: "threejs" } }));
+    const argv = routed.output.handoff.argv;
+    const child = spawnSync(argv[0], argv.slice(1), { cwd: root, encoding: "utf8", windowsHide: true });
+    assert.equal(child.status, 0, child.stdout || child.stderr);
+    const prepared = JSON.parse(child.stdout);
+    assert.equal(prepared.status, "prepared");
+    const request = JSON.parse(fs.readFileSync(path.join(root, "toolchain-request.json"), "utf8"));
+    assert.equal(request.brief, "Three.js enamel component with GLSL");
+    assert.equal(request.jobPlanSha256, routed.output.planSha256);
+    assert.equal(request.jobPlanPath, "job-plan.json");
+    assert.equal(request.jobId, "graphics-runtime");
+    const resolved = run(["toolchain", "resolve", "--root", root, "--artifact", "toolchain-request.json"]);
+    assert.equal(resolved.status, 0, resolved.stdout);
+    assert.equal(resolved.output.plan.graphics.id, "threejs");
+    assert.equal(resolved.output.plan.jobPlanSha256, routed.output.planSha256);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("request handoff rejects missing choices, binding drift and unsafe output before writing", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-request-boundaries-"));
+  try {
+    const plan = buildJobPlan(routeJob({ query: "Three.js enamel component with GLSL" }));
+    const planFile = path.join(root, "job-plan.json");
+    const choicesFile = path.join(root, "stack-input.json");
+    const valid = { framework: "agnostic", graphics: { adapter: "threejs" } };
+    fs.symlinkSync(root, path.join(root, "alias"), process.platform === "win32" ? "junction" : "dir");
+    const cases = [
+      { choices: {}, pattern: /framework/ },
+      { choices: { ...valid, jobPlanSha256: "0".repeat(64) }, pattern: /jobPlanSha256/ },
+      { choices: { ...valid, brief: "different query" }, pattern: /brief/ },
+      { choices: valid, plan: { ...plan, query: plan.query + " drift" }, pattern: /hash does not match/ },
+      { choices: valid, output: "../escaped-request.json", pattern: /inside|outside/ },
+      { choices: valid, output: "job-plan.json", pattern: /overwrite/ },
+      { choices: valid, output: "stack-input.json", pattern: /overwrite/ },
+      { choices: valid, output: "alias/job-plan.json", pattern: /overwrite/ },
+      ...(process.platform === "win32" ? [{ choices: valid, output: "JOB-PLAN.JSON", pattern: /overwrite/ }] : []),
+    ];
+    for (const entry of cases) {
+      fs.writeFileSync(planFile, JSON.stringify(entry.plan || plan));
+      fs.writeFileSync(choicesFile, JSON.stringify(entry.choices));
+      const originalPlan = fs.readFileSync(planFile, "utf8");
+      const originalChoices = fs.readFileSync(choicesFile, "utf8");
+      const result = run(["toolchain", "request", "--root", root, "--plan", "job-plan.json", "--artifact", "stack-input.json", "--write", "--output", entry.output || "toolchain-request.json"]);
+      assert.equal(result.status, 1, result.stdout);
+      assert.match(result.output.error.message, entry.pattern);
+      assert.equal(fs.existsSync(path.join(root, "toolchain-request.json")), false);
+      assert.equal(fs.readFileSync(planFile, "utf8"), originalPlan);
+      assert.equal(fs.readFileSync(choicesFile, "utf8"), originalChoices);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("route handoff keeps choices and request separate from any legal plan output", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-handoff-names-"));
+  try {
+    for (const planPath of ["stack-input.json", "toolchain-request.json"]) {
+      const routed = run(["route", "--root", root, "--query", "Three.js enamel component with GLSL", "--write", "--output", planPath]);
+      assert.equal(routed.status, 0, routed.stdout);
+      const { handoff } = routed.output;
+      assert.notEqual(handoff.choicesPath, planPath);
+      fs.writeFileSync(path.join(root, handoff.choicesPath), JSON.stringify({ framework: "agnostic", graphics: { adapter: "threejs" } }));
+      const child = spawnSync(handoff.argv[0], handoff.argv.slice(1), { cwd: root, encoding: "utf8", windowsHide: true });
+      assert.equal(child.status, 0, child.stdout || child.stderr);
+      const prepared = JSON.parse(child.stdout);
+      assert.equal(prepared.request.jobPlanPath, planPath);
+      assert.equal(JSON.parse(fs.readFileSync(path.join(root, planPath), "utf8")).schema, PLAN_SCHEMA);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });

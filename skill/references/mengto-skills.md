@@ -3,13 +3,24 @@
 `design-pipeline` ships the complete reviewed source tree from
 [`MengTo/skills`](https://github.com/MengTo/skills) as a pinned, MIT-attributed package resource.
 It is available offline and does not depend on a global skill install. The upstream files remain
-byte-preserved under `references/mengto-skills/upstream/`; this overlay defines how the pipeline
+byte-preserved under `vendor/mengto-skills/upstream/`; this overlay defines how the pipeline
 uses them without rewriting upstream authorship or mixing local policy into future syncs.
 
-The manifest at `references/mengto-skills/manifest.json` is the source of truth for revision,
+The manifest at `vendor/mengto-skills/manifest.json` is the source of truth for revision,
 Git tree, license, file and byte counts, canonical tree hash, categories, all skill descriptions,
 activation policy, and pipeline-stage mapping. Upstream README counts are descriptive only; the
 manifest is generated from the tracked tree.
+
+The reviewed 2026-10-07 snapshot adds 49 playbooks and no removals: focused 3D materials and
+lighting, 14 illustration treatments, six game-combat effects, particle-trail and wireframe-scan
+interactions, horizontal scroll scenes, and workflow references. Existing GSAP, ScrollTrigger,
+Three.js, and scroll-world playbook instructions are unchanged. Three.js landscape, towers, and
+weather demos now size their canvases to the viewport and re-layout after embedded views recover
+from zero-size startup; the towers demo also adjusts lighting and keeps labels on-screen. New
+`workflow-ship-change` and `workflow-threads-manager` entries stay explicit-only because they
+describe publishing or managing other sessions. All source remains inert reference material;
+selecting a playbook does not grant publishing, credentials, paid services, or permission to
+execute bundled scripts.
 
 ## Operating Protocol
 

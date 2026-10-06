@@ -7,7 +7,9 @@ current stage; read only that section. Stage order:
 - `standard` and `full`: intake, analyze, style, cut, render, check, review, deliver.
 - `replicate` mode adds reference after analyze at every tier.
 
-Full command reference: `film-edit.md`.
+Full command reference: `film-edit.md`. Movement and phrasing decisions: `animation-thinking.md`.
+This workflow assembles clips; PV/MAD visual language can also require authored animation,
+compositing and typography from the film workflow. A voice track does not dictate a diagram style.
 
 ## intake
 
@@ -29,13 +31,16 @@ transfer. It cannot be skipped.
 
 ## style
 
-The user picks `mad` (fast, energy-driven cuts) or `pv` (readable shots on phrases):
+The `mad` and `pv` choices are rough-cut presets, not creative limits. Record the already agreed
+direction when present. For automatic assembly choose `mad` (shorter cuts) or `pv` (longer shots):
 `decide --stage concept --choice mad|pv`. Quick tier skips this and cuts as MAD.
 
 ## cut
 
 `film-edit auto --project-root . --style mad|pv` places shots on the beat grid in `edit.json`.
-Adjust `edit.json` by hand afterwards; hand edits reopen check.
+Adjust `edit.json` by hand afterwards; hand edits reopen check. Judge the first phrase against
+the reference before extending it: subject movement, staging, motif, cut relationship and sound.
+Off-grid cuts can be intentional; review their effect instead of snapping every cut mechanically.
 
 ## render
 
