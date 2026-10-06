@@ -1,0 +1,9 @@
+{
+  "name": "design-pipeline-enamel-badge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node serve.cjs",
+    "check": "node serve.cjs --check && node lib/caustics.mjs"
+  }
+}
