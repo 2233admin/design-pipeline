@@ -14,6 +14,9 @@ const { sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { included } = require("../scripts/import-huashu-art-motion.cjs");
 const repo = path.resolve(__dirname, ".."), vendor = path.join(repo, "skill/vendor/huashu-art-motion");
 const example = JSON.parse(fs.readFileSync(path.join(repo, "skill/tools/art-motion/clip.example.json")));
+// Film render checks need ffmpeg and ffprobe on PATH and skip without them (AGENTS.md); CI runners have neither.
+const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0 && spawnSync("ffprobe", ["-version"], { windowsHide: true }).status === 0;
+const skipWithoutFfmpeg = !hasFfmpeg && "ffmpeg not installed";
 function temporary(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "huashu-tools-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true })); return directory;
@@ -56,7 +59,7 @@ test("scaffold opens offline, renders material, resizes and seeks identically wi
   assert.deepEqual(errors, []);
 });
 
-test("render validates inputs, preserves asset aliases and exports timed PNG, H264 and alpha frames", async t => {
+test("render validates inputs, preserves asset aliases and exports timed PNG, H264 and alpha frames", { skip: skipWithoutFfmpeg }, async t => {
   const root = temporary(t), spec = { ...example, width: 480, height: 270, duration: 1, fps: 4, safe: { bottom: 25 } };
   fs.writeFileSync(path.join(root, "clip.json"), JSON.stringify(spec));
   assert.throws(() => validateSpec({ ...spec, duration: 0.3 }), /exact number of frames/);
@@ -87,7 +90,7 @@ test("render validates inputs, preserves asset aliases and exports timed PNG, H2
   assert.equal(stream.codec_name, "prores"); assert.match(stream.pix_fmt, /^yuva/); assert.equal(Number(stream.nb_frames), 4);
 });
 
-test("reference study joins source-bound motion/audio evidence without inventing a silent track", t => {
+test("reference study joins source-bound motion/audio evidence without inventing a silent track", { skip: skipWithoutFfmpeg }, t => {
   const root = temporary(t), grid = fitCutGrid([0.01, 0.51, 1.01, 1.51, 2.01]);
   assert.ok(Math.abs(grid.stepSec - 0.5) < 0.01); assert.equal(fitCutGrid([0, 1]), null);
   assert.throws(() => fitCutGrid([0, 1, 0.5, 2]), /ordered/);
