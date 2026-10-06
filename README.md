@@ -21,6 +21,14 @@
   一条给 AI Agent 用的设计与影片管线。
 </p>
 
+## 作品案例：珐琅徽章
+
+![珐琅徽章的 WebGL 实时渲染预览](examples/enamel-badge/preview.png)
+
+[在线体验](https://2233admin.github.io/design-pipeline/enamel-badge/) · [源码与运行说明](examples/enamel-badge/)
+
+蓝釉、银色掐丝、虹彩箔片与凸透镜的交互材质研究。由当前会话 Codex 与用户多轮校对完成；运行环境未暴露精确模型 ID。这不是模型一次自动复刻的结果，也不是路径追踪（PT）；用户仍指出玻璃与参考效果存在误差。[制作边界与依赖来源](examples/enamel-badge/README.md)见案例说明。
+
 ---
 
 ## 定位

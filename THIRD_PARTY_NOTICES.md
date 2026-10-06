@@ -453,3 +453,13 @@ as an external program with MIT-licensed template scripts from this package. Whe
 given a Poly Haven HDRI id, the HDRI is downloaded from https://polyhaven.com (CC0) into the
 user's project and verified against the published md5. Neither Blender nor Poly Haven assets are
 included in this package.
+
+## Enamel badge showcase (repository example)
+
+`examples/enamel-badge/` is a separately runnable static demonstration, outside the
+packaged skill. It redistributes Three.js r180 (MIT), derived Scott Sun and Drei
+shader helpers (MIT), SMAA v2.8 code/lookup data under its retained upstream
+license, and Greg Zaal's Kloofendal 48d Partly Cloudy HDR from Poly Haven (CC0).
+Exact revisions, scope and full-license locations are listed in
+[the example's notices](examples/enamel-badge/THIRD_PARTY_NOTICES.md).
+The original reference video, screenshots and audio are not redistributed.
