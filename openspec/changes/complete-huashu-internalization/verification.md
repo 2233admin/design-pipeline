@@ -150,3 +150,25 @@ Evidence: ignored `.design-pipeline/design-tool-discovery-20261007/`, including 
 `stage-addition.txt` and `installed.json`. Recoverable backup:
 `C:/Users/Administrator/.codex/backups/design-pipeline-design-tool-discovery-20261007-dCHZoC`.
 Technical conformance does not supply visual acceptance of any downstream design.
+
+## GitHub delivery integration
+
+Date: 2026-10-07. The user authorized pushing the current version and recording the remaining
+six capability/evidence gaps as GitHub issues. Repository commit `3661ade` integrates the
+current work with the existing upstream enamel-badge example without changing its acceptance.
+
+- A clean `npm ci` succeeded. Repository QA ran under Python 3.14 with fonttools 4.66.1:
+  942 tests across 109 registered files passed, with zero failures/skips. Reproducible packaging,
+  12 installed-package CLI tests and byte-identical repository status checks passed.
+- Both browser workspace self-tests passed. Strict OpenSpec validation passed all 44 items;
+  historical archive-precondition notices remain informational and were not treated as archives.
+- These are the two commands behind `npm test`, run separately because this Windows npm is a
+  PowerShell script that `uv run` cannot launch directly. Dependency inspection returned `OK`.
+- CI and release jobs now explicitly prepare isolated fonttools 4.66.1 environments and pass
+  `HUASHU_PYTHON` to the existing font regression, instead of relying on an undeclared runner
+  installation. This follow-up changes environment preparation only; remote results belong to
+  the resulting PR checks, not this local QA record.
+
+Local logs are under ignored `.design-pipeline/github-delivery-20261007/`. Installation smoke
+checks use an isolated temporary skill; they do not synchronize the canonical installation or
+re-evaluate historical model runs. Technical conformance does not establish visual acceptance.

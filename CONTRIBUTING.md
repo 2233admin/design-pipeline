@@ -23,6 +23,10 @@ project dependencies. `npm test` runs `scripts/qa.cjs` and the browser-tool self
 bare `node --test`, which discovers nested upstream fixtures. Use `npm run browser:install` to
 prepare Playwright Chromium and the HyperFrames browser.
 
+Font-subset regressions also need Python with `fonttools==4.66.1`. Set `HUASHU_PYTHON` to
+that environment's Python executable, or make it available as `python` on PATH. CI and release
+jobs prepare an isolated environment; no global Python package installation is required.
+
 The root `package.json` is the source of truth for maintenance commands:
 
 | Command | Purpose |
