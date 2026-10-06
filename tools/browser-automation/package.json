@@ -11,8 +11,8 @@
     "test": "node prewalk-pipeline.cjs self-test && node build-prewalk-clone.cjs self-test"
   },
   "dependencies": {
-    "pixelmatch": "7.2.0",
-    "playwright": "1.62.0",
+    "pixelmatch": "8.0.0",
+    "playwright": "1.63.0",
     "pngjs": "7.0.0"
   }
 }

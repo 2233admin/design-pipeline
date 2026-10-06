@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline-companions.v1",
-  "updatedAt": "2026-08-14",
+  "updatedAt": "2026-10-07",
   "groups": [
     {
       "name": "Core pipeline",
@@ -153,10 +153,11 @@
         "kind": "documentation",
         "url": "https://animejs.com/documentation/",
         "reviewedVersion": "4.5.0",
-        "reviewedAt": "2026-07-19T00:00:00.000Z",
+        "reviewedRevision": "2c9cf8ea00329f6768c7d7902252ed977d75ce42",
+        "reviewedAt": "2026-10-06T17:03:30.000Z",
         "freshnessDays": 30
       },
-      "fallback": "Use official Anime.js v4.5 documentation for missing capabilities and record the stale companion surface in qa.md.",
+      "fallback": "Use references/capability-routing.md#animejs-450-profile for bundled implementation guidance, then version-matched official docs for remaining APIs; record the stale companion surface in qa.md.",
       "requirements": [
         {"id": "v4-api", "skill": "animejs", "patterns": [{"source": "Anime\\.js v4", "flags": "i"}]},
         {"id": "layout", "skill": "animejs", "patterns": [{"source": "createLayout"}]},
@@ -180,15 +181,16 @@
         "id": "hyperframes-skill-main",
         "kind": "github",
         "url": "https://github.com/heygen-com/hyperframes",
-        "reviewedRevision": "0e4da52c8222b8d18a1211b34f2fb3bd0f7e79ee",
+        "reviewedVersion": "0.8.137",
+        "reviewedRevision": "d09e003b17610177b71e340ec0bac95c9dde3e64",
         "reviewedMarkers": ["mandatory-entry-point", "html-source-of-truth", "paused-seekable-timeline"],
-        "reviewedAt": "2026-08-14T00:00:00.000Z",
+        "reviewedAt": "2026-10-07T00:00:00.000Z",
         "freshnessDays": 30
       },
       "fallback": "Use references/hyperframes.md and the project-owned motion/evidence gates.",
       "requirements": [
         {"id": "mandatory-entry-point", "skill": "hyperframes", "match": "all", "patterns": [{"source": "Mandatory entry point", "flags": "i"}, {"source": "HTML"}]},
-        {"id": "html-source-of-truth", "skill": "hyperframes", "match": "all", "patterns": [{"source": "HTML as the source of truth", "flags": "i"}, {"source": "data-\\*", "flags": "i"}]},
+        {"id": "html-source-of-truth", "skill": "hyperframes", "match": "all", "patterns": [{"source": "composition is an HTML file", "flags": "i"}, {"source": "data-\\*", "flags": "i"}]},
         {"id": "paused-seekable-timeline", "skill": "hyperframes", "match": "all", "patterns": [{"source": "paused", "flags": "i"}, {"source": "seek", "flags": "i"}, {"source": "BRIEF\\.md"}]}
       ]
     },
@@ -209,7 +211,7 @@
         "id": "pixijs-skills-v8",
         "kind": "github",
         "url": "https://github.com/pixijs/pixijs-skills",
-        "reviewedRevision": "6aae70d76cf410432dd144029c07a1ad4bb12793",
+        "reviewedRevision": "83760c6f53462ca9cecd68055041f5a8c94758ce",
         "reviewedMarkers": [
           "v8-router-and-doc-fallback",
           "application-lifecycle",
@@ -218,10 +220,10 @@
           "ticker-lifecycle",
           "worker-ssr-csp"
         ],
-        "reviewedAt": "2026-07-23T00:00:00.000Z",
+        "reviewedAt": "2026-10-07T00:00:00.000Z",
         "freshnessDays": 30
       },
-      "fallback": "Use the canonical PixiJS v8 llms.txt/API documentation for missing surfaces, keep PixiJS optional, and record stale or partial suite coverage in qa.md.",
+      "fallback": "Use references/pixijs-rendering.md for bundled scene and renderer guidance, then version-matched official docs for remaining APIs; record stale or partial companion coverage in qa.md.",
       "requirements": [
         {
           "id": "v8-router-and-doc-fallback",
@@ -491,7 +493,7 @@
         "reviewedAt": "2026-07-19T00:00:00.000Z",
         "freshnessDays": 30
       },
-      "fallback": "Use the project's existing runtime or official GSAP docs and preserve cleanup, reduced motion, and performance gates.",
+      "fallback": "Use references/capability-routing.md#gsap-implementation-without-companion-installs and its local iart playbook; preserve the project runtime, cleanup, reduced motion and performance gates.",
       "requirements": [
         {"id": "core-tweens", "skill": "gsap-core", "patterns": [{"source": "gsap\\.(?:to|from|fromTo)\\b"}]},
         {"id": "timeline", "skill": "gsap-timeline", "patterns": [{"source": "gsap\\.timeline\\b"}]},

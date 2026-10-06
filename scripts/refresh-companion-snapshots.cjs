@@ -7,9 +7,9 @@ const path = require("node:path");
 
 const repoRoot = path.resolve(__dirname, "..");
 const manifests = [
-  "skill/references/holosticker/manifest.json",
-  "skill/references/iart-motion-skills/manifest.json",
-  "skill/references/mengto-skills/manifest.json",
+  "skill/vendor/holosticker/manifest.json",
+  "skill/vendor/iart-motion-skills/manifest.json",
+  "skill/vendor/mengto-skills/manifest.json",
 ];
 
 function fail(message) {

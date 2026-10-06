@@ -30,8 +30,9 @@ node <design-pipeline>/scripts/check-motion-foundation.cjs `
 The motion checker uses the same status names. An intentionally motionless product still authors a
 `static` foundation with accessibility, runtime, and source decisions.
 
-The official DESIGN.md format separates machine-readable tokens from human-readable design
-rationale. Preserve both, but optimize first for clear, specific intent. “Modern, clean, premium”
+The [Google DESIGN.md format](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md)
+separates machine-readable tokens from human-readable design rationale. Preserve both, but
+optimize first for clear, specific intent. “Modern, clean, premium”
 is not a direction. A concrete product world, audience, operating pressure, and set of exclusions is.
 
 ## Quick Start
@@ -170,19 +171,37 @@ Create 2-3 directions in change `directions.md`, select one, and write:
 - project `DESIGN.md`: reusable product identity for future coding agents.
 - project `MOTION.md`: reusable motion language, or an explicit static posture.
 
-The project DESIGN.md must contain YAML frontmatter with `name` and these level-two sections:
+Use Google's format for the project visual foundation, not the OpenSpec engineering `design.md`.
+Include YAML frontmatter with `name`; when declaring the format version, use `version: alpha`.
+Define the visual tokens the product actually owns. For intentionally absent token groups, use
+the official `omitted` field with reasons instead of fabricated values.
 
-1. Product Context
-2. Overview
-3. Colors
-4. Typography
-5. Layout
-6. Components
-7. Do's and Don'ts
-8. Source Decisions
+The official level-two sections, when relevant, appear in this order:
 
-`Source Decisions` must explicitly identify adopted and rejected source properties and link the
-active change id or artifact path.
+1. Overview (or Brand & Style)
+2. Colors
+3. Typography
+4. Layout (or Layout & Spacing)
+5. Elevation & Depth
+6. Shapes
+7. Components
+8. Do's and Don'ts
+
+The existing pipeline foundation check also requires `Product Context` and `Source Decisions`;
+append these as local provenance extensions after the visual sections. It requires Overview,
+Colors, Typography, Layout, Components and Do's and Don'ts even for host-rendered surfaces;
+explain inheritance there when tokens are omitted. `Source Decisions` identifies adopted and
+rejected source properties and links the active change id or artifact path.
+
+Keep Components about visual elements and their states. Put workflow stages, receipts, installation
+details and verification reports in their own guides or change artifacts. The local foundation
+check covers project provenance and structure; it is not a substitute for Google's format lint:
+
+```powershell
+npx --package "@google/design.md" designmd lint DESIGN.md
+```
+
+Use the dot-free `designmd` executable on Windows to avoid Markdown file-association handling.
 
 Project `MOTION.md` follows `references/motion-foundation.md`. It must declare timing and
 choreography principles, primitive vocabulary, procedural and runtime policy, reduced-motion

@@ -252,7 +252,7 @@ function validateEdit(edit) {
 const HINTS = {
   "timeline-gap": "Make each clip start where the previous one ends (atSec = previous atSec + durSec).",
   "timeline-overlap": "Shorten the earlier clip or move the later one so clips do not overlap.",
-  "cut-off-grid": "Move the cut onto the nearest beat (or downbeat for PV) shown in the finding.",
+  "cut-off-grid": "Review the cut against the phrase, action and sound. Snap to the suggested beat if the offset is accidental; retain an intentional pickup, delay or counterpoint and record why in qa.md.",
   "shot-too-short": "Hold the shot at least one beat; shorter flashes read as glitches unless that is the intent.",
   "shot-too-long": "Split the shot or cut away within four bars; long holds stall a music-led edit.",
   "monotone-rhythm": "Vary shot lengths with the music's energy: cut every beat in the chorus, every two or four beats in verses.",
@@ -280,7 +280,7 @@ function checkEdit(edit, music, sources = {}) {
       if (gap > frame) add("timeline-gap", "error", `${gap.toFixed(3)} s gap before clip ${i}`, i);
       if (gap < -frame) add("timeline-overlap", "error", `clip ${i} overlaps the previous clip by ${(-gap).toFixed(3)} s`, i);
       const snap = nearest(clip.atSec);
-      if (Math.abs(snap - clip.atSec) > frame) add("cut-off-grid", "error", `cut at ${clip.atSec}s is ${Math.abs(snap - clip.atSec).toFixed(3)} s off the beat grid (nearest ${snap.toFixed(3)}s)`, i);
+      if (Math.abs(snap - clip.atSec) > frame) add("cut-off-grid", "warn", `cut at ${clip.atSec}s is ${Math.abs(snap - clip.atSec).toFixed(3)} s off the beat grid (nearest ${snap.toFixed(3)}s)`, i);
     }
     const beatsLong = clip.durSec / beatSec;
     lengths.push(Math.round(beatsLong * 2) / 2);

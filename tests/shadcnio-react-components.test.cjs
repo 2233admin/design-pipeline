@@ -9,7 +9,7 @@ const test = require("node:test");
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
-const manifestFile = path.join(repoRoot, "skill/references/shadcnio-react-components/manifest.json");
+const manifestFile = path.join(repoRoot, "skill/vendor/shadcnio-react-components/manifest.json");
 const packageResources = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/package-resources.json"), "utf8"));
 const {
   loadShadcnioComponents,
@@ -32,9 +32,9 @@ test("bundles the complete pinned shadcnio repository and README index", () => {
   for (const resource of [
     "scripts/shadcnio-react-components-core.cjs",
     "references/shadcnio-react-components.md",
-    "references/shadcnio-react-components/manifest.json",
-    "references/shadcnio-react-components/upstream/LICENSE",
-    "references/shadcnio-react-components/upstream/README.md",
+    "vendor/shadcnio-react-components/manifest.json",
+    "vendor/shadcnio-react-components/upstream/LICENSE",
+    "vendor/shadcnio-react-components/upstream/README.md",
   ]) assert.ok(packageResources.required.includes(resource), resource);
   assert.equal(verifyShadcnioComponentSnapshot(manifestFile).status, "ready");
   assert.match(fs.readFileSync(path.join(path.dirname(manifestFile), "upstream/LICENSE"), "utf8"), /Copyright \(c\) 2025 Shadcn IO/);

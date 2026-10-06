@@ -784,9 +784,13 @@ Every declared website-cloning target SHALL preserve DOM-derived and raster-deri
 separately, reconcile that evidence into semantic roles and relationships, and map the result to
 implementation tokens before implementation or fidelity completion.
 
-Palette evidence paths SHALL be relative to the target research directory, identify existing files,
-and remain contained after symlinks or directory junctions are resolved. Palette evidence SHALL
-reject unknown fields. Semantic roles and target tokens SHALL form a connected mapping.
+#### Scenario: Palette evidence is submitted
+
+- **WHEN** a target submits palette evidence
+- **THEN** its paths SHALL be relative to the target research directory, identify existing files,
+  and remain contained after symlinks or directory junctions are resolved
+- **AND** palette evidence SHALL reject unknown fields
+- **AND** semantic roles and target tokens SHALL form a connected mapping.
 
 #### Scenario: Accent colors are present but structural evidence is missing
 
@@ -1526,7 +1530,14 @@ The pipeline SHALL require a machine-readable implementation-authority contract 
 
 ### Requirement: Companion self-check covers the design profile
 
-The design-pipeline self-check MUST detect the full companion set when installed via the team `design` profile:
+The design-pipeline self-check MUST detect the full companion set when installed via the team `design` profile.
+Missing optional companions remain fallback-safe; missing required `design-pipeline` skill still fails the check.
+
+#### Scenario: The full design profile is installed
+
+- **WHEN** self-check runs with every companion listed below installed
+- **THEN** it SHALL detect every companion in its corresponding capability group
+- **AND** the required core pipeline check SHALL pass.
 
 **Visual taste**
 
@@ -1564,14 +1575,6 @@ The design-pipeline self-check MUST detect the full companion set when installed
 - `implement`
 - `matt-tdd` (local rename of `tdd`)
 - `matt-code-review` (local rename of `code-review`)
-
-Missing optional companions remain fallback-safe; missing required `design-pipeline` skill still fails the check.
-
-#### Scenario: The full design profile is installed
-
-- **WHEN** self-check runs with every companion listed above installed
-- **THEN** it SHALL detect every companion in its corresponding capability group
-- **AND** the required core pipeline check SHALL pass.
 
 #### Scenario: An optional companion is missing
 
@@ -1912,9 +1915,7 @@ network access.
 The pipeline SHALL keep the Methodology Kernel frozen during layered adaptation. The Kernel SHALL
 remain the authority for durable method, quality gates, and safety boundaries. Task Session Policy
 SHALL be ephemeral. Project Adaptation Skill and User Collaboration Skill SHALL be external,
-versioned, inspectable artifacts. Effective compatible guidance SHALL resolve in the order current
-task > project > user > defaults, with mutually exclusive values keyed by collaboration dimension
-rather than caller-defined rule id. Project constraints and quality gates SHALL NOT be weakened,
+versioned, inspectable artifacts. Project constraints and quality gates SHALL NOT be weakened,
 suppressed, or bypassed by any adaptation layer.
 
 #### Scenario: Conflicting scoped guidance is resolved
@@ -1922,6 +1923,8 @@ suppressed, or bypassed by any adaptation layer.
 - **WHEN** a current task, project skill, user skill, and defaults offer conflicting compatible
   workflow choices
 - **THEN** the resolver SHALL select the current-task value before project, user, and defaults
+- **AND** mutually exclusive values SHALL be keyed by collaboration dimension rather than
+  caller-defined rule id
 - **AND** it SHALL preserve every applicable project constraint and Kernel quality gate
 - **AND** it SHALL record dropped invalid or unsafe guidance in an inspectable receipt.
 
@@ -1937,11 +1940,16 @@ suppressed, or bypassed by any adaptation layer.
 Experience-derived adaptation SHALL create only bounded `add`, `replace`, or `delete` candidates
 against an exact external-skill path, version, and incumbent content hash. Candidate guidance SHALL
 select from a finite contract of collaboration dimensions and SHALL NOT contain free-form behavioral
-instructions. The pipeline SHALL evaluate every candidate independently
-on a held-out set and replay set against the incumbent using a pinned common manifest. It SHALL
-promote only if all required gates pass, evidence is complete, and the predeclared primary metric is
-strictly improved in its declared direction against the incumbent in every required comparison. The pipeline SHALL reject, revert,
-expire, or forget candidates that do not qualify.
+instructions. The pipeline SHALL reject, revert, expire, or forget candidates that do not qualify.
+
+#### Scenario: A candidate enters evaluation
+
+- **WHEN** a bounded candidate is evaluated for promotion
+- **THEN** the pipeline SHALL evaluate it independently on a held-out set and replay set against
+  the incumbent using a pinned common manifest
+- **AND** it SHALL promote only if all required gates pass, evidence is complete, and the
+  predeclared primary metric is strictly improved in its declared direction against the incumbent
+  in every required comparison.
 
 #### Scenario: A candidate ties or lacks evidence
 

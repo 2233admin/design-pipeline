@@ -41,6 +41,31 @@ The audit writes `.design-pipeline/audits/capability-audit.json` and reports:
 
 `--record-feedback` synchronously records only `STALE` and `CHANGED` findings. It never publishes.
 
+## Review and internalize a difference
+
+Before updating a reviewed baseline, compare the affected source files and their licenses. Separate
+runtime version, upstream skill revision, installed companion coverage and bundled capability:
+`deps:check` checks npm packages; `sources:check` checks pinned-byte integrity; neither checks that
+upstream skill guidance is current. `UNKNOWN` stays unknown until source evidence is supplied.
+
+For a useful difference, find its existing destination before adding anything:
+
+- A reusable design decision, failure diagnosis or review method belongs in its existing reference
+  guide, with the situation that calls for it and an observable result.
+- An existing bundled implementation needs a reachable local route and project adaptation, not a
+  duplicate helper. New callable code needs a concrete task, explicit inputs and a relevant check;
+  listing source code does not make it a verified tool.
+- A version-dependent API needs version-matched primary evidence and an affected runtime probe.
+  Update only the source metadata actually reviewed; keep external companion warnings honest.
+- A source-specific canvas size, character, global dependency, fixed style or unconditional library
+  recommendation is an example assumption. Replace it with the target project's actual contract.
+
+Keep attributed vendor bytes immutable; update a snapshot only through its existing reviewed import
+path. Maintain decisions and links in the existing overlay. Verify the route with companions absent,
+record remaining reference-only methods, then use the normal package/install checks. A passing
+technical check does not establish aesthetic improvement or owner acceptance. This local adaptation
+step does not require or authorize a remote publication.
+
 ## 3. Prepare a publication request
 
 ```powershell

@@ -7,7 +7,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 
 const repoRoot = path.resolve(__dirname, "..");
-const destination = path.join(repoRoot, "skill", "references", "mengto-skills");
+const destination = path.join(repoRoot, "skill", "vendor", "mengto-skills");
 const repository = "https://github.com/MengTo/skills";
 const explicitOnly = new Set([
   "article-prompts-to-skills",
@@ -18,6 +18,8 @@ const explicitOnly = new Set([
   "ship-web-games",
   "write-like-meng-on-x",
   "x-bookmark-quote-posts",
+  "workflow-ship-change",
+  "workflow-threads-manager",
 ]);
 
 function fail(message) {

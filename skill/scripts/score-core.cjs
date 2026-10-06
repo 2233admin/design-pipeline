@@ -153,7 +153,7 @@ function summarizeGrid(events, { bpm, cps, durationSec }) {
   };
 }
 
-// Cuts and accent cues should land on a musical event or beat, within one frame.
+// Off-grid cuts invite review; explicit accent cues still promise an actual musical event.
 function checkGridAlignment(board, grid, options = {}) {
   const frame = 1 / (options.fps || board.fps || 30);
   const tolerance = options.toleranceSec ?? frame;
@@ -163,14 +163,14 @@ function checkGridAlignment(board, grid, options = {}) {
   for (const beat of board.beats.slice(1)) {
     if (!["hard-cut", "match-cut"].includes(beat.handoff)) continue;
     const snap = nearest(beat.startSec);
-    if (Math.abs(snap - beat.startSec) > tolerance) findings.push({ code: "cut-off-grid", beatId: beat.id, message: `cut at ${beat.startSec}s is ${Math.abs(snap - beat.startSec).toFixed(3)}s from the nearest musical event`, fix: `Move the cut to ${snap}s (nearest beat or event), or move the pattern's event onto the cut.` });
+    if (Math.abs(snap - beat.startSec) > tolerance) findings.push({ code: "cut-off-grid", severity: "warn", beatId: beat.id, message: `cut at ${beat.startSec}s is ${Math.abs(snap - beat.startSec).toFixed(3)}s from the nearest musical event`, fix: `Review the intended phrase or counterpoint. If accidental, move the cut to ${snap}s (nearest beat or event), or move the pattern's event onto the cut.` });
   }
   for (const cue of board.sound.cues || []) {
     if (!["downbeat", "accent", "impact"].includes(cue.kind)) continue;
     const snap = nearest(cue.atSec);
     if (Math.abs(snap - cue.atSec) > tolerance) findings.push({ code: "cue-off-grid", message: `${cue.kind} cue ${cue.id} at ${cue.atSec}s is ${Math.abs(snap - cue.atSec).toFixed(3)}s from the nearest musical event`, fix: `Set the cue to ${snap}s and move the visual action with it, or change the pattern so an event lands at ${cue.atSec}s.` });
   }
-  return { status: findings.length ? "failed" : "passed", findings, toleranceSec: Number(tolerance.toFixed(4)) };
+  return { status: findings.some((finding) => finding.severity !== "warn") ? "failed" : "passed", findings, toleranceSec: Number(tolerance.toFixed(4)) };
 }
 
 module.exports = { GRID_SCHEMA, HOME, PINNED, TEMPLATES, checkGridAlignment, cpsFor, ensureStrudel, scoreFromTemplate, summarizeGrid };

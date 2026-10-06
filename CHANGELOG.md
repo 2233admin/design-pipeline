@@ -6,6 +6,19 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- `composition scaffold --template visual-craft` copies the drawing helper, browser study and
+  license into a new project directory. Skill installation and invocation now distinguish
+  the installed resource root from the user's project, with a dedicated installation guide.
+- Progressive `skill/tools/` index for drawing, images, typography, layout, frontend and animation:
+  reusable Canvas craft helpers, a responsive study, and a pinned local Huashu technique library
+  (17 drawing modules and seven utility scripts, with MIT attribution and source hashes).
+- `composition compare` preserves equal-size PNG pairs and localizes pixel changes. Existing
+  video reference analysis gains source-bound spatial motion maps and stale-map validation.
+  These diagnostics do not assign aesthetic scores or create another acceptance gate.
+- Animation-thinking guidance for authored films and PV/MAD: intention, staging, poses,
+  timing/spacing and audiovisual relationships. Existing choreography gains `pose-to-pose`
+  with authored holds and `draw-on` with SVG arc-length timing; `film scaffold --template
+  motion-study` supplies a four-second silent comparison for testing a motion choice.
 - Golden case library (`evals/cases/`, step 6 of `redesign-user-workflow`; change
   `add-golden-case-library`). Each case (`design-pipeline.golden-case.v1`) holds a golden film, the
   rules behind its choices, and counter-examples that the gates must catch. First candidates, both
@@ -26,6 +39,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- Rhythm heuristics (regular cadence, holds, dissolves, sparse accents and off-beat cuts) now prompt creative
+  review instead of rejecting a style. Missing action, timing conflicts, broken carry and
+  declared audio-cue misalignment still fail. Changed held transform poses count as action;
+  initialization, repeated identical sets and fade-only changes do not.
 - `audio master` masters 1.5 dB under the target's true-peak ceiling, so the film's AAC encode no
   longer overshoots it (HyperFrames attenuated such renders below the loudness target or refused
   to render). When the gain would push a peaky mix over the ceiling, a lookahead limiter shaves

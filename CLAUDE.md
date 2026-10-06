@@ -1,3 +1,3 @@
 @AGENTS.md
 
-- Claude Code project router: `.claude/skills/design-pipeline/SKILL.md`.
+- Packaged skill entry: `skill/SKILL.md`; read it for tool use and deliverable workflows.

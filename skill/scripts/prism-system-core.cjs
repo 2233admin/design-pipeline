@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const defaultManifest = path.resolve(__dirname, "../references/prism-system/manifest.json");
+const defaultManifest = path.resolve(__dirname, "../vendor/prism-system/manifest.json");
 const schema = "design-pipeline.prism-system-source.v1";
 
 function invalid(message) {

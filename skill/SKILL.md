@@ -1,73 +1,77 @@
 ---
 name: design-pipeline
-description: Art and design literacy for agents, carried in code - promotional films and explainers, PV and MAD edits, motion websites, product UI and design systems. One next step at a time, two user decisions, gates before anything is shown. Use for product promo animations and HTML films, beat-cut edits, logo stings, 3D product shots, motion pages, UI work, design reviews and anything that must not look generic.
+description: Design and visual workflow guidance for tasks involving graphics, images, typography, layout, frontend UI, rendering, animation, reference studies, design reviews, motion websites, product films, and edits. Use this skill to choose the relevant method or tool while preserving the user's project workflow and acceptance decisions.
 ---
 
 # design-pipeline
 
-Talk with the user; drive the work with one command. The CLI is `node scripts/designer-pipeline.cjs`
-inside this skill (below: `designer-pipeline`).
+Use this entry for the current task only. Resolve `<skill-root>` from this loaded `SKILL.md` path.
+The CLI is `node "<skill-root>/scripts/designer-pipeline.cjs"` (below: `designer-pipeline`). Run
+it from the user's project, or pass `--root <project>` for project files. Skill scripts and
+resources stay relative to `<skill-root>` regardless of the working directory.
 
-## Loop
+## Choose the work path
 
-1. `designer-pipeline next --project-root <project>` returns exactly one action:
-   - `run`: do it (a command or a short task), then call `next` again.
-   - `ask`: put the question to the user with its recommended answer, then record the reply with
-     the `record` command it gives.
-   - `done`: report the evidence.
-2. Never skip ahead, never repeat a finished step, never show the user a draft whose error gates
-   failed: apply each finding's `fix` and rerun the check.
-3. `rules` in a `next` result are the user's earlier rejections. Obey them.
+- **Supporting tool task:** start at `tools/README.md`, load one relevant tool guide and its
+  implementation, then finish inside the task's existing workflow and renderer. These tools do
+  not require a film project, narration, a fixed canvas, or a particular subject or style.
+- **Complete deliverable:** start with `designer-pipeline next --project-root <project>`. It returns
+  one action at a time: do the returned `run`, ask the returned `ask` question and record the reply
+  with its `record` command, or report the returned `done` evidence. Obey prior user rejections in
+  `rules`; apply each gate finding's `fix` and rerun its check before showing a draft.
 
-First call in a new project: pick the deliverable and tier and pass them to `next`:
+For a new complete deliverable, choose its kind and tier from the request; let the user override.
+Use `--mode replicate` when reproducing a supplied reference, and `--mode freeform` when the user
+gave no direction. `quick` covers one motion, shot, component or fix; `standard` covers one whole
+deliverable with its applicable brief, concept and draft decisions; `full` adds the expanded
+planning and evidence workflow, including the OpenSpec change required by `next`. In this repository,
+behavior changes always use an OpenSpec change. Preserve any stronger change process required by a
+user project. If a new project needs a deliverable or tier, answer the `next` question and use the
+`record` command it returns to initialize the existing workflow.
 
-| Deliverable | For |
-|---|---|
-| `film` | generated promo, explainer, logo sting, feature demo, 3D product shot |
-| `edit` | PV, MAD, beat montage cut from existing footage and music |
-| `web` | motion-first websites and pages |
-| `ui` | product UI, components, design systems, clones |
+For a supporting task, stop when the requested support is complete in its current workflow. For a
+complete deliverable, keep using `next` and `decide` as returned. Native implementation subtasks
+use `next --change-root <change> --plan <tasks-plan>` and the matching `decide`; technical task
+completion remains separate from the owner's visual acceptance. See
+`references/stages.md#stage-4-tasks` for task inputs, output snapshots, checks, and receipt lineage.
 
-| Tier | When | Ceremony |
-|---|---|---|
-| `quick` | one motion, shot, component or fix | build, gates, evidence |
-| `standard` | one whole deliverable | brief, concepts, draft review (two user decisions) |
-| `full` | large or shared work | adds an OpenSpec change and full lineage |
+During planning, production and rendered review, identify unmet visual goals and missing methods.
+Use the project and bundled tools first; when they do not cover the need, proactively follow
+[design capability discovery](tools/open-source-design.md) to find and inspect relevant open-source
+implementations, test a bounded study and integrate the useful part. Do not wait for the user to
+name a repository. This is triggered by the work's needs, not a required search for every edit.
 
-Add `--mode replicate` when the user gives a reference to reproduce, `--mode freeform` when they
-give no direction. Choose the tier yourself from the request size; the user can override it.
+## Keep evidence and acceptance honest
 
-## Talking to the user
+- Inspect the actual requested surface and relevant evidence. Motion also needs playback; a
+  screenshot alone does not verify it.
+- Gates report technical checks such as component conformance and fidelity evidence. They never
+  grant creative or visual acceptance. Ask the owner about the actual output at the workflow's
+  review points and record accept/reject only from their reply.
+- Preserve source, snapshot, policy digest, receipt and downstream evidence lineage. Changed or
+  failed evidence stays open or invalidates dependent evidence under the existing workflow.
+- Record asset licenses; non-commercial material does not ship in commercial work.
 
-- Ask everything missing in one round, numbered, each with your recommendation; "default"
-  accepts all. Ask only facts that change the result: product, audience, duration, assets and
-  their licenses. Decide style from references and judgment.
-- The user decides twice in standard work: which of three concepts, and accept or reject the
-  draft. A rejection needs one sentence; it becomes a project rule.
-- Show drafts with the video, `evidence/contact-sheet.png` and a one-paragraph gate summary.
-- Name the tools on each concept card in one line (for example "3D shot in Blender, score in
-  Strudel"). Raise missing licenses there, not at delivery.
+## Open only what this task needs
 
-## Where the details are
-
-Read only what the current step needs. For `film`, `edit` and `web`, each `next` action names its
-`guide` section: `references/workflow-film.md`, `references/workflow-edit.md`,
-`references/workflow-web.md`.
-
-- Film direction and storyboards: `references/product-film-direction.md`,
-  `references/film-choreography/` (patterns, timeline probe, example storyboard)
-- Film tools: `references/hyperframes.md`, `references/film-blender.md` (3D shots),
-  `references/film-score.md` (music as code), `references/audio-gate.md`,
-  `references/composition-gate.md`
-- Edits (PV, MAD): `references/film-edit.md`
-- UI, web, design systems, website cloning, stage contracts and full-tier work:
-  `references/pipeline-reference.md`
-- Every command: `designer-pipeline --help`
-
-## Always
-
-- Gates judge failure shapes; they never grant creative acceptance. Watch the film.
-- Keep licenses honest: record every asset's license; non-commercial material never ships in
-  commercial work.
-- In this repository itself, behavior changes need an OpenSpec change; in user projects only the
-  `full` tier does.
+- Workflow stages, UI, references, implementation and review: `references/stages.md`.
+- Detailed route, CLI, gate and receipt contracts: `references/pipeline-reference.md`.
+- `film`, `edit`, and `web` workflow selected by `next`: the matching `references/workflow-*.md`.
+- Supporting drawing, image placement, text fitting, comparison, motion maps and advanced
+  technique sources: `tools/README.md` → one selected guide → its implementation/example.
+- Upstream bundles: follow the selected route in
+  `references/pipeline-reference.md#companion-skills` and the capability registry; load only the
+  returned source needed for this task. Bundled source remains reference material unless an
+  existing governed route permits adaptation or execution.
+- Installation, upgrade and skill location: `references/installation.md`.
+- Animation decisions: `references/animation-thinking.md` and, when required by the route,
+  `references/animation-opportunity-and-review.md`.
+- Film direction and storyboards: `references/product-film-direction.md` and
+  `references/film-choreography/`.
+- Film runtime and audio: `references/hyperframes.md`, `references/film-blender.md`,
+  `references/film-score.md`, `references/audio-gate.md`, `references/composition-gate.md`.
+- PV/MAD edits: `references/film-edit.md`.
+- Reference analysis, project inspection, reconstruction, and scene/runtime contracts:
+  `references/reference-spec.md`, `references/reconstruction-spec.md`,
+  `references/scene-runtime-spec.md`.
+- Every command: `designer-pipeline --help`.

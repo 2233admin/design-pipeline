@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const defaultManifest = path.resolve(__dirname, "../references/holosticker/manifest.json");
+const defaultManifest = path.resolve(__dirname, "../vendor/holosticker/manifest.json");
 const schema = "design-pipeline.holosticker-source.v1";
 const adoptionModes = new Set(["core", "optional"]);
 

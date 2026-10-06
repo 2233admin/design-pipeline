@@ -6,15 +6,47 @@ It is not a general-purpose agent skill marketplace.
 
 ## Before Opening A PR
 
-1. Read `openspec/project.md`.
+1. Read `openspec/config.yaml`; OpenSpec injects its context and artifact-specific rules when generating instructions.
 2. Read `skill/references/curation-policy.md`.
-3. For behavior changes, create an OpenSpec-style change under `openspec/changes/<change-id>/`.
+3. For repository behavior changes, create an OpenSpec change under `openspec/changes/<change-id>/`.
 4. If the change came from a downstream observation, link its `dpf-*` id and remove private evidence before publication.
 5. Run:
 
 ```bash
-node scripts/qa.cjs
+npm ci
+npm test
 ```
+
+The private root npm workspace requires Node.js 22.12+ and locks the maintenance dependencies for
+`evals/cases` and `tools/browser-automation`; it is not part of the packaged skill or downstream
+project dependencies. `npm test` runs `scripts/qa.cjs` and the browser-tool self-tests. Do not use
+bare `node --test`, which discovers nested upstream fixtures. Use `npm run browser:install` to
+prepare Playwright Chromium and the HyperFrames browser.
+
+The root `package.json` is the source of truth for maintenance commands:
+
+| Command | Purpose |
+| --- | --- |
+| `npm run deps:check` | Report available workspace dependency updates. |
+| `npm run specs:check` | Run strict OpenSpec validation for the repository. |
+| `npm run capabilities:check` | Audit existing source-evidence; missing evidence remains `UNKNOWN`, with no network refresh. |
+| `npm run sources:check` | Verify locked source snapshots and their existing checks. |
+| `npm run sources:import:mengto -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import a reviewed local MengTo revision. |
+| `npm run sources:import:iart -- --source-root <checkout-directory> --reviewed-at YYYY-MM-DD` | Import reviewed local iArt checkouts. |
+| `npm run sources:import:designmd -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import a reviewed local DESIGN.md revision. |
+| `npm run test:browser` | Run browser-tool self-tests. |
+| `npm run package:skill` / `npm run install:skill -- --root <skills-root> --target <skill-target>` | Build or locally install the skill. |
+
+Imports require a local checkout at the deliberately selected revision. `sources:check` validates
+already locked snapshots; it does not update them, and recomputing a manifest hash is not a source
+refresh. The owned runtime pins are GSAP 3.15.0, HyperFrames 0.8.137, Playwright 1.63.0 and
+pixelmatch 8.0.0. Comparison v1 reports now identify the installed pixelmatch version, OKLab/HyAB
+metric and actual options. Scores from v7 require recalibration before comparison with v8. Do not
+regenerate or re-approve existing golden HTML or video as part of a dependency refresh.
+
+For a local Blender install, `.env.local` may set `BLENDER_PATH=<path-to-blender.exe>` for QA; an
+externally set environment variable takes precedence. Keep machine-specific paths in that ignored
+file only. QA resolves Chrome through the shared resolver and passes it into its isolated test run.
 
 ## Reporting A Pipeline Or Companion Gap
 
@@ -51,6 +83,28 @@ openspec/changes/<change-id>/
   specs/<capability>/spec.md
 ```
 
+Use the workspace-pinned [OpenSpec](https://github.com/Fission-AI/OpenSpec) CLI with
+`npm exec -- openspec <command>`; validate with `npm run specs:check`. To upgrade the CLI, review a
+specific version, install it exactly with `npm install -D -E @fission-ai/openspec@<reviewed-version>`,
+then run `npm exec -- openspec update` to refresh already configured local agent integrations. For a
+fresh Codex checkout, use `npm exec -- openspec init --tools codex`; the generated
+`.agents/skills/openspec-*` files stay local and ignored. Keep personal workflow-profile settings.
+The Codex initializer replaces legacy global `opsx-*` prompts with local skills and removes the
+matching old prompts after installation succeeds. Use the generated skills in configured projects.
+
+The default workflow offers explore, propose, apply and archive actions. Artifacts can be revised
+when evidence changes; the schema determines dependencies, not a requirement to repeat every phase.
+Use `npm exec -- openspec status --change <change-id>` and
+`npm exec -- openspec instructions <artifact> --change <change-id>`
+to see what the installed schema requires. Run `npm run specs:check` before
+delivery. Delta specs use `## ADDED Requirements` (or MODIFIED/REMOVED/RENAMED),
+`### Requirement:` and `#### Scenario:`. Put detailed examples in scenarios and keep requirement
+statements below 500 characters. Completed checkboxes do not authorize archival: verify results and
+review first. Archived changes remain historical records.
+
+The repository's OpenSpec requirement governs development of this tool. Installing the skill or
+using one drawing, text or image helper in another project does not impose this contributor workflow.
+
 ## Skill Intake Policy
 
 Do not add a GitHub skill repo just because it exists.
@@ -82,7 +136,7 @@ Pull requests must preserve:
 Required:
 
 ```bash
-node scripts/qa.cjs
+npm test
 ```
 
 When touching dependency detection:

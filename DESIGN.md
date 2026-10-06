@@ -1,110 +1,113 @@
 ---
-version: "1.0"
+version: alpha
 name: Design Pipeline
-description: Evidence-backed product design orchestration for coding agents
+description: Visual presentation of the repository's CLI and Markdown documentation
+omitted:
+  - section: colors
+    reason: The terminal and Markdown renderer own their accessible color themes.
+  - section: typography
+    reason: The host owns font families, sizes and zoom; the repository uses semantic Markdown.
+  - section: spacing
+    reason: The host lays out text; this repository defines no shared pixel spacing scale.
+  - section: rounded
+    reason: The repository has no shared graphical control or container theme.
+  - section: components
+    reason: Documentation elements inherit the host renderer rather than custom component tokens.
 ---
 
 # Design Pipeline
 
-## Product Context
-
-Design Pipeline helps coding agents turn product intent, repository constraints, and attributed
-reference evidence into a durable design foundation before implementation. The active foundation
-invariant was established by `openspec/changes/enforce-design-foundation`.
-
-Its primary users are developers and AI agents who need a resumable path from an incomplete design
-request to implementation and evidence-backed QA.
-
 ## Overview
 
-The product should feel calm, exact, and inspectable. It favors explicit state, small commands,
-plain-language decisions, and repository-native artifacts over decorative workflow UI or opaque
-automation.
+Design Pipeline's own surface is a command-line tool and a set of Markdown documents for designers,
+developers and agents. Presentation should be calm, readable and easy to inspect: a clear result,
+the evidence needed to assess it, and the next action when one is needed.
 
-Every project owns a synthesized `DESIGN.md`. Change-level `design.md` files may specialize it but
-cannot replace it.
+This document follows the [Google DESIGN.md format](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md).
+It describes this repository's presentation. Each target product owns its visual identity; studies,
+reference collections and example films do not establish a shared house style.
 
 ## Colors
 
-- Documentation and CLI output use the host terminal or documentation theme by default.
-- Status semantics are stable: green for passed, amber for fallback or planned debt, red for a
-  blocking failure, and blue only for neutral navigation or references.
-- Generated product designs define their own palette; this pipeline does not impose a house palette
-  on downstream products.
+The host theme supplies foreground, background, links and code highlighting. No fixed palette is
+authored here, so color tokens are intentionally omitted. Statuses must remain understandable in
+plain text: a failed check names the failure and its remedy; a passed check names what was checked.
+Color may reinforce a label, but must never carry the result alone.
 
 ## Typography
 
-- Use the repository's documentation type system.
-- Use monospace for commands, paths, identifiers, hashes, state names, and machine contracts.
-- Prefer short declarative headings and readable prose over promotional language.
+Use semantic Markdown headings for hierarchy, ordinary paragraphs for explanations, and inline
+code for paths, identifiers and exact commands. Use fenced blocks for runnable examples. Let the
+reader's renderer choose font metrics and support zoom. Keep headings short and descriptive;
+avoid decorative Unicode alphabets, visual ASCII banners and paragraphs presented as headings.
 
 ## Layout
 
-- Present lifecycle information in dependency order: intent, evidence, decisions, tasks,
-  implementation, verification, handoff.
-- Keep one source of truth per concern and link related artifacts instead of duplicating them.
-- Keep machine-readable state adjacent to human-readable context.
+Lead with the useful result. Put the command or example beside the explanation it serves. Use
+lists for steps and tables for genuine comparisons; long narrative belongs in prose. Keep one
+canonical explanation per concern and link to it from short entry documents.
+
+Documents should read in a single column without a fixed viewport. Wide evidence images need a
+caption and a link to their original; side-by-side comparisons should retain legible labels when
+stacked on narrow screens. Keep release history, research and verification reports out of the
+root entry documents; their locations are indexed in [docs/README.md](docs/README.md).
+
+## Elevation & Depth
+
+The CLI and Markdown surfaces are flat. Establish hierarchy with headings, whitespace, grouping
+and labels. The repository defines no decorative shadows, glass layers or perspective effects.
+
+## Shapes
+
+Code blocks, tables and image frames inherit the renderer's treatment. No border-radius system
+or fixed canvas shape is specified. Embedded studies choose shapes for their own subject.
 
 ## Components
 
-- Project foundation: `DESIGN.md`.
-- Motion foundation: project `MOTION.md`, including an explicit `static` posture when motion is not
-  part of the product.
-- Palette foundation: DOM and raster color evidence reconciled into semantic roles, relationships,
-  and implementation tokens before website-cloning implementation.
-- Change contract: `brief.md`, `directions.md`, lowercase `design.md`, `motion.md`, `tasks.md`,
-  and `qa.md`.
-- Headless state: `state.json`, `events.jsonl`, and `handoff.md`.
-- Evidence adapters: browser, website-cloning, capability audit, and host publication receipts.
-- Contextual anti-slop review: structured hard, contextual, and preference rules plus explicit
-  evidence and accepted-context decisions.
-- Guard commands: initialization, transition, foundation validation, self-check, QA, and packaging.
+- **Command examples:** a language-labelled code block with necessary context and copyable syntax.
+- **Results and findings:** an explicit status, a concrete observation and a relevant evidence link.
+- **Comparison tables:** short parallel fields, meaningful headers and visible missing values.
+- **Evidence figures:** an image or preview with a descriptive caption, source and useful dimensions.
+- **Navigation links:** descriptive labels pointing to the canonical guide rather than duplicated text.
 
-Each component must have a deterministic contract, explicit failure state, and a resumable handoff.
+These are content presentation patterns. Workflow stages, receipts and validators are engineering
+contracts documented in [openspec/project.md](openspec/project.md), not visual component tokens.
 
 ## Do's and Don'ts
 
 ### Do
 
-- Synthesize project identity from requirements and attributed evidence.
-- Validate `DESIGN.md` before implementation begins.
-- Validate the palette foundation before implementing a website clone.
-- Treat motion as a reusable design language with timing, choreography, state, accessibility, and
-  performance decisions.
-- Preserve user decisions, provenance, and rejected alternatives.
-- Preserve useful anti-template observations without granting mutable external prompts design
-  authority.
-- Fail closed at filesystem, authority, and remote-receipt boundaries.
+- Preserve native text selection, document semantics, readable contrast and host zoom.
+- Let evidence carry the visual claim; keep technical checks and creative acceptance distinct.
+- Use the static presentation defined in [MOTION.md](MOTION.md) for repository documentation.
+- Give target products their own design tokens, composition and motion decisions.
 
 ### Don't
 
-- Do not copy a public template and present it as project design.
-- Do not treat a token dump as a complete design foundation.
-- Do not infer a complete palette from accent colors alone.
-- Do not invent an issue map, publication receipt, measurement, or user decision.
-- Do not let framework or animation integrations become the product boundary.
-- Do not copy showcase animation code or turn a runtime API into the motion language.
-- Do not convert named colors, fonts, punctuation, shapes, effects, or common layouts into
-  universal design failures.
+- Do not invent color or spacing tokens for surfaces whose rendering belongs to the host.
+- Do not use a screenshot as the only form of documentation or meaning-bearing text.
+- Do not turn an example's palette, dimensions or character into a global design requirement.
+- Do not replace visual guidance with installation instructions, process lists or test reports.
+
+## Product Context
+
+This is a local provenance extension to the Google format. The project improves agents' ability
+to design interfaces, graphics, images, motion and films. Individual tools can support an existing
+workflow; complete deliverables use the documented design and verification contracts. The package
+itself is host-rendered and does not prescribe an aesthetic to those deliverables.
 
 ## Source Decisions
 
 ### Adopted
 
-- Adopted the public DESIGN.md convention of machine-readable frontmatter plus human-readable
-  product guidance.
-- Adopted OpenSpec-style change artifacts and append-only event evidence for resumability.
-- Adopted reference sites and template collections as attributed evidence only.
-- Adopted a blocking palette-evidence gate for website-cloning work.
-- Adopted a two-level motion contract: project `MOTION.md` plus change-level `motion.md`.
-- Adopted a contextual anti-slop rubric that blocks product-quality defects while keeping
-  subjective fashion signals advisory.
+- Adopted Google's visual-system format, official section order and reasoned `omitted` token groups.
+- Adopted the repository's existing host-rendered CLI, semantic Markdown and static motion posture.
+- Adopted project-specific identity and attributed visual evidence; the foundation requirement is
+  recorded in [enforce-design-foundation](openspec/changes/archive/2026-08-23-enforce-design-foundation/proposal.md).
+- Recorded this clarification in [organize-repository-docs](openspec/changes/organize-repository-docs/proposal.md).
 
 ### Rejected
 
-- Rejected copying a generic DESIGN.md template as the default project foundation.
-- Rejected gallery, loader, animation-library, or benchmark projects as motion-spec authority.
-- Rejected installing a reference catalog directly over the project's `DESIGN.md`.
-- Rejected optional DESIGN.md enforcement at implementation time.
-- Rejected automatic remote publication from local scripts without exact user authority.
-- Rejected appending mutable remote taste prompts to global agent instruction files.
+- Rejected treating workflow machinery as a visual component system.
+- Rejected fabricated theme values, a mandatory canvas size or a reference character for all tools.
+- Rejected replacing a target product's authored design with a generic or upstream example.

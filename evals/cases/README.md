@@ -19,7 +19,7 @@ library serves three purposes:
 
 ```
 evals/cases/
-  package.json                  pinned render toolchain (HyperFrames 0.8.84)
+  package.json                  workspace toolchain pins (GSAP 3.15.0, HyperFrames 0.8.137)
   cases.cjs                     load, validate, patch and check cases
   capture-core.cjs              deterministic 2x UI capture for real-interface cases
   verify.cjs                    command-line verification
@@ -83,18 +83,21 @@ node evals/cases/verify.cjs
 ```
 
 ```bash
-npm --prefix evals/cases install
+npm ci
+npm run browser:install
 ```
 
 ```bash
 node evals/cases/verify.cjs --render
 ```
 
-The first command checks the storyboard, score and timeline gates on every golden and
-counter-example. Repository QA runs it through `tests/golden-cases.test.cjs`. The third command
+Run `npm ci` from the repository root to install both private npm workspaces from the root lockfile;
+the packages remain development tooling and are not added to downstream projects or the packaged
+skill. The first command checks the storyboard, score and timeline gates on every golden and
+counter-example. Repository QA runs it through `tests/golden-cases.test.cjs`. `verify.cjs --render`
 also scores, renders and checks each golden, requires a recorded disposition for every warning
-(`reviewedWarnings`), and renders every render counter-example; it needs the toolchain from the
-second command, headless Chrome and ffmpeg.
+(`reviewedWarnings`), and renders every render counter-example; it needs the workspace toolchain,
+the browser runtimes from `npm run browser:install`, and ffmpeg.
 
 ## Approval
 

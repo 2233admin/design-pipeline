@@ -1,6 +1,10 @@
 {
   "schema": "design-pipeline.test-manifest.v1",
   "tests": [
+    "reference-analysis-entry.test.cjs",
+    "reference-video.test.cjs",
+    "project-analysis.test.cjs",
+    "component-eval.test.cjs",
     "github-workflows.test.cjs",
     "hyperframes-routing.test.cjs",
     "adapter-intake.test.cjs",
@@ -55,9 +59,12 @@
     "motion-foundation.test.cjs",
     "motion-verification.test.cjs",
     "film-gates.test.cjs",
+    "animation-craft.test.cjs",
     "film-timeline-eval.test.cjs",
     "film-project.test.cjs",
     "composition-gate.test.cjs",
+    "visual-diagnostics.test.cjs",
+    "visual-craft.test.cjs",
     "audio-gate.test.cjs",
     "film-catalog-3d.test.cjs",
     "film-score.test.cjs",
@@ -98,6 +105,10 @@
     "guided-design-intake.test.cjs",
     "region-template.test.cjs",
     "surface-design-artifacts.test.cjs",
-    "golden-cases.test.cjs"
+    "golden-cases.test.cjs",
+    "huashu-runtime.test.cjs",
+    "huashu-scroll.test.cjs",
+    "huashu-assets-audio.test.cjs",
+    "huashu-tools.test.cjs"
   ]
 }

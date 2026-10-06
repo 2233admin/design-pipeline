@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const defaultManifest = path.resolve(__dirname, "../references/design-md/manifest.json");
+const defaultManifest = path.resolve(__dirname, "../vendor/design-md/manifest.json");
 const schema = "design-pipeline.design-md-source.v1";
 
 function invalid(message) {

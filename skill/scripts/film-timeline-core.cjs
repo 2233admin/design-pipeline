@@ -13,6 +13,7 @@ const TIMELINE_SCHEMA = "design-pipeline.film-timeline.v1";
 const SCOPE = "film timeline";
 const LAYOUT_PROPS = new Set(["top", "left", "right", "bottom", "width", "height", "display", "visibility", "margin", "marginTop", "marginLeft", "marginRight", "marginBottom", "padding", "paddingTop", "paddingLeft", "paddingRight", "paddingBottom"]);
 const FADE_PROPS = new Set(["opacity", "autoAlpha", "scale", "scaleX", "scaleY"]);
+const POSE_MOTION_PROPS = new Set(["x", "y", "z", "xPercent", "yPercent", "rotation", "rotationX", "rotationY", "rotationZ", "skewX", "skewY", "locationX", "locationY", "locationZ"]);
 const CARRIED_HANDOFFS = new Set(["continuation", "morph", "camera-carry"]);
 const FRAME_TOLERANCE_SEC = 0.05;
 const BOUNDARY_WINDOW_SEC = 0.35;
@@ -41,6 +42,30 @@ function overlaps(tween, start, end) {
   return tween.startSec < end && tweenEnd > start;
 }
 
+// Only compare explicit numeric zero-duration poses. A prior pose is known only after an earlier
+// set named that same target and property; never infer setup from a timed tween or the DOM.
+function changedPoseSets(tweens) {
+  const known = new Map();
+  const changes = [];
+  const sets = tweens.map((tween, index) => ({ tween, index })).filter(({ tween }) => !tween.driver && tween.durationSec === 0)
+    .sort((a, b) => a.tween.startSec - b.tween.startSec || a.index - b.index);
+  for (const { tween } of sets) {
+    const values = tween.to && typeof tween.to === "object" ? tween.to : {};
+    for (const target of tween.targets) {
+      if (!known.has(target)) known.set(target, new Map());
+      const targetPose = known.get(target);
+      for (const prop of tween.props) {
+        const value = values[prop];
+        if (!Number.isFinite(value)) continue;
+        const previous = targetPose.get(prop);
+        if (previous && previous.at < tween.startSec && previous.value !== value) changes.push({ tween, target, prop });
+        targetPose.set(prop, { value, at: tween.startSec });
+      }
+    }
+  }
+  return changes;
+}
+
 function checkTimeline(timeline, board, options = {}) {
   validateTimeline(timeline);
   const storyboard = checkStoryboard(board, options);
@@ -66,6 +91,7 @@ function checkTimeline(timeline, board, options = {}) {
   }
   const ambient = new Set([...coverage].filter(([target, total]) => total / timeline.durationSec > 0.6 && longest.get(target) / timeline.durationSec >= 0.5).map(([target]) => target));
   const subjects = (tween) => (tween.driver ? [] : tween.targets.filter((target) => !ambient.has(target)));
+  const poseChanges = changedPoseSets(timeline.tweens);
   // One time source per property: two tweens driving the same property of the same element at
   // overlapping times fight each other (and stack their easing), so the motion is undefined.
   const tracks = new Map();
@@ -99,20 +125,29 @@ function checkTimeline(timeline, board, options = {}) {
     // (a single continuous shot, such as a Blender turntable, is all "ambient" by coverage).
     const own = timeline.tweens.filter((tween) => subjects(tween).length > 0 && overlaps(tween, beat.startSec, beat.endSec));
     const tweens = own.length ? own : timeline.tweens.filter((tween) => !tween.driver && overlaps(tween, beat.startSec, beat.endSec));
+    const setChanges = poseChanges.filter((change) => tweens.includes(change.tween) && overlaps(change.tween, beat.startSec, beat.endSec));
     const animated = tweens.filter((tween) => tween.durationSec > 0);
-    const propsUsed = new Set(animated.flatMap((tween) => tween.props));
-    const targets = new Set(animated.flatMap((tween) => (own.length ? subjects(tween) : tween.targets)));
-    return { beat, tweens: animated, props: [...propsUsed].sort(), targets };
+    const timedProps = new Set(animated.flatMap((tween) => tween.props));
+    const propsUsed = new Set([...animated.flatMap((tween) => tween.props), ...setChanges.map(({ prop }) => prop)]);
+    const targets = new Set([...animated.flatMap((tween) => (own.length ? subjects(tween) : tween.targets)), ...setChanges.map(({ target }) => target)]);
+    return {
+      beat, tweens: animated, setChanges, props: [...propsUsed].sort(), targets,
+      substantivePose: setChanges.some(({ prop }) => POSE_MOTION_PROPS.has(prop)),
+      fadeOnlySets: setChanges.length > 0 && setChanges.every(({ prop }) => FADE_PROPS.has(prop)),
+      timedFadeOnly: animated.length > 0 && [...timedProps].every((prop) => FADE_PROPS.has(prop)),
+    };
   });
 
   const drivers = timeline.tweens.filter((tween) => tween.driver && tween.durationSec > 0);
   const drivenBeats = new Set(board.beats.filter((beat) => drivers.some((tween) => overlaps(tween, beat.startSec, beat.endSec))).map((beat) => beat.id));
-  for (const { beat, tweens, props } of perBeat) {
+  for (const { beat, tweens, props, substantivePose, fadeOnlySets, timedFadeOnly } of perBeat) {
     if (beat.role !== "action") continue;
     // Procedurally driven beats (3D, shader, canvas) are judged from rendered pixels instead.
     if (tweens.length === 0 && drivenBeats.has(beat.id)) continue;
-    if (tweens.length === 0) add("beat-static", "action beat has no animated tween", beat.id);
-    else if (props.every((prop) => FADE_PROPS.has(prop))) add("beat-fade-only", `action beat only animates ${props.join(", ")}`, beat.id);
+    if (tweens.length === 0 && !substantivePose) {
+      if (fadeOnlySets) add("beat-fade-only", `action beat only changes ${props.join(", ")}`, beat.id);
+      else add("beat-static", "action beat has no animated tween or changing transform pose", beat.id);
+    } else if (!substantivePose && timedFadeOnly) add("beat-fade-only", `action beat only animates ${props.join(", ")}`, beat.id);
   }
 
   // Continuity: a carried handoff needs one subject animated on both sides of the boundary.
@@ -148,8 +183,8 @@ function checkTimeline(timeline, board, options = {}) {
     findings,
     metrics: {
       tweens: timeline.tweens.length,
-      staticActionBeats: actionBeats.filter(({ tweens }) => tweens.length === 0).length,
-      fadeOnlyActionBeats: actionBeats.filter(({ tweens, props }) => tweens.length && props.every((prop) => FADE_PROPS.has(prop))).length,
+      staticActionBeats: actionBeats.filter(({ tweens, substantivePose, fadeOnlySets }) => !tweens.length && !substantivePose && !fadeOnlySets).length,
+      fadeOnlyActionBeats: actionBeats.filter(({ tweens, substantivePose, fadeOnlySets, timedFadeOnly }) => !substantivePose && (timedFadeOnly || (!tweens.length && fadeOnlySets))).length,
       ambientTargets: [...ambient].sort(),
       proceduralBeats: [...drivenBeats].filter((id) => !perBeat.find((entry) => entry.beat.id === id).tweens.length),
       carriedHandoffs: carriedPlanned ? Number((carried / Math.max(1, carriedPlanned - proceduralHandoffs)).toFixed(3)) : null,

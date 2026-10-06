@@ -19,7 +19,13 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
 fps = int(params["fps"])
 frames = max(2, round(params["durationSec"] * fps))
-scene.render.engine = params.get("engine", "BLENDER_EEVEE")
+engine = params.get("engine", "BLENDER_EEVEE")
+try:
+    scene.render.engine = engine
+except TypeError:
+    if engine != "BLENDER_EEVEE":
+        raise
+    scene.render.engine = "BLENDER_EEVEE_NEXT"
 scene.render.resolution_x, scene.render.resolution_y = int(params["width"]), int(params["height"])
 scene.render.fps, scene.render.fps_base = fps, 1.0
 scene.frame_start, scene.frame_end = 1, frames

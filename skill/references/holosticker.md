@@ -1,8 +1,8 @@
 # Holosticker capability
 
 The complete MIT-licensed `jal-co/holosticker` repository is bundled at
-`references/holosticker/upstream/` at the revision recorded in
-`references/holosticker/manifest.json`. Its 57 tracked files contain the real Three.js holographic
+`vendor/holosticker/upstream/` at the revision recorded in
+`vendor/holosticker/manifest.json`. Its 57 tracked files contain the real Three.js holographic
 material, exact distance-field die cut, pointer tilt, peel geometry, studio controls, and export
 paths; this is implementation source, not a screenshot or prose-only reference.
 

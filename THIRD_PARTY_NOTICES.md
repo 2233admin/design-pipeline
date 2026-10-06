@@ -223,13 +223,18 @@ SOFTWARE.
 The bundled design-playbook library is a byte-preserved snapshot of:
 
 - Source: https://github.com/MengTo/skills
-- Reviewed commit: `3f4c22d10055d3fdddb17248d59d0c1b731cb8d3`
+- Reviewed commit: `83a47fee32f0b6349bff1fede99257a5ef03dc93`
 - Original copyright: Copyright (c) 2026 Meng To
 - License: MIT
 
-The package preserves every tracked file from the reviewed revision as inert reference material.
+The package preserves all 1,313 tracked files (136,325,371 bytes) from the reviewed revision as
+inert reference material. This revision adds 49 playbooks, including 3D material/lighting studies,
+14 illustration treatments, six game-combat effects, and six web interaction patterns; existing
+GSAP and Three.js playbook instructions are unchanged. Three.js landscape, towers, and weather demo
+files update canvas sizing and viewport recovery, with lighting and label adjustments in towers.
 Catalog search reads metadata only; it does not execute upstream scripts or demos, install runtime
-dependencies, or authorize external actions.
+dependencies, or authorize external actions. Publishing and thread-management playbooks remain
+explicit-only.
 
 MIT License
 
@@ -421,13 +426,13 @@ The bundled DesignMD example catalog is a byte-preserved snapshot of:
 The package preserves every tracked file from the reviewed revision as inert reference material.
 Catalog search does not install those files as a product DESIGN.md and does not wrap
 `designmd-cli`. The upstream LICENSE is retained at
-`skill/references/design-md/upstream/LICENSE`.
+`skill/vendor/design-md/upstream/LICENSE`.
 
 ## iart-ai motion skills
 
 The bundled motion-skill library is a byte-preserved snapshot of the MIT-licensed
 [`iart-ai/motion-skills`](https://github.com/iart-ai/motion-skills) index and the licensed packs
-listed in `skill/references/iart-motion-skills/manifest.json`.
+listed in `skill/vendor/iart-motion-skills/manifest.json`.
 
 - Index commit: `945c4c70f7cf82a4502cfe3877ff8466972d2842`
 - Reviewed: 2026-08-26
@@ -438,6 +443,39 @@ listed in `skill/references/iart-motion-skills/manifest.json`.
 Catalog search does not execute upstream scripts, install Remotion, Manim, After Effects, or
 ffmpeg, or authorize paid or credentialed generation. Each bundled pack retains its upstream
 LICENSE.
+
+## Animation craft references
+
+`references/animation-thinking.md` and the original motion-study example draw method inspiration
+from [alchaincyf/huashu-art-motion](https://github.com/alchaincyf/huashu-art-motion) at
+`26dba25b2b495c2138848c29a2c90df356a20325` (MIT, copyright 2026 alchaincyf; reviewed 2026-10-06).
+That guide redistributes no upstream artwork or audio. The guide also links Richard Williams'
+authorized publisher/masterclass descriptions and Toei's public production guidance; no book
+pages, course videos or other training material are bundled.
+
+## alchaincyf/huashu-art-motion tools
+
+`skill/vendor/huashu-art-motion/` preserves the reviewed code, methods, recipes, examples and
+licensed font resources from https://github.com/alchaincyf/huashu-art-motion at commit
+`26dba25b2b495c2138848c29a2c90df356a20325` (complete capability review 2026-10-07).
+Its `manifest.json` records original paths, SHA-256 hashes and exclusions. Code/docs retain
+the MIT license and `Copyright (c) 2026 alchaincyf (花叔 · 花生)` notice. Font resources retain
+their separate SIL Open Font License files under `upstream/scripts/engine/lib/fonts/`;
+stroke-derived data retains `upstream/scripts/engine/reference_films/spacex/spacex_wb/assets/ARPHICPL.TXT`.
+The author's demo-only portrait/frame packs and showcase media are excluded; consumers supply
+their own artwork. Example references to those excluded assets are not packaged asset promises.
+
+`skill/tools/art-motion/` adapts all 17 library modules, 35 scene studies, eight clip grammars
+and 50 transitions into an isolated static runtime, with asset/font/audio/scroll/render helpers
+and production guides. Generated code embeds the upstream MIT notice. The original bootstrap
+scripts remain reference material; maintained tools replace their global loading, fixed stage,
+unsafe browser flags and overwrite behavior. Named scenes and characters are optional studies,
+not project defaults or claims of creative acceptance.
+
+`skill/tools/visual-craft/canvas.js` adapts arc-length, pressure-stroke, seeded-random and text
+layout methods into caller-owned helpers. Its adjacent `LICENSE.huashu-art-motion` preserves
+the upstream MIT notice. The visual diagnostics implementation borrows the inspection method
+and uses this project's existing PNG codec, sampler and evidence contracts.
 
 ## Strudel (downloaded at runtime, not distributed)
 

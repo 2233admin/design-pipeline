@@ -1,0 +1,25 @@
+{
+  "grammar": "t3_finance_chart",
+  "width": 960,
+  "height": 540,
+  "duration": 4,
+  "fps": 24,
+  "fonts": ["PuHui-Medium", "PuHui-Bold", "PuHui-Heavy", "RobotoCondensed"],
+  "safe": { "left": 40, "right": 40, "top": 24, "bottom": 56 },
+  "data": {
+    "title": "Prototype comparison",
+    "unit": "Illustrative units",
+    "source": "Synthetic demonstration data",
+    "chart": "bar",
+    "decimals": 0,
+    "series": [
+      { "label": "A", "value": 12 },
+      { "label": "B", "value": 18 },
+      { "label": "C", "value": 15 }
+    ]
+  },
+  "cues": [
+    { "at": 0, "kind": "title" },
+    { "at": 0.5, "kind": "bar" }
+  ]
+}

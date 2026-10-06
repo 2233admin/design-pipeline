@@ -47,6 +47,23 @@ For an existing motion surface, `improve-animations` is an audit-and-plan route;
 become an implementation task. For a missing but worthwhile transition, `find-animation-opportunities`
 provides a proposal; it does not turn every seam into a wishlist.
 
+For an explicitly broad audit of an app or several surfaces, make the report finite and useful for
+decision-making: list evidence-backed findings in priority order, and include representative motion
+candidates you rejected with the specific frequency, purpose, function, or budget reason. If no
+candidate survives, say so. Do not invent a fixed finding count or keep searching after the relevant
+surface classes have been covered. For each finding handed to a low-context executor, put the exact
+target and current behavior, the applicable existing token or primitive, the allowed change boundary,
+and the rendered check needed to confirm it in the existing phase task record or `motion.md`. Include
+the intended-speed feel check and any relevant reduced-motion, rapid-input, reverse, or cleanup case.
+This adds an output shape to broad audits; it does not require a new plan directory, fan-out, or
+implementation of an audit finding without authorization.
+
+This broad-audit supplement was reviewed against the current
+[opportunity scan](https://github.com/emilkowalski/skills/blob/e8a175de22ae1e49370fc144c1f3bb9aeedf988d/skills/find-animation-opportunities/SKILL.md)
+and [audit/handoff method](https://github.com/emilkowalski/skills/blob/e8a175de22ae1e49370fc144c1f3bb9aeedf988d/skills/improve-animations/SKILL.md)
+on 2026-10-07. The four-file baseline recorded above is retained; this scoped review does not
+declare every upstream skill or installed companion current.
+
 ## 2. Vocabulary, curve, and runtime contract
 
 Name the behavior before choosing the mechanism. Use `animation-vocabulary` terms such as `enter/exit`,
@@ -70,8 +87,8 @@ origin; dynamic or gesture-driven motion must be interruptible rather than resta
 
 ## 3. Review and evidence before completion
 
-After implementation, run `review-animations` against the actual rendered surface, not only the source.
-Review each animation for:
+After implementation, apply the following built-in review to the actual rendered surface, not only
+the source. An installed `review-animations` companion may provide extra detail. Review each animation for:
 
 - justified purpose and frequency-appropriate intensity;
 - responsive easing, bounded duration, correct origin, and physical continuity;

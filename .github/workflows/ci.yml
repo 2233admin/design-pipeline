@@ -17,12 +17,24 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "22"
+          cache: npm
+
+      - name: Install locked workspace dependencies
+        run: npm ci
+
+      - name: Prepare browser runtimes
+        run: |
+          npm exec -- playwright install-deps chromium
+          npm run browser:install
+
+      - name: Validate specifications
+        run: npm run specs:check
 
       - name: Hermetic QA
-        run: node scripts/qa.cjs
+        run: npm test
 
       - name: Package
-        run: node scripts/package.cjs --output-root dist
+        run: npm run package:skill -- --output-root dist
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v7
