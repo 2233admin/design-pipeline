@@ -13,6 +13,11 @@ All notable changes to Design Pipeline are documented here.
   accessibility and Web Vitals. The receipt is `complete` only when every command succeeded.
   `evidence capture` gains `--agent-browser <path>` (project-installed) and forwards `--chrome <exe>`.
 
+### Fixed
+
+- `designer-pipeline evidence capture` honors `--timeout-ms` above 60 s: the public CLI killed the
+  capture kernel after a fixed 60 s; it now allows the requested capture time plus 30 s.
+
 ## [0.12.0-beta.1] - 2026-09-29
 
 ### Changed

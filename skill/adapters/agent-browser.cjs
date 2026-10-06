@@ -26,6 +26,8 @@ const IDLE_TIMEOUT = "2m";
 function tool() {
   const bin = process.env.DESIGN_PIPELINE_AGENT_BROWSER;
   if (!bin || !path.isAbsolute(bin)) throw new Error("DESIGN_PIPELINE_AGENT_BROWSER must be an explicit absolute path");
+  // Windows npm shims (.cmd) need a shell, which would also route the capture URL through it.
+  if (/\.(cmd|bat|ps1)$/i.test(bin)) throw new Error("DESIGN_PIPELINE_AGENT_BROWSER must not be a shell shim; pass node_modules/agent-browser/bin/agent-browser.js or the native executable");
   // The npm wrapper (bin/agent-browser.js) picks the native binary for this platform.
   return /\.[cm]?js$/i.test(bin) ? { command: process.execPath, prefix: [bin] } : { command: bin, prefix: [] };
 }
@@ -137,12 +139,19 @@ function main() {
   const toolVersion = version();
   const session = `dp-${process.pid}-${crypto.randomBytes(4).toString("hex")}`;
   let outcome;
+  let closed = false;
   try {
     outcome = capture(request, session, chrome);
   } finally {
-    run(["--session", session, "close"]);
+    closed = run(["--session", session, "close"]).status === 0;
   }
   const { artifacts, failed } = outcome;
+  // A failed close does not change what was captured, so it does not make the receipt partial; the
+  // probe message names it, and the session's idle timeout still shuts the browser down.
+  const notes = [
+    failed.length ? `agent-browser commands failed: ${failed.join(", ")}` : "agent-browser capture completed",
+    ...(closed ? [] : [`close failed; the session shuts down after the ${IDLE_TIMEOUT} idle timeout`]),
+  ];
   const hashes = {};
   for (const [key, name] of Object.entries(artifacts)) {
     if (name) hashes[key] = crypto.createHash("sha256").update(fs.readFileSync(path.join(request.outputRoot, name))).digest("hex");
@@ -157,7 +166,7 @@ function main() {
       id: "agent-browser",
       version: toolVersion,
       availability: "available",
-      probe: { ok: true, message: failed.length ? `agent-browser commands failed: ${failed.join(", ")}` : "agent-browser capture completed" },
+      probe: { ok: true, message: notes.join("; ") },
     },
     target: { url: request.url, viewport: request.viewport },
     capturedAt: new Date().toISOString(),

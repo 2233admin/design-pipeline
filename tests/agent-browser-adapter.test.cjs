@@ -21,7 +21,7 @@ const config = JSON.parse(fs.readFileSync(path.join(__dirname, "fake-config.json
 const args = process.argv.slice(2);
 fs.appendFileSync(path.join(__dirname, "calls.log"), JSON.stringify(args) + "\n");
 if (args[0] === "--version") { process.stdout.write("agent-browser 0.38.2\n"); process.exit(0); }
-if (args.includes("close")) { process.stdout.write("closed\n"); process.exit(0); }
+if (args.includes("close")) { if (config.closeFail) { process.stderr.write("close failed"); process.exit(1); } process.stdout.write("closed\n"); process.exit(0); }
 if (config.crash) { process.stderr.write("daemon failed to start"); process.exit(1); }
 const commands = JSON.parse(fs.readFileSync(0, "utf8"));
 const lifecycle = { reused: true };
@@ -147,4 +147,21 @@ test("the public CLI forwards --agent-browser and --chrome to the capture host",
   const result = spawnSync(process.execPath, [cli, "evidence", "capture", "--project-root", fixture.root, "--adapter-path", adapter, "--output-root", fixture.output, "--url", "https://example.com/", "--agent-browser", fixture.tool, "--chrome", fixture.chrome, "--json"], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
   assert.equal(result.status, 0, result.stdout || result.stderr);
   assert.equal(JSON.parse(result.stdout).receipt.status, "complete");
+});
+
+test("a failed close is named in the probe without discarding complete evidence", () => {
+  const fixture = project({ closeFail: true });
+  const { envelope } = runCapture(fixture, ["--agent-browser", fixture.tool]);
+  assert.equal(envelope.receipt.status, "complete");
+  assert.match(envelope.receipt.adapter.probe.message, /close failed/);
+});
+
+test("a Windows shell shim is refused before anything runs", () => {
+  const fixture = project();
+  const shim = path.join(fixture.root, "tools", "agent-browser.cmd");
+  fs.writeFileSync(shim, "@echo off\r\n");
+  const { envelope } = runCapture(fixture, ["--agent-browser", shim]);
+  assert.equal(envelope.ok, false);
+  assert.match(envelope.error.message, /must not be a shell shim/);
+  assert.deepEqual(calls(fixture), []);
 });

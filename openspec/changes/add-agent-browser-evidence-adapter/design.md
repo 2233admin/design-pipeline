@@ -37,8 +37,17 @@ session therefore starts with `--idle-timeout 2m`, which shuts the orphaned daem
 browser down instead of agent-browser's default of one hour (verified with a short timeout and no
 `close`: no daemon or browser process remained).
 
+A failed `close` is named in the probe message but does not make the receipt `partial`: it does not
+change what was captured, and the idle timeout still shuts the session down.
+
 A capture of a Vite dev server serving about 170 unbundled modules took 20 s, close to the host's
-30 s default; callers on dev servers should pass `--timeout-ms 120000`.
+30 s default; callers on dev servers should pass `--timeout-ms 120000`. The public CLI used to kill
+the capture kernel after a fixed 60 s whatever `--timeout-ms` said; `evidence capture` now gives the
+kernel the `--timeout-ms` budget plus 30 s for receipt validation and cleanup.
+
+Windows npm shims (`.cmd`, `.bat`, `.ps1`) are refused: running one needs a shell, which would also
+route the capture URL through it. Callers pass `node_modules/agent-browser/bin/agent-browser.js` or
+the native executable.
 
 ## Artifact shapes
 

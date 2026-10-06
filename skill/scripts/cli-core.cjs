@@ -438,13 +438,13 @@ function kernelStatusLabel(exitCode, successLabel) {
   return KERNEL_STATUS_LABELS[exitCode] ?? successLabel;
 }
 
-function runKernel(script, args, cwd) {
+function runKernel(script, args, cwd, { timeout = 60000 } = {}) {
   const child = spawnSync(process.execPath, [path.join(__dirname, script), ...args], {
     cwd,
     encoding: "utf8",
     env: { ...process.env, DESIGN_PIPELINE_CLI: "1" },
     windowsHide: true,
-    timeout: 60000,
+    timeout,
     maxBuffer: 4 * 1024 * 1024,
   });
   if (child.error) fail("cli", `kernel ${script} failed: ${child.error.message}`, { code: "KERNEL_FAILED" });
@@ -765,7 +765,10 @@ function evidenceCommand(parsed, root, action) {
       if (!value) continue;
       args.push(flag, ["--playwright-module", "--agent-browser"].includes(flag) ? contained(projectRoot, value, flag) : value);
     }
-    const kernel = runKernel("capture-web-evidence.cjs", args, projectRoot);
+    // The capture host enforces --timeout-ms on the adapter; the kernel gets that budget plus room for
+    // receipt validation and cleanup, so a long capture is not killed by the default kernel timeout.
+    const captureTimeout = Number(option(parsed, "--timeout-ms") || 30000);
+    const kernel = runKernel("capture-web-evidence.cjs", args, projectRoot, { timeout: Math.max(60000, (Number.isFinite(captureTimeout) ? captureTimeout : 0) + 30000) });
     return { result: { status: kernelStatusLabel(kernel.exitCode, "captured"), receipt: kernel.value }, exitCode: kernel.exitCode };
   }
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
