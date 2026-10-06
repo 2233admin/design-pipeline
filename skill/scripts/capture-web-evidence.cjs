@@ -8,7 +8,7 @@ const { validateReceipt } = require("./evidence-core.cjs");
 const { fail, jsonResult, pathInside } = require("./contract-utils.cjs");
 
 function parseArgs(argv) {
-  const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module"]);
+  const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module", "--agent-browser", "--chrome"]);
   const result = {};
   for (let index = 0; index < argv.length; index += 1) {
     const name = argv[index];
@@ -59,13 +59,21 @@ function validatedUrl(raw) {
   return url.href;
 }
 
-function optionalModule(projectRoot, raw) {
+// Tools an adapter runs or loads are project-installed: they must resolve inside the project root.
+function optionalProjectTool(projectRoot, raw, name) {
   if (!raw) return null;
   const candidate = path.resolve(raw);
-  if (!fs.existsSync(candidate)) fail("evidence capture", "--playwright-module does not exist");
+  if (!fs.existsSync(candidate)) fail("evidence capture", `${name} does not exist`);
   const real = fs.realpathSync(candidate);
-  if (!pathInside(projectRoot, real)) fail("evidence capture", "--playwright-module must stay inside --project-root");
+  if (!pathInside(projectRoot, real)) fail("evidence capture", `${name} must stay inside --project-root`);
   return real;
+}
+
+function optionalExecutable(raw, name) {
+  if (!raw) return null;
+  const candidate = path.resolve(raw);
+  if (!fs.existsSync(candidate) || !fs.statSync(candidate).isFile()) fail("evidence capture", `${name} must be an existing file`);
+  return fs.realpathSync(candidate);
 }
 
 function capture(options) {
@@ -77,7 +85,9 @@ function capture(options) {
   const height = positiveInteger(options["--height"] || 720, "--height", 16384);
   const timeout = positiveInteger(options["--timeout-ms"] || 30000, "--timeout-ms", 300000);
   const url = validatedUrl(required(options, "--url"));
-  const playwrightModule = optionalModule(projectRoot, options["--playwright-module"]);
+  const playwrightModule = optionalProjectTool(projectRoot, options["--playwright-module"], "--playwright-module");
+  const agentBrowser = optionalProjectTool(projectRoot, options["--agent-browser"], "--agent-browser");
+  const chrome = optionalExecutable(options["--chrome"], "--chrome");
   const stage = `${outputRoot}.tmp-${process.pid}`;
   if (fs.existsSync(stage)) fail("evidence capture", `stale capture stage exists: ${stage}`);
   fs.mkdirSync(path.dirname(outputRoot), { recursive: true });
@@ -92,6 +102,8 @@ function capture(options) {
       TMP: stage,
       DESIGN_PIPELINE_ADAPTER: "1",
       ...(playwrightModule ? { DESIGN_PIPELINE_PLAYWRIGHT_MODULE: playwrightModule } : {}),
+      ...(agentBrowser ? { DESIGN_PIPELINE_AGENT_BROWSER: agentBrowser } : {}),
+      ...(chrome ? { DESIGN_PIPELINE_CHROME: chrome } : {}),
     };
     const child = spawnSync(process.execPath, [adapterPath], { input: JSON.stringify(request), encoding: "utf8", env, timeout, windowsHide: true, maxBuffer: 4 * 1024 * 1024 });
     if (child.error) fail("evidence capture", child.error.message, { code: child.error.code === "ETIMEDOUT" ? "ADAPTER_TIMEOUT" : "ADAPTER_FAILED" });

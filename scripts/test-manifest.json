@@ -96,6 +96,7 @@
     "victor-design-guidance.test.cjs",
     "visual-style-signals.test.cjs",
     "web-evidence-adapter.test.cjs",
+    "agent-browser-adapter.test.cjs",
     "website-cloning-init.test.cjs",
     "skill-cli-handoff.test.cjs",
     "claude-code-surface.test.cjs",

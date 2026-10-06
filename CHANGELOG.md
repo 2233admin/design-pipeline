@@ -6,6 +6,12 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Web evidence adapter `adapters/agent-browser.cjs` (`add-agent-browser-evidence-adapter`): drives
+  [agent-browser](https://github.com/vercel-labs/agent-browser) to fill every artifact of the
+  evidence receipt — full-page screenshot, gzipped Chrome trace, DOM, console with uncaught page
+  errors, network requests with status codes (headers removed, redaction `applied`), axe-core
+  accessibility and Web Vitals. The receipt is `complete` only when every command succeeded.
+  `evidence capture` gains `--agent-browser <path>` (project-installed) and forwards `--chrome <exe>`.
 - `composition scaffold --template visual-craft` copies the drawing helper, browser study and
   license into a new project directory. Skill installation and invocation now distinguish
   the installed resource root from the user's project, with a dedicated installation guide.
@@ -59,6 +65,8 @@ All notable changes to Design Pipeline are documented here.
 - Timeline gate: tweens that only animate opacity no longer carry a planned continuation, morph or
   camera-carry handoff; overlapping fades (a dissolve) now give `handoff-not-carried`.
 - `film score` removes its temporary download folder when a render fails.
+- `designer-pipeline evidence capture` honors `--timeout-ms` above 60 s: the public CLI killed the
+  capture kernel after a fixed 60 s; it now allows the requested capture time plus 30 s.
 
 ## [0.12.0-beta.1] - 2026-09-29
 
