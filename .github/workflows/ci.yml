@@ -33,6 +33,12 @@ jobs:
           npm exec -- playwright install-deps chromium
           npm run browser:install
 
+      - name: Allow Chrome's sandbox
+        # Ubuntu 23.10+ runners restrict unprivileged user namespaces through AppArmor, so the headless
+        # Chrome the browser tests launch exits with "No usable sandbox!". Lift that restriction here
+        # instead of turning the sandbox off in the tests.
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Validate specifications
         run: npm run specs:check
 
