@@ -20,9 +20,10 @@ const path = require("node:path");
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, "fake-config.json"), "utf8"));
 const args = process.argv.slice(2);
 fs.appendFileSync(path.join(__dirname, "calls.log"), JSON.stringify(args) + "\n");
-if (args[0] === "--version") { process.stdout.write("agent-browser 0.38.2\n"); process.exit(0); }
+if (args[0] === "--version") { if (config.mutate) fs.writeFileSync(config.mutate, "mutated"); process.stdout.write("agent-browser 0.38.2\n"); process.exit(0); }
 if (args.includes("close")) { if (config.closeFail) { process.stderr.write("close failed"); process.exit(1); } process.stdout.write("closed\n"); process.exit(0); }
 if (config.crash) { process.stderr.write("daemon failed to start"); process.exit(1); }
+if (args.includes("--state")) fs.writeFileSync(path.join(__dirname, "state-seen.txt"), fs.readFileSync(args[args.indexOf("--state") + 1]));
 const commands = JSON.parse(fs.readFileSync(0, "utf8"));
 const lifecycle = { reused: true };
 const payload = {
@@ -59,8 +60,8 @@ function project(config = {}) {
   return { root, tool: path.join(tools, "agent-browser.cjs"), chrome, calls: path.join(tools, "calls.log"), output: path.join(root, "evidence") };
 }
 
-function runCapture(fixture, extra = []) {
-  const args = ["--project-root", fixture.root, "--adapter-path", adapter, "--output-root", fixture.output, "--url", "https://example.com/", "--width", "800", "--height", "600", ...extra];
+function runCapture(fixture, extra = [], adapterPath = adapter) {
+  const args = ["--project-root", fixture.root, "--adapter-path", adapterPath, "--output-root", fixture.output, "--url", "https://example.com/", "--width", "800", "--height", "600", ...extra];
   const result = spawnSync(process.execPath, [capture, ...args], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
   return { status: result.status, envelope: JSON.parse(result.stdout) };
 }
@@ -164,4 +165,69 @@ test("a Windows shell shim is refused before anything runs", () => {
   assert.equal(envelope.ok, false);
   assert.match(envelope.error.message, /must not be a shell shim/);
   assert.deepEqual(calls(fixture), []);
+});
+
+test("saved browser state is loaded from a copy read once, and the receipt names the hash of those bytes", () => {
+  const fixture = project();
+  const state = path.join(fixture.root, "state.json");
+  const content = JSON.stringify({ cookies: [], origins: [{ origin: "https://example.com", localStorage: [{ name: "layout", value: "secret-layout" }] }] });
+  fs.writeFileSync(state, content);
+  // The stand-in rewrites the project file after the host has read it and before the session starts.
+  fs.writeFileSync(path.join(fixture.root, "tools", "fake-config.json"), JSON.stringify({ mutate: state }));
+  const { status, envelope } = runCapture(fixture, ["--agent-browser", fixture.tool, "--agent-browser-state", state]);
+  assert.equal(status, 0, JSON.stringify(envelope));
+  assert.equal(fs.readFileSync(state, "utf8"), "mutated");
+  const batch = calls(fixture).find((args) => args.includes("batch"));
+  const loaded = batch[batch.indexOf("--state") + 1];
+  assert.equal(path.basename(loaded), "state.json");
+  assert.notEqual(loaded, fs.realpathSync(state));
+  assert.equal(fs.existsSync(path.dirname(loaded)), false, "the private copy is removed after the capture");
+  assert.equal(fs.readFileSync(path.join(fixture.root, "tools", "state-seen.txt"), "utf8"), content);
+  const hash = require("node:crypto").createHash("sha256").update(content).digest("hex");
+  assert.match(envelope.receipt.adapter.probe.message, new RegExp(`state preloaded from state\\.json \\(sha256 ${hash}\\)`));
+  for (const name of fs.readdirSync(fixture.output)) assert.equal(fs.readFileSync(path.join(fixture.output, name)).includes("secret-layout"), false, name);
+});
+
+test("the private state copy is removed when the adapter fails", () => {
+  const fixture = project({ crash: true });
+  const state = path.join(fixture.root, "state.json");
+  fs.writeFileSync(state, "{}");
+  const { status } = runCapture(fixture, ["--agent-browser", fixture.tool, "--agent-browser-state", state]);
+  assert.equal(status, 1);
+  const batch = calls(fixture).find((args) => args.includes("batch"));
+  assert.equal(fs.existsSync(path.dirname(batch[batch.indexOf("--state") + 1])), false);
+});
+
+test("saved browser state outside the project, for another adapter, or without agent-browser, fails closed", () => {
+  const fixture = project();
+  const elsewhere = project();
+  const outside = path.join(elsewhere.root, "state.json");
+  fs.writeFileSync(outside, "{}");
+  const escaped = runCapture(fixture, ["--agent-browser", fixture.tool, "--agent-browser-state", outside]);
+  assert.equal(escaped.status, 1);
+  assert.match(escaped.envelope.error.message, /--agent-browser-state must stay inside --project-root/);
+
+  const inside = path.join(fixture.root, "state.json");
+  fs.writeFileSync(inside, "{}");
+  // Playwright has no state option: even with --agent-browser supplied it must not start.
+  const playwright = path.resolve(__dirname, "../skill/adapters/playwright.cjs");
+  const other = runCapture(fixture, ["--agent-browser", fixture.tool, "--agent-browser-state", inside], playwright);
+  assert.equal(other.status, 1);
+  assert.match(other.envelope.error.message, /--agent-browser-state needs --adapter-path <skill>\/adapters\/agent-browser\.cjs/);
+  assert.equal(fs.existsSync(fixture.output), false);
+
+  const alone = runCapture(fixture, ["--agent-browser-state", inside]);
+  assert.equal(alone.status, 1);
+  assert.match(alone.envelope.error.message, /--agent-browser-state requires --agent-browser/);
+  assert.deepEqual(calls(fixture), []);
+});
+
+test("the public CLI forwards --agent-browser-state to the capture host", () => {
+  const fixture = project();
+  const state = path.join(fixture.root, "state.json");
+  fs.writeFileSync(state, "{}");
+  const result = spawnSync(process.execPath, [cli, "evidence", "capture", "--project-root", fixture.root, "--adapter-path", adapter, "--output-root", fixture.output, "--url", "https://example.com/", "--agent-browser", fixture.tool, "--agent-browser-state", state, "--json"], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
+  assert.equal(result.status, 0, result.stdout || result.stderr);
+  // The CLI envelope nests the kernel envelope: the receipt itself is at receipt.receipt.
+  assert.match(JSON.parse(result.stdout).receipt.receipt.adapter.probe.message, /state preloaded from state\.json/);
 });

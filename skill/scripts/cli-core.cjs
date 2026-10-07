@@ -145,7 +145,7 @@ const KNOWN_OPTIONS = new Set([
   "--action", "--adapter-path", "--api-version", "--artifact", "--answer", "--approval", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root", "--context", "--expected-sha256", "--failpoint",
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
-  "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--agent-browser", "--project-root",
+  "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--agent-browser", "--agent-browser-state", "--project-root",
   "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
@@ -389,7 +389,7 @@ function publicHelp() {
     "  design-skill route|manifest|run|select|promote",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
-    "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url> [--playwright-module <path>] [--agent-browser <path>] [--chrome <exe>]",
+    "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url> [--playwright-module <path>] [--agent-browser <path> [--agent-browser-state <file>]] [--chrome <exe>]",
     "  verify motion|components|audio|composition|interaction|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
     "    verify components --matrix <file> [--evidence-root <dir>] [--require-files]",
     "    verify motion --receipt <file> [--require-lifecycle]",
@@ -790,10 +790,10 @@ function evidenceCommand(parsed, root, action) {
     if (!adapterTrusted) fail("cli", "--adapter-path must stay inside the project or built-in adapter directory");
     const outputRoot = contained(projectRoot, requireOption(parsed, "--output-root"), "--output-root", false);
     const args = ["--project-root", projectRoot, "--adapter-path", adapterPath, "--output-root", outputRoot, "--url", requireOption(parsed, "--url")];
-    for (const flag of ["--width", "--height", "--timeout-ms", "--playwright-module", "--agent-browser", "--chrome"]) {
+    for (const flag of ["--width", "--height", "--timeout-ms", "--playwright-module", "--agent-browser", "--agent-browser-state", "--chrome"]) {
       const value = option(parsed, flag);
       if (!value) continue;
-      args.push(flag, ["--playwright-module", "--agent-browser"].includes(flag) ? contained(projectRoot, value, flag) : value);
+      args.push(flag, ["--playwright-module", "--agent-browser", "--agent-browser-state"].includes(flag) ? contained(projectRoot, value, flag) : value);
     }
     // The capture host enforces --timeout-ms on the adapter; the kernel gets that budget plus room for
     // receipt validation and cleanup, so a long capture is not killed by the default kernel timeout.
