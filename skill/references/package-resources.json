@@ -72,6 +72,7 @@
     "scripts/workflows/edit.cjs",
     "scripts/workflows/web.cjs",
     "references/workflow-film.md",
+    "references/qa-checklist.md",
     "references/animation-thinking.md",
     "references/film-choreography/motion-study.html",
     "references/film-choreography/motion-study.storyboard.json",

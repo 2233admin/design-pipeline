@@ -10,9 +10,13 @@ const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs")
 const { resolveToolchain } = require("../skill/scripts/toolchain-core.cjs");
 const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs");
 const {
+  captureGitSnapshot,
   finalizeExecutionTarget,
+  inspectGitChanges,
   prepareExecutionTarget,
   resolveExecutionTarget,
+  samePath,
+  validateGitSnapshot,
 } = require("../skill/scripts/execution-target-core.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -32,18 +36,19 @@ function git(root, ...args) {
   return child.stdout.trim();
 }
 
-function repository(t) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "execution-target-repo-"));
+function repository(t, { tempRoot = os.tmpdir() } = {}) {
+  const root = fs.mkdtempSync(path.join(tempRoot, "execution-target-repo-"));
   git(root, "init", "-b", "main");
   git(root, "config", "user.email", "pipeline@example.test");
   git(root, "config", "user.name", "Design Pipeline Test");
+  git(root, "config", "core.autocrlf", "false");
   fs.mkdirSync(path.join(root, "src"));
   fs.writeFileSync(path.join(root, ".gitignore"), ".design-pipeline/\n");
   fs.writeFileSync(path.join(root, "src", "App.tsx"), "export default function App() { return null; }\n");
   fs.writeFileSync(path.join(root, "README.md"), "# Fixture\n");
   git(root, "add", ".");
   git(root, "commit", "-m", "fixture");
-  const worktreeBase = fs.mkdtempSync(path.join(os.tmpdir(), "execution-target-worktrees-"));
+  const worktreeBase = fs.mkdtempSync(path.join(tempRoot, "execution-target-worktrees-"));
   t.after(() => {
     spawnSync("git", ["worktree", "prune"], { cwd: root, encoding: "utf8", windowsHide: true });
     fs.rmSync(worktreeBase, { recursive: true, force: true });
@@ -302,4 +307,273 @@ test("CLI routes, prepares, and finalizes a React execution with bound receipts"
   assert.equal(finalize.output.receipt.status, "complete");
   assert.equal(finalize.output.receipt.toolchainPlanSha256, executionRequest.toolchainPlanSha256);
   assert.deepEqual(finalize.output.receipt.changedFiles, ["src/App.tsx"]);
+});
+
+test("Git snapshots preserve unchanged dirty work and detect another edit with the same status", (t) => {
+  const { root } = repository(t);
+  const readme = path.join(root, "README.md");
+  fs.appendFileSync(readme, "pre-existing work\n");
+  fs.writeFileSync(path.join(root, "owner-notes.txt"), "another owner's untracked work\n");
+  const baseline = captureGitSnapshot(path.join(root, "src"));
+  assert.equal(baseline.root, fs.realpathSync(root));
+  assert.equal(validateGitSnapshot(baseline), baseline);
+  assert.equal(baseline.files["README.md"].status, " M");
+  const unchanged = inspectGitChanges(baseline, ["src/"], { root });
+  assert.equal(unchanged.status, "passed");
+  assert.deepEqual(unchanged.changedFiles, []);
+  assert.equal(fs.readFileSync(readme, "utf8"), "# Fixture\npre-existing work\n");
+  assert.equal(fs.readFileSync(path.join(root, "owner-notes.txt"), "utf8"), "another owner's untracked work\n");
+  if (process.platform === "win32") {
+    assert.equal(samePath(root, root.toUpperCase()), true);
+    assert.equal(inspectGitChanges(baseline, ["src/"], { root: root.toUpperCase() }).status, "passed");
+  }
+
+  fs.appendFileSync(readme, "a new task edit\n");
+  const changed = inspectGitChanges(baseline, ["src/"], { root: path.join(root, "src") });
+  assert.equal(changed.current.files["README.md"].status, baseline.files["README.md"].status);
+  assert.equal(changed.status, "blocked");
+  assert.deepEqual(changed.changedFiles, ["README.md"]);
+  assert.deepEqual(changed.outOfScope, ["README.md"]);
+  assert.match(changed.blockers.join("\n"), /scope/);
+});
+
+test("Git scope detects an index-only edit while working bytes and MM status stay unchanged", (t) => {
+  const { root } = repository(t);
+  const readme = path.join(root, "README.md");
+  fs.writeFileSync(readme, "first staged contents\n");
+  git(root, "add", "README.md");
+  fs.writeFileSync(readme, "unchanged working contents\n");
+  const baseline = captureGitSnapshot(root);
+  assert.equal(baseline.files["README.md"].status, "MM");
+  assert.equal(inspectGitChanges(baseline, ["src/"]).status, "passed");
+  const blob = spawnSync("git", ["hash-object", "-w", "--stdin"], { cwd: root, input: "different staged contents\n", encoding: "utf8", windowsHide: true });
+  assert.equal(blob.status, 0, blob.stderr);
+  git(root, "update-index", "--cacheinfo", `100644,${blob.stdout.trim()},README.md`);
+  const result = inspectGitChanges(baseline, ["src/"]);
+  assert.equal(result.status, "blocked");
+  assert.deepEqual(result.outOfScope, ["README.md"]);
+  assert.equal(result.current.files["README.md"].status, "MM");
+  assert.equal(result.current.files["README.md"].sha256, baseline.files["README.md"].sha256);
+  assert.notEqual(result.current.files["README.md"].index[0].oid, baseline.files["README.md"].index[0].oid);
+  assert.equal(fs.readFileSync(readme, "utf8"), "unchanged working contents\n");
+});
+
+test("Git scope retains rename endpoints, deleted files, untracked paths and index modes", (t) => {
+  const { root } = repository(t);
+  const baseline = captureGitSnapshot(root);
+  fs.mkdirSync(path.join(root, "docs"));
+  git(root, "mv", "src/App.tsx", "docs/App.tsx");
+  fs.unlinkSync(path.join(root, "README.md"));
+  fs.writeFileSync(path.join(root, "new.txt"), "untracked\n");
+  git(root, "update-index", "--chmod=+x", ".gitignore");
+  const result = inspectGitChanges(baseline, ["src/"]);
+  assert.equal(result.status, "blocked");
+  assert.deepEqual(result.changedFiles, [".gitignore", "README.md", "docs/App.tsx", "new.txt", "src/App.tsx"]);
+  assert.deepEqual(result.outOfScope, [".gitignore", "README.md", "docs/App.tsx", "new.txt"]);
+  assert.equal(result.current.files["README.md"].type, "missing");
+  assert.equal(result.current.files[".gitignore"].index[0].mode, "100755");
+  git(root, "add", "-A");
+  git(root, "commit", "-m", "rename, delete and add");
+  const committed = inspectGitChanges(baseline, ["src/"]);
+  assert.ok(committed.commitChangedFiles.includes("src/App.tsx"));
+  assert.ok(committed.commitChangedFiles.includes("docs/App.tsx"));
+  assert.ok(committed.commitChangedFiles.includes("README.md"));
+  assert.ok(committed.commitChangedFiles.includes("new.txt"));
+});
+
+test("Git scope blocks unresolved index stages even when the conflict path is authorized", (t) => {
+  const { root } = repository(t);
+  git(root, "checkout", "-b", "conflicting");
+  fs.writeFileSync(path.join(root, "README.md"), "other branch\n");
+  git(root, "add", "README.md");
+  git(root, "commit", "-m", "other branch");
+  git(root, "checkout", "main");
+  fs.writeFileSync(path.join(root, "README.md"), "main branch\n");
+  git(root, "add", "README.md");
+  git(root, "commit", "-m", "main branch");
+  const baseline = captureGitSnapshot(root);
+  const merge = spawnSync("git", ["merge", "--no-edit", "conflicting"], { cwd: root, encoding: "utf8", windowsHide: true });
+  assert.equal(merge.status, 1, merge.stderr || merge.stdout);
+  const result = inspectGitChanges(baseline, ["README.md"]);
+  assert.equal(result.status, "blocked");
+  assert.deepEqual(result.outOfScope, []);
+  assert.deepEqual(result.current.files["README.md"].index.map(({ stage }) => stage), [1, 2, 3]);
+  assert.match(result.blockers.join("\n"), /unresolved Git index stages/);
+});
+
+test("Git scope observes every commit when an out-of-scope edit is later reverted", (t) => {
+  const { root } = repository(t);
+  const baseline = captureGitSnapshot(root);
+  fs.appendFileSync(path.join(root, "README.md"), "temporary committed escape\n");
+  git(root, "add", "README.md");
+  git(root, "commit", "-m", "outside task scope");
+  git(root, "revert", "--no-edit", "HEAD");
+  const result = inspectGitChanges(baseline, ["src/"]);
+  assert.equal(result.status, "blocked");
+  assert.deepEqual(result.current.files, baseline.files);
+  assert.deepEqual(result.commitChangedFiles, ["README.md"]);
+  assert.deepEqual(result.outOfScope, ["README.md"]);
+});
+
+test("Git scope refuses root, branch and baseline history replacement", async (t) => {
+  await t.test("another Git root", (child) => {
+    const first = repository(child);
+    const second = repository(child);
+    git(second.root, "fetch", first.root, "main");
+    git(second.root, "reset", "--hard", "FETCH_HEAD");
+    assert.equal(git(second.root, "rev-parse", "HEAD"), git(first.root, "rev-parse", "HEAD"));
+    assert.equal(samePath(first.root, second.root), false);
+    const result = inspectGitChanges(captureGitSnapshot(first.root), ["src/"], { root: second.root });
+    assert.equal(result.status, "blocked");
+    assert.match(result.blockers.join("\n"), /Git root changed/);
+  });
+  await t.test("another branch", (child) => {
+    const { root } = repository(child);
+    const baseline = captureGitSnapshot(root);
+    git(root, "checkout", "-b", "different");
+    const result = inspectGitChanges(baseline, ["src/"]);
+    assert.equal(result.status, "blocked");
+    assert.match(result.blockers.join("\n"), /Git branch changed/);
+  });
+  await t.test("same branch with replaced history", (child) => {
+    const { root } = repository(child);
+    const baseline = captureGitSnapshot(root);
+    git(root, "commit", "--amend", "-m", "replacement initial commit");
+    const result = inspectGitChanges(baseline, ["src/"]);
+    assert.equal(result.current.branch, baseline.branch);
+    assert.deepEqual(result.changedFiles, []);
+    assert.equal(result.status, "blocked");
+    assert.match(result.blockers.join("\n"), /ancestor/);
+  });
+});
+
+test("scope inspection retains a successful worktree until the existing finalizer removes it", (t) => {
+  // A revision range must not be probed as a filename relative to a long cwd.
+  let tempRoot = os.tmpdir();
+  let longTempRoot;
+  if (tempRoot.length < 130) {
+    longTempRoot = fs.mkdtempSync(path.join(tempRoot, "scope-long-temp-"));
+    tempRoot = longTempRoot;
+    while (tempRoot.length < 130) tempRoot = path.join(tempRoot, "subpath");
+    fs.mkdirSync(tempRoot, { recursive: true });
+  }
+  const { root, worktreeBase } = repository(t, { tempRoot });
+  if (longTempRoot) t.after(() => fs.rmSync(longTempRoot, { recursive: true, force: true }));
+  const plan = resolveExecutionTarget(request({ id: "inspect-no-cleanup", isolation: "required" }), { projectRoot: root, worktreeBase });
+  const state = prepareExecutionTarget(plan, { projectRoot: root, worktreeBase, now: "2026-08-13T00:00:00.000Z" });
+  const baseline = captureGitSnapshot(state.executionRoot);
+  fs.appendFileSync(path.join(state.executionRoot, "src", "App.tsx"), "// verified scope\n");
+  git(state.executionRoot, "add", "src/App.tsx");
+  git(state.executionRoot, "commit", "-m", "in scope");
+  const result = inspectGitChanges(baseline, ["src/"]);
+  assert.equal(result.status, "passed", `execution root: ${state.executionRoot}\n${result.blockers.join("\n")}`);
+  assert.deepEqual(result.changedFiles, ["src/App.tsx"]);
+  assert.equal(fs.existsSync(state.executionRoot), true);
+  const receipt = finalizeExecutionTarget(plan, state, outcome(), { projectRoot: root, worktreeBase });
+  assert.equal(receipt.status, "complete");
+  assert.equal(receipt.cleanup.action, "removed");
+  assert.equal(fs.existsSync(state.executionRoot), false);
+});
+
+test("existing finalizer retains a clean worktree whose out-of-scope commit was reverted", (t) => {
+  const { root, worktreeBase } = repository(t);
+  const plan = resolveExecutionTarget(request({ id: "inspect-revert-retained", isolation: "required" }), { projectRoot: root, worktreeBase });
+  const state = prepareExecutionTarget(plan, { projectRoot: root, worktreeBase, now: "2026-08-13T00:00:00.000Z" });
+  fs.appendFileSync(path.join(state.executionRoot, "README.md"), "committed scope escape\n");
+  git(state.executionRoot, "add", "README.md");
+  git(state.executionRoot, "commit", "-m", "scope escape");
+  git(state.executionRoot, "revert", "--no-edit", "HEAD");
+  assert.equal(git(state.executionRoot, "status", "--porcelain"), "");
+  const receipt = finalizeExecutionTarget(plan, state, outcome(), { projectRoot: root, worktreeBase });
+  assert.equal(receipt.status, "blocked");
+  assert.deepEqual(receipt.outOfScope, ["README.md"]);
+  assert.equal(receipt.cleanup.action, "retained");
+  assert.equal(fs.existsSync(state.executionRoot), true);
+});
+
+test("Git snapshots hash link identity without reading targets outside the repository", (t) => {
+  const { root, worktreeBase } = repository(t);
+  const outside = path.join(worktreeBase, "outside.txt");
+  fs.writeFileSync(outside, "external original\n");
+  const link = path.join(root, "outside-link");
+  try { fs.symlinkSync(outside, link, "file"); } catch (error) {
+    if (error.code !== "EPERM") throw error;
+    t.skip("file symlink creation is not permitted by this host");
+    return;
+  }
+  const baseline = captureGitSnapshot(root);
+  assert.equal(baseline.files["outside-link"].type, "symlink");
+  assert.equal(baseline.files["outside-link"].sha256, sha256(fs.readlinkSync(link, { encoding: "buffer" })));
+  fs.writeFileSync(outside, "external updated\n");
+  assert.equal(inspectGitChanges(baseline, ["src/"]).status, "passed");
+  fs.unlinkSync(link);
+  fs.symlinkSync(path.join(worktreeBase, "missing.txt"), link, "file");
+  const result = inspectGitChanges(baseline, ["src/"]);
+  assert.equal(result.status, "blocked");
+  assert.deepEqual(result.outOfScope, ["outside-link"]);
+  assert.equal(fs.readFileSync(outside, "utf8"), "external updated\n");
+});
+
+test("Git scope blocks missing observation and a tracked parent linked outside the repository", async (t) => {
+  await t.test("non-Git target", (child) => {
+    const { root, worktreeBase } = repository(child);
+    const baseline = captureGitSnapshot(root);
+    const ceiling = process.env.GIT_CEILING_DIRECTORIES;
+    let result;
+    try {
+      // F-drive test temp lives under this maintenance checkout; stop discovery
+      // before Git can inherit that unrelated parent repository.
+      process.env.GIT_CEILING_DIRECTORIES = path.dirname(worktreeBase);
+      result = inspectGitChanges(baseline, ["src/"], { root: worktreeBase });
+    } finally {
+      if (ceiling === undefined) delete process.env.GIT_CEILING_DIRECTORIES;
+      else process.env.GIT_CEILING_DIRECTORIES = ceiling;
+    }
+    assert.equal(result.status, "blocked");
+    assert.ok(result.current === null, "unobservable target must not produce a current snapshot");
+    assert.match(result.blockers.join("\n"), /cannot observe Git scope/);
+  });
+  await t.test("external directory link", (child) => {
+    const { root, worktreeBase } = repository(child);
+    const baseline = captureGitSnapshot(root);
+    const outside = path.join(worktreeBase, "external");
+    fs.mkdirSync(outside);
+    fs.writeFileSync(path.join(outside, "App.tsx"), "external protected contents\n");
+    fs.renameSync(path.join(root, "src"), path.join(worktreeBase, "saved-src"));
+    try { fs.symlinkSync(outside, path.join(root, "src"), process.platform === "win32" ? "junction" : "dir"); } catch (error) {
+      if (error.code !== "EPERM") throw error;
+      child.skip("directory link creation is not permitted by this host");
+      return;
+    }
+    const result = inspectGitChanges(baseline, ["src/"]);
+    assert.equal(result.status, "blocked");
+    assert.match(result.blockers.join("\n"), /resolves outside/);
+    assert.equal(fs.readFileSync(path.join(outside, "App.tsx"), "utf8"), "external protected contents\n");
+  });
+});
+
+test("Git scope refuses a mixed snapshot when a new out-of-scope commit lands during file hashing", (t) => {
+  const { root } = repository(t);
+  const baseline = captureGitSnapshot(root);
+  const originalRead = fs.readFileSync;
+  let committed = false;
+  let result;
+  try {
+    fs.readFileSync = function (file, ...args) {
+      if (!committed && file === path.join(root, ".gitignore")) {
+        committed = true;
+        fs.writeFileSync(path.join(root, "late-outside.txt"), "committed during observation\n");
+        git(root, "add", "late-outside.txt");
+        git(root, "commit", "-m", "late scope escape");
+      }
+      return originalRead.call(this, file, ...args);
+    };
+    result = inspectGitChanges(baseline, ["src/"]);
+  } finally { fs.readFileSync = originalRead; }
+  assert.equal(committed, true);
+  assert.equal(result.status, "blocked");
+  assert.match(result.blockers.join("\n"), /changed during snapshot/);
+  const settled = inspectGitChanges(baseline, ["src/"]);
+  assert.equal(settled.status, "blocked");
+  assert.deepEqual(settled.outOfScope, ["late-outside.txt"]);
 });

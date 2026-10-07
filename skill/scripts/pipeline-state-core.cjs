@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { ARTIFACT_STATUSES, validateArtifactMetadata } = require("./artifact-core.cjs");
 const { validateVisualTaskPath } = require("./plan-core.cjs");
+const { validateGitSnapshot, validateScope } = require("./execution-target-core.cjs");
 const {
   assertEnum,
   assertKeys,
@@ -111,12 +112,30 @@ function validateControlProjection(control, label = "extensions.control") {
 function validateVisualTasks(progress) {
   const label = "extensions.visualTasks";
   const keys = ["planHash", "planPath", "completed", "failures"];
-  assertKeys(progress, keys, keys, label, "pipeline state");
+  assertKeys(progress, keys, [...keys, "active"], label, "pipeline state");
   const hash = (value, field) => {
     if (typeof value !== "string" || !/^sha256:[a-f0-9]{64}$/i.test(value)) fail("pipeline state", `${field} must be sha256`);
   };
+  const absoluteRoot = (value, field) => {
+    assertString(value, field, "pipeline state");
+    if (!(path.posix.isAbsolute(value) || path.win32.isAbsolute(value)) || /[\u0000-\u001f]/.test(value)) fail("pipeline state", `${field} must be an absolute path`);
+  };
+  const attempt = (value, field) => {
+    const required = ["taskId", "taskHash", "planHash", "changeRoot", "metadataPath", "authorization", "baseline"];
+    assertKeys(value, required, required, field, "pipeline state");
+    assertString(value.taskId, `${field}.taskId`, "pipeline state");
+    if (Object.hasOwn(Object.prototype, value.taskId)) fail("pipeline state", `${field}.taskId is reserved for object prototype records`);
+    hash(value.taskHash, `${field}.taskHash`);
+    hash(value.planHash, `${field}.planHash`);
+    absoluteRoot(value.changeRoot, `${field}.changeRoot`);
+    validateVisualTaskPath(value.metadataPath, `${field}.metadataPath`);
+    assertStringArray(value.authorization, `${field}.authorization`, "pipeline state", { min: 1, unique: true });
+    for (const authorization of value.authorization) validateScope(authorization, `${field}.authorization`);
+    validateGitSnapshot(value.baseline);
+  };
   hash(progress.planHash, `${label}.planHash`);
   validateVisualTaskPath(progress.planPath, `${label}.planPath`);
+  if (progress.active !== undefined) attempt(progress.active, `${label}.active`);
   assertObject(progress.completed, `${label}.completed`, "pipeline state");
   assertObject(progress.failures, `${label}.failures`, "pipeline state");
   for (const [id, record] of Object.entries(progress.completed)) {
@@ -124,7 +143,7 @@ function validateVisualTasks(progress) {
     if (Object.hasOwn(Object.prototype, id)) fail("pipeline state", `${label}.completed id is reserved for object prototype records`);
     const item = `${label}.completed.${id}`;
     const required = ["taskHash", "inputHashes", "artifacts"];
-    assertKeys(record, required, [...required, "status", "review"], item, "pipeline state");
+    assertKeys(record, required, [...required, "status", "review", "observation"], item, "pipeline state");
     hash(record.taskHash, `${item}.taskHash`);
     assertObject(record.inputHashes, `${item}.inputHashes`, "pipeline state");
     for (const [key, value] of Object.entries(record.inputHashes)) {
@@ -134,6 +153,27 @@ function validateVisualTasks(progress) {
     if (!Array.isArray(record.artifacts) || record.artifacts.length === 0) fail("pipeline state", `${item}.artifacts must be a non-empty array`);
     for (const artifact of record.artifacts) validateArtifactMetadata(artifact, { metadataOnly: true });
     if (record.status !== undefined) assertEnum(record.status, ARTIFACT_STATUSES, `${item}.status`, "pipeline state");
+    if (record.observation !== undefined) {
+      const observation = record.observation, observationLabel = `${item}.observation`, keys = ["kind", "attempt", "checks", "at", "scope"];
+      assertKeys(observation, keys, keys, observationLabel, "pipeline state");
+      assertEnum(observation.kind, ["interaction"], `${observationLabel}.kind`, "pipeline state");
+      attempt(observation.attempt, `${observationLabel}.attempt`);
+      assertStringArray(observation.checks, `${observationLabel}.checks`, "pipeline state", { min: 1, unique: true });
+      for (const check of observation.checks) validateVisualTaskPath(check, `${observationLabel}.checks`);
+      assertString(observation.at, `${observationLabel}.at`, "pipeline state");
+      const time = Date.parse(observation.at);
+      if (!Number.isFinite(time) || new Date(time).toISOString() !== observation.at) fail("pipeline state", `${observationLabel}.at must be an ISO timestamp`);
+      const scope = observation.scope, scopeLabel = `${observationLabel}.scope`, scopeKeys = ["changedFiles", "commitChangedFiles", "head"];
+      assertKeys(scope, scopeKeys, scopeKeys, scopeLabel, "pipeline state");
+      for (const key of ["changedFiles", "commitChangedFiles"]) {
+        assertStringArray(scope[key], `${scopeLabel}.${key}`, "pipeline state");
+        for (const file of scope[key]) {
+          validateScope(file, `${scopeLabel}.${key}`);
+          if (file.endsWith("/")) fail("pipeline state", `${scopeLabel}.${key} must contain file paths, not directories`);
+        }
+      }
+      if (typeof scope.head !== "string" || !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(scope.head)) fail("pipeline state", `${scopeLabel}.head must be a Git object id`);
+    }
     if (record.review !== undefined) {
       const review = record.review, reviewLabel = `${item}.review`;
       const keys = ["verdict", "at", "artifactHash", "valid"];
@@ -149,7 +189,26 @@ function validateVisualTasks(progress) {
   for (const [id, reason] of Object.entries(progress.failures)) {
     assertString(id, `${label}.failures id`, "pipeline state");
     if (Object.hasOwn(Object.prototype, id)) fail("pipeline state", `${label}.failures id is reserved for object prototype records`);
-    assertString(reason, `${label}.failures.${id}`, "pipeline state");
+    const field = `${label}.failures.${id}`;
+    if (typeof reason === "string") { assertString(reason, field, "pipeline state"); continue; }
+    const keys = ["message", "findings", "inputHashes", "attempts"];
+    assertKeys(reason, keys, keys, field, "pipeline state");
+    assertString(reason.message, `${field}.message`, "pipeline state");
+    if (!Array.isArray(reason.findings) || !reason.findings.length) fail("pipeline state", `${field}.findings must be non-empty`);
+    for (const [index, finding] of reason.findings.entries()) {
+      const findingField = `${field}.findings[${index}]`, required = ["code", "severity", "message", "fix"];
+      assertKeys(finding, required, [...required, "probeId", "stepId", "path", "selector", "name", "expected", "actual"], findingField, "pipeline state");
+      for (const key of ["code", "message", "fix", "probeId", "stepId", "selector", "name"]) if (finding[key] !== undefined) assertString(finding[key], `${findingField}.${key}`, "pipeline state");
+      assertEnum(finding.severity, ["error", "warning", "info"], `${findingField}.severity`, "pipeline state");
+      if (finding.path !== undefined) validateVisualTaskPath(finding.path, `${findingField}.path`);
+      if (Object.hasOwn(finding, "expected") || Object.hasOwn(finding, "actual")) for (const key of ["expected", "actual"]) {
+        if (!Object.hasOwn(finding, key) || finding[key] !== null && !["string", "boolean"].includes(typeof finding[key])) fail("pipeline state", `${findingField}.${key} must retain a string, boolean or null literal`);
+      }
+    }
+    assertObject(reason.inputHashes, `${field}.inputHashes`, "pipeline state");
+    if (!Object.keys(reason.inputHashes).length) fail("pipeline state", `${field}.inputHashes must bind measured files`);
+    for (const [key, value] of Object.entries(reason.inputHashes)) { assertString(key, `${field}.inputHashes key`, "pipeline state"); hash(value, `${field}.inputHashes.${key}`); }
+    if (!Number.isSafeInteger(reason.attempts) || reason.attempts < 1) fail("pipeline state", `${field}.attempts must be a positive safe integer`);
   }
   return progress;
 }

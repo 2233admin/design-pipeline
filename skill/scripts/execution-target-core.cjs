@@ -7,11 +7,13 @@ const { spawnSync } = require("node:child_process");
 const {
   assertEnum,
   assertKeys,
+  assertObject,
   assertString,
   assertStringArray,
   canonicalJson,
   fail,
   pathInside,
+  resolveInside,
   sha256,
   sortValue,
 } = require("./contract-utils.cjs");
@@ -48,15 +50,15 @@ function samePath(left, right) {
   const b = path.resolve(right);
   if ((process.platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b)) return true;
   if (!fs.existsSync(a) || !fs.existsSync(b)) return false;
-  const leftStat = fs.statSync(a);
-  const rightStat = fs.statSync(b);
+  const leftStat = fs.statSync(a, { bigint: true });
+  const rightStat = fs.statSync(b, { bigint: true });
   return leftStat.dev === rightStat.dev && leftStat.ino === rightStat.ino;
 }
 
-function repository(projectRoot) {
+function repository(projectRoot, options = {}) {
   const input = fs.realpathSync(path.resolve(projectRoot));
   const top = fs.realpathSync(path.resolve(input, git(input, "rev-parse", "--show-toplevel").trim()));
-  if (!samePath(input, top)) invalid(`projectRoot must be the Git repository root: ${top}`);
+  if (!options.allowSubdirectory && !samePath(input, top)) invalid(`projectRoot must be the Git repository root: ${top}`);
   const branchResult = gitResult(top, ["symbolic-ref", "--quiet", "--short", "HEAD"]);
   if (branchResult.status !== 0) invalid("an attached base branch is required");
   const branch = String(branchResult.stdout).trim();
@@ -64,7 +66,7 @@ function repository(projectRoot) {
     root: top,
     branch,
     head: git(top, "rev-parse", "HEAD").trim(),
-    dirty: git(top, "status", "--porcelain=v1", "-z", "--untracked-files=all").length > 0,
+    dirty: options.inspectDirty === false ? false : git(top, "status", "--porcelain=v1", "-z", "--untracked-files=all").length > 0,
   };
 }
 
@@ -96,6 +98,43 @@ function validateScope(value, label) {
     invalid(`${label} contains an unsafe path segment`);
   }
   return value;
+}
+
+function validateGitSnapshot(snapshot) {
+  const keys = ["root", "branch", "head", "files"];
+  assertKeys(snapshot, keys, keys, "Git snapshot", "execution target");
+  assertString(snapshot.root, "Git snapshot.root", "execution target");
+  if (!path.isAbsolute(snapshot.root)) invalid("Git snapshot.root must be absolute");
+  assertString(snapshot.branch, "Git snapshot.branch", "execution target");
+  if (typeof snapshot.head !== "string" || !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(snapshot.head)) invalid("Git snapshot.head must be a Git object id");
+  assertObject(snapshot.files, "Git snapshot.files", "execution target");
+  for (const [file, entry] of Object.entries(snapshot.files)) {
+    validateScope(file, "Git snapshot file");
+    if (file.endsWith("/")) invalid("Git snapshot file must not end with a slash");
+    const label = `Git snapshot.files[${file}]`;
+    const entryKeys = ["type", "sha256", "mode", "status", "index"];
+    assertKeys(entry, entryKeys, entryKeys, label, "execution target");
+    assertEnum(entry.type, ["file", "symlink", "directory", "missing", "other"], `${label}.type`, "execution target");
+    if (["file", "symlink"].includes(entry.type)) {
+      if (typeof entry.sha256 !== "string") invalid(`${label}.sha256 must be SHA-256`);
+      validateHash(entry.sha256, `${label}.sha256`);
+    }
+    else if (entry.sha256 !== null) invalid(`${label}.sha256 must be null for ${entry.type}`);
+    if (entry.type === "missing") {
+      if (entry.mode !== null) invalid(`${label}.mode must be null for missing files`);
+    } else if (!Number.isInteger(entry.mode) || entry.mode < 0 || entry.mode > 0o7777) invalid(`${label}.mode must contain file permissions`);
+    if (typeof entry.status !== "string" || !/^[ MADRCUT?!]{2}$/.test(entry.status)) invalid(`${label}.status must be a two-character Git status`);
+    if (!Array.isArray(entry.index)) invalid(`${label}.index must be an array`);
+    const stages = new Set();
+    for (const item of entry.index) {
+      assertKeys(item, ["oid", "mode", "stage"], ["oid", "mode", "stage"], `${label}.index`, "execution target");
+      if (typeof item.oid !== "string" || !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(item.oid)) invalid(`${label}.index oid must be a Git object id`);
+      if (typeof item.mode !== "string" || !/^[0-7]{6}$/.test(item.mode)) invalid(`${label}.index mode must be a Git file mode`);
+      if (!Number.isInteger(item.stage) || item.stage < 0 || item.stage > 3 || stages.has(item.stage)) invalid(`${label}.index stage must be unique and between 0 and 3`);
+      stages.add(item.stage);
+    }
+  }
+  return snapshot;
 }
 
 function scopesOverlap(left, right) {
@@ -323,20 +362,115 @@ function commonGitDirectory(root) {
   return fs.realpathSync(path.resolve(root, raw));
 }
 
+function gitPaths(root, args) {
+  const files = git(root, ...args).split("\0").filter(Boolean);
+  for (const file of files) validateScope(file, "changed file");
+  return files;
+}
+
+function commitChanges(root, baseHead, head) {
+  const ancestor = gitResult(root, ["merge-base", "--is-ancestor", baseHead, head]);
+  if (ancestor.status !== 0) return { files: [], blockers: ["baseline HEAD is no longer an observable ancestor of current HEAD"] };
+  const commits = git(root, "rev-list", "--reverse", `${baseHead}..${head}`, "--").trim().split("\n").filter(Boolean);
+  const files = commits.flatMap((commit) => gitPaths(root, ["diff-tree", "--no-commit-id", "--name-only", "--no-renames", "-r", "-m", "-z", commit, "--"]));
+  return { files: [...new Set(files)].sort(), blockers: [] };
+}
+
+function scopeInspection(files, scopes) {
+  const outOfScope = files.filter((file) => !scopes.some((scope) => scope.endsWith("/") ? file.startsWith(scope) : file === scope));
+  return {
+    outOfScope,
+    blockers: outOfScope.length ? [`changed files escape declared scope: ${outOfScope.join(", ")}`] : [],
+  };
+}
+
+function captureGitSnapshot(root) {
+  const repo = repository(root, { allowSubdirectory: true, inspectDirty: false });
+  const index = new Map();
+  const indexArgs = ["ls-files", "--stage", "-z", "--"];
+  const indexData = git(repo.root, ...indexArgs);
+  for (const record of indexData.split("\0").filter(Boolean)) {
+    const match = /^(\d{6}) ([a-f0-9]+) ([0-3])\t([\s\S]+)$/.exec(record);
+    if (!match) invalid("cannot read Git index entry");
+    const file = validateScope(match[4], "Git index file");
+    if (!index.has(file)) index.set(file, []);
+    index.get(file).push({ mode: match[1], oid: match[2], stage: Number(match[3]) });
+  }
+  // Git status may hash tracked files, so contain their parents first too.
+  for (const file of index.keys()) resolveInside(repo.root, path.dirname(path.resolve(repo.root, file)), "Git snapshot parent", { scope: "execution target" });
+  const statuses = new Map();
+  const statusArgs = ["status", "--porcelain=v1", "--no-renames", "-z", "--untracked-files=all"];
+  const statusData = git(repo.root, ...statusArgs);
+  for (const record of statusData.split("\0").filter(Boolean)) {
+    if (record.length < 4 || record[2] !== " ") invalid("cannot read Git status entry");
+    statuses.set(validateScope(record.slice(3), "Git status file"), record.slice(0, 2));
+  }
+  const untracked = gitPaths(repo.root, ["ls-files", "--others", "--exclude-standard", "-z", "--"]);
+  const paths = [...new Set([...index.keys(), ...statuses.keys(), ...untracked])].sort();
+  const files = Object.create(null);
+  for (const file of paths) {
+    const absolute = path.resolve(repo.root, file);
+    // Check the parent separately so a file link is recorded, never followed.
+    resolveInside(repo.root, path.dirname(absolute), "Git snapshot parent", { scope: "execution target" });
+    const stat = fs.lstatSync(absolute, { throwIfNoEntry: false });
+    const type = !stat ? "missing" : stat.isSymbolicLink() ? "symlink" : stat.isFile() ? "file" : stat.isDirectory() ? "directory" : "other";
+    const hash = type === "symlink" ? sha256(fs.readlinkSync(absolute, { encoding: "buffer" })) : type === "file" ? sha256(fs.readFileSync(resolveInside(repo.root, absolute, "Git snapshot file", { scope: "execution target", mustExist: true }))) : null;
+    files[file] = {
+      type,
+      sha256: hash,
+      mode: stat ? stat.mode & 0o7777 : null,
+      status: statuses.get(file) || "  ",
+      index: index.get(file) || [],
+    };
+  }
+  if (git(repo.root, ...indexArgs) !== indexData || git(repo.root, ...statusArgs) !== statusData || git(repo.root, "rev-parse", "HEAD").trim() !== repo.head || git(repo.root, "symbolic-ref", "--quiet", "--short", "HEAD").trim() !== repo.branch) {
+    invalid("Git HEAD/index/status changed during snapshot; retry observation", { code: "BLOCKED" });
+  }
+  const snapshot = sortValue({ root: repo.root, branch: repo.branch, head: repo.head, files });
+  validateGitSnapshot(snapshot);
+  return snapshot;
+}
+
+function inspectGitChanges(baseline, scopes, options = {}) {
+  validateGitSnapshot(baseline);
+  assertStringArray(scopes, "scopes", "execution target", { unique: true, min: 1 });
+  for (const scope of scopes) validateScope(scope, "scope");
+  let current;
+  try {
+    current = captureGitSnapshot(options.root || baseline.root);
+  } catch (error) {
+    return { status: "blocked", changedFiles: [], commitChangedFiles: [], outOfScope: [], blockers: [`cannot observe Git scope: ${error.message}`], current: null };
+  }
+  const blockers = [];
+  if (!samePath(current.root, baseline.root)) blockers.push("Git root changed after baseline capture");
+  if (current.branch !== baseline.branch) blockers.push("Git branch changed after baseline capture");
+  let history = { files: [], blockers: [] };
+  if (!blockers.length) {
+    try { history = commitChanges(current.root, baseline.head, current.head); }
+    catch (error) { history.blockers.push(`cannot observe baseline commit history: ${error.message}`); }
+  }
+  blockers.push(...history.blockers);
+  const files = [...new Set([...Object.keys(baseline.files), ...Object.keys(current.files)])]
+    .filter((file) => canonicalJson(baseline.files[file]) !== canonicalJson(current.files[file]));
+  const changed = [...new Set([...files, ...history.files])].sort();
+  const scope = scopeInspection(changed, scopes);
+  blockers.push(...scope.blockers);
+  const unmerged = Object.entries(current.files).filter(([, entry]) => entry.index.some(({ stage }) => stage !== 0)).map(([file]) => file);
+  if (unmerged.length) blockers.push(`unresolved Git index stages: ${unmerged.join(", ")}`);
+  const unobservable = Object.entries(current.files).filter(([, entry]) => ["directory", "other"].includes(entry.type)).map(([file]) => file);
+  if (unobservable.length) blockers.push(`cannot observe file contents for Git scope: ${unobservable.join(", ")}`);
+  return sortValue({ status: blockers.length ? "blocked" : "passed", changedFiles: changed, commitChangedFiles: history.files, outOfScope: scope.outOfScope, blockers, current });
+}
+
 function changedFiles(root, baseHead) {
+  const history = commitChanges(root, baseHead, git(root, "rev-parse", "HEAD").trim());
   const commands = [
-    ["diff", "--name-only", "--no-renames", "-z", `${baseHead}..HEAD`, "--"],
     ["diff", "--name-only", "--no-renames", "-z", "--"],
     ["diff", "--cached", "--name-only", "--no-renames", "-z", "--"],
     ["ls-files", "--others", "--exclude-standard", "-z", "--"],
   ];
-  const files = commands.flatMap((args) => git(root, ...args).split("\0").filter(Boolean));
-  for (const file of files) validateScope(file, "changed file");
-  return [...new Set(files)].sort();
-}
-
-function inScope(file, slices) {
-  return slices.some((slice) => slice.scope.some((scope) => scope.endsWith("/") ? file.startsWith(scope) : file === scope));
+  const files = commands.flatMap((args) => gitPaths(root, args));
+  return { files: [...new Set([...files, ...history.files])].sort(), blockers: history.blockers };
 }
 
 function finalizeExecutionTarget(plan, state, outcome, options = {}) {
@@ -345,12 +479,13 @@ function finalizeExecutionTarget(plan, state, outcome, options = {}) {
   validateOutcome(outcome, state);
   const target = repository(state.executionRoot);
   if (!samePath(commonGitDirectory(state.projectRoot), commonGitDirectory(state.executionRoot))) invalid("execution target is not registered to the project repository");
-  const files = changedFiles(state.executionRoot, state.baseHead);
-  const outOfScope = files.filter((file) => !inScope(file, plan.slices));
+  const changes = changedFiles(state.executionRoot, state.baseHead);
+  const files = changes.files;
+  const scope = scopeInspection(files, plan.slices.flatMap(({ scope }) => scope));
+  const outOfScope = scope.outOfScope;
   const dirty = git(state.executionRoot, "status", "--porcelain=v1", "-z", "--untracked-files=all").length > 0;
-  const blockers = [];
+  const blockers = [...changes.blockers, ...scope.blockers];
   if (target.branch !== state.branch) blockers.push("execution branch changed after prepare");
-  if (outOfScope.length) blockers.push(`changed files escape declared scope: ${outOfScope.join(", ")}`);
   if (outcome.status === "complete" && !files.length && !outcome.evidenceReceipts.length) blockers.push("complete execution requires changed files or evidence receipts");
   if (outcome.status === "complete" && state.mode === "worktree" && dirty) blockers.push("successful worktree must be clean before removal");
   let status = blockers.length ? "blocked" : outcome.status;
@@ -396,8 +531,13 @@ module.exports = {
   RECEIPT_SCHEMA,
   REQUEST_SCHEMA,
   STATE_SCHEMA,
+  captureGitSnapshot,
   finalizeExecutionTarget,
+  inspectGitChanges,
   prepareExecutionTarget,
   resolveExecutionTarget,
+  samePath,
   validateRequest,
+  validateGitSnapshot,
+  validateScope,
 };

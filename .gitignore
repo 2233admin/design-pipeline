@@ -32,3 +32,6 @@ NUL
 /_bmad/
 /_bmad-output/
 /skills-lock.json
+
+# This tracked upstream source must survive personal *.bin ignore rules.
+!/skill/vendor/mengto-skills/upstream/agent-skills/game-combat/water-crystal-skill-vfx/demo/layout/layout.bin

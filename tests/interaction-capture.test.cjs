@@ -6,6 +6,7 @@ const fs = require("node:fs");
 const http = require("node:http");
 const os = require("node:os");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 const { captureInteraction } = require("../skill/scripts/interaction-capture-core.cjs");
 const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
 
@@ -224,6 +225,166 @@ test("a page that ignores the pointer records a motionless target and its off-or
   } finally {
     if (site) await close(site.server);
     if (external) await close(external.server);
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+const LOCAL_BUTTON = '<!doctype html><button id="card" style="position:absolute;left:200px;top:300px;width:320px;height:200px" onclick="this.style.transform=\'translateX(20px)\';location.hash=\'clicked\'">target</button>';
+const click = id => ({ id, target: "#card", input: { kind: "click", at: [360, 400] }, expect: { responds: true, settleWithinMs: 100, returnsToRest: false, response: "stepped" } });
+
+const MENU_HTML = `<!doctype html><div id="wrapper"><button id="toggle" aria-expanded="false" onclick="menu.hidden=!menu.hidden;this.setAttribute('aria-expanded',String(!menu.hidden))">Choose</button><div id="menu" hidden><button id="blue" aria-selected="false" onclick="selected.textContent='Blue';this.setAttribute('aria-selected','true')">Blue</button></div><output id="selected">None</output></div><script>
+const toggle=document.querySelector('#toggle'),menu=document.querySelector('#menu'),selected=document.querySelector('#selected');
+document.addEventListener('keydown',event=>{if(event.key==='ArrowDown'&&!menu.hidden){event.preventDefault();document.querySelector('#blue').focus()}if(event.key==='Escape'){menu.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus()}});
+</script>`;
+function menuJourney() {
+  return { id: "menu", target: "#wrapper", steps: [
+    { id: "initial", timeoutMs: 20, assertions: [{ selector: "#menu", kind: "visible", equals: false }, { selector: "#selected", kind: "text", equals: "None" }] },
+    { id: "open", input: { kind: "click", selector: "#toggle" }, timeoutMs: 80, assertions: [{ selector: "#menu", kind: "visible", equals: true }, { selector: "#toggle", kind: "attribute", name: "aria-expanded", equals: "true" }] },
+    { id: "focus", input: { kind: "key", key: "ArrowDown" }, timeoutMs: 80, assertions: [{ selector: "#blue", kind: "focused", equals: true }] },
+    { id: "choose", input: { kind: "key", key: "Enter" }, timeoutMs: 80, assertions: [{ selector: "#selected", kind: "text", equals: "Blue" }, { selector: "#blue", kind: "attribute", name: "aria-selected", equals: "true" }] },
+    { id: "close", input: { kind: "key", key: "Escape" }, timeoutMs: 80, assertions: [{ selector: "#menu", kind: "visible", equals: false }, { selector: "#toggle", kind: "focused", equals: true }, { selector: "#selected", kind: "text", equals: "Blue" }] },
+  ] };
+}
+test("menu journey keeps actual open, selection, close and keyboard focus state on one page", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-menu-"));
+  try {
+    fs.writeFileSync(path.join(dir, "index.html"), MENU_HTML);
+    const doc = document_("index.html", menuJourney()), raw = await capture(dir, doc);
+    const result = require("../skill/scripts/interaction-core.cjs").evaluateProbeFile(doc, raw);
+    assert.equal(result.status, "passed", JSON.stringify(result.findings));
+    assert.equal(raw.probes[0].steps.length, 5);
+    assert.equal(Object.hasOwn(raw.probes[0], "samples"), false);
+    assert.equal(result.probes[0].steps[4].assertions[2].actual, "Blue");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("menu journey fails broken selection and a transient value that reverses before the window ends", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-menu-failed-"));
+  try {
+    for (const html of [
+      MENU_HTML.replace("selected.textContent='Blue';", "this.style.transform='translateX(20px)';"),
+      MENU_HTML.replace("selected.textContent='Blue';", "selected.textContent='Blue';setTimeout(()=>selected.textContent='None',30);"),
+    ]) {
+      fs.writeFileSync(path.join(dir, "index.html"), html);
+      const journey = menuJourney(); journey.steps[3].input = { kind: "click", selector: "#blue" };
+      const doc = document_("index.html", journey), raw = await capture(dir, doc);
+      const result = require("../skill/scripts/interaction-core.cjs").evaluateProbeFile(doc, raw);
+      assert.equal(result.status, "failed");
+      assert.equal(result.probes[0].steps[3].assertions[0].actual, "None");
+      assert(result.findings.some(finding => finding.stepId === "choose" && finding.code === "state-mismatch"));
+    }
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("journey state selectors are unique inside the wrapper and ancestor hiding is observed", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-menu-contained-"));
+  try {
+    for (const [html, assertion, expectedFound, expectedActual] of [
+      [MENU_HTML, { selector: "#absent", kind: "visible", equals: false }, false, null],
+      [MENU_HTML + '<output id="outside">Blue</output>', { selector: "#outside", kind: "text", equals: "Blue" }, false, null],
+      [MENU_HTML + '<output id="selected">None</output>', { selector: "#selected", kind: "text", equals: "None" }, false, null],
+      [MENU_HTML.replace('<div id="wrapper">', '<div id="wrapper" style="opacity:0">'), { selector: "#toggle", kind: "visible", equals: true }, true, false],
+    ]) {
+      fs.writeFileSync(path.join(dir, "index.html"), html);
+      const doc = document_("index.html", { id: "contained", target: "#wrapper", steps: [{ id: "observe", timeoutMs: 1, assertions: [assertion] }] });
+      const raw = await capture(dir, doc), observed = raw.probes[0].steps[0].observations[0];
+      assert.equal(observed.found, expectedFound); assert.equal(observed.actual, expectedActual);
+      assert.ok(raw.probes[0].steps[0].elapsedMs >= 1);
+      assert.equal(require("../skill/scripts/interaction-core.cjs").evaluateProbeFile(doc, raw).status, "failed");
+    }
+    fs.writeFileSync(path.join(dir, "index.html"), MENU_HTML + '<button id="outside">Other menu</button>');
+    const doc = document_("index.html", { id: "outside-click", target: "#wrapper", steps: [{ id: "click", input: { kind: "click", selector: "#outside" }, timeoutMs: 20, assertions: [{ selector: "#toggle", kind: "focused", equals: false }] }] });
+    await assert.rejects(capture(dir, doc), /click selector .*one element inside/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("journey click redirects retain the canonical local-page guard", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-menu-redirect-"));
+  try {
+    fs.writeFileSync(path.join(dir, "other.html"), MENU_HTML);
+    fs.writeFileSync(path.join(dir, "index.html"), MENU_HTML.replace("menu.hidden=!menu.hidden;", "location.replace('./other.html');menu.hidden=!menu.hidden;"));
+    await assert.rejects(capture(dir, document_("index.html", menuJourney())), error => error.code === "INTERACTION_TARGET_MISMATCH");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("journey captures real load requests and preserves the external-request finding", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-menu-network-"));
+  let external;
+  try {
+    external = await serve((_request, response) => { response.writeHead(200, { "content-type": "image/png" }); response.end(PIXEL); });
+    fs.writeFileSync(path.join(dir, "index.html"), MENU_HTML + `<img src="${external.origin}/pixel.png">`);
+    const doc = document_("index.html", menuJourney()), raw = await capture(dir, doc);
+    assert(raw.probes[0].requests.includes(`${external.origin}/pixel.png`));
+    const result = require("../skill/scripts/interaction-core.cjs").evaluateProbeFile(doc, raw);
+    assert.equal(result.status, "failed"); assert(result.findings.some(finding => finding.code === "external-request"));
+  } finally { if (external) await close(external.server); fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+for (const kind of ["JavaScript", "meta refresh"]) {
+  test(`local ${kind} redirect cannot measure a different file as the requested page`, { skip }, async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-redirect-"));
+    try {
+      fs.writeFileSync(path.join(dir, "other.html"), LOCAL_BUTTON);
+      fs.writeFileSync(path.join(dir, "index.html"), kind === "JavaScript"
+        ? '<!doctype html><script>location.replace("./other.html")</script>'
+        : '<!doctype html><meta http-equiv="refresh" content="0; url=./other.html">');
+      await assert.rejects(capture(dir, document_("index.html", click("redirect"))), error => error.code === "INTERACTION_TARGET_MISMATCH" && /other\.html/.test(error.message));
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+}
+
+test("local redirect to a hard-link alias is a different page target despite identical file bytes", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-hardlink-redirect-"));
+  try {
+    fs.writeFileSync(path.join(dir, "index.html"), LOCAL_BUTTON + '<script>if (location.pathname.toLowerCase().endsWith("/index.html")) location.replace("./other.html")</script>');
+    fs.linkSync(path.join(dir, "index.html"), path.join(dir, "other.html"));
+    await assert.rejects(capture(dir, document_("index.html", click("hardlink-redirect"))), error => error.code === "INTERACTION_TARGET_MISMATCH" && /other\.html/.test(error.message));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("local capture retains the actual same-file fragment and Windows case spelling", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-fragment-"));
+  try {
+    const sameFile = process.platform === "win32" ? "INDEX.html" : "index.html";
+    fs.writeFileSync(path.join(dir, "index.html"), LOCAL_BUTTON + `<script>if (!location.hash) location.replace(${JSON.stringify(sameFile + "#loaded")})</script>`);
+    const result = await capture(dir, document_("index.html", click("fragment"), click("fragment-again")));
+    const actual = new URL(result.url);
+    assert.equal(actual.hash, "#clicked");
+    assert.equal(actual.href, pathToFileURL(path.join(dir, sameFile)).href + "#clicked");
+    assert.equal(result.probes.length, 2);
+    for (const probe of result.probes) {
+      assert.ok(probe.samples.length >= 5);
+      assert.ok(probe.samples.some(sample => sample.box.x >= 219.5), "the real click still moved the declared target");
+    }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a local page redirecting to a remote page is rejected while legacy remote redirects remain measurable", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-remote-redirect-"));
+  let site = null;
+  try {
+    site = await serve((request, response) => {
+      if (request.url === "/redirect") {
+        response.writeHead(302, { location: "/target" }).end();
+        return;
+      }
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end(LOCAL_BUTTON);
+    });
+    fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><script>location.replace(${JSON.stringify(site.origin + "/target")})</script>`);
+    await assert.rejects(capture(dir, document_("index.html", click("local-to-remote"))), error => error.code === "INTERACTION_TARGET_MISMATCH" && error.message.includes(site.origin));
+    const remote = await capture(dir, document_(`${site.origin}/redirect`, click("legacy-remote")));
+    assert.equal(remote.url, `${site.origin}/redirect`, "the remote legacy capture URL contract is unchanged");
+    assert.ok(remote.probes[0].samples.length >= 5);
+    assert.ok(remote.probes[0].samples.some(sample => sample.box.x >= 219.5));
+  } finally {
+    if (site) await close(site.server);
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });

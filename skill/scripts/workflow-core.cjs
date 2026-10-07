@@ -12,7 +12,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { assertEnum, canonicalJson, fail, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { validatePlan } = require("./plan-core.cjs");
-const { validateArtifactMetadata } = require("./artifact-core.cjs");
+const { createArtifactMetadata, validateArtifactMetadata } = require("./artifact-core.cjs");
+const { captureGitSnapshot, inspectGitChanges, samePath } = require("./execution-target-core.cjs");
+const { RESULT_SCHEMA, validateProbeFile, journeyResultFailure } = require("./interaction-core.cjs");
 const { advanceChange } = require("./pipeline-state-core.cjs");
 const { readState: readNativeState } = require("./control-runtime-core.cjs");
 const { downstreamPhases, invalidateDownstream } = require("./invalidation-core.cjs");
@@ -27,7 +29,7 @@ const CLI = "designer-pipeline";
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { INTAKE, reference } = require("./workflows/shared.cjs");
+const { INTAKE, REVIEW, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -88,14 +90,15 @@ function nextAction(root) {
   const stages = stagesFor(state);
   const done = [];
   for (const stage of stages) {
-    if (stage.finished(state, root)) { done.push(stage.id); continue; }
+    const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
+    if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
     const action = stage.action(state, root);
     const directed = state.director && action.type === "ask" && ["concepts", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
-    return { ...action, ...guide, ...directed, ...rules, stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? action.question : action.command}` };
+    return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? action.question : action.command}` };
   }
-  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
+  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
 }
 
 function decide(root, options = {}) {
@@ -118,24 +121,54 @@ function decide(root, options = {}) {
   } else if (stage === "review") {
     assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
     if (options.verdict === "reject" && !options.answer) fail("workflow", "a rejection needs --answer with one sentence on what is wrong; it becomes a project rule");
-    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString() }];
+    const next = nextAction(root);
+    const rejectCurrent = options.verdict === "reject" && ["deliver", "done"].includes(next.stage) && REVIEW.finished(state);
+    if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
+      fail("workflow", `Cannot record review while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    }
+    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)) }];
     if (options.verdict === "reject") {
       state.rules = [...(state.rules || []), { text: options.answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
       // A rejected draft must be rebuilt and rechecked.
       state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
+      delete state.decisions.delivered;
+      delete state.decisions.deliveryInputHashes;
+      delete state.decisions.deliveredSha256;
     }
   } else if (stage === "deliver") {
+    const next = nextAction(root);
+    const allowed = state.deliverable === "ui" ? ["work", "done"] : ["deliver", "done"];
+    if (!allowed.includes(next.stage)) fail("workflow", `Cannot record delivery while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    if (["film", "edit"].includes(state.deliverable)) {
+      const file = resolveInside(root, options.answer, "delivery file (--answer)", { scope: "workflow", mustExist: true });
+      if (!fs.statSync(file).isFile()) fail("workflow", "delivery output must be a file, not a directory");
+      state.decisions.deliveredSha256 = "sha256:" + sha256(fs.readFileSync(file));
+    }
     state.decisions.delivered = options.answer || true;
+    if (state.deliverable !== "ui") state.decisions.deliveryInputHashes = structuredClone(reviewInputHashes(state));
   }
   writeState(root, state);
   return { status: "recorded", stage, next: nextAction(root) };
 }
 
 // Gates report back here so `next` knows a check passed without rerunning it.
-function recordGate(root, gate, status) {
+// ponytail: hashes cover declared primary files; add explicit asset dependencies when coverage requires them.
+function recordGate(root, gate, status, inputs = [], report = {}) {
   const state = readState(root);
   if (!state) return;
-  state.gates = { ...(state.gates || {}), [gate]: { status, at: Date.now() } };
+  const inputHashes = status === "passed" ? Object.fromEntries(inputs.filter(Boolean).map(input => {
+    const file = resolveInside(root, input, "checked input", { scope: "workflow", mustExist: true });
+    return [path.relative(root, file).split(path.sep).join("/"), "sha256:" + sha256(fs.readFileSync(file))];
+  })) : {};
+  const steps = Array.isArray(report.steps) ? report.steps : [];
+  const rawFindings = report.findings || (steps.length ? steps.flatMap(step => [
+    ...(step.findings || []).map(item => ({ gate: step.gate, ...item })),
+    ...((step.stale || step.status === "skipped") && (step.reason || step.source) ? [{ code: "workflow-step-blocked", severity: "error", gate: step.gate, message: step.reason || step.source, fix: step.next || report.next || "Repair this step, then rerun the returned check." }] : []),
+  ]) : report.fixes) || [];
+  const fields = ["code", "severity", "message", "fix", "gate", "beatId", "probeId", "shot"];
+  const findings = Array.isArray(rawFindings) ? rawFindings.filter(item => item && typeof item === "object").map(item => Object.fromEntries(fields.filter(field => typeof item[field] === "string").map(field => [field, item[field]]))) : [];
+  const next = typeof report.next === "string" ? report.next : steps.filter(step => typeof step.next === "string").map(step => step.next).join(" ");
+  state.gates = { ...(state.gates || {}), [gate]: { status, at: Date.now(), inputHashes, findings, ...(next ? { next } : {}) } };
   writeState(root, state);
 }
 
@@ -143,7 +176,7 @@ const visualHash = value => "sha256:" + sha256(value);
 const visualPath = value => value.replaceAll("\\", "/");
 
 function visualContext(changeRoot, options) {
-  const root = path.resolve(changeRoot), stateHash = sha256(fs.readFileSync(path.join(root, "state.json"))), native = readNativeState(root);
+  const root = fs.realpathSync(path.resolve(changeRoot)), stateHash = sha256(fs.readFileSync(path.join(root, "state.json"))), native = readNativeState(root);
   native.stateHash = stateHash;
   if (native.state.phase !== "implementation") fail("workflow", "Visual task progress requires the native implementation phase.");
   const stored = native.state.extensions.visualTasks;
@@ -153,7 +186,7 @@ function visualContext(changeRoot, options) {
   if (!fs.existsSync(planFile)) return { root, native, missingPlan: requested };
   const plan = validatePlan(readJson(planFile, "visual plan"), { requireVisualTasks: true });
   const planHash = visualHash(fs.readFileSync(planFile)), planPath = visualPath(path.relative(root, planFile));
-  const progress = { planHash, planPath, completed: structuredClone(stored?.completed || {}), failures: { ...(stored?.failures || {}) } };
+  const progress = { planHash, planPath, completed: structuredClone(stored?.completed || {}), failures: { ...(stored?.failures || {}) }, ...(stored?.active ? { active: structuredClone(stored.active) } : {}) };
   const context = { root, native, plan, progress, videoCache: new Map(), sourceEvidence: new Map() };
   if (stored && stored.planHash !== planHash) {
     for (const id of Object.keys(progress.completed)) markVisualStale(context, id, "visual plan changed");
@@ -216,9 +249,65 @@ function visualInputs(context, task) {
   return hashes;
 }
 
+const taskMetadataPath = task => `${task.id}-completion.json`;
+const normalizedVisualPath = value => path.posix.normalize(visualPath(value));
+
+function visualBindingsFailure(task) {
+  const bindings = task.visual.verification;
+  if (!Array.isArray(bindings) || task.visual.checks.some(check => bindings.filter(binding => binding.kind === "interaction" && normalizedVisualPath(binding.check) === normalizedVisualPath(check)).length !== 1)) {
+    return "Every check needs a supported visual.verification interaction binding (probe input, local target output and check path). Update the plan, then dispatch with next; report-only evidence cannot complete a task.";
+  }
+  return null;
+}
+
+function inspectVisualAttempt(context) {
+  const active = context.progress.active;
+  if (!active) return "Task baseline is missing. Dispatch this task with next before working or completing it.";
+  if (!samePath(active.changeRoot, context.root)) return "Task baseline belongs to another change root; repair the original execution window.";
+  const result = inspectGitChanges(active.baseline, active.authorization, { root: context.root });
+  context.scopeObservation = result;
+  return result.status === "passed" ? null : `Task scope is blocked: ${[...result.blockers, ...result.outOfScope.map(file => `outside original authorization: ${file}`)].join("; ")}. Repair the original window; repeating next or expanding the plan does not erase it.`;
+}
+
+function bindVisualAttempt(context, task) {
+  const active = context.progress.active;
+  if (active) {
+    const failure = inspectVisualAttempt(context);
+    if (failure) return failure;
+    if (active.taskId === task.id && active.taskHash === visualHash(canonicalJson(task)) && active.planHash === context.progress.planHash) return null;
+  }
+  try {
+    const baseline = captureGitSnapshot(context.root);
+    const metadataPath = taskMetadataPath(task);
+    const authorization = [...new Set([...task.visual.scope, ...task.outputs, ...task.visual.checks, context.progress.planPath, "state.json", "events.jsonl", metadataPath].map(raw => {
+      const target = resolveInside(context.root, raw, "task authorization", { scope: "workflow" });
+      const relative = visualPath(path.relative(baseline.root, target));
+      if (!relative || relative === ".." || relative.startsWith("../") || path.isAbsolute(relative)) fail("workflow", "Task scope must remain inside its observed Git root.");
+      return relative + (visualPath(raw).endsWith("/") ? "/" : "");
+    }))];
+    context.progress.active = { taskId: task.id, taskHash: visualHash(canonicalJson(task)), planHash: context.progress.planHash, changeRoot: context.root, metadataPath, authorization, baseline };
+    return null;
+  } catch (error) { return `Cannot observe this task's Git baseline: ${error.message}`; }
+}
+
+function interactionResultFailure(report, rawProbe) {
+  const probe = validateProbeFile(rawProbe);
+  if (report?.schema !== RESULT_SCHEMA || report.id !== probe.id || report.url !== probe.url || report.status !== "passed" || !Array.isArray(report.probes) || report.probes.length !== probe.probes.length || !Array.isArray(report.findings) || report.findings.some(row => row.severity === "error")) return "Interaction report must contain the actual passed interaction-result.v1 measurements for every declared probe.";
+  for (let index = 0; index < probe.probes.length; index++) {
+    const row = report.probes[index], samples = row?.samples;
+    if (probe.probes[index].steps) {
+      const failure = journeyResultFailure(probe.probes[index], row);
+      if (failure) return failure;
+      continue;
+    }
+    if (row?.id !== probe.probes[index].id || row.status !== "passed" || !Array.isArray(row.findings) || row.findings.some(finding => finding.severity === "error") || !Number.isInteger(samples?.count) || samples.count < 5 || !Number.isFinite(samples.firstMs) || !Number.isFinite(samples.lastMs) || samples.lastMs <= samples.firstMs || row.metrics?.frames !== samples.count || !Number.isFinite(row.metrics.durationMs)) return `Interaction probe ${probe.probes[index].id} is failed, incomplete or unmeasured.`;
+  }
+  return null;
+}
+
 function visualEvidenceFailure(context, task, inputHashes, artifacts) {
   if (!Array.isArray(artifacts) || !artifacts.length) return "Completion requires artifact.v1 metadata for outputs and checks.";
-  const outputs = task.outputs.map(visualPath), checks = task.visual.checks.map(visualPath);
+  const outputs = task.outputs.map(normalizedVisualPath), checks = task.visual.checks.map(normalizedVisualPath);
   const required = new Set([...outputs, ...checks]), byPath = new Map();
   for (const metadata of artifacts) {
     try {
@@ -238,8 +327,12 @@ function visualEvidenceFailure(context, task, inputHashes, artifacts) {
     let report;
     try { report = readJson(resolveInside(context.root, file, "visual check", { scope: "workflow", mustExist: true }), "visual check"); }
     catch (error) { return error.message; }
-    if (report?.status !== "passed" || !Array.isArray(report.checks) || !report.checks.length || report.checks.some(check => typeof check === "string" ? !check.trim() : !check || typeof check !== "object" || Array.isArray(check) || !Object.keys(check).length || Object.hasOwn(check, "status") && !["passed", "pass"].includes(check.status))) return `Check report must be passed with nonempty checks: ${file}`;
-    if (Array.isArray(report.errors) && report.errors.length) return `Check report contains errors: ${file}`;
+    const binding = task.visual.verification?.find(binding => normalizedVisualPath(binding.check) === normalizedVisualPath(file));
+    if (!binding) return `Check has no supported observed verification binding: ${file}`;
+    try {
+      const failure = interactionResultFailure(report, readJson(resolveInside(context.root, binding.probe, "interaction probe", { scope: "workflow", mustExist: true }), "interaction probe"));
+      if (failure) return `${file}: ${failure}`;
+    } catch (error) { return error.message; }
   }
   return null;
 }
@@ -255,7 +348,9 @@ function currentVisual(context) {
       current = task; blocker = error.message; break;
     }
     if (record && (record.status || "ready") === "ready") {
-      const failure = record.taskHash !== expected.$task || canonicalJson(record.inputHashes) !== canonicalJson(expected)
+      const failure = !record.observation || record.observation.kind !== "interaction" || record.observation.attempt?.taskHash !== record.taskHash || record.observation.attempt?.planHash !== context.progress.planHash || !samePath(record.observation.attempt?.changeRoot, context.root) || canonicalJson(record.observation.checks) !== canonicalJson(task.visual.checks)
+        ? "Legacy or unobserved completion requires fresh dispatch and actual verification."
+        : record.taskHash !== expected.$task || canonicalJson(record.inputHashes) !== canonicalJson(expected)
         ? "Task or upstream input changed."
         : visualEvidenceFailure(context, task, expected, record.artifacts);
       if (!failure) {
@@ -275,23 +370,45 @@ function currentVisual(context) {
 function visualDecomposition(context) {
   return {
     type: "run", stage: "decompose", visualAcceptance: "not-evaluated",
-    command: "Write a design-plan.v1 with one observed visual property per phase. Bind reference files, scope, outputs, checks and dependencies. Guides must name actual readable method files. A video report reference requires visual.sourceObservation with report, confirmed shotId and observed observationIds; its target/property must match. Then run next --change-root <change> --plan <file>. Do not build the whole surface first.",
+    command: "Write a design-plan.v1 with one observed property per phase. This example checks a menu's declared open, selection, close, Escape and focus states through the documented eight-step interaction.json journey in a stable #menu-demo wrapper; use #menu-trigger, #sort-menu, #sort-default, #sort-updated and #selection-value, reading the loaded QA method copied to guides/qa.md. It does not prove structural fidelity, backend persistence or visual acceptance. Bind reference files, scope, outputs, checks and dependencies. Bind each local-web check through visual.verification: interaction probe input, exact local page output and check result path. Guides must name actual readable method files. A video report reference requires visual.sourceObservation with report, confirmed shotId and observed observationIds; its target/property must match. Then run next --change-root <change> --plan <file> before working in an owned Git window.",
     ...(context.missingPlan ? { missingPlan: context.missingPlan } : {}),
-    template: { schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: "visual-goals", input_hash: "sha256:" + "0".repeat(64), mode: "clone", fidelity: "exact", phases: [{ id: "structure", depends_on: [], inputs: ["reference-evidence.json"], outputs: ["evidence/structure-output.json"], gates: [], goal: "Match one observed structural property.", visual: { target: "reference-region-id", property: "structure", references: ["reference-evidence.json"], scope: ["src/component.js"], guides: ["references/reference-spec.md"], checks: ["evidence/structure-check.json"] } }] },
+    template: { schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: "sort-menu", input_hash: "sha256:" + "0".repeat(64), mode: "greenfield", fidelity: "adaptive", phases: [{ id: "menu-selection", depends_on: [], inputs: ["brief.md", "interaction.json", "guides/qa.md"], outputs: ["index.html"], gates: [], goal: "Open the menu, select 按更新时间, close it, then use Escape to restore focus while preserving the selected value.", visual: { target: "sort-menu", property: "menu.selection", references: ["brief.md"], scope: ["index.html", "implementation.md"], guides: ["guides/qa.md"], checks: ["evidence/menu-check.json"], review: true, verification: [{ kind: "interaction", probe: "interaction.json", target: "index.html", check: "evidence/menu-check.json" }] } }] },
+  };
+}
+
+function visualOutputHashes(context, task) {
+  return Object.fromEntries(task.outputs.map(raw => {
+    const file = resolveInside(context.root, raw, "task output", { scope: "workflow", mustExist: true });
+    if (!fs.statSync(file).isFile()) fail("workflow", `Task output is not a file: ${raw}`);
+    return ["output:" + normalizedVisualPath(raw), visualHash(fs.readFileSync(file))];
+  }));
+}
+
+function visualFailureFeedback(context, task, inputHashes) {
+  const failure = context.progress.failures[task.id];
+  if (!failure) return {};
+  if (typeof failure === "string") return { feedback: failure };
+  let sameSnapshot = false;
+  try { sameSnapshot = canonicalJson(failure.inputHashes) === canonicalJson({ ...inputHashes, ...visualOutputHashes(context, task) }); } catch { /* Missing outputs still need repair before verification. */ }
+  return {
+    feedback: failure.message, findings: failure.findings, attempts: failure.attempts, sameSnapshot,
+    ...(sameSnapshot && failure.attempts >= 3 ? { recovery: { code: "stop-repeating", message: "This measured input/output snapshot has failed at least three times. Stop repeating the unchanged verification.", fix: "Read the failing check and its findings, repair the declared behavior, then complete the changed snapshot. Keep the original scope window; this hint never permits skipping verification or granting acceptance." } } : {}),
   };
 }
 
 function nextVisualTask(changeRoot, options = {}) {
   const context = visualContext(changeRoot, options);
   if (!context.plan) return visualDecomposition(context);
-  const { current, inputHashes, blocker, waitingReview } = currentVisual(context);
+  const { current, inputHashes, blocker: inputBlocker, waitingReview } = currentVisual(context);
+  let blocker = inputBlocker;
+  if (current && !waitingReview) blocker ||= visualBindingsFailure(current) || bindVisualAttempt(context, current);
   if (canonicalJson(context.native.state.extensions.visualTasks || null) !== canonicalJson(context.progress)) persistVisual(context, "Bound current visual tasks and invalidated changed evidence.");
   if (!current) return { type: "done", stage: "visual-tasks", technicalCompletion: "passed", visualAcceptance: "not-evaluated", evidence: context.progress.completed };
   if (waitingReview) {
     const artifacts = context.progress.completed[current.id].artifacts;
     const evidence = {
-      outputs: artifacts.filter(metadata => current.outputs.includes(metadata.path)),
-      checks: artifacts.filter(metadata => current.visual.checks.includes(metadata.path)),
+      outputs: artifacts.filter(metadata => current.outputs.some(file => normalizedVisualPath(file) === metadata.path)),
+      checks: artifacts.filter(metadata => current.visual.checks.some(file => normalizedVisualPath(file) === metadata.path)),
     };
     return {
       type: "ask", stage: "visual-review", task: current, inputHashes,
@@ -307,11 +424,11 @@ function nextVisualTask(changeRoot, options = {}) {
     type: "run", stage: "visual-task", task: current, inputHashes,
     ...(context.sourceEvidence.has(current.id) ? { sourceEvidence: context.sourceEvidence.get(current.id) } : {}),
     planHash: context.progress.planHash, taskHash: inputHashes?.$task || visualHash(canonicalJson(current)),
-    planPath: context.progress.planPath, visualAcceptance: "not-evaluated",
+    planPath: context.progress.planPath, metadataPath: taskMetadataPath(current), visualAcceptance: "not-evaluated",
     ...(blocker ? { status: "blocked", blockers: [blocker] } : {}),
-    ...(context.progress.failures[current.id] ? { feedback: context.progress.failures[current.id] } : {}),
+    ...visualFailureFeedback(context, current, inputHashes),
     ...(context.progress.completed[current.id]?.status === "stale" ? { previousArtifacts: context.progress.completed[current.id].artifacts } : {}),
-    command: `Work only on ${current.id}: ${current.goal} Read the named guides and references; keep changes inside its scope. Produce bound artifact.v1 metadata for every output/check, then decide --change-root <change> --choice ${current.id} --verdict complete --artifact <metadata.json>. A technical completion never grants visual acceptance.`,
+    command: `Work only on ${current.id}: ${current.goal} Read the named guides and references; keep this execution window owned and changes inside its scope. Produce the declared outputs, then decide --change-root <change> --choice ${current.id} --verdict complete --artifact ${taskMetadataPath(current)}. Completion runs the bound browser verifier and writes artifact.v1 metadata itself. A technical completion never grants visual acceptance.`,
   };
 }
 
@@ -330,6 +447,69 @@ function completedDecisionFailure(context, task, record, raw) {
     if (canonicalJson(artifacts) !== canonicalJson(record.artifacts)) return "Review metadata must match the exact stored completion version.";
     return visualEvidenceFailure(context, task, expected, artifacts);
   } catch (error) { return error.message; }
+}
+
+function recheckVisualSnapshot(context, task, inputHashes, outputHashes) {
+  if (visualHash(fs.readFileSync(path.join(context.root, context.progress.planPath))) !== context.progress.planHash || canonicalJson(visualInputs(context, task)) !== canonicalJson(inputHashes)) fail("workflow", "Plan or bound inputs drifted during browser verification; rerun on the repaired snapshot.");
+  for (const raw of task.outputs) if (visualHash(fs.readFileSync(resolveInside(context.root, raw, "checked output", { scope: "workflow", mustExist: true }))) !== outputHashes["output:" + normalizedVisualPath(raw)]) fail("workflow", `Output drifted during browser verification: ${raw}. Rerun the checked snapshot.`);
+  const scopeFailure = inspectVisualAttempt(context);
+  if (scopeFailure) fail("workflow", scopeFailure);
+  readNativeState(context.root);
+  if (sha256(fs.readFileSync(context.native.stateFile)) !== context.native.stateHash) fail("workflow", "Native state changed during verification; completion CAS cannot promote this snapshot.", { code: "HASH_MISMATCH" });
+}
+
+function observeVisualTask(context, task, inputHashes, options) {
+  const bindingFailure = visualBindingsFailure(task) || inspectVisualAttempt(context);
+  if (bindingFailure) fail("workflow", bindingFailure);
+  const active = context.progress.active;
+  if (active.taskId !== task.id || active.taskHash !== inputHashes.$task || active.planHash !== context.progress.planHash) fail("workflow", "Completion baseline does not bind this task/plan. Close the original scope window and dispatch with next.");
+  if (options.artifact && normalizedVisualPath(options.artifact) !== active.metadataPath) fail("workflow", `Completion writes its observed metadata to ${active.metadataPath}; --artifact must name that exact destination.`);
+  const { observeInteraction, preflightInteraction } = require("./cli-core.cjs");
+  const outputHashes = visualOutputHashes(context, task);
+  const boundFiles = [...Object.keys(inputHashes).filter(key => key !== "$plan" && key !== "$task"), ...task.outputs, context.progress.planPath, "state.json", "events.jsonl"].map(raw => resolveInside(context.root, raw, "bound task file", { scope: "workflow" }));
+  const protectedFiles = [...boundFiles, resolveInside(context.root, active.metadataPath, "completion metadata", { scope: "workflow" })];
+  const bindings = task.visual.verification.map(binding => ({
+    ...binding, resultFile: binding.check,
+    protectedFiles: [...protectedFiles, ...task.visual.checks.filter(check => normalizedVisualPath(check) !== normalizedVisualPath(binding.check)).map(raw => resolveInside(context.root, raw, "other check", { scope: "workflow" }))],
+    chrome: options.chrome, puppeteer: options.puppeteerModule,
+  }));
+  // Preflight every destination before executing or writing any check.
+  for (const binding of bindings) preflightInteraction(context.root, binding);
+  const metadataOptions = { ...bindings[0], resultFile: active.metadataPath, protectedFiles: [...boundFiles, ...task.visual.checks.map(raw => path.join(context.root, raw))] };
+  preflightInteraction(context.root, metadataOptions);
+  const observations = bindings.map(binding => observeInteraction(context.root, binding));
+  recheckVisualSnapshot(context, task, inputHashes, outputHashes);
+  for (const binding of bindings) preflightInteraction(context.root, binding);
+  preflightInteraction(context.root, metadataOptions);
+  const failures = observations.map((observed, index) => interactionResultFailure(observed.result, observed.doc) && `${bindings[index].check}: ${interactionResultFailure(observed.result, observed.doc)}`).filter(Boolean);
+  observations.forEach((observed, index) => {
+    const destination = resolveInside(context.root, bindings[index].check, "observed report", { scope: "workflow" });
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.writeFileSync(destination, canonicalJson(observed.result));
+  });
+  if (failures.length) {
+    recheckVisualSnapshot(context, task, inputHashes, outputHashes);
+    for (const [index, observed] of observations.entries()) {
+      if (visualHash(fs.readFileSync(resolveInside(context.root, bindings[index].check, "observed report", { scope: "workflow", mustExist: true }))) !== visualHash(canonicalJson(observed.result))) fail("workflow", "Observed report changed while recording failed verification; repair and rerun.");
+    }
+    const fields = ["code", "severity", "message", "fix", "probeId", "stepId", "selector", "name"];
+    const findings = observations.flatMap((observed, index) => observed.result.status === "failed" ? (observed.result.findings || []).filter(finding => finding && ["code", "severity", "message", "fix"].every(field => typeof finding[field] === "string" && finding[field])).map(finding => ({ ...Object.fromEntries(fields.filter(field => typeof finding[field] === "string").map(field => [field, finding[field]])), ...Object.fromEntries(["expected", "actual"].filter(field => Object.hasOwn(finding, field)).map(field => [field, finding[field]])), path: bindings[index].check })) : []);
+    const observedFailure = findings.length ? { message: `Observed interaction verification failed: ${findings.filter(finding => finding.severity === "error").map(finding => `${finding.path}${finding.stepId ? ` (${finding.stepId})` : ""}: ${finding.message}`).join("; ")}`, findings, inputHashes: { ...inputHashes, ...outputHashes } } : null;
+    fail("workflow", failures.join("; "), observedFailure ? { code: "VERIFICATION_FAILED", observedFailure } : {});
+  }
+  const dependencies = context.plan.phases.filter(phase => task.depends_on.includes(phase.id)).flatMap(phase => phase.outputs);
+  const at = new Date().toISOString();
+  const artifacts = [...task.outputs, ...task.visual.checks].map(file => createArtifactMetadata({ path: file, producer: "designer-pipeline observed interaction", input_hashes: task.visual.checks.includes(file) ? { ...inputHashes, ...outputHashes } : inputHashes, dependencies: task.visual.checks.includes(file) ? task.outputs : dependencies, created_at: at }, { changeRoot: context.root }));
+  const failure = visualEvidenceFailure(context, task, inputHashes, artifacts);
+  if (failure) fail("workflow", failure);
+  const metadataFile = resolveInside(context.root, active.metadataPath, "observed metadata", { scope: "workflow" });
+  fs.mkdirSync(path.dirname(metadataFile), { recursive: true });
+  fs.writeFileSync(metadataFile, canonicalJson(artifacts));
+  recheckVisualSnapshot(context, task, inputHashes, outputHashes);
+  const finalFailure = visualEvidenceFailure(context, task, inputHashes, artifacts);
+  if (finalFailure) fail("workflow", finalFailure);
+  const measuredScope = context.scopeObservation;
+  return { taskHash: inputHashes.$task, inputHashes, artifacts, status: "ready", observation: { kind: "interaction", attempt: structuredClone(active), checks: [...task.visual.checks], scope: { changedFiles: measuredScope.changedFiles, commitChangedFiles: measuredScope.commitChangedFiles, head: measuredScope.current.head }, at } };
 }
 
 function decideVisualTask(changeRoot, options = {}) {
@@ -355,28 +535,36 @@ function decideVisualTask(changeRoot, options = {}) {
     if (record && ((record.status || "ready") === "ready" || options.artifact)) {
       const failure = completedDecisionFailure(context, chosen, record, options.artifact);
       if (failure) return blockedDecision(failure);
+      const scopeFailure = context.progress.active && inspectVisualAttempt(context);
+      if (scopeFailure) return blockedDecision(scopeFailure);
       markVisualStale(context, chosen.id, options.answer.trim());
+      delete context.progress.active;
       context.progress.failures[chosen.id] = options.answer.trim();
       persistVisual(context, `${chosen.id} owner rejected this evidence: ${options.answer.trim()}`, "visual-task-failed");
       return { status: "blocked", taskId: chosen.id, failure: options.answer.trim(), visualAcceptance: "not-evaluated", next: nextVisualTask(changeRoot) };
     }
   }
   if (!current || current.id !== chosen.id) fail("workflow", `Only the current task ${current?.id || "(none)"} can be completed or rejected without completed evidence.`);
-  let failure = blocker;
+  let failure = blocker, failureCode, observedFailure;
   if (options.verdict === "reject") {
     failure = options.answer.trim();
   } else if (!failure) {
-    let artifacts;
     try {
-      artifacts = completionArtifacts(context, options.artifact);
-      failure = visualEvidenceFailure(context, current, inputHashes, artifacts);
-    } catch (error) { failure = error.message; }
+      context.progress.completed[current.id] = observeVisualTask(context, current, inputHashes, options);
+    } catch (error) { failure = error.message; failureCode = error.code; observedFailure = error.details?.observedFailure; }
     if (!failure) {
-      context.progress.completed[current.id] = { taskHash: inputHashes.$task, inputHashes, artifacts, status: "ready" };
       delete context.progress.failures[current.id];
+      delete context.progress.active;
     }
   }
-  if (failure) context.progress.failures[current.id] = failure;
+  // A destination aliasing native controls must not receive even a failure-state write.
+  if (failureCode === "OUTPUT_COLLISION") return { status: "blocked", taskId: current.id, failure, visualAcceptance: "not-evaluated", next: nextVisualTask(changeRoot) };
+  if (sha256(fs.readFileSync(context.native.stateFile)) !== context.native.stateHash) return { status: "blocked", taskId: current.id, failure: failure || "Native completion CAS conflict; rerun next.", visualAcceptance: "not-evaluated", next: { type: "run", stage: "visual-task", command: "Rerun next --change-root <change> and repair the concurrent state change before completing." } };
+  if (failure) {
+    const previous = context.progress.failures[current.id];
+    if (observedFailure) context.progress.failures[current.id] = { ...observedFailure, attempts: Math.min(typeof previous === "object" && canonicalJson(previous.inputHashes) === canonicalJson(observedFailure.inputHashes) ? previous.attempts + 1 : 1, Number.MAX_SAFE_INTEGER) };
+    else context.progress.failures[current.id] = typeof previous === "object" ? { ...previous, message: failure } : failure;
+  }
   persistVisual(context, failure ? `${current.id} needs repair: ${failure}` : `${current.id} technical evidence passed.`, failure ? "visual-task-failed" : "visual-task-complete");
   return { status: failure ? "blocked" : "recorded", taskId: current.id, ...(failure ? { failure } : {}), visualAcceptance: "not-evaluated", next: nextVisualTask(changeRoot) };
 }

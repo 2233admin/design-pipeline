@@ -70,6 +70,7 @@ function resolveInside(root, raw, label, options = {}) {
   const realBase = fs.realpathSync(base);
   let existing = target;
   while (!fs.existsSync(existing)) {
+    if (fs.lstatSync(existing, { throwIfNoEntry: false })?.isSymbolicLink()) fail(options.scope || "path", `${label} has an unresolved symlink and cannot be contained`);
     const parent = path.dirname(existing);
     if (parent === existing || !pathInside(base, parent)) fail(options.scope || "path", `${label} has no contained existing parent`);
     existing = parent;

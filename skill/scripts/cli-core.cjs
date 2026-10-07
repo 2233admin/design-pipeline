@@ -2,6 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { fileURLToPath } = require("node:url");
 const { spawnSync } = require("node:child_process");
 const {
   advanceChange,
@@ -801,6 +802,57 @@ function evidenceCommand(parsed, root, action) {
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+// Observe one interaction through the existing kernel. Callers own report/state writes so native
+// completion can commit its own checked snapshot without advancing a second workflow.
+function preflightInteraction(root, options = {}) {
+  const probeFile = contained(root, options.probe, "--probe");
+  const doc = validateProbeFile(readJson(probeFile, "interaction probe"));
+  const resultFile = contained(root, options.resultFile, "interaction result", false);
+  const resultParent = contained(root, path.dirname(resultFile), "interaction output directory", false);
+  if (fs.existsSync(resultParent) && !fs.statSync(resultParent).isDirectory()) fail("interaction capture", "output parent must be a directory");
+  if (fs.existsSync(resultFile) && !fs.statSync(resultFile).isFile()) fail("interaction capture", "output must be a file");
+  const pageUrl = require("./interaction-capture-core.cjs").resolvePageUrl(probeFile, doc.url);
+  const localPage = pageUrl.startsWith("file:") ? contained(root, fileURLToPath(pageUrl), "interaction page") : null;
+  let targetFile = null;
+  if (options.target !== undefined && options.target !== null) {
+    if (!localPage) fail("interaction capture", "native verification requires the declared local output target", { code: "INTERACTION_TARGET_MISMATCH" });
+    targetFile = contained(root, options.target, "interaction target");
+    if (!fs.statSync(targetFile).isFile() || !sameFilePath(localPage, targetFile)) fail("interaction capture", "probe page differs from the declared local output target", { code: "INTERACTION_TARGET_MISMATCH" });
+  }
+  if (options.protectedFiles !== undefined && !Array.isArray(options.protectedFiles)) fail("interaction capture", "protectedFiles must be an array");
+  const protectedFiles = [...new Set([probeFile, localPage, ...(options.protectedFiles || [])].filter(Boolean))]
+    .map(file => contained(root, file, "interaction protected input", false));
+  const output = fs.existsSync(resultFile) ? fs.statSync(resultFile, { bigint: true }) : null;
+  for (const file of protectedFiles) {
+    const input = fs.existsSync(file) ? fs.statSync(file, { bigint: true }) : null;
+    if (path.relative(file, resultFile) === "" || input && output && input.dev === output.dev && input.ino === output.ino) {
+      fail("interaction capture", `output would overwrite ${path.basename(file)}. Fix: use a separate report destination`, { code: "OUTPUT_COLLISION" });
+    }
+  }
+  return { doc, probeFile, pageUrl, localPage, targetFile, resultFile, protectedFiles };
+}
+
+function observeInteraction(root, options = {}) {
+  const context = preflightInteraction(root, options);
+  const args = ["--probe", context.probeFile];
+  if (options.chrome) args.push("--chrome", options.chrome);
+  if (options.puppeteer) args.push("--puppeteer-module", options.puppeteer);
+  const kernel = runKernel("capture-interaction.cjs", args, root);
+  const capture = kernel.value?.capture;
+  if (kernel.exitCode !== 0 || capture?.schema !== "design-pipeline.interaction-capture.v1" || typeof capture.url !== "string") {
+    fail("interaction capture", "capture kernel returned no valid capture", { code: "KERNEL_FAILED" });
+  }
+  const actualLocalPage = capture.url.startsWith("file:") ? contained(root, fileURLToPath(capture.url), "captured interaction page") : null;
+  if (capture.url !== context.pageUrl && !(actualLocalPage && context.localPage && sameFilePath(actualLocalPage, context.localPage))) {
+    fail("interaction capture", "captured page differs from the requested interaction target", { code: "INTERACTION_TARGET_MISMATCH" });
+  }
+  if (context.targetFile && !(actualLocalPage && sameFilePath(actualLocalPage, context.targetFile))) {
+    fail("interaction capture", "captured page differs from the declared local output target", { code: "INTERACTION_TARGET_MISMATCH" });
+  }
+  const result = evaluateProbeFile(context.doc, capture);
+  return { ...context, result, kernel };
+}
+
 function filmCapture(parsed, root, composition, url) {
   const args = url ? ["--url", url] : ["--composition", composition];
   for (const flag of ["--composition-id", "--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
@@ -828,7 +880,8 @@ function verifyCommand(parsed, root, action) {
   if (action === "film-storyboard") {
     const storyboardFile = artifact(parsed, root, "--storyboard");
     const result = checkStoryboard(readJson(storyboardFile, "film storyboard"));
-    workflow.recordGate(path.dirname(storyboardFile), "storyboard", result.status);
+    const project = path.dirname(storyboardFile);
+    workflow.recordGate(project, "storyboard", result.status, [storyboardFile, ...(fs.existsSync(path.join(project, "reference.md")) ? ["reference.md"] : [])], result);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "audio") {
@@ -866,18 +919,15 @@ function verifyCommand(parsed, root, action) {
     // probe or an --output outside --root is a contract error the caller can fix without Chrome ever
     // being involved.
     const probeFile = artifact(parsed, root, "--probe");
-    const doc = validateProbeFile(readJson(probeFile, "interaction probe"));
-    const outDir = option(parsed, "--output") ? contained(root, option(parsed, "--output"), "--output", false) : path.join(path.dirname(probeFile), "evidence");
-    const args = ["--probe", probeFile];
-    for (const flag of ["--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
-    const kernel = runKernel("capture-interaction.cjs", args, root);
-    // A measurement that never happened is a failed measurement, never a failed gate: this aborts
-    // with a contract error rather than turning an absent recording into a gate verdict.
-    if (!kernel.value || !kernel.value.capture) fail("interaction capture", "capture kernel returned no capture", { code: "KERNEL_FAILED" });
-    const result = evaluateProbeFile(doc, kernel.value.capture);
+    const outDir = contained(root, option(parsed, "--output", path.join(path.dirname(probeFile), "evidence")), "--output", false);
+    const { result, resultFile, localPage } = observeInteraction(root, {
+      probe: probeFile, resultFile: path.join(outDir, "interaction.json"),
+      protectedFiles: [path.join(path.dirname(probeFile), workflow.STATE)],
+      chrome: option(parsed, "--chrome"), puppeteer: option(parsed, "--puppeteer-module"),
+    });
     fs.mkdirSync(outDir, { recursive: true });
-    fs.writeFileSync(path.join(outDir, "interaction.json"), `${JSON.stringify(result, null, 2)}\n`);
-    workflow.recordGate(path.dirname(probeFile), "interaction", result.status);
+    fs.writeFileSync(resultFile, `${JSON.stringify(result, null, 2)}\n`);
+    workflow.recordGate(path.dirname(probeFile), "interaction", result.status, [probeFile, ...(localPage ? [localPage] : [])], result);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   fail("cli", `unknown verify action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
@@ -1998,7 +2048,7 @@ const COMMANDS = {
         run: ({ parsed, root }) => {
           const project = contained(root, option(parsed, "--project-root"), "--project-root");
           const result = checkFilmProject(project, { capture: (composition, url) => filmCapture(parsed, root, composition, url), preview: option(parsed, "--url") ? () => ({ url: option(parsed, "--url"), started: false }) : undefined });
-          workflow.recordGate(project, "film", result.status);
+          workflow.recordGate(project, "film", result.status, ["storyboard.json", result.steps.find(step => step.gate === "render")?.video, ...["index.html", "timeline.json", "score-grid.json"].filter(file => fs.existsSync(path.join(project, file)))], result);
           return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },
       },
@@ -2058,7 +2108,7 @@ const COMMANDS = {
   decide: {
     run: ({ parsed, root }) => {
       if (option(parsed, "--change-root")) {
-        const result = workflow.decideVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan"), choice: option(parsed, "--choice"), artifact: option(parsed, "--artifact"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer") });
+        const result = workflow.decideVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan"), choice: option(parsed, "--choice"), artifact: option(parsed, "--artifact"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), chrome: option(parsed, "--chrome"), puppeteerModule: option(parsed, "--puppeteer-module") });
         return { result, exitCode: result.status === "blocked" ? 2 : 0 };
       }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
@@ -2073,7 +2123,7 @@ const COMMANDS = {
         const num = (flag) => (option(parsed, flag) ? Number(option(parsed, flag)) : undefined);
         const opts = { music: option(parsed, "--audio"), sources: option(parsed, "--sources"), style: option(parsed, "--style"), durationSec: num("--duration"), width: num("--width"), height: num("--height"), replace: option(parsed, "--replace") === true, output: option(parsed, "--output") };
         const result = { analyze: editProject.analyzeProject, auto: editProject.autoProject, render: editProject.renderProject, check: editProject.checkProject }[name](project, opts);
-        if (name === "check") workflow.recordGate(project, "edit", result.status);
+        if (name === "check") workflow.recordGate(project, "edit", result.status, ["edit.json", "edit/analysis.json", opts.output || path.join("renders", "edit.mp4")], result);
         const failed = name === "check" ? result.status !== "passed" : name === "auto" ? result.check.status !== "passed" : false;
         return { result, exitCode: failed ? 2 : 0 };
       },
@@ -2180,4 +2230,4 @@ function execute(argv) {
   }
 }
 
-module.exports = { dispatch, execute, inspectDoctor, parseArgs, publicHelp };
+module.exports = { dispatch, execute, inspectDoctor, observeInteraction, parseArgs, preflightInteraction, publicHelp };

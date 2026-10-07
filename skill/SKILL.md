@@ -43,6 +43,7 @@ name a repository. This is triggered by the work's needs, not a required search 
 
 ## Keep evidence and acceptance honest
 
+- Follow the [QA verification method](references/qa-checklist.md#run-verification) before completion.
 - Inspect the actual requested surface and relevant evidence. Motion also needs playback; a
   screenshot alone does not verify it.
 - Gates report technical checks such as component conformance and fidelity evidence. They never

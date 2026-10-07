@@ -9,7 +9,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const fs = require("node:fs");
 const path = require("node:path");
-const { HINTS, RESULT_SCHEMA, evaluateProbeFile, evaluateSamples, validateProbeFile } = require("../skill/scripts/interaction-core.cjs");
+const { HINTS, RESULT_SCHEMA, evaluateProbeFile, evaluateSamples, validateProbeFile, journeyResultFailure } = require("../skill/scripts/interaction-core.cjs");
 
 const FIXTURE = path.join(__dirname, "fixtures/interaction-samples.json");
 const fixture = () => JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
@@ -292,6 +292,115 @@ test("a probe the capture never recorded is a contract error", () => {
   const empty = fixture();
   empty.capture.probes[0].samples = [];
   assert.throws(() => evaluateProbeFile(empty.document, empty.capture), /recorded no samples/);
+});
+
+function menuDocument() {
+  return { schema: fixture().document.schema, id: "menu-business", url: "index.html", probes: [{ id: "menu", target: "#wrapper", steps: [
+    { id: "initial", timeoutMs: 20, assertions: [{ selector: "#menu", kind: "visible", equals: false }] },
+    { id: "choose", input: { kind: "click", selector: "#blue" }, timeoutMs: 100, assertions: [{ selector: "#selected", kind: "text", equals: "Blue" }] },
+  ] }] };
+}
+function menuCapture() {
+  return { pageOrigin: "file:", probes: [{ id: "menu", requests: ["file:///study/index.html"], steps: [
+    { id: "initial", elapsedMs: 20, observations: [{ selector: "#menu", kind: "visible", found: true, actual: false }] },
+    { id: "choose", elapsedMs: 100, observations: [{ selector: "#selected", kind: "text", found: true, actual: "Blue" }] },
+  ] }] };
+}
+
+test("menu journey verifies real business values without inventing motion frames", () => {
+  const doc = menuDocument(), capture = menuCapture();
+  const result = evaluateProbeFile(doc, capture);
+  assert.equal(result.status, "passed");
+  assert.equal(result.probes[0].steps.length, 2);
+  assert.equal(Object.hasOwn(result.probes[0], "samples"), false);
+  assert.equal(Object.hasOwn(result.probes[0], "metrics"), false);
+  capture.probes[0].steps[1].observations[0].actual = "None";
+  const failed = evaluateProbeFile(doc, capture);
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.probes[0].steps[1].assertions[0].actual, "None");
+  assert.equal(failed.findings[0].stepId, "choose");
+});
+
+test("journey contracts reject mixed shapes, executable fields and unbounded observations", () => {
+  for (const [mutate, expected] of [
+    [doc => { doc.probes[0].input = { kind: "click", at: [0, 0] }; }, /unsupported properties: input/],
+    [doc => { doc.probes[0].steps = []; }, /1..16 steps/],
+    [doc => { doc.probes[0].steps = Array.from({ length: 17 }, (_, id) => ({ ...doc.probes[0].steps[0], id: String(id) })); }, /1..16 steps/],
+    [doc => { doc.probes[0].steps[1].id = "initial"; }, /duplicates step id/],
+    [doc => { doc.probes[0].steps[0].assertions = []; }, /1..16 assertions/],
+    [doc => { doc.probes[0].steps[0].assertions = Array.from({ length: 17 }, (_, id) => ({ selector: "#row" + id, kind: "text", equals: "" })); }, /1..16 assertions/],
+    [doc => { doc.probes[0].steps[0].timeoutMs = null; }, /must be a number/],
+    [doc => { doc.probes[0].steps[0].timeoutMs = 5001; }, /must be a number/],
+    [doc => { doc.probes[0].steps = Array.from({ length: 4 }, (_, id) => ({ ...doc.probes[0].steps[0], id: String(id), timeoutMs: 5000 })); }, /exceed 15000/],
+    [doc => { doc.probes[0].steps[1].input = { kind: "key", key: "Space" }; }, /invalid value Space/],
+    [doc => { doc.probes[0].steps[1].input = { kind: "click", selector: "#blue", script: "window.selected='Blue'" }; }, /unsupported properties: script/],
+    [doc => { doc.probes[0].steps[0].assertions[0].equals = "false"; }, /must be true or false/],
+    [doc => { doc.probes[0].steps[0].assertions[0].evaluate = "document.hidden=false"; }, /unsupported properties: evaluate/],
+  ]) {
+    const doc = menuDocument(); mutate(doc); assert.throws(() => validateProbeFile(doc), expected);
+  }
+  const doc = menuDocument(); delete doc.probes[0].steps[0].timeoutMs;
+  assert.equal(validateProbeFile(doc).probes[0].steps[0].timeoutMs, 1000);
+  assert.equal(doc.probes[0].steps[0].timeoutMs, undefined, "normalization leaves the caller's document alone");
+});
+
+test("journey observations and native rows require exact coverage and typed literal comparisons", () => {
+  const doc = menuDocument(), probe = validateProbeFile(doc).probes[0], row = evaluateProbeFile(doc, menuCapture()).probes[0];
+  assert.equal(journeyResultFailure(probe, row), null);
+  for (const mutate of [
+    capture => capture.probes.push({ ...capture.probes[0] }),
+    capture => capture.probes[0].steps.pop(),
+    capture => capture.probes[0].steps.reverse(),
+    capture => capture.probes[0].steps[0].observations.push({ ...capture.probes[0].steps[0].observations[0] }),
+    capture => { capture.probes[0].steps[1].observations[0].actual = true; },
+    capture => { capture.probes[0].steps[1].elapsedMs = 99; },
+  ]) { const capture = menuCapture(); mutate(capture); assert.throws(() => evaluateProbeFile(doc, capture), /journey|incomplete|reordered|invalid literal|observation window/); }
+  for (const mutate of [
+    row => row.steps.reverse(),
+    row => { row.steps[1].assertions[0].actual = "None"; },
+    row => { row.steps[1].assertions[0].expected = "None"; },
+    row => { row.steps[0].assertions[0].found = false; row.steps[0].assertions[0].actual = null; },
+    row => { row.samples = { count: 0 }; },
+  ]) { const forged = JSON.parse(JSON.stringify(row)); mutate(forged); assert.notEqual(journeyResultFailure(probe, forged), null); }
+});
+
+test("missing state nodes cannot satisfy false or null and journey retains external-request failures", () => {
+  const doc = menuDocument(), capture = menuCapture();
+  capture.probes[0].steps[0].observations[0] = { selector: "#menu", kind: "visible", found: false, actual: null };
+  const missing = evaluateProbeFile(doc, capture);
+  assert.equal(missing.status, "failed"); assert.equal(missing.findings[0].code, "state-target-missing");
+  const attribute = menuDocument(), raw = menuCapture();
+  attribute.probes[0].steps[0].assertions[0] = { selector: "#menu", kind: "attribute", name: "aria-hidden", equals: null };
+  raw.probes[0].steps[0].observations[0] = { selector: "#menu", kind: "attribute", name: "aria-hidden", found: false, actual: null };
+  assert.equal(evaluateProbeFile(attribute, raw).status, "failed");
+  raw.probes[0].steps[0].observations[0].found = true;
+  assert.equal(evaluateProbeFile(attribute, raw).status, "passed", "a missing attribute on one existing element can be declared explicitly");
+  const network = menuCapture(); network.probes[0].requests.push("https://cdn.example.invalid/widget.js");
+  const external = evaluateProbeFile(doc, network);
+  assert.equal(external.status, "failed"); assert.equal(external.findings[0].code, "external-request");
+});
+
+test("journey origin completeness cannot hide off-origin requests while motion stays compatible", () => {
+  const doc = menuDocument(), incomplete = menuCapture();
+  incomplete.probes[0].requests.push("https://off-origin.invalid/script.js"); delete incomplete.pageOrigin;
+  assert.throws(() => evaluateProbeFile(doc, incomplete), /journey.*origin/);
+  for (const origin of ["", null, 42, "bogus", "file://", "https://off-origin.invalid", "https://off-origin.invalid/path"]) {
+    const raw = menuCapture(); raw.pageOrigin = origin;
+    assert.throws(() => evaluateProbeFile(doc, raw), /journey.*origin/);
+  }
+  const mismatched = menuCapture(); mismatched.url = "https://off-origin.invalid/menu.html";
+  assert.throws(() => evaluateProbeFile(doc, mismatched), /journey.*origin/);
+  const invalidUrl = menuCapture(); invalidUrl.url = "not-an-absolute-url";
+  assert.throws(() => evaluateProbeFile(doc, invalidUrl), /journey.*origin/);
+  const local = menuCapture(); local.url = "file:///study/index.html#menu";
+  assert.equal(evaluateProbeFile(doc, local).status, "passed");
+  const remote = menuCapture(), remoteDoc = menuDocument();
+  remoteDoc.url = "https://menu.example.invalid/index.html"; remote.pageOrigin = "https://menu.example.invalid"; remote.url = remoteDoc.url;
+  remote.probes[0].requests = [remote.url];
+  assert.equal(evaluateProbeFile(remoteDoc, remote).status, "passed");
+  const old = fixture(); delete old.capture.pageOrigin;
+  old.capture.probes[0].requests.push("https://off-origin.invalid/script.js");
+  assert.equal(evaluateProbeFile(old.document, old.capture).status, "passed", "legacy motion's missing-origin behavior is unchanged");
 });
 
 // A hover or tilt returns to rest, so its net travel is about zero. Overshoot is then the swing past
