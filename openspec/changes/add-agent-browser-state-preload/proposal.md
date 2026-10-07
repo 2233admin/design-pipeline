@@ -17,13 +17,15 @@ Issue: 2233admin/design-pipeline#83.
 ## What Changes
 
 - `evidence capture` gains `--agent-browser-state <file>`. The file must resolve inside
-  `--project-root`, the trust rule `--agent-browser` already uses. The host forwards it as
-  `DESIGN_PIPELINE_AGENT_BROWSER_STATE`, and the adapter passes it to agent-browser as `--state`
-  when the session starts.
-- The receipt's probe message names the state file and its sha256, so the capture traces back
-  to the exact state. The contents are never copied into the evidence, because state files can
-  hold session cookies.
-- The option fails closed without `--agent-browser`, so no other adapter can silently ignore it.
+  `--project-root`, the trust rule `--agent-browser` already uses. The host reads it once into a
+  private copy in the system temp directory, forwards that copy as
+  `DESIGN_PIPELINE_AGENT_BROWSER_STATE`, and removes it after the capture; the adapter passes it
+  to agent-browser as `--state` when the session starts.
+- The receipt's probe message names the state file and the sha256 of the copied bytes, so the
+  capture traces back to the exact state even if the project file changes during the capture.
+  The contents are never copied into the evidence, because state files can hold session cookies.
+- The option fails closed unless `--adapter-path` is the packaged `adapters/agent-browser.cjs` and
+  `--agent-browser` is set, so no other adapter can start and silently ignore it.
 
 ## Non-Goals
 

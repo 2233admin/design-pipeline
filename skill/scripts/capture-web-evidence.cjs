@@ -2,10 +2,13 @@
 "use strict";
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { fail, jsonResult, pathInside } = require("./contract-utils.cjs");
+
+const AGENT_BROWSER_ADAPTER = fs.realpathSync(path.join(__dirname, "..", "adapters", "agent-browser.cjs"));
 
 function parseArgs(argv) {
   const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module", "--agent-browser", "--agent-browser-state", "--chrome"]);
@@ -88,9 +91,11 @@ function capture(options) {
   const playwrightModule = optionalProjectTool(projectRoot, options["--playwright-module"], "--playwright-module");
   const agentBrowser = optionalProjectTool(projectRoot, options["--agent-browser"], "--agent-browser");
   // Saved browser state (cookies and localStorage from `agent-browser state save`) for pages that only
-  // show the surface under review after it is restored. Only agent-browser can load it, so another
-  // adapter never silently ignores it; like the tools, it must resolve inside the project root.
+  // show the surface under review after it is restored. Like the tools, it must resolve inside the
+  // project root. Only the packaged agent-browser adapter loads it, so it is refused before any other
+  // adapter starts and silently ignores it.
   const agentBrowserState = optionalProjectTool(projectRoot, options["--agent-browser-state"], "--agent-browser-state");
+  if (agentBrowserState && adapterPath !== AGENT_BROWSER_ADAPTER) fail("evidence capture", "--agent-browser-state needs --adapter-path <skill>/adapters/agent-browser.cjs, the only adapter that loads it");
   if (agentBrowserState && !agentBrowser) fail("evidence capture", "--agent-browser-state requires --agent-browser");
   if (agentBrowserState && !fs.statSync(agentBrowserState).isFile()) fail("evidence capture", "--agent-browser-state must be a file");
   const chrome = optionalExecutable(options["--chrome"], "--chrome");
@@ -99,7 +104,15 @@ function capture(options) {
   fs.mkdirSync(path.dirname(outputRoot), { recursive: true });
   if (!pathInside(projectRoot, fs.realpathSync(path.dirname(outputRoot)))) fail("evidence capture", "--output-root parent resolves outside --project-root");
   fs.mkdirSync(stage);
+  let stateSnapshot = null;
   try {
+    // The bytes are read once and the adapter loads this private copy, so the sha256 in the receipt is
+    // the state the browser started from even if the project file changes during the capture. It lives
+    // in the system temp directory, not the stage, because state files can hold session cookies.
+    if (agentBrowserState) {
+      stateSnapshot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-state-"));
+      fs.writeFileSync(path.join(stateSnapshot, path.basename(agentBrowserState)), fs.readFileSync(agentBrowserState), { mode: 0o600 });
+    }
     const request = { schema: "design-pipeline.web-evidence-request.v1", url, viewport: { width, height }, outputRoot: stage };
     const env = {
       PATH: process.env.PATH || "",
@@ -109,7 +122,7 @@ function capture(options) {
       DESIGN_PIPELINE_ADAPTER: "1",
       ...(playwrightModule ? { DESIGN_PIPELINE_PLAYWRIGHT_MODULE: playwrightModule } : {}),
       ...(agentBrowser ? { DESIGN_PIPELINE_AGENT_BROWSER: agentBrowser } : {}),
-      ...(agentBrowserState ? { DESIGN_PIPELINE_AGENT_BROWSER_STATE: agentBrowserState } : {}),
+      ...(stateSnapshot ? { DESIGN_PIPELINE_AGENT_BROWSER_STATE: path.join(stateSnapshot, path.basename(agentBrowserState)) } : {}),
       ...(chrome ? { DESIGN_PIPELINE_CHROME: chrome } : {}),
     };
     const child = spawnSync(process.execPath, [adapterPath], { input: JSON.stringify(request), encoding: "utf8", env, timeout, windowsHide: true, maxBuffer: 4 * 1024 * 1024 });
@@ -126,6 +139,7 @@ function capture(options) {
     return receipt;
   } finally {
     if (fs.existsSync(stage)) fs.rmSync(stage, { recursive: true, force: true });
+    if (stateSnapshot) fs.rmSync(stateSnapshot, { recursive: true, force: true });
   }
 }
 

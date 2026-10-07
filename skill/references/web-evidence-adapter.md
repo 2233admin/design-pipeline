@@ -33,10 +33,13 @@ agent-browser state save .design-pipeline/state/<name>.json   # in a session alr
 designer-pipeline evidence capture ... --agent-browser <path> --agent-browser-state .design-pipeline/state/<name>.json
 ```
 
-- **Location:** the file must stay inside `--project-root`. It needs `--agent-browser`, because
-  only that adapter can load it.
-- **Receipt:** the probe message names the file and its sha256. The contents are not copied
-  into the evidence.
+- **Location:** the file must stay inside `--project-root`. It needs `--adapter-path
+  <skill>/adapters/agent-browser.cjs` and `--agent-browser`, because only that adapter loads it;
+  with any other adapter the capture fails before it starts.
+- **Receipt:** the host reads the file once into a private copy in the system temp directory, the
+  browser loads that copy, and the copy is removed afterwards. The probe message names the file
+  and the sha256 of those bytes, so a later edit to the file cannot change what the receipt
+  claims. The contents are not copied into the evidence.
 - **Credentials:** state files can hold session cookies, so keep them in ignored paths such as
   `.design-pipeline/`.
 

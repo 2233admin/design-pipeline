@@ -136,9 +136,9 @@ function main() {
   const request = JSON.parse(fs.readFileSync(0, "utf8"));
   const chrome = process.env.DESIGN_PIPELINE_CHROME || null;
   if (chrome && !path.isAbsolute(chrome)) throw new Error("DESIGN_PIPELINE_CHROME must be an absolute path");
-  // Saved cookies and localStorage, loaded when the session starts. The receipt names the file and its
-  // hash so the capture can be traced to the exact state; the contents (possibly session cookies) are
-  // never copied into the evidence.
+  // Saved cookies and localStorage, loaded when the session starts. The host passes a private copy it
+  // read once, so the hash taken here is of the bytes the browser loads. The receipt names the file and
+  // that hash; the contents (possibly session cookies) are never copied into the evidence.
   const state = process.env.DESIGN_PIPELINE_AGENT_BROWSER_STATE || null;
   if (state && !path.isAbsolute(state)) throw new Error("DESIGN_PIPELINE_AGENT_BROWSER_STATE must be an absolute path");
   const stateNote = state ? `state preloaded from ${path.basename(state)} (sha256 ${crypto.createHash("sha256").update(fs.readFileSync(state)).digest("hex")})` : null;
