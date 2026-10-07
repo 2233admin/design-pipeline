@@ -8,7 +8,7 @@ const { validateReceipt } = require("./evidence-core.cjs");
 const { fail, jsonResult, pathInside } = require("./contract-utils.cjs");
 
 function parseArgs(argv) {
-  const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module", "--agent-browser", "--chrome"]);
+  const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module", "--agent-browser", "--agent-browser-state", "--chrome"]);
   const result = {};
   for (let index = 0; index < argv.length; index += 1) {
     const name = argv[index];
@@ -87,6 +87,12 @@ function capture(options) {
   const url = validatedUrl(required(options, "--url"));
   const playwrightModule = optionalProjectTool(projectRoot, options["--playwright-module"], "--playwright-module");
   const agentBrowser = optionalProjectTool(projectRoot, options["--agent-browser"], "--agent-browser");
+  // Saved browser state (cookies and localStorage from `agent-browser state save`) for pages that only
+  // show the surface under review after it is restored. Only agent-browser can load it, so another
+  // adapter never silently ignores it; like the tools, it must resolve inside the project root.
+  const agentBrowserState = optionalProjectTool(projectRoot, options["--agent-browser-state"], "--agent-browser-state");
+  if (agentBrowserState && !agentBrowser) fail("evidence capture", "--agent-browser-state requires --agent-browser");
+  if (agentBrowserState && !fs.statSync(agentBrowserState).isFile()) fail("evidence capture", "--agent-browser-state must be a file");
   const chrome = optionalExecutable(options["--chrome"], "--chrome");
   const stage = `${outputRoot}.tmp-${process.pid}`;
   if (fs.existsSync(stage)) fail("evidence capture", `stale capture stage exists: ${stage}`);
@@ -103,6 +109,7 @@ function capture(options) {
       DESIGN_PIPELINE_ADAPTER: "1",
       ...(playwrightModule ? { DESIGN_PIPELINE_PLAYWRIGHT_MODULE: playwrightModule } : {}),
       ...(agentBrowser ? { DESIGN_PIPELINE_AGENT_BROWSER: agentBrowser } : {}),
+      ...(agentBrowserState ? { DESIGN_PIPELINE_AGENT_BROWSER_STATE: agentBrowserState } : {}),
       ...(chrome ? { DESIGN_PIPELINE_CHROME: chrome } : {}),
     };
     const child = spawnSync(process.execPath, [adapterPath], { input: JSON.stringify(request), encoding: "utf8", env, timeout, windowsHide: true, maxBuffer: 4 * 1024 * 1024 });

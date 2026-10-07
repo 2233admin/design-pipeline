@@ -165,3 +165,44 @@ test("a Windows shell shim is refused before anything runs", () => {
   assert.match(envelope.error.message, /must not be a shell shim/);
   assert.deepEqual(calls(fixture), []);
 });
+
+test("saved browser state is loaded when the session starts and named by hash in the receipt", () => {
+  const fixture = project();
+  const state = path.join(fixture.root, "state.json");
+  const content = JSON.stringify({ cookies: [], origins: [{ origin: "https://example.com", localStorage: [{ name: "layout", value: "secret-layout" }] }] });
+  fs.writeFileSync(state, content);
+  const { status, envelope } = runCapture(fixture, ["--agent-browser", fixture.tool, "--agent-browser-state", state]);
+  assert.equal(status, 0, JSON.stringify(envelope));
+  const batch = calls(fixture).find((args) => args.includes("batch"));
+  assert.deepEqual(batch.slice(batch.indexOf("--state"), batch.indexOf("--state") + 2), ["--state", fs.realpathSync(state)]);
+  const hash = require("node:crypto").createHash("sha256").update(content).digest("hex");
+  assert.match(envelope.receipt.adapter.probe.message, new RegExp(`state preloaded from state\\.json \\(sha256 ${hash}\\)`));
+  for (const name of fs.readdirSync(fixture.output)) assert.equal(fs.readFileSync(path.join(fixture.output, name)).includes("secret-layout"), false, name);
+});
+
+test("saved browser state outside the project, or without agent-browser, fails closed", () => {
+  const fixture = project();
+  const elsewhere = project();
+  const outside = path.join(elsewhere.root, "state.json");
+  fs.writeFileSync(outside, "{}");
+  const escaped = runCapture(fixture, ["--agent-browser", fixture.tool, "--agent-browser-state", outside]);
+  assert.equal(escaped.status, 1);
+  assert.match(escaped.envelope.error.message, /--agent-browser-state must stay inside --project-root/);
+
+  const inside = path.join(fixture.root, "state.json");
+  fs.writeFileSync(inside, "{}");
+  const alone = runCapture(fixture, ["--agent-browser-state", inside]);
+  assert.equal(alone.status, 1);
+  assert.match(alone.envelope.error.message, /--agent-browser-state requires --agent-browser/);
+  assert.deepEqual(calls(fixture), []);
+});
+
+test("the public CLI forwards --agent-browser-state to the capture host", () => {
+  const fixture = project();
+  const state = path.join(fixture.root, "state.json");
+  fs.writeFileSync(state, "{}");
+  const result = spawnSync(process.execPath, [cli, "evidence", "capture", "--project-root", fixture.root, "--adapter-path", adapter, "--output-root", fixture.output, "--url", "https://example.com/", "--agent-browser", fixture.tool, "--agent-browser-state", state, "--json"], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
+  assert.equal(result.status, 0, result.stdout || result.stderr);
+  // The CLI envelope nests the kernel envelope: the receipt itself is at receipt.receipt.
+  assert.match(JSON.parse(result.stdout).receipt.receipt.adapter.probe.message, /state preloaded from state\.json/);
+});

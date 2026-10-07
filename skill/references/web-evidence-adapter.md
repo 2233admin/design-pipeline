@@ -19,8 +19,26 @@ Project-installed tools must resolve inside `--project-root`.
 
 | Adapter | Host options | Fills |
 | --- | --- | --- |
-| `adapters/agent-browser.cjs` | `--agent-browser <path>` (the agent-browser executable or the npm package's `bin/agent-browser.js`, project-installed); `--chrome <exe>` (needed when agent-browser cannot find a browser inside the bounded adapter environment, as measured on Linux) | all seven: full-page screenshot, gzipped Chrome trace, DOM, console plus uncaught page errors, network requests without headers, axe-core accessibility, Web Vitals |
+| `adapters/agent-browser.cjs` | `--agent-browser <path>` (the agent-browser executable or the npm package's `bin/agent-browser.js`, project-installed); `--agent-browser-state <file>` (optional saved cookies and localStorage, see below); `--chrome <exe>` (needed when agent-browser cannot find a browser inside the bounded adapter environment, as measured on Linux) | all seven: full-page screenshot, gzipped Chrome trace, DOM, console plus uncaught page errors, network requests without headers, axe-core accessibility, Web Vitals |
 | `adapters/playwright.cjs` | `--playwright-module <path>` (project-installed) | screenshot, Playwright trace, DOM, console; accessibility, network and performance stay `unknown` |
+
+### Starting from saved state
+
+Some surfaces only appear after saved state is restored: a saved layout, a chosen account or a
+switched-on data source kept in cookies or localStorage. Save that state once with agent-browser,
+then pass it to the capture:
+
+```bash
+agent-browser state save .design-pipeline/state/<name>.json   # in a session already showing the surface
+designer-pipeline evidence capture ... --agent-browser <path> --agent-browser-state .design-pipeline/state/<name>.json
+```
+
+- **Location:** the file must stay inside `--project-root`. It needs `--agent-browser`, because
+  only that adapter can load it.
+- **Receipt:** the probe message names the file and its sha256. The contents are not copied
+  into the evidence.
+- **Credentials:** state files can hold session cookies, so keep them in ignored paths such as
+  `.design-pipeline/`.
 
 ```bash
 npm install --save-dev agent-browser

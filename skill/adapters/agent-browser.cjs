@@ -51,7 +51,7 @@ function withoutLifecycle(result) {
   return rest;
 }
 
-function capture(request, session, chrome) {
+function capture(request, session, chrome, state) {
   const stage = request.outputRoot;
   const rawTrace = path.join(stage, "trace.json");
   const steps = [
@@ -71,7 +71,7 @@ function capture(request, session, chrome) {
   ];
   // The host kills the adapter on timeout before `close` can run; the idle timeout then shuts the
   // orphaned daemon and its browser down instead of the default one hour.
-  const launch = ["--session", session, "--idle-timeout", IDLE_TIMEOUT, ...(chrome ? ["--executable-path", chrome] : [])];
+  const launch = ["--session", session, "--idle-timeout", IDLE_TIMEOUT, ...(chrome ? ["--executable-path", chrome] : []), ...(state ? ["--state", state] : [])];
   const child = run([...launch, "batch", "--json"], JSON.stringify(steps.map(([, command]) => command)));
   let results;
   try { results = JSON.parse(child.stdout); } catch { throw new Error(`agent-browser batch returned no JSON (exit ${child.status}): ${(child.stderr || "").trim()}`); }
@@ -136,12 +136,18 @@ function main() {
   const request = JSON.parse(fs.readFileSync(0, "utf8"));
   const chrome = process.env.DESIGN_PIPELINE_CHROME || null;
   if (chrome && !path.isAbsolute(chrome)) throw new Error("DESIGN_PIPELINE_CHROME must be an absolute path");
+  // Saved cookies and localStorage, loaded when the session starts. The receipt names the file and its
+  // hash so the capture can be traced to the exact state; the contents (possibly session cookies) are
+  // never copied into the evidence.
+  const state = process.env.DESIGN_PIPELINE_AGENT_BROWSER_STATE || null;
+  if (state && !path.isAbsolute(state)) throw new Error("DESIGN_PIPELINE_AGENT_BROWSER_STATE must be an absolute path");
+  const stateNote = state ? `state preloaded from ${path.basename(state)} (sha256 ${crypto.createHash("sha256").update(fs.readFileSync(state)).digest("hex")})` : null;
   const toolVersion = version();
   const session = `dp-${process.pid}-${crypto.randomBytes(4).toString("hex")}`;
   let outcome;
   let closed = false;
   try {
-    outcome = capture(request, session, chrome);
+    outcome = capture(request, session, chrome, state);
   } finally {
     closed = run(["--session", session, "close"]).status === 0;
   }
@@ -150,6 +156,7 @@ function main() {
   // probe message names it, and the session's idle timeout still shuts the browser down.
   const notes = [
     failed.length ? `agent-browser commands failed: ${failed.join(", ")}` : "agent-browser capture completed",
+    ...(stateNote ? [stateNote] : []),
     ...(closed ? [] : [`close failed; the session shuts down after the ${IDLE_TIMEOUT} idle timeout`]),
   ];
   const hashes = {};

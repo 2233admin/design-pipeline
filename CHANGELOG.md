@@ -6,6 +6,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- `evidence capture --agent-browser-state <file>` (`add-agent-browser-state-preload`): the agent-browser adapter loads saved
+  cookies and localStorage before capturing, so surfaces that only appear after a saved layout or
+  connection is restored can be captured. The file stays inside the project; the receipt names it
+  and its sha256 without copying the contents.
 - Web evidence adapter `adapters/agent-browser.cjs` (`add-agent-browser-evidence-adapter`): drives
   [agent-browser](https://github.com/vercel-labs/agent-browser) to fill every artifact of the
   evidence receipt — full-page screenshot, gzipped Chrome trace, DOM, console with uncaught page
