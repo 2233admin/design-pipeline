@@ -71,7 +71,7 @@ byte-verified outside skill discovery roots at
 
 The existing contained installer synchronized the canonical root at C:/Users/Administrator/.codex/skills/design-pipeline. All 3,008 installed files match the frozen skill working bytes by SHA-256, with zero modifications or extras. The four new library resources are shipped. Installed offline CLI, with HTTP(S) proxies blocked, returned twelve recipes and 233 indexed cases; selecting ui-state-loop returned its two sources and unrendered status. The shared .agents/skills compatibility content was preserved.
 
-Delivery uses the existing open PR #85 against main. Canonical synchronization and local verification are complete; publication and exact-head CI are the remaining delivery step. Their results will be recorded here after execution. No merge is authorized or performed.
+Published to the existing open PR #85 against main at head `71a67b6e50d79982775a79a6ebf98eb240a9f6e0`. Exact-head [CI run 37822127459](https://github.com/2233admin/design-pipeline/actions/runs/37822127459) passed: Windows path regressions 3/3, zero skipped; strict specs 57/57; Linux repository QA 1,046 passed, zero failed and 43 tool/platform skips (1,089 total); installed-package CLI 12/12, zero skipped; both browser self-tests, packaging and upload passed. Local Windows full QA above executed all 1,089 tests without skips. After this passing run, only this record and task completion flags change; packaged skill tree remains unchanged. The final documentation-head CI is linked from the PR after completion. PR remains open and unmerged.
 
 ## Acceptance and limits
 

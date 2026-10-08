@@ -11,4 +11,4 @@
 ## 3. Verification and delivery
 
 - [x] 3.1 Independently review catalog and maintenance boundaries; run focused checks and strict specs, then frozen-tree repository QA and package/install verification.
-- [ ] 3.2 Safely synchronize canonical installation, commit/push and update PR #85 with exact-head CI and recipe-only limitations; do not merge.
+- [x] 3.2 Safely synchronize canonical installation, commit/push and update PR #85 with exact-head CI and recipe-only limitations; do not merge.
