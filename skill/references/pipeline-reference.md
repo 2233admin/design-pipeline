@@ -58,7 +58,7 @@ reversibility, or confidence that the implementation cannot prove.
 | `website-cloning` | Live-page clone or reverse-engineering | `references/feature-routes.md`, `references/website-cloning.md`, `references/deepclonewebsite.md` | target manifest, palette evidence, foundations, measured clone evaluation |
 | `component-first` | Component or design-system selection | `references/companion-skills.md`, `references/capability-routing.md`, `references/component-capabilities.md`, `references/pipeline-method.md` | capability inventory, provider route, behavioral evidence, conformance |
 | `motion-graphics` | Motion, animation, WebGL, game, or graphics | `references/capability-routing.md`, `references/animation-opportunity-and-review.md`, `references/stages.md` | runtime ownership, motion spec, reduced motion, performance and cleanup |
-| `dynamic-web-verification` | Dynamic web verification | `references/stages.md`, `adapters/playwright.cjs`, `references/qa-checklist.md` | runtime readiness, `networkidle`, DOM, screenshot, console, accessibility, network, performance |
+| `dynamic-web-verification` | Dynamic web verification | `references/stages.md`, `references/web-evidence-adapter.md`, `references/qa-checklist.md` | runtime readiness, `networkidle`, DOM, screenshot, console, accessibility, network, performance |
 | `product-foundation` | Requirements-driven product foundation | `references/design-synthesis.md` | reusable `DESIGN.md`, decision evidence, validation |
 | `feedback-loop` | Pipeline bug, missing capability, or reusable gap | `references/feedback-loop.md`, `references/lifecycle.md` | redacted local feedback, regression test, explicit publication authority |
 

@@ -13,6 +13,17 @@ All notable changes to Design Pipeline are documented here.
 - Complete pinned good-css source, eight CSS category references, practice-by-practice project
   adaptation and an offline specimen builder. Existing CSS implementation/review routes now
   expose the built-in library; no external skill, new dependency or acceptance gate is required.
+- `evidence capture --agent-browser-state <file>` (`add-agent-browser-state-preload`): the agent-browser adapter loads saved
+  cookies and localStorage before capturing, so surfaces that only appear after a saved layout or
+  connection is restored can be captured. The file stays inside the project and only the
+  agent-browser adapter accepts it. The browser loads a copy read once, and the receipt names the
+  file and the sha256 of those bytes without copying the contents.
+- Web evidence adapter `adapters/agent-browser.cjs` (`add-agent-browser-evidence-adapter`): drives
+  [agent-browser](https://github.com/vercel-labs/agent-browser) to fill every artifact of the
+  evidence receipt — full-page screenshot, gzipped Chrome trace, DOM, console with uncaught page
+  errors, network requests with status codes (headers removed, redaction `applied`), axe-core
+  accessibility and Web Vitals. The receipt is `complete` only when every command succeeded.
+  `evidence capture` gains `--agent-browser <path>` (project-installed) and forwards `--chrome <exe>`.
 - `composition scaffold --template visual-craft` copies the drawing helper, browser study and
   license into a new project directory. Skill installation and invocation now distinguish
   the installed resource root from the user's project, with a dedicated installation guide.
@@ -70,6 +81,8 @@ All notable changes to Design Pipeline are documented here.
 - Timeline gate: tweens that only animate opacity no longer carry a planned continuation, morph or
   camera-carry handoff; overlapping fades (a dissolve) now give `handoff-not-carried`.
 - `film score` removes its temporary download folder when a render fails.
+- `designer-pipeline evidence capture` honors `--timeout-ms` above 60 s: the public CLI killed the
+  capture kernel after a fixed 60 s; it now allows the requested capture time plus 30 s.
 
 ## [0.12.0-beta.1] - 2026-09-29
 

@@ -48,7 +48,10 @@ function liveHtml() {
 <script>
 var card = document.getElementById("card");
 var target = 0, x = 0, velocity = 0;
-window.addEventListener("mousemove", function (event) { target = event.clientX - 200; });
+// A fresh headless page has its pointer parked at (0,0), and Chrome may send a mousemove there by
+// itself once the page has laid out; whether it lands before the recording is a race. The card
+// follows only moves that actually travel, so that stray event cannot pull it off its rest box.
+window.addEventListener("mousemove", function (event) { if (event.movementX || event.movementY) target = event.clientX - 200; });
 function tick() {
   velocity = (velocity + (target - x) * 0.14) * 0.78;
   x += velocity;

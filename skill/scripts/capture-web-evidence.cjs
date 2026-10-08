@@ -2,13 +2,16 @@
 "use strict";
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { fail, jsonResult, pathInside } = require("./contract-utils.cjs");
 
+const AGENT_BROWSER_ADAPTER = fs.realpathSync(path.join(__dirname, "..", "adapters", "agent-browser.cjs"));
+
 function parseArgs(argv) {
-  const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module"]);
+  const allowed = new Set(["--project-root", "--adapter-path", "--output-root", "--url", "--width", "--height", "--timeout-ms", "--playwright-module", "--agent-browser", "--agent-browser-state", "--chrome"]);
   const result = {};
   for (let index = 0; index < argv.length; index += 1) {
     const name = argv[index];
@@ -59,13 +62,21 @@ function validatedUrl(raw) {
   return url.href;
 }
 
-function optionalModule(projectRoot, raw) {
+// Tools an adapter runs or loads are project-installed: they must resolve inside the project root.
+function optionalProjectTool(projectRoot, raw, name) {
   if (!raw) return null;
   const candidate = path.resolve(raw);
-  if (!fs.existsSync(candidate)) fail("evidence capture", "--playwright-module does not exist");
+  if (!fs.existsSync(candidate)) fail("evidence capture", `${name} does not exist`);
   const real = fs.realpathSync(candidate);
-  if (!pathInside(projectRoot, real)) fail("evidence capture", "--playwright-module must stay inside --project-root");
+  if (!pathInside(projectRoot, real)) fail("evidence capture", `${name} must stay inside --project-root`);
   return real;
+}
+
+function optionalExecutable(raw, name) {
+  if (!raw) return null;
+  const candidate = path.resolve(raw);
+  if (!fs.existsSync(candidate) || !fs.statSync(candidate).isFile()) fail("evidence capture", `${name} must be an existing file`);
+  return fs.realpathSync(candidate);
 }
 
 function capture(options) {
@@ -77,13 +88,31 @@ function capture(options) {
   const height = positiveInteger(options["--height"] || 720, "--height", 16384);
   const timeout = positiveInteger(options["--timeout-ms"] || 30000, "--timeout-ms", 300000);
   const url = validatedUrl(required(options, "--url"));
-  const playwrightModule = optionalModule(projectRoot, options["--playwright-module"]);
+  const playwrightModule = optionalProjectTool(projectRoot, options["--playwright-module"], "--playwright-module");
+  const agentBrowser = optionalProjectTool(projectRoot, options["--agent-browser"], "--agent-browser");
+  // Saved browser state (cookies and localStorage from `agent-browser state save`) for pages that only
+  // show the surface under review after it is restored. Like the tools, it must resolve inside the
+  // project root. Only the packaged agent-browser adapter loads it, so it is refused before any other
+  // adapter starts and silently ignores it.
+  const agentBrowserState = optionalProjectTool(projectRoot, options["--agent-browser-state"], "--agent-browser-state");
+  if (agentBrowserState && adapterPath !== AGENT_BROWSER_ADAPTER) fail("evidence capture", "--agent-browser-state needs --adapter-path <skill>/adapters/agent-browser.cjs, the only adapter that loads it");
+  if (agentBrowserState && !agentBrowser) fail("evidence capture", "--agent-browser-state requires --agent-browser");
+  if (agentBrowserState && !fs.statSync(agentBrowserState).isFile()) fail("evidence capture", "--agent-browser-state must be a file");
+  const chrome = optionalExecutable(options["--chrome"], "--chrome");
   const stage = `${outputRoot}.tmp-${process.pid}`;
   if (fs.existsSync(stage)) fail("evidence capture", `stale capture stage exists: ${stage}`);
   fs.mkdirSync(path.dirname(outputRoot), { recursive: true });
   if (!pathInside(projectRoot, fs.realpathSync(path.dirname(outputRoot)))) fail("evidence capture", "--output-root parent resolves outside --project-root");
   fs.mkdirSync(stage);
+  let stateSnapshot = null;
   try {
+    // The bytes are read once and the adapter loads this private copy, so the sha256 in the receipt is
+    // the state the browser started from even if the project file changes during the capture. It lives
+    // in the system temp directory, not the stage, because state files can hold session cookies.
+    if (agentBrowserState) {
+      stateSnapshot = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-state-"));
+      fs.writeFileSync(path.join(stateSnapshot, path.basename(agentBrowserState)), fs.readFileSync(agentBrowserState), { mode: 0o600 });
+    }
     const request = { schema: "design-pipeline.web-evidence-request.v1", url, viewport: { width, height }, outputRoot: stage };
     const env = {
       PATH: process.env.PATH || "",
@@ -92,6 +121,9 @@ function capture(options) {
       TMP: stage,
       DESIGN_PIPELINE_ADAPTER: "1",
       ...(playwrightModule ? { DESIGN_PIPELINE_PLAYWRIGHT_MODULE: playwrightModule } : {}),
+      ...(agentBrowser ? { DESIGN_PIPELINE_AGENT_BROWSER: agentBrowser } : {}),
+      ...(stateSnapshot ? { DESIGN_PIPELINE_AGENT_BROWSER_STATE: path.join(stateSnapshot, path.basename(agentBrowserState)) } : {}),
+      ...(chrome ? { DESIGN_PIPELINE_CHROME: chrome } : {}),
     };
     const child = spawnSync(process.execPath, [adapterPath], { input: JSON.stringify(request), encoding: "utf8", env, timeout, windowsHide: true, maxBuffer: 4 * 1024 * 1024 });
     if (child.error) fail("evidence capture", child.error.message, { code: child.error.code === "ETIMEDOUT" ? "ADAPTER_TIMEOUT" : "ADAPTER_FAILED" });
@@ -107,6 +139,7 @@ function capture(options) {
     return receipt;
   } finally {
     if (fs.existsSync(stage)) fs.rmSync(stage, { recursive: true, force: true });
+    if (stateSnapshot) fs.rmSync(stateSnapshot, { recursive: true, force: true });
   }
 }
 

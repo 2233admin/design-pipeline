@@ -205,8 +205,9 @@ The browser runner is an evidence port, not a source of authority. For dynamic w
 5. Capture the applicable DOM, screenshot, console, accessibility, network, and performance artifacts.
 6. Bind artifacts to hashes and record missing or degraded capabilities explicitly.
 
-`adapters/playwright.cjs` is the project-owned implementation. A static screenshot cannot replace
-behavioral evidence.
+`adapters/agent-browser.cjs` fills every artifact (axe-core accessibility, network, Web Vitals);
+`adapters/playwright.cjs` leaves accessibility, network and performance `unknown`. Options and usage:
+[`web-evidence-adapter.md`](web-evidence-adapter.md). A static screenshot cannot replace behavioral evidence.
 
 ### Public CLI Surfaces
 

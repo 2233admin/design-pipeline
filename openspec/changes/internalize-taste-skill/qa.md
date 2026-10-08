@@ -92,3 +92,30 @@ and the dedicated branch; no substitute remote tracker was created.
 - GitHub/Linux CI and Safari/Firefox were not run. Full QA applies to the isolated
   implementation commit above; unrelated original-workspace changes were not included
   in that full run. The branch has not been merged into the default branch.
+
+## PR preparation: merge of current main
+
+On 2026-10-08 the publication branch was synchronized with main
+`7205ee80f1328ce85550bc3fd18a1f8d3f91f799` before opening the PR. The only
+manual conflict was CHANGELOG.md; both source-internalization and agent-browser entries
+were retained. Incoming saved-state capture, long capture timeout and pointer-fixture
+changes remain intact. This does not merge the feature into the default branch.
+
+Post-merge verification: 34/34 agent-browser, interaction-capture, CLI-routing and receipt
+tests; 14/14 web-evidence and interaction-CLI tests; 16/16 selected native workflow cases
+covering dispatch, self-report rejection, canonical roots, actual page/menu verification
+and protected output collisions. All 64 passed without skips. Strict specs passed 54/54.
+The test manifest covers all 112 test files and all 907 required package resources exist.
+An independent read-only review found no direct semantic conflict between the two
+capture kernels or the automatically merged public CLI.
+
+The 1,042-test full QA above predates this merge and remains bound to a64d7b1; it is not
+a full-run result for the merged tree. The PR CI must establish that result. The original
+dirty workspace was not updated with incoming main changes during PR preparation.
+
+Local evidence hashes:
+
+- `pr-main-integration-tests.log`: `0ba2853430ebd95225fd4269dfd0b79b8c9197c4f36396b1c6955e945594bb84`.
+- `pr-evidence-boundary-tests.log`: `3b190e708fb77ede9b6a53c663485b489a8d2ff5f518a6da1d54a26cfd50460d`.
+- `pr-native-merge-tests.log`: `e035e0d1c89151daa883ee8fe5c8bfd0e17bb4ef1e80b4c70f2cc78efa20d30a`.
+- `pr-main-integration-specs.log`: `86cdacbcc4f68a9f4e25a8d63c4bbfb491ff2d7e3bc30a4f5bba796ae40ba45c`.
