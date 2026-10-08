@@ -55,6 +55,10 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   unresolved dependencies; `reference` points to `reference.md`. Patterns: `film-choreography/`.
 - The scaffold is an editable example. Replication cannot advance with its unchanged beats even
   if the structure check passed; changing reference notes also reopens the existing plan check.
+- For selected concept/technique or real brand/component discovery, read [film-methods.md](film-methods.md).
+  `film methods --project-root . --input plan.json --write` records the selected full recipes and
+  actual source hashes, and installs bounded motion primitives for the current fps. It consumes
+  the existing storyboard and does not create another renderer, gate or acceptance result.
 - In replicate mode fill `storyboard.json.rendering` from the reference: route, requirements,
   reason and material sample times. The storyboard gate rejects incapable declared routes.
 - Carry: every beat whose handoff is `continuation`, `morph`, `camera-carry` or `match-cut` names

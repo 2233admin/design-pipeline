@@ -124,6 +124,8 @@ CSS 写作和审查内置 [Good CSS](skill/references/good-css.md)：完整保�
 
 视觉设计内置 [Taste-Skill 的全部 13 项能力](skill/references/taste-skill.md)：前端方向、截图还原、旧项目改造、风格设计、完整交付、Stitch、网页/移动端生图和品牌视觉。根据任务选择对应指南，完整原文随工具发布；无需另装 Taste 技能。生图仍使用宿主提供的图像生成工具。
 
+影片任务内置 [Cinetic 与 Product Film 方法](skill/references/film-methods.md)：完整锁定来源、真实品牌与组件复用、显式技法选择和可配置帧率的动效实现，沿用既有 HyperFrames 与影片验证。[Prompt Motion 案例入口](skill/references/prompt-motion.md)记录作者、原仓库及观察限制；普通 UI/CSS 任务仍按原流程执行。
+
 ## 从 GitHub Release 安装
 
 如果不想克隆仓库，直接下载最新正式版 `v0.10.0` Release 的资产（预发布版资产在发布后见 Releases 页面）。需要 Node.js 22 或更新版本。

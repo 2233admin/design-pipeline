@@ -46,6 +46,7 @@ const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
+const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
 const { scaffoldVisualCraft } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
@@ -405,6 +406,7 @@ function publicHelp() {
     "  composition scaffold --output <new-dir> [--template visual-craft]",
     "  composition compare --source <png> --image <png> --output <new-dir>",
     "  film scaffold --output <dir> [--template default|motion-study] [--replace]",
+    "  film methods --project-root <dir> --input <plan.json> [--write] [--replace]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>]   (one next step)",
     "  decide --project-root . --stage intake|reference|concept|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
@@ -1993,6 +1995,19 @@ const COMMANDS = {
   "design-code-map": { actions: { check: { required: ["--artifact"], run: designCodeMapCheckCommand } } },
   film: {
     actions: {
+      methods: {
+        required: ["--project-root", "--input"],
+        run: ({ parsed, root }) => {
+          try {
+            return { result: prepareFilmMethods(contained(root, option(parsed, "--project-root"), "--project-root"), readJson(contained(root, option(parsed, "--input"), "--input"), "film methods request"), {
+              root, write: option(parsed, "--write") === true, replace: option(parsed, "--replace") === true,
+            }), exitCode: 0 };
+          } catch (error) {
+            if (error.code === "STORYBOARD_FAILED") return { result: error.details.result, exitCode: 2 };
+            throw error;
+          }
+        },
+      },
       scaffold: {
         required: ["--output"],
         run: ({ parsed, root }) => ({ result: scaffoldFilm(contained(root, option(parsed, "--output"), "--output", false), { template: option(parsed, "--template"), replace: option(parsed, "--replace") === true }), exitCode: 0 }),

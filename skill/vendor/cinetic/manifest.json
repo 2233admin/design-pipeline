@@ -1,0 +1,1021 @@
+{
+  "schema": "design-pipeline.cinetic-source.v1",
+  "source": {
+    "repository": "https://github.com/Leonxlnx/cinetic",
+    "revision": "bee5d7807205d5543472c38312507f9bf366cbbf",
+    "gitTree": "6bf9bcdfbc1af302f3d9233f7438bc0d38d4dfc1",
+    "committedAt": "2026-10-05T01:31:39+02:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-09",
+    "scope": [
+      "**"
+    ]
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Leonxlnx"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 137,
+    "byteCount": 2645694,
+    "treeSha256": "08a00027789a3452f030919e8c2d3ababdf44162c1934dfa9a45b35c505c9a75",
+    "executableFiles": [
+      "skills/cinetic/scripts/accumulate.py",
+      "skills/cinetic/scripts/add-font.mjs",
+      "skills/cinetic/scripts/brand-kit.sh",
+      "skills/cinetic/scripts/check-sync.py",
+      "skills/cinetic/scripts/deliver.sh",
+      "skills/cinetic/scripts/dither-gradient.py",
+      "skills/cinetic/scripts/grab.sh",
+      "skills/cinetic/scripts/hf-finish.sh",
+      "skills/cinetic/scripts/layout-audit.sh",
+      "skills/cinetic/scripts/measure-speed.py",
+      "skills/cinetic/scripts/new-film.sh",
+      "skills/cinetic/scripts/probe.py",
+      "skills/cinetic/scripts/render-chunks.sh",
+      "skills/cinetic/scripts/render.sh"
+    ],
+    "objects": [
+      {
+        "path": ".claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "a9c3956296a12b0e0b8f316e90e75a1921d5e328",
+        "size": 518,
+        "sha256": "ccc0a1dca9b17822230436cf545f26e1afee0de126214f6feb86231c817fe03d"
+      },
+      {
+        "path": ".claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "c1143c8a1632cffa1e1894bc54e410fd5149652f",
+        "size": 638,
+        "sha256": "e2516770fadfedfde684f38f54fec1d92fa4ef401dc6c919ad6de359b8846c0e"
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "mode": "100644",
+        "oid": "bd4e85f167aa63ff4b93a3c386915638b49c3ebf",
+        "size": 8395,
+        "sha256": "ed1f8f1110cb39e9078c7570e93765caeac5a438d450e09eefc104e02f24627f"
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "mode": "100644",
+        "oid": "9e295b485c2ecec8d98ae2a74acfe791f5409620",
+        "size": 10912,
+        "sha256": "5d78f3bc292011b3fd8b6626356513ea71810d81b4c158144208803688873b80"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "oid": "dd8156219d2749fbdd71cdbf3b4de6faaebc9ee6",
+        "size": 192,
+        "sha256": "be50387e08a6317a24993ebe9412c28ecc1fed1705becfd77638a4cfbf34f5c1"
+      },
+      {
+        "path": "CHANGELOG.md",
+        "mode": "100644",
+        "oid": "805eef4e4fd21322e21090178484e587ad410906",
+        "size": 34405,
+        "sha256": "61e3d937ce2583192f379fa04f1eaafd3a6423d167d7f8154b16bd7476d3cf5c"
+      },
+      {
+        "path": "docs/brand/avatar.png",
+        "mode": "100644",
+        "oid": "449b4665f52532a4918225de5a267f238e9aa7e7",
+        "size": 7704,
+        "sha256": "99bee72ec93bcac3c07f922303a97d55e54337a959191ab7989d0fe1bc78d50f"
+      },
+      {
+        "path": "docs/brand/lockup-dark.png",
+        "mode": "100644",
+        "oid": "e26b33814dde09868adfe8a510f7ae1aa353a2e8",
+        "size": 27833,
+        "sha256": "e992d0f9ba237da24a41b99788cec337d5e2f58f26c6ed852ec60ee6272fd2c4"
+      },
+      {
+        "path": "docs/brand/lockup-dark.svg",
+        "mode": "100644",
+        "oid": "428d9cc0f807b8297e749f7f278734c80cf058bd",
+        "size": 3527,
+        "sha256": "2b8e59502bf944a7ae5cc2ea0708533306b15fc036ca402b0bf7e8b7686bac35"
+      },
+      {
+        "path": "docs/brand/lockup-light.png",
+        "mode": "100644",
+        "oid": "bf012971738cb9d8389a16fd7e725a202b43ba35",
+        "size": 29646,
+        "sha256": "b0b11cee8d6d0d78cd02e60e0f99ecf423818895baf5d03990c77cd8d713951c"
+      },
+      {
+        "path": "docs/brand/lockup-light.svg",
+        "mode": "100644",
+        "oid": "a56370c5538f5f59aa3753478c1f221c6cca9446",
+        "size": 3527,
+        "sha256": "ce6edc0e3c79cf51880b62ea44a0b8c7bb1174de7acfa90094c96b54f7d26728"
+      },
+      {
+        "path": "docs/brand/mark-16.png",
+        "mode": "100644",
+        "oid": "54fe84f18177380441811692d5e95f388af88f4c",
+        "size": 427,
+        "sha256": "b5371fd3e65adeb72699161532f07f808731547bc4e77333a78bf69a86d531cf"
+      },
+      {
+        "path": "docs/brand/mark-32.png",
+        "mode": "100644",
+        "oid": "c62bee46324dc081f565fb02a8b3cdd2453e3ce6",
+        "size": 777,
+        "sha256": "a469a9992b9ea5d415c1e4905d44e1eaa9616c4bcb838a384166813e2ba3c688"
+      },
+      {
+        "path": "docs/brand/mark-512-dark.png",
+        "mode": "100644",
+        "oid": "c859f593e674c3d7f052024d4766f0448d472dcb",
+        "size": 20384,
+        "sha256": "72cbcdade8f60ddf570057709f207a87029d21954c3e999e6b0cdc9b0de5c639"
+      },
+      {
+        "path": "docs/brand/mark-512.png",
+        "mode": "100644",
+        "oid": "4b42995e9dd9ca0a02004912acdbe6ca38580e23",
+        "size": 20528,
+        "sha256": "d6534eb41cf53482af6f2f18f6a1f87c9cea1ab1f3daa5fa9a69a119f38dc2e9"
+      },
+      {
+        "path": "docs/brand/mark-dark.svg",
+        "mode": "100644",
+        "oid": "e2a7667a85c56ffec97b5f3eea6d5b5253481f17",
+        "size": 567,
+        "sha256": "fd68045c7c7b49da3dc237f5967d108d91ddec3105c5ac8262ed4ae141a1c475"
+      },
+      {
+        "path": "docs/brand/mark-light.svg",
+        "mode": "100644",
+        "oid": "a3701dab0d6c6a70208568772b9632e157ea34e5",
+        "size": 567,
+        "sha256": "81b4a2e5f370fbc66f66227e638946169acc6ba5b3a716183c65c441252b998c"
+      },
+      {
+        "path": "docs/brand/README.md",
+        "mode": "100644",
+        "oid": "1555ea31c02b0876611a6d77949592a6c630fe63",
+        "size": 1936,
+        "sha256": "46563254956f23b555c0aa09a2f5c06f7dff104e4e8788f71ab4eb26e25eb833"
+      },
+      {
+        "path": "docs/brand/x-header.png",
+        "mode": "100644",
+        "oid": "8ac365ac2e6df09e541de2aea7ab47098bce5a56",
+        "size": 21668,
+        "sha256": "95cdfffb0c28a910c66cb009867879b1320b53b1dce7bd7197cea57102c3aeef"
+      },
+      {
+        "path": "docs/evaluation.md",
+        "mode": "100644",
+        "oid": "4c674db3450d46c8a8da36dd1892864927151da5",
+        "size": 21702,
+        "sha256": "b8dd0b2f9163d66f4154034712b7c3858a932b77cb6aa0db589d58738bfd87e2"
+      },
+      {
+        "path": "docs/setup.md",
+        "mode": "100644",
+        "oid": "8d97008be935177e0db295ba37aa0f504412613c",
+        "size": 34578,
+        "sha256": "72db4f582692f4d655985febbbfcf3b4e7d9dac0fb7abc818ec452e6a09b3b81"
+      },
+      {
+        "path": "evals/evals.json",
+        "mode": "100644",
+        "oid": "1823a318e9a4f6850d89a44ab9e2821a5d0d71d7",
+        "size": 8341,
+        "sha256": "59d54fae8de0538706546eb94d43ab5b8bf671f35bc8659da6ce7feca01e8600"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "48a2f6640b81ff8eca9ce7f6a96337692713ef5b",
+        "size": 1065,
+        "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "0d11c90cfa9fe0180550dee885df8c6070a4c5c8",
+        "size": 27795,
+        "sha256": "6801b314e3daec4202ece74b794b8991ccc02d7a0223bdf24fc342197b11658c"
+      },
+      {
+        "path": "skills/cinetic/assets/critics/art-copy-ui.md",
+        "mode": "100644",
+        "oid": "2710350a11aefe9f1c544ccd6b8fa261a11fc046",
+        "size": 10069,
+        "sha256": "50231cd58e0ccbdfe7c4f226854350420e01d75017e3594f66620a6050acc713"
+      },
+      {
+        "path": "skills/cinetic/assets/critics/director.md",
+        "mode": "100644",
+        "oid": "9ef861a8bb745903620a86099cf72ea7e48a2ee5",
+        "size": 9088,
+        "sha256": "0627d62d85b67e788f3a2457717d2434fea7d9937ce269968a48b85082adb9ce"
+      },
+      {
+        "path": "skills/cinetic/assets/critics/forensics.md",
+        "mode": "100644",
+        "oid": "d60f0053c0ecc57a88a334aa1678a7058c5c6816",
+        "size": 5604,
+        "sha256": "01a63a798f6de2d4b6ab089ca303360af6320aafd2f22a5efd1e970b7d7ab656"
+      },
+      {
+        "path": "skills/cinetic/assets/critics/sound-sync.md",
+        "mode": "100644",
+        "oid": "c4d98869df19ca15b36b08ac766e5c96709277cb",
+        "size": 8289,
+        "sha256": "1f139af542c60c7726b2585e3f05ac13060c3596a060d0f9394eeaae5550c4ac"
+      },
+      {
+        "path": "skills/cinetic/assets/critics/verifier.md",
+        "mode": "100644",
+        "oid": "c91821a80ddd2c829ef9aa5289a7c2d8b2d24d56",
+        "size": 3599,
+        "sha256": "916a2ee594699b5c0dd750deddd3c4292af48d9f919d0c236aa930258e65437a"
+      },
+      {
+        "path": "skills/cinetic/assets/hyperframes-starter/audio/score.json",
+        "mode": "100644",
+        "oid": "8d3a2fcf2a202c23e6c8997f8ec3545641a54096",
+        "size": 606,
+        "sha256": "07d7383bc0ede354b6f6214e81bef0cbc0d184546900c7d1fb48e2bc04c0fbd0"
+      },
+      {
+        "path": "skills/cinetic/assets/hyperframes-starter/fonts/README.md",
+        "mode": "100644",
+        "oid": "1978e2a90d78cc45168b253de537fb5ece2a6709",
+        "size": 2706,
+        "sha256": "fae2b209f1e7075d68053a1fc3589bed13a851ddb56b240b91fcbe073125e4be"
+      },
+      {
+        "path": "skills/cinetic/assets/hyperframes-starter/index.html",
+        "mode": "100644",
+        "oid": "5e6f26236aab8498bb9bd5527518968f3e55f878",
+        "size": 8044,
+        "sha256": "5693da9a8821cc2977832c6ac16f19ad7dbed9f104bdf77ca32f75543d50640e"
+      },
+      {
+        "path": "skills/cinetic/assets/hyperframes-starter/motion.js",
+        "mode": "100644",
+        "oid": "8c293b304876a5f9b3cb3efdbfe96a702fabe5db",
+        "size": 13392,
+        "sha256": "dff9de86e2752d06560226379e003696ba81258c3695ed9522a6d18b85d5894e"
+      },
+      {
+        "path": "skills/cinetic/assets/hyperframes-starter/package.json",
+        "mode": "100644",
+        "oid": "dab7d5279f74c5fd87ee391e3411bbc3b1ad39b3",
+        "size": 942,
+        "sha256": "9214153c01fe2f0a95b38f72b92f1f55e17320468677552b1a7f3547997268eb"
+      },
+      {
+        "path": "skills/cinetic/assets/hyperframes-starter/setup.mjs",
+        "mode": "100644",
+        "oid": "19c5b2b501b042946823818ddda55d16e0b7e77d",
+        "size": 1365,
+        "sha256": "8bb7ae4094ad9f202572e9c93f425cb8f6410d4803ecbb3aab04241aaac70816"
+      },
+      {
+        "path": "skills/cinetic/assets/hyperframes-starter/timeline.js",
+        "mode": "100644",
+        "oid": "91419fe1983c6c8c4b5085828866a0425dded9ee",
+        "size": 3961,
+        "sha256": "6100cb81899071884ac5938bd0fce1e5ea6c5a6a341452b3e3822aacd2e0b89f"
+      },
+      {
+        "path": "skills/cinetic/assets/library/techniques.json",
+        "mode": "100644",
+        "oid": "37e7b9bd80539285dbd0e0a0af51f9b0c883155c",
+        "size": 524625,
+        "sha256": "d8d936571cfcbf884002130004f02845f514d6d2d36cfa5676114afc6fc0992b"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/.gitignore",
+        "mode": "100644",
+        "oid": "ab6c807323d1c14e0ec59055cd8703c443dac73e",
+        "size": 83,
+        "sha256": "a190623e97acb5cdf9825681a0df3d091e3b32aae4ed9ee32f0528d8b128a602"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/audio/score.json",
+        "mode": "100644",
+        "oid": "1b20db6794c0722e8c79a66e2483846b2f90057a",
+        "size": 681,
+        "sha256": "3aa7ca6c46068f54c0f2ab8bc38b88f784377fd5961b357fdd9af50bf7ec3768"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/package.json",
+        "mode": "100644",
+        "oid": "eb991b0cf1daf6daeb6b1b30e9ea8eec3e301881",
+        "size": 1803,
+        "sha256": "ab0ecab7b3fb3ec39c97ba3e91cc6ed98f2da3834909c55093e935d86360b28a"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/public/audio/.gitkeep",
+        "mode": "100644",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/remotion.config.ts",
+        "mode": "100644",
+        "oid": "b7a68d3768e7e3ac3bf864cab5b7376a028699ed",
+        "size": 2268,
+        "sha256": "e83cd51d19c7dad314f2a998e22dabbca72907d6168c7f360711cce77bc2001c"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/acts/Act1.tsx",
+        "mode": "100644",
+        "oid": "4c7094f9d22558612e5df8679c38246d05cff73d",
+        "size": 6750,
+        "sha256": "bbdc08d26d6e942abac47894bafbb19dfdd535929bb5a757af44b53707d48760"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/acts/Act2.tsx",
+        "mode": "100644",
+        "oid": "ff7076a012b5e32e09f3c63081536755951bfba3",
+        "size": 6205,
+        "sha256": "0a2be8b1cc28e4eaafa51862a5e3eb1356fd53625dbb7bb00075b8ae43630288"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/blur.ts",
+        "mode": "100644",
+        "oid": "08be32b9a7627e254c8552a8eb7e168c07de33d0",
+        "size": 1924,
+        "sha256": "6760976b0a54aec8a1e47a317f3617d1b0e71905dbd7f7b434f83a8c70a7b750"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/brand/fonts.ts",
+        "mode": "100644",
+        "oid": "60819a5ae11aade93bcf96de003c40c3cdb8bffc",
+        "size": 635,
+        "sha256": "5c896d31f117ca16cbebb3412f2102e4ac5a305483006cac49f5e5214276d5f9"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/brand/Mark.tsx",
+        "mode": "100644",
+        "oid": "740941f1c62d447adfa6f9e9f79cad257185b6fa",
+        "size": 3149,
+        "sha256": "639aa98482171c6a6e10231f5f5fdc00c06bcedfdb1364ee0c15daeeb68d0590"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/brand/tokens.ts",
+        "mode": "100644",
+        "oid": "b2881c5f8e3da33ee0de39821c9a952c960fcb08",
+        "size": 3673,
+        "sha256": "7a437a26d030c610c33f8f2efd0777645a752b990baee306d51d9a5528c138a5"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/Film.tsx",
+        "mode": "100644",
+        "oid": "0ad51640d86c29ac01d5207128c1e4e6b9b0eccc",
+        "size": 1535,
+        "sha256": "dcb63f4409c2a938138771c5c9dab27171b5d52d34973f68c0626b71e1694c15"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/FilmSub.tsx",
+        "mode": "100644",
+        "oid": "765a5fd1e61291162e80929e98a8a6649757ae07",
+        "size": 1234,
+        "sha256": "9577052b61dbfda8bfd6865c3d2c26c26148da7fa490ed93f34f9ba8698f497b"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/Cursor.tsx",
+        "mode": "100644",
+        "oid": "f838aecf4cc4182710d0824062ea96cef55f9924",
+        "size": 1966,
+        "sha256": "5280ea14b624d97c6694f374e16e02e9787a53e5849e5b870886bb7a4d5be3a1"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/Iris.tsx",
+        "mode": "100644",
+        "oid": "93c0c5e7572ac931dc8610aa46ada2abf41e15d2",
+        "size": 4135,
+        "sha256": "a2fc1d002d815b746c7d4b51888e258eaf9c02f3c3bbc8201d8e4331f59eeec8"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/MaskRise.tsx",
+        "mode": "100644",
+        "oid": "068c93148055860d66d06faed4c41debcfb3e6eb",
+        "size": 4463,
+        "sha256": "619d846dd0f529ea75b7bed2989e39a0008c4662edbf72304bba10aadb56f73f"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/Morph.tsx",
+        "mode": "100644",
+        "oid": "bf1d8c09cf9931338c05997fa84a89b116017a26",
+        "size": 4946,
+        "sha256": "1e4f9c5f4f46ff0d0e1f3a0ccac138e57a8c439beec45f3d1804bcc5df218c62"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/RackFocus.tsx",
+        "mode": "100644",
+        "oid": "7c6d917464b901b6b6b2278c8ab237579dcab53a",
+        "size": 1772,
+        "sha256": "a87e12816ecb107c156b042e67f1317cb4f91c39b43ed7570ebe9f0dbbf21606"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/Roll.tsx",
+        "mode": "100644",
+        "oid": "cec6a98d7484283e7e646886aef94b8ca45502ec",
+        "size": 6005,
+        "sha256": "6e7ac08ffd178e1fcbdf5ac10a1712dc0bd1f111c54d7b3d477b1762228ac1ad"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/Scramble.tsx",
+        "mode": "100644",
+        "oid": "d1018a607c51bea6747d04d00f58e03f38563db5",
+        "size": 6063,
+        "sha256": "cde638639d855a0f4add37b40366a829a5a8d53c2eeeeb776b5e5a5feb7a3411"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/TypeOn.tsx",
+        "mode": "100644",
+        "oid": "ab20d1a7c004ff4aa19cb24a86d5872f155289c9",
+        "size": 6733,
+        "sha256": "27c228ee527e6390974516f5bcca660f813e02f6e5fd630745a462edc8a72338"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/fx/Words.tsx",
+        "mode": "100644",
+        "oid": "fe15a8670ec05d96150c884bd4a4d60b2def8aa1",
+        "size": 2903,
+        "sha256": "87dff082ae1da892e2c99911e3a3dd4f1b374ee8d0480451c3d9c5bfdd54d2d9"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/index.ts",
+        "mode": "100644",
+        "oid": "91fa0f3468e91d9cd078de3983976508c3c020e5",
+        "size": 109,
+        "sha256": "8ad7cfb50e32546485a1a2ef5e468e5b6bdee2bc5c9b92d08882f96e3750b4a3"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/lib/anim.ts",
+        "mode": "100644",
+        "oid": "fb97efab1d21eda4e8c28a1931927ed3ddcc2a41",
+        "size": 9547,
+        "sha256": "d32b666f62504597d64a777a324a08c1c3db526218d5643208dad68294832646"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/lib/Audit.tsx",
+        "mode": "100644",
+        "oid": "b2696fc60159761d418e581cbcea9b4ce1ef3853",
+        "size": 6919,
+        "sha256": "46d52db9dfe8e62eac012c5bc70a0cf42fcd7279d277ad240699b9f47162a7d2"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/lib/camera.ts",
+        "mode": "100644",
+        "oid": "7cd561afaaf94e8f88fd8cacb727a6edbb18177a",
+        "size": 4290,
+        "sha256": "ddc0bb6273ef058ffad4a9fff1325a242331deafcbbeaa0fc82a2b3b60deb39a"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/lib/color.ts",
+        "mode": "100644",
+        "oid": "aef59831624f73a0c73c1434e40865bfa0adc997",
+        "size": 2311,
+        "sha256": "de0c2305c3ac3338b6ae80e5eae8f3c93a71ffffeb9fe4c05c3ef9916b8acb0c"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/lib/FontGate.tsx",
+        "mode": "100644",
+        "oid": "a16aa410f102391305cf9fa8e1460a9858477466",
+        "size": 1517,
+        "sha256": "672ff63e523adc04dabbc61750d517bd1813a4b615d5461e3815892268d1ed06"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/lib/measure.ts",
+        "mode": "100644",
+        "oid": "69187e1fd7da2e312da12dc503c22f7f776d50e8",
+        "size": 3051,
+        "sha256": "b060a7b06fe673160c3cb4127af8ab9b2829df6ca97ac090173dc890af3dc2ea"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/lib/safe.ts",
+        "mode": "100644",
+        "oid": "2f42cf4badc00b3629b1c3ebe318cc1743789aca",
+        "size": 3813,
+        "sha256": "4bff8e4ef7d207bd37aac5bed164dfaa56e3b0b28373971ce38cb9fad1e55f26"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/lib/sync.ts",
+        "mode": "100644",
+        "oid": "bae328f553d1d13763049da3e03ed8db6eac6987",
+        "size": 1768,
+        "sha256": "01df082be0b0e4d9eeb081e159c70dad1378346ca057bbafce71a2a117ef163c"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/Root.tsx",
+        "mode": "100644",
+        "oid": "a07eb080452e7fe50f411f30cfddd435f793b84a",
+        "size": 3172,
+        "sha256": "7cccd3580c3bff9ddb6934f780c88a39c1226bee3ed5de0d1a2b300b109af006"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/Stills.tsx",
+        "mode": "100644",
+        "oid": "7dbf33eef6527469258e21ab4e3d3ab6e2f5e667",
+        "size": 3788,
+        "sha256": "7bb87478ffe4a3895ae3a14e74c97715bff1267731fda28260001b2cda64d276"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/sync.ts",
+        "mode": "100644",
+        "oid": "cc955d323eaefccbc8b4dd1397b7ab09e2b779cb",
+        "size": 5768,
+        "sha256": "661c5cc702e8645ebb7ad7e8d0edd0413622531dfdf92328860b7e05d4a4b42e"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/src/timeline.ts",
+        "mode": "100644",
+        "oid": "91354cbbc3209cfdebee481aad6771ad5102dbba",
+        "size": 4018,
+        "sha256": "c6702417ef30d69fe077590eab83a18a037be42b2b15791479c71dc66d37efcf"
+      },
+      {
+        "path": "skills/cinetic/assets/remotion-starter/tsconfig.json",
+        "mode": "100644",
+        "oid": "fb47f3fd13d1d082d73ab2e8fe25489743410f89",
+        "size": 344,
+        "sha256": "859343141cd4a962364919d9e1192f716b54430dc8f05ea6b5cdfac8d9fb4fff"
+      },
+      {
+        "path": "skills/cinetic/assets/TREATMENT.md",
+        "mode": "100644",
+        "oid": "7b9d35741420a379877870e34dcee553ea007ae2",
+        "size": 14051,
+        "sha256": "c132b26bfebe8515748a215afee697bb5e2f5689ab9be2f79b3a37a981a028fc"
+      },
+      {
+        "path": "skills/cinetic/LICENSE.txt",
+        "mode": "100644",
+        "oid": "48a2f6640b81ff8eca9ce7f6a96337692713ef5b",
+        "size": 1065,
+        "sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df"
+      },
+      {
+        "path": "skills/cinetic/references/brand-and-color.md",
+        "mode": "100644",
+        "oid": "a5d756d6df60d5fe9401582036255dbf329e2c88",
+        "size": 40843,
+        "sha256": "b2dc37e9abf5f717f84e92b7584a7eb18fbe9b01990d8adf79fa50f931013e5c"
+      },
+      {
+        "path": "skills/cinetic/references/camera.md",
+        "mode": "100644",
+        "oid": "da09931efb1c68927b48fa918e848c6b3d2976ec",
+        "size": 14664,
+        "sha256": "7b7a77f46e38b9e3c6d61a6eedd5fb1b2d5ecb97794e45a3b71ee6666b2e0216"
+      },
+      {
+        "path": "skills/cinetic/references/chromium-rendering.md",
+        "mode": "100644",
+        "oid": "960abce6e201518a9f91d88bf7c616aa64717500",
+        "size": 16628,
+        "sha256": "1c4e1686e7890bb3e0bd52bbcb3a2303ff46fe97a6aa71755cac92bd0537a6ce"
+      },
+      {
+        "path": "skills/cinetic/references/concept-and-story.md",
+        "mode": "100644",
+        "oid": "55b0b6df0a9ce53ba77e1d95d5736ebb69ed6ab2",
+        "size": 27885,
+        "sha256": "7a6d57401b97824ac9f422b2c977983491e2391c3b398d2fd24919ba83e2449f"
+      },
+      {
+        "path": "skills/cinetic/references/copy-and-type.md",
+        "mode": "100644",
+        "oid": "50263f21c2259546712262a272dce7fcb5acfd5b",
+        "size": 28488,
+        "sha256": "5c01704062d6c4dc19eaeaa67e301d5ab073ac961123aa89076c5ebb2af2e2c2"
+      },
+      {
+        "path": "skills/cinetic/references/craft-rules.md",
+        "mode": "100644",
+        "oid": "315cef45cfb2bca81d20f8e18ff9349bae4e5d25",
+        "size": 44861,
+        "sha256": "39c5892aad2a1ab9629a4e45e4fdc15f08928ae6665ff9683b1c9e01573b03c4"
+      },
+      {
+        "path": "skills/cinetic/references/finishing.md",
+        "mode": "100644",
+        "oid": "b5a1ad5a07e2cc3d1fe0020e4ef7b50a012d91ab",
+        "size": 32810,
+        "sha256": "a54f357d8ab270f24ed3366fba59d851b0b57443b5e3c226fe2e3d9c804a1770"
+      },
+      {
+        "path": "skills/cinetic/references/formats.md",
+        "mode": "100644",
+        "oid": "2dcaa1da2f15a17a8797101fbfc47fe38dd18484",
+        "size": 29391,
+        "sha256": "c8b62a3c5a2c5c2e77eebaddcf8a4e93b986306de469727a91c808b764934966"
+      },
+      {
+        "path": "skills/cinetic/references/hyperframes-engine.md",
+        "mode": "100644",
+        "oid": "cd8f5e748144c59021d1a28c8f940eab8499f521",
+        "size": 25948,
+        "sha256": "c6a2e23926b38cb53cd94aa0fb50e1ed62e9911d92e6c2b57629fdf8ac9eeee6"
+      },
+      {
+        "path": "skills/cinetic/references/motion-tokens.md",
+        "mode": "100644",
+        "oid": "a8065ab2a45b70766575b873146a1db6e3390c33",
+        "size": 22684,
+        "sha256": "3b5ac6b7d09bfa4b39159062a8a9eeb90bb3e115268a9ea14ca694bf5c828e98"
+      },
+      {
+        "path": "skills/cinetic/references/product-ui.md",
+        "mode": "100644",
+        "oid": "55151bbfa376746460b34af3af12fe2f252d787c",
+        "size": 24777,
+        "sha256": "5d87c0e7424438fce8a2be8e359bfca4cb3fed25d1b6f76248cd3aed92a59b5c"
+      },
+      {
+        "path": "skills/cinetic/references/remotion-engine.md",
+        "mode": "100644",
+        "oid": "fc7f328bd0b99ec4c0699ff00927331ad7a68be7",
+        "size": 21446,
+        "sha256": "ed1be1b7842e0ad36968fe855f27e9075cb7055e0f942f123d3a5163c5421558"
+      },
+      {
+        "path": "skills/cinetic/references/review-loop.md",
+        "mode": "100644",
+        "oid": "e95d48ff3656f4130160d0cb4d802a170ce3786a",
+        "size": 30582,
+        "sha256": "3323c23831197bcbc325c15f67690bf3bb9ddc10841eda2f42dac161863c352d"
+      },
+      {
+        "path": "skills/cinetic/references/sound.md",
+        "mode": "100644",
+        "oid": "3a1bb93f96a3c2f7b4c5504e8c43c0ec96260f6b",
+        "size": 59830,
+        "sha256": "67da8ba07ad277e30c1c6e9f95e3276f2f89c041d1e6b7f91c3d49e50050930a"
+      },
+      {
+        "path": "skills/cinetic/references/taste-and-slop.md",
+        "mode": "100644",
+        "oid": "93af2cea51da45e725fbf2404cdd31c2cf90ef4e",
+        "size": 28954,
+        "sha256": "741fb52cc9a4dc94ff9075215bc85ae8ce21fa2efed2b1f171762e8d94a6eec6"
+      },
+      {
+        "path": "skills/cinetic/references/technique-library.md",
+        "mode": "100644",
+        "oid": "e62bb843140798fae13692de39311119ec1a2347",
+        "size": 475918,
+        "sha256": "c96523bb0f9f8a83074b81a0ef039708f06eda9682b7e26fea422c2d9588a04c"
+      },
+      {
+        "path": "skills/cinetic/references/timing-grid.md",
+        "mode": "100644",
+        "oid": "6e4c1d375d3c336697c6609dbebecbf5d8abc9b6",
+        "size": 21862,
+        "sha256": "f5dcce8a995581367c8b1dbd39d2f603b2dc340a379f304afa4c36340276580b"
+      },
+      {
+        "path": "skills/cinetic/references/transitions.md",
+        "mode": "100644",
+        "oid": "7c3b46dbf5064d7655fd8f8077801fbd39ff691f",
+        "size": 18635,
+        "sha256": "86ecbd1b8fa34add3fd293053c7a926148ad9812187e967fba5976a267687a8a"
+      },
+      {
+        "path": "skills/cinetic/references/worked-example.md",
+        "mode": "100644",
+        "oid": "327c3bc535b5fb29afed047617cec6d1d3071fc2",
+        "size": 21756,
+        "sha256": "e8f04ae3013e8341851927896995b36dc92c78e55e830423c948b895b3f28840"
+      },
+      {
+        "path": "skills/cinetic/scripts/accumulate.py",
+        "mode": "100755",
+        "oid": "862f3539ada8619baca0b55eaeba84b9bbf8f1e0",
+        "size": 18663,
+        "sha256": "89a7b6f57ce7582754edd66a7d566bab6ebb734f099f49c4b9fe5c919a3884b2"
+      },
+      {
+        "path": "skills/cinetic/scripts/add-font.mjs",
+        "mode": "100755",
+        "oid": "7d719c57cc884b82fb569b418faf8da4d5d2e1ad",
+        "size": 12429,
+        "sha256": "ba6b5d6879625c012cf5f47f7dc8784c046becc136cd8847d021c147e262455a"
+      },
+      {
+        "path": "skills/cinetic/scripts/audio/master.py",
+        "mode": "100644",
+        "oid": "cf9c56547bf145735cafa6f98782427edb870832",
+        "size": 15202,
+        "sha256": "77a1f133ecc372c5166399ec3849826130c5be82faffd2236708522caaa28798"
+      },
+      {
+        "path": "skills/cinetic/scripts/audio/score.py",
+        "mode": "100644",
+        "oid": "6cf67fa89cde626f9854c382a0a1c90f2a75eeea",
+        "size": 84862,
+        "sha256": "68a51ec5b398e9c81e51631b926fa6af30424eeb0de0c40b2d7539bfff6d2da6"
+      },
+      {
+        "path": "skills/cinetic/scripts/audio/synth.py",
+        "mode": "100644",
+        "oid": "5134970c096842e16778c7507ca4ddf31be07af3",
+        "size": 40711,
+        "sha256": "f3c81a1588b3be169bc4a30772526bf46b3914bef59f487b299e7047f5066fdc"
+      },
+      {
+        "path": "skills/cinetic/scripts/av-audit.py",
+        "mode": "100644",
+        "oid": "02df4d01aadc907c632a74d281a999d27bfe7e50",
+        "size": 44615,
+        "sha256": "e70f052480b98399bb05a3abf95f1d3c3efa00d572e42064649d6813728b9d1a"
+      },
+      {
+        "path": "skills/cinetic/scripts/brand-kit.sh",
+        "mode": "100755",
+        "oid": "8ce4b7a7aa85a2d0f986f7f6f2785f569794b464",
+        "size": 4291,
+        "sha256": "75e9f7e24ec18fd74162af14cc95c363731182526e7d25a511e4b56ef7a7e54f"
+      },
+      {
+        "path": "skills/cinetic/scripts/brand-svg.ts",
+        "mode": "100644",
+        "oid": "64420c7719c2bdb86be190edc4a263676da2544d",
+        "size": 6634,
+        "sha256": "47eb94cbd7f64517be4870cd0236d1161610da3b66b2f1d6682ec9b6709f76fe"
+      },
+      {
+        "path": "skills/cinetic/scripts/check-sync.py",
+        "mode": "100755",
+        "oid": "a9a0d54e6ce697ac7a39e0f591742bf32b6f2889",
+        "size": 9495,
+        "sha256": "b8929038f87d20e672e684ab9fc67d01ff5f1bb7b7c9140deec79ccc021b254c"
+      },
+      {
+        "path": "skills/cinetic/scripts/deliver.sh",
+        "mode": "100755",
+        "oid": "4566f8be40e3e1e08e0fc646ad63c49954d9c452",
+        "size": 19106,
+        "sha256": "68d4861b483fd05b249288624c184148b3cef0132dfb19907a4202b569732e1a"
+      },
+      {
+        "path": "skills/cinetic/scripts/dither-gradient.py",
+        "mode": "100755",
+        "oid": "737fb1666c2453730627a7b98fcd0f39d1d09c95",
+        "size": 11767,
+        "sha256": "dbcda1be4206dd11db49910cf1400164aec53e1a02349b56543136483131b00f"
+      },
+      {
+        "path": "skills/cinetic/scripts/export-cues.ts",
+        "mode": "100644",
+        "oid": "ad5198212c4c9613db5f3b539459475645e369c6",
+        "size": 7639,
+        "sha256": "89ac62d039747dda0d64eb9865a9486a1b69c221f371b7e03ba23f9193d02a24"
+      },
+      {
+        "path": "skills/cinetic/scripts/forensics.py",
+        "mode": "100644",
+        "oid": "c72f0b9f5c4ac30e2024b9702ce09e784260847e",
+        "size": 60738,
+        "sha256": "416833a0b77f3a85439e6ae7ea7f0dd92c87bbb9cc2c20ee3a2a5cc58a2e9421"
+      },
+      {
+        "path": "skills/cinetic/scripts/grab.sh",
+        "mode": "100755",
+        "oid": "2a44ef56355001a37ed1d3422eec102851d4ee36",
+        "size": 2661,
+        "sha256": "bcb4c59938ca7a6633a7d9b0b680c1e862e42bbcde548c1d76ee52b0d79b557d"
+      },
+      {
+        "path": "skills/cinetic/scripts/grid-check.ts",
+        "mode": "100644",
+        "oid": "2a8d6e8e77f4f2191d59d8859f6e82d2d578a5ac",
+        "size": 12888,
+        "sha256": "dda552a2ba8cca40dd6619bbfe5eeab59d67de601fcfd86945e8b4ebb218b210"
+      },
+      {
+        "path": "skills/cinetic/scripts/hf-finish.sh",
+        "mode": "100755",
+        "oid": "e2a84a16416f2e4bfdc85229034376d828151d3e",
+        "size": 17253,
+        "sha256": "3195c55afb1b874b82a4aefd1ec7045ea0f9824c9aecf5ee79b283000841637a"
+      },
+      {
+        "path": "skills/cinetic/scripts/layout-audit.sh",
+        "mode": "100755",
+        "oid": "e87c6effb5a3aee6a3b3434b880442677a7e1532",
+        "size": 11884,
+        "sha256": "03743869acaadb512359ff524244bb014568b89c7a08ee1229cb3d1d1c7f449b"
+      },
+      {
+        "path": "skills/cinetic/scripts/lint-film.mjs",
+        "mode": "100644",
+        "oid": "ecfff6b64396f6d45d03e36c7a8a31fc907da67c",
+        "size": 41358,
+        "sha256": "90b676a51fad421192cb6b7a5d401247b4aa4db507e020fae5b44431667a464f"
+      },
+      {
+        "path": "skills/cinetic/scripts/measure-speed.py",
+        "mode": "100755",
+        "oid": "569909dfb840e1b45d252ca4db2ab0f11c609f39",
+        "size": 24986,
+        "sha256": "786fca20483caf8c0d62813327e9f3b69d49ecb20530a670b8db7462eccf272f"
+      },
+      {
+        "path": "skills/cinetic/scripts/new-film.sh",
+        "mode": "100755",
+        "oid": "2937160b3e0e2cd5760e1804d0de49cb82d80813",
+        "size": 11219,
+        "sha256": "bebbefd0aa4df9ff02c598da9df1b0aa3c367f3f6dddbe25e1a34ae6016b0aa9"
+      },
+      {
+        "path": "skills/cinetic/scripts/outline-text.py",
+        "mode": "100644",
+        "oid": "0f56efa95b3652bb5db76ba2ccd83be4e78dffa2",
+        "size": 5004,
+        "sha256": "fcaab966ccfc743e81a5ce0e8044abd65cd3f7f038f8e7710abe3f0af0738a67"
+      },
+      {
+        "path": "skills/cinetic/scripts/palette.py",
+        "mode": "100644",
+        "oid": "493d4e47d15ffc36fa657391e4afb03bbd5e3ad1",
+        "size": 17885,
+        "sha256": "92953451a472c91a41966b4c02bd61c2119c7ef2903658f1b61b6309301ced9f"
+      },
+      {
+        "path": "skills/cinetic/scripts/pick.py",
+        "mode": "100644",
+        "oid": "2dc9e07aa5f67e095d4e7ec6e7bd556a7e24e6e3",
+        "size": 20211,
+        "sha256": "fc36210bfe8f25a8b0c7cf97de5b4c7899e486afa266bd1bf06e47aade45e4a9"
+      },
+      {
+        "path": "skills/cinetic/scripts/probe.py",
+        "mode": "100755",
+        "oid": "ee628c81feaec8c4cd8a085d09eb7e0b82f61e9c",
+        "size": 13802,
+        "sha256": "bda6408cb2cf299712dd5c0d964268b862916a864aa2a25178859e8268c47c47"
+      },
+      {
+        "path": "skills/cinetic/scripts/render-chunks.sh",
+        "mode": "100755",
+        "oid": "a49ab8ad07d7370b132efa220ba6b1e1a1624a87",
+        "size": 5850,
+        "sha256": "f74ddc627619eb5df29c1be4a81e1af79e322e7c11d076b256be9ace765336ed"
+      },
+      {
+        "path": "skills/cinetic/scripts/render.sh",
+        "mode": "100755",
+        "oid": "351797dbd976916821d1d2032f67060814356f14",
+        "size": 19688,
+        "sha256": "230c856993936253f322f1f35d3dc6b9dd50d99cc1ee51308e4f9266b51b4b94"
+      },
+      {
+        "path": "skills/cinetic/scripts/sheet.py",
+        "mode": "100644",
+        "oid": "67b89dae4e191920b1f219a1d0df83a800031fc2",
+        "size": 13202,
+        "sha256": "e50c9dc5ee8ca7ca6d1bacd6f7d1c6b505a09db137e1f95270e0f1722f2fbe14"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-film.test.mjs",
+        "mode": "100644",
+        "oid": "4741683fddd0a4b11c49d04d309c04ceb4ff6267",
+        "size": 6049,
+        "sha256": "2befc4d394082e0d29ef789cd05548ad8f24fd2df2665ddb1d0b6f7223c72712"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/banned-color.ts",
+        "mode": "100644",
+        "oid": "c97d99106529f5adc21a544442d7a11b8bb0763b",
+        "size": 1168,
+        "sha256": "fb53700d20c462bf4ec0093bb45f305736af44f268584a9579c4cb9c4b462a4d"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/banned-named.tsx",
+        "mode": "100644",
+        "oid": "4ae44e9b58282cdbbfe712566c927727223d780a",
+        "size": 320,
+        "sha256": "1cabb5cd2a0eac5972cf1e2663cdd5cd2df3b0ba7bb02871373a03e68c2a41de"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/brand-file.tsx",
+        "mode": "100644",
+        "oid": "68280a9314aea1e80e34e576be357a48ac4e2e5a",
+        "size": 357,
+        "sha256": "36f5552096b90b5a72a4498e7e4e2f2e8ae697a86c191d77a34dc2f7f5fde739"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/brand-line.tsx",
+        "mode": "100644",
+        "oid": "96bc004ec7a14faba9a429c5dd38b1db476f1c24",
+        "size": 318,
+        "sha256": "d39127c939085a7f15493fd1b6857a3b885fd9b5be6c681dce085470eab17651"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/emoji-decoration.tsx",
+        "mode": "100644",
+        "oid": "76aafe65e8600923cfee75939211c3c106c7c142",
+        "size": 316,
+        "sha256": "c4f2cb1386262292feffdbd38806531b79f162200092f146e774c79df4722116"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/glass-glow.tsx",
+        "mode": "100644",
+        "oid": "5799871324f16805bd0ef8eb7b9a24588da7619f",
+        "size": 1148,
+        "sha256": "b86847f086e8df106f51cec4d37d6ebdd167a977f5c4d26504f56f57b19732c3"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/gradient.tsx",
+        "mode": "100644",
+        "oid": "01b9966a71335e61f3562e90a159680f8043e777",
+        "size": 411,
+        "sha256": "47b42afec054e178fd986ee136a58b9e03a6fa0570459c8a99beee352aab963f"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/hyperframes-brand.html",
+        "mode": "100644",
+        "oid": "e80932b68891b3ce10d59b4f27fdbc14160e716c",
+        "size": 389,
+        "sha256": "882926e23b676efca9c9cddd9fd027870cd50b68dee48990b003940c6c270b3d"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/hyperframes.html",
+        "mode": "100644",
+        "oid": "5f41bc941988697a9d671d34bcbf457da10dac0a",
+        "size": 725,
+        "sha256": "0c09453dac7bf7017f7942aeafd7c65b074353ae39a825c927e2294ecf9ee7f4"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/italic.tsx",
+        "mode": "100644",
+        "oid": "2a40fd2ca9bb61977827cb8bbd4ca7eed4b28fc1",
+        "size": 526,
+        "sha256": "25a2a15d94bab87d7fc75163f522a45a7fb8b60cb119d730bde4339eca9ee5df"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/number-labels.tsx",
+        "mode": "100644",
+        "oid": "11e3abe731251ef3f213a01bd02b74247699c809",
+        "size": 569,
+        "sha256": "2fd7492ab09c889abb35900044b6350a49c0639130529f4c5b653c26a5b8bce1"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/lint-fixtures/serif.tsx",
+        "mode": "100644",
+        "oid": "eb92be899b5fa2b7b55909dc12865378d7101cb1",
+        "size": 748,
+        "sha256": "c61400b9c2aea8b7fa418f56241a759a37b6e87cc5692ecc1c4d9fa4ffd8bbac"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/pick-fixtures/library.json",
+        "mode": "100644",
+        "oid": "c9342804c2dbd6447c7b7626cdd15dd0c468025f",
+        "size": 9560,
+        "sha256": "f334eabaf317c602e28f6e7a5f4a6008a6cb0182920827e1c21ac27eb31aadd3"
+      },
+      {
+        "path": "skills/cinetic/scripts/test/pick.test.py",
+        "mode": "100644",
+        "oid": "41efc0826e8361adb7660720c1b69404b570036f",
+        "size": 11241,
+        "sha256": "97df832604b6e31552b580f1ac2bfd7881b674c0262df7288cddae4b4729a150"
+      },
+      {
+        "path": "skills/cinetic/SKILL.md",
+        "mode": "100644",
+        "oid": "b2b4e614a95b79184e3b9370f82abefd9daa66c5",
+        "size": 55465,
+        "sha256": "7160507bf0d9b4f48556f4bdf1d1961b71afed43398903752cad3bc115226960"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "cinetic",
+      "path": "upstream/skills/cinetic/SKILL.md",
+      "description": "Direct, build and render premium cinematic motion design from code — launch films, product and feature videos, looping feature animations for landing pages and social, logo stings and reveals, UI walkthroughs, app demos, kinetic type, teasers, trailers, intros and promo clips. Use this whenever the user wants any video, animation, motion graphic or animated demo made with Remotion, HyperFrames, HTML/GSAP or React, or asks to storyboard, time, score, render, polish or critique one — even if they only say \"make a video about X\", \"animate this feature\" or \"we need a launch clip\". It supplies concept and copy discipline, type and colour taste that defers to a supplied brand, a beat-locked timeline that drives both picture and a synthesized soundtrack, choreography and transition craft, real product UI in motion, film-grade finishing (true motion blur, no banding, BT.709, sync-checked mux) and a measured self-critique loop on contact sheets and renders."
+    }
+  ],
+  "excluded": [],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "activatesUpstreamPlugin": false,
+    "runsUpstreamPipeline": false,
+    "changesProjectRuntime": false,
+    "externalMedia": "README gallery media-branch videos and linked dependencies are outside this reviewed Git tree; none are mirrored.",
+    "platform": "Upstream bash pipeline targets macOS/Linux; native Windows and WSL are unverified. Packaged Python/Node scripts are source, not a promise of installed dependencies or pipeline compatibility."
+  }
+}

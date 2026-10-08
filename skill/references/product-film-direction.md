@@ -10,6 +10,11 @@ For the movement itself, use `animation-thinking.md`: acting intent, staging, ke
 and spacing. These decisions also apply to PV/MAD and explanations; a voice track need not
 produce a whiteboard or a literal picture for every sentence.
 
+For the selected concept, product discovery or technique gap, use [built-in film methods](film-methods.md):
+Cinetic's complete concept/technique/timing sources and Product Film's real brand/component reuse.
+Its `film methods` preparation consumes this workflow's existing storyboard and retains source
+hashes; it does not replace direction, the selected renderer or owner acceptance.
+
 ## 1. Inspect moving references and available material
 
 Start with the user's references. When none are supplied, find a small set of relevant finished

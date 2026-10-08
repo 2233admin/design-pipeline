@@ -5,6 +5,11 @@ helps decide what motion should communicate and diagnose what is unclear; it is 
 or a new gate. The professional user's explicit direction governs. Do not require narration,
 diagrams, or a fixed genre.
 
+For an explicit film or loop, [built-in film methods](film-methods.md) adds Cinetic's complete
+concept/technique sources and pure easing/spring/timing adapter. Choose a technique for this
+action and convert its source frames to the chosen fps; random draws and 60fps are not required.
+Ordinary component motion may borrow a primitive within its existing clock and task artifacts.
+
 ## Direct the change
 
 Before choosing an effect, state the viewer's intended read: what should they notice, feel, or

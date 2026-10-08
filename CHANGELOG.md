@@ -6,6 +6,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Complete pinned Cinetic and product-film-skill sources, bounded film-method planning,
+  product component provenance and a configurable JavaScript motion adaptation. Existing
+  HyperFrames/film checks verify reproducible product-promo and short-loop studies; Prompt
+  Motion case references preserve authorship and viewing limits. Source scripts remain
+  distinct from maintained, tested entries and technical checks do not grant Visual Acceptance.
 - Huashu's reviewed `57d6760` media sources now include their defaults, schema and source
   tests. Images use the current host tool and existing evidence; supplied audio gains an
   offline fit/match/PCM helper with closed temporary handles and protected new outputs.

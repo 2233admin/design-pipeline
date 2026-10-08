@@ -7,6 +7,11 @@ montage is a prerequisite. The user's direction takes precedence over the sample
 
 ## Choose one route
 
+For an explicit product film or short loop, [built-in film methods](../../references/film-methods.md)
+adds Cinetic concepts/technique recipes and Product Film brand/component discovery to the existing
+storyboard, choreography, clock and render checks. These methods do not take over supporting UI
+or drawing tasks; use one selected primitive within the task's current runtime.
+
 | Need | Method | Do next |
 | --- | --- | --- |
 | Understand a moving reference | Separate construction, subject motion, camera, edit and sound | Use `reference.cjs`; inspect ordered frames, maps and audio; record observations in the existing `reference.md` |

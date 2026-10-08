@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.film-storyboard.v1",
+  "id": "design-pipeline-real-profile-6s",
+  "durationSec": 6,
+  "fps": 30,
+  "grammar": "product-demonstration",
+  "benefit": "Design Pipeline's real account-settings example preserves readable, accessible controls and a clear local save result.",
+  "proofAction": "The actual source form receives demo details, switches notifications off and reports that the profile was saved.",
+  "reference": "reference.md (real source interaction capture; Prompt Motion page text is method discovery only)",
+  "sound": { "mode": "silent", "reason": "Intentional silent maintenance proof of real component reuse and deterministic motion; no soundtrack or listening claim." },
+  "rendering": { "route": "footage", "requirements": [], "reason": "Recorded pixels of the unchanged real HTML component, framed by a bounded 2D camera push.", "samples": [ { "atSec": 1, "purpose": "Confirm actual typed input." }, { "atSec": 3.5, "purpose": "Confirm notification state changed." }, { "atSec": 5.5, "purpose": "Read the actual saved result." } ] },
+  "beats": [
+    { "id": "profile-save", "startSec": 0, "endSec": 6, "role": "action", "subject": "the real account-settings form", "productAction": "Enter demo details, disable notifications and submit the real component.", "transformation": { "kind": "state-change", "from": "empty fields with notifications on", "to": "valid demo fields, notifications off and the actual saved confirmation" }, "handoff": "open", "motion": ["native-input-state-change", "camera-push"], "choreography": "ui-demo", "holdSec": 0.8, "note": "The footage is captured from the original source file. FilmMotion.E.ui from the selected Cinetic adapter frames the action at the project's 30 fps; no 60/120 fps, 3D renderer or Remotion is imposed." }
+  ]
+}

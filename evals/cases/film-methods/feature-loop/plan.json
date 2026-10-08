@@ -1,0 +1,8 @@
+{
+  "task": "feature-loop",
+  "methods": ["cinetic"],
+  "brand": [ { "file": "evals/cases/skill-behavior/index.html", "note": "Preserve the real account-settings example's labels, light green palette and switch appearance." } ],
+  "components": [ { "file": "evals/cases/skill-behavior/index.html", "mode": "frame-twin", "reason": "Record the unchanged real notification switch on, off, then on; recorded start/end states agree." } ],
+  "techniques": ["cam-seamless-loop-orbit"],
+  "concept": "A four-second silent feature loop shows the real notification control on, off and on. Adapt the camera-return principle to a small bounded 2D scale cycle; the source is flat UI and supplies no evidence for a 3D orbit."
+}

@@ -113,6 +113,9 @@
     "huashu-assets-audio.test.cjs",
     "huashu-tools.test.cjs",
     "taste-skill.test.cjs",
-    "huashu-koubo.test.cjs"
+    "huashu-koubo.test.cjs",
+    "film-sources.test.cjs",
+    "film-methods.test.cjs",
+    "film-methods-eval.test.cjs"
   ]
 }

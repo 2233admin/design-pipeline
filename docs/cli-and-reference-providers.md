@@ -49,6 +49,7 @@ designmd sync|search|inspect|verify|iart search|route|verify
 toolchain resolve|probe|receipt-check
 execution route|prepare|finalize
 benchmark brief|evaluate
+film methods --project-root <existing-film-dir> --input <method-plan.json> [--write] [--replace]
 adapter audit|intake|receipt-check|style-signals check
 adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget
 

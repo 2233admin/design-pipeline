@@ -20,6 +20,8 @@ by the visual problem; using a helper does not create a film project or select a
 | Multi-world travel, interaction pauses and style boundaries | [Scroll helper](art-motion/scroll.md) | Caller-owned world, subject and camera callbacks |
 | Style recipes, cue-driven clips, exact-frame/alpha export, audiovisual reference breakdown | [Art Motion](art-motion/README.md) | 35 style studies, 8 clip grammars, full method routing |
 | Poses, spacing, acting, audiovisual phrasing | [Animation thinking](../references/animation-thinking.md) | Existing choreography and motion study |
+| Explicit product film or short motion loop | [Built-in film methods](../references/film-methods.md) | Complete Cinetic/product-film sources, real component provenance, selected recipes and configurable motion primitives through existing film tools |
+| Case references for film methods | [Prompt Motion entries](../references/prompt-motion.md) | Author/repository provenance and observation limits; adopt through existing reference evidence |
 | DOM/SVG timelines, scroll, layout or existing Three.js property animation | [Runtime guidance](../references/capability-routing.md) | Local GSAP playbook, Anime.js construction/seek/cleanup methods; companions optional |
 | Layout/text checks, interactions, 3D and GPU materials | [Composition](../references/composition-gate.md), [runtime routing](../references/graphics-runtime-routing.md) | Existing capture, gates and project renderer |
 | Intrinsic layout, CSS tokens, content/overflow, control states and native CSS motion | [Good CSS](../references/good-css.md), [offline specimens](good-css/README.md) | Complete pinned practices and a Node-only builder for local live studies |

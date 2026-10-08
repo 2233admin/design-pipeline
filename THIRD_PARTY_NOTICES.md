@@ -542,3 +542,43 @@ or a claim of trademark rights. Research claims remain upstream claims, not our 
 `skill/references/taste-skill.md` adapts each capability into the existing project workflow.
 The package does not run upstream scripts, activate its plugin, install its dependencies or supply
 an image model. Image-only workflows use a separately available host image-generation provider.
+
+## Leonxlnx/cinetic
+
+The complete byte-preserved source snapshot under `skill/vendor/cinetic/upstream/` is from
+https://github.com/Leonxlnx/cinetic at reviewed commit
+`bee5d7807205d5543472c38312507f9bf366cbbf` (reviewed 2026-10-09).
+All 137 tracked files are retained: 19 guides, the 273-entry technique library, treatment and
+critic templates, both engine starters, scripts and their tests, brand source assets, evaluation
+records and inert plugin/CI metadata. No tracked files from this reviewed tree are excluded.
+This is a separate project from Leonxlnx/taste-skill.
+
+MIT, Copyright (c) 2026 Leonxlnx. Complete original notices are at
+`skill/vendor/cinetic/upstream/LICENSE` and `skills/cinetic/LICENSE.txt` within that snapshot.
+The upstream brand assets remain source context; they do not grant trademark rights or become
+the user's default brand. README gallery videos on the separate media branch are not mirrored.
+Referenced fonts, music, Remotion and Python dependencies are not distributed by this import.
+Remotion has its own license, which must be checked separately if selected for a project.
+
+The maintained film-method adaptation uses selected methods and the deterministic HyperFrames
+motion library with the original MIT notice. It follows existing engine selection and evidence
+contracts. The upstream bash pipeline was designed for macOS/Linux; its native Windows and WSL
+execution is unverified. Bundling its scripts does not install dependencies, activate its plugin
+or make the complete upstream pipeline a validated runtime entry.
+
+## Rieranthony/product-film-skill
+
+The complete byte-preserved source snapshot under `skill/vendor/product-film-skill/upstream/`
+is from https://github.com/Rieranthony/product-film-skill at reviewed commit
+`fe11efc429d5903e37274d0b294e1b95745b2881` (reviewed 2026-10-09).
+All 30 tracked files are retained, including discovery/interview/story/music/engine/review/render
+guides, brand and film templates, reusable motion-kit source, the five scripts and inert plugin
+metadata. No tracked files from this reviewed tree are excluded.
+
+MIT, Copyright (c) 2026 Rieranthony. The complete original license is
+`skill/vendor/product-film-skill/upstream/LICENSE`. Project fonts and music, Remotion,
+Bun, uv and Python packages referenced by these sources are not bundled. Remotion retains
+its separate runtime license. The maintained adaptation gives project-owned design tokens,
+components, claims and user choices priority, using the pipeline's existing render and evidence
+tools. Upstream Bun/uv/Remotion scripts remain readable source; native Windows and WSL pipeline
+execution is unverified and the package does not install their dependencies.
