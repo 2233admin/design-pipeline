@@ -11,5 +11,5 @@
 ## 3. Verify and deliver
 
 - [x] 3.1 Verify source parity, failed-import preservation, local links and built-in availability in a relocated empty-companion installation.
-- [ ] 3.2 Run source checks, strict specs and full repository QA on a stable tree; independently review final source and integration scope.
-- [ ] 3.3 Record evidence and limitations, preserve unrelated original-tree edits and deliver the complete integration.
+- [x] 3.2 Run source checks, strict specs and full repository QA on a stable tree; independently review final source and integration scope.
+- [x] 3.3 Record evidence and limitations, preserve unrelated original-tree edits and deliver the complete integration.
