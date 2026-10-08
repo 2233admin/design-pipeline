@@ -14,4 +14,4 @@
 
 - [x] 3.1 Freeze implementation commit/tree; run npm ci, npm run specs:check and npm test; verify isolated package/install.
 - [x] 3.2 Compare/backup local canonical installation, synchronize using existing installer, verify file identity and preserve compatibility consumers.
-- [ ] 3.3 Commit/push, rewrite PR #85 to final scope, attach it, track exact-head CI and record tracker/platform/acceptance limitations.
+- [x] 3.3 Commit/push, rewrite PR #85 to final scope, attach it, track exact-head CI and record tracker/platform/acceptance limitations.

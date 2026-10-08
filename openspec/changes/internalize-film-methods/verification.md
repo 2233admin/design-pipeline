@@ -7,7 +7,8 @@ Tested Git tree: `2a2e0c74de9b45a2986970377922935878cd7085`.
 Date: 2026-10-09, native Windows PowerShell, Node 26.3.1.
 All implementation and evidence work used the existing release worktree on
 `codex/internalize-taste-skill`. The dirty original project checkout was not edited.
-Subsequent delivery records change only OpenSpec documents; the implementation remains frozen.
+Subsequent delivery changes comprise OpenSpec records and the single cross-platform test
+assertion described below; runtime, fixtures and packaged skill bytes remain frozen.
 
 This change imports the entire reviewed Cinetic tree (137 files at
 `bee5d7807205d5543472c38312507f9bf366cbbf`) and product-film-skill tree (30 files at
@@ -103,6 +104,25 @@ were not overwritten.
 Target remains [PR #85](https://github.com/2233admin/design-pipeline/pull/85), base `main`,
 branch `codex/internalize-taste-skill`; no merge is authorized. The final PR description records
 the complete branch scope and the exact-head CI result after publication.
+
+The first published delivery head was `4daeda71cecb89553e124898cf9a0fed57d5abd0`.
+[CI run 37813963825](https://github.com/2233admin/design-pipeline/actions/runs/37813963825)
+passed Windows path regressions and strict specs, but Linux QA had 1,036 passed, one failed
+and 43 skipped (1,080 total). The installed-package CLI still passed 12/12; the failed QA
+step prevented the later browser self-tests and artifact upload. This run is not counted as
+passing CI. Its failed log remains in `ci-first-failed.log`.
+
+The only failure was the new output-parent conflict test expecting Windows's error text.
+On Linux, the existing contained-path resolver rejects a regular file used as the `lib/`
+parent earlier with `ENOTDIR`. Both paths fail before any notes or runtime asset is written.
+The test now accepts the two structured rejection codes `ENOTDIR` and `OUTPUT_TYPE`, retaining
+the no-write and original-file-content assertions. An independent read-only review confirmed
+this platform difference does not require a shared resolver or runtime change. Windows's
+focused method suite passed 7/7 after that test-only fix (`methods-portable.log`). The final
+publication CI reruns full QA against the updated head; its exact SHA, run and counts are
+recorded in the PR after completion, without treating the earlier local full-QA tree as a
+fresh test of this later test assertion. Linux's tool/platform skips do not replace the native
+Windows run's zero-skipped evidence.
 
 Multica was retried at closeout against the canonical project and still returned service
 unavailable/server error. No substitute issue tracker was created; scope, implementation,

@@ -162,7 +162,7 @@ test("a conflicting output type fails before method notes or any runtime asset i
   try {
     fs.rmSync(path.join(f.project, "lib"), { recursive: true });
     fs.writeFileSync(path.join(f.project, "lib"), "This existing user file must survive.");
-    assert.throws(() => prepareFilmMethods(f.project, f.request, { root: f.root, write: true, replace: true }), /parent is not a directory/);
+    assert.throws(() => prepareFilmMethods(f.project, f.request, { root: f.root, write: true, replace: true }), (error) => error.code === "ENOTDIR" || error.code === "OUTPUT_TYPE");
     assert.equal(fs.existsSync(path.join(f.project, "film-methods.md")), false);
     assert.equal(fs.readFileSync(path.join(f.project, "lib"), "utf8"), "This existing user file must survive.");
   } finally { f.clean(); }
