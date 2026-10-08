@@ -8,5 +8,5 @@
 ## 2. Verify and publish
 
 - [x] 2.1 Run the exact Windows regression command, inspect the final diff and validate specifications.
-- [ ] 2.2 Freeze the integrated tree and run full `npm test`, retaining visible progress, complete output and exit evidence.
-- [ ] 2.3 Record evidence and limitations, update the existing PR and inspect its CI status.
+- [x] 2.2 Freeze the integrated tree and run full `npm test`, retaining visible progress, complete output and exit evidence.
+- [x] 2.3 Record evidence and limitations, update the existing PR and inspect its CI status.
