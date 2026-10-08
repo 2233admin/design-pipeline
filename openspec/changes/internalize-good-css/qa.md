@@ -134,4 +134,10 @@ Only reports, completion markers, the changelog and a whitespace-check attribute
 Geist Mono license changed after that frozen-code full run. That attribute preserves the reviewed
 license bytes, including its original trailing space; all 133 staged vendor blobs must still match.
 See the companion change's `qa.md` for red/green diagnosis and the full log's SHA-256.
-Verified commit and remote publication will be recorded after pushing the selected branch.
+Implementation commit [`853249ba5121ae1243fe53c772bf15dd30df9bf6`](https://github.com/2233admin/design-pipeline/commit/853249ba5121ae1243fe53c772bf15dd30df9bf6),
+Git tree `883a0ad81427852ede4db9aeec774025a112b111`, was pushed successfully to
+[codex/good-css-qa](https://github.com/2233admin/design-pipeline/tree/codex/good-css-qa).
+An independent `git ls-remote` read confirms the exact implementation commit. All 133 staged
+upstream blobs and Git modes match their manifest. This final close-out changes only QA reports
+and the repair checklist; unrelated original-tree edits remain preserved. Results above describe
+local full QA; no remote CI run is claimed for the feature branch push.

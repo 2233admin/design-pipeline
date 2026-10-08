@@ -47,7 +47,9 @@ Staged whitespace checking detected the reviewed Geist Mono OFL file's original 
 
 The delayed pointer regression verifies a new pause of at least 15ms after each delivered input, input steps at most 25px and observed direct-follower movement below `travel/10`. Actual discontinuity remains at or above that threshold; the inert target still fails with `dead-interaction`. These are asserted observed bounds; the temporary successful trace is cleaned, so no unretained exact minimum/maximum is claimed.
 
-Commit and remote publication are the remaining close-out step. Their verified implementation identity will be recorded here after the push.
+Implementation commit: [`853249ba5121ae1243fe53c772bf15dd30df9bf6`](https://github.com/2233admin/design-pipeline/commit/853249ba5121ae1243fe53c772bf15dd30df9bf6), Git tree `883a0ad81427852ede4db9aeec774025a112b111`. It contains exactly the audited Good CSS integration and QA repairs, including all 133 original staged vendor blob/mode identities. `git push -u origin codex/good-css-qa` exits 0; `git ls-remote` independently confirms the same implementation commit on the new remote branch. This close-out update changes only the two QA reports and this change's task checklist.
+
+GitHub branch: [codex/good-css-qa](https://github.com/2233admin/design-pipeline/tree/codex/good-css-qa). Original working tree remains on `improve-beta-motion` at `77f6baf6b4f820443e5cced814b7233df7fa40c0` with unrelated local changes preserved. Publication is a branch push; the existing GitHub Actions configuration does not trigger CI on this feature branch push. The passing results above are the complete local publication-tree QA, not a remote CI claim.
 
 Multica lookup remains temporarily unavailable; implementation and verification continue under the canonical host policy, with evidence retained in this change. Code-Intel's earlier recorded failure is reused; diagnosis used bounded source/caller reads.
 

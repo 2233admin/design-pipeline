@@ -8,4 +8,4 @@
 
 - [x] 2.1 Run focused checks, full npm test, sources:check and strict specs with a stable working tree.
 - [x] 2.2 Audit the authorized publication diff and verify the exact selected tree.
-- [ ] 2.3 Record results, commit and push the authorized changes to GitHub, preserving unrelated local edits.
+- [x] 2.3 Record results, commit and push the authorized changes to GitHub, preserving unrelated local edits.
