@@ -79,6 +79,8 @@ name a repository. This is triggered by the work's needs, not a required search 
 - Built-in Cinetic/Product Film methods: `references/film-methods.md` for explicit film/loop
   selection, real brand/component discovery, full technique recipes and the maintained
   `film methods` preparation/motion adapter. Keep ordinary UI/CSS on its existing route.
+- Prompt Motion template library: `references/prompt-motion/README.md` for indexed cases,
+  curated recipe inputs and invariants; `film templates` provides offline read-only search/detail.
 - Film runtime and audio: `references/hyperframes.md`, `references/film-blender.md`,
   `references/film-score.md`, `references/audio-gate.md`, `references/composition-gate.md`.
 - PV/MAD edits: `references/film-edit.md`.

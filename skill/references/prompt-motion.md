@@ -1,9 +1,11 @@
-# Prompt Motion case references
+# Prompt Motion templates and case references
 
-[Prompt Motion](https://www.prompt-motion.com/) is a curated collection of works, prompts and
-skills, not one installable library. Select a case because it answers the current product or
-motion question. User references and the product's actual identity take priority. Ordinary UI or
-CSS work does not become a film task because a case looks useful.
+[Prompt Motion](https://www.prompt-motion.com/) supplies case and prompt references. The bundled
+[template library](prompt-motion/README.md) maintains a reviewed homepage index and reusable,
+parameterized planning recipes. Search with `film templates --query "<terms>" --json`, read a
+recipe with `--template <id>`, or include discovery candidates with `--all`. Library lookup is
+offline and read-only. Select for the current product or motion question; user references and
+actual product identity take priority. Ordinary UI/CSS keeps its existing task route.
 
 ## Reviewed entries
 
@@ -41,5 +43,6 @@ provenance and execution boundaries in [film-methods.md](film-methods.md).
 
 HTML video keeps the existing HyperFrames route; an example's Remotion tag, frame rate or style
 does not override the project. Repository source readability, a callable method and a verified
-maintenance tool are different claims. Other site entries are discovery candidates only; this
-round does not import session-story, buildfast-skills or any further libraries.
+maintenance tool are different claims. Indexed cases and curated recipes are separately labelled;
+recipes retain page-only observation limits and identify authored adaptations. Library maintenance
+does not import additional case repositories. It does not import session-story or buildfast-skills.

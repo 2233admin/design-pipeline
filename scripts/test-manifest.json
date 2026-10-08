@@ -116,6 +116,8 @@
     "huashu-koubo.test.cjs",
     "film-sources.test.cjs",
     "film-methods.test.cjs",
-    "film-methods-eval.test.cjs"
+    "film-methods-eval.test.cjs",
+    "prompt-motion-index.test.cjs",
+    "prompt-motion-library.test.cjs"
   ]
 }

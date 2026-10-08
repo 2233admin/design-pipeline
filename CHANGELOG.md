@@ -6,6 +6,9 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Maintained Prompt Motion homepage inventory and twelve authored planning recipes with
+  replaceable inputs, structure, invariants and source/viewing limits. Offline `film templates`
+  search/detail separates recipes from indexed cases; local HTML refresh writes review candidates.
 - Complete pinned Cinetic and product-film-skill sources, bounded film-method planning,
   product component provenance and a configurable JavaScript motion adaptation. Existing
   HyperFrames/film checks verify reproducible product-promo and short-loop studies; Prompt

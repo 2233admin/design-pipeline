@@ -124,7 +124,7 @@ CSS 写作和审查内置 [Good CSS](skill/references/good-css.md)：完整保�
 
 视觉设计内置 [Taste-Skill 的全部 13 项能力](skill/references/taste-skill.md)：前端方向、截图还原、旧项目改造、风格设计、完整交付、Stitch、网页/移动端生图和品牌视觉。根据任务选择对应指南，完整原文随工具发布；无需另装 Taste 技能。生图仍使用宿主提供的图像生成工具。
 
-影片任务内置 [Cinetic 与 Product Film 方法](skill/references/film-methods.md)：完整锁定来源、真实品牌与组件复用、显式技法选择和可配置帧率的动效实现，沿用既有 HyperFrames 与影片验证。[Prompt Motion 案例入口](skill/references/prompt-motion.md)记录作者、原仓库及观察限制；普通 UI/CSS 任务仍按原流程执行。
+影片任务内置 [Cinetic 与 Product Film 方法](skill/references/film-methods.md)：完整锁定来源、真实品牌与组件复用、显式技法选择和可配置帧率的动效实现，沿用既有 HyperFrames 与影片验证。[Prompt Motion 模板库](skill/references/prompt-motion/README.md)支持离线检索案例与配方，保留替换输入、结构规则、来源及观察限制；[维护指南](docs/prompt-motion-template-maintenance.md)说明候选更新、重复和下架处理。普通 UI/CSS 任务仍按原流程执行。
 
 ## 从 GitHub Release 安装
 

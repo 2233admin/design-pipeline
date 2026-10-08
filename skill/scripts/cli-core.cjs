@@ -47,6 +47,7 @@ const { checkTimeline } = require("./film-timeline-core.cjs");
 const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
+const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs");
 const { scaffoldVisualCraft } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
@@ -139,7 +140,7 @@ const {
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all"]);
 const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -407,6 +408,7 @@ function publicHelp() {
     "  composition compare --source <png> --image <png> --output <new-dir>",
     "  film scaffold --output <dir> [--template default|motion-study] [--replace]",
     "  film methods --project-root <dir> --input <plan.json> [--write] [--replace]",
+    "  film templates [--query <terms> | --template <id>] [--all]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>]   (one next step)",
     "  decide --project-root . --stage intake|reference|concept|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
@@ -1995,6 +1997,9 @@ const COMMANDS = {
   "design-code-map": { actions: { check: { required: ["--artifact"], run: designCodeMapCheckCommand } } },
   film: {
     actions: {
+      templates: {
+        run: ({ parsed }) => ({ result: filmTemplates({ query: option(parsed, "--query"), template: option(parsed, "--template"), all: option(parsed, "--all") === true }), exitCode: 0 }),
+      },
       methods: {
         required: ["--project-root", "--input"],
         run: ({ parsed, root }) => {

@@ -50,6 +50,7 @@ toolchain resolve|probe|receipt-check
 execution route|prepare|finalize
 benchmark brief|evaluate
 film methods --project-root <existing-film-dir> --input <method-plan.json> [--write] [--replace]
+film templates [--query <terms> | --template <id>] [--all]
 adapter audit|intake|receipt-check|style-signals check
 adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget
 
@@ -69,6 +70,11 @@ upstream bindings as well.
 
 `source add` is intentionally deferred until an attributed provider contract exists. It returns a
 stable `COMMAND_DEFERRED` error rather than performing an implicit fetch.
+
+`film templates` reads the bundled Prompt Motion recipe library offline, without writing project
+state. Default results contain curated planning recipes; `--all` includes homepage-only cases.
+Inclusion is neither an execution result nor creative acceptance. See the
+[library](../skill/references/prompt-motion/README.md) and [maintenance guide](prompt-motion-template-maintenance.md).
 
 ## Lifecycle Safety
 

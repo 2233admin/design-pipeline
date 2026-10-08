@@ -3,6 +3,7 @@
 - [项目视觉规范](../DESIGN.md)：遵循 [Google DESIGN.md](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md)，描述视觉语言与设计理由。
 - [项目动效规范](../MOTION.md)：本仓库的静态呈现，以及目标项目的动效边界。
 - [安装与升级](../skill/references/installation.md)、[工具索引](../skill/tools/README.md)：安装 skill 后按需阅读。
+- [Prompt Motion 模板库维护](prompt-motion-template-maintenance.md)：案例索引、配方整理、候选更新和重复/下架处理。
 - [术语表](glossary.md)：项目术语及其含义。
 - [OpenSpec 配置](../openspec/config.yaml)、[贡献流程](../CONTRIBUTING.md)：项目上下文、行为规范和变更验收。
 - [历史文档](archive/README.md)：保留旧稿，仅供追溯。

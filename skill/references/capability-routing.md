@@ -11,6 +11,8 @@ For explicit product films, feature loops, stings or film studies, the selected 
 door can use [film-methods.md](film-methods.md) for Cinetic concepts/techniques and Product Film's
 actual brand/component discovery. `film methods` is supporting preparation inside that route;
 ordinary UI/CSS stays on its component/runtime route and acquires no storyboard or soundtrack.
+For reusable case structures, search the [Prompt Motion library](prompt-motion/README.md) with
+`film templates`; adopt selected inputs and rules through the existing reference flow.
 
 1. Classify the brief with `designer-pipeline route --query "<brief>" --json`. The job registry
    `references/job-registry.json` is the Stage 0 extension point. A new capability is a job, not

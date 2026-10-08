@@ -1,0 +1,893 @@
+{
+  "reviewedAt": "2026-10-09",
+  "templates": [
+    {
+      "id": "dot-carried-motion-system",
+      "title": "圆点接力运动系统",
+      "category": "brand-motion",
+      "tags": [
+        "圆点",
+        "图表",
+        "字形",
+        "半色调",
+        "dot",
+        "spring",
+        "graph",
+        "halftone"
+      ],
+      "sources": [
+        "ultimaxbt-bbebf5"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "一个强调色圆点在控件、字形、曲线、几何形和结尾卡之间传递身份。",
+      "adaptation": {
+        "basis": "authored",
+        "note": "保留来源主体接力，参数化文案与颜色；不沿用示例数值。"
+      },
+      "inputs": [
+        {
+          "name": "brand",
+          "description": "强调色、主字与落版文案",
+          "required": true
+        },
+        {
+          "name": "toggleLabel",
+          "description": "开场控件文字",
+          "required": true
+        },
+        {
+          "name": "claim",
+          "description": "图表旁经证实的数值；无证据则省略",
+          "required": false
+        },
+        {
+          "name": "track",
+          "description": "可用音乐和已测节拍",
+          "required": false
+        }
+      ],
+      "sequence": [
+        "点击控件，文字收拢，圆点附着于主字",
+        "圆点离开字形，以同一弹簧函数绘出响应曲线",
+        "圆点扩成圆形，内部方形接成胶囊并收回",
+        "关键词环绕圆点，向点阵场展开",
+        "点阵揭开结尾卡，主体沿既有路径回到开场"
+      ],
+      "invariants": [
+        "圆点与曲线共用运动函数",
+        "跨场强调色与主体身份一致",
+        "回环时控件、文字和光标完整归位"
+      ],
+      "gotchas": [
+        "出入文字分开安排以免重叠",
+        "满屏变形需越过画面边缘"
+      ],
+      "relatedGuides": [
+        "references/film-methods.md",
+        "references/animation-thinking.md"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "未附品牌、音频和可运行项目",
+        "原例橙色、画幅和帧率仅是来源选择；效果未验证"
+      ]
+    },
+    {
+      "id": "slow-logo-assembly",
+      "title": "慢速拼装标志揭示",
+      "category": "brand-motion",
+      "tags": [
+        "标志",
+        "拼装",
+        "慢揭示",
+        "logo",
+        "assembly",
+        "reveal"
+      ],
+      "sources": [
+        "tdinh-me-815acb"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "原 Prompt 只要求慢速拼装并揭示标志。本库展开为可替换身份的三拍，不还原未看视频。",
+      "adaptation": {
+        "basis": "authored",
+        "note": "来源只给慢速拼装目标；三拍、输入与守则均是本库作者建议。"
+      },
+      "inputs": [
+        {
+          "name": "logo",
+          "description": "获准使用且可拆分的真实标志几何",
+          "required": true
+        },
+        {
+          "name": "brand",
+          "description": "原始配色、字标与安全空间",
+          "required": true
+        },
+        {
+          "name": "duration",
+          "description": "展示位置允许的时长和末帧阅读时间",
+          "required": true
+        }
+      ],
+      "sequence": [
+        "适配：先显露可识别的局部轮廓",
+        "适配：沿原标志几何逐组拼装，主体保持可追踪",
+        "适配：收束到完整标志，留出稳定阅读姿态"
+      ],
+      "invariants": [
+        "最终标志与原身份几何、比例和颜色一致",
+        "拼装顺序服务识别，不遮住已完成部分"
+      ],
+      "gotchas": [
+        "扁平图片可能不具备独立部件，需先取得可拆素材",
+        "短摆放位需重新分配节奏，不能仅加速整段"
+      ],
+      "relatedGuides": [
+        "references/animation-thinking.md",
+        "references/film-choreography/registry.json"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "来源未提供具体分镜、标志文件、时长或工程",
+        "拼装方式为本库提案，实际动作与成片效果未知"
+      ]
+    },
+    {
+      "id": "historical-milestone-timeline",
+      "title": "关键事件时间线",
+      "category": "data-story",
+      "tags": [
+        "时间线",
+        "历史",
+        "里程碑",
+        "timeline",
+        "history",
+        "data-story"
+      ],
+      "sources": [
+        "kloss-xyz-fe0c31"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "把经核验的关键事件排成时间线，以持续保留的时间位置承接焦点变化，适合技术演进或项目历程。",
+      "inputs": [
+        {
+          "name": "milestones",
+          "description": "事件、准确日期、简短说明和事实来源。",
+          "required": true
+        },
+        {
+          "name": "scope",
+          "description": "起止范围、事件选择依据，以及等距还是按真实时间间隔排布。",
+          "required": true
+        },
+        {
+          "name": "identity",
+          "description": "字体、颜色和与事件有关且有权限的视觉资料。",
+          "required": false
+        }
+      ],
+      "sequence": [
+        "给出主题与时间范围，建立可见的时间方向。",
+        "让焦点沿时间线移动到首个事件，显示日期和简短作用。",
+        "依次引入后续事件；保留前后位置，让读者比较连续或突变。",
+        "拉回全段时间线，用一句有依据的观察收束。"
+      ],
+      "invariants": [
+        "日期和事件选择有来源，不靠视觉效果制造事实。",
+        "已出现事件保持时间顺序；间隔尺度明确且一致。",
+        "运动焦点和文字出现顺序一致，给每个重点留出阅读时间。"
+      ],
+      "gotchas": [
+        "原 Prompt 只提出 AI 历史主题，没有时间线几何或镜头说明。",
+        "等距事件卡片不等于等距年份；避免把两者混淆。"
+      ],
+      "relatedGuides": [
+        "references/animation-thinking.md",
+        "references/hyperframes.md",
+        "references/reference-spec.md"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "时间线运动为本库作者适配，不是对原视频的复刻或观察结论。",
+        "未提供历史数据、事实核验、图片授权或可运行工程。"
+      ],
+      "adaptation": {
+        "basis": "authored",
+        "note": "原页仅确证呈现 AI 历史关键事件；时间线布局、焦点移动、数据核验参数和比较规则由本库拟定。"
+      }
+    },
+    {
+      "id": "talking-head-meaning-led-edit",
+      "title": "围绕语意的人像口播剪辑",
+      "category": "editing",
+      "tags": [
+        "口播",
+        "字幕",
+        "剪辑",
+        "talking-head",
+        "caption",
+        "recut"
+      ],
+      "sources": [
+        "sab8a-364a5a"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "从原始口播提取清楚的表达段落，把字幕、图形和音乐放在语意重点上，使画面辅助讲话。",
+      "inputs": [
+        {
+          "name": "footage",
+          "description": "有使用权限的原始口播素材及需要保留的完整意思。",
+          "required": true
+        },
+        {
+          "name": "transcript",
+          "description": "校对后的逐句文本和重点词；缺少时先转写校对。",
+          "required": true
+        },
+        {
+          "name": "overlays",
+          "description": "与讲话相关的图片、图形和品牌样式。",
+          "required": false
+        },
+        {
+          "name": "music",
+          "description": "有使用权限的音乐，以及是否需要音乐的发布要求。",
+          "required": false
+        }
+      ],
+      "sequence": [
+        "保留开场中最清楚的问题或主张，先让人声成立。",
+        "按完整意思收紧冗余停顿；字幕跟随对应句子出现。",
+        "重点词落下时加入相关图形或有限画面强调，再返回人物。",
+        "用结论完成表达；音乐和覆盖图形随讲话收束。"
+      ],
+      "invariants": [
+        "剪辑不能改变人物原意或把不连续句子拼成新主张。",
+        "字幕与对应语音一致；图形遮挡和音乐音量不能削弱讲话。",
+        "音乐节拍可以支持剪辑，但语意完整优先于每拍切换。"
+      ],
+      "gotchas": [
+        "页面只有任务级 Prompt，未给字幕时序或素材工程。",
+        "本库 film-edit 是既有片段组装路线；字幕与人物覆盖图形需结合现有 HyperFrames 路线。"
+      ],
+      "relatedGuides": [
+        "references/film-edit.md",
+        "references/hyperframes.md",
+        "references/animation-thinking.md"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "未提供原始人物视频、校对文本、音乐授权或可运行工程。",
+        "原页标注 OpenEdit；本配方未运行该工具，语意编排为本库适配且未试听。"
+      ],
+      "adaptation": {
+        "basis": "authored",
+        "note": "原页确证原始口播加字幕、图形和音乐的剪辑用途；语意段落、素材输入和收束顺序由本库拟定。"
+      }
+    },
+    {
+      "id": "business-five-scene-explainer",
+      "title": "五幕业务介绍",
+      "category": "explainer",
+      "tags": [
+        "业务介绍",
+        "问题到证明",
+        "business",
+        "five-scene",
+        "explainer"
+      ],
+      "sources": [
+        "alex-prompter-1ea044"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "围绕客户问题、业务作用、三步流程、可信证明和品牌收束组织介绍；每幕承接上一幕提出的问题。",
+      "inputs": [
+        {
+          "name": "business",
+          "description": "卖什么、服务谁，以及客户要完成的任务。",
+          "required": true
+        },
+        {
+          "name": "workflow",
+          "description": "实际业务的三个步骤和对应输入、输出。",
+          "required": true
+        },
+        {
+          "name": "proof",
+          "description": "获准使用的一个证明点及来源；无证明时改为可验证的操作结果。",
+          "required": true
+        },
+        {
+          "name": "identity",
+          "description": "名称、颜色、字体和结尾行动文案。",
+          "required": true
+        }
+      ],
+      "sequence": [
+        "客户遇到具体障碍；让问题先读清，再转入解决路径。",
+        "以业务名称和一句作用说明回答问题。",
+        "按输入、处理、结果依次展开三个步骤，保持同一对象的连续性。",
+        "用一个有依据的结果或证明承接流程。",
+        "收束到品牌名称和下一步行动，留出阅读停顿。"
+      ],
+      "invariants": [
+        "五幕的因果关系清楚，每幕有一个主要信息。",
+        "步骤和证明必须对应真实业务；品牌来自输入。",
+        "转场交接主对象，避免上一幕未读完就切走。"
+      ],
+      "gotchas": [
+        "三步流程挤在同一画面时容易只剩装饰，需逐项交接。",
+        "原案例提出约半分钟和单页 HTML；它们是案例设定，不是本库固定规格。"
+      ],
+      "relatedGuides": [
+        "references/animation-thinking.md",
+        "references/film-methods.md",
+        "references/hyperframes.md"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "仅维护配方；未提供业务事实、品牌素材或可运行工程。",
+        "五幕结构来自页面 Prompt；具体运动和停顿为本库适配建议，未验证原视频效果。"
+      ],
+      "adaptation": {
+        "basis": "authored",
+        "note": "原页确证五幕业务结构、三步流程、一个证明点和品牌颜色；对象交接、阅读停顿及可替换输入由本库细化。"
+      }
+    },
+    {
+      "id": "derivative-example-explainer",
+      "title": "从例子理解导数",
+      "category": "explainer",
+      "tags": [
+        "数学",
+        "导数",
+        "概念解释",
+        "derivative",
+        "math",
+        "science"
+      ],
+      "sources": [
+        "linearuncle-5d2bae"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "从可理解的变化问题进入例子，再用连续图形说明变化率如何由区间逼近局部；最后用问题检查理解。",
+      "inputs": [
+        {
+          "name": "example",
+          "description": "经核对的函数或生活变化例子、坐标单位和适合受众的难度。",
+          "required": true
+        },
+        {
+          "name": "explanation",
+          "description": "校对过的概念、公式、结论和一道思考题。",
+          "required": true
+        },
+        {
+          "name": "narration",
+          "description": "可选旁白文本、语言和已有音频；不预设生成服务。",
+          "required": false
+        }
+      ],
+      "sequence": [
+        "提出一个局部变化问题，同时显示相关对象和坐标。",
+        "选两个可比较位置，用区间变化说明平均变化率。",
+        "缩小比较区间，保持点、线与数值同步变化。",
+        "停留在局部变化的结果，说明概念并提出可检验的思考问题。"
+      ],
+      "invariants": [
+        "图形、公式和讲解使用同一组已核验的数据和单位。",
+        "点位置改变时相关线与数值一起更新，不出现不同时间状态。",
+        "先有可读例子再给概念结论；旁白有无均能按发布要求理解。"
+      ],
+      "gotchas": [
+        "区间趋近的图形是本库适配方案，原 Prompt 未指定此分镜。",
+        "原页选择 Manim 和 edge-tts；本库没有把它们升级为全局工具要求。"
+      ],
+      "relatedGuides": [
+        "references/animation-thinking.md",
+        "references/hyperframes.md",
+        "references/reference-spec.md"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "未提供经审校的数学例子、旁白、坐标素材或可运行工程。",
+        "未运行 Manim 或 edge-tts；未观察原视频的图形或听到原配音。"
+      ],
+      "adaptation": {
+        "basis": "authored",
+        "note": "原页确证导数概念、易懂例子和思考问题，注明 Manim 与 edge-tts；区间趋近、图形联动和分段讲解由本库拟定。"
+      }
+    },
+    {
+      "id": "token-bucket-state-explainer",
+      "title": "令牌桶状态与请求结果",
+      "category": "explainer",
+      "tags": [
+        "令牌桶",
+        "限流",
+        "状态变化",
+        "token-bucket",
+        "rate-limiter",
+        "deterministic"
+      ],
+      "sources": [
+        "parkerrex-1a54fe"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "用桶内令牌、到达请求和处理结果建立同一时间轴上的状态对应，说明补充、消耗与拒绝的关系。",
+      "inputs": [
+        {
+          "name": "parameters",
+          "description": "容量、补充速率、初始令牌和边界取整规则，须与被说明系统一致。",
+          "required": true
+        },
+        {
+          "name": "requests",
+          "description": "经核对的请求到达时刻及每次令牌消耗。",
+          "required": true
+        },
+        {
+          "name": "labels",
+          "description": "受众语言、单位、可访问的结果标签和颜色。",
+          "required": true
+        }
+      ],
+      "sequence": [
+        "显示桶容量、初始令牌与时间轴，说明各图形含义。",
+        "随时间补充令牌，到达容量后保持上限。",
+        "让请求抵达；有足够令牌时显示消耗和允许结果。",
+        "在不足的时刻显示拒绝，再通过等待和补充说明下一次结果。"
+      ],
+      "invariants": [
+        "请求结果、令牌数和时间使用同一套已核验规则。",
+        "相同时刻对应相同画面，支持跳转和离线截帧。",
+        "允许与拒绝同时有文字或形状提示，不只依赖颜色。"
+      ],
+      "gotchas": [
+        "连续补充与按固定间隔补充不能混用同一示意规则。",
+        "原案例选 Canvas 且不使用库；它是该例的运行限制，不是本库全局工具要求。"
+      ],
+      "relatedGuides": [
+        "references/animation-thinking.md",
+        "references/hyperframes.md",
+        "references/reference-spec.md"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "未提供实际服务参数、算法实现或可运行工程。",
+        "页面确证时间确定性要求；具体桶、请求图形和状态交接为本库适配，未观察原视频。"
+      ],
+      "adaptation": {
+        "basis": "authored",
+        "note": "原页确证令牌桶说明、Canvas 和每帧由时间确定的要求；请求演示、容量边界和可访问标签由本库拟定。"
+      }
+    },
+    {
+      "id": "paper-product-explainer",
+      "title": "纸面标注产品介绍",
+      "category": "product-film",
+      "tags": [
+        "纸面",
+        "手写",
+        "产品定位",
+        "动感文字",
+        "paper",
+        "marker",
+        "kinetic-type",
+        "positioning"
+      ],
+      "sources": [
+        "ik-builds-b8bdcf"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "以定位文档决定买家文案，纸面标注与大字交替说明产品做什么。以下分镜是本库适配。",
+      "adaptation": {
+        "basis": "authored",
+        "note": "来源无逐镜结构；以下四拍是本库作者建议，未从视频观察。"
+      },
+      "inputs": [
+        {
+          "name": "positioning",
+          "description": "受众、单句定位和实际能力文档",
+          "required": true
+        },
+        {
+          "name": "brand",
+          "description": "真实标志、字标字体与颜色",
+          "required": true
+        },
+        {
+          "name": "copy",
+          "description": "经核实的买家用语及禁用词",
+          "required": true
+        },
+        {
+          "name": "sound",
+          "description": "可用音乐段落与标注事件音效",
+          "required": false
+        }
+      ],
+      "sequence": [
+        "纸面大字提出买家关心的问题",
+        "手写标注圈出产品处理的具体对象",
+        "用受力或形变动作显出能力，切换明暗制造段落",
+        "大字给出直接价值，再回到真实品牌落版"
+      ],
+      "invariants": [
+        "文案说买家事实，不展示动画术语",
+        "每个初始姿态可从时间零点复现",
+        "每次交接只有一个主要动作，保留退出动作"
+      ],
+      "gotchas": [
+        "不填造百分比、客户名或效果倍数",
+        "手写路径需可绘制几何，而非只换字体"
+      ],
+      "relatedGuides": [
+        "references/hyperframes.md",
+        "references/film-choreography/registry.json"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "未附定位、标志、音频或可运行项目",
+        "来源强调工艺而无逐镜分镜；本库适配未渲染"
+      ]
+    },
+    {
+      "id": "photo-print-launch",
+      "title": "照片到实体打印发布片",
+      "category": "product-film",
+      "tags": [
+        "照片",
+        "打印",
+        "连续镜头",
+        "玻璃",
+        "photo",
+        "launch",
+        "continuous",
+        "glass"
+      ],
+      "sources": [
+        "twoclipping-221cab"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "从字标、照片操作到下单与实体展示，用形状接力表现数字内容变成实物。",
+      "adaptation": {
+        "basis": "authored",
+        "note": "将来源多阶段连拍压缩成五段；品牌和产品操作需替换。"
+      },
+      "inputs": [
+        {
+          "name": "brand",
+          "description": "真实字标、字体及界面颜色",
+          "required": true
+        },
+        {
+          "name": "photos",
+          "description": "获准使用的照片与调整前后对齐图",
+          "required": true
+        },
+        {
+          "name": "components",
+          "description": "照片选择、参数调整、购买与订单状态",
+          "required": true
+        },
+        {
+          "name": "wallFootage",
+          "description": "实体展示场景素材",
+          "required": true
+        },
+        {
+          "name": "track",
+          "description": "音乐段落和事件音效",
+          "required": false
+        }
+      ],
+      "sequence": [
+        "字标收成圆点，点扩展为入口，再揭开照片",
+        "照片展开成网格，选择一张进入参数调整",
+        "照片由设备界面接到网页与打印商品卡",
+        "购买按钮接成订单进度，最后进入实体场景",
+        "实体展示收回圆点，再还原字标"
+      ],
+      "invariants": [
+        "下一场的形状从当前主体生长，保持空间接续",
+        "操作与状态使用真实产品事实",
+        "逐时定位素材时等待解码完成"
+      ],
+      "gotchas": [
+        "铺满画面的形状需覆盖四角",
+        "玻璃位移与素材跳帧需单独验证"
+      ],
+      "relatedGuides": [
+        "references/product-film-direction.md",
+        "references/film-methods.md"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "照片、品牌、墙面素材及工程均需另供",
+        "玻璃效果、素材寻帧及首尾回环未验证"
+      ]
+    },
+    {
+      "id": "ugc-proof-promo",
+      "title": "真实片段与操作证明宣传片",
+      "category": "product-film",
+      "tags": [
+        "UGC",
+        "实拍",
+        "操作证明",
+        "匹配剪辑",
+        "ugc",
+        "footage",
+        "match-cut",
+        "proof"
+      ],
+      "sources": [
+        "twoclipping-6dd14e"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "先用一句承诺带出真实操作，再用已有视频与可核实结果证明产品价值。",
+      "adaptation": {
+        "basis": "authored",
+        "note": "将来源素材与结果镜头压缩，证明内容改由真实产品输出承担。"
+      },
+      "inputs": [
+        {
+          "name": "brand",
+          "description": "产品名、单句承诺、强调色",
+          "required": true
+        },
+        {
+          "name": "components",
+          "description": "少量真实操作及关键输出",
+          "required": true
+        },
+        {
+          "name": "clips",
+          "description": "有使用权限的竖屏片段与精选主片",
+          "required": true
+        },
+        {
+          "name": "proof",
+          "description": "经批准的结果数据；没有则展示具体输出",
+          "required": true
+        },
+        {
+          "name": "track",
+          "description": "段落、重拍和可用事件音效",
+          "required": false
+        }
+      ],
+      "sequence": [
+        "钩子逐词出现，关键词匹配到产品界面",
+        "光标操作完成关键输出，按钮打开素材场",
+        "片段墙筛出代表素材，再将一条变成主片",
+        "主片与结果并列，用经过确认的信息落地证明",
+        "关键词短句接品牌落版"
+      ],
+      "invariants": [
+        "每镜围绕一个可读信息",
+        "匹配剪辑按实际位置对齐",
+        "真实素材按时间解码，避免前次寻帧残留"
+      ],
+      "gotchas": [
+        "3D 元素上的透明度或滤镜可能压平层次，改在外层处理",
+        "数据与素材许可均需本项目证据"
+      ],
+      "relatedGuides": [
+        "references/product-film-direction.md",
+        "references/film-choreography/registry.json"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "未附素材、产品组件或可运行项目",
+        "媒体寻帧、3D 层级及音画时点未验证"
+      ]
+    },
+    {
+      "id": "lyrics-vocal-beat-typography",
+      "title": "歌词随人声与节拍出现",
+      "category": "typography",
+      "tags": [
+        "歌词",
+        "动态字体",
+        "人声同步",
+        "lyrics",
+        "kinetic-type",
+        "vocal-sync",
+        "beat"
+      ],
+      "sources": [
+        "samaote-5e2fc2"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "以已有歌曲为时间依据，让歌词随对应人声出现；图形变化借节拍组织重音和段落交接。",
+      "inputs": [
+        {
+          "name": "audio",
+          "description": "有使用权限的音乐，以及需要展示的片段。",
+          "required": true
+        },
+        {
+          "name": "lyrics",
+          "description": "校对过的歌词、语言、逐句或逐词时刻。",
+          "required": true
+        },
+        {
+          "name": "typeStyle",
+          "description": "可使用的字体、颜色和文字安全区。",
+          "required": true
+        }
+      ],
+      "sequence": [
+        "在乐句开始前建立一处稳定排版和可读位置。",
+        "歌词随对应人声进入，在重音或拍点完成主要变化。",
+        "上句保留到读完，再通过位置或字形交接进入下一句。",
+        "音乐段落变化时调整排版密度，末句收束到可读停顿。"
+      ],
+      "invariants": [
+        "文字时刻以实际人声为依据，不能只按均匀节拍分词。",
+        "主运动的重音与所选节拍对应；歌词语意和阅读优先。",
+        "替换歌词后重排字宽与断句，保留至少一次完整可读状态。"
+      ],
+      "gotchas": [
+        "快句、连音和多语言会使逐词时刻不同于节拍格。",
+        "页面提供同步目标，没有提供歌词文件、时间码或字形编排。"
+      ],
+      "relatedGuides": [
+        "references/animation-thinking.md",
+        "references/film-edit.md",
+        "references/hyperframes.md"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "未镜像歌曲或歌词，也未提供字体授权和可运行工程。",
+        "未试听人声或观察原视频；时序和排版效果需要使用实际素材另行验证。"
+      ],
+      "adaptation": {
+        "basis": "authored",
+        "note": "原页确证歌词、动画与已有音乐的人声和节拍同步；排版位置、句间交接和阅读停顿由本库拟定。"
+      }
+    },
+    {
+      "id": "ui-state-loop",
+      "title": "单体 UI 状态循环",
+      "category": "ui-loop",
+      "tags": [
+        "界面",
+        "循环",
+        "弹簧",
+        "拖拽",
+        "ui",
+        "loop",
+        "morph",
+        "spring"
+      ],
+      "sources": [
+        "twoclipping-5cba86",
+        "demonugc-4c5753"
+      ],
+      "reviewedAt": "2026-10-09",
+      "summary": "同一容器承载连续控件状态，以光标动作串联，最后回到起始姿态。",
+      "adaptation": {
+        "basis": "authored",
+        "note": "两页显示相同配方，合并一条并保留各自归属。分镜压缩自页面 Prompt。"
+      },
+      "inputs": [
+        {
+          "name": "brand",
+          "description": "界面字体、控件样式与强调色",
+          "required": true
+        },
+        {
+          "name": "states",
+          "description": "有操作因果的状态清单及实际组件",
+          "required": true
+        },
+        {
+          "name": "track",
+          "description": "可用音乐及已测节拍；静音版本可省略",
+          "required": false
+        }
+      ],
+      "sequence": [
+        "按钮受点击变为加载与完成状态",
+        "容器扩展成播放器，再将进度操作接到滑杆",
+        "滑杆端点交给开关与标签指示器",
+        "标签展开为图表，再收拢到搜索命令",
+        "搜索确认生成提示，容器与光标回到起点"
+      ],
+      "invariants": [
+        "状态间保留同一容器的位置与形状连续性",
+        "拖拽时数值跟随光标，释放后才回弹",
+        "视觉由时间求值，首尾包含光标位置和速度一致"
+      ],
+      "gotchas": [
+        "内容进出独立计时，避免变形时文字叠加",
+        "缩放中的文字需检查清晰度"
+      ],
+      "relatedGuides": [
+        "references/film-methods.md",
+        "references/film-choreography/registry.json"
+      ],
+      "status": "recipe",
+      "observation": {
+        "basis": "page-prompt",
+        "videoWatched": false,
+        "audioHeard": false,
+        "rendered": false
+      },
+      "limitations": [
+        "来源提供 Prompt，不含本项目组件或可运行工程",
+        "节奏、弹簧观感和循环接缝尚未验证"
+      ]
+    }
+  ]
+}

@@ -1105,6 +1105,10 @@
     "tools/film-methods/prepare.cjs",
     "tools/film-methods/motion.js",
     "references/film-methods.md",
-    "references/prompt-motion.md"
+    "references/prompt-motion.md",
+    "references/prompt-motion/README.md",
+    "references/prompt-motion/source-index.json",
+    "references/prompt-motion/templates.json",
+    "tools/prompt-motion/library.cjs"
   ]
 }

@@ -28,7 +28,8 @@ then `npm run sources:check`, `npm run specs:check` and `npm test` on a frozen i
 component source and output observations. Source-only scripts, WSL, cloud tools and unheard audio
 remain unverified; structural checks never substitute for Visual Acceptance.
 
-Prompt Motion is a reference collection, not an installable upstream. The case entry points and
-observation limits are in [`prompt-motion.md`](../skill/references/prompt-motion.md). Use the
-existing `reference.md` / `reference-evidence.json` flow for adoption; do not ship its videos
-without explicit redistribution authority.
+Prompt Motion cases are reusable through the bundled
+[template library](../skill/references/prompt-motion/README.md). Maintain its indexed sources,
+curated recipes and review candidates with [the maintenance guide](prompt-motion-template-maintenance.md).
+The [case entry points](../skill/references/prompt-motion.md) preserve observation limits and
+the existing `reference.md` / `reference-evidence.json` adoption flow.

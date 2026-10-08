@@ -26,7 +26,8 @@
     "package:skill": "node scripts/package.cjs",
     "install:skill": "node scripts/install-local.cjs",
     "sources:import:taste": "node scripts/import-taste-skill.cjs",
-    "sources:import:film": "node scripts/import-film-sources.cjs"
+    "sources:import:film": "node scripts/import-film-sources.cjs",
+    "templates:discover": "node scripts/refresh-prompt-motion-index.cjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.14.1"
