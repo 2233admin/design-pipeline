@@ -369,6 +369,11 @@ the package and does not require a global skill installation. Start with its `be
 router, use full coverage unless a narrow repair qualifies for quick coverage, and use its
 change-scoped review protocol for changed UI.
 
+Whenever styles are written, edited or reviewed, also use `references/good-css.md`. Its complete
+pinned practices, category references and offline specimens are built in, including for plain
+CSS, utility classes, StyleX and CSS-in-JS. Read the matching entries and preserve their conditions
+alongside project tokens, browser support, semantics and existing motion/evidence contracts.
+
 Catalog CLIs are escape hatches. Open them only when `designer-pipeline route` selects that catalog
 as the primary knowledge door, or when a listed secondary is needed as reference. Do not search
 MengTo, Prism, Astryx, shadcnio, DesignMD, iart, and holosticker as peer Stage 0 searches.

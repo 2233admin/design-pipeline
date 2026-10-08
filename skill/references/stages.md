@@ -445,6 +445,8 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
 `design.md` records:
 
 - Layout grid and responsive behavior.
+- Applicable CSS practices from `references/good-css.md`: intrinsic layout, logical axes,
+  content/overflow and token decisions, target-browser support and usable fallbacks.
 - Color tokens and contrast posture. For website references, these must cite the ready
   `palette-evidence.json`, preserve DOM and raster-media sources separately, and record coverage,
   luminance, saturation, and temperature relationships rather than listing accents alone.
@@ -738,6 +740,12 @@ against actual outputs and checks; tasks.md existence does not verify decomposit
 
 Implement directly from `design.md` and `tasks.md`.
 
+Whenever writing, editing or reviewing styles (plain CSS, utility classes, StyleX, CSS-in-JS or
+inline styles), use the built-in `references/good-css.md` and read the matched original entries
+before implementation. Preserve project tokens, semantic controls and existing runtime ownership;
+test newer features and their fallbacks against the actual target browser. The local specimen
+builder in `tools/good-css/` provides bounded studies without an external skill installation.
+
 For a bounded drawing, image, typography, layout or rendering task, use `tools/README.md` as a
 progressive tool index. Load one relevant guide and implementation; keep the selected project
 runtime and existing evidence contract. Give workers real inputs and a visible goal, and have
@@ -830,6 +838,11 @@ Rules:
 ## Stage 6: Gate Review
 
 Before claiming completion, write `qa.md` using `references/qa-checklist.md` with the result of these gates:
+
+For changed styles, include the applied good-css entries, browser/fallback observations, narrow
+content and RTL/CJK/zoom checks where relevant, keyboard/focus and reduced-motion behavior. Reuse
+the existing interface, composition and interaction checks; source integrity does not establish
+Component Conformance or Visual Acceptance.
 
 - Visual gate: composition is non-generic, brand/product signal is clear, palette is not one-note, typography fits the surface.
 - Impeccable gate: the selected visitor mode is explicit, refinement has not become a hidden

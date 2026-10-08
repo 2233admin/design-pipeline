@@ -1,0 +1,77 @@
+<template data-specimen data-height="380">
+  Follow the link. The two pages crossfade, the header holds still, and the readout says yes. In Firefox the page changes at once.
+</template>
+
+<style>
+  @layer demo {
+    /* A whole page, so it covers the stage. */
+    :root {
+      background: var(--bp-panel);
+    }
+
+    main {
+      display: grid;
+      align-content: start;
+      gap: 1.5rem;
+      padding: 1.5rem;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-block-end: 1rem;
+      border-block-end: 1px solid var(--bp-line-faint);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      display: grid;
+      place-items: center;
+      min-height: 12rem;
+    }
+
+    h1 {
+      font-size: 4rem;
+    }
+
+    .b.page {
+      background: var(--bp-ink);
+      color: var(--bp-panel);
+    }
+
+    [data-page="a"] .b,
+    [data-page="b"] .a {
+      display: none;
+    }
+  }
+</style>
+
+<main>
+<header>
+  <p>The header is the same on both pages.</p>
+  <a class="a" href="?page=b">Go to page B</a>
+  <a class="b" href="?page=a">Go to page A</a>
+</header>
+
+<div class="placeholder page a"><h1>Page A</h1></div>
+<div class="placeholder page b"><h1>Page B</h1></div>
+</main>
+
+<footer class="status">
+  <p>arrived with a view transition <output>no</output></p>
+</footer>
+
+<script>
+  /* A view transition needs two documents. Both are this specimen, and the
+     query string picks which page it shows. */
+  document.documentElement.dataset.page = new URLSearchParams(location.search).get("page") ?? "a";
+
+  addEventListener("pagereveal", (event) => {
+    if (event.viewTransition) document.querySelector("output").textContent = "yes";
+  });
+</script>

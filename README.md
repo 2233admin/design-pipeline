@@ -120,6 +120,8 @@ node "$HOME/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs" \
 
 Agent 提示示例：“在当前项目里运行 `composition scaffold --template visual-craft --output visual-craft-study`，用复制出的 Canvas helper 做一个可拖动进度、支持乱序重绘的小型绘画与排版 study；保留 DOM 正文语义，渲染后检查不同尺寸和文本溢出。”轻量脚手架只创建新目录中的 study 文件，不初始化影片或工作流状态。仓库内置其他工具见 [工具索引](skill/tools/README.md)。
 
+CSS 写作和审查内置 [Good CSS](skill/references/good-css.md)：完整保留已审核上游的 47 个实践、8 类指南和全部示例素材，逐项说明项目适配与验证条件。[离线示例工具](skill/tools/good-css/README.md) 只需 Node.js，不依赖额外安装的 skill。
+
 ## 从 GitHub Release 安装
 
 如果不想克隆仓库，直接下载最新正式版 `v0.10.0` Release 的资产（预发布版资产在发布后见 Releases 页面）。需要 Node.js 22 或更新版本。

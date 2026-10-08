@@ -1,0 +1,57 @@
+<template data-specimen data-height="340">
+  Click anywhere on the card, the corners and the paragraph included: the link count goes up. Click Save: only the button count goes up. Tab to the link: the ring is drawn round the whole card.
+</template>
+
+<style>
+  @layer demo {
+    .card {
+      display: grid;
+      justify-items: start;
+      gap: 0.75rem;
+      inline-size: min(100vw - 3rem, 24rem);
+      padding: 1.5rem;
+      border: 1px solid var(--bp-line-faint);
+      border-radius: var(--bp-radius);
+      background: var(--bp-panel);
+    }
+
+    h3 {
+      font-size: 1.75rem;
+    }
+
+    .card-link {
+      color: inherit;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .card:hover {
+        border-color: var(--bp-ink);
+      }
+    }
+  }
+</style>
+
+<div class="center">
+<!-- html -->
+</div>
+
+<footer class="status">
+  <p>link followed <output data-count="a"></output></p>
+  <p>button clicked <output data-count="button"></output></p>
+</footer>
+
+<script>
+  /* The link is stopped from leaving the page, and each control counts its clicks. */
+  for (const output of document.querySelectorAll("[data-count]")) {
+    let count = 0;
+    const show = () => (output.textContent = count);
+
+    document.querySelector(`.card ${output.dataset.count}`).addEventListener("click", (event) => {
+      event.preventDefault();
+      count += 1;
+      show();
+    });
+
+    show();
+  }
+</script>

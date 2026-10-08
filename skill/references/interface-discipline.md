@@ -37,6 +37,9 @@ pipeline; it does not paraphrase or weaken individual checks.
 3. Read the selected domain `SKILL.md` and only the referenced detail files relevant to the
    change. Keep existing project design-system and framework conventions unless the design change
    explicitly replaces them.
+   When styles are involved, also follow `good-css.md` and its matched original practice entries
+   for concrete CSS implementation. Keep the same review scope and finding classifications;
+   target-browser fallbacks and project token/semantic constraints govern adaptation.
 4. For a diff, review `upstream/skills/interface-review/SKILL.md` before judging results. Resolve
    the affected UI and its consumers, inspect removed lines where applicable, and classify every
    finding as `Introduced`, `Regression`, or `Pre-existing`. Do not make a pre-existing problem

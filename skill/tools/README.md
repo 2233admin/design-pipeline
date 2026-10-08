@@ -20,6 +20,7 @@ by the visual problem; using a helper does not create a film project or select a
 | Poses, spacing, acting, audiovisual phrasing | [Animation thinking](../references/animation-thinking.md) | Existing choreography and motion study |
 | DOM/SVG timelines, scroll, layout or existing Three.js property animation | [Runtime guidance](../references/capability-routing.md) | Local GSAP playbook, Anime.js construction/seek/cleanup methods; companions optional |
 | Layout/text checks, interactions, 3D and GPU materials | [Composition](../references/composition-gate.md), [runtime routing](../references/graphics-runtime-routing.md) | Existing capture, gates and project renderer |
+| Intrinsic layout, CSS tokens, content/overflow, control states and native CSS motion | [Good CSS](../references/good-css.md), [offline specimens](good-css/README.md) | Complete pinned practices and a Node-only builder for local live studies |
 
 Read this index first, then one tool guide, then the needed function/example. Do not preload the
 whole source library. `../vendor/huashu-art-motion/manifest.json` records provenance, not another runtime or

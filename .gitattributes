@@ -1,2 +1,5 @@
 * text=auto eol=lf
 skill/references/**/upstream/** -text
+skill/vendor/good-css/upstream/** -text
+# Preserve the reviewed license's original whitespace as well as its bytes.
+skill/vendor/good-css/upstream/harness/public/fonts/GeistMono-OFL.txt -whitespace

@@ -364,7 +364,7 @@ test("native review shows canonical output/check paths for equivalent plan spell
   assert.equal(completed.status, "recorded", completed.failure);
   assert.deepEqual(completed.next.evidence.outputs.map(metadata => metadata.path), ["outline.html"]);
   assert.deepEqual(completed.next.evidence.checks.map(metadata => metadata.path), ["outline-check.json"]);
-  assert.deepEqual(completed.next.show, [path.join(fixture.dir, "outline.html")]);
+  assert.deepEqual(completed.next.show, [path.join(fs.realpathSync.native(fixture.dir), "outline.html")]);
 });
 
 test("native visual completion cannot promote arbitrary check rows over a failed observed interaction", () => {
@@ -539,7 +539,7 @@ test("public native visual review asks for its exact evidence and advances only 
   assert.deepEqual(review.artifacts, JSON.parse(fs.readFileSync(path.join(fixture.dir, artifact), "utf8")));
   assert.deepEqual(review.evidence.outputs.map(item => item.path), ["outline.html"]);
   assert.deepEqual(review.evidence.checks.map(item => item.path), ["outline-check.json"]);
-  assert.ok(review.show.includes(path.join(fixture.dir, "outline.html")));
+  assert.ok(review.show.includes(path.join(fs.realpathSync.native(fixture.dir), "outline.html")));
   assert.equal(run("next").value.stage, "visual-review");
   assert.equal(run("decide", "--choice", "surface", "--verdict", "complete", "--artifact", artifact).exitCode, 1);
   assert.equal(run("decide", "--choice", "surface", "--verdict", "reject", "--answer", "A future task cannot be rejected.").exitCode, 1);
@@ -711,7 +711,7 @@ test("native scope maps a nested change's paths into Git coordinates", t => {
   const action = nextVisualTask(nested, { plan: fixture.plan });
   assert.equal(action.status, undefined, action.blockers?.join("; "));
   const active = JSON.parse(fs.readFileSync(path.join(nested, "state.json"))).extensions.visualTasks.active;
-  assert.equal(active.baseline.root, fixture.dir);
+  assert.equal(active.baseline.root, fs.realpathSync.native(fixture.dir));
   assert.ok(active.authorization.every(file => file.startsWith("changes/nested/")));
   assert.equal(decideVisualTask(nested, { choice: "outline", verdict: "complete", artifact: visualEvidence({ dir: nested, plan: fixture.plan }, action) }).status, "recorded");
 });
@@ -855,7 +855,7 @@ test("native completion rechecks scope and bound bytes after writing observed ev
     let injected = false;
     fs.writeFileSync = function(file, ...args) {
       const result = write.call(fs, file, ...args);
-      if (!injected && path.resolve(String(file)) === path.join(fixture.dir, "outline-completion.json")) {
+      if (!injected && path.resolve(String(file)) === path.join(fs.realpathSync.native(fixture.dir), "outline-completion.json")) {
         injected = true;
         write.call(fs, path.join(fixture.dir, changed), "changed after evidence write");
       }

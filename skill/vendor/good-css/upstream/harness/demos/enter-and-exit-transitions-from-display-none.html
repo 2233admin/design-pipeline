@@ -1,0 +1,37 @@
+<template data-specimen data-height="360">
+  Open and close both. In Chrome each one fades and rises in, then fades out before it is removed, and the dialog's backdrop fades with it. With Reduce Motion on they still fade, and do not move.
+</template>
+
+<style>
+  @layer demo {
+    .center {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    dialog,
+    [popover] {
+      max-width: 20rem;
+    }
+
+    dialog p {
+      margin-block-end: 1rem;
+    }
+  }
+</style>
+
+<div class="center">
+  <button commandfor="dialog" command="show-modal">Open the dialog</button>
+  <button popovertarget="popover">Toggle the popover</button>
+</div>
+
+<dialog id="dialog">
+  <p>A modal dialog.</p>
+  <button commandfor="dialog" command="close">Close</button>
+</dialog>
+
+<div id="popover" popover>
+  <p>A popover. Click outside it or press Escape.</p>
+</div>

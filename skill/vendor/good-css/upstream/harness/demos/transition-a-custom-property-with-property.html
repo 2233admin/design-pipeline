@@ -1,0 +1,53 @@
+<template data-specimen data-height="320">
+  Hover the card, or tab to its link. The arrow turns, the bar grows and the last line fades in, all together, and the readout runs through the numbers between 0 and 1 instead of jumping.
+</template>
+
+<style>
+  @layer demo {
+    .card {
+      display: grid;
+      gap: 1rem;
+      inline-size: min(100vw - 3rem, 24rem);
+      padding: 1.5rem;
+    }
+
+    .card a {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .bar {
+      height: 2px;
+      background: var(--bp-ink);
+    }
+  }
+</style>
+
+<div class="center">
+<article class="box card">
+  <a href="#">Hover or focus me <span class="icon" aria-hidden="true">→</span></a>
+  <div class="bar"></div>
+  <p class="more">This line is at the opacity of <code>--progress</code>.</p>
+</article>
+</div>
+
+<footer class="status">
+  <p>--progress on the card <output></output></p>
+</footer>
+
+<script>
+  const card = document.querySelector(".card");
+  const output = document.querySelector("output");
+
+  const read = () => {
+    output.textContent = Number(getComputedStyle(card).getPropertyValue("--progress")).toFixed(2);
+    requestAnimationFrame(read);
+  };
+
+  read();
+</script>

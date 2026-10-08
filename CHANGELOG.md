@@ -6,6 +6,9 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Complete pinned good-css source, eight CSS category references, practice-by-practice project
+  adaptation and an offline specimen builder. Existing CSS implementation/review routes now
+  expose the built-in library; no external skill, new dependency or acceptance gate is required.
 - `composition scaffold --template visual-craft` copies the drawing helper, browser study and
   license into a new project directory. Skill installation and invocation now distinguish
   the installed resource root from the user's project, with a dedicated installation guide.
@@ -51,6 +54,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Windows native task verification and offline study boundaries now compare physical paths
+  consistently across long/short aliases while retaining link and case-sensitive root rejection.
+- Pointer capture retains each native input step after driver delays, with spacing between
+  delivered moves; real discontinuities and unresponsive targets still fail existing checks.
 - Render gate: a one-step change between two still neighbours (each under a tenth of it) counts as
   a cut even when camera moves fill its 2 s window; such planned cuts were reported missing.
 - Render gate: a planned cut also counts when one 10 fps step replaces a block of the frame (the

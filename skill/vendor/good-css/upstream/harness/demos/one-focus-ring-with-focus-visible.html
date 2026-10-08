@@ -1,0 +1,44 @@
+<template data-specimen data-height="220">
+  Press Tab through the row. Each ring takes the color and size of its element. A mouse click on a button shows no ring, and a click into the input does.
+</template>
+
+<style>
+  @layer demo {
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2rem;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Each element has its own color and size. The ring takes both. */
+    a {
+      color: oklch(0.85 0.16 115);
+    }
+
+    button {
+      border: 1px solid currentColor;
+      box-shadow: none;
+    }
+
+    .mint {
+      color: oklch(0.8 0.11 165);
+    }
+
+    .large {
+      padding: 0.75rem 1.5rem;
+      font-size: 2rem;
+      color: oklch(0.75 0.17 350);
+    }
+  }
+</style>
+
+<div class="center">
+<div class="box row">
+<a href="#">A link</a>
+<button class="mint">A button</button>
+<button class="large">A large button</button>
+<input type="text" value="A text input" aria-label="A text input">
+</div>
+</div>

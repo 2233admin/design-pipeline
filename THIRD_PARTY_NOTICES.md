@@ -501,3 +501,24 @@ license, and Greg Zaal's Kloofendal 48d Partly Cloudy HDR from Poly Haven (CC0).
 Exact revisions, scope and full-license locations are listed in
 [the example's notices](examples/enamel-badge/THIRD_PARTY_NOTICES.md).
 The original reference video, screenshots and audio are not redistributed.
+
+## vojtaholik/good-css
+
+The complete byte-preserved source snapshot under `skill/vendor/good-css/upstream/` is from
+https://github.com/vojtaholik/good-css at reviewed commit
+`6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef` (reviewed 2026-10-08).
+All 133 tracked files are retained, including the 47 practices/specimens, eight generated reference
+files, harness assets, source generator/checker and inert plugin/deployment metadata.
+
+- Repository code/text/assets: MIT, Copyright (c) 2026 Vojta Holik. Full original license:
+  `skill/vendor/good-css/upstream/LICENSE`.
+- Inter font: Copyright (c) 2016 The Inter Project Authors, SIL Open Font License 1.1.
+  Full original license: `skill/vendor/good-css/upstream/harness/public/fonts/Inter-OFL.txt`.
+- Geist Mono font: Copyright 2024 The Geist Project Authors, SIL Open Font License 1.1.
+  Full original license: `skill/vendor/good-css/upstream/harness/public/fonts/GeistMono-OFL.txt`.
+- Original practice credits and source links remain in upstream `PRACTICES.md`.
+
+`skill/references/good-css.md` adapts the practices into the existing project workflow.
+`skill/tools/good-css/build-study.cjs` adapts the harness framing method into a local Node-only
+study builder. Generated studies retain the MIT notice, font licenses and original practices.
+The package does not install upstream dependencies, activate its plugin or run its deployment.

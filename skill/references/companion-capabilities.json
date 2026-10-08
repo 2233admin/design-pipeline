@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline-companions.v1",
-  "updatedAt": "2026-10-07",
+  "updatedAt": "2026-10-08",
   "groups": [
     {
       "name": "Core pipeline",
@@ -552,6 +552,29 @@
         {"id": "issue-spec", "skill": "gstack-spec", "patterns": [{"source": "GitHub issue", "flags": "i"}]},
         {"id": "code-review", "skill": "gstack-review", "patterns": [{"source": "review", "flags": "i"}]},
         {"id": "pull-request-ship", "skill": "gstack-ship", "patterns": [{"source": "create (?:a )?PR", "flags": "i"}, {"source": "pull request", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "good-css-built-in",
+      "name": "Built-in good-css implementation reference",
+      "skill": "design-pipeline",
+      "level": "enhancement",
+      "source": "https://github.com/vojtaholik/good-css/tree/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
+      "sourceMeta": {
+        "id": "good-css",
+        "kind": "github",
+        "url": "https://github.com/vojtaholik/good-css/tree/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
+        "reviewedRevision": "6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
+        "reviewedContentHash": "fe50d90bf5b9bcbd30d9696886f8f1c67fb3d3cfadc4a4a564f321adc7929a08",
+        "contentHashScope": "complete Git tree: sorted POSIX path, NUL, SHA-256 blob hash, newline",
+        "reviewedAt": "2026-10-08T00:00:00.000Z",
+        "freshnessDays": 365,
+        "license": "MIT; bundled Inter and Geist Mono fonts SIL-OFL-1.1",
+        "useBoundary": "built-in source reference and maintained local specimen adaptation; no upstream install or deployment"
+      },
+      "fallback": "Use references/good-css.md, its bundled original entries and tools/good-css/ offline studies within existing interface and motion checks.",
+      "requirements": [
+        {"id": "built-in-guide-routed", "skill": "design-pipeline", "patterns": [{"source": "references/good-css\\.md"}]}
       ]
     }
   ],

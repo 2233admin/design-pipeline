@@ -52,6 +52,13 @@ material techniques or pixel comparison. Load only that tool, preserve the exist
 and inspect the resulting surface at its real viewport. Source tools support the chosen direction;
 their example styles, coordinates and characters do not define the product.
 
+For page/component styles, follow `good-css.md` and its matched original entries across CSS,
+utility classes and CSS-in-JS. Prefer a fitting intrinsic/native solution, preserve project
+DESIGN/MOTION tokens, and verify target-browser support and usable fallbacks. Use the bundled
+offline specimen builder for a bounded study; keep film seeking and interaction evidence on
+their existing routes. In probe/review, record applied entries and actual fallback, focus,
+content/viewport and reduced-motion observations in the existing QA evidence.
+
 Use the task fields in `stages.md#stage-4-tasks`: one visual goal with explicit inputs, scope,
 outputs, checks and repair path. For references, first render bounded structure/occlusion in a
 graybox. Then read complete `reference check`, `reconstruction check` and applicable `scene check`

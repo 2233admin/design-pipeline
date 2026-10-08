@@ -191,6 +191,52 @@ test("a card that follows the pointer records real motion in the canonical sampl
   }
 });
 
+test("delayed native pointer delivery keeps intermediate positions and real jumps still fail the smoothness check", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-delayed-"));
+  let site = null;
+  try {
+    const movesFile = path.join(dir, "moves.json"), wrapper = path.join(dir, "puppeteer.cjs");
+    const modulePath = PUPPETEER_MODULE ? path.resolve(PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
+    // Delay one real native move like a stalled driver/CDP round trip. Recording stays in the
+    // browser's rAF; the wrapper neither synthesizes DOM input nor changes captured samples.
+    fs.writeFileSync(wrapper, `const fs=require("node:fs"),puppeteer=require(${JSON.stringify(modulePath)});
+module.exports={...puppeteer,async launch(options){
+  const browser=await puppeteer.launch(options),newPage=browser.newPage.bind(browser),close=browser.close.bind(browser),moves=[];
+  browser.newPage=async()=>{const page=await newPage(),move=page.mouse.move.bind(page.mouse);
+    page.mouse.move=async(x,y,...args)=>{const startedAt=performance.now();if(moves.length===6)await new Promise(resolve=>setTimeout(resolve,250));
+      const result=await move(x,y,...args);moves.push({x,y,startedAt,t:performance.now()});return result;};return page;};
+  browser.close=async()=>{fs.writeFileSync(${JSON.stringify(movesFile)},JSON.stringify(moves));return close();};return browser;
+}};`);
+    fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><style>${CARD_CSS}</style><div id="card"></div><script>
+addEventListener("mousemove",event=>{document.querySelector("#card").style.transform="translateX("+(event.clientX-200)+"px)";});
+</script>`);
+    site = await fileServer(dir);
+    const doc = document_(`${site.origin}/index.html`, sweep("delayed-sweep", 600, 800));
+    const raw = await captureInteraction(path.join(dir, "interaction.json"), { doc, puppeteerModule: wrapper });
+    const moves = JSON.parse(fs.readFileSync(movesFile, "utf8"));
+    assert.ok(Math.max(...moves.slice(1).map((move, index) => move.t - moves[index].t)) >= 250, "the native input driver actually stalled");
+    // A 60 Hz step needs a new wait after actual delivery, even after the 250 ms stall.
+    // Allow timer rounding to 15 ms; expired absolute deadlines must not burst with no wait.
+    const pauses = moves.slice(1).map((move, index) => move.startedAt - moves[index].t);
+    assert.ok(Math.min(...pauses) >= 15, `native pointer delivery caught up in a burst: minimum pause ${Math.min(...pauses)}ms`);
+    assert.deepEqual([moves[0].x, moves.at(-1).x], [200, 1080]);
+    assert.ok(Math.max(...moves.slice(1).map((move, index) => move.x - moves[index].x)) <= 25, "a slow native move must not skip intermediate input coordinates");
+    const samples = raw.probes[0].samples, positions = xs(samples), travel = Math.max(...positions) - Math.min(...positions);
+    assert.ok(Math.max(...positions.slice(1).map((x, index) => Math.abs(x - positions[index]))) < travel / 10, "driver delay must not make the responding specimen jump");
+
+    fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><style>${CARD_CSS}</style><div id="card"></div><script>
+addEventListener("mousemove",event=>{if(event.clientX>200)document.querySelector("#card").style.transform="translateX(880px)";});
+</script>`);
+    const jumped = await capture(dir, document_(`${site.origin}/index.html`, sweep("jumping-target", 600, 800)));
+    const jumpPositions = xs(jumped.probes[0].samples), jumpTravel = Math.max(...jumpPositions) - Math.min(...jumpPositions);
+    assert.ok(jumpTravel > 800, "the real pointer input reached the jumping page");
+    assert.ok(Math.max(...jumpPositions.slice(1).map((x, index) => Math.abs(x - jumpPositions[index]))) >= jumpTravel / 10, "an actual target jump must still fail the same smoothness threshold");
+  } finally {
+    if (site) await close(site.server);
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("a page that ignores the pointer records a motionless target and its off-origin request", { skip }, async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "interaction-dead-"));
   let site = null;
@@ -214,6 +260,9 @@ test("a page that ignores the pointer records a motionless target and its off-or
     assert.ok(drift <= 0.5, `an inert page moved the card by ${drift}px`);
     assert.deepEqual([...new Set(samples.map((sample) => sample.transform))], ["none"]);
     assert.deepEqual([...new Set(samples.map((sample) => sample.box.y))], [CANONICAL.box.y]);
+    const evaluated = require("../skill/scripts/interaction-core.cjs").evaluateProbeFile(doc, result);
+    assert.equal(evaluated.status, "failed");
+    assert.ok(evaluated.findings.some(finding => finding.code === "dead-interaction" && finding.severity === "error"));
 
     // The request list is what the external-request finding reads: it carries the off-origin image,
     // and the reload between probes means the second probe sees its own load, not the first's too.

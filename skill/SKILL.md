@@ -56,6 +56,8 @@ name a repository. This is triggered by the work's needs, not a required search 
 ## Open only what this task needs
 
 - Workflow stages, UI, references, implementation and review: `references/stages.md`.
+- CSS authoring or review in any stack: `references/good-css.md` for the complete built-in
+  practice library, project adaptations and offline specimens; load its matched source entries.
 - Detailed route, CLI, gate and receipt contracts: `references/pipeline-reference.md`.
 - `film`, `edit`, and `web` workflow selected by `next`: the matching `references/workflow-*.md`.
 - Supporting drawing, image placement, text fitting, comparison, motion maps and advanced

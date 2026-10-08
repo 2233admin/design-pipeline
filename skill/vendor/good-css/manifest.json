@@ -1,0 +1,1222 @@
+{
+  "schema": "design-pipeline.good-css-source.v1",
+  "source": {
+    "repository": "https://github.com/vojtaholik/good-css",
+    "revision": "6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
+    "gitTree": "a14bae52fb7bd2374faefaf6c62f575aeff8dad5",
+    "committedAt": "2026-10-07T20:56:17+02:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-08",
+    "scope": [
+      "**"
+    ]
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Vojta Holik"
+    },
+    {
+      "path": "upstream/harness/public/fonts/Inter-OFL.txt",
+      "license": "OFL-1.1",
+      "copyright": "Copyright (c) 2016 The Inter Project Authors"
+    },
+    {
+      "path": "upstream/harness/public/fonts/GeistMono-OFL.txt",
+      "license": "OFL-1.1",
+      "copyright": "Copyright 2024 The Geist Project Authors"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 133,
+    "byteCount": 881927,
+    "treeSha256": "fe50d90bf5b9bcbd30d9696886f8f1c67fb3d3cfadc4a4a564f321adc7929a08",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": ".claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "2ab4a8489b115e3f40c7bb3a8d503e7c8e13ee93",
+        "size": 398
+      },
+      {
+        "path": ".claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "d56fd6696fd2763d3f80391c6001ad0f3b9ed220",
+        "size": 493
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "oid": "1821b2d725cb7c6fcd205187273b92ca8bb49fa5",
+        "size": 68
+      },
+      {
+        "path": "AGENTS.md",
+        "mode": "100644",
+        "oid": "7439895b9d95e0d1b45bf24e1e95082d86c7e187",
+        "size": 1953
+      },
+      {
+        "path": "bun.lock",
+        "mode": "100644",
+        "oid": "5f6216ccbda639856073be262bdd70d0a9241347",
+        "size": 12583
+      },
+      {
+        "path": "deploy/agent-files.js",
+        "mode": "100644",
+        "oid": "15dfb3f2a605911c08da2ea4193b25ffdae10a9f",
+        "size": 4363
+      },
+      {
+        "path": "deploy/build.js",
+        "mode": "100644",
+        "oid": "7396639a1006ca641fc70c0a72c3a798bffbbcb8",
+        "size": 12113
+      },
+      {
+        "path": "deploy/og.png",
+        "mode": "100644",
+        "oid": "71f64ee028f1facf63027629210e886bdee7d7cd",
+        "size": 91915
+      },
+      {
+        "path": "deploy/page.js",
+        "mode": "100644",
+        "oid": "e691465c728af13292e70a0ebcbb65bcb5b99a11",
+        "size": 6390
+      },
+      {
+        "path": "deploy/pages/about.md",
+        "mode": "100644",
+        "oid": "00a7da8b5f4bf3bd5eb9fd0fd9f9344db4a3b583",
+        "size": 958
+      },
+      {
+        "path": "deploy/pages/contact.md",
+        "mode": "100644",
+        "oid": "28244f11bbb40b10808fb54003186bcfef0f2218",
+        "size": 684
+      },
+      {
+        "path": "deploy/pages/not-found.md",
+        "mode": "100644",
+        "oid": "e4bf42e22ede9db00f34e0a2366e94aa7bdd30e4",
+        "size": 326
+      },
+      {
+        "path": "deploy/pages/privacy.md",
+        "mode": "100644",
+        "oid": "10499329c717da0c0dd45ad853f203ebf5adbb88",
+        "size": 783
+      },
+      {
+        "path": "deploy/site.js",
+        "mode": "100644",
+        "oid": "495efb4faa8603ae6a96862f7455dce5fb488615",
+        "size": 513
+      },
+      {
+        "path": "harness/categories/foundations.svg",
+        "mode": "100644",
+        "oid": "39b069f98b2a7d784f0270a5783a87f256784164",
+        "size": 1945
+      },
+      {
+        "path": "harness/categories/interaction.svg",
+        "mode": "100644",
+        "oid": "10e39e80411a275fd7890a95db186a9004608a05",
+        "size": 1758
+      },
+      {
+        "path": "harness/categories/layout.svg",
+        "mode": "100644",
+        "oid": "fcd85ccb15a6e8b03c258df68628e4adeeaec706",
+        "size": 1652
+      },
+      {
+        "path": "harness/categories/motion.svg",
+        "mode": "100644",
+        "oid": "e5453b992ba8d4edfbc7d55601ed367e02df5698",
+        "size": 1968
+      },
+      {
+        "path": "harness/categories/scroll-and-viewport.svg",
+        "mode": "100644",
+        "oid": "30b6d3a656f44ebc76c58ddf9b705dd3f7ef74e1",
+        "size": 1939
+      },
+      {
+        "path": "harness/categories/show-and-hide.svg",
+        "mode": "100644",
+        "oid": "80762906885566592c92f45900f0b8810f9ff838",
+        "size": 1902
+      },
+      {
+        "path": "harness/categories/spacing-and-shape.svg",
+        "mode": "100644",
+        "oid": "ac704c6a429a0db3517fbf24cbe86453e1f85c69",
+        "size": 1230
+      },
+      {
+        "path": "harness/categories/text-and-media.svg",
+        "mode": "100644",
+        "oid": "b65e787ec513375ce410b620ffaee8d9edc82f3c",
+        "size": 1446
+      },
+      {
+        "path": "harness/demos/accordion-that-animates-its-height.html",
+        "mode": "100644",
+        "oid": "6579019a9882995b13344485a34393af90460b20",
+        "size": 1888
+      },
+      {
+        "path": "harness/demos/anchor-targets-that-clear-a-sticky-header.html",
+        "mode": "100644",
+        "oid": "e7d71f758815f1df643a1c28dd2dda8d86a5ab46",
+        "size": 1263
+      },
+      {
+        "path": "harness/demos/base.css",
+        "mode": "100644",
+        "oid": "c180a7a4c376e65eafc581559c47906e5517e103",
+        "size": 7957
+      },
+      {
+        "path": "harness/demos/carousel-on-native-scroll.html",
+        "mode": "100644",
+        "oid": "eb4b9c852cc39db82954edd83826b7176bf662a4",
+        "size": 1192
+      },
+      {
+        "path": "harness/demos/concentric-nested-radius.html",
+        "mode": "100644",
+        "oid": "6173be00acf2816a9fe93644670c0db71b220a0f",
+        "size": 1121
+      },
+      {
+        "path": "harness/demos/container-queries-with-container-units.html",
+        "mode": "100644",
+        "oid": "b4eb5c3179deb92e40d5ec4268ef9367e3be58cd",
+        "size": 1252
+      },
+      {
+        "path": "harness/demos/content-clear-of-the-notch.html",
+        "mode": "100644",
+        "oid": "bb5899264c3b522ed6e0a38539ed14589ff0a8b8",
+        "size": 2796
+      },
+      {
+        "path": "harness/demos/content-grid-with-breakouts.html",
+        "mode": "100644",
+        "oid": "9efe40d6554eb42b58d63dcda354015e627cc3a8",
+        "size": 960
+      },
+      {
+        "path": "harness/demos/cross-document-view-transitions.html",
+        "mode": "100644",
+        "oid": "0c8a43ec70b070819256f537b9a7b80215398439",
+        "size": 1729
+      },
+      {
+        "path": "harness/demos/enter-and-exit-transitions-from-display-none.html",
+        "mode": "100644",
+        "oid": "55f23610b8e48355858b678298dcbcfc381daa3b",
+        "size": 889
+      },
+      {
+        "path": "harness/demos/fluid-sizes-with-clamp.html",
+        "mode": "100644",
+        "oid": "49bba37f73b9d1d67dff5c459d04a0b5600cd2b4",
+        "size": 1545
+      },
+      {
+        "path": "harness/demos/form-feedback-with-user-invalid.html",
+        "mode": "100644",
+        "oid": "58ae002401005b9a5772189d67b90367211c0380",
+        "size": 900
+      },
+      {
+        "path": "harness/demos/has-for-parent-and-page-state.html",
+        "mode": "100644",
+        "oid": "1989316de7125f3981c74e810ac3a683813089d3",
+        "size": 2776
+      },
+      {
+        "path": "harness/demos/hit-area-larger-than-the-visual.html",
+        "mode": "100644",
+        "oid": "8c6efa616b29a7b3808098447de2a34af945da4b",
+        "size": 1568
+      },
+      {
+        "path": "harness/demos/hover-styles-only-where-hover-exists.html",
+        "mode": "100644",
+        "oid": "2cf755b8296dd399012a237bd0760c75738525d0",
+        "size": 1219
+      },
+      {
+        "path": "harness/demos/icon-sized-by-the-text-beside-it.html",
+        "mode": "100644",
+        "oid": "11c3f2fa5bbfe843c56a446c11b728dbd988826e",
+        "size": 2029
+      },
+      {
+        "path": "harness/demos/image-box-that-holds-any-upload.html",
+        "mode": "100644",
+        "oid": "db088cffba434622c12a3770a64c966046dc31a6",
+        "size": 5259
+      },
+      {
+        "path": "harness/demos/index.js",
+        "mode": "100644",
+        "oid": "881b2f15b344ba935f58dffd3c4f9461a26d19aa",
+        "size": 1162
+      },
+      {
+        "path": "harness/demos/indicator-that-slides-to-the-active-item.html",
+        "mode": "100644",
+        "oid": "a74ed6bf6ad6365ecfae07ad92091c6bba16cb5d",
+        "size": 1269
+      },
+      {
+        "path": "harness/demos/intrinsic-grid.html",
+        "mode": "100644",
+        "oid": "e0d6051d062db629348fca9d3c841b0079e477f2",
+        "size": 529
+      },
+      {
+        "path": "harness/demos/label-centered-on-its-letters-with-text-box.html",
+        "mode": "100644",
+        "oid": "4d0b3b32161bc9692e3f5ff35317d66e4669492f",
+        "size": 3588
+      },
+      {
+        "path": "harness/demos/logical-properties.html",
+        "mode": "100644",
+        "oid": "28fd93b3507d0b0b9d16430acafd6ae5f8674294",
+        "size": 1259
+      },
+      {
+        "path": "harness/demos/long-text-that-wraps-truncates-or-clamps.html",
+        "mode": "100644",
+        "oid": "4fe9181097db33c1edcdebfd2cd4988c9f3fc1d7",
+        "size": 2363
+      },
+      {
+        "path": "harness/demos/motion-tokens.html",
+        "mode": "100644",
+        "oid": "7eddc28604d600a028d9c2580d6b0f76e3d67609",
+        "size": 2853
+      },
+      {
+        "path": "harness/demos/no-rubber-band-bounce-on-desktop.html",
+        "mode": "100644",
+        "oid": "d0b9b17fbb65dfd3585443699bd8df8284d24608",
+        "size": 1634
+      },
+      {
+        "path": "harness/demos/oklch-color.html",
+        "mode": "100644",
+        "oid": "cc8cf512420fde36ce5db945c3e215e6856a2a2d",
+        "size": 2594
+      },
+      {
+        "path": "harness/demos/one-fluid-scale-for-type-and-space.html",
+        "mode": "100644",
+        "oid": "351620f8b95591267a704e9f6c140d6c23016ac3",
+        "size": 1649
+      },
+      {
+        "path": "harness/demos/one-focus-ring-with-focus-visible.html",
+        "mode": "100644",
+        "oid": "702be4eae08f513199dad4371a5142ea4424a434",
+        "size": 979
+      },
+      {
+        "path": "harness/demos/one-set-of-color-tokens-for-light-and-dark.html",
+        "mode": "100644",
+        "oid": "cc9cacecfe819bf676d736c4e39fb6884b3f3394",
+        "size": 2848
+      },
+      {
+        "path": "harness/demos/opt-in-motion.html",
+        "mode": "100644",
+        "oid": "7fadaf554ef95ab3fe461117ac0dce61d7c28287",
+        "size": 665
+      },
+      {
+        "path": "harness/demos/overflow-clip-over-hidden.html",
+        "mode": "100644",
+        "oid": "a3d9099e707288bc6cc818fea23ae134646d8f36",
+        "size": 1000
+      },
+      {
+        "path": "harness/demos/popover-anchored-to-its-trigger.html",
+        "mode": "100644",
+        "oid": "9380d7398434cc418ab604ce48d5e6559280d0da",
+        "size": 1603
+      },
+      {
+        "path": "harness/demos/press-feedback.html",
+        "mode": "100644",
+        "oid": "7b3449f4c40cb030707abe783412bf91729a9281",
+        "size": 755
+      },
+      {
+        "path": "harness/demos/push-one-item-away-with-an-auto-margin.html",
+        "mode": "100644",
+        "oid": "b837e371d51e50b4c38a89ebd82582a7435a2c3b",
+        "size": 1821
+      },
+      {
+        "path": "harness/demos/reveal-with-clip-path.html",
+        "mode": "100644",
+        "oid": "576600de23577c7862cb3636872f8c692e35ec17",
+        "size": 1928
+      },
+      {
+        "path": "harness/demos/safe-alignment.html",
+        "mode": "100644",
+        "oid": "220e3ca6f6130e259711b4c16e4b0ba2bc4c498d",
+        "size": 849
+      },
+      {
+        "path": "harness/demos/scroll-area-between-a-fixed-header-and-footer.html",
+        "mode": "100644",
+        "oid": "71922d6ca86e3c254ea930b6c5540dafba83413c",
+        "size": 3492
+      },
+      {
+        "path": "harness/demos/section-spacing-that-depends-on-its-neighbors.html",
+        "mode": "100644",
+        "oid": "f2de32785608a189a9872a84faa571fdf3cdf8af",
+        "size": 3836
+      },
+      {
+        "path": "harness/demos/shadow-change-that-fades-and-does-not-repaint.html",
+        "mode": "100644",
+        "oid": "d18e45fedb261424796757032cf56c9b42deb2e6",
+        "size": 1014
+      },
+      {
+        "path": "harness/demos/sidebar-that-wraps-on-its-own.html",
+        "mode": "100644",
+        "oid": "a52910571b3dd339d23c935d3f77e5da04778312",
+        "size": 537
+      },
+      {
+        "path": "harness/demos/space-between-siblings-set-by-the-parent.html",
+        "mode": "100644",
+        "oid": "53e961f4e09dad076f8fd7e2c0521eb12a856493",
+        "size": 1902
+      },
+      {
+        "path": "harness/demos/stack-layers-with-grid.html",
+        "mode": "100644",
+        "oid": "1eee37ad156285cfc2b34cc571cd5be596186939",
+        "size": 1399
+      },
+      {
+        "path": "harness/demos/styles-that-apply-only-when-a-scroller-overflows.html",
+        "mode": "100644",
+        "oid": "10c84bc053077cfea3d0ef157ba2d697e2add7e1",
+        "size": 1637
+      },
+      {
+        "path": "harness/demos/subgrid-rows-shared-across-cards.html",
+        "mode": "100644",
+        "oid": "0e662bf82a6681b1a2a3f206d4d623b12ec7ef01",
+        "size": 916
+      },
+      {
+        "path": "harness/demos/tabular-numbers.html",
+        "mode": "100644",
+        "oid": "f80d364a1ac4f93199f1602c17d616134d86e220",
+        "size": 1799
+      },
+      {
+        "path": "harness/demos/textarea-that-grows-with-its-content.html",
+        "mode": "100644",
+        "oid": "bd9f90965b97e248fa469d6ecd2f4270505556e9",
+        "size": 1377
+      },
+      {
+        "path": "harness/demos/the-reset.html",
+        "mode": "100644",
+        "oid": "ec471ad04b795a01ceaadd93ad54af8f0328afdc",
+        "size": 2093
+      },
+      {
+        "path": "harness/demos/transition-a-custom-property-with-property.html",
+        "mode": "100644",
+        "oid": "e1388328aadfb15cbbb63719bfe5758fbdd42c9a",
+        "size": 1305
+      },
+      {
+        "path": "harness/demos/whole-card-clickable-from-one-link.html",
+        "mode": "100644",
+        "oid": "57fceac2ac66a9c4d37f5588c4b50a38e5dd8543",
+        "size": 1400
+      },
+      {
+        "path": "harness/frame.js",
+        "mode": "100644",
+        "oid": "a04f9f6e29c46b6e4017dce6a48ad2d55b4b6f59",
+        "size": 1543
+      },
+      {
+        "path": "harness/harness.css",
+        "mode": "100644",
+        "oid": "09999e25bff9a577d794b77cc388285cd00bb7aa",
+        "size": 61619
+      },
+      {
+        "path": "harness/hero.svg",
+        "mode": "100644",
+        "oid": "986fb6935a77ebec69dade287970f6a805c98ec8",
+        "size": 2076
+      },
+      {
+        "path": "harness/index.html",
+        "mode": "100644",
+        "oid": "cea0ff28c20599db7be5ae39103c171071ba2682",
+        "size": 9136
+      },
+      {
+        "path": "harness/main.js",
+        "mode": "100644",
+        "oid": "ba838f76cf6946f2c47d0e8498f771f0cfca7cef",
+        "size": 14953
+      },
+      {
+        "path": "harness/practices.js",
+        "mode": "100644",
+        "oid": "ccb8e86f62cb8c5e02fee31c32e8176ce80578a4",
+        "size": 5366
+      },
+      {
+        "path": "harness/public/art/foundations-dark.webp",
+        "mode": "100644",
+        "oid": "aeef6e688301fb3a5b5e217c699e3babafee465d",
+        "size": 8940
+      },
+      {
+        "path": "harness/public/art/foundations-lime.webp",
+        "mode": "100644",
+        "oid": "3b69ea20e1c6200432972de7cacbf98593281e48",
+        "size": 10942
+      },
+      {
+        "path": "harness/public/art/hero-sphere.webp",
+        "mode": "100644",
+        "oid": "7740f87c91b8c113589880d3e1a799eb6c61e1c8",
+        "size": 39240
+      },
+      {
+        "path": "harness/public/art/interaction-dark.webp",
+        "mode": "100644",
+        "oid": "52f4f18226e30a99dd5a4cf9dedfa4d3a2c83491",
+        "size": 13414
+      },
+      {
+        "path": "harness/public/art/interaction-lime.webp",
+        "mode": "100644",
+        "oid": "b439e28b83ed3bff20a193169959f3af111be839",
+        "size": 15624
+      },
+      {
+        "path": "harness/public/art/layout-dark.webp",
+        "mode": "100644",
+        "oid": "ca571dc579acc98661af79a2ab9ce4d50cf4eded",
+        "size": 4622
+      },
+      {
+        "path": "harness/public/art/layout-lime.webp",
+        "mode": "100644",
+        "oid": "338fcbeac969cfb12550a13a99efd1c9c4e45d99",
+        "size": 4992
+      },
+      {
+        "path": "harness/public/art/motion-dark.webp",
+        "mode": "100644",
+        "oid": "361d66c0c5af571f29fbac45a02121cfd62ddb1c",
+        "size": 9146
+      },
+      {
+        "path": "harness/public/art/motion-lime.webp",
+        "mode": "100644",
+        "oid": "8b5159fc573553763e6faedaf649eafa0e24a639",
+        "size": 10774
+      },
+      {
+        "path": "harness/public/art/scroll-and-viewport-dark.webp",
+        "mode": "100644",
+        "oid": "878710dd841459ca283c0b406f1a8bc3d66fa077",
+        "size": 12610
+      },
+      {
+        "path": "harness/public/art/scroll-and-viewport-lime.webp",
+        "mode": "100644",
+        "oid": "3fe258363bef235f50a2ba1d4e36b314deb148db",
+        "size": 14640
+      },
+      {
+        "path": "harness/public/art/show-and-hide-dark.webp",
+        "mode": "100644",
+        "oid": "5656f6e47899f7da3b9ba1140390c6170c6eb021",
+        "size": 14288
+      },
+      {
+        "path": "harness/public/art/show-and-hide-lime.webp",
+        "mode": "100644",
+        "oid": "a92fdbf3fc2d43e5e8a3e270dba6a467074093a0",
+        "size": 16712
+      },
+      {
+        "path": "harness/public/art/spacing-and-shape-dark.webp",
+        "mode": "100644",
+        "oid": "a38ec110912fc23f6fc0e5da4cbdd8f0ba3f7a45",
+        "size": 23108
+      },
+      {
+        "path": "harness/public/art/spacing-and-shape-lime.webp",
+        "mode": "100644",
+        "oid": "986079aae919002a1f52ad41e025d9e57c46e3fa",
+        "size": 27012
+      },
+      {
+        "path": "harness/public/art/text-and-media-dark.webp",
+        "mode": "100644",
+        "oid": "4b62f0cdae63962fa67e57037c77d7c3fbeb3641",
+        "size": 19748
+      },
+      {
+        "path": "harness/public/art/text-and-media-lime.webp",
+        "mode": "100644",
+        "oid": "b551fdcd812f1ba17a5b448aeabac70b85496b8e",
+        "size": 22948
+      },
+      {
+        "path": "harness/public/fonts/GeistMono-OFL.txt",
+        "mode": "100644",
+        "oid": "04e95fc550855eb44416b9db1f6722f5cb7342db",
+        "size": 4383
+      },
+      {
+        "path": "harness/public/fonts/GeistMono-Variable.woff2",
+        "mode": "100644",
+        "oid": "cf24126b086f12217076c4902c7c6d58e4f52c75",
+        "size": 23108
+      },
+      {
+        "path": "harness/public/fonts/Inter-OFL.txt",
+        "mode": "100644",
+        "oid": "9b2ca37b3ffc77391d8b2ebef4a974ef32bf46ea",
+        "size": 4380
+      },
+      {
+        "path": "harness/public/fonts/Inter-Variable.woff2",
+        "mode": "100644",
+        "oid": "91dc3e8529921cabc74fb1dacf5253260b9c8cca",
+        "size": 48432
+      },
+      {
+        "path": "harness/public/icons/arrow-up-right.svg",
+        "mode": "100644",
+        "oid": "11df9ffd9c3939b0521f30254cc3ad88fa553f99",
+        "size": 163
+      },
+      {
+        "path": "harness/public/icons/arrow.svg",
+        "mode": "100644",
+        "oid": "7db8385ee792e638e3b685ed80d2a308971add2c",
+        "size": 184
+      },
+      {
+        "path": "harness/public/icons/copy.svg",
+        "mode": "100644",
+        "oid": "d4916a552f9eacb643f09ce2e41c9f62d5938293",
+        "size": 216
+      },
+      {
+        "path": "harness/public/icons/github.svg",
+        "mode": "100644",
+        "oid": "e23010caac4c677610973ad7480a9759625fe8f8",
+        "size": 964
+      },
+      {
+        "path": "harness/public/icons/grip.svg",
+        "mode": "100644",
+        "oid": "1efa6a180883ef6b27953d8517170789a0b536e4",
+        "size": 191
+      },
+      {
+        "path": "harness/public/icons/index.svg",
+        "mode": "100644",
+        "oid": "ea8f48e9fb3b656cf251ffd3b222ce7e96c7bed0",
+        "size": 215
+      },
+      {
+        "path": "harness/public/icons/info.svg",
+        "mode": "100644",
+        "oid": "7552a84217ebf10f5a5b59b0be3644f9246f4329",
+        "size": 276
+      },
+      {
+        "path": "harness/public/icons/minus.svg",
+        "mode": "100644",
+        "oid": "8a00580ca568099e9c765ce0a59299c100b87881",
+        "size": 154
+      },
+      {
+        "path": "harness/public/icons/open.svg",
+        "mode": "100644",
+        "oid": "23a5885cd2f7d34acdb9146e515c7154a7520613",
+        "size": 227
+      },
+      {
+        "path": "harness/public/icons/plus.svg",
+        "mode": "100644",
+        "oid": "4fffe2aa580bd98cdc2e8a296892abda2087494f",
+        "size": 161
+      },
+      {
+        "path": "harness/public/icons/spark.svg",
+        "mode": "100644",
+        "oid": "3dbdcc74bb01066999e9dac18f70a4cd161e73c0",
+        "size": 263
+      },
+      {
+        "path": "harness/public/icons/target.svg",
+        "mode": "100644",
+        "oid": "de74025eceec79c1d802ac79be2f241544444e79",
+        "size": 198
+      },
+      {
+        "path": "harness/public/mark.svg",
+        "mode": "100644",
+        "oid": "dbe77e497ce1c56154699cf8adac5f494e8264ee",
+        "size": 5276
+      },
+      {
+        "path": "harness/public/patterns/box-model-square.svg",
+        "mode": "100644",
+        "oid": "4e47806a51896185d0c2f91f43901c758393974a",
+        "size": 479
+      },
+      {
+        "path": "harness/public/patterns/box-model-wide.svg",
+        "mode": "100644",
+        "oid": "efe2c597ebfb5803493fa5b04aeec1c4e5c258d4",
+        "size": 494
+      },
+      {
+        "path": "harness/public/wordmark.svg",
+        "mode": "100644",
+        "oid": "5f9dfbc6fa9594a356b2b6fabb3c17d9d6720afc",
+        "size": 7973
+      },
+      {
+        "path": "harness/README.md",
+        "mode": "100644",
+        "oid": "c8518f69920c507d07fecbfbd993a4be8801d655",
+        "size": 5742
+      },
+      {
+        "path": "harness/tokens.css",
+        "mode": "100644",
+        "oid": "b7f98d02006f3f45043cbb526003ddfae2466af8",
+        "size": 1711
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "66a325d82e56f2f41ebd14812517d6c50f5b66da",
+        "size": 1068
+      },
+      {
+        "path": "package.json",
+        "mode": "100644",
+        "oid": "b61e614b04334fc51e59aec69c76e5d0b24ee271",
+        "size": 349
+      },
+      {
+        "path": "PRACTICES.md",
+        "mode": "100644",
+        "oid": "66fb5dc6a56bf613c2f8f10a14ca2458efc31db3",
+        "size": 93719
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "1dccee3b8809a3df02c63c5479f2b87dd948953a",
+        "size": 2588
+      },
+      {
+        "path": "scripts/build-skill.js",
+        "mode": "100644",
+        "oid": "e3c4149659b90671ac828a2d1e728cdf03209e59",
+        "size": 6351
+      },
+      {
+        "path": "scripts/check-css.mjs",
+        "mode": "100644",
+        "oid": "6fa72714ba18cf02f698fa8015f63df043b3af85",
+        "size": 10443
+      },
+      {
+        "path": "skills/good-css/references/foundations.md",
+        "mode": "100644",
+        "oid": "3e213a8f6f902f72383d9c7955988a295662a37b",
+        "size": 9344
+      },
+      {
+        "path": "skills/good-css/references/interaction.md",
+        "mode": "100644",
+        "oid": "d1cc2f3b7cad24270f2acd1f86033a1874e697b2",
+        "size": 6215
+      },
+      {
+        "path": "skills/good-css/references/layout.md",
+        "mode": "100644",
+        "oid": "bc4f7dc1105fd811a532e269afac9c597b54b968",
+        "size": 6771
+      },
+      {
+        "path": "skills/good-css/references/motion.md",
+        "mode": "100644",
+        "oid": "a78f10a6cea41aeb9a1f3ac04df32206f9a49e45",
+        "size": 6434
+      },
+      {
+        "path": "skills/good-css/references/scroll-and-viewport.md",
+        "mode": "100644",
+        "oid": "a930702b8ce39c23eccd50ef825b72598bb79dcc",
+        "size": 6949
+      },
+      {
+        "path": "skills/good-css/references/show-and-hide.md",
+        "mode": "100644",
+        "oid": "01669e940916c638fb0dcbe74a497d4589bdc757",
+        "size": 5317
+      },
+      {
+        "path": "skills/good-css/references/spacing-and-shape.md",
+        "mode": "100644",
+        "oid": "3b01f254b070932c7614f147f9f2b33f8792ec01",
+        "size": 4724
+      },
+      {
+        "path": "skills/good-css/references/text-and-media.md",
+        "mode": "100644",
+        "oid": "7970ef7bd59488746339b88fce37a88a13b12145",
+        "size": 6759
+      },
+      {
+        "path": "skills/good-css/SKILL.md",
+        "mode": "100644",
+        "oid": "4abdfc3cb8edb33a9ceb1259b8613e41922fe7c5",
+        "size": 4661
+      },
+      {
+        "path": "vercel.json",
+        "mode": "100644",
+        "oid": "9d06948c51c8cc1e492e919943c3d3125646e5bc",
+        "size": 1503
+      },
+      {
+        "path": "vite.config.js",
+        "mode": "100644",
+        "oid": "586619c9b4857878499a9c97d31825dd0f04df36",
+        "size": 2311
+      }
+    ]
+  },
+  "practices": [
+    {
+      "slug": "the-reset",
+      "title": "The reset",
+      "category": "foundations",
+      "source": "upstream/PRACTICES.md#the-reset",
+      "reference": "upstream/skills/good-css/references/foundations.md",
+      "specimen": "upstream/harness/demos/the-reset.html"
+    },
+    {
+      "slug": "logical-properties",
+      "title": "Logical properties",
+      "category": "foundations",
+      "source": "upstream/PRACTICES.md#logical-properties",
+      "reference": "upstream/skills/good-css/references/foundations.md",
+      "specimen": "upstream/harness/demos/logical-properties.html"
+    },
+    {
+      "slug": "oklch-color",
+      "title": "OKLCH color",
+      "category": "foundations",
+      "source": "upstream/PRACTICES.md#oklch-color",
+      "reference": "upstream/skills/good-css/references/foundations.md",
+      "specimen": "upstream/harness/demos/oklch-color.html"
+    },
+    {
+      "slug": "one-set-of-color-tokens-for-light-and-dark",
+      "title": "One set of color tokens for light and dark",
+      "category": "foundations",
+      "source": "upstream/PRACTICES.md#one-set-of-color-tokens-for-light-and-dark",
+      "reference": "upstream/skills/good-css/references/foundations.md",
+      "specimen": "upstream/harness/demos/one-set-of-color-tokens-for-light-and-dark.html"
+    },
+    {
+      "slug": "fluid-sizes-with-clamp",
+      "title": "Fluid sizes with `clamp()`",
+      "category": "foundations",
+      "source": "upstream/PRACTICES.md#fluid-sizes-with-clamp",
+      "reference": "upstream/skills/good-css/references/foundations.md",
+      "specimen": "upstream/harness/demos/fluid-sizes-with-clamp.html"
+    },
+    {
+      "slug": "one-fluid-scale-for-type-and-space",
+      "title": "One fluid scale for type and space",
+      "category": "foundations",
+      "source": "upstream/PRACTICES.md#one-fluid-scale-for-type-and-space",
+      "reference": "upstream/skills/good-css/references/foundations.md",
+      "specimen": "upstream/harness/demos/one-fluid-scale-for-type-and-space.html"
+    },
+    {
+      "slug": "content-grid-with-breakouts",
+      "title": "Content grid with breakouts",
+      "category": "layout",
+      "source": "upstream/PRACTICES.md#content-grid-with-breakouts",
+      "reference": "upstream/skills/good-css/references/layout.md",
+      "specimen": "upstream/harness/demos/content-grid-with-breakouts.html"
+    },
+    {
+      "slug": "intrinsic-grid",
+      "title": "Intrinsic grid",
+      "category": "layout",
+      "source": "upstream/PRACTICES.md#intrinsic-grid",
+      "reference": "upstream/skills/good-css/references/layout.md",
+      "specimen": "upstream/harness/demos/intrinsic-grid.html"
+    },
+    {
+      "slug": "subgrid-rows-shared-across-cards",
+      "title": "Subgrid rows shared across cards",
+      "category": "layout",
+      "source": "upstream/PRACTICES.md#subgrid-rows-shared-across-cards",
+      "reference": "upstream/skills/good-css/references/layout.md",
+      "specimen": "upstream/harness/demos/subgrid-rows-shared-across-cards.html"
+    },
+    {
+      "slug": "sidebar-that-wraps-on-its-own",
+      "title": "Sidebar that wraps on its own",
+      "category": "layout",
+      "source": "upstream/PRACTICES.md#sidebar-that-wraps-on-its-own",
+      "reference": "upstream/skills/good-css/references/layout.md",
+      "specimen": "upstream/harness/demos/sidebar-that-wraps-on-its-own.html"
+    },
+    {
+      "slug": "container-queries-with-container-units",
+      "title": "Container queries with container units",
+      "category": "layout",
+      "source": "upstream/PRACTICES.md#container-queries-with-container-units",
+      "reference": "upstream/skills/good-css/references/layout.md",
+      "specimen": "upstream/harness/demos/container-queries-with-container-units.html"
+    },
+    {
+      "slug": "stack-layers-with-grid",
+      "title": "Stack layers with grid",
+      "category": "layout",
+      "source": "upstream/PRACTICES.md#stack-layers-with-grid",
+      "reference": "upstream/skills/good-css/references/layout.md",
+      "specimen": "upstream/harness/demos/stack-layers-with-grid.html"
+    },
+    {
+      "slug": "safe-alignment",
+      "title": "Safe alignment",
+      "category": "layout",
+      "source": "upstream/PRACTICES.md#safe-alignment",
+      "reference": "upstream/skills/good-css/references/layout.md",
+      "specimen": "upstream/harness/demos/safe-alignment.html"
+    },
+    {
+      "slug": "overflow-clip-over-hidden",
+      "title": "`overflow: clip` over `hidden`",
+      "category": "layout",
+      "source": "upstream/PRACTICES.md#overflow-clip-over-hidden",
+      "reference": "upstream/skills/good-css/references/layout.md",
+      "specimen": "upstream/harness/demos/overflow-clip-over-hidden.html"
+    },
+    {
+      "slug": "section-spacing-that-depends-on-its-neighbors",
+      "title": "Section spacing that depends on its neighbors",
+      "category": "spacing-and-shape",
+      "source": "upstream/PRACTICES.md#section-spacing-that-depends-on-its-neighbors",
+      "reference": "upstream/skills/good-css/references/spacing-and-shape.md",
+      "specimen": "upstream/harness/demos/section-spacing-that-depends-on-its-neighbors.html"
+    },
+    {
+      "slug": "space-between-siblings-set-by-the-parent",
+      "title": "Space between siblings set by the parent",
+      "category": "spacing-and-shape",
+      "source": "upstream/PRACTICES.md#space-between-siblings-set-by-the-parent",
+      "reference": "upstream/skills/good-css/references/spacing-and-shape.md",
+      "specimen": "upstream/harness/demos/space-between-siblings-set-by-the-parent.html"
+    },
+    {
+      "slug": "push-one-item-away-with-an-auto-margin",
+      "title": "Push one item away with an auto margin",
+      "category": "spacing-and-shape",
+      "source": "upstream/PRACTICES.md#push-one-item-away-with-an-auto-margin",
+      "reference": "upstream/skills/good-css/references/spacing-and-shape.md",
+      "specimen": "upstream/harness/demos/push-one-item-away-with-an-auto-margin.html"
+    },
+    {
+      "slug": "concentric-nested-radius",
+      "title": "Concentric nested radius",
+      "category": "spacing-and-shape",
+      "source": "upstream/PRACTICES.md#concentric-nested-radius",
+      "reference": "upstream/skills/good-css/references/spacing-and-shape.md",
+      "specimen": "upstream/harness/demos/concentric-nested-radius.html"
+    },
+    {
+      "slug": "long-text-that-wraps-truncates-or-clamps",
+      "title": "Long text that wraps, truncates or clamps",
+      "category": "text-and-media",
+      "source": "upstream/PRACTICES.md#long-text-that-wraps-truncates-or-clamps",
+      "reference": "upstream/skills/good-css/references/text-and-media.md",
+      "specimen": "upstream/harness/demos/long-text-that-wraps-truncates-or-clamps.html"
+    },
+    {
+      "slug": "image-box-that-holds-any-upload",
+      "title": "Image box that holds any upload",
+      "category": "text-and-media",
+      "source": "upstream/PRACTICES.md#image-box-that-holds-any-upload",
+      "reference": "upstream/skills/good-css/references/text-and-media.md",
+      "specimen": "upstream/harness/demos/image-box-that-holds-any-upload.html"
+    },
+    {
+      "slug": "tabular-numbers",
+      "title": "Tabular numbers",
+      "category": "text-and-media",
+      "source": "upstream/PRACTICES.md#tabular-numbers",
+      "reference": "upstream/skills/good-css/references/text-and-media.md",
+      "specimen": "upstream/harness/demos/tabular-numbers.html"
+    },
+    {
+      "slug": "label-centered-on-its-letters-with-text-box",
+      "title": "Label centered on its letters with `text-box`",
+      "category": "text-and-media",
+      "source": "upstream/PRACTICES.md#label-centered-on-its-letters-with-text-box",
+      "reference": "upstream/skills/good-css/references/text-and-media.md",
+      "specimen": "upstream/harness/demos/label-centered-on-its-letters-with-text-box.html"
+    },
+    {
+      "slug": "icon-sized-by-the-text-beside-it",
+      "title": "Icon sized by the text beside it",
+      "category": "text-and-media",
+      "source": "upstream/PRACTICES.md#icon-sized-by-the-text-beside-it",
+      "reference": "upstream/skills/good-css/references/text-and-media.md",
+      "specimen": "upstream/harness/demos/icon-sized-by-the-text-beside-it.html"
+    },
+    {
+      "slug": "one-focus-ring-with-focus-visible",
+      "title": "One focus ring with `:focus-visible`",
+      "category": "interaction",
+      "source": "upstream/PRACTICES.md#one-focus-ring-with-focus-visible",
+      "reference": "upstream/skills/good-css/references/interaction.md",
+      "specimen": "upstream/harness/demos/one-focus-ring-with-focus-visible.html"
+    },
+    {
+      "slug": "hover-styles-only-where-hover-exists",
+      "title": "Hover styles only where hover exists",
+      "category": "interaction",
+      "source": "upstream/PRACTICES.md#hover-styles-only-where-hover-exists",
+      "reference": "upstream/skills/good-css/references/interaction.md",
+      "specimen": "upstream/harness/demos/hover-styles-only-where-hover-exists.html"
+    },
+    {
+      "slug": "press-feedback",
+      "title": "Press feedback",
+      "category": "interaction",
+      "source": "upstream/PRACTICES.md#press-feedback",
+      "reference": "upstream/skills/good-css/references/interaction.md",
+      "specimen": "upstream/harness/demos/press-feedback.html"
+    },
+    {
+      "slug": "hit-area-larger-than-the-visual",
+      "title": "Hit area larger than the visual",
+      "category": "interaction",
+      "source": "upstream/PRACTICES.md#hit-area-larger-than-the-visual",
+      "reference": "upstream/skills/good-css/references/interaction.md",
+      "specimen": "upstream/harness/demos/hit-area-larger-than-the-visual.html"
+    },
+    {
+      "slug": "whole-card-clickable-from-one-link",
+      "title": "Whole card clickable from one link",
+      "category": "interaction",
+      "source": "upstream/PRACTICES.md#whole-card-clickable-from-one-link",
+      "reference": "upstream/skills/good-css/references/interaction.md",
+      "specimen": "upstream/harness/demos/whole-card-clickable-from-one-link.html"
+    },
+    {
+      "slug": "has-for-parent-and-page-state",
+      "title": "`:has()` for parent and page state",
+      "category": "interaction",
+      "source": "upstream/PRACTICES.md#has-for-parent-and-page-state",
+      "reference": "upstream/skills/good-css/references/interaction.md",
+      "specimen": "upstream/harness/demos/has-for-parent-and-page-state.html"
+    },
+    {
+      "slug": "form-feedback-with-user-invalid",
+      "title": "Form feedback with `:user-invalid`",
+      "category": "interaction",
+      "source": "upstream/PRACTICES.md#form-feedback-with-user-invalid",
+      "reference": "upstream/skills/good-css/references/interaction.md",
+      "specimen": "upstream/harness/demos/form-feedback-with-user-invalid.html"
+    },
+    {
+      "slug": "textarea-that-grows-with-its-content",
+      "title": "Textarea that grows with its content",
+      "category": "interaction",
+      "source": "upstream/PRACTICES.md#textarea-that-grows-with-its-content",
+      "reference": "upstream/skills/good-css/references/interaction.md",
+      "specimen": "upstream/harness/demos/textarea-that-grows-with-its-content.html"
+    },
+    {
+      "slug": "opt-in-motion",
+      "title": "Opt-in motion",
+      "category": "motion",
+      "source": "upstream/PRACTICES.md#opt-in-motion",
+      "reference": "upstream/skills/good-css/references/motion.md",
+      "specimen": "upstream/harness/demos/opt-in-motion.html"
+    },
+    {
+      "slug": "motion-tokens",
+      "title": "Motion tokens",
+      "category": "motion",
+      "source": "upstream/PRACTICES.md#motion-tokens",
+      "reference": "upstream/skills/good-css/references/motion.md",
+      "specimen": "upstream/harness/demos/motion-tokens.html"
+    },
+    {
+      "slug": "transition-a-custom-property-with-property",
+      "title": "Transition a custom property with `@property`",
+      "category": "motion",
+      "source": "upstream/PRACTICES.md#transition-a-custom-property-with-property",
+      "reference": "upstream/skills/good-css/references/motion.md",
+      "specimen": "upstream/harness/demos/transition-a-custom-property-with-property.html"
+    },
+    {
+      "slug": "shadow-change-that-fades-and-does-not-repaint",
+      "title": "Shadow change that fades and does not repaint",
+      "category": "motion",
+      "source": "upstream/PRACTICES.md#shadow-change-that-fades-and-does-not-repaint",
+      "reference": "upstream/skills/good-css/references/motion.md",
+      "specimen": "upstream/harness/demos/shadow-change-that-fades-and-does-not-repaint.html"
+    },
+    {
+      "slug": "cross-document-view-transitions",
+      "title": "Cross-document view transitions",
+      "category": "motion",
+      "source": "upstream/PRACTICES.md#cross-document-view-transitions",
+      "reference": "upstream/skills/good-css/references/motion.md",
+      "specimen": "upstream/harness/demos/cross-document-view-transitions.html"
+    },
+    {
+      "slug": "indicator-that-slides-to-the-active-item",
+      "title": "Indicator that slides to the active item",
+      "category": "motion",
+      "source": "upstream/PRACTICES.md#indicator-that-slides-to-the-active-item",
+      "reference": "upstream/skills/good-css/references/motion.md",
+      "specimen": "upstream/harness/demos/indicator-that-slides-to-the-active-item.html"
+    },
+    {
+      "slug": "enter-and-exit-transitions-from-display-none",
+      "title": "Enter and exit transitions from `display: none`",
+      "category": "show-and-hide",
+      "source": "upstream/PRACTICES.md#enter-and-exit-transitions-from-display-none",
+      "reference": "upstream/skills/good-css/references/show-and-hide.md",
+      "specimen": "upstream/harness/demos/enter-and-exit-transitions-from-display-none.html"
+    },
+    {
+      "slug": "popover-anchored-to-its-trigger",
+      "title": "Popover anchored to its trigger",
+      "category": "show-and-hide",
+      "source": "upstream/PRACTICES.md#popover-anchored-to-its-trigger",
+      "reference": "upstream/skills/good-css/references/show-and-hide.md",
+      "specimen": "upstream/harness/demos/popover-anchored-to-its-trigger.html"
+    },
+    {
+      "slug": "accordion-that-animates-its-height",
+      "title": "Accordion that animates its height",
+      "category": "show-and-hide",
+      "source": "upstream/PRACTICES.md#accordion-that-animates-its-height",
+      "reference": "upstream/skills/good-css/references/show-and-hide.md",
+      "specimen": "upstream/harness/demos/accordion-that-animates-its-height.html"
+    },
+    {
+      "slug": "reveal-with-clip-path",
+      "title": "Reveal with `clip-path`",
+      "category": "show-and-hide",
+      "source": "upstream/PRACTICES.md#reveal-with-clip-path",
+      "reference": "upstream/skills/good-css/references/show-and-hide.md",
+      "specimen": "upstream/harness/demos/reveal-with-clip-path.html"
+    },
+    {
+      "slug": "carousel-on-native-scroll",
+      "title": "Carousel on native scroll",
+      "category": "scroll-and-viewport",
+      "source": "upstream/PRACTICES.md#carousel-on-native-scroll",
+      "reference": "upstream/skills/good-css/references/scroll-and-viewport.md",
+      "specimen": "upstream/harness/demos/carousel-on-native-scroll.html"
+    },
+    {
+      "slug": "scroll-area-between-a-fixed-header-and-footer",
+      "title": "Scroll area between a fixed header and footer",
+      "category": "scroll-and-viewport",
+      "source": "upstream/PRACTICES.md#scroll-area-between-a-fixed-header-and-footer",
+      "reference": "upstream/skills/good-css/references/scroll-and-viewport.md",
+      "specimen": "upstream/harness/demos/scroll-area-between-a-fixed-header-and-footer.html"
+    },
+    {
+      "slug": "styles-that-apply-only-when-a-scroller-overflows",
+      "title": "Styles that apply only when a scroller overflows",
+      "category": "scroll-and-viewport",
+      "source": "upstream/PRACTICES.md#styles-that-apply-only-when-a-scroller-overflows",
+      "reference": "upstream/skills/good-css/references/scroll-and-viewport.md",
+      "specimen": "upstream/harness/demos/styles-that-apply-only-when-a-scroller-overflows.html"
+    },
+    {
+      "slug": "anchor-targets-that-clear-a-sticky-header",
+      "title": "Anchor targets that clear a sticky header",
+      "category": "scroll-and-viewport",
+      "source": "upstream/PRACTICES.md#anchor-targets-that-clear-a-sticky-header",
+      "reference": "upstream/skills/good-css/references/scroll-and-viewport.md",
+      "specimen": "upstream/harness/demos/anchor-targets-that-clear-a-sticky-header.html"
+    },
+    {
+      "slug": "no-rubber-band-bounce-on-desktop",
+      "title": "No rubber-band bounce on desktop",
+      "category": "scroll-and-viewport",
+      "source": "upstream/PRACTICES.md#no-rubber-band-bounce-on-desktop",
+      "reference": "upstream/skills/good-css/references/scroll-and-viewport.md",
+      "specimen": "upstream/harness/demos/no-rubber-band-bounce-on-desktop.html"
+    },
+    {
+      "slug": "content-clear-of-the-notch",
+      "title": "Content clear of the notch",
+      "category": "scroll-and-viewport",
+      "source": "upstream/PRACTICES.md#content-clear-of-the-notch",
+      "reference": "upstream/skills/good-css/references/scroll-and-viewport.md",
+      "specimen": "upstream/harness/demos/content-clear-of-the-notch.html"
+    }
+  ],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "executesDeployment": false,
+    "changesProjectRuntime": false
+  }
+}

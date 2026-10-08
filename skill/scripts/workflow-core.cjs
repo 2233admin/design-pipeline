@@ -176,7 +176,7 @@ const visualHash = value => "sha256:" + sha256(value);
 const visualPath = value => value.replaceAll("\\", "/");
 
 function visualContext(changeRoot, options) {
-  const root = fs.realpathSync(path.resolve(changeRoot)), stateHash = sha256(fs.readFileSync(path.join(root, "state.json"))), native = readNativeState(root);
+  const root = fs.realpathSync.native(path.resolve(changeRoot)), stateHash = sha256(fs.readFileSync(path.join(root, "state.json"))), native = readNativeState(root);
   native.stateHash = stateHash;
   if (native.state.phase !== "implementation") fail("workflow", "Visual task progress requires the native implementation phase.");
   const stored = native.state.extensions.visualTasks;

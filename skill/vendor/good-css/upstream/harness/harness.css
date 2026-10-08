@@ -1,0 +1,2740 @@
+/* The page around the specimens. It is built with the practices it shows,
+   written out by hand, and each one is named where it is used. Specimens do
+   not use this file. They run the entry's own code. */
+
+/* The reset, as the entry "The reset" has it. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+:root {
+  interpolate-size: allow-keywords;
+  scrollbar-gutter: stable;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+textarea,
+select {
+  font-size: max(16px, 1rem);
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+button,
+[role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Tokens and base --------------------------------------------------------- */
+
+:root {
+  /* Sizes that grow with the screen, as in "Fluid sizes with clamp()". Each
+     one runs from a 320px screen to the 1512px the design is drawn at, and
+     holds still beyond. */
+  --text-tagline: clamp(2.75rem, 1.5419rem + 6.0403vw, 7.25rem);
+  --text-opener: clamp(2.875rem, 1.4992rem + 6.8792vw, 8rem);
+  --text-heading: clamp(2.5rem, 1.896rem + 3.0201vw, 4.75rem);
+  --text-title: clamp(1.75rem, 1.4815rem + 1.3423vw, 2.75rem);
+  --text-lede: clamp(1.0625rem, 1.0122rem + 0.2517vw, 1.25rem);
+  --text-stat: clamp(2.75rem, 2.3473rem + 2.0134vw, 4.25rem);
+  --text-counter: clamp(8.5rem, 3.735rem + 23.826vw, 26.25rem);
+  --text-ghost-band: clamp(15rem, 8.2886rem + 33.557vw, 40rem);
+  --text-ghost-hero: clamp(13.75rem, 8.7164rem + 25.1678vw, 32.5rem);
+  --text-ghost-entry: clamp(8.75rem, 6.0654rem + 13.4228vw, 18.75rem);
+  --text-panel-title: clamp(2.125rem, 1.7559rem + 1.8456vw, 3.5rem);
+  --space-band: clamp(4rem, 2.9262rem + 5.3691vw, 8rem);
+  --space-band-end: clamp(6rem, 4.5906rem + 7.047vw, 11.25rem);
+  --space-entry: clamp(4.5rem, 3.8289rem + 3.3557vw, 7rem);
+  --space-head: clamp(3rem, 2.2282rem + 3.8591vw, 5.875rem);
+  --space-footer: clamp(4.5rem, 3.6946rem + 4.0268vw, 7.5rem);
+  --wordmark-gap: clamp(2.25rem, 1.7802rem + 2.349vw, 4rem);
+  --gutter: clamp(1rem, 0.4631rem + 2.6846vw, 3rem);
+
+  /* The content column, and where it starts, for what is placed against it
+     from outside the grid. Both are measured on main, a container, as in
+     "Container queries with container units", so they leave out the
+     scrollbar. */
+  --content: 70.5625rem;
+  --column: min(100cqi - var(--gutter) * 2, var(--content));
+  --start: calc((100cqi - var(--column)) / 2);
+
+  /* How far below the top of the window a link into the page stops. */
+  --anchor-offset: 2rem;
+
+  /* The height of the header where it stays at the top of the window, on a
+     narrow screen. */
+  --header-bar: 3.5rem;
+
+  /* From "Motion tokens". */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  color-scheme: light;
+  scroll-padding-block-start: var(--anchor-offset);
+  font-family: var(--bp-font-sans);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--bp-dark);
+  background: var(--bp-slate);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* The footer sits at the bottom of the window on a page shorter than it,
+   pushed there by its auto margin, as in "Push one item away with an auto
+   margin". */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  container-type: inline-size;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ol,
+ul,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+}
+
+code,
+pre {
+  font-family: var(--bp-font-mono);
+}
+
+::selection {
+  background: var(--bp-lime);
+  color: var(--bp-dark);
+}
+
+/* "One focus ring with :focus-visible". */
+:focus-visible {
+  outline: max(2px, 0.08em) solid currentColor;
+  outline-offset: 0.25em;
+}
+
+/* "Cross-document view transitions". */
+@view-transition {
+  navigation: auto;
+}
+
+/* Bands ------------------------------------------------------------------- */
+
+/* The page is a stack of bands, light, dark and slate. A band sets the ink
+   and the ground for all that is in it, and the rest is drawn with the two,
+   so one class turns a part over from light to dark. Every color is mixed
+   from those in tokens.css, as in "OKLCH color". */
+.band,
+.site-header {
+  --soft: color-mix(in oklch, var(--ink) 66%, transparent);
+  --text: color-mix(in oklch, var(--ink) 86%, transparent);
+  --line: color-mix(in oklch, var(--ink) 45%, transparent);
+  --art-ground: var(--ground);
+
+  position: relative;
+  isolation: isolate;
+  color: var(--ink);
+  background: var(--ground);
+}
+
+/* A band cuts what reaches past it, such as a ghost numeral. */
+.band {
+  overflow: clip;
+}
+
+.band-tint,
+.site-header {
+  --ink: var(--bp-dark);
+  --ground: var(--bp-tint);
+  --ghost: var(--bp-ghost-tint);
+}
+
+.band-dark {
+  --ink: var(--bp-tint);
+  --ground: var(--bp-dark);
+  --ghost: var(--bp-ghost-dark);
+}
+
+.band-slate {
+  --ink: var(--bp-tint);
+  --ground: var(--bp-slate);
+  --ghost: var(--bp-ghost-slate);
+}
+
+/* A label: small, bold capitals. */
+.label {
+  font-size: 0.65625rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* A drawing from the design, in the color of the text around it. The file
+   is a mask, so one drawing serves every band. */
+.icon {
+  display: inline-block;
+  flex: none;
+  inline-size: var(--size, 1rem);
+  block-size: var(--size, 1rem);
+  background: currentColor;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+.icon-arrow {
+  --icon: url("/icons/arrow.svg");
+  --size: 0.875rem;
+}
+
+.icon-copy {
+  --icon: url("/icons/copy.svg");
+  --size: 0.875rem;
+}
+
+.icon-github {
+  --icon: url("/icons/github.svg");
+}
+
+.icon-grip {
+  --icon: url("/icons/grip.svg");
+  --size: 0.875rem;
+}
+
+.icon-index {
+  --icon: url("/icons/index.svg");
+}
+
+.icon-info {
+  --icon: url("/icons/info.svg");
+  --size: 1.5rem;
+}
+
+.icon-open {
+  --icon: url("/icons/open.svg");
+  --size: 0.875rem;
+}
+
+.icon-out {
+  --icon: url("/icons/arrow-up-right.svg");
+  --size: 0.75em;
+}
+
+.icon-spark {
+  --icon: url("/icons/spark.svg");
+}
+
+.icon-target {
+  --icon: url("/icons/target.svg");
+}
+
+.with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* A number set huge and pale behind its band, and cut by the band's edge. */
+.ghost {
+  position: absolute;
+  z-index: -1;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: var(--ghost);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The head of a band: a label on each side, over a heavy rule. */
+.band-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding-block-end: 0.8125rem;
+  border-block-end: 4px solid var(--ink);
+}
+
+/* The mark, drawn from its file as a mask so it takes the ink of its band. */
+.mark {
+  display: block;
+  flex: none;
+  inline-size: 3.5897rem;
+  aspect-ratio: 57.4359 / 56;
+  background: currentColor;
+  mask: url("/mark.svg") center / contain no-repeat;
+}
+
+/* Content grid with breakouts ---------------------------------------------- */
+
+/* Nothing on the page is wider than the content and narrower than the
+   window, so the grid has no breakout. */
+.content-grid {
+  display: grid;
+  grid-template-columns:
+    [full-width-start] minmax(var(--gutter), 1fr)
+    [content-start] min(100% - var(--gutter) * 2, var(--content)) [content-end]
+    minmax(var(--gutter), 1fr) [full-width-end];
+}
+
+:is(.content-grid, .full-width) > * {
+  grid-column: content;
+}
+
+:is(.content-grid, .full-width) > .full-width {
+  grid-column: full-width;
+  display: grid;
+  grid-template-columns: inherit;
+}
+
+/* Controls ---------------------------------------------------------------- */
+
+/* A pill: the link and the button in the header. The filled one is the
+   install button. */
+.pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6875rem 1rem;
+  border: 1px solid color-mix(in oklch, var(--ink) 60%, transparent);
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 0.65625rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pill-filled {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--ground);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pill:hover {
+    border-color: var(--ink);
+  }
+
+  .pill-filled:hover {
+    border-color: var(--bp-lime);
+    background: var(--bp-lime);
+    color: var(--bp-dark);
+  }
+}
+
+/* "Press feedback", on everything that is pressed like a button. */
+:is(.pill, .install-command button, .carousel-buttons button, .card, .phases button):active {
+  scale: 0.97;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.pill, .install-command button, .carousel-buttons button, .card, .phases button) {
+    transition: scale 160ms var(--ease-out);
+  }
+}
+
+/* The hit area of "Hit area larger than the visual", for what looks smaller
+   than 44px. */
+:is(.pill, .viewport-bar :is(button, a), .current, .footer-links a, .entry-index a, .hero-score a) {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
+  }
+}
+
+/* The command and the button that copies it: a dark bar with a sulphur end.
+   A press on the command selects all of it. Where the row has no room for
+   the command on two lines, the button drops under it. */
+.install-command {
+  display: flex;
+  flex-wrap: wrap;
+  min-block-size: 3.25rem;
+  background: var(--bp-dark);
+  color: var(--bp-tint);
+
+  /* The command takes nearly all the room a row has, and the button alone
+     on a row takes all of it. */
+  & code {
+    flex: 999 1 14rem;
+    align-self: center;
+    padding: 0.75rem 1rem;
+    font-size: 0.84375rem;
+    font-weight: 500;
+    line-height: 1.4;
+    user-select: all;
+
+    &::before {
+      content: "$ ";
+      color: color-mix(in oklch, var(--bp-tint) 60%, transparent);
+    }
+  }
+
+  /* Wide enough for "Copied", so the bar holds still when the label changes. */
+  & button {
+    display: flex;
+    flex: 1 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-inline-size: 4.75rem;
+    min-block-size: 2.75rem;
+    padding-inline: 1rem;
+    border: 0;
+    background: var(--bp-lime);
+    font: inherit;
+    font-size: 0.65625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bp-dark);
+    cursor: pointer;
+
+    & .icon {
+      display: none;
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .install-command button:hover {
+    background: color-mix(in oklch, var(--bp-lime) 80%, var(--bp-tint));
+  }
+}
+
+/* Header ------------------------------------------------------------------ */
+
+/* The mark, then the two links pushed to the far end by the auto margin of
+   the first, as in "Push one item away with an auto margin". The header is
+   the top of the light band the page opens with. */
+.site-header {
+  z-index: 2;
+  padding-block-start: 3.5rem;
+}
+
+.site-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: 3.5rem;
+}
+
+.github {
+  margin-inline-start: auto;
+}
+
+.mark:active {
+  opacity: 0.6;
+}
+
+/* The install command, opened by the button in the header. It fades and rises
+   in, as in "Enter and exit transitions from display: none", and sits under
+   the button, as in "Popover anchored to its trigger". The button is at the
+   end of the row, so the popover runs back from the button's end edge. It
+   opens over the light band, so a line in the ink sets it apart. */
+.install {
+  inline-size: min(100% - 2rem, 30rem);
+  padding: 1.5rem;
+  border: 1.5px solid var(--bp-dark);
+  background: var(--bp-tint);
+  box-shadow: 0 1.5rem 3rem color-mix(in oklch, var(--bp-dark) 35%, transparent);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--bp-dark);
+
+  & > * + * {
+    margin-block-start: 1rem;
+  }
+
+  & a {
+    font-weight: 600;
+    text-underline-offset: 0.2em;
+  }
+}
+
+.install-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+[popover] {
+  opacity: 0;
+  transition:
+    opacity 0.2s var(--ease-out),
+    translate 0.2s var(--ease-out),
+    display 0.2s allow-discrete,
+    overlay 0.2s allow-discrete;
+}
+
+[popover]:popover-open {
+  opacity: 1;
+}
+
+@starting-style {
+  [popover]:popover-open {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [popover] {
+    translate: 0 0.5rem;
+  }
+
+  [popover]:popover-open {
+    translate: 0 0;
+  }
+
+  @starting-style {
+    [popover]:popover-open {
+      translate: 0 0.5rem;
+    }
+  }
+}
+
+@supports (position-area: block-end) {
+  [popover] {
+    margin: 0;
+    margin-block-start: 0.5rem;
+    position-area: block-end span-inline-start;
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+}
+
+/* The header on a narrow screen ------------------------------------------- */
+
+/* The button that names the category in view, and the list it opens. A wide
+   screen has neither. */
+.current,
+.menu {
+  display: none;
+}
+
+@keyframes in-view {
+  from,
+  to {
+    max-inline-size: 14rem;
+    visibility: visible;
+  }
+}
+
+@keyframes out-of-view {
+  from,
+  to {
+    max-inline-size: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes current-category {
+  from,
+  to {
+    color: var(--bp-dark);
+    background: var(--bp-lime);
+  }
+}
+
+/* The ink, the ground and the accent of the narrow header, registered as
+   colors so they turn from light to dark smoothly and do not flip halfway, as
+   in "Transition a custom property with `@property`". The accent is the sign
+   of its button: the ink on the light bar, and sulphur on the dark one. */
+@property --header-ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: black;
+}
+
+@property --header-ground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: white;
+}
+
+@property --header-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: black;
+}
+
+@keyframes header-tone {
+  from {
+    --header-ink: var(--bp-dark);
+    --header-ground: var(--bp-tint);
+    --header-accent: var(--bp-dark);
+    border-color: transparent;
+  }
+
+  to {
+    --header-ink: var(--bp-tint);
+    --header-ground: var(--bp-dark);
+    --header-accent: var(--bp-lime);
+    border-color: color-mix(in oklch, var(--bp-tint) 20%, transparent);
+  }
+}
+
+@media (width < 56rem) {
+  /* A link into the page stops below the bar, as in "Anchor targets that
+     clear a sticky header". */
+  :root {
+    --anchor-offset: calc(var(--header-bar) + 1rem);
+  }
+
+  /* The header is a bar that stays at the top of the window. At the top of
+     the page it is part of the light band under it. While the page scrolls
+     by the height of the bar it turns dark, by a scroll-driven animation, and
+     no script watches the scroll. A browser with no scroll timelines shows
+     it dark. */
+  .site-header {
+    --ink: var(--header-ink);
+    --ground: var(--header-ground);
+
+    position: sticky;
+    inset-block-start: 0;
+    padding-block-start: 0;
+    border-block-end: 1px solid;
+    animation: header-tone linear both;
+    animation-timeline: scroll();
+    animation-range: 0px var(--header-bar);
+  }
+
+  .site-header-bar {
+    min-block-size: var(--header-bar);
+  }
+
+  /* The mark is drawn 2rem wide, in a box a finger can hit, and its edge
+     stays on the column. */
+  .site-header .mark {
+    inline-size: 2.75rem;
+    aspect-ratio: 1;
+    margin-inline: -0.375rem 0.125rem;
+    mask-size: 2rem auto;
+  }
+
+  /* The link keeps its name for a screen reader and shows its sign alone. */
+  .github {
+    padding: 0.6875rem;
+  }
+
+  .github-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: clip;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* A category's timeline runs while the category crosses the line under the
+     bar. The two insets leave one pixel of the window there. It is the
+     technique of "Styles that apply only when a scroller overflows", with the
+     page as the scroller: a timeline switches a value on and no script
+     watches the scroll. */
+  .category,
+  [data-slot="categories"] {
+    view-timeline-axis: block;
+    view-timeline-inset: var(--header-bar) calc(100% - var(--header-bar) - 1px);
+  }
+
+  .current {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.65625rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+
+    /* The sign of an accordion, in sulphur. It is drawn before the names and
+       ordered after them, because the hit area has the other pseudo-element. */
+    &::before {
+      content: "";
+      order: 1;
+      flex: none;
+      inline-size: 0.75rem;
+      block-size: 0.75rem;
+      background: var(--header-accent);
+      mask: url("/icons/plus.svg") center / contain no-repeat;
+    }
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
+
+  .site-header:has(.menu:popover-open) .current::before {
+    mask-image: url("/icons/minus.svg");
+  }
+
+  /* Each name shows while its timeline runs, and "Categories" shows while
+     none does. A hidden name has no width, so the button is as wide as the
+     one that shows and the sign stays beside it. A name too long for the bar
+     ends in an ellipsis. A browser with no view timelines shows "Categories"
+     all the way down. */
+  .current-names {
+    display: flex;
+    overflow: clip;
+
+    & > * {
+      overflow: clip;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    & > :first-child {
+      animation: out-of-view linear;
+    }
+
+    & > :not(:first-child) {
+      max-inline-size: 0;
+      visibility: hidden;
+      animation: in-view linear;
+    }
+  }
+
+  /* The list of all eight, under the button, as in "Popover anchored to its
+     trigger". It fades and rises in with the rules every popover has. The
+     link of the category in view is lit by the same timeline. */
+  .menu {
+    min-inline-size: 15rem;
+    padding: 0;
+    border: 1.5px solid var(--bp-tint);
+    background: var(--bp-dark);
+    box-shadow: 0 1.5rem 3rem color-mix(in oklch, var(--bp-dark) 50%, transparent);
+    color: var(--bp-tint);
+
+    &:popover-open {
+      display: block;
+    }
+
+    & li + li {
+      border-block-start: 1px solid color-mix(in oklch, var(--bp-tint) 25%, transparent);
+    }
+
+    & a {
+      display: block;
+      padding: 0.75rem 1rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      text-decoration: none;
+      outline-offset: -3px;
+      animation: current-category linear;
+
+      &:active {
+        background: color-mix(in oklch, var(--bp-tint) 15%, transparent);
+      }
+    }
+  }
+
+  @supports (position-area: block-end) {
+    .menu {
+      position-area: block-end span-inline-end;
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .menu a:hover {
+    background: color-mix(in oklch, var(--bp-tint) 10%, transparent);
+  }
+
+  .current:hover .current-names {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+/* Hero -------------------------------------------------------------------- */
+
+/* The wordmark and the two ways in, on the band the header opens, with the
+   number of entries huge behind them. The drawing is at the end of the row,
+   centered on the text, and under it on a narrow screen. On a wide screen the
+   band fills the viewport under the 7rem header (3.5rem of padding and a
+   3.5rem bar), and the row sits in its middle. */
+.hero {
+  align-content: center;
+  padding-block: 3rem 6rem;
+
+  @media (width >= 56rem) {
+    min-block-size: max(36rem, 100svh - 7rem);
+    padding-block: 3rem;
+  }
+
+  /* The band cuts the number at the same share of its height at any size.
+     It shows 0.485em of it, and the row is at most 28rem tall, so on a short
+     wide screen the number shrinks to stay in the gap under the row. */
+  & > .ghost {
+    inset-block-start: calc(100% - 0.485em);
+    inset-inline-start: calc(var(--start) - 1.5rem);
+    font-size: var(--text-ghost-hero);
+
+    @media (width >= 56rem) {
+      font-size: clamp(8rem, (100svh - 35rem) / 1.1, var(--text-ghost-hero));
+    }
+  }
+}
+
+/* The drawing reaches past the column to the gutter of the page, and no more
+   than 9rem past it on a wide screen. Its column leaves room for it. */
+.hero-main {
+  --art: clamp(20rem, 30cqi, 28rem);
+  --reach: min(var(--start) - var(--gutter), 9rem);
+
+  display: grid;
+  grid-template-columns: minmax(0, 48rem) minmax(calc(var(--art) - var(--reach)), 1fr);
+  align-items: center;
+  column-gap: 4rem;
+}
+
+.hero-text {
+  display: grid;
+  gap: var(--wordmark-gap);
+
+  /* The G is round, so it hangs a little over the edge of the column to
+     look in line with it. */
+  & h1 img {
+    inline-size: 100%;
+    translate: -0.75% 0;
+  }
+}
+
+.hero-art {
+  container-type: inline-size;
+  justify-self: end;
+  inline-size: var(--art);
+  margin-inline-end: calc(var(--reach) * -1);
+
+  /* A node keeps the radius it has in the file, 3.8px at 448px, at any
+     size of the drawing. */
+  & .nodes circle {
+    r: calc(3.8px * (448px / 100cqi));
+  }
+}
+
+/* Two ways in: the command that installs the skill, and the score that says
+   an agent can read the site without it. */
+.hero-install {
+  display: grid;
+  gap: 0.5625rem;
+  max-inline-size: 41.25rem;
+}
+
+.hero-caption {
+  margin-block-start: 0.5625rem;
+  color: color-mix(in oklch, var(--ink) 72%, transparent);
+}
+
+/* The "or" between the two: its words, then a hairline to the end of the row. */
+.hero-or {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-block-start: 1.75rem;
+
+  &::after {
+    content: "";
+    flex: 1;
+    border-block-start: 1px solid var(--line);
+  }
+}
+
+/* The proof that an agent can read the site: a dial drawn as the art is,
+   full of sulphur, its line closed and its hand back at the node it started
+   from, then the sentence, with the score linked to the scan. */
+.hero-score {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.75rem;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.45;
+  text-wrap: balance;
+
+  & svg {
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    overflow: visible;
+    color: var(--ink);
+  }
+
+  & a {
+    color: var(--ink);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    white-space: nowrap;
+  }
+
+  & .icon {
+    margin-inline-start: 0.25em;
+    vertical-align: -0.05em;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-score a:hover {
+    text-decoration-thickness: 2px;
+  }
+}
+
+.hero-install-head {
+  display: flex;
+  justify-content: space-between;
+
+  & span + span {
+    color: color-mix(in oklch, var(--ink) 60%, transparent);
+  }
+}
+
+/* The large command of the hero, with the sign of a copy in its button. */
+.hero .install-command {
+  min-block-size: 4.125rem;
+
+  & code {
+    padding-inline: 1.375rem;
+    font-size: clamp(0.875rem, 0.7rem + 0.55vw, 1.0625rem);
+    font-weight: 600;
+  }
+
+  & button {
+    min-inline-size: 7rem;
+
+    & .icon {
+      display: block;
+    }
+  }
+}
+
+/* Stats ------------------------------------------------------------------- */
+
+.stats {
+  padding-block: var(--space-head) 6.5rem;
+
+  /* The box model again, large and faint, at the right of the band. */
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset-block-start: -5rem;
+    inset-inline-start: calc(var(--start) + var(--column) * 0.5385);
+    inline-size: 53.75rem;
+    block-size: 41.25rem;
+    background: currentColor;
+    opacity: 0.13;
+    mask: url("/patterns/box-model-wide.svg") center / contain no-repeat;
+  }
+}
+
+.tagline {
+  max-inline-size: 7em;
+  margin-block-start: 2.5rem;
+  font-size: var(--text-tagline);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  translate: -0.05em 0;
+}
+
+.statement {
+  margin-block-start: 1.625rem;
+  font-size: 1.1875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+/* Three cells, each with its label above it. The cells share their borders:
+   each one after the first draws over the line of the one before. */
+.stat-cells {
+  display: grid;
+  grid-template-columns: 388fr 388fr 353fr;
+  margin-block-start: 4.375rem;
+}
+
+/* The cell takes what height the row has over its label, so the cells line
+   up when one caption runs to two lines. */
+.stat {
+  display: grid;
+  grid-template-rows: auto 1fr;
+
+  & + & {
+    margin-inline-start: -1.5px;
+  }
+}
+
+/* A label is never broken. One that has no room goes under the other. */
+.stat-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding-block-end: 0.9375rem;
+  padding-inline-end: 0.875rem;
+
+  & > * {
+    white-space: nowrap;
+  }
+
+  & > :last-child {
+    color: color-mix(in oklch, var(--ink) 55%, transparent);
+  }
+}
+
+/* A cell: a bar along the top, the figure, and what it counts. The bars
+   step from the ink to a mid lilac to sulphur. */
+.stat-cell {
+  position: relative;
+  display: grid;
+  align-content: end;
+  gap: 1rem;
+  min-block-size: 10.5rem;
+  padding: 2.5rem 1.25rem 1.375rem;
+  border: 1.5px solid var(--ink);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0.375rem 0.375rem auto;
+    block-size: 0.875rem;
+    background: var(--bar, var(--ink));
+  }
+
+  & b {
+    font-size: var(--text-stat);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+
+  & span {
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+}
+
+.stat:nth-child(2) .stat-cell {
+  --bar: var(--bp-mid);
+}
+
+.stat:nth-child(3) .stat-cell {
+  --bar: var(--bp-lime);
+}
+
+/* Categories -------------------------------------------------------------- */
+
+/* The band is a container, as in "Container queries with container units",
+   so the row of cards can measure it. Its bottom is a grid of dots, behind
+   the count. */
+.categories {
+  container-type: inline-size;
+  padding-block-start: var(--space-head);
+
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: auto 0 0;
+    block-size: 17.125rem;
+    background: radial-gradient(circle, var(--ink) 0.8px, transparent 1px) 0 0 / 1rem 1rem;
+    opacity: 0.34;
+  }
+
+  & h2 {
+    margin-block-start: 1.5rem;
+    font-size: var(--text-heading);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    translate: -0.05em 0;
+  }
+}
+
+/* The carousel of "Carousel on native scroll". It runs to both edges of the
+   window, and its padding brings the first card in line with the content,
+   and the last card at the end of the scroll. Three cards fill the content
+   column, and a card is never narrower than 16rem. */
+.carousel {
+  --gap: 1.3125rem;
+  --pad: max(var(--gutter), (100cqi - var(--content)) / 2);
+  --card: max(16rem, (100cqi - var(--pad) * 2 - var(--gap) * 2) / 3);
+
+  grid-column: full-width;
+  display: flex;
+  gap: var(--gap);
+  margin-block-start: 2.625rem;
+  padding-inline: var(--pad);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--pad);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+
+  /* Each card is a container too, and sizes what it holds in `cqi`. */
+  & > * {
+    container-type: inline-size;
+    flex: none;
+    inline-size: var(--card);
+    scroll-snap-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .carousel {
+    scroll-behavior: smooth;
+  }
+}
+
+/* A card: the title, the drawing, the count and a round arrow. The card the
+   count names is sulphur, with dark lines and the aubergine solid. The focus
+   ring is drawn inside the card, where the scroller cannot clip it. */
+.card {
+  --ink: var(--bp-tint);
+  --ground: var(--bp-card);
+  --art-ground: var(--ground);
+
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  aspect-ratio: 362 / 452;
+  padding: 6.1cqi 6.63cqi 6.63cqi;
+  background: var(--ground);
+  color: var(--ink);
+  text-decoration: none;
+  outline-offset: -0.5rem;
+
+  [data-current] > & {
+    --ink: var(--bp-dark);
+    --ground: var(--bp-lime);
+  }
+}
+
+.card-title {
+  font-size: clamp(1.25rem, 6.63cqi, 1.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+
+.card .art {
+  place-self: center;
+  inline-size: 86.2cqi;
+}
+
+.card-count {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+
+  & b {
+    font-size: 12.7cqi;
+    font-weight: 700;
+    line-height: 0.8;
+    letter-spacing: -0.05em;
+  }
+}
+
+.card-open {
+  position: absolute;
+  inset-block-end: 6.63cqi;
+  inset-inline-end: 6.63cqi;
+  display: grid;
+  place-items: center;
+  inline-size: 2.25rem;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in oklch, var(--ink) 55%, transparent);
+  border-radius: 50%;
+
+  [data-current] > .card > & {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--ground);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .card-open {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--ground);
+  }
+}
+
+/* The eight phases under the row, one per category. The one the count names
+   is sulphur, and a press on one scrolls to it. */
+.phases {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 0.25rem;
+  margin-block-start: 2.625rem;
+
+  & button {
+    position: relative;
+    display: block;
+    inline-size: 100%;
+    block-size: 2.75rem;
+    padding: 1rem 0 0 0.5rem;
+    border: 0;
+    border-block-start: 0.5rem solid color-mix(in oklch, var(--ink) 30%, transparent);
+    background: none;
+    font: inherit;
+    color: color-mix(in oklch, var(--ink) 75%, transparent);
+    text-align: start;
+    cursor: pointer;
+    outline-offset: -2px;
+
+    /* The tick under the start of the bar. */
+    &::before {
+      content: "";
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      inline-size: 1px;
+      block-size: 0.75rem;
+      background: color-mix(in oklch, var(--ink) 60%, transparent);
+    }
+
+    & .label {
+      font-size: 0.625rem;
+    }
+
+    &[aria-pressed="true"] {
+      border-color: var(--bp-lime);
+      color: var(--bp-lime);
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .phases button:not([aria-pressed="true"]):hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+}
+
+/* The count, huge and cut by the bottom of the band, with the total and the
+   name of the category beside it, and the two buttons at the far end. On a
+   narrow screen the buttons go under the name. */
+.carousel-controls {
+  display: grid;
+  grid-template-areas:
+    "count total buttons"
+    "count name buttons";
+  grid-template-columns: auto auto 1fr;
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  column-gap: clamp(1rem, 4vw, 3.5rem);
+  margin-block-start: 1.125rem;
+  /* The band ends two thirds of the way down the count. */
+  margin-block-end: calc(var(--text-counter) * -0.3333);
+}
+
+/* Every digit is one width, as in "Tabular numbers", so the total and the
+   name beside the count hold still as it changes. */
+.counter {
+  grid-area: count;
+  font-size: var(--text-counter);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  translate: -0.05em 0;
+}
+
+.counter-total {
+  grid-area: total;
+  padding-block-start: calc(var(--text-counter) * 0.2);
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.counter-name {
+  grid-area: name;
+  padding-block-start: 0.75rem;
+  color: color-mix(in oklch, var(--ink) 80%, transparent);
+}
+
+/* A button that has somewhere to go is filled. */
+.carousel-buttons {
+  grid-area: buttons;
+  justify-self: end;
+  display: flex;
+  gap: 0.75rem;
+  padding-block-start: calc(var(--text-counter) * 0.186);
+
+  & button {
+    display: grid;
+    place-items: center;
+    inline-size: 3.25rem;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--ground);
+    cursor: pointer;
+
+    &:disabled {
+      background: var(--ground);
+      color: var(--ink);
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+
+  & [data-carousel-dir="-1"] .icon {
+    rotate: 180deg;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .carousel-buttons button:not(:disabled):hover {
+    border-color: var(--bp-lime);
+    background: var(--bp-lime);
+    color: var(--bp-dark);
+  }
+}
+
+/* A drawing of a category: lines in the ink, open nodes filled with the
+   ground, and a solid in sulphur, or in aubergine where the ground is
+   sulphur. Its solids reach a little past its square. */
+.art {
+  display: block;
+  aspect-ratio: 1;
+
+  & > svg {
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+  }
+
+  & .solid-dark {
+    display: none;
+  }
+}
+
+[data-current] .art {
+  & .solid {
+    display: none;
+  }
+
+  & .solid-dark {
+    display: inline;
+  }
+}
+
+/* A node keeps its size on screen as the drawing shrinks: the file's radius
+   is for the 312px of a card, and these are for 184px and 124px. */
+.opener-tile .nodes circle {
+  r: 5.43px;
+}
+
+.footer-art .nodes circle {
+  r: 6.54px;
+}
+
+/* Category ---------------------------------------------------------------- */
+
+/* A category is a band of its own, light or dark in turn, with its number
+   huge behind it. */
+.category {
+  padding-block: var(--space-band) var(--space-band-end);
+
+  & > .ghost {
+    inset-block-start: -0.336em;
+    inset-inline-start: calc(var(--start) + var(--column) * 0.37);
+    font-size: var(--text-ghost-band);
+  }
+}
+
+/* The opener: a rule with a sulphur first quarter, the number, the name, an
+   index of the entries, and the drawing in a square of the other tone. */
+.opener {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 12.5rem;
+  align-items: start;
+  column-gap: 1.8125rem;
+  padding-block-start: 2.25rem;
+  border-block-start: 6px solid;
+  border-image: linear-gradient(90deg, var(--bp-lime) 25%, var(--ink) 25%) 1;
+}
+
+.opener-text {
+  display: grid;
+  gap: 1.125rem;
+  max-inline-size: 56.25rem;
+
+  & h2 {
+    font-size: var(--text-opener);
+    font-weight: 800;
+    line-height: 0.96;
+    letter-spacing: -0.055em;
+    translate: -0.03em 0;
+  }
+}
+
+.opener-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--soft);
+}
+
+.opener-number {
+  padding: 0.375rem 0.5625rem;
+  background: var(--bp-lime);
+  color: var(--bp-dark);
+}
+
+.opener-dash {
+  inline-size: 1.75rem;
+  block-size: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+/* The drawing lies on the band itself, in the band's ink, with its nodes
+   filled with the band's ground. */
+.opener-tile {
+  padding: 0.5rem;
+}
+
+/* The entries of the category as a table of two columns, filled down the
+   first and then the second. Each cell draws the lines on its top and start
+   sides, and the outer edge clips those of the first row and column, so
+   every line is drawn once. */
+.entry-index {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(var(--rows), auto);
+  grid-auto-flow: column;
+  margin-block-start: 0.875rem;
+  border: 1.5px solid var(--ink);
+  overflow: clip;
+
+  & li {
+    margin-block-start: -1px;
+    margin-inline-start: -1.5px;
+    border-block-start: 1px solid var(--ink);
+    border-inline-start: 1.5px solid var(--ink);
+  }
+
+  & a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-block-size: 2.625rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.012em;
+    text-decoration: none;
+    outline-offset: -3px;
+
+    & .label {
+      flex: none;
+      inline-size: 1.5rem;
+      color: var(--soft);
+    }
+
+    & code {
+      font: inherit;
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .entry-index a:hover {
+    background: color-mix(in oklch, var(--ink) 8%, transparent);
+  }
+}
+
+.entry-index a:active {
+  background: color-mix(in oklch, var(--ink) 14%, transparent);
+}
+
+.entries {
+  margin-block-start: var(--space-entry);
+}
+
+/* Entry ------------------------------------------------------------------- */
+
+/* The number in a gutter of its own, huge and pale behind, then the entry. */
+.entry {
+  display: grid;
+  grid-template-columns: 191fr 938fr;
+
+  & + & {
+    margin-block-start: var(--space-entry);
+  }
+}
+
+.entry-number {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 0.25rem;
+  padding: 2.375rem 0 0 3.75rem;
+
+  & .label {
+    font-size: 0.625rem;
+    color: var(--soft);
+  }
+
+  & b {
+    font-size: 1.625rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.045em;
+  }
+
+  & .ghost {
+    inset-block-start: -0.147em;
+    inset-inline-start: -0.787em;
+    font-size: var(--text-ghost-entry);
+  }
+}
+
+/* The parts of an entry are spaced by the entry, as in "Space between
+   siblings set by the parent", and a part that wants another space says so.
+   A rule with a short sulphur start opens it. */
+.entry-body {
+  padding-block-start: 2.25rem;
+  border-block-start: 4px solid;
+  border-image: linear-gradient(90deg, var(--bp-lime) 6rem, var(--ink) 6rem) 1;
+
+  & > * + * {
+    margin-block-start: var(--flow-space, 2.25rem);
+  }
+}
+
+.entry h3 {
+  font-size: var(--text-title);
+  font-weight: 800;
+  line-height: 1.136;
+  letter-spacing: -0.045em;
+
+  /* Code in a title is set as the title is. */
+  & code {
+    font: inherit;
+  }
+}
+
+.lede {
+  --flow-space: 1.125rem;
+
+  max-inline-size: 46.625rem;
+  font-size: var(--text-lede);
+  line-height: 1.55;
+  letter-spacing: -0.025em;
+  color: var(--text);
+
+  &:empty {
+    display: none;
+  }
+
+  & code {
+    font-size: 0.9em;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--ink);
+  }
+}
+
+/* Specimen ---------------------------------------------------------------- */
+
+/* The one column is as wide as the entry and no wider, whatever the frame in
+   it asks for. That is what holds the frame's width to 100%. */
+.specimen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.125rem;
+}
+
+/* The frame is a viewport with its controls in a bar on top: a dark panel
+   on a light band, a light one on a dark band. The width buttons resize it,
+   and so does a drag of its corner. It is centered in its column, so it
+   grows and shrinks from its middle.
+
+   A resize stops at these sizes. The frame is never wider than its column,
+   and never narrower than 20rem unless the column is. It is never shorter
+   than 10rem, and never taller than the window less 4rem, so all of it can
+   be seen at once. */
+.viewport {
+  --bar: 2.875rem;
+  --panel-ink: var(--bp-tint);
+  --panel-bar: var(--bp-deep);
+  --panel-ground: var(--bp-dark);
+
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--bar) 1fr;
+  width: 100%;
+  max-width: 100%;
+  min-width: min(100%, 20rem);
+  height: calc(var(--frame-height) + var(--bar));
+  min-height: 10rem;
+  max-height: calc(100svh - 4rem);
+  margin-inline: auto;
+  background: var(--panel-ground);
+  color: var(--panel-ink);
+  overflow: clip;
+
+  .band-dark & {
+    --panel-ink: var(--bp-dark);
+    --panel-bar: var(--bp-ghost-tint);
+    --panel-ground: var(--bp-tint);
+  }
+
+  /* It may shrink below the 150px an iframe has by default. */
+  & iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: 0;
+  }
+
+  /* While the corner is dragged the specimen takes no pointer events, so the
+     drag is not lost when the pointer crosses it. */
+  &[data-resizing] iframe {
+    pointer-events: none;
+  }
+}
+
+/* The corner that resizes the frame. A touch on it drags and does not scroll
+   the page. */
+.viewport-grip {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 1.875rem;
+  block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: color-mix(in oklch, var(--panel-ink) 66%, transparent);
+  outline-offset: -3px;
+  cursor: nwse-resize;
+  touch-action: none;
+
+  &:active {
+    opacity: 0.5;
+  }
+}
+
+/* The hit area of "Hit area larger than the visual", for a finger only. It
+   reaches over the corner of the specimen, where a mouse should still get to
+   a scrollbar. */
+@media (pointer: coarse) {
+  .viewport-grip::after {
+    content: "";
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
+  }
+}
+
+/* The bar: a sulphur light, the size, the three widths, and the link that
+   opens the specimen in its own tab. */
+.viewport-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-inline: 1.125rem 0.6875rem;
+  border-block-end: 1px solid color-mix(in oklch, var(--panel-ink) 40%, transparent);
+  background: var(--panel-bar);
+  font-family: var(--bp-font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.viewport-size {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.625rem;
+  overflow: clip;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: color-mix(in oklch, var(--panel-ink) 86%, transparent);
+
+  &::before {
+    content: "";
+    flex: none;
+    inline-size: 6px;
+    block-size: 6px;
+    background: var(--bp-lime);
+  }
+}
+
+.viewport-open {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border: 1px solid color-mix(in oklch, var(--panel-ink) 50%, transparent);
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+/* The link is named on a narrow screen only. */
+.viewport-open-label {
+  display: none;
+}
+
+/* The three widths in a pill, with the one in use in sulphur. */
+.viewport-widths {
+  display: flex;
+  flex: none;
+  padding: 2px;
+  border: 1px solid color-mix(in oklch, var(--panel-ink) 50%, transparent);
+  border-radius: 999px;
+
+  & button {
+    min-inline-size: 2.5rem;
+    block-size: 1.5rem;
+    padding: 0 0.375rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    font: inherit;
+    font-size: 0.6875rem;
+    color: color-mix(in oklch, var(--panel-ink) 66%, transparent);
+    outline-offset: -2px;
+    cursor: pointer;
+
+    &[aria-pressed="true"] {
+      background: var(--bp-lime);
+      font-weight: 700;
+      color: var(--bp-dark);
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .viewport-widths button:not([aria-pressed="true"]):hover {
+    color: var(--panel-ink);
+  }
+
+  .viewport-open:hover {
+    border-color: var(--panel-ink);
+  }
+}
+
+.viewport-widths button:not([aria-pressed="true"]):active,
+.viewport-open:active {
+  opacity: 0.6;
+}
+
+/* What a pass looks like, under the frame. The sign is as tall as a line of
+   the text and stays beside the first one, as in "Icon sized by the text
+   beside it". */
+.check {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+  max-inline-size: 51.75rem;
+  font-size: 0.875rem;
+  line-height: 1.643;
+  letter-spacing: -0.012em;
+  color: color-mix(in oklch, var(--ink) 74%, transparent);
+
+  & .icon {
+    --size: 1lh;
+  }
+
+  & code {
+    font-size: 0.9em;
+  }
+}
+
+.no-specimen {
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  min-height: 16rem;
+  padding: 1.5rem;
+  border: 1.5px dashed var(--ink);
+  text-align: center;
+}
+
+/* The two accordions ------------------------------------------------------ */
+
+/* The entry's code, then why it works, the rules, the support and the
+   credits. Both start closed, and both open and close as "Accordion that
+   animates its height" has it. A closed one still holds its text in the
+   page, so find-in-page and a reader of the HTML reach it. An open one
+   turns its summary over to the ink. */
+.folds {
+  border: 3px solid var(--ink);
+}
+
+.fold + .fold {
+  border-block-start: 1.5px solid var(--ink);
+}
+
+.fold summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-block-size: 3.75rem;
+  padding: 0.75rem 1rem 0.75rem 1.375rem;
+  list-style: none;
+  outline-offset: -4px;
+  cursor: pointer;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  /* The sign in a ring. The two are one mask, so both take the ink. */
+  &::after {
+    content: "";
+    flex: none;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    background: currentColor;
+    mask:
+      url("/icons/plus.svg") center / 0.75rem no-repeat,
+      radial-gradient(closest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px) 100%, transparent 100%);
+  }
+}
+
+/* Open, the summary is the ink, and the sign sits on a sulphur disc. */
+.fold[open] summary {
+  background: var(--ink);
+  color: var(--ground);
+
+  /* The sign is drawn in the dark on the disc, as text on sulphur is
+     everywhere, so it reads on a light band and a dark one alike. */
+  &::after {
+    background: linear-gradient(var(--bp-dark) 0 0) center / 0.75rem 1.6px no-repeat, var(--bp-lime);
+    mask: radial-gradient(closest-side, #000 calc(100% - 0.5px), transparent 100%);
+  }
+}
+
+/* The title and the meta give up room in step with their lengths, so
+   neither is squeezed to nothing. */
+.fold-title {
+  flex: 1 1 auto;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+.fold-meta {
+  text-align: end;
+  opacity: 0.66;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fold:not([open]) summary:hover {
+    background: color-mix(in oklch, var(--ink) 8%, transparent);
+  }
+}
+
+.fold summary:active .fold-title {
+  opacity: 0.7;
+}
+
+details::details-content {
+  height: 0;
+  overflow: clip;
+}
+
+details[open]::details-content {
+  height: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  details::details-content {
+    transition:
+      height 0.3s var(--ease-out),
+      content-visibility 0.3s allow-discrete;
+  }
+}
+
+/* The code, on the deepest dark in every band, each block with its line
+   numbers. Text between two blocks keeps to the column of the code. */
+.source {
+  padding-block: 1.625rem 1.75rem;
+  background: var(--bp-deep);
+  color: color-mix(in oklch, var(--bp-tint) 86%, transparent);
+}
+
+.source-text {
+  padding: 0.5rem 1.5rem 0.5rem 4rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+
+  & + .code-block,
+  .code-block + & {
+    margin-block-start: 1rem;
+  }
+
+  & code {
+    font-size: 0.9em;
+    color: var(--bp-tint);
+  }
+}
+
+.code-block {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  column-gap: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5625rem;
+
+  & + & {
+    margin-block-start: 1.5rem;
+  }
+
+  /* A side with more code past it fades, as in "Styles that apply only when
+     a scroller overflows". A block that fits does not. */
+  & pre {
+    margin: 0;
+    padding-inline-end: 1.5rem;
+    overflow-x: auto;
+    scrollbar-color: color-mix(in oklch, var(--bp-tint) 30%, transparent) transparent;
+    tab-size: 2;
+    animation: code-edges linear;
+    animation-timeline: scroll(self inline);
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--code-fade-start),
+      #000 calc(100% - var(--code-fade-end)),
+      transparent
+    );
+  }
+
+  & code {
+    font-size: inherit;
+  }
+}
+
+@property --code-fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --code-fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes code-edges {
+  from {
+    --code-fade-start: 0px;
+    --code-fade-end: 2.5rem;
+  }
+
+  10%,
+  90% {
+    --code-fade-start: 2.5rem;
+    --code-fade-end: 2.5rem;
+  }
+
+  to {
+    --code-fade-start: 2.5rem;
+    --code-fade-end: 0px;
+  }
+}
+
+.code-lines {
+  white-space: pre;
+  text-align: end;
+  color: color-mix(in oklch, var(--bp-tint) 50%, transparent);
+  user-select: none;
+}
+
+/* The colors of Prism's tokens: selectors in full tint, names in sulphur,
+   functions and strings bright, punctuation and comments soft, the rest
+   between. */
+.code-block .token {
+  &:is(.selector, .tag) {
+    color: var(--bp-tint);
+  }
+
+  &:is(.property, .attr-name, .keyword, .important, .atrule .rule) {
+    color: var(--bp-lime);
+  }
+
+  &:is(.function, .string, .attr-value, .url, .atrule) {
+    color: var(--bp-bright);
+  }
+
+  &:is(.punctuation, .operator) {
+    color: color-mix(in oklch, var(--bp-tint) 66%, transparent);
+  }
+
+  &.comment {
+    color: color-mix(in oklch, var(--bp-tint) 50%, transparent);
+  }
+}
+
+/* The notes: a label on one side and its items on the other, one part
+   under the other with a line between. */
+.notes {
+  padding: 0.625rem 2.5rem 1.125rem;
+}
+
+.note {
+  display: grid;
+  grid-template-columns: 9.375rem minmax(0, 1fr);
+  column-gap: 1.75rem;
+  padding-block: 1.875rem;
+
+  & + & {
+    border-block-start: 1px solid var(--ink);
+  }
+}
+
+.note-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5625rem;
+  align-self: start;
+  padding-block-start: 0.4375rem;
+  color: var(--text);
+
+  &::before {
+    content: "";
+    flex: none;
+    inline-size: 6px;
+    block-size: 6px;
+    background: var(--bp-lime);
+  }
+}
+
+/* Text in the notes, with code and links in the full ink. */
+:is(.note-items, .note-body) {
+  max-inline-size: 42.5rem;
+  font-size: 1.03125rem;
+  line-height: 1.6364;
+  letter-spacing: -0.012em;
+  color: var(--text);
+
+  & code {
+    font-size: 0.9em;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--ink);
+  }
+
+  & a {
+    color: var(--ink);
+    text-underline-offset: 0.2em;
+  }
+
+  & strong {
+    font-weight: 700;
+    color: var(--ink);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.note-items, .note-body, .install, .prose, .footer-install) a:hover {
+    text-decoration-thickness: 2px;
+  }
+}
+
+/* Numbered items, the number a label in a column of its own. */
+.note-items {
+  display: grid;
+  gap: 1rem;
+  counter-reset: item;
+
+  & li {
+    display: grid;
+    grid-template-columns: 2.125rem minmax(0, 1fr);
+    counter-increment: item;
+
+    &::before {
+      content: counter(item, decimal-leading-zero);
+      font-size: 0.65625rem;
+      line-height: 2.5714;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--soft);
+    }
+  }
+}
+
+.note-body {
+  display: grid;
+  gap: 1rem;
+}
+
+/* The versions that support an entry, one cell per browser, with the bars
+   of the stat cells. */
+.browsers {
+  display: flex;
+  justify-self: start;
+  border: 1.5px solid var(--ink);
+
+  & > div {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    inline-size: 11.875rem;
+    padding: 1.75rem 1rem 0.75rem;
+
+    & + div {
+      border-inline-start: 1.5px solid var(--ink);
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0.375rem 0.375rem auto;
+      block-size: 0.625rem;
+      background: var(--bar, var(--ink));
+    }
+  }
+
+  & [data-browser="Firefox"] {
+    --bar: var(--bp-mid);
+  }
+
+  & [data-browser="Safari"] {
+    --bar: var(--bp-lime);
+  }
+
+  & dt {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--soft);
+  }
+
+  & dd {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.045em;
+    color: var(--ink);
+  }
+}
+
+.credits {
+  gap: 0.75rem;
+  font-size: 0.90625rem;
+  line-height: 1.6552;
+}
+
+/* Page -------------------------------------------------------------------- */
+
+/* A page of deploy/pages: its title, its statement, its text, on the light
+   band under the header. */
+.page {
+  flex: 1;
+  padding-block: var(--space-band) var(--space-band-end);
+
+  & h1 {
+    font-size: var(--text-opener);
+    font-weight: 800;
+    line-height: 0.96;
+    letter-spacing: -0.055em;
+    translate: -0.03em 0;
+  }
+}
+
+.page-statement {
+  max-inline-size: 36rem;
+  margin-block-start: 2rem;
+  font-size: var(--text-lede);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* The body of a page. The blocks are spaced by the parent, as in "Space
+   between siblings set by the parent". */
+.prose {
+  max-inline-size: 42.5rem;
+  margin-block-start: 3rem;
+  font-size: 1.03125rem;
+  line-height: 1.6364;
+  color: var(--text);
+
+  & > * + * {
+    margin-block-start: 1em;
+  }
+
+  & :is(ul, ol) {
+    display: grid;
+    gap: 0.5rem;
+    padding-inline-start: 1.25rem;
+    list-style: square;
+  }
+
+  & a {
+    color: var(--ink);
+    text-underline-offset: 0.2em;
+  }
+
+  & code {
+    font-size: 0.9em;
+    color: var(--ink);
+  }
+}
+
+/* Footer ------------------------------------------------------------------ */
+
+.site-footer {
+  margin-block-start: auto;
+  padding-block-start: var(--space-footer);
+}
+
+/* The install panel, and the eight drawings beside it. A page with no
+   drawings gives the panel the row. */
+.footer-top {
+  display: grid;
+  grid-template-columns: 548fr 545fr;
+  align-items: center;
+  gap: 2.25rem;
+
+  &:has(.footer-art:empty) {
+    grid-template-columns: minmax(0, 34.25rem);
+  }
+}
+
+.footer-install {
+  --ink: var(--bp-dark);
+  --ground: var(--bp-tint);
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: start;
+  padding: 2.5rem;
+  overflow: clip;
+  background: var(--ground);
+  color: var(--ink);
+
+  /* The box model once more, faint, cut by the panel's edge. */
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset-block-start: -6.875rem;
+    inset-inline-start: 15.625rem;
+    inline-size: 32.5rem;
+    aspect-ratio: 1;
+    background: var(--bp-dark);
+    opacity: 0.12;
+    mask: url("/patterns/box-model-square.svg") center / contain no-repeat;
+  }
+
+  & .mark {
+    inline-size: 3.5897rem;
+  }
+
+  /* It breaks after "an", as drawn. */
+  & h2 {
+    max-inline-size: 6.5em;
+    margin-block-start: 2rem;
+    font-size: var(--text-panel-title);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+    text-wrap: wrap;
+    translate: -0.05em 0;
+  }
+
+  & p {
+    max-inline-size: 28.25rem;
+    margin-block-start: 1.375rem;
+    font-size: 1.03125rem;
+    line-height: 1.48;
+    letter-spacing: -0.015em;
+    color: color-mix(in oklch, var(--ink) 90%, transparent);
+  }
+
+  & a {
+    font-weight: 600;
+    text-underline-offset: 0.2em;
+  }
+
+  & .install-command {
+    justify-self: stretch;
+    margin-block-start: 2.5rem;
+  }
+}
+
+.footer-art {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem 0.75rem;
+
+  & .art {
+    inline-size: min(100%, 7.75rem);
+    justify-self: center;
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
+/* The links in four columns of a bordered table. */
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-block-start: 5.625rem;
+  border: 1.5px solid var(--ink);
+
+  & > div {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 0.75rem;
+    min-block-size: 13.1rem;
+    padding: 1.125rem 1.25rem 1.5rem;
+
+    & + div {
+      border-inline-start: 1.5px solid var(--ink);
+    }
+  }
+
+  & .label {
+    justify-self: stretch;
+    margin-block-end: 0.25rem;
+    padding-block-end: 0.875rem;
+    border-block-end: 1px solid var(--line);
+  }
+
+  & a {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+}
+
+.footer-soft {
+  opacity: 0.8;
+}
+
+/* The arrow of an outside link follows its last word. */
+.footer-links .with-icon {
+  display: inline;
+
+  & .icon {
+    margin-inline-start: 0.375rem;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footer-links a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+.footer-links a:active {
+  opacity: 0.6;
+}
+
+/* A rule with a sulphur first quarter, then who made it and the line. */
+.footer-end {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem 2rem;
+  margin-block-start: 3.25rem;
+  padding-block-start: 1.125rem;
+  border-block-start: 4px solid;
+  border-image: linear-gradient(90deg, var(--bp-lime) 25%, var(--ink) 25%) 1;
+
+  & p:last-child {
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+}
+
+/* The wordmark as wide as the column, in a shade of the band, cut by the
+   bottom of the page. */
+.footer-wordmark {
+  aspect-ratio: 768 / 74;
+  margin-block-start: 4.75rem;
+  background: var(--ghost);
+  mask: url("/wordmark.svg") top center / 100% auto no-repeat;
+}
+
+/* A narrow screen --------------------------------------------------------- */
+
+@media (width < 56rem) {
+  .hero {
+    min-block-size: 0;
+    padding-block: 3.5rem 7rem;
+
+    & > .ghost {
+      inset-block: auto -0.35em;
+      inset-inline: auto calc(var(--start) - 0.25em);
+    }
+  }
+
+  .hero-main {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--wordmark-gap);
+  }
+
+  /* Under the command the drawing takes the width of the column, and clears
+     the number below it. */
+  .hero-art {
+    justify-self: start;
+    inline-size: min(100%, 28rem);
+    margin-block-end: 1.5rem;
+    margin-inline-end: 0;
+  }
+
+  .stat-cells {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+
+  .stat + .stat {
+    margin-inline-start: 0;
+  }
+
+  .stat-head {
+    column-gap: 0.75rem;
+    padding-inline-end: 0;
+  }
+
+  /* A cell is a row: the figure, then what it counts, its last line on the
+     figure's baseline. Where the text would be narrower than 7rem beside a
+     wide figure, it goes under it. */
+  .stat-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: last baseline;
+    gap: 0.5rem 1.25rem;
+    min-block-size: 0;
+    padding: 2.625rem 1.125rem 1.25rem;
+
+    & span {
+      flex: 1 1 7rem;
+    }
+  }
+
+  .carousel-controls {
+    grid-template-areas:
+      "count total"
+      "count name"
+      "count buttons";
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    /* The buttons under the name need the whole height, so the count is
+       not cut. */
+    margin-block-end: 0;
+    padding-block-end: 1.5rem;
+  }
+
+  .carousel-buttons {
+    justify-self: start;
+    gap: 0.5rem;
+    padding-block-start: 1rem;
+
+    & button {
+      inline-size: 2.75rem;
+    }
+  }
+
+  /* The command wraps once, after "add", and its button loses the sign. */
+  .hero .install-command button {
+    min-inline-size: 4.75rem;
+
+    & .icon {
+      display: none;
+    }
+  }
+
+  .opener {
+    grid-template-columns: minmax(0, 1fr) 6rem;
+    column-gap: 1rem;
+  }
+
+  .entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .entry-number {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.625rem;
+    padding: 0 0 1rem;
+
+    & b {
+      font-size: 1.25rem;
+    }
+
+    & .ghost {
+      inset-block-start: -0.32em;
+      inset-inline-start: auto;
+      inset-inline-end: -0.1em;
+    }
+  }
+
+  .footer-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .footer-links {
+    grid-template-columns: 1fr 1fr;
+
+    & > div {
+      min-block-size: 0;
+    }
+
+    & > div:nth-child(3) {
+      border-inline-start: 0;
+    }
+
+    & > div:nth-child(n + 3) {
+      border-block-start: 1.5px solid var(--ink);
+    }
+
+    /* Each link is a row as tall as a finger needs. */
+    & > div {
+      gap: 0;
+      padding-block-end: 0.75rem;
+    }
+
+    & :is(a, .with-icon) {
+      display: block;
+      padding-block: 0.6875rem;
+    }
+  }
+}
+
+@media (width < 40rem) {
+  /* One card fills most of the row and the next one shows at its edge. A
+     swipe stops at every card, as a pager does. */
+  .carousel {
+    --card: clamp(15rem, 100cqi - var(--pad) * 2 - 3.5rem, 22rem);
+
+    & > * {
+      scroll-snap-stop: always;
+    }
+  }
+
+  /* The phases in two rows of four, so each is wide enough for a finger. */
+  .phases {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: row;
+    row-gap: 1rem;
+  }
+
+  /* The frame runs from one edge of the screen to the other, so a specimen
+     gets the 20rem it is drawn for on the narrowest phone too. The check
+     under it keeps to the column. */
+  .specimen {
+    margin-inline: calc(var(--gutter) * -1);
+  }
+
+  .check {
+    padding-inline: var(--gutter);
+  }
+
+  /* A phone has no room to change the frame's width, so the bar keeps the
+     size and the link that opens the specimen on a page of its own, named. */
+  .viewport-widths {
+    display: none;
+  }
+
+  .viewport-open {
+    display: flex;
+    gap: 0.5rem;
+    inline-size: auto;
+    block-size: 1.75rem;
+    padding-inline: 0.75rem 0.625rem;
+    border-radius: 999px;
+  }
+
+  .viewport-open-label {
+    display: inline;
+  }
+
+  /* The title over its meta, and the sign beside both. */
+  .fold summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title sign"
+      "meta sign";
+    gap: 0.375rem 1rem;
+    padding-block: 0.875rem;
+    padding-inline-start: 1.125rem;
+
+    &::after {
+      grid-area: sign;
+    }
+  }
+
+  .fold-title {
+    grid-area: title;
+  }
+
+  .fold-meta {
+    grid-area: meta;
+    text-align: start;
+  }
+
+  .entry-index {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-auto-flow: row;
+  }
+
+  .opener {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .opener-tile {
+    display: none;
+  }
+
+  .entry-body {
+    padding-block-start: 1.75rem;
+  }
+
+  .notes {
+    padding-inline: 1.25rem;
+  }
+
+  .note {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1rem;
+    padding-block: 1.5rem;
+  }
+
+  .browsers {
+    justify-self: stretch;
+
+    & > div {
+      flex: 1;
+      inline-size: auto;
+      padding-inline: 0.75rem;
+    }
+
+    & dd {
+      font-size: 1.75rem;
+    }
+  }
+
+  .source-text {
+    padding-inline-start: 1.25rem;
+  }
+
+  .code-block {
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    column-gap: 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .footer-install {
+    padding: 1.5rem;
+  }
+
+  .footer-art {
+    gap: 1rem 0.5rem;
+  }
+}

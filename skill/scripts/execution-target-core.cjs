@@ -48,16 +48,16 @@ function git(root, ...args) {
 function samePath(left, right) {
   const a = path.resolve(left);
   const b = path.resolve(right);
-  if ((process.platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b)) return true;
+  if (a === b) return true;
   if (!fs.existsSync(a) || !fs.existsSync(b)) return false;
   const leftStat = fs.statSync(a, { bigint: true });
   const rightStat = fs.statSync(b, { bigint: true });
-  return leftStat.dev === rightStat.dev && leftStat.ino === rightStat.ino;
+  return leftStat.ino !== 0n && leftStat.dev === rightStat.dev && leftStat.ino === rightStat.ino;
 }
 
 function repository(projectRoot, options = {}) {
-  const input = fs.realpathSync(path.resolve(projectRoot));
-  const top = fs.realpathSync(path.resolve(input, git(input, "rev-parse", "--show-toplevel").trim()));
+  const input = fs.realpathSync.native(path.resolve(projectRoot));
+  const top = fs.realpathSync.native(path.resolve(input, git(input, "rev-parse", "--show-toplevel").trim()));
   if (!options.allowSubdirectory && !samePath(input, top)) invalid(`projectRoot must be the Git repository root: ${top}`);
   const branchResult = gitResult(top, ["symbolic-ref", "--quiet", "--short", "HEAD"]);
   if (branchResult.status !== 0) invalid("an attached base branch is required");
@@ -359,7 +359,7 @@ function validateOutcome(outcome, state) {
 
 function commonGitDirectory(root) {
   const raw = git(root, "rev-parse", "--git-common-dir").trim();
-  return fs.realpathSync(path.resolve(root, raw));
+  return fs.realpathSync.native(path.resolve(root, raw));
 }
 
 function gitPaths(root, args) {

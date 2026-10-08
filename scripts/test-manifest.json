@@ -48,6 +48,7 @@
     "execution-target-routing.test.cjs",
     "frontend-stack-routing.test.cjs",
     "graphics-runtime-catalog.test.cjs",
+    "good-css.test.cjs",
     "graybox-gate.test.cjs",
     "holosticker.test.cjs",
     "install-local.test.cjs",

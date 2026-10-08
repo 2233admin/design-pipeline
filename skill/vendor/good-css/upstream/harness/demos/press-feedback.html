@@ -1,0 +1,33 @@
+<template data-specimen data-height="240">
+  Press and hold a button. It shrinks the moment you press, label and all, and eases back when you let go. With Reduce Motion on it still shrinks, with no easing.
+</template>
+
+<style>
+  @layer demo {
+    .center {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    .button {
+      padding: 1rem 2rem;
+      border: 0;
+      background: var(--bp-ink);
+      font-size: 1.25rem;
+      color: var(--bp-panel);
+    }
+
+    .small {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+  }
+</style>
+
+<div class="center">
+  <button class="button">Press and hold</button>
+  <button class="button small">A small one</button>
+</div>

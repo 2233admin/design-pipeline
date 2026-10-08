@@ -546,6 +546,19 @@ Complete this section when `scene.json` and `scene.md` or `3d.md` are required.
 - React/Next conventions checked when applicable:
 - Animation library choice justified:
 
+For CSS changes, use `good-css.md` within the existing interface review and evidence process:
+
+- Applied practice IDs, original conditions and project adaptations:
+- Target-browser/version support, unsupported features and exercised usable fallbacks:
+- Intrinsic layout with narrow/wide viewports, real long content and RTL/CJK/200% zoom as applicable:
+- Keyboard/focus, hover-capability, pressed/form states and reduced-motion observations:
+- Offline specimen study and actual affected project surface inspected:
+- CSS-owned properties do not conflict with the deterministic film or existing motion owner:
+
+The upstream checker is a scoped diagnostic for readable CSS/style blocks, with opinionated rules;
+it cannot validate utility/CSS-in-JS output, browser support, accessibility or visual quality.
+Source integrity and study generation do not establish Component Conformance or Visual Acceptance.
+
 ## Agent-Readable State
 
 - `state.json` exists:

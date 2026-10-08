@@ -119,21 +119,21 @@ function plannedInputMs(input) {
   return CLICK_HOLD_MS;
 }
 
-// 60 steps per second for the pointer. The wheel is paced by the probe's own intervalMs, which is
-// the field that exists to say how fast the wheel turns. Positions are computed from elapsed time
-// rather than step index, so a slow round trip drops a step instead of stretching the gesture, and
-// the last move always lands exactly on the endpoint.
+// 60 intermediate positions per planned second for the pointer. Keep every native move: skipping
+// to the elapsed-time position after a delayed browser round trip creates an artificial jump.
+// Pace each step after the previous move actually finishes, so a delayed driver cannot burst
+// through overdue positions. A slow driver may take longer, as the wheel already does, and the
+// recorder retains that real input duration and its safety bound.
 async function driveInput(page, probe) {
   const input = probe.input;
   if (input.kind === "pointer-sweep") {
     const moveTo = (ratio) => page.mouse.move(input.from[0] + (input.to[0] - input.from[0]) * ratio, input.from[1] + (input.to[1] - input.from[1]) * ratio);
-    const startedAt = Date.now();
+    const steps = Math.ceil(input.durationMs / STEP_MS);
     await moveTo(0);
-    while (Date.now() - startedAt < input.durationMs) {
-      await sleep(Math.min(STEP_MS, input.durationMs - (Date.now() - startedAt)));
-      await moveTo(Math.min(1, (Date.now() - startedAt) / input.durationMs));
+    for (let step = 1; step <= steps; step += 1) {
+      await sleep(input.durationMs / steps);
+      await moveTo(step / steps);
     }
-    await moveTo(1);
     return;
   }
   if (input.kind === "wheel") {
