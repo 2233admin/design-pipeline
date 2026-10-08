@@ -7,6 +7,31 @@ on:
     branches: [main, master]
 
 jobs:
+  windows-path-regressions:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install locked workspace dependencies
+        run: npm ci
+
+      - name: Windows path identity and storyboard regressions
+        shell: pwsh
+        run: |
+          node --test --test-reporter=tap --test-name-pattern="contained paths keep lexical coordinates|Windows public storyboard verification" tests/execution-target-routing.test.cjs tests/workflow-next.test.cjs | Tee-Object -Variable windowsResults
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $report = $windowsResults -join "`n"
+          foreach ($marker in @("Windows alias identity assertions executed", "Windows storyboard uppercase path verified")) {
+            if ($report -notmatch "(?m)^# $marker\r?$") { throw "Windows regression did not execute: $marker" }
+          }
+
   qa-and-package:
     runs-on: ubuntu-latest
     steps:

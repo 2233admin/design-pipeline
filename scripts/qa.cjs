@@ -154,7 +154,7 @@ try {
 
   const testFiles = testManifest.tests.map((name) => path.join(repoRoot, "tests", name));
   // ponytail: cap subprocess contention at four files; tune only with measured suite timings.
-  const tests = run(process.execPath, ["--test", `--test-concurrency=${Math.min(4, os.availableParallelism())}`, ...testFiles], { env: hermeticEnv });
+  const tests = run(process.execPath, ["--test", `--test-concurrency=${Math.min(4, os.availableParallelism())}`, ...testFiles], { env: hermeticEnv, stdio: ["ignore", "inherit", "inherit"] });
   report(tests.status === 0, `repository tests (${testManifest.tests.length} files)`);
 
   const packageScript = path.join(repoRoot, "scripts/package.cjs");

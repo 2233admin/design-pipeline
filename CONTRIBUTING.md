@@ -10,12 +10,25 @@ It is not a general-purpose agent skill marketplace.
 2. Read `skill/references/curation-policy.md`.
 3. For repository behavior changes, create an OpenSpec change under `openspec/changes/<change-id>/`.
 4. If the change came from a downstream observation, link its `dpf-*` id and remove private evidence before publication.
-5. Run:
+5. Before selecting the publication worktree base or freezing full QA, fetch the intended PR target and review both branch histories and the three-dot PR diff. Replace `<target-branch>` with the actual target, such as `main`:
+
+```bash
+git fetch origin
+git log --left-right --oneline origin/<target-branch>...HEAD
+git diff --stat origin/<target-branch>...HEAD
+```
+
+Reconcile incoming target changes and dependent commits with the intended PR scope before freezing the implementation.
+
+6. Record the implementation commit (`git rev-parse HEAD`) and tested Git tree (`git rev-parse 'HEAD^{tree}'`) in the change's verification record. Keep implementation bytes frozen during full QA, then run:
 
 ```bash
 npm ci
 npm test
+npm run specs:check
 ```
+
+7. If later integration or implementation changes the tested tree, record fresh verification separately. Earlier full-QA results cover only their recorded revision; focused checks of the integrated tree do not become a full-QA pass.
 
 The private root npm workspace requires Node.js 22.12+ and locks the maintenance dependencies for
 `evals/cases` and `tools/browser-automation`; it is not part of the packaged skill or downstream
@@ -143,6 +156,7 @@ Required:
 
 ```bash
 npm test
+npm run specs:check
 ```
 
 When touching dependency detection:

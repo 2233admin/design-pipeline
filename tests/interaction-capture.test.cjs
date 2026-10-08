@@ -204,28 +204,38 @@ test("delayed native pointer delivery keeps intermediate positions and real jump
     // browser's rAF; the wrapper neither synthesizes DOM input nor changes captured samples.
     fs.writeFileSync(wrapper, `const fs=require("node:fs"),puppeteer=require(${JSON.stringify(modulePath)});
 module.exports={...puppeteer,async launch(options){
-  const browser=await puppeteer.launch(options),newPage=browser.newPage.bind(browser),close=browser.close.bind(browser),moves=[];
+  const browser=await puppeteer.launch(options),newPage=browser.newPage.bind(browser),close=browser.close.bind(browser),moves=[];let startupMoves=0;
   browser.newPage=async()=>{const page=await newPage(),move=page.mouse.move.bind(page.mouse);
-    page.mouse.move=async(x,y,...args)=>{const startedAt=performance.now();if(moves.length===6)await new Promise(resolve=>setTimeout(resolve,250));
+    // Reproduce Chrome's stationary startup event with real native input after the recorder sees
+    // rest frames. Setup bypasses the swept-move log; the actual driver still stalls on move six.
+    page.mouse.move=async(x,y,...args)=>{if(!moves.length){
+      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await move(0,0);
+      await page.evaluate(()=>new Promise(requestAnimationFrame));startupMoves++;}
+      const startedAt=performance.now();if(moves.length===6)await new Promise(resolve=>setTimeout(resolve,250));
       const result=await move(x,y,...args);moves.push({x,y,startedAt,t:performance.now()});return result;};return page;};
-  browser.close=async()=>{fs.writeFileSync(${JSON.stringify(movesFile)},JSON.stringify(moves));return close();};return browser;
+  browser.close=async()=>{fs.writeFileSync(${JSON.stringify(movesFile)},JSON.stringify({moves,startupMoves}));return close();};return browser;
 }};`);
     fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><style>${CARD_CSS}</style><div id="card"></div><script>
-addEventListener("mousemove",event=>{document.querySelector("#card").style.transform="translateX("+(event.clientX-200)+"px)";});
+// Ignore the stationary startup event, as the live spring specimen already does.
+addEventListener("mousemove",event=>{if(!event.movementX&&!event.movementY)return;document.querySelector("#card").style.transform="translateX("+(event.clientX-200)+"px)";});
 </script>`);
     site = await fileServer(dir);
     const doc = document_(`${site.origin}/index.html`, sweep("delayed-sweep", 600, 800));
     const raw = await captureInteraction(path.join(dir, "interaction.json"), { doc, puppeteerModule: wrapper });
-    const moves = JSON.parse(fs.readFileSync(movesFile, "utf8"));
+    const { moves, startupMoves } = JSON.parse(fs.readFileSync(movesFile, "utf8"));
+    assert.equal(startupMoves, 1, "the stationary native startup input must actually execute");
     assert.ok(Math.max(...moves.slice(1).map((move, index) => move.t - moves[index].t)) >= 250, "the native input driver actually stalled");
     // A 60 Hz step needs a new wait after actual delivery, even after the 250 ms stall.
     // Allow timer rounding to 15 ms; expired absolute deadlines must not burst with no wait.
     const pauses = moves.slice(1).map((move, index) => move.startedAt - moves[index].t);
     assert.ok(Math.min(...pauses) >= 15, `native pointer delivery caught up in a burst: minimum pause ${Math.min(...pauses)}ms`);
     assert.deepEqual([moves[0].x, moves.at(-1).x], [200, 1080]);
-    assert.ok(Math.max(...moves.slice(1).map((move, index) => move.x - moves[index].x)) <= 25, "a slow native move must not skip intermediate input coordinates");
+    const maxPointerStep = Math.max(...moves.slice(1).map((move, index) => move.x - moves[index].x));
+    assert.ok(maxPointerStep <= 25, `a slow native move must not skip intermediate input coordinates: maximum step ${maxPointerStep}px`);
     const samples = raw.probes[0].samples, positions = xs(samples), travel = Math.max(...positions) - Math.min(...positions);
-    assert.ok(Math.max(...positions.slice(1).map((x, index) => Math.abs(x - positions[index]))) < travel / 10, "driver delay must not make the responding specimen jump");
+    const largestSampleStep = samples.slice(1).map((sample, index) => ({ delta: Math.abs(sample.box.x - samples[index].box.x), from: samples[index], to: sample }))
+      .reduce((largest, step) => step.delta > largest.delta ? step : largest);
+    assert.ok(largestSampleStep.delta < travel / 10, `driver delay must not make the responding specimen jump: ${largestSampleStep.delta}px of ${travel}px travel, frame gap ${largestSampleStep.to.t - largestSampleStep.from.t}ms (${largestSampleStep.from.phase}->${largestSampleStep.to.phase}), driver duration ${moves.at(-1).t - moves[0].t}ms`);
 
     fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><style>${CARD_CSS}</style><div id="card"></div><script>
 addEventListener("mousemove",event=>{if(event.clientX>200)document.querySelector("#card").style.transform="translateX(880px)";});
@@ -233,7 +243,8 @@ addEventListener("mousemove",event=>{if(event.clientX>200)document.querySelector
     const jumped = await capture(dir, document_(`${site.origin}/index.html`, sweep("jumping-target", 600, 800)));
     const jumpPositions = xs(jumped.probes[0].samples), jumpTravel = Math.max(...jumpPositions) - Math.min(...jumpPositions);
     assert.ok(jumpTravel > 800, "the real pointer input reached the jumping page");
-    assert.ok(Math.max(...jumpPositions.slice(1).map((x, index) => Math.abs(x - jumpPositions[index]))) >= jumpTravel / 10, "an actual target jump must still fail the same smoothness threshold");
+    const jumpDelta = Math.max(...jumpPositions.slice(1).map((x, index) => Math.abs(x - jumpPositions[index])));
+    assert.ok(jumpDelta >= jumpTravel / 10, `an actual target jump must still fail the same smoothness threshold: ${jumpDelta}px of ${jumpTravel}px travel`);
   } finally {
     if (site) await close(site.server);
     fs.rmSync(dir, { recursive: true, force: true });

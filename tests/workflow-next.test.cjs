@@ -171,8 +171,11 @@ test("native visual next asks for a concrete decomposition without creating lega
 
 test("public native failures retain measured fixes and bound repeated attempts to input/output bytes", t => {
   const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
-  let chrome;
-  try { chrome = resolveChrome(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE); }
+  let chrome, puppeteerModule;
+  try {
+    chrome = resolveChrome(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
+    puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
+  }
   catch (error) { if (error.code === "TOOL_MISSING") { t.skip(error.message); return; } throw error; }
   const fixture = visualFixture(); t.after(() => fs.rmSync(fixture.dir, { recursive: true, force: true }));
   const invoke = (...args) => {
@@ -180,16 +183,16 @@ test("public native failures retain measured fixes and bound repeated attempts t
     assert.ok(result.stdout, result.stderr || result.error?.message);
     return { exit: result.status, value: JSON.parse(result.stdout) };
   };
-  const complete = () => invoke("decide", "--choice", "outline", "--verdict", "complete", "--chrome", chrome, ...(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? ["--puppeteer-module", process.env.DESIGN_PIPELINE_PUPPETEER_MODULE] : []));
+  const complete = () => invoke("decide", "--choice", "outline", "--verdict", "complete", "--chrome", chrome, "--puppeteer-module", puppeteerModule);
   const first = invoke("next", "--plan", fixture.plan); assert.equal(first.exit, 0);
   touch(fixture.dir, "outline.html", visualHtml.replace(' onclick="this.style.transform=\'translateX(20px)\'"', ""));
   const stateFile = path.join(fixture.dir, "state.json");
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const failed = complete(); assert.equal(failed.exit, 2); assert.equal(failed.value.status, "blocked");
+    const failed = complete(); assert.equal(failed.exit, 2, JSON.stringify(failed.value)); assert.equal(failed.value.status, "blocked", JSON.stringify(failed.value));
     const beforeNext = fs.readFileSync(stateFile), next = invoke("next").value;
     assert.deepEqual(fs.readFileSync(stateFile), beforeNext, "repeated next does not count another verification");
     assert.equal(typeof next.feedback, "string");
-    assert.equal(next.attempts, attempt);
+    assert.equal(next.attempts, attempt, JSON.stringify(next));
     assert.ok(next.findings.some(item => item.code === "dead-interaction" && item.probeId === "click" && item.path === "outline-check.json" && item.message && item.fix));
     if (attempt === 3) assert.equal(next.recovery.code, "stop-repeating");
     else assert.equal(next.recovery, undefined);
@@ -205,15 +208,18 @@ test("public native failures retain measured fixes and bound repeated attempts t
   const scope = complete(); assert.equal(scope.exit, 2);
   assert.equal(JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks.failures.outline.attempts, 1, "scope blocking is not another observed verifier failure");
   fs.unlinkSync(path.join(fixture.dir, "outside.txt"));
-  const missing = invoke("decide", "--choice", "outline", "--verdict", "complete", "--chrome", path.join(fixture.dir, "missing-chrome"));
+  const missing = invoke("decide", "--choice", "outline", "--verdict", "complete", "--chrome", path.join(fixture.dir, "missing-chrome"), "--puppeteer-module", puppeteerModule);
   assert.equal(missing.exit, 2);
   assert.equal(JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks.failures.outline.attempts, 1, "missing tools do not add observed attempts");
 });
 
 test("public native menu selection fails with typed repair evidence and completes only after real journey repair", t => {
   const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
-  let chrome;
-  try { chrome = resolveChrome(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE); }
+  let chrome, puppeteerModule;
+  try {
+    chrome = resolveChrome(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
+    puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
+  }
   catch (error) { if (error.code === "TOOL_MISSING") { t.skip(error.message); return; } throw error; }
   const fixture = menuFixture(); t.after(() => fs.rmSync(fixture.dir, { recursive: true, force: true }));
   const invoke = (...args) => {
@@ -221,16 +227,18 @@ test("public native menu selection fails with typed repair evidence and complete
     assert.ok(result.stdout, result.stderr || result.error?.message);
     return { exit: result.status, value: JSON.parse(result.stdout) };
   };
-  const complete = () => invoke("decide", "--choice", "menu-selection", "--verdict", "complete", "--chrome", chrome, ...(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? ["--puppeteer-module", process.env.DESIGN_PIPELINE_PUPPETEER_MODULE] : []));
+  const complete = () => invoke("decide", "--choice", "menu-selection", "--verdict", "complete", "--chrome", chrome, "--puppeteer-module", puppeteerModule);
   const first = invoke("next", "--plan", fixture.plan); assert.equal(first.exit, 0);
   touch(fixture.dir, "index.html", menuHtml(true));
-  const failed = complete(); assert.equal(failed.exit, 2); assert.equal(failed.value.status, "blocked");
-  const repair = invoke("next").value, finding = repair.findings.find(item => item.stepId === "choose" && item.selector === "#selection-value");
+  const failed = complete(); assert.equal(failed.exit, 2, JSON.stringify(failed.value)); assert.equal(failed.value.status, "blocked", JSON.stringify(failed.value));
+  const repair = invoke("next").value;
+  assert.equal(repair.attempts, 1, JSON.stringify(repair));
+  const finding = repair.findings.find(item => item.stepId === "choose" && item.selector === "#selection-value");
   assert.equal(finding.code, "state-mismatch"); assert.equal(finding.expected, "按更新时间"); assert.equal(finding.actual, "默认顺序"); assert.ok(finding.fix);
-  assert.equal(repair.attempts, 1); assert.equal(repair.stage, "visual-task");
+  assert.equal(repair.stage, "visual-task", JSON.stringify(repair));
   const probeBefore = fs.readFileSync(path.join(fixture.dir, "interaction.json"));
   touch(fixture.dir, "index.html", menuHtml());
-  const checked = complete(); assert.equal(checked.exit, 0); assert.equal(checked.value.next.stage, "visual-review");
+  const checked = complete(); assert.equal(checked.exit, 0, JSON.stringify(checked.value)); assert.equal(checked.value.next.stage, "visual-review", JSON.stringify(checked.value));
   assert.deepEqual(fs.readFileSync(path.join(fixture.dir, "interaction.json")), probeBefore, "repair preserves the independently declared journey");
   const report = JSON.parse(fs.readFileSync(path.join(fixture.dir, "evidence/menu-check.json"))), row = report.probes[0];
   assert.equal(row.steps.length, 8); assert.ok(row.steps.every(step => step.status === "passed"));
@@ -495,8 +503,9 @@ test("native visual rejection stays on the current goal with concrete feedback",
 
 test("native visual CLI next and decide share the native projection and failed checks do not advance", () => {
   const fixture = visualFixture();
+  const puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
   const run = (...args) => {
-    const result = spawnSync(process.execPath, [cli, ...args, "--root", fixture.dir, "--change-root", ".", "--json"], { encoding: "utf8" });
+    const result = spawnSync(process.execPath, [cli, ...args, "--puppeteer-module", puppeteerModule, "--root", fixture.dir, "--change-root", ".", "--json"], { encoding: "utf8" });
     return { exitCode: result.status, value: JSON.parse(result.stdout) };
   };
   assert.equal(run("next").value.stage, "decompose");
@@ -505,11 +514,11 @@ test("native visual CLI next and decide share the native projection and failed c
   assert.equal(next.value.task.id, "outline");
   let artifact = visualEvidence(fixture, next.value, { status: "failed", checks: ["Missing fixed-time frame."] });
   const failed = run("decide", "--choice", "outline", "--verdict", "complete", "--artifact", artifact);
-  assert.equal(failed.exitCode, 2);
+  assert.equal(failed.exitCode, 2, JSON.stringify(failed.value));
   assert.equal(failed.value.next.task.id, "outline");
   artifact = visualEvidence(fixture, next.value);
   const completed = run("decide", "--choice", "outline", "--verdict", "complete", "--artifact", artifact);
-  assert.equal(completed.exitCode, 0);
+  assert.equal(completed.exitCode, 0, JSON.stringify(completed.value));
   assert.equal(completed.value.next.task.id, "surface");
   assert.equal(run("next").value.task.id, "surface");
   assert.equal(fs.existsSync(path.join(fixture.dir, ".design-pipeline/state.json")), false);
@@ -517,17 +526,18 @@ test("native visual CLI next and decide share the native projection and failed c
 
 test("public native visual review asks for its exact evidence and advances only after scoped acceptance", () => {
   const fixture = visualFixture();
+  const puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
   const plan = JSON.parse(fs.readFileSync(path.join(fixture.dir, fixture.plan), "utf8"));
   plan.phases[0].visual.review = true;
   touch(fixture.dir, fixture.plan, canonicalJson(plan));
   const run = (...args) => {
-    const result = spawnSync(process.execPath, [cli, ...args, "--root", fixture.dir, "--change-root", ".", "--json"], { encoding: "utf8" });
+    const result = spawnSync(process.execPath, [cli, ...args, "--puppeteer-module", puppeteerModule, "--root", fixture.dir, "--change-root", ".", "--json"], { encoding: "utf8" });
     return { exitCode: result.status, value: JSON.parse(result.stdout) };
   };
   const action = run("next", "--plan", fixture.plan).value;
   const artifact = visualEvidence(fixture, action);
   const completed = run("decide", "--choice", "outline", "--verdict", "complete", "--artifact", artifact);
-  assert.equal(completed.exitCode, 0);
+  assert.equal(completed.exitCode, 0, JSON.stringify(completed.value));
   const review = completed.value.next;
   assert.equal(review.type, "ask");
   assert.equal(review.stage, "visual-review");
@@ -580,19 +590,21 @@ test("native review cannot accept or reject an older completion version", () => 
 
 test("public native rejection reopens a completed target and invalidates dependent evidence", () => {
   const fixture = visualFixture();
+  const puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
   const plan = JSON.parse(fs.readFileSync(path.join(fixture.dir, fixture.plan), "utf8"));
   plan.phases[0].invalidates = []; // Explicit extra invalidations cannot hide real dependency lineage.
   plan.phases.forEach(task => { task.visual.review = true; });
   touch(fixture.dir, fixture.plan, canonicalJson(plan));
   const run = (...args) => {
-    const result = spawnSync(process.execPath, [cli, ...args, "--root", fixture.dir, "--change-root", ".", "--json"], { encoding: "utf8" });
+    const result = spawnSync(process.execPath, [cli, ...args, "--puppeteer-module", puppeteerModule, "--root", fixture.dir, "--change-root", ".", "--json"], { encoding: "utf8" });
     return { exitCode: result.status, value: JSON.parse(result.stdout) };
   };
   for (const id of ["outline", "surface"]) {
     const action = run("next", "--plan", fixture.plan).value;
     const artifact = visualEvidence(fixture, action);
     touch(fixture.dir, `${id}-completion.json`, fs.readFileSync(path.join(fixture.dir, artifact), "utf8"));
-    assert.equal(run("decide", "--choice", id, "--verdict", "complete", "--artifact", `${id}-completion.json`).exitCode, 0);
+    const completed = run("decide", "--choice", id, "--verdict", "complete", "--artifact", `${id}-completion.json`);
+    assert.equal(completed.exitCode, 0, JSON.stringify(completed.value));
     assert.equal(run("next").value.stage, "visual-review");
     assert.equal(run("decide", "--choice", id, "--verdict", "accept", "--artifact", `${id}-completion.json`).exitCode, 0);
   }
@@ -1243,8 +1255,14 @@ test("Windows public storyboard verification accepts the filesystem's case-insen
     };
     run("next", "--deliverable", "film", "--tier", "quick");
     run("film", "scaffold", "--output", ".");
+    const original = fs.statSync(path.join(dir, "storyboard.json"), { bigint: true });
+    const upper = fs.statSync(path.join(dir, "STORYBOARD.JSON"), { bigint: true });
+    assert.notEqual(original.ino, 0n);
+    assert.equal(upper.dev, original.dev);
+    assert.equal(upper.ino, original.ino);
     assert.equal(run("verify", "film-storyboard", "--storyboard", "STORYBOARD.JSON").status, "passed");
     assert.equal(run("next").stage, "build", "the existing storyboard.json was actually checked through its Windows alias");
+    t.diagnostic("Windows storyboard uppercase path verified");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

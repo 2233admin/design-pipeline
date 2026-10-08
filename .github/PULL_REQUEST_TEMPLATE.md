@@ -15,8 +15,14 @@ Describe the design outcome and the smallest pipeline change that supports it.
 
 ## Validation
 
-- [ ] `node scripts/qa.cjs`
-- [ ] `node --test tests/*.test.cjs`
+- Target branch and reviewed three-dot diff:
+- Tested implementation commit / Git tree:
+- Verification after later integration, if applicable:
+
+Keep each result bound to its tested revision. Earlier full QA does not cover a later integrated tree; report its fresh checks separately.
+
+- [ ] `npm test`
+- [ ] `npm run specs:check`
 - [ ] Project `DESIGN.md` and `MOTION.md` foundation checks pass
 - [ ] Website-cloning palette gates pass when cloning behavior changes
 - [ ] Package artifacts generated

@@ -309,7 +309,7 @@ test("CLI routes, prepares, and finalizes a React execution with bound receipts"
   assert.deepEqual(finalize.output.receipt.changedFiles, ["src/App.tsx"]);
 });
 
-test("contained paths keep lexical coordinates and Windows aliases retain physical containment", (t) => {
+test("contained paths keep lexical coordinates and Windows aliases retain physical containment", async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "execution-containment-"));
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), "execution-containment-outside-"));
   t.after(() => {
@@ -333,27 +333,37 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
     assert.equal(resolveInside(canonicalRoot, upperSpelling, "case-insensitive spelling", { mustExist: true }), upperSpelling);
     assert.equal(samePath(future, future), true);
     assert.equal(samePath(future, future.toUpperCase()), false);
-    if (path.relative(root, canonicalRoot) !== "") {
-      const originalStat = fs.statSync;
-      try {
-        fs.statSync = function (file, options) {
-          const stat = originalStat.call(this, file, options);
-          if (file === canonicalRoot && options?.bigint) stat.ino = 0n;
-          return stat;
-        };
-        assert.throws(() => resolveInside(canonicalRoot, future, "unobservable alias"), /must stay inside/);
-        assert.equal(samePath(root, canonicalRoot), false);
-      } finally { fs.statSync = originalStat; }
-      const originalLstat = fs.lstatSync;
-      try {
-        fs.lstatSync = function (file, options) {
-          const stat = originalLstat.call(this, file, options);
-          if (file === root && options?.bigint && stat) stat.dev += 1n;
-          return stat;
-        };
-        assert.throws(() => resolveInside(canonicalRoot, future, "different device alias"), /must stay inside/);
-      } finally { fs.lstatSync = originalLstat; }
-    }
+    // A real namespace alias always changes lexical coordinates, even when this
+    // volume does not create 8.3 names for new temporary directories.
+    const aliasRoot = path.toNamespacedPath(canonicalRoot);
+    const canonicalFuture = path.join(canonicalRoot, "nested", "new", "file.txt");
+    assert.notEqual(path.relative(canonicalRoot, aliasRoot), "");
+    const canonicalStat = fs.statSync(canonicalRoot, { bigint: true });
+    const aliasStat = fs.statSync(aliasRoot, { bigint: true });
+    assert.notEqual(canonicalStat.ino, 0n);
+    assert.equal(aliasStat.dev, canonicalStat.dev);
+    assert.equal(aliasStat.ino, canonicalStat.ino);
+    assert.equal(resolveInside(aliasRoot, canonicalFuture, "namespace alias"), canonicalFuture);
+    assert.equal(samePath(aliasRoot, canonicalRoot), true);
+    const originalStat = fs.statSync;
+    try {
+      fs.statSync = function (file, options) {
+        const stat = originalStat.call(this, file, options);
+        if (file === canonicalRoot && options?.bigint) stat.ino = 0n;
+        return stat;
+      };
+      assert.throws(() => resolveInside(aliasRoot, canonicalFuture, "unobservable alias"), /must stay inside/);
+      assert.equal(samePath(aliasRoot, canonicalRoot), false);
+    } finally { fs.statSync = originalStat; }
+    const originalLstat = fs.lstatSync;
+    try {
+      fs.lstatSync = function (file, options) {
+        const stat = originalLstat.call(this, file, options);
+        if (file === canonicalRoot && options?.bigint && stat) stat.dev += 1n;
+        return stat;
+      };
+      assert.throws(() => resolveInside(aliasRoot, canonicalFuture, "different device alias"), /must stay inside/);
+    } finally { fs.lstatSync = originalLstat; }
   }
 
   const linkType = process.platform === "win32" ? "junction" : "dir";
@@ -366,7 +376,7 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
     fs.symlinkSync(root, inboundLink, linkType);
   } catch (error) {
     if (error.code !== "EPERM") throw error;
-    t.diagnostic("directory link checks unavailable on this host");
+    t.skip("directory link checks unavailable on this host");
     return;
   }
   assert.equal(resolveInside(root, "contained-link/new/file.txt", "contained link"), path.join(containedLink, "new", "file.txt"));
@@ -382,12 +392,12 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
   const brokenLink = path.join(root, "broken-link");
   fs.symlinkSync(path.join(outside, "absent"), brokenLink, linkType);
   assert.throws(() => resolveInside(root, "broken-link/file.txt", "broken link"), /unresolved symlink/);
-  if (process.platform === "win32") {
+  await t.test("NTFS case-sensitive roots retain distinct physical identity", { skip: process.platform !== "win32" && "Windows NTFS capability" }, (ntfs) => {
     const caseDirectory = path.join(root, "case-sensitive");
     fs.mkdirSync(caseDirectory);
     const enabled = spawnSync("fsutil.exe", ["file", "setCaseSensitiveInfo", caseDirectory, "enable"], { encoding: "utf8", windowsHide: true, timeout: 10000 });
     if (enabled.status !== 0) {
-      t.diagnostic("temporary NTFS case-sensitive directory unavailable; alias identity checks still ran");
+      ntfs.skip(`NTFS case-sensitive directory unavailable: ${(enabled.stderr || enabled.stdout || enabled.error?.message || `exit ${enabled.status}`).trim()}`);
       return;
     }
     const upper = path.join(caseDirectory, "Root"), lower = path.join(caseDirectory, "root");
@@ -400,7 +410,8 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
     assert.throws(() => resolveInside(canonicalUpper, path.join(canonicalLower, "outside.txt"), "case-sensitive root"), /resolves outside/);
     assert.throws(() => resolveInside(canonicalUpper + path.sep, path.join(canonicalLower, "new", "outside.txt"), "case-sensitive future root"), /resolves outside/);
     assert.throws(() => resolveInside(canonicalUpper, path.join(lower, "outside.txt"), "case-sensitive alias root"), /must stay inside|resolves outside/);
-  }
+  });
+  if (process.platform === "win32") t.diagnostic("Windows alias identity assertions executed");
 });
 
 test("Git snapshots preserve unchanged dirty work and detect another edit with the same status", (t) => {
