@@ -1,2 +1,3 @@
 * text=auto eol=lf
+skill/vendor/gepa/upstream/** -text
 skill/references/**/upstream/** -text

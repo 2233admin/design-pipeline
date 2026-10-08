@@ -55,6 +55,8 @@ name a repository. This is triggered by the work's needs, not a required search 
 ## Open only what this task needs
 
 - Workflow stages, UI, references, implementation and review: `references/stages.md`.
+- Explicit offline improvement of a design prompt or skill instruction: `references/gepa.md`
+  for the independent native optimizer, frozen cases, diagnostic feedback and reviewable candidates.
 - Detailed route, CLI, gate and receipt contracts: `references/pipeline-reference.md`.
 - `film`, `edit`, and `web` workflow selected by `next`: the matching `references/workflow-*.md`.
 - Supporting drawing, image placement, text fitting, comparison, motion maps and advanced

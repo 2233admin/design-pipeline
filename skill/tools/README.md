@@ -5,6 +5,7 @@ by the visual problem; using a helper does not create a film project or select a
 
 | Need | Open next | Available now |
 | --- | --- | --- |
+| Improve a bounded design prompt or skill instruction through comparable cases | [Independent GEPA optimization](../references/gepa.md) | Native feedback-driven candidate search, frozen training/validation/final-test splits and exported proposals; optional pinned Python runtime |
 | The visible goal needs a method or implementation beyond the current tools | [Find and apply a capability](open-source-design.md) | Active GitHub/upstream discovery, source inspection, a rendered study and task-local adoption |
 | Find visual references, assets or a specific design operation | [Design sources](design-sources.md) | User's design directory, task-based lookup and transfer into existing reference/preview tools |
 | Continuous ink, pressure, path reveal, static paper grain | [Canvas craft](visual-craft/README.md) | Callable, caller-sized Canvas helpers and browser study |

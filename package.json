@@ -14,7 +14,7 @@
     "deps:check": "npm outdated --workspaces --include-workspace-root",
     "specs:check": "openspec validate --all --strict",
     "capabilities:check": "node skill/scripts/audit-capabilities.cjs --json",
-    "sources:check": "node --test tests/deepclonewebsite-reference.test.cjs tests/design-md-source.test.cjs tests/holosticker.test.cjs tests/iart-motion-skills.test.cjs tests/interface-discipline.test.cjs tests/mengto-skills.test.cjs tests/prism-system.test.cjs tests/shadcnio-react-components.test.cjs tests/visual-craft.test.cjs",
+    "sources:check": "node --test tests/deepclonewebsite-reference.test.cjs tests/design-md-source.test.cjs tests/holosticker.test.cjs tests/iart-motion-skills.test.cjs tests/interface-discipline.test.cjs tests/mengto-skills.test.cjs tests/prism-system.test.cjs tests/shadcnio-react-components.test.cjs tests/visual-craft.test.cjs tests/gepa-source.test.cjs",
     "sources:import:mengto": "node scripts/import-mengto-skills.cjs",
     "sources:import:iart": "node scripts/import-iart-motion-skills.cjs",
     "sources:import:designmd": "node scripts/import-design-md.cjs",
@@ -23,7 +23,8 @@
     "test:huashu": "uv run --with fonttools node --test tests/huashu-runtime.test.cjs tests/huashu-scroll.test.cjs tests/huashu-assets-audio.test.cjs tests/huashu-tools.test.cjs",
     "browser:install": "npm run install-browser --workspace tools/browser-automation && hyperframes browser ensure",
     "package:skill": "node scripts/package.cjs",
-    "install:skill": "node scripts/install-local.cjs"
+    "install:skill": "node scripts/install-local.cjs",
+    "sources:import:gepa": "node scripts/import-gepa.cjs"
   },
   "devDependencies": {
     "@fission-ai/openspec": "1.14.1"

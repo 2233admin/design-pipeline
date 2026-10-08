@@ -38,6 +38,7 @@ The root `package.json` is the source of truth for maintenance commands:
 | `npm run sources:import:mengto -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import a reviewed local MengTo revision. |
 | `npm run sources:import:iart -- --source-root <checkout-directory> --reviewed-at YYYY-MM-DD` | Import reviewed local iArt checkouts. |
 | `npm run sources:import:designmd -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import a reviewed local DESIGN.md revision. |
+| `npm run sources:import:gepa -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import the complete official GEPA source skill and metadata from its reviewed revision. |
 | `npm run test:browser` | Run browser-tool self-tests. |
 | `npm run package:skill` / `npm run install:skill -- --root <skills-root> --target <skill-target>` | Build or locally install the skill. |
 
