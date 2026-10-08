@@ -3,7 +3,8 @@
 - [项目视觉规范](../DESIGN.md)：遵循 [Google DESIGN.md](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md)，描述视觉语言与设计理由。
 - [项目动效规范](../MOTION.md)：本仓库的静态呈现，以及目标项目的动效边界。
 - [安装与升级](../skill/references/installation.md)、[工具索引](../skill/tools/README.md)：安装 skill 后按需阅读。
-- [术语表](glossary.md)：项目术语及其含义。
+- [术语表](GLOSSARY.md)：项目术语及其含义。
+- [Matt 技能适配](agents/matt-skills.md)：上游版本、项目配置与工程方法的组合方式。
 - [OpenSpec 配置](../openspec/config.yaml)、[贡献流程](../CONTRIBUTING.md)：项目上下文、行为规范和变更验收。
 - [历史文档](archive/README.md)：保留旧稿，仅供追溯。
 

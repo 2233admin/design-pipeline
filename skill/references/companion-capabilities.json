@@ -129,7 +129,7 @@
     {
       "name": "Matt Pocock development",
       "level": "optional",
-      "skills": ["codebase-design", "grill-with-docs", "implement", "matt-tdd", "matt-code-review"],
+      "skills": ["codebase-design", "grill-with-docs", "implement", "tdd", "code-review"],
       "fallback": "Use the repo's normal planning, implementation, test, and review process.",
       "install": ["Install Matt Pocock skills from: https://github.com/mattpocock/skills"]
     },

@@ -47,6 +47,24 @@ function runCheck(skillRoots, options = {}) {
   return JSON.parse(result.stdout);
 }
 
+test("recognizes official Matt install names without local aliases", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    for (const name of ["codebase-design", "grill-with-docs", "implement", "tdd", "code-review"]) {
+      installSkill(root, name, `---\nname: ${name}\ndescription: Installed skill fixture.\n---\n`);
+    }
+    const group = runCheck([root]).groups.find((item) => item.name === "Matt Pocock development");
+    assert.equal(group.level, "optional");
+    assert.equal(group.status, "OK");
+    assert.deepEqual(group.missing, []);
+    assert.ok(group.installed.includes("tdd"));
+    assert.ok(group.installed.includes("code-review"));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("reports INFO when the optional Anime.js skill is absent", () => {
   const root = makeRoot();
   try {

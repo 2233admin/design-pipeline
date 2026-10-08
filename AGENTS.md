@@ -35,3 +35,17 @@ Design and film workflow (UI, motion web, product films, PV/MAD edits) shipped a
 - Keep local agent installations, BMAD/output, skill-manager locks and root dotpaths out of Git. Shared dotpaths require an explicit `.gitignore` exception; `.github/`, `.gitignore` and `.gitattributes` are the current exceptions. QA rejects tracked ignored files. Preserve local copies when removing them from the index.
 - Project `DESIGN.md` follows the [Google DESIGN.md format](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md): visual tokens and design rationale in the official section order. Treat Product Context and Source Decisions as local provenance extensions. Keep engineering process and QA reports in change documents, not in visual component guidance.
 - Keep original source bundles in `skill/vendor/`, maintained callable helpers in `skill/tools/`, and task guides in `skill/references/`. Preserve upstream bytes and update consumers when moving a source bundle.
+
+## Agent skills
+
+### Issue tracker
+
+Execution tasks use Multica under the canonical host project-tracking policy. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the canonical triage roles and workspace categories. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: reuse `docs/GLOSSARY.md` and existing OpenSpec decisions. See `docs/agents/domain.md`.
