@@ -122,6 +122,8 @@ Agent 提示示例：“在当前项目里运行 `composition scaffold --templat
 
 CSS 写作和审查内置 [Good CSS](skill/references/good-css.md)：完整保留已审核上游的 47 个实践、8 类指南和全部示例素材，逐项说明项目适配与验证条件。[离线示例工具](skill/tools/good-css/README.md) 只需 Node.js，不依赖额外安装的 skill。
 
+视觉设计内置 [Taste-Skill 的全部 13 项能力](skill/references/taste-skill.md)：前端方向、截图还原、旧项目改造、风格设计、完整交付、Stitch、网页/移动端生图和品牌视觉。根据任务选择对应指南，完整原文随工具发布；无需另装 Taste 技能。生图仍使用宿主提供的图像生成工具。
+
 ## 从 GitHub Release 安装
 
 如果不想克隆仓库，直接下载最新正式版 `v0.10.0` Release 的资产（预发布版资产在发布后见 Releases 页面）。需要 Node.js 22 或更新版本。

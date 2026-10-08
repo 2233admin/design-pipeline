@@ -110,6 +110,7 @@
     "huashu-runtime.test.cjs",
     "huashu-scroll.test.cjs",
     "huashu-assets-audio.test.cjs",
-    "huashu-tools.test.cjs"
+    "huashu-tools.test.cjs",
+    "taste-skill.test.cjs"
   ]
 }

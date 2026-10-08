@@ -302,8 +302,11 @@ Read `references/pipeline-method.md` for the state, artifact, and invalidation c
   `references/interface-discipline.md` remains the fallback.
 - `frontend-design` supplies subject grounding, deliberate visual direction, critique-before-build,
   and anti-default judgment when installed; project contracts remain authoritative.
-- `design-taste-frontend`, `ui-ux-pro-max`, `web-design-guidelines`, and `emil-design-eng` are
-  capability lenses, not competing pipelines.
+- The built-in [Taste suite](taste-skill.md) supplies thirteen complete local methods for new
+  websites, redesign, selected style, reference-to-code, Stitch rules, image/brand concepts and
+  complete output. Read the relevant entry; v2 is experimental and v1 is explicit compatibility.
+  Its method rules adapt to project authority and reuse these stages without an ambient install.
+- `ui-ux-pro-max`, `web-design-guidelines`, and `emil-design-eng` add companion detail when installed.
 - For React/Next.js, use the governed Vercel/Next.js companions listed in
   `references/companion-skills.md`.
 - Use `references/capability-routing.md` and `references/job-registry.json` for motion, graphics,
@@ -445,6 +448,10 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
 `design.md` records:
 
 - Layout grid and responsive behavior.
+- Selected Taste method/version from `references/taste-skill.md`, its product/audience fit,
+  relevant source checks, adaptations and non-applicable rules. Preserve user references and
+  existing brand/stack; image concepts remain distinct from implemented behavior, and the Stitch
+  DESIGN.md example is translated through design-synthesis rather than copied as a foundation.
 - Applicable CSS practices from `references/good-css.md`: intrinsic layout, logical axes,
   content/overflow and token decisions, target-browser support and usable fallbacks.
 - Color tokens and contrast posture. For website references, these must cite the ready
@@ -740,6 +747,12 @@ against actual outputs and checks; tasks.md existence does not verify decomposit
 
 Implement directly from `design.md` and `tasks.md`.
 
+For web design, redesign, style or image/brand work, read the selected complete source through
+`references/taste-skill.md` and implement its agreed decisions in the existing stack. An authorized
+image-only deliverable uses an available provider and retains its output boundary. Do not generate
+replacement references, add GSAP/React, or apply all style variants merely because the library is
+present. Reference-to-code follows the existing reference/reconstruction gates and actual inputs.
+
 Whenever writing, editing or reviewing styles (plain CSS, utility classes, StyleX, CSS-in-JS or
 inline styles), use the built-in `references/good-css.md` and read the matched original entries
 before implementation. Preserve project tokens, semantic controls and existing runtime ownership;
@@ -838,6 +851,11 @@ Rules:
 ## Stage 6: Gate Review
 
 Before claiming completion, write `qa.md` using `references/qa-checklist.md` with the result of these gates:
+
+For selected Taste methods, record the exact source/version, project adaptations, completed
+artifacts and observed checks on the actual output. Verify image sets for completeness and
+readability, and implemented surfaces for behavior, accessibility, responsive fit and motion.
+Source/marker availability does not establish Component Conformance or Visual Acceptance.
 
 For changed styles, include the applied good-css entries, browser/fallback observations, narrow
 content and RTL/CJK/zoom checks where relevant, keyboard/focus and reduced-motion behavior. Reuse

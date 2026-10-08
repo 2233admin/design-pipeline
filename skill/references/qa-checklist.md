@@ -546,6 +546,21 @@ Complete this section when `scene.json` and `scene.md` or `3d.md` are required.
 - React/Next conventions checked when applicable:
 - Animation library choice justified:
 
+For selected built-in Taste methods, use `taste-skill.md` within these existing checks:
+
+- Exact entry/version and complete original source read; v2 experimental or explicit v1 compatibility:
+- Brief/audience fit, chosen dials/style and project/user authority; adapted or non-applicable rules:
+- Every requested file, section image, screen or board completed and actually inspected:
+- Existing brand, route/IA/SEO/analytics, functionality, framework and shared consumers preserved:
+- Real copy/assets/facts, font licensing/CJK glyphs, contrast, zoom/reflow, keyboard and states checked:
+- Image provider/output paths and limitations; image-only output is distinct from live UI behavior:
+- Reference-to-code uses the actual selected/user reference and existing final fidelity evidence:
+- Stitch example translated into the project foundation; no copied example claimed as user design:
+- Implemented motion motivated, bounded, responsive to reduced motion, and observed through real input/playback:
+
+Availability, a source pre-flight checklist or a marker result does not establish Component
+Conformance or Visual Acceptance. Report both separately and preserve the existing evidence lineage.
+
 For CSS changes, use `good-css.md` within the existing interface review and evidence process:
 
 - Applied practice IDs, original conditions and project adaptations:

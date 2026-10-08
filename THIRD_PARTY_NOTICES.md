@@ -522,3 +522,20 @@ files, harness assets, source generator/checker and inert plugin/deployment meta
 `skill/tools/good-css/build-study.cjs` adapts the harness framing method into a local Node-only
 study builder. Generated studies retain the MIT notice, font licenses and original practices.
 The package does not install upstream dependencies, activate its plugin or run its deployment.
+
+## Leonxlnx/taste-skill
+
+The complete byte-preserved source snapshot under `skill/vendor/taste-skill/upstream/` is from
+https://github.com/Leonxlnx/taste-skill at reviewed commit
+`b482f7a970abb98c4108d4a9f761e458c64cefc8` (reviewed 2026-10-08).
+All 62 tracked files are retained, including the thirteen skill entries, Stitch design example,
+research notes, example images, artwork and inert plugin, installer and sponsor-script metadata.
+
+The upstream repository is MIT, Copyright (c) 2026 Leonxlnx. The complete original license is
+`skill/vendor/taste-skill/upstream/LICENSE`. Original credits and links remain in the source.
+Example and sponsor artwork is preserved as source context, not a default project asset library
+or a claim of trademark rights. Research claims remain upstream claims, not our benchmark results.
+
+`skill/references/taste-skill.md` adapts each capability into the existing project workflow.
+The package does not run upstream scripts, activate its plugin, install its dependencies or supply
+an image model. Image-only workflows use a separately available host image-generation provider.

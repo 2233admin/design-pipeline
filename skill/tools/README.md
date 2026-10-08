@@ -7,6 +7,8 @@ by the visual problem; using a helper does not create a film project or select a
 | --- | --- | --- |
 | The visible goal needs a method or implementation beyond the current tools | [Find and apply a capability](open-source-design.md) | Active GitHub/upstream discovery, source inspection, a rendered study and task-local adoption |
 | Find visual references, assets or a specific design operation | [Design sources](design-sources.md) | User's design directory, task-based lookup and transfer into existing reference/preview tools |
+| New-site design, existing-project redesign, aesthetic critique or a chosen UI style | [Built-in Taste suite](../references/taste-skill.md) | Thirteen complete local methods; select by task and keep the project stack and checks |
+| Website/mobile concept images, brand boards or image-to-code | [Taste output selection](../references/taste-skill.md#choose-the-deliverable) | Image-only guidance uses an available provider; user references can go directly to verified frontend implementation |
 | Continuous ink, pressure, path reveal, static paper grain | [Canvas craft](visual-craft/README.md) | Callable, caller-sized Canvas helpers and browser study |
 | Fit short labels, keep a readable minimum, place/crop images, choose sprite frames | [Canvas craft](visual-craft/README.md) | Measured layout and explicit overflow; keep product text in semantic DOM |
 | Choose and obtain a font, compare real copy, handle CJK/Latin and font variants | [Font sources and selection](fonts.md) | FontLab and primary sources, project-local acquisition, actual-family and rendering checks |

@@ -3,3 +3,13 @@ skill/references/**/upstream/** -text
 skill/vendor/good-css/upstream/** -text
 # Preserve the reviewed license's original whitespace as well as its bytes.
 skill/vendor/good-css/upstream/harness/public/fonts/GeistMono-OFL.txt -whitespace
+skill/vendor/taste-skill/upstream/** -text
+# Preserve original Markdown hard breaks and whitespace in the pinned Taste source.
+skill/vendor/taste-skill/upstream/README.md -whitespace
+skill/vendor/taste-skill/upstream/skills/brandkit/SKILL.md -whitespace
+skill/vendor/taste-skill/upstream/skills/gpt-tasteskill/SKILL.md -whitespace
+skill/vendor/taste-skill/upstream/skills/image-to-code-skill/SKILL.md -whitespace
+skill/vendor/taste-skill/upstream/skills/imagegen-frontend-mobile/SKILL.md -whitespace
+skill/vendor/taste-skill/upstream/skills/minimalist-skill/SKILL.md -whitespace
+skill/vendor/taste-skill/upstream/skills/soft-skill/SKILL.md -whitespace
+skill/vendor/taste-skill/upstream/skills/taste-skill-v1/SKILL.md -whitespace

@@ -56,6 +56,11 @@ name a repository. This is triggered by the work's needs, not a required search 
 ## Open only what this task needs
 
 - Workflow stages, UI, references, implementation and review: `references/stages.md`.
+- **Built-in Taste suite:** `references/taste-skill.md` selects from thirteen complete local
+  methods for new websites, existing-project redesign, visual critique, style, Stitch design
+  rules, image-to-code, web/mobile concept images, brand boards and complete output. Read the
+  selected original source; no external Taste installation is required. Project/user design,
+  accessibility and CJK rules govern adaptation; image-only methods need an available provider.
 - CSS authoring or review in any stack: `references/good-css.md` for the complete built-in
   practice library, project adaptations and offline specimens; load its matched source entries.
 - Detailed route, CLI, gate and receipt contracts: `references/pipeline-reference.md`.

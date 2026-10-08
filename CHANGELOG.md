@@ -6,6 +6,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- All thirteen Taste-Skill capabilities now ship with the tool: a complete pinned 62-file
+  source, task-specific adaptation guide, existing frontend/brand/image routes and built-in
+  dependency checks. Image generation uses the host provider; no separate Taste install is needed.
+
 - Complete pinned good-css source, eight CSS category references, practice-by-practice project
   adaptation and an offline specimen builder. Existing CSS implementation/review routes now
   expose the built-in library; no external skill, new dependency or acceptance gate is required.
