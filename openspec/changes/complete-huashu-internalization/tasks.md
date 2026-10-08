@@ -33,4 +33,4 @@
 - [x] 7.1 Import only reviewed revision 57d6760 with committed media dependencies and related tests/release source; preserve historical adaptation attribution.
 - [x] 7.2 Refresh current runtime/render provenance and route optional images through existing host tools and asset evidence.
 - [x] 7.3 Adapt local voice fit/match/prepare with closed handles, same-directory staging and source/output/sidecar protection; run offline success/failure regressions.
-- [ ] 7.4 Run registered Huashu/Visual Craft source and render checks, strict OpenSpec and repository/package/install QA; report service and visual limits separately.
+- [x] 7.4 Run registered Huashu/Visual Craft source and render checks, strict OpenSpec and repository/package/install QA; report service and visual limits separately in `../internalize-taste-skill/audit-fixes-qa.md`.

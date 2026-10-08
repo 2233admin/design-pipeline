@@ -18,4 +18,4 @@
 
 - [x] 4.1 Select the six existing React/Next engineering companions by current framework and actual capability need; retain bounded fallback behavior.
 - [x] 4.2 Extend the existing skill eval manifest/test with observable CSS, quick Chinese UI and missing-reference regressions, negative expectation controls and fixtures outside the package; run `node --test tests/skill-evals.test.cjs` and distinguish deterministic coverage from independent forward tests.
-- [ ] 4.3 Independently forward-test the updated skill from raw tasks, rerun `npm run specs:check` and `npm test` with isolated install validation, and record final review/acceptance limits.
+- [x] 4.3 Independently forward-test the updated skill from raw tasks, rerun `npm run specs:check` and `npm test` with isolated install validation, and record final review/acceptance limits in `audit-fixes-qa.md`.
