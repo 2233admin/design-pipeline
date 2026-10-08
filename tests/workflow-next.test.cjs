@@ -200,7 +200,9 @@ test("public native failures retain measured fixes and bound repeated attempts t
   }
   rewriteSameTime(fixture.dir, "outline.html", fs.readFileSync(path.join(fixture.dir, "outline.html"), "utf8") + "\n<!-- changed bytes, still broken -->");
   assert.equal(invoke("next").value.recovery, undefined, "a changed unverified snapshot does not inherit the repeat hint");
-  assert.equal(complete().value.next.attempts, 1, "actual verification restarts the count for changed output bytes");
+  const rechecked = complete();
+  assert.equal(rechecked.value.next.sameSnapshot, true, rechecked.value.failure);
+  assert.equal(rechecked.value.next.attempts, 1, "actual verification restarts the count for changed output bytes: " + rechecked.value.failure);
   touch(fixture.dir, "outside.txt", "outside original authorization");
   const scope = complete(); assert.equal(scope.exit, 2);
   assert.equal(JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks.failures.outline.attempts, 1, "scope blocking is not another observed verifier failure");
@@ -208,6 +210,30 @@ test("public native failures retain measured fixes and bound repeated attempts t
   const missing = invoke("decide", "--choice", "outline", "--verdict", "complete", "--chrome", path.join(fixture.dir, "missing-chrome"));
   assert.equal(missing.exit, 2);
   assert.equal(JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks.failures.outline.attempts, 1, "missing tools do not add observed attempts");
+});
+
+test("incomplete capture preserves old observed attempts until the changed output is measured", t => {
+  const fixture = visualFixture(); t.after(() => fs.rmSync(fixture.dir, { recursive: true, force: true }));
+  nextVisualTask(fixture.dir, { plan: fixture.plan });
+  touch(fixture.dir, "outline.html", visualHtml.replace(' onclick="this.style.transform=\'translateX(20px)\'"', ""));
+  for (let attempt = 1; attempt <= 3; attempt++) decideVisualTask(fixture.dir, { choice: "outline", verdict: "complete" });
+  const stateFile = path.join(fixture.dir, "state.json"), before = JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks;
+  assert.equal(before.failures.outline.attempts, 3);
+  rewriteSameTime(fixture.dir, "outline.html", fs.readFileSync(path.join(fixture.dir, "outline.html"), "utf8") + "\n<!-- another broken output -->");
+  const cliCore = require("../skill/scripts/cli-core.cjs"), observe = cliCore.observeInteraction;
+  cliCore.observeInteraction = () => { throw new Error("probe click recorded only 2 samples; capture harness failed"); };
+  let blocked;
+  try { blocked = actualDecideVisualTask(fixture.dir, { choice: "outline", verdict: "complete" }); }
+  finally { cliCore.observeInteraction = observe; }
+  assert.equal(blocked.status, "blocked"); assert.match(blocked.failure, /only 2 samples/);
+  const after = JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks;
+  assert.equal(after.failures.outline.attempts, 3);
+  assert.deepEqual(after.failures.outline.inputHashes, before.failures.outline.inputHashes);
+  assert.deepEqual(after.active, before.active);
+  assert.equal(blocked.next.sameSnapshot, false); assert.equal(blocked.next.recovery, undefined);
+  const measured = decideVisualTask(fixture.dir, { choice: "outline", verdict: "complete" });
+  assert.equal(measured.next.sameSnapshot, true); assert.equal(measured.next.attempts, 1);
+  assert.ok(measured.next.findings.some(finding => finding.code === "dead-interaction"));
 });
 
 test("public native menu selection fails with typed repair evidence and completes only after real journey repair", t => {
@@ -364,7 +390,7 @@ test("native review shows canonical output/check paths for equivalent plan spell
   assert.equal(completed.status, "recorded", completed.failure);
   assert.deepEqual(completed.next.evidence.outputs.map(metadata => metadata.path), ["outline.html"]);
   assert.deepEqual(completed.next.evidence.checks.map(metadata => metadata.path), ["outline-check.json"]);
-  assert.deepEqual(completed.next.show, [path.join(fixture.dir, "outline.html")]);
+  assert.deepEqual(completed.next.show, [path.join(fs.realpathSync.native(fixture.dir), "outline.html")]);
 });
 
 test("native visual completion cannot promote arbitrary check rows over a failed observed interaction", () => {
@@ -539,7 +565,7 @@ test("public native visual review asks for its exact evidence and advances only 
   assert.deepEqual(review.artifacts, JSON.parse(fs.readFileSync(path.join(fixture.dir, artifact), "utf8")));
   assert.deepEqual(review.evidence.outputs.map(item => item.path), ["outline.html"]);
   assert.deepEqual(review.evidence.checks.map(item => item.path), ["outline-check.json"]);
-  assert.ok(review.show.includes(path.join(fixture.dir, "outline.html")));
+  assert.ok(review.show.includes(path.join(fs.realpathSync.native(fixture.dir), "outline.html")));
   assert.equal(run("next").value.stage, "visual-review");
   assert.equal(run("decide", "--choice", "surface", "--verdict", "complete", "--artifact", artifact).exitCode, 1);
   assert.equal(run("decide", "--choice", "surface", "--verdict", "reject", "--answer", "A future task cannot be rejected.").exitCode, 1);
@@ -711,7 +737,7 @@ test("native scope maps a nested change's paths into Git coordinates", t => {
   const action = nextVisualTask(nested, { plan: fixture.plan });
   assert.equal(action.status, undefined, action.blockers?.join("; "));
   const active = JSON.parse(fs.readFileSync(path.join(nested, "state.json"))).extensions.visualTasks.active;
-  assert.equal(active.baseline.root, fixture.dir);
+  assert.equal(active.baseline.root, fs.realpathSync.native(fixture.dir));
   assert.ok(active.authorization.every(file => file.startsWith("changes/nested/")));
   assert.equal(decideVisualTask(nested, { choice: "outline", verdict: "complete", artifact: visualEvidence({ dir: nested, plan: fixture.plan }, action) }).status, "recorded");
 });
@@ -855,7 +881,7 @@ test("native completion rechecks scope and bound bytes after writing observed ev
     let injected = false;
     fs.writeFileSync = function(file, ...args) {
       const result = write.call(fs, file, ...args);
-      if (!injected && path.resolve(String(file)) === path.join(fixture.dir, "outline-completion.json")) {
+      if (!injected && path.resolve(String(file)) === path.join(fs.realpathSync.native(fixture.dir), "outline-completion.json")) {
         injected = true;
         write.call(fs, path.join(fixture.dir, changed), "changed after evidence write");
       }

@@ -33,16 +33,19 @@ test("JSON lines preserve split UTF8 and report malformed input without leaking 
   assert(!JSON.stringify(errors).includes("PRIVATE"));
 });
 
+function runStateMessage(run) {
+  return JSON.stringify(run && { status: run.status, notice: run.notice, tasks: run.tasks.map(task => {
+    const attempt = task.attempts.at(-1);
+    return { id: task.id, status: task.status, attempts: task.attempts.length, lastAttempt: attempt && { status: attempt.status, failureCode: attempt.failureCode, failure: attempt.failure } };
+  }) });
+}
+
 async function until(check, run) {
   // ponytail: concurrent QA reads the full frozen toolkit; calibrate this bound if its size grows.
   const end = Date.now() + 60000;
   while (!check()) {
     if (Date.now() >= end) {
-      const lastState = run && { status: run.status, notice: run.notice, tasks: run.tasks.map(task => {
-        const attempt = task.attempts.at(-1);
-        return { id: task.id, status: task.status, attempts: task.attempts.length, lastAttempt: attempt && { status: attempt.status, failureCode: attempt.failureCode, failure: attempt.failure } };
-      }) };
-      assert.fail("task did not reach expected state within 60s; last state: " + JSON.stringify(lastState));
+      assert.fail("task did not reach expected state within 60s; last state: " + runStateMessage(run));
     }
     await new Promise(resolve => setTimeout(resolve, 20));
   }
@@ -208,7 +211,7 @@ function visualFixture(t, missingPlan = false, mode = "normal") {
 test("tool dispatch consumes product visual tasks rather than the shared seven macros", async t => {
   const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
   await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-  assert.equal(run.status, "awaiting-review", run.notice);
+  assert.equal(run.status, "awaiting-review", runStateMessage(run));
   assert.deepEqual(run.tasks.map(task => task.id), ["reference", "outline", "depth"]);
   const outline = run.tasks[1].attempts.at(-1), depth = run.tasks[2].attempts.at(-1);
   assert.match(outline.prompt, /geometry.contour/);
@@ -243,7 +246,7 @@ test("tool dispatch consumes product visual tasks rather than the shared seven m
   const repaired = run.tasks[2].attempts.at(-1);
   await bench.review(run.id, { taskId: "depth", attemptId: repaired.id, artifactHash: repaired.artifactHash, verdict: "accept" });
   await until(() => ["complete", "failed"].includes(run.status), run);
-  assert.equal(run.status, "complete", run.notice);
+  assert.equal(run.status, "complete", runStateMessage(run));
   const acceptedState = JSON.parse(fs.readFileSync(path.join(bench.runtimeRoot, run.id, "state.json")));
   assert.equal(acceptedState.extensions.visualTasks.completed.depth.review.verdict, "accept");
   assert.equal(acceptedState.extensions.visualTasks.completed.depth.review.valid, true);
@@ -270,7 +273,7 @@ test("native visual review recovers exact evidence without repeating completed w
   for (const humanAccepted of [false, true]) {
     const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
     await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-    assert.equal(run.status, "awaiting-review", run.notice);
+    assert.equal(run.status, "awaiting-review", runStateMessage(run));
     const depth = run.tasks[2].attempts.at(-1);
     const originalPipeline = bench.pipeline.bind(bench);
     if (humanAccepted) {
@@ -288,11 +291,11 @@ test("native visual review recovers exact evidence without repeating completed w
     await restored.start(run.id); await until(() => ["complete", "failed", "awaiting-review"].includes(resumed.status), resumed);
     assert.equal(resumed.tasks[2].attempts.length, 1, "checkpoint recovery must not repeat model work");
     if (humanAccepted) {
-      assert.equal(resumed.status, "complete", resumed.notice);
+      assert.equal(resumed.status, "complete", runStateMessage(resumed));
       const state = JSON.parse(fs.readFileSync(path.join(restored.runtimeRoot, run.id, "state.json")));
       assert.equal(state.extensions.visualTasks.completed.depth.review.valid, true);
     } else {
-      assert.equal(resumed.status, "awaiting-review", resumed.notice);
+      assert.equal(resumed.status, "awaiting-review", runStateMessage(resumed));
       await restored.review(run.id, { taskId: "depth", attemptId: depth.id, artifactHash: depth.artifactHash, verdict: "reject", feedback: "只修厚度" });
       await until(() => resumed.tasks[2].attempts.length === 2 && resumed.status === "awaiting-review", resumed);
       assert.equal(resumed.tasks[1].attempts.length, 1);
@@ -305,7 +308,7 @@ test("owner decisions survive interruption after native commit without duplicate
   for (const verdict of ["accept", "reject"]) {
     const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
     await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-    assert.equal(run.status, "awaiting-review", run.notice);
+    assert.equal(run.status, "awaiting-review", runStateMessage(run));
     const attempt = run.tasks[2].attempts.at(-1);
     const review = { taskId: "depth", attemptId: attempt.id, artifactHash: attempt.artifactHash, verdict, feedback: "只改厚度" };
     const originalPipeline = bench.pipeline.bind(bench);
@@ -320,7 +323,7 @@ test("owner decisions survive interruption after native commit without duplicate
     const resumed = restored.get(run.id);
     await restored.review(run.id, review);
     await until(() => verdict === "accept" ? ["complete", "failed"].includes(resumed.status) : resumed.tasks[2].attempts.length === 2 && resumed.status === "awaiting-review", resumed);
-    assert.equal(resumed.status, verdict === "accept" ? "complete" : "awaiting-review", resumed.notice);
+    assert.equal(resumed.status, verdict === "accept" ? "complete" : "awaiting-review", runStateMessage(resumed));
     assert.equal(resumed.tasks[2].attempts.length, verdict === "accept" ? 1 : 2);
     assert.equal(resumed.tasks[1].attempts.length, 1);
     const duplicate = restored.events(run.id).events.filter(event => event.tool === "decide" && event.args.includes(verdict));
@@ -331,7 +334,7 @@ test("owner decisions survive interruption after native commit without duplicate
 test("native technical progress recovers a dispatcher interruption without redoing a completed unit", async t => {
   const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
   await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-  assert.equal(run.status, "awaiting-review", run.notice);
+  assert.equal(run.status, "awaiting-review", runStateMessage(run));
   const depth = run.tasks[2].attempts.at(-1);
   run.tasks[1].status = run.tasks[1].attempts.at(-1).status = "inconclusive";
   bench.save(run, "fixture-interrupted-projection", "native outline complete, dispatcher projection not yet updated");
@@ -340,7 +343,7 @@ test("native technical progress recovers a dispatcher interruption without redoi
   const resumed = restored.get(run.id);
   await restored.review(run.id, { taskId: "depth", attemptId: depth.id, artifactHash: depth.artifactHash, verdict: "reject", feedback: "只改厚度" });
   await until(() => ["failed", "awaiting-review"].includes(resumed.status), resumed);
-  assert.equal(resumed.status, "awaiting-review", resumed.notice);
+  assert.equal(resumed.status, "awaiting-review", runStateMessage(resumed));
   assert.equal(resumed.tasks[1].attempts.length, 1);
   assert.equal(resumed.tasks[1].status, "completed");
 });
@@ -395,7 +398,7 @@ test("native output promotion rejects linked destinations before copying any out
 test("fresh native completion cannot transfer old visual acceptance to rewritten metadata", async t => {
   const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
   await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-  assert.equal(run.status, "awaiting-review", run.notice);
+  assert.equal(run.status, "awaiting-review", runStateMessage(run));
   const attempt = run.tasks[2].attempts.at(-1), root = bench.runRoot(run), previousHash = attempt.artifactHash;
   assert(attempt.artifacts.some(artifact => artifact.path === attempt.completionPath), "the first fixed metadata file is bound into the existing artifact manifest");
   fs.appendFileSync(path.join(root, "results/depth/index.html"), "<!-- another observed output version -->");
@@ -407,4 +410,13 @@ test("fresh native completion cannot transfer old visual acceptance to rewritten
   const native = JSON.parse(fs.readFileSync(path.join(root, "state.json"))).extensions.visualTasks.completed.depth;
   assert.equal(native.status, "ready"); assert.equal(native.review, undefined);
   assert.equal(bench.events(run.id).events.some(event => event.tool === "decide" && event.args.includes("accept")), false);
+});
+
+test("failed native assertion reports its attempt when no run notice exists", () => {
+  const run = { status: "failed", tasks: [
+    { id: "outline", status: "failed", attempts: [{ status: "failed", failureCode: "TASK_BLOCKED", failure: "fixture baseline failure" }] },
+    { id: "depth", status: "pending", attempts: [] },
+  ] };
+  assert.throws(() => assert.equal(run.status, "awaiting-review", runStateMessage(run)), error =>
+    error.code === "ERR_ASSERTION" && error.message.includes("TASK_BLOCKED") && error.message.includes("fixture baseline failure"));
 });

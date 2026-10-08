@@ -61,24 +61,47 @@ function pathInside(root, target) {
   return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
 }
 
+function windowsRootAlias(realRoot, target) {
+  if (process.platform !== "win32") return null;
+  const rootStat = fs.statSync(realRoot, { bigint: true });
+  if (rootStat.ino === 0n) return null;
+  // Native realpath expands 8.3 names. An outside junction must not serve as
+  // an alternate lexical root, even if its destination is inside realRoot.
+  for (let candidate = target; ; candidate = path.dirname(candidate)) {
+    const stat = fs.lstatSync(candidate, { bigint: true, throwIfNoEntry: false });
+    if (stat?.isDirectory() && !stat.isSymbolicLink() && stat.dev === rootStat.dev && stat.ino === rootStat.ino) {
+      for (let ancestor = candidate; ; ancestor = path.dirname(ancestor)) {
+        if (fs.lstatSync(ancestor).isSymbolicLink()) return null;
+        if (path.dirname(ancestor) === ancestor) return candidate;
+      }
+    }
+    if (path.dirname(candidate) === candidate) return null;
+  }
+}
+
 function resolveInside(root, raw, label, options = {}) {
   if (!nonEmpty(raw)) fail(options.scope || "path", `${label} requires a path`);
   const base = path.resolve(root);
   const target = path.isAbsolute(raw) ? path.resolve(raw) : path.resolve(base, raw);
-  if (!pathInside(base, target)) fail(options.scope || "path", `${label} must stay inside ${base}`);
   if (!fs.existsSync(base)) fail(options.scope || "path", `root does not exist: ${base}`);
-  const realBase = fs.realpathSync(base);
+  const realBase = fs.realpathSync.native(base);
+  const targetInsideBase = pathInside(base, target);
+  if (!targetInsideBase && !path.isAbsolute(raw)) fail(options.scope || "path", `${label} must stay inside ${base}`);
+  const lexicalBase = targetInsideBase ? base : windowsRootAlias(realBase, target);
+  if (!lexicalBase) fail(options.scope || "path", `${label} must stay inside ${base}`);
   let existing = target;
   while (!fs.existsSync(existing)) {
     if (fs.lstatSync(existing, { throwIfNoEntry: false })?.isSymbolicLink()) fail(options.scope || "path", `${label} has an unresolved symlink and cannot be contained`);
     const parent = path.dirname(existing);
-    if (parent === existing || !pathInside(base, parent)) fail(options.scope || "path", `${label} has no contained existing parent`);
+    if (parent === existing || !pathInside(lexicalBase, parent)) fail(options.scope || "path", `${label} has no contained existing parent`);
     existing = parent;
   }
-  const projected = path.resolve(fs.realpathSync(existing), path.relative(existing, target));
-  if (!pathInside(realBase, projected)) fail(options.scope || "path", `${label} resolves outside ${realBase}`);
-  if (options.mustExist && !fs.existsSync(target)) fail(options.scope || "path", `${label} does not exist: ${target}`);
-  return target;
+  const projected = path.resolve(fs.realpathSync.native(existing), path.relative(existing, target));
+  const realPrefix = realBase.endsWith(path.sep) ? realBase : realBase + path.sep;
+  if (!pathInside(realBase, projected) || process.platform === "win32" && projected !== realBase && !projected.startsWith(realPrefix) && !windowsRootAlias(realBase, projected)) fail(options.scope || "path", `${label} resolves outside ${realBase}`);
+  const contained = lexicalBase === base ? target : path.resolve(base, path.relative(lexicalBase, target));
+  if (options.mustExist && !fs.existsSync(contained)) fail(options.scope || "path", `${label} does not exist: ${contained}`);
+  return contained;
 }
 
 function readJson(file, scope = "json") {

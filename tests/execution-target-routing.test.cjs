@@ -6,7 +6,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
-const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
+const { canonicalJson, resolveInside, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { resolveToolchain } = require("../skill/scripts/toolchain-core.cjs");
 const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs");
 const {
@@ -309,13 +309,116 @@ test("CLI routes, prepares, and finalizes a React execution with bound receipts"
   assert.deepEqual(finalize.output.receipt.changedFiles, ["src/App.tsx"]);
 });
 
+test("contained paths keep lexical coordinates and Windows aliases retain physical containment", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "execution-containment-"));
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "execution-containment-outside-"));
+  t.after(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(outside, { recursive: true, force: true });
+  });
+  const nested = path.join(root, "nested");
+  fs.mkdirSync(nested);
+  fs.writeFileSync(path.join(nested, "file.txt"), "contained\n");
+  const canonicalRoot = fs.realpathSync.native(root);
+  const future = path.join(root, "nested", "new", "file.txt");
+  assert.equal(resolveInside(root, "nested/new/file.txt", "future"), future);
+  assert.throws(() => resolveInside(root, path.join(outside, "file.txt"), "outside"), /must stay inside/);
+  assert.throws(() => resolveInside(root, "../outside.txt", "traversal"), /must stay inside/);
+  if (process.platform === "win32") {
+    assert.equal(resolveInside(root, path.join(canonicalRoot, "nested", "file.txt"), "long spelling", { mustExist: true }), path.join(root, "nested", "file.txt"));
+    assert.equal(resolveInside(canonicalRoot, future, "short spelling"), path.join(canonicalRoot, "nested", "new", "file.txt"));
+    assert.equal(resolveInside(canonicalRoot + path.sep, future, "trailing separator"), path.join(canonicalRoot, "nested", "new", "file.txt"));
+    assert.equal(resolveInside(path.parse(root).root, root, "drive root", { mustExist: true }), root);
+    const upperSpelling = path.join(canonicalRoot, "nested", "file.txt").toUpperCase();
+    assert.equal(resolveInside(canonicalRoot, upperSpelling, "case-insensitive spelling", { mustExist: true }), upperSpelling);
+    assert.equal(samePath(future, future), true);
+    assert.equal(samePath(future, future.toUpperCase()), false);
+    if (path.relative(root, canonicalRoot) !== "") {
+      const originalStat = fs.statSync;
+      try {
+        fs.statSync = function (file, options) {
+          const stat = originalStat.call(this, file, options);
+          if (file === canonicalRoot && options?.bigint) stat.ino = 0n;
+          return stat;
+        };
+        assert.throws(() => resolveInside(canonicalRoot, future, "unobservable alias"), /must stay inside/);
+        assert.equal(samePath(root, canonicalRoot), false);
+      } finally { fs.statSync = originalStat; }
+      const originalLstat = fs.lstatSync;
+      try {
+        fs.lstatSync = function (file, options) {
+          const stat = originalLstat.call(this, file, options);
+          if (file === root && options?.bigint && stat) stat.dev += 1n;
+          return stat;
+        };
+        assert.throws(() => resolveInside(canonicalRoot, future, "different device alias"), /must stay inside/);
+      } finally { fs.lstatSync = originalLstat; }
+    }
+  }
+
+  const linkType = process.platform === "win32" ? "junction" : "dir";
+  const containedLink = path.join(root, "contained-link");
+  const outsideLink = path.join(root, "outside-link");
+  const inboundLink = path.join(outside, "inbound-link");
+  try {
+    fs.symlinkSync(nested, containedLink, linkType);
+    fs.symlinkSync(outside, outsideLink, linkType);
+    fs.symlinkSync(root, inboundLink, linkType);
+  } catch (error) {
+    if (error.code !== "EPERM") throw error;
+    t.diagnostic("directory link checks unavailable on this host");
+    return;
+  }
+  assert.equal(resolveInside(root, "contained-link/new/file.txt", "contained link"), path.join(containedLink, "new", "file.txt"));
+  assert.throws(() => resolveInside(root, "outside-link/new/file.txt", "external link"), /resolves outside/);
+  assert.throws(() => resolveInside(canonicalRoot, path.join(inboundLink, "nested", "file.txt"), "outside alias"), /must stay inside/);
+  if (process.platform === "win32") {
+    const canonicalLinkPath = path.join(canonicalRoot, "contained-link", "file.txt");
+    assert.equal(resolveInside(root, canonicalLinkPath, "contained link long spelling", { mustExist: true }), path.join(containedLink, "file.txt"));
+    const { createArtifactMetadata, validateArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
+    const metadata = createArtifactMetadata({ path: path.join(canonicalRoot, "nested", "file.txt"), producer: "alias fixture", input_hashes: {}, dependencies: [], created_at: new Date().toISOString() }, { changeRoot: containedLink });
+    assert.equal(metadata.path, "file.txt", "physical aliases retain caller-root artifact coordinates");
+    assert.equal(validateArtifactMetadata(metadata, { metadataOnly: true }).status, "ready");
+    assert.throws(() => validateArtifactMetadata({ ...metadata, path: "../nested/file.txt" }, { changeRoot: containedLink }), /must stay inside/);
+    const ancestorLink = path.join(outside, "ancestor-link");
+    fs.symlinkSync(path.dirname(root), ancestorLink, "junction");
+    assert.throws(() => resolveInside(canonicalRoot, path.join(ancestorLink, path.basename(root), "nested", "file.txt"), "outside ancestor alias"), /must stay inside/);
+  }
+  const brokenLink = path.join(root, "broken-link");
+  fs.symlinkSync(path.join(outside, "absent"), brokenLink, linkType);
+  assert.throws(() => resolveInside(root, "broken-link/file.txt", "broken link"), /unresolved symlink/);
+  if (process.platform === "win32") {
+    const caseDirectory = path.join(root, "case-sensitive");
+    fs.mkdirSync(caseDirectory);
+    const enabled = spawnSync("fsutil.exe", ["file", "setCaseSensitiveInfo", caseDirectory, "enable"], { encoding: "utf8", windowsHide: true, timeout: 10000 });
+    if (enabled.status !== 0) {
+      t.diagnostic("temporary NTFS case-sensitive directory unavailable; alias identity checks still ran");
+      return;
+    }
+    const upper = path.join(caseDirectory, "Root"), lower = path.join(caseDirectory, "root");
+    fs.mkdirSync(upper);
+    if (fs.existsSync(lower)) {
+      t.diagnostic("temporary directory remains case-insensitive despite fsutil exit 0; distinct-root scenario unavailable");
+      return;
+    }
+    fs.mkdirSync(lower);
+    fs.writeFileSync(path.join(lower, "outside.txt"), "different physical root\n");
+    assert.notEqual(fs.statSync(upper, { bigint: true }).ino, fs.statSync(lower, { bigint: true }).ino);
+    const canonicalUpper = fs.realpathSync.native(upper), canonicalLower = fs.realpathSync.native(lower);
+    assert.equal(samePath(canonicalUpper, canonicalLower), false);
+    assert.throws(() => resolveInside(canonicalUpper, path.join(canonicalLower, "outside.txt"), "case-sensitive root"), /resolves outside/);
+    assert.throws(() => resolveInside(canonicalUpper + path.sep, path.join(canonicalLower, "new", "outside.txt"), "case-sensitive future root"), /resolves outside/);
+    assert.throws(() => resolveInside(canonicalUpper, path.join(lower, "outside.txt"), "case-sensitive alias root"), /must stay inside|resolves outside/);
+  }
+});
+
 test("Git snapshots preserve unchanged dirty work and detect another edit with the same status", (t) => {
   const { root } = repository(t);
   const readme = path.join(root, "README.md");
   fs.appendFileSync(readme, "pre-existing work\n");
   fs.writeFileSync(path.join(root, "owner-notes.txt"), "another owner's untracked work\n");
   const baseline = captureGitSnapshot(path.join(root, "src"));
-  assert.equal(baseline.root, fs.realpathSync(root));
+  assert.equal(baseline.root, fs.realpathSync.native(root));
   assert.equal(validateGitSnapshot(baseline), baseline);
   assert.equal(baseline.files["README.md"].status, " M");
   const unchanged = inspectGitChanges(baseline, ["src/"], { root });
@@ -326,6 +429,7 @@ test("Git snapshots preserve unchanged dirty work and detect another edit with t
   if (process.platform === "win32") {
     assert.equal(samePath(root, root.toUpperCase()), true);
     assert.equal(inspectGitChanges(baseline, ["src/"], { root: root.toUpperCase() }).status, "passed");
+    assert.equal(inspectGitChanges(baseline, ["src/"], { root: fs.realpathSync.native(root) }).status, "passed");
   }
 
   fs.appendFileSync(readme, "a new task edit\n");
@@ -560,7 +664,7 @@ test("Git scope refuses a mixed snapshot when a new out-of-scope commit lands du
   let result;
   try {
     fs.readFileSync = function (file, ...args) {
-      if (!committed && file === path.join(root, ".gitignore")) {
+      if (!committed && file === path.join(baseline.root, ".gitignore")) {
         committed = true;
         fs.writeFileSync(path.join(root, "late-outside.txt"), "committed during observation\n");
         git(root, "add", "late-outside.txt");
