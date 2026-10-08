@@ -1,12 +1,32 @@
 {
   "source": "https://github.com/alchaincyf/huashu-art-motion",
-  "sourceCommit": "26dba25b2b495c2138848c29a2c90df356a20325",
-  "gitTree": "5233f4022b738f079fb22e7f82e1a648940b1e82",
+  "sourceCommit": "57d67608ab458f57d9b153b1a2831b921e22498b",
+  "gitTree": "90a620a37a9077cae0d8596b992584e7ba49eeb2",
   "files": [
+    {
+      "sourcePath": ".github/workflows/tests.yml",
+      "localPath": "upstream/.github/workflows/tests.yml",
+      "sha256": "91b5797ea6f59b6e31e53de2a846194e33ab1dbe24b2efb8c0ed4367324f8fbe"
+    },
+    {
+      "sourcePath": ".gitignore",
+      "localPath": "upstream/.gitignore",
+      "sha256": "64ed0cc55105bb4b33ebd1baadd1eb18c74b604f6bbce0fbaa4c62b5eb425197"
+    },
     {
       "sourcePath": "CHANGELOG.md",
       "localPath": "upstream/CHANGELOG.md",
-      "sha256": "7950f64ae9e14a1b07587353212a1280d77bf4d86183bf6e7969a933079b9d9b"
+      "sha256": "7bedbb5ed661647265c083e0e76cb82d03e1d0822564d06e0396319500eb2468"
+    },
+    {
+      "sourcePath": "CONTRIBUTING.md",
+      "localPath": "upstream/CONTRIBUTING.md",
+      "sha256": "742a1a6071f6be25e82f0524a520fd6d09961be3f87d7a85940cd816ce7309a1"
+    },
+    {
+      "sourcePath": "defaults/media.json",
+      "localPath": "upstream/defaults/media.json",
+      "sha256": "8e1c98a9b5b8195f66c4060e05e5dded9bb95b797164a8b9c587bdfa5df4e0b4"
     },
     {
       "sourcePath": "LICENSE",
@@ -16,7 +36,7 @@
     {
       "sourcePath": "README.md",
       "localPath": "upstream/README.md",
-      "sha256": "8061facbbcc5365d8ac3dba8fb0d507a1f640a7e80a73d0d0c0a2f526ff09220"
+      "sha256": "fab161f6e22b8ff74d11602990ada532ba28d49478c8297b010a442d354903f5"
     },
     {
       "sourcePath": "references/01-拆解.md",
@@ -31,7 +51,7 @@
     {
       "sourcePath": "references/03-一帧先行四条路线.md",
       "localPath": "upstream/references/03-一帧先行四条路线.md",
-      "sha256": "47907e39bc96849bf2ff1769cfa99cef1102cb9ae3c428c593980b518e8e3cc4"
+      "sha256": "1e2f5bd60e0cdf66921acf852d4fc60d632a9b2e5e2bb4c74d28066a75b0f3d1"
     },
     {
       "sourcePath": "references/04-纯代码绘制.md",
@@ -66,7 +86,7 @@
     {
       "sourcePath": "references/10-角色.md",
       "localPath": "upstream/references/10-角色.md",
-      "sha256": "8d081ae797fe7c1baeea13c8537e320cfe6c02033d571c296e49e215ece391a7"
+      "sha256": "0c69bc849688069ee59bfe619eb7c44c48dbeee0324ee2bcc87bbe98d41af74b"
     },
     {
       "sourcePath": "references/11-长卷穿越片.md",
@@ -77,6 +97,11 @@
       "sourcePath": "references/12-口播整片与经验回流.md",
       "localPath": "upstream/references/12-口播整片与经验回流.md",
       "sha256": "b85f6e8b665c13a5d98ea461c10af340679a6949101ee31dd64eee7e88aed415"
+    },
+    {
+      "sourcePath": "references/13-口播与语音复刻.md",
+      "localPath": "upstream/references/13-口播与语音复刻.md",
+      "sha256": "cb12d2002f9c7a8a41b9abd711bd44a99f9929bcd66351015232cea2eda024a6"
     },
     {
       "sourcePath": "references/动画语法/t1_3b1b.md",
@@ -314,6 +339,36 @@
       "sha256": "93628df4da963c24fa6cf4929684d3bfcef3cc65228480529bffb3c5e2ede609"
     },
     {
+      "sourcePath": "references/口播API.md",
+      "localPath": "upstream/references/口播API.md",
+      "sha256": "a9d2775fc97bf92f46cf0a6531f1921ccdcf195dd79475c575bf8f188ca5801e"
+    },
+    {
+      "sourcePath": "references/capabilities.md",
+      "localPath": "upstream/references/capabilities.md",
+      "sha256": "8d0577a8128d661711a3ca26f1b60a1e3d06cc5b6191b7007326dccd0e35d2ed"
+    },
+    {
+      "sourcePath": "references/compatibility.md",
+      "localPath": "upstream/references/compatibility.md",
+      "sha256": "c5665580fab722a3ed784a71f5cca725fc56cebf8c8c3ad66219b24b6b97bb0e"
+    },
+    {
+      "sourcePath": "references/images.md",
+      "localPath": "upstream/references/images.md",
+      "sha256": "313bee677064eb46ee13c88c74effeecdb536579d7e8a25e23ddf9a2a06357e3"
+    },
+    {
+      "sourcePath": "release-manifest.json",
+      "localPath": "upstream/release-manifest.json",
+      "sha256": "7e86e90e4d8ab3685f804edd27c0405707b383741e7ee699b2bccd5efb75501d"
+    },
+    {
+      "sourcePath": "schemas/media.schema.json",
+      "localPath": "upstream/schemas/media.schema.json",
+      "sha256": "4b7d93ebb7edf5fa6219891f28325f68fc51f090eee756bc4cc3a3c746d48bda"
+    },
+    {
       "sourcePath": "scripts/analyze/breakdown.py",
       "localPath": "upstream/scripts/analyze/breakdown.py",
       "sha256": "5badcd4e3f5694f5b8c5a6d7d353f830e972ae5c8a6f24ed75af634411eb75f3"
@@ -322,6 +377,16 @@
       "sourcePath": "scripts/audio/synth_艺术史速通.py",
       "localPath": "upstream/scripts/audio/synth_艺术史速通.py",
       "sha256": "6476605af684b477d47b7f47c3c987059277de36b97bff5d77d167c27efdb40d"
+    },
+    {
+      "sourcePath": "scripts/capabilities.py",
+      "localPath": "upstream/scripts/capabilities.py",
+      "sha256": "43b1dd58d9f42efc638270cf67190ce85dda4e25fd591925c2f31e5bd6b4f63b"
+    },
+    {
+      "sourcePath": "scripts/check_release.py",
+      "localPath": "upstream/scripts/check_release.py",
+      "sha256": "508388bdcfe87d97d486de7d76fec87b893469779af14cc75e4b72b4c17ecc60"
     },
     {
       "sourcePath": "scripts/engine/时代作者规范.md",
@@ -1406,7 +1471,7 @@
     {
       "sourcePath": "scripts/engine/render.py",
       "localPath": "upstream/scripts/engine/render.py",
-      "sha256": "eb2abd1a159a63a58fbf9da6bfc5e06febaeb31aec21ac091d351fc8159ed5dc"
+      "sha256": "b7a8bf535f18b8e14e2e1da52a715dfb9923133a7e961499009a0c811f0739ff"
     },
     {
       "sourcePath": "scripts/engine/scenes/01_cave.js",
@@ -1599,6 +1664,11 @@
       "sha256": "ed826dffb4b370741602aa79caefd69157fcf6d7f9abd90a9078d4f7208896e0"
     },
     {
+      "sourcePath": "scripts/images.py",
+      "localPath": "upstream/scripts/images.py",
+      "sha256": "a47a2663f251525bfbed5b46533e3d43415c9e10c8a2b8a9f754abf204529535"
+    },
+    {
       "sourcePath": "scripts/key_green.py",
       "localPath": "upstream/scripts/key_green.py",
       "sha256": "11ac28bb2508d6b4a240eb37a55b342a0f556943fe29a17962bbc0f93f90d303"
@@ -1609,9 +1679,14 @@
       "sha256": "889759cd6b5353b4d48d34faf3878682890e06ca79887c9ade9be401b7359f86"
     },
     {
+      "sourcePath": "scripts/koubo.py",
+      "localPath": "upstream/scripts/koubo.py",
+      "sha256": "7837507e6bf02b20f8aa63efdc881c8de0d5de775b4bf31a1040bd3824348494"
+    },
+    {
       "sourcePath": "scripts/qa.py",
       "localPath": "upstream/scripts/qa.py",
-      "sha256": "435fa30c91b432b0fd25a72e139c7a883b619c251a3545c9b460de192fcc3942"
+      "sha256": "e6d229292103ffc0783e999d46984b3521cfe5b24803bc2db214bc3e03b6efed"
     },
     {
       "sourcePath": "scripts/subzone_gate.py",
@@ -1621,89 +1696,105 @@
     {
       "sourcePath": "SKILL.md",
       "localPath": "upstream/SKILL.md",
-      "sha256": "605f45fcd19d7059b4e1bea94618515c766d816a583abf12aeae763404f44d71"
+      "sha256": "1e4dffc3766442f2aedf4681dd492dae8345be0dfa532c2ca42194075d155cc6"
+    },
+    {
+      "sourcePath": "tests/test_capabilities.py",
+      "localPath": "upstream/tests/test_capabilities.py",
+      "sha256": "04ce548d5a72a11a87a3bd85c46a98e13f1aabafb096e3c59a6fc7a20bfdf4ad"
+    },
+    {
+      "sourcePath": "tests/test_images.py",
+      "localPath": "upstream/tests/test_images.py",
+      "sha256": "5fe7533ec25a2644e3685e1677186eaf1554ebbbcc390fcd56a45afbad872040"
+    },
+    {
+      "sourcePath": "tests/test_local_server.py",
+      "localPath": "upstream/tests/test_local_server.py",
+      "sha256": "b775a60c86c4a0914d67c4cfb7cb37256a447db700bfdba146a2db3704ea83ff"
+    },
+    {
+      "sourcePath": "tests/test_release.py",
+      "localPath": "upstream/tests/test_release.py",
+      "sha256": "a190d8825e23f6204263f3d00d6728bf709586bc178c980d53244a82ef198b41"
     }
   ],
   "excluded": [
     {
-      "sourcePath": ".gitignore",
-      "reason": "repository/showcase asset; no reusable capability omitted"
-    },
-    {
       "sourcePath": "assets/动画语法/t1_3b1b_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/动画语法/t2_keynote_ui_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/动画语法/t3_finance_chart_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/动画语法/y1_kurzgesagt_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/动画语法/y2_vox_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/动画语法/y3_whiteboard_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/动画语法/y4_storytime_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/动画语法/y5_kinetic_type_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/角色/花叔形象_对比.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/全风格总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/长卷穿越_总览.jpg",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/showcase/egypt.gif",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/showcase/hero.png",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/showcase/mario-claude.gif",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/showcase/mario-clips.md",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/showcase/mario-combo.gif",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/showcase/mario-pipe.gif",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/showcase/monet.gif",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "assets/showcase/pixel.gif",
-      "reason": "repository/showcase asset; no reusable capability omitted"
+      "reason": "showcase asset; retained methods use project-owned artwork"
     },
     {
       "sourcePath": "scripts/engine/demos/_shared/hero/c1_0.png",
@@ -1914,5 +2005,5 @@
       "reason": "demo-only author character artwork; supply project-owned assets"
     }
   ],
-  "treeSha256": "769fb6365940c69b2ad6aeb2503c8427e7bb17338e6bf7f21abe80f9a10184b0"
+  "treeSha256": "2de17eb2344f68fa45650e8614c4149f519cbd76c9ab7a4c5d6b53971535df91"
 }

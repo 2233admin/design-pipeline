@@ -1,9 +1,56 @@
 # Asset preparation and sound cues
 
-Load this guide only when preparing supplied raster artwork, subsetting a supplied font,
+Load this guide only when selecting/preparing raster artwork, processing a supplied voice track, subsetting a supplied font,
 checking sampled frames against a deliberately chosen light-background region, or creating
 short synthetic effects. These helpers do not fetch assets, choose a typeface, compose a full
 score, or decide that a design is visually accepted.
+
+## Choose and check image assets
+
+Reuse suitable supplied images. For a requested new image or edit, inspect the current session's
+actual host/MCP tool name and schema, then call that tool with the task's existing authorization,
+references, size and transparency requirements. Use the tool's real returned files; a bundled
+source declaration or installed skill does not prove that a provider is available. If the needed
+tool or reference is missing, record the missing input in the existing task workflow.
+
+Copy selected output into the project's existing asset directory using a new path. Confirm the
+actual file decodes, check dimensions, aspect and alpha pixels, and inspect subject, content and
+edges at the intended size. Bind its actual file/hash and observed tool call in the task's existing
+asset/design evidence; do not infer a model name from PNG metadata. Changes to a reference or asset
+require refreshed downstream render evidence under the current pipeline contracts.
+
+Use the explicit `assets` map in [render specs](README.md#render-a-style-or-clip) or the project's
+renderer; the maintained render report records input hashes. For matte/crop/sprite work, continue
+below. Review the actual composed output with existing composition checks and visual review.
+The original [image guide](../../vendor/huashu-art-motion/upstream/references/images.md), defaults,
+schema and scripts are preserved for research; do not run their separate plan/receipt/config
+fingerprint workflow or introduce a new media configuration questionnaire.
+
+## Process a supplied voice track
+
+Use a suitable existing recording directly when it already fits. The maintained offline entry
+can fit duration within the original ±10% fine-adjustment limit, level-match a supplied mean-dB
+target, or prepare a 24 kHz mono PCM WAV. It needs Python plus FFmpeg/ffprobe on PATH.
+
+```sh
+python "<skill-root>/tools/art-motion/koubo.py" --root "<project>" \
+  --input assets/voice.wav --output build/voice-fitted.wav --fit-seconds 3.5
+python "<skill-root>/tools/art-motion/koubo.py" --root "<project>" \
+  --input assets/voice.wav --output build/voice-level.wav --match-db -30
+python "<skill-root>/tools/art-motion/koubo.py" --root "<project>" \
+  --input assets/voice.wav --output build/voice-prepared.wav --prepare
+```
+
+Paths stay within the supplied project root. Existing output or its `.json` sidecar is refused.
+Temporary files are allocated beside the output, with allocation handles closed before FFmpeg
+or replacement; failed processing cleans newly created files and preserves supplied files.
+The stdout measurements are diagnostics, not another receipt. Use existing `verify audio` and
+listen with the picture; duration/level measurements do not verify speech accuracy or quality.
+
+The original macOS/Volcengine synthesis, training, private media configuration and voice registry
+remain source reference. This entry does not connect a voice provider, train, upload or request
+credentials. If new speech is needed, use an actually available, explicitly selected tool under
+the task's existing authorization; absent backend access remains a missing input.
 
 ## Key and split supplied artwork
 

@@ -112,6 +112,7 @@
     "huashu-scroll.test.cjs",
     "huashu-assets-audio.test.cjs",
     "huashu-tools.test.cjs",
-    "taste-skill.test.cjs"
+    "taste-skill.test.cjs",
+    "huashu-koubo.test.cjs"
   ]
 }

@@ -11,6 +11,7 @@ const { assertKeys, resolveInside, readJson, sha256 } = require("../../scripts/c
 
 const SOURCE = path.resolve(__dirname, "../../vendor/huashu-art-motion/upstream/scripts/engine");
 const RUNTIME = path.join(__dirname, "huashu-runtime.js");
+const { SOURCE_COMMIT } = require("./huashu-runtime.js");
 function number(value, label, min, max, integer = false) {
   if (!Number.isFinite(value) || value < min || value > max || (integer && !Number.isInteger(value))) throw new Error(`${label} must be ${integer ? "an integer" : "finite"} in ${min}..${max}`);
   return value;
@@ -192,7 +193,7 @@ async function render(root, options) {
       if (Math.abs(media.durationSec - spec.duration) > 1 / spec.fps + 0.001 || Math.abs(media.fps - spec.fps) > 0.001) throw new Error("encoded timing does not match requested frames/fps");
       video = spec.alpha ? "render.mov" : "render.mp4"; fs.renameSync(temporary, path.join(directory, video));
     }
-    const report = { specSha256: sha256(specBytes), inputs: inputs.files, sourceCommit: "26dba25b2b495c2138848c29a2c90df356a20325", width: spec.width, height: spec.height, fps: spec.fps, durationSec: spec.duration, video, frames: records, coldAndReorderedMatch: deterministic, warnings: [...new Set(warnings)], limits: ["Canvas timing includes PNG readback; it is not real-time playback performance.", "Authored style scenes retain source composition; contain/cover is not responsive reflow.", "Rendered output and technical diagnostics do not grant creative acceptance."] };
+    const report = { specSha256: sha256(specBytes), inputs: inputs.files, sourceCommit: SOURCE_COMMIT, width: spec.width, height: spec.height, fps: spec.fps, durationSec: spec.duration, video, frames: records, coldAndReorderedMatch: deterministic, warnings: [...new Set(warnings)], limits: ["Canvas timing includes PNG readback; it is not real-time playback performance.", "Authored style scenes retain source composition; contain/cover is not responsive reflow.", "Rendered output and technical diagnostics do not grant creative acceptance."] };
     fs.writeFileSync(path.join(directory, "render-report.json"), `${JSON.stringify(report, null, 2)}\n`, { flag: "wx" });
     return { directory, video, frames: count, coldAndReorderedMatch: deterministic, report: path.join(directory, "render-report.json") };
   } finally {

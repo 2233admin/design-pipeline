@@ -1,0 +1,18 @@
+.save {
+  background: #2266cc;
+  color: white;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 6px;
+}
+
+.save:focus-visible {
+  outline: 2px solid #2266cc;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .save {
+    transition: background-color .2s ease-out, color .2s ease-out;
+  }
+}

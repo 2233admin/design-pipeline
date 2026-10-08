@@ -6,6 +6,12 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Huashu's reviewed `57d6760` media sources now include their defaults, schema and source
+  tests. Images use the current host tool and existing evidence; supplied audio gains an
+  offline fit/match/PCM helper with closed temporary handles and protected new outputs.
+- Three observable skill eval regressions cover CSS focus/motion, a quick Chinese profile
+  page and blocked reference input. React/Next engineering companions are selected by need.
+
 - All thirteen Taste-Skill capabilities now ship with the tool: a complete pinned 62-file
   source, task-specific adaptation guide, existing frontend/brand/image routes and built-in
   dependency checks. Image generation uses the host provider; no separate Taste install is needed.

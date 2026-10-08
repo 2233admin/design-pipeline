@@ -469,16 +469,16 @@ For animation implementation, choose library skills by job:
 - Treat an installed but stale `animejs` companion as a warning. Use the bundled guide plus version-matched documentation for remaining API gaps and record the fallback in `qa.md`.
 - Treat a partial or stale PixiJS suite as a warning. Use the bundled guide plus the canonical PixiJS documentation index for remaining APIs and record the fallback in `qa.md`.
 
-For React and Next.js work, also apply the installed Vercel / Next.js engineering skills listed in `references/companion-skills.md`:
+Select installed Vercel / Next.js companions from `references/companion-skills.md` only for the current framework and capability:
 
-- `vercel-react-best-practices`
-- `vercel-composition-patterns`
-- `vercel-react-view-transitions`
-- `next-cache-components-adoption`
-- `next-cache-components-optimizer`
-- `next-dev-loop`
+- `vercel-react-best-practices`: React rendering, bundle, waterfall or performance work.
+- `vercel-composition-patterns`: React component composition or public component API work.
+- `vercel-react-view-transitions`: requested React navigation or view-transition motion.
+- `next-dev-loop`: development or runtime diagnosis in a Next.js project.
+- `next-cache-components-adoption`: a Next.js Cache Components migration/adoption request, or a demonstrated capability need within the authorized task.
+- `next-cache-components-optimizer`: optimization of existing Next.js Cache Components or affected cache boundaries.
 
-If a companion skill is missing, continue with the same gate manually and note the missing skill in `qa.md`. Do not block the user unless the requested output depends on a missing asset, credential, or external service.
+Ordinary React UI work does not trigger Next.js methods; a Next.js visual change does not trigger cache adoption or optimization by itself. When a selected companion is unavailable, use the project and bundled guidance for that capability and record a relevant fallback in `qa.md`. Block only when the requested output depends on a missing asset, credential, or external service.
 
 ## Stage 0: Repo Read
 

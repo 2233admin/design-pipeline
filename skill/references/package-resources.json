@@ -912,6 +912,26 @@
     "vendor/taste-skill/upstream/skills/stitch-skill/DESIGN.md",
     "vendor/taste-skill/upstream/skills/stitch-skill/SKILL.md",
     "vendor/taste-skill/upstream/skills/taste-skill-v1/SKILL.md",
-    "vendor/taste-skill/upstream/skills/taste-skill/SKILL.md"
+    "vendor/taste-skill/upstream/skills/taste-skill/SKILL.md",
+    "tools/art-motion/koubo.py",
+    "vendor/huashu-art-motion/upstream/.github/workflows/tests.yml",
+    "vendor/huashu-art-motion/upstream/.gitignore",
+    "vendor/huashu-art-motion/upstream/CONTRIBUTING.md",
+    "vendor/huashu-art-motion/upstream/defaults/media.json",
+    "vendor/huashu-art-motion/upstream/references/13-口播与语音复刻.md",
+    "vendor/huashu-art-motion/upstream/references/口播API.md",
+    "vendor/huashu-art-motion/upstream/references/capabilities.md",
+    "vendor/huashu-art-motion/upstream/references/compatibility.md",
+    "vendor/huashu-art-motion/upstream/references/images.md",
+    "vendor/huashu-art-motion/upstream/release-manifest.json",
+    "vendor/huashu-art-motion/upstream/schemas/media.schema.json",
+    "vendor/huashu-art-motion/upstream/scripts/capabilities.py",
+    "vendor/huashu-art-motion/upstream/scripts/check_release.py",
+    "vendor/huashu-art-motion/upstream/scripts/images.py",
+    "vendor/huashu-art-motion/upstream/scripts/koubo.py",
+    "vendor/huashu-art-motion/upstream/tests/test_capabilities.py",
+    "vendor/huashu-art-motion/upstream/tests/test_images.py",
+    "vendor/huashu-art-motion/upstream/tests/test_local_server.py",
+    "vendor/huashu-art-motion/upstream/tests/test_release.py"
   ]
 }

@@ -38,6 +38,44 @@ The pipeline SHALL expose all thirteen Taste capabilities through a maintained l
 - **THEN** the guide SHALL use the available image-generation capability and distinguish image output from implemented behavior
 - **AND** lack of an image provider SHALL remain explicit rather than claiming images were produced.
 
+### Requirement: Capability-selected engineering companions
+
+The pipeline SHALL select engineering companions by the current framework and requested or required capability. Next.js methods SHALL require a Next.js project. Cache Components adoption SHALL require authorized adoption or demonstrated task need; optimization SHALL require affected existing cache boundaries.
+
+#### Scenario: Ordinary UI work does not need specialized caching
+
+- **WHEN** an ordinary React component or Next.js visual change has no cache adoption or optimization need
+- **THEN** engineering guidance SHALL select only the capabilities needed for that task
+- **AND** the presence of an installed companion SHALL NOT require its unrelated procedure.
+
+#### Scenario: An applicable companion is absent
+
+- **WHEN** a selected engineering companion is unavailable
+- **THEN** the pipeline SHALL use applicable project and bundled guidance with a relevant fallback record
+- **AND** only missing inputs or services required by the requested output SHALL block that work.
+
+### Requirement: Observable skill eval coverage
+
+The skill eval suite SHALL check actual state, observable behavior signals and nonempty artifacts for its named supporting CSS, quick Chinese UI and missing-reference cases. Deterministic fixture/CLI regressions SHALL be reported separately from independent-agent forward tests and other cases' manifest/routing coverage. Neither SHALL grant Visual Acceptance.
+
+#### Scenario: Named behavior expectations are executed
+
+- **WHEN** the supporting CSS or quick Chinese UI regression runs with available browser tooling
+- **THEN** it SHALL execute the actual rendered fixture and applicable public workflow
+- **AND** wrong expected state, a missing required signal or a missing required artifact SHALL fail
+- **AND** quick UI completion SHALL retain `visualAcceptance: not-evaluated`.
+
+#### Scenario: Required reference input is unavailable
+
+- **WHEN** the missing-reference regression checks pending source input and attempts resolution without its file
+- **THEN** the public check SHALL return blocked with exit 2 and source-pending reason
+- **AND** failed resolution SHALL preserve the pending input bytes and null source path/hash.
+
+#### Scenario: A browser prerequisite is absent
+
+- **WHEN** a named rendered-fixture regression cannot obtain its existing browser tooling
+- **THEN** the skipped case SHALL remain visible and SHALL NOT be reported as a behavioral pass.
+
 ## MODIFIED Requirements
 
 ### Requirement: Companion self-check covers the design profile

@@ -96,7 +96,7 @@ npx skills add alchaincyf/huashu-art-motion
 | 长卷穿越片示范（骨架＋3 段＋角色帧库） | 1 支，`scripts/engine/demos/long_scroll/` |
 | 转场 | 艺术风格签名转场与解说转场，包含淡入、硬切和纸面转场 |
 | 绘画与动画库（笔刷、渲染器、后期、骨架、镜头、图表、排版……） | 17 个，`scripts/engine/lib/` |
-| 方法文档（拆解、机制、一帧先行、纯代码绘制、节奏配乐、角色、长卷……） | 12篇，`references/01`–`12` |
+| 方法文档（拆解、机制、一帧先行、纯代码绘制、节奏配乐、角色、长卷……） | 核心12篇，`references/01`–`12`；另有[可选语音指南](references/capabilities.md) |
 
 ```
 huashu-art-motion/
@@ -184,3 +184,18 @@ MIT License © [花叔 Huashu](https://github.com/alchaincyf)
 It started as a code-only recreation of Tak's ([@cherry_mx_reds](https://x.com/cherry_mx_reds/status/2106095190285144331)) 15-second *Art History Speedrun*. The scene layouts and the girl-and-cat premise follow his original; every frame here is redrawn in code, and no frames, screenshots or audio from the original are included.
 
 Install: `npx skills add alchaincyf/huashu-art-motion`. Requires uv, ffmpeg and Playwright Chromium. The skill content is in Chinese. The ninth grammar, presenter-led explainers, ships as a reference implementation and requires your own character assets. Full-narration examples are code snapshots, not ready-to-render projects. Code and docs are MIT; the bundled stroke medians retain the Arphic Public License; bundled fonts keep their SIL OFL licenses; the Huashu character artwork, including its appearance in overview images and demo videos, is for demo use only.
+
+## 可选媒体能力
+
+基础代码动画不需要语音或图片账号。有素材先沿用；需要生成时，按用户选择和当前环境调用。语音支持macOS系统声音和自己的火山复刻音色；图片支持现有文件导入和当前Agent/MCP工具桥接。
+
+- [语音与私人配置](references/capabilities.md)：按需配置、可跳过，旧koubo入口兼容。
+- [图片工具接入](references/images.md)：先生成计划，由Agent调用工具，再验收并收纳素材。
+- [兼容性与验证范围](references/compatibility.md)：三家安装重装通过；Codex在线回归通过，Claude Code/Kimi在线回归受测试账户条件阻塞，待补验。
+- [维护、扩展与发布](CONTRIBUTING.md)：公共默认与私人配置分离，升级不覆盖个人选择，发布检查覆盖实际待发Git对象。
+
+先运行`python scripts/capabilities.py status --explain`。新增能力默认未选择、未授权；不能从检测到Key或工具推断允许消费。独立图片API执行器为后续可选扩展，不会自动切换供应商。
+
+## 感谢反馈
+
+感谢[@ismilewolf-eng](https://github.com/ismilewolf-eng)（[PR#1](https://github.com/alchaincyf/huashu-art-motion/pull/1)）、[@noahark](https://github.com/noahark)（[PR#2](https://github.com/alchaincyf/huashu-art-motion/pull/2)）提供Windows并发加载故障的修复建议与验证，[@nctt777-hue](https://github.com/nctt777-hue)（[Issue#3](https://github.com/alchaincyf/huashu-art-motion/issues/3)）提供详细的复现、对照实验与复测，以及[@GFXfly](https://github.com/GFXfly)补充macOS排查反馈。这些反馈帮助我们修复了渲染与QA本地服务的并发加载问题。

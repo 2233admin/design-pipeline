@@ -457,7 +457,10 @@ pages, course videos or other training material are bundled.
 
 `skill/vendor/huashu-art-motion/` preserves the reviewed code, methods, recipes, examples and
 licensed font resources from https://github.com/alchaincyf/huashu-art-motion at commit
-`26dba25b2b495c2138848c29a2c90df356a20325` (complete capability review 2026-10-07).
+`57d67608ab458f57d9b153b1a2831b921e22498b` (incremental source review 2026-10-08).
+The snapshot includes media defaults/schema, upstream contract tests and inert release/CI
+materials. Original image plans, media configuration and voice providers remain source
+reference; maintained image workflows use the host tools and existing pipeline evidence.
 Its `manifest.json` records original paths, SHA-256 hashes and exclusions. Code/docs retain
 the MIT license and `Copyright (c) 2026 alchaincyf (花叔 · 花生)` notice. Font resources retain
 their separate SIL Open Font License files under `upstream/scripts/engine/lib/fonts/`;

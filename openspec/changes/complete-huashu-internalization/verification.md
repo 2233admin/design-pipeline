@@ -172,3 +172,39 @@ current work with the existing upstream enamel-badge example without changing it
 Local logs are under ignored `.design-pipeline/github-delivery-20261007/`. Installation smoke
 checks use an isolated temporary skill; they do not synchronize the canonical installation or
 re-evaluate historical model runs. Technical conformance does not establish visual acceptance.
+
+## Reviewed media increment
+
+Date: 2026-10-08. The fixed source boundary is old `26dba25` to reviewed
+`57d67608ab458f57d9b153b1a2831b921e22498b`: two commits and 26 changed files.
+The clean source checkout and observed remote HEAD both identified this exact revision.
+No later commit was imported. The original source manifest now retains 343 files, including
+media defaults/schema, four contract test files and inert contribution/release/CI source.
+The 19 added files keep original paths and Git committed bytes.
+
+- Before editing, the actual importer rejected `defaults/media.json`, `schemas/media.schema.json`,
+  `tests/test_images.py` and `release-manifest.json`; an inclusion assertion failed. The existing
+  source test now checks these dependencies and related media/release source resources.
+- Every one of the 343 retained files was independently compared byte-for-byte with
+  `git show HEAD:<sourcePath>` from the fixed source checkout; all matched. The regenerated
+  runtime diff changes only its provenance header and constant. Canvas libraries, 35 scenes
+  and eight clips did not change. The render report reuses the runtime's source constant.
+- With Node 22.23.2, the four existing Huashu test files passed 19 tests with zero failures/skips. Real
+  browser checks covered 35 scenes, eight clips, 50 transitions, separate instances,
+  portrait/landscape and reordered seek. PNG, H.264 and transparent ProRes exports, input
+  validation and static-generation reproducibility passed.
+- `node --test tests/visual-craft.test.cjs tests/designer-pipeline-cli.test.cjs` passed 18
+  tests with zero failures/skips, including isolated installation, source hashes, Canvas
+  drawing/typography/image placement and reordered browser studies.
+- `uv run --with pillow --with requests python -m unittest discover -s
+  skill/vendor/huashu-art-motion/upstream/tests` passed 61 upstream contract tests, with
+  bytecode writes disabled. These exercise source configuration/image fixtures, mocked API
+  responses, local server concurrency and temporary Git release fixtures. They do not
+  exercise a real synthesis account or validate provider service availability.
+
+Images continue through current host tools, supplied assets and existing evidence. The original
+tool snapshot/image plan/receipt/config fingerprint and provider/configuration/voice registry
+remain research material. Offline audio adaptation results are recorded separately in
+[koubo-verification.md](koubo-verification.md). Strict OpenSpec, whole-repository/package/install
+results belong to the final delivery record. Component Conformance remains separate from
+Visual Acceptance, which these source/render tests do not grant.

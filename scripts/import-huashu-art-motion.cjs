@@ -6,12 +6,12 @@ const path = require("node:path");
 const { inspectCheckout, copyTrackedFiles, canonicalTree } = require("./git-tree-snapshot.cjs");
 const { sha256, resolveInside } = require("../skill/scripts/contract-utils.cjs");
 
-const REVIEWED = "26dba25b2b495c2138848c29a2c90df356a20325";
+const REVIEWED = "57d67608ab458f57d9b153b1a2831b921e22498b";
 const repo = path.resolve(__dirname, "..");
 const destination = path.join(repo, "skill/vendor/huashu-art-motion");
 
 function included(file) {
-  if (!/^(references\/|scripts\/|(?:LICENSE|README\.md|SKILL\.md|CHANGELOG\.md)$)/.test(file)) return false;
+  if (!/^(references\/|scripts\/|defaults\/|schemas\/|tests\/|(?:LICENSE|README\.md|SKILL\.md|CHANGELOG\.md|CONTRIBUTING\.md|release-manifest\.json|\.gitignore|\.github\/workflows\/tests\.yml)$)/.test(file)) return false;
   // The author's portrait frames are demo-only, not reusable project assets.
   return !/^scripts\/engine\/demos\/(?:_shared\/hero\/|long_scroll\/frames\/).*\.png$/i.test(file);
 }
@@ -27,7 +27,7 @@ function importSnapshot(source) {
     files: entries.map(entry => ({ sourcePath: entry.path, localPath: `upstream/${entry.path}`, sha256: sha256(checkout.blobs.get(entry.path)) })),
     excluded: checkout.indexEntries.filter(entry => !included(entry.path)).map(entry => ({
       sourcePath: entry.path,
-      reason: entry.path.startsWith("scripts/") ? "demo-only author character artwork; supply project-owned assets" : "repository/showcase asset; no reusable capability omitted",
+      reason: entry.path.startsWith("scripts/") ? "demo-only author character artwork; supply project-owned assets" : "showcase asset; retained methods use project-owned artwork",
     })),
   };
   const parent = resolveInside(repo, path.dirname(destination), "vendor parent", { mustExist: true });

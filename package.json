@@ -21,7 +21,7 @@
     "sources:import:goodcss": "node scripts/import-good-css.cjs",
     "sources:import:huashu": "node scripts/import-huashu-art-motion.cjs",
     "sources:build:huashu": "node skill/tools/art-motion/build-huashu-runtime.cjs",
-    "test:huashu": "uv run --with fonttools node --test tests/huashu-runtime.test.cjs tests/huashu-scroll.test.cjs tests/huashu-assets-audio.test.cjs tests/huashu-tools.test.cjs",
+    "test:huashu": "uv run --with fonttools node --test tests/huashu-runtime.test.cjs tests/huashu-scroll.test.cjs tests/huashu-assets-audio.test.cjs tests/huashu-tools.test.cjs tests/huashu-koubo.test.cjs",
     "browser:install": "npm run install-browser --workspace tools/browser-automation && hyperframes browser ensure",
     "package:skill": "node scripts/package.cjs",
     "install:skill": "node scripts/install-local.cjs",

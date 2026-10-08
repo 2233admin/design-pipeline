@@ -11,6 +11,26 @@
   },
   "cases": [
     {
+      "id": "supporting-css-focus-motion",
+      "name": "局部 CSS 焦点与 reduced motion",
+      "prompt": "只改善这个保存按钮的键盘焦点和 reduced motion 支持，保留颜色、布局、原生 CSS 技术栈，不扩展为全站设计。原始 CSS：.save { background: #2266cc; color: white; padding: 8px 16px; border: 0; border-radius: 6px; transition: all .2s; } .save:focus { outline: none; }",
+      "expectedRoute": "motion-graphics",
+      "expectedJob": "technique",
+      "expectedState": "ready",
+      "requiredSignals": ["css-artifact-footprint", "palette-layout-preserved", "keyboard-focus", "reduced-motion", "forced-colors"],
+      "requiredArtifacts": ["result.css", "evidence.json"]
+    },
+    {
+      "id": "quick-chinese-profile-page",
+      "name": "quick 中文账户资料单页",
+      "prompt": "用 design-pipeline 的 quick 路径做一个中文账户资料设置单页：姓名、邮箱、通知开关、保存按钮，必填与邮箱校验，键盘可用，保存成功提示。单个 HTML 可本地打开，无框架、后端和动画。",
+      "expectedRoute": "motion-graphics",
+      "expectedJob": "technique",
+      "expectedState": "ready",
+      "requiredSignals": ["quick-workflow", "required-validation", "email-validation", "keyboard-save", "reload-persistence", "responsive", "no-animation", "user-acceptance-separate"],
+      "requiredArtifacts": ["index.html", "evidence.json", ".design-pipeline/state.json", "next.json"]
+    },
+    {
       "id": "new-dashboard-direction",
       "name": "新建数据看板方向",
       "prompt": "为面向运营团队的深色实时风控看板设计两套视觉方向，保留真实数据状态和键盘可用性。",
@@ -118,7 +138,7 @@
       "expectedJob": "reference-reconstruction",
       "expectedState": "blocked",
       "requiredSignals": ["source-pending", "blocked", "unlock-action", "fail-closed"],
-      "requiredArtifacts": ["reference-evidence.json", "explain-block.md", "handoff.md"]
+      "requiredArtifacts": ["reference-evidence.json", "reference-check.json"]
     }
   ]
 }

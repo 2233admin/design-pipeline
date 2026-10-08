@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
-const SOURCE_COMMIT = '26dba25b2b495c2138848c29a2c90df356a20325';
+const SOURCE_COMMIT = '57d67608ab458f57d9b153b1a2831b921e22498b';
 const VENDOR = path.resolve(__dirname, '../../vendor/huashu-art-motion');
 const MANIFEST_PATH = path.join(VENDOR, 'manifest.json');
 const OUTPUT = path.join(__dirname, 'huashu-runtime.js');

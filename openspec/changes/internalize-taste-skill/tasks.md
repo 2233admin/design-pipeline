@@ -13,3 +13,9 @@
 - [x] 3.1 Verify source parity, failed-import preservation, local links and built-in availability in a relocated empty-companion installation.
 - [x] 3.2 Run source checks, strict specs and full repository QA on a stable tree; independently review final source and integration scope.
 - [x] 3.3 Record evidence and limitations, preserve unrelated original-tree edits and deliver the complete integration.
+
+## 4. Address Skill Creator review gaps
+
+- [x] 4.1 Select the six existing React/Next engineering companions by current framework and actual capability need; retain bounded fallback behavior.
+- [x] 4.2 Extend the existing skill eval manifest/test with observable CSS, quick Chinese UI and missing-reference regressions, negative expectation controls and fixtures outside the package; run `node --test tests/skill-evals.test.cjs` and distinguish deterministic coverage from independent forward tests.
+- [ ] 4.3 Independently forward-test the updated skill from raw tasks, rerun `npm run specs:check` and `npm test` with isolated install validation, and record final review/acceptance limits.

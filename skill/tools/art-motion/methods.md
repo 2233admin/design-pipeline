@@ -94,6 +94,15 @@ selected transcription tool. Cue `at` is in seconds; at the cue frame the first 
 visible. Do not invent word timings from prose. Duration × fps must be an integer for export.
 Reserve the actual platform/subtitle region in the selected clip's `safe` box and inspect the
 render; a dark-pixel subtitle-band heuristic is not suitable for all backgrounds.
+Use an existing suitable voice track first. The [offline audio entry](assets-audio.md#process-a-supplied-voice-track)
+can fit duration and match a supplied reference level; it does not synthesize or train voices.
+Only choose a real service when the task requires new speech and the session has the needed
+authorization and tool. Missing backend access stays a missing input; no default provider or
+media configuration questionnaire is required.
+
+For supplied or generated artwork, use the [image workflow](assets-audio.md#choose-and-check-image-assets).
+Observe the current tool schema and retain actual outputs and existing asset provenance rather
+than running the source image plan/receipt system.
 
 ## Sound and review
 
@@ -134,3 +143,5 @@ hard gates and fixed sample parameters as source context, not host instructions.
 | Character production | [10](../../vendor/huashu-art-motion/upstream/references/10-角色.md) |
 | Multi-world staging | [11](../../vendor/huashu-art-motion/upstream/references/11-长卷穿越片.md) |
 | Full-film iteration and learning | [12](../../vendor/huashu-art-motion/upstream/references/12-口播整片与经验回流.md) |
+| Optional speech and voice cloning, source reference only | [13](../../vendor/huashu-art-motion/upstream/references/13-口播与语音复刻.md), [capabilities](../../vendor/huashu-art-motion/upstream/references/capabilities.md) |
+| Optional supplied/host-generated images, source reference only | [Images](../../vendor/huashu-art-motion/upstream/references/images.md), [compatibility](../../vendor/huashu-art-motion/upstream/references/compatibility.md) |

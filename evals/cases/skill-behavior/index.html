@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>账户资料设置</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --background: oklch(0.975 0.008 160);
+      --surface: oklch(1 0 none);
+      --text: oklch(0.25 0.015 160);
+      --muted: oklch(0.47 0.015 160);
+      --border: oklch(0.62 0.015 160);
+      --accent: oklch(0.43 0.075 165);
+      --accent-hover: color-mix(in oklch, var(--accent), black 12%);
+      --accent-tint: color-mix(in oklch, var(--accent) 8%, white);
+      --danger: oklch(0.46 0.17 28);
+      --page-space: clamp(1rem, 0.55rem + 2.25vw, 2.5rem);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      line-height: 1.65;
+      letter-spacing: 0;
+      line-break: strict;
+      word-break: normal;
+      overflow-wrap: break-word;
+    }
+    *, *::before, *::after { box-sizing: border-box; min-inline-size: 0; }
+    body { margin: 0; min-block-size: 100svh; background: var(--background); color: var(--text); }
+    main { max-inline-size: 42rem; margin-inline: auto; padding-inline: var(--page-space); padding-block: clamp(2rem, 1rem + 5vw, 5rem); }
+    h1, h2, p { margin-block: 0; }
+    h1 { font-size: 1.75rem; line-height: 1.4; }
+    h2 { font-size: 1.125rem; }
+    header { display: grid; gap: 0.625rem; margin-block-end: 2rem; }
+    .eyebrow { color: var(--accent); font-size: 0.875rem; font-weight: 600; }
+    .description, .hint { color: var(--muted); }
+    .hint, .error { font-size: 0.875rem; }
+    form { background: var(--surface); padding: var(--page-space); border-radius: 1rem; display: grid; gap: 1.5rem; box-shadow: 0 0.25rem 1.5rem color-mix(in oklch, var(--accent) 7%, transparent); }
+    .section-heading { display: grid; gap: 0.25rem; }
+    .field { display: grid; gap: 0.5rem; }
+    label { font-weight: 600; }
+    input, button { font: inherit; }
+    input[type="text"], input[type="email"] { inline-size: 100%; min-block-size: 3rem; padding-block: 0.65rem; padding-inline: 0.875rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--surface); color: var(--text); font-size: 1rem; }
+    input::placeholder { color: var(--muted); opacity: 1; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    input:user-invalid, input[aria-invalid="true"] { border-color: var(--danger); }
+    .error { display: none; color: var(--danger); }
+    input:user-invalid ~ .error, input[aria-invalid="true"] ~ .error { display: block; }
+    .notification { display: flex; align-items: center; gap: 1rem; min-block-size: 4rem; cursor: pointer; position: relative; }
+    .notification-copy { display: grid; gap: 0.2rem; flex: 1; }
+    .notification .hint { font-weight: 400; }
+    .notification input { position: absolute; opacity: 0; inline-size: 100%; block-size: 100%; margin: 0; inset-inline-start: 0; inset-block-start: 0; cursor: pointer; }
+    .switch { flex: none; inline-size: 2.75rem; block-size: 1.625rem; border: 2px solid var(--muted); border-radius: 2rem; background: var(--muted); pointer-events: none; }
+    .switch::before { content: ""; display: block; inline-size: 1.125rem; block-size: 1.125rem; margin-block: 0.125rem; margin-inline: 0.125rem; border-radius: 50%; background: var(--surface); }
+    .notification input:checked ~ .switch { background: var(--accent); border-color: var(--accent); }
+    .notification input:checked ~ .switch::before { margin-inline-start: 1.125rem; }
+    .notification input:focus-visible ~ .switch { outline: 3px solid var(--accent); outline-offset: 4px; }
+    .notification:active { background: var(--accent-tint); }
+    button { justify-self: start; min-block-size: 3rem; padding-inline: 1.5rem; padding-block: 0.65rem; border: 1px solid transparent; border-radius: 0.5rem; background: var(--accent); color: var(--surface); font-weight: 600; cursor: pointer; touch-action: manipulation; }
+    @media (hover: hover) and (pointer: fine) { button:hover { background: var(--accent-hover); } }
+    button:active { background: color-mix(in oklch, var(--accent), black 22%); }
+    #save-status { color: var(--accent); min-block-size: 1.65em; }
+    #save-status[data-error] { color: var(--danger); }
+    footer { margin-block-start: 1rem; }
+    @media (forced-colors: active) {
+      .switch { border-color: ButtonText; background: Canvas; }
+      .switch::before { background: ButtonText; }
+      .notification input:checked ~ .switch { border-color: Highlight; background: Canvas; }
+      .notification input:checked ~ .switch::before { background: Highlight; }
+      .notification input:focus-visible ~ .switch { outline-color: Highlight; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">个人设置</p>
+      <h1>账户资料</h1>
+      <p class="description">更新你的基本信息和通知偏好。</p>
+    </header>
+    <form id="profile-form">
+      <div class="section-heading">
+        <h2>基本信息</h2>
+        <p class="hint">姓名和邮箱为必填项。</p>
+      </div>
+      <div class="field">
+        <label for="full-name">姓名</label>
+        <input id="full-name" name="name" type="text" autocomplete="name" placeholder="请输入姓名" required pattern=".*\S.*" aria-describedby="name-error">
+        <p id="name-error" class="error">请输入姓名，不能仅包含空格。</p>
+      </div>
+      <div class="field">
+        <label for="email">邮箱</label>
+        <input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" required aria-describedby="email-error">
+        <p id="email-error" class="error">请输入有效的邮箱地址，例如 name@example.com。</p>
+      </div>
+      <label class="notification" for="notifications">
+        <span class="notification-copy"><span>接收通知</span><span class="hint">保存你的邮件通知偏好。</span></span>
+        <input id="notifications" name="notifications" type="checkbox" role="switch" aria-label="接收通知" checked>
+        <span class="switch" aria-hidden="true"></span>
+      </label>
+      <button type="submit">保存资料</button>
+      <p id="save-status" role="status" aria-live="polite"></p>
+    </form>
+    <footer class="hint">资料仅保存在当前浏览器，不会上传。</footer>
+    <noscript><p>请启用 JavaScript，以便保存资料。</p></noscript>
+  </main>
+  <script>
+    const form = document.querySelector('#profile-form');
+    const nameInput = document.querySelector('#full-name');
+    const emailInput = document.querySelector('#email');
+    const notifications = document.querySelector('#notifications');
+    const status = document.querySelector('#save-status');
+    const storageKey = 'account-profile-settings-v1';
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      if (saved && typeof saved.name === 'string' && typeof saved.email === 'string' && typeof saved.notifications === 'boolean') {
+        nameInput.value = saved.name;
+        emailInput.value = saved.email;
+        notifications.checked = saved.notifications;
+      }
+    } catch {
+      status.textContent = '无法读取已保存的资料。你仍可填写并尝试保存。';
+      status.dataset.error = '';
+    }
+
+    form.addEventListener('invalid', (event) => {
+      event.target.setAttribute('aria-invalid', 'true');
+      status.textContent = '';
+    }, true);
+    form.addEventListener('input', (event) => {
+      event.target.removeAttribute('aria-invalid');
+      status.textContent = '';
+      delete status.dataset.error;
+    });
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const profile = { name: nameInput.value.trim(), email: emailInput.value.trim(), notifications: notifications.checked };
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(profile));
+        nameInput.value = profile.name;
+        emailInput.value = profile.email;
+        delete status.dataset.error;
+        status.textContent = '资料已保存。';
+      } catch {
+        status.dataset.error = '';
+        status.textContent = '保存失败：浏览器无法存储资料。请允许本地存储后重试，填写内容仍在页面中。';
+      }
+    });
+  </script>
+</body>
+</html>
