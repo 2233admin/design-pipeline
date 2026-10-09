@@ -27,3 +27,9 @@ The Chrome-absence commands set `PUPPETEER_EXECUTABLE_PATH` only in the child Po
 ## Boundaries
 
 No new gate, schema, resolver, option or dependency was added. Existing target, snapshot, receipt lineage and Component Conformance / Visual Acceptance boundaries remain intact. The existing Git observation limitations and same-permission trust assumptions still apply; these checks do not establish filesystem write containment or user acceptance.
+
+## Consolidated repository verification
+
+On 2026-10-09, the consolidation owner ran canonical `npm test` on clean runtime snapshot `c82a9b08cced46f4a32e8bf758afc9fb5e7888b6`, with reviewed optional GEPA and local render tools available. It exited 0: 120 registered files produced 1,109 tests, 1,108 passed, zero failed, and one intentional missing-GEPA skip because GEPA was installed. Native GEPA proposal, provenance, callback-drift and failed-evidence checks executed. The final workflow fixtures and Windows namespace/NTFS checks passed in this complete run.
+
+Reproducible TGZ, ZIP and checksums, archive resources, isolated installation and public CLI smoke (12 passed, zero skipped), and both browser-tool self-tests passed. QA confirmed repository status remained byte-identical. `npm run specs:check` also passed all 63 items strictly. Raw logs are retained in ignored `.design-pipeline/`; the original workspace's v2 Git inventory and tracked binary diff match the pre-cleanup snapshot. These results verify software behavior and packaging; no real design-quality experiment, release or Visual Acceptance was performed.

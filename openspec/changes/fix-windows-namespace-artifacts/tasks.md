@@ -6,4 +6,4 @@
 ## 2. Verify
 
 - [x] 2.1 Run the single explicit execution-target-routing test file and strict validation of this change; record evidence.
-- [ ] 2.2 Run canonical full repository/browser QA through the consolidation owner before publication.
+- [x] 2.2 Run canonical full repository/browser QA through the consolidation owner before publication.
