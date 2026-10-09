@@ -68,14 +68,16 @@ function windowsRootAlias(realRoot, target) {
   // Native realpath expands 8.3 names. An outside junction must not serve as
   // an alternate lexical root, even if its destination is inside realRoot.
   for (let candidate = target; ; candidate = path.dirname(candidate)) {
-    const stat = fs.lstatSync(candidate, { bigint: true, throwIfNoEntry: false });
+    const terminalRoot = path.dirname(candidate) === candidate;
+    // Windows rejects lstat of a namespace drive root; inspect its ordinary spelling.
+    const stat = fs.lstatSync(terminalRoot ? candidate.replace(/^\\\\\?\\([a-z]:\\)$/i, "$1") : candidate, { bigint: true, throwIfNoEntry: false });
     if (stat?.isDirectory() && !stat.isSymbolicLink() && stat.dev === rootStat.dev && stat.ino === rootStat.ino) {
       for (let ancestor = candidate; ; ancestor = path.dirname(ancestor)) {
-        if (fs.lstatSync(ancestor).isSymbolicLink()) return null;
         if (path.dirname(ancestor) === ancestor) return candidate;
+        if (fs.lstatSync(ancestor).isSymbolicLink()) return null;
       }
     }
-    if (path.dirname(candidate) === candidate) return null;
+    if (terminalRoot) return null;
   }
 }
 

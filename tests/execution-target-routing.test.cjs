@@ -423,6 +423,34 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
   if (process.platform === "win32") t.diagnostic("Windows alias identity assertions executed");
 });
 
+test("contained paths keep lexical coordinates for Windows namespace artifacts", { skip: process.platform !== "win32" && "Windows namespace paths" }, async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "execution-namespace-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const canonicalRoot = fs.realpathSync.native(root), aliasRoot = path.toNamespacedPath(canonicalRoot);
+  fs.writeFileSync(path.join(canonicalRoot, "file.txt"), "namespace artifact\n");
+  await t.test("existing and future paths resolve in both directions", () => {
+    for (const relative of ["file.txt", "future/file.txt"]) {
+      const mustExist = relative === "file.txt";
+      assert.equal(resolveInside(aliasRoot, path.join(canonicalRoot, relative), "canonical path", { mustExist }), path.join(aliasRoot, relative));
+      assert.equal(resolveInside(canonicalRoot, path.join(aliasRoot, relative), "namespace path", { mustExist }), path.join(canonicalRoot, relative));
+    }
+    const driveRoot = path.parse(canonicalRoot).root;
+    assert.equal(resolveInside(driveRoot, aliasRoot, "namespace drive root", { mustExist: true }), canonicalRoot);
+    assert.throws(() => resolveInside(canonicalRoot, path.toNamespacedPath(path.dirname(canonicalRoot)), "outside namespace root"), /must stay inside/);
+    assert.throws(() => resolveInside(aliasRoot, "../outside.txt", "relative namespace escape"), /must stay inside/);
+  });
+  await t.test("artifact creation and validation preserve relative metadata", () => {
+    const { createArtifactMetadata, validateArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
+    for (const [changeRoot, file] of [[aliasRoot, path.join(canonicalRoot, "file.txt")], [canonicalRoot, path.join(aliasRoot, "file.txt")]]) {
+      const metadata = createArtifactMetadata({ path: file, producer: "namespace fixture", input_hashes: {}, dependencies: [], created_at: new Date().toISOString() }, { changeRoot });
+      assert.equal(metadata.path, "file.txt");
+      assert.equal(validateArtifactMetadata(metadata, { metadataOnly: true }).status, "ready");
+      assert.equal(validateArtifactMetadata(metadata, { changeRoot }).status, "ready");
+      assert.throws(() => validateArtifactMetadata({ ...metadata, path: "../outside.txt" }, { changeRoot }), /must stay inside/);
+    }
+  });
+});
+
 test("Git snapshots preserve unchanged dirty work and detect another edit with the same status", (t) => {
   const { root } = repository(t);
   const readme = path.join(root, "README.md");
