@@ -411,3 +411,12 @@ test("fresh native completion cannot transfer old visual acceptance to rewritten
   assert.equal(native.status, "ready"); assert.equal(native.review, undefined);
   assert.equal(bench.events(run.id).events.some(event => event.tool === "decide" && event.args.includes("accept")), false);
 });
+
+test("failed native assertion reports its attempt when no run notice exists", () => {
+  const run = { status: "failed", tasks: [
+    { id: "outline", status: "failed", attempts: [{ status: "failed", failureCode: "TASK_BLOCKED", failure: "fixture baseline failure" }] },
+    { id: "depth", status: "pending", attempts: [] },
+  ] };
+  assert.throws(() => assert.equal(run.status, "awaiting-review", runStateMessage(run)), error =>
+    error.code === "ERR_ASSERTION" && error.message.includes("TASK_BLOCKED") && error.message.includes("fixture baseline failure"));
+});

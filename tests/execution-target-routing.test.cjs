@@ -325,9 +325,9 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
   assert.throws(() => resolveInside(root, path.join(outside, "file.txt"), "outside"), /must stay inside/);
   assert.throws(() => resolveInside(root, "../outside.txt", "traversal"), /must stay inside/);
   if (process.platform === "win32") {
-    assert.equal(resolveInside(root, path.join(canonicalRoot, "nested", "file.txt"), "long spelling", { mustExist: true }), path.join(canonicalRoot, "nested", "file.txt"));
-    assert.equal(resolveInside(canonicalRoot, future, "short spelling"), future);
-    assert.equal(resolveInside(canonicalRoot + path.sep, future, "trailing separator"), future);
+    assert.equal(resolveInside(root, path.join(canonicalRoot, "nested", "file.txt"), "long spelling", { mustExist: true }), path.join(root, "nested", "file.txt"));
+    assert.equal(resolveInside(canonicalRoot, future, "short spelling"), path.join(canonicalRoot, "nested", "new", "file.txt"));
+    assert.equal(resolveInside(canonicalRoot + path.sep, future, "trailing separator"), path.join(canonicalRoot, "nested", "new", "file.txt"));
     assert.equal(resolveInside(path.parse(root).root, root, "drive root", { mustExist: true }), root);
     const upperSpelling = path.join(canonicalRoot, "nested", "file.txt").toUpperCase();
     assert.equal(resolveInside(canonicalRoot, upperSpelling, "case-insensitive spelling", { mustExist: true }), upperSpelling);
@@ -343,7 +343,7 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
     assert.notEqual(canonicalStat.ino, 0n);
     assert.equal(aliasStat.dev, canonicalStat.dev);
     assert.equal(aliasStat.ino, canonicalStat.ino);
-    assert.equal(resolveInside(aliasRoot, canonicalFuture, "namespace alias"), canonicalFuture);
+    assert.equal(resolveInside(aliasRoot, canonicalFuture, "namespace alias"), path.join(aliasRoot, "nested", "new", "file.txt"));
     assert.equal(samePath(aliasRoot, canonicalRoot), true);
     const originalStat = fs.statSync;
     try {
@@ -384,7 +384,12 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
   assert.throws(() => resolveInside(canonicalRoot, path.join(inboundLink, "nested", "file.txt"), "outside alias"), /must stay inside/);
   if (process.platform === "win32") {
     const canonicalLinkPath = path.join(canonicalRoot, "contained-link", "file.txt");
-    assert.equal(resolveInside(root, canonicalLinkPath, "contained link long spelling", { mustExist: true }), canonicalLinkPath);
+    assert.equal(resolveInside(root, canonicalLinkPath, "contained link long spelling", { mustExist: true }), path.join(containedLink, "file.txt"));
+    const { createArtifactMetadata, validateArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
+    const metadata = createArtifactMetadata({ path: path.join(canonicalRoot, "nested", "file.txt"), producer: "alias fixture", input_hashes: {}, dependencies: [], created_at: new Date().toISOString() }, { changeRoot: containedLink });
+    assert.equal(metadata.path, "file.txt", "physical aliases retain caller-root artifact coordinates");
+    assert.equal(validateArtifactMetadata(metadata, { metadataOnly: true }).status, "ready");
+    assert.throws(() => validateArtifactMetadata({ ...metadata, path: "../nested/file.txt" }, { changeRoot: containedLink }), /must stay inside/);
     const ancestorLink = path.join(outside, "ancestor-link");
     fs.symlinkSync(path.dirname(root), ancestorLink, "junction");
     assert.throws(() => resolveInside(canonicalRoot, path.join(ancestorLink, path.basename(root), "nested", "file.txt"), "outside ancestor alias"), /must stay inside/);
@@ -402,6 +407,10 @@ test("contained paths keep lexical coordinates and Windows aliases retain physic
     }
     const upper = path.join(caseDirectory, "Root"), lower = path.join(caseDirectory, "root");
     fs.mkdirSync(upper);
+    if (fs.existsSync(lower)) {
+      ntfs.skip("temporary directory remains case-insensitive despite fsutil exit 0");
+      return;
+    }
     fs.mkdirSync(lower);
     fs.writeFileSync(path.join(lower, "outside.txt"), "different physical root\n");
     assert.notEqual(fs.statSync(upper, { bigint: true }).ino, fs.statSync(lower, { bigint: true }).ino);

@@ -85,7 +85,9 @@ function resolveInside(root, raw, label, options = {}) {
   const target = path.isAbsolute(raw) ? path.resolve(raw) : path.resolve(base, raw);
   if (!fs.existsSync(base)) fail(options.scope || "path", `root does not exist: ${base}`);
   const realBase = fs.realpathSync.native(base);
-  const lexicalBase = pathInside(base, target) ? base : windowsRootAlias(realBase, target);
+  const targetInsideBase = pathInside(base, target);
+  if (!targetInsideBase && !path.isAbsolute(raw)) fail(options.scope || "path", `${label} must stay inside ${base}`);
+  const lexicalBase = targetInsideBase ? base : windowsRootAlias(realBase, target);
   if (!lexicalBase) fail(options.scope || "path", `${label} must stay inside ${base}`);
   let existing = target;
   while (!fs.existsSync(existing)) {
@@ -97,8 +99,9 @@ function resolveInside(root, raw, label, options = {}) {
   const projected = path.resolve(fs.realpathSync.native(existing), path.relative(existing, target));
   const realPrefix = realBase.endsWith(path.sep) ? realBase : realBase + path.sep;
   if (!pathInside(realBase, projected) || process.platform === "win32" && projected !== realBase && !projected.startsWith(realPrefix) && !windowsRootAlias(realBase, projected)) fail(options.scope || "path", `${label} resolves outside ${realBase}`);
-  if (options.mustExist && !fs.existsSync(target)) fail(options.scope || "path", `${label} does not exist: ${target}`);
-  return target;
+  const contained = lexicalBase === base ? target : path.resolve(base, path.relative(lexicalBase, target));
+  if (options.mustExist && !fs.existsSync(contained)) fail(options.scope || "path", `${label} does not exist: ${contained}`);
+  return contained;
 }
 
 function readJson(file, scope = "json") {
