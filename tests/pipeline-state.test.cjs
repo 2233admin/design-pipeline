@@ -215,6 +215,35 @@ function visualProgress() {
   };
 }
 
+test("native failures preserve legacy strings and strictly validate observed snapshot findings", () => {
+  const state = createInitialState({ changeId: "observed-failure", timestamp: "2026-07-23T00:00:00.000Z", phase: "implementation" });
+  const failure = () => ({ message: "The selected value stayed unchanged", findings: [{ code: "state-mismatch", severity: "error", message: "Expected Blue, got Red", fix: "Apply the selected item before closing the menu", probeId: "menu", stepId: "select", path: "menu-check.json", selector: "#value", expected: "Blue", actual: "Red" }], inputHashes: { $plan: "sha256:" + "b".repeat(64), $task: "sha256:" + "c".repeat(64), "menu-probe.json": "sha256:" + "d".repeat(64), "output:index.html": "sha256:" + "e".repeat(64) }, attempts: 3 });
+  const progress = visualProgress(); progress.failures.menu = failure();
+  assert.deepEqual(validateV2({ ...state, extensions: { visualTasks: progress } }).extensions.visualTasks.failures, progress.failures);
+  for (const [label, mutate] of [
+    ["unknown field", value => { value.claimedPass = true; }],
+    ["finding absent", value => { value.findings = []; }],
+    ["finding fields", value => { value.findings[0].unknown = true; }],
+    ["finding fix", value => { delete value.findings[0].fix; }],
+    ["finding message", value => { value.findings[0].message = []; }],
+    ["finding severity", value => { value.findings[0].severity = "passed"; }],
+    ["finding path", value => { value.findings[0].path = "../outside.json"; }],
+    ["literal array", value => { value.findings[0].actual = []; }],
+    ["literal object", value => { value.findings[0].expected = {}; }],
+    ["literal number", value => { value.findings[0].actual = 0; }],
+    ["literal absent", value => { delete value.findings[0].expected; }],
+    ["empty hashes", value => { value.inputHashes = {}; }],
+    ["bad hash", value => { value.inputHashes.$task = "claimed"; }],
+    ["hash type", value => { value.inputHashes.$task = [value.inputHashes.$task]; }],
+    ["zero attempts", value => { value.attempts = 0; }],
+    ["fraction attempts", value => { value.attempts = 1.5; }],
+    ["unsafe attempts", value => { value.attempts = Number.MAX_SAFE_INTEGER + 1; }],
+  ]) {
+    const invalid = visualProgress(); invalid.failures.menu = failure(); mutate(invalid.failures.menu);
+    assert.throws(() => validateV2({ ...state, extensions: { visualTasks: invalid } }), /failures|path/, label);
+  }
+});
+
 test("visual tasks reject aggregate properties and missing capability entry points", () => {
   const plan = visualPlan();
   for (const property of ["轮廓、厚度和倒角", "geometry.all", "surface.ALL", "geometry", "materials", "motion", "component", "page", "all", "implementation", "contour and depth", "geometry/color"]) {
@@ -284,6 +313,99 @@ test("native state validates visual progress and preserves historical stale evid
   ]) {
     const progress = visualProgress(); alter(progress);
     assert.throws(() => validateV2(withProgress(progress)), /visualTasks|artifact/);
+  }
+});
+
+function activeVisualAttempt() {
+  const gitRoot = path.resolve(os.tmpdir(), "visual-state-fixture");
+  return {
+    taskId: "outline", taskHash: "sha256:" + "b".repeat(64), planHash: "sha256:" + "b".repeat(64),
+    changeRoot: path.join(gitRoot, "changes", "visual"), metadataPath: "outline-completion.json",
+    authorization: ["changes/visual/index.html", "changes/visual/outline-completion.json"],
+    baseline: {
+      root: gitRoot, branch: "main", head: "a".repeat(40), files: {
+        "changes/visual/index.html": { type: "file", sha256: "b".repeat(64), mode: 0o644, status: "  ", index: [{ oid: "c".repeat(40), mode: "100644", stage: 0 }] },
+      },
+    },
+  };
+}
+
+test("native state retains readable active windows and historical observed completions", () => {
+  const state = createInitialState({ changeId: "visual-observation", timestamp: "2026-07-23T00:00:00.000Z", phase: "implementation" });
+  const progress = visualProgress();
+  progress.active = activeVisualAttempt();
+  progress.completed.outline.observation = {
+    kind: "interaction", attempt: activeVisualAttempt(), checks: ["evidence/interaction-check.json"], at: "2026-07-23T00:01:00.000Z",
+    scope: { changedFiles: ["changes/visual/index.html"], commitChangedFiles: [], head: "d".repeat(40) },
+  };
+  const before = canonicalJson(progress);
+  assert.equal(validateV2({ ...state, extensions: { visualTasks: progress } }).extensions.visualTasks, progress);
+  assert.equal(canonicalJson(progress), before);
+  progress.planHash = "sha256:" + "c".repeat(64);
+  assert.equal(validateV2({ ...state, extensions: { visualTasks: progress } }).extensions.visualTasks.active.planHash, "sha256:" + "b".repeat(64), "a replaced plan must preserve the prior window's authorization");
+  assert.equal(progress.completed.outline.status, "stale", "historical evidence remains readable without current file checks");
+  progress.completed.outline.observation.scope = { changedFiles: [], commitChangedFiles: [], head: "d".repeat(64) };
+  assert.equal(validateV2({ ...state, extensions: { visualTasks: progress } }).extensions.visualTasks, progress, "an observed verification may have no source changes");
+});
+
+test("native state rejects malformed active windows and observed verification records", () => {
+  const state = createInitialState({ changeId: "visual-observation", timestamp: "2026-07-23T00:00:00.000Z", phase: "implementation" });
+  const cases = [
+    ["active object", p => { p.active = []; }],
+    ["unknown active field", p => { p.active.claimed = true; }],
+    ["task id", p => { p.active.taskId = ""; }],
+    ["reserved task id", p => { p.active.taskId = "constructor"; }],
+    ["task hash", p => { p.active.taskHash = "claimed"; }],
+    ["plan hash", p => { p.active.planHash = "claimed"; }],
+    ["absolute change root", p => { p.active.changeRoot = "relative/change"; }],
+    ["metadata path required", p => { delete p.active.metadataPath; }],
+    ["metadata path contained", p => { p.active.metadataPath = "../completion.json"; }],
+    ["authorization list", p => { p.active.authorization = {}; }],
+    ["authorization contained", p => { p.active.authorization = ["../outside.js"]; }],
+    ["authorization literal", p => { p.active.authorization = ["changes/*"]; }],
+    ["baseline object", p => { p.active.baseline = null; }],
+    ["baseline root", p => { p.active.baseline.root = "relative/repo"; }],
+    ["baseline branch", p => { p.active.baseline.branch = ""; }],
+    ["baseline head", p => { p.active.baseline.head = "claimed"; }],
+    ["baseline files", p => { p.active.baseline.files = []; }],
+    ["baseline strict fields", p => { p.active.baseline.claimed = true; }],
+    ["baseline literal file path", p => { p.active.baseline.files = { "../outside.js": p.active.baseline.files["changes/visual/index.html"] }; }],
+    ["baseline object id type", p => { p.active.baseline.head = ["a".repeat(40)]; }],
+    ["baseline file hash type", p => { p.active.baseline.files["changes/visual/index.html"].sha256 = ["b".repeat(64)]; }],
+    ["baseline file permissions", p => { p.active.baseline.files["changes/visual/index.html"].mode = 0o100644; }],
+    ["baseline status", p => { p.active.baseline.files["changes/visual/index.html"].status = "M"; }],
+    ["baseline index list", p => { p.active.baseline.files["changes/visual/index.html"].index = {}; }],
+    ["baseline index oid type", p => { p.active.baseline.files["changes/visual/index.html"].index[0].oid = ["c".repeat(40)]; }],
+    ["baseline index mode type", p => { p.active.baseline.files["changes/visual/index.html"].index[0].mode = 100644; }],
+    ["baseline index stages", p => { p.active.baseline.files["changes/visual/index.html"].index.push({ ...p.active.baseline.files["changes/visual/index.html"].index[0] }); }],
+    ["observation kind", p => { p.completed.outline.observation.kind = "shell"; }],
+    ["unknown observation field", p => { p.completed.outline.observation.claimed = true; }],
+    ["observation attempt", p => { p.completed.outline.observation.attempt = null; }],
+    ["checks nonempty", p => { p.completed.outline.observation.checks = []; }],
+    ["checks unique", p => { p.completed.outline.observation.checks.push("evidence/interaction-check.json"); }],
+    ["checks contained", p => { p.completed.outline.observation.checks = ["../outside-check.json"]; }],
+    ["observation timestamp", p => { p.completed.outline.observation.at = "2026-07-23"; }],
+    ["scope required", p => { delete p.completed.outline.observation.scope; }],
+    ["scope object", p => { p.completed.outline.observation.scope = []; }],
+    ["scope strict fields", p => { p.completed.outline.observation.scope.claimed = true; }],
+    ["scope files list", p => { p.completed.outline.observation.scope.changedFiles = {}; }],
+    ["scope history list", p => { p.completed.outline.observation.scope.commitChangedFiles = "claimed"; }],
+    ["scope path contained", p => { p.completed.outline.observation.scope.changedFiles = ["../outside.js"]; }],
+    ["scope history literal", p => { p.completed.outline.observation.scope.commitChangedFiles = ["changes/*"]; }],
+    ["scope file not directory", p => { p.completed.outline.observation.scope.changedFiles = ["changes/visual/"]; }],
+    ["scope history not directory", p => { p.completed.outline.observation.scope.commitChangedFiles = ["changes/visual/"]; }],
+    ["scope head", p => { p.completed.outline.observation.scope.head = "claimed"; }],
+    ["scope head type", p => { p.completed.outline.observation.scope.head = ["d".repeat(40)]; }],
+  ];
+  for (const [label, mutate] of cases) {
+    const progress = visualProgress();
+    progress.active = activeVisualAttempt();
+    progress.completed.outline.observation = {
+      kind: "interaction", attempt: activeVisualAttempt(), checks: ["evidence/interaction-check.json"], at: "2026-07-23T00:01:00.000Z",
+      scope: { changedFiles: ["changes/visual/index.html"], commitChangedFiles: [], head: "d".repeat(40) },
+    };
+    mutate(progress);
+    assert.throws(() => validateV2({ ...state, extensions: { visualTasks: progress } }), /visualTasks|path|Git snapshot/, label);
   }
 });
 

@@ -24,14 +24,14 @@ function validHash(value) { return typeof value === "string" && /^sha256:[a-f0-9
 function artifactPath(changeRoot, raw, options = {}) {
   const target = resolveInside(changeRoot, raw, "artifact path", { scope: "artifact", mustExist: options.mustExist !== false });
   if (options.mustExist !== false && fs.existsSync(target)) {
-    const real = fs.realpathSync(target);
+    const real = fs.realpathSync.native(target);
     if (!pathInsideReal(changeRoot, real)) fail("artifact", `artifact path resolves outside ${path.resolve(changeRoot)}`, { code: "ARTIFACT_PATH_ESCAPE" });
   }
   return target;
 }
 
 function pathInsideReal(root, target) {
-  const relative = path.relative(fs.realpathSync(root), target);
+  const relative = path.relative(fs.realpathSync.native(root), target);
   return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
 }
 

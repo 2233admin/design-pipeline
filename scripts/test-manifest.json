@@ -1,6 +1,8 @@
 {
   "schema": "design-pipeline.test-manifest.v1",
   "tests": [
+    "gepa-source.test.cjs",
+    "gepa-runtime.test.cjs",
     "reference-analysis-entry.test.cjs",
     "reference-video.test.cjs",
     "project-analysis.test.cjs",
@@ -48,6 +50,7 @@
     "execution-target-routing.test.cjs",
     "frontend-stack-routing.test.cjs",
     "graphics-runtime-catalog.test.cjs",
+    "good-css.test.cjs",
     "graybox-gate.test.cjs",
     "holosticker.test.cjs",
     "install-local.test.cjs",
@@ -110,6 +113,13 @@
     "huashu-runtime.test.cjs",
     "huashu-scroll.test.cjs",
     "huashu-assets-audio.test.cjs",
-    "huashu-tools.test.cjs"
+    "huashu-tools.test.cjs",
+    "taste-skill.test.cjs",
+    "huashu-koubo.test.cjs",
+    "film-sources.test.cjs",
+    "film-methods.test.cjs",
+    "film-methods-eval.test.cjs",
+    "prompt-motion-index.test.cjs",
+    "prompt-motion-library.test.cjs"
   ]
 }

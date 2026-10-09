@@ -5,8 +5,11 @@ by the visual problem; using a helper does not create a film project or select a
 
 | Need | Open next | Available now |
 | --- | --- | --- |
+| Improve a bounded design prompt or skill instruction through comparable cases | [Independent GEPA optimization](../references/gepa.md) | Native feedback-driven candidate search, frozen training/validation/final-test splits and exported proposals; optional pinned Python runtime |
 | The visible goal needs a method or implementation beyond the current tools | [Find and apply a capability](open-source-design.md) | Active GitHub/upstream discovery, source inspection, a rendered study and task-local adoption |
 | Find visual references, assets or a specific design operation | [Design sources](design-sources.md) | User's design directory, task-based lookup and transfer into existing reference/preview tools |
+| New-site design, existing-project redesign, aesthetic critique or a chosen UI style | [Built-in Taste suite](../references/taste-skill.md) | Thirteen complete local methods; select by task and keep the project stack and checks |
+| Website/mobile concept images, brand boards or image-to-code | [Taste output selection](../references/taste-skill.md#choose-the-deliverable) | Image-only guidance uses an available provider; user references can go directly to verified frontend implementation |
 | Continuous ink, pressure, path reveal, static paper grain | [Canvas craft](visual-craft/README.md) | Callable, caller-sized Canvas helpers and browser study |
 | Fit short labels, keep a readable minimum, place/crop images, choose sprite frames | [Canvas craft](visual-craft/README.md) | Measured layout and explicit overflow; keep product text in semantic DOM |
 | Choose and obtain a font, compare real copy, handle CJK/Latin and font variants | [Font sources and selection](fonts.md) | FontLab and primary sources, project-local acquisition, actual-family and rendering checks |
@@ -18,8 +21,11 @@ by the visual problem; using a helper does not create a film project or select a
 | Multi-world travel, interaction pauses and style boundaries | [Scroll helper](art-motion/scroll.md) | Caller-owned world, subject and camera callbacks |
 | Style recipes, cue-driven clips, exact-frame/alpha export, audiovisual reference breakdown | [Art Motion](art-motion/README.md) | 35 style studies, 8 clip grammars, full method routing |
 | Poses, spacing, acting, audiovisual phrasing | [Animation thinking](../references/animation-thinking.md) | Existing choreography and motion study |
+| Explicit product film or short motion loop | [Built-in film methods](../references/film-methods.md) | Complete Cinetic/product-film sources, real component provenance, selected recipes and configurable motion primitives through existing film tools |
+| Reusable motion case structures | [Prompt Motion template library](../references/prompt-motion/README.md) | Offline `film templates` search/detail; indexed sources, curated inputs/rules and authored adaptation limits |
 | DOM/SVG timelines, scroll, layout or existing Three.js property animation | [Runtime guidance](../references/capability-routing.md) | Local GSAP playbook, Anime.js construction/seek/cleanup methods; companions optional |
 | Layout/text checks, interactions, 3D and GPU materials | [Composition](../references/composition-gate.md), [runtime routing](../references/graphics-runtime-routing.md) | Existing capture, gates and project renderer |
+| Intrinsic layout, CSS tokens, content/overflow, control states and native CSS motion | [Good CSS](../references/good-css.md), [offline specimens](good-css/README.md) | Complete pinned practices and a Node-only builder for local live studies |
 
 Read this index first, then one tool guide, then the needed function/example. Do not preload the
 whole source library. `../vendor/huashu-art-motion/manifest.json` records provenance, not another runtime or

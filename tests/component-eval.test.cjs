@@ -33,16 +33,19 @@ test("JSON lines preserve split UTF8 and report malformed input without leaking 
   assert(!JSON.stringify(errors).includes("PRIVATE"));
 });
 
+function runStateMessage(run) {
+  return JSON.stringify(run && { status: run.status, notice: run.notice, tasks: run.tasks.map(task => {
+    const attempt = task.attempts.at(-1);
+    return { id: task.id, status: task.status, attempts: task.attempts.length, lastAttempt: attempt && { status: attempt.status, failureCode: attempt.failureCode, failure: attempt.failure } };
+  }) });
+}
+
 async function until(check, run) {
   // ponytail: concurrent QA reads the full frozen toolkit; calibrate this bound if its size grows.
   const end = Date.now() + 60000;
   while (!check()) {
     if (Date.now() >= end) {
-      const lastState = run && { status: run.status, notice: run.notice, tasks: run.tasks.map(task => {
-        const attempt = task.attempts.at(-1);
-        return { id: task.id, status: task.status, attempts: task.attempts.length, lastAttempt: attempt && { status: attempt.status, failureCode: attempt.failureCode, failure: attempt.failure } };
-      }) };
-      assert.fail("task did not reach expected state within 60s; last state: " + JSON.stringify(lastState));
+      assert.fail("task did not reach expected state within 60s; last state: " + runStateMessage(run));
     }
     await new Promise(resolve => setTimeout(resolve, 20));
   }
@@ -177,34 +180,47 @@ test("user stop targets the owned child and restart does not silently redispatch
   assert.equal(restored.active, null);
 });
 
-function visualFixture(t, missingPlan = false) {
+function browserTools(t) {
+  const capture = require("../skill/scripts/film-capture-core.cjs");
+  try {
+    const chromePath = capture.resolveChrome();
+    capture.resolvePuppeteer(path.resolve(__dirname, ".."), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
+    return { chromePath, puppeteerModule: process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [path.resolve(__dirname, "..")] }) };
+  } catch (error) { if (error.code === "TOOL_MISSING") { t.skip(error.message); return null; } throw error; }
+}
+
+function visualFixture(t, missingPlan = false, mode = "normal") {
   const f = fixture(t);
   const toolkit = path.join(f.root, "toolkit");
   fs.cpSync(path.join(__dirname, "../skill"), toolkit, { recursive: true });
   f.bench.options.toolkitRoot = toolkit;
-  f.bench.options.spawnTask = ({ cwd, task, run }) => {
+  f.bench.options.spawnTask = ({ cwd, task, attempt, run }) => {
     const phases = ["outline", "depth"].map((id, i) => ({
       id, goal: i ? "只校准侧面厚度" : "只校准正面轮廓", depends_on: i ? ["outline"] : [],
-      inputs: ["reference.md"], outputs: [`results/${id}/index.html`], gates: [],
-      visual: { target: "outer-shell", property: i ? "geometry.depth" : "geometry.contour", references: [i ? "reference/side.png" : "reference/front.png"], scope: ["index.html"], guides: ["references/3d-spec.md"], checks: [`results/${id}/technical-check.json`], review: i === 1 }
+      inputs: ["reference.md", `${id}-probe.json`], outputs: [`results/${id}/index.html`], gates: [],
+      visual: { target: "outer-shell", property: i ? "geometry.depth" : "geometry.contour", references: [i ? "reference/side.png" : "reference/front.png"], scope: ["index.html"], guides: ["references/3d-spec.md"], checks: [`results/${id}/technical-check.json`], ...(mode === "report-only" ? {} : { verification: [{ kind: "interaction", probe: `${id}-probe.json`, target: `results/${id}/index.html`, check: `results/${id}/technical-check.json` }] }) }
     }));
     const plan = { schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: run.id, input_hash: "sha256:" + run.commonInputHash, mode: "clone", fidelity: "exact", phases };
+    const html = '<!doctype html><button id="target" style="position:absolute;left:20px;top:20px;width:80px;height:40px"' + (mode === "dead-page" ? "" : ' onclick="this.style.transform=\'translateX(20px)\'"') + `>target</button><!-- attempt ${attempt.id} -->`;
+    const probes = Object.fromEntries(phases.map(phase => [`${phase.id}-probe.json`, { schema: "design-pipeline.interaction-probe.v1", id: phase.id, url: `results/${phase.id}/index.html`, probes: [{ id: "click", target: "#target", input: { kind: "click", at: [50, 40] }, expect: { response: "stepped", settleWithinMs: 120 } }] }]));
     return spawn(process.execPath, ["-e", `const fs=require('node:fs');const id=${JSON.stringify(task.id)};
-      fs.writeFileSync(id==='reference'?'reference.md':'index.html',id==='reference'?'reference observations':'<html>'+id+'</html>');
-      if(id==='reference'&&!${JSON.stringify(missingPlan)})fs.writeFileSync('tasks-plan.json',JSON.stringify(${JSON.stringify(plan)}));
+      fs.writeFileSync(id==='reference'?'reference.md':'index.html',id==='reference'?'reference observations':${JSON.stringify(html)});
+      if(id==='reference'&&!${JSON.stringify(missingPlan)}) { fs.writeFileSync('tasks-plan.json',JSON.stringify(${JSON.stringify(plan)}));for(const [file,probe] of Object.entries(${JSON.stringify(probes)}))fs.writeFileSync(file,JSON.stringify(probe)); }
       console.log(JSON.stringify({type:'message_end',message:{role:'assistant',provider:'test',model:'actual',stopReason:'stop',content:[{type:'text',text:'saved current task'}]}}));`], { cwd, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
   };
   f.bench.options.capture = async ({ cwd }) => {
     for (const file of ["front.png", "side.png"]) fs.writeFileSync(path.join(cwd, file), "independent capture");
-    return { status: "passed", source: "controlled-test-adapter", files: ["front.png", "side.png"], checks: ["independent surface check"] };
+    return { status: "captured", source: "test-image-fixture", files: ["front.png", "side.png"], visualAcceptance: "not-evaluated" };
   };
   return f;
 }
 
 test("tool dispatch consumes product visual tasks rather than the shared seven macros", async t => {
+  const browser = browserTools(t); if (!browser) return;
   const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
+  Object.assign(bench.options, browser);
   await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-  assert.equal(run.status, "awaiting-review", run.notice);
+  assert.equal(run.status, "awaiting-review", runStateMessage(run));
   assert.deepEqual(run.tasks.map(task => task.id), ["reference", "outline", "depth"]);
   const outline = run.tasks[1].attempts.at(-1), depth = run.tasks[2].attempts.at(-1);
   assert.match(outline.prompt, /geometry.contour/);
@@ -220,7 +236,17 @@ test("tool dispatch consumes product visual tasks rather than the shared seven m
   }
   const state = JSON.parse(fs.readFileSync(path.join(bench.runtimeRoot, run.id, "state.json")));
   assert.equal(state.extensions.visualTasks.completed.outline.status, "ready");
-  assert.equal(state.extensions.visualTasks.completed.depth, undefined, "human review still required");
+  assert.equal(state.extensions.visualTasks.completed.depth.status, "ready", "actual native verification precedes human review");
+  assert.equal(state.extensions.visualTasks.completed.depth.review, undefined, "technical verification does not grant owner acceptance");
+  assert.equal(JSON.parse(fs.readFileSync(path.join(bench.runtimeRoot, run.id, "visual-plan.json"))).phases[1].visual.review, true, "derived owner review is bound before native dispatch");
+  for (const id of ["outline", "depth"]) {
+    const report = JSON.parse(fs.readFileSync(path.join(bench.runtimeRoot, run.id, `results/${id}/technical-check.json`)));
+    assert.equal(report.schema, "design-pipeline.interaction-result.v1");
+    assert.equal(report.status, "passed");
+    assert.ok(report.probes[0].samples.count >= 5, "the native verifier measured actual Chrome frames");
+    assert.equal(Object.hasOwn(report, "checks"), false, "image fixture labels cannot substitute for native measurements");
+    assert.equal(fs.existsSync(path.join(bench.runtimeRoot, run.id, `results/${id}/front.png`)), false, "only declared outputs are promoted");
+  }
   assert(bench.events(run.id).events.some(event => event.source === "design-pipeline-dispatcher" && event.tool === "next"));
   await bench.review(run.id, { taskId: "depth", attemptId: depth.id, artifactHash: depth.artifactHash, verdict: "reject", feedback: "厚度太大，只改厚度" });
   await until(() => run.tasks[2].attempts.length === 2 && run.status === "awaiting-review", run);
@@ -229,34 +255,40 @@ test("tool dispatch consumes product visual tasks rather than the shared seven m
   const repaired = run.tasks[2].attempts.at(-1);
   await bench.review(run.id, { taskId: "depth", attemptId: repaired.id, artifactHash: repaired.artifactHash, verdict: "accept" });
   await until(() => ["complete", "failed"].includes(run.status), run);
-  assert.equal(run.status, "complete", run.notice);
+  assert.equal(run.status, "complete", runStateMessage(run));
   const acceptedState = JSON.parse(fs.readFileSync(path.join(bench.runtimeRoot, run.id, "state.json")));
   assert.equal(acceptedState.extensions.visualTasks.completed.depth.review.verdict, "accept");
   assert.equal(acceptedState.extensions.visualTasks.completed.depth.review.valid, true);
 });
 
 test("tool reference without a task decomposition cannot silently start whole geometry", async t => {
+  const chrome = t.mock.method(require("../skill/scripts/film-capture-core.cjs"), "resolveChrome", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
   const { bench } = visualFixture(t, true), run = bench.createRun({ model: "test/actual", treatment: "tool" });
   await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
   assert.equal(run.status, "failed");
   assert.equal(run.tasks[0].attempts.at(-1).failureCode, "TASK_PLAN_MISSING");
   assert.equal(run.tasks.length, 1);
+  assert.equal(chrome.mock.callCount(), 0, "missing-plan rejection does not resolve Chrome");
 });
 
 test("tool method binding preserves a conflicting existing run input", async t => {
+  const chrome = t.mock.method(require("../skill/scripts/film-capture-core.cjs"), "resolveChrome", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
   const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
   const file = path.join(bench.runtimeRoot, run.id, "references/3d-spec.md");
   fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, "Existing different method input");
   await bench.start(run.id); await until(() => run.status === "failed", run);
   assert.equal(run.tasks[0].attempts.at(-1).failureCode, "GUIDE_INPUT_CONFLICT");
   assert.equal(fs.readFileSync(file, "utf8"), "Existing different method input");
+  assert.equal(chrome.mock.callCount(), 0, "guide-conflict rejection does not resolve Chrome");
 });
 
 test("native visual review recovers exact evidence without repeating completed work", async t => {
+  const browser = browserTools(t); if (!browser) return;
   for (const humanAccepted of [false, true]) {
     const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
+    Object.assign(bench.options, browser);
     await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-    assert.equal(run.status, "awaiting-review", run.notice);
+    assert.equal(run.status, "awaiting-review", runStateMessage(run));
     const depth = run.tasks[2].attempts.at(-1);
     const originalPipeline = bench.pipeline.bind(bench);
     if (humanAccepted) {
@@ -265,7 +297,7 @@ test("native visual review recovers exact evidence without repeating completed w
         return originalPipeline(current, command, args);
       };
       await assert.rejects(bench.review(run.id, { taskId: "depth", attemptId: depth.id, artifactHash: depth.artifactHash, verdict: "accept" }), /fixture interrupted/);
-    } else bench.pipeline(run, "decide", ["--plan", run.visualPlan, "--choice", "depth", "--verdict", "complete", "--artifact", depth.completionPath]);
+    }
     run.status = run.tasks[2].status = depth.status = "inconclusive";
     bench.save(run, "fixture-interrupted-projection", "native review pending; dispatcher projection interrupted");
     await bench.close();
@@ -274,11 +306,11 @@ test("native visual review recovers exact evidence without repeating completed w
     await restored.start(run.id); await until(() => ["complete", "failed", "awaiting-review"].includes(resumed.status), resumed);
     assert.equal(resumed.tasks[2].attempts.length, 1, "checkpoint recovery must not repeat model work");
     if (humanAccepted) {
-      assert.equal(resumed.status, "complete", resumed.notice);
+      assert.equal(resumed.status, "complete", runStateMessage(resumed));
       const state = JSON.parse(fs.readFileSync(path.join(restored.runtimeRoot, run.id, "state.json")));
       assert.equal(state.extensions.visualTasks.completed.depth.review.valid, true);
     } else {
-      assert.equal(resumed.status, "awaiting-review", resumed.notice);
+      assert.equal(resumed.status, "awaiting-review", runStateMessage(resumed));
       await restored.review(run.id, { taskId: "depth", attemptId: depth.id, artifactHash: depth.artifactHash, verdict: "reject", feedback: "只修厚度" });
       await until(() => resumed.tasks[2].attempts.length === 2 && resumed.status === "awaiting-review", resumed);
       assert.equal(resumed.tasks[1].attempts.length, 1);
@@ -288,12 +320,13 @@ test("native visual review recovers exact evidence without repeating completed w
 });
 
 test("owner decisions survive interruption after native commit without duplicate submission", async t => {
+  const browser = browserTools(t); if (!browser) return;
   for (const verdict of ["accept", "reject"]) {
     const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
+    Object.assign(bench.options, browser);
     await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-    assert.equal(run.status, "awaiting-review", run.notice);
+    assert.equal(run.status, "awaiting-review", runStateMessage(run));
     const attempt = run.tasks[2].attempts.at(-1);
-    if (verdict === "reject") bench.pipeline(run, "decide", ["--plan", run.visualPlan, "--choice", "depth", "--verdict", "complete", "--artifact", attempt.completionPath]);
     const review = { taskId: "depth", attemptId: attempt.id, artifactHash: attempt.artifactHash, verdict, feedback: "只改厚度" };
     const originalPipeline = bench.pipeline.bind(bench);
     bench.pipeline = (current, command, args) => {
@@ -307,7 +340,7 @@ test("owner decisions survive interruption after native commit without duplicate
     const resumed = restored.get(run.id);
     await restored.review(run.id, review);
     await until(() => verdict === "accept" ? ["complete", "failed"].includes(resumed.status) : resumed.tasks[2].attempts.length === 2 && resumed.status === "awaiting-review", resumed);
-    assert.equal(resumed.status, verdict === "accept" ? "complete" : "awaiting-review", resumed.notice);
+    assert.equal(resumed.status, verdict === "accept" ? "complete" : "awaiting-review", runStateMessage(resumed));
     assert.equal(resumed.tasks[2].attempts.length, verdict === "accept" ? 1 : 2);
     assert.equal(resumed.tasks[1].attempts.length, 1);
     const duplicate = restored.events(run.id).events.filter(event => event.tool === "decide" && event.args.includes(verdict));
@@ -316,9 +349,11 @@ test("owner decisions survive interruption after native commit without duplicate
 });
 
 test("native technical progress recovers a dispatcher interruption without redoing a completed unit", async t => {
+  const browser = browserTools(t); if (!browser) return;
   const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
+  Object.assign(bench.options, browser);
   await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
-  assert.equal(run.status, "awaiting-review", run.notice);
+  assert.equal(run.status, "awaiting-review", runStateMessage(run));
   const depth = run.tasks[2].attempts.at(-1);
   run.tasks[1].status = run.tasks[1].attempts.at(-1).status = "inconclusive";
   bench.save(run, "fixture-interrupted-projection", "native outline complete, dispatcher projection not yet updated");
@@ -327,7 +362,87 @@ test("native technical progress recovers a dispatcher interruption without redoi
   const resumed = restored.get(run.id);
   await restored.review(run.id, { taskId: "depth", attemptId: depth.id, artifactHash: depth.artifactHash, verdict: "reject", feedback: "只改厚度" });
   await until(() => ["failed", "awaiting-review"].includes(resumed.status), resumed);
-  assert.equal(resumed.status, "awaiting-review", resumed.notice);
+  assert.equal(resumed.status, "awaiting-review", runStateMessage(resumed));
   assert.equal(resumed.tasks[1].attempts.length, 1);
   assert.equal(resumed.tasks[1].status, "completed");
+});
+
+test("report-only product visual plans remain readable but cannot enter review", async t => {
+  const chrome = t.mock.method(require("../skill/scripts/film-capture-core.cjs"), "resolveChrome", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
+  const { bench } = visualFixture(t, false, "report-only"), run = bench.createRun({ model: "test/actual", treatment: "tool" });
+  await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
+  assert.equal(run.status, "failed");
+  assert.equal(run.tasks[0].attempts.at(-1).failureCode, "TASK_BLOCKED");
+  assert.match(run.tasks[0].attempts.at(-1).failure, /verification.*binding/);
+  assert.equal(run.tasks[1].attempts.length, 0);
+  const state = JSON.parse(fs.readFileSync(path.join(bench.runtimeRoot, run.id, "state.json")));
+  assert.deepEqual(state.extensions.visualTasks.completed, {});
+  assert.equal(chrome.mock.callCount(), 0, "report-only rejection does not resolve Chrome");
+});
+
+test("a bad local page cannot enter native review from a successful image fixture", async t => {
+  const browser = browserTools(t); if (!browser) return;
+  const { bench } = visualFixture(t, false, "dead-page"), run = bench.createRun({ model: "test/actual", treatment: "tool" });
+  Object.assign(bench.options, browser);
+  await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
+  assert.equal(run.status, "failed");
+  assert.equal(run.tasks[1].attempts.at(-1).failureCode, "TASK_EVIDENCE_FAILED");
+  assert.equal(run.tasks[2].attempts.length, 0);
+  const root = path.join(bench.runtimeRoot, run.id), report = JSON.parse(fs.readFileSync(path.join(root, "results/outline/technical-check.json")));
+  assert.equal(report.status, "failed");
+  assert.ok(report.findings.some(finding => finding.code === "dead-interaction"));
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root, "state.json"))).extensions.visualTasks.completed.outline, undefined);
+});
+
+test("native output promotion rejects linked destinations before copying any output", t => {
+  const { bench } = fixture(t), run = bench.createRun({ model: "test/actual", treatment: "direct" });
+  const root = bench.runRoot(run), cwd = path.join(root, "attempts", "promotion-proof", "work");
+  fs.mkdirSync(cwd, { recursive: true }); fs.writeFileSync(path.join(cwd, "index.html"), "new page"); fs.writeFileSync(path.join(cwd, "linked.html"), "new linked page");
+  for (const [name, kind, protectedName] of [["state", "hardlink", "state.json"], ["probe", "hardlink", "probe.json"], ["guide", "symlink", "references/guide.md"], ["parent", "parent", "references/guide.md"]]) {
+    const protectedFile = path.join(root, protectedName); fs.mkdirSync(path.dirname(protectedFile), { recursive: true });
+    if (!fs.existsSync(protectedFile)) fs.writeFileSync(protectedFile, "fixed " + name);
+    const original = fs.readFileSync(protectedFile), task = { id: name }, prefix = `results/${name}/`, first = path.join(root, prefix, "index.html");
+    fs.mkdirSync(path.dirname(first), { recursive: true }); fs.writeFileSync(first, "old first output");
+    const alias = path.join(root, prefix, "linked.html");
+    if (kind === "hardlink") fs.linkSync(protectedFile, alias);
+    else if (kind === "symlink") fs.symlinkSync(protectedFile, alias, "file");
+    else { fs.symlinkSync(path.join(root, "references"), path.join(root, prefix, "alias"), "junction"); }
+    const outputs = [prefix + "index.html", kind === "parent" ? prefix + "alias/guide.md" : prefix + "linked.html"];
+    if (kind === "parent") { fs.mkdirSync(path.join(cwd, "alias")); fs.writeFileSync(path.join(cwd, "alias/guide.md"), "new guide"); }
+    const attempt = { cwd, pipelineAction: { task: { outputs }, metadataPath: `${name}-completion.json` } };
+    let completed = false; bench.completeVisual = () => { completed = true; };
+    assert.throws(() => { bench.sealVisual(run, task, attempt, {}); bench.completeVisual(run, task, attempt); }, { code: "OUTPUT_COLLISION" });
+    assert.deepEqual(fs.readFileSync(protectedFile), original, name + " input/control bytes are preserved");
+    assert.equal(fs.readFileSync(first, "utf8"), "old first output", "all destinations are checked before the first copy");
+    assert.equal(completed, false, "colliding outputs cannot reach native completion");
+  }
+});
+
+test("fresh native completion cannot transfer old visual acceptance to rewritten metadata", async t => {
+  const browser = browserTools(t); if (!browser) return;
+  const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
+  Object.assign(bench.options, browser);
+  await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
+  assert.equal(run.status, "awaiting-review", runStateMessage(run));
+  const attempt = run.tasks[2].attempts.at(-1), root = bench.runRoot(run), previousHash = attempt.artifactHash;
+  assert(attempt.artifacts.some(artifact => artifact.path === attempt.completionPath), "the first fixed metadata file is bound into the existing artifact manifest");
+  fs.appendFileSync(path.join(root, "results/depth/index.html"), "<!-- another observed output version -->");
+  assert.equal(bench.pipeline(run, "next", ["--plan", run.visualPlan]).task.id, "depth");
+  fs.appendFileSync(path.join(root, "results/depth/index.html"), "<!-- actual repair after dispatch -->");
+  const completed = bench.pipeline(run, "decide", ["--plan", run.visualPlan, "--choice", "depth", "--verdict", "complete", "--artifact", attempt.completionPath]);
+  assert.equal(completed.status, "recorded", "the public native operation actually remeasures the new page");
+  await assert.rejects(bench.review(run.id, { taskId: "depth", attemptId: attempt.id, artifactHash: previousHash, verdict: "accept" }), { code: "ARTIFACT_CHANGED" });
+  assert.equal(attempt.review, null, "failed version validation never persists a valid owner decision");
+  const native = JSON.parse(fs.readFileSync(path.join(root, "state.json"))).extensions.visualTasks.completed.depth;
+  assert.equal(native.status, "ready"); assert.equal(native.review, undefined);
+  assert.equal(bench.events(run.id).events.some(event => event.tool === "decide" && event.args.includes("accept")), false);
+});
+
+test("failed native assertion reports its attempt when no run notice exists", () => {
+  const run = { status: "failed", tasks: [
+    { id: "outline", status: "failed", attempts: [{ status: "failed", failureCode: "TASK_BLOCKED", failure: "fixture baseline failure" }] },
+    { id: "depth", status: "pending", attempts: [] },
+  ] };
+  assert.throws(() => assert.equal(run.status, "awaiting-review", runStateMessage(run)), error =>
+    error.code === "ERR_ASSERTION" && error.message.includes("TASK_BLOCKED") && error.message.includes("fixture baseline failure"));
 });

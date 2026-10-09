@@ -1,0 +1,15 @@
+{
+  "schema": "design-pipeline.film-storyboard.v1",
+  "id": "design-pipeline-real-switch-loop-4s",
+  "durationSec": 4,
+  "fps": 30,
+  "grammar": "product-demonstration",
+  "benefit": "The real notification control exposes an immediate visible state change and returns to its initial state.",
+  "proofAction": "The actual source switch toggles on to off and back to on while a finite camera cycle returns to its initial transform.",
+  "reference": "reference.md (real source interaction capture; no external video observation)",
+  "endState": "loop",
+  "sound": { "mode": "silent", "reason": "A deliberately silent loop proof, with no music generation or audio listening claim." },
+  "beats": [
+    { "id": "switch-cycle", "startSec": 0, "endSec": 4, "role": "action", "subject": "the real notification switch", "productAction": "Toggle the real notification preference off, then back on.", "transformation": { "kind": "state-change", "from": "notifications on, camera at scale 1", "to": "notifications on after a complete off/on cycle, camera at scale 1" }, "handoff": "open", "motion": ["native-toggle-state-change", "camera-return"], "choreography": "ui-demo", "holdSec": 0.5, "note": "Finite timeline, no infinite GSAP repeat. The upstream seamless-orbit method contributes camera-return and seam checking; flat UI uses a 2D scale return instead of inventing 3D depth." }
+  ]
+}

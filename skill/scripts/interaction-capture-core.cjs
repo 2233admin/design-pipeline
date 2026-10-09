@@ -7,7 +7,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { pathToFileURL } = require("node:url");
+const { fileURLToPath, pathToFileURL } = require("node:url");
 const { fail } = require("./contract-utils.cjs");
 const { resolveChrome, resolvePuppeteer } = require("./film-capture-core.cjs");
 
@@ -119,21 +119,21 @@ function plannedInputMs(input) {
   return CLICK_HOLD_MS;
 }
 
-// 60 steps per second for the pointer. The wheel is paced by the probe's own intervalMs, which is
-// the field that exists to say how fast the wheel turns. Positions are computed from elapsed time
-// rather than step index, so a slow round trip drops a step instead of stretching the gesture, and
-// the last move always lands exactly on the endpoint.
+// 60 intermediate positions per planned second for the pointer. Keep every native move: skipping
+// to the elapsed-time position after a delayed browser round trip creates an artificial jump.
+// Pace each step after the previous move actually finishes, so a delayed driver cannot burst
+// through overdue positions. A slow driver may take longer, as the wheel already does, and the
+// recorder retains that real input duration and its safety bound.
 async function driveInput(page, probe) {
   const input = probe.input;
   if (input.kind === "pointer-sweep") {
     const moveTo = (ratio) => page.mouse.move(input.from[0] + (input.to[0] - input.from[0]) * ratio, input.from[1] + (input.to[1] - input.from[1]) * ratio);
-    const startedAt = Date.now();
+    const steps = Math.ceil(input.durationMs / STEP_MS);
     await moveTo(0);
-    while (Date.now() - startedAt < input.durationMs) {
-      await sleep(Math.min(STEP_MS, input.durationMs - (Date.now() - startedAt)));
-      await moveTo(Math.min(1, (Date.now() - startedAt) / input.durationMs));
+    for (let step = 1; step <= steps; step += 1) {
+      await sleep(input.durationMs / steps);
+      await moveTo(step / steps);
     }
-    await moveTo(1);
     return;
   }
   if (input.kind === "wheel") {
@@ -153,16 +153,77 @@ async function driveInput(page, probe) {
   await page.mouse.up();
 }
 
+// Runs in the real page. Resolve one component node per declaration; an unrelated or absent
+// node is not the boolean false or missing attribute a caller may have expected.
+function observeJourney(wrapperSelector, assertions) {
+  const wrappers = document.querySelectorAll(wrapperSelector);
+  if (wrappers.length !== 1) return { wrapperFound: false, observations: [] };
+  const wrapper = wrappers[0];
+  const observations = assertions.map(assertion => {
+    const matches = document.querySelectorAll(assertion.selector);
+    const element = matches.length === 1 && wrapper.contains(matches[0]) ? matches[0] : null;
+    const identity = { selector: assertion.selector, kind: assertion.kind, ...(assertion.kind === "attribute" ? { name: assertion.name } : {}) };
+    if (!element) return { ...identity, found: false, actual: null };
+    let actual;
+    if (assertion.kind === "text") actual = (element.textContent || "").trim();
+    else if (assertion.kind === "attribute") actual = element.getAttribute(assertion.name);
+    else if (assertion.kind === "focused") actual = document.activeElement === element;
+    else {
+      actual = [...element.getClientRects()].some(box => box.width > 0 && box.height > 0);
+      for (let current = element; actual && current; current = current.parentElement) {
+        const style = getComputedStyle(current);
+        if (style.display === "none" || ["hidden", "collapse"].includes(style.visibility) || Number(style.opacity) === 0) actual = false;
+      }
+    }
+    return { ...identity, found: true, actual };
+  });
+  return { wrapperFound: true, observations };
+}
+
+async function recordJourney(page, probe, recordedRequests, mark, assertLocalTarget) {
+  const steps = [];
+  for (const step of probe.steps) {
+    assertLocalTarget();
+    if (step.input?.kind === "click") {
+      const contained = await page.evaluate((wrapperSelector, selector) => {
+        const wrappers = document.querySelectorAll(wrapperSelector), elements = document.querySelectorAll(selector);
+        return wrappers.length === 1 && elements.length === 1 && wrappers[0].contains(elements[0]);
+      }, probe.target, step.input.selector);
+      assertLocalTarget();
+      if (!contained) fail(SCOPE, `probe "${probe.id}" step "${step.id}": click selector ${step.input.selector} must name one element inside ${probe.target}`);
+      await page.click(step.input.selector);
+    } else if (step.input?.kind === "key") await page.keyboard.press(step.input.key);
+    assertLocalTarget();
+    const startedAt = Date.now();
+    await sleep(step.timeoutMs);
+    assertLocalTarget();
+    const observed = await page.evaluate(observeJourney, probe.target, step.assertions);
+    assertLocalTarget();
+    if (!observed.wrapperFound) fail(SCOPE, `probe "${probe.id}" step "${step.id}": stable wrapper ${probe.target} is missing or ambiguous`);
+    steps.push({ id: step.id, elapsedMs: Date.now() - startedAt, observations: observed.observations });
+  }
+  return { id: probe.id, steps, requests: recordedRequests.slice(mark) };
+}
+
 async function recordProbe(page, probe, url, recordedRequests, timeoutMs) {
   const mark = recordedRequests.length;
   const pageErrors = [];
   const onError = (error) => pageErrors.push(error.message);
+  const assertLocalTarget = () => {
+    if (!url.startsWith("file:")) return;
+    const actualUrl = page.url();
+    if (!actualUrl.startsWith("file:") || path.relative(fs.realpathSync(fileURLToPath(url)), fs.realpathSync(fileURLToPath(actualUrl))) !== "") {
+      fail(SCOPE, `probe "${probe.id}": actual local page ${actualUrl} differs from the requested target ${url}. Fix: remove the redirect or bind the probe to the page that is actually measured`, { code: "INTERACTION_TARGET_MISMATCH" });
+    }
+  };
   page.on("pageerror", onError);
   try {
     // A reload per probe is the reset: fresh DOM, fresh listeners, and its own load requests.
     await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
+    assertLocalTarget();
     const present = await page.evaluate((css) => Boolean(document.querySelector(css)), probe.target);
     if (!present) fail(SCOPE, `probe "${probe.id}": no element matches ${probe.target} on ${url}. Fix: point "target" at a selector the page has rendered by load, or probe a wrapper that is always present`);
+    if (probe.steps) return await recordJourney(page, probe, recordedRequests, mark, assertLocalTarget);
 
     // Normalization has one owner (validateProbeFile); a missing field here is a caller bug.
     const settleWithinMs = probe.expect && typeof probe.expect.settleWithinMs === "number" ? probe.expect.settleWithinMs : null;
@@ -198,6 +259,7 @@ async function recordProbe(page, probe, url, recordedRequests, timeoutMs) {
     // A short recording is never read as "it settled": the page stopped animating before the
     // deadline, so the measurement is missing rather than clean.
     if (!state.done) fail(SCOPE, `probe "${probe.id}": the recording was truncated after ${state.samples.length} frame(s) — ${url} stopped producing animation frames before ${inputMs + settleWithinMs}ms of input and settle had elapsed${pageErrors.length ? ` (page errors: ${pageErrors.join(" | ")})` : ""}. Fix: check the page loads and animates without a script error, or lower expect.settleWithinMs to the time the motion actually takes`);
+    assertLocalTarget();
     return { id: probe.id, samples: state.samples, requests: recordedRequests.slice(mark) };
   } finally {
     page.off("pageerror", onError);
@@ -232,10 +294,10 @@ async function captureInteraction(probeFile, options = {}) {
     page.on("request", (request) => { if (isNetworkUrl(request.url())) requests.push(request.url()); });
     const probes = [];
     for (const probe of doc.probes) probes.push(await recordProbe(page, probe, url, requests, options.timeoutMs || 30000));
-    return { schema: CAPTURE_SCHEMA, url, pageOrigin, probes };
+    return { schema: CAPTURE_SCHEMA, url: url.startsWith("file:") ? page.url() : url, pageOrigin, probes };
   } finally {
     await browser.close();
   }
 }
 
-module.exports = { captureInteraction };
+module.exports = { captureInteraction, resolvePageUrl };

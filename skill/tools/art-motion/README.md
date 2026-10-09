@@ -1,7 +1,7 @@
 # Art Motion tools
 
 Use one operation for the actual drawing, image, typography, layout, interface or animation
-problem. The complete Huashu capability family is available locally; narration, a mascot, a
+problem. The reviewed drawing/motion tools and media method guides are available locally; narration, a mascot, a
 genre and a soundtrack are optional. Read this guide, then the one method or recipe needed.
 
 | Need | Callable entry |
@@ -12,15 +12,20 @@ genre and a soundtrack are optional. Read this guide, then the one method or rec
 | Material-aware transitions | 50 `transition` operations; enumerate `runtime.transitionIds` |
 | Continuous travel, pauses, style seams and occlusion | [Long-scroll helper](scroll.md) |
 | Matte preparation, crop/split/registration, font subsets, region diagnostics | [Asset tools](assets-audio.md) |
+| Supplied images or authorized generation with a currently available host tool | [Image workflow](assets-audio.md#choose-and-check-image-assets) |
+| Offline duration/level processing of a supplied voice track | [Voice processing](assets-audio.md#process-a-supplied-voice-track) |
 | Deterministic synthesized instruments/effects and score alignment | [Audio tools](assets-audio.md#synthesize-a-separate-cue-layer), existing [film score](../../references/film-score.md) |
 | Reference breakdown, shot/camera/material observations, sound | [Reference analysis](#reference-analysis), [methods](methods.md) |
 | Exact-time stills, exact-frame video and transparency | [Render](#render-a-style-or-clip) |
 | Frame comparison, spatial motion maps, acceptance | [Visual diagnostics](../visual-diagnostics/README.md), existing film/composition/audio checks |
 
-The 12 adapted production methods cover first-frame construction choices, reference analysis,
+The 13 numbered source methods cover first-frame construction choices, reference analysis,
 material-aware motion, character production, music/timing, optional speech-driven work and
 review/experience reuse. The [complete source index](../../references/huashu-art-motion.md)
-records provenance and limitations. Source instructions do not replace project policy.
+records provenance and limitations. The original voice providers/configuration and image
+plan/receipt system are source reference, not maintained service integrations. Our image route
+uses actual host tools and existing asset evidence; the maintained voice entry processes local
+audio only. Source instructions do not replace project policy.
 
 ## Try an editable study
 

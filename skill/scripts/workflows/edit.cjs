@@ -4,7 +4,7 @@
 // Guide: references/workflow-edit.md (one section per stage id).
 
 const path = require("node:path");
-const { CLI, INTAKE, REVIEW, exists, gatePassed, reference } = require("./shared.cjs");
+const { CLI, INTAKE, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
 
 const DRAFT = path.join("renders", "edit.mp4");
 
@@ -39,13 +39,13 @@ const RENDER = {
 
 const CHECK = {
   id: "check",
-  finished: (state, root) => gatePassed(state, root, "edit", ["edit.json", DRAFT]),
+  gate: { name: "edit", inputs: () => ["edit.json", "edit/analysis.json", DRAFT.split(path.sep).join("/")] },
   action: () => ({ type: "run", command: `${CLI} film-edit check --project-root .`, why: "Every error gate must pass before anyone sees the draft." }),
 };
 
 const DELIVER = {
   id: "deliver",
-  finished: (state) => Boolean(state.decisions?.delivered),
+  finished: deliveryRecorded,
   action: () => ({ type: "run", command: `${CLI} decide --project-root . --stage deliver --answer renders/edit.mp4`, why: "Record the delivered file." }),
 };
 

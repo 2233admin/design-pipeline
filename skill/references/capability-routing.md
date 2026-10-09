@@ -7,6 +7,13 @@ bundled capability.
 
 ## Routing Order
 
+For explicit product films, feature loops, stings or film studies, the selected film knowledge
+door can use [film-methods.md](film-methods.md) for Cinetic concepts/techniques and Product Film's
+actual brand/component discovery. `film methods` is supporting preparation inside that route;
+ordinary UI/CSS stays on its component/runtime route and acquires no storyboard or soundtrack.
+For reusable case structures, search the [Prompt Motion library](prompt-motion/README.md) with
+`film templates`; adopt selected inputs and rules through the existing reference flow.
+
 1. Classify the brief with `designer-pipeline route --query "<brief>" --json`. The job registry
    `references/job-registry.json` is the Stage 0 extension point. A new capability is a job, not
    another mandatory catalog search.
@@ -14,7 +21,7 @@ bundled capability.
    Secondaries stay reference-only.
 3. Preserve the target repo's existing framework, design system, animation runtime, and delivery surface.
 4. Identify the capability: evidence, direction, system, assets, motion, runtime animation, framework integration, or QA.
-5. Select the smallest companion set that covers the capability.
+5. Select the matching built-in method first, then the smallest companion set for any remaining detail.
 6. Do not add two overlapping runtime libraries only to gain skills.
 7. Record missing or stale companion coverage in `qa.md` and continue with official documentation plus the built-in pipeline gate.
 
@@ -30,19 +37,23 @@ The table below is the catalog map the dispatcher points at, not a list of requi
 
 | Capability | Primary routes | Use when |
 | --- | --- | --- |
+| Offline design-guidance optimization | Built-in [GEPA supporting tool](gepa.md) and pinned official skill | Explicit improvement of one instruction with frozen cases and a real evaluator; independent search exports proposals for the existing maintainer workflow |
 | Full product-design capability surface | `references/impeccable-product-design.json`, `impeccable`, design-synthesis module, interface discipline, design-system routes | Any product-design request; use the command map to select the stage, artifact, and evidence rather than treating Impeccable as a skin |
 | UX research method selection | `references/ux-research-methods.md` | A design decision needs the right attitudinal/behavioral, qualitative/quantitative, context, or product-phase method; match claims to evidence and limitations |
 | AI interaction and trust patterns | `references/ai-interaction-patterns.md` | An AI surface needs input, wayfinding, disclosure, caveats, consent, provenance, control, recovery, accessibility, or reduced-motion decisions |
 | Requirements to reusable product design | design-synthesis module, `grill-with-docs`, visual direction/design-system skills, Wayfinder host when oversized | The project lacks a suitable DESIGN.md or needs a new product-specific design system |
 | Interface quality and change-scoped UI review | Built-in `interface-discipline.md`: `better-interface`, six domain skills, and `interface-review` | Any product UI, flow, shared component/token change, or interface review; full coverage is the default and quick coverage is limited to narrow repairs |
+| CSS implementation and review | Built-in `good-css.md`: complete practice library, eight category references and offline live specimens | Writing/editing/reviewing styles in any stack; preserve project tokens and semantics, verify newer features and usable fallbacks |
 | Design technique and workflow discovery | Built-in `mengto-skills.md` plus `mengto search` over the complete pinned source tree; `kage-scroll-world.md` for the Kage clean-room delta | A visual, motion, reference, WebGL, asset, or game task can reuse a specific procedural playbook before inventing another workflow |
 | React/Tailwind component-pattern discovery | Built-in `shadcnio-react-components.md` plus `shadcnio search` over the pinned README index | AI-chat, button, hook, or text behavior needs a reference candidate; linked page implementation remains `review` until license and dependency evidence is recorded |
 | Product-design routing and design-system intelligence | Built-in `prism-system.md` plus `prism route/search` over all 107 pinned skills | Design DNA, prototype, UI craft, new experience, handoff, corpus distillation, token governance, Figma, React, or design QA needs a coherent local sequence without adding another runtime |
 | Holographic sticker rendering | Built-in `holosticker.md` plus `holosticker inspect` over the pinned implementation | Explicit holofoil, die-cut, pointer-tilt, peel, transparent export, animation export, GLB, or reusable React sticker work needs a real Three.js source slice |
-| Live-page evidence and reconstruction | website-cloning module, `image-to-code`, Browser/Builder/Evidence ports | Rebuilding or adapting an authorized live reference |
-| Visual direction and taste | `impeccable`, `frontend-design`, `design-taste-frontend`, `ui-ux-pro-max`, `emil-design-eng` | Choosing surface mode, composition, hierarchy, density, typography, interaction posture, and bounded polish |
-| Design system and brand | `design-system`, `brand`, `brandkit`, `ui-styling` | Defining reusable tokens, components, state variants, and brand rules |
-| Visual assets | `imagegen-frontend-web`, `imagegen-frontend-mobile`, image generation tools | A website, portfolio, campaign, or product surface needs real bitmap assets or visual references |
+| Live-page evidence and reconstruction | Website-cloning module, built-in [Taste image-to-code](taste-skill.md#image-to-code), Browser/Builder/Evidence ports | Rebuilding or adapting an authorized supplied image or live reference; preserve its authority and verify the actual implementation |
+| Visual direction and taste | Built-in [Taste suite](taste-skill.md), interface discipline; `impeccable`, `frontend-design`, `ui-ux-pro-max`, `emil-design-eng` when installed | New websites, existing-project redesign, composition, hierarchy, density, typography and selected style; read the matched complete source |
+| Existing-project design upgrade | Built-in [redesign method](taste-skill.md#redesign-existing-projects) and interface-review | Audit current brand, IA, behavior and stack before targeted visual fixes; compare before/after without silently changing product contracts |
+| Design system and brand | Design-synthesis module, built-in [Stitch method](taste-skill.md#stitch-design-taste) and [brandkit](taste-skill.md#brandkit); `design-system`, `brand`, `ui-styling` when available | Define product foundations/tokens separately from image-only brand concepts; do not copy the upstream DESIGN.md example over the user's foundation |
+| Visual assets | Built-in [web concept images](taste-skill.md#imagegen-frontend-web), [mobile concept images](taste-skill.md#imagegen-frontend-mobile), [brand boards](taste-skill.md#brandkit), available image provider | Image-only concept deliverables and real visual assets; provider availability stays explicit, existing user images take priority |
+| Complete output | Built-in [full-output-enforcement](taste-skill.md#full-output-enforcement) | Several requested files or artifacts must be delivered completely within the existing task scope |
 | Motion language and audit | `design-motion-principles`, `animation-vocabulary`, `review-animations`, `apple-design`, built-in `iart-motion-skills.md` plus `iart route` | Writing `motion.md`, defining timing/easing, or reviewing implemented motion |
 | Animation opportunity and review | `references/animation-opportunity-and-review.md` plus existing `MOTION.md`, motion primitives, and `motion.md` | Screening non-trivial motion before runtime selection, naming vocabulary/curve, then reviewing the rendered surface with evidence |
 | Runtime animation | CSS, `animejs`, GSAP skill set, React View Transitions, automatic iart web-animation/WebGL playbooks | Implementing DOM/SVG choreography with the smallest fitting runtime |

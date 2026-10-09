@@ -1,0 +1,7 @@
+refs/
+node_modules/
+dist/
+.vercel/
+.impeccable/
+research/
+.DS_Store

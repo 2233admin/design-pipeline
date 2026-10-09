@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline-companions.v1",
-  "updatedAt": "2026-10-07",
+  "updatedAt": "2026-10-08",
   "groups": [
     {
       "name": "Core pipeline",
@@ -14,15 +14,13 @@
       "skills": [
         "impeccable",
         "frontend-design",
-        "design-taste-frontend",
         "ui-ux-pro-max",
         "web-design-guidelines",
         "emil-design-eng"
       ],
-      "fallback": "Use the built-in visual, UX, accessibility, and motion gates manually.",
+      "fallback": "Use references/taste-skill.md and the built-in visual, UX, accessibility, and motion checks.",
       "install": [
         "Install Impeccable from: https://github.com/pbakaus/impeccable",
-        "Install companion skills from: https://github.com/Leonxlnx/taste-skill",
         "Install UI/UX Pro Max from: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
         "Install Vercel skills from: https://github.com/vercel-labs/agent-skills"
       ]
@@ -129,7 +127,7 @@
     {
       "name": "Matt Pocock development",
       "level": "optional",
-      "skills": ["codebase-design", "grill-with-docs", "implement", "matt-tdd", "matt-code-review"],
+      "skills": ["codebase-design", "grill-with-docs", "implement", "tdd", "code-review"],
       "fallback": "Use the repo's normal planning, implementation, test, and review process.",
       "install": ["Install Matt Pocock skills from: https://github.com/mattpocock/skills"]
     },
@@ -289,28 +287,29 @@
     {
       "id": "visual-direction-review",
       "name": "Visual direction and anti-template review",
-      "skills": ["frontend-design", "design-taste-frontend"],
+      "skill": "design-pipeline",
       "level": "enhancement",
-      "source": "installed companion skill contracts",
+      "source": "https://github.com/Leonxlnx/taste-skill/tree/b482f7a970abb98c4108d4a9f761e458c64cefc8",
       "sourceMeta": {
-        "id": "visual-direction-skill-contracts",
-        "kind": "installed-skill",
-        "url": "https://github.com/Leonxlnx/taste-skill",
+        "id": "taste-skill",
+        "kind": "github",
+        "url": "https://github.com/Leonxlnx/taste-skill/tree/b482f7a970abb98c4108d4a9f761e458c64cefc8",
+        "reviewedRevision": "b482f7a970abb98c4108d4a9f761e458c64cefc8",
+        "reviewedContentHash": "5c05edf236140ec2152a02c95f079911ce4636dd1b15089ad9292be9d0b5a40a",
+        "contentHashScope": "complete Git tree: sorted POSIX path, NUL, SHA-256 blob hash, newline",
         "reviewedMarkers": [
-          "subject-grounding",
-          "iterative-critique",
-          "anti-default",
-          "dependency-verification"
+          "built-in-taste-suite",
+          "built-in-guide-routed"
         ],
-        "reviewedAt": "2026-07-19T00:00:00.000Z",
-        "freshnessDays": 30
+        "reviewedAt": "2026-10-08T00:00:00.000Z",
+        "freshnessDays": 365,
+        "license": "MIT",
+        "useBoundary": "complete built-in source and task-selected maintained adaptation; no ambient Taste install, upstream script execution or bundled image model"
       },
-      "fallback": "Use the visual and scorecard gates in qa.md.",
+      "fallback": "Use references/taste-skill.md and its complete packaged sources within existing interface, reference, motion and QA checks; restore a missing core package resource before claiming built-in availability.",
       "requirements": [
-        {"id": "subject-grounding", "skill": "frontend-design", "patterns": [{"source": "Ground it in the subject", "flags": "i"}]},
-        {"id": "iterative-critique", "skill": "frontend-design", "patterns": [{"source": "critique, build, critique again", "flags": "i"}]},
-        {"id": "anti-default", "skill": "design-taste-frontend", "patterns": [{"source": "Anti-Default Discipline", "flags": "i"}]},
-        {"id": "dependency-verification", "skill": "design-taste-frontend", "patterns": [{"source": "Dependency Verification", "flags": "i"}]}
+        {"id": "built-in-taste-suite", "skill": "design-pipeline", "patterns": [{"source": "Built-in Taste suite"}]},
+        {"id": "built-in-guide-routed", "skill": "design-pipeline", "patterns": [{"source": "references/taste-skill\\.md"}]}
       ]
     },
     {
@@ -552,6 +551,29 @@
         {"id": "issue-spec", "skill": "gstack-spec", "patterns": [{"source": "GitHub issue", "flags": "i"}]},
         {"id": "code-review", "skill": "gstack-review", "patterns": [{"source": "review", "flags": "i"}]},
         {"id": "pull-request-ship", "skill": "gstack-ship", "patterns": [{"source": "create (?:a )?PR", "flags": "i"}, {"source": "pull request", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "good-css-built-in",
+      "name": "Built-in good-css implementation reference",
+      "skill": "design-pipeline",
+      "level": "enhancement",
+      "source": "https://github.com/vojtaholik/good-css/tree/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
+      "sourceMeta": {
+        "id": "good-css",
+        "kind": "github",
+        "url": "https://github.com/vojtaholik/good-css/tree/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
+        "reviewedRevision": "6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
+        "reviewedContentHash": "fe50d90bf5b9bcbd30d9696886f8f1c67fb3d3cfadc4a4a564f321adc7929a08",
+        "contentHashScope": "complete Git tree: sorted POSIX path, NUL, SHA-256 blob hash, newline",
+        "reviewedAt": "2026-10-08T00:00:00.000Z",
+        "freshnessDays": 365,
+        "license": "MIT; bundled Inter and Geist Mono fonts SIL-OFL-1.1",
+        "useBoundary": "built-in source reference and maintained local specimen adaptation; no upstream install or deployment"
+      },
+      "fallback": "Use references/good-css.md, its bundled original entries and tools/good-css/ offline studies within existing interface and motion checks.",
+      "requirements": [
+        {"id": "built-in-guide-routed", "skill": "design-pipeline", "patterns": [{"source": "references/good-css\\.md"}]}
       ]
     }
   ],

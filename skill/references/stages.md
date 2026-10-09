@@ -213,11 +213,39 @@ The browser runner is an evidence port, not a source of authority. For dynamic w
 
 Native implementation subtasks use the existing
 `next --change-root <change> --plan <tasks-plan>` and
-`decide --change-root <change> --choice <task-id> --verdict complete --artifact <metadata.json>`.
+`decide --change-root <change> --choice <task-id> --verdict complete --artifact <task-id>-completion.json`.
+Use the metadata path returned by `next`; completion runs the bound verifier and creates that file.
 Missing decomposition returns a bounded task; valid decomposition returns one observed property.
 These paths preserve native state/event transactions and existing artifact.v1 lineage; failed or
 stale evidence does not advance. Legacy project-root `next`/`decide` remain deliverable-level
 actions and do not themselves execute the native subtask plan.
+
+Project-root film/edit/web checks bind the actual checked file bytes in the existing workflow
+state. Missing or changed inputs, including content changes with unchanged timestamps, reopen
+their check. Timestamp-only legacy passes remain readable but must be rerun. Review uses the
+latest owner verdict and its checked-input snapshot; changing a draft cannot reuse an old accept.
+Default web progress requires a capture of local `index.html`; a passed remote or different-page
+probe remains a valid measurement but does not complete that local stage. Point the workflow
+probe at its actual `index.html` and rerun.
+`decide --stage deliver` refuses unfinished prerequisites. Film/edit delivery names an existing
+contained file, and standard delivery binds that file and the current check snapshot. A changed
+delivery returns to its delivery action; changed checked inputs return to checks and review first.
+Quick workflows may record delivery after their applicable stages finish. UI's existing work-stage
+declaration stays available and reports Visual Acceptance as unevaluated. For actual surface
+verification and retained proof, follow [the QA recipe](qa-checklist.md#run-verification).
+
+A pending verification action also returns `verification`: `gate`, current `status`, the last
+`recordedStatus`, and `findings` with affected `path` and recovery `fix` when applicable. A recorded
+pass can now be `stale`; its prior findings appear separately as `previousFindings`. Failed checks
+retain their actual verifier findings, blocked-step causes and available recovery instructions. These are recovery clues,
+not new checks or acceptance. Read them before repeating a command with unchanged inputs;
+`next` does not write the state or repair inputs on its own. Legacy records without repair hints
+still return the existing verification command.
+
+Shared film/edit/web review `show` paths name the actual checked page or video and only available
+contained supplemental evidence. Open that primary output: an optional contact sheet or saved
+interaction result can be old, and its existence is not freshness proof or Visual Acceptance.
+Review and delivery continue to bind the current checked-input snapshot.
 
 Use the public CLI rather than reaching into implementation modules:
 
@@ -275,8 +303,11 @@ Read `references/pipeline-method.md` for the state, artifact, and invalidation c
   `references/interface-discipline.md` remains the fallback.
 - `frontend-design` supplies subject grounding, deliberate visual direction, critique-before-build,
   and anti-default judgment when installed; project contracts remain authoritative.
-- `design-taste-frontend`, `ui-ux-pro-max`, `web-design-guidelines`, and `emil-design-eng` are
-  capability lenses, not competing pipelines.
+- The built-in [Taste suite](taste-skill.md) supplies thirteen complete local methods for new
+  websites, redesign, selected style, reference-to-code, Stitch rules, image/brand concepts and
+  complete output. Read the relevant entry; v2 is experimental and v1 is explicit compatibility.
+  Its method rules adapt to project authority and reuse these stages without an ambient install.
+- `ui-ux-pro-max`, `web-design-guidelines`, and `emil-design-eng` add companion detail when installed.
 - For React/Next.js, use the governed Vercel/Next.js companions listed in
   `references/companion-skills.md`.
 - Use `references/capability-routing.md` and `references/job-registry.json` for motion, graphics,
@@ -418,6 +449,12 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
 `design.md` records:
 
 - Layout grid and responsive behavior.
+- Selected Taste method/version from `references/taste-skill.md`, its product/audience fit,
+  relevant source checks, adaptations and non-applicable rules. Preserve user references and
+  existing brand/stack; image concepts remain distinct from implemented behavior, and the Stitch
+  DESIGN.md example is translated through design-synthesis rather than copied as a foundation.
+- Applicable CSS practices from `references/good-css.md`: intrinsic layout, logical axes,
+  content/overflow and token decisions, target-browser support and usable fallbacks.
 - Color tokens and contrast posture. For website references, these must cite the ready
   `palette-evidence.json`, preserve DOM and raster-media sources separately, and record coverage,
   luminance, saturation, and temperature relationships rather than listing accents alone.
@@ -496,7 +533,7 @@ is inspectable or navigable.
 
 Execute visual subtasks through the native `next --change-root <change> --plan <tasks-plan>` entry.
 The implementation-local plan reuses design-plan.v1; each phase adds `goal` and
-`visual: {target, property, references, scope, guides, checks, review?, sourceObservation?}`. Name one observed property,
+`visual: {target, property, references, scope, guides, checks, verification?, review?, sourceObservation?}`. Name one observed property,
 not a whole build, with real reference paths and applicable packaged guides. `scope` names editable
 source paths; `outputs` and `visual.checks` name separate immutable per-task evidence paths, so a
 later source edit cannot overwrite an accepted upstream snapshot. The governed phase registry stays
@@ -515,13 +552,149 @@ in `inputs`; rebuild missing assets in preceding tasks and consume their outputs
 If a native state does not yet exist, initialize it with the existing
 `change init --change-id <id> --change-root <change> --phase implementation --status implementing`.
 All plan paths resolve inside that change root. Call `next` without a plan to obtain its decomposition
-template. Complete only the current task with `decide --change-root <change> --choice <task-id>
---verdict complete --artifact <metadata.json>`: the JSON contains artifact.v1 metadata (one object or
-an array) for every declared output and check. Outputs bind the exact returned `inputHashes`;
-checks additionally bind `output:<relative-output-path>` to each current output artifact hash.
-Check reports must contain their real passed checks, not a self-declared file-delivery result.
+template. The supported completion slice is local web interaction. Bind every check explicitly:
+`verification: [{kind: "interaction", probe: "interaction.json", target: "index.html", check:
+"evidence/interaction-check.json"}]`. Declare the probe in `inputs`, the local page in `outputs`,
+and the result in `checks`. The probe must open that exact local page; remote or other-page
+verification cannot complete this task. Report-only legacy plans remain readable but blocked;
+add the binding and dispatch again. Unsupported verification does not become a pass.
+
+The same interaction-probe.v1 supports either a motion probe `{id, target, input, expect}` or
+an ordered state journey `{id, target, steps}`; never mix the two shapes. A journey navigates once
+and retains state between steps. Each step has a unique `id`, optional real `input`, nonempty
+`assertions` and optional `timeoutMs` (default 1,000; range 1..5,000). At most 16 steps and 16
+assertions per step are supported; the step windows sum to at most 15,000 ms. Observe state at
+the end of each window. Use actual selector clicks or keys Escape, Enter, ArrowDown, ArrowUp and
+Tab; no expressions, internal setters or synthetic DOM events. Every click/assertion selector
+must identify one element inside the persistent `target` wrapper, including its visible readout.
+
+Assertions are `{selector, kind, equals}` for `visible`, `text` or `focused`, or
+`{selector, kind: "attribute", name, equals}`. Visible/focused compare booleans; text compares
+trimmed textContent; attributes compare a string or null. A missing element cannot satisfy
+false/null. Visibility means positive rendered geometry without hiding styles on it or ancestors;
+it does not establish click reachability or visual quality. Capture returns actual step values,
+not invented motion frames. A journey proves only its declared DOM states; keep motion,
+structural fidelity, persistence, backend behavior and owner acceptance as separate coverage.
+
+Before editing, `next` records the owned task window's Git root/branch/HEAD, working-file and index
+snapshot, and original literal authorization in native progress. Paths are relative to changeRoot
+and mapped to Git-root coordinates. Repeated `next`, failed checks and expanded plans retain the
+old window until its original scope passes. Unchanged pre-existing dirty files are preserved;
+new edits to them, staged-only edits, rename/deletion/untracked paths and commit/revert history
+are measured. Non-Git targets, unmerged indexes and replaced history block this scope check.
+Only this task's source scope, exact outputs/checks and exact plan/state/events/metadata control
+paths are authorized. This observes Git-visible changes in an owned window; it cannot attribute
+concurrent writers or police ignored/outside files or restored uncommitted transient writes.
+
+Complete only the current task with `decide --change-root <change> --choice <task-id>
+--verdict complete --artifact <task-id>-completion.json`. This exact metadata destination is
+returned by `next`; the harness runs the existing browser capture/evaluator, writes the declared
+interaction-result.v1 report and generates the artifact.v1 array itself. Caller-written metadata,
+reports or receipt claims cannot replace execution. Outputs bind current `inputHashes`; checks
+also bind `output:<relative-output-path>`. Scope, plan/input/output hashes and native CAS are
+checked before promotion. Missing tools, incomplete capture, timeout, failed checks or execution
+drift retain the attempt for repair and rerun. Scope inspection does not remove the worktree.
 `--verdict reject --answer <feedback>` retains the current task and its concrete repair feedback.
 Progress lives only in native state/events; technical completion is separate from Visual Acceptance.
+
+Observed failures return concrete `findings` and a compatible text `feedback`. Consecutive
+failures count only actual verification on the same input/output bytes. After three identical
+failures, stop repeating that snapshot: change one justified cause or report the missing condition.
+Repeated `next`, missing tools and scope/CAS blocks do not count as measured retries. Repairing
+output bytes restarts the count; it never resets the original scope window or permits skipping
+the verifier. Read each finding's check/probe/step, actual versus expected value and `fix`.
+
+### Complete menu task example
+
+Work in an owned Git change root. Create `brief.md` with the requested menu behavior and copy
+the loaded skill's QA method into the real local `guides/qa.md` before dispatch. The menu wrapper
+is `#menu-demo`; its trigger, options, menu and visible selected value all belong inside it.
+Opening focuses the first option, `#sort-default`; ArrowDown moves to `#sort-updated`.
+Selection updates the readout, closes the menu and returns focus to the trigger. Escape closes
+without changing the selected value. These are observable requirements, not hidden test setters.
+
+Save the following as `interaction.json`:
+
+```json
+{
+  "schema": "design-pipeline.interaction-probe.v1",
+  "id": "sort-menu",
+  "url": "index.html",
+  "viewport": {"width": 900, "height": 600},
+  "probes": [{
+    "id": "menu-selection",
+    "target": "#menu-demo",
+    "steps": [
+      {"id": "initial", "timeoutMs": 1, "assertions": [
+        {"selector": "#sort-menu", "kind": "visible", "equals": false},
+        {"selector": "#menu-trigger", "kind": "attribute", "name": "aria-expanded", "equals": "false"},
+        {"selector": "#selection-value", "kind": "text", "equals": "默认顺序"}
+      ]},
+      {"id": "open", "timeoutMs": 200, "input": {"kind": "click", "selector": "#menu-trigger"}, "assertions": [
+        {"selector": "#sort-menu", "kind": "visible", "equals": true},
+        {"selector": "#menu-trigger", "kind": "attribute", "name": "aria-expanded", "equals": "true"}
+      ]},
+      {"id": "choose", "timeoutMs": 200, "input": {"kind": "click", "selector": "#sort-updated"}, "assertions": [
+        {"selector": "#selection-value", "kind": "text", "equals": "按更新时间"},
+        {"selector": "#sort-menu", "kind": "visible", "equals": false}
+      ]},
+      {"id": "reopen", "timeoutMs": 200, "input": {"kind": "click", "selector": "#menu-trigger"}, "assertions": [
+        {"selector": "#sort-default", "kind": "focused", "equals": true}
+      ]},
+      {"id": "next-option", "timeoutMs": 200, "input": {"kind": "key", "key": "ArrowDown"}, "assertions": [
+        {"selector": "#sort-updated", "kind": "focused", "equals": true}
+      ]},
+      {"id": "keyboard-select", "timeoutMs": 200, "input": {"kind": "key", "key": "Enter"}, "assertions": [
+        {"selector": "#selection-value", "kind": "text", "equals": "按更新时间"},
+        {"selector": "#sort-menu", "kind": "visible", "equals": false},
+        {"selector": "#menu-trigger", "kind": "focused", "equals": true}
+      ]},
+      {"id": "open-for-escape", "timeoutMs": 200, "input": {"kind": "click", "selector": "#menu-trigger"}, "assertions": [
+        {"selector": "#sort-menu", "kind": "visible", "equals": true}
+      ]},
+      {"id": "escape", "timeoutMs": 200, "input": {"kind": "key", "key": "Escape"}, "assertions": [
+        {"selector": "#sort-menu", "kind": "visible", "equals": false},
+        {"selector": "#menu-trigger", "kind": "attribute", "name": "aria-expanded", "equals": "false"},
+        {"selector": "#menu-trigger", "kind": "focused", "equals": true},
+        {"selector": "#selection-value", "kind": "text", "equals": "按更新时间"}
+      ]}
+    ]
+  }]
+}
+```
+
+From that root, use Node to write `menu-plan.json` with the real brief digest:
+
+```js
+const fs = require("node:fs");
+const { createHash } = require("node:crypto");
+const plan = {
+  schema: "design-pipeline.design-plan.v1", schema_version: 1,
+  plan_id: "sort-menu", input_hash: "sha256:" + createHash("sha256").update(fs.readFileSync("brief.md")).digest("hex"),
+  mode: "greenfield", fidelity: "adaptive",
+  phases: [{
+    id: "menu-selection", depends_on: [],
+    inputs: ["brief.md", "interaction.json", "guides/qa.md"], outputs: ["index.html"], gates: [],
+    goal: "Open the menu, choose 按更新时间, retain that value after closing, and recover keyboard focus.",
+    visual: {
+      target: "sort-menu", property: "menu.selection", references: ["brief.md"],
+      scope: ["index.html", "implementation.md"], guides: ["guides/qa.md"],
+      checks: ["evidence/menu-check.json"], review: true,
+      verification: [{kind: "interaction", probe: "interaction.json", target: "index.html", check: "evidence/menu-check.json"}]
+    }
+  }]
+};
+fs.writeFileSync("menu-plan.json", JSON.stringify(plan, null, 2) + "\n");
+```
+
+Initialize the native change if needed, then run `next --change-root <change> --plan menu-plan.json`
+before the agent edits `index.html` and `implementation.md`. Keep the brief, guide and probe
+frozen. Follow the returned complete command; a menu that animates but retains the old readout
+must fail `choose`. Feed that actual finding back, repair the implementation and run the same
+check. Keep the final HTML/check snapshot and show it at the returned exact-version review.
+Do not record owner acceptance from the agent's report. This example covers declared menu state,
+pointer selection and the listed keyboard/focus behavior; it does not prove an underlying sort,
+stored preferences, complete accessibility or structural/visual fidelity.
 
 Use `visual.review: true` for the first meaningful visual sample, a direction change or an uncertain
 critical difference. Once its technical evidence passes, `next` returns `ask` / `visual-review`
@@ -529,8 +702,12 @@ with the exact target, property, output and checks. Show the actual frame or cli
 that property. Only a real owner reply permits `decide ... --verdict accept --artifact <same-metadata.json>`;
 this accepts this task/version, not the whole deliverable. To reopen an already completed target,
 use `--verdict reject --artifact <same-metadata.json> --answer <specific-feedback>`. Keep its old
-evidence; the existing dependency invalidation reopens affected downstream tasks. Changed inputs
-or outputs invalidate prior acceptance. Tasks without review retain automatic technical advancement.
+evidence; the existing dependency invalidation reopens affected downstream tasks. Rejection after
+observed completion starts a distinct rework window; unfinished failures retain the original one.
+Changed inputs, probes, outputs or reports invalidate prior acceptance. Legacy completions without
+observed execution become stale. Tasks without review retain automatic technical advancement.
+Technical verification, Component Conformance and owner Visual Acceptance are separate results;
+local records assume a trusted installed harness and cannot authenticate same-permission tampering.
 
 State the intended customer interaction in the goal. Default output presents that experience;
 authoring controls, model records, diagnostics and source links use an explicit inspection/evaluation
@@ -570,6 +747,18 @@ against actual outputs and checks; tasks.md existence does not verify decomposit
 ## Stage 5: Implementation
 
 Implement directly from `design.md` and `tasks.md`.
+
+For web design, redesign, style or image/brand work, read the selected complete source through
+`references/taste-skill.md` and implement its agreed decisions in the existing stack. An authorized
+image-only deliverable uses an available provider and retains its output boundary. Do not generate
+replacement references, add GSAP/React, or apply all style variants merely because the library is
+present. Reference-to-code follows the existing reference/reconstruction gates and actual inputs.
+
+Whenever writing, editing or reviewing styles (plain CSS, utility classes, StyleX, CSS-in-JS or
+inline styles), use the built-in `references/good-css.md` and read the matched original entries
+before implementation. Preserve project tokens, semantic controls and existing runtime ownership;
+test newer features and their fallbacks against the actual target browser. The local specimen
+builder in `tools/good-css/` provides bounded studies without an external skill installation.
 
 For a bounded drawing, image, typography, layout or rendering task, use `tools/README.md` as a
 progressive tool index. Load one relevant guide and implementation; keep the selected project
@@ -663,6 +852,16 @@ Rules:
 ## Stage 6: Gate Review
 
 Before claiming completion, write `qa.md` using `references/qa-checklist.md` with the result of these gates:
+
+For selected Taste methods, record the exact source/version, project adaptations, completed
+artifacts and observed checks on the actual output. Verify image sets for completeness and
+readability, and implemented surfaces for behavior, accessibility, responsive fit and motion.
+Source/marker availability does not establish Component Conformance or Visual Acceptance.
+
+For changed styles, include the applied good-css entries, browser/fallback observations, narrow
+content and RTL/CJK/zoom checks where relevant, keyboard/focus and reduced-motion behavior. Reuse
+the existing interface, composition and interaction checks; source integrity does not establish
+Component Conformance or Visual Acceptance.
 
 - Visual gate: composition is non-generic, brand/product signal is clear, palette is not one-note, typography fits the surface.
 - Impeccable gate: the selected visitor mode is explicit, refinement has not become a hidden

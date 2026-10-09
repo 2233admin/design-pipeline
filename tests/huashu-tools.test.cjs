@@ -11,7 +11,7 @@ const { resolvePuppeteer, resolveChrome } = require("../skill/scripts/film-captu
 const { run } = require("../skill/scripts/film-core.cjs");
 const { encodePng, decodePng } = require("../skill/scripts/png-core.cjs");
 const { sha256 } = require("../skill/scripts/contract-utils.cjs");
-const { included } = require("../scripts/import-huashu-art-motion.cjs");
+const { REVIEWED, included } = require("../scripts/import-huashu-art-motion.cjs");
 const repo = path.resolve(__dirname, ".."), vendor = path.join(repo, "skill/vendor/huashu-art-motion");
 const example = JSON.parse(fs.readFileSync(path.join(repo, "skill/tools/art-motion/clip.example.json")));
 // Film render checks need ffmpeg and ffprobe on PATH and skip without them (AGENTS.md); CI runners have neither.
@@ -24,13 +24,22 @@ function temporary(t) {
 
 test("complete pinned source keeps original paths and rebuilds the same static runtime", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(vendor, "manifest.json")));
-  assert.equal(manifest.files.length, 324);
+  assert.equal(manifest.sourceCommit, REVIEWED);
+  assert.equal(manifest.files.length, 343);
   for (const entry of manifest.files) {
     assert.equal(entry.localPath, `upstream/${entry.sourcePath}`);
     assert.equal(included(entry.sourcePath), true);
     assert.equal(sha256(fs.readFileSync(path.join(vendor, entry.localPath))), entry.sha256);
   }
   assert.ok(manifest.files.some(file => file.sourcePath.endsWith("ARPHICPL.TXT")));
+  for (const sourcePath of ["defaults/media.json", "schemas/media.schema.json", "release-manifest.json", "scripts/capabilities.py", "scripts/images.py", "scripts/koubo.py", "scripts/check_release.py", "tests/test_capabilities.py", "tests/test_images.py", "tests/test_local_server.py", "tests/test_release.py", ".github/workflows/tests.yml", "CONTRIBUTING.md"]) {
+    assert.ok(manifest.files.some(file => file.sourcePath === sourcePath), `missing media dependency or source evidence: ${sourcePath}`);
+    assert.equal(included(sourcePath), true);
+  }
+  assert.doesNotThrow(() => JSON.parse(fs.readFileSync(path.join(vendor, "upstream/defaults/media.json"))));
+  assert.doesNotThrow(() => JSON.parse(fs.readFileSync(path.join(vendor, "upstream/schemas/media.schema.json"))));
+  assert.equal(included("assets/showcase/hero.png"), false);
+  assert.equal(included(".github/workflows/unreviewed.yml"), false);
   assert.equal(included("scripts/engine/demos/_shared/hero/author.png"), false);
   const runtime = path.join(repo, "skill/tools/art-motion/huashu-runtime.js"), before = fs.readFileSync(runtime);
   const build = spawnSync(process.execPath, [path.join(repo, "skill/tools/art-motion/build-huashu-runtime.cjs")], { encoding: "utf8", windowsHide: true });
@@ -74,6 +83,7 @@ test("render validates inputs, preserves asset aliases and exports timed PNG, H2
   const video = await render(root, options);
   assert.equal(video.frames, 4); assert.equal(video.coldAndReorderedMatch, true);
   const report = JSON.parse(fs.readFileSync(video.report));
+  assert.equal(report.sourceCommit, REVIEWED);
   assert.equal(report.frames.length, 4); assert.equal(report.frames[3].atSec, 0.75);
   assert.ok(new Set(report.frames.map(frame => frame.sha256)).size > 1);
   assert.equal(report.warnings.length, 0);

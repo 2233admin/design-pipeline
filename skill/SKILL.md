@@ -43,6 +43,7 @@ name a repository. This is triggered by the work's needs, not a required search 
 
 ## Keep evidence and acceptance honest
 
+- Follow the [QA verification method](references/qa-checklist.md#run-verification) before completion.
 - Inspect the actual requested surface and relevant evidence. Motion also needs playback; a
   screenshot alone does not verify it.
 - Gates report technical checks such as component conformance and fidelity evidence. They never
@@ -55,6 +56,15 @@ name a repository. This is triggered by the work's needs, not a required search 
 ## Open only what this task needs
 
 - Workflow stages, UI, references, implementation and review: `references/stages.md`.
+- **Built-in Taste suite:** `references/taste-skill.md` selects from thirteen complete local
+  methods for new websites, existing-project redesign, visual critique, style, Stitch design
+  rules, image-to-code, web/mobile concept images, brand boards and complete output. Read the
+  selected original source; no external Taste installation is required. Project/user design,
+  accessibility and CJK rules govern adaptation; image-only methods need an available provider.
+- CSS authoring or review in any stack: `references/good-css.md` for the complete built-in
+  practice library, project adaptations and offline specimens; load its matched source entries.
+- Explicit offline improvement of a design prompt or skill instruction: `references/gepa.md`
+  for the independent native optimizer, frozen cases, diagnostic feedback and reviewable candidates.
 - Detailed route, CLI, gate and receipt contracts: `references/pipeline-reference.md`.
 - `film`, `edit`, and `web` workflow selected by `next`: the matching `references/workflow-*.md`.
 - Supporting drawing, image placement, text fitting, comparison, motion maps and advanced
@@ -68,6 +78,11 @@ name a repository. This is triggered by the work's needs, not a required search 
   `references/animation-opportunity-and-review.md`.
 - Film direction and storyboards: `references/product-film-direction.md` and
   `references/film-choreography/`.
+- Built-in Cinetic/Product Film methods: `references/film-methods.md` for explicit film/loop
+  selection, real brand/component discovery, full technique recipes and the maintained
+  `film methods` preparation/motion adapter. Keep ordinary UI/CSS on its existing route.
+- Prompt Motion template library: `references/prompt-motion/README.md` for indexed cases,
+  curated recipe inputs and invariants; `film templates` provides offline read-only search/detail.
 - Film runtime and audio: `references/hyperframes.md`, `references/film-blender.md`,
   `references/film-score.md`, `references/audio-gate.md`, `references/composition-gate.md`.
 - PV/MAD edits: `references/film-edit.md`.

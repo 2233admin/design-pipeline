@@ -1,16 +1,16 @@
 "use strict";
 
 // Stages and helpers shared by the deliverable sub-workflows (film, edit).
-// A stage is { id, finished(state, root), action(state, root) }; `next` walks a sub-workflow's
-// stages and returns the first unfinished one's action.
+// Stages declare finished(state, root) and/or the existing gate with its required inputs.
+// `next` checks that gate once and returns the first unfinished action with recovery context.
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { canonicalJson, resolveInside, sha256 } = require("../contract-utils.cjs");
 
 const CLI = "designer-pipeline";
 
 const exists = (root, rel) => fs.existsSync(path.join(root, rel));
-const mtime = (root, rel) => (exists(root, rel) ? fs.statSync(path.join(root, rel)).mtimeMs : 0);
 
 function referenceObserved(state, root) {
   if (state.mode !== "replicate" && state.decisions?.reference === "none") return true;
@@ -24,17 +24,50 @@ function referenceObserved(state, root) {
   return video.status === "ready" && video.coverage.fullSource;
 }
 
-// A gate result counts only when it passed and is not older than the files it checked, so an
-// edited storyboard or a re-rendered draft reopens its stage. File times and Date.now() come from
-// different clocks; on a loaded Windows host a file written just before the gate was recorded can
-// carry a time a few milliseconds after it, so the comparison allows CLOCK_SKEW_MS. A real edit
-// comes seconds later and still reopens the stage.
-const CLOCK_SKEW_MS = 50;
-function gatePassed(state, root, gate, inputs = []) {
+function gateStatus(state, root, gate, inputs = []) {
   const result = state.gates && state.gates[gate];
-  if (!result || result.status !== "passed") return false;
-  const newest = Math.max(0, ...inputs.filter(Boolean).map((rel) => mtime(root, rel)));
-  return result.at + CLOCK_SKEW_MS >= newest;
+  const context = { gate, recordedStatus: result?.status || null };
+  const finding = (code, message, fix, file) => ({ code, severity: "error", message, fix, ...(file ? { path: file } : {}) });
+  if (result?.status !== "passed") return {
+    ...context, status: result?.status === "failed" ? "failed" : "incomplete",
+    findings: result?.findings?.length ? result.findings : [finding("workflow-check-required", `No current passed ${gate} check is recorded.`, "Run the returned check and apply its findings before continuing.")],
+    next: result?.next || "Run the returned verification command and apply its reported fixes.",
+  };
+  if (!result.inputHashes || !Object.keys(result.inputHashes).length) return {
+    ...context, status: "stale", findings: [finding("workflow-pass-unbound", "The recorded pass has no checked-file bindings.", "Rerun the returned check; do not edit cached state to mark it passed.")],
+  };
+  const key = rel => process.platform === "win32" ? rel.toLowerCase() : rel;
+  const inputHashes = Object.fromEntries(Object.entries(result.inputHashes).map(([rel, hash]) => [key(rel), hash]));
+  const files = new Map([...Object.keys(result.inputHashes), ...inputs.filter(Boolean)].map(rel => [key(rel), rel]));
+  const findings = [];
+  for (const rel of files.values()) {
+    try {
+      const file = resolveInside(root, rel, "checked input", { scope: "workflow" });
+      if (!fs.existsSync(file)) findings.push(finding("workflow-input-missing", `Checked input is missing: ${rel}`, "Restore or rebuild this input, then rerun the returned check.", rel));
+      else if (!inputHashes[key(rel)]) findings.push(finding("workflow-input-unbound", `The recorded check did not bind required input: ${rel}`, gate === "interaction" && key(rel) === "index.html" ? "Point interaction.json.url at the local index.html, then rerun the returned check." : "Verify this required input with the returned check; do not edit the stored pass.", rel));
+      else if (inputHashes[key(rel)] !== "sha256:" + sha256(fs.readFileSync(file))) findings.push(finding("workflow-input-changed", `Checked input changed: ${rel}`, "Rerun the returned check against the current input, then review the new draft when requested.", rel));
+    } catch {
+      findings.push(finding("workflow-input-unavailable", `Checked input is unreadable or outside the project: ${rel}`, "Repair the contained input path, then rerun the returned check.", rel));
+    }
+  }
+  return { ...context, status: findings.length ? "stale" : "passed", findings, ...(result.findings?.length ? { previousFindings: result.findings } : {}) };
+}
+
+const gatePassed = (...args) => gateStatus(...args).status === "passed";
+
+function reviewInputHashes(state) {
+  const gate = { film: "film", edit: "edit", web: "interaction" }[state.deliverable];
+  return state.gates?.[gate]?.inputHashes || null;
+}
+
+function deliveryRecorded(state, root) {
+  if (!state.decisions?.delivered || !state.decisions.deliveryInputHashes
+      || canonicalJson(state.decisions.deliveryInputHashes) !== canonicalJson(reviewInputHashes(state))) return false;
+  if (state.deliverable === "web") return true;
+  try {
+    const file = resolveInside(root, state.decisions.delivered, "delivery file", { scope: "workflow", mustExist: true });
+    return state.decisions.deliveredSha256 === "sha256:" + sha256(fs.readFileSync(file));
+  } catch { return false; }
 }
 
 const INTAKE = {
@@ -94,8 +127,22 @@ const CONCEPTS = {
 
 const REVIEW = {
   id: "review",
-  finished: (state) => (state.decisions?.drafts || []).some((draft) => draft.verdict === "accept"),
-  action: (state) => ({ type: "ask", question: "Accept this draft, or reject it with one sentence on what is wrong?", show: ["the draft video", "evidence/contact-sheet.png", "the gate summary"], recommended: "Accept if nothing reads wrong at full speed.", record: `${CLI} decide --project-root . --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The second human decision${(state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : ""}.` }),
+  finished: (state) => {
+    const draft = state.decisions?.drafts?.at(-1);
+    return draft?.verdict === "accept" && Boolean(draft.inputHashes)
+      && canonicalJson(draft.inputHashes) === canonicalJson(reviewInputHashes(state));
+  },
+  action: (state, root) => {
+    const web = state.deliverable === "web";
+    const outputs = Object.keys(reviewInputHashes(state) || {}).filter(file => (web ? /\.html?$/i : /\.mp4$/i).test(file));
+    const show = [...outputs, "evidence/contact-sheet.png", ...(web ? ["evidence/interaction.json"] : [])].flatMap(rel => {
+      try {
+        const file = resolveInside(root, rel, "review file", { scope: "workflow", mustExist: true });
+        return fs.statSync(file).isFile() ? [file] : [];
+      } catch { return []; }
+    });
+    return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${CLI} decide --project-root . --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The second human decision${(state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : ""}.` };
+  },
 };
 
-module.exports = { CLI, CONCEPTS, INTAKE, REVIEW, exists, gatePassed, reference };
+module.exports = { CLI, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, gatePassed, gateStatus, reference, reviewInputHashes };

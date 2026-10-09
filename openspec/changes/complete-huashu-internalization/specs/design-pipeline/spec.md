@@ -78,3 +78,27 @@ The package SHALL preserve reviewed source provenance and licenses and SHALL ver
 #### Scenario: Technical checks complete
 - **WHEN** structural or rendering tests pass
 - **THEN** the report states what was exercised and any asset, portability or visual limits without claiming user acceptance
+
+### Requirement: Reviewed Huashu media source and routing
+The skill SHALL retain committed media defaults/schema, contract tests and release source from the reviewed Huashu revision. Optional images SHALL use actual host tools and existing asset evidence; original provider/configuration and plan/receipt mechanisms SHALL remain source reference without adding a parallel pipeline contract.
+
+#### Scenario: Importing the reviewed media increment
+- **WHEN** the source refresh imports revision `57d67608ab458f57d9b153b1a2831b921e22498b`
+- **THEN** defaults/schema and related source tests are retained with original bytes, the runtime and render report identify that revision, and historical manual adaptations retain their original attribution
+- **AND** later remote commits are not imported without separate review
+
+#### Scenario: A task needs an image
+- **WHEN** supplied artwork is suitable or authorized generation/editing is requested
+- **THEN** the agent uses the supplied file or the current host tool's real schema, checks the actual file and records its source/hash in existing asset evidence
+- **AND** changed references/assets require downstream evidence refresh without importing upstream plan/receipt/config fingerprint machinery
+
+### Requirement: Safe maintained offline voice processing
+Maintained offline audio operations SHALL use closed-handle temporary files beside the output, clean failed new outputs and preserve supplied files and existing output/sidecar. They SHALL expose local fit, level-match and PCM preparation only; voice providers, training and media configuration SHALL remain source reference.
+
+#### Scenario: System temporary directory is on another filesystem
+- **WHEN** a supplied audio file is processed into a fresh output while the system temporary directory is elsewhere
+- **THEN** processing stages beside the output with closed file handles and publishes exclusively without a cross-filesystem replacement
+
+#### Scenario: Processing fails or the destination already exists
+- **WHEN** FFmpeg or fit validation fails, or the requested output or its JSON sidecar already exists
+- **THEN** the operation preserves source/existing files, refuses overwrite and removes only its own new temporary or failed output files

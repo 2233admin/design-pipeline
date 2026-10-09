@@ -4,6 +4,10 @@ Create `reference.md` before design directions whenever screenshots, films, game
 concept art, diagrams, or other visual references influence the change. The file records observable
 evidence; it must not jump directly from mood words to implementation.
 
+For task-relevant coded film examples, [prompt-motion.md](prompt-motion.md) supplies dated case
+provenance and observation limits. A page description is method discovery; adopt actual moving
+evidence through this same `reference.md` and `reference-evidence.json` flow.
+
 ## Video content and project analysis
 
 For a supplied local video, prepare evidence with the executable packaged entry:

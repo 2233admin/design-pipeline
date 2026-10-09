@@ -228,4 +228,4 @@ function checkFilmProject(dir, options = {}) {
   };
 }
 
-module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, scaffoldFilm };
+module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, newestRender, scaffoldFilm };

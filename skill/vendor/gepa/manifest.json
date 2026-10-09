@@ -1,0 +1,107 @@
+{
+  "schema": "design-pipeline.gepa-source.v1",
+  "source": {
+    "repository": "https://github.com/gepa-ai/gepa",
+    "revision": "462e437a09be67d2acb59564cc0ea59132f5777c",
+    "gitTree": "105cafea9959b259f1fa63ca0b5b375bcc611b9e",
+    "committedAt": "2026-10-08T12:30:53-07:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-09",
+    "scope": [
+      ".claude/skills/gepa-optimize-anything/**",
+      "LICENSE",
+      "README.md",
+      "pyproject.toml"
+    ],
+    "contentHashScope": "selected official skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright © 2025 Lakshya A Agrawal"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 10,
+    "byteCount": 107619,
+    "treeSha256": "c8bc85080ff2179e42879d573a29fa4f7d779e179da67a9d37528b8d2cfc2795",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": ".claude/skills/gepa-optimize-anything/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "2f0ead0e5fc738dfb255a1a429245c6b08b0550f",
+        "size": 686
+      },
+      {
+        "path": ".claude/skills/gepa-optimize-anything/references/api.md",
+        "mode": "100644",
+        "oid": "127f4c42b31053da121e3e224e78c813764ba5d8",
+        "size": 18252
+      },
+      {
+        "path": ".claude/skills/gepa-optimize-anything/references/gotchas.md",
+        "mode": "100644",
+        "oid": "ffd3c0b7f4f9fad72036a101ba5c5cd339f9db76",
+        "size": 8306
+      },
+      {
+        "path": ".claude/skills/gepa-optimize-anything/references/tracking.md",
+        "mode": "100644",
+        "oid": "1b3f49a85e7912aec21b68c0210c3daf79d57d2d",
+        "size": 2844
+      },
+      {
+        "path": ".claude/skills/gepa-optimize-anything/references/writing_evaluators.md",
+        "mode": "100644",
+        "oid": "a60675b924e140b681f55edb7c60adf10795992a",
+        "size": 7573
+      },
+      {
+        "path": ".claude/skills/gepa-optimize-anything/scripts/preflight.py",
+        "mode": "100644",
+        "oid": "6b1848ae68244a1a5a5c94c00fad71ea83f62c7a",
+        "size": 4922
+      },
+      {
+        "path": ".claude/skills/gepa-optimize-anything/SKILL.md",
+        "mode": "100644",
+        "oid": "2fe46d4202d442beda5d902f197eb4e2b128d572",
+        "size": 18411
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "a2d71aed19ccc43d94b9c3afe6430da9b2277f32",
+        "size": 1067
+      },
+      {
+        "path": "pyproject.toml",
+        "mode": "100644",
+        "oid": "3716b220b76df7c54b930380057a4d7819d89550",
+        "size": 5691
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "379d0a38ef009c1b0a01dec2a325a5fe1a5190ac",
+        "size": 39867
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "gepa-optimize-anything",
+      "path": "upstream/.claude/skills/gepa-optimize-anything/SKILL.md"
+    }
+  ],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "executesUpstreamScripts": false,
+    "executesDeployment": false,
+    "changesProjectRuntime": false
+  }
+}

@@ -36,6 +36,11 @@ const PEAK_TO_MEDIAN = 1.25;
 const MAX_LISTED_URLS = 20;
 // A recording shorter than this cannot carry a pre/input/post story at all: the harness failed.
 const MIN_SAMPLES = 5;
+const JOURNEY_KEYS = ["Escape", "Enter", "ArrowDown", "ArrowUp", "Tab"];
+const ASSERTION_KINDS = ["visible", "text", "attribute", "focused"];
+const MAX_JOURNEY_ROWS = 16;
+const DEFAULT_STEP_MS = 1000;
+const MAX_JOURNEY_MS = 15000;
 
 // One concrete repair per finding, in the shape film-hints.cjs uses: the agent reading a gate
 // result should know what to change without opening the reference first.
@@ -46,6 +51,8 @@ const HINTS = {
   "linear-response": "Give the motion a spring shape: accelerate into it and decelerate out with a small overshoot (the spring-settle primitive, or an ease that is not constant speed), or set expect.response to linear or stepped if constant-speed motion is the intent.",
   "opacity-only": "Move the element, not only its opacity: animate transform (translate, scale, rotate) so the interaction has a physical response, or set expect.responds to false if a fade really is the whole interaction.",
   "external-request": "Serve every listed resource from the page's own origin: vendor the fonts, scripts and images next to the page so the probe runs with no network, or point the probe at the origin that already serves them.",
+  "state-mismatch": "Wire the real input to the declared state and business readout; repair the listener or state transition, then repeat the unchanged journey and check the selected value still survives the final step.",
+  "state-target-missing": "Render one matching element inside the declared stable wrapper; repair the selector or component structure instead of treating an absent, ambiguous or unrelated element as a false or null state.",
 };
 
 // ---------- probe document ----------
@@ -134,6 +141,59 @@ function validateExpect(expectation, label) {
   };
 }
 
+function validateJourneyInput(input, label) {
+  assertKeys(input, ["kind"], ["kind", "selector", "key"], label, SCOPE);
+  assertEnum(input.kind, ["click", "key"], `${label}.kind`, SCOPE);
+  if (input.kind === "click") {
+    assertKeys(input, ["kind", "selector"], ["kind", "selector"], label, SCOPE);
+    assertString(input.selector, `${label}.selector`, SCOPE);
+  } else {
+    assertKeys(input, ["kind", "key"], ["kind", "key"], label, SCOPE);
+    assertEnum(input.key, JOURNEY_KEYS, `${label}.key`, SCOPE);
+  }
+}
+
+function validateAssertion(assertion, label) {
+  assertKeys(assertion, ["selector", "kind", "equals"], ["selector", "kind", "name", "equals"], label, SCOPE);
+  assertString(assertion.selector, `${label}.selector`, SCOPE);
+  assertEnum(assertion.kind, ASSERTION_KINDS, `${label}.kind`, SCOPE);
+  if (assertion.kind === "attribute") {
+    assertKeys(assertion, ["selector", "kind", "name", "equals"], ["selector", "kind", "name", "equals"], label, SCOPE);
+    assertString(assertion.name, `${label}.name`, SCOPE);
+    if (assertion.equals !== null && typeof assertion.equals !== "string") fail(SCOPE, `${label}.equals must be a literal string or null`);
+  } else {
+    assertKeys(assertion, ["selector", "kind", "equals"], ["selector", "kind", "equals"], label, SCOPE);
+    if (["visible", "focused"].includes(assertion.kind)) boolean(assertion.equals, `${label}.equals`);
+    else if (typeof assertion.equals !== "string") fail(SCOPE, `${label}.equals must be a literal string`);
+  }
+}
+
+function validateJourney(steps, label) {
+  if (!Array.isArray(steps) || steps.length < 1 || steps.length > MAX_JOURNEY_ROWS) fail(SCOPE, `${label} must contain 1..${MAX_JOURNEY_ROWS} steps`);
+  const ids = new Set();
+  const normalized = steps.map((step, index) => {
+    const stepLabel = `${label}[${index}]`;
+    assertKeys(step, ["id", "assertions"], ["id", "input", "assertions", "timeoutMs"], stepLabel, SCOPE);
+    assertString(step.id, `${stepLabel}.id`, SCOPE);
+    if (ids.has(step.id)) fail(SCOPE, `${stepLabel} duplicates step id ${step.id}`);
+    ids.add(step.id);
+    if (step.input !== undefined) validateJourneyInput(step.input, `${stepLabel}.input`);
+    const timeoutMs = step.timeoutMs === undefined ? DEFAULT_STEP_MS : step.timeoutMs;
+    numberBetween(timeoutMs, `${stepLabel}.timeoutMs`, 1, MAX_DURATION_MS);
+    if (!Array.isArray(step.assertions) || step.assertions.length < 1 || step.assertions.length > MAX_JOURNEY_ROWS) fail(SCOPE, `${stepLabel}.assertions must contain 1..${MAX_JOURNEY_ROWS} assertions`);
+    const assertions = new Set();
+    step.assertions.forEach((assertion, row) => {
+      validateAssertion(assertion, `${stepLabel}.assertions[${row}]`);
+      const identity = JSON.stringify([assertion.selector, assertion.kind, assertion.name]);
+      if (assertions.has(identity)) fail(SCOPE, `${stepLabel} duplicates an assertion selector/kind/name`);
+      assertions.add(identity);
+    });
+    return { ...step, timeoutMs };
+  });
+  if (normalized.reduce((sum, step) => sum + step.timeoutMs, 0) > MAX_JOURNEY_MS) fail(SCOPE, `${label} observation windows exceed ${MAX_JOURNEY_MS} ms`);
+  return normalized;
+}
+
 function validateProbeFile(doc) {
   assertKeys(doc, ["schema", "id", "url", "probes"], ["schema", "id", "url", "probes", "viewport"], "probe file", SCOPE);
   if (doc.schema !== SCHEMA) fail(SCOPE, `schema must be ${SCHEMA}`);
@@ -144,11 +204,14 @@ function validateProbeFile(doc) {
   const ids = new Set();
   const probes = doc.probes.map((probe, index) => {
     const label = `probes[${index}]`;
-    assertKeys(probe, ["id", "target", "input", "expect"], ["id", "target", "input", "expect"], label, SCOPE);
+    const journey = Object.hasOwn(probe, "steps");
+    const keys = journey ? ["id", "target", "steps"] : ["id", "target", "input", "expect"];
+    assertKeys(probe, keys, keys, label, SCOPE);
     assertString(probe.id, `${label}.id`, SCOPE);
     if (ids.has(probe.id)) fail(SCOPE, `${label} duplicates probe id ${probe.id}`);
     ids.add(probe.id);
     assertString(probe.target, `${label}.target`, SCOPE);
+    if (journey) return { ...probe, steps: validateJourney(probe.steps, `${label}.steps`) };
     validateInput(probe.input, `${label}.input`);
     return { ...probe, expect: validateExpect(probe.expect, `${label}.expect`) };
   });
@@ -397,10 +460,85 @@ function evaluateSamples(probe, samples, requests = []) {
 
 // ---------- result document ----------
 
+function compareObservation(assertion, observation, label) {
+  const keys = ["selector", "kind", ...(assertion.kind === "attribute" ? ["name"] : []), "found", "actual"];
+  assertKeys(observation, keys, keys, label, SCOPE);
+  for (const key of ["selector", "kind", ...(assertion.kind === "attribute" ? ["name"] : [])]) if (observation[key] !== assertion[key]) fail(SCOPE, `${label}.${key} differs from the declared assertion`);
+  boolean(observation.found, `${label}.found`);
+  if (!observation.found) {
+    if (observation.actual !== null) fail(SCOPE, `${label}.actual must be null for an unresolved element`);
+    return false;
+  }
+  if (["visible", "focused"].includes(assertion.kind)) boolean(observation.actual, `${label}.actual`);
+  else if (assertion.kind === "text" && typeof observation.actual !== "string" || assertion.kind === "attribute" && observation.actual !== null && typeof observation.actual !== "string") fail(SCOPE, `${label}.actual has an invalid literal type`);
+  return observation.actual === assertion.equals;
+}
+
+function evaluateJourney(probe, shot, pageOrigin) {
+  assertKeys(shot, ["id", "steps", "requests"], ["id", "steps", "requests"], `capture ${probe.id}`, SCOPE);
+  if (shot.id !== probe.id || !Array.isArray(shot.steps) || shot.steps.length !== probe.steps.length) fail(SCOPE, `capture ${probe.id} has incomplete journey steps`);
+  if (!Array.isArray(shot.requests) || shot.requests.some(url => typeof url !== "string")) fail(SCOPE, `capture ${probe.id}.requests must be recorded URL strings`);
+  const steps = probe.steps.map((step, index) => {
+    const recorded = shot.steps[index], label = `capture ${probe.id} step ${step.id}`;
+    assertKeys(recorded, ["id", "elapsedMs", "observations"], ["id", "elapsedMs", "observations"], label, SCOPE);
+    if (recorded.id !== step.id) fail(SCOPE, `${label} is missing or reordered`);
+    if (!Number.isFinite(recorded.elapsedMs) || recorded.elapsedMs < step.timeoutMs) fail(SCOPE, `${label} ended before its ${step.timeoutMs} ms observation window`);
+    if (!Array.isArray(recorded.observations) || recorded.observations.length !== step.assertions.length) fail(SCOPE, `${label} has incomplete assertions`);
+    const findings = [];
+    const assertions = step.assertions.map((assertion, row) => {
+      const observed = recorded.observations[row], matched = compareObservation(assertion, observed, `${label} assertion ${row}`);
+      if (!matched) {
+        const code = observed.found ? "state-mismatch" : "state-target-missing";
+        findings.push({ code, severity: "error", message: `Step ${step.id}: ${assertion.selector} ${assertion.kind}${assertion.name ? " " + assertion.name : ""} expected ${JSON.stringify(assertion.equals)}, actual ${JSON.stringify(observed.actual)}${observed.found ? "" : " (element missing, ambiguous or outside the wrapper)"}`, fix: HINTS[code], selector: assertion.selector, expected: assertion.equals, actual: observed.actual });
+      }
+      return { ...observed, expected: assertion.equals, matched };
+    });
+    return { id: step.id, status: findings.length ? "failed" : "passed", elapsedMs: recorded.elapsedMs, assertions, findings };
+  });
+  const findings = steps.flatMap(step => step.findings.map(finding => ({ stepId: step.id, ...finding })));
+  const external = externalUrls(shot.requests, pageOrigin);
+  if (external.length) findings.push({ code: "external-request", severity: "error", message: `${external.length} requests went outside the page origin ${pageOrigin}`, fix: HINTS["external-request"], urls: external.slice(0, MAX_LISTED_URLS) });
+  return { id: probe.id, status: findings.length ? "failed" : "passed", steps, findings };
+}
+
+// Native completion uses the normalized declaration, never a report-provided mode flag. This
+// checks the same typed literal comparison as raw evaluation without accepting a caller verdict.
+function journeyResultFailure(probe, row) {
+  try {
+    assertKeys(row, ["id", "status", "steps", "findings"], ["id", "status", "steps", "findings"], "journey result", SCOPE);
+    if (row.id !== probe.id || row.status !== "passed" || !Array.isArray(row.steps) || row.steps.length !== probe.steps.length || !Array.isArray(row.findings) || row.findings.some(finding => finding.severity === "error")) return `Interaction journey ${probe.id} is failed or incomplete.`;
+    for (const [index, step] of probe.steps.entries()) {
+      const actual = row.steps[index], label = `journey result ${probe.id} step ${step.id}`;
+      assertKeys(actual, ["id", "status", "elapsedMs", "assertions", "findings"], ["id", "status", "elapsedMs", "assertions", "findings"], label, SCOPE);
+      if (actual.id !== step.id || actual.status !== "passed" || !Number.isFinite(actual.elapsedMs) || actual.elapsedMs < step.timeoutMs || !Array.isArray(actual.assertions) || actual.assertions.length !== step.assertions.length || !Array.isArray(actual.findings) || actual.findings.some(finding => finding.severity === "error")) return `${label} is failed, reordered or incomplete.`;
+      for (const [index, expected] of step.assertions.entries()) {
+        const assertion = actual.assertions[index], keys = ["selector", "kind", ...(expected.kind === "attribute" ? ["name"] : []), "expected", "actual", "found", "matched"];
+        assertKeys(assertion, keys, keys, `${label} assertion ${index}`, SCOPE);
+        const { expected: literal, matched, ...observation } = assertion;
+        if (literal !== expected.equals || matched !== true || !compareObservation(expected, observation, `${label} assertion ${index}`)) return `${label} assertion ${index} does not establish the declared literal state.`;
+      }
+    }
+    return null;
+  } catch (error) { return error.message; }
+}
+
 function evaluateProbeFile(doc, capture) {
   const normalized = validateProbeFile(doc);
   assertObject(capture, "capture", SCOPE);
   if (!Array.isArray(capture.probes)) fail(SCOPE, "capture.probes must be an array");
+  if (normalized.probes.some(probe => probe.steps)) {
+    let declaredOrigin = "file:";
+    try { if (HTTP_URL.test(normalized.url.trim())) declaredOrigin = new URL(normalized.url).origin; }
+    catch { fail(SCOPE, "capture journey origin cannot be determined from the declared URL"); }
+    if (typeof capture.pageOrigin !== "string" || capture.pageOrigin !== declaredOrigin) fail(SCOPE, "capture journey origin is missing, invalid or differs from the declared page origin");
+    if (capture.url !== undefined) {
+      let actual;
+      try { actual = new URL(capture.url); }
+      catch { fail(SCOPE, "capture journey origin cannot be determined from the captured URL"); }
+      if (!["file:", "http:", "https:"].includes(actual.protocol) || (actual.protocol === "file:" ? "file:" : actual.origin) !== capture.pageOrigin) fail(SCOPE, "capture journey origin differs from the captured URL origin");
+    }
+    if (capture.probes.length !== normalized.probes.length || capture.probes.some((probe, index) => probe?.id !== normalized.probes[index].id)) fail(SCOPE, "capture journey probes are missing, extra, duplicated or reordered");
+  }
   const recorded = new Map();
   for (const entry of capture.probes) {
     if (entry !== null && typeof entry === "object" && typeof entry.id === "string") recorded.set(entry.id, entry);
@@ -408,6 +546,7 @@ function evaluateProbeFile(doc, capture) {
   const probes = normalized.probes.map((probe) => {
     const shot = recorded.get(probe.id);
     if (!shot) fail(SCOPE, `capture is missing probe ${probe.id}`);
+    if (probe.steps) return evaluateJourney(probe, shot, capture.pageOrigin);
     const result = evaluateSamples({ ...probe, pageOrigin: capture.pageOrigin }, shot.samples, shot.requests ?? []);
     const samples = shot.samples;
     return {
@@ -428,4 +567,4 @@ function evaluateProbeFile(doc, capture) {
   };
 }
 
-module.exports = { SCHEMA, RESULT_SCHEMA, HINTS, validateProbeFile, evaluateSamples, evaluateProbeFile };
+module.exports = { SCHEMA, RESULT_SCHEMA, HINTS, validateProbeFile, evaluateSamples, evaluateProbeFile, journeyResultFailure };

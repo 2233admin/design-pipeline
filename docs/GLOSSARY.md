@@ -1,4 +1,4 @@
-# Design Pipeline Context
+# Design Pipeline Glossary
 
 Design Pipeline separates durable design-engineering method from the changing way an agent guides
 each user and discovers current implementation capabilities.

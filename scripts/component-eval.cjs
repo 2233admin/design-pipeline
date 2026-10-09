@@ -203,7 +203,13 @@ class Workbench {
     this.save(run, "component-action", `${attempt.taskId}: ${item.kind}${item.tool ? " " + item.tool : ""}`);
   }
   pipeline(run, action, args = []) {
-    const result = spawnSync(process.execPath, [path.join(this.options.toolkitRoot, "scripts/designer-pipeline.cjs"), action, "--change-root", ".", ...args, "--json"], { cwd: this.runRoot(run), windowsHide: true, encoding: "utf8", maxBuffer: 8 * 1024 * 1024, timeout: 30000 });
+    const completes = action === "decide" && args[args.indexOf("--verdict") + 1] === "complete";
+    if (completes) {
+      args = [...args];
+      if (this.options.chromePath && !args.includes("--chrome")) args.push("--chrome", this.options.chromePath);
+      if (this.options.puppeteerModule && !args.includes("--puppeteer-module")) args.push("--puppeteer-module", this.options.puppeteerModule);
+    }
+    const result = spawnSync(process.execPath, [path.join(this.options.toolkitRoot, "scripts/designer-pipeline.cjs"), action, "--change-root", ".", ...args, "--json"], { cwd: this.runRoot(run), windowsHide: true, encoding: "utf8", maxBuffer: 8 * 1024 * 1024, timeout: completes ? 75000 : 30000 });
     let value; try { value = JSON.parse(result.stdout); } catch { throw error("PIPELINE_FAILED", "工具入口未返回有效结果：" + redact(result.stderr || result.error?.message || "")); }
     run.eventCount = (run.eventCount || 0) + 1;
     const record = { seq: run.eventCount, kind: "tool-end", source: "design-pipeline-dispatcher", tool: action, args, taskId: value.task?.id || value.taskId || "reference", text: JSON.stringify(publicValue(value)), isError: result.status !== 0, timestamp: now(), receivedAt: now() };
@@ -218,12 +224,14 @@ class Workbench {
     safePath(attempt.cwd, "tasks-plan.json");
     const plan = validatePlan(readJson(file), { requireVisualTasks: true });
     if (plan.input_hash !== "sha256:" + run.commonInputHash) throw error("TASK_INPUT_MISMATCH", "任务拆解没有绑定本次固定参考输入");
-    for (const phase of plan.phases) {
+    for (const [index, phase] of plan.phases.entries()) {
       if (!/^[a-z][a-z0-9_-]{0,63}$/.test(phase.id) || phase.id === "reference") throw error("TASK_ID_INVALID", "细任务需要独立、可定位的ID");
       const prefix = `results/${phase.id}/`;
       if (!phase.outputs.includes(prefix + "index.html") || phase.outputs.some(file => !file.startsWith(prefix)) || phase.visual.checks.length !== 1 || phase.visual.checks[0] !== prefix + "technical-check.json") throw error("TASK_OUTPUT_INVALID", "每个细任务须使用自己的 results/<id>/index.html 和独立 technical-check.json");
       if (phase.visual.scope.some(file => /^(?:reference|toolkit|node_modules|prompt\.md|brief\.md|task\.json)(?:\/|$)/.test(file))) throw error("TASK_SCOPE_INVALID", "修改范围包含固定输入");
       for (const guide of phase.visual.guides) safePath(this.options.toolkitRoot, guide);
+      const category = phase.visual.property.split(".")[0], lastInCategory = !plan.phases.slice(index + 1).some(next => next.visual.property.split(".")[0] === category);
+      phase.visual.review = phase.visual.review === true || lastInCategory && ["geometry", "materials", "motion"].includes(category);
     }
     if (!plan.phases.some(phase => phase.visual.property.startsWith("geometry."))) throw error("TASK_GEOMETRY_MISSING", "拆解须先包含可单独检查的几何属性，如 geometry.contour 或 geometry.depth");
     const root = this.runRoot(run);
@@ -238,30 +246,52 @@ class Workbench {
       }
     }
     fs.copyFileSync(path.join(attempt.cwd, "reference.md"), path.join(root, "reference.md"));
-    fs.copyFileSync(file, path.join(root, "visual-plan.json"));
-    run.tasks = [run.tasks[0], ...plan.phases.map((phase, i) => {
-      const category = phase.visual.property.split(".")[0], lastInCategory = !plan.phases.slice(i + 1).some(next => next.visual.property.split(".")[0] === category);
-      return { id: phase.id, title: phase.goal, goal: phase.goal, visual: phase.visual, requiresReview: phase.visual.review === true || lastInCategory && ["geometry", "materials", "motion"].includes(category), dependsOn: phase.depends_on.length ? phase.depends_on : ["reference"], deliverables: ["index.html", "front.png", "side.png"], status: "pending", attempts: [] };
+    const plannedOutputs = new Set(plan.phases.flatMap(phase => phase.outputs));
+    for (const input of new Set(plan.phases.flatMap(phase => phase.inputs))) {
+      if (plannedOutputs.has(input)) continue;
+      const source = safePath(attempt.cwd, input), target = safePath(root, input, false);
+      if (fs.existsSync(target)) {
+        if (!fs.statSync(target).isFile() || sha256(fs.readFileSync(target)) !== sha256(fs.readFileSync(source))) throw error("TASK_INPUT_CONFLICT", "任务输入不能覆盖已有的不同文件：" + input);
+      } else { fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(source, target, fs.constants.COPYFILE_EXCL); }
+    }
+    writeJson(path.join(root, "visual-plan.json"), plan);
+    run.tasks = [run.tasks[0], ...plan.phases.map(phase => {
+      return { id: phase.id, title: phase.goal, goal: phase.goal, visual: phase.visual, requiresReview: phase.visual.review === true, dependsOn: phase.depends_on.length ? phase.depends_on : ["reference"], deliverables: ["index.html", "front.png", "side.png"], status: "pending", attempts: [] };
     })];
     run.visualPlan = "visual-plan.json";
+    if (!fs.existsSync(path.join(root, ".git"))) {
+      if (readJson(path.join(root, "state.json")).extensions.visualTasks?.active) throw error("TASK_BASELINE_MISSING", "已有任务窗口不能通过新建Git基线清除，请修复原窗口");
+      // This fresh, owned benchmark repository observes promoted outputs. Attempt scratch
+      // remains subject to the existing input/scope checks, not a Git write-containment claim.
+      fs.writeFileSync(path.join(root, ".gitignore"), "/attempts/\n/plan.json\n", { flag: "wx" });
+      for (const args of [["init", "-q", "-b", "codex/component-eval"], ["add", "."], ["-c", "user.name=Component evaluation", "-c", "user.email=component-eval@example.invalid", "commit", "--no-gpg-sign", "-qm", "Freeze native evaluation inputs"]]) {
+        const git = spawnSync("git", ["-C", root, ...args], { windowsHide: true, encoding: "utf8", timeout: 30000 });
+        if (git.status !== 0) throw error("TASK_GIT_MISSING", "无法建立本次独立评测的Git基线：" + redact(git.stderr || git.error?.message || ""));
+      }
+    }
     const action = this.pipeline(run, "next", ["--plan", run.visualPlan]);
+    if (action.status === "blocked") throw error("TASK_BLOCKED", action.blockers?.join("; ") || "原生细任务缺少可执行检查绑定");
     if (action.stage !== "visual-task") throw error("TASK_DISPATCH_INVALID", "冻结工具没有返回当前细任务");
   }
   sealVisual(run, task, attempt, capture) {
-    const root = this.runRoot(run), phase = attempt.pipelineAction.task, destination = path.join(root, "results", task.id); fs.mkdirSync(destination, { recursive: true });
-    snapshot(attempt.cwd, destination);
-    writeJson(path.join(root, phase.visual.checks[0]), capture);
-    const inputHashes = attempt.pipelineAction.inputHashes;
-    const outputs = phase.outputs.map(file => createArtifactMetadata({ path: file, producer: run.selector + ":" + attempt.id, input_hashes: inputHashes, dependencies: phase.depends_on, created_at: now() }, { changeRoot: root }));
-    const checkedHashes = { ...inputHashes, ...Object.fromEntries(outputs.map(meta => ["output:" + meta.path, meta.artifact_hash])) };
-    const reports = phase.visual.checks.map(file => createArtifactMetadata({ path: file, producer: "external-check:" + attempt.id, input_hashes: checkedHashes, dependencies: phase.outputs, created_at: now() }, { changeRoot: root }));
-    attempt.completionPath = `attempts/${attempt.id}/completion.json`;
-    writeJson(path.join(root, attempt.completionPath), [...outputs, ...reports]);
+    const root = this.runRoot(run), phase = attempt.pipelineAction.task, prefix = `results/${task.id}/`;
+    const outputs = phase.outputs.map(file => ({ source: safePath(attempt.cwd, file.slice(prefix.length)), target: safePath(root, file, false) }));
+    for (const { target } of outputs) {
+      const leaf = fs.lstatSync(target, { throwIfNoEntry: false });
+      if (leaf && (leaf.isSymbolicLink() || !leaf.isFile() || fs.statSync(target, { bigint: true }).nlink > 1n)) throw error("OUTPUT_COLLISION", "任务交付目标不能覆盖已有链接或其它文件实体");
+      for (let parent = path.dirname(target); path.relative(root, parent); parent = path.dirname(parent)) {
+        if (fs.lstatSync(parent, { throwIfNoEntry: false })?.isSymbolicLink()) throw error("OUTPUT_COLLISION", "任务交付目标不能通过链接目录写入");
+      }
+    }
+    for (const { source, target } of outputs) {
+      fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(source, target);
+    }
+    attempt.completionPath = attempt.pipelineAction.metadataPath;
   }
   completeVisual(run, task, attempt) {
     const result = this.pipeline(run, "decide", ["--plan", run.visualPlan, "--choice", task.id, "--verdict", "complete", "--artifact", attempt.completionPath]);
     if (result.status !== "recorded") throw error("TASK_EVIDENCE_FAILED", result.failure || "细任务证据未通过");
-    if (result.next?.stage === "visual-review") this.acceptVisual(run, task, attempt);
+    attempt.nativeArtifacts = readJson(safePath(this.runRoot(run), attempt.completionPath));
   }
   acceptVisual(run, task, attempt) {
     this.verifyArtifact(run, attempt);
@@ -286,15 +316,15 @@ class Workbench {
       if (task.id === "reference" && pipelineAction.stage !== "decompose" || task.id !== "reference" && pipelineAction.task?.id !== task.id) throw error("TASK_DISPATCH_INVALID", "冻结工具与当前细任务不一致，请先更新工具快照");
       if (task.id === "reference") pipelineAction.template = {
         ...pipelineAction.template, plan_id: run.id, input_hash: "sha256:" + run.commonInputHash,
-        phases: [{ id: "outline", goal: "只对齐正面轮廓", depends_on: [], inputs: ["reference.md"], outputs: ["results/outline/index.html"], gates: [], visual: { target: "outer-shell", property: "geometry.contour", references: ["reference/front.png"], scope: ["index.html"], guides: ["references/3d-spec.md", "references/reconstruction-spec.md"], checks: ["results/outline/technical-check.json"] } }]
+        phases: [{ id: "outline", goal: "只对齐正面轮廓", depends_on: [], inputs: ["reference.md", "outline-probe.json"], outputs: ["results/outline/index.html"], gates: [], visual: { target: "outer-shell", property: "geometry.contour", references: ["reference/front.png"], scope: ["index.html"], guides: ["references/3d-spec.md", "references/reconstruction-spec.md"], checks: ["results/outline/technical-check.json"], verification: [{ kind: "interaction", probe: "outline-probe.json", target: "results/outline/index.html", check: "results/outline/technical-check.json" }] } }]
       };
     }
-    const boundInputs = Object.keys(pipelineAction?.inputHashes || {}).filter(file => !file.startsWith("$"));
+    const boundInputs = Object.keys(pipelineAction?.inputHashes || {}).filter(file => file !== "$plan" && file !== "$task");
     for (const file of boundInputs) { const output = safePath(cwd, file, false); fs.mkdirSync(path.dirname(output), { recursive: true }); fs.copyFileSync(safePath(this.runRoot(run), file), output); }
     const guide = run.treatment === "tool" ? '工具版：读 toolkit/SKILL.md，并执行当前任务列出的能力指南。需要技术路线时用 route --write 再按返回handoff准备toolchain request，不用手猜绑定输入。工具错误保留在 failure.md 和实际日志里。' : "直接版：使用同一参考与任务目标独立制作，不读取 design-pipeline 或其他任务作品。";
     const interfaces = task.id === "reference" ? "交付 reference.md：观察、结构关系、材质目标和明确未知。" : `交付可独立打开的 index.html 与本地源文件。默认入口只呈现当前徽章及已实现的交互；调参、拆层、模型记录和源码说明只在 ?inspect=1 检查入口显示。使用 Three.js 实体几何；每一视觉阶段提供 window.__ready=true、可定位并绘制的 window.sampleTime(t)，检查入口提供 input#yaw（改变视角）和 input#explode（改变层距），供外部截图验证。场景随容器尺寸变化。${task.id === "motion" || task.visual?.property.startsWith("motion.") ? "当前动作任务提供完整时间线与实际播放，默认播放并尊重减少动态效果偏好，检查入口提供button#play、button#reset。" : "当前任务保持可定位的静态场景，不扩展整段播放。"}源码图形需有真正WebGL渲染；保留之前阶段已认可内容。前侧截图与运行报告由独立检查器生成，你不能伪造检查通过或人工评分。`;
     const feedback = previous?.review?.feedback || previous?.failure || "无";
-    const decomposition = pipelineAction && task.id === "reference" ? `\n同时交付 tasks-plan.json，复用下面工具返回的design-plan.v1模板。input_hash须为 sha256:${run.commonInputHash}。每项只写一项可观察属性，例如geometry.contour、geometry.depth、geometry.bevel，分别说明参考、改动范围和检查；不可用geometry.all合并整个灰模。先几何再材质、最后运动。references使用reference/中的文件，inputs可用reference.md；outputs使用results/<task-id>/index.html（可声明其他源文件），checks只写results/<task-id>/technical-check.json。每项完成由宿主封存独立快照并生成检查，模型不要伪造报告。各视觉关键节点用visual.review:true标明。\n${JSON.stringify(pipelineAction.template)}` : "";
+    const decomposition = pipelineAction && task.id === "reference" ? `\n同时交付 tasks-plan.json，复用下面工具返回的design-plan.v1模板。input_hash须为 sha256:${run.commonInputHash}。每项只写一项可观察属性，例如geometry.contour、geometry.depth、geometry.bevel，分别说明参考、改动范围和检查；不可用geometry.all合并整个灰模。先几何再材质、最后运动。references使用reference/中的文件，inputs可用reference.md；outputs使用results/<task-id>/index.html（可声明其他源文件），checks只写results/<task-id>/technical-check.json。每项显式交付本地interaction-probe.v1探针文件，把它列入inputs并用visual.verification绑定probe、当前output target和check；探针url相对探针文件指向该任务的results/<task-id>/index.html。只使用受支持的本地页面测量，不假定截图或报告标签等于技术通过。宿主会调用原生complete实际运行探针并生成报告与固定元数据，然后展示独立快照等待验收；模型不要伪造报告。各视觉关键节点用visual.review:true标明。\n${JSON.stringify(pipelineAction.template)}` : "";
     const currentTask = pipelineAction?.task ? `\n这是冻结产品入口返回的唯一当前任务（副本task.json），只改其scope，只解决其property，保留其他属性。读取visual.guides列出的每个toolkit资源、对应参考与上游源文件。输出先写当前目录index.html和所需源码，由宿主封存到task.outputs中的独立路径并生成检查。\n${JSON.stringify(pipelineAction.task)}` : "";
     const prompt = `${brief}\n\n${interfaces}\n\n${guide}${decomposition}${currentTask}\n\n输入：reference/ 中固定样帧与当前目录已复制的上游源文件；姿态表如果存在是历史估计。只做本任务，交付后退出等待下一步。\n上次反馈：${feedback}\n\n你只拥有当前目录的组件源文件、reference.md、tasks-plan.json、implementation.md、failure.md和本任务产物，不修改 brief.md、prompt.md、task.json、reference/、toolkit、node_modules或父目录。不要读取兄弟运行、旧复刻、认证文件或转储环境变量；不调用其他模型、网络、安装依赖或公开发布。不要启动后台服务。bash工具使用其支持的shell语法，node命令用相对路径；不要混用PowerShell/cmd内建命令。没有累计token或12分钟制作淘汰线。最后仅总结已执行的动作、真实错误与交付文件，不宣称用户验收通过。`;
     fs.writeFileSync(path.join(cwd, "brief.md"), brief); fs.writeFileSync(path.join(cwd, "prompt.md"), prompt);
@@ -324,6 +354,7 @@ class Workbench {
     const parent = run.tasks.find(t => t.id === task.dependsOn[0])?.attempts.at(-1)?.artifact;
     const inputHashes = Object.fromEntries(Object.entries(attempt.inputHashes).map(([key, value]) => [key, "sha256:" + value])); if (parent) inputHashes.parent = parent.artifact_hash;
     attempt.artifacts = files.map(file => { safePath(attempt.cwd, file); return createArtifactMetadata({ path: prefix + file, producer: run.selector + ":" + attempt.id, input_hashes: inputHashes, dependencies: parent ? [parent.path] : [], created_at: now() }, { changeRoot: root }); });
+    if (attempt.nativeArtifacts) attempt.artifacts.push(...attempt.nativeArtifacts, createArtifactMetadata({ path: attempt.completionPath, producer: "native-completion:" + attempt.id, input_hashes: attempt.pipelineAction.inputHashes, dependencies: attempt.nativeArtifacts.map(artifact => artifact.path), created_at: now() }, { changeRoot: root }));
     const manifestPath = `attempts/${attempt.id}/artifact.json`;
     writeJson(path.join(root, manifestPath), { taskId: task.id, attemptId: attempt.id, files: attempt.artifacts, engineering: capture, visualAcceptance: "not-evaluated" });
     attempt.artifact = createArtifactMetadata({ path: manifestPath, producer: run.selector + ":" + attempt.id, input_hashes: inputHashes, dependencies: parent ? [parent.path] : [], created_at: now() }, { changeRoot: root });
@@ -450,10 +481,10 @@ class Workbench {
       if (active.stopped) throw error("USER_STOPPED", "用户停止了当前任务");
       if (run.treatment === "tool" && run.dispatchVersion === 2) {
         if (task.id === "reference") this.loadVisualPlan(run, attempt);
-        else this.sealVisual(run, task, attempt, capture);
+        else { this.sealVisual(run, task, attempt, capture); this.completeVisual(run, task, attempt); }
       }
       this.seal(run, task, attempt, capture); attempt.status = "generated";
-      if (task.visual) { this.save(run, "component-evidence-sealed", task.title + "独立证据已封存"); if (!task.requiresReview) this.completeVisual(run, task, attempt); }
+      if (task.visual) this.save(run, "component-evidence-sealed", task.title + "独立证据已封存");
     } catch (e) {
       attempt.failureCode = e.code || "DRIVER_ERROR"; attempt.failure = redact(e.message); if (e.evidence) attempt.engineering = e.evidence;
       attempt.status = attempt.failureCode === "USER_STOPPED" ? "stopped" : "failed"; task.status = attempt.status; run.status = attempt.status; this.save(run, "component-failed", task.title + "：" + attempt.failure);
@@ -469,26 +500,29 @@ class Workbench {
     if (!["accept", "reject"].includes(input.verdict)) throw error("VERDICT_REQUIRED", "请选择通过或退回", 400);
     if (input.verdict === "reject" && !String(input.feedback || "").trim()) throw error("FEEDBACK_REQUIRED", "退回时请写明需要修改的地方", 400);
     const scores = {}; for (const key of ["geometry", "material", "motion"]) { const value = input.scores?.[key] ?? null; if (value !== null && (!Number.isInteger(value) || value < 0 || value > 5)) throw error("SCORE_INVALID", "评分必须为空或0至5整数", 400); scores[key] = value; }
-    attempt.review = { verdict: input.verdict, valid: true, feedback: String(input.feedback || ""), scores, artifactHash: attempt.artifactHash, reviewedAt: now(), reviewer: "human-user", blindAtSubmission: false };
+    let native;
     if (run.treatment === "tool" && run.dispatchVersion === 2) {
-      this.save(run, "component-review-recorded", task.title + "人工意见已绑定当前作品");
       const action = this.pipeline(run, "next", ["--plan", run.visualPlan]);
       const progress = readJson(path.join(this.runRoot(run), "state.json")).extensions.visualTasks, record = progress.completed[task.id];
       const withoutStatus = ({ status, stale_cause, ...metadata }) => metadata;
-      const sameEvidence = record && progress.planHash === attempt.pipelineAction.planHash && record.taskHash === attempt.pipelineAction.taskHash
+      const sameEvidence = record && attempt.nativeArtifacts && progress.planHash === attempt.pipelineAction.planHash && record.taskHash === attempt.pipelineAction.taskHash
         && canonicalJson(record.inputHashes) === canonicalJson(attempt.pipelineAction.inputHashes)
+        && canonicalJson(record.artifacts.map(withoutStatus)) === canonicalJson(attempt.nativeArtifacts.map(withoutStatus))
         && canonicalJson(record.artifacts.map(withoutStatus)) === canonicalJson(readJson(safePath(this.runRoot(run), attempt.completionPath)).map(withoutStatus));
+      const feedback = String(input.feedback || "").trim();
+      const alreadyRejected = sameEvidence && record.status === "stale" && progress.failures[task.id] === feedback && record.artifacts.every(metadata => metadata.stale_cause === feedback);
+      if (!sameEvidence || record.status !== "ready" && !(input.verdict === "reject" && alreadyRejected)) throw error("TASK_EVIDENCE_CHANGED", "原生检查版本已改变或缺失，不能把旧人审用于重新执行的证据");
+      native = { action, alreadyRejected, feedback };
+    }
+    attempt.review = { verdict: input.verdict, valid: true, feedback: String(input.feedback || ""), scores, artifactHash: attempt.artifactHash, reviewedAt: now(), reviewer: "human-user", blindAtSubmission: false };
+    if (native) {
+      this.save(run, "component-review-recorded", task.title + "人工意见已绑定当前作品");
       if (input.verdict === "accept") {
-        if (sameEvidence && record.status === "ready") {
-          if (action.stage === "visual-review" && action.task?.id === task.id) this.acceptVisual(run, task, attempt);
-        } else this.completeVisual(run, task, attempt);
-      }
-      else {
-        const feedback = String(input.feedback).trim();
-        const alreadyRejected = sameEvidence && record.status === "stale" && progress.failures[task.id] === feedback && record.artifacts.every(metadata => metadata.stale_cause === feedback);
-        if (!alreadyRejected) {
+        if (native.action.stage === "visual-review" && native.action.task?.id === task.id) this.acceptVisual(run, task, attempt);
+      } else {
+        if (!native.alreadyRejected) {
           const rejected = this.pipeline(run, "decide", ["--plan", run.visualPlan, "--choice", task.id, "--verdict", "reject", "--artifact", attempt.completionPath, "--answer", String(input.feedback)]);
-          if (rejected.status !== "blocked" || rejected.failure !== feedback) throw error("TASK_REVIEW_FAILED", rejected.failure || "退回意见未绑定当前证据");
+          if (rejected.status !== "blocked" || rejected.failure !== native.feedback) throw error("TASK_REVIEW_FAILED", rejected.failure || "退回意见未绑定当前证据");
         }
       }
     }

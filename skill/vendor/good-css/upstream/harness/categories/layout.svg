@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 312 312" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <g class="lines" stroke="currentColor">
+    <path vector-effect="non-scaling-stroke" d="M14 14.11L298 14.11L298 297.89L14 297.89Z"/>
+    <path vector-effect="non-scaling-stroke" d="M105.63 14.11L105.63 297.89"/>
+    <path vector-effect="non-scaling-stroke" d="M14 107.57L298 107.57"/>
+    <path vector-effect="non-scaling-stroke" d="M14 15.48C61.07 22.3 99.72 57.32 105.41 107.57"/>
+    <path vector-effect="non-scaling-stroke" d="M105.63 107.57C207.05 114.62 289.36 194.2 298 297.89"/>
+  </g>
+  <image class="solid" href="/art/layout-lime.webp" x="-16" y="-15.89" width="151.667" height="153.667"/>
+  <image class="solid solid-dark" href="/art/layout-dark.webp" x="-16" y="-15.89" width="151.667" height="153.667"/>
+  <g class="nodes" fill="var(--art-ground, none)" stroke="currentColor">
+    <circle vector-effect="non-scaling-stroke" cx="14" cy="14.11" r="3.8"/>
+    <circle vector-effect="non-scaling-stroke" cx="105.63" cy="14.11" r="3.8"/>
+    <circle vector-effect="non-scaling-stroke" cx="298" cy="14.11" r="3.8"/>
+    <circle vector-effect="non-scaling-stroke" cx="14" cy="107.57" r="3.8"/>
+    <circle vector-effect="non-scaling-stroke" cx="105.63" cy="107.57" r="3.8"/>
+    <circle vector-effect="non-scaling-stroke" cx="298" cy="107.57" r="3.8"/>
+    <circle vector-effect="non-scaling-stroke" cx="14" cy="297.89" r="3.8"/>
+    <circle vector-effect="non-scaling-stroke" cx="105.63" cy="297.89" r="3.8"/>
+    <circle vector-effect="non-scaling-stroke" cx="298" cy="297.89" r="3.8"/>
+  </g>
+</svg>

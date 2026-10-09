@@ -1,0 +1,45 @@
+<template data-specimen data-height="320">
+  Hover a card. Its shadow deepens with a fade and comes to rest, and fades back when you leave. Nothing else about the card changes.
+</template>
+
+<style>
+  @layer demo {
+    body {
+      padding: 2rem;
+    }
+
+    /* The entry's shadows are dark and faint, made for a light page. The
+       stage is one, so the cards lie on it with no line round them. */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      padding: 1.25rem;
+      border-radius: var(--bp-radius);
+      background: var(--bp-panel);
+    }
+
+    h2 {
+      margin-block-end: 0.5rem;
+      font-size: 1.5rem;
+    }
+  }
+</style>
+
+<div class="cards">
+  <article class="card">
+    <h2>First card</h2>
+    <p>Hover me.</p>
+  </article>
+  <article class="card">
+    <h2>Second card</h2>
+    <p>Then me.</p>
+  </article>
+  <article class="card">
+    <h2>Third card</h2>
+    <p>And me.</p>
+  </article>
+</div>

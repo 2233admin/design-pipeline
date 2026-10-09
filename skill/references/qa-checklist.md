@@ -2,6 +2,120 @@
 
 Create or update `qa.md` for every design-pipeline change with this structure.
 
+## Run verification
+
+Use this recipe before declaring completion. Resolve `designer-pipeline` from the loaded
+`SKILL.md`; commands below use that public CLI and the actual project/change paths.
+
+### Launch
+
+The packaged CLI needs Node.js 22+ and runs per command; it has no server to keep alive.
+For maintenance in this repository, use Node.js 22.12+ and `npm ci`; prepare missing browsers with
+`npm run browser:install`. Start a target app using its own documented command, configuration,
+data and authentication. Record the instance, owned PID/port and observed readiness; isolate it
+from other runs before driving it.
+
+### Doctor
+
+Run `designer-pipeline doctor --root <project> --json`. It checks Node and packaged resources,
+not the target app, browser, port or authentication; verify the actual target is reachable too.
+For an initialized native change, run `designer-pipeline status --root <project>
+--change-root <change> --json` and read state/event consistency. Diagnose the instance and the
+observation method first when results look wrong; do not replace missing observations with a pass.
+
+### Drive
+
+State the condition, expected result and a check that can disprove it. Exercise the real entry
+changed by this task; reuse its existing harness and stable selectors instead of internal setters.
+
+| Changed surface | Existing public entry | Observable proof |
+| --- | --- | --- |
+| CLI/routing | Run the changed command; `route --query "design a settings page" --json` for a route smoke | Read the actual returned action/result and exit code; this does not exercise UI. |
+| Native tasks | `next --change-root <change> --plan <tasks-plan>`; its returned `decide` command | Native complete runs every declared interaction binding on the exact local page and checks the preserved Git window before promotion. |
+| Rendered frame | `composition capture --composition <html> --output <new-dir>`; `verify composition --image <dir>/screenshot.png --elements <dir>/elements.json --profile ui` | Inspect the generated image and full gate result; a frame does not prove interaction or playback. |
+| Interaction/motion | `verify interaction --probe <interaction.json> --output <new-dir>` | Read recorded responses for the declared probes; also walk the affected real user journey. |
+| Film/edit | `film check --project-root <project>` or `film-edit check --project-root <project>` | Read every applicable check and play the actual output, including audio. |
+
+### Evidence
+
+Record commands, inputs/actions, actual exit codes, observed results and untested operations in
+`qa.md`. Keep logs/captures in a new project-contained directory under ignored `.design-pipeline/`;
+keep native output/check snapshots at their plan paths. Inspect artifacts rather than their names.
+For web captures, `evidence capture` writes artifacts and prints a CLI envelope; it does not write
+a receipt file. The raw evidence receipt is its stdout envelope's `receipt.receipt` field.
+`evidence check --receipt <raw-receipt.json> --evidence-root <capture-dir> --require-files --json`
+checks files and hashes. The built-in Playwright adapter captures screenshot/DOM/console/trace,
+but writes an empty network list and unknown accessibility/performance; its receipt is `partial`.
+A partial receipt can validate with exit 0: neither that exit nor `captured` proves full behavior.
+Native complete generates report/output artifact metadata from observed browser execution; retain
+the interaction-result.v1 measurements and state/event completion. Declare supported
+`visual.verification` bindings; supplied reports/receipt labels and legacy cached records do not
+replace execution. Hashes bind freshness, with plan/input/output and CAS rechecked after capture.
+Report Component Conformance, functional coverage and owner Visual Acceptance separately.
+
+For a state journey, inspect every ordered assertion's actual/expected value and step finding;
+the same page instance must carry state across open, selection and close. Journey results do not
+contain motion frames. Keep selected values in the final assertions so a transient success cannot
+hide a later reset. Motion samples alone do not prove business state, and DOM readouts alone do
+not prove persistence or backend side effects. The complete menu example is in
+`stages.md#complete-menu-task-example`.
+
+### Cleanup and recovery
+
+Stop only instances this run started, using their recorded ownership; remove temporary runtime
+state and keep proof artifacts. Confirm the evidence still exists after cleanup. If a check cannot
+run, name the missing instance/input/tool and recovery action. Repair and rerun the same real path;
+for native tasks use the returned `reject`/`next` flow and preserve feedback. Changed upstream or
+output bytes require fresh checks and applicable review; never hand-edit state to complete.
+Native dispatch must precede work in an owned Git window. Retrying does not reset its baseline or
+original scope; expanding the plan cannot legalize an existing out-of-scope edit. Preserve other
+people's unchanged dirty files. Scope coverage includes working/index changes and commit/revert
+paths, with non-Git, unmerged and replaced-history windows blocked. Ignored/outside writes,
+restored uncommitted writes and attribution of concurrent writers need a separate host boundary.
+Keep exact output/check snapshots available through owner review; scope inspection has no cleanup.
+
+Read native `findings` and text `feedback` before another repair. Actual consecutive failures
+bind input and output bytes; three identical failed observations return stop-repeating guidance.
+Change one justified cause or report the missing condition, then rerun. Repeating next, missing
+tools or a blocked scope/CAS does not add a measured attempt; output-byte changes reset the
+consecutive count without resetting authorization. Never change a frozen expectation to make
+the implementation pass.
+
+## Engineering feedback loop
+
+Use this loop for code and deterministic runtime changes; keep visual inspection and owner
+Visual Acceptance separate. The established public CLI is the test interface. Existing task
+authorization covers that interface; do not repeat setup or ask to confirm it again.
+
+1. Name one observable behavior and the existing command that reaches it. State what the check
+   catches and what it leaves untested. Take the expected result from the spec or a known literal,
+   not a second implementation of the same calculation or a mock of internal collaborators.
+2. Run one regression check and observe RED on the actual symptom before changing behavior.
+   Make the smallest change that produces GREEN, then rerun that public path before starting the
+   next behavior. Do not write every imagined test first or broaden unrelated implementation.
+3. Keep the feedback command quick and unattended: isolate files/data, pin variable conditions
+   and assert the specific result rather than merely successful exit. Save its actual invocation,
+   input, exit code and output as [verification evidence](#evidence). A pass proves that scope only.
+4. When a command passes but workflow progress stalls, run project-root `next --root <project>`
+   and compare `verification.status` with `verification.recordedStatus`; read `verification.gate`,
+   `verification.findings` and each finding's `fix`. Recorded status describes the previous check;
+   current findings can require a new check because files changed, disappeared or were never bound.
+5. Test one concrete cause at a time: name the prediction, change one input or condition, rerun
+   the same symptom check and compare the observed result. Follow returned recovery guidance;
+   do not blindly repeat identical inputs, substitute another unrelated passing check or
+   hand-edit state. If the loop cannot run, record the missing input/tool/instance and next action.
+6. Trace the affected callers and fix the shared module's root cause once. Keep its public
+   interface small and understandable; reuse existing helpers and the standard library before
+   adding indirection. A single implementation does not justify another interface or runner.
+
+For UI, interaction and film changes, continue the real journey or play the changed output with
+audio after technical checks; retain applicable owner review. A deterministic regression does
+not establish creative quality or replace playback and Visual Acceptance.
+
+Methods adapted from Matt Pocock's pinned [TDD](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/tdd/SKILL.md),
+[diagnosis](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/diagnosing-bugs/SKILL.md) and
+[module design](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/codebase-design/SKILL.md).
+
 ## Self-Check
 
 - Command:
@@ -431,6 +545,34 @@ Complete this section when `scene.json` and `scene.md` or `3d.md` are required.
 - Does not create parallel OpenSpec/GBrain source of truth:
 - React/Next conventions checked when applicable:
 - Animation library choice justified:
+
+For selected built-in Taste methods, use `taste-skill.md` within these existing checks:
+
+- Exact entry/version and complete original source read; v2 experimental or explicit v1 compatibility:
+- Brief/audience fit, chosen dials/style and project/user authority; adapted or non-applicable rules:
+- Every requested file, section image, screen or board completed and actually inspected:
+- Existing brand, route/IA/SEO/analytics, functionality, framework and shared consumers preserved:
+- Real copy/assets/facts, font licensing/CJK glyphs, contrast, zoom/reflow, keyboard and states checked:
+- Image provider/output paths and limitations; image-only output is distinct from live UI behavior:
+- Reference-to-code uses the actual selected/user reference and existing final fidelity evidence:
+- Stitch example translated into the project foundation; no copied example claimed as user design:
+- Implemented motion motivated, bounded, responsive to reduced motion, and observed through real input/playback:
+
+Availability, a source pre-flight checklist or a marker result does not establish Component
+Conformance or Visual Acceptance. Report both separately and preserve the existing evidence lineage.
+
+For CSS changes, use `good-css.md` within the existing interface review and evidence process:
+
+- Applied practice IDs, original conditions and project adaptations:
+- Target-browser/version support, unsupported features and exercised usable fallbacks:
+- Intrinsic layout with narrow/wide viewports, real long content and RTL/CJK/200% zoom as applicable:
+- Keyboard/focus, hover-capability, pressed/form states and reduced-motion observations:
+- Offline specimen study and actual affected project surface inspected:
+- CSS-owned properties do not conflict with the deterministic film or existing motion owner:
+
+The upstream checker is a scoped diagnostic for readable CSS/style blocks, with opinionated rules;
+it cannot validate utility/CSS-in-JS output, browser support, accessibility or visual quality.
+Source integrity and study generation do not establish Component Conformance or Visual Acceptance.
 
 ## Agent-Readable State
 

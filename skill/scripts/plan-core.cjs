@@ -43,7 +43,7 @@ function validateVisualTask(phase, index) {
   if (Object.hasOwn(Object.prototype, phase.id)) fail("design plan", `${label}.id is reserved for object prototype records`);
   assertString(phase.goal, `${label}.goal`, "design plan");
   const keys = ["target", "property", "references", "scope", "guides", "checks"];
-  assertKeys(phase.visual, keys, [...keys, "review", "sourceObservation"], `${label}.visual`, "design plan");
+  assertKeys(phase.visual, keys, [...keys, "review", "sourceObservation", "verification"], `${label}.visual`, "design plan");
   for (const key of ["target", "property"]) assertString(phase.visual[key], `${label}.visual.${key}`, "design plan");
   const property = phase.visual.property;
   if (!/^[a-zA-Z][a-zA-Z0-9_.-]*$/.test(property) || ["geometry", "materials", "motion", "component", "page", "all", "implementation"].includes(property.toLowerCase()) || /\.all$/i.test(property)) {
@@ -62,10 +62,32 @@ function validateVisualTask(phase, index) {
       fail("design plan", `${bindingLabel}.report must be included in visual.references`);
     }
   }
-  visualTaskPaths(phase.inputs, `${label}.inputs`, false);
+  const inputs = visualTaskPaths(phase.inputs, `${label}.inputs`, false);
   const outputs = visualTaskPaths(phase.outputs, `${label}.outputs`);
-  if (phase.visual.checks.some((file) => outputs.includes(validateVisualTaskPath(file, `${label}.visual.checks`)))) {
+  const checks = visualTaskPaths(phase.visual.checks, `${label}.visual.checks`);
+  if (checks.some(file => outputs.includes(file))) {
     fail("design plan", `${label}.visual.checks must not overlap task outputs`);
+  }
+  if (phase.visual.verification !== undefined) {
+    const bindings = phase.visual.verification, bindingLabel = `${label}.visual.verification`;
+    if (!Array.isArray(bindings) || bindings.length === 0) fail("design plan", `${bindingLabel} must be a non-empty array of check bindings`);
+    if (new Set(checks).size !== checks.length) fail("design plan", `${label}.visual.checks must not contain duplicate checks`);
+    const bound = new Set();
+    for (const [bindingIndex, binding] of bindings.entries()) {
+      const itemLabel = `${bindingLabel}[${bindingIndex}]`, bindingKeys = ["kind", "probe", "target", "check"];
+      assertKeys(binding, bindingKeys, bindingKeys, itemLabel, "design plan");
+      assertEnum(binding.kind, ["interaction"], `${itemLabel}.kind`, "design plan");
+      const probe = validateVisualTaskPath(binding.probe, `${itemLabel}.probe`);
+      const target = validateVisualTaskPath(binding.target, `${itemLabel}.target`);
+      const check = validateVisualTaskPath(binding.check, `${itemLabel}.check`);
+      if (!inputs.includes(probe)) fail("design plan", `${itemLabel}.probe must be declared in task inputs`);
+      if (!outputs.includes(target)) fail("design plan", `${itemLabel}.target must be declared in task outputs`);
+      if (!checks.includes(check)) fail("design plan", `${itemLabel}.check must be declared in visual.checks`);
+      if (bound.has(check)) fail("design plan", `${bindingLabel} has a duplicate check binding: ${check}`);
+      bound.add(check);
+    }
+    const missing = checks.filter(check => !bound.has(check));
+    if (missing.length) fail("design plan", `${bindingLabel} is missing bindings for checks: ${missing.join(", ")}`);
   }
 }
 

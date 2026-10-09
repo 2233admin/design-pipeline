@@ -34,6 +34,10 @@ asset study plus sound direction precede film construction. This project-owned
 creative contract complements the upstream runtime contract below. Technical checks and creative
 review are separate outcomes; ordinary promotional wording is sufficient to activate both.
 
+Optional [Cinetic/Product Film methods](film-methods.md) reuse this HTML route: explicit technique
+recipes, actual product component/twin provenance and configurable motion primitives feed the
+existing paused timeline. Their upstream Remotion/default-fps choices do not reroute HTML video.
+
 Existing project state wins over fresh routing. An existing `BRIEF.md`, `hyperframes.json`, or
 `STORYBOARD.md` resumes the recorded workflow. An explicit inspect, check, preview, render, publish,
 or batch-render request performs only that operation. When the user requests a creative revision,

@@ -113,6 +113,18 @@ Keep the artifacts distinct:
 The bundled scripts manage deterministic state and validation. The host design agent performs the
 creative synthesis; do not disguise a copied template or token dump as generated product design.
 
+## Built-In Taste Capabilities
+
+For new websites, existing-project redesign, aesthetic direction/critique, image-to-code,
+web/mobile concept images or brand boards, open [taste-skill.md](taste-skill.md). It selects among
+all thirteen complete packaged source entries and maps each output to the existing stages and
+checks. V2 is experimental; v1 is an explicit compatibility choice. Choose only the relevant
+method/style, preserve project/user authority and use the current framework and evidence routes.
+The three image-generation methods produce images through an available provider; they do not
+implement controls or bundle a model. Existing reference images take priority. Stitch's example
+DESIGN.md must be translated through design-synthesis into the project-owned foundation.
+No external Taste installation, new gate or extra catalog search is required.
+
 ## Companion Skills
 
 Reference file: `references/companion-skills.md`.
@@ -152,11 +164,13 @@ Impeccable design contract: `references/impeccable-contract.md`.
 Impeccable product-design capability map: `references/impeccable-product-design.json` and
 `references/impeccable-product-design.md`.
 
-If these design skills are installed, use them as lenses in this order:
+Use these design lenses in this order; external companions apply when installed, while Taste
+is built in:
 
 1. `impeccable`: command vocabulary, surface modes, refinement semantics, bounded verification, and design-detector workflow.
 2. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
-3. `design-taste-frontend`: anti-template discipline, typography taste, language and visual restraint.
+3. [Built-in Taste suite](taste-skill.md): select the matched complete method for direction,
+   redesign, style or visual assets; adapt its rules within project contracts.
 4. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
 5. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
 6. `emil-design-eng`: motion, transitions, input feedback, perceived quality, interaction details.

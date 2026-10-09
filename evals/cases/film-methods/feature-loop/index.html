@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Design Pipeline · 通知开关循环</title>
+  <script src="lib/gsap.min.js"></script>
+  <script src="lib/cinetic-motion-source.js"></script>
+  <script src="lib/film-motion.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; background: oklch(0.975 0.008 160); color: oklch(0.25 0.015 160); font-family: "Microsoft YaHei", system-ui, sans-serif; }
+    #root { width: 1920px; height: 1080px; position: relative; }
+    h1 { position: absolute; left: 120px; top: 180px; font-size: 58px; }
+    p { position: absolute; left: 124px; top: 340px; width: 560px; font-size: 30px; line-height: 1.65; }
+    #camera { position: absolute; left: 850px; top: 90px; width: 1000px; height: 900px; transform-origin: center; }
+    video { width: 1000px; height: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="4" data-width="1920" data-height="1080">
+    <h1>通知偏好，立即看见。</h1><p>Design Pipeline 真实组件示例<br>开启 → 关闭 → 开启</p>
+    <div id="camera"><video id="profile" src="assets/source.mp4" data-start="0" data-duration="4" data-track-index="0" muted playsinline></video></div>
+  </div>
+  <script>
+    const M = FilmMotion.create({ fps: 30, bpm: 120 });
+    const tl = gsap.timeline({ paused: true });
+    tl.to('#camera', { x: -24, y: -12, scale: 1.04, duration: M.sec(M.b(1, 4)), ease: M.E.ui }, 0);
+    tl.to('#camera', { x: 0, y: 0, scale: 1, duration: M.sec(M.b(1, 4)), ease: M.E.ui }, 2);
+    window.__timelines = window.__timelines || {};
+    window.__timelines.main = tl;
+    tl.seek(0);
+  </script>
+</body>
+</html>

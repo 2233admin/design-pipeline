@@ -46,3 +46,24 @@ reordered time, instance isolation, transparent exports, missing inputs, invalid
 safe output paths. Exercise each asset/audio tool with actual outputs and run the relevant
 existing diagnostics. Run OpenSpec, repository QA and packaged CLI/install checks. Test counts
 describe technical checks only, not functions or aesthetic quality.
+
+## Reviewed media increment (2026-10-08)
+
+The fixed refresh boundary is `26dba25b2b495c2138848c29a2c90df356a20325` to
+`57d67608ab458f57d9b153b1a2831b921e22498b`: two reviewed commits, 26 changed files.
+The importer additionally retains media defaults/schema, four contract tests, release manifest,
+contribution/CI source and gitignore as inert source material. The retained tree has 343 files;
+author portrait frames/showcase media stay excluded. Git committed bytes and original paths are
+preserved; historical manual-adaptation attribution stays at its real original revision.
+
+Canvas libraries, 35 scenes and eight clips are unchanged. Regenerate the static adapter with
+the current source pin and derive the render report's pin from its runtime. The maintained
+renderer still uses `page.setContent` and embedded local data URLs; the upstream threaded
+Python server is source material and does not add another renderer/service.
+
+Image guidance reuses supplied assets or an actual current host tool, project asset notes,
+input hashes and downstream evidence invalidation. Do not adopt the upstream independent
+configuration, tool snapshot, image plan/receipt or fingerprint as pipeline machinery.
+Optional voice execution is limited to a maintained offline `koubo.py` entry over supplied
+audio: closed temp handles, same-directory staging, failure cleanup and overwrite protection.
+Original synthesis, training, registry and credential/config paths remain reference-only.

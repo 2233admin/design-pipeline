@@ -13,6 +13,7 @@ coverage is reachable here:
 | GSAP and Anime.js implementation | `capability-routing.md`; local iart playbook and maintained Anime.js path |
 | PixiJS, Phaser and graphics/runtime selection | `pixijs-rendering.md`, `phaser-v4.md`, `graphics-runtime-routing.md` |
 | Layout, typography, color, interaction and design systems | `interface-discipline.md`, `impeccable-contract.md`, `prism-system.md` |
+| New websites, existing-project redesign, taste, style, reference-to-code and image/brand concepts | [Built-in Taste suite](taste-skill.md); thirteen complete local methods with task and output boundaries |
 | Additional drawing, material and animation techniques | `huashu-art-motion.md`, `mengto-skills.md`, `iart-motion-skills.md`; adapt the selected source |
 
 The last row exposes source methods, not a claim that every recipe is a tested callable helper.
@@ -76,7 +77,7 @@ shadcn controls, or `gifenc` automatic project dependencies.
 | `frontend-design` | `anthropics/skills` | Strong visual direction, composition, non-generic first impression |
 | `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility |
 | `ui-ux-pro-max` | `nextlevelbuilder/ui-ux-pro-max-skill` | UX heuristics, searchable style/color/type system, repeatable choices |
-| `design-taste-frontend` | `Leonxlnx/taste-skill` | Anti-template design discipline, typography and copy taste |
+| `design-taste-frontend` | Built-in pinned `Leonxlnx/taste-skill` | [Local v2 experimental method](taste-skill.md#design-taste-frontend); no companion installation |
 | `emil-design-eng` | `emilkowalski/skills` | Motion, easing, feedback, interaction polish |
 
 ## Motion / Animation Set
@@ -150,28 +151,33 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 1. `impeccable`
 2. `web-design-guidelines`
 3. `frontend-design`
-4. `design-taste-frontend`
-5. `ui-ux-pro-max`
-6. `emil-design-eng`
-7. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
+4. `ui-ux-pro-max`
+5. `emil-design-eng`
+6. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
 
-## Taste-Skill Extension Set
+## Built-In Taste-Skill Suite
+
+All thirteen complete source entries are shipped in the core package. Start with
+[taste-skill.md](taste-skill.md) to select one primary method and read its local original source.
+The default is v2 experimental; choose v1 explicitly for compatibility. This is source and
+guidance availability, not a bundled image model or automatic Visual Acceptance. The existing
+`visual-direction-review` profile checks the built-in entry rather than an ambient Taste install.
 
 | Skill | Source | Pipeline role |
 | --- | --- | --- |
-| `design-taste-frontend` | `Leonxlnx/taste-skill` | Main v2 frontend taste skill |
-| `design-taste-frontend-v1` | `Leonxlnx/taste-skill` | Older v1 taste behavior for compatibility |
-| `gpt-taste` | `Leonxlnx/taste-skill` | General taste critique and output shaping |
-| `minimalist-ui` | `Leonxlnx/taste-skill` | Minimalist visual direction |
-| `industrial-brutalist-ui` | `Leonxlnx/taste-skill` | Brutalist / industrial UI direction |
-| `high-end-visual-design` | `Leonxlnx/taste-skill` | High-end soft visual polish |
-| `stitch-design-taste` | `Leonxlnx/taste-skill` | Stitch-style design taste guidance |
-| `redesign-existing-projects` | `Leonxlnx/taste-skill` | Redesign existing projects without losing product intent |
-| `image-to-code` | `Leonxlnx/taste-skill` | Convert visual references into frontend implementation guidance |
-| `imagegen-frontend-web` | `Leonxlnx/taste-skill` | Generate web frontend visual references |
-| `imagegen-frontend-mobile` | `Leonxlnx/taste-skill` | Generate mobile frontend visual references |
-| `brandkit` | `Leonxlnx/taste-skill` | Brand kit direction and consistency |
-| `full-output-enforcement` | `Leonxlnx/taste-skill` | Enforce complete output expectations |
+| `design-taste-frontend` | [Local selection/source](taste-skill.md#design-taste-frontend) | V2 experimental: brief-led landing, portfolio and redesign implementation |
+| `design-taste-frontend-v1` | [Local selection/source](taste-skill.md#design-taste-frontend-v1) | Explicit original v1 compatibility |
+| `gpt-taste` | [Local selection/source](taste-skill.md#gpt-taste) | Motion-rich AIDA marketing, variation plan, bento and GSAP methods |
+| `minimalist-ui` | [Local selection/source](taste-skill.md#minimalist-ui) | Editorial minimalism applied to an approved direction |
+| `industrial-brutalist-ui` | [Local selection/source](taste-skill.md#industrial-brutalist-ui) | Swiss-industrial or tactical telemetry style |
+| `high-end-visual-design` | [Local selection/source](taste-skill.md#high-end-visual-design) | Soft/luxury surfaces, nested radii and tactile polish |
+| `stitch-design-taste` | [Local selection/source](taste-skill.md#stitch-design-taste) | Semantic design rules; convert the example into a product foundation |
+| `redesign-existing-projects` | [Local selection/source](taste-skill.md#redesign-existing-projects) | Audit-first targeted improvements preserving current behavior and stack |
+| `image-to-code` | [Local selection/source](taste-skill.md#image-to-code) | Extract selected/user references and verify a real frontend |
+| `imagegen-frontend-web` | [Local selection/source](taste-skill.md#imagegen-frontend-web) | Images only: separate horizontal web section comps |
+| `imagegen-frontend-mobile` | [Local selection/source](taste-skill.md#imagegen-frontend-mobile) | Images only: coherent mobile screens and flows |
+| `brandkit` | [Local selection/source](taste-skill.md#brandkit) | Images only: strategic identity/brand boards |
+| `full-output-enforcement` | [Local selection/source](taste-skill.md#full-output-enforcement) | Complete the requested files and artifacts without omitted-code placeholders |
 
 ## UI/UX Pro Max Extension Set
 
@@ -238,4 +244,4 @@ gates authoritative for product motion and QA.
 
 Installation state is machine-specific: obtain it from `check-deps.cjs --json` when needed.
 Do not write a workstation's Installed/Not installed result into this shipped reference.
-The roles above are optional companions; bundled routes remain available independently.
+External companion roles are optional; the explicitly bundled suites above remain available independently.

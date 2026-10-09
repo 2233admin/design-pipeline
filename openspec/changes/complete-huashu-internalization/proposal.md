@@ -16,6 +16,12 @@ user's request to internalize the whole source skill.
   compatibility/asset requirements. Reuse existing comparison, video analysis, render and QA.
 - Test actual behavior and installed package reachability; report unresolved visual limits.
 
+The 2026-10-08 follow-up fixes incomplete import coverage for the reviewed media increment
+at `57d67608ab458f57d9b153b1a2831b921e22498b`, refreshes current provenance and routes
+optional images through actual host tools. A small maintained offline audio entry fixes the
+confirmed Windows temporary-file lifecycle issue over supplied files; provider/configuration,
+training and upstream image plan/receipt mechanisms remain reference-only.
+
 ## Capabilities
 
 ### Modified capabilities

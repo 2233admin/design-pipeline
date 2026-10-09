@@ -1,5 +1,16 @@
 # Third-Party Notices
 
+## gepa-ai/gepa
+
+The complete official `gepa-optimize-anything` skill (seven files), repository README,
+pyproject metadata and original MIT license are bundled under `skill/vendor/gepa/upstream/`
+from reviewed revision `462e437a09be67d2acb59564cc0ea59132f5777c` (reviewed 2026-10-09).
+Copyright © 2025 Lakshya A Agrawal. `skill/vendor/gepa/manifest.json` records the scoped
+original Git blobs and hashes. The native Python runtime is an optional, separately prepared
+dependency pinned to that same revision. Upstream plugin/preflight metadata and alternative
+engines remain source references; their installation instructions do not grant execution or
+publication authority. Maintained invocation code lives in `skill/tools/gepa/`.
+
 ## Frontend stack and tool-routing metadata
 
 The inert registries and routed capability metadata credit these reviewed upstreams. No upstream
@@ -457,7 +468,10 @@ pages, course videos or other training material are bundled.
 
 `skill/vendor/huashu-art-motion/` preserves the reviewed code, methods, recipes, examples and
 licensed font resources from https://github.com/alchaincyf/huashu-art-motion at commit
-`26dba25b2b495c2138848c29a2c90df356a20325` (complete capability review 2026-10-07).
+`57d67608ab458f57d9b153b1a2831b921e22498b` (incremental source review 2026-10-08).
+The snapshot includes media defaults/schema, upstream contract tests and inert release/CI
+materials. Original image plans, media configuration and voice providers remain source
+reference; maintained image workflows use the host tools and existing pipeline evidence.
 Its `manifest.json` records original paths, SHA-256 hashes and exclusions. Code/docs retain
 the MIT license and `Copyright (c) 2026 alchaincyf (花叔 · 花生)` notice. Font resources retain
 their separate SIL Open Font License files under `upstream/scripts/engine/lib/fonts/`;
@@ -501,3 +515,81 @@ license, and Greg Zaal's Kloofendal 48d Partly Cloudy HDR from Poly Haven (CC0).
 Exact revisions, scope and full-license locations are listed in
 [the example's notices](examples/enamel-badge/THIRD_PARTY_NOTICES.md).
 The original reference video, screenshots and audio are not redistributed.
+
+## vojtaholik/good-css
+
+The complete byte-preserved source snapshot under `skill/vendor/good-css/upstream/` is from
+https://github.com/vojtaholik/good-css at reviewed commit
+`6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef` (reviewed 2026-10-08).
+All 133 tracked files are retained, including the 47 practices/specimens, eight generated reference
+files, harness assets, source generator/checker and inert plugin/deployment metadata.
+
+- Repository code/text/assets: MIT, Copyright (c) 2026 Vojta Holik. Full original license:
+  `skill/vendor/good-css/upstream/LICENSE`.
+- Inter font: Copyright (c) 2016 The Inter Project Authors, SIL Open Font License 1.1.
+  Full original license: `skill/vendor/good-css/upstream/harness/public/fonts/Inter-OFL.txt`.
+- Geist Mono font: Copyright 2024 The Geist Project Authors, SIL Open Font License 1.1.
+  Full original license: `skill/vendor/good-css/upstream/harness/public/fonts/GeistMono-OFL.txt`.
+- Original practice credits and source links remain in upstream `PRACTICES.md`.
+
+`skill/references/good-css.md` adapts the practices into the existing project workflow.
+`skill/tools/good-css/build-study.cjs` adapts the harness framing method into a local Node-only
+study builder. Generated studies retain the MIT notice, font licenses and original practices.
+The package does not install upstream dependencies, activate its plugin or run its deployment.
+
+## Leonxlnx/taste-skill
+
+The complete byte-preserved source snapshot under `skill/vendor/taste-skill/upstream/` is from
+https://github.com/Leonxlnx/taste-skill at reviewed commit
+`b482f7a970abb98c4108d4a9f761e458c64cefc8` (reviewed 2026-10-08).
+All 62 tracked files are retained, including the thirteen skill entries, Stitch design example,
+research notes, example images, artwork and inert plugin, installer and sponsor-script metadata.
+
+The upstream repository is MIT, Copyright (c) 2026 Leonxlnx. The complete original license is
+`skill/vendor/taste-skill/upstream/LICENSE`. Original credits and links remain in the source.
+Example and sponsor artwork is preserved as source context, not a default project asset library
+or a claim of trademark rights. Research claims remain upstream claims, not our benchmark results.
+
+`skill/references/taste-skill.md` adapts each capability into the existing project workflow.
+The package does not run upstream scripts, activate its plugin, install its dependencies or supply
+an image model. Image-only workflows use a separately available host image-generation provider.
+
+## Leonxlnx/cinetic
+
+The complete byte-preserved source snapshot under `skill/vendor/cinetic/upstream/` is from
+https://github.com/Leonxlnx/cinetic at reviewed commit
+`bee5d7807205d5543472c38312507f9bf366cbbf` (reviewed 2026-10-09).
+All 137 tracked files are retained: 19 guides, the 273-entry technique library, treatment and
+critic templates, both engine starters, scripts and their tests, brand source assets, evaluation
+records and inert plugin/CI metadata. No tracked files from this reviewed tree are excluded.
+This is a separate project from Leonxlnx/taste-skill.
+
+MIT, Copyright (c) 2026 Leonxlnx. Complete original notices are at
+`skill/vendor/cinetic/upstream/LICENSE` and `skills/cinetic/LICENSE.txt` within that snapshot.
+The upstream brand assets remain source context; they do not grant trademark rights or become
+the user's default brand. README gallery videos on the separate media branch are not mirrored.
+Referenced fonts, music, Remotion and Python dependencies are not distributed by this import.
+Remotion has its own license, which must be checked separately if selected for a project.
+
+The maintained film-method adaptation uses selected methods and the deterministic HyperFrames
+motion library with the original MIT notice. It follows existing engine selection and evidence
+contracts. The upstream bash pipeline was designed for macOS/Linux; its native Windows and WSL
+execution is unverified. Bundling its scripts does not install dependencies, activate its plugin
+or make the complete upstream pipeline a validated runtime entry.
+
+## Rieranthony/product-film-skill
+
+The complete byte-preserved source snapshot under `skill/vendor/product-film-skill/upstream/`
+is from https://github.com/Rieranthony/product-film-skill at reviewed commit
+`fe11efc429d5903e37274d0b294e1b95745b2881` (reviewed 2026-10-09).
+All 30 tracked files are retained, including discovery/interview/story/music/engine/review/render
+guides, brand and film templates, reusable motion-kit source, the five scripts and inert plugin
+metadata. No tracked files from this reviewed tree are excluded.
+
+MIT, Copyright (c) 2026 Rieranthony. The complete original license is
+`skill/vendor/product-film-skill/upstream/LICENSE`. Project fonts and music, Remotion,
+Bun, uv and Python packages referenced by these sources are not bundled. Remotion retains
+its separate runtime license. The maintained adaptation gives project-owned design tokens,
+components, claims and user choices priority, using the pipeline's existing render and evidence
+tools. Upstream Bun/uv/Remotion scripts remain readable source; native Windows and WSL pipeline
+execution is unverified and the package does not install their dependencies.

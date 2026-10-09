@@ -6,6 +6,32 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Maintained Prompt Motion homepage inventory and twelve authored planning recipes with
+  replaceable inputs, structure, invariants and source/viewing limits. Offline `film templates`
+  search/detail separates recipes from indexed cases; local HTML refresh writes review candidates.
+- Complete pinned Cinetic and product-film-skill sources, bounded film-method planning,
+  product component provenance and a configurable JavaScript motion adaptation. Existing
+  HyperFrames/film checks verify reproducible product-promo and short-loop studies; Prompt
+  Motion case references preserve authorship and viewing limits. Source scripts remain
+  distinct from maintained, tested entries and technical checks do not grant Visual Acceptance.
+- Huashu's reviewed `57d6760` media sources now include their defaults, schema and source
+  tests. Images use the current host tool and existing evidence; supplied audio gains an
+  offline fit/match/PCM helper with closed temporary handles and protected new outputs.
+- Three observable skill eval regressions cover CSS focus/motion, a quick Chinese profile
+  page and blocked reference input. React/Next engineering companions are selected by need.
+
+- All thirteen Taste-Skill capabilities now ship with the tool: a complete pinned 62-file
+  source, task-specific adaptation guide, existing frontend/brand/image routes and built-in
+  dependency checks. Image generation uses the host provider; no separate Taste install is needed.
+
+- Complete pinned good-css source, eight CSS category references, practice-by-practice project
+  adaptation and an offline specimen builder. Existing CSS implementation/review routes now
+  expose the built-in library; no external skill, new dependency or acceptance gate is required.
+- Independent GEPA guidance optimization with the pinned complete official skill, a native
+  Python invocation tool, disjoint case splits, candidate diff/history and final-test export.
+  Outputs remain proposals for the existing feedback/OpenSpec maintainer workflow; the
+  optional runtime does not change normal production, gates or visual acceptance.
+
 - `evidence capture --agent-browser-state <file>` (`add-agent-browser-state-preload`): the agent-browser adapter loads saved
   cookies and localStorage before capturing, so surfaces that only appear after a saved layout or
   connection is restored can be captured. The file stays inside the project and only the
@@ -62,6 +88,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Windows native task verification and offline study boundaries now compare physical paths
+  consistently across long/short aliases while retaining link and case-sensitive root rejection.
+- Pointer capture retains each native input step after driver delays, with spacing between
+  delivered moves; real discontinuities and unresponsive targets still fail existing checks.
 - Render gate: a one-step change between two still neighbours (each under a tenth of it) counts as
   a cut even when camera moves fill its 2 s window; such planned cuts were reported missing.
 - Render gate: a planned cut also counts when one 10 fps step replaces a block of the frame (the

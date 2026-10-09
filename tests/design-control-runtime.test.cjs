@@ -42,6 +42,69 @@ test("plan validation rejects cyclic or misordered persisted plans", () => {
   assert.throws(() => validatePlan({ ...base, phases: base.phases.map((phase) => phase.id === "intent" ? { ...phase, depends_on: ["package"] } : phase) }), /cycle|follow dependency|unknown phase/);
 });
 
+function interactionVisualPlan() {
+  return {
+    schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: "local-web", input_hash: "sha256:" + "a".repeat(64), mode: "greenfield", fidelity: "adaptive",
+    phases: [{
+      id: "toggle", depends_on: [], inputs: ["interaction.json"], outputs: ["index.html"], gates: [], goal: "Make the toggle respond to activation.",
+      visual: {
+        target: "toggle", property: "activation", references: ["reference.md"], scope: ["index.html"], guides: ["guides/interaction.md"], checks: ["evidence/interaction-check.json"],
+        verification: [{ kind: "interaction", probe: "interaction.json", target: "index.html", check: "evidence/interaction-check.json" }],
+      },
+    }],
+  };
+}
+
+test("visual plans accept declared interaction bindings and keep report-only legacy plans readable", () => {
+  const plan = interactionVisualPlan();
+  const before = JSON.stringify(plan);
+  assert.equal(validatePlan(plan, { requireVisualTasks: true }), plan);
+  assert.equal(JSON.stringify(plan), before, "validation must not rewrite the bound plan");
+  const legacy = structuredClone(plan);
+  delete legacy.phases[0].visual.verification;
+  assert.equal(validatePlan(legacy, { requireVisualTasks: true }), legacy);
+
+  const twoChecks = structuredClone(plan);
+  twoChecks.phases[0].visual.checks.push("evidence/second-check.json");
+  twoChecks.phases[0].visual.verification.push({ kind: "interaction", probe: "interaction.json", target: "index.html", check: "evidence/second-check.json" });
+  assert.equal(validatePlan(twoChecks, { requireVisualTasks: true }), twoChecks);
+});
+
+test("visual verification rejects unsupported, duplicate and undeclared check bindings", () => {
+  const cases = [
+    ["unsupported kind", phase => { phase.visual.verification[0].kind = "shell"; }, /kind/],
+    ["arbitrary command", phase => { phase.visual.verification[0].command = "node check.cjs"; }, /unknown|unexpected|allowed|command/],
+    ["missing descriptor field", phase => { delete phase.visual.verification[0].target; }, /target/],
+    ["object instead of list", phase => { phase.visual.verification = phase.visual.verification[0]; }, /array/],
+    ["empty list", phase => { phase.visual.verification = []; }, /non-empty|binding|check/],
+    ["undeclared probe", phase => { phase.visual.verification[0].probe = "other-probe.json"; }, /probe.*inputs|inputs.*probe/],
+    ["undeclared output", phase => { phase.visual.verification[0].target = "other.html"; }, /target.*outputs|outputs.*target/],
+    ["undeclared check", phase => { phase.visual.verification[0].check = "evidence/other-check.json"; }, /check.*checks|checks.*check/],
+    ["missing required check", phase => { phase.visual.checks.push("evidence/second-check.json"); }, /binding|verification/],
+    ["duplicate check binding", phase => { phase.visual.verification.push({ ...phase.visual.verification[0] }); }, /duplicate|exactly once/],
+    ["duplicate normalized check binding", phase => { phase.visual.verification.push({ ...phase.visual.verification[0], check: "evidence/./interaction-check.json" }); }, /duplicate|exactly once/],
+    ["duplicate declared check", phase => { phase.visual.checks.push(phase.visual.checks[0]); }, /duplicate|exactly once/],
+  ];
+  for (const [label, mutate, expected] of cases) {
+    const plan = interactionVisualPlan();
+    mutate(plan.phases[0]);
+    assert.throws(() => validatePlan(plan, { requireVisualTasks: true }), expected, label);
+  }
+});
+
+test("visual verification paths stay contained and bind normalized declared paths", () => {
+  const normalized = interactionVisualPlan();
+  normalized.phases[0].visual.verification[0] = { kind: "interaction", probe: "./interaction.json", target: "./index.html", check: "evidence\\interaction-check.json" };
+  assert.equal(validatePlan(normalized, { requireVisualTasks: true }), normalized);
+  for (const key of ["probe", "target", "check"]) {
+    for (const value of ["../outside.json", "nested/../outside.json", "/outside.json", "C:\\outside.json", "https://example.test/index.html", "$plan"]) {
+      const plan = interactionVisualPlan();
+      plan.phases[0].visual.verification[0][key] = value;
+      assert.throws(() => validatePlan(plan, { requireVisualTasks: true }), /contained relative path/, `${key}: ${value}`);
+    }
+  }
+});
+
 test("persisted control plans must remain governed and runnable", () => {
   const changeRoot = root();
   const plan = compileDesignPlan(manifest());

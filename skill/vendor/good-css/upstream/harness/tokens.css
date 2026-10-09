@@ -1,0 +1,45 @@
+/* Fonts and tokens, shared by the page and every specimen. The tokens are
+   prefixed so they never collide with a token an entry defines. */
+
+/* Inter for headings and text, Geist Mono for code and readouts. Both are
+   variable fonts in their Latin subset, served from public/fonts. Geist Mono
+   is served with no italic, and the reset specimen uses that to show
+   font-synthesis: none. */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  /* Lilac and sulphur. The page is drawn in bands of the first three, and
+     sulphur is the one accent. Every other color is mixed from these, as in
+     "OKLCH color". */
+  --bp-tint: oklch(0.851 0.017 297.5);
+  --bp-dark: oklch(0.236 0.025 295);
+  --bp-slate: oklch(0.448 0.041 297.5);
+  --bp-lime: oklch(0.847 0.164 115.5);
+  /* The bar of a frame, and code, on the dark. */
+  --bp-deep: oklch(0.191 0.022 296.7);
+  /* A card on the slate band. */
+  --bp-card: oklch(0.271 0.028 296.7);
+  /* The middle bar of a set of three, between the ink and sulphur. */
+  --bp-mid: oklch(0.627 0.036 296.8);
+  /* A function name or a string in code. */
+  --bp-bright: oklch(0.969 0.005 297.7);
+  /* A ghost numeral, one step off the band it lies on. */
+  --bp-ghost-tint: oklch(0.8 0.023 297.3);
+  --bp-ghost-dark: oklch(0.281 0.031 295.1);
+  --bp-ghost-slate: oklch(0.407 0.045 294.5);
+
+  --bp-font-sans: "Inter", system-ui, sans-serif;
+  --bp-font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}

@@ -6,14 +6,12 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson } = require("../contract-utils.cjs");
-const { CLI, CONCEPTS, INTAKE, REVIEW, exists, gatePassed, reference } = require("./shared.cjs");
+const { CLI, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
+const { newestRender } = require("../film-project-core.cjs");
 
-// The draft render: out.mp4, or the first .mp4 under renders/.
 function draftRender(root) {
-  if (exists(root, "out.mp4")) return "out.mp4";
-  if (!exists(root, "renders")) return null;
-  const name = fs.readdirSync(path.join(root, "renders")).find((file) => file.endsWith(".mp4"));
-  return name ? path.join("renders", name) : null;
+  const video = newestRender(root);
+  return video ? path.relative(root, video).split(path.sep).join("/") : null;
 }
 
 const SHOT_GUIDE = "references/product-film-direction.md#from-reference-to-producible-shots";
@@ -43,7 +41,8 @@ const usesReference = (state, root) => state.mode === "replicate" || (state.tier
 
 const PLAN = {
   id: "plan",
-  finished: (state, root) => exists(root, "storyboard.json") && (state.mode !== "replicate" || (Boolean(renderingPlan(root)) && !usesExampleBeats(root))) && gatePassed(state, root, "storyboard", ["storyboard.json", ...(usesReference(state, root) ? ["reference.md"] : [])]),
+  finished: (state, root) => exists(root, "storyboard.json") && (state.mode !== "replicate" || (Boolean(renderingPlan(root)) && !usesExampleBeats(root))),
+  gate: { name: "storyboard", inputs: (state, root) => ["storyboard.json", ...(usesReference(state, root) ? ["reference.md"] : [])] },
   action: (state, root) => {
     const fromReference = usesReference(state, root);
     const handoff = fromReference ? SHOT_HANDOFF : "Author storyboard.json from the brief or chosen direction using references/product-film-direction.md and the existing choreography. ";
@@ -67,13 +66,13 @@ const BUILD = {
 
 const CHECK = {
   id: "check",
-  finished: (state, root) => gatePassed(state, root, "film", ["storyboard.json", draftRender(root)]),
+  gate: { name: "film", inputs: (state, root) => ["storyboard.json", draftRender(root), ...["index.html", "timeline.json", "score-grid.json"].filter(file => exists(root, file))] },
   action: () => ({ type: "run", command: `${CLI} film check --project-root .`, why: "Every error gate must pass before anyone sees the draft; apply each finding's fix and rerun." }),
 };
 
 const DELIVER = {
   id: "deliver",
-  finished: (state) => Boolean(state.decisions?.delivered),
+  finished: deliveryRecorded,
   action: () => ({ type: "run", command: `Render the final quality (npx hyperframes render --quality high --output final.mp4), then: ${CLI} decide --project-root . --stage deliver --answer final.mp4`, why: "Drafts are cheap; the final render happens once, after acceptance." }),
 };
 

@@ -1,0 +1,257 @@
+{
+  "schema": "design-pipeline.product-film-skill-source.v1",
+  "source": {
+    "repository": "https://github.com/Rieranthony/product-film-skill",
+    "revision": "fe11efc429d5903e37274d0b294e1b95745b2881",
+    "gitTree": "ca1b16a4091528f90059b1ed2c0bb1afb8b5769f",
+    "committedAt": "2026-09-26T12:58:48+02:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-09",
+    "scope": [
+      "**"
+    ]
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Rieranthony"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 30,
+    "byteCount": 82908,
+    "treeSha256": "6ed8d4b4e6da3e00c82b7e86472c01c23d7c5748a4d2e063bf28b563cf559089",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": ".claude-plugin/marketplace.json",
+        "mode": "100644",
+        "oid": "1e6379e7c80232d3024677c850a05e8109fc3076",
+        "size": 428,
+        "sha256": "3802f8b601e39a63b6ec24ecc237e7281438d62b19f2b26e76e7675316323172"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "oid": "e43b0f988953ae3a84b00331d0ccf5f7d51cb3cf",
+        "size": 10,
+        "sha256": "cf237c7aff44efbe6e502e645c3e06da03a69d7bdeb43392108ef3348143417e"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "78325604ab5deba4e1718604e969e88dfde63672",
+        "size": 1068,
+        "sha256": "b9421b7e71d950f1fe2979d1424befd73870a77b8e8c9ab453c4e2c84894423b"
+      },
+      {
+        "path": "plugins/product-film/.claude-plugin/plugin.json",
+        "mode": "100644",
+        "oid": "2cf495ca2e4bb329fcff8c3da24714aad2235c4c",
+        "size": 712,
+        "sha256": "5e4ccbca0d91bca5bd167d1014c3de8067ac2f4d37ba53bd769d3337621f5a9c"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/reference/discovery.md",
+        "mode": "100644",
+        "oid": "eae6587966533b560472c73ad7615badb6caf908",
+        "size": 4120,
+        "sha256": "c3084507a7842ba44d014758e4d941dce72f9d4a85bbe05afa3d63f00e50911a"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/reference/engine.md",
+        "mode": "100644",
+        "oid": "d348faa8bab237fb329ee235bed3b04cad79b393",
+        "size": 6226,
+        "sha256": "3815fa692476451fb23601934dac01a97f2b5acb8a67aeb0d2791df093cc86d6"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/reference/ingredients.md",
+        "mode": "100644",
+        "oid": "659edaacb15a7010a45d079053fef081c3d923f7",
+        "size": 5510,
+        "sha256": "f471b7d08ccbab9382366b055a28c7a173c3acf01b7468f02065b0a63d2e70c2"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/reference/interview.md",
+        "mode": "100644",
+        "oid": "d93d77b4947683120d61ef316c65a702b5b337d0",
+        "size": 2297,
+        "sha256": "4c8b8f54b50728fb3ad2a155b264d5e7794b2d6618243786c9da4ed8b86821ae"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/reference/music.md",
+        "mode": "100644",
+        "oid": "5f760d4bf3eb085eab8dab01a8addeb1986f67d2",
+        "size": 3107,
+        "sha256": "179d936f239d1e45f646505f69f8e5a9e7a399754b00a9849340131eb064c725"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/reference/render.md",
+        "mode": "100644",
+        "oid": "6ed414954a5dd0f6f2360bd5c0bddf0587b9171b",
+        "size": 2010,
+        "sha256": "79827005f5d8198f7eeb9f3f43c27e281222be646402460b7f2670253d5b59f7"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/reference/review.md",
+        "mode": "100644",
+        "oid": "bbe4c92e5f683416be921032d41bd3c8e098baaa",
+        "size": 2698,
+        "sha256": "d5aca2151d6a50f35dbea6eaee90fe208ef1ece98ef20a7216e0670d129cb284"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/reference/story.md",
+        "mode": "100644",
+        "oid": "939f786d909bc2f7de5ccb6603823e61ce3a5fba",
+        "size": 2544,
+        "sha256": "a74a1f5cb8b6cad33271e90baadd439ec5ba82c185c137465d78c20967856a19"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/scripts/audio-edit.py",
+        "mode": "100644",
+        "oid": "7492aa91d69778300c639496df4a4aac26d5d62c",
+        "size": 1892,
+        "sha256": "40d12f3ed53d653624a38ad88928bd28434a958c01c328207709bc72e46da38a"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/scripts/beats.py",
+        "mode": "100644",
+        "oid": "5b9792b0bdcd702cd95b2047c0e2384424916f1e",
+        "size": 7358,
+        "sha256": "ac3b727a8a3da207795c1bf603c5fefd6acda14e5b6bc1b28d8608d9ee6745fc"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/scripts/render.ts",
+        "mode": "100644",
+        "oid": "f4302609a30efbeee71d5b9e52a259285bc7a61f",
+        "size": 4343,
+        "sha256": "6ec11a5f5e23d92a972b91cfc4b137cbf76d81f7aee3fba088220ae21923e77e"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/scripts/stills.ts",
+        "mode": "100644",
+        "oid": "120c7a69e2a2a23780894b9530fdf7e60704abb5",
+        "size": 2013,
+        "sha256": "be1557fa6e46c7cab7da12fc9b37b45a4169594dd14e4866b00f271ecb3e9bcd"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/scripts/verify.py",
+        "mode": "100644",
+        "oid": "0d89a856a935bd0fe3111c769891dc0df2e444d2",
+        "size": 3178,
+        "sha256": "7280134c8707c71ceb0b85cf85e167abb7a0df6c04cd06dfbb0e685e78ef778f"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/SKILL.md",
+        "mode": "100644",
+        "oid": "7dbf693f8cd1962d6395d152db66cfc4c6ff5c1b",
+        "size": 5642,
+        "sha256": "65825fbc4bdfbf9861c0a077028032876b5324b1515fee00c4791c37297e9292"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/BRAND.md",
+        "mode": "100644",
+        "oid": "786cc826c840167c78d8f11be777409f71705dd3",
+        "size": 3309,
+        "sha256": "8c2edd875d3424087f7d131ce44bf6439e2d6a8ba4bc5a63ca6d7629d9c509c8"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/film-prompt.md",
+        "mode": "100644",
+        "oid": "4aac8dd97e9cbe1c4a2e605f2313feef06ba4b5a",
+        "size": 3183,
+        "sha256": "bbf7cb42a0e92dca15e6b1e43fbcbca381855536a6c3e1b174974d5c0577c308"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/camera.ts",
+        "mode": "100644",
+        "oid": "12ce29dada959a66b8af0ff0229952b205517199",
+        "size": 1525,
+        "sha256": "bf7253a923dd9ca0b346d416ad2381f99884626e83da1ba123299dd30f93c227"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/cursor-path.ts",
+        "mode": "100644",
+        "oid": "252610398650837d3f4a119a0fa6fb26bfc2e1ac",
+        "size": 2178,
+        "sha256": "32715b1ecb08564c9fb1d940e70040c111141412711695002ae503e976527cd9"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/cursor.tsx",
+        "mode": "100644",
+        "oid": "d9f0d9ec3c8f4152756e063c2ed06dee2e4468b2",
+        "size": 2535,
+        "sha256": "5b0352b1ed327825fefbd4b4301dc3fbe98a7b537782e317282b65bb216ebe5c"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/debug.tsx",
+        "mode": "100644",
+        "oid": "113e430db742c4184e9a00af1cd00a60915a6630",
+        "size": 1226,
+        "sha256": "7a933460beb5203ce5ee8bf2dcfd9bb5fc3e86bcba3c1cb7cb92370fe6725257"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/dither.ts",
+        "mode": "100644",
+        "oid": "067c067d1daa5fdaa2a82f53ef75ae407ea08505",
+        "size": 2450,
+        "sha256": "de0184834bc849c377500c68b97b6f373baa73b604439eb6e380cf8e5b7b62db"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/move.ts",
+        "mode": "100644",
+        "oid": "941b2a7fec66daa37962f6fc4c7777dd7a264ab8",
+        "size": 1261,
+        "sha256": "27e10125470b3addd9bdf2eb456661b510b52a11e8f5d00442d935241252a9d8"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/punchlines.tsx",
+        "mode": "100644",
+        "oid": "85a0c2e8fffc62024e60f1cd7e1c0ac2976a66ac",
+        "size": 3179,
+        "sha256": "7d17c935abeffea80a5213b1593dfc3ac2dca9f526cb59a42a3a4ee3916d40fe"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/spring.ts",
+        "mode": "100644",
+        "oid": "b3a45dc7b273600744d4a23c200bc91f462495c2",
+        "size": 1706,
+        "sha256": "290ac4ce826d4ed0a5aec96901dd46863301fe68d8f732128ad6e2e8a7312c39"
+      },
+      {
+        "path": "plugins/product-film/skills/product-film/templates/kit/time.ts",
+        "mode": "100644",
+        "oid": "e9f8de419230ed7fa0fbc2efec5d0efd29213e44",
+        "size": 1117,
+        "sha256": "da4ac2501807e4e53a40dc99aaefd8668c5bea257e7e6abe3a7b01c5c628b30f"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "c814eb4d1a2fee280f99fcee3a6922c569d9ba40",
+        "size": 4083,
+        "sha256": "180306c9a980f5b6d4b9f4e4fcbc9a33852ceac4de4040478699720ade5f77a8"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "product-film",
+      "path": "upstream/plugins/product-film/skills/product-film/SKILL.md",
+      "description": "Make a showreel-grade product film (landing-page loop, launch video, promo, demo reel, social cut) in code with Remotion, built on the product's own design system, components and voice. Use when someone asks for a product video, landing video, promo, launch film, explainer or \"motion design video\" for their app, SaaS or codebase. It asks what to include, then covers design discovery, story, music sync, transitions, review loops and a verified final render."
+    }
+  ],
+  "excluded": [],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "activatesUpstreamPlugin": false,
+    "runsUpstreamPipeline": false,
+    "changesProjectRuntime": false,
+    "externalMedia": "Project fonts, music, Remotion and on-demand Python dependencies are not in this reviewed Git tree; none are mirrored.",
+    "platform": "Upstream entrypoints require Bun, Remotion and uv-managed Python packages; native Windows and WSL execution is unverified. The render script's npx subprocess also needs a Windows command-launch adaptation."
+  }
+}

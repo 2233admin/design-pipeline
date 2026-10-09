@@ -298,6 +298,18 @@ Keep the artifacts distinct:
 The bundled scripts manage deterministic state and validation. The host design agent performs the
 creative synthesis; do not disguise a copied template or token dump as generated product design.
 
+## Built-In Taste Capabilities
+
+For new websites, existing-project redesign, aesthetic direction/critique, image-to-code,
+web/mobile concept images or brand boards, open [taste-skill.md](taste-skill.md). It selects among
+all thirteen complete packaged source entries and maps each output to the existing stages and
+checks. V2 is experimental; v1 is an explicit compatibility choice. Choose only the relevant
+method/style, preserve project/user authority and use the current framework and evidence routes.
+The three image-generation methods produce images through an available provider; they do not
+implement controls or bundle a model. Existing reference images take priority. Stitch's example
+DESIGN.md must be translated through design-synthesis into the project-owned foundation.
+No external Taste installation, new gate or extra catalog search is required.
+
 ## Companion Skills
 
 Reference file: `references/companion-skills.md`.
@@ -337,11 +349,13 @@ Impeccable design contract: `references/impeccable-contract.md`.
 Impeccable product-design capability map: `references/impeccable-product-design.json` and
 `references/impeccable-product-design.md`.
 
-If these design skills are installed, use them as lenses in this order:
+Use these design lenses in this order; external companions apply when installed, while Taste
+is built in:
 
 1. `impeccable`: command vocabulary, surface modes, refinement semantics, bounded verification, and design-detector workflow.
 2. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
-3. `design-taste-frontend`: anti-template discipline, typography taste, language and visual restraint.
+3. [Built-in Taste suite](taste-skill.md): select the matched complete method for direction,
+   redesign, style or visual assets; adapt its rules within project contracts.
 4. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
 5. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
 6. `emil-design-eng`: motion, transitions, input feedback, perceived quality, interaction details.
@@ -368,6 +382,11 @@ apply the bundled interface discipline in `references/interface-discipline.md`. 
 the package and does not require a global skill installation. Start with its `better-interface`
 router, use full coverage unless a narrow repair qualifies for quick coverage, and use its
 change-scoped review protocol for changed UI.
+
+Whenever styles are written, edited or reviewed, also use `references/good-css.md`. Its complete
+pinned practices, category references and offline specimens are built in, including for plain
+CSS, utility classes, StyleX and CSS-in-JS. Read the matching entries and preserve their conditions
+alongside project tokens, browser support, semantics and existing motion/evidence contracts.
 
 Catalog CLIs are escape hatches. Open them only when `designer-pipeline route` selects that catalog
 as the primary knowledge door, or when a listed secondary is needed as reference. Do not search
@@ -450,16 +469,16 @@ For animation implementation, choose library skills by job:
 - Treat an installed but stale `animejs` companion as a warning. Use the bundled guide plus version-matched documentation for remaining API gaps and record the fallback in `qa.md`.
 - Treat a partial or stale PixiJS suite as a warning. Use the bundled guide plus the canonical PixiJS documentation index for remaining APIs and record the fallback in `qa.md`.
 
-For React and Next.js work, also apply the installed Vercel / Next.js engineering skills listed in `references/companion-skills.md`:
+Select installed Vercel / Next.js companions from `references/companion-skills.md` only for the current framework and capability:
 
-- `vercel-react-best-practices`
-- `vercel-composition-patterns`
-- `vercel-react-view-transitions`
-- `next-cache-components-adoption`
-- `next-cache-components-optimizer`
-- `next-dev-loop`
+- `vercel-react-best-practices`: React rendering, bundle, waterfall or performance work.
+- `vercel-composition-patterns`: React component composition or public component API work.
+- `vercel-react-view-transitions`: requested React navigation or view-transition motion.
+- `next-dev-loop`: development or runtime diagnosis in a Next.js project.
+- `next-cache-components-adoption`: a Next.js Cache Components migration/adoption request, or a demonstrated capability need within the authorized task.
+- `next-cache-components-optimizer`: optimization of existing Next.js Cache Components or affected cache boundaries.
 
-If a companion skill is missing, continue with the same gate manually and note the missing skill in `qa.md`. Do not block the user unless the requested output depends on a missing asset, credential, or external service.
+Ordinary React UI work does not trigger Next.js methods; a Next.js visual change does not trigger cache adoption or optimization by itself. When a selected companion is unavailable, use the project and bundled guidance for that capability and record a relevant fallback in `qa.md`. Block only when the requested output depends on a missing asset, credential, or external service.
 
 ## Stage 0: Repo Read
 

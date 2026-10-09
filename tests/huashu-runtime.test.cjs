@@ -183,7 +183,7 @@ test('Huashu static runtime isolates instances and replays the complete Canvas c
   await (await page.$('#landscape-proof')).screenshot({ path: path.join(PROOF, 'huashu-landscape.png') });
   await (await page.$('#portrait-proof')).screenshot({ path: path.join(PROOF, 'huashu-portrait.png') });
   fs.writeFileSync(path.join(PROOF, 'browser-proof.json'), `${JSON.stringify(result, null, 2)}\n`);
-  assert.equal(result.sourceCommit, '26dba25b2b495c2138848c29a2c90df356a20325');
+  assert.equal(result.sourceCommit, '57d67608ab458f57d9b153b1a2831b921e22498b');
   assert.equal(result.sceneCount, 35);
   assert.equal(result.clipCount, 8);
   assert.ok(result.transitionCount >= 40, `expected the complete transition registry, received ${result.transitionCount}`);

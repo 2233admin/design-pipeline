@@ -1,0 +1,13 @@
+{
+  "task": "product-film",
+  "methods": ["cinetic", "product-film"],
+  "brand": [
+    { "file": "README.md", "note": "Design Pipeline is the named product; this film demonstrates its real account-settings evaluation example, not a production account service." },
+    { "file": "evals/cases/skill-behavior/index.html", "note": "Reuse this example's actual light green tokens and Chinese labels; root DESIGN.md explicitly does not impose an application palette." }
+  ],
+  "components": [
+    { "file": "evals/cases/skill-behavior/index.html", "mode": "frame-twin", "reason": "Capture the unchanged real form after actual input, notification toggle and submit; reuse its recorded pixels, labels, focus behavior and save result." }
+  ],
+  "techniques": ["cam-isolating-push", "pd-ui-native-transitions"],
+  "concept": "A six-second silent Design Pipeline example film follows one real form: enter demo details, turn off notifications, save, then read the actual confirmation. A small camera push isolates the form; native UI state changes supply the action."
+}

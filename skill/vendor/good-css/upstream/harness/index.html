@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>good-css specimens</title>
+    <link rel="icon" href="/mark.svg" type="image/svg+xml">
+    <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="./tokens.css">
+    <link rel="stylesheet" href="./harness.css">
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <!-- header -->
+
+    <main>
+      <section class="hero band band-tint content-grid">
+        <p class="ghost" aria-hidden="true" data-slot="entry-count"></p>
+
+        <div class="hero-main">
+          <div class="hero-text">
+            <h1><img src="/wordmark.svg" alt="good-css" width="768" height="95"></h1>
+
+            <div class="hero-install">
+              <p class="hero-install-head label"><span>Install</span> <span>Agent skill</span></p>
+              <!-- install-command -->
+              <p class="hero-caption label">For Claude Code, Codex, Cursor and any other agent that reads skills</p>
+
+              <p class="hero-or label">Or skip the install</p>
+              <p class="hero-score">
+                <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <circle cx="14" cy="14" r="12.25" fill="var(--bp-lime)" stroke="none"/>
+                  <circle vector-effect="non-scaling-stroke" cx="14" cy="14" r="12.25"/>
+                  <path vector-effect="non-scaling-stroke" d="M14 14V1.75"/>
+                  <circle vector-effect="non-scaling-stroke" cx="14" cy="14" r="2.25" fill="var(--art-ground)"/>
+                  <circle vector-effect="non-scaling-stroke" cx="14" cy="1.75" r="2.75" fill="var(--art-ground)"/>
+                </svg>
+                <span>The site scores <a href="https://is-agentic.com/scan/good-css.com"><b>100/100</b> on is&#8209;agentic<span class="icon icon-out"></span></a>, so you can just point your agent at it.</span>
+              </p>
+            </div>
+          </div>
+
+          <figure class="hero-art art" aria-hidden="true" data-slot="hero-art"></figure>
+        </div>
+      </section>
+
+      <section class="stats band band-dark content-grid" aria-labelledby="tagline">
+        <p class="band-head label">
+          <span class="with-icon"><span class="icon icon-spark"></span>good-css · agent skill</span>
+          <span>PRACTICES.md</span>
+        </p>
+
+        <h2 class="tagline" id="tagline">From experts for agents.</h2>
+        <p class="statement">Opinionated modern CSS techniques, packaged as an agent skill.</p>
+
+        <ul class="stat-cells">
+          <li class="stat">
+            <p class="stat-head label">
+              <span class="with-icon"><span class="icon icon-target"></span>Entries</span>
+              <span>PRACTICES.md</span>
+            </p>
+            <p class="stat-cell">
+              <b data-slot="entry-count"></b>
+              <span>Entries, each one a live specimen</span>
+            </p>
+          </li>
+          <li class="stat">
+            <p class="stat-head label">
+              <span class="with-icon"><span class="icon icon-index"></span>Categories</span>
+              <span>skills/good-css/references</span>
+            </p>
+            <p class="stat-cell">
+              <b data-slot="category-count"></b>
+              <span>Categories, one reference file each</span>
+            </p>
+          </li>
+          <li class="stat">
+            <p class="stat-head label">
+              <span class="with-icon"><span class="icon icon-spark"></span>Dependencies</span>
+              <span>Plain CSS</span>
+            </p>
+            <p class="stat-cell">
+              <b>0</b>
+              <span>Packages or class names to adopt</span>
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="categories band band-slate content-grid" aria-labelledby="categories-title">
+        <p class="band-head label">
+          <span class="with-icon"><span class="icon icon-index"></span>Index</span>
+          <span data-slot="range"></span>
+        </p>
+
+        <h2 id="categories-title">Categories</h2>
+
+        <ul class="carousel" data-slot="cards"></ul>
+
+        <ol class="phases" data-slot="phases"></ol>
+
+        <div class="carousel-controls">
+          <b class="counter" data-slot="current">01</b>
+          <span class="counter-total">/ <span data-slot="total"></span></span>
+          <span class="counter-name label" data-slot="current-name"></span>
+          <div class="carousel-buttons">
+            <button type="button" data-carousel-dir="-1" aria-label="Previous category">
+              <span class="icon icon-arrow"></span>
+            </button>
+            <button type="button" data-carousel-dir="1" aria-label="Next category">
+              <span class="icon icon-arrow"></span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div data-slot="categories" style="view-timeline-name: --in-categories"></div>
+    </main>
+
+    <!-- footer -->
+
+    <template id="card">
+      <li>
+        <a class="card">
+          <span class="card-title" data-slot="title"></span>
+          <span class="art" data-slot="art" aria-hidden="true"></span>
+          <span class="card-count"><b data-slot="count"></b> <span class="label">Entries</span></span>
+          <span class="card-open" aria-hidden="true"><span class="icon icon-arrow"></span></span>
+        </a>
+      </li>
+    </template>
+
+    <template id="category">
+      <section class="category band content-grid">
+        <p class="ghost" aria-hidden="true" data-slot="ghost"></p>
+
+        <header class="opener">
+          <div class="opener-text">
+            <p class="opener-meta label">
+              <span class="opener-number" data-slot="number"></span>
+              <span data-slot="of"></span>
+              <span class="opener-dash"></span>
+              <span data-slot="count"></span>
+            </p>
+            <h2 data-slot="title"></h2>
+            <ol class="entry-index" data-slot="index"></ol>
+          </div>
+          <div class="opener-tile art" data-slot="art" aria-hidden="true"></div>
+        </header>
+
+        <div class="entries" data-slot="entries"></div>
+      </section>
+    </template>
+
+    <template id="entry">
+      <article class="entry">
+        <p class="entry-number">
+          <span class="ghost" aria-hidden="true" data-slot="ghost"></span>
+          <span class="label">Entry</span>
+          <b data-slot="number"></b>
+        </p>
+
+        <div class="entry-body">
+          <h3 data-slot="title"></h3>
+          <p class="lede" data-slot="lede"></p>
+
+          <div data-slot="specimen"></div>
+
+          <div class="folds">
+            <details class="fold fold-code">
+              <summary>
+                <span class="fold-title">Code</span>
+                <span class="fold-meta label" data-slot="code-meta"></span>
+              </summary>
+              <div class="source" data-slot="source"></div>
+            </details>
+
+            <details class="fold">
+              <summary>
+                <span class="fold-title">Why it works, the rules and the credits</span>
+                <span class="fold-meta label" data-slot="notes-meta"></span>
+              </summary>
+              <div class="notes" data-slot="notes"></div>
+            </details>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <template id="specimen">
+      <figure class="specimen">
+        <div class="viewport">
+          <div class="viewport-bar">
+            <span class="viewport-size" data-slot="size"></span>
+            <div class="viewport-widths" role="group" aria-label="Frame width">
+              <button type="button" data-width="360">360</button>
+              <button type="button" data-width="768">768</button>
+              <button type="button" data-width="full">100%</button>
+            </div>
+            <a
+              class="viewport-open"
+              data-slot="open"
+              target="_blank"
+              title="Open in its own tab"
+              aria-label="Open this specimen in its own tab"
+            >
+              <span class="viewport-open-label">Open</span>
+              <span class="icon icon-open"></span>
+            </a>
+          </div>
+          <iframe data-slot="frame"></iframe>
+          <button
+            class="viewport-grip"
+            type="button"
+            aria-label="Resize the frame, by dragging or with the arrow keys"
+          >
+            <span class="icon icon-grip"></span>
+          </button>
+        </div>
+
+        <figcaption class="check">
+          <span class="icon icon-info" role="img" aria-label="Check:"></span>
+          <span data-slot="check"></span>
+        </figcaption>
+      </figure>
+    </template>
+
+    <template id="no-specimen">
+      <div class="no-specimen">
+        <p>No specimen is drawn for this entry yet.</p>
+        <p>Add <code data-slot="file"></code>.</p>
+      </div>
+    </template>
+  </body>
+</html>

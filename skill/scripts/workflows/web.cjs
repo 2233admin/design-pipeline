@@ -3,7 +3,7 @@
 // Web sub-workflow: motion-first websites and pages.
 // Guide: references/workflow-web.md (one section per stage id).
 
-const { CLI, CONCEPTS, INTAKE, REVIEW, exists, gatePassed, reference } = require("./shared.cjs");
+const { CLI, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -19,7 +19,7 @@ const BUILD = {
 
 const PROBE = {
   id: "probe",
-  finished: (state, root) => gatePassed(state, root, "interaction", ["interaction.json", "index.html"]),
+  gate: { name: "interaction", inputs: () => ["interaction.json", "index.html"] },
   action: (state, root) => (exists(root, "interaction.json")
     ? { type: "run", command: `${CLI} verify interaction --probe interaction.json`, why: "Apply each finding's fix, then run next again." }
     : { type: "run", command: "Write interaction.json: one probe per key interaction (schema in references/workflow-web.md)", why: "Every key interaction is verified against the real page, not eyeballed." }),
@@ -27,7 +27,7 @@ const PROBE = {
 
 const DELIVER = {
   id: "deliver",
-  finished: (state) => Boolean(state.decisions?.delivered),
+  finished: deliveryRecorded,
   action: () => ({ type: "run", command: `${CLI} decide --project-root . --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
 };
 
