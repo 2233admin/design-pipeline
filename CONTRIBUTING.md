@@ -54,6 +54,7 @@ The root `package.json` is the source of truth for maintenance commands:
 | `npm run sources:import:goodcss -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import the complete reviewed good-css Git tree. |
 | `npm run sources:import:taste -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import the complete reviewed Taste-Skill Git tree. |
 | `npm run sources:import:film -- --name <cinetic\|product-film-skill> --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import one complete reviewed film-method Git tree. |
+| `npm run sources:import:gepa -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import the complete official GEPA source skill and metadata from its reviewed revision. |
 | `npm run test:browser` | Run browser-tool self-tests. |
 | `npm run package:skill` / `npm run install:skill -- --root <skills-root> --target <skill-target>` | Build or locally install the skill. |
 

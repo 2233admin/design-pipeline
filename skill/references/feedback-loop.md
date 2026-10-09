@@ -130,6 +130,12 @@ After a finding is resolved:
 
 ## Maintainer self-hosting loop
 
+For an explicitly requested search over a bounded design instruction, use the independent
+[GEPA supporting tool](gepa.md). Its native search runs comparable cases and exports a candidate
+diff, history and final-test evidence. Inspect those results as input to this maintainer loop;
+search does not promote packaged guidance or alter the finite project/user adaptation contract.
+Component Conformance and Visual Acceptance remain separate from the search score.
+
 When changing `design-pipeline` itself:
 
 1. Start or link an OpenSpec change.

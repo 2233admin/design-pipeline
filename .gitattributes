@@ -1,4 +1,5 @@
 * text=auto eol=lf
+skill/vendor/gepa/upstream/** -text
 skill/references/**/upstream/** -text
 skill/vendor/good-css/upstream/** -text
 # Preserve the reviewed license's original whitespace as well as its bytes.

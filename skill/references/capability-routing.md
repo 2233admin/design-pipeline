@@ -37,6 +37,7 @@ The table below is the catalog map the dispatcher points at, not a list of requi
 
 | Capability | Primary routes | Use when |
 | --- | --- | --- |
+| Offline design-guidance optimization | Built-in [GEPA supporting tool](gepa.md) and pinned official skill | Explicit improvement of one instruction with frozen cases and a real evaluator; independent search exports proposals for the existing maintainer workflow |
 | Full product-design capability surface | `references/impeccable-product-design.json`, `impeccable`, design-synthesis module, interface discipline, design-system routes | Any product-design request; use the command map to select the stage, artifact, and evidence rather than treating Impeccable as a skin |
 | UX research method selection | `references/ux-research-methods.md` | A design decision needs the right attitudinal/behavioral, qualitative/quantitative, context, or product-phase method; match claims to evidence and limitations |
 | AI interaction and trust patterns | `references/ai-interaction-patterns.md` | An AI surface needs input, wayfinding, disclosure, caveats, consent, provenance, control, recovery, accessibility, or reduced-motion decisions |

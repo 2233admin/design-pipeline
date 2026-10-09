@@ -29,6 +29,9 @@ NUL
 !/.github/
 
 # Local agent installations and generated planning output are not product source.
+# Keep the reviewed official GEPA skill's inert original paths in its source bundle.
+!skill/vendor/gepa/upstream/.claude/
+!skill/vendor/gepa/upstream/.claude/**
 /_bmad/
 /_bmad-output/
 /skills-lock.json

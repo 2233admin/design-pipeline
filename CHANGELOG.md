@@ -27,6 +27,11 @@ All notable changes to Design Pipeline are documented here.
 - Complete pinned good-css source, eight CSS category references, practice-by-practice project
   adaptation and an offline specimen builder. Existing CSS implementation/review routes now
   expose the built-in library; no external skill, new dependency or acceptance gate is required.
+- Independent GEPA guidance optimization with the pinned complete official skill, a native
+  Python invocation tool, disjoint case splits, candidate diff/history and final-test export.
+  Outputs remain proposals for the existing feedback/OpenSpec maintainer workflow; the
+  optional runtime does not change normal production, gates or visual acceptance.
+
 - `evidence capture --agent-browser-state <file>` (`add-agent-browser-state-preload`): the agent-browser adapter loads saved
   cookies and localStorage before capturing, so surfaces that only appear after a saved layout or
   connection is restored can be captured. The file stays inside the project and only the

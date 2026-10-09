@@ -1,5 +1,16 @@
 # Third-Party Notices
 
+## gepa-ai/gepa
+
+The complete official `gepa-optimize-anything` skill (seven files), repository README,
+pyproject metadata and original MIT license are bundled under `skill/vendor/gepa/upstream/`
+from reviewed revision `462e437a09be67d2acb59564cc0ea59132f5777c` (reviewed 2026-10-09).
+Copyright © 2025 Lakshya A Agrawal. `skill/vendor/gepa/manifest.json` records the scoped
+original Git blobs and hashes. The native Python runtime is an optional, separately prepared
+dependency pinned to that same revision. Upstream plugin/preflight metadata and alternative
+engines remain source references; their installation instructions do not grant execution or
+publication authority. Maintained invocation code lives in `skill/tools/gepa/`.
+
 ## Frontend stack and tool-routing metadata
 
 The inert registries and routed capability metadata credit these reviewed upstreams. No upstream
