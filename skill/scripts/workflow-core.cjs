@@ -260,13 +260,20 @@ function visualBindingsFailure(task) {
   return null;
 }
 
-function inspectVisualAttempt(context) {
+function inspectVisualAttempt(context, task) {
   const active = context.progress.active;
   if (!active) return "Task baseline is missing. Dispatch this task with next before working or completing it.";
   if (!samePath(active.changeRoot, context.root)) return "Task baseline belongs to another change root; repair the original execution window.";
   const result = inspectGitChanges(active.baseline, active.authorization, { root: context.root });
   context.scopeObservation = result;
-  return result.status === "passed" ? null : `Task scope is blocked: ${[...result.blockers, ...result.outOfScope.map(file => `outside original authorization: ${file}`)].join("; ")}. Repair the original window; repeating next or expanding the plan does not erase it.`;
+  if (result.status !== "passed") return `Task scope is blocked: ${[...result.blockers, ...result.outOfScope.map(file => `outside original authorization: ${file}`)].join("; ")}. Repair the original window; repeating next or expanding the plan does not erase it.`;
+  if (task) {
+    const gitPath = raw => visualPath(path.relative(active.baseline.root, resolveInside(context.root, raw, "task change path", { scope: "workflow" }))) + (visualPath(raw).endsWith("/") ? "/" : "");
+    const sourceScopes = [...task.visual.scope, ...task.outputs].map(gitPath);
+    const verifierPaths = new Set([...task.visual.checks, active.metadataPath, "state.json", "events.jsonl"].map(gitPath));
+    if (!result.changedFiles.some(file => !verifierPaths.has(file) && sourceScopes.some(scope => scope.endsWith("/") ? file.startsWith(scope) : file === scope))) return "Completion requires an actual task change within its source scope or declared outputs. Verifier reports, metadata and native controls do not count; edit the task in its original window before completing.";
+  }
+  return null;
 }
 
 function bindVisualAttempt(context, task) {
@@ -452,14 +459,14 @@ function completedDecisionFailure(context, task, record, raw) {
 function recheckVisualSnapshot(context, task, inputHashes, outputHashes) {
   if (visualHash(fs.readFileSync(path.join(context.root, context.progress.planPath))) !== context.progress.planHash || canonicalJson(visualInputs(context, task)) !== canonicalJson(inputHashes)) fail("workflow", "Plan or bound inputs drifted during browser verification; rerun on the repaired snapshot.");
   for (const raw of task.outputs) if (visualHash(fs.readFileSync(resolveInside(context.root, raw, "checked output", { scope: "workflow", mustExist: true }))) !== outputHashes["output:" + normalizedVisualPath(raw)]) fail("workflow", `Output drifted during browser verification: ${raw}. Rerun the checked snapshot.`);
-  const scopeFailure = inspectVisualAttempt(context);
+  const scopeFailure = inspectVisualAttempt(context, task);
   if (scopeFailure) fail("workflow", scopeFailure);
   readNativeState(context.root);
   if (sha256(fs.readFileSync(context.native.stateFile)) !== context.native.stateHash) fail("workflow", "Native state changed during verification; completion CAS cannot promote this snapshot.", { code: "HASH_MISMATCH" });
 }
 
 function observeVisualTask(context, task, inputHashes, options) {
-  const bindingFailure = visualBindingsFailure(task) || inspectVisualAttempt(context);
+  const bindingFailure = visualBindingsFailure(task) || inspectVisualAttempt(context, task);
   if (bindingFailure) fail("workflow", bindingFailure);
   const active = context.progress.active;
   if (active.taskId !== task.id || active.taskHash !== inputHashes.$task || active.planHash !== context.progress.planHash) fail("workflow", "Completion baseline does not bind this task/plan. Close the original scope window and dispatch with next.");

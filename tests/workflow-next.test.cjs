@@ -602,6 +602,7 @@ test("native review cannot accept or reject an older completion version", () => 
   touch(fixture.dir, "old-completion.json", fs.readFileSync(path.join(fixture.dir, artifact), "utf8"));
   decideVisualTask(fixture.dir, { choice: "outline", verdict: "reject", artifact, answer: "Repair this version." });
   visualEvidence(fixture, nextVisualTask(fixture.dir));
+  fs.appendFileSync(path.join(fixture.dir, "outline.html"), "<!-- actual rejected-version repair -->");
   decideVisualTask(fixture.dir, { choice: "outline", verdict: "complete", artifact });
   const before = fs.readFileSync(path.join(fixture.dir, "state.json"), "utf8");
   for (const verdict of ["accept", "reject"]) {
@@ -679,6 +680,92 @@ test("native input, output and plan drift invalidate accepted task reviews while
   }
 });
 
+test("native completion rejects unchanged good outputs and verifier-only writes before observation", t => {
+  for (const mode of ["clean", "pre-existing-dirty", "verifier-only"]) {
+    const fixture = visualFixture();
+    t.after(() => fs.rmSync(fixture.dir, { recursive: true, force: true }));
+    const plan = JSON.parse(fs.readFileSync(path.join(fixture.dir, fixture.plan)));
+    plan.phases[0].visual.scope = ["outline.html", "evidence/", "outline-completion.json", "state.json", "events.jsonl"];
+    plan.phases[0].visual.checks = ["evidence/outline-check.json"];
+    plan.phases[0].visual.verification[0].check = "evidence/outline-check.json";
+    touch(fixture.dir, fixture.plan, canonicalJson(plan));
+    touch(fixture.dir, "outline.html", visualHtml);
+    gitFixture(fixture.dir, "add", "."); gitFixture(fixture.dir, "commit", "-qm", "pre-existing good output");
+    if (mode === "pre-existing-dirty") fs.appendFileSync(path.join(fixture.dir, "outline.html"), "<!-- already dirty -->");
+    nextVisualTask(fixture.dir, { plan: fixture.plan });
+    const stateFile = path.join(fixture.dir, "state.json");
+    const baseline = JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks.active;
+    if (mode === "verifier-only") {
+      touch(fixture.dir, "evidence/outline-check.json", "previous verifier report");
+      touch(fixture.dir, "outline-completion.json", "previous verifier metadata");
+    }
+    const cliCore = require("../skill/scripts/cli-core.cjs"), observe = cliCore.observeInteraction;
+    let captures = 0;
+    cliCore.observeInteraction = (...args) => { captures++; return syntheticInteraction(...args); };
+    try {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const blocked = actualDecideVisualTask(fixture.dir, { choice: "outline", verdict: "complete" });
+        assert.equal(blocked.status, "blocked", mode);
+        assert.match(blocked.failure, /actual task change.*source scope.*outputs/i);
+        assert.deepEqual(JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks.active, baseline, "repeated observation retains the original window");
+        assert.equal(nextVisualTask(fixture.dir).status, undefined, "an untouched window still dispatches");
+      }
+    } finally { cliCore.observeInteraction = observe; }
+    assert.equal(captures, 0, "no browser observation precedes task work");
+    for (const [file, previous] of [["evidence/outline-check.json", "previous verifier report"], ["outline-completion.json", "previous verifier metadata"]]) {
+      assert.equal(fs.existsSync(path.join(fixture.dir, file)), mode === "verifier-only", file);
+      if (mode === "verifier-only") assert.equal(fs.readFileSync(path.join(fixture.dir, file), "utf8"), previous, "completion preserves verifier-only files");
+    }
+    assert.deepEqual(JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks.completed, {});
+  }
+});
+
+test("native completion accepts actual source or output edits beside verifier evidence", t => {
+  for (const changed of ["evidence/source.txt", "outline.html"]) {
+    const fixture = visualFixture();
+    t.after(() => fs.rmSync(fixture.dir, { recursive: true, force: true }));
+    const plan = JSON.parse(fs.readFileSync(path.join(fixture.dir, fixture.plan)));
+    plan.phases[0].visual.scope = ["evidence/"];
+    plan.phases[0].visual.checks = ["evidence/outline-check.json"];
+    plan.phases[0].visual.verification[0].check = "evidence/outline-check.json";
+    touch(fixture.dir, fixture.plan, canonicalJson(plan)); touch(fixture.dir, "outline.html", visualHtml);
+    nextVisualTask(fixture.dir, { plan: fixture.plan });
+    touch(fixture.dir, changed, changed.endsWith(".html") ? visualHtml + "<!-- actual output edit -->" : "actual source edit");
+    const completed = decideVisualTask(fixture.dir, { choice: "outline", verdict: "complete" });
+    assert.equal(completed.status, "recorded", completed.failure);
+    const record = JSON.parse(fs.readFileSync(path.join(fixture.dir, "state.json"))).extensions.visualTasks.completed.outline;
+    assert.ok(record.observation.scope.changedFiles.includes(changed));
+    assert.equal(record.status, "ready");
+    assert.equal(record.review, undefined, "task work and technical verification do not grant owner acceptance");
+  }
+});
+
+test("native task-change rechecks reject reverted source work before and after evidence writes", t => {
+  for (const timing of ["capture", "metadata"]) {
+    const fixture = visualFixture();
+    t.after(() => fs.rmSync(fixture.dir, { recursive: true, force: true }));
+    const plan = JSON.parse(fs.readFileSync(path.join(fixture.dir, fixture.plan)));
+    plan.phases[0].visual.scope = ["evidence/"];
+    plan.phases[0].visual.checks = ["evidence/outline-check.json"];
+    plan.phases[0].visual.verification[0].check = "evidence/outline-check.json";
+    touch(fixture.dir, fixture.plan, canonicalJson(plan)); touch(fixture.dir, "outline.html", visualHtml);
+    nextVisualTask(fixture.dir, { plan: fixture.plan });
+    touch(fixture.dir, "evidence/source.txt", "sole actual task change");
+    const source = path.join(fixture.dir, "evidence/source.txt"), cliCore = require("../skill/scripts/cli-core.cjs"), observe = cliCore.observeInteraction, write = fs.writeFileSync;
+    cliCore.observeInteraction = (...args) => { const result = syntheticInteraction(...args); if (timing === "capture") fs.unlinkSync(source); return result; };
+    fs.writeFileSync = function(file, ...args) { const result = write.call(fs, file, ...args); if (timing === "metadata" && path.basename(String(file)) === "outline-completion.json") fs.unlinkSync(source); return result; };
+    let completed;
+    try { completed = actualDecideVisualTask(fixture.dir, { choice: "outline", verdict: "complete" }); }
+    finally { cliCore.observeInteraction = observe; fs.writeFileSync = write; }
+    assert.equal(completed.status, "blocked", timing);
+    assert.match(completed.failure, /actual task change/);
+    const progress = JSON.parse(fs.readFileSync(path.join(fixture.dir, "state.json"))).extensions.visualTasks;
+    assert.equal(progress.completed.outline, undefined);
+    assert.ok(progress.active, "restored source cannot close the original window");
+    assert.equal(fs.existsSync(path.join(fixture.dir, "evidence/outline-check.json")), timing === "metadata");
+  }
+});
+
 test("native scope preserves dirty baselines, rejects another task and resists expanded-scope laundering", t => {
   for (const changed of ["outside.txt", "surface.html"]) {
     const fixture = visualFixture();
@@ -702,7 +789,9 @@ test("native scope preserves dirty baselines, rejects another task and resists e
     const repaired = nextVisualTask(fixture.dir);
     assert.equal(repaired.status, undefined, repaired.blockers?.join("; "));
     assert.notEqual(state().extensions.visualTasks.active.planHash, original.planHash);
-    const completed = decideVisualTask(fixture.dir, { choice: "outline", verdict: "complete", artifact: visualEvidence(fixture, repaired) });
+    const repairedArtifact = visualEvidence(fixture, repaired);
+    fs.appendFileSync(path.join(fixture.dir, "outline.html"), "<!-- actual edit after plan rebinding -->");
+    const completed = decideVisualTask(fixture.dir, { choice: "outline", verdict: "complete", artifact: repairedArtifact });
     assert.equal(completed.status, "recorded", completed.failure);
     assert.equal(fs.readFileSync(path.join(fixture.dir, "outside.txt"), "utf8"), "pre-existing dirty bytes");
   }
@@ -810,6 +899,7 @@ test("native metadata destination cannot overwrite a same-name bound input or an
     touch(fixture.dir, "outline.html", visualHtml);
     touch(fixture.dir, "outline-completion.json", "this bound input/output must remain intact");
     nextVisualTask(fixture.dir, { plan: fixture.plan });
+    fs.appendFileSync(path.join(fixture.dir, "outline.html"), "<!-- actual task edit before collision check -->");
     const before = fs.readFileSync(path.join(fixture.dir, "outline-completion.json"));
     const result = actualDecideVisualTask(fixture.dir, { choice: "outline", verdict: "complete", chrome: process.execPath, puppeteerModule: path.join(fixture.dir, "missing.cjs") });
     assert.equal(result.status, "blocked", role);
