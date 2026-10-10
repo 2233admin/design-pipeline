@@ -199,7 +199,7 @@ function checkFilmProject(dir, options = {}) {
       if (isHyperframes) preview = (options.preview || ((dir) => hyperframesPreview(dir)))(root);
       timeline = options.capture(composition, preview ? preview.url : undefined);
       fs.writeFileSync(timelineFile, `${JSON.stringify(timeline, null, 2)}\n`);
-      timelineNote = preview ? "captured through the HyperFrames preview runtime" : "captured from index.html";
+      timelineNote = preview ? `captured through the HyperFrames preview runtime${preview.cli ? ` (${preview.cli})` : ""}` : "captured from index.html";
       if (options.layout) {
         try { layout = options.layout(composition, preview ? preview.url : undefined, layoutTimes(board)); }
         catch (error) { layoutNote = `layout capture failed: ${error.message}`; }
@@ -276,7 +276,7 @@ function compositionStep(board, frames, layout, layoutNote, options) {
     status: failed ? "failed" : "passed",
     findings: [...frames.flatMap((frame) => frame.findings), ...layoutFindings],
     frames: frames.map(({ beatId, atSec, status }) => ({ beatId, atSec, status })),
-    layout: text ? { status: text.status, samples: text.samples, viewport: layout.viewport } : { status: "unavailable", reason: layoutNote || "the composition was not captured" },
+    layout: text ? { status: text.status, samples: text.samples, viewport: layout.viewport, ...(layout.seek ? { seek: layout.seek } : {}) } : { status: "unavailable", reason: layoutNote || "the composition was not captured" },
   };
 }
 

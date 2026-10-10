@@ -6,7 +6,8 @@
 in the same preview session, it now asks the same kernel (`capture-film-timeline.cjs
 --layout-times`) to run `references/film-choreography/layout-probe.js` at a 5 fps grid
 (0.1, 0.3, ... s) plus 50 ms either side of every beat boundary. At each time the probe seeks the
-registered timeline (`window.__hf.seek` under the HyperFrames runtime, otherwise the GSAP
+registered timeline (the runtime's `window.__player.seek` in the HyperFrames preview, or
+`window.__hf.seek` in its render engine; otherwise the GSAP
 timeline, applying `data-start`/`data-duration` clip windows itself) and returns, per element that
 owns visible text: line boxes from `Range.getClientRects` clipped by `overflow` ancestors and
 `clip-path: inset()`, effective opacity, rendered font size, `occluded` (an opaque non-ancestor
@@ -66,10 +67,14 @@ film takes ~2.3 s to sample (150 samples, up to 33 runs each).
 
 ### Limits
 
-Only DOM text is measured; text drawn in canvas, WebGL or video is not. The HyperFrames-runtime
-seek path (`window.__hf.seek`, projects with `hyperframes.json`) is implemented but was not
-exercised by these films. Size and margin are frame-relative; the onboarding owner's "32 px is
-small when embedded 900 px wide" depends on the embed and stays a review judgement.
+Only DOM text is measured; text drawn in canvas, WebGL or video is not. Projects with
+`hyperframes.json` are sampled through the pinned preview (`hyperframes@0.8.137`, named in the
+timeline step's `source`); in the 0.8.137 preview `window.__hf.seek` is listed but undefined, so
+the probe uses `window.__player.seek` and reports `layout.seek: "hyperframes-runtime"` (smoke:
+an injected boundary overlap was caught at 3.7-4.1 s that way). The QA test uses a stand-in with
+that shape, since starting the real preview needs npx and ~30 s. Size and margin are
+frame-relative; the onboarding owner's "32 px is small when embedded 900 px wide" depends on the
+embed and stays a review judgement.
 
 ## 2. Quick film ends with the owner's review
 

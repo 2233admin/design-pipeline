@@ -181,6 +181,7 @@ test("layout probe measures what is visible in the browser", { skip: BROWSER.ski
     layoutPage(dir, 2, 4);
     const layout = await captureLayout(path.join(dir, "index.html"), [1.0, 1.9, 2.1, 3.7], { puppeteerModule: BROWSER.puppeteerModule, chrome: BROWSER.chrome });
     assert.deepEqual(layout.viewport, VIEW);
+    assert.equal(layout.seek, "timeline");
     const ids = (atSec) => layout.samples.find((sample) => sample.atSec === atSec).runs;
     const at = (atSec, id) => ids(atSec).find((run) => run.id === id);
     assert.equal(at(1.0, "#next"), undefined, "opacity 0 is not visible");
@@ -194,6 +195,28 @@ test("layout probe measures what is visible in the browser", { skip: BROWSER.ski
     assert.equal(at(1.0, "#title").fontPx, 40);
     const result = checkFilmLayout(layout);
     assert.deepEqual(result.findings.filter((finding) => finding.severity === "error").map((finding) => finding.target), ["#next | #title"]);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+// Under the HyperFrames runtime the probe seeks through window.__hf and leaves clip visibility to
+// the runtime. A stand-in runtime keeps #later visible outside its data-start window and hides
+// #title before 2 s, so each sample shows which clock drove it.
+test("layout probe seeks through the HyperFrames runtime when it is present", { skip: BROWSER.skip }, async () => {
+  const dir = tmp();
+  try {
+    layoutPage(dir, 2, 4);
+    const file = path.join(dir, "index.html");
+    // Shape observed in the hyperframes@0.8.137 preview: __hf lists a seek key without a function
+    // and the player seeks.
+    const runtime = `<script>window.__hf = { seek: undefined }; window.__player = { seek: (t) => { window.__timelines.main.seek(t, false); document.getElementById("title").style.visibility = t < 2 ? "hidden" : "visible"; } };</script></body>`;
+    fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace("</body>", runtime));
+    const layout = await captureLayout(file, [1.0, 2.1], { puppeteerModule: BROWSER.puppeteerModule, chrome: BROWSER.chrome });
+    assert.equal(layout.seek, "hyperframes-runtime");
+    const at = (atSec, id) => layout.samples.find((sample) => sample.atSec === atSec).runs.find((run) => run.id === id);
+    assert.equal(at(1.0, "#title"), undefined, "the runtime's visibility is respected");
+    assert.ok(at(2.1, "#title"));
+    assert.ok(at(1.0, "#later"), "clip windows are not emulated over the runtime");
+    assert.equal(at(2.1, "#next").opacity, 1, "the runtime seek drove the timeline");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

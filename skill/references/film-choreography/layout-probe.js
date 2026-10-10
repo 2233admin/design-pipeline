@@ -168,10 +168,15 @@
     });
   }
 
+  // The HyperFrames preview exposes its player as window.__player; the render engine installs
+  // window.__hf.seek. Either one also drives clip visibility and nested compositions.
   async function seek(timeline, atSec) {
-    if (typeof window !== "undefined" && window.__hf && typeof window.__hf.seek === "function") {
-      await window.__hf.seek(atSec);
-      if (typeof window.__hfWaitForSeekCompletion === "function") await window.__hfWaitForSeekCompletion();
+    const hf = typeof window !== "undefined" ? window : {};
+    const runtimeSeek = hf.__player && typeof hf.__player.seek === "function" ? (t) => hf.__player.seek(t)
+      : hf.__hf && typeof hf.__hf.seek === "function" ? (t) => hf.__hf.seek(t) : null;
+    if (runtimeSeek) {
+      await runtimeSeek(atSec);
+      if (typeof hf.__hfWaitForSeekCompletion === "function") await hf.__hfWaitForSeekCompletion();
       return false;
     }
     timeline.seek(atSec, false);
@@ -181,12 +186,14 @@
   async function sample(timeline, times) {
     if (!timeline || typeof timeline.seek !== "function") throw new Error("layout probe: expected a seekable GSAP timeline");
     const samples = [];
+    let emulateClips = true;
     for (const atSec of times) {
-      const emulateClips = await seek(timeline, atSec);
+      emulateClips = await seek(timeline, atSec);
       samples.push({ atSec, runs: collect(atSec, emulateClips) });
     }
     timeline.seek(0, false);
-    return { viewport: { width: innerWidth, height: innerHeight }, samples };
+    // seek tells the report which clock drove the samples: the HyperFrames runtime or the timeline.
+    return { viewport: { width: innerWidth, height: innerHeight }, seek: emulateClips ? "timeline" : "hyperframes-runtime", samples };
   }
 
   return { sample };

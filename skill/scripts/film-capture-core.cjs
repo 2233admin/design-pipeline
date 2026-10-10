@@ -96,7 +96,7 @@ function hyperframesPreview(projectDir, options = {}) {
     if (started) stop();
     fail(SCOPE, `the preview at ${state.serverUrl} does not serve ${dir}. Fix: stop other previews (npx hyperframes preview --kill-all) and re-run`, { code: "TOOL_FAILED" });
   }
-  return { url: `${state.serverUrl}/api/projects/${encodeURIComponent(listed.id)}/preview`, started, stop };
+  return { url: `${state.serverUrl}/api/projects/${encodeURIComponent(listed.id)}/preview`, cli, started, stop };
 }
 
 // Opens the composition in headless Chrome at its declared canvas size and waits for the
