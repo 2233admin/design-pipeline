@@ -105,7 +105,7 @@ Owns `skill/references/stages.md` (`pipeline-reference.md` on the original branc
 - [x] CLI smoke from an empty temporary project: web intake, concepts, build and review prompts;
   film intake and concepts unchanged; a `replicate` build has no treatment.
 - [x] Fix the automated review findings on PR #87 (`design.md` section 8).
-- [ ] Rerun `node scripts/qa.cjs` on the review-fix commit and record it in `qa.md`.
+- [x] Rerun `node scripts/qa.cjs` on the review-fix commit and record it in `qa.md`.
 - [ ] Review and merge the pull request (owner).
 
 ## Pending (not done by any task above)

@@ -35,6 +35,17 @@
   with no treatment.
 - No gate, finding code, receipt, schema, workflow stage or workflow-state field was added.
 
+### Fresh verification after the review fixes
+
+- Review-fix commit `c26f2f7ca92bb948a4820afc52189757f56fd9a4`, tested tree
+  `a9636c00f5ad837d3dd145cae173ef472b0e9856`; it changes only the guide text, spec delta and change
+  records (`design.md` section 8).
+- `node scripts/qa.cjs` on that frozen commit, same setup: exit 0. Repository tests (120 files):
+  1,114 tests, 1,111 passed, 0 failed, 3 skipped (GEPA runtime); installed-package public CLI smoke
+  12 of 12; repository status byte-identical.
+- `npm run specs:check`: 64 passed, 0 failed. Both probe examples still pass `validateProbeFile`.
+- The CLI smoke above ran on `48a94bd`; the review fixes do not change `next` output.
+
 ## Conformance on the original branch (`b631fcd`, 2026-09-30)
 
 Recorded on branch `project-progress-status` before the port onto main. The web review override
