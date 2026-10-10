@@ -156,11 +156,11 @@ U.missingGlyphs = (font, text) => {
   if (!cm) return chars;
   return chars.filter(ch => !cm.has(ch.codePointAt(0)));
 };
-// 缺字就 console.error（qa.py / render.py 会把页面 console.error 当失败）。返回 true = 全都有。
+// 缺字就 console.error（art-motion render 会把页面 console.error 当失败）。返回 true = 全都有。
 U.assertGlyphs = (font, text, where = '') => {
   const fam = famOf(font), miss = U.missingGlyphs(font, text);
-  if (miss.length) console.error(!CMAPS[fam] ? `字体「${fam}」没注册或没读到 cmap（lib/fonts.js 的 FONT_FACES）${where ? '（' + where + '）' : ''}`
-    : `缺字形：字体「${fam}」里没有「${miss.join('')}」${where ? '（' + where + '）' : ''}——会静默回退系统字体。用 scripts/font_subset.py 补进子集，或改用路径自画。`);
+  if (miss.length) console.error(!CMAPS[fam] ? `字体「${fam}」没注册或没读到 cmap（创建运行时传入的 fonts）${where ? '（' + where + '）' : ''}`
+    : `缺字形：字体「${fam}」里没有「${miss.join('')}」${where ? '（' + where + '）' : ''}——会静默回退系统字体。用 tools/art-motion/font-subset.py 补进子集，或改用路径自画。`);
   return miss.length === 0;
 };
 U.fontFamily = famOf;
@@ -1497,8 +1497,8 @@ const { clamp, lerp } = U;
 const MO = window.MO = {};
 
 // ---------- 画布尺寸（片段渲染用） ----------
-// 引擎和全部示范片是 1920×1080。clip.html（口播管线的参数化片段）可能是竖屏 1080×1920：
-// 用到屏幕尺寸的库（CAM / UI / CH / DG / CL）用 U.onStage 登记，clip.js 启动时 U.setStage(w, h) 一次性改掉。
+// 引擎和全部风格场景是 1920×1080。drawClip（参数化片段）可能是竖屏 1080×1920：
+// 用到屏幕尺寸的库（CAM / UI / CH / DG / CL）用 U.onStage 登记，运行时创建实例时 U.setStage(w, h) 一次性改掉。
 const stageHooks = [];
 window.STAGE = { W: 1920, H: 1080 };
 U.onStage = f => { stageHooks.push(f); };
@@ -2001,7 +2001,7 @@ const TR_UTIL = namespace("TR_UTIL");
     const WIDTH = width, HEIGHT = height, FPS = defaultFps, IMG = assets;
     const FONT_FACES = fonts;
 // 文字动效 TY：逐字/逐词弹入、遮罩升起、弹入、打字、从模糊浮出、荧光笔、下划线、主词砸入、关键词强调、数字计数与等宽数字。
-// 约定：p 是 0..1 进度；lt/t 是秒。字体用 CSS 字体串或 family 名（中文默认 PuHui-*，开源版是思源黑体，见 lib/fonts.js）。
+// 约定：p 是 0..1 进度；lt/t 是秒。字体用 CSS 字体串或 family 名（中文默认 PuHui-*，开源版是思源黑体，见 tools/art-motion/fonts/catalog.json）。
 // 可读性底线（y5/y1 卡片）：主词 : 辅句 : 标签 ≈ 3.4 : 1 : 0.4；一句辅句在屏 ≥1.2s；入场慢（0.3–0.4s）、退场快（≈0.18s）。
 (() => {
 const { clamp, lerp } = U;
@@ -14346,7 +14346,7 @@ const TR_UTIL = namespace("TR_UTIL");
 //       number（一页大数字：data {value, prefix, suffix, decimals}，at = 数字落定的时刻，页面提前 0.7s 出现开始滚）
 //       highlight（当前页里 data.word 这个词刷荧光笔＋放大一下；不给 word 就刷整个主词）
 //       sub 里的关键词：data.key 写辅句里的一个词，那个词用强调色（示范片「下一行」那样）
-//       number 的说明写 text 或 sub 都行（clip.js 已统一）；data.label 照样有
+//       number 的说明写 text 或 sub 都行（drawClip 已统一）；data.label 照样有
 // 两个以上的 point 页 = 一份清单：画进度轨（01/02/03，告诉观众第几个、一共几个；横屏右上、竖屏在下方）和背景巨型序号（低对比、斜向慢漂，data.num 可指定）。
 // data.palette = [[底色, 字色], ...] 换配色。alpha 模式不画底，字白色带深色描边。safe：主词块在 top..H−bottom 之间居中，进度轨也在这一带里。
 CLIPS.y5_kinetic_type = (() => {
@@ -14495,8 +14495,8 @@ const TR_UTIL = namespace("TR_UTIL");
     const WIDTH = width, HEIGHT = height, FPS = defaultFps, IMG = assets;
     const FONT_FACES = fonts;
 // 转场库：每个函数 (c, A, B, p, o) —— A=旧画面 canvas，B=新画面 canvas，p∈[0,1]，
-// o: {W,H,lt,t,tmp,IMG, ...该转场在 eras.js 里的参数}。确定性：随机数一律 U.rng(种子)。
-// 每个转场都取「新时代」最有辨识度的形式元素（见 经验日志「转场」）。
+// o: {W,H,lt,t,tmp,IMG, ...调用方传给 runtime.transition 的参数}。确定性：随机数一律 U.rng(种子)。
+// 每个转场都取「新时代」最有辨识度的形式元素（见 references/art-motion/styles/transitions.md）。
 (() => {
 const W = WIDTH, H = HEIGHT;
 const { clamp, lerp, ease, rng } = U, TAU = Math.PI * 2;

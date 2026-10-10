@@ -1,5 +1,6 @@
-Status: implementation in progress. `<former-bundle>` and `<former>` stand for the reference
-project's directory name and romanized name, which this record does not spell.
+Status: implemented; evidence in [verification.md](verification.md). `<former-bundle>` and
+`<former>` stand for the reference project's directory name and romanized name, which this record
+does not spell.
 
 ## Goals and non-goals
 
@@ -118,8 +119,9 @@ superseded by this change.
 - `libraries` namespaces: `U PAINT CAM CH CL DG KIT MO RIG TY UI SCENES CLIPS TRANSITIONS`, plus
   opt-in `TOON` loaded by `enableDemoArt()` or the y1/y4 grammars. Nothing is written to host globals.
 - Messages say "Art Motion". The header names the build script and embeds `LICENSE` verbatim.
-- Apart from the header, names and messages and the two removed modules, the regenerated bundle is
-  identical to the former one, so scene, clip and transition drawing is unchanged.
+- Apart from the header, names and messages, engine comments and one glyph message that named
+  removed upstream files, and the two removed modules, the regenerated bundle is identical to the
+  former one, so scene, clip and transition drawing is unchanged.
 
 ### Build (`scripts/build-art-motion-runtime.cjs`)
 

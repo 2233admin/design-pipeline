@@ -72,11 +72,11 @@ U.missingGlyphs = (font, text) => {
   if (!cm) return chars;
   return chars.filter(ch => !cm.has(ch.codePointAt(0)));
 };
-// 缺字就 console.error（qa.py / render.py 会把页面 console.error 当失败）。返回 true = 全都有。
+// 缺字就 console.error（art-motion render 会把页面 console.error 当失败）。返回 true = 全都有。
 U.assertGlyphs = (font, text, where = '') => {
   const fam = famOf(font), miss = U.missingGlyphs(font, text);
-  if (miss.length) console.error(!CMAPS[fam] ? `字体「${fam}」没注册或没读到 cmap（lib/fonts.js 的 FONT_FACES）${where ? '（' + where + '）' : ''}`
-    : `缺字形：字体「${fam}」里没有「${miss.join('')}」${where ? '（' + where + '）' : ''}——会静默回退系统字体。用 scripts/font_subset.py 补进子集，或改用路径自画。`);
+  if (miss.length) console.error(!CMAPS[fam] ? `字体「${fam}」没注册或没读到 cmap（创建运行时传入的 fonts）${where ? '（' + where + '）' : ''}`
+    : `缺字形：字体「${fam}」里没有「${miss.join('')}」${where ? '（' + where + '）' : ''}——会静默回退系统字体。用 tools/art-motion/font-subset.py 补进子集，或改用路径自画。`);
   return miss.length === 0;
 };
 U.fontFamily = famOf;

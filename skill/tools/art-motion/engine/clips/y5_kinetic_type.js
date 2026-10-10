@@ -4,7 +4,7 @@
 //       number（一页大数字：data {value, prefix, suffix, decimals}，at = 数字落定的时刻，页面提前 0.7s 出现开始滚）
 //       highlight（当前页里 data.word 这个词刷荧光笔＋放大一下；不给 word 就刷整个主词）
 //       sub 里的关键词：data.key 写辅句里的一个词，那个词用强调色（示范片「下一行」那样）
-//       number 的说明写 text 或 sub 都行（clip.js 已统一）；data.label 照样有
+//       number 的说明写 text 或 sub 都行（drawClip 已统一）；data.label 照样有
 // 两个以上的 point 页 = 一份清单：画进度轨（01/02/03，告诉观众第几个、一共几个；横屏右上、竖屏在下方）和背景巨型序号（低对比、斜向慢漂，data.num 可指定）。
 // data.palette = [[底色, 字色], ...] 换配色。alpha 模式不画底，字白色带深色描边。safe：主词块在 top..H−bottom 之间居中，进度轨也在这一带里。
 CLIPS.y5_kinetic_type = (() => {

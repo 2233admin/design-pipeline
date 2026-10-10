@@ -1,6 +1,6 @@
 // 转场库：每个函数 (c, A, B, p, o) —— A=旧画面 canvas，B=新画面 canvas，p∈[0,1]，
-// o: {W,H,lt,t,tmp,IMG, ...该转场在 eras.js 里的参数}。确定性：随机数一律 U.rng(种子)。
-// 每个转场都取「新时代」最有辨识度的形式元素（见 经验日志「转场」）。
+// o: {W,H,lt,t,tmp,IMG, ...调用方传给 runtime.transition 的参数}。确定性：随机数一律 U.rng(种子)。
+// 每个转场都取「新时代」最有辨识度的形式元素（见 references/art-motion/styles/transitions.md）。
 (() => {
 const W = WIDTH, H = HEIGHT;
 const { clamp, lerp, ease, rng } = U, TAU = Math.PI * 2;
