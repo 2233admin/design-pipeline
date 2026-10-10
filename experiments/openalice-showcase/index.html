@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAlice — 从一个问题到一笔你亲自批准的交易</title>
+<style>
+/* ===========================================================================
+   OpenAlice showcase — single file, no build step, no network.
+   Foundations: ./DESIGN.md and ./MOTION.md (both checked `ready`).
+   Primary knowledge door: mengto/web-design/scroll-progress-timeline.
+   Toolchain: framework agnostic, styling `none`, UI library `none`.
+   =========================================================================== */
+
+:root {
+  --bg: #0a0d12;
+  --bg-raise: #111721;
+  --bg-sunk: #070a0e;
+  --line: #1e2735;
+  --line-strong: #2e3a4d;
+  --ink: #eef2f8;          /* 15.9:1 on --bg */
+  --ink-mute: #9aa8bd;     /* 6.4:1  on --bg */
+  --ink-faint: #6c7a90;    /* 3.6:1  — large or non-essential only */
+  --spine: #3d5a80;
+  --spine-live: #7aa2d8;
+  --gain: #4ec98b;
+  --loss: #e0655f;
+  --gate: #e8b64c;
+  --focus: #9fc4ff;
+  --r: 10px;
+  --dur-fast: 180ms;
+  --dur: 420ms;
+  --dur-slow: 760ms;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
+  --rail: 56px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.6 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* A jittering price column is the fastest way to make a trading surface feel untrustworthy. */
+.num { font-variant-numeric: tabular-nums; font-family: var(--mono); }
+
+a { color: var(--spine-live); }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px;
+}
+
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 10;
+  background: var(--bg-raise); color: var(--ink);
+  padding: 10px 14px; border-radius: 0 0 var(--r) 0;
+}
+.skip:focus { left: 0; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------------------------------------------------------------------------
+   The Git spine follows the door's geometry contract: a positioned timeline
+   wrapper contains the ordered list and its rail as siblings. The rail stays
+   in document flow's coordinate system, with progress normalized between the
+   FIRST and LAST point centre — not between arbitrary page edges.
+   --------------------------------------------------------------------------- */
+.timeline { position: relative; }
+.scenes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rail {
+  position: absolute;
+  left: 0;
+  top: var(--rail-top, 0px);
+  height: var(--rail-height, 0px);
+  width: 2px;
+  pointer-events: none;
+}
+/* `reveal.trim-line` binds `path.progress` to this SVG path. pathLength=1
+   makes stroke-dashoffset a plain 0..1 progress channel while the measured
+   first/last point centres keep the rail aligned with the ordered list. */
+.rail svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.rail-track { stroke: var(--line); stroke-width: 2; fill: none; }
+.rail-fill {
+  stroke: var(--spine-live); stroke-width: 2; fill: none; stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--progress, 0));
+}
+.rail-head {
+  position: absolute; left: -3px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--spine-live);
+  top: calc(var(--progress, 0) * 100%);
+  margin-top: -4px;
+  opacity: calc(var(--progress, 0) * 6);
+}
+
+.scene { position: relative; padding: 96px 0 96px var(--rail); border-bottom: 1px solid var(--line); }
+.scene:last-child { border-bottom: 0; }
+
+/* One point per step, sitting on the rail. `--dot-y` is the measured centre the
+   progress normalization uses, so the head and the active step always agree. */
+.point {
+  position: absolute; left: -4px; top: var(--dot-y, 0px);
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--line-strong);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+/* Passed points latch, per MOTION.md: the trail must accumulate. Lighting only the
+   active step would make already-reached commits revert to unreached. */
+.scene[data-active] .point,
+.scene[data-passed] .point { background: var(--spine-live); border-color: var(--spine-live); }
+
+@media (max-width: 860px) {
+  :root { --rail: 0px; }
+  .rail, .point { display: none; }
+  .scene { padding-left: 0; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+.is-reached .reveal { opacity: 1; transform: none; }
+
+.eyebrow {
+  display: flex; align-items: baseline; gap: 10px;
+  font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-faint); margin: 0 0 14px;
+}
+.eyebrow b { color: var(--spine-live); font-weight: 600; }
+
+h1 { font: 600 clamp(34px, 5.4vw, 60px)/1.08 var(--sans); letter-spacing: -.02em; margin: 0 0 20px; }
+h2 { font: 600 clamp(25px, 3.1vw, 35px)/1.2 var(--sans); letter-spacing: -.015em; margin: 0 0 14px; }
+h3 { font: 600 16px/1.35 var(--sans); margin: 0 0 6px; }
+.lede { font-size: clamp(17px, 1.5vw, 20px); color: var(--ink-mute); max-width: 60ch; margin: 0 0 28px; }
+p { max-width: 68ch; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 500 12px/1 var(--mono); color: var(--ink-mute);
+  border: 1px solid var(--line-strong); border-radius: 999px; padding: 7px 12px;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gain); }
+
+/* --- scene 1: the agent constellation ---------------------------------- */
+.hero { display: grid; grid-template-columns: 1.15fr .85fr; gap: 56px; align-items: center; }
+@media (max-width: 860px) { .hero { grid-template-columns: 1fr; gap: 36px; } }
+
+.orbit { position: relative; aspect-ratio: 1; max-width: 380px; width: 100%; margin-inline: auto; }
+.orbit-ring { position: absolute; inset: 14%; border: 1px dashed var(--line-strong); border-radius: 50%; }
+.orbit-ring.outer { inset: 0; border-style: solid; border-color: var(--line); }
+.core {
+  position: absolute; inset: 34%; display: grid; place-items: center; border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #1b2536, #0d1219 72%);
+  border: 1px solid var(--line-strong);
+  font: 600 13px/1 var(--mono); letter-spacing: .06em;
+}
+/* transform.orbit — an authored phase per mark, held rather than spun, so the
+   constellation reads as "these agents are attached", not as a spinner. */
+.agent {
+  position: absolute; top: 50%; left: 50%;
+  width: 78px; height: 34px; margin: -17px 0 0 -39px;
+  display: grid; place-items: center; border-radius: 8px;
+  background: var(--bg-raise); border: 1px solid var(--line-strong);
+  font: 500 11px/1 var(--mono); color: var(--ink-mute);
+  --orbit-r: 150px;
+  transform: rotate(var(--phase)) translateX(var(--orbit-r)) rotate(calc(-1 * var(--phase))) scale(.82);
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+.is-reached .agent {
+  opacity: 1;
+  transform: rotate(var(--phase)) translateX(var(--orbit-r)) rotate(calc(-1 * var(--phase))) scale(1);
+}
+@media (max-width: 520px) { .agent { --orbit-r: 112px; } }
+
+/* --- panels ------------------------------------------------------------- */
+.panel { background: var(--bg-raise); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.panel-bar {
+  display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+  border-bottom: 1px solid var(--line); background: var(--bg-sunk);
+  font: 500 12px/1 var(--mono); color: var(--ink-mute);
+}
+.panel-body { padding: 16px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 860px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+/* --- commit log --------------------------------------------------------- */
+.log { list-style: none; margin: 0; padding: 0; }
+.log li {
+  position: relative; display: grid; grid-template-columns: 22px 92px 1fr; gap: 12px;
+  align-items: baseline; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px;
+}
+.log li:first-child { border-top: 0; }
+.log .node { position: relative; height: 1em; }
+.log .node::before {
+  content: ""; position: absolute; left: 7px; top: .38em; z-index: 1;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--bg-sunk); border: 1.5px solid var(--line-strong);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+/* Anchored to the row box, not to a guessed row height: on a narrow viewport the
+   message wraps and any fixed height leaves the trail visibly broken. */
+.log li::after {
+  content: ""; position: absolute; left: 10.5px;
+  top: calc(10px + .38em + 4px); bottom: calc(-10px - .38em - 4px);
+  width: 1.5px; background: var(--line-strong);
+}
+.log li:last-child::after { display: none; }
+.is-reached .log .node::before { background: var(--spine-live); border-color: var(--spine-live); }
+.log .sha { color: var(--ink-faint); font-family: var(--mono); font-size: 12px; }
+.log .msg { color: var(--ink-mute); }
+
+/* --- illustrative market row -------------------------------------------- */
+.quote { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.quote .sym { font: 600 15px/1 var(--mono); }
+.quote .px { font-size: 26px; font-weight: 600; }
+.quote .chg { color: var(--gain); font-size: 14px; }
+.bars { display: flex; align-items: flex-end; gap: 4px; height: 56px; margin-top: 16px; }
+.bars i {
+  flex: 1; background: var(--spine); border-radius: 2px 2px 0 0; height: 6px;
+  transition: height var(--dur-slow) var(--ease); transition-delay: var(--d, 0ms);
+}
+.is-reached .bars i { height: var(--h); }
+
+/* --- the approval gate -------------------------------------------------- */
+.gate {
+  border: 1px solid var(--gate); border-radius: var(--r); padding: 18px;
+  background: linear-gradient(180deg, rgba(232,182,76,.07), transparent);
+}
+.gate-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font: 600 13px/1 var(--mono); color: var(--gate); }
+.gate-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+button {
+  font: 500 14px/1 var(--sans); padding: 10px 16px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--line-strong); background: var(--bg-sunk); color: var(--ink);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  min-height: 44px; /* WCAG 2.5.8 AAA target size */
+}
+button:hover:not(:disabled) { background: #18202c; border-color: var(--ink-faint); }
+button:active:not(:disabled) { background: #0f141c; }
+button.primary { background: #1d2c42; border-color: var(--spine); }
+button.primary:hover:not(:disabled) { background: #253853; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+.gate-state {
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+  font: 500 13px/1.5 var(--mono); color: var(--ink-mute);
+}
+.gate-state b { color: var(--ink); font-weight: 600; }
+
+.caution {
+  margin-top: 20px; padding: 14px 16px; border-left: 3px solid var(--gate);
+  background: var(--bg-sunk); color: var(--ink-mute); font-size: 14px; border-radius: 0 6px 6px 0;
+}
+
+.foot { padding: 56px 0 72px; color: var(--ink-faint); font-size: 13px; }
+.foot p { max-width: 80ch; }
+
+/* ---------------------------------------------------------------------------
+   Reduced motion is the authored substitute, not a degradation: the rail is
+   complete, every scene sits at its final state, the constellation holds its
+   resting phase, and the gate stays operable.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal, .agent, .bars i, .log .node::before, .point { transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  .agent { opacity: 1; transform: rotate(var(--phase)) translateX(var(--orbit-r)) rotate(calc(-1 * var(--phase))); }
+  .bars i { height: var(--h); }
+  .log .node::before, .point { background: var(--spine-live) !important; border-color: var(--spine-live) !important; }
+  .rail-fill { stroke-dashoffset: 0; }
+  .rail-head { display: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<main id="main" class="wrap">
+  <!-- An ordered list with real headings, per the door: the line, points, and
+       active state enhance that structure; they never replace it. -->
+  <div class="timeline">
+    <div class="rail" aria-hidden="true">
+      <svg viewBox="0 0 2 100" preserveAspectRatio="none" focusable="false">
+        <path class="rail-track" d="M 1 0 V 100" pathLength="1"/>
+        <path class="rail-fill" d="M 1 0 V 100" pathLength="1"/>
+      </svg>
+      <span class="rail-head"></span>
+    </div>
+
+    <ol class="scenes">
+
+    <li class="scene" data-scene>
+      <span class="point" aria-hidden="true"></span>
+      <div class="hero">
+        <div>
+          <p class="eyebrow reveal"><b>00</b><span>本地运行 · 开源 · AGPL-3.0</span></p>
+          <h1 class="reveal" style="--d:60ms">从一个问题，<br>到一笔你亲自批准的交易。</h1>
+          <p class="lede reveal" style="--d:140ms">
+            OpenAlice 把你已经在用的 AI agent 接到行情数据、研究工作区、定时任务和券商账户上。
+            研究留在磁盘，决策留在 Git，执行停在你面前。
+          </p>
+          <div class="reveal" style="--d:220ms">
+            <span class="tag"><span class="dot"></span>状态保存在 <span class="num">~/.openalice</span></span>
+          </div>
+        </div>
+        <div class="orbit">
+          <div class="orbit-ring outer"></div>
+          <div class="orbit-ring"></div>
+          <div class="core">ALICE</div>
+          <div class="agent" style="--phase:-58deg; --d:300ms">Claude&nbsp;Code</div>
+          <div class="agent" style="--phase:62deg;  --d:400ms">Codex</div>
+          <div class="agent" style="--phase:176deg; --d:500ms">Pi&nbsp;/&nbsp;OpenCode</div>
+        </div>
+      </div>
+    </li>
+
+    <li class="scene" data-scene>
+      <span class="point" aria-hidden="true"></span>
+      <p class="eyebrow reveal"><b>01</b><span>Workspaces</span></p>
+      <h2 class="reveal" style="--d:60ms">每条研究线都有地方生长</h2>
+      <p class="lede reveal" style="--d:110ms">
+        对话、文件、Git 历史留在同一个可复用的 Workspace 里。Chat 做通用研究，AutoQuant 做量化项目，
+        Auto Prediction 做预测市场——它们各有自己的 Studio 界面。
+      </p>
+      <div class="grid2">
+        <div class="panel reveal" style="--d:180ms">
+          <div class="panel-bar"><span>workspace / nvda-thesis</span><span style="margin-left:auto">git · main</span></div>
+          <div class="panel-body">
+            <ol class="log">
+              <li><span class="node"></span><span class="sha num">a3f1c08</span><span class="msg">建立 NVDA 论点：基本面 × 板块趋势</span></li>
+              <li><span class="node"></span><span class="sha num">7b20e94</span><span class="msg">加入价格行为对照，记录反证条件</span></li>
+              <li><span class="node"></span><span class="sha num">c91d4aa</span><span class="msg">周度宏观复查 → 论点仍成立</span></li>
+              <li><span class="node"></span><span class="sha num">e04b7f1</span><span class="msg">拟定仓位方案，待人工审核</span></li>
+            </ol>
+          </div>
+        </div>
+        <div class="panel reveal" style="--d:260ms">
+          <div class="panel-bar"><span>market · NVDA</span><span style="margin-left:auto">示意数据</span></div>
+          <div class="panel-body">
+            <div class="quote">
+              <span class="sym">NVDA</span>
+              <span class="px num">184.32</span>
+              <span class="chg num">+2.14%</span>
+            </div>
+            <div class="bars" aria-hidden="true">
+              <i style="--h:22px; --d:300ms"></i><i style="--h:34px; --d:330ms"></i>
+              <i style="--h:28px; --d:360ms"></i><i style="--h:44px; --d:390ms"></i>
+              <i style="--h:38px; --d:420ms"></i><i style="--h:52px; --d:450ms"></i>
+              <i style="--h:47px; --d:480ms"></i><i style="--h:56px; --d:510ms"></i>
+            </div>
+            <p style="color:var(--ink-faint); font-size:13px; margin:14px 0 0">
+              图中数字为示意，不代表实时行情或任何收益。可用数据取决于你配置的 provider。
+            </p>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <li class="scene" data-scene>
+      <span class="point" aria-hidden="true"></span>
+      <p class="eyebrow reveal"><b>02</b><span>Issues · Tracked · Inbox</span></p>
+      <h2 class="reveal" style="--d:60ms">重要的想法会自己回来找你</h2>
+      <p class="lede reveal" style="--d:110ms">
+        在 Tracked 里把研究连到标的和主题上；把后续工作变成带指令和排期的 Issue——早盘扫描、
+        周度宏观复查、对某个论点的定期检查。定时运行使用该 Workspace 自己的 agent 和上下文。
+      </p>
+      <div class="grid3">
+        <div class="panel reveal" style="--d:180ms">
+          <div class="panel-bar">Issue · 每日 08:30</div>
+          <div class="panel-body">
+            <h3>早盘扫描</h3>
+            <p style="color:var(--ink-mute); font-size:14px; margin:0">上次运行 <span class="num">08:31</span> · 产出 1 份报告</p>
+          </div>
+        </div>
+        <div class="panel reveal" style="--d:240ms">
+          <div class="panel-bar">Issue · 每周一</div>
+          <div class="panel-body">
+            <h3>宏观复查</h3>
+            <p style="color:var(--ink-mute); font-size:14px; margin:0">等待人工审核 · <span class="num">2</span> 项</p>
+          </div>
+        </div>
+        <div class="panel reveal" style="--d:300ms">
+          <div class="panel-bar">Inbox</div>
+          <div class="panel-body">
+            <h3>报告与追问</h3>
+            <p style="color:var(--ink-mute); font-size:14px; margin:0">可直接回到产出它的 Session</p>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <li class="scene" data-scene>
+      <span class="point" aria-hidden="true"></span>
+      <p class="eyebrow reveal"><b>03</b><span>Trading as Git</span></p>
+      <h2 class="reveal" style="--d:60ms">研究走到决策，然后停在你面前</h2>
+      <p class="lede reveal" style="--d:110ms">
+        通过 Unified Trading Account 接入支持的券商，查看持仓、委托和账户状态。开启 AI 交易后，
+        agent 只能<strong>暂存</strong>拟议操作并提交它的理由——执行由你在 Trading as Git 里审核批准。
+      </p>
+
+      <div class="gate reveal" style="--d:180ms">
+        <div class="gate-head" aria-hidden="true">等待人工批准</div>
+        <div class="panel" style="background:var(--bg-sunk)">
+          <div class="panel-bar"><span>proposed / nvda-entry</span><span style="margin-left:auto" class="num">e04b7f1</span></div>
+          <div class="panel-body">
+            <p style="margin:0 0 10px; font-family:var(--mono); font-size:13px; color:var(--ink)">
+              BUY NVDA · <span class="num">120</span> 股 · 限价 <span class="num">182.50</span>
+            </p>
+            <p style="margin:0; color:var(--ink-mute); font-size:14px">
+              理由：论点四项条件中三项成立；若板块动能转负则失效。仓位按账户风险上限的
+              <span class="num">1.5%</span> 计算。
+            </p>
+          </div>
+        </div>
+        <div class="gate-actions">
+          <button type="button" class="primary" data-approve>审核并批准</button>
+          <button type="button" data-reject>退回并要求修改</button>
+        </div>
+        <p class="gate-state" id="gate-state" role="status" aria-live="polite">
+          当前状态：<b>已暂存，未执行。</b>没有任何动画会替你推进这一步。
+        </p>
+      </div>
+
+      <div class="caution">
+        <strong style="color:var(--gate)">执行功能处于 beta。</strong>
+        请先使用模拟、paper、demo 或 testnet 账户。OpenAlice 是实验性软件，不保证正确性、可靠性、
+        盈利或防止亏损。只有在你理解并接受风险后再使用真实资金。
+      </div>
+    </li>
+    </ol>
+  </div>
+
+  <footer class="foot">
+    <p>
+      由 Designer Pipeline 生成的产品功能展示页 · 主题为
+      <a href="https://github.com/TraderAlice/OpenAlice">TraderAlice/OpenAlice</a>（AGPL-3.0）。
+      文案取自该项目公开 README 的功能名称与措辞；未包含其源码、截图或品牌素材。
+      页面中的价格、股数与百分比均为示意，不构成投资建议。
+    </p>
+  </footer>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const root = document.documentElement;
+  const timeline = document.querySelector(".timeline");
+  const list = document.querySelector(".scenes");
+  const rail = document.querySelector(".rail");
+  const scenes = Array.from(document.querySelectorAll("[data-scene]"));
+
+  let points = [];      // measured dot centres, document coordinates
+  let io = null;
+  let queued = false;
+
+  /* --- geometry ----------------------------------------------------------
+     The door is explicit: measure the first and last point centres, not
+     arbitrary section edges, and recompute after fonts, resize, orientation,
+     and content mutation. Each scene's dot is placed at the top of its own
+     copy block so the head and the active step agree at every boundary. */
+  const measure = () => {
+    const timelineTop = timeline.getBoundingClientRect().top + window.scrollY;
+    points = scenes.map((scene) => {
+      const marker = scene.querySelector(".point");
+      const anchor = scene.querySelector(".eyebrow, h1, h2");
+      const y = anchor
+        ? anchor.getBoundingClientRect().top + window.scrollY + anchor.offsetHeight / 2
+        : scene.getBoundingClientRect().top + window.scrollY + 40;
+      if (marker) marker.style.setProperty("--dot-y", `${Math.round(y - (scene.getBoundingClientRect().top + window.scrollY))}px`);
+      return y;
+    });
+    if (!rail || points.length < 2) return;
+    const first = points[0];
+    const last = points[points.length - 1];
+    rail.style.setProperty("--rail-top", `${Math.round(first - timelineTop)}px`);
+    rail.style.setProperty("--rail-height", `${Math.round(last - first)}px`);
+  };
+
+  /* --- progress: normalized between first and last point centre --------- */
+  const writeProgress = () => {
+    queued = false;
+    if (points.length < 2) return;
+    const anchor = window.scrollY + window.innerHeight * 0.55;
+    const first = points[0];
+    const last = points[points.length - 1];
+    const span = last - first;
+    const p = span > 0 ? Math.min(1, Math.max(0, (anchor - first) / span)) : 0;
+    root.style.setProperty("--progress", p.toFixed(4));
+    markActive(anchor);
+    latchPassed();
+  };
+  const onScroll = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(writeProgress);
+  };
+
+  /* --- active step: the one the progress head has crossed ---------------- */
+  // aria-current="step" is set on exactly one item and only while it is the
+  // current step; passive scrolling never moves focus and never announces.
+  const markActive = (anchor) => {
+    let index = 0;
+    for (let i = 0; i < points.length; i += 1) if (anchor >= points[i]) index = i;
+    scenes.forEach((scene, i) => {
+      if (i === index) {
+        scene.setAttribute("data-active", "");
+        scene.setAttribute("aria-current", "step");
+      } else {
+        scene.removeAttribute("data-active");
+        scene.removeAttribute("aria-current");
+      }
+      // Latched once the draw front has passed, and never unset.
+      if (i <= index) scene.setAttribute("data-passed", "");
+    });
+  };
+
+  /* --- scene latch -------------------------------------------------------
+     Reached is set once; scrolling back up must not replay the reveal. And a
+     skipped scene must never stay invisible: IntersectionObserver only fires
+     for sections that actually cross the viewport, so an anchor jump or fast
+     scroll would otherwise leave the sections in between at opacity 0 —
+     content hidden behind an entrance animation that never ran. */
+  const latchPassed = () => {
+    const edge = window.innerHeight;
+    for (const scene of scenes) {
+      if (scene.classList.contains("is-reached")) continue;
+      if (scene.getBoundingClientRect().top < edge) {
+        scene.classList.add("is-reached");
+        if (io) io.unobserve(scene);
+      }
+    }
+  };
+
+  const teardown = () => {
+    window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("orientationchange", onResize);
+    if (io) { io.disconnect(); io = null; }
+  };
+
+  const onResize = () => { measure(); writeProgress(); };
+
+  const start = () => {
+    teardown();
+    measure();
+    if (reduce.matches) {
+      scenes.forEach((s) => s.classList.add("is-reached"));
+      root.style.setProperty("--progress", "1");
+      markActive(Number.POSITIVE_INFINITY);
+      return;
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add("is-reached");
+        io.unobserve(entry.target);
+      }
+    }, { rootMargin: "0px 0px -18% 0px", threshold: 0.12 });
+    scenes.forEach((s) => io.observe(s));
+    scenes[0].classList.add("is-reached");
+    writeProgress();
+  };
+
+  start();
+  reduce.addEventListener("change", start);
+  // Late font and image layout shifts the measured centres.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onResize);
+  window.addEventListener("load", onResize, { once: true });
+
+  /* --- the approval gate: a real state machine -------------------------- */
+  const state = document.getElementById("gate-state");
+  const approve = document.querySelector("[data-approve]");
+  const reject = document.querySelector("[data-reject]");
+  // textContent nodes rather than innerHTML: there is no user input here today,
+  // but a showcase gets copied, and the copy will have one.
+  const settle = (lead, strong, tail, lock) => {
+    state.replaceChildren(
+      document.createTextNode(lead),
+      Object.assign(document.createElement("b"), { textContent: strong }),
+      document.createTextNode(tail),
+    );
+    approve.disabled = lock;
+    reject.disabled = lock;
+  };
+  approve.addEventListener("click", () => {
+    settle("当前状态：", "已批准，交由执行。", "在真实部署里这一步会写入一条提交并记录批准人。", true);
+  });
+  reject.addEventListener("click", () => {
+    settle("当前状态：", "已退回。", "agent 会收到修改要求，方案保持未执行。", false);
+  });
+
+  window.addEventListener("pagehide", () => {
+    teardown();
+    reduce.removeEventListener("change", start);
+  }, { once: true });
+})();
+</script>
+</body>
+</html>

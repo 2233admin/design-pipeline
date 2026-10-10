@@ -1,0 +1,16 @@
+{
+  "schema": "design-pipeline.toolchain-request.v1",
+  "framework": "agnostic",
+  "brief": "Single self-contained HTML product showcase for OpenAlice, a local-first AI orchestrator for trading. Must open from file:// with no install step, no network access, and no package manager. Motion is a scroll-driven progress timeline plus discrete scene state, per the routed scroll-progress-timeline knowledge door.",
+  "capabilities": [
+    "scroll-progress-timeline",
+    "scene-state-latch",
+    "reduced-motion-substitute",
+    "keyboard-operable-approval-gate",
+    "tabular-numerals"
+  ],
+  "requested": {
+    "styling": "none",
+    "uiLibrary": "none"
+  }
+}

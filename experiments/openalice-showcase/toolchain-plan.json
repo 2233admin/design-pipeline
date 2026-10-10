@@ -1,0 +1,150 @@
+{
+  "blockers": [],
+  "brief": "Single self-contained HTML product showcase for OpenAlice, a local-first AI orchestrator for trading. Must open from file:// with no install step, no network access, and no package manager. Motion is a scroll-driven progress timeline plus discrete scene state, per the routed scroll-progress-timeline knowledge door.",
+  "evidence": [
+    "registry:2026-08-14",
+    "mengto:3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+    "tool:design-pipeline/core@bundled",
+    "tool:design-pipeline/feedback-loop@bundled",
+    "tool:MengTo/skills@3f4c22d10055d3fdddb17248d59d0c1b731cb8d3",
+    "tool:wevm/frog@702c4eadefe175a208290a99c36e7f4ac1390e53"
+  ],
+  "framework": "agnostic",
+  "graphics": null,
+  "invocations": [
+    {
+      "command": null,
+      "kind": "agent-route",
+      "owner": "agent",
+      "target": "design-pipeline/core",
+      "toolId": "design-pipeline/core"
+    },
+    {
+      "command": null,
+      "kind": "agent-route",
+      "owner": "agent",
+      "target": "design-pipeline/feedback-loop",
+      "toolId": "design-pipeline/feedback-loop"
+    },
+    {
+      "command": null,
+      "kind": "agent-route",
+      "owner": "agent",
+      "target": "MengTo/skills",
+      "toolId": "MengTo/skills"
+    },
+    {
+      "command": null,
+      "kind": "governed-review",
+      "owner": "agent",
+      "status": "review",
+      "target": "wevm/frog",
+      "toolId": "wevm/frog"
+    }
+  ],
+  "primaryRouteId": "design-pipeline/core",
+  "probes": [
+    {
+      "command": null,
+      "kind": "catalog",
+      "status": "available",
+      "toolId": "design-pipeline/core"
+    },
+    {
+      "command": null,
+      "kind": "catalog",
+      "status": "available",
+      "toolId": "design-pipeline/feedback-loop"
+    },
+    {
+      "command": null,
+      "kind": "catalog",
+      "status": "available",
+      "toolId": "MengTo/skills"
+    },
+    {
+      "command": null,
+      "kind": "governed-review",
+      "status": "review",
+      "toolId": "wevm/frog"
+    }
+  ],
+  "recommendedSkills": [],
+  "reviews": [
+    "wevm/frog is review"
+  ],
+  "routingContext": null,
+  "schema": "design-pipeline.toolchain-plan.v1",
+  "sourceHashes": {
+    "adapterRegistry": "00cfdb3b60c4388c248103164e340a39dc16719ff85367cd4586ece4649c729d",
+    "frontendRegistry": "8ef8f8c46e103619e081ad0b9f983d41d4317e41e384b4e72e9362f3b98d4f75",
+    "graphicsCatalog": "9baabd9656a05cf7ebf3a95399e11e348db50422ca068f7b00abee0caf1bc090"
+  },
+  "status": "ready",
+  "styling": {
+    "id": "none",
+    "label": "None"
+  },
+  "tools": [
+    {
+      "id": "design-pipeline/core",
+      "mode": "project-owned",
+      "source": "frontend-stack",
+      "status": "ready"
+    },
+    {
+      "id": "design-pipeline/feedback-loop",
+      "mode": "project-owned",
+      "source": "frontend-stack",
+      "status": "ready"
+    },
+    {
+      "id": "MengTo/skills",
+      "mode": "bundled-index",
+      "source": "frontend-stack",
+      "status": "ready"
+    },
+    {
+      "id": "wevm/frog",
+      "mode": "governed-candidate",
+      "source": "frontend-stack",
+      "status": "review"
+    }
+  ],
+  "uiLibrary": {
+    "id": "none",
+    "label": "None",
+    "license": "project",
+    "source": "project-owned"
+  },
+  "verification": [
+    {
+      "evidenceTypes": [
+        "design-workflow"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "design-pipeline/core"
+    },
+    {
+      "evidenceTypes": [
+        "friction-logging"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "design-pipeline/feedback-loop"
+    },
+    {
+      "evidenceTypes": [
+        "design-workflow"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "MengTo/skills"
+    },
+    {
+      "evidenceTypes": [
+        "friction-logging"
+      ],
+      "receiptSchema": "design-pipeline.toolchain-receipt.v1",
+      "toolId": "wevm/frog"
+    }
+  ]
+}
