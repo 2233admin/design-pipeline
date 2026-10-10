@@ -109,6 +109,7 @@
     "surface-profile.test.cjs",
     "guided-design-intake.test.cjs",
     "region-template.test.cjs",
+    "runtime-review.test.cjs",
     "surface-design-artifacts.test.cjs",
     "golden-cases.test.cjs",
     "huashu-runtime.test.cjs",

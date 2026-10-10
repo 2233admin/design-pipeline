@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "runtime-review-feedback.schema.json",
+  "title": "对象反馈（不代表解决或验收）",
+  "$ref": "runtime-review.schema.json#/$defs/Feedback"
+}

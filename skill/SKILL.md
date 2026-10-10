@@ -89,4 +89,8 @@ name a repository. This is triggered by the work's needs, not a required search 
 - Reference analysis, project inspection, reconstruction, and scene/runtime contracts:
   `references/reference-spec.md`, `references/reconstruction-spec.md`,
   `references/scene-runtime-spec.md`.
+- Object-level captured runtime review and developer handoff (`runtime-review build|check|record`):
+  `references/runtime-review.md` with `references/runtime-review.schema.json` and
+  `references/runtime-review-feedback.schema.json`. A captured review is not live verification,
+  a hash match does not certify the producer, and a recorded Feedback is not resolved.
 - Every command: `designer-pipeline --help`.
