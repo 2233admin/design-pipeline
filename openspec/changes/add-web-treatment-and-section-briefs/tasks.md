@@ -101,7 +101,7 @@ Owns `skill/references/stages.md` (`pipeline-reference.md` on the original branc
   `add-music-driven-plate-kit` (`bbf7fa4`) is not part of this port.
 - [x] Focused red/green: the ported web prompt tests fail against main's `web.cjs` and pass after.
 - [x] `openspec validate add-web-treatment-and-section-briefs --strict` and `npm run specs:check`.
-- [ ] `node scripts/qa.cjs` on the frozen port commit; record commit, tree and counts in `qa.md`.
+- [x] `node scripts/qa.cjs` on the frozen port commit; record commit, tree and counts in `qa.md`.
 - [x] CLI smoke from an empty temporary project: web intake, concepts, build and review prompts;
   film intake and concepts unchanged; a `replicate` build has no treatment.
 - [ ] Review and merge the pull request (owner).
