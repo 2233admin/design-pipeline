@@ -66,6 +66,7 @@
     "film-timeline-eval.test.cjs",
     "film-project.test.cjs",
     "composition-gate.test.cjs",
+    "film-layout.test.cjs",
     "visual-diagnostics.test.cjs",
     "visual-craft.test.cjs",
     "audio-gate.test.cjs",

@@ -45,7 +45,7 @@ test("bundled HyperFrames reference preserves the official authoring and verific
     "exactly one fully built `gsap.timeline({ paused: true })`",
     "register only after the timeline build finishes",
     "No `Date.now`",
-    "npx hyperframes check",
+    "npx --no-install hyperframes check",
     "render only after approval",
   ]) assert.match(reference, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });

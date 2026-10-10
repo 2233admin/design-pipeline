@@ -9,6 +9,7 @@ const { spawnSync } = require("node:child_process");
 const { HINTS } = require("../skill/scripts/film-hints.cjs");
 const { checkStoryboard } = require("../skill/scripts/film-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("../skill/scripts/film-project-core.cjs");
+const { GSAP_VERSION, HYPERFRAMES_VERSION, hyperframesCli } = require("../skill/scripts/film-capture-core.cjs");
 const { assertEnum, assertKeys } = require("../skill/scripts/contract-utils.cjs");
 
 const scripts = path.join(__dirname, "../skill/scripts");
@@ -44,7 +45,7 @@ test("scaffold writes a gate-passing storyboard, a composition wired to its beat
   try {
     const result = scaffoldFilm(dir, { id: "my-film" });
     assert.equal(result.status, "scaffolded");
-    for (const name of ["storyboard.json", "index.html", "lib/patterns.js", "lib/timeline-probe.js", "reference.md", "sound.md", "qa.md", "FILM.md"]) assert.ok(fs.existsSync(path.join(dir, name)), name);
+    for (const name of ["package.json", "storyboard.json", "index.html", "lib/patterns.js", "lib/timeline-probe.js", "reference.md", "sound.md", "qa.md", "FILM.md"]) assert.ok(fs.existsSync(path.join(dir, name)), name);
     const board = JSON.parse(fs.readFileSync(path.join(dir, "storyboard.json"), "utf8"));
     assert.equal(board.id, "my-film");
     assert.equal(checkStoryboard(board).status, "passed");
@@ -56,6 +57,41 @@ test("scaffold writes a gate-passing storyboard, a composition wired to its beat
     assert.throws(() => scaffoldFilm(dir), /--replace/);
     assert.equal(scaffoldFilm(dir, { replace: true }).status, "scaffolded");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("scaffold pins the reviewed runtime and loads GSAP from the local install", () => {
+  const dir = tmp();
+  try {
+    const result = scaffoldFilm(dir, { id: "My Film" });
+    const pkg = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
+    assert.deepEqual(pkg.devDependencies, { gsap: GSAP_VERSION, hyperframes: HYPERFRAMES_VERSION });
+    assert.equal(pkg.private, true);
+    assert.equal(pkg.name, "my-film");
+    assert.deepEqual(result.runtime, { gsap: "3.15.0", hyperframes: "0.8.137", install: "npm install", run: "npx --no-install hyperframes" });
+    const html = fs.readFileSync(path.join(dir, "index.html"), "utf8");
+    assert.doesNotMatch(html, /https?:\/\//, "render and capture need no network");
+    assert.ok(html.includes('<script src="node_modules/gsap/dist/gsap.min.js"></script>'));
+    const guide = fs.readFileSync(path.join(dir, "FILM.md"), "utf8");
+    assert.match(guide, /1\. `npm install` once/);
+    assert.match(guide, /npx --no-install hyperframes render/);
+    assert.doesNotMatch(guide, /`npx hyperframes/);
+    assert.match(result.next[0], /hyperframes@0\.8\.137 and gsap@3\.15\.0/);
+    // Replacing keeps the project's own package fields and only sets the pins.
+    fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "kept", scripts: { render: "custom" }, devDependencies: { hyperframes: "^0.8.145", sharp: "1.0.0" } }));
+    scaffoldFilm(dir, { replace: true });
+    const merged = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
+    assert.equal(merged.name, "kept");
+    assert.equal(merged.scripts.render, "custom");
+    assert.deepEqual(merged.devDependencies, { hyperframes: "0.8.137", sharp: "1.0.0", gsap: "3.15.0" });
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("every HyperFrames call defaults to the reviewed release", () => {
+  assert.equal(hyperframesCli(), "hyperframes@0.8.137");
+  assert.equal(hyperframesCli("0.9.0"), "hyperframes@0.9.0");
+  const reviewed = fs.readFileSync(path.join(__dirname, "../skill/references/hyperframes.md"), "utf8");
+  assert.ok(reviewed.includes(`Reviewed release: \`hyperframes@${HYPERFRAMES_VERSION}\``));
+  for (const file of ["film-capture-core.cjs", "film-blocks-core.cjs"]) assert.doesNotMatch(fs.readFileSync(path.join(scripts, file), "utf8"), /: "hyperframes";/, file);
 });
 
 test("film check reports skipped gates with the command that unblocks them", () => {
@@ -78,8 +114,12 @@ test("CLI motion study scaffolds runnable dependencies and preserves notes on re
     assert.equal(result.status, 0, result.stdout + result.stderr);
     const root = path.join(dir, "study");
     const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+    const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
     for (const [, source] of html.matchAll(/<script src="([^"]+)"/g)) {
-      if (!/^https?:/.test(source)) assert.ok(fs.existsSync(path.join(root, source)), source);
+      assert.doesNotMatch(source, /^https?:/, source);
+      const installed = /^node_modules\/([^/]+)\//.exec(source);
+      if (installed) assert.ok(pkg.devDependencies[installed[1]], `${installed[1]} is pinned in package.json`);
+      else assert.ok(fs.existsSync(path.join(root, source)), source);
     }
     assert.ok(html.includes('P["pose-to-pose"](tl'));
     const board = JSON.parse(fs.readFileSync(path.join(root, "storyboard.json"), "utf8"));

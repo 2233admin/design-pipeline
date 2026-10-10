@@ -96,7 +96,7 @@ function nextAction(root) {
     const directed = state.director && action.type === "ask" && ["concepts", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
-    return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? action.question : action.command}` };
+    return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? `${action.first ? `${action.first} ` : ""}${action.question}` : action.command}` };
   }
   return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
 }

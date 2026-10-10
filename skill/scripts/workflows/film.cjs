@@ -60,7 +60,7 @@ const BUILD = {
     const rendering = renderingPlan(root);
     const material = rendering?.requirements.length
       ? `Implement ${rendering.requirements.join(", ")} using the recorded ${rendering.route} route. Read references/film-materials.md${rendering.route === "webgl" ? " and reuse references/film-materials/enamel.mjs for enamel" : ""}; inspect the planned material samples before full rendering. ` : "";
-    return { type: "run", command: `${material}Use references/animation-thinking.md to define the action's key poses and timing/spacing; test an uncertain movement as a short study before extending it. Build index.html from the storyboard beats, then: npx hyperframes render --output out.mp4`, why: "The subject's action, camera and edit each need an intended effect; choose the simplest route that preserves it and the required material response." };
+    return { type: "run", command: `${material}Use references/animation-thinking.md to define the action's key poses and timing/spacing; test an uncertain movement as a short study before extending it. Build index.html from the storyboard beats, then: npx --no-install hyperframes render --output out.mp4`, why: "The subject's action, camera and edit each need an intended effect; choose the simplest route that preserves it and the required material response." };
   },
 };
 
@@ -70,15 +70,22 @@ const CHECK = {
   action: () => ({ type: "run", command: `${CLI} film check --project-root .`, why: "Every error gate must pass before anyone sees the draft; apply each finding's fix and rerun." }),
 };
 
+// Every film tier ends in the owner's verdict on the checked draft. Before asking, the agent
+// reviews the draft one frame per second: the gates sample beats and text layout, not every
+// frame, and they never grant acceptance.
+const frameReview = (root) => `Review the checked draft frame by frame first: ffmpeg -i ${draftRender(root) || "out.mp4"} -vf fps=1 evidence/second-%03d.png, then open every frame at full size and look for text overlap, clipping, empty transitional frames, edge crowding, too-small text and wrong values. Fix what you find, re-render and rerun film check; write the frame and creative review in qa.md. Then ask the owner:`;
+const FILM_REVIEW = { ...REVIEW, action: (state, root) => ({ first: frameReview(root), ...REVIEW.action(state, root) }) };
+
 const DELIVER = {
   id: "deliver",
   finished: deliveryRecorded,
-  action: () => ({ type: "run", command: `Render the final quality (npx hyperframes render --quality high --output final.mp4), then: ${CLI} decide --project-root . --stage deliver --answer final.mp4`, why: "Drafts are cheap; the final render happens once, after acceptance." }),
+  action: () => ({ type: "run", command: `Render the final quality (npx --no-install hyperframes render --quality high --output final.mp4), then: ${CLI} decide --project-root . --stage deliver --answer final.mp4`, why: "Drafts are cheap; the final render happens once, after acceptance." }),
 };
 
+// quick ends at the owner's review (no delivery render); standard and full also deliver.
 function stages(state) {
-  if (state.tier === "quick") return state.mode === "replicate" ? [REFERENCE, PLAN, BUILD, CHECK] : [PLAN, BUILD, CHECK];
-  return [INTAKE, REFERENCE, CONCEPTS, PLAN, BUILD, CHECK, REVIEW, DELIVER];
+  if (state.tier === "quick") return state.mode === "replicate" ? [REFERENCE, PLAN, BUILD, CHECK, FILM_REVIEW] : [PLAN, BUILD, CHECK, FILM_REVIEW];
+  return [INTAKE, REFERENCE, CONCEPTS, PLAN, BUILD, CHECK, FILM_REVIEW, DELIVER];
 }
 
 module.exports = { stages };
