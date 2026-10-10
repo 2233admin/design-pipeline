@@ -93,7 +93,8 @@ Creating files or passing engineering checks does not grant visual acceptance.
 ## probe
 
 If `interaction.json` is missing, write it: one probe per key interaction (a section with no driver
-has none; see `web-direction.md`), schema `design-pipeline.interaction-probe.v1`.
+has none, but the page keeps at least one; see `web-direction.md`), schema
+`design-pipeline.interaction-probe.v1`.
 
 ```json
 {
@@ -117,11 +118,12 @@ Then `verify interaction --probe interaction.json`. Apply each finding's `fix` a
 
 ## review
 
-Show the page, its motion at full speed and a one-paragraph gate summary. The reviewer also reads
-W1 to W7 (`web-direction.md`) and reports them under Visual Acceptance in `qa.md`; the agent never
-records acceptance and gate findings stay Conformance. The user accepts, or rejects with one
-sentence (`decide --stage review --verdict accept|reject`). A rejection reopens `probe` for the
-rebuilt page and becomes a project rule.
+Show the page, its motion at full speed and a one-paragraph gate summary. When the build used a
+treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and
+reports them under Visual Acceptance in `qa.md`; the agent never records acceptance and gate
+findings stay Conformance. The user accepts, or rejects with one sentence
+(`decide --stage review --verdict accept|reject`). A rejection reopens `probe` for the rebuilt page
+and becomes a project rule.
 
 ## deliver
 

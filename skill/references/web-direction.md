@@ -15,7 +15,7 @@ motion refer back to it.
 | --- | --- |
 | Premise | One sentence about the page and the single thing it makes a visitor do or understand. |
 | Section arc | One row per section: section id, its job, its dominant element (the product or concept object it shows), ground, density (`sparse`, `medium`, `dense`), escalation role (`opens`, `builds`, `lands`, `rests`). |
-| Style-bible seed | A ground per section, ink, accent and any extra colour; type voices (display, text, data); spacing unit, radius, stroke; one **must-not-copy** line taken from `reference.md`. |
+| Style-bible seed | A ground per section, ink, accent and any extra colour; type voices (display, text, data); spacing unit, radius, stroke; when `reference.md` exists, one **must-not-copy** line taken from it. |
 | Motion language | One row per driver (scroll progress, in-view, pointer, click, load): the response it produces, the primitive (for example `response.spring-settle`, or stepped), and the reduced-motion substitute. |
 | Escalation and negative space | Where the page builds, the section that lands and holds still, and the section that is deliberately empty and why. |
 
@@ -34,23 +34,26 @@ the section id and never restates a value another artifact owns.
 | Dominant element and its one job | `design.md` Component inventory row; use the component id from the component-first flow when the section uses a catalogued component |
 | Supporting layers (at most three), one job each | Further Component inventory rows |
 | Ground and density | `design.md` Layout grid row of the section, and Color tokens |
-| States the element needs (empty, loading, error, hover, focus, active) | `component-state-matrix.json` entries |
+| How the element looks in each state the matrix requires (hover, focus, pressed, disabled, loading, empty, error) | `component-state-matrix.json` entries; `checkComponentMatrix` rejects an entry that lacks one of the seven |
 | Driver and response, one verb per element | `motion.md` Interaction Inventory row: Trigger, Target, Primitive / effect, Purpose, Start state, End state, Repeat behavior |
 | Proof of response | An `interaction.json` probe: `id`, `target`, `input.kind` (`pointer-sweep`, `wheel`, `click`), `expect.response` (`spring`, `linear`, `stepped`) |
 | Signature, if this is the first viewport | The direction-preview candidate's product-specific signature |
 | Escalation, negative-space or landing line | The section's `design.md` Layout grid row |
 
 A section with no driver has no Interaction Inventory row and no probe, and its brief says so. That
-is a valid brief (W3, W6).
+is a valid brief (W3, W6). The page as a whole still needs at least one probe: the `probe` stage
+needs a passed `verify interaction`, and an empty `probes` list is invalid.
 
 Worked brief, section `plan-picker` (role `builds`, density `dense`, ground `ink-900`):
 
 - Dominant element: `plan-dial`, one job: the visitor sets a team size and sees the price change.
   Supporting layers: `price-readout` (shows the number), `seat-ticks` (mark the steps).
-- States: hover, focus, active on `plan-dial`.
-- Driver and response: pointer drags the dial; the needle follows with a spring settle.
+- States: the seven matrix states of `plan-dial`.
+- Driver and response: the pointer moves across the dial; the needle follows with a spring settle
+  and stays at the chosen size.
 - Motion row: Trigger pointer move over `#plan-dial`; Target `#plan-dial`; Primitive
-  `response.spring-settle`; Purpose direct feedback; Start state rest; End state rest; Repeat every move.
+  `response.spring-settle`; Purpose direct feedback; Start state rest; End state the chosen size;
+  Repeat every move.
 - Landing line: this section builds toward `close` and does not land.
 
 Its proof, `interaction.json`:
@@ -66,7 +69,7 @@ Its proof, `interaction.json`:
       "id": "dial-follows-pointer",
       "target": "#plan-dial",
       "input": { "kind": "pointer-sweep", "from": [400, 520], "to": [900, 520], "durationMs": 500 },
-      "expect": { "responds": true, "settleWithinMs": 1200, "returnsToRest": true, "response": "spring" }
+      "expect": { "responds": true, "settleWithinMs": 1200, "returnsToRest": false, "response": "spring" }
     }
   ]
 }

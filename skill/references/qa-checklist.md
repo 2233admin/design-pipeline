@@ -168,8 +168,8 @@ Check:
 
 ## Web Treatment And Section Review (Visual Acceptance)
 
-Complete for web changes at standard and full tier. Rules and evidence: `references/web-direction.md`
-(Review rules W1 to W7).
+Complete for web changes at standard and full tier, except in `replicate` mode, which has no
+treatment. Rules and evidence: `references/web-direction.md` (Review rules W1 to W7).
 
 | Rule | Name | Evidence read | Result |
 | --- | --- | --- | --- |

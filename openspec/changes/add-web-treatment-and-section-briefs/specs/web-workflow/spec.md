@@ -50,8 +50,8 @@ NOT change for any tier or mode. The film, edit and `ui` prompts SHALL NOT chang
 The web guide SHALL define the treatment as a `## Treatment` section under the chosen card of
 `concepts.md`, written before `index.html`, with the fields premise, section arc (job, dominant
 element, ground, density and escalation role per section), style-bible seed with a must-not-copy
-line from `reference.md`, motion language (driver, response, primitive, reduced-motion substitute),
-and escalation and negative space.
+line from `reference.md` when it exists, motion language (driver, response, primitive,
+reduced-motion substitute), and escalation and negative space.
 
 #### Scenario: The guide defines the treatment
 
@@ -103,8 +103,9 @@ viewport's signature onto the direction-preview signature; the landing line onto
 
 ### Requirement: Section briefs need no new schema
 
-Section briefs SHALL use only fields that the mapped artifacts already define, and the guide SHALL
-state that a section with no driver has no Interaction Inventory row and no probe.
+Section briefs SHALL use only fields that the mapped artifacts already define, including the seven
+state names `component-state-matrix.json` requires. The guide SHALL state that a section with no
+driver has no Interaction Inventory row and no probe, and that the page keeps at least one probe.
 
 #### Scenario: A brief needs no new schema
 
@@ -143,8 +144,8 @@ code, change a gate status, or record or imply a Visual Acceptance result.
 ### Requirement: The web review links the rules
 
 The `review` section of `workflow-web.md`, which the web review action links through its `guide`
-anchor, SHALL point the reviewer to W1 to W7; the review action itself SHALL stay the shared
-checked-page review. Agents SHALL NOT record Visual Acceptance.
+anchor, SHALL point the reviewer to W1 to W7 for builds that used a treatment; the review action
+itself SHALL stay the shared checked-page review. Agents SHALL NOT record Visual Acceptance.
 
 #### Scenario: The web review links to the rules
 
