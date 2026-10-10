@@ -1349,7 +1349,13 @@ function designCodeMapCheckCommand({ file }) {
 }
 
 function benchmarkEvaluateCommand({ parsed, root, file }) {
-  const result = evaluateBenchmark(readJson(file("--manifest"), "benchmark manifest"), readJson(file("--measurements"), "benchmark measurements"));
+  // The CLI owns containment, so the trusted root is injected here; a v3 measurement is never
+  // allowed to name its own project root.
+  const result = evaluateBenchmark(
+    readJson(file("--manifest"), "benchmark manifest"),
+    readJson(file("--measurements"), "benchmark measurements"),
+    { projectRoot: root },
+  );
   const feedback = option(parsed, "--record-feedback") === true ? benchmarkFeedback(root, result) : null;
   return { result: { ...result, ...(feedback ? { feedback } : {}) }, exitCode: result.status === "passed" ? 0 : 2 };
 }
