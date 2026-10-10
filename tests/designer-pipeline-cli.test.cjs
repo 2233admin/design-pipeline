@@ -175,6 +175,8 @@ test("help, doctor, foundation, and stable JSON error envelopes work", () => {
     assert.equal(result.output.schema, "design-pipeline.cli-result.v1");
     assert.equal(result.output.ok, true);
   }
+  const help = run(["help"]).output.help;
+  assert.match(help, /composition scaffold --output <new-dir> \[--template visual-craft\|art-motion\]/, "help lists every scaffold template");
   const unknown = run(["does-not-exist", "--root", repoRoot]);
   assert.equal(unknown.status, 1);
   assert.equal(unknown.output.schema, "design-pipeline.cli-result.v1");

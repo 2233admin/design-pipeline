@@ -48,7 +48,7 @@ const { measureFilmBenchmark } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
 const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs");
-const { scaffoldVisualCraft } = require("../tools/visual-craft/scaffold.cjs");
+const { scaffoldVisualCraft, TEMPLATES: scaffoldTemplates } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
 const { scoreFilm } = require("./score-project-core.cjs");
@@ -405,7 +405,7 @@ function publicHelp() {
     "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>]",
     "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
-    "  composition scaffold --output <new-dir> [--template visual-craft]",
+    `  composition scaffold --output <new-dir> [--template ${scaffoldTemplates.join("|")}]`,
     "  composition compare --source <png> --image <png> --output <new-dir>",
     "  art-motion render --spec <file> --output <new-dir> [--stills 0,1.5] [--chrome <exe>] [--puppeteer-module <file>] [--ffmpeg <exe>] [--ffprobe <exe>]   (PNG stills or video plus render-report.json; diagnostics only)",
     "  film scaffold --output <dir> [--template default|motion-study] [--replace]",

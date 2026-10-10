@@ -148,6 +148,16 @@ All notable changes to Design Pipeline are documented here.
   capture kernel after a fixed 60 s; it now allows the requested capture time plus 30 s.
 - Repository QA reads `git status` with a 256 MiB buffer and reports the spawn error; nested
   worktrees pushed the listing past the 1 MiB default and QA died with a bare `ENOBUFS`.
+- Art Motion `drawClip` paints `safe.fill` over the top, bottom, left and right margins outside
+  `ctx.box` after the grammar draws, as the clip grammar guide documents; it only validated the
+  colour before. Alpha clips (`"alpha": true`) keep the margins transparent.
+- The eight Art Motion example clip specs select `"fonts": "bundled"`, so
+  `designer-pipeline art-motion render --spec tools/art-motion/examples/<grammar>.json` renders them
+  as shipped; they failed with a missing font family before.
+- `designer-pipeline help` lists both `composition scaffold` templates (`visual-craft|art-motion`).
+- Art Motion guides describe only shipped material: pointers to demo films, overview images and
+  the removed harness and scripts (`engine.js`, `render.py`, `qa.py`, `clip.html` and others) are
+  gone or rewritten against `art-motion render`, the runtime and the example specs.
 
 ## [0.12.0-beta.1] - 2026-09-29
 

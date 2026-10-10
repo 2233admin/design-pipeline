@@ -4,6 +4,7 @@
   "fps": 30,
   "width": 1920,
   "height": 1080,
+  "fonts": "bundled",
   "cues": [
     { "at": 0.0, "kind": "title", "text": "AI 为什么会一本正经地胡说" },
     { "at": 1.9, "kind": "point", "text": "它读过海量的文字" },

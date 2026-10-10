@@ -4,6 +4,7 @@
   "fps": 30,
   "width": 1920,
   "height": 1080,
+  "fonts": "bundled",
   "cues": [
     { "at": 0.0, "kind": "title", "text": "梯度下降：每一步都往坡下走" },
     { "at": 1.2, "kind": "equation", "data": { "tokens": [

@@ -4,6 +4,7 @@
   "fps": 30,
   "width": 1920,
   "height": 1080,
+  "fonts": "bundled",
   "cues": [
     { "at": 0.0, "kind": "title", "text": "AI 写代码", "sub": "的三个阶段" },
     { "at": 1.9, "kind": "point", "text": "补全", "sub": "它补完下一行", "data": { "label": "阶段 01", "key": "下一行" } },

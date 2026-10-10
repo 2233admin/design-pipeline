@@ -3,10 +3,11 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { assertEnum, fail, resolveInside } = require("../../scripts/contract-utils.cjs");
+const TEMPLATES = ["visual-craft", "art-motion"];
 
 function scaffoldVisualCraft(root, options) {
   const template = options.template ?? "visual-craft";
-  assertEnum(template, ["visual-craft", "art-motion"], "template", "composition");
+  assertEnum(template, TEMPLATES, "template", "composition");
   if (options.replace) fail("composition", "scaffolding requires a new directory; --replace is not supported");
   const directory = resolveInside(root, options.output, "--output", { scope: "composition" });
   if (fs.existsSync(directory)) fail("composition", "output already exists; choose a new directory");
@@ -23,4 +24,4 @@ function scaffoldVisualCraft(root, options) {
   };
 }
 
-module.exports = { scaffoldVisualCraft };
+module.exports = { scaffoldVisualCraft, TEMPLATES };

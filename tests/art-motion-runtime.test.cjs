@@ -29,7 +29,12 @@ test('Art Motion static runtime isolates instances and replays the complete Canv
   page.on('pageerror', error => browserErrors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') browserErrors.push(message.text()); });
   await page.addScriptTag({ path: RUNTIME });
-  const exampleFiles = fs.readdirSync(EXAMPLES).filter(file => file.endsWith('.json')).sort().map(file => JSON.parse(fs.readFileSync(path.join(EXAMPLES, file), 'utf8')));
+  // `fonts` selects render-kernel inputs (`art-motion render`); the runtime clipSpec takes the faces via createArtMotionRuntime instead.
+  const exampleFiles = fs.readdirSync(EXAMPLES).filter(file => file.endsWith('.json')).sort().map(file => {
+    const { fonts, ...clipSpec } = JSON.parse(fs.readFileSync(path.join(EXAMPLES, file), 'utf8'));
+    assert.equal(fonts, 'bundled', `${file} selects the bundled fonts so it renders as shipped`);
+    return clipSpec;
+  });
   const fontFaces = PROOF_FAMILIES.map(family => {
     const face = CATALOG.find(entry => entry.family === family);
     assert.ok(face, `font catalog lacks proof family ${family}`);

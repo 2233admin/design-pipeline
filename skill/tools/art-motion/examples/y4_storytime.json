@@ -4,6 +4,7 @@
   "fps": 30,
   "width": 1920,
   "height": 1080,
+  "fonts": "bundled",
   "cues": [
     { "at": 0.1, "kind": "point", "text": "我第一次让 AI 帮我写代码，", "sub": "AI，帮我写个网站！" },
     { "at": 2.0, "kind": "insert", "text": "3000行", "sub": "帮我做个网站", "data": { "hit": 3.5, "count": 3000, "unit": "行" } },

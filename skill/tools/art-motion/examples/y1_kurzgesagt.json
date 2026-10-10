@@ -4,6 +4,7 @@
   "fps": 30,
   "width": 1920,
   "height": 1080,
+  "fonts": "bundled",
   "data": { "center": "大模型" },
   "cues": [
     { "at": 0.0, "kind": "title", "text": "一个大模型里面有什么？" },

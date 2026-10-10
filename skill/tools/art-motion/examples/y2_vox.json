@@ -4,6 +4,7 @@
   "fps": 30,
   "width": 1920,
   "height": 1080,
+  "fonts": "bundled",
   "cues": [
     { "at": 0.0, "kind": "title", "text": "这两张图都是代码画的" },
     { "at": 1.6, "kind": "image", "image": "assets/candlestick-landscape.png", "text": "t3 财经图表：日 K 线（示意数据）" },

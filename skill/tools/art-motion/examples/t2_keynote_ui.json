@@ -4,6 +4,7 @@
   "fps": 30,
   "width": 1920,
   "height": 1080,
+  "fonts": "bundled",
   "data": { "eyebrow": "全 新 发 布", "title": "参数化动画片段", "subtitle": "一份 JSON，出一段时长精确的动画" },
   "cues": [
     { "at": 0.0, "kind": "title" },

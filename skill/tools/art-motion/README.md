@@ -97,9 +97,12 @@ pixels after forward/reverse seeks when combining stateful project code.
 
 ## Render a style or clip
 
-Copy and edit [clip.example.json](clip.example.json), or author a spec with exactly one `scene`
-or `grammar`, plus explicit `width`, `height`, `duration` and integer `fps` (1–120). Duration ×
-fps must be an integer. Nothing requires a particular aspect, character or narration.
+Copy and edit [clip.example.json](clip.example.json) or one grammar's spec in `examples/`, or
+author a spec with exactly one `scene` or `grammar`, plus explicit `width`, `height`, `duration`
+and integer `fps` (1–120). Duration × fps must be an integer. Nothing requires a particular
+aspect, character or narration. The example specs select `"fonts": "bundled"` and render as
+shipped, e.g. `--spec <skill-root>/tools/art-motion/examples/t3_finance_chart.json` with the
+skill root inside `--root`.
 
 ```sh
 node "<skill-root>/scripts/designer-pipeline.cjs" art-motion render --root "<project>" \
@@ -122,10 +125,12 @@ names or `{family,file,weight?,style?}` descriptors; `"bundled"` opts into the f
 Glyph inspection supports WOFF1/TTF/OTF. Missing preset fonts/glyphs are errors to resolve.
 
 `safe` reserves a positive clip content box; background and decorative elements can still fill
-the canvas. Inspect actual text/subject placement per grammar. Authored scene samples retain
-their original composition; contain/cover fits a study and does not reflow it. Use the library
-operations to recompose original work. The ninth presenter grammar is a reference method,
-implemented by combining supplied character frames with these drawing/timing tools.
+the canvas unless `safe.fill` is set, which paints the margins outside the box with that CSS
+colour after the grammar draws (never with `alpha:true`). Inspect actual text/subject placement
+per grammar. Authored scene samples retain their original composition; contain/cover fits a
+study and does not reflow it. Use the library operations to recompose original work. The ninth
+presenter grammar is a reference method, implemented by combining supplied character frames
+with these drawing/timing tools.
 
 Each output includes a `render-report.json` with `runtimeSha256` (the SHA-256 of `runtime.js`),
 input hashes, frame timestamps/hashes/costs, first/last PNGs and a cold/reordered repeat check.

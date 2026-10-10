@@ -217,7 +217,21 @@ ${modules.join('\n')}
       const specKey = JSON.stringify(spec);
       if (clipInitialized.get(id) !== specKey) { if (clip.init) clip.init(clipCtx); clipInitialized.set(id, specKey); }
       ctx.save(); try { clip.draw(ctx, time, clipCtx); } finally { ctx.restore(); }
+      if (safe.fill && !spec.alpha) paintSafeFill(ctx, safe.fill, box);
       return clipCtx;
+    }
+    // Paint the margins outside the content box after the grammar draws, in the caller context state the
+    // grammar drew with; alpha clips keep them transparent.
+    function paintSafeFill(ctx, fill, box) {
+      ctx.save();
+      try {
+        ctx.fillStyle = fill;
+        const right = box.x + box.w, bottom = box.y + box.h;
+        if (box.y > 0) ctx.fillRect(0, 0, width, box.y);
+        if (bottom < height) ctx.fillRect(0, bottom, width, height - bottom);
+        if (box.x > 0) ctx.fillRect(0, box.y, box.x, box.h);
+        if (right < width) ctx.fillRect(right, box.y, width - right, box.h);
+      } finally { ctx.restore(); }
     }
     function runTransition(type, ctx, from, to, progress, supplied) {
       getContext(ctx); if (!(Number.isFinite(progress) && progress >= 0 && progress <= 1)) throw new TypeError('transition progress must be in [0,1]');

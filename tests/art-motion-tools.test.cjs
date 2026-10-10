@@ -59,7 +59,11 @@ test("owned engine, fonts, examples and license are complete and the runtime reb
     if (typeof value === "string") { if (/\.(?:png|jpe?g|webp)$/i.test(value)) images.push(value); }
     else if (value && typeof value === "object") Object.values(value).forEach(collect);
   };
-  for (const file of examples) collect(JSON.parse(fs.readFileSync(path.join(tool, "examples", file))));
+  for (const file of examples) {
+    const spec = JSON.parse(fs.readFileSync(path.join(tool, "examples", file)));
+    validateSpec(spec); assert.equal(spec.fonts, "bundled", `${file} renders as shipped with the bundled fonts`);
+    collect(spec);
+  }
   assert.ok(images.length >= 3, "examples reference their image assets");
   for (const image of images) assert.ok(fs.statSync(path.resolve(tool, "examples", image)).isFile(), `missing example image ${image}`);
   for (const name of ["candlestick-landscape", "revenue-portrait", "finance-chart-landscape"]) assert.ok(images.includes(`assets/${name}.png`), `examples use assets/${name}.png`);
@@ -178,6 +182,34 @@ test("art-motion render CLI renders a still through the kernel and reports the r
   assert.equal(report.frames.length, 1); assert.equal(report.frames[0].atSec, 0);
   const png = decodePng(fs.readFileSync(path.join(root, "still", report.frames[0].path)));
   assert.equal(png.width, 64); assert.equal(png.height, 64);
+});
+
+test("render paints safe.fill margins outside the content box and leaves them transparent for alpha", { skip: BROWSER.skip }, async t => {
+  const root = temporary(t), width = 320, height = 180, safe = { top: 30, bottom: 40, left: 16, right: 12, fill: "#ff00ff" };
+  const spec = { width, height, duration: 1, fps: 4, grammar: "y5_kinetic_type", fonts: ["PuHui-Black", "PuHui-Heavy", "PuHui-Bold"], safe, cues: [{ at: 0, kind: "title", text: "动画" }] };
+  const options = { chrome: BROWSER.chrome, puppeteerModule: BROWSER.puppeteerModule, stills: [0.75] };
+  const margins = width * height - (width - safe.left - safe.right) * (height - safe.top - safe.bottom);
+  const bands = (png, test) => {
+    let painted = 0, content = 0;
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4, pixel = png.data.subarray(i, i + 4);
+      if (y < safe.top || y >= height - safe.bottom || x < safe.left || x >= width - safe.right) { assert.ok(test(pixel), `band pixel ${x},${y} is ${[...pixel]}`); painted++; }
+      else if (!(pixel[0] === 255 && pixel[1] === 0 && pixel[2] === 255)) content++;
+    }
+    return { painted, content };
+  };
+  fs.writeFileSync(path.join(root, "filled.json"), JSON.stringify(spec));
+  const filled = await render(root, { ...options, spec: "filled.json", output: "filled" });
+  const opaque = decodePng(fs.readFileSync(path.join(filled.directory, "frame-000000.png")));
+  const solid = bands(opaque, ([r, g, b, a]) => r === 255 && g === 0 && b === 255 && a === 255);
+  assert.equal(solid.painted, margins);
+  assert.equal(solid.content, width * height - margins, "grammar content inside the box is not the fill color");
+  fs.writeFileSync(path.join(root, "alpha.json"), JSON.stringify({ ...spec, alpha: true }));
+  const alpha = await render(root, { ...options, spec: "alpha.json", output: "alpha" });
+  const transparent = decodePng(fs.readFileSync(path.join(alpha.directory, "frame-000000.png")));
+  const clear = bands(transparent, pixel => pixel[3] === 0);
+  assert.equal(clear.painted, margins);
+  assert.ok(transparent.data.some((value, index) => index % 4 === 3 && value > 0), "alpha content is present inside the box");
 });
 
 test("reference analyze-video writes study evidence only with --study", { skip: skipWithoutFfmpeg }, t => {
