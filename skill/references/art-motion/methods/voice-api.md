@@ -1,6 +1,6 @@
 # 火山豆包声音复刻 2.0 · 接口细节与实测记录
 
-历史接口记录来自2026-09-13，查询段更新于2026-09-18；新用户先按`voice-configuration.md`配置（其中的配置脚本是上游示例/脚本，本项目未提供），服务限制以调用时实际响应为准。官方文档：火山引擎文档中心「豆包语音」库（LibraryID 6561）。
+历史接口记录来自2026-09-13，查询段更新于2026-09-18；可选语音的路径与授权原则见[可选语音指南](voice-configuration.md)，服务限制以调用时实际响应为准。官方文档：火山引擎文档中心「豆包语音」库（LibraryID 6561）。
 
 ## 鉴权
 
@@ -52,13 +52,13 @@ Host 一律 `https://openspeech.bytedance.com`。
 
 ### 查询（2026-09-18实测）
 
-v3 `get_voice`请求体使用单数`{"speaker_id":"S_xxxxxxxx"}`，不是`speaker_ids`数组。多个槽逐个查，HTTP错误必须显式报出，不能当成音色不存在。上游`koubo.py voices`（上游示例/脚本，本项目未提供）已按此修正。
+v3 `get_voice`请求体使用单数`{"speaker_id":"S_xxxxxxxx"}`，不是`speaker_ids`数组。多个槽逐个查，HTTP错误必须显式报出，不能当成音色不存在。
 
 ### 合成
 
 ```json
 {
-  "user": { "uid": "koubo" },
+  "user": { "uid": "<uid>" },
   "req_params": {
     "text": "...",
     "speaker": "S_xxxxxxxx",
@@ -110,7 +110,7 @@ v3 `get_voice`请求体使用单数`{"speaker_id":"S_xxxxxxxx"}`，不是`speake
 `openspeech.bytedance.com` 是国内接口。如果本机开着 socks 代理，
 **光给 requests 传 `proxies=None` 挡不住**——它仍会读环境里的 `ALL_PROXY`，
 表现为间歇性 `SSL: UNEXPECTED_EOF_WHILE_READING`。
-受影响环境可配置`bindings.volcengine.trust_env=false`（上游示例/脚本，本项目未提供）；默认遵从环境代理，不对所有用户强制绕过。
+受影响环境需让HTTP客户端不继承环境代理变量；默认遵从环境代理，不对所有用户强制绕过。
 
 ## 关于「参考音频要喂多长」
 

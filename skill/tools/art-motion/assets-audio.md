@@ -22,10 +22,9 @@ require refreshed downstream render evidence under the current pipeline contract
 Use the explicit `assets` map in [render specs](README.md#render-a-style-or-clip) or the project's
 renderer; the maintained render report records input hashes. For matte/crop/sprite work, continue
 below. Review the actual composed output with existing composition checks and visual review.
-The [image method note](../../references/art-motion/methods/images.md) is reference only. The
-former upstream image plan/receipt scripts, media defaults and schema are not shipped; do not
-recreate their plan/receipt/config fingerprint workflow or introduce a new media configuration
-questionnaire.
+The [image method note](../../references/art-motion/methods/images.md) is reference only
+(authorization and review principles). Do not add a plan/receipt/config-fingerprint workflow or a
+new media configuration questionnaire.
 
 ## Process a supplied voice track
 
@@ -136,7 +135,7 @@ musical events, BPM and storyboard alignment. `audio.cjs` adds short, determinis
 sit as a separate audio layer in the existing composition; `audio-core.cjs` remains the delivery
 measurement/mastering path. For a worked method of breaking down and writing a code-synthesized
 score on a strict BPM grid, read the [soundtrack synthesis note](../../references/art-motion/styles/soundtrack-synthesis.md);
-its synthesis script is replaced by `audio.cjs`.
+build its instruments and cues from `audio.cjs` events.
 
 ```js
 const fs = require("node:fs");

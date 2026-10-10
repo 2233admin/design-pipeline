@@ -2,7 +2,7 @@
 
 一句话：把论证摆在一张有真实材料的桌面上——剪报、照片、文件，相机像调查记者的眼睛在桌上移动；线和笔一顿一顿地画上去，证据感来自「这些东西是真的被放在这里的」。
 
-示范片：`demos/y2_vox/`（上游示例/脚本，本项目未提供）（8s，3 镜 2 转场），总览：`assets/动画语法/y2_vox_总览.jpg`（上游示例/脚本，本项目未提供）；同一语法的参数化片段用 `designer-pipeline art-motion render` 渲染，输入样例见 `tools/art-motion/examples/y2_vox.json`
+参数化片段：`tools/art-motion/engine/clips/y2_vox.js`，用 `designer-pipeline art-motion render` 渲染，输入样例见 `tools/art-motion/examples/y2_vox.json`（实验样片 8s，3 镜 2 转场）
 依据：本风格的调研（调研原文与逐帧数据留在实验归档、没收进 skill，用到的数字已摘进本卡）。样本 5 支：Missing Chapter（2022）、迷幻海报（2019）、Vox Borders（2018）、Johnny Harris（2026），另有 Vox 2026 实拍片作对照。13 段相机运动拟合了缓动，取了色。
 
 ---
@@ -42,14 +42,14 @@
   - 纸纹是**静态**的。实测停留段帧差是 0.0–0.1，没有逐帧颗粒，那是 Johnny Harris 2026 的底片风，不是 Vox。
 - **投影很弱**。黑底卡片在 360p 下几乎看不到投影【实测】。【本片】统一 blur 10、偏移 (3,6)、α 0.28。
 - **故意不完美**：Vox 美术总监的原话是「You don't want it to look perfect because that might make it look more like an ad than an editorial piece」【一手】。
-- **角色**：真人照片剪下来做贴纸，加白边和阴影。【本片】示例角色用作者形象角色模块的 `draw`（上游示例/脚本，本项目未提供），把剪影向 16 个方向偏移 12px，垫一层纸白当贴纸边。
+- **角色**：真人照片剪下来做贴纸，加白边和阴影。【本片】示例角色把剪影向 16 个方向偏移 12px，垫一层纸白当贴纸边。
 
 ## ③ 运动轨迹
 
 - **两层帧率（核心）**【实测】：
   - 相机层是 24fps 平滑运动。
   - 元素层（地图色块生长、红线描路、打字、手绘圈、弹入）按 12fps「一拍二」步进。迷幻海报片里 52% 的运动帧有「动-停-动」交替的指纹。
-  - 【本片】相机按 60fps 连续算；所有元素都用 `MO.step(t, 12)` 量化后再算进度。qa 量到镜 1 有 16.9% 的静止帧对，就是一拍二的停帧，不是卡顿。
+  - 【本片】相机按 60fps 连续算；所有元素都用 `MO.step(t, 12)` 量化后再算进度。逐帧检查量到镜 1 有 16.9% 的静止帧对，就是一拍二的停帧，不是卡顿。
 - **相机缓动**【实测 13 段】：
   - 时长中位 1.29s，范围 0.71–1.96s，**没有一段是线性**。
   - 7 段是对称的 easeInOutSine，相当于 AE 默认 Easy Ease，用于长距离「找下一张卡」。
@@ -102,15 +102,14 @@
 
 ## ⑥ 代码实现要点
 
-> 收进 skill 后（2026-10-04 v0.4）：本卡「新写」里的通用函数已统一进 `tools/art-motion/engine/lib/`（名字已换成统一后的 MO / CAM / DG / TY / CH / UI / CL / TOON），示范片自己的代码在 `demos/y2_vox/`（上游示例/脚本，本项目未提供）。库速查和「怎么为一段口播选语法」见 `references/art-motion/methods/09-clip-grammar.md`。
+> 收进 skill 后（2026-10-04 v0.4）：本卡「新写」里的通用函数已统一进 `tools/art-motion/engine/lib/`（名字已换成统一后的 MO / CAM / DG / TY / CH / UI / CL / TOON）。库速查和「怎么为一段口播选语法」见 `references/art-motion/methods/09-clip-grammar.md`。
 
 - 复用 skill：
   - `PAINT.cached`、`PAINT.scratch`：所有纸片、照片、剪报都一次画成精灵图
   - `PAINT.grain`：静态颗粒
   - `PAINT.noise/fbm`
   - `KIT.densify/resample`：手画圈
-  - 作者形象角色模块的 `build/pose/draw`（上游示例/脚本，本项目未提供）
-  - 引擎转场接口（本项目用 `runtime.transition`）
+  - 转场接口：`runtime.transition`（`tools/art-motion/engine/transitions.js`）
 - 新写、现已统一进库（`lib/collage.js` / `camera.js` / `diagram.js` / `motion.js`）：
   - `MO.step(t,12)`：一拍二。
   - `CL.paperTile`：可平铺纸纹，在环面上取样所以无缝，带纤维。
@@ -119,11 +118,11 @@
   - `DG.hand / DG.drawPartial / DG.cum`：手画线，按长度描出。
   - `CAM.motionBlur`：沿速度方向叠帧。
   - `MO.bezier`：长尾缓动 `(.33,0,.2,1)`。
-- 示范片自己的（`demos/y2_vox/vox.js`（上游示例/脚本，本项目未提供）；`slideIn / highlight / stringPts` 已进库为 `CL.slideIn / CL.highlight / CL.stringPts`）：
-  - `slideIn`：倾斜滑入放平。
-  - `highlight`：荧光毛边带，multiply。
-  - `stringPts`：带下垂的红线。
-  - `deskCam`：桌面相机关键帧，加末段推进。
+- 实验样片里的写法（`slideIn / highlight / stringPts` 已进库为 `CL.slideIn / CL.highlight / CL.stringPts`）：
+  - `CL.slideIn`：倾斜滑入放平。
+  - `CL.highlight`：荧光毛边带，multiply。
+  - `CL.stringPts`：带下垂的红线。
+  - 桌面相机：关键帧，加末段推进。
 - **关键架构**：
   - 镜 1、镜 2 是同一张桌面世界、同一台相机。转场 A 用 `same`（A、B 本来就是同一幅画），平移完全由相机完成。
   - 镜 3 是桌上的大黑卡纸。转场 B 用 `cut`，在推满的那一帧切。
@@ -165,21 +164,8 @@
 - 「它脑中的『猫』字太小」：提到 40px。
 - 「相机全程平滑，一拍二不够」：没改。调研实测 Vox 就是「相机 24fps 平滑、元素 12fps 步进」；把相机也改成步进，会背离实测。
 
-## QA（skill `qa.py`（上游示例/脚本，本项目未提供），修订后终版）
+## 复查要点（修订后）
 
-| 镜 | 量的窗口（镜内秒） | 运动面积% 均/峰 | 静止帧对% | 跳变帧 | 每帧耗时 均/峰 ms | 确定性 |
-|---|---|---|---|---|---|---|
-| y2_s1 | 0.35–2.58 | 11.02 / 16.71 | 3.1 | 0 | 17.4 / 20.3 | ✓ 逐像素一致 |
-| y2_s2 | 1.1–3.28 | 16.09 / 76.76 | 3.1 | 16（2.77–3.28s 连续） | 23.4 / 52.2 | ✓ 逐像素一致 |
-| y2_s3 | 0.35–2.08 | 7.77 / 37.41 | 0.0 | 14（0.39–0.83s 连续） | 73.3 / 88.5 | ✓ 逐像素一致 |
-
-转场冒烟（每个转场渲一遍，最慢一帧）：y2_s2（same）55.2ms；y2_s3（hardcut）43.8ms
-
-读法：
-- **镜 2 的跳变**在 2.77–3.28s 连续，是「推进墙上小照片」的 0.6s 推镜，推到 9.6 倍。
-- **镜 3 的跳变**在 0.39–0.83s 连续，是硬切后「拉出揭示」的 0.85s 拉镜。
-- 两段都是整屏缩放，属于设计内的相机运动。硬切本身落在镜 3 第 0 帧，不在量的窗口里。
-- **静止帧对 3.1%**：来自元素层的一拍二（12fps 停帧）。第一版开场相机不动，这个数是 16.9%；审片指出「0–0.9s 完全静止」后加了开场慢推，降到 3.1%。
-- **镜 3 每帧 73/89ms** 是三片里最重的：示例角色贴纸每帧做 16 次偏移垫白边，还要画黑卡纸纹。要提速，可以只在 12fps 换姿势时重算贴纸、其余帧复用。
-
-复跑：示范片 `demos/y2_vox` 与 `qa.py`（上游示例/脚本，本项目未提供）；同一语法的参数化片段用 `designer-pipeline art-motion render` 渲染后看 `render-report.json`（每帧耗时、冷/乱序一致性），再配合现有 composition/film 检查（上表是实验时的数字；收进 skill 后的复跑见 09 号的回归表）。
+- **推镜与拉镜的连续跳变**：镜 2「推进墙上小照片」0.6s 推到 9.6 倍，镜 3 硬切后「拉出揭示」0.85s，两段都是整屏缩放，逐帧检查会报一串连续跳变帧，属于设计内的相机运动。硬切本身落在镜头第 0 帧。
+- **静止帧对来自一拍二**：元素层 12fps 停帧会留下少量静止帧对。第一版开场相机不动，这个数是 16.9%；审片指出「0–0.9s 完全静止」后加了开场慢推，降到 3.1%。
+- 用 `designer-pipeline art-motion render` 渲染参数化片段：`render-report.json` 里冷/乱序渲染必须逐帧一致、每帧耗时留在预算内（贴纸垫边最重，见 ⑥ 性能）；设计内的推拉之外不应有跳变，用 `--stills` 抽帧核对（细则见 09 号的验收基线）。

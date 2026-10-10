@@ -1,10 +1,10 @@
 # 05 · 节奏与配乐
 
-拆解方法与可复用规律：`references/art-motion/styles/soundtrack-synthesis.md`（第 5 节「可复用规律」可以直接照抄）；合成脚本模板（原创示例乐谱）：`synth_艺术史速通.py`（上游示例/脚本，本项目未提供；本项目的确定性合成构件在 `tools/art-motion/audio.cjs`）。
+拆解方法与可复用规律：`references/art-motion/styles/soundtrack-synthesis.md`（第 5 节「可复用规律」可以直接照抄）；确定性合成构件在 `tools/art-motion/audio.cjs`，用法见[音频工具](../../../tools/art-motion/assets-audio.md#synthesize-a-separate-cue-layer)。
 
 ## 要点
 
-1. **先定 BPM 网格，画面和音乐都落在网格上。** 128 BPM、八分音符 0.234s 适合速通/蒙太奇。`eras.js`（上游示例/脚本，本项目未提供）的 `eighths` 就是每段占几个八分。
+1. **先定 BPM 网格，画面和音乐都落在网格上。** 128 BPM、八分音符 0.234s 适合速通/蒙太奇。段落表里每段写占几个八分音符（`eighths`），段起止时间由网格算出。
 2. **加速靠每段变短，不靠提速。** 6 → 4×5 → 3×4 → 2×3 → 1×3 → 结尾放长。
 3. **一个三音动机，每段换该风格的代表乐器、随和弦移调。** 和声一个四和弦循环就够。
 4. **段间硬起音，不交叉淡化，不加嗖声。**

@@ -2,7 +2,7 @@
 
 一句话：讲者说一句，手就在一张大白板上写一句、画一个图；相机跟着论证在板上移动，最后拉远，观众看到整场论证是一张图。
 
-示范片：`demos/y3_whiteboard/`（上游示例/脚本，本项目未提供）（8s，3 镜，转场 2 种＋收尾拉远），总览：`assets/动画语法/y3_whiteboard_总览.jpg`（上游示例/脚本，本项目未提供）；同一语法的参数化片段用 `designer-pipeline art-motion render` 渲染，输入样例见 `tools/art-motion/examples/y3_whiteboard.json`
+参数化片段：`tools/art-motion/engine/clips/y3_whiteboard.js`，用 `designer-pipeline art-motion render` 渲染，输入样例见 `tools/art-motion/examples/y3_whiteboard.json`（实验样片 8s，3 镜，转场 2 种＋收尾拉远）
 依据：本风格的调研（调研原文与逐帧数据留在实验归档、没收进 skill，用到的数字已摘进本卡）。实测了 RSA Animate《Changing Education Paradigms》和 Minute Physics《Why is it Dark at Night?》，还查了 VideoScribe、Doodly 的官方文档和 Andrew Park、Henry Reich 的一手说法。
 
 **先选一种语法，不能混**：
@@ -105,23 +105,22 @@
 
 ## ⑥ 代码实现要点
 
-> 收进 skill 后（2026-10-04 v0.4）：本卡「新写」里的通用函数已统一进 `tools/art-motion/engine/lib/`（名字已换成统一后的 MO / CAM / DG / TY / CH / UI / CL / TOON），示范片自己的代码在 `demos/y3_whiteboard/`（上游示例/脚本，本项目未提供）。库速查和「怎么为一段口播选语法」见 `references/art-motion/methods/09-clip-grammar.md`。
+> 收进 skill 后（2026-10-04 v0.4）：本卡「新写」里的通用函数已统一进 `tools/art-motion/engine/lib/`（名字已换成统一后的 MO / CAM / DG / TY / CH / UI / CL / TOON）。库速查和「怎么为一段口播选语法」见 `references/art-motion/methods/09-clip-grammar.md`。
 
 - 复用 skill：
   - `KIT.densify / KIT.resample`：Catmull-Rom 加密后按弧长等距重采样，`DG.hand` 在这之上加低频噪声
   - `PAINT.noise`、`PAINT.cached`
-  - 作者形象角色模块的 `build/pose/details`（上游示例/脚本，本项目未提供）：示例角色线稿
-  - 引擎转场接口（本项目用 `runtime.transition`）
+  - 转场接口：`runtime.transition`（`tools/art-motion/engine/transitions.js`）
 - 新写、现已统一进库（`lib/diagram.js` / `camera.js`）：
   - `DG.cum / DG.pointAt / DG.drawPartial`：折线按长度描出，返回笔尖位置。
   - `CAM.at`：关键帧相机。
   - `CAM.motionBlur`：运动模糊。
   - `DG.revealMask / DG.zigzag`：之字形揭开遮罩（审片后新加）。
-- 示范片自己的（`demos/y3_whiteboard/whiteboard.js`（上游示例/脚本，本项目未提供）；笔画时间线、笔间滑移、马克笔已进库为 `DG.board` / `B.penAt` / `DG.pen`）：
-  - **笔画时间线**：`addLine / addText / addPop / addFill` 按顺序排，时长由长度和速度自动算，交付时打印 `Y3.timeline` 核对每块的结束时间。第一版第二块排到了 7.9s，比相机移动晚了 2.5s，靠这个数才发现。
-  - `drawStroke`：线、字、弹出、填色、角色五种。字和角色都用之字形遮罩揭开，笔尖坐标直接取遮罩的前沿。
-  - `penAt`：笔尖与手的路径，包括笔间滑移、抬手出画、入画。
-  - `drawHand`：手和马克笔。
+- 实验样片里的写法（笔画时间线、笔间滑移、马克笔已进库为 `DG.board` / `B.penAt` / `DG.pen`）：
+  - **笔画时间线**（`DG.board`：`B.line / B.text / B.pop / B.fill`）：按顺序排，时长由长度和速度自动算，交付时打印时间线核对每块的结束时间。第一版第二块排到了 7.9s，比相机移动晚了 2.5s，靠这个数才发现。
+  - 绘制（`B.draw`）：线、字、弹出、填色，角色走自定义笔画（`B.push`）。字和角色都用之字形遮罩揭开，笔尖坐标直接取遮罩的前沿。
+  - `B.penAt`：笔尖与手的路径，包括笔间滑移、抬手出画、入画。
+  - `DG.pen`：马克笔（实验样片另画了手）。
   - 擦痕纹理放在屏幕空间，只跟相机平移、不跟缩放，否则推近 5 倍时会变成大灰斑。
 - **关键架构**：三镜画的是同一块白板、同一台相机，转场全是 `same`。「转场」本身就是相机运动，所以白板上的东西在转场里绝不会跳。
 
@@ -164,19 +163,9 @@
   - 拉远提前到 6.85–7.5s，全景停 0.5s。
 - 「手是蓝袖子卡通手」：改成裸前臂，带暗面和汗毛，更接近 RSA 的真人手。仍是代码画的。
 
-## QA（skill `qa.py`（上游示例/脚本，本项目未提供），修订后终版）
+## 复查要点（修订后）
 
-| 镜 | 量的窗口（镜内秒） | 运动面积% 均/峰 | 静止帧对% | 跳变帧 | 每帧耗时 均/峰 ms | 确定性 |
-|---|---|---|---|---|---|---|
-| y3_s1 | 0.35–2.48 | 3.1 / 5.31 | 0.0 | 0 | 6.5 / 6.9 | ✓ 逐像素一致 |
-| y3_s2 | 0.8–2.23 | 4.65 / 9.57 | 0.0 | 0 | 6.5 / 7.3 | ✓ 逐像素一致 |
-| y3_s3 | 0.85–3.23 | 4.45 / 10.94 | 0.0 | 0 | 8.3 / 9.0 | ✓ 逐像素一致 |
-
-转场冒烟（每个转场渲一遍，最慢一帧）：y3_s2（same）46.9ms；y3_s3（same）14ms
-
-读法：
-- 白板片三镜都没有跳变：所有「转场」都是同一块板上的相机运动，板上的东西不会跳。
-- 运动面积 3–4.7% 主要来自手和正在画的线，相机移动时会更高。
-- 每帧不到 10ms，因为全是矢量线条，没有像素级处理。
-
-复跑：示范片 `demos/y3_whiteboard` 与 `qa.py`（上游示例/脚本，本项目未提供）；同一语法的参数化片段用 `designer-pipeline art-motion render` 渲染后看 `render-report.json`（每帧耗时、冷/乱序一致性），再配合现有 composition/film 检查（上表是实验时的数字；收进 skill 后的复跑见 09 号的回归表）。
+- 白板片应该零跳变帧：所有「转场」都是同一块板上的相机运动，板上的东西不会跳。
+- 运动面积主要来自手和正在画的线，相机移动时会更高。
+- 全是矢量线条、没有像素级处理，每帧不到 10ms。
+- 用 `designer-pipeline art-motion render` 渲染参数化片段：`render-report.json` 里冷/乱序渲染必须逐帧一致、每帧耗时留在预算内；用 `--stills` 抽帧核对没有跳变（细则见 09 号的验收基线）。

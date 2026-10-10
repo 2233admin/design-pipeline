@@ -4,16 +4,16 @@
 
 ## 接口
 
-一个风格段 = `scenes/<id>.js`：
+一个风格段 = `tools/art-motion/engine/scenes/<id>.js`：
 
 ```js
 SCENES['<id>'] = { draw(c, lt, t) { /* 画满 1920×1080 */ }, init(IMG) { /* 可选：一次性预计算 */ } };
 ```
 
 - `c` 目标 2D context；`lt` 本段局部时间（秒，从该段转场开始算）；`t` 全片时间。
-- 段落表 `eras.js`（上游示例/脚本，本项目未提供）：`{ id, eighths 或 dur, transition: { type, dur }, counter: {...} }`。片长由段落表自动算。
-- 转场 `transitions.js`：`TRANSITIONS.<name> = (c, A旧, B新, p, o) => {}`。
-- 场景缺文件、语法错、没注册 → 引擎拒绝启动，render/qa（上游示例/脚本，本项目未提供；`designer-pipeline art-motion render` 遇到未知场景或页面报错同样以 1 退出）直接报错。不要靠「看起来渲出来了」判断成功。
+- 段落表（多段成片时由调用方维护）：每段 `{ id, eighths 或 dur, transition: { type, dur } }`，按 BPM 网格的八分音符数或秒数排，片长由段落表算出。
+- 转场 `tools/art-motion/engine/transitions.js`：`TRANSITIONS.<name> = (c, A旧, B新, p, o) => {}`，运行时用 `runtime.transition` 调。
+- 新 scene 要先 `npm run art-motion:build` 打进 `tools/art-motion/runtime.js`；没打包、id 写错或页面报错时，`designer-pipeline art-motion render` 以 1 退出。不要靠「看起来渲出来了」判断成功。
 
 ## 先读（按顺序）
 
@@ -39,18 +39,18 @@ SCENES['<id>'] = { draw(c, lt, t) { /* 画满 1920×1080 */ }, init(IMG) { /* �
 3. **画要活**：主动作＋2–4 个母题小循环，在停留窗口里看得出。速通/穿越片里角色动作用全片时间（`PAINT.cupCycle(t)` 这类），换段不重置。
 4. **流畅**：不要整屏按低帧率换种子重洗（会读成闪）；沸腾只给线稿或母题区域。有意的「步进帧率」（橡皮管 12fps、皮影 10fps）用 `stepTime`，那是风格不是卡顿。滚动纹样的取模周期等于图案真实周期。
 5. **确定性**：所有随机用种子；同一个 t 两次渲染逐像素一致。
-6. **性能**：静态部分 `PAINT.cached`；读像素的离屏用 `willReadFrequently`、每帧 `g.reset()`；目标每帧 ≤150ms（qa 量的是带 GPU flush 的真实时间）。
+6. **性能**：静态部分 `PAINT.cached`；读像素的离屏用 `willReadFrequently`、每帧 `g.reset()`；目标每帧 ≤150ms（`render-report.json` 的每帧耗时含 PNG 回读，不等于实时播放性能）。
 7. **字**：风格里的字优先用路径画成该风格的材料；用字体时先 `U.assertGlyphs` 验证字形存在（缺字会静默回退系统字体）。
 8. **做旧不上身**：剥落、污渍、划痕只在背景；角色区域设保护区（敦煌剥落斑落在背上读成「衣服破洞」）。
 
 ## 自检与交付
 
 ```sh
-designer-pipeline art-motion render --spec <场景spec.json> --stills 0.4,0.6,0.8,1.0 --output <渲染>/<id>   # 静帧；spec 的 scene 填 <id>（本项目差异：只渲已打进 tools/art-motion/runtime.js 的场景）
+designer-pipeline art-motion render --spec <场景spec.json> --stills 0.4,0.6,0.8,1.0 --output <渲染>/<id>   # 静帧；spec 的 scene 填 <id>，只渲已打进 tools/art-motion/runtime.js 的场景
 designer-pipeline art-motion render --spec <场景spec.json> --output <渲染>/<id>-video   # 数字：看 render-report.json 的每帧耗时、冷/乱序一致性，再配合现有 composition/film 检查
 ```
 
-每段至少 3 轮：静帧对照原作/参考拼图看 → qa 看运动/静止帧对/跳变/耗时/确定性 → 改。四问：①一眼认得出是哪个风格？②角色对、和背景融吗？③停留窗口里看得出画在动、而且不闪不卡？④有没有穿帮（遮挡、断线、错位、空白、叠字）？
+每段至少 3 轮：静帧对照原作/参考拼图看（`designer-pipeline composition compare`）→ 看 `render-report.json` 的耗时与确定性，抽帧看运动/静止/跳变 → 改。四问：①一眼认得出是哪个风格？②角色对、和背景融吗？③停留窗口里看得出画在动、而且不闪不卡？④有没有穿帮（遮挡、断线、错位、空白、叠字）？
 
 交付：`scenes/<id>.js`＋配方卡（照 `references/art-motion/styles/` 格式：管线、关键参数与色值、母题动画怎么做、签名转场、性能、坑、仍可改进），写具体、写数字。**多段的片子交付前派一个没参与制作的 agent 只看成片审片。**
 

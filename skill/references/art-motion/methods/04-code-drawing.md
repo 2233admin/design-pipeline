@@ -2,21 +2,21 @@
 
 本页以纯代码绘制为主线：场景、几何角色和物件通过程序与风格渲染器实现；拟人角色的生成帧方案见10号。本页是第一次做完 16 种风格后的方法总结；每种风格的具体参数在 `references/art-motion/styles/<id>.md`。
 
-## 一、工程骨架（上游示例工程，复制一份就能开新片；本项目只保留其中的引擎源码，在 `tools/art-motion/engine/`）
+## 一、工程骨架（`tools/art-motion/engine/`）
 
 ```
-index.html      加载顺序：lib/fonts → lib/util → lib/paint → lib/rig → eras → transitions → scenes/index → engine（上游示例/脚本，本项目未提供）
-eras.js         段落表：id、占几个八分音符(eighths)、转场{type,dur,delay,cx,cy}、年份牌样式（上游示例/脚本，本项目未提供）
-scenes/<id>.js  每段一个文件：SCENES['<id>'] = { draw(c, lt, t) }   ← 主要工作量在这里
-transitions.js  转场库：(c, A旧, B新, p, o) → 画一帧
-engine.js       节拍网格→各段 t0/t1；转场时新旧两段各画进离屏再交给转场；拍点镜头冲击；年份计数器（值只由全局 t 决定）（上游示例/脚本，本项目未提供）
-lib/paint.js    噪声、纹理、手绘沸腾线、风格渲染器、区域色板 swatch、共享编舞 choreo、热气、粒子
-lib/rig.js      角色骨架：RIG.girl / RIG.cat → 各部位 Path2D ＋ 锚点；drawGirl/drawCat（mode: fill/line）；ik2、smooth、taper
-render.py       无头 Chromium 逐帧调 renderFrame(t) → PNG 管道 → ffmpeg 60fps，可混音轨；--solo <id> 单段预览、--stills 出静帧（上游示例/脚本，本项目未提供；本项目的渲染命令见 09 号「片段契约」）
-compare.py      原片｜复刻 同时刻并排拼图（上游示例/脚本，本项目未提供；对比用 designer-pipeline composition compare）
+engine/lib/*.js          共享库：util（U）、paint（PAINT：噪声、纹理、手绘沸腾线、风格渲染器、区域色板 swatch、共享编舞 choreo、热气、粒子）、
+                         rig（RIG：RIG.girl / RIG.cat → 各部位 Path2D ＋ 锚点；drawGirl/drawCat（mode: fill/line）；ik2、smooth、taper），
+                         以及 motion/camera/diagram/typo/chart/ui/collage/toon/kit/brush/post/render
+engine/scenes/<id>.js    每种风格一个文件：SCENES['<id>'] = { draw(c, lt, t) }   ← 主要工作量在这里
+engine/clips/<语法>.js   8 种参数化片段（见 09 号）
+engine/transitions.js    转场库：TRANSITIONS.<name> = (c, A旧, B新, p, o) → 画一帧；运行时用 runtime.transition 调
+npm run art-motion:build 把 engine/ 重新打包成 tools/art-motion/runtime.js（createArtMotionRuntime：drawScene / drawClip / transition / libraries）
+designer-pipeline art-motion render --spec <spec.json> --output <新目录>   出静帧（--stills）或视频，附 render-report.json（见 09 号「片段契约」）
+designer-pipeline composition compare --source <原片帧> --image <复刻帧> --output <新文件>   原片｜复刻 同时刻并排对比
 ```
 
-渲染速度：15 秒 60fps 整片约 90 秒（M 系列 Mac）。单段每帧大多 5–40ms，最重的梵高 110ms。
+实验时的渲染速度：15 秒 60fps 整片约 90 秒（M 系列 Mac）。单段每帧大多 5–40ms，最重的梵高 110ms。
 
 ## 二、一个风格怎么画（五层，标杆 `scenes/09_postimp.js`）
 

@@ -2,34 +2,32 @@
 
 做口播解说片的「动画段」时读这份。它是 8 张语法卡（`references/art-motion/grammars/`）的总目录、选型表、跨语法规律、库速查，以及给口播管线用的片段契约。
 
-8 种语法都有可直接渲的示范片（`demos/<语法>/`（上游示例/脚本，本项目未提供），收进来时和实验原片逐像素一致；2026-10-05 修了 `TY.charsIn` 透明度后，y1 示范片标题按原意 0.55s 淡出，那 0.55s 的帧和原片不同）和参数化片段（`tools/art-motion/engine/clips/<语法>.js`，喂一份 JSON 就出一段时长精确的视频）。
+8 种语法都以参数化片段随 skill 提供：`tools/art-motion/engine/clips/<语法>.js`，喂一份 JSON spec 就出一段时长精确的视频；每种语法的 spec 样例在 `tools/art-motion/examples/<语法>.json`，用 `designer-pipeline art-motion render` 渲染。
 
 ---
 
 ## 一、总览
 
-| 语法 | 适用场景 | 一句话核心语法 | 典型镜头时长 | 主缓动 | 主转场 | 卡片 | 示范 |
+| 语法 | 适用场景 | 一句话核心语法 | 典型镜头时长 | 主缓动 | 主转场 | 卡片 | 样例 spec |
 |---|---|---|---|---|---|---|---|
-| **y1 Kurzgesagt 扁平科普** | 讲尺度、讲「里面是什么」、讲机制系统；娓娓道来的科普腔 | 把抽象概念放进能无限缩放的发光世界，相机在尺度之间穿行，画面永远在轻轻动 | 硬切镜头 7–9s，视觉单元每 4.6–6.7s 换一次 | `MO.k75`＝bezier(.75,0,.25,1)；循环 `MO.easyEase` | 钻进镜头 `lensReveal`、填满再拉出 `matchCut`（相机对数推拉） | `references/art-motion/grammars/y1_kurzgesagt.md` | `--film demos/y1_kurzgesagt`（上游示例/脚本，本项目未提供） |
-| **y2 Vox 拼贴** | 有真实档案、新闻、截图、人物的论证；「看这一句」「注意这个数字」 | 论证摆在一张有真实材料的桌面上，相机像调查记者的眼睛在桌上移动，线和笔一顿一顿画上去 | 慢档中位 3.3s（一张卡 3–7s）；快档 1.4–1.8s | 相机 `MO.sineInOut` / 长尾 `MO.longTail`；元素 12fps 步进 | 硬切、沿红线平移 `same`、推满照片→硬切 `cut` | `references/art-motion/grammars/y2_vox.md` | `--film demos/y2_vox`（上游示例/脚本，本项目未提供） |
-| **y3 白板手绘（RSA）** | 推理链、步骤、「为什么」；边讲边推导 | 说一句写一句，相机跟着论证在一张大白板上移动，最后拉远看全图 | 每块停留中位 6.6s | 板上平移 `MO.sineInOut` 1.2–2.4s；远跳 0.8s 甩镜＋运动模糊 | 同一块板 `same`（相机运动就是转场），收尾拉远 | `references/art-motion/grammars/y3_whiteboard.md` | `--film demos/y3_whiteboard`（上游示例/脚本，本项目未提供） |
-| **y4 故事型简笔角色** | 第一人称讲经历、翻车、笑点；观众要的是「这个人」 | 口播是主角，画面是给口播配的表情包：姿势 0.1s 快切后定住，笑点靠切到反应特写并在那一下闭嘴 | ASL 2.43s（中位 1.87s） | 换姿势 `MO.expoOut` 0.1s＋`MO.settle` 挤压回弹；角色 24fps | 硬切 `cut`、砸镜 `smash`、甩镜 `whip`、跳近 | `references/art-motion/grammars/y4_storytime.md` | `--film demos/y4_storytime`（上游示例/脚本，本项目未提供） |
-| **y5 动态文字** | 清单、「X 个阶段」、金句、数字开场、章节卡 | 字就是演员：关键词踩重音砸进来，主词大到一眼读完，画面永远只有一个焦点 | 一小节一个镜头（120BPM 约 2s） | `MO.expoOut` 入场、`MO.springHz` 砸入、退场 `MO.expoIn` 更快 | 冲进色块 `fillZoom`、色带 `bands`、推页 `push` | `references/art-motion/grammars/y5_kinetic_type.md` | `--film demos/y5_kinetic_type`（上游示例/脚本，本项目未提供） |
-| **t1 3Blue1Brown** | 讲一个机制怎么一步步变成另一个东西：网络、矩阵、梯度、概率 | 黑底上只放正在讲的那一个东西，用 Transform 把上一个概念直接变成下一个，颜色＝概念名，几乎不切 | 单个动画 1–3s＋停 1s；一个概念 8–20s | `MO.smooth`（6t⁵−15t⁴+10t³），几乎全用它 | Transform 接续（不切）、镜头穿越 `zoomThrough`、`fadeShift` | `references/art-motion/grammars/t1_3b1b.md` | `--film demos/t1_3b1b`（上游示例/脚本，本项目未提供） |
-| **t2 发布会界面** | 产品/功能发布、版本更新、教程步骤、参数公布 | 深色光斑底一屏一件事，字从模糊里浮出，界面装进玻璃卡用轻回弹弹簧落位，转场靠同一块玻璃展开 | 演讲一屏 5–8s；产品快剪 1.5–3s | `MO.spring` bounce 0–0.15、`MO.appleOut` | 模糊推进 `blurPush`、卡片展开 `expandRect` | `references/art-motion/grammars/t2_keynote_ui.md` | `--film demos/t2_keynote_ui`（上游示例/脚本，本项目未提供） |
-| **t3 财经图表** | 营收、股价、份额、拐点；观众会截图较真的数字 | 先搭坐标系，再让数据长出来，最后只标一件事；数值永远诚实，动画只决定怎么出现 | 一张图 2.5–6s | `MO.quintOut`、折线 `MO.smooth` | 面板横推 `slidePush`、推进局部 `zoomThrough`（live＋bScale0）、硬切版式不动 | `references/art-motion/grammars/t3_finance_chart.md` | `--film demos/t3_finance_chart`（上游示例/脚本，本项目未提供） |
+| **y1 Kurzgesagt 扁平科普** | 讲尺度、讲「里面是什么」、讲机制系统；娓娓道来的科普腔 | 把抽象概念放进能无限缩放的发光世界，相机在尺度之间穿行，画面永远在轻轻动 | 硬切镜头 7–9s，视觉单元每 4.6–6.7s 换一次 | `MO.k75`＝bezier(.75,0,.25,1)；循环 `MO.easyEase` | 钻进镜头 `lensReveal`、填满再拉出 `matchCut`（相机对数推拉） | `references/art-motion/grammars/y1_kurzgesagt.md` | `tools/art-motion/examples/y1_kurzgesagt.json` |
+| **y2 Vox 拼贴** | 有真实档案、新闻、截图、人物的论证；「看这一句」「注意这个数字」 | 论证摆在一张有真实材料的桌面上，相机像调查记者的眼睛在桌上移动，线和笔一顿一顿画上去 | 慢档中位 3.3s（一张卡 3–7s）；快档 1.4–1.8s | 相机 `MO.sineInOut` / 长尾 `MO.longTail`；元素 12fps 步进 | 硬切、沿红线平移 `same`、推满照片→硬切 `cut` | `references/art-motion/grammars/y2_vox.md` | `tools/art-motion/examples/y2_vox.json` |
+| **y3 白板手绘（RSA）** | 推理链、步骤、「为什么」；边讲边推导 | 说一句写一句，相机跟着论证在一张大白板上移动，最后拉远看全图 | 每块停留中位 6.6s | 板上平移 `MO.sineInOut` 1.2–2.4s；远跳 0.8s 甩镜＋运动模糊 | 同一块板 `same`（相机运动就是转场），收尾拉远 | `references/art-motion/grammars/y3_whiteboard.md` | `tools/art-motion/examples/y3_whiteboard.json` |
+| **y4 故事型简笔角色** | 第一人称讲经历、翻车、笑点；观众要的是「这个人」 | 口播是主角，画面是给口播配的表情包：姿势 0.1s 快切后定住，笑点靠切到反应特写并在那一下闭嘴 | ASL 2.43s（中位 1.87s） | 换姿势 `MO.expoOut` 0.1s＋`MO.settle` 挤压回弹；角色 24fps | 硬切 `cut`、砸镜 `smash`、甩镜 `whip`、跳近 | `references/art-motion/grammars/y4_storytime.md` | `tools/art-motion/examples/y4_storytime.json` |
+| **y5 动态文字** | 清单、「X 个阶段」、金句、数字开场、章节卡 | 字就是演员：关键词踩重音砸进来，主词大到一眼读完，画面永远只有一个焦点 | 一小节一个镜头（120BPM 约 2s） | `MO.expoOut` 入场、`MO.springHz` 砸入、退场 `MO.expoIn` 更快 | 冲进色块 `fillZoom`、色带 `bands`、推页 `push` | `references/art-motion/grammars/y5_kinetic_type.md` | `tools/art-motion/examples/y5_kinetic_type.json` |
+| **t1 3Blue1Brown** | 讲一个机制怎么一步步变成另一个东西：网络、矩阵、梯度、概率 | 黑底上只放正在讲的那一个东西，用 Transform 把上一个概念直接变成下一个，颜色＝概念名，几乎不切 | 单个动画 1–3s＋停 1s；一个概念 8–20s | `MO.smooth`（6t⁵−15t⁴+10t³），几乎全用它 | Transform 接续（不切）、镜头穿越 `zoomThrough`、`fadeShift` | `references/art-motion/grammars/t1_3b1b.md` | `tools/art-motion/examples/t1_3b1b.json` |
+| **t2 发布会界面** | 产品/功能发布、版本更新、教程步骤、参数公布 | 深色光斑底一屏一件事，字从模糊里浮出，界面装进玻璃卡用轻回弹弹簧落位，转场靠同一块玻璃展开 | 演讲一屏 5–8s；产品快剪 1.5–3s | `MO.spring` bounce 0–0.15、`MO.appleOut` | 模糊推进 `blurPush`、卡片展开 `expandRect` | `references/art-motion/grammars/t2_keynote_ui.md` | `tools/art-motion/examples/t2_keynote_ui.json` |
+| **t3 财经图表** | 营收、股价、份额、拐点；观众会截图较真的数字 | 先搭坐标系，再让数据长出来，最后只标一件事；数值永远诚实，动画只决定怎么出现 | 一张图 2.5–6s | `MO.quintOut`、折线 `MO.smooth` | 面板横推 `slidePush`、推进局部 `zoomThrough`（live＋bScale0）、硬切版式不动 | `references/art-motion/grammars/t3_finance_chart.md` | `tools/art-motion/examples/t3_finance_chart.json` |
 
-总览图：`assets/动画语法/<语法>_总览.jpg`（上游示例/脚本，本项目未提供）（每镜一帧）。
-
-示范命令（上游示范片的 render.py、qa.py、index.html 命令（上游示例/脚本，本项目未提供）已换成本项目命令）：
+示范命令：
 
 ```sh
 designer-pipeline art-motion render --spec <项目内的 y1_kurzgesagt spec> --output y1/   # 渲同一语法的参数化片段（样例见 tools/art-motion/examples/）
 # 验收：看 y1/render-report.json（每帧耗时、冷/乱序一致性），再用现有 composition/film 检查
-# 预览：上游 index.html 拖时间轴（上游示例/脚本，本项目未提供）；改用 --stills 抽帧检查
+# 预览：用 --stills 抽几个时刻的静帧检查，例如 --stills 0.5,2,4
 ```
 
-示范片的时长都压到 8 秒左右，是真片节奏的 2.5–3 倍密度，只为在演示里看全语法。真用时按上表的镜头时长放慢。
+语法卡里的实验样片时长都压到 8 秒左右，是真片节奏的 2.5–3 倍密度，只为在演示里看全语法。真用时按上表的镜头时长放慢。
 
 ---
 
@@ -72,7 +70,7 @@ designer-pipeline art-motion render --spec <项目内的 y1_kurzgesagt spec> --o
 
 ---
 
-## 四、库速查（`tools/art-motion/engine/lib/`，打包进 `tools/art-motion/runtime.js` 的 `runtime.libraries`；上游 index.html 和 clip.html（上游示例/脚本，本项目未提供）都已加载）
+## 四、库速查（`tools/art-motion/engine/lib/`，打包进 `tools/art-motion/runtime.js` 的 `runtime.libraries`）
 
 | 文件 | 命名空间 | 有什么 |
 |---|---|---|
@@ -87,11 +85,9 @@ designer-pipeline art-motion render --spec <项目内的 y1_kurzgesagt spec> --o
 
 转场在 `tools/art-motion/engine/transitions.js` 末尾「YouTube 解说语法的转场」一节：`same / lensReveal / matchCut / whip / smash / fillZoom / bands / push / zoomThrough / blurPush / expandRect / slidePush / fadeShift`，每个都写了一句说明和参数。硬切用原有的 `cut`。
 
-上游引擎 `engine.js`（上游示例/脚本，本项目未提供）相关的小改动：段可写 `dur`（秒）代替 `eighths`；`window.BPM` 改节拍；解说片写 `window.PUNCH = 0` 关掉拍点冲击（或单个转场写 `punch`）；`window.SCENE_LIBS / SCENE_DIR` 让一支片子把代码放在自己的目录里（demos 就是这么组织的）。
+**实验时的旧名 → 现在的名字**（语法卡里提到实验旧名时对照）：`YT.camAt→CAM.at`、`YT.camForAnchor→CAM.anchor`、`YT.apply/camera→CAM.apply/with`（相机字段 `zoom/rot` 改成 `z/r`）、`YT.ease.*→MO.*`、`YT.spring(t,f,d)→MO.springHz`、`YT.textIn→TY.charsIn`、`YT.type→TY.typed`、`YT.partial→DG.drawPartial`、`YT.at→DG.pointAt`、`YT.circlePts→DG.ellipsePts`、`YT.paperTile/halftone/tornEdge→CL.*`、`YT.bean/POSES/mouth→TOON.*`、`MN.*→DG.*`（`lerpPts→morph`、`C→MANIM`、`FONT_RM→FONT.rm`）、`GL.*→UI.*`、`MO.textIn→TY.blurIn`、`MO.count/fmt/tabular→TY.*`、`easeOutQuint/easeOutExpo→quintOut/expoOut`、转场 `k_lens→lensReveal`、`k_fill→matchCut`、`hardcut→cut`、y5 的 `zoomThrough→fillZoom`（和 3b1b 的镜头穿越撞名）。
 
-**实验时的旧名 → 现在的名字**（读实验归档代码时对照）：`YT.camAt→CAM.at`、`YT.camForAnchor→CAM.anchor`、`YT.apply/camera→CAM.apply/with`（相机字段 `zoom/rot` 改成 `z/r`）、`YT.ease.*→MO.*`、`YT.spring(t,f,d)→MO.springHz`、`YT.textIn→TY.charsIn`、`YT.type→TY.typed`、`YT.partial→DG.drawPartial`、`YT.at→DG.pointAt`、`YT.circlePts→DG.ellipsePts`、`YT.paperTile/halftone/tornEdge→CL.*`、`YT.bean/POSES/mouth→TOON.*`、`MN.*→DG.*`（`lerpPts→morph`、`C→MANIM`、`FONT_RM→FONT.rm`）、`GL.*→UI.*`、`MO.textIn→TY.blurIn`、`MO.count/fmt/tabular→TY.*`、`easeOutQuint/easeOutExpo→quintOut/expoOut`、转场 `k_lens→lensReveal`、`k_fill→matchCut`、`hardcut→cut`、y5 的 `zoomThrough→fillZoom`（和 3b1b 的镜头穿越撞名）。
-
-字体：中文黑体统一用 `PuHui-Medium/Bold/Heavy/Black`（开源版实际是思源黑体 Noto Sans SC 500/700/800/900，family 名沿用；见 `tools/art-motion/fonts/catalog.json`），白板用 `LXGWWenKai-500`，两者都是 GB2312 全部 6763 个汉字的子集，换题目一般不用补字。公式 `CMU-rm/it`，发布会 `Inter`，财经数字 `RobotoCondensed`。思源黑/宋 `NotoSansSC/NotoSerifSC` 只含三支示范片用到的字，新内容别用。
+字体：中文黑体统一用 `PuHui-Medium/Bold/Heavy/Black`（开源版实际是思源黑体 Noto Sans SC 500/700/800/900，family 名沿用；见 `tools/art-motion/fonts/catalog.json`），白板用 `LXGWWenKai-500`，两者都是 GB2312 全部 6763 个汉字的子集，换题目一般不用补字。公式 `CMU-rm/it`，发布会 `Inter`，财经数字 `RobotoCondensed`。思源黑/宋 `NotoSansSC/NotoSerifSC` 只含少数实验样片用到的字，新内容别用。
 
 ---
 
@@ -101,20 +97,19 @@ designer-pipeline art-motion render --spec <项目内的 y1_kurzgesagt spec> --o
 
 ### 入口
 
-**口播管线里建议包一层脚本，不要手敲下面这些**：draft 从成片时间轴定时长、出词表和 spec 草稿 → render 解析 word、调本节的 `designer-pipeline art-motion render`、数帧、换进剪辑工程、冻结 → verify 对章节逐帧核同步。作者自己的管线就是这样接的（那部分未随本仓库开源）。下面是引擎本身的接口。
+**口播管线里建议包一层脚本，不要手敲下面这些**：draft 从成片时间轴定时长、出词表和 spec 草稿 → render 解析 word、调本节的 `designer-pipeline art-motion render`、数帧、换进剪辑工程、冻结 → verify 对章节逐帧核同步。下面是引擎本身的接口。
 
 ```sh
-# 本项目差异：在项目根运行（或加 --root <项目>）；spec 与图片须在项目根内，--output 必须是新目录
-designer-pipeline art-motion render --spec clip.json --output 片段/            # 无声 H.264 yuv420p（片段/render.mp4）
-designer-pipeline art-motion render --spec clip.json --output 片段透明/        # spec 写 "alpha": true → ProRes 4444 带透明（片段透明/render.mov；不画背景，给管线叠层）
-designer-pipeline art-motion render --spec clip.json --stills 0.5,2,4 --output 静帧/   # 抽帧检查
-# 预览：上游 clip.html 拖时间轴（上游示例/脚本，本项目未提供）；改用 --stills 抽帧
+# 在项目根运行（或加 --root <项目>）；spec 与图片须在项目根内，--output 必须是新目录
+designer-pipeline art-motion render --spec 片段.json --output 片段/            # 无声 H.264 yuv420p（片段/render.mp4）
+designer-pipeline art-motion render --spec 片段.json --output 片段透明/        # spec 写 "alpha": true → ProRes 4444 带透明（片段透明/render.mov；不画背景，给管线叠层）
+designer-pipeline art-motion render --spec 片段.json --stills 0.5,2,4 --output 静帧/   # 抽帧检查
 ```
 
-- 时长严格等于 `duration`：帧数 = round(duration × fps)，第 i 帧的时间是 i / fps。H.264 每秒一个关键帧（GOP = fps），管线的渲染器按秒 seek 不冻帧（本项目差异：`designer-pipeline art-motion render` 要求 duration × fps 正好是整数）。
-- 宽高和 fps 从 spec 读，默认 1920×1080@30（本项目差异：`width`、`height`、`duration`、`fps` 都必须写明，下面的最小 spec 用时要补上）；竖屏写 `width: 1080, height: 1920`，每种语法都有竖屏排版。
-- spec 里的图片路径相对 spec 文件（也可以写绝对路径）；渲染只服务 spec 里点名的文件（本项目差异：`designer-pipeline art-motion render` 只收项目根内的本地 PNG/JPEG/WebP）。
-- 量这一段：`designer-pipeline art-motion render` 输出的 `render-report.json` 记录每帧耗时、帧哈希和冷/乱序重渲一致性；运动、静止帧对、孤立跳变改用现有 composition/film 检查（如对抽帧用 `designer-pipeline composition compare`）并看片核对。上游 `qa.py --spec`（上游示例/脚本，本项目未提供）整段当一段量确定性、运动、静止帧对、孤立跳变、耗时，竖屏按画幅缩。
+- 时长严格等于 `duration`：duration × fps 必须正好是整数（否则 `designer-pipeline art-motion render` 报错），第 i 帧的时间是 i / fps。H.264 每秒一个关键帧（GOP = fps），管线的渲染器按秒 seek 不冻帧。
+- `width`、`height`、`duration`、`fps` 都必须写在 spec 里（下面各语法的最小 spec 用时要补上，如 `"fps":30,"width":1920,"height":1080`）；竖屏写 `width: 1080, height: 1920`，每种语法都有竖屏排版。
+- spec 里的图片路径相对 spec 文件，只收项目根内的本地 PNG/JPEG/WebP（`data:`、`http(s):` 和根外路径都会被拒）；渲染只读 spec 里点名的文件。
+- 量这一段：`designer-pipeline art-motion render` 输出的 `render-report.json` 记录每帧耗时、帧哈希和冷/乱序重渲一致性；运动、静止帧对、孤立跳变用现有 composition/film 检查（如对抽帧用 `designer-pipeline composition compare`）并看片核对。
 - 页面报错（语法文件出错、图片不存在）→ 非零退出，不出片。spec 里有字库没有的汉字只告警（会回退系统字体，换台机器会变样），常用字都在子集里。
 
 ### spec
@@ -124,7 +119,7 @@ designer-pipeline art-motion render --spec clip.json --stills 0.5,2,4 --output �
   "grammar": "t3_finance_chart",          // 8 选 1：t1_3b1b | t2_keynote_ui | t3_finance_chart | y1_kurzgesagt | y2_vox | y3_whiteboard | y4_storytime | y5_kinetic_type
   "duration": 7, "fps": 30, "width": 1920, "height": 1080,
   "safe": { "top": 0, "bottom": 520 },     // 可选：让开的边（px），见下
-  "alpha": false,                          // 可选：true = 不画背景（本项目差异：没有 --alpha 参数，在 spec 写 true 即输出 ProRes 4444 MOV）
+  "alpha": false,                          // 可选：true = 不画背景，输出 ProRes 4444 MOV（没有命令行参数，只在 spec 里写）
   "data": { ... },                        // 语法级参数，各语法认的字段见下面每节的「data」行；不认的字段直接忽略
   "cues": [ { "at": 1.2, "kind": "bar", "text": "...", "sub": "...", "data": { ... }, "image": "截图.png", "dur": 1.0 } ]
 }
@@ -134,15 +129,15 @@ designer-pipeline art-motion render --spec clip.json --stills 0.5,2,4 --output �
 
 | 字段 | 含义 |
 |---|---|
-| `at` | 秒，必填。「揭开那一帧」：元素在 t = at 这一帧第一次可见（动画内部从 at 前一帧起算）。例外：`number` 的 at 是数字**落定**的时刻。cue 不必按时间排序，clip.js（上游示例/脚本，本项目未提供；本项目由运行时的 `drawClip` 负责）会排；at 超过 duration 的 cue 告警后丢掉（看不到，也不占版面；本项目差异：`drawClip` 和 `designer-pipeline art-motion render` 直接报错）。 |
+| `at` | 秒，必填。「揭开那一帧」：元素在 t = at 这一帧第一次可见（动画内部从 at 前一帧起算）。例外：`number` 的 at 是数字**落定**的时刻。cue 不必按时间排序，`drawClip` 会排；写了 at ≥ duration 的 cue（或 `dur` 超出片尾）：`drawClip` 和 `designer-pipeline art-motion render` 直接报错。 |
 | `kind` | 必填。**写了这个语法不认的 kind 不报错、什么都不画**——对着下面的表写。 |
 | `text` | 主文字：标题、要点、标签、气泡原文、插入镜头的大字。 |
 | `sub` | 辅文字：t2 卡片说明、y5 辅句、y4 气泡里实际显示的短句、y4 插入镜头里他打的那一行。 |
-| `image` | 图片路径，相对 spec 文件（也可写绝对路径、`data:`、`http(s):`）。文件不存在 → 拒绝渲染。 |
+| `image` | 图片路径，相对 spec 文件；只收项目根内的本地 PNG/JPEG/WebP。文件不存在 → 拒绝渲染。 |
 | `data` | 这个 cue 自己的参数（`index`、`rect`、`icon`……），见各节。 |
 | `dur` | 只有少数 kind 读：t1 的 title/point/equation/line，t3 的 bar/line/candle，y1 的 enter，y4 的 react/insert。其它 kind 写了也不读。 |
 
-**`safe`**：`{top, bottom, left, right, fill?}`（px，默认 0）。运行时的 `drawClip`（取代上游 clip.js）把它和让开后的内容框 `ctx.box = {x, y, w, h}` 传给语法；`fill` 是可选颜色，上游 clip.js 渲完把让开的边涂成它（竖屏片里让图表成为和相邻 contain 截图同一位置、同一种底的「卡」；`alpha` 时不涂；本项目差异：`drawClip` 只校验 `fill`，不涂色）。**8 种语法都已接 `top` / `bottom`**（语法对象里都写了 `safe: true`，内容只排在 top..H−bottom 之间：t3 的坐标系与来源行、y2 的相机缩放与画面中心、t1/t2/y1/y3/y5 的版面、y4 的气泡与插入镜头大字）；**`left` / `right` 目前没有语法按它排版**，写了只会被 `fill` 涂色、内容照样排到边上。竖屏 1080×1920 的口播片字幕带约在 1400–1520，`bottom` 取 490–570；横屏一般 `bottom` 160–220。新语法要接 safe，照 t3：版式的纵向基准加 `safe.top`、底部元素减 `safe.bottom`，或者直接按 `ctx.box` 排，再在语法对象里写 `safe: true`（没写而 spec 给了 safe 时上游 clip.js 会 console.warn）。
+**`safe`**：`{top, bottom, left, right, fill?}`（px，默认 0）。运行时的 `drawClip` 把它和让开后的内容框 `ctx.box = {x, y, w, h}` 传给语法；`fill` 是可选颜色，给了就在语法画完后把 `ctx.box` 以外的上下左右边涂成它（竖屏片里让图表成为和相邻 contain 截图同一位置、同一种底的「卡」）；`"alpha": true` 时不涂，让开的边保持透明。**8 种语法都已接 `top` / `bottom`**（语法对象里都写了 `safe: true`，内容只排在 top..H−bottom 之间：t3 的坐标系与来源行、y2 的相机缩放与画面中心、t1/t2/y1/y3/y5 的版面、y4 的气泡与插入镜头大字）；**`left` / `right` 目前没有语法按它排版**，写了只会被 `fill` 涂色、内容照样排到边上。竖屏 1080×1920 的口播片字幕带约在 1400–1520，`bottom` 取 490–570；横屏一般 `bottom` 160–220。新语法要接 safe，照 t3：版式的纵向基准加 `safe.top`、底部元素减 `safe.bottom`，或者直接按 `ctx.box` 排，再在语法对象里写 `safe: true`。
 
 **`number`（大数字）的口径**——只有 t2、t3、y5 认，其它 5 种写了不显示：
 
@@ -150,7 +145,7 @@ designer-pipeline art-motion render --spec clip.json --stills 0.5,2,4 --output �
 |---|---|
 | 数值 | `data.value`（数，可负；不写当 0）。从 0 滚到 value（expoOut，先快后慢），负数用真减号「−」，整数部分自动加千分位。 |
 | 格式 | `data.prefix`（如 `"¥"`）、`data.suffix`（如 `"%"`、`" 倍"`，要空格自己写）、`data.decimals`（默认 **0**；t3 的 `spec.data.decimals` 只管柱子标签，**number 不继承**，要小数就在 cue 里再写一遍）。 |
-| 说明 | 写 `text`、`sub`、`data.text` 任一个都行，`drawClip`（取代上游 clip.js）把三者统一。 |
+| 说明 | 写 `text`、`sub`、`data.text` 任一个都行，`drawClip` 把三者统一。 |
 | 小标签 | `data.label`：t2 画在数字上方，y5 画在页左上；t3 不画。 |
 | 时间 | `at` = 数字落定的时刻。t2、t3 在 at−0.9s 开始滚；y5 在 at−0.7s 换页并开始滚。所以 number 的 at 至少写 0.9（y5 0.7），否则第 0 帧就已经滚了一大半。 |
 | 位置 | t2：单独一屏，上一屏在 at−0.9s 开始退场，不叠在卡上；t3：图区上方专留的一条，右对齐，说明在数字左边；y5：单独一页。 |
@@ -317,7 +312,7 @@ spec 级 data：`palette: [[底色, 字色], …]`（按页轮换）。
 ### 样例（`tools/art-motion/examples/`）
 
 ```sh
-# 本项目差异：把样例连同 tools/art-motion/examples/assets/ 复制进项目，spec 里没有 fonts 时加 "fonts": "bundled"，再在项目根运行
+# 先把样例连同 tools/art-motion/examples/assets/ 复制进项目，spec 里没有 fonts 时加 "fonts": "bundled"，再在项目根运行
 designer-pipeline art-motion render --spec examples/t3_finance_chart.json --output t3/   # 英伟达五个财年营收（10-K 真实数据，无示意角标）
 designer-pipeline art-motion render --spec examples/t2_keynote_ui.json   --output t2/   # 教程：两张截图进玻璃卡＋框出时间轴
 designer-pipeline art-motion render --spec examples/t1_3b1b.json         --output t1/   # 梯度下降：公式＋损失曲线＋三个要点
@@ -336,14 +331,12 @@ designer-pipeline art-motion render --spec examples/y3_whiteboard.json   --outpu
 
 ---
 
-## 六、回归（2026-10-04 收进 skill 时）
+## 六、验收基线
 
-| 对象 | 结果 |
-|---|---|
-| 16 段原片（`eras.js`）、36 段全风格样片（`--film gallery`）（上游示例/脚本，本项目未提供） | 改前改后同一时刻 61 帧逐像素一致；qa 全部无报错、确定性 ✓，运动/跳变数字不变，耗时背靠背 21.5 → 22.3 ms/帧（噪声内） |
-| 8 支示范片 vs 实验原片 | 每片 16 个时刻（含转场窗口）逐像素一致；qa 25 段全部无报错、确定性 ✓；运动、跳变、耗时和原工程一致（各片首段起点从 8/16s 变成 0，qa 采样窗口不同，所以首段数字略有出入） |
-| 2026-10-05 终审修复后 | 8 份样例＋16 原段＋36 样片＋8 支示范片共 87 段 qa 全部确定性 ✓、无页面报错；样例静帧只有预期的变化（t2 差 1 色阶＝修确定性、y5 深蓝页关键词改橙、y1 标题真的淡出）；独立终审 36 份 spec（横屏样例、竖屏、压力、边界、alpha）无 🔴 |
-| 已知的跳变 | y1_s3（42 倍→1 倍拉出中段）、y2_s2/s3（快摇与推满照片）、t1_s3（穿进神经元）、y5 拍点重音——都是设计内的相机推拉或节拍闪，原片里就有 |
+- 每段片段渲完看 `render-report.json`：冷/乱序重渲必须逐帧一致（`coldAndReorderedMatch` 为真），每帧耗时留在预算里（场景每帧 ≤ 150ms）。
+- 改库或改语法后，同一 spec 同一时刻改前改后用 `--stills` 各渲一张，用 `designer-pipeline composition compare` 并排核对：只允许出现预期的变化（例如修确定性造成的 1 色阶差、按原意改的淡出）。
+- 自写 spec 要覆盖横屏样例、竖屏、长文本压力、边界时刻和 `alpha`，不要只在样例长度上验收。
+- 允许的跳变只有设计内的相机推拉或节拍闪：尺度穿越的中段（如 42 倍→1 倍拉出）、快摇与推满照片、穿进对象、拍点重音；其余孤立跳变都要查。
 
 ---
 
@@ -352,18 +345,18 @@ designer-pipeline art-motion render --spec examples/y3_whiteboard.json   --outpu
 - **（2026-10-04 接入口播管线实测）y2 推近后下一处框在画外，荧光笔在画外开扫。** 观众晚 7 帧才看到。已改：框的起点不在当前镜头里时，镜头先移过去、at 前一帧到位，再揭开；推近的倍数同时受「红圈留在画里」约束（红圈比框宽 1.24 倍、高 1.5 倍）。
 - **（2026-10-04 参数化片段审片）t3 刻度撒谎、类目没名字、大数字压线头。** `fmtTick` 只在步长 <1 时留小数，步长 2.5 时 −2.5/2.5/7.5 被印成 −3/3/8；10 根类目柱竖屏按 `ceil(n/6)` 抽稀，被标注的「第一」恰好没名字；number 固定在图区右上角，上涨的折线线头正好在那。三处都改了（见第五节 t3 一行）。
 - **（同上）y2 文字卡没打完相机就走。** 相机离开只看下一件的 at−0.95。现在按「打完＋停 0.5s」才起跑（最晚 at−0.4），间隔短就把打字从 13 字/秒提到最多 40 字/秒。
-- **（同上）普惠体 Medium/Bold 的全角空格字宽是 0。** 源字体（阿里巴巴普惠体 3.0 的 65/85 两个字重）本身就是 0，「美元　纵轴未从 0 开始」粘成一串。上游 `font_subset.py`（上游示例/脚本，本项目未提供）抽子集时自动设成和「一」同宽；已有文件用 `--fix-widths` 修过（本项目差异：`tools/art-motion/font-subset.py` 不改字宽）。
+- **（同上）普惠体 Medium/Bold 的全角空格字宽是 0。** 源字体（阿里巴巴普惠体 3.0 的 65/85 两个字重）本身就是 0，「美元　纵轴未从 0 开始」粘成一串。抽子集时要把全角空格设成和「一」同宽；`tools/art-motion/font-subset.py` 不改字宽，自己抽的子集要先核对全角空格的宽度。
 - **（同上）t3 竖屏的标注正好落在烧录字幕带上。** 竖屏图表底部在 y≈1660，标注在 y≈1460，和 1080×1920 片子的字幕（1400–1520）重叠。加了 `safe`。
 
 - **（2026-10-05 参数化片段终审）照样例写都对，换成竖屏和真实长度就出画。** 独立终审 33 份 spec（横屏样例、自写竖屏、压力、边界、alpha）查出 12 条 🔴：y2 空 text 让渲染器死循环卡住；y5 深蓝页荧光笔和黄字同色把主词涂没、竖屏长数字出画；t1 竖屏 7 条要点压进字幕带；t3 竖屏副标题与来源行出画、标注压邻柱、透明底叠深色看不见；y1 竖屏标签被切；y3 竖屏说明出画；y4 竖屏打字溢出气泡；t2 同一时刻先后渲差 1 色阶（复用的缓冲带上一帧残留）。另自测出 `TY.charsIn` 不乘外层透明度（y1 标题说好的淡出是一帧消失）、t3 最低负数柱的数值压类目名、`TY.fit` 只数行数不量行宽。规律：**凡是「放不下」的地方都要有退路——先缩、再折、再让位，最后才告警**；只在样例长度上调好的版式，一碰真实口播就破。
 
 - **两组实验各写了一个 `window.YT`，API 完全不同。** 合并时按功能拆成 8 个命名空间，并给同名不同义的东西改名：G2 的 `zoomThrough`（冲进色块）→ `fillZoom`，G2 的 `spring(t, freq, decay)` → `MO.springHz`，G1 的 `circlePts`（开口椭圆）→ `DG.ellipsePts`。
-- **woff2 字体过不了字形检查。** 引擎的 `U.loadCmaps` 只会解 WOFF1／TTF，G3 的 woff2 一加载就 console.error，qa 判失败。收进来时统一转成 woff。
-- **全片时间读出来的背景会因为片子在时间轴上的位置不同而换相位。** 发布会示范的光斑原来排在 8–16s，单独成片后构图全变了，用 `T2.PHASE = 8` 保住定稿画面。参数化片段里光斑只读片段时间，不受这个影响。
+- **woff2 字体过不了字形检查。** 引擎的 `U.loadCmaps` 只会解 WOFF1／TTF，G3 的 woff2 一加载就 console.error，字形检查判失败。收进来时统一转成 woff。
+- **全片时间读出来的背景会因为片子在时间轴上的位置不同而换相位。** 发布会实验样片的光斑原来排在 8–16s，单独成片后构图全变了，只能加一个固定相位偏移保住定稿画面。参数化片段里光斑只读片段时间，不受这个影响。
 - **刻度要把数据整个包住。** `CH.ticks` 只给区间内的整刻度，最大值 130 时最高刻度可能是 100，柱子顶出坐标系；片段里补齐了上下各一档。
-- **系统字体不在 skill 里。** Vox 示范的宋体（Songti SC）、动态文字示范的代码字体（Menlo）用的是 macOS 系统字体，换台机器会变样；参数化片段已全部换成 skill 自带的字体。
+- **系统字体不在 skill 里。** Vox 实验样片的宋体（Songti SC）、动态文字实验样片的代码字体（Menlo）用的是 macOS 系统字体，换台机器会变样；参数化片段已全部换成 skill 自带的字体。
 
 
 ## 口播整片与第9种语法
 
-以上8种已提供参数化片段。另有[讲解员式财经科普](../grammars/y6_presenter_explainer.md)，提供语法和整片参考代码，尚无参数化片段。完整口播制作、框景检查和经验回流见[口播整片与经验回流](12-full-film-iteration.md)。
+以上8种已提供参数化片段。另有[讲解员式财经科普](../grammars/y6_presenter_explainer.md)，只提供语法卡，尚无参数化片段。完整口播制作、框景检查和经验回流见[口播整片与经验回流](12-full-film-iteration.md)。

@@ -2,7 +2,7 @@
 
 > 一句话语法：**深色底上缓慢漂移的彩色光斑，一屏一件事；字收紧、从模糊里浮出来；界面做成玻璃卡片在 3D 里用无回弹/轻回弹弹簧落位，数字计数、光扫过，转场靠「同一块玻璃」展开。**
 >
-> 示范片：`demos/t2_keynote_ui/`（上游示例/脚本，本项目未提供）（8s，3 镜头）· 总览 `assets/动画语法/t2_keynote_ui_总览.jpg`（上游示例/脚本，本项目未提供）· 代码 `demos/t2_keynote_ui/`；同一语法的参数化片段用 `designer-pipeline art-motion render` 渲染，输入样例见 `tools/art-motion/examples/t2_keynote_ui.json`
+> 参数化片段：`tools/art-motion/engine/clips/t2_keynote_ui.js`，用 `designer-pipeline art-motion render` 渲染，输入样例见 `tools/art-motion/examples/t2_keynote_ui.json`（实验样片 8s，3 镜头）
 
 ## ① 适用场景
 
@@ -51,14 +51,14 @@
 
 ## ⑥ 代码实现要点
 
-> 收进 skill 后（2026-10-04 v0.4）：本卡「新写」里的通用函数已统一进 `tools/art-motion/engine/lib/`（名字已换成统一后的 MO / CAM / DG / TY / CH / UI / CL / TOON），示范片自己的代码在 `demos/t2_keynote_ui/`（上游示例/脚本，本项目未提供）。库速查和「怎么为一段口播选语法」见 `references/art-motion/methods/09-clip-grammar.md`。
+> 收进 skill 后（2026-10-04 v0.4）：本卡「新写」里的通用函数已统一进 `tools/art-motion/engine/lib/`（名字已换成统一后的 MO / CAM / DG / TY / CH / UI / CL / TOON）。库速查和「怎么为一段口播选语法」见 `references/art-motion/methods/09-clip-grammar.md`。
 
-- 复用 skill：`engine.js`（上游示例/脚本，本项目未提供）、`render.py`（上游示例/脚本，本项目未提供）、`PAINT.cached/hex`、`U.rng`。
+- 复用 skill：`PAINT.cached/hex`、`U.rng`；转场走 `runtime.transition`。
 - 新写、现已统一进库 `lib/ui.js`（`window.UI`）：`mesh`（光斑底）、`grainTex`、`backdrop`（模糊副本，毛玻璃取样）、`shadow`（只画影子）、`glass`（毛玻璃卡）、`sheen`（光扫过，`comp` 可选）、`persp`（绕 Y/X 轴伪 3D）、`icon`、`rr/rrPath`、`scratch`。
 - `lib/motion.js`：`spring/smoothSpring/snappy/bouncy`、`bezier/appleOut/emphasized`、`float`；数字与文字在 `lib/typo.js`：`TY.count/tabular`、`TY.blurIn`（实验时叫 MO.textIn）。
-- 转场（实验时在 `transitions_info.js`，现已进 `tools/art-motion/engine/transitions.js`）：`blurPush`、`expandRect`。
-- 性能：每帧画一次光斑（1/4 尺寸）＋一次背景模糊副本，均 40–60ms/帧（qa 带 GPU flush）；8 秒 60fps 渲完约 1 分钟。
-- 坑（已修进库里）：①**blur 会从画布外拉进透明像素**，画进不清空的离屏会逐帧累积，qa 报确定性 ✗——先垫一层不模糊原图；②透视切片相邻重叠 0.75px 在半透明纹理上出一条条纹——切片边界取整像素首尾相接，并先画进离屏再整体按 alpha 贴回；③`UI.sheen` 内部设了合成模式，会盖掉外面设的 `source-atop`，所以做成参数。
+- 转场（已进 `tools/art-motion/engine/transitions.js`）：`blurPush`、`expandRect`。
+- 性能：每帧画一次光斑（1/4 尺寸）＋一次背景模糊副本，均 40–60ms/帧（含 GPU flush）；8 秒 60fps 渲完约 1 分钟。
+- 坑（已修进库里）：①**blur 会从画布外拉进透明像素**，画进不清空的离屏会逐帧累积，确定性检查报 ✗——先垫一层不模糊原图；②透视切片相邻重叠 0.75px 在半透明纹理上出一条条纹——切片边界取整像素首尾相接，并先画进离屏再整体按 alpha 贴回；③`UI.sheen` 内部设了合成模式，会盖掉外面设的 `source-atop`，所以做成参数。
 
 ## ⑦ 代表作品与一手参考
 
@@ -78,16 +78,6 @@
 2. **弹簧太弹、动作太多。** bounce 默认 0，入场最多 0.15–0.3；>0.4 立刻廉价。一次只动一组东西。
 3. **大字没收紧字距、光斑颜色发脏。** 64px 以上 −0.015～−0.03em；光斑每团颜色各占一块（screen 叠加＋大模糊），别把多色线性平均成灰紫泥。
 
-## qa 数字（skill `qa.py`（上游示例/脚本，本项目未提供），2026-10-04，审片前）
-
-| 镜头 | 运动% | 静止帧对% | 跳变 | 均/峰 ms | 确定性 |
-|---|---|---|---|---|---|
-| t2_s1 | 0.58 | 35.4 | 0 | 39.8/51.4 | ✓ |
-| t2_s2 | 2.62 | 8.5 | 0 | 60.2/65.0 | ✓ |
-| t2_s3 | 1.84 | 9.6 | 0 | 44.3/51.0 | ✓ |
-
-说明：t2_s1 的「静止帧对 35%」不是卡——光斑漂移和 4.5% 的慢推每帧变化低于 qa 的像素阈值（>12 级），隔 1 秒取两帧（成片 1.6s vs 2.6s）有 26.8% 的像素变化超过 12 级、78% 超过 4 级；这类「慢呼吸」画面要另用间隔帧差判断。
-
 ## 修订（独立审片 → 改一轮，2026-10-04）
 
 | 审片意见 | 改法 |
@@ -98,12 +88,7 @@
 | 🟡 落版只出现 0.4s、y≈1020 出安全区 | 落版 1.2–1.8s 浮现、停 0.6s，y=972；对话面板整体上移 65px |
 | ⚪ 卡片「100万」与全屏「1,000,000」口径不一 | 统一为「100万」 |
 
-修订后 qa：
+复查要点：
 
-| 镜头 | 运动% | 静止帧对% | 跳变 | 均/峰 ms | 确定性 |
-|---|---|---|---|---|---|
-| t2_s1 | 0.58 | 35.4 | 0 | 39.5/51.6 | ✓ |
-| t2_s2 | 2.62 | 8.5 | 0 | 57.2/59.9 | ✓ |
-| t2_s3 | 0.97 | 15.4 | 0 | 43.0/48.7 | ✓ |
-
-（转场冒烟：blurPush 最慢约 137ms/帧，含两次全屏模糊。）
+- 「慢呼吸」画面（光斑漂移、4.5% 的慢推）每帧变化低于逐帧像素阈值，会被读成静止帧；实验里隔 1 秒取两帧，有 26.8% 的像素变化超过 12 级、78% 超过 4 级——这类画面要用间隔帧差判断（`--stills` 抽相隔 1 秒的两帧比较），不是卡。
+- blurPush 最慢约 137ms/帧（含两次全屏模糊），渲染时盯 `render-report.json` 的每帧耗时；冷/乱序渲染必须逐帧一致（细则见 09 号的验收基线）。

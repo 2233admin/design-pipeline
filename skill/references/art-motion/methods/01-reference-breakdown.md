@@ -49,7 +49,7 @@ X 的视频从 syndication 接口拿最高档（`video_info.variants` 里挑最�
 | `转场/T*.jpg`（60fps 接触表） | 写转场代码时逐帧对照 |
 | `镜内运动/运动热图.jpg` | 每段动什么、动多大 |
 | `结尾动作/`（如有角色表演） | 逐帧质心、轨迹、物理参数（重力 px/帧²） |
-| `音轨拆解.md` + 合成脚本（用 `tools/art-motion/audio.cjs`；上游模板 `synth_艺术史速通.py`（上游示例/脚本，本项目未提供）） | BPM 网格、每段八分音符数、动机、配器、音效序列 |
-| `关键帧总览.jpg` + `生图/ref/*.png` | 构图地图、每段参考帧 |
+| `音轨拆解.md` + 合成脚本（用 `tools/art-motion/audio.cjs` 写） | BPM 网格、每段八分音符数、动机、配器、音效序列 |
+| `关键帧总览.jpg` + `参考帧/*.png`（自己从参考片抽） | 构图地图、每段参考帧 |
 
-脚本：`designer-pipeline reference analyze-video --study`（取代上游拆解脚本：接触表与转场接触表对应有序取样窗口，可用 `--start`/`--end`/`--fps` 对单个转场重采样；灰度差对应剪切候选；运动热图对应窗口运动图），用法见[参考分析](../../../tools/art-motion/README.md#reference-analysis)。
+脚本：`designer-pipeline reference analyze-video --study`：有序取样窗口的接触表对应接触表与转场接触表，可用 `--start`/`--end`/`--fps` 对单个转场重采样；灰度差给剪切候选；窗口运动图对应运动热图。用法见[参考分析](../../../tools/art-motion/README.md#reference-analysis)。

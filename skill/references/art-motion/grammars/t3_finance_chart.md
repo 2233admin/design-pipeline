@@ -2,7 +2,7 @@
 
 > 一句话语法：**先搭坐标系、再让数据「长」出来、最后只标一件事；一个颜色讲主角、其余变灰；数值永远诚实（柱从 0 起、单位和来源写在图上），动画只决定「怎么出现」，不改变「是多少」。**
 >
-> 示范片：`demos/t3_finance_chart/`（上游示例/脚本，本项目未提供）（8s，3 镜头，数据全部虚构，每镜右下角「示意数据」）· 总览 `assets/动画语法/t3_finance_chart_总览.jpg`（上游示例/脚本，本项目未提供）· 代码 `demos/t3_finance_chart/`；同一语法的参数化片段用 `designer-pipeline art-motion render` 渲染，输入样例见 `tools/art-motion/examples/t3_finance_chart.json`
+> 参数化片段：`tools/art-motion/engine/clips/t3_finance_chart.js`，用 `designer-pipeline art-motion render` 渲染，输入样例见 `tools/art-motion/examples/t3_finance_chart.json`（实验样片 8s，3 镜头，数据全部虚构，每镜右下角「示意数据」）
 
 ## ① 适用场景
 
@@ -51,9 +51,9 @@
 
 ## ⑥ 代码实现要点
 
-> 收进 skill 后（2026-10-04 v0.4）：本卡「新写」里的通用函数已统一进 `tools/art-motion/engine/lib/`（名字已换成统一后的 MO / CAM / DG / TY / CH / UI / CL / TOON），示范片自己的代码在 `demos/t3_finance_chart/`（上游示例/脚本，本项目未提供）。库速查和「怎么为一段口播选语法」见 `references/art-motion/methods/09-clip-grammar.md`。
+> 收进 skill 后（2026-10-04 v0.4）：本卡「新写」里的通用函数已统一进 `tools/art-motion/engine/lib/`（名字已换成统一后的 MO / CAM / DG / TY / CH / UI / CL / TOON）。库速查和「怎么为一段口播选语法」见 `references/art-motion/methods/09-clip-grammar.md`。
 
-- 复用 skill：`engine.js`（上游示例/脚本，本项目未提供）、`render.py`（上游示例/脚本，本项目未提供）、`U.rng`（虚构数据全部种子生成，可复现）、`PAINT.hex`。
+- 复用 skill：`U.rng`（虚构数据全部种子生成，可复现）、`PAINT.hex`；转场走 `runtime.transition`。
 - 新写 `lib/chart.js`（`window.CH`）：`lin`（比例尺，带 `inv`）、`ticks`（1/2/2.5/5×10ᵏ 刻度）、`grid`（网格逐条画出、零线加粗、刻度值右置）、`xLabels`、`bars`（从 0 长出＋同步计数＋高亮/变灰）、`line`（按 x 推进、头部点、面积）、`yAt`、`candles`（逐根 K 线，涨跌色可配）、`callout`（点→引线→文字）、`tag`（红色小旗）、`demoBadge`（示意数据角标）、`mixHex`。
 - `lib/motion.js`：`lagged`、`quintOut/expoOut`（实验时叫 easeOutQuint/easeOutExpo）、`spring`（标注圆点）；`TY.count/tabular/fmt`。
 - 转场（已进 `tools/art-motion/engine/transitions.js`）：`slidePush`、`zoomThrough`（live、bScale0、focus）。
@@ -77,16 +77,6 @@
 2. **颜色太多、全部都是主角。** 一个颜色讲故事，其余变灰；红绿含义面向谁要写清（A 股红涨，欧美红跌）。
 3. **动画太花读不出数。** 不要弹跳柱、3D 柱、旋转饼图；分阶段、缓入缓出、一步约 1s；数字落定后至少停 0.5s 让人读。
 
-## qa 数字（skill `qa.py`（上游示例/脚本，本项目未提供），2026-10-04，审片前）
-
-| 镜头 | 运动% | 静止帧对% | 跳变 | 均/峰 ms | 确定性 |
-|---|---|---|---|---|---|
-| t3_s1 | 1.39 | 0.0 | 3 | 1.3/1.9 | ✓ |
-| t3_s2 | 2.37 | 4.7 | 0 | 1.9/2.8 | ✓ |
-| t3_s3 | 0.96 | 0.0 | 0 | 1.6/2.3 | ✓ |
-
-说明：t3_s1 的 3 个「跳变」在 lt 2.10/2.20/2.27s，正是四根柱同时由蓝变灰（高亮主角）和标注弹出的那几帧——有意的大面积变化，不是穿帮。
-
 ## 修订（独立审片 → 改一轮，2026-10-04）
 
 | 审片意见 | 改法 |
@@ -98,10 +88,7 @@
 | 🟡 日 K 页 2 秒读不完 | 删 5 日均线；K 线 1.3s 出完、括注 1.75s 落定、停 0.75s |
 | ⚪ 红涨绿跌与品牌红撞色 | 保留（面向 A 股观众），副标题写「红涨绿跌（A 股惯例）」；做海外版换绿涨或蓝/橙 |
 
-修订后 qa：
+复查要点：
 
-| 镜头 | 运动% | 静止帧对% | 跳变 | 均/峰 ms | 确定性 |
-|---|---|---|---|---|---|
-| t3_s1 | 1.44 | 0.0 | 3 | 1.3/1.7 | ✓ |
-| t3_s2 | 2.45 | 4.7 | 0 | 1.9/2.6 | ✓ |
-| t3_s3 | 0.91 | 0.0 | 0 | 1.7/2.9 | ✓ |
+- 四根柱同时由蓝变灰（高亮主角）、标注弹出的那几帧是有意的大面积变化，逐帧检查会报成跳变，不是穿帮。
+- 用 `designer-pipeline art-motion render` 渲染参数化片段：`render-report.json` 里冷/乱序渲染必须逐帧一致、每帧耗时有记录；设计内的高亮切换和推镜之外不应有跳变，用 `--stills` 抽帧核对（细则见 09 号的验收基线）。
