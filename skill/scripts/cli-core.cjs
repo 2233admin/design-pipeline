@@ -25,6 +25,7 @@ const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
 const { checkPlayground } = require("./playground-core.cjs");
+const { buildRuntimeReview, inspectRuntimeReview, recordRuntimeReviewFeedback } = require("./runtime-review-core.cjs");
 const { checkComponentFirstGate, checkComponentFirstStage } = require("./component-first-core.cjs");
 const {
   checkV2Artifact,
@@ -386,6 +387,11 @@ function publicHelp() {
     "  foundation check [--kind design|motion|all] | direction check | playground check | reference check|resolve | reconstruction check | scene check",
     "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400]   (decoded timed windows; observations pending)",
     "  project inspect [--project-root <dir>] [--scope <relative-dir>] [--query <brief>] [--write --output project-analysis.json]   (read-only source evidence)",
+    "  runtime-review build --change-root <dir> --manifest <file> [--root <workspace>] [--json]",
+    "  runtime-review check --change-root <dir> --artifact <review.json> [--root <workspace>] [--json]",
+    "  runtime-review record --change-root <dir> --artifact <review.json> --observation <feedback.json> [--root <workspace>] [--json]",
+    "    file flags are change-relative; captured review is not live verification; record is not resolved",
+    "    --help/-h shows public help; built/matched/recorded exit 0, stale/blocked exit 2",
     "  component-first check|stack|components|playground|page",
     "  high-fidelity check",
     "  component-first-v2 check|migrate|select|promote",
@@ -662,6 +668,58 @@ function playgroundCommand(parsed, root) {
     stage: option(parsed, "--stage", "build"),
   });
   return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
+const RUNTIME_REVIEW_COMMON_OPTIONS = ["--change-root", "--root", "--json", "--help", "-h"];
+const RUNTIME_REVIEW_ACTION_OPTIONS = {
+  build: ["--manifest"],
+  check: ["--artifact"],
+  record: ["--artifact", "--observation"],
+};
+const RUNTIME_REVIEW_EXIT_CODES = { built: 0, matched: 0, recorded: 0, stale: 2, blocked: 2 };
+
+// 仅在本 namespace 中先校验再进入公共 help，不改变其它命令。
+function validateRuntimeReviewOptions(parsed) {
+  const [, action] = parsed.positionals;
+  const help = option(parsed, "--help") === true || option(parsed, "-h") === true;
+  if (parsed.positionals.length > 2) {
+    fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
+  }
+  if ((action && !Object.hasOwn(RUNTIME_REVIEW_ACTION_OPTIONS, action)) || (!action && !help)) {
+    fail("cli", `unknown command: ${parsed.positionals.join(" ")}`, { code: "UNKNOWN_COMMAND" });
+  }
+  const allowed = action
+    ? [...RUNTIME_REVIEW_COMMON_OPTIONS, ...RUNTIME_REVIEW_ACTION_OPTIONS[action]]
+    : ["--root", "--json", "--help", "-h"];
+  for (const [flag, values] of parsed.options) {
+    if (!allowed.includes(flag)) fail("cli", `${flag} is not allowed for runtime-review${action ? ` ${action}` : ""}`, { code: "UNKNOWN_OPTION" });
+    if (values.length !== 1) fail("cli", `${flag} may be provided only once`, { code: "DUPLICATE_OPTION" });
+    if (["--json", "--help", "-h"].includes(flag)) {
+      if (values[0] !== true) fail("cli", `${flag} does not accept a value`, { code: "UNKNOWN_ARGUMENT" });
+    } else {
+      requireOption(parsed, flag);
+      if (values[0] === "-h") fail("cli", `${flag} requires a value`, { code: "OPTION_VALUE_REQUIRED" });
+    }
+  }
+}
+
+function runtimeReviewCommand(parsed, root, action) {
+  // 保留 change-root 的 lexical 路径供 core 检查 link；file flags 原样相对 change-root。
+  const changeRoot = path.resolve(root, requireOption(parsed, "--change-root"));
+  let result;
+  if (action === "build") {
+    result = buildRuntimeReview(changeRoot, { projectRoot: root, manifest: requireOption(parsed, "--manifest") });
+  } else if (action === "check") {
+    result = inspectRuntimeReview(changeRoot, { projectRoot: root, artifact: requireOption(parsed, "--artifact") });
+  } else {
+    result = recordRuntimeReviewFeedback(changeRoot, {
+      projectRoot: root,
+      artifact: requireOption(parsed, "--artifact"),
+      observation: requireOption(parsed, "--observation"),
+    });
+  }
+  if (!Object.hasOwn(RUNTIME_REVIEW_EXIT_CODES, result.status)) fail("cli", "runtime-review returned an unknown status");
+  return { result, exitCode: RUNTIME_REVIEW_EXIT_CODES[result.status] };
 }
 
 // The reconciliation stage mirrors the graybox fold in `reference-evidence-core.cjs`: the stage is
@@ -1979,6 +2037,13 @@ const COMMANDS = {
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
   direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },
   playground: { actions: { check: { run: ({ parsed, root }) => playgroundCommand(parsed, root) } } },
+  "runtime-review": {
+    actions: {
+      build: { run: ({ parsed, root, action }) => runtimeReviewCommand(parsed, root, action) },
+      check: { run: ({ parsed, root, action }) => runtimeReviewCommand(parsed, root, action) },
+      record: { run: ({ parsed, root, action }) => runtimeReviewCommand(parsed, root, action) },
+    },
+  },
   reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
   reference: {
     actions: {
@@ -2241,6 +2306,7 @@ function fileResolver(parsed, root, entry) {
 
 function dispatch(argv) {
   const parsed = parseArgs(argv);
+  if (parsed.positionals[0] === "runtime-review") validateRuntimeReviewOptions(parsed);
   const json = option(parsed, "--json") === true;
   if (option(parsed, "--help") === true || option(parsed, "-h") === true || !parsed.positionals.length || parsed.positionals[0] === "help") {
     return { result: { status: "help", help: publicHelp() }, exitCode: 0, json };
