@@ -71,13 +71,17 @@ structure solely because it already exists.
 
 ## Production loop
 
-Use the project-pinned CLI from the composition root:
+Use the project-pinned CLI from the composition root. `film scaffold` writes a `package.json`
+that pins `hyperframes` 0.8.137 and `gsap` 3.15.0 and loads GSAP from
+`node_modules/gsap/dist/gsap.min.js`; run `npm install` once (network), then call the CLI with
+`--no-install` so `npx` never fetches a newer release and lint, check and render run offline:
 
 ```bash
-npx hyperframes lint
-npx hyperframes check
-npx hyperframes preview
-npx hyperframes render --quality high --output out.mp4
+npm install
+npx --no-install hyperframes lint
+npx --no-install hyperframes check
+npx --no-install hyperframes preview
+npx --no-install hyperframes render --quality high --output out.mp4
 ffprobe -v error -show_format out.mp4
 ```
 
@@ -88,4 +92,4 @@ plausible duration.
 
 Keep the CLI version pinned for reproducibility. A latest-version upgrade probe may be run before a
 render-affecting command, but a dependency bump is a separate, explicit change and must be followed
-by `npx hyperframes check`.
+by `npx --no-install hyperframes check`.

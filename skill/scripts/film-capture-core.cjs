@@ -14,6 +14,12 @@ const { fail } = require("./contract-utils.cjs");
 
 const SCOPE = "film capture";
 const PROBE = path.join(__dirname, "../references/film-choreography/timeline-probe.js");
+const LAYOUT_PROBE = path.join(__dirname, "../references/film-choreography/layout-probe.js");
+// The reviewed HyperFrames release (references/hyperframes.md); `film scaffold` pins the same one.
+const HYPERFRAMES_VERSION = "0.8.137";
+const GSAP_VERSION = "3.15.0";
+// npx package spec: the reviewed pin unless a caller names another release explicitly.
+const hyperframesCli = (version) => `hyperframes@${version || HYPERFRAMES_VERSION}`;
 
 function resolvePuppeteer(compositionDir, explicit) {
   const candidates = explicit ? [explicit] : [compositionDir, process.cwd()];
@@ -69,7 +75,7 @@ function httpJson(url) {
 // up from the server by directory rather than trusted from the status output.
 function hyperframesPreview(projectDir, options = {}) {
   const dir = path.resolve(projectDir);
-  const cli = options.cliVersion ? `hyperframes@${options.cliVersion}` : "hyperframes";
+  const cli = hyperframesCli(options.cliVersion);
   const call = (args) => runNpx(["--yes", cli, "preview", dir, ...args], { cwd: dir, timeout: 120000 });
   const status = () => {
     const out = call(["--status", "--json"]);
@@ -90,10 +96,12 @@ function hyperframesPreview(projectDir, options = {}) {
     if (started) stop();
     fail(SCOPE, `the preview at ${state.serverUrl} does not serve ${dir}. Fix: stop other previews (npx hyperframes preview --kill-all) and re-run`, { code: "TOOL_FAILED" });
   }
-  return { url: `${state.serverUrl}/api/projects/${encodeURIComponent(listed.id)}/preview`, started, stop };
+  return { url: `${state.serverUrl}/api/projects/${encodeURIComponent(listed.id)}/preview`, cli, started, stop };
 }
 
-async function captureTimeline(compositionFile, options = {}) {
+// Opens the composition in headless Chrome at its declared canvas size and waits for the
+// registered timeline; run(page, compositionId) does the measurement.
+async function withComposition(compositionFile, options, run) {
   const file = compositionFile ? path.resolve(compositionFile) : null;
   if (!options.url && (!file || !fs.existsSync(file))) fail(SCOPE, `composition not found: ${file}. Fix: pass --composition <path to the HyperFrames index.html> or --url <preview url>`);
   const compositionId = options.compositionId || "main";
@@ -103,6 +111,7 @@ async function captureTimeline(compositionFile, options = {}) {
     const page = await browser.newPage();
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    if (options.viewport) await page.setViewport(options.viewport);
     // HyperFrames' runtime normally provides the registry; a bare page needs it before scripts run.
     await page.evaluateOnNewDocument(() => { window.__timelines = window.__timelines || {}; });
     await page.goto(options.url || pathToFileURL(file).href, { waitUntil: "networkidle0", timeout: options.timeoutMs || 30000 });
@@ -110,17 +119,41 @@ async function captureTimeline(compositionFile, options = {}) {
     if (nested.hosts && !nested.runtime) fail(SCOPE, `${nested.hosts} nested composition(s) (data-composition-src) do not load without the HyperFrames runtime, so their motion would be missing. Fix: capture through the preview server: "designer-pipeline film check" does this automatically for projects with hyperframes.json, or pass --url <serverUrl>/api/projects/<id>/preview`);
     // A cold preview registers timelines after its scenes load; wait for the one we probe.
     await page.waitForFunction((id) => Boolean(window.__timelines && window.__timelines[id]), { timeout: nested.runtime ? 30000 : 5000 }, compositionId).catch(() => {});
-    await page.addScriptTag({ content: fs.readFileSync(PROBE, "utf8") });
-    const result = await page.evaluate((id) => {
-      const timeline = window.__timelines && window.__timelines[id];
-      if (!timeline) return { missing: Object.keys(window.__timelines || {}) };
-      return { manifest: window.FilmTimelineProbe.probe(timeline, id) };
-    }, compositionId);
-    if (result.missing) fail(SCOPE, `window.__timelines["${compositionId}"] is not registered (found: ${result.missing.join(", ") || "none"}${errors.length ? `; page errors: ${errors.join(" | ")}` : ""}). Fix: register the paused timeline synchronously as window.__timelines["${compositionId}"], or pass --composition-id`);
-    return { ...result.manifest, ...(errors.length ? { pageErrors: errors } : {}) };
+    const missing = await page.evaluate((id) => (window.__timelines && window.__timelines[id] ? null : Object.keys(window.__timelines || {})), compositionId);
+    if (missing) fail(SCOPE, `window.__timelines["${compositionId}"] is not registered (found: ${missing.join(", ") || "none"}${errors.length ? `; page errors: ${errors.join(" | ")}` : ""}). Fix: register the paused timeline synchronously as window.__timelines["${compositionId}"], or pass --composition-id`);
+    return await run(page, compositionId, errors);
   } finally {
     await browser.close();
   }
 }
 
-module.exports = { captureTimeline, hyperframesPreview, resolveChrome, resolvePuppeteer, runNpx };
+async function captureTimeline(compositionFile, options = {}) {
+  return withComposition(compositionFile, options, async (page, compositionId, errors) => {
+    await page.addScriptTag({ content: fs.readFileSync(PROBE, "utf8") });
+    const manifest = await page.evaluate((id) => window.FilmTimelineProbe.probe(window.__timelines[id], id), compositionId);
+    return { ...manifest, ...(errors.length ? { pageErrors: errors } : {}) };
+  });
+}
+
+// Visible text runs at each time, for the composition gate's layout checks. The canvas size
+// comes from the root's data-width/data-height (1920x1080 when absent).
+async function captureLayout(compositionFile, times, options = {}) {
+  if (!Array.isArray(times) || !times.length || times.some((value) => !Number.isFinite(value) || value < 0)) fail(SCOPE, "layout times must be a non-empty list of non-negative seconds");
+  const file = compositionFile ? path.resolve(compositionFile) : null;
+  const size = file && fs.existsSync(file) ? canvasSize(fs.readFileSync(file, "utf8")) : { width: 1920, height: 1080 };
+  return withComposition(compositionFile, { ...options, viewport: size }, async (page, compositionId) => {
+    await page.addScriptTag({ content: fs.readFileSync(LAYOUT_PROBE, "utf8") });
+    return page.evaluate((id, at) => window.FilmLayoutProbe.sample(window.__timelines[id], at), compositionId, times);
+  });
+}
+
+function canvasSize(html) {
+  const root = /<[^>]*data-composition-id=[^>]*>/i.exec(html);
+  const read = (name, fallback) => {
+    const match = root && new RegExp(`data-${name}="(\\d+)"`, "i").exec(root[0]);
+    return match ? Number(match[1]) : fallback;
+  };
+  return { width: read("width", 1920), height: read("height", 1080) };
+}
+
+module.exports = { GSAP_VERSION, HYPERFRAMES_VERSION, canvasSize, captureLayout, captureTimeline, hyperframesCli, hyperframesPreview, resolveChrome, resolvePuppeteer, runNpx };

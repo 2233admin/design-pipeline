@@ -26,7 +26,15 @@ Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1
 the composition deliberately does that (`--allow dead-band` for intended negative space) and say
 why in the change's qa record.
 
-`film check` runs the gate on each beat's midpoint frame with the `frame` profile.
+`film check` runs the gate on each beat's midpoint frame with the `frame` profile and, when it
+captures the composition, on the visible text sampled five times a second plus both sides of
+every beat boundary (`references/film-choreography/layout-probe.js`). Text runs count only
+while they are legible, not covered by an opaque element, not clipped away and not marked
+`data-layout-allow-overlap`. Error: `text-overlap` held for two samples (a dissolve, whose
+opacities sum to about one, does not count). Warnings: `text-overlap` caught in one sample or as
+a steady faint copy under legible text, `text-edge-margin` (resting text within 4% of the short
+side from the edge) and `text-too-small` (resting text under 2.4% of the frame height).
+`film check --allow <code>` accepts named warnings.
 
 The gate measures failure shapes; it does not judge taste. A passing frame still needs creative
 review, and a warning is not proof of a bad design.

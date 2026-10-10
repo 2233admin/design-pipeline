@@ -3,7 +3,8 @@
 Generated promo, explainer, logo sting, feature demo or 3D product shot. `designer-pipeline next`
 names the current stage; read only that section. Stage order:
 
-- `quick`: plan, build, check (replicate mode adds reference first).
+- `quick`: plan, build, check, review (replicate mode adds reference first). Quick has no delivery
+  render, but it ends with the owner's verdict on the checked draft, not with a passing check.
 - `standard` and `full`: intake, reference, concepts, plan, build, check, review, deliver.
 
 ## intake
@@ -85,24 +86,36 @@ Pick the lowest-rung tool that reaches each beat:
 
 For a new movement choice, render a short study before extending the film. Inspect key poses,
 spacing, contact and handoff at speed and by frame; a smooth ease alone does not design an action.
-Then render the draft: `npx hyperframes render --output out.mp4`.
+Then render the draft: `npx --no-install hyperframes render --output out.mp4` (the scaffold's
+`package.json` pins hyperframes 0.8.137 and gsap 3.15.0; run `npm install` once first).
 Before a full material shot, verify shader compilation, reverse seeking and fixed-time angle
 response, and inspect actual frames at `rendering.samples`. Reuse `film-materials/enamel.mjs`.
 
 ## check
 
-`film check --project-root .` runs the storyboard, timeline and render gates. Apply each
-error finding's `fix` and rerun; resolve warnings through viewing and record the decision in
-`qa.md`, not by blindly optimizing a number. Frame layout: `composition capture` then `verify composition`
-(`composition-gate.md`). A re-render reopens this stage.
+`film check --project-root .` runs the storyboard, timeline, render and composition gates. Apply
+each error finding's `fix` and rerun; resolve warnings through viewing and record the decision in
+`qa.md`, not by blindly optimizing a number. The composition gate measures the rendered beat
+midpoints and, when the composition is captured, its visible text five times a second plus both
+sides of every beat boundary: held text-on-text overlap fails; a passing overlap, a faint copy
+under legible text, resting text within 4% of the frame edge and text under 2.4% of the frame
+height are review prompts. Deliberate layering takes `data-layout-allow-overlap`; deliberate
+warnings take `film check --allow <code>`. Static UI layout: `composition capture` then
+`verify composition` (`composition-gate.md`). A re-render reopens this stage.
 
 ## review
 
-Show the draft video, `evidence/contact-sheet.png` and a one-paragraph gate summary. The user
-accepts, or rejects with one sentence (`decide --stage review --verdict accept|reject`). A
-rejection becomes a project rule that every later `next` returns.
+The gates sample beats and text, not every frame, and never grant acceptance. Before asking,
+review the checked draft frame by frame: `ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png`,
+open every frame at full size and look for text overlap, clipping, empty transitional frames,
+edge crowding, too-small text and wrong values. Fix, re-render and rerun `film check`; write the
+frame and creative review in `qa.md`. Then show the draft video, `evidence/contact-sheet.png` and
+a one-paragraph gate summary. The owner accepts, or rejects with one sentence
+(`decide --stage review --verdict accept|reject`). A rejection becomes a project rule that every
+later `next` returns and reopens the check. Every tier asks; quick reports `done` after an
+accepted draft, standard and full after the accepted draft's delivery render.
 
 ## deliver
 
-Render the final quality once (`npx hyperframes render --quality high --output final.mp4`), then
+Render the final quality once (`npx --no-install hyperframes render --quality high --output final.mp4`), then
 `decide --stage deliver --answer final.mp4`.

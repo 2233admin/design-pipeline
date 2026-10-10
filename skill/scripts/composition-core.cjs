@@ -34,6 +34,9 @@ const FIX = {
   "alignment-near-miss": "Edges almost align but miss by a few pixels. Snap these elements to the same left, center or right edge.",
   "flat-hierarchy": "Text sizes are too similar to show order. Make the headline at least 1.5x the body size, or change weight/color to separate levels.",
   "type-scale-sprawl": "Too many distinct text sizes. Reduce to a scale of 4-5 sizes.",
+  "text-overlap": "Two text runs overlap on screen. Move one into its own zone, retime it so it has left before the other arrives (or fade it fully out first), or mark deliberate layering with data-layout-allow-overlap.",
+  "text-edge-margin": "Resting text sits within 4% of the short side from the frame edge, or crosses it. Move it inward or reduce its size; allow the code for a deliberate bleed.",
+  "text-too-small": "Resting text renders below 2.4% of the frame height (26 px at 1080p) and becomes illegible when the film is embedded or played small. Enlarge it or drop it.",
 };
 
 function luminance(r, g, b) {
@@ -315,4 +318,144 @@ function checkComposition(image, options = {}) {
   };
 }
 
-module.exports = { SCHEMA, FIX, PROFILES, checkComposition, contrastRatio, measure };
+// ---------- film layout: visible text sampled over time (references/film-choreography/layout-probe.js) ----------
+// Samples come from the composition DOM at a 5 fps grid plus beat boundaries. Overlap counts
+// only while both texts are legible and the pair is not a dissolve (opacities summing to about
+// one). It is an error when it holds for LAYOUT_HOLD_SEC (two grid samples) and a review prompt
+// when one sample catches it in passing or a steady faint copy sits under legible text. Edge and
+// size prompts apply to text at rest. Calibration: design.md of fix-film-workflow-usability.
+const LAYOUT_HOLD_SEC = 0.15;
+const LAYOUT_STEP_SEC = 0.25;
+const OVERLAP_SHARE = 0.2;
+const LEGIBLE_OPACITY = 0.1;
+const GHOST_OPACITY = 0.02;
+const DISSOLVE_SUM = 1.1;
+const REST_SEC = 0.35;
+const EDGE_MARGIN = 0.04;
+const MIN_TEXT_HEIGHT = 0.024;
+const LISTED = 3;
+
+function rectOverlap(a, b) {
+  let best = 0;
+  for (const [ax, ay, aw, ah] of a) for (const [bx, by, bw, bh] of b) {
+    const w = Math.min(ax + aw, bx + bw) - Math.max(ax, bx);
+    const h = Math.min(ay + ah, by + bh) - Math.max(ay, by);
+    if (w > 0 && h > 0) best = Math.max(best, (w * h) / Math.min(aw * ah, bw * bh));
+  }
+  return best;
+}
+
+// Splits the times at which a condition held into stretches of consecutive samples.
+function stretches(entries, times) {
+  const order = new Map(times.map((at, index) => [at, index]));
+  const out = [];
+  for (const entry of [...entries].sort((a, b) => a.atSec - b.atSec)) {
+    const last = out.at(-1);
+    const previous = last && last.at(-1);
+    if (previous && order.get(entry.atSec) === order.get(previous.atSec) + 1 && entry.atSec - previous.atSec <= LAYOUT_STEP_SEC) last.push(entry);
+    else out.push([entry]);
+  }
+  return out.filter((run) => run.length >= 2 && run.at(-1).atSec - run[0].atSec >= LAYOUT_HOLD_SEC);
+}
+
+function checkFilmLayout(layout, options = {}) {
+  if (!layout || !Array.isArray(layout.samples)) fail(SCOPE, "layout must have samples");
+  const { width, height } = layout.viewport || {};
+  if (!(width > 0) || !(height > 0)) fail(SCOPE, "layout.viewport must have positive width and height");
+  const allow = new Set(options.allow || []);
+  for (const code of allow) if (!FIX[code]) fail(SCOPE, `cannot allow unknown code ${code}; allowed codes: ${Object.keys(FIX).join(", ")}`);
+  const findings = [];
+  const allowed = [];
+  const add = (code, severity, message, atSec, target) => {
+    const finding = { code, severity, message, fix: FIX[code], atSec, ...(target ? { target } : {}) };
+    if (severity === "warn" && allow.has(code)) allowed.push(finding);
+    else findings.push(finding);
+  };
+  const samples = [...layout.samples].sort((a, b) => a.atSec - b.atSec);
+  const times = samples.map((sample) => sample.atSec);
+  const quote = (text) => `"${String(text).slice(0, 40)}"`;
+  const span = (run) => `${run[0].atSec}-${run.at(-1).atSec}s`;
+  const inFrame = (rects) => rects.some(([x, y, w, h]) => x + w > 0 && y + h > 0 && x < width && y < height);
+
+  const pairs = new Map();
+  const resting = new Map();
+  for (const sample of samples) {
+    const runs = sample.runs.filter((run) => run.opacity >= GHOST_OPACITY && !run.occluded && run.rects.length && inFrame(run.rects));
+    for (let i = 0; i < runs.length; i += 1) {
+      for (let j = i + 1; j < runs.length; j += 1) {
+        const [a, b] = [runs[i], runs[j]];
+        if (a.allowOverlap || b.allowOverlap || a.id === b.id) continue;
+        const ia = sample.runs.indexOf(a);
+        const ib = sample.runs.indexOf(b);
+        if ((a.within || []).includes(ib) || (b.within || []).includes(ia)) continue;
+        const share = rectOverlap(a.rects, b.rects);
+        if (share < OVERLAP_SHARE) continue;
+        const [first, second] = a.id < b.id ? [a, b] : [b, a];
+        const key = `${first.id}\u0000${second.id}`;
+        if (!pairs.has(key)) pairs.set(key, []);
+        pairs.get(key).push({ atSec: sample.atSec, a: first, b: second, low: Math.min(a.opacity, b.opacity), high: Math.max(a.opacity, b.opacity) });
+      }
+    }
+    for (const run of runs) {
+      if (run.opacity < 0.5) continue;
+      if (!resting.has(run.id)) resting.set(run.id, []);
+      resting.get(run.id).push({ atSec: sample.atSec, run });
+    }
+  }
+
+  const overlaps = [];
+  for (const entries of pairs.values()) {
+    const legible = entries.filter((entry) => entry.low >= LEGIBLE_OPACITY && entry.low + entry.high >= DISSOLVE_SUM);
+    const held = stretches(legible, times)[0];
+    // A steady faint copy under legible text (a receded layer) still reads as text-on-text.
+    const ghost = stretches(entries.filter((entry) => entry.low < LEGIBLE_OPACITY && entry.high >= 0.5), times)
+      .find((run) => Math.max(...run.map((entry) => entry.low)) - Math.min(...run.map((entry) => entry.low)) <= GHOST_OPACITY);
+    if (held) overlaps.push({ severity: "error", kind: "overlap", run: held });
+    else if (ghost) overlaps.push({ severity: "warn", kind: "faint copy under legible text", run: ghost });
+    else if (legible.length) overlaps.push({ severity: "warn", kind: "overlap in passing (one sample)", run: [legible[0]] });
+  }
+  const groups = new Map();
+  for (const item of overlaps) {
+    const key = `${item.severity}\u0000${item.kind}\u0000${item.run[0].atSec}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  for (const items of groups.values()) {
+    const [{ severity, kind, run }] = items;
+    const end = Math.max(...items.map((item) => item.run.at(-1).atSec));
+    const listed = items.slice(0, LISTED).map(({ run: [entry] }) => `${entry.a.id} ${quote(entry.a.text)} / ${entry.b.id} ${quote(entry.b.text)} (opacity ${entry.high.toFixed(2)}/${entry.low.toFixed(2)})`);
+    const more = items.length > LISTED ? `; and ${items.length - LISTED} more` : "";
+    add("text-overlap", severity, `text ${kind} at ${run[0].atSec === end ? `${end}s` : `${run[0].atSec}-${end}s`}: ${listed.join("; ")}${more}`, run[0].atSec, items.map(({ run: [entry] }) => `${entry.a.id} | ${entry.b.id}`).join(", "));
+  }
+
+  const margin = EDGE_MARGIN * Math.min(width, height);
+  const minFont = MIN_TEXT_HEIGHT * height;
+  const gapOf = ([x, y, w, h]) => Math.min(x, y, width - (x + w), height - (y + h));
+  const small = [];
+  for (const [id, entries] of resting) {
+    const still = [];
+    for (const entry of entries) {
+      const last = still.at(-1);
+      const same = last && JSON.stringify(last.at(-1).run.rects) === JSON.stringify(entry.run.rects) && times.indexOf(entry.atSec) === times.indexOf(last.at(-1).atSec) + 1;
+      if (same) last.push(entry);
+      else still.push([entry]);
+    }
+    const rest = still.filter((run) => run.at(-1).atSec - run[0].atSec >= REST_SEC);
+    if (!rest.length) continue;
+    const edge = rest.find((group) => group[0].run.rects.some((rect) => gapOf(rect) < margin));
+    if (edge) {
+      const gap = Math.round(Math.min(...edge[0].run.rects.map(gapOf)));
+      add("text-edge-margin", "warn", `${id} ${quote(edge[0].run.text)} rests ${gap}px from the frame edge at ${span(edge)} (minimum ${Math.round(margin)}px)`, edge[0].atSec, id);
+    }
+    const [{ run, atSec }] = rest[0];
+    if (run.fontPx > 0 && run.fontPx < minFont) small.push({ id, run, atSec });
+  }
+  if (small.length) {
+    const listed = small.slice(0, LISTED).map(({ id, run, atSec }) => `${id} ${quote(run.text)} ${run.fontPx}px from ${atSec}s`);
+    add("text-too-small", "warn", `${small.length} resting text run(s) below ${Math.round(minFont)}px at ${height}p: ${listed.join("; ")}${small.length > LISTED ? `; and ${small.length - LISTED} more` : ""}`, Math.min(...small.map((item) => item.atSec)), small.map((item) => item.id).join(", "));
+  }
+  findings.sort((a, b) => a.atSec - b.atSec);
+  return { status: findings.some((finding) => finding.severity === "error") ? "failed" : "passed", findings, allowed, samples: samples.length };
+}
+
+module.exports = { SCHEMA, FIX, PROFILES, checkComposition, checkFilmLayout, contrastRatio, measure };

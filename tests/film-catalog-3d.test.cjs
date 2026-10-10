@@ -73,7 +73,7 @@ test("timeline gate leaves driver-only beats to pixel evidence instead of callin
 test("catalog search ranks name and tag hits and filters by tag", () => {
   assert.equal(searchBlocks(CATALOG, "dolly zoom camera")[0].name, "camera-dolly-zoom");
   assert.deepEqual(searchBlocks(CATALOG, "", { tag: "shader" }).map((r) => r.name), ["glitch"]);
-  assert.equal(searchBlocks(CATALOG, "phone showcase")[0].install, "npx hyperframes add app-showcase");
+  assert.equal(searchBlocks(CATALOG, "phone showcase")[0].install, "npx --no-install hyperframes add app-showcase");
   assert.deepEqual(searchBlocks(CATALOG, "nothing-matches-this"), []);
 });
 
@@ -103,7 +103,7 @@ test("scaffold hosts a named block at its beat time with the install command", (
     board.beats[2].block = "camera-dolly-zoom";
     fs.writeFileSync(path.join(dir, "storyboard.json"), JSON.stringify(board));
     const html = require("../skill/scripts/film-project-core.cjs").compositionHtml(board);
-    assert.ok(html.includes("npx hyperframes add camera-dolly-zoom"));
+    assert.ok(html.includes("npx --no-install hyperframes add camera-dolly-zoom"));
     assert.ok(html.includes(`data-composition-src="compositions/camera-dolly-zoom.html" data-start="${board.beats[2].startSec}"`));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

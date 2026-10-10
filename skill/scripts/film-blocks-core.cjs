@@ -8,13 +8,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { fail } = require("./contract-utils.cjs");
-const { runNpx } = require("./film-capture-core.cjs");
+const { hyperframesCli, runNpx } = require("./film-capture-core.cjs");
 
 const SCOPE = "film blocks";
 const CACHE = path.join(".design-pipeline", "hyperframes-catalog.json");
 
 function fetchCatalog(projectDir, options = {}) {
-  const cli = options.cliVersion ? `hyperframes@${options.cliVersion}` : "hyperframes";
+  // The catalog must match the blocks the pinned CLI can `add`.
+  const cli = hyperframesCli(options.cliVersion);
   const result = runNpx(["--yes", cli, "catalog", "--json"], { cwd: projectDir });
   const start = String(result.stdout || "").indexOf("[");
   let items;
@@ -64,7 +65,7 @@ function searchBlocks(items, query = "", options = {}) {
     durationSec: item.duration ?? null,
     score,
     description: String(item.description || "").slice(0, 240),
-    install: `npx hyperframes add ${item.name}`,
+    install: `npx --no-install hyperframes add ${item.name}`,
   }));
 }
 

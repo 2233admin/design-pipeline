@@ -82,6 +82,13 @@ function checkedWorkflowFixture(deliverable, tier = "standard") {
   return root;
 }
 
+// Quick film ends at the owner's review of the checked draft; the other quick workflows end once
+// their check passes. Either way the check stage is behind us.
+function afterCheck(dir) {
+  const next = nextAction(dir);
+  return next.type === "done" || (readState(dir).deliverable === "film" && next.stage === "review") ? "checked" : next.stage;
+}
+
 function visualFixture(nativePhase = "implementation") {
   const dir = tmp();
   const state = createInitialState({ changeId: "visual-example", timestamp: new Date().toISOString(), phase: nativePhase, status: "implementing" });
@@ -1051,11 +1058,11 @@ test("standard film walks intake, reference, concepts, plan, build, check, revie
   assert.equal(done.evidence.drafts.length, 2);
 });
 
-test("quick film skips intake, concepts and review", () => {
+test("quick film skips intake and concepts", () => {
   const dir = tmp();
   initState(dir, { deliverable: "film", tier: "quick" });
   assert.equal(nextAction(dir).stage, "plan");
-  assert.equal(nextAction(dir).remaining, 3);
+  assert.equal(nextAction(dir).remaining, 4);
   const waived = tmp();
   initState(waived, { deliverable: "film", tier: "standard" });
   decide(waived, { stage: "intake", answer: "default" });
@@ -1069,6 +1076,38 @@ test("quick film skips intake, concepts and review", () => {
       assert.match(action.command, /brief|chosen direction/);
       assert.doesNotMatch(action.command, /observed shots|frame ids|Set reference/);
     }
+  }
+});
+
+test("quick film asks for frame review and the owner's verdict before done", () => {
+  const dir = checkedWorkflowFixture("film", "quick");
+  try {
+    const review = nextAction(dir);
+    assert.equal(review.type, "ask", "a passing film check is not acceptance");
+    assert.equal(review.stage, "review");
+    assert.deepEqual(review.completed, ["plan", "build", "check"]);
+    assert.match(review.first, /ffmpeg -i out\.mp4 -vf fps=1/);
+    assert.match(review.first, /every frame at full size/);
+    assert.match(review.first, /qa\.md/);
+    assert.match(review.line, /^film\/quick: review \(4\/4\) - Review the checked draft frame by frame first: .*Then ask the owner: Accept this checked draft, or reject it/);
+    assert.match(review.record, /decide --project-root \. --stage review --verdict accept\|reject/);
+    decide(dir, { stage: "review", verdict: "reject", answer: "Labels cross the terminal at 23 s." });
+    assert.equal(nextAction(dir).stage, "check", "a rejection reopens the check");
+    assert.deepEqual(nextAction(dir).rules, ["Labels cross the terminal at 23 s."]);
+    recordGate(dir, "film", "passed");
+    assert.equal(nextAction(dir).stage, "review");
+    decide(dir, { stage: "review", verdict: "accept" });
+    const done = nextAction(dir);
+    assert.equal(done.type, "done");
+    assert.deepEqual(done.evidence.drafts.map((draft) => draft.verdict), ["reject", "accept"]);
+    rewriteSameTime(dir, "out.mp4", "a new draft after acceptance");
+    recordGate(dir, "film", "passed");
+    assert.equal(nextAction(dir).stage, "review", "a new draft needs a new verdict");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  for (const deliverable of ["edit", "web"]) {
+    const other = checkedWorkflowFixture(deliverable, "quick");
+    try { assert.equal(nextAction(other).type, "done", `${deliverable} quick is unchanged`); }
+    finally { fs.rmSync(other, { recursive: true, force: true }); }
   }
 });
 
@@ -1472,7 +1511,7 @@ test("a gate result goes stale when its inputs change", () => {
   recordGate(dir, "storyboard", "passed");
   touch(dir, "out.mp4");
   recordGate(dir, "film", "passed");
-  assert.equal(nextAction(dir).type, "done");
+  assert.equal(afterCheck(dir), "checked");
   rewriteSameTime(dir, "out.mp4", "a different render");
   assert.equal(nextAction(dir).stage, "check", "a re-rendered draft must be checked again");
   rewriteSameTime(dir, "storyboard.json", '{"id":"changed"}');
@@ -1488,10 +1527,10 @@ test("unchanged bytes remain checked despite file-clock skew; changed bytes do n
   recordGate(dir, "film", "passed");
   const skewed = new Date(Date.now() + 20);
   fs.utimesSync(path.join(dir, "out.mp4"), skewed, skewed);
-  assert.equal(nextAction(dir).type, "done");
+  assert.equal(afterCheck(dir), "checked");
   const edited = new Date(Date.now() + 1000);
   fs.utimesSync(path.join(dir, "out.mp4"), edited, edited);
-  assert.equal(nextAction(dir).type, "done", "timestamps alone do not invalidate identical bytes");
+  assert.equal(afterCheck(dir), "checked", "timestamps alone do not invalidate identical bytes");
   rewriteSameTime(dir, "out.mp4", "changed without a newer timestamp");
   assert.equal(nextAction(dir).stage, "check");
 });
@@ -1743,13 +1782,13 @@ test("missing required files and timestamp-only legacy passes reopen existing ch
   ]) {
     const dir = checkedWorkflowFixture(deliverable, "quick");
     try {
-      assert.equal(nextAction(dir).type, "done");
+      assert.equal(afterCheck(dir), "checked");
       const state = readState(dir);
       state.gates[gate] = { status: "passed", at: Date.now() };
       touch(dir, ".design-pipeline/state.json", JSON.stringify(state));
       assert.equal(nextAction(dir).stage, gate === "storyboard" ? "plan" : deliverable === "web" ? "probe" : "check", "legacy state is readable but is not current evidence");
       recordGate(dir, gate, "passed");
-      assert.equal(nextAction(dir).type, "done");
+      assert.equal(afterCheck(dir), "checked");
       fs.unlinkSync(path.join(dir, missing));
       assert.equal(nextAction(dir).stage, stage, "missing checked bytes cannot count as a pass");
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
@@ -1768,7 +1807,7 @@ test("active film composition, timeline, score grid and edit analysis belong to 
       touch(dir, file, "initial checked input");
       if (deliverable === "film") assert.equal(nextAction(dir).stage, "check", "newly active input was absent from the old checked snapshot");
       recordGate(dir, gate, "passed");
-      assert.equal(nextAction(dir).type, "done");
+      assert.equal(afterCheck(dir), "checked");
       rewriteSameTime(dir, file, "different checked input");
       assert.equal(nextAction(dir).stage, "check", file);
       if (deliverable === "film") {
@@ -1784,13 +1823,13 @@ test("film progress follows the actual newest nonempty render and edit custom ou
   const film = checkedWorkflowFixture("film", "quick"), edit = checkedWorkflowFixture("edit", "quick");
   try {
     touch(film, "renders/empty.mp4", "");
-    assert.equal(nextAction(film).type, "done", "an empty video is not a render candidate");
+    assert.equal(afterCheck(film), "checked", "an empty video is not a render candidate");
     touch(film, "renders/newer.mp4", "new render");
     const later = new Date(Date.now() + 60_000);
     fs.utimesSync(path.join(film, "renders/newer.mp4"), later, later);
     assert.equal(nextAction(film).stage, "check", "the old out.mp4 pass cannot prove the newly selected render");
     recordWorkflowGate(film, "film", "passed", ["storyboard.json", "renders/newer.mp4"]);
-    assert.equal(nextAction(film).type, "done", "a pass of the actual selected render advances");
+    assert.equal(afterCheck(film), "checked", "a pass of the actual selected render advances");
     rewriteSameTime(film, "renders/newer.mp4", "changed selected render");
     assert.equal(nextAction(film).stage, "check");
     touch(edit, "renders/custom.mp4", "different edit output");
@@ -1841,6 +1880,10 @@ test("film and edit delivery requires an existing contained file and quick may r
     const quick = checkedWorkflowFixture(deliverable, "quick");
     try {
       const output = deliverable === "film" ? "out.mp4" : "renders/edit.mp4";
+      if (deliverable === "film") {
+        assert.throws(() => decide(quick, { stage: "deliver", answer: output }), /review/, "quick film records delivery only after the owner's verdict");
+        decide(quick, { stage: "review", verdict: "accept" });
+      }
       assert.equal(decide(quick, { stage: "deliver", answer: output }).next.type, "done");
     } finally { fs.rmSync(quick, { recursive: true, force: true }); }
   }
