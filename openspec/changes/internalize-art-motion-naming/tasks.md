@@ -19,4 +19,4 @@
 
 ## 6. Integration and verification
 - [x] 6.1 Remove the former bundle and importer; update `package.json`, test manifest, package resources, `.gitattributes`, `CHANGELOG.md` (with a migration note) and the `scripts/qa.cjs` naming policy check.
-- [ ] 6.2 Run the zero-hit checks, the focused Art Motion/Visual Craft/CLI tests, `npm test` with an isolated `fonttools==4.66.1` and `npm run specs:check`.
+- [x] 6.2 Run the zero-hit checks, the focused Art Motion/Visual Craft/CLI tests, `npm test` with an isolated `fonttools==4.66.1` and `npm run specs:check`.
