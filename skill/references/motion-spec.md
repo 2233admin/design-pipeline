@@ -63,6 +63,8 @@ For each layer record:
 Include hover, focus, press, drag, scroll, route, loading, success, error, and data-update motion
 when applicable.
 
+A web section brief's driver and response are one row here; a section with no driver has no row (`references/web-direction.md`, Section briefs, W6).
+
 ## Tracks And Timeline
 
 | Track id | Scene / target | Channel | Start | Duration | Delay | Easing | Stagger | Driver |
