@@ -25,9 +25,11 @@ function run(command, args, options = {}) {
 }
 function readJson(file) { return JSON.parse(fs.readFileSync(file, "utf8")); }
 function hash(file) { return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex"); }
+// Nested worktrees and local captures can push this listing past spawnSync's 1 MiB default.
+const STATUS_MAX_BUFFER = 256 * 1024 * 1024;
 function statusBytes() {
-  const child = spawnSync("git", ["status", "--porcelain=v2", "-z", "--untracked-files=all"], { cwd: repoRoot, encoding: "buffer", windowsHide: true });
-  if (child.status !== 0) throw new Error(`git status failed: ${String(child.stderr)}`);
+  const child = spawnSync("git", ["status", "--porcelain=v2", "-z", "--untracked-files=all"], { cwd: repoRoot, encoding: "buffer", windowsHide: true, maxBuffer: STATUS_MAX_BUFFER });
+  if (child.error || child.status !== 0) throw new Error(`git status failed: ${child.error ? child.error.message : String(child.stderr)}`);
   return child.stdout;
 }
 

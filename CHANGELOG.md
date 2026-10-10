@@ -102,6 +102,8 @@ All notable changes to Design Pipeline are documented here.
 - `film score` removes its temporary download folder when a render fails.
 - `designer-pipeline evidence capture` honors `--timeout-ms` above 60 s: the public CLI killed the
   capture kernel after a fixed 60 s; it now allows the requested capture time plus 30 s.
+- Repository QA reads `git status` with a 256 MiB buffer and reports the spawn error; nested
+  worktrees pushed the listing past the 1 MiB default and QA died with a bare `ENOBUFS`.
 
 ## [0.12.0-beta.1] - 2026-09-29
 
