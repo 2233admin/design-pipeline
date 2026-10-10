@@ -11,6 +11,8 @@ const { advanceChange, createInitialState, inspectConsistency, writeNewChange } 
 const { createArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { analyzeVideo } = require("../skill/scripts/reference-video-core.cjs");
+const shared = require("../skill/scripts/workflows/shared.cjs");
+const { stages: webStages } = require("../skill/scripts/workflows/web.cjs");
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "workflow-"));
 const cli = path.join(__dirname, "../skill/scripts/designer-pipeline.cjs");
@@ -1703,6 +1705,113 @@ test("a rejected web draft reopens probe", () => {
   assert.equal(review.stage, "review");
   decide(dir, { stage: "review", verdict: "reject", answer: "The hero tilt snaps instead of easing." });
   assert.equal(nextAction(dir).stage, "probe", "a rejection reopens probe");
+});
+
+const PROMPT_FIELDS = ["question", "questions", "recommended", "options", "record", "why", "command"];
+const promptOf = (action) => Object.fromEntries(PROMPT_FIELDS.filter((key) => key in action).map((key) => [key, action[key]]));
+
+test("web intake asks product, audience, scope and assets, with no duration or film wording", () => {
+  const dir = tmp();
+  try {
+    initState(dir, { deliverable: "web", tier: "standard" });
+    const action = nextAction(dir);
+    assert.equal(action.stage, "intake");
+    assert.equal(action.type, "ask");
+    assert.deepEqual(action.questions.map((question) => question.id), ["product", "audience", "scope", "assets"]);
+    assert.ok(!action.questions.some((question) => question.id === "duration"));
+    assert.doesNotMatch(JSON.stringify(action), /how long|duration|film|promo|video|footage|beat/i);
+    assert.equal(action.record, shared.INTAKE.action().record);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("web concepts asks for a section arc and a treatment, then keeps the shared choice record", () => {
+  const dir = tmp();
+  try {
+    initState(dir, { deliverable: "web", tier: "standard" });
+    touch(dir, "brief.md");
+    decide(dir, { stage: "reference", answer: "none" });
+    const write = nextAction(dir);
+    assert.equal(write.stage, "concepts");
+    assert.equal(write.type, "run");
+    assert.match(write.command, /section/i);
+    assert.match(write.command, /## Treatment/);
+    assert.doesNotMatch(write.command, /between beats|the picture/i);
+    touch(dir, "concepts.md");
+    const choose = nextAction(dir);
+    assert.equal(choose.type, "ask");
+    assert.equal(choose.record, shared.CONCEPTS.action({}, dir).record);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("film, edit and ui prompts at intake and concepts equal the shared ones", () => {
+  const dirs = [];
+  try {
+    for (const deliverable of ["film", "edit", "ui"]) {
+      const dir = tmp();
+      dirs.push(dir);
+      initState(dir, { deliverable, tier: "standard" });
+      const intake = nextAction(dir);
+      assert.equal(intake.stage, "intake", deliverable);
+      assert.deepEqual(promptOf(intake), promptOf(shared.INTAKE.action()), deliverable);
+      if (deliverable !== "ui") assert.ok(intake.questions.some((question) => question.id === "duration"), `${deliverable} intake keeps the duration question`);
+    }
+
+    const film = tmp();
+    dirs.push(film);
+    initState(film, { deliverable: "film", tier: "standard" });
+    decide(film, { stage: "intake", answer: "default" });
+    decide(film, { stage: "reference", answer: "none" });
+    const write = nextAction(film);
+    assert.equal(write.stage, "concepts");
+    assert.deepEqual(promptOf(write), promptOf(shared.CONCEPTS.action(readState(film), film)));
+    touch(film, "concepts.md");
+    const choose = nextAction(film);
+    assert.equal(choose.type, "ask");
+    assert.deepEqual(promptOf(choose), promptOf(shared.CONCEPTS.action(readState(film), film)));
+  } finally { for (const dir of dirs) fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("web stage ids per tier and mode keep their order", () => {
+  assert.deepEqual(webStages({ tier: "quick" }).map((stage) => stage.id), ["build", "probe"]);
+  assert.deepEqual(webStages({ tier: "quick", mode: "replicate" }).map((stage) => stage.id), ["reference", "build", "probe"]);
+  for (const tier of ["standard", "full"]) {
+    assert.deepEqual(webStages({ tier }).map((stage) => stage.id), ["intake", "reference", "concepts", "build", "probe", "review", "deliver"], tier);
+    assert.deepEqual(webStages({ tier, mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "build", "probe", "review", "deliver"], `${tier} replicate`);
+  }
+});
+
+test("web build at standard and full extends the chosen card with a treatment; quick and replicate do not", () => {
+  const dirs = [];
+  try {
+    for (const tier of ["standard", "full"]) {
+      const dir = tmp();
+      dirs.push(dir);
+      initState(dir, { deliverable: "web", tier });
+      decide(dir, { stage: "intake", answer: "default" });
+      decide(dir, { stage: "reference", answer: "none" });
+      touch(dir, "concepts.md");
+      decide(dir, { stage: "concept", choice: 1 });
+      const build = nextAction(dir);
+      assert.equal(build.stage, "build", tier);
+      assert.match(build.command, /## Treatment/, tier);
+      assert.equal(build.remaining, 4, `${tier}: build, probe, review, deliver`);
+    }
+    const quick = tmp();
+    dirs.push(quick);
+    initState(quick, { deliverable: "web", tier: "quick" });
+    const quickBuild = nextAction(quick);
+    assert.equal(quickBuild.stage, "build");
+    assert.doesNotMatch(quickBuild.command, /Treatment/i);
+
+    const replicate = tmp();
+    dirs.push(replicate);
+    initState(replicate, { deliverable: "web", tier: "standard", mode: "replicate" });
+    decide(replicate, { stage: "intake", answer: "default" });
+    touch(replicate, "reference.md");
+    const replicateBuild = nextAction(replicate);
+    assert.equal(replicateBuild.stage, "build");
+    assert.doesNotMatch(replicateBuild.command, /Treatment/i, "replicate has no concept card to extend");
+  } finally { for (const dir of dirs) fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
 test("delivery and review cannot bypass unfinished prerequisites or write state", () => {

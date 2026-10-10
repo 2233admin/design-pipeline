@@ -11,6 +11,7 @@ navigation.
 - component states, content hierarchy, accessibility semantics, focus order, and keyboard behavior;
 - screen-space HUD, captions, menus, toolbars, status layers, and fallback presentation;
 - asset treatment and visual fidelity invariants derived from `reference.md`.
+- for web pages, section-brief ground, density and dominant element as Layout grid, Color token and Component inventory rows (`references/web-direction.md`, Section briefs).
 
 ## Does Not Own
 

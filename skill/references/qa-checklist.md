@@ -166,6 +166,26 @@ Check:
 - Palette is not one-note.
 - Typography fits the surface and density.
 
+## Web Treatment And Section Review (Visual Acceptance)
+
+Complete for web changes at standard and full tier. Rules and evidence: `references/web-direction.md`
+(Review rules W1 to W7).
+
+| Rule | Name | Evidence read | Result |
+| --- | --- | --- | --- |
+| W1 | Dominant element and first-viewport signal |  |  |
+| W2 | Adjacent density contrast |  |  |
+| W3 | A purposeful empty section |  |  |
+| W4 | Ground or structure change per section |  |  |
+| W5 | Scroll pacing builds then lands |  |  |
+| W6 | Motion answers a named driver, no opacity-only entrance |  |  |
+| W7 | Type and colour inside the style seed |  |  |
+
+- Reviewer:
+- Visual Acceptance: pending / recorded by <reviewer>
+
+Agents never record Visual Acceptance. Gate findings remain Conformance findings with their existing meaning.
+
 ## Plain-Language Checks
 
 Complete for user-facing interface copy and artifacts that ask a person to decide or act.
