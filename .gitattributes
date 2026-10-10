@@ -5,7 +5,6 @@ skill/vendor/good-css/upstream/** -text
 # Preserve the reviewed license's original whitespace as well as its bytes.
 skill/vendor/good-css/upstream/harness/public/fonts/GeistMono-OFL.txt -whitespace
 skill/vendor/taste-skill/upstream/** -text
-skill/vendor/huashu-art-motion/upstream/** -text
 skill/vendor/cinetic/upstream/** -text
 skill/vendor/product-film-skill/upstream/** -text
 # Preserve the reviewed source's original trailing blank line.

@@ -144,5 +144,5 @@ watching the chosen reference or judging the resulting animation:
   [director interview](https://www.toei-anim.co.jp/tv/majinbone/special_talk.html).
 - Blender's Grease Pencil documentation describes held drawings and layers as production features:
   [Grease Pencil architecture](https://developer.blender.org/docs/features/grease_pencil/architecture/).
-- The pinned [huashu-art-motion method reference](https://github.com/alchaincyf/huashu-art-motion/tree/26dba25b2b495c2138848c29a2c90df356a20325)
-  is optional inspiration for short studies, deterministic seeking, and review of visible motion.
+- The project's [Art Motion methods](art-motion.md) are optional inspiration for short studies,
+  deterministic seeking, and review of visible motion.

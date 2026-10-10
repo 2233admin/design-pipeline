@@ -36,7 +36,7 @@ project dependencies. `npm test` runs `scripts/qa.cjs` and the browser-tool self
 bare `node --test`, which discovers nested upstream fixtures. Use `npm run browser:install` to
 prepare Playwright Chromium and the HyperFrames browser.
 
-Font-subset regressions also need Python with `fonttools==4.66.1`. Set `HUASHU_PYTHON` to
+Font-subset regressions also need Python with `fonttools==4.66.1`. Set `FONTTOOLS_PYTHON` to
 that environment's Python executable, or make it available as `python` on PATH. CI and release
 jobs prepare an isolated environment; no global Python package installation is required.
 
@@ -55,7 +55,9 @@ The root `package.json` is the source of truth for maintenance commands:
 | `npm run sources:import:taste -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import the complete reviewed Taste-Skill Git tree. |
 | `npm run sources:import:film -- --name <cinetic\|product-film-skill> --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import one complete reviewed film-method Git tree. |
 | `npm run sources:import:gepa -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import the complete official GEPA source skill and metadata from its reviewed revision. |
+| `npm run art-motion:build` | Regenerate `skill/tools/art-motion/runtime.js` from the owned engine. |
 | `npm run test:browser` | Run browser-tool self-tests. |
+| `npm run test:art-motion` | Run the focused Art Motion tests with a scoped `fonttools==4.66.1`. |
 | `npm run package:skill` / `npm run install:skill -- --root <skills-root> --target <skill-target>` | Build or locally install the skill. |
 
 Imports require a local checkout at the deliberately selected revision. `sources:check` validates

@@ -21,9 +21,9 @@ All notable changes to Design Pipeline are documented here.
   HyperFrames/film checks verify reproducible product-promo and short-loop studies; Prompt
   Motion case references preserve authorship and viewing limits. Source scripts remain
   distinct from maintained, tested entries and technical checks do not grant Visual Acceptance.
-- Huashu's reviewed `57d6760` media sources now include their defaults, schema and source
-  tests. Images use the current host tool and existing evidence; supplied audio gains an
-  offline fit/match/PCM helper with closed temporary handles and protected new outputs.
+- Supplied audio gains an offline fit/match/PCM helper (`tools/art-motion/voice.py`) with closed
+  temporary handles and protected new outputs; optional images use the current host tool and
+  existing asset evidence.
 - Three observable skill eval regressions cover CSS focus/motion, a quick Chinese profile
   page and blocked reference input. React/Next engineering companions are selected by need.
 
@@ -54,8 +54,8 @@ All notable changes to Design Pipeline are documented here.
   license into a new project directory. Skill installation and invocation now distinguish
   the installed resource root from the user's project, with a dedicated installation guide.
 - Progressive `skill/tools/` index for drawing, images, typography, layout, frontend and animation:
-  reusable Canvas craft helpers, a responsive study, and a pinned local Huashu technique library
-  (17 drawing modules and seven utility scripts, with MIT attribution and source hashes).
+  reusable Canvas craft helpers, a responsive study, and the Art Motion technique library (drawing
+  modules and utility tools with retained MIT attribution).
 - `composition compare` preserves equal-size PNG pairs and localizes pixel changes. Existing
   video reference analysis gains source-bound spatial motion maps and stale-map validation.
   These diagnostics do not assign aesthetic scores or create another acceptance gate.
@@ -83,6 +83,24 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- Art Motion is project-owned (change `internalize-art-motion-naming`). Its engine source, fonts,
+  examples and license moved from `skill/vendor/` to `skill/tools/art-motion/`, and its method,
+  style and grammar notes to `skill/references/art-motion/`. `npm run art-motion:build` regenerates
+  `runtime.js` from the owned engine; drawing output is unchanged. Mirror material that nothing used
+  is gone: demo and reference films, the upstream harness, scripts already replaced by maintained
+  tools, release and media-configuration files, and the importer. The MIT copyright and permission
+  notice stays verbatim in `skill/tools/art-motion/LICENSE`. Migration:
+  - `node <skill-root>/tools/art-motion/render.cjs --root <project> --spec <file> --output <dir>`
+    becomes `designer-pipeline art-motion render --root <project> --spec <file> --output <dir>`
+    (same `--stills`, `--chrome`, `--puppeteer-module`, `--ffmpeg` and `--ffprobe` options).
+  - `node <skill-root>/tools/art-motion/reference.cjs --root <project> --path <video> --output <dir>`
+    becomes `designer-pipeline reference analyze-video --root <project> --path <video> --output <dir> --study`.
+  - Browser and CommonJS callers load `runtime.js` and call `ArtMotion.createArtMotionRuntime`;
+    instances expose no source commit, `enableDemoArt()` returns `{ TOON }`, and render reports
+    record `runtimeSha256` instead of `sourceCommit`.
+  - Scaffolded `art-motion` and `visual-craft` studies contain `runtime.js` and `LICENSE.art-motion`;
+    `tools/art-motion/koubo.py` is now `voice.py`; the font-subset test reads `FONTTOOLS_PYTHON`;
+    the npm scripts are `art-motion:build` and `test:art-motion`.
 - Quick film tier is now plan, build, check, review: after `film check` passes, `next` asks for
   the owner's verdict (`decide --stage review`) with an instruction to review the draft one frame
   per second and record it in `qa.md` first, and returns `done` only after an accepted draft.

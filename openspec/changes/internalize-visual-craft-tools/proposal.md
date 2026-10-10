@@ -1,10 +1,13 @@
 # Internalize visual craft tools
 
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
 ## Why
 
 The user clarified that design-pipeline assists an agent's graphics, imagery, drawing, frontend,
 design, typography and rendering judgment across deliverables. The prior animation change is one
-part of that capability. huashu-art-motion contains useful executable craft beyond film grammar;
+part of that capability. The Art Motion reference contains useful executable craft beyond film grammar;
 linking it or repeating its advice does not make those tools available to a smaller model.
 
 ## Changes
@@ -23,7 +26,7 @@ linking it or repeating its advice does not make those tools available to a smal
 
 ## Boundaries
 
-Upstream: alchaincyf/huashu-art-motion at 26dba25b2b495c2138848c29a2c90df356a20325 (MIT),
+Upstream: the Art Motion reference project by alchaincyf at 26dba25b2b495c2138848c29a2c90df356a20325 (MIT),
 confirmed against remote HEAD on 2026-10-06. Preserve attribution for adapted code. Do not import
 upstream instructions, personal character art, font binaries, or a second film/render runtime.
 No new gate, receipt schema, target resolver, policy digest, dependency installation or model ID.

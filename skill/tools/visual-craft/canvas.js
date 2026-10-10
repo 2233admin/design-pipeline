@@ -1,8 +1,8 @@
 /*
- * Small caller-owned Canvas primitives adapted from huashu-art-motion, MIT,
- * commit 26dba25b2b495c2138848c29a2c90df356a20325. Source areas: engine/lib/kit.js
- * (arc-length sampling), brush.js (pressure-shaped continuous strokes), typo.js
- * (measure/wrap/fit), and util.js (seeded randomness). See ./LICENSE.huashu-art-motion.
+ * Small caller-owned Canvas primitives adapted from MIT-licensed work by alchaincyf.
+ * Source areas: engine/lib/kit.js (arc-length sampling), brush.js (pressure-shaped
+ * continuous strokes), typo.js (measure/wrap/fit), and util.js (seeded randomness).
+ * Notice: LICENSE.art-motion beside a scaffolded copy; ../art-motion/LICENSE in the skill.
  * This module removes upstream globals, fixed stage dimensions, caches and clock use.
  */
 (function (root, factory) {

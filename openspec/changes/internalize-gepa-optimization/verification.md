@@ -1,5 +1,8 @@
 # GEPA integration verification — 2026-10-09
 
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
 ## Result and scope
 
 The independent supporting-tool route reaches the maintained GEPA guide, complete official
@@ -107,7 +110,7 @@ final repository source. Output: ignored `.design-pipeline/gepa-pinned-installed
 The result records runtime GEPA 0.1.4 at the exact reviewed Git commit, a two-candidate pool
 with parent lineage, unchanged inputs, 20 search evaluations and final-test scores 0 → 1.
 
-The host's Windows tar failed on existing Huashu source filenames containing non-ASCII text;
+The host's Windows tar failed on existing Art Motion reference source filenames containing non-ASCII text;
 Python extraction succeeded. An initial dependency check without the isolated-root override
 inspected the older global installation instead; the corrected explicit-root check passed.
 Neither diagnostic required a maintained-code change or global installation update.

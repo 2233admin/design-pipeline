@@ -28,8 +28,7 @@ by the visual problem; using a helper does not create a film project or select a
 | Intrinsic layout, CSS tokens, content/overflow, control states and native CSS motion | [Good CSS](../references/good-css.md), [offline specimens](good-css/README.md) | Complete pinned practices and a Node-only builder for local live studies |
 
 Read this index first, then one tool guide, then the needed function/example. Do not preload the
-whole source library. `../vendor/huashu-art-motion/manifest.json` records provenance, not another runtime or
-tool-selection registry. Existing adapters and receipts retain their authority.
+whole source library. Existing adapters and receipts retain their authority.
 
 ## Try one small tool
 

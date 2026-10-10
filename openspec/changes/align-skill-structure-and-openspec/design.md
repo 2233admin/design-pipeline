@@ -33,12 +33,12 @@ guidance never grants creative acceptance from test counts.
 
 Move complete source bundles from `references/{deepclonewebsite,design-md,holosticker,
 iart-motion-skills,interface-discipline,mengto-skills,prism-system,shadcnio-react-components}` and
-`tools/huashu-art-motion` into `vendor/<same-name>`. Their internal relative paths and source bytes
+`tools/art-motion-reference` into `vendor/<same-name>`. Their internal relative paths and source bytes
 stay identical. Update project-owned importers, default catalog locations, documentation links,
 package required paths and tests. Keep source IDs, revisions, licenses, hashes and CLI commands.
 Do not rewrite raw upstream source or historical logs to match today's paths.
 
-The maintained Huashu bundle README becomes `references/huashu-art-motion.md` with updated links;
+The maintained Art Motion reference bundle README becomes `references/art-motion-reference.md` with updated links;
 it is guidance, not upstream source. All other 1,508 moved files retain their original SHA-256.
 
 Keep adapted tools and their browser studies together. Keep existing schema/catalog file paths in

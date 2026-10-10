@@ -1,0 +1,188 @@
+{
+  "faces": [
+    {
+      "family": "Cinzel-400",
+      "file": "Cinzel-400.woff"
+    },
+    {
+      "family": "Cinzel-700",
+      "file": "Cinzel-700.woff"
+    },
+    {
+      "family": "CormorantGaramond-500i",
+      "file": "CormorantGaramond-500i.woff"
+    },
+    {
+      "family": "CormorantGaramond-500",
+      "file": "CormorantGaramond-500.woff"
+    },
+    {
+      "family": "CormorantGaramond-700",
+      "file": "CormorantGaramond-700.woff"
+    },
+    {
+      "family": "EBGaramond-400i",
+      "file": "EBGaramond-400i.woff"
+    },
+    {
+      "family": "EBGaramond-400",
+      "file": "EBGaramond-400.woff"
+    },
+    {
+      "family": "EBGaramond-600",
+      "file": "EBGaramond-600.woff"
+    },
+    {
+      "family": "IMFellEnglish-400i",
+      "file": "IMFellEnglish-400i.woff"
+    },
+    {
+      "family": "IMFellEnglish-400",
+      "file": "IMFellEnglish-400.woff"
+    },
+    {
+      "family": "PlayfairDisplay-400i",
+      "file": "PlayfairDisplay-400i.woff"
+    },
+    {
+      "family": "PlayfairDisplay-700i",
+      "file": "PlayfairDisplay-700i.woff"
+    },
+    {
+      "family": "PlayfairDisplay-700",
+      "file": "PlayfairDisplay-700.woff"
+    },
+    {
+      "family": "PressStart2P-400",
+      "file": "PressStart2P-400.woff"
+    },
+    {
+      "family": "Poppins-600",
+      "file": "Poppins-600.woff"
+    },
+    {
+      "family": "Poppins-700",
+      "file": "Poppins-700.woff"
+    },
+    {
+      "family": "Poppins-800",
+      "file": "Poppins-800.woff"
+    },
+    {
+      "family": "JosefinSans-700",
+      "file": "JosefinSans-700.woff"
+    },
+    {
+      "family": "Bangers-400",
+      "file": "Bangers-400.woff"
+    },
+    {
+      "family": "GochiHand-400",
+      "file": "GochiHand-400.woff"
+    },
+    {
+      "family": "Caveat-600",
+      "file": "Caveat-600.woff"
+    },
+    {
+      "family": "LilitaOne-400",
+      "file": "LilitaOne-400.woff"
+    },
+    {
+      "family": "NotoSerifJP-600",
+      "file": "NotoSerifJP-600.woff"
+    },
+    {
+      "family": "Exo2-800i",
+      "file": "Exo2-800i.woff"
+    },
+    {
+      "family": "ArchivoBlack-400",
+      "file": "ArchivoBlack-400.woff"
+    },
+    {
+      "family": "Kalam-700",
+      "file": "Kalam-700.woff"
+    },
+    {
+      "family": "UnifrakturMaguntia-400",
+      "file": "UnifrakturMaguntia-400.woff"
+    },
+    {
+      "family": "Marcellus-400",
+      "file": "Marcellus-400.woff"
+    },
+    {
+      "family": "Righteous-400",
+      "file": "Righteous-400.woff"
+    },
+    {
+      "family": "Anton-400",
+      "file": "Anton-400.woff"
+    },
+    {
+      "family": "AlfaSlabOne-400",
+      "file": "AlfaSlabOne-400.woff"
+    },
+    {
+      "family": "Rye-400",
+      "file": "Rye-400.woff"
+    },
+    {
+      "family": "LibreBaskerville-400",
+      "file": "LibreBaskerville-400.woff"
+    },
+    {
+      "family": "LibreBaskerville-700",
+      "file": "LibreBaskerville-700.woff"
+    },
+    {
+      "family": "LXGWWenKai-500",
+      "file": "LXGWWenKai-500.woff"
+    },
+    {
+      "family": "PuHui-Medium",
+      "file": "NotoSansSC-500.woff"
+    },
+    {
+      "family": "PuHui-Bold",
+      "file": "NotoSansSC-700.woff"
+    },
+    {
+      "family": "PuHui-Heavy",
+      "file": "NotoSansSC-800.woff"
+    },
+    {
+      "family": "PuHui-Black",
+      "file": "NotoSansSC-900.woff"
+    },
+    {
+      "family": "CMU-rm",
+      "file": "cmunrm.woff"
+    },
+    {
+      "family": "CMU-it",
+      "file": "cmunti.woff"
+    },
+    {
+      "family": "Inter",
+      "file": "Inter-var.woff",
+      "weight": "100 900"
+    },
+    {
+      "family": "RobotoCondensed",
+      "file": "RobotoCondensed-var.woff",
+      "weight": "100 900"
+    },
+    {
+      "family": "NotoSansSC",
+      "file": "NotoSansSC-sub.woff",
+      "weight": "100 900"
+    },
+    {
+      "family": "NotoSerifSC",
+      "file": "NotoSerifSC-sub.woff",
+      "weight": "200 900"
+    }
+  ]
+}

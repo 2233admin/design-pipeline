@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 "use strict";
 
 const fs = require("node:fs");
@@ -9,9 +8,9 @@ const { resolveChrome, resolvePuppeteer } = require("../../scripts/film-capture-
 const { run, probe } = require("../../scripts/film-core.cjs");
 const { assertKeys, resolveInside, readJson, sha256 } = require("../../scripts/contract-utils.cjs");
 
-const SOURCE = path.resolve(__dirname, "../../vendor/huashu-art-motion/upstream/scripts/engine");
-const RUNTIME = path.join(__dirname, "huashu-runtime.js");
-const { SOURCE_COMMIT } = require("./huashu-runtime.js");
+const ENGINE = path.join(__dirname, "engine");
+const FONTS = path.join(__dirname, "fonts");
+const RUNTIME = path.join(__dirname, "runtime.js");
 function number(value, label, min, max, integer = false) {
   if (!Number.isFinite(value) || value < min || value > max || (integer && !Number.isInteger(value))) throw new Error(`${label} must be ${integer ? "an integer" : "finite"} in ${min}..${max}`);
   return value;
@@ -26,7 +25,7 @@ function validateSpec(spec) {
   if (Math.abs(frames - Math.round(frames)) > 1e-7 || frames > 216000) throw new Error("duration must be an exact number of frames, at most 216000");
   if (Boolean(spec.scene) === Boolean(spec.grammar)) throw new Error("choose exactly one scene or grammar");
   for (const [key, directory] of [["scene", "scenes"], ["grammar", "clips"]]) {
-    if (spec[key] !== undefined && (!/^[a-z0-9_]+$/.test(spec[key]) || spec[key] === "index" || !fs.existsSync(path.join(SOURCE, directory, `${spec[key]}.js`)))) throw new Error(`unknown ${key}: ${spec[key]}`);
+    if (spec[key] !== undefined && (!/^[a-z0-9_]+$/.test(spec[key]) || spec[key] === "index" || !fs.existsSync(path.join(ENGINE, directory, `${spec[key]}.js`)))) throw new Error(`unknown ${key}: ${spec[key]}`);
   }
   if (spec.alpha !== undefined && typeof spec.alpha !== "boolean") throw new Error("alpha must be boolean");
   if (spec.seed !== undefined) number(spec.seed, "seed", 0, 0xffffffff, true);
@@ -79,15 +78,15 @@ function loadInputs(root, spec, specFile) {
     const loaded = load(full, mime); Object.defineProperty(assets, key, { value: loaded.url, enumerable: true });
     files.push({ path: path.relative(root, full).replaceAll("\\", "/"), sha256: loaded.sha256 });
   }
-  const sourceFaces = [...fs.readFileSync(path.join(SOURCE, "lib/fonts.js"), "utf8").matchAll(/\{family:'([^']+)', url:'([^']+)'(?:, desc:\{weight:'([^']+)'\})?\}/g)].map(([, family, file, weight]) => ({ family, file, ...(weight ? { weight } : {}) }));
-  const requested = spec.fonts === "bundled" ? sourceFaces.map(face => face.family) : (spec.fonts || []);
+  const catalog = readJson(path.join(FONTS, "catalog.json"), "font catalog").faces;
+  const requested = spec.fonts === "bundled" ? catalog.map(face => face.family) : (spec.fonts || []);
   if (!Array.isArray(requested) || requested.length > 64) throw new Error("fonts must be 'bundled' or at most 64 explicit family names/font descriptors");
   for (const item of requested) {
     let face, full;
     if (typeof item === "string") {
-      face = sourceFaces.find(value => value.family === item);
+      face = catalog.find(value => value.family === item);
       if (!face) throw new Error(`unknown bundled font ${item}`);
-      full = resolveInside(SOURCE, face.file, "bundled font", { mustExist: true });
+      full = resolveInside(FONTS, face.file, "bundled font", { mustExist: true });
     } else {
       assertKeys(item, ["family", "file"], ["family", "file", "weight", "style"], "font", "art motion");
       face = item; full = resolveInside(root, path.resolve(assetRoot, face.file), "font", { mustExist: true });
@@ -115,6 +114,7 @@ async function render(root, options) {
   const inputs = loadInputs(root, spec, specFile);
   const tools = { ffmpeg: options.ffmpeg || "ffmpeg", ffprobe: options.ffprobe || "ffprobe" };
   if (!times) { run(tools.ffmpeg, ["-version"]); run(tools.ffprobe, ["-version"]); }
+  const runtime = fs.readFileSync(RUNTIME);
   const puppeteer = resolvePuppeteer(root, options.puppeteerModule);
   const browser = await puppeteer.launch({ executablePath: resolveChrome(options.chrome), headless: true });
   let encoder, encoded, encoderError = "", closed = false;
@@ -124,7 +124,7 @@ async function render(root, options) {
     page.on("console", message => { if (message.type() === "error") errors.push(message.text()); else if (message.type() === "warning") warnings.push(message.text()); });
     await page.setViewport({ width: spec.width, height: spec.height });
     await page.setContent("<!doctype html><meta charset=utf-8><canvas id=artCanvas></canvas>");
-    await page.addScriptTag({ path: RUNTIME });
+    await page.addScriptTag({ content: runtime.toString("utf8") });
     await page.evaluate(async ({ spec, assets, fonts }) => {
       const loaded = Object.create(null); let pixels = 0;
       for (const [key, url] of Object.entries(assets)) {
@@ -138,7 +138,7 @@ async function render(root, options) {
       const context = canvas.getContext("2d");
       window.resetArt = async () => {
         window.art?.dispose();
-        window.art = HuashuArtMotion.createHuashuRuntime({ width: spec.width, height: spec.height, assets: loaded, fonts, seed: spec.seed ?? 1,
+        window.art = ArtMotion.createArtMotionRuntime({ width: spec.width, height: spec.height, assets: loaded, fonts, seed: spec.seed ?? 1,
           createCanvas(width, height) { const value = document.createElement("canvas"); value.width = width; value.height = height; return value; },
           capabilities: { Path2D, DOMMatrix, DOMPoint } });
         if (["y1_kurzgesagt", "y4_storytime"].includes(spec.grammar)) window.art.enableDemoArt();
@@ -193,26 +193,13 @@ async function render(root, options) {
       if (Math.abs(media.durationSec - spec.duration) > 1 / spec.fps + 0.001 || Math.abs(media.fps - spec.fps) > 0.001) throw new Error("encoded timing does not match requested frames/fps");
       video = spec.alpha ? "render.mov" : "render.mp4"; fs.renameSync(temporary, path.join(directory, video));
     }
-    const report = { specSha256: sha256(specBytes), inputs: inputs.files, sourceCommit: SOURCE_COMMIT, width: spec.width, height: spec.height, fps: spec.fps, durationSec: spec.duration, video, frames: records, coldAndReorderedMatch: deterministic, warnings: [...new Set(warnings)], limits: ["Canvas timing includes PNG readback; it is not real-time playback performance.", "Authored style scenes retain source composition; contain/cover is not responsive reflow.", "Rendered output and technical diagnostics do not grant creative acceptance."] };
+    const report = { specSha256: sha256(specBytes), inputs: inputs.files, runtimeSha256: sha256(runtime), width: spec.width, height: spec.height, fps: spec.fps, durationSec: spec.duration, video, frames: records, coldAndReorderedMatch: deterministic, warnings: [...new Set(warnings)], limits: ["Canvas timing includes PNG readback; it is not real-time playback performance.", "Authored style scenes retain source composition; contain/cover is not responsive reflow.", "Rendered output and technical diagnostics do not grant creative acceptance."] };
     fs.writeFileSync(path.join(directory, "render-report.json"), `${JSON.stringify(report, null, 2)}\n`, { flag: "wx" });
     return { directory, video, frames: count, coldAndReorderedMatch: deterministic, report: path.join(directory, "render-report.json") };
   } finally {
     if (encoder && !closed) { encoder.stdin.destroy(); encoder.kill(); }
     await browser.close();
   }
-}
-
-if (require.main === module) {
-  const names = { "--root": "root", "--spec": "spec", "--output": "output", "--stills": "stills", "--chrome": "chrome", "--puppeteer-module": "puppeteerModule", "--ffmpeg": "ffmpeg", "--ffprobe": "ffprobe" };
-  (async () => {
-    const options = {};
-    for (let i = 2; i < process.argv.length; i += 2) {
-      const key = names[process.argv[i]], value = process.argv[i + 1];
-      if (!key || value === undefined || value.startsWith("--") || Object.hasOwn(options, key)) throw new Error(`invalid option ${process.argv[i]}`);
-      options[key] = key === "stills" ? value.split(",").map(Number) : value;
-    }
-    console.log(JSON.stringify(await render(options.root || process.cwd(), options), null, 2));
-  })().catch(error => { console.error(error.message); process.exitCode = 1; });
 }
 
 module.exports = { validateSpec, loadInputs, render };

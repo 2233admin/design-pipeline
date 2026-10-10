@@ -140,7 +140,7 @@ const {
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study"]);
 const REPEATABLE_OPTIONS = new Set(["--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -153,6 +153,7 @@ const KNOWN_OPTIONS = new Set([
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames",
+  "--spec", "--stills", "--ffmpeg", "--ffprobe",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
 function parseArgs(argv) {
@@ -384,7 +385,7 @@ function publicHelp() {
     "  route --query [--write --output]",
     "  change init|resume|advance|migrate|repair",
     "  foundation check [--kind design|motion|all] | direction check | playground check | reference check|resolve | reconstruction check | scene check",
-    "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400]   (decoded timed windows; observations pending)",
+    "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400] [--study]   (decoded timed windows; observations pending; --study adds study.json with audio and cut-grid candidates)",
     "  project inspect [--project-root <dir>] [--scope <relative-dir>] [--query <brief>] [--write --output project-analysis.json]   (read-only source evidence)",
     "  component-first check|stack|components|playground|page",
     "  high-fidelity check",
@@ -406,6 +407,7 @@ function publicHelp() {
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     "  composition scaffold --output <new-dir> [--template visual-craft]",
     "  composition compare --source <png> --image <png> --output <new-dir>",
+    "  art-motion render --spec <file> --output <new-dir> [--stills 0,1.5] [--chrome <exe>] [--puppeteer-module <file>] [--ffmpeg <exe>] [--ffprobe <exe>]   (PNG stills or video plus render-report.json; diagnostics only)",
     "  film scaffold --output <dir> [--template default|motion-study] [--replace]",
     "  film methods --project-root <dir> --input <plan.json> [--write] [--replace]",
     "  film templates [--query <terms> | --template <id>] [--all]",
@@ -1985,7 +1987,11 @@ const COMMANDS = {
       check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) },
       resolve: { run: ({ parsed, root }) => referenceResolveCommand(parsed, root) },
       "analyze-video": { required: ["--path", "--output"], run: ({ parsed, root }) => {
-        const result = require("./reference-video-core.cjs").analyzeVideo(analysisRoot(parsed, root), { path: option(parsed, "--path"), output: option(parsed, "--output"), ...(option(parsed, "--start") !== null ? { startSec: Number(option(parsed, "--start")) } : {}), ...(option(parsed, "--end") !== null ? { endSec: Number(option(parsed, "--end")) } : {}), ...(option(parsed, "--fps") !== null ? { sampleFps: Number(option(parsed, "--fps")) } : {}), ...(option(parsed, "--max-frames") !== null ? { maxFrames: Number(option(parsed, "--max-frames")) } : {}) });
+        const options = { path: option(parsed, "--path"), output: option(parsed, "--output"), ...(option(parsed, "--start") !== null ? { startSec: Number(option(parsed, "--start")) } : {}), ...(option(parsed, "--end") !== null ? { endSec: Number(option(parsed, "--end")) } : {}), ...(option(parsed, "--fps") !== null ? { sampleFps: Number(option(parsed, "--fps")) } : {}), ...(option(parsed, "--max-frames") !== null ? { maxFrames: Number(option(parsed, "--max-frames")) } : {}) };
+        // --study adds study.json, an audio excerpt and spectrogram when the source has sound, and cut-grid candidates.
+        const result = option(parsed, "--study") === true
+          ? require("../tools/art-motion/reference.cjs").analyzeReference(analysisRoot(parsed, root), options)
+          : require("./reference-video-core.cjs").analyzeVideo(analysisRoot(parsed, root), options);
         return { result, exitCode: 0 };
       } },
     },
@@ -2126,6 +2132,20 @@ const COMMANDS = {
           if (option(parsed, "--composition")) args.push("--composition", contained(root, option(parsed, "--composition"), "--composition"));
           for (const flag of ["--url", "--width", "--height", "--seek", "--chrome", "--puppeteer-module"]) if (option(parsed, flag) !== null) args.push(flag, String(option(parsed, flag)));
           const kernel = runKernel("capture-composition.cjs", args, root);
+          return { result: kernel.value, exitCode: 0 };
+        },
+      },
+    },
+  },
+  "art-motion": {
+    actions: {
+      render: {
+        required: ["--spec", "--output"],
+        run: ({ parsed, root, file }) => {
+          const args = ["--root", root, "--spec", file("--spec"), "--output", contained(root, requireOption(parsed, "--output"), "--output", false)];
+          for (const flag of ["--stills", "--chrome", "--puppeteer-module", "--ffmpeg", "--ffprobe"]) if (option(parsed, flag) !== null) args.push(flag, String(option(parsed, flag)));
+          // A full-length render encodes every frame; the kernel prints one small JSON result.
+          const kernel = runKernel("render-art-motion.cjs", args, root, { timeout: 60 * 60 * 1000, maxBuffer: 16 * 1024 * 1024 });
           return { result: kernel.value, exitCode: 0 };
         },
       },

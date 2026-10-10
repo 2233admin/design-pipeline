@@ -29,7 +29,7 @@ jobs:
         run: |
           python3 -m venv "$RUNNER_TEMP/design-pipeline-fonttools"
           "$RUNNER_TEMP/design-pipeline-fonttools/bin/python" -m pip install fonttools==4.66.1
-          echo "HUASHU_PYTHON=$RUNNER_TEMP/design-pipeline-fonttools/bin/python" >> "$GITHUB_ENV"
+          echo "FONTTOOLS_PYTHON=$RUNNER_TEMP/design-pipeline-fonttools/bin/python" >> "$GITHUB_ENV"
 
       - name: Prepare browser runtimes
         run: |

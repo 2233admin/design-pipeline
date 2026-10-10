@@ -1,5 +1,8 @@
 # Frontend toolchain and runtime discovery
 
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
 ## Scope and authorization
 
 The user asked to find the already installed Blender, refresh the frontend/animation capabilities,
@@ -136,8 +139,8 @@ The user asked whether the previously referenced skills also needed adjustment/i
 This follows the existing scope to absorb reusable visual methods while retaining a small skill
 entry, progressive disclosure and the project's runtime/workflow. No host companion was overwritten.
 
-The audit found actual local coverage in Huashu's Canvas craft/diagnostic helpers, the MengTo and
-Prism source routes, iart playbooks, and the animation/Impeccable guidance. Huashu's current upstream
+The audit found actual local coverage in the Art Motion reference's Canvas craft/diagnostic helpers, the MengTo and
+Prism source routes, iart playbooks, and the animation/Impeccable guidance. The Art Motion reference's current upstream
 revision matches the bundled `26dba25b2b495c2138848c29a2c90df356a20325`. Watercolor, impasto and other
 indexed source methods remain reference material; they are not all callable, validated helpers.
 No blanket source port or additional runtime dependency was needed.

@@ -38,10 +38,10 @@ test("installed visual-craft scaffold works outside the skill and preserves auth
   const directory = path.join(project, "art/study");
   assert.equal(result.output.entry, path.join(directory, "index.html"));
   const bundled = path.resolve(path.dirname(cli), "../tools/visual-craft");
-  for (const [source, destination] of [["study.html", "index.html"], ["canvas.js", "canvas.js"], ["LICENSE.huashu-art-motion", "LICENSE.huashu-art-motion"]]) {
+  for (const [source, destination] of [["study.html", "index.html"], ["canvas.js", "canvas.js"], ["../art-motion/LICENSE", "LICENSE.art-motion"]]) {
     assert.equal(sha(path.join(directory, destination)), sha(path.join(bundled, source)), destination);
   }
-  assert.deepEqual(fs.readdirSync(directory).sort(), ["LICENSE.huashu-art-motion", "canvas.js", "index.html"]);
+  assert.deepEqual(fs.readdirSync(directory).sort(), ["LICENSE.art-motion", "canvas.js", "index.html"]);
   assert.deepEqual(fs.readdirSync(project), ["art"]);
   const kit = require(path.join(directory, "canvas.js"));
   assert.ok(kit.strokeGeometry([[0, 0], [30, 20]], { width: 5 }).outline.length > 2);

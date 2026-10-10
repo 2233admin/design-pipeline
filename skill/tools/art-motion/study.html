@@ -18,7 +18,7 @@ label{display:flex;gap:16px;align-items:center;flex-wrap:wrap}input{flex:1;min-w
 <label for="progress">Time <input id="progress" type="range" min="0" max="1" step="0.01" value="0.6"><output for="progress">0.60</output></label>
 <small>Resize the window to rebuild the material at the actual canvas dimensions. The same seed keeps the texture stable.</small>
 </main>
-<script src="huashu-runtime.js"></script>
+<script src="runtime.js"></script>
 <script>
 const canvas = document.querySelector('canvas'), control = document.querySelector('input');
 let runtime;
@@ -26,7 +26,7 @@ function renderStudy(progress) {
   const width = Math.round(canvas.getBoundingClientRect().width), height = Math.round(width * 0.55);
   if (!runtime || runtime.width !== width || runtime.height !== height) {
     runtime?.dispose(); canvas.width = width; canvas.height = height;
-    runtime = HuashuArtMotion.createHuashuRuntime({width, height, seed: 31,
+    runtime = ArtMotion.createArtMotionRuntime({width, height, seed: 31,
       createCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;},
       capabilities:{Path2D,DOMMatrix,DOMPoint}});
   }
