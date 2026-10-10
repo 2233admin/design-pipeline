@@ -10,9 +10,9 @@ const path = require("node:path");
 const { fail, readJson } = require("./contract-utils.cjs");
 const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
-const { checkComposition } = require("./composition-core.cjs");
+const { checkComposition, checkFilmLayout } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
-const { hyperframesPreview } = require("./film-capture-core.cjs");
+const { GSAP_VERSION, HYPERFRAMES_VERSION, hyperframesPreview } = require("./film-capture-core.cjs");
 const { blockNames } = require("./film-blocks-core.cjs");
 const { checkGridAlignment } = require("./score-core.cjs");
 const { checkAudio } = require("./audio-core.cjs");
@@ -55,7 +55,7 @@ const CALLS = {
 function compositionHtml(board) {
   const beats = board.beats.map((beat) => {
     const call = beat.block
-      ? `// Block ${beat.block}: run \`npx hyperframes add ${beat.block}\`, then host it in #world as\n      // <div data-composition-id="${beat.block}" data-composition-src="compositions/${beat.block}.html" data-start="${beat.startSec}" data-duration="${Number((beat.endSec - beat.startSec).toFixed(3))}" data-width="1920" data-height="1080"></div>`
+      ? `// Block ${beat.block}: run \`npx --no-install hyperframes add ${beat.block}\`, then host it in #world as\n      // <div data-composition-id="${beat.block}" data-composition-src="compositions/${beat.block}.html" data-start="${beat.startSec}" data-duration="${Number((beat.endSec - beat.startSec).toFixed(3))}" data-width="1920" data-height="1080"></div>`
       : beat.choreography && CALLS[beat.choreography] ? CALLS[beat.choreography](beat.startSec) : `// Author motion that turns "${beat.transformation.from || "?"}" into "${beat.transformation.to || "?"}".`;
     return `      // ${beat.startSec}-${beat.endSec}s ${beat.id} (${beat.role}, handoff ${beat.handoff}): ${beat.productAction}\n      ${call}`;
   }).join("\n");
@@ -64,7 +64,7 @@ function compositionHtml(board) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script src="${GSAP_SRC}"></script>
     <script src="lib/patterns.js"></script>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -92,12 +92,28 @@ ${beats}
 `;
 }
 
+// The scaffold pins the reviewed runtime in package.json and loads GSAP from the local install,
+// so after one `npm install` lint, check, render and film check need no network and `npx` never
+// resolves a newer HyperFrames release.
+const GSAP_SRC = "node_modules/gsap/dist/gsap.min.js";
+const PINS = { gsap: GSAP_VERSION, hyperframes: HYPERFRAMES_VERSION };
+const SETUP = `1. \`npm install\` once (needs network): installs the pinned hyperframes@${HYPERFRAMES_VERSION} and gsap@${GSAP_VERSION}. Afterwards run HyperFrames as \`npx --no-install hyperframes ...\`; lint, check, render and film check then work offline (fonts a composition names but does not declare are still fetched by HyperFrames).`;
+
 const NOTES = {
   "reference.md": "# Reference\n\n- Primary moving reference (URL/title, role):\n- Observed time ranges (shot scale, motion, cuts, type, sound actually heard):\n- Transfer to this product / keep with the reference:\n- Geometry and material requirements (solid depth, bevel, glaze, relief, angle-dependent color):\n- Rendering route and material inspection angles (references/film-materials.md):\n- Asset inventory and missing shots:\n- Inspection limits:\n",
   "sound.md": "# Sound\n\n- Energy arc:\n- Music source and reuse basis (auditioned / pending):\n- Entry and exit points:\n- Accents bound to beats (match storyboard soundCues):\n- Intentional silence:\n",
-  "qa.md": "# QA\n\n## Technical (film check)\n\n## Creative review (watch uninterrupted at speed)\n\n- Product comprehension:\n- Continuity:\n- Rhythm:\n- Transformation:\n- Identity:\n- Reference fit:\n- Sound:\n\n## User acceptance\n\nPending.\n",
-  "FILM.md": "# Film project\n\n1. Fill reference.md and sound.md from real references before editing the storyboard.\n2. Edit storyboard.json, then `designer-pipeline verify film-storyboard --storyboard storyboard.json` until it passes.\n3. Build index.html from the beat comments; replace #FROM/#TO/#SUBJECT/#RESULT with real element ids.\n4. `npx hyperframes check`, then `npx hyperframes render --output out.mp4`.\n5. `designer-pipeline film check --project-root .` captures timeline.json and runs every film gate; follow each finding's `fix`.\n6. Watch the film and write the creative review in qa.md. Gates never grant creative acceptance.\n",
+  "qa.md": "# QA\n\n## Technical (film check)\n\n## Frame review (one frame per second, every frame at full size)\n\n## Creative review (watch uninterrupted at speed)\n\n- Product comprehension:\n- Continuity:\n- Rhythm:\n- Transformation:\n- Identity:\n- Reference fit:\n- Sound:\n\n## User acceptance\n\nPending.\n",
+  "FILM.md": `# Film project\n\n${SETUP}\n2. Fill reference.md and sound.md from real references before editing the storyboard.\n3. Edit storyboard.json, then \`designer-pipeline verify film-storyboard --storyboard storyboard.json\` until it passes.\n4. Build index.html from the beat comments; replace #FROM/#TO/#SUBJECT/#RESULT with real element ids.\n5. \`npx --no-install hyperframes check\`, then \`npx --no-install hyperframes render --output out.mp4\`.\n6. \`designer-pipeline film check --project-root .\` captures timeline.json and runs every film gate; follow each finding's \`fix\`.\n7. Review the draft frame by frame (\`ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png\`, every frame at full size: overlap, clipping, empty frames, edge margins, text size), fix and re-check, and write qa.md. Then ask the owner to accept or reject it. Gates never grant creative acceptance.\n`,
 };
+
+function packageJson(target, board) {
+  const file = path.join(target, "package.json");
+  const existing = fs.existsSync(file) ? readJson(file, "package.json") : null;
+  const name = String(board.id || "film").toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^[._-]+/, "") || "film";
+  const base = existing || { name, private: true, description: "HyperFrames film project scaffolded by designer-pipeline" };
+  // Replacing an existing package.json keeps its fields and only pins the runtime.
+  return `${JSON.stringify({ ...base, scripts: { check: "hyperframes check", render: "hyperframes render --output out.mp4", ...(base.scripts || {}) }, devDependencies: { ...(base.devDependencies || {}), ...PINS } }, null, 2)}\n`;
+}
 
 function scaffoldFilm(dir, options = {}) {
   const target = path.resolve(dir);
@@ -107,9 +123,10 @@ function scaffoldFilm(dir, options = {}) {
   const board = readJson(path.join(refs, study ? "motion-study.storyboard.json" : "storyboard.example.json"), "film storyboard example");
   if (options.id) board.id = options.id;
   const guide = study
-    ? "# Motion study\n\nA four-second silent timing/spacing comparison, not a finished film or an artistic quality benchmark.\n\n1. Preview index.html through the film runtime and compare the two actions at intended speed.\n2. Edit the authored keys to test your intended read; keep the static SVG origin on the parent group.\n3. Scrub forward/backward and step around preparation, contact and recovery.\n4. `npx hyperframes render --output out.mp4`, then `designer-pipeline film check --project-root .`.\n5. Record observations and intentional choices in qa.md; passing gates never grants creative acceptance.\n"
+    ? `# Motion study\n\nA four-second silent timing/spacing comparison, not a finished film or an artistic quality benchmark.\n\n${SETUP}\n2. Preview index.html through the film runtime and compare the two actions at intended speed.\n3. Edit the authored keys to test your intended read; keep the static SVG origin on the parent group.\n4. Scrub forward/backward and step around preparation, contact and recovery.\n5. \`npx --no-install hyperframes render --output out.mp4\`, then \`designer-pipeline film check --project-root .\`.\n6. Record observations and intentional choices in qa.md; passing gates never grants creative acceptance.\n`
     : NOTES["FILM.md"];
   const files = {
+    "package.json": null,
     "storyboard.json": `${JSON.stringify(board, null, 2)}\n`,
     "index.html": study ? fs.readFileSync(path.join(refs, "motion-study.html"), "utf8") : compositionHtml(board),
     "lib/patterns.js": fs.readFileSync(path.join(refs, "patterns.js"), "utf8"),
@@ -118,16 +135,17 @@ function scaffoldFilm(dir, options = {}) {
     "FILM.md": guide,
   };
   // Notes the workflow may already have written (reference.md in the reference stage) are kept;
-  // only the storyboard, composition and libraries are refused without --replace.
+  // only the package pins, storyboard, composition and libraries are refused without --replace.
   const kept = Object.keys(NOTES).filter((name) => fs.existsSync(path.join(target, name)));
   for (const name of kept) delete files[name];
   const existing = Object.keys(files).filter((name) => fs.existsSync(path.join(target, name)));
-  if (existing.length && !options.replace) fail("film scaffold", `refusing to overwrite ${existing.join(", ")} in ${target}. Fix: choose an empty --output directory, or pass --replace to overwrite these files`, { code: "OUTPUT_EXISTS" });
+  if (existing.length && !options.replace) fail("film scaffold", `refusing to overwrite ${existing.join(", ")} in ${target}. Fix: choose an empty --output directory, or pass --replace to overwrite these files (an existing package.json keeps its fields and gains the runtime pins)`, { code: "OUTPUT_EXISTS" });
+  files["package.json"] = packageJson(target, board);
   for (const [name, content] of Object.entries(files)) {
     fs.mkdirSync(path.dirname(path.join(target, name)), { recursive: true });
     fs.writeFileSync(path.join(target, name), content);
   }
-  return { status: "scaffolded", root: target, files: Object.keys(files), kept, next: guide.split("\n").filter((line) => /^\d\./.test(line)) };
+  return { status: "scaffolded", root: target, files: Object.keys(files), kept, runtime: { ...PINS, install: "npm install", run: "npx --no-install hyperframes" }, next: guide.split("\n").filter((line) => /^\d\./.test(line)) };
 }
 
 function newestRender(dir) {
@@ -139,7 +157,18 @@ function newestRender(dir) {
   return present[0] || null;
 }
 
-// capture(compositionFile) -> timeline manifest; injected so the CLI can run it in a kernel.
+// Layout sample times: a 5 fps grid (offset half a step so samples avoid exact cut frames) plus
+// 50 ms either side of every beat boundary, where transitions overlap outgoing and incoming text.
+function layoutTimes(board) {
+  const end = board.durationSec;
+  const times = new Set();
+  for (let at = 0.1; at < end; at += 0.2) times.add(Number(at.toFixed(3)));
+  for (const beat of board.beats.slice(1)) for (const at of [beat.startSec - 0.05, beat.startSec + 0.05]) if (at >= 0 && at < end) times.add(Number(at.toFixed(3)));
+  return [...times].sort((a, b) => a - b);
+}
+
+// capture(compositionFile, url) -> timeline manifest and layout(compositionFile, url, times) ->
+// visible-text samples; both injected so the CLI can run them in a kernel.
 function checkFilmProject(dir, options = {}) {
   const root = path.resolve(dir);
   const steps = [];
@@ -160,6 +189,8 @@ function checkFilmProject(dir, options = {}) {
   const composition = path.join(root, "index.html");
   let timeline = null;
   let timelineNote = null;
+  let layout = null;
+  let layoutNote = null;
   if (fs.existsSync(composition) && options.capture) {
     // HyperFrames projects are captured through the preview runtime so nested blocks load.
     const isHyperframes = fs.existsSync(path.join(root, "hyperframes.json"));
@@ -169,6 +200,10 @@ function checkFilmProject(dir, options = {}) {
       timeline = options.capture(composition, preview ? preview.url : undefined);
       fs.writeFileSync(timelineFile, `${JSON.stringify(timeline, null, 2)}\n`);
       timelineNote = preview ? "captured through the HyperFrames preview runtime" : "captured from index.html";
+      if (options.layout) {
+        try { layout = options.layout(composition, preview ? preview.url : undefined, layoutTimes(board)); }
+        catch (error) { layoutNote = `layout capture failed: ${error.message}`; }
+      }
     } catch (error) {
       timelineNote = `capture failed: ${error.message}`;
     } finally {
@@ -202,9 +237,10 @@ function checkFilmProject(dir, options = {}) {
       const check = checkComposition(decodePng(fs.readFileSync(path.join(root, "evidence", frame.file)), frame.file), { profile: "frame", allow: options.allowComposition || [] });
       return { beatId: frame.beatId, atSec: frame.atSec, status: check.status, findings: check.findings.map((finding) => ({ ...finding, beatId: frame.beatId })) };
     });
-    if (frames.length) steps.push({ gate: "composition", status: frames.some((frame) => frame.status === "failed") ? "failed" : "passed", findings: frames.flatMap((frame) => frame.findings), frames: frames.map(({ beatId, atSec, status }) => ({ beatId, atSec, status })) });
+    if (frames.length) steps.push(compositionStep(board, frames, layout, layoutNote, options));
   } else {
-    steps.push({ gate: "render", status: "skipped", reason: "no out.mp4 or renders/*.mp4", next: "Run `npx hyperframes render --output out.mp4`, then re-run `film check`." });
+    steps.push({ gate: "render", status: "skipped", reason: "no out.mp4 or renders/*.mp4", next: "Run `npx --no-install hyperframes render --output out.mp4`, then re-run `film check`." });
+    if (layout || layoutNote) steps.push(compositionStep(board, [], layout, layoutNote, options));
   }
 
   const continuity = carryContinuity(board, steps);
@@ -224,8 +260,24 @@ function checkFilmProject(dir, options = {}) {
     steps,
     fixes,
     creativeAcceptance: "not-assessed",
-    next: failed ? "Apply each entry in fixes, then re-run `film check`." : skipped ? steps.filter((step) => step.next).map((step) => step.next).join(" ") : "All film gates pass. Watch the film and record the creative review in qa.md.",
+    next: failed ? "Apply each entry in fixes, then re-run `film check`." : skipped ? steps.filter((step) => step.next).map((step) => step.next).join(" ") : "All film gates pass; this is not acceptance. Review the draft frame by frame (one frame per second), fix and re-check what you find, record the creative review in qa.md, then ask the owner to accept or reject it.",
   };
 }
 
-module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, newestRender, scaffoldFilm };
+// The composition gate covers rendered beat frames and, when the composition was captured, its
+// visible text sampled between them (overlap, edge margin, size).
+function compositionStep(board, frames, layout, layoutNote, options) {
+  const beatAt = (atSec) => (board.beats.find((beat) => atSec >= beat.startSec && atSec < beat.endSec) || board.beats.at(-1)).id;
+  const text = layout ? checkFilmLayout(layout, { allow: options.allowComposition || [] }) : null;
+  const layoutFindings = text ? text.findings.map((finding) => ({ ...finding, beatId: beatAt(finding.atSec) })) : [];
+  const failed = frames.some((frame) => frame.status === "failed") || (text && text.status === "failed");
+  return {
+    gate: "composition",
+    status: failed ? "failed" : "passed",
+    findings: [...frames.flatMap((frame) => frame.findings), ...layoutFindings],
+    frames: frames.map(({ beatId, atSec, status }) => ({ beatId, atSec, status })),
+    layout: text ? { status: text.status, samples: text.samples, viewport: layout.viewport } : { status: "unavailable", reason: layoutNote || "the composition was not captured" },
+  };
+}
+
+module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, layoutTimes, newestRender, scaffoldFilm };

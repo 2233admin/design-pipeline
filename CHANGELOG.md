@@ -6,6 +6,13 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- `film check` (change `fix-film-workflow-usability`): the existing composition gate also samples
+  the captured composition's visible text five times a second and on both sides of every beat
+  boundary. Text-on-text overlap held for two samples fails; overlap caught in passing, a faint
+  copy under legible text, resting text within 4% of the frame edge and text under 2.4% of the
+  frame height are review prompts (`--allow <code>` now works on `film check`). Both dogfooding
+  films' reviewed defects are flagged and their accepted finals stay clean. No new gate; gates
+  still never grant acceptance.
 - Maintained Prompt Motion homepage inventory and twelve authored planning recipes with
   replaceable inputs, structure, invariants and source/viewing limits. Offline `film templates`
   search/detail separates recipes from indexed cases; local HTML refresh writes review candidates.
@@ -76,6 +83,14 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- Quick film tier is now plan, build, check, review: after `film check` passes, `next` asks for
+  the owner's verdict (`decide --stage review`) with an instruction to review the draft one frame
+  per second and record it in `qa.md` first, and returns `done` only after an accepted draft.
+  Edit, web and UI quick tiers are unchanged.
+- `film scaffold` writes a `package.json` pinning `hyperframes` 0.8.137 and `gsap` 3.15.0 and loads
+  GSAP from `node_modules`, so one `npm install` makes check, render and capture offline;
+  guides use `npx --no-install hyperframes`. HyperFrames preview and catalog calls default to the
+  same pin instead of the latest release.
 - Rhythm heuristics (regular cadence, holds, dissolves, sparse accents and off-beat cuts) now prompt creative
   review instead of rejecting a style. Missing action, timing conflicts, broken carry and
   declared audio-cue misalignment still fail. Changed held transform poses count as action;

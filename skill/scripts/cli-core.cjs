@@ -419,7 +419,7 @@ function publicHelp() {
     "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
     "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
     "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
-    "  film check --project-root <dir>   (runs storyboard, timeline and render gates; each finding carries a fix)",
+    "  film check --project-root <dir> [--allow code,code]   (runs storyboard, timeline, render and composition gates; each finding carries a fix; --allow accepts named composition warnings)",
     "  film-eval measure --manifest <benchmark.json> --runs <runs-dir> [--output <measurements.json>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
@@ -455,14 +455,14 @@ function kernelStatusLabel(exitCode, successLabel) {
   return KERNEL_STATUS_LABELS[exitCode] ?? successLabel;
 }
 
-function runKernel(script, args, cwd, { timeout = 60000 } = {}) {
+function runKernel(script, args, cwd, { timeout = 60000, maxBuffer = 4 * 1024 * 1024 } = {}) {
   const child = spawnSync(process.execPath, [path.join(__dirname, script), ...args], {
     cwd,
     encoding: "utf8",
     env: { ...process.env, DESIGN_PIPELINE_CLI: "1" },
     windowsHide: true,
     timeout,
-    maxBuffer: 4 * 1024 * 1024,
+    maxBuffer,
   });
   if (child.error) fail("cli", `kernel ${script} failed: ${child.error.message}`, { code: "KERNEL_FAILED" });
   // A killed child reports `signal` and a null status. `error` is not always set for it (a timeout
@@ -866,6 +866,15 @@ function filmCapture(parsed, root, composition, url) {
   const kernel = runKernel("capture-film-timeline.cjs", args, root);
   if (!kernel.value || !kernel.value.timeline) fail("film capture", "capture kernel returned no timeline", { code: "KERNEL_FAILED" });
   return kernel.value.timeline;
+}
+
+function filmLayout(parsed, root, composition, url, times) {
+  const args = [...(url ? ["--url", url] : []), "--composition", composition, "--layout-times", times.join(",")];
+  for (const flag of ["--composition-id", "--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
+  // Five samples per second of every visible text run: long films need more than the default budget.
+  const kernel = runKernel("capture-film-timeline.cjs", args, root, { timeout: 180000, maxBuffer: 64 * 1024 * 1024 });
+  if (!kernel.value || !kernel.value.layout) fail("film capture", "capture kernel returned no layout", { code: "KERNEL_FAILED" });
+  return kernel.value.layout;
 }
 
 function verifyCommand(parsed, root, action) {
@@ -2070,7 +2079,13 @@ const COMMANDS = {
         required: ["--project-root"],
         run: ({ parsed, root }) => {
           const project = contained(root, option(parsed, "--project-root"), "--project-root");
-          const result = checkFilmProject(project, { capture: (composition, url) => filmCapture(parsed, root, composition, url), preview: option(parsed, "--url") ? () => ({ url: option(parsed, "--url"), started: false }) : undefined });
+          const allow = option(parsed, "--allow") ? String(option(parsed, "--allow")).split(",").map((code) => code.trim()).filter(Boolean) : [];
+          const result = checkFilmProject(project, {
+            capture: (composition, url) => filmCapture(parsed, root, composition, url),
+            layout: (composition, url, times) => filmLayout(parsed, root, composition, url, times),
+            preview: option(parsed, "--url") ? () => ({ url: option(parsed, "--url"), started: false }) : undefined,
+            allowComposition: allow,
+          });
           workflow.recordGate(project, "film", result.status, ["storyboard.json", result.steps.find(step => step.gate === "render")?.video, ...["index.html", "timeline.json", "score-grid.json"].filter(file => fs.existsSync(path.join(project, file)))], result);
           return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },

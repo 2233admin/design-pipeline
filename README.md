@@ -40,6 +40,10 @@ Component Conformance 记录技术符合性，Visual Acceptance 记录用户对�
 
 完整工作流覆盖四种交付物：影片（`film`）、剪辑（`edit`）、网站（`web`）和界面（`ui`）。入口是 `designer-pipeline next`：它读取
 `.design-pipeline/state.json`，每次只返回一个动作；按 `quick` / `standard` / `full` 三档控制流程轻重。
+影片的 `quick` 档依次是 plan、build、check、review：`film check` 通过后，Agent 先逐秒审帧并写入
+`qa.md`，再请用户接受或拒绝草稿；只有用户接受后 `next` 才返回 `done`（剪辑、网站、界面的 `quick` 档不变）。
+`film scaffold` 生成的 `package.json` 固定 `hyperframes` 0.8.137 与 `gsap` 3.15.0，执行一次
+`npm install` 后用 `npx --no-install hyperframes ...` 离线检查和渲染。
 
 Agent 按返回的动作执行工具与检查，并用 `decide` 记录用户决定。一次完整交付的主线是：
 
