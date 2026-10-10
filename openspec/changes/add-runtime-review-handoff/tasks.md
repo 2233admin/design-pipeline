@@ -41,4 +41,6 @@ status: in-review
 
 - [x] 原分支 `check-project-progress` 落后 main 127 个提交；在最新 `origin/main` 上重新应用 f55fcdd。118ffad 只修改 `_bmad-output/` 本地实施记录，该目录在 main 上被 `.gitignore` 排除且不得提交，故无可移植内容；f55fcdd 中全部 `_bmad-output/` 文件同样排除。
 - [x] 冲突按"保留 main 行为 + 接入本功能"解决：`cli-core.cjs` 只加 import、help 五行、runtime-review 选项校验/命令函数、`COMMANDS` 条目与 dispatch 前置校验，所用 flags 均已在 `KNOWN_OPTIONS`/`BOOLEAN_OPTIONS`；`test-manifest.json`、`package-resources.json` 追加登记；main 已将 `SKILL.md` 改为精简英文路由，故只加一条指向 `references/runtime-review.md` 的入口；`CHANGELOG.md` [Unreleased] 以英文 Added 条目记录（原未发布功能自身的 Fixed 条目并入其中）。
+- [x] 移植后 QA（commit bd0b8b2，基于 origin/main 0160bc9，Node 26.3.1，`HUASHU_PYTHON` 指向按 CONTRIBUTING 隔离的 fonttools 4.66.1 venv）：`npm test` 实际 exit 0——仓库测试 1143 项（122 文件）pass 1140 / fail 0 / skip 3（3 项为可选 GEPA runtime 未配置），其中 `tests/runtime-review.test.cjs` 21/21 pass；reproducible tgz/zip/checksums、安装包 public CLI 12/12、QA 后仓库 status byte-identical 均 OK；browser-automation self-test OK。`npm run specs:check` exit 0（65 passed，含本 change）。首轮未设 `HUASHU_PYTHON` 时唯一失败为系统 Python 缺 fontTools 的 font-subset 环境前提，与本功能无关。
+- [ ] 人类 CHECKPOINT 2 仍待；移植 PR 只提交审阅，不自动合并。
 
