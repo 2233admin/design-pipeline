@@ -75,8 +75,39 @@ all copies or substantial portions of the Software." The copyright line `Copyrig
 (花叔 · 花生)` therefore stays verbatim in the license, the runtime header and scaffolded `LICENSE.art-motion`.
 Fonts keep `OFL.txt` and `LICENSES.md` beside them.
 
-## Findings outside this change
+## Review fixes (PR #90)
 
-- `drawClip` validates `safe.fill` but does not paint it; `methods/09-clip-grammar.md` records this.
-- The example clip specs carry no `fonts`; rendering one needs `"fonts": "bundled"` or explicit faces.
-- The `composition scaffold` help line lists only the `visual-craft` template.
+Tested at `3297dbe` (tree `b9718824cb9fafe93c038f340a7906eb10e2cceb`) with the same tools as above. The three
+findings the first pass recorded outside this change are fixed, and guides no longer point at unshipped material.
+
+- `safe.fill`: `drawClip` paints the margins outside `ctx.box` after the grammar draws, except with
+  `alpha: true`. The new test `render paints safe.fill margins outside the content box and leaves them
+  transparent for alpha` renders a 320x180 `y5_kinetic_type` still with `safe {top:30, bottom:40, left:16,
+  right:12, fill:'#ff00ff'}` through the kernel. It checks that every margin pixel is opaque `#ff00ff`, that
+  no box pixel is, and that the alpha render leaves every margin pixel at alpha 0. On a clean `4f0cf8b`
+  worktree with only this test copied in, it fails with `band pixel 0,0 is 255,210,63,255` (the grammar's
+  background, unpainted). On the new head it passes. The regenerated `runtime.js` is 15,638 lines, 1,287,766
+  bytes, SHA-256 `9143b2aade0fcbd99d2db0004584295e8a268defdc576707d11c71d93ebe3c8b`. `npm run art-motion:build`
+  reports `Unchanged` on a second run. Clips without `fill` draw as before.
+- Examples: every `examples/<grammar>.json` selects `"fonts": "bundled"`. At `4f0cf8b`, `art-motion render` on the
+  t3 example exited 1 with `Clip t3_finance_chart requires font family "PuHui-Medium"; provide it in runtime fonts`.
+  Now `designer-pipeline art-motion render --root . --spec skill/tools/art-motion/examples/<grammar>.json
+  --stills 1,<duration/2>,<duration-0.5>` rendered 3 stills each, with `coldAndReorderedMatch: true` and no
+  warnings, for t1_3b1b, t2_keynote_ui, t3_finance_chart, y1_kurzgesagt, y2_vox, y3_whiteboard, y4_storytime and
+  y5_kinetic_type. A contact sheet of the last stills was reviewed for missing fonts or images and showed none.
+  The tools test validates each example as a render spec, and the runtime test strips the render-only `fonts` key.
+- `designer-pipeline help` prints `composition scaffold --output <new-dir> [--template visual-craft|art-motion]`,
+  built from the scaffold's exported template list and asserted in the CLI help test.
+- Guides: grammar, method and style notes and the tool guides drop pointers to demo films, overview images,
+  `engine.js`/`eras.js`/`index.html`/`clip.html`/`clip.js`, `render.py`/`qa.py`/`compare.py`, the synthesis,
+  voice-configuration and image scripts, the reference film, and the per-demo QA tables. The 09 grammar table's
+  demo column now links the example specs. The method, timing and review lessons stay. A grep for
+  `上游|未提供|本项目差异|demos/|qa\.py|render\.py|engine\.js|eras\.js|clip\.js|clip\.html|--film|_总览` over the guides
+  returns no hits. The Art Motion guide link/option test passes.
+- `npm test`: every repository QA check OK, including the naming policy, package reproducibility, isolated
+  install, installed-package CLI smoke (12 of 12) and unchanged repository status. Repository tests (121 files):
+  1,132 tests, 1,129 passed, 0 failed, 3 skipped (GEPA runtime not installed). Browser-tool self-tests passed.
+  Two earlier full runs on the same changes failed one and then three `tests/component-eval.test.cjs` native
+  visual-review tests, each with `task did not reach expected state within 60s` while the machine was loaded.
+  That file passed 18 of 18 when run alone, and it does not touch Art Motion.
+- `npm run specs:check`: 66 passed, 0 failed.

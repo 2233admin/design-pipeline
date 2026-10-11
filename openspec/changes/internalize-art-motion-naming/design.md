@@ -182,18 +182,21 @@ separate grid candidates. `--study` is boolean; without it the command is unchan
 | `动画语法/<id>.md` (9) | `grammars/<id>.md` |
 
 A note that a route or guide links to stays, neutralized, unless the capability it describes is
-gone. The voice, voice-API, voice-configuration and image notes stay as reference for the voice and
-image workflows; their commands for removed upstream scripts are marked as not shipped and point to
-the maintained entries (`voice.py`, the image workflow in `tools/art-motion/assets-audio.md`).
+gone. The voice, voice-API, voice-configuration and image notes stay as reference principles for
+the voice and image workflows; commands of removed upstream scripts are dropped, and the notes
+point to the maintained entries (`voice.py`, the image workflow in `tools/art-motion/assets-audio.md`).
 
-Mentions of removed harness files map to maintained entries: engine `lib`, `scenes`, `clips` and
-`transitions.js` → `tools/art-motion/engine/…`; `render.py`, `qa.py` → `designer-pipeline art-motion
-render` plus the existing composition/film checks; `breakdown.py` → `reference analyze-video
---study`; `compare.py` → `composition compare`; `key_green.py`, `key_split.py` → `assets.cjs`
-`keyFiles`/`splitFile`; `subzone_gate.py` → `assets.cjs` `inspectRegions`; `font_subset.py` →
-`font-subset.py`; synthesis scripts → `audio.cjs`; voice `say`/`train`/`voices`/`bind` and the
-media configuration → not shipped (offline `voice.py` only). Demo films, `engine.js`, `eras.js` and
-the reference film are described as removed examples; long-scroll mechanics route to `scroll.js`.
+Guides describe only shipped material. Mentions of removed harness files map to maintained
+entries: engine `lib`, `scenes`, `clips` and `transitions.js` → `tools/art-motion/engine/…`;
+`render.py`, `qa.py` → `designer-pipeline art-motion render` plus the existing composition/film
+checks; `breakdown.py` → `reference analyze-video --study`; `compare.py` → `composition compare`;
+`key_green.py`, `key_split.py` → `assets.cjs` `keyFiles`/`splitFile`; `subzone_gate.py` →
+`assets.cjs` `inspectRegions`; `font_subset.py` → `font-subset.py`; synthesis scripts →
+`audio.cjs`; long-scroll mechanics → `scroll.js`; parameterized clip samples →
+`tools/art-motion/examples/<grammar>.json`. Pointers to demo films, overview images, the reference
+film, `engine.js`, `eras.js`, `index.html`/`clip.html` and per-demo QA tables are removed; the
+method, timing and review lessons around them stay. Voice `say`/`train`/`voices`/`bind` and the
+media configuration are not shipped (offline `voice.py` only).
 
 ## Slices and ownership
 

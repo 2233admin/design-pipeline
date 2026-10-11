@@ -35,6 +35,15 @@ Art Motion rendering and the audiovisual reference study SHALL run through `desi
 - **WHEN** `art-motion render --spec <file> --output <new-dir>` runs with a valid spec
 - **THEN** stills or exact-frame video and a `render-report.json` naming the runtime by `runtimeSha256` are written to the new directory
 
+#### Scenario: Render a shipped example clip spec
+- **WHEN** `art-motion render` runs on any `skill/tools/art-motion/examples/<grammar>.json` as shipped
+- **THEN** it renders without extra inputs because the spec selects the bundled fonts
+
+#### Scenario: Grammar clip with safe margins and fill
+- **WHEN** a grammar spec sets `safe` edges with a `fill` colour and `alpha` is not true
+- **THEN** the margins outside the content box are painted with `fill` after the grammar draws
+- **AND** with `alpha: true` the margins are left unpainted
+
 #### Scenario: Invalid render request
 - **WHEN** the spec is invalid, the output exists or escapes the root, or an unregistered option is passed
 - **THEN** the command exits 1 with the contract error and preserves existing files
