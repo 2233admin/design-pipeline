@@ -14,10 +14,13 @@ high structure and rhythm scores can outweigh any deduction for invented materia
 
 - `status: "admitted"`: `repository` (credential-free https/http/ssh/git URL or
   `git@host:owner/repo`; no local path or `file://`), `commit` (full 40/64 lowercase hex; no
-  branch, tag or short SHA), `run` (`command`, ISO `observedAt`, `log {path, sha256}`, optional
-  http(s) `url`), `captures` (non-empty; unique `id`, `kind` `ui-state|operation`, project-relative
-  image/video `path`, `sha256`, `shows`, ISO `capturedAt`) and `flow {action, response, result}`
-  (non-empty, unique, known capture ids).
+  branch, tag or short SHA), `run` (`command`, RFC 3339 `observedAt`, `log {path, sha256}`,
+  optional http(s) `url`), `captures` (non-empty; unique `id`, `kind` `ui-state|operation`,
+  project-relative image/video `path`, `sha256`, `shows`, RFC 3339 `capturedAt`) and
+  `flow {action, response, result}` (non-empty, unique, known capture ids). Both times need seconds
+  and `Z` or `±hh:mm`; a timezone-less time is a contract error, because the host would read it in
+  its own timezone and the same record could pass on one machine and fail on another. Ordering uses
+  instants computed from each value's own offset, never the host timezone.
 - `status: "blocked"`: `blocker {kind, reason, needs}` with kind `no-repository`,
   `access-denied`, `build-failed`, `run-failed`, `needs-credentials` or `capture-failed`;
   optional `repository`/`commit`; no `run`, `captures` or `flow`.

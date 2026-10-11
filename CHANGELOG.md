@@ -9,7 +9,8 @@ All notable changes to Design Pipeline are documented here.
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional
   `productSource` — the real product's repository, full commit SHA, hashed run log, `ui-state`
-  and `operation` captures and an action → response → result flow — and `beats[].source` citing
+  and `operation` captures (run and capture times are RFC 3339 with `Z` or `±hh:mm`; timezone-less
+  times are contract errors) and an action → response → result flow — and `beats[].source` citing
   capture ids. The existing storyboard gate reports `product-source-*`, `shot-source-missing`
   (every beat cites captures except a pure brand card), `flow-unshown`, `flow-out-of-order` and
   `source-share-low` (unsourced brand cards over a quarter of the film) with fixes. An

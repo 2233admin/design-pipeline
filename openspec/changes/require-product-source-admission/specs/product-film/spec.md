@@ -25,7 +25,7 @@ A film whose Stage 0 deliverableForm is product-launch-video, or whose storyboar
 
 ### Requirement: Product source record pins the real product
 
-An admitted productSource SHALL record a credential-free repository URL, a full commit SHA, the run command, observation time and hashed run log, hashed UI-state and operation captures, and an action → response → result flow of capture ids. Malformed records MUST be contract errors. Local paths, file URLs, branches, tags and short SHAs MUST be rejected.
+An admitted productSource SHALL record a credential-free repository URL, a full commit SHA, the run command, observation time and hashed run log, hashed UI-state and operation captures, and an action → response → result flow of capture ids. Malformed records MUST be contract errors. Local paths, file URLs, branches, tags and short SHAs MUST be rejected. Run and capture times MUST be RFC 3339 with seconds and Z or ±hh:mm.
 
 #### Scenario: Branch instead of commit
 
@@ -41,6 +41,11 @@ An admitted productSource SHALL record a credential-free repository URL, a full 
 
 - **WHEN** flow or `beats[].source` cites a capture id that the record does not contain
 - **THEN** the storyboard is rejected with a contract error
+
+#### Scenario: Timezone-less capture time
+
+- **WHEN** run.observedAt or a capture's capturedAt has no `Z` or `±hh:mm` offset, such as `2026-10-11T10:00`
+- **THEN** the storyboard is rejected with a contract error instead of being ordered in the host's timezone
 
 ### Requirement: Product source files stay bound
 

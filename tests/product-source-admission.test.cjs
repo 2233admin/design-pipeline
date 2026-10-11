@@ -112,7 +112,7 @@ test("every required productSource field and value is a contract, not a score", 
       [(s) => { s.captures[0].path = "source/mock.html"; }, /image or video capture/],
       [(s) => { s.captures[0].path = "../outside.png"; }, /project-relative path/],
       [(s) => { s.captures[0].kind = "card"; }, /kind has invalid value card/],
-      [(s) => { s.captures[0].capturedAt = "yesterday"; }, /ISO 8601/],
+      [(s) => { s.captures[0].capturedAt = "yesterday"; }, /captures\[0\]\.capturedAt must be an RFC 3339 date-time/],
       [(s) => { s.captures[0].sha256 = "abc"; }, /SHA-256 hex digest/],
       [(s) => { s.flow.response = ["invented-screen"]; }, /references unknown capture invented-screen/],
       [(s) => { s.status = "pending"; }, /status has invalid value pending/],
@@ -406,5 +406,50 @@ test("public CLI rejects a card-only product promo, blocks fiction and admits th
     fs.writeFileSync(path.join(root, "source/captures/image-rendered.png"), "re-captured with different pixels");
     const reopened = runCli(root, "next");
     assert.equal(reopened.output.stage, "source", "the record no longer matches its capture");
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+// Review of c6083ba: timezone-less run and capture times were read in the host's own timezone, so
+// the same record was admitted on one machine and failed time order on another.
+test("run and capture times need an explicit RFC 3339 offset, so admission never depends on the host timezone", () => {
+  const root = tmp();
+  try {
+    const rejected = [
+      [(s) => { s.run.observedAt = "2026-10-11T10:00"; }, /productSource\.run\.observedAt must be an RFC 3339 date-time/],
+      [(s) => { s.run.observedAt = "2026-09-19T10:54:00"; }, /productSource\.run\.observedAt must be an RFC 3339 date-time/],
+      [(s) => { s.captures[1].capturedAt = "2026-10-11T10:00"; }, /productSource\.captures\[1\]\.capturedAt must be an RFC 3339 date-time/],
+      [(s) => { s.captures[1].capturedAt = "2026-09-19T10:56:00"; }, /productSource\.captures\[1\]\.capturedAt must be an RFC 3339 date-time/],
+      // RFC 3339 also needs seconds, the T separator, a real calendar date and an in-range offset.
+      [(s) => { s.captures[0].capturedAt = "2026-09-19T10:55Z"; }, /captures\[0\]\.capturedAt must be an RFC 3339 date-time/],
+      [(s) => { s.captures[0].capturedAt = "2026-09-19 10:55:00Z"; }, /captures\[0\]\.capturedAt must be an RFC 3339 date-time/],
+      [(s) => { s.captures[0].capturedAt = "2026-02-30T10:55:00Z"; }, /captures\[0\]\.capturedAt must be an RFC 3339 date-time/],
+      [(s) => { s.captures[0].capturedAt = "2026-09-19T10:55:00+24:00"; }, /captures\[0\]\.capturedAt must be an RFC 3339 date-time/],
+      [(s) => { s.captures[0].capturedAt = "2026-09-19T10:55:00+0800"; }, /captures\[0\]\.capturedAt must be an RFC 3339 date-time/],
+    ];
+    for (const [mutate, message] of rejected) {
+      const board = sourcedBoard(root);
+      mutate(board.productSource);
+      assert.throws(() => checkStoryboard(board, { ...PROMO, projectRoot: root }), (error) => error.code === "CONTRACT_INVALID" && message.test(error.message), String(message));
+    }
+    // Explicit offsets are honored as instants: 18:58+08:00 is 10:58Z and 03:57:00.250-07:00 is 10:57:00.250Z.
+    const offsets = sourcedBoard(root);
+    offsets.productSource.captures[1].capturedAt = "2026-09-19t10:56:00z";
+    offsets.productSource.captures[2].capturedAt = "2026-09-19T03:57:00.250-07:00";
+    offsets.productSource.captures[3].capturedAt = "2026-09-19T18:58:00+08:00";
+    assert.equal(checkStoryboard(offsets, { ...PROMO, projectRoot: root }).status, "passed");
+    // 10:58+08:00 is 02:58Z: before the run at 10:54Z and before the response.
+    const early = sourcedBoard(root);
+    early.productSource.captures[3].capturedAt = "2026-09-19T10:58:00+08:00";
+    const order = checkStoryboard(early, { ...PROMO, projectRoot: root });
+    assert.equal(order.status, "failed");
+    assert.deepEqual([...new Set(codes(order))], ["product-source-time-order"]);
+    // The public CLI reports a timezone-less time as a contract error (exit 1).
+    const board = sourcedBoard(root);
+    board.productSource.run.observedAt = "2026-10-11T10:00";
+    writeBoard(root, board);
+    const cliResult = runCli(root, "verify", "film-storyboard", "--storyboard", "storyboard.json");
+    assert.equal(cliResult.status, 1, cliResult.stderr);
+    assert.equal(cliResult.output.error.code, "CONTRACT_INVALID");
+    assert.match(cliResult.output.error.message, /run\.observedAt must be an RFC 3339 date-time/);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });

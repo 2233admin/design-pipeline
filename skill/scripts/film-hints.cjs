@@ -11,7 +11,7 @@ const HINTS = {
     "product-source-file-changed": "Capture again from the pinned run or restore the original bytes, then record the new sha256. Changed material reopens the checks that relied on it.",
     "product-source-run-unpinned": "Write `git -C <checkout> rev-parse HEAD` and the start command's output into the run log so it shows the pinned commit, then update run.log.sha256.",
     "product-source-captures-incomplete": "Capture at least one real UI state and one operation (the user's action with its visible response), and cite the operation capture in flow.action.",
-    "product-source-time-order": "Record each capture's actual capture time: captures come from the recorded run (after run.observedAt), and the flow reads action, then response, then result.",
+    "product-source-time-order": "Record each capture's actual capture time as an RFC 3339 date-time with its offset: captures come from the recorded run (after run.observedAt), every action capture precedes every response capture, and every response capture precedes every result capture.",
     "shot-source-missing": "List the capture ids this beat shows in beats[].source. Titles, captions, result and benefit claims sit on real captures; only a pure brand card (brand-hold with transformation none) may stay unsourced. Otherwise remove the beat.",
     "flow-unshown": "Give the recorded flow's action, response and result each an action beat that cites one of that step's captures in source; a title, card or hold cannot show a step.",
     "flow-out-of-order": "Order the action beats so the action is shown before its response and the response before the result, or carry all three in one continuous beat that cites them.",

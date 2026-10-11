@@ -42,7 +42,9 @@ const FLOW_STEPS = ["action", "response", "result"];
 const COMMIT_SHA = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const SHA256_HEX = /^[0-9a-f]{64}$/;
 const CAPTURE_MEDIA = /\.(?:png|jpe?g|webp|gif|mp4|webm|mov|mkv)$/i;
-const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+// Run and capture times are RFC 3339 date-times with seconds and an explicit offset (Z or ±hh:mm):
+// a time without an offset would be read in each host's own timezone and order captures differently.
+const RFC3339_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|[+-]\d{2}:\d{2})$/i;
 // Unsourced beats may only be pure brand cards (brand-hold, transformation none), within the
 // existing hold share; everything that shows product behavior, results or claims cites captures.
 const MAX_UNSOURCED_SHARE = MAX_HOLD_SHARE;
@@ -58,9 +60,24 @@ function loadChoreographyIds() {
   const file = path.join(__dirname, "../references/film-choreography/registry.json");
   return new Set(JSON.parse(fs.readFileSync(file, "utf8")).patterns.map((pattern) => pattern.id));
 }
+// Epoch milliseconds of an RFC 3339 date-time computed from its own offset, or NaN; never the host
+// timezone. A leap second (:60) orders as the start of the next minute.
+function instant(value) {
+  const match = typeof value === "string" ? RFC3339_DATE_TIME.exec(value) : null;
+  if (!match) return NaN;
+  const [year, month, day, hour, minute, second] = match.slice(1, 7).map(Number);
+  const offset = match[8].toUpperCase();
+  const [offsetHour, offsetMinute] = offset === "Z" ? [0, 0] : [Number(offset.slice(1, 3)), Number(offset.slice(4, 6))];
+  if (month < 1 || month > 12 || hour > 23 || minute > 59 || second > 60 || offsetHour > 23 || offsetMinute > 59) return NaN;
+  const date = new Date(0);
+  date.setUTCFullYear(year, month - 1, day);
+  if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return NaN;
+  const sign = offset.startsWith("-") ? -1 : 1;
+  return date.getTime() + ((hour - sign * offsetHour) * 60 + minute - sign * offsetMinute) * 60000 + (second + Number(`0${match[7] || ""}`)) * 1000;
+}
 function dateTime(value, label) {
   assertString(value, label, SCOPE);
-  if (!ISO_DATE_TIME.test(value) || !Number.isFinite(Date.parse(value))) fail(SCOPE, `${label} must be an ISO 8601 date-time`);
+  if (!Number.isFinite(instant(value))) fail(SCOPE, `${label} must be an RFC 3339 date-time with seconds and a Z or +hh:mm/-hh:mm offset, for example 2026-09-19T10:55:00Z or 2026-09-19T18:55:00+08:00; a time without an offset would be read in each machine's own timezone`);
 }
 function projectPath(value, label) {
   real(value, label);
@@ -178,11 +195,11 @@ function productSourceAdmission(board, options = {}) {
   const missingKinds = CAPTURE_KINDS.filter((kind) => !source.captures.some((capture) => capture.kind === kind));
   if (missingKinds.length) add("product-source-captures-incomplete", `captures need at least one ${missingKinds.join(" and one ")} capture`);
   if (!source.flow.action.some((id) => byId.get(id).kind === "operation")) add("product-source-captures-incomplete", "flow.action must cite an operation capture of the user's action");
-  const observedAt = Date.parse(source.run.observedAt);
-  const early = source.captures.filter((capture) => Date.parse(capture.capturedAt) < observedAt).map((capture) => capture.id);
+  const observedAt = instant(source.run.observedAt);
+  const early = source.captures.filter((capture) => instant(capture.capturedAt) < observedAt).map((capture) => capture.id);
   if (early.length) add("product-source-time-order", `captures ${early.join(", ")} predate the recorded run (${source.run.observedAt})`);
   // Every capture of a step precedes every capture of the next step, not only the earliest ones.
-  const times = (step) => source.flow[step].map((id) => Date.parse(byId.get(id).capturedAt));
+  const times = (step) => source.flow[step].map((id) => instant(byId.get(id).capturedAt));
   if (Math.max(...times("action")) > Math.min(...times("response")) || Math.max(...times("response")) > Math.min(...times("result"))) add("product-source-time-order", "the flow's captures are out of order: every action capture must come before every response capture, and every response capture before every result capture");
   if (options.shots !== false) {
     // Copy and claims ride on real material: every beat cites the captures it shows, except a pure

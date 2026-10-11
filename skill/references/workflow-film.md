@@ -39,7 +39,9 @@ UI or text cards standing in for it.
    real trades, payments or messages to obtain a capture.
 4. Capture at least one real UI state (`ui-state`) and one user operation (`operation`) with its
    visible response and result. Keep the run log and captures inside the project, e.g. `source/`.
-5. Record `storyboard.json.productSource` with each file's sha256 and actual capture time:
+5. Record `storyboard.json.productSource` with each file's sha256 and actual capture time, as RFC 3339
+   date-times with seconds and `Z` or `±hh:mm` (a time without an offset is rejected, because each
+   machine would read it in its own timezone):
 
 ```json
 "productSource": {
