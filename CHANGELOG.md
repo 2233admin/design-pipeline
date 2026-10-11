@@ -4,6 +4,12 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- The production video inventory test authors shot and observation intervals against the
+  measured sampling endpoint, not the nominal generated clip length. Production bounds
+  remain strict, with an out-of-range shot regression retained (#81).
+
 ### Added
 
 - Product source admission for product-promo films (change `require-product-source-admission`,
