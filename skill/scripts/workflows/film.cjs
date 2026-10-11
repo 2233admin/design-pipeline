@@ -11,7 +11,7 @@ const path = require("node:path");
 const { canonicalJson, isObject, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { CLI, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
 const { newestRender } = require("../film-project-core.cjs");
-const { PRODUCT_PROMO_FORM, productSourceAdmission, productSourceFiles } = require("../film-core.cjs");
+const { PRODUCT_PROMO_FORM, probe, productSourceAdmission, productSourceFiles, run } = require("../film-core.cjs");
 
 function draftRender(root) {
   const video = newestRender(root);
@@ -147,15 +147,50 @@ function sampleBinding(root) {
   } catch { return null; }
 }
 
+// The sample is the owner's first look at the real material, so it must decode and run 5–8 s; an
+// unreadable or off-length file never reaches the verdict. Findings carry the fix, like the gates'.
+// ffprobe reads only metadata, so a full video decode (any decoder error counts) proves the frames.
+const SAMPLE_SECONDS = [5, 8];
+const sampleChecks = new Map(); // sha256 of the file -> findings, so each next call does not decode it again
+function sampleFindings(root) {
+  const finding = (code, message, fix) => ({ code, severity: "error", message, fix });
+  const recut = `Recut ${SAMPLE_FILE} as a decodable video of ${SAMPLE_SECONDS[0]}–${SAMPLE_SECONDS[1]} s at the project root, then run next again.`;
+  const notVideo = detail => [finding("sample-not-video", `${SAMPLE_FILE} cannot be decoded as video: ${detail}`, recut)];
+  const tools = { ffmpeg: "ffmpeg", ffprobe: "ffprobe" };
+  let file, key;
+  try {
+    file = resolveInside(root, SAMPLE_FILE, "sample", { scope: "workflow", mustExist: true });
+    key = sha256(fs.readFileSync(file));
+  } catch (error) { return notVideo(error.message); }
+  if (sampleChecks.has(key)) return sampleChecks.get(key);
+  let findings;
+  try {
+    const media = probe(file, tools);
+    const [min, max] = SAMPLE_SECONDS;
+    if (!(media.durationSec >= min && media.durationSec <= max)) findings = [finding("sample-duration", `${SAMPLE_FILE} runs ${Number(media.durationSec.toFixed(2))} s; the sample must run ${min}–${max} s.`, recut)];
+    else {
+      const errors = String(run(tools.ffmpeg, ["-v", "error", "-xerror", "-i", file, "-map", "0:v:0", "-f", "null", "-"]).stderr || "").trim();
+      findings = errors ? notVideo(errors.split(/\r?\n/)[0]) : [];
+    }
+  } catch (error) {
+    if (error.code === "TOOL_MISSING") return [finding("sample-probe-unavailable", error.message, "Install ffmpeg and ffprobe on PATH so the sample can be checked, then run next again.")];
+    findings = notVideo(String(error.message).split(/\r?\n/)[0].slice(0, 300));
+  }
+  sampleChecks.set(key, findings);
+  return findings;
+}
+
 const SAMPLE = {
   id: "sample",
   finished: (state, root) => {
     const latest = state.decisions?.samples?.at(-1), current = sampleBinding(root);
-    return latest?.verdict === "accept" && Boolean(current) && latest.sha256 === current.sha256 && latest.sourceSha256 === current.sourceSha256;
+    return latest?.verdict === "accept" && Boolean(current) && latest.sha256 === current.sha256 && latest.sourceSha256 === current.sourceSha256 && sampleFindings(root).length === 0;
   },
   action: (state, root) => {
     const current = sampleBinding(root);
-    if (!current) return { type: "run", command: `Cut a 5–8 s sample from the real captures cited in beats[].source that shows the recorded action, then its response, then the result; crop, zoom, mask and caption the captures, but add no invented cards or redrawn UI. Save it as ${SAMPLE_FILE} at the project root, then run next again.`, why: "The owner judges the real material on a short cut before the whole film is built from it." };
+    if (!current) return { type: "run", command: `Cut a ${SAMPLE_SECONDS[0]}–${SAMPLE_SECONDS[1]} s sample from the real captures cited in beats[].source that shows the recorded action, then its response, then the result; crop, zoom, mask and caption the captures, but add no invented cards or redrawn UI. Save it as ${SAMPLE_FILE} at the project root, then run next again.`, why: "The owner judges the real material on a short cut before the whole film is built from it." };
+    const findings = sampleFindings(root);
+    if (findings.length) return { type: "run", command: findings[0].fix, findings, why: `The owner is shown ${SAMPLE_FILE} only once it decodes and runs ${SAMPLE_SECONDS[0]}–${SAMPLE_SECONDS[1]} s.`, record: "fix each finding, then run next again" };
     const latest = state.decisions?.samples?.at(-1);
     const captures = storyboard(root).productSource.captures;
     const show = [SAMPLE_FILE, ...(Array.isArray(captures) ? captures.map(capture => capture?.path) : [])].flatMap(rel => {
@@ -205,4 +240,4 @@ function doneFields(state, root) {
   return { admission: findings.length ? { ...admission, findings } : admission };
 }
 
-module.exports = { doneFields, sampleBinding, stages };
+module.exports = { doneFields, sampleBinding, sampleFindings, stages };

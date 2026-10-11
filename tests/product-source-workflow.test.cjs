@@ -10,12 +10,13 @@ const test = require("node:test");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { spawnSync } = require("node:child_process");
 const { bindStateJobPlan, decide, initState, nextAction, projectJobPlan, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { canonicalJson, sha256, sortValue } = require("../skill/scripts/contract-utils.cjs");
 const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs");
 const { productSourceFiles } = require("../skill/scripts/film-core.cjs");
 const { scaffoldFilm } = require("../skill/scripts/film-project-core.cjs");
-const { stages } = require("../skill/scripts/workflows/film.cjs");
+const { sampleBinding, stages } = require("../skill/scripts/workflows/film.cjs");
 const { INTAKE, gateStatus } = require("../skill/scripts/workflows/shared.cjs");
 
 const PRODUCT_QUERY = "制作产品宣传动画"; // Stage 0 classifies it as product-launch-video.
@@ -34,6 +35,25 @@ function project(t) {
 const touch = (dir, rel, body = "x") => { fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true }); fs.writeFileSync(path.join(dir, rel), body); };
 const hex = (dir, rel) => sha256(fs.readFileSync(path.join(dir, rel)));
 const stateFile = dir => path.join(dir, ".design-pipeline/state.json");
+
+// The sample stage decodes sample.mp4 with ffmpeg/ffprobe, which CI runners lack (AGENTS.md).
+const hasFfmpeg = ["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0);
+const cuts = new Map();
+// A real H.264 clip of the given length; `tag` changes its bytes, and the same arguments reproduce them.
+function cutBytes(seconds, tag = "cut") {
+  const key = `${seconds}:${tag}`;
+  if (!cuts.has(key)) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "sample-cut-"));
+    try {
+      const out = path.join(dir, "cut.mp4");
+      const made = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", `testsrc=size=160x90:rate=10:duration=${seconds}`, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-fflags", "+bitexact", "-flags:v", "+bitexact", "-metadata", `comment=${tag}`, out], { encoding: "utf8", windowsHide: true });
+      assert.equal(made.status, 0, made.stderr);
+      cuts.set(key, fs.readFileSync(out));
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  }
+  return cuts.get(key);
+}
+const cut = (dir, seconds, tag) => { fs.writeFileSync(path.join(dir, "sample.mp4"), cutBytes(seconds, tag)); };
 const ids = state => stages(state).map(stage => stage.id);
 const codes = action => action.findings.map(finding => finding.code);
 
@@ -419,7 +439,7 @@ test("changed product material, or a pass recorded without it, reopens plan and 
   assert.ok(codes(next).includes("product-source-file-changed"));
 });
 
-test("a standard product promo walks source and an owner-viewed sample to done with its admission", t => {
+test("a standard product promo walks source and an owner-viewed sample to done with its admission", { skip: !hasFfmpeg }, t => {
   const dir = project(t);
   writePlan(dir, PRODUCT_QUERY);
   initState(dir, { deliverable: "film", tier: "standard", director: "claude-opus-5-5" });
@@ -458,7 +478,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "INPUT_MISSING");
   assert.deepEqual(fs.readFileSync(stateFile(dir)), before);
 
-  touch(dir, "sample.mp4", "first cut");
+  cut(dir, 6, "first cut");
   next = nextAction(dir);
   assert.equal(next.type, "ask");
   assert.equal(next.first, undefined);
@@ -475,7 +495,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.deepEqual(rejected.next.rules, [rejection]);
   assert.deepEqual(readState(dir).rules, [{ text: rejection, from: "sample 1", scope: "project" }]);
 
-  touch(dir, "sample.mp4", "second cut");
+  cut(dir, 6, "second cut");
   assert.equal(nextAction(dir).first, undefined, "a new cut is asked about afresh");
   decide(dir, { stage: "sample", verdict: "accept" });
   const samples = readState(dir).decisions.samples;
@@ -486,9 +506,9 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(next.stage, "build");
   assert.match(next.command, /admitted captures each beat cites in beats\[\]\.source/);
 
-  touch(dir, "sample.mp4", "third cut");
+  cut(dir, 6, "third cut");
   assert.equal(nextAction(dir).stage, "sample", "a changed sample asks again");
-  touch(dir, "sample.mp4", "second cut");
+  cut(dir, 6, "second cut");
   assert.equal(nextAction(dir).stage, "build", "the accepted bytes are accepted");
 
   // A changed product record reopens plan, then the sample cut from the old record.
@@ -516,6 +536,51 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(done.type, "done");
   assert.deepEqual(done.completed, PRODUCT_STANDARD);
   assert.deepEqual(done.admission, { required: true, status: "admitted", form: "product-launch-video", repository: source.repository, commit: COMMIT });
+});
+
+test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { skip: !hasFfmpeg }, t => {
+  const dir = project(t);
+  writePlan(dir, PRODUCT_QUERY);
+  initState(dir, { deliverable: "film", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "default" });
+  writeStoryboard(dir, admittedSource(dir));
+  decide(dir, { stage: "reference", answer: "none" });
+  touch(dir, "concepts.md");
+  decide(dir, { stage: "concept", choice: "1" });
+  passStoryboard(dir);
+  assert.equal(nextAction(dir).stage, "sample");
+
+  const truncated = cutBytes(7, "truncated");
+  const refused = [
+    ["sample-not-video", () => touch(dir, "sample.mp4", "not a video at all")],
+    ["sample-not-video", () => { fs.writeFileSync(path.join(dir, "sample.mp4"), truncated.subarray(0, Math.floor(truncated.length * 0.6))); }],
+    ["sample-duration", () => cut(dir, 1)],
+    ["sample-duration", () => cut(dir, 30)],
+  ];
+  for (const [code, write] of refused) {
+    write();
+    const next = nextAction(dir);
+    assert.equal(next.stage, "sample");
+    assert.equal(next.type, "run", `${code}: the owner is not asked`);
+    assert.deepEqual(codes(next), [code]);
+    assert.match(next.findings[0].fix, /Recut sample\.mp4 .* 5–8 s/);
+    assert.equal(next.command, next.findings[0].fix);
+    const before = fs.readFileSync(stateFile(dir));
+    assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
+    assert.deepEqual(fs.readFileSync(stateFile(dir)), before, "no verdict is recorded");
+  }
+
+  cut(dir, 7.64);
+  assert.equal(nextAction(dir).type, "ask");
+  decide(dir, { stage: "sample", verdict: "accept" });
+  assert.equal(nextAction(dir).stage, "build");
+
+  // A verdict recorded before this check on an off-length file no longer finishes the stage.
+  cut(dir, 30);
+  const state = readState(dir);
+  state.decisions.samples = [{ verdict: "accept", reason: null, at: "2026-10-10T00:00:00.000Z", ...sampleBinding(dir) }];
+  fs.writeFileSync(stateFile(dir), JSON.stringify(state));
+  assert.deepEqual(codes(nextAction(dir)), ["sample-duration"]);
 });
 
 test("a recorded blocked check reports blocked rather than incomplete", t => {

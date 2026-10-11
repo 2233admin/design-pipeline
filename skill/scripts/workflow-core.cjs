@@ -196,6 +196,8 @@ function decide(root, options = {}) {
     // The verdict binds the sample bytes and the product record they were cut from.
     const binding = SUB_WORKFLOWS.film.sampleBinding(root);
     if (!binding) fail("workflow", "there is no sample.mp4 to judge. Fix: cut sample.mp4 at the project root from the admitted captures, then follow next", { code: "INPUT_MISSING" });
+    const sampleFindings = SUB_WORKFLOWS.film.sampleFindings(root);
+    if (sampleFindings.length) fail("workflow", `${sampleFindings[0].message} Fix: ${sampleFindings[0].fix}`, { code: "SAMPLE_INVALID" });
     state.decisions.samples = [...(state.decisions.samples || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), ...binding }];
     if (options.verdict === "reject") state.rules = [...(state.rules || []), { text: options.answer, from: `sample ${state.decisions.samples.length}`, scope: "project" }];
   } else if (stage === "review") {

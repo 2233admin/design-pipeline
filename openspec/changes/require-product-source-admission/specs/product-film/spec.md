@@ -155,6 +155,11 @@ Product-launch-video films SHALL use stages source, plan, build, check, review a
 - **WHEN** the owner records `decide --stage sample --verdict reject --answer <reason>`
 - **THEN** the reason becomes a project rule and sample stays open
 
+#### Scenario: Sample is not a decodable 5–8 s video
+
+- **WHEN** sample.mp4 is not a video, fails to decode, or runs under 5 s or over 8 s
+- **THEN** `next` returns a run action whose findings carry a recut fix and does not ask the owner, `decide --stage sample` fails with `SAMPLE_INVALID`, and an earlier accept of such a file no longer finishes the stage
+
 #### Scenario: Source changed after sample acceptance
 
 - **WHEN** sample.mp4 or productSource changes after an accept verdict

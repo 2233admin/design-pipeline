@@ -171,6 +171,10 @@ All notable changes to Design Pipeline are documented here.
   acceptance run). The stage now asks for a reference or `decide --stage reference --answer none`.
   The unfilled-template check lives in the dependency-free `scripts/scaffold-notes.cjs`, so the
   generic workflow stages no longer load the film project core.
+- Film `sample` stage: `next` now checks that `sample.mp4` decodes (full ffmpeg decode) and runs
+  5–8 s before asking the owner; any file, a 1 s clip or a 30 s clip used to go straight to the
+  verdict. Failures return findings with a recut fix, `decide --stage sample` refuses with
+  `SAMPLE_INVALID`, and an earlier accept of an off-length file no longer finishes the stage.
 - Windows native task verification and offline study boundaries now compare physical paths
   consistently across long/short aliases while retaining link and case-sensitive root rejection.
 - Pointer capture retains each native input step after driver delays, with spacing between
