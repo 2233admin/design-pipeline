@@ -150,7 +150,10 @@ All notable changes to Design Pipeline are documented here.
   worktrees pushed the listing past the 1 MiB default and QA died with a bare `ENOBUFS`.
 - Art Motion `drawClip` paints `safe.fill` over the top, bottom, left and right margins outside
   `ctx.box` after the grammar draws, as the clip grammar guide documents; it only validated the
-  colour before. Alpha clips (`"alpha": true`) keep the margins transparent.
+  colour before. Alpha clips (`"alpha": true`) keep the margins transparent. The fill must be a
+  CSS colour Canvas can parse and must paint something: an unparseable value (which Canvas would
+  ignore, painting with a stale colour) or a fully transparent one is a contract error, and
+  `art-motion render` reports it before writing any output. Translucent fills tint the margins.
 - The eight Art Motion example clip specs select `"fonts": "bundled"`, so
   `designer-pipeline art-motion render --spec tools/art-motion/examples/<grammar>.json` renders them
   as shipped; they failed with a missing font family before.

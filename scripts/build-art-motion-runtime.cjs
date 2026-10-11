@@ -90,7 +90,7 @@ ${license}
     });
     const hostDocument = { createElement(tag) { if (tag !== 'canvas') throw new Error('Art Motion runtime only creates canvas elements'); return createCanvas(1, 1); } };
     let currentTime = 0, disposed = false, demoArtLoaded = false, transitionsLoaded = false, sceneRuntime = null;
-    const sceneLoaded = new Set(), clipLoaded = new Set(), clipInitialized = new Map(), sceneInitialized = new Set();
+    const sceneLoaded = new Set(), clipLoaded = new Set(), clipInitialized = new Map(), sceneInitialized = new Set(), validFills = new Set();
     const assertActive = () => { if (disposed) throw new Error('Art Motion runtime is disposed'); };
 ${modules.join('\n')}
     const moduleFns = {
@@ -175,7 +175,7 @@ ${modules.join('\n')}
         throw new TypeError('clipSpec.safe must be a plain object');
       const safeKeys = new Set(['top', 'bottom', 'left', 'right', 'fill']);
       for (const key of Object.keys(safe)) { if (!safeKeys.has(key)) throw new TypeError('Unknown clipSpec.safe key: ' + key); if (key !== 'fill' && !(Number.isFinite(safe[key]) && safe[key] >= 0)) throw new TypeError('clipSpec.safe.' + key + ' must be >= 0'); }
-      if (safe.fill != null && typeof safe.fill !== 'string') throw new TypeError('clipSpec.safe.fill must be a string');
+      if (safe.fill != null) assertSafeFill(safe.fill);
       if (width - (safe.left || 0) - (safe.right || 0) <= 0 || height - (safe.top || 0) - (safe.bottom || 0) <= 0)
         throw new RangeError('clipSpec.safe leaves a nonpositive content box');
       if (!Array.isArray(spec.cues)) throw new TypeError('clipSpec.cues must be an array');
@@ -192,6 +192,19 @@ ${modules.join('\n')}
           throw new RangeError('clip cue dur must be > 0 and end within clip duration');
       }
       return { fps, cues: spec.cues.map((cue, i) => ({ ...cue, i, at: Number(cue.at) })).sort((a, b) => a.at - b.at || a.i - b.i) };
+    }
+    // Canvas ignores an unparseable fillStyle and keeps the previous one, so probe with two sentinels;
+    // a fill that paints nothing (alpha 0) is rejected rather than silently leaving the margins unpainted.
+    function assertSafeFill(fill) {
+      if (typeof fill !== 'string') throw new TypeError('clipSpec.safe.fill must be a string');
+      if (validFills.has(fill)) return;
+      const probe = createCanvas(1, 1).getContext('2d');
+      probe.fillStyle = '#000001'; probe.fillStyle = fill; const first = probe.fillStyle;
+      probe.fillStyle = '#000002'; probe.fillStyle = fill;
+      if (probe.fillStyle !== first) throw new TypeError('clipSpec.safe.fill must be a CSS color: ' + JSON.stringify(fill));
+      probe.clearRect(0, 0, 1, 1); probe.fillRect(0, 0, 1, 1);
+      if (probe.getImageData(0, 0, 1, 1).data[3] === 0) throw new TypeError('clipSpec.safe.fill is fully transparent; omit fill to leave the margins unpainted');
+      validFills.add(fill);
     }
     function drawClip(id, ctx, time, spec) {
       getContext(ctx); if (!Number.isFinite(time)) throw new TypeError('clip time must be finite');

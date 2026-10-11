@@ -212,6 +212,38 @@ test("render paints safe.fill margins outside the content box and leaves them tr
   assert.ok(transparent.data.some((value, index) => index % 4 === 3 && value > 0), "alpha content is present inside the box");
 });
 
+test("safe.fill must be a visible CSS colour; translucent fills composite over the grammar", { skip: BROWSER.skip }, async t => {
+  const root = temporary(t), width = 160, height = 90, edges = { top: 20, bottom: 10 };
+  const spec = { width, height, duration: 1, fps: 4, grammar: "y5_kinetic_type", fonts: ["PuHui-Black", "PuHui-Heavy", "PuHui-Bold"], cues: [{ at: 0, kind: "title", text: "动画" }] };
+  const browser = { chrome: BROWSER.chrome, puppeteerModule: BROWSER.puppeteerModule };
+  const rejected = [["not-a-color", /safe\.fill must be a CSS color/], ["transparent", /safe\.fill is fully transparent/], ["rgba(255, 0, 255, 0)", /safe\.fill is fully transparent/]];
+  for (const [index, [fill, expected]] of rejected.entries()) {
+    const file = `invalid-${index}.json`, before = () => fs.readdirSync(root).sort();
+    fs.writeFileSync(path.join(root, file), JSON.stringify({ ...spec, safe: { ...edges, fill } }));
+    const listing = before();
+    await assert.rejects(render(root, { ...browser, spec: file, output: `module-${index}`, stills: [0] }), expected, `module rejects ${fill}`);
+    const cli = execute(["art-motion", "render", "--root", root, "--spec", file, "--output", `cli-${index}`, "--stills", "0", "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule, "--json"]);
+    assert.equal(cli.exitCode, 1, JSON.stringify(cli.output)); assert.equal(cli.output.ok, false);
+    assert.equal(cli.output.error.code, "KERNEL_FAILED"); assert.match(cli.output.error.message, expected);
+    assert.deepEqual(before(), listing, `no output is written for ${fill}`);
+  }
+  const still = async (name, extra) => {
+    fs.writeFileSync(path.join(root, `${name}.json`), JSON.stringify({ ...spec, ...extra }));
+    const result = await render(root, { ...browser, spec: `${name}.json`, output: name, stills: [0.75] });
+    return decodePng(fs.readFileSync(path.join(result.directory, "frame-000000.png"))).data;
+  };
+  const base = await still("base", { safe: edges }), tinted = await still("tinted", { safe: { ...edges, fill: "rgba(255, 0, 255, 0.5)" } });
+  const fill = [255, 0, 255];
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const i = (y * width + x) * 4, inBand = y < edges.top || y >= height - edges.bottom;
+    for (let c = 0; c < 3; c++) {
+      const want = inBand ? (fill[c] + base[i + c]) / 2 : base[i + c];
+      assert.ok(Math.abs(tinted[i + c] - want) <= 1, `pixel ${x},${y} channel ${c} is ${tinted[i + c]}, expected ${want}`);
+    }
+    assert.equal(tinted[i + 3], base[i + 3]);
+  }
+});
+
 test("reference analyze-video writes study evidence only with --study", { skip: skipWithoutFfmpeg }, t => {
   const root = temporary(t);
   run("ffmpeg", ["-v", "error", "-n", "-f", "lavfi", "-i", "testsrc2=size=160x90:rate=8:duration=1.5", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=22050:duration=1.5", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", path.join(root, "source.mp4")]);

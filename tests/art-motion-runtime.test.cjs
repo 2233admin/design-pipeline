@@ -135,6 +135,9 @@ test('Art Motion static runtime isolates instances and replays the complete Canv
       ['cue at duration', { ...structuredClone(exampleFiles[0]), cues: [{ at: 10, kind: 'title' }] }, /at in \[0,duration\)/],
       ['nonpositive cue duration', { ...structuredClone(exampleFiles[0]), cues: [{ at: 1, kind: 'title', dur: 0 }] }, /dur must be > 0/],
       ['cue duration past clip end', { ...structuredClone(exampleFiles[0]), cues: [{ at: 9.5, kind: 'title', dur: 1 }] }, /end within clip duration/],
+      ['unparseable safe fill', { ...structuredClone(exampleFiles[0]), safe: { top: 20, fill: 'not-a-color' } }, /safe\.fill must be a CSS color/],
+      ['fully transparent safe fill', { ...structuredClone(exampleFiles[0]), safe: { top: 20, fill: 'transparent' } }, /safe\.fill is fully transparent/],
+      ['zero-alpha safe fill', { ...structuredClone(exampleFiles[0]), safe: { top: 20, fill: 'rgba(255, 0, 255, 0)' } }, /safe\.fill is fully transparent/],
     ];
     for (const [name, raw, expected] of invalidCases) {
       const malformed = { ...raw, width: 640, height: 360 };

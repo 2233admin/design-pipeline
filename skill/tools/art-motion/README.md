@@ -126,7 +126,10 @@ Glyph inspection supports WOFF1/TTF/OTF. Missing preset fonts/glyphs are errors 
 
 `safe` reserves a positive clip content box; background and decorative elements can still fill
 the canvas unless `safe.fill` is set, which paints the margins outside the box with that CSS
-colour after the grammar draws (never with `alpha:true`). Inspect actual text/subject placement
+colour over the grammar (source-over) after it draws, never with `alpha:true`. A fill Canvas
+cannot parse, or one that paints nothing (`transparent`, alpha 0), is a contract error raised
+before any output is written; omit `fill` to leave the margins as drawn, or use `alpha:true` for
+transparent margins. Inspect actual text/subject placement
 per grammar. Authored scene samples retain their original composition; contain/cover fits a
 study and does not reflow it. Use the library operations to recompose original work. The ninth
 presenter grammar is a reference method, implemented by combining supplied character frames

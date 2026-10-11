@@ -137,7 +137,7 @@ designer-pipeline art-motion render --spec 片段.json --stills 0.5,2,4 --output
 | `data` | 这个 cue 自己的参数（`index`、`rect`、`icon`……），见各节。 |
 | `dur` | 只有少数 kind 读：t1 的 title/point/equation/line，t3 的 bar/line/candle，y1 的 enter，y4 的 react/insert。其它 kind 写了也不读。 |
 
-**`safe`**：`{top, bottom, left, right, fill?}`（px，默认 0）。运行时的 `drawClip` 把它和让开后的内容框 `ctx.box = {x, y, w, h}` 传给语法；`fill` 是可选颜色，给了就在语法画完后把 `ctx.box` 以外的上下左右边涂成它（竖屏片里让图表成为和相邻 contain 截图同一位置、同一种底的「卡」）；`"alpha": true` 时不涂，让开的边保持透明。**8 种语法都已接 `top` / `bottom`**（语法对象里都写了 `safe: true`，内容只排在 top..H−bottom 之间：t3 的坐标系与来源行、y2 的相机缩放与画面中心、t1/t2/y1/y3/y5 的版面、y4 的气泡与插入镜头大字）；**`left` / `right` 目前没有语法按它排版**，写了只会被 `fill` 涂色、内容照样排到边上。竖屏 1080×1920 的口播片字幕带约在 1400–1520，`bottom` 取 490–570；横屏一般 `bottom` 160–220。新语法要接 safe，照 t3：版式的纵向基准加 `safe.top`、底部元素减 `safe.bottom`，或者直接按 `ctx.box` 排，再在语法对象里写 `safe: true`。
+**`safe`**：`{top, bottom, left, right, fill?}`（px，默认 0）。运行时的 `drawClip` 把它和让开后的内容框 `ctx.box = {x, y, w, h}` 传给语法；`fill` 是可选颜色，给了就在语法画完后把 `ctx.box` 以外的上下左右边涂成它（竖屏片里让图表成为和相邻 contain 截图同一位置、同一种底的「卡」）；`"alpha": true` 时不涂，让开的边保持透明。`fill` 必须是 Canvas 能解析的 CSS 颜色（`#ff00ff`、`rgb()`、`oklch()`、颜色名都行），写错（如 `"not-a-color"`）直接报错，不会悄悄用上一次的颜色涂。涂法是叠在语法画面上（source-over）：半透明的 `fill`（如 `rgba(0,0,0,0.5)`）给边压一层色，底下的画面透出来；完全透明的 `fill`（`transparent`、alpha 为 0）什么都涂不上，所以直接报错——要让边保持语法原样就不写 `fill`，要透明的边就用 `"alpha": true`。`designer-pipeline art-motion render` 在写出任何输出之前先让运行时校验一遍，报错时不会留下输出目录。**8 种语法都已接 `top` / `bottom`**（语法对象里都写了 `safe: true`，内容只排在 top..H−bottom 之间：t3 的坐标系与来源行、y2 的相机缩放与画面中心、t1/t2/y1/y3/y5 的版面、y4 的气泡与插入镜头大字）；**`left` / `right` 目前没有语法按它排版**，写了只会被 `fill` 涂色、内容照样排到边上。竖屏 1080×1920 的口播片字幕带约在 1400–1520，`bottom` 取 490–570；横屏一般 `bottom` 160–220。新语法要接 safe，照 t3：版式的纵向基准加 `safe.top`、底部元素减 `safe.bottom`，或者直接按 `ctx.box` 排，再在语法对象里写 `safe: true`。
 
 **`number`（大数字）的口径**——只有 t2、t3、y5 认，其它 5 种写了不显示：
 
@@ -312,7 +312,7 @@ spec 级 data：`palette: [[底色, 字色], …]`（按页轮换）。
 ### 样例（`tools/art-motion/examples/`）
 
 ```sh
-# 先把样例连同 tools/art-motion/examples/assets/ 复制进项目，spec 里没有 fonts 时加 "fonts": "bundled"，再在项目根运行
+# 先把样例连同 tools/art-motion/examples/assets/ 复制进项目（样例已写 "fonts": "bundled"），再在项目根运行
 designer-pipeline art-motion render --spec examples/t3_finance_chart.json --output t3/   # 英伟达五个财年营收（10-K 真实数据，无示意角标）
 designer-pipeline art-motion render --spec examples/t2_keynote_ui.json   --output t2/   # 教程：两张截图进玻璃卡＋框出时间轴
 designer-pipeline art-motion render --spec examples/t1_3b1b.json         --output t1/   # 梯度下降：公式＋损失曲线＋三个要点

@@ -145,13 +145,16 @@ async function render(root, options) {
         await window.art.libraries.U.loadCmaps(fonts);
       };
       await window.resetArt();
+      const clipSpec = spec.grammar ? { cues: [], ...Object.fromEntries(["grammar", "duration", "fps", "width", "height", "safe", "theme", "alpha", "data", "cues"].filter(key => spec[key] !== undefined).map(key => [key, spec[key]])) } : null;
       window.drawArt = time => {
         const start = performance.now(); context.reset(); context.clearRect(0, 0, canvas.width, canvas.height);
         if (spec.scene) window.art.drawScene(spec.scene, context, time, { fit: spec.fit || "contain" });
-        else window.art.drawClip(spec.grammar, context, time, { cues: [], ...Object.fromEntries(["grammar", "duration", "fps", "width", "height", "safe", "theme", "alpha", "data", "cues"].filter(key => spec[key] !== undefined).map(key => [key, spec[key]])) });
+        else window.art.drawClip(spec.grammar, context, time, clipSpec);
         const pixels = canvas.toDataURL("image/png").split(",")[1];
         return { pixels, renderMs: performance.now() - start };
       };
+      // The runtime owns the clip contract (CSS-colour safe.fill and the rest); surface its errors before any output exists.
+      if (clipSpec) window.art.drawClip(spec.grammar, context, 0, clipSpec);
     }, { spec, assets: inputs.assets, fonts: inputs.fonts });
     if (errors.length) throw new Error(errors.join("\n"));
     fs.mkdirSync(path.dirname(directory), { recursive: true }); fs.mkdirSync(directory);
