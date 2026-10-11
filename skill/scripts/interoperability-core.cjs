@@ -102,27 +102,34 @@ function auditPatterns(catalog) {
   return { status: "valid", total: catalog.patterns.length, coverage };
 }
 
-function validateUiIr(ir, catalog) {
+function validateUiIrStructure(ir) {
   assertKeys(ir, ["schema", "catalogVersion", "nodes"], ["schema", "catalogVersion", "nodes"], "ir", "ui ir");
   if (ir.schema !== "design-pipeline.ui-ir.v1") fail("ui ir", "unsupported schema");
-  validateCatalog(catalog);
-  if (ir.catalogVersion !== catalog.version) fail("ui ir", "catalogVersion does not match catalog");
   if (!Array.isArray(ir.nodes) || !ir.nodes.length) fail("ui ir", "nodes must not be empty");
   const ids = new Set();
-  const componentIds = new Set(catalog.patterns.map((pattern) => pattern.id));
   ir.nodes.forEach((node, index) => {
     const label = `nodes[${index}]`;
     assertKeys(node, ["id", "componentId", "props", "children"], ["id", "componentId", "props", "children"], label, "ui ir");
     assertString(node.id, `${label}.id`, "ui ir");
     if (ids.has(node.id)) fail("ui ir", `duplicate node id ${node.id}`);
     ids.add(node.id);
-    if (!componentIds.has(node.componentId)) fail("ui ir", `${label}.componentId is not in catalog`);
     assertObject(node.props, `${label}.props`, "ui ir");
     assertStringArray(node.children, `${label}.children`, "ui ir", { unique: true });
     rejectExecutable(node.props, `${label}.props`, "ui ir");
   });
   for (const node of ir.nodes) for (const child of node.children) if (!ids.has(child)) fail("ui ir", `${node.id} references unknown child ${child}`);
   return { status: "valid", nodeCount: ir.nodes.length, ir };
+}
+
+function validateUiIr(ir, catalog) {
+  const result = validateUiIrStructure(ir);
+  validateCatalog(catalog);
+  if (ir.catalogVersion !== catalog.version) fail("ui ir", "catalogVersion does not match catalog");
+  const componentIds = new Set(catalog.patterns.map((pattern) => pattern.id));
+  ir.nodes.forEach((node, index) => {
+    if (!componentIds.has(node.componentId)) fail("ui ir", `nodes[${index}].componentId is not in catalog`);
+  });
+  return result;
 }
 
 function validateDesignCodeMap(document, options = {}) {
@@ -143,4 +150,4 @@ function validateDesignCodeMap(document, options = {}) {
   return { status: "valid", mappingCount: document.mappings.length, document };
 }
 
-module.exports = { SUPPORT, auditPatterns, searchPatterns, validateCatalog, validateDesignCodeMap, validateTokens, validateUiIr };
+module.exports = { SUPPORT, auditPatterns, searchPatterns, validateCatalog, validateDesignCodeMap, validateTokens, validateUiIr, validateUiIrStructure };

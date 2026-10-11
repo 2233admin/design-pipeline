@@ -85,6 +85,17 @@ All notable changes to Design Pipeline are documented here.
   existing artifacts (design.md inventory and layout grid, component-state-matrix, motion.md
   Interaction Inventory, `interaction.json` probe, direction-preview signature) and review rules W1
   to W7 as Visual Acceptance guidance. No gate, finding code, receipt or schema is added.
+- `runtime-review build|check|record` (change `add-runtime-review-handoff`): builds an offline
+  object handoff page from a selected Playground, a declared source set and an externally
+  captured observation; the page copies a developer prompt and exports object Feedback, and
+  `record` stores it change-locally. Design, source-set and observation identities stay separate
+  from the original target, snapshot, policy and receipt lineage. Read-only `check` reports
+  point-in-time freshness (`matched` exit 0, `stale`/`blocked` exit 2); Component Conformance and
+  Visual Acceptance stay separate, and `record` never marks Feedback resolved or writes targets,
+  ledgers or receipts. Records publish exclusively via a same-directory hard link (no overwrite
+  fallback). Captured or hash-matched evidence does not mean live, currently accepted or
+  producer-certified. `interoperability-core` splits out `validateUiIrStructure` so runtime-review
+  reports a structurally invalid UI IR before a missing catalog; `ui-ir check` is unchanged.
 
 ### Changed
 
