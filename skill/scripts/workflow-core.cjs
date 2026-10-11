@@ -5,8 +5,10 @@
 // and returns the first unfinished stage as exactly one action:
 //   run  - a command for the agent, with the reason
 //   ask  - one decision for the user, with a recommended answer (concept pick, draft verdict)
+//   blocked - nothing can go on until a recorded blocker is resolved (a product that cannot be sourced)
 //   done - the deliverable is finished, with its evidence
 // Stages are finished by artifacts on disk or decisions in the state, so `next` never repeats work.
+// A film may bind its Stage 0 job plan (state.jobPlan); `next` re-verifies the bound plan every time.
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -19,6 +21,7 @@ const { advanceChange } = require("./pipeline-state-core.cjs");
 const { readState: readNativeState } = require("./control-runtime-core.cjs");
 const { downstreamPhases, invalidateDownstream } = require("./invalidation-core.cjs");
 const { resolveVideoObservation } = require("./reference-video-core.cjs");
+const { bindJobPlan, validateJobPlan } = require("./job-route-core.cjs");
 
 const SCHEMA = "design-pipeline.workflow-state.v1";
 const STATE = path.join(".design-pipeline", "state.json");
@@ -68,6 +71,58 @@ function writeState(root, state) {
   fs.writeFileSync(file, `${JSON.stringify({ ...state, updatedAt: new Date().toISOString() }, null, 2)}\n`);
 }
 
+// Stage 0 binding: the four fields a toolchain request carries. A film binds the job plan it was
+// routed under; every later call re-verifies it, and a plan is never rewritten here.
+const JOB_PLAN = "job-plan.json";
+const reasonOf = error => String(error?.message ?? error).replace(/^[\w .-]+: /, "").replace(/\.$/, "");
+const replanFix = where => `re-plan from the original brief with \`${CLI} route --query "<brief>" --write --output ${where}\``;
+const planBinding = (plan, where) => ({ jobId: plan.jobId, jobPlanSha256: plan.planSha256, jobPlanPath: where, deliverableForm: plan.deliverableForm });
+const readPlan = (root, rel) => readJson(resolveInside(root, rel, "Stage 0 job plan", { scope: "workflow", mustExist: true }), "job plan");
+
+function staleJobPlan(where, error) {
+  fail("workflow", `the bound Stage 0 job plan ${where} is stale: ${reasonOf(error)}. Fix: ${replanFix(where)}, then rebind with \`${CLI} next --project-root . --job-plan ${where}\``, { code: "JOB_PLAN_STALE" });
+}
+
+// A plan to bind now: contained, valid, and recorded by its project-relative posix path.
+function newJobPlan(root, file) {
+  const target = resolveInside(root, file, "Stage 0 job plan", { scope: "workflow", mustExist: true });
+  const where = path.relative(root, target).split(path.sep).join("/");
+  try { return planBinding(validateJobPlan(readJson(target, "job plan")), where); }
+  catch (error) { fail("workflow", `the Stage 0 job plan ${where} is invalid: ${reasonOf(error)}. Fix: ${replanFix(where)}, then rerun next with --job-plan ${where}`); }
+}
+
+// The film's binding re-verified against the bound file (missing, edited, replaced, or its query now
+// classified as another form: stale), or null when the project has none.
+function stateJobPlan(root, state) {
+  const binding = state.jobPlan;
+  if (!binding) return null;
+  try { return planBinding(bindJobPlan(binding, readPlan(root, binding.jobPlanPath)), binding.jobPlanPath); }
+  catch (error) { staleJobPlan(typeof binding.jobPlanPath === "string" && binding.jobPlanPath ? binding.jobPlanPath : JOB_PLAN, error); }
+}
+
+function discoveredJobPlan(root) {
+  if (!fs.existsSync(path.join(root, JOB_PLAN))) return null;
+  try { return planBinding(validateJobPlan(readPlan(root, JOB_PLAN)), JOB_PLAN); }
+  catch (error) { staleJobPlan(JOB_PLAN, error); }
+}
+
+// The project's Stage 0 binding: the state's (or null), else a job-plan.json a film would bind.
+function projectJobPlan(root) {
+  const state = readState(root);
+  return state ? stateJobPlan(root, state) : discoveredJobPlan(root);
+}
+
+// Binds or rebinds an existing film (next --job-plan without --deliverable). Checks recorded earlier
+// reopen through their unbound or changed job-plan input.
+function bindStateJobPlan(root, file) {
+  const state = readState(root);
+  if (!state) fail("workflow", "no project state to bind. Fix: start the film with next --deliverable film --tier quick|standard|full --job-plan <file>", { code: "INPUT_MISSING" });
+  if (state.deliverable !== "film") fail("workflow", `a Stage 0 job plan binds a film, not a ${state.deliverable} project. Fix: drop --job-plan`);
+  state.jobPlan = newJobPlan(root, file);
+  writeState(root, state);
+  return { ...state.jobPlan };
+}
+
 // Tier from the request size when the agent does not choose: one element is quick, a whole
 // deliverable is standard, shared or multi-part work is full.
 function initState(root, options = {}) {
@@ -77,35 +132,50 @@ function initState(root, options = {}) {
   assertEnum(tier, TIERS, "tier", "workflow");
   const mode = options.mode || "brief";
   assertEnum(mode, MODES, "mode", "workflow");
-  const state = { schema: SCHEMA, deliverable: options.deliverable, tier, mode, director: options.director || null, decisions: {}, gates: {}, rules: [], createdAt: new Date().toISOString() };
+  // A film binds its Stage 0 plan: the named file, else a job-plan.json at the project root.
+  const named = options.jobPlan !== undefined && options.jobPlan !== null;
+  if (named && options.deliverable !== "film") fail("workflow", `a Stage 0 job plan binds a film, not a ${options.deliverable} project. Fix: drop --job-plan, or start a film with --deliverable film`);
+  let jobPlan = null;
+  if (named) jobPlan = newJobPlan(root, options.jobPlan);
+  else if (options.deliverable === "film" && fs.existsSync(path.join(root, JOB_PLAN))) jobPlan = newJobPlan(root, JOB_PLAN);
+  const state = { schema: SCHEMA, deliverable: options.deliverable, tier, mode, director: options.director || null, ...(jobPlan ? { jobPlan } : {}), decisions: {}, gates: {}, rules: [], createdAt: new Date().toISOString() };
   writeState(root, state);
   return state;
+}
+
+// One line per action: the question (after any first step), the blocker, or the command.
+function actionLine(action) {
+  if (action.type === "ask") return `${action.first ? `${action.first} ` : ""}${action.question}`;
+  if (action.type === "blocked") return `blocked (${action.blocker.kind}): ${action.blocker.reason} Needs: ${action.blocker.needs}`;
+  return action.command;
 }
 
 function nextAction(root) {
   const state = readState(root);
   if (!state) {
-    return { type: "ask", stage: "start", question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${CLI} next --project-root . --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform]`, line: "No project state yet: choose the deliverable and tier." };
+    return { type: "ask", stage: "start", question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${CLI} next --project-root . --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
   }
+  stateJobPlan(root, state);
   const stages = stagesFor(state);
   const done = [];
   for (const stage of stages) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
     const action = stage.action(state, root);
-    const directed = state.director && action.type === "ask" && ["concepts", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
+    const directed = state.director && action.type === "ask" && ["concepts", "sample", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
-    return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? `${action.first ? `${action.first} ` : ""}${action.question}` : action.command}` };
+    return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
   }
-  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
+  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
 }
 
 function decide(root, options = {}) {
   const state = readState(root);
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
+  stateJobPlan(root, state); // A stale Stage 0 binding records nothing.
   const stage = options.stage;
-  assertEnum(stage, ["intake", "reference", "concept", "review", "deliver"], "stage", "workflow");
+  assertEnum(stage, ["intake", "reference", "concept", "sample", "review", "deliver"], "stage", "workflow");
   state.decisions = state.decisions || {};
   if (stage === "intake") {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
@@ -118,6 +188,16 @@ function decide(root, options = {}) {
     if (!options.choice) fail("workflow", "--choice is required: the concept number, or mad/pv for an edit");
     state.decisions.concept = String(options.choice);
     if (options.answer) state.decisions.conceptNotes = options.answer;
+  } else if (stage === "sample") {
+    assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
+    if (options.verdict === "reject" && !options.answer) fail("workflow", "a rejected sample needs --answer with one sentence on what is wrong; it becomes a project rule");
+    const next = nextAction(root);
+    if (next.stage !== "sample") fail("workflow", `Cannot record the sample verdict while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    // The verdict binds the sample bytes and the product record they were cut from.
+    const binding = SUB_WORKFLOWS.film.sampleBinding(root);
+    if (!binding) fail("workflow", "there is no sample.mp4 to judge. Fix: cut sample.mp4 at the project root from the admitted captures, then follow next", { code: "INPUT_MISSING" });
+    state.decisions.samples = [...(state.decisions.samples || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), ...binding }];
+    if (options.verdict === "reject") state.rules = [...(state.rules || []), { text: options.answer, from: `sample ${state.decisions.samples.length}`, scope: "project" }];
   } else if (stage === "review") {
     assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
     if (options.verdict === "reject" && !options.answer) fail("workflow", "a rejection needs --answer with one sentence on what is wrong; it becomes a project rule");
@@ -576,4 +656,4 @@ function decideVisualTask(changeRoot, options = {}) {
   return { status: failure ? "blocked" : "recorded", taskId: current.id, ...(failure ? { failure } : {}), visualAcceptance: "not-evaluated", next: nextVisualTask(changeRoot) };
 }
 
-module.exports = { DELIVERABLES, SCHEMA, STATE, TIERS, decide, decideVisualTask, initState, nextAction, nextVisualTask, readState, recordGate };
+module.exports = { DELIVERABLES, SCHEMA, STATE, TIERS, bindStateJobPlan, decide, decideVisualTask, initState, nextAction, nextVisualTask, projectJobPlan, readState, recordGate };

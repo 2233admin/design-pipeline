@@ -11,6 +11,10 @@ For product promotional films/animations (`product-launch-video`), including HTM
 read `references/product-film-direction.md` before storyboard or template selection. Inspect moving
 references and existing assets, plan sound and picture, then apply its audiovisual proof and creative
 review in addition to runtime QA; the user need not name film techniques or separately request music.
+Bind the persisted plan to the film workflow with `designer-pipeline next --project-root .
+--deliverable film --tier standard --job-plan job-plan.json` (an existing film project rebinds
+with `next --project-root . --job-plan job-plan.json`). A product promo is admitted to evaluation
+only after the real product is sourced: see `references/workflow-film.md#source`.
 
 Before writing design artifacts or code:
 
@@ -247,10 +251,25 @@ contained supplemental evidence. Open that primary output: an optional contact s
 interaction result can be old, and its existence is not freshness proof or Visual Acceptance.
 Review and delivery continue to bind the current checked-input snapshot.
 
+Film workflow state stores the Stage 0 binding (`jobId`, `jobPlanSha256`, `jobPlanPath`,
+`deliverableForm`) from `next --job-plan <file>` or a discovered `job-plan.json`. A missing,
+changed or form-conflicting bound plan stops `next` with `JOB_PLAN_STALE` and the route re-plan
+command; plans are never rewritten. For `product-launch-video`, real product sourcing is an
+admission precondition, not a score: `storyboard.json.productSource` records the repository,
+full commit, hashed run log, `ui-state`/`operation` captures and action → response → result flow,
+and `beats[].source` cites them. Until it is admitted, `film check`, `verify film-storyboard` and
+`verify film-render` return only admission findings and `film-eval measure` leaves the run
+unmeasured (the benchmark reports `blocked`). A `blocked` record (`no-repository`,
+`access-denied`, `build-failed`, `run-failed`, `needs-credentials`, `capture-failed`) makes `next`
+return `type: "blocked"` with exit 2; it never advances. Run log, captures and the bound plan are
+checked inputs. Standard/full promos add an owner-decided `sample` before build. Gates bind records
+and hashes, cannot prove pixels are real, and grant no Visual Acceptance.
+
 Use the public CLI rather than reaching into implementation modules:
 
 ```bash
 designer-pipeline route --query "<brief>" --write --output job-plan.json --json
+designer-pipeline next --project-root . --deliverable film --tier standard --job-plan job-plan.json --json
 designer-pipeline toolchain request --plan job-plan.json --artifact stack-input.json --write --output toolchain-request.json --json
 designer-pipeline toolchain resolve --artifact toolchain-request.json --write --output toolchain-plan.json --json
 designer-pipeline design-system decompose --query "<brief>" --write --output capability-inventory.json --json

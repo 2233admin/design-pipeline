@@ -57,3 +57,10 @@ _Avoid_: Self-modifying prompt, automatic preference
 The rule that an Adaptation Candidate advances only after independent, hash-bound replay and
 held-out comparisons both strictly improve while every required invariant remains satisfied.
 _Avoid_: Reward loop, self-scoring
+
+**Product Source Admission**:
+The precondition that a product-promo film (`product-launch-video`) is evaluated only after its
+storyboard records the real product run at a pinned commit, hashed captures of its UI and one user
+operation, and shots built from them. It binds records and hashes, not pixel truth, and grants no
+Visual Acceptance.
+_Avoid_: Realism score, source axis

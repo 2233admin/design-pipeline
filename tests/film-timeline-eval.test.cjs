@@ -7,7 +7,8 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { checkTimeline } = require("../skill/scripts/film-timeline-core.cjs");
-const { measureFilmBenchmark } = require("../skill/scripts/film-eval-core.cjs");
+const { evaluateFilmRuns, measureFilmBenchmark } = require("../skill/scripts/film-eval-core.cjs");
+const { classifyDeliverableForm } = require("../skill/scripts/job-route-core.cjs");
 const { evaluateBenchmark } = require("../skill/scripts/benchmark-core.cjs");
 const { probe } = require("../skill/references/film-choreography/timeline-probe.js");
 
@@ -116,10 +117,13 @@ test("film benchmark manifest is a valid v2 benchmark whose brief hides private 
   assert.equal(checkStoryboard(fixture).status, "failed", "repair fixture must start broken");
 });
 
-test("film-eval measures systems through the film gates and benchmark evaluate ranks them", { skip: !hasFfmpeg && "ffmpeg not installed" }, () => {
+test("film-eval measures systems through the film gates; fictional product promos stay unmeasured and block the benchmark", { skip: !hasFfmpeg && "ffmpeg not installed" }, () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "film-eval-"));
   try {
     const manifest = load(path.join(evals, "film-benchmark.json"));
+    // canvas-launch and cli-launch ask for promotional/launch films of fictional products; Stage 0
+    // routes them as product promos, which are evaluated only from an admitted real product source.
+    assert.deepEqual(manifest.scenarios.map((scenario) => classifyDeliverableForm(scenario.prompt)), ["product-launch-video", "product-launch-video", "motion-graphics-video"]);
     const put = (system, scenario, files) => {
       const target = path.join(dir, system, scenario);
       fs.mkdirSync(target, { recursive: true });
@@ -133,25 +137,37 @@ test("film-eval measures systems through the film gates and benchmark evaluate r
     }
     put("omp", "canvas-launch", { "storyboard.json": "{not json" });
 
-    const measurements = measureFilmBenchmark(manifest, dir);
+    const { measurements, admission } = evaluateFilmRuns(manifest, dir);
     assert.equal(measurements.schema, "design-pipeline.benchmark-measurements.v2");
-    assert.equal(measurements.measurements.claude["canvas-launch"].score, 1);
-    assert.ok(measurements.measurements.codex["canvas-launch"].score < 0.4);
-    assert.equal(measurements.measurements.omp["canvas-launch"].score, 0);
+    assert.deepEqual(measurements, measureFilmBenchmark(manifest, dir), "both entry points produce the same measurements document");
+    for (const system of ["claude", "codex"]) {
+      for (const scenario of ["canvas-launch", "cli-launch"]) {
+        assert.equal(measurements.measurements[system][scenario], undefined, `${system}/${scenario} has no admitted product source and is not scored`);
+        assert.equal(admission[system][scenario].status, "failed");
+        assert.deepEqual(admission[system][scenario].findings.map((finding) => finding.code), ["product-source-missing"]);
+      }
+    }
+    assert.equal(measurements.measurements.claude["repair-slideshow"].score, 1, "non-promo craft scenarios keep their gate score");
+    assert.ok(measurements.measurements.codex["repair-slideshow"].score < 0.4);
+    assert.equal(measurements.measurements.omp["canvas-launch"], undefined);
+    assert.equal(admission.omp["canvas-launch"].findings[0].code, "storyboard-invalid");
     assert.equal(measurements.measurements.omp["cli-launch"], undefined);
 
     const result = evaluateBenchmark(manifest, measurements);
-    assert.equal(result.status, "blocked", "unmeasured omp scenarios block the benchmark");
+    assert.equal(result.status, "blocked", "unmeasured product promos and omp scenarios block the benchmark");
     const system = (name) => result.systems.find((entry) => entry.system === name);
-    assert.equal(system("claude").status, "passed");
-    assert.equal(system("codex").status, "failed");
-    assert.ok(result.unknownRequired.includes("omp/cli-launch"));
+    assert.equal(system("claude").status, "blocked");
+    assert.equal(system("codex").status, "blocked");
+    for (const id of ["claude/canvas-launch", "claude/cli-launch", "codex/canvas-launch", "omp/cli-launch"]) assert.ok(result.unknownRequired.includes(id), id);
+    assert.ok(result.failedRequired.includes("codex/repair-slideshow"));
+    assert.equal(system("claude").scenarios.find((entry) => entry.id === "repair-slideshow").status, "passed");
 
     const cli = path.join(__dirname, "../skill/scripts/designer-pipeline.cjs");
     fs.copyFileSync(path.join(evals, "film-benchmark.json"), path.join(dir, "manifest.json"));
-    const run = spawnSync(process.execPath, [cli, "film-eval", "measure", "--root", dir, "--manifest", "manifest.json", "--runs", ".", "--output", "measurements.json"], { encoding: "utf8" });
+    const run = spawnSync(process.execPath, [cli, "film-eval", "measure", "--root", dir, "--manifest", "manifest.json", "--runs", ".", "--output", "measurements.json", "--json"], { encoding: "utf8" });
     assert.equal(run.status, 0, run.stdout + run.stderr);
     assert.equal(load(path.join(dir, "measurements.json")).measurements.claude["repair-slideshow"].score, 1);
+    assert.equal(JSON.parse(run.stdout).admission.claude["canvas-launch"].findings[0].code, "product-source-missing");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

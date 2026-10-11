@@ -43,9 +43,9 @@ const {
 const { exitCodeForStatus: componentFirstExitCode } = require("./component-first/orchestration/aggregate-result.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
-const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
+const { checkStoryboard, evaluateFilmRender, productSourceFiles } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
-const { measureFilmBenchmark } = require("./film-eval-core.cjs");
+const { evaluateFilmRuns } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
 const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs");
@@ -150,7 +150,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--agent-browser", "--agent-browser-state", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames",
@@ -418,8 +418,8 @@ function publicHelp() {
     "  film methods --project-root <dir> --input <plan.json> [--write] [--replace]",
     "  film templates [--query <terms> | --template <id>] [--all]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
-    "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>]   (one next step)",
-    "  decide --project-root . --stage intake|reference|concept|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
+    "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
+    "  decide --project-root . --stage intake|reference|concept|sample|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
     "  film blender (lists templates) | film blender --project-root <dir> --template product-turntable [--params params.json] [--engine eevee|cycles] [--output renders/shot.mp4] [--audio score.wav] [--blender <exe>]",
     "  film-edit analyze --project-root <dir> --audio <music> [--sources sources]   (beat grid + footage shots)",
     "  film-edit auto --project-root <dir> --style mad|pv [--duration <sec>] [--width 1280 --height 720] [--replace]",
@@ -937,6 +937,13 @@ function filmLayout(parsed, root, composition, url, times) {
   return kernel.value.layout;
 }
 
+// Upstream evidence a film gate pass depends on beyond storyboard.json: the admitted product
+// source's run log and captures, and the bound Stage 0 job plan. Recording them as checked inputs
+// lets the existing workflow input hashes reopen the gate when any of them changes.
+function filmEvidenceInputs(board, plan) {
+  return [...productSourceFiles(board), ...(plan?.jobPlanPath ? [plan.jobPlanPath] : [])];
+}
+
 function verifyCommand(parsed, root, action) {
   const gate = option(parsed, "--gate");
   if (gate) {
@@ -955,9 +962,11 @@ function verifyCommand(parsed, root, action) {
   }
   if (action === "film-storyboard") {
     const storyboardFile = artifact(parsed, root, "--storyboard");
-    const result = checkStoryboard(readJson(storyboardFile, "film storyboard"));
     const project = path.dirname(storyboardFile);
-    workflow.recordGate(project, "storyboard", result.status, [storyboardFile, ...(fs.existsSync(path.join(project, "reference.md")) ? ["reference.md"] : [])], result);
+    const board = readJson(storyboardFile, "film storyboard");
+    const plan = workflow.projectJobPlan(project);
+    const result = checkStoryboard(board, { deliverableForm: plan?.deliverableForm, projectRoot: project });
+    workflow.recordGate(project, "storyboard", result.status, [storyboardFile, ...(fs.existsSync(path.join(project, "reference.md")) ? ["reference.md"] : []), ...filmEvidenceInputs(board, plan)], result);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "audio") {
@@ -973,15 +982,19 @@ function verifyCommand(parsed, root, action) {
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "film-timeline") {
-    const board = readJson(artifact(parsed, root, "--storyboard"), "film storyboard");
-    const result = checkTimeline(readJson(artifact(parsed, root, "--timeline"), "film timeline"), board);
+    const storyboardFile = artifact(parsed, root, "--storyboard");
+    const project = path.dirname(storyboardFile);
+    const board = readJson(storyboardFile, "film storyboard");
+    const result = checkTimeline(readJson(artifact(parsed, root, "--timeline"), "film timeline"), board, { deliverableForm: workflow.projectJobPlan(project)?.deliverableForm, projectRoot: project });
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "film-render") {
-    const board = readJson(artifact(parsed, root, "--storyboard"), "film storyboard");
+    const storyboardFile = artifact(parsed, root, "--storyboard");
+    const project = path.dirname(storyboardFile);
+    const board = readJson(storyboardFile, "film storyboard");
     const video = artifact(parsed, root, "--video");
     const outDir = option(parsed, "--output") ? contained(root, option(parsed, "--output"), "--output", false) : null;
-    const result = evaluateFilmRender(board, video, { outDir });
+    const result = evaluateFilmRender(board, video, { outDir, deliverableForm: workflow.projectJobPlan(project)?.deliverableForm, projectRoot: project });
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "components") {
@@ -2151,13 +2164,16 @@ const COMMANDS = {
         run: ({ parsed, root }) => {
           const project = contained(root, option(parsed, "--project-root"), "--project-root");
           const allow = option(parsed, "--allow") ? String(option(parsed, "--allow")).split(",").map((code) => code.trim()).filter(Boolean) : [];
+          const plan = workflow.projectJobPlan(project);
           const result = checkFilmProject(project, {
             capture: (composition, url) => filmCapture(parsed, root, composition, url),
             layout: (composition, url, times) => filmLayout(parsed, root, composition, url, times),
             preview: option(parsed, "--url") ? () => ({ url: option(parsed, "--url"), started: false }) : undefined,
             allowComposition: allow,
+            deliverableForm: plan?.deliverableForm,
           });
-          workflow.recordGate(project, "film", result.status, ["storyboard.json", result.steps.find(step => step.gate === "render")?.video, ...["index.html", "timeline.json", "score-grid.json"].filter(file => fs.existsSync(path.join(project, file)))], result);
+          const board = readJson(path.join(project, "storyboard.json"), "film storyboard");
+          workflow.recordGate(project, "film", result.status, ["storyboard.json", result.steps.find(step => step.gate === "render")?.video, ...["index.html", "timeline.json", "score-grid.json"].filter(file => fs.existsSync(path.join(project, file))), ...filmEvidenceInputs(board, plan)], result);
           return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },
       },
@@ -2219,13 +2235,15 @@ const COMMANDS = {
   next: {
     run: ({ parsed, root }) => {
       if (option(parsed, "--change-root")) {
-        if (option(parsed, "--deliverable") || option(parsed, "--replace")) fail("cli", "native visual tasks cannot initialize a legacy workflow", { code: "OPTION_CONFLICT" });
+        if (option(parsed, "--deliverable") || option(parsed, "--replace") || option(parsed, "--job-plan")) fail("cli", "native visual tasks cannot initialize or bind a legacy workflow", { code: "OPTION_CONFLICT" });
         const result = workflow.nextVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan") });
         return { result, exitCode: result.status === "blocked" ? 2 : 0 };
       }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
-      if (option(parsed, "--deliverable")) workflow.initState(project, { deliverable: option(parsed, "--deliverable"), tier: option(parsed, "--tier"), mode: option(parsed, "--mode"), director: option(parsed, "--director"), replace: option(parsed, "--replace") === true });
-      return { result: workflow.nextAction(project), exitCode: 0 };
+      if (option(parsed, "--deliverable")) workflow.initState(project, { deliverable: option(parsed, "--deliverable"), tier: option(parsed, "--tier"), mode: option(parsed, "--mode"), director: option(parsed, "--director"), replace: option(parsed, "--replace") === true, jobPlan: option(parsed, "--job-plan") || undefined });
+      else if (option(parsed, "--job-plan")) workflow.bindStateJobPlan(project, option(parsed, "--job-plan"));
+      const result = workflow.nextAction(project);
+      return { result, exitCode: result.type === "blocked" ? 2 : 0 };
     },
   },
   decide: {
@@ -2258,14 +2276,15 @@ const COMMANDS = {
         required: ["--manifest", "--runs"],
         run: ({ parsed, root, file }) => {
           const runs = contained(root, option(parsed, "--runs"), "--runs");
-          const measurements = measureFilmBenchmark(readJson(file("--manifest"), "benchmark manifest"), runs);
+          const { measurements, admission } = evaluateFilmRuns(readJson(file("--manifest"), "benchmark manifest"), runs);
           if (option(parsed, "--output")) {
             const out = contained(root, option(parsed, "--output"), "--output", false);
             fs.mkdirSync(path.dirname(out), { recursive: true });
             fs.writeFileSync(out, `${JSON.stringify(measurements, null, 2)}
 `);
           }
-          return { result: { status: "measured", measurements }, exitCode: 0 };
+          // Product-promo runs that were not admitted stay unmeasured; their admission result says why.
+          return { result: { status: "measured", measurements, ...(Object.keys(admission).length ? { admission } : {}) }, exitCode: 0 };
         },
       },
     },

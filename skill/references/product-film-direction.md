@@ -15,6 +15,40 @@ Cinetic's complete concept/technique/timing sources and Product Film's real bran
 Its `film methods` preparation consumes this workflow's existing storyboard and retains source
 hashes; it does not replace direction, the selected renderer or owner acceptance.
 
+## Real product material for product promos
+
+A product promo (Stage 0 `deliverableForm: product-launch-video`) is made from the product
+itself. Invented screens, mock interfaces and text cards that stand in for the product are not a
+product film, however well they score: a pair of films about a fictional product passed every
+structural check and was rejected by the owner because nothing in them was the real product.
+Real material is therefore an admission precondition for evaluation, not one more quality axis.
+
+Source it before directing it (`workflow-film.md#source`): run the product's repository at a
+pinned commit in demo or seeded mode, capture real UI states and one user operation, and record
+`storyboard.json.productSource`:
+
+| Field | Records |
+| --- | --- |
+| `repository`, `commit` | Credential-free repository URL and the full commit SHA that was run |
+| `run` | Start `command`, `observedAt`, hashed `log` showing `git rev-parse HEAD`, optional local `url` |
+| `captures[]` | `id`, `kind` (`ui-state` or `operation`), project `path`, `sha256`, what it `shows`, `capturedAt` |
+| `flow` | Capture ids for the user's `action`, the product's visible `response` and the `result` |
+
+Direct the film around that flow. The product action named in section 2 should be the recorded
+action → response → result, shown in that order by action beats that cite its captures. Map every
+shot to its captures in `beats[].source`, titles and claims included; record crop, zoom, mask and
+caption choices in the beat's `note`. Only a pure brand card (a `brand-hold` that changes nothing)
+may stay unsourced, within a quarter of the runtime. A shot the captures cannot supply is a missing
+capture to record, not a scene or card to draw.
+
+If the product cannot be run or captured, record `status: "blocked"` with the blocker kind,
+reason and needs, and stop: the workflow returns `blocked` until the owner resolves it. Physical
+products have no repository and are blocked under this contract.
+
+Honest limits: gates bind the record and file hashes and check that the run log names the commit.
+They cannot prove that captured pixels came from the product or that the shown flow is its normal
+behavior. Admission, the owner's sample verdict and final Visual Acceptance are separate decisions.
+
 ## 1. Inspect moving references and available material
 
 Start with the user's references. When none are supplied, find a small set of relevant finished
