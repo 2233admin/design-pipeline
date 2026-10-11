@@ -48,3 +48,12 @@
   `flow-out-of-order` and `product-source-time-order`. `npm test` exits 0: 1184 tests, 1181 passed,
   0 failed, 3 skipped (optional GEPA), installed CLI smoke 12/12, byte-identical status;
   `npm run specs:check` 68 passed, 0 failed.
+- Timezone fix (433d678): `run.observedAt` and `captures[].capturedAt` must be RFC 3339 date-times
+  with seconds and `Z` or `±hh:mm`; anything else is a contract error (CLI exit 1), and ordering uses
+  instants from each value's own offset instead of `Date.parse`. On c6083ba the same record with a
+  timezone-less `observedAt` "2026-09-19T10:54:00" passed under TZ=Asia/Shanghai and failed
+  `product-source-time-order` under TZ=America/Los_Angeles (a timezone-less `capturedAt` did the
+  reverse), and the new regression failed (`2026-10-11T10:00` passed validation). After the fix both
+  zones report the contract error and the regression passes. `npm test` exits 0: 1185 tests, 1182
+  passed, 0 failed, 3 skipped (optional GEPA), installed CLI smoke 12/12, byte-identical status;
+  `npm run specs:check` 68 passed, 0 failed.
