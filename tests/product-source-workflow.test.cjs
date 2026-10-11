@@ -36,7 +36,8 @@ const touch = (dir, rel, body = "x") => { fs.mkdirSync(path.dirname(path.join(di
 const hex = (dir, rel) => sha256(fs.readFileSync(path.join(dir, rel)));
 const stateFile = dir => path.join(dir, ".design-pipeline/state.json");
 
-// The sample stage decodes sample.mp4 with ffmpeg/ffprobe, which CI runners lack (AGENTS.md).
+// Only the media test below decodes a real sample.mp4 with ffmpeg/ffprobe, which CI runners lack
+// (AGENTS.md); it and the tests that `cut()` real clips skip without them.
 const hasFfmpeg = ["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0);
 const cuts = new Map();
 // A real H.264 clip of the given length; `tag` changes its bytes, and the same arguments reproduce them.
@@ -54,6 +55,39 @@ function cutBytes(seconds, tag = "cut") {
   return cuts.get(key);
 }
 const cut = (dir, seconds, tag) => { fs.writeFileSync(path.join(dir, "sample.mp4"), cutBytes(seconds, tag)); };
+
+// The walk exercises the sample stage with a stand-in for ffmpeg/ffprobe, so its verdict, hash,
+// delivery and admission assertions run on runners without them. film-core binds `spawnSync` when it
+// loads and the stage runs the bare `ffmpeg`/`ffprobe` names (CreateProcess cannot run a script
+// there), so the workflow graph is loaded afresh while `child_process.spawnSync` answers those two
+// names from the file's bytes; every other command goes to the real one. The shared module cache is
+// restored afterwards, so no other test sees the stand-in. Real decoding stays with the media test.
+const FAKE_CUT = "fake-mp4";
+const fakeCut = (dir, seconds, tag) => fs.writeFileSync(path.join(dir, "sample.mp4"), `${FAKE_CUT} duration=${seconds} tag=${tag}`);
+function workflowWithFakeMedia() {
+  const childProcess = require("node:child_process");
+  const scripts = path.resolve(__dirname, "../skill/scripts") + path.sep;
+  const loaded = () => Object.keys(require.cache).filter(key => key.startsWith(scripts));
+  const saved = loaded().map(key => [key, require.cache[key]]);
+  for (const [key] of saved) delete require.cache[key];
+  const realSpawnSync = childProcess.spawnSync, calls = [];
+  childProcess.spawnSync = (bin, args, options) => {
+    if (bin !== "ffmpeg" && bin !== "ffprobe") return realSpawnSync(bin, args, options);
+    calls.push(bin);
+    const file = bin === "ffprobe" ? args.at(-1) : args[args.indexOf("-i") + 1];
+    const text = fs.readFileSync(file, "utf8");
+    const seconds = text.startsWith(FAKE_CUT) ? /duration=([\d.]+)/.exec(text)?.[1] : null;
+    if (!seconds) return { status: 1, stdout: "", stderr: `${file}: Invalid data found when processing input\n` };
+    const stdout = bin === "ffprobe" ? JSON.stringify({ format: { duration: seconds }, streams: [{ codec_type: "video", r_frame_rate: "10/1" }] }) : "";
+    return { status: 0, stdout, stderr: "" };
+  };
+  try { return { ...require("../skill/scripts/workflow-core.cjs"), calls }; }
+  finally {
+    childProcess.spawnSync = realSpawnSync;
+    for (const key of loaded()) delete require.cache[key];
+    for (const [key, entry] of saved) require.cache[key] = entry;
+  }
+}
 const ids = state => stages(state).map(stage => stage.id);
 const codes = action => action.findings.map(finding => finding.code);
 
@@ -442,7 +476,8 @@ test("changed product material, or a pass recorded without it, reopens plan and 
   assert.ok(codes(next).includes("product-source-file-changed"));
 });
 
-test("a standard product promo walks source and an owner-viewed sample to done with its admission", { skip: !hasFfmpeg }, t => {
+test("a standard product promo walks source and an owner-viewed sample to done with its admission", t => {
+  const { decide, nextAction, calls } = workflowWithFakeMedia();
   const dir = project(t);
   writePlan(dir, PRODUCT_QUERY);
   initState(dir, { deliverable: "film", tier: "standard", director: "claude-opus-5-5" });
@@ -481,7 +516,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "INPUT_MISSING");
   assert.deepEqual(fs.readFileSync(stateFile(dir)), before);
 
-  cut(dir, 6, "first cut");
+  fakeCut(dir, 6, "first cut");
   next = nextAction(dir);
   assert.equal(next.type, "ask");
   assert.equal(next.first, undefined);
@@ -498,7 +533,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.deepEqual(rejected.next.rules, [rejection]);
   assert.deepEqual(readState(dir).rules, [{ text: rejection, from: "sample 1", scope: "project" }]);
 
-  cut(dir, 6, "second cut");
+  fakeCut(dir, 6, "second cut");
   assert.equal(nextAction(dir).first, undefined, "a new cut is asked about afresh");
   decide(dir, { stage: "sample", verdict: "accept" });
   const samples = readState(dir).decisions.samples;
@@ -509,9 +544,9 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(next.stage, "build");
   assert.match(next.instruction, /admitted captures each beat cites in beats\[\]\.source/);
 
-  cut(dir, 6, "third cut");
+  fakeCut(dir, 6, "third cut");
   assert.equal(nextAction(dir).stage, "sample", "a changed sample asks again");
-  cut(dir, 6, "second cut");
+  fakeCut(dir, 6, "second cut");
   assert.equal(nextAction(dir).stage, "build", "the accepted bytes are accepted");
 
   // A changed product record reopens plan, then the sample cut from the old record.
@@ -539,6 +574,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(done.type, "done");
   assert.deepEqual(done.completed, PRODUCT_STANDARD);
   assert.deepEqual(done.admission, { required: true, status: "admitted", form: "product-launch-video", repository: source.repository, commit: COMMIT });
+  assert.ok(calls.includes("ffprobe") && calls.includes("ffmpeg"), "the sample stage inspected the cuts through the stand-in");
 });
 
 test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { skip: !hasFfmpeg }, t => {
