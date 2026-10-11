@@ -140,3 +140,29 @@ keeps the previous one, so a `string`-only check let `"not-a-color"` paint the m
   The rebuild is `Unchanged` on a second run.
 - `npm test`: exit 0, every QA check OK (naming policy, isolated install, installed CLI smoke, unchanged status).
   Repository tests: 1,133 tests, 1,130 passed, 0 failed, 3 skipped (GEPA). `npm run specs:check`: 66 passed, 0 failed.
+
+### Fresh runtime after the clip preflight
+
+Tested at `91364f7` (tree `44073a43f0df561d3c63c6816c9f2e6dc7cc2135`). The kernel's `safe.fill` preflight drew frame 0
+on the runtime that then recorded the clip. After a successful preflight, and before the output directory exists, it
+now calls the existing `window.resetArt()` (the cold-redraw reset). There is no new API, and `runtime.js` is unchanged
+(the build reports `Unchanged`).
+
+- Test `render's clip preflight leaves the first recorded frame equal to a fresh runtime's frame`: renders a still of
+  every example clip at 640x360, 30% into the clip, through `render()`. It asserts that the first frame's `sha256`
+  equals the PNG hash from a fresh runtime that has drawn only that frame, using the kernel's page setup without
+  the preflight. It passes at `91364f7`.
+- The drift is not observable on the current grammars, so the test is an invariant guard and does not fail on
+  `6b24719`; it also passed there with that commit's `render.cjs`. A probe drew each example at every half-second
+  (y2_vox and t2_keynote_ui at every frame) on a fresh runtime, then on a runtime that had drawn t=0 first.
+  Frames differed only for y2_vox at 3.4–5.23 s and t2_keynote_ui at 8.4–9.97 s, the windows of their `highlight`
+  cues. At every one of those times, a second draw on the same runtime also differs from the first. The kernel's
+  existing cold/reordered check (first frame vs. a warm redraw vs. a fresh runtime) therefore rejects those frames
+  with or without the preflight. `render.cjs` from `bdb1ae8`, before the preflight, also fails y2_vox at 4.5 s
+  with `cold/reordered frame mismatch`. A successful render always has a first frame equal to a fresh runtime's.
+  The reset makes this hold by construction rather than only being checked.
+- Finding outside this fix: the y2_vox and t2_keynote_ui `highlight` frames depend on draw history. Seeking a
+  still into those windows fails the cold/reordered check, and sequential video frames there may differ from
+  seeked frames.
+- `npm test`: exit 0, every QA check OK. Repository tests: 1,134 tests, 1,131 passed, 0 failed, 3 skipped (GEPA).
+  `npm run specs:check`: 66 passed, 0 failed.
