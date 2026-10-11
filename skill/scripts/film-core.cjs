@@ -8,7 +8,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { assertEnum, assertKeys, assertString, fail } = require("./contract-utils.cjs");
+const { assertEnum, assertKeys, assertString, fail, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { withFix } = require("./film-hints.cjs");
 
 const STORYBOARD_SCHEMA = "design-pipeline.film-storyboard.v1";
@@ -31,6 +31,19 @@ const MAX_HOLD_SHARE = 0.25;
 const RHYTHM_WARNINGS = new Set(["uniform-cadence", "no-rest", "hold-dominant", "hold-chain", "slideshow-handoffs", "sound-unbound"]);
 const MATERIAL_REQUIREMENTS = ["solid-depth", "bevel", "clearcoat", "view-dependent-color", "surface-relief"];
 const RENDER_ROUTES = ["dom", "canvas2d", "css3d", "webgl", "blender", "footage"];
+// Product-promo admission (storyboard.productSource): a product-launch-video film is evaluated
+// only when it is built from the real product, run at a pinned commit and captured. The record
+// binds files by path and sha256; it cannot prove that captured pixels are real.
+const PRODUCT_PROMO_FORM = "product-launch-video";
+const SOURCE_STATUSES = ["admitted", "blocked"];
+const CAPTURE_KINDS = ["ui-state", "operation"];
+const BLOCKER_KINDS = ["no-repository", "access-denied", "build-failed", "run-failed", "needs-credentials", "capture-failed"];
+const FLOW_STEPS = ["action", "response", "result"];
+const COMMIT_SHA = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
+const SHA256_HEX = /^[0-9a-f]{64}$/;
+const CAPTURE_MEDIA = /\.(?:png|jpe?g|webp|gif|mp4|webm|mov|mkv)$/i;
+const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+const MIN_SOURCED_SHARE = 0.5;
 
 function real(value, label) {
   assertString(value, label, SCOPE);
@@ -43,9 +56,153 @@ function loadChoreographyIds() {
   const file = path.join(__dirname, "../references/film-choreography/registry.json");
   return new Set(JSON.parse(fs.readFileSync(file, "utf8")).patterns.map((pattern) => pattern.id));
 }
+function dateTime(value, label) {
+  assertString(value, label, SCOPE);
+  if (!ISO_DATE_TIME.test(value) || !Number.isFinite(Date.parse(value))) fail(SCOPE, `${label} must be an ISO 8601 date-time`);
+}
+function projectPath(value, label) {
+  real(value, label);
+  const slashed = value.replace(/\\/g, "/");
+  if (path.isAbsolute(value) || path.win32.isAbsolute(value) || /^[a-z]:/i.test(value) || slashed.split("/").includes("..")) fail(SCOPE, `${label} must be a project-relative path`);
+}
+function digest(value, label) {
+  if (typeof value !== "string" || !SHA256_HEX.test(value)) fail(SCOPE, `${label} must be the file's lowercase SHA-256 hex digest`);
+}
+function networkUrl(value, label, protocols) {
+  real(value, label);
+  let url;
+  try { url = new URL(value); } catch { fail(SCOPE, `${label} must be a URL`); }
+  if (!protocols.includes(url.protocol) || !url.hostname) fail(SCOPE, `${label} must be a ${protocols.map((protocol) => protocol.slice(0, -1)).join("/")} URL, not a local path`);
+  if (url.password || (url.username && url.protocol.startsWith("http"))) fail(SCOPE, `${label} must not contain credentials`);
+  return url;
+}
+function repositoryUrl(value) {
+  const label = "productSource.repository";
+  real(value, label);
+  if (/^[\w.-]+@[\w.-]+:[^\s:]+$/.test(value)) return; // scp-like git@host:owner/repo
+  const url = networkUrl(value, label, ["https:", "http:", "ssh:", "git:"]);
+  if (url.pathname.replace(/\/+$/, "").length <= 1) fail(SCOPE, `${label} must name the repository, not only its host`);
+}
+
+// Shape of storyboard.productSource; returns the captures by id for beats[].source.
+function validateProductSource(source) {
+  assertKeys(source, ["status"], ["status", "repository", "commit", "run", "captures", "flow", "blocker"], "productSource", SCOPE);
+  assertEnum(source.status, SOURCE_STATUSES, "productSource.status", SCOPE);
+  if (source.repository !== undefined) repositoryUrl(source.repository);
+  if (source.commit !== undefined && (typeof source.commit !== "string" || !COMMIT_SHA.test(source.commit))) fail(SCOPE, "productSource.commit must be a full 40- or 64-character lowercase commit SHA, not a branch, tag or short SHA");
+  if (source.status === "blocked") {
+    for (const key of ["run", "captures", "flow"]) if (source[key] !== undefined) fail(SCOPE, `a blocked productSource must not carry ${key}; record what is missing in blocker`);
+    assertKeys(source.blocker, ["kind", "reason", "needs"], ["kind", "reason", "needs"], "productSource.blocker", SCOPE);
+    assertEnum(source.blocker.kind, BLOCKER_KINDS, "productSource.blocker.kind", SCOPE);
+    real(source.blocker.reason, "productSource.blocker.reason");
+    real(source.blocker.needs, "productSource.blocker.needs");
+    return new Map();
+  }
+  if (source.blocker !== undefined) fail(SCOPE, "productSource.blocker is only allowed when status is blocked");
+  for (const key of ["repository", "commit", "run", "captures", "flow"]) if (source[key] === undefined) fail(SCOPE, `productSource is missing ${key}`);
+  const run = source.run;
+  assertKeys(run, ["command", "observedAt", "log"], ["command", "observedAt", "log", "url"], "productSource.run", SCOPE);
+  real(run.command, "productSource.run.command");
+  dateTime(run.observedAt, "productSource.run.observedAt");
+  assertKeys(run.log, ["path", "sha256"], ["path", "sha256"], "productSource.run.log", SCOPE);
+  projectPath(run.log.path, "productSource.run.log.path");
+  digest(run.log.sha256, "productSource.run.log.sha256");
+  if (run.url !== undefined) networkUrl(run.url, "productSource.run.url", ["http:", "https:"]);
+  if (!Array.isArray(source.captures) || source.captures.length === 0) fail(SCOPE, "productSource.captures must be a non-empty array");
+  const captures = new Map();
+  for (const [index, capture] of source.captures.entries()) {
+    const label = `productSource.captures[${index}]`;
+    assertKeys(capture, ["id", "kind", "path", "sha256", "shows", "capturedAt"], ["id", "kind", "path", "sha256", "shows", "capturedAt"], label, SCOPE);
+    real(capture.id, `${label}.id`);
+    if (captures.has(capture.id)) fail(SCOPE, `${label} duplicates ${capture.id}`);
+    assertEnum(capture.kind, CAPTURE_KINDS, `${label}.kind`, SCOPE);
+    projectPath(capture.path, `${label}.path`);
+    if (!CAPTURE_MEDIA.test(capture.path)) fail(SCOPE, `${label}.path must be an image or video capture (png, jpg, webp, gif, mp4, webm, mov or mkv)`);
+    digest(capture.sha256, `${label}.sha256`);
+    real(capture.shows, `${label}.shows`);
+    dateTime(capture.capturedAt, `${label}.capturedAt`);
+    captures.set(capture.id, capture);
+  }
+  assertKeys(source.flow, FLOW_STEPS, FLOW_STEPS, "productSource.flow", SCOPE);
+  for (const step of FLOW_STEPS) {
+    const ids = source.flow[step];
+    const label = `productSource.flow.${step}`;
+    if (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => typeof id !== "string" || !id.trim())) fail(SCOPE, `${label} must be a non-empty array of capture ids`);
+    if (new Set(ids).size !== ids.length) fail(SCOPE, `${label} must not repeat capture ids`);
+    for (const id of ids) if (!captures.has(id)) fail(SCOPE, `${label} references unknown capture ${id}`);
+  }
+  return captures;
+}
+
+// Admission is a precondition for evaluating a product-promo film, not one more weighted finding:
+// callers stop before any other evaluation unless the status is admitted. Required for the Stage 0
+// product-launch-video form and whenever a storyboard declares productSource. options.shots
+// false checks the record alone (before beats are planned).
+function productSourceAdmission(board, options = {}) {
+  const source = board.productSource;
+  const form = options.deliverableForm || null;
+  const required = form === PRODUCT_PROMO_FORM || source !== undefined;
+  if (!required) return { required: false, status: "not-required", form, findings: [] };
+  if (source !== undefined) validateProductSource(source);
+  const findings = [];
+  const add = (code, message, beatId) => findings.push(withFix("storyboard", { code, severity: "error", message, ...(beatId ? { beatId } : {}) }));
+  const result = (status) => ({ required: true, status, form, ...(source?.repository ? { repository: source.repository } : {}), ...(source?.commit ? { commit: source.commit } : {}), findings });
+  if (source === undefined) {
+    add("product-source-missing", "a product-launch-video film needs storyboard.json.productSource: the real product's repository, pinned commit, run evidence, UI and operation captures, and shots built from them. Text, cards or invented screens cannot stand in for the product.");
+    return result("failed");
+  }
+  if (source.status === "blocked") {
+    add("product-source-blocked", `the product could not be sourced (${source.blocker.kind}): ${source.blocker.reason} Needs: ${source.blocker.needs}`);
+    return result("blocked");
+  }
+  if (!options.projectRoot) fail(SCOPE, "productSource verification needs the project root that contains its run log and captures");
+  const bytes = (rel, label) => {
+    let file;
+    try { file = resolveInside(options.projectRoot, rel, label, { scope: SCOPE }); }
+    catch (error) { add("product-source-file-missing", `${label} ${rel} is not a file inside the project (${error.message})`); return null; }
+    if (!fs.existsSync(file) || !fs.statSync(file).isFile()) { add("product-source-file-missing", `${label} ${rel} does not exist`); return null; }
+    return fs.readFileSync(file);
+  };
+  const log = bytes(source.run.log.path, "productSource.run.log");
+  if (log) {
+    if (sha256(log) !== source.run.log.sha256) add("product-source-file-changed", `productSource.run.log ${source.run.log.path} no longer matches its recorded sha256`);
+    if (!log.toString("utf8").toLowerCase().includes(source.commit)) add("product-source-run-unpinned", `run log ${source.run.log.path} does not show the pinned commit ${source.commit}`);
+  }
+  for (const capture of source.captures) {
+    const content = bytes(capture.path, `capture ${capture.id}`);
+    if (content && sha256(content) !== capture.sha256) add("product-source-file-changed", `capture ${capture.id} (${capture.path}) no longer matches its recorded sha256`);
+  }
+  const byId = new Map(source.captures.map((capture) => [capture.id, capture]));
+  const missingKinds = CAPTURE_KINDS.filter((kind) => !source.captures.some((capture) => capture.kind === kind));
+  if (missingKinds.length) add("product-source-captures-incomplete", `captures need at least one ${missingKinds.join(" and one ")} capture`);
+  if (!source.flow.action.some((id) => byId.get(id).kind === "operation")) add("product-source-captures-incomplete", "flow.action must cite an operation capture of the user's action");
+  const observedAt = Date.parse(source.run.observedAt);
+  const early = source.captures.filter((capture) => Date.parse(capture.capturedAt) < observedAt).map((capture) => capture.id);
+  if (early.length) add("product-source-time-order", `captures ${early.join(", ")} predate the recorded run (${source.run.observedAt})`);
+  const firstAt = (step) => Math.min(...source.flow[step].map((id) => Date.parse(byId.get(id).capturedAt)));
+  if (firstAt("action") > firstAt("response") || firstAt("response") > firstAt("result")) add("product-source-time-order", "the flow's captures are out of order: the action comes first, then the response, then the result");
+  if (options.shots !== false) {
+    const actionBeats = board.beats.filter((beat) => beat.role === "action");
+    for (const beat of actionBeats) if (!(beat.source || []).length) add("shot-source-missing", `action beat ${beat.id} names no real product capture in source`, beat.id);
+    const shown = new Set(actionBeats.flatMap((beat) => beat.source || []));
+    for (const step of FLOW_STEPS) if (!source.flow[step].some((id) => shown.has(id))) add("flow-unshown", `no action beat shows the recorded flow ${step} (${source.flow[step].join(", ")})`);
+    const sourcedSec = board.beats.filter((beat) => (beat.source || []).length).reduce((sum, beat) => sum + Math.max(0, beat.endSec - beat.startSec), 0);
+    const share = sourcedSec / board.durationSec;
+    if (share < MIN_SOURCED_SHARE) add("source-share-low", `beats built from real captures cover ${(share * 100).toFixed(0)}% of the film; at least ${MIN_SOURCED_SHARE * 100}% must show the product's own material`);
+  }
+  return result(findings.length ? "failed" : "admitted");
+}
+
+// Project-relative files an admitted record binds; workflow gates hash them as checked inputs so a
+// changed capture or run log reopens the checks that relied on it.
+function productSourceFiles(board) {
+  const source = board && typeof board === "object" ? board.productSource : null;
+  if (!source || source.status !== "admitted" || !Array.isArray(source.captures)) return [];
+  return [source.run?.log?.path, ...source.captures.map((capture) => capture?.path)].filter((file) => typeof file === "string" && file.trim());
+}
 
 function validateShape(board) {
-  assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState", "rendering"], "storyboard", SCOPE);
+  assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState", "rendering", "productSource"], "storyboard", SCOPE);
   if (board.endState !== undefined) assertEnum(board.endState, ["free", "rest", "loop"], "endState", SCOPE);
   if (board.schema !== STORYBOARD_SCHEMA) fail(SCOPE, `schema must be ${STORYBOARD_SCHEMA}`);
   real(board.id, "id");
@@ -72,6 +229,7 @@ function validateShape(board) {
       real(sample.purpose, `${label}.purpose`);
     }
   }
+  const captures = board.productSource === undefined ? new Map() : validateProductSource(board.productSource);
   const sound = board.sound;
   assertKeys(sound, ["mode"], ["mode", "reason", "source", "cues", "usage", "assets"], "sound", SCOPE);
   if (sound.usage !== undefined) assertEnum(sound.usage, ["commercial", "personal", "internal"], "sound.usage", SCOPE);
@@ -105,7 +263,7 @@ function validateShape(board) {
   const beatIds = new Set();
   for (const [index, beat] of board.beats.entries()) {
     const label = `beats[${index}]`;
-    assertKeys(beat, ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion"], ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion", "choreography", "block", "arc", "soundCues", "note", "carrier", "holdSec"], label, SCOPE);
+    assertKeys(beat, ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion"], ["id", "startSec", "endSec", "role", "subject", "productAction", "transformation", "handoff", "motion", "choreography", "block", "arc", "soundCues", "note", "carrier", "holdSec", "source"], label, SCOPE);
     if (beat.arc !== undefined) assertEnum(beat.arc, ["anticipate-act-settle"], `${label}.arc`, SCOPE);
     real(beat.id, `${label}.id`);
     if (beatIds.has(beat.id)) fail(SCOPE, `${label} duplicates ${beat.id}`);
@@ -126,11 +284,22 @@ function validateShape(board) {
       if (!Array.isArray(beat.soundCues)) fail(SCOPE, `${label}.soundCues must be an array`);
       for (const id of beat.soundCues) if (!cueIds.has(id)) fail(SCOPE, `${label}.soundCues references unknown cue ${id}`);
     }
+    if (beat.source !== undefined) {
+      if (!Array.isArray(beat.source) || beat.source.length === 0 || beat.source.some((id) => typeof id !== "string" || !id.trim())) fail(SCOPE, `${label}.source must be a non-empty array of productSource capture ids`);
+      if (new Set(beat.source).size !== beat.source.length) fail(SCOPE, `${label}.source must not repeat capture ids`);
+      for (const id of beat.source) if (!captures.has(id)) fail(SCOPE, `${label}.source references unknown capture ${id}${board.productSource?.status === "admitted" ? "" : " (no admitted productSource records it)"}`);
+    }
   }
 }
 
 function checkStoryboard(board, options = {}) {
   validateShape(board);
+  // A product-launch-video film that is not built from the admitted real product is not evaluated
+  // further: no structure, rhythm or later render result can offset a missing product source.
+  const { findings: admissionFindings, ...admission } = productSourceAdmission(board, options);
+  if (admission.required && admission.status !== "admitted") {
+    return { schema: STORYBOARD_SCHEMA, id: board.id, status: admission.status === "blocked" ? "blocked" : "failed", findings: admissionFindings, admission, metrics: null, creativeAcceptance: "not-assessed" };
+  }
   const choreography = options.choreographyIds || loadChoreographyIds();
   const filmRhythm = options.filmRhythm !== false;
   const findings = [];
@@ -234,6 +403,7 @@ function checkStoryboard(board, options = {}) {
       cadenceRatio,
       restSec,
     },
+    ...(admission.required ? { admission } : {}),
     creativeAcceptance: "not-assessed",
   };
 }
@@ -416,6 +586,18 @@ function contactSheet(video, beats, outDir, tools, extraSamples = {}) {
 
 function evaluateFilmRender(board, video, options = {}) {
   const storyboard = checkStoryboard(board, options);
+  if (storyboard.admission && storyboard.admission.status !== "admitted") {
+    return {
+      schema: RENDER_SCHEMA,
+      id: board.id,
+      status: storyboard.status,
+      storyboard: { status: storyboard.status, findings: storyboard.findings },
+      admission: storyboard.admission,
+      findings: [],
+      creativeAcceptance: "not-assessed",
+      limits: "Not evaluated: product-promo render evidence is measured only after the storyboard's product source is admitted.",
+    };
+  }
   const tools = { ffmpeg: options.ffmpeg || "ffmpeg", ffprobe: options.ffprobe || "ffprobe" };
   const cutTolerance = options.cutToleranceSec ?? 0.2;
   const syncTolerance = options.syncToleranceSec ?? 0.1;
@@ -485,6 +667,7 @@ function evaluateFilmRender(board, video, options = {}) {
     id: board.id,
     status: storyboard.status === "passed" && !findings.some((finding) => finding.severity !== "warn") ? "passed" : "failed",
     storyboard: { status: storyboard.status, findings: storyboard.findings },
+    ...(storyboard.admission ? { admission: storyboard.admission } : {}),
     findings,
     media: { durationSec: media.durationSec, durationDeltaSec: durationDelta, fps: Number(media.fps.toFixed(3)) },
     cuts: { detectedSec: cuts, pixelCutsSec: pixelCuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
@@ -498,4 +681,4 @@ function evaluateFilmRender(board, video, options = {}) {
   };
 }
 
-module.exports = { STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, run };
+module.exports = { PRODUCT_PROMO_FORM, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run };

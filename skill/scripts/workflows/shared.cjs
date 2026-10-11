@@ -29,7 +29,7 @@ function gateStatus(state, root, gate, inputs = []) {
   const context = { gate, recordedStatus: result?.status || null };
   const finding = (code, message, fix, file) => ({ code, severity: "error", message, fix, ...(file ? { path: file } : {}) });
   if (result?.status !== "passed") return {
-    ...context, status: result?.status === "failed" ? "failed" : "incomplete",
+    ...context, status: ["failed", "blocked"].includes(result?.status) ? result.status : "incomplete",
     findings: result?.findings?.length ? result.findings : [finding("workflow-check-required", `No current passed ${gate} check is recorded.`, "Run the returned check and apply its findings before continuing.")],
     next: result?.next || "Run the returned verification command and apply its reported fixes.",
   };

@@ -20,7 +20,7 @@ function scoreFilm(projectDir, options = {}) {
   const storyboardFile = path.join(root, "storyboard.json");
   if (!fs.existsSync(storyboardFile)) fail("film score", `no storyboard.json in ${root}. Fix: run film scaffold or write the storyboard first; the score is timed to it`, { code: "INPUT_MISSING" });
   const board = readJson(storyboardFile, "film storyboard");
-  checkStoryboard(board);
+  checkStoryboard(board, { projectRoot: root });
   if (!options.bpm) fail("film score", "--bpm is required (tempo of the score, e.g. 120)", { code: "OPTION_REQUIRED" });
   const cps = cpsFor(options.bpm);
   const patternFile = path.join(root, options.pattern || PATTERN);

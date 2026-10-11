@@ -71,6 +71,21 @@ test("product showcase animation keeps Stage 0 and HyperFrames aligned", () => {
   }
 });
 
+test("product promo film phrasings keep Stage 0 and HyperFrames aligned", () => {
+  for (const query of [
+    "Make a 12-second promotional film for a node-canvas app",
+    "Make a 15-second launch film for a developer CLI",
+    "Make a launch trailer for our canvas", "Cut a promo reel", "Create a product teaser",
+    "做一个宣传视频", "推广片", "广告片", "做一个宣传短片", "产品介绍短片",
+  ]) {
+    const stage0 = routeJob({ query });
+    assert.equal(stage0.job, "motion-graphics", query);
+    assert.equal(stage0.deliverableForm, "product-launch-video", query);
+    const frontend = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "agnostic", brief: query }, registry, skills);
+    assert.ok(frontend.toolRoutes.some(({ id }) => id === "heygen-com/hyperframes"), query);
+  }
+});
+
 test("product film direction is reachable from authoring entry points and included in the package", () => {
   for (const file of ["../SKILL.md", "stages.md", "hyperframes.md"]) {
     assert.ok(fs.readFileSync(path.join(references, file), "utf8").includes("references/product-film-direction.md"), file);
@@ -81,7 +96,11 @@ test("product film direction is reachable from authoring entry points and includ
 });
 
 test("ordinary UI and marketing pages retain their delivery intent", () => {
-  for (const query of ["给画布节点增加连接动画", "制作产品宣传页面", "Build a marketing page with hover animation"]) {
+  for (const query of [
+    "给画布节点增加连接动画", "制作产品宣传页面", "Build a marketing page with hover animation",
+    "product promo code", "Build a product promo page", "Design a promo banner",
+    "产品推广方案", "产品宣传册", "宣传海报", "Add a showcase animation to the hero section",
+  ]) {
     assert.notEqual(routeJob({ query }).deliverableForm, "product-launch-video", query);
     const result = resolveFrontendStack({ schema: "design-pipeline.frontend-stack-request.v1", framework: "agnostic", brief: query }, registry, skills);
     assert.equal(result.toolRoutes.some(({ id }) => id === "heygen-com/hyperframes"), false, query);

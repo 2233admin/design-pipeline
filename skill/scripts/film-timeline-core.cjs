@@ -69,6 +69,10 @@ function changedPoseSets(tweens) {
 function checkTimeline(timeline, board, options = {}) {
   validateTimeline(timeline);
   const storyboard = checkStoryboard(board, options);
+  // Product-promo admission is a precondition: a non-admitted storyboard's timeline is not evaluated.
+  if (storyboard.admission && storyboard.admission.status !== "admitted") {
+    return { schema: TIMELINE_SCHEMA, id: board.id, compositionId: timeline.compositionId, status: storyboard.status, storyboard: { status: storyboard.status, findings: storyboard.findings }, admission: storyboard.admission, findings: [], metrics: null, creativeAcceptance: "not-assessed" };
+  }
   const findings = [];
   const add = (code, message, beatId, severity = "error") => findings.push(withFix("timeline", { code, severity, message, ...(beatId ? { beatId } : {}) }));
 
@@ -180,6 +184,7 @@ function checkTimeline(timeline, board, options = {}) {
     compositionId: timeline.compositionId,
     status: storyboard.status === "passed" && !findings.some((finding) => finding.severity !== "warn") ? "passed" : "failed",
     storyboard: { status: storyboard.status, findings: storyboard.findings },
+    ...(storyboard.admission ? { admission: storyboard.admission } : {}),
     findings,
     metrics: {
       tweens: timeline.tweens.length,

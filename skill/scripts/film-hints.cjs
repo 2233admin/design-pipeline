@@ -5,6 +5,16 @@
 
 const HINTS = {
   storyboard: {
+    "product-source-missing": "Clone the product's repository, check out one full commit SHA, run the product from that checkout, capture its real UI states and one user operation with the visible response and result, then record storyboard.json.productSource (repository, commit, run, captures, flow). If it cannot be run or captured, record status blocked with blocker kind/reason/needs and stop; never substitute invented screens or cards. See references/workflow-film.md#source.",
+    "product-source-blocked": "Resolve the named blocker with the user (repository access, credentials, build or run failure), then replace the blocked record with the admitted one. Do not plan or build the film from invented screens meanwhile.",
+    "product-source-file-missing": "Keep the run log and every capture inside the project at its recorded path; restore the file or capture it again from the pinned run and record its new sha256.",
+    "product-source-file-changed": "Capture again from the pinned run or restore the original bytes, then record the new sha256. Changed material reopens the checks that relied on it.",
+    "product-source-run-unpinned": "Write `git -C <checkout> rev-parse HEAD` and the start command's output into the run log so it shows the pinned commit, then update run.log.sha256.",
+    "product-source-captures-incomplete": "Capture at least one real UI state and one operation (the user's action with its visible response), and cite the operation capture in flow.action.",
+    "product-source-time-order": "Record each capture's actual capture time: captures come from the recorded run (after run.observedAt), and the flow reads action, then response, then result.",
+    "shot-source-missing": "List the capture ids this beat is built from in beats[].source. A beat without real product material becomes a short title/brand hold or is removed.",
+    "flow-unshown": "Give the recorded flow's action, response and result each an action beat that cites one of that step's captures in source.",
+    "source-share-low": "Build more of the film from the real captures, or shorten text and card holds: captions and motion support the product's own material.",
     "material-route-incapable": "Use WebGL/Three.js with physical materials and GLSL, Blender, or licensed footage for these effects; keep the reference requirements instead of deleting them. See references/film-materials.md.",
     "material-angle-samples-missing": "Add rendering.samples at two distinct in-range times showing different reference angles; compare glaze highlights, relief and color in the actual renders. See references/film-materials.md.",
     "timeline-open-start": "Set the first beat's startSec to 0.",

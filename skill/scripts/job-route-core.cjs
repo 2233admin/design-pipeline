@@ -76,13 +76,24 @@ function fold(text) {
   return String(text).toLocaleLowerCase("en-US");
 }
 
+const PROMO_MEDIA = "(?:films?|movies?|reels?|clips?|spots?|trailers?|teasers?|videos?|animations?)";
+const PROMO_NON_FILM = "(?:codes?|coupons?|pages?|sites?|websites?|landing|banners?|emails?|newsletters?|cards?|posts?|forms?|plans?|strateg(?:y|ies)|campaigns?|offers?|deals?|discounts?|copy|text|posters?|flyers?|brochures?|images?|graphics?|sections?|components?|modals?|popups?|links?|prices?|pricing|sales?|ads?|budgets?|calendars?|schedules?|reports?|templates?|widgets?|dashboards?)";
+const PRODUCT_PROMO_VIDEO = new RegExp([
+  `\\b(?:promotional|promo|launch)[\\s-]+${PROMO_MEDIA}\\b`,
+  `\\bproduct(?:[\\s-]+(?:launch|demo|showcase|promo(?:tional)?|intro|overview|teaser|explainer|walkthrough|tour|feature))?[\\s-]+${PROMO_MEDIA}\\b`,
+  `\\bproduct[\\s-]+promo\\b(?![\\s-]+${PROMO_NON_FILM}\\b)`,
+  `\\bshowcase[\\s-]+(?:videos?|films?|reels?|trailers?)\\b`,
+  "(?:宣传|推广)(?:短视频|视频|动画|短片|片)",
+  "广告(?:短视频|视频|短片|片)",
+  "产品(?:发布|推广|宣传展示|宣传|展示|演示|介绍|广告)(?:宣传)?(?:短视频|视频|动画|短片|片)",
+].join("|"));
+
 function classifyDeliverableForm(query) {
   const text = fold(query);
   if (/scrollytelling|scroll[- ]driven|scrolling narrative|scroll page|滚动叙事|滚动页面|滚动故事/.test(text)) return "scrollytelling-page";
   if (/interactive (?:page|website|web)|互动页面|交互页面/.test(text)) return "interactive-page";
-  const productVideo = /\bproduct(?:[- ](?:launch|demo|showcase|promo(?:tional)?|intro|overview))?[- ](?:video|film|reel|animation)\b|\b(?:promotional|promo|launch)\s+(?:video|animation)\b|产品(?:发布|推广|宣传展示|宣传|展示|演示|介绍)(?:宣传)?(?:短视频|视频|动画|片)|宣传片|宣传动画|推广动画/.test(text);
-  if (productVideo) return "product-launch-video";
-  if (/\bvideo\b|\bfilms?\b|\breels?\b|motion graphics?|animated explainer|short-form|短视频|片头|视频|宣传片/.test(text)) return "motion-graphics-video";
+  if (PRODUCT_PROMO_VIDEO.test(text)) return "product-launch-video";
+  if (/\bvideo\b|\bfilms?\b|\breels?\b|motion graphics?|animated explainer|short-form|短视频|片头|视频/.test(text)) return "motion-graphics-video";
   return "ui-motion";
 }
 
@@ -229,7 +240,10 @@ function validateJobPlan(plan) {
   }
   const { planSha256, ...body } = plan;
   if (planSha256 !== sha256(canonicalJson(sortValue(body)))) invalid("job plan hash does not match contents");
-  if (classifyDeliverableForm(plan.query) !== plan.deliverableForm) invalid("deliverable-form conflict: job plan query does not match its form");
+  const classified = classifyDeliverableForm(plan.query);
+  if (classified !== plan.deliverableForm) {
+    invalid(`deliverable-form conflict: job plan query does not match its form (stored ${plan.deliverableForm}, query classifies as ${classified}); re-plan from the original brief with \`designer-pipeline route --query "<brief>" --write\``);
+  }
   return plan;
 }
 
