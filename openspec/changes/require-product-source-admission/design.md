@@ -27,10 +27,17 @@ Malformed shape is a contract error (exit 1, scope `film storyboard`). Admission
 the bound Stage 0 form is `product-launch-video` or the storyboard declares `productSource`.
 Error findings, each with a `fix`: `product-source-missing`, `product-source-blocked`,
 `product-source-file-missing`, `product-source-file-changed`, `product-source-run-unpinned`,
-`product-source-captures-incomplete`, `product-source-time-order`, and for planned shots
-`shot-source-missing`, `flow-unshown` and `source-share-low` (sourced beats cover under 50% of
-`durationSec`). The record-only form (`shots: false`) serves the workflow `source` stage before
-beats exist.
+`product-source-captures-incomplete`, `product-source-time-order` (a capture before the run, or any
+action capture after a response capture, or response after result: max(action) ≤ min(response)
+and max(response) ≤ min(result)), and for planned shots `shot-source-missing` (every beat cites
+the captures it shows except a pure brand card, a `brand-hold` with `transformation.kind:
+"none"`), `flow-unshown` (no action beat cites a step's capture; holds and cards cannot show a
+step), `flow-out-of-order` (the action is first shown after the response, or the response after
+the result; one continuous beat may carry all three) and the secondary `source-share-low`
+(unsourced brand cards over 25% of `durationSec`, the existing hold share). The sourced share is
+never the primary criterion: half real captures plus invented result cards fail
+`shot-source-missing`. The record-only form (`shots: false`) serves the workflow `source` stage
+before beats exist.
 
 ## Workflow
 

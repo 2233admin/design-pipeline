@@ -44,7 +44,7 @@ An admitted productSource SHALL record a credential-free repository URL, a full 
 
 ### Requirement: Product source files stay bound
 
-Admission SHALL hash the run log and every capture inside the project root. A missing or changed file, a run log that does not show the pinned commit, captures lacking a UI state or an operation, a flow action that cites no operation, or captures timed before the run or out of action → response → result order MUST fail admission with a fix.
+Admission SHALL hash the run log and every capture inside the project root. A missing or changed file, a run log that does not show the pinned commit, captures lacking a UI state or an operation, a flow action that cites no operation, a capture timed before the run, or any action capture timed after a response capture (or response after result) MUST fail admission with a fix.
 
 #### Scenario: Capture changed after recording
 
@@ -66,23 +66,38 @@ Admission SHALL hash the run log and every capture inside the project root. A mi
 - **WHEN** a capture's capturedAt is earlier than run.observedAt
 - **THEN** admission fails with `product-source-time-order`
 
+#### Scenario: Flow captures only look ordered
+
+- **WHEN** action captures are timed at 10 s and 30 s, the response at 20 s and the result at 40 s
+- **THEN** admission fails with `product-source-time-order`, because every action capture must precede every response capture
+
 ### Requirement: Shots are built from the captures
 
-When beats are planned, every action beat of an admitted product promo SHALL cite capture ids in beats[].source. Each flow step MUST be shown by an action beat citing one of its captures, and sourced beats MUST cover at least 50% of durationSec. A beat without real material becomes a short title or brand hold, or is removed.
+When beats are planned, every beat of an admitted product promo SHALL cite the captures it shows in beats[].source, except a pure brand card (brand-hold, transformation none). Unsourced beats MUST stay within 25% of durationSec. Each flow step MUST be shown by an action beat citing its capture, action no later than response no later than result; a title, card or hold cannot show a step.
 
 #### Scenario: Invented action beat
 
 - **WHEN** an action beat has no `source`
 - **THEN** admission fails with `shot-source-missing` for that beat
 
-#### Scenario: Result never shown
+#### Scenario: Half real captures plus invented result cards
 
-- **WHEN** no action beat cites a capture of the flow's result step
+- **WHEN** real captures cover half the film and unsourced title-holds present result or benefit claims
+- **THEN** admission fails with `shot-source-missing` for each card, whatever the sourced share
+
+#### Scenario: Result claimed only by a title-hold
+
+- **WHEN** no action beat cites a capture of the flow's result step, even if a title-hold cites one
 - **THEN** admission fails with `flow-unshown`
 
-#### Scenario: Card-heavy film
+#### Scenario: Flow shown out of order
 
-- **WHEN** sourced beats cover under half of the film's duration
+- **WHEN** an action beat shows the result before any action beat shows the response
+- **THEN** admission fails with `flow-out-of-order`
+
+#### Scenario: Brand cards dominate
+
+- **WHEN** unsourced brand cards take more than a quarter of the film
 - **THEN** admission fails with `source-share-low`
 
 ### Requirement: Unsourceable products block explicitly

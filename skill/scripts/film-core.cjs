@@ -43,7 +43,9 @@ const COMMIT_SHA = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const SHA256_HEX = /^[0-9a-f]{64}$/;
 const CAPTURE_MEDIA = /\.(?:png|jpe?g|webp|gif|mp4|webm|mov|mkv)$/i;
 const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
-const MIN_SOURCED_SHARE = 0.5;
+// Unsourced beats may only be pure brand cards (brand-hold, transformation none), within the
+// existing hold share; everything that shows product behavior, results or claims cites captures.
+const MAX_UNSOURCED_SHARE = MAX_HOLD_SHARE;
 
 function real(value, label) {
   assertString(value, label, SCOPE);
@@ -179,16 +181,36 @@ function productSourceAdmission(board, options = {}) {
   const observedAt = Date.parse(source.run.observedAt);
   const early = source.captures.filter((capture) => Date.parse(capture.capturedAt) < observedAt).map((capture) => capture.id);
   if (early.length) add("product-source-time-order", `captures ${early.join(", ")} predate the recorded run (${source.run.observedAt})`);
-  const firstAt = (step) => Math.min(...source.flow[step].map((id) => Date.parse(byId.get(id).capturedAt)));
-  if (firstAt("action") > firstAt("response") || firstAt("response") > firstAt("result")) add("product-source-time-order", "the flow's captures are out of order: the action comes first, then the response, then the result");
+  // Every capture of a step precedes every capture of the next step, not only the earliest ones.
+  const times = (step) => source.flow[step].map((id) => Date.parse(byId.get(id).capturedAt));
+  if (Math.max(...times("action")) > Math.min(...times("response")) || Math.max(...times("response")) > Math.min(...times("result"))) add("product-source-time-order", "the flow's captures are out of order: every action capture must come before every response capture, and every response capture before every result capture");
   if (options.shots !== false) {
-    const actionBeats = board.beats.filter((beat) => beat.role === "action");
-    for (const beat of actionBeats) if (!(beat.source || []).length) add("shot-source-missing", `action beat ${beat.id} names no real product capture in source`, beat.id);
-    const shown = new Set(actionBeats.flatMap((beat) => beat.source || []));
-    for (const step of FLOW_STEPS) if (!source.flow[step].some((id) => shown.has(id))) add("flow-unshown", `no action beat shows the recorded flow ${step} (${source.flow[step].join(", ")})`);
-    const sourcedSec = board.beats.filter((beat) => (beat.source || []).length).reduce((sum, beat) => sum + Math.max(0, beat.endSec - beat.startSec), 0);
-    const share = sourcedSec / board.durationSec;
-    if (share < MIN_SOURCED_SHARE) add("source-share-low", `beats built from real captures cover ${(share * 100).toFixed(0)}% of the film; at least ${MIN_SOURCED_SHARE * 100}% must show the product's own material`);
+    // Copy and claims ride on real material: every beat cites the captures it shows, except a pure
+    // brand card (a brand-hold that changes nothing). Title cards, result cards and benefit claims
+    // without captures are invented material, whatever share of the film is real.
+    const pureBrand = (beat) => beat.role === "brand-hold" && beat.transformation.kind === "none";
+    for (const beat of board.beats) {
+      if ((beat.source || []).length || pureBrand(beat)) continue;
+      add("shot-source-missing", beat.role === "action"
+        ? `action beat ${beat.id} names no real product capture in source`
+        : `${beat.role} ${beat.id} presents copy or a product claim without real product material; cite the captures it shows (only a brand-hold that changes nothing may stay unsourced)`, beat.id);
+    }
+    // Each flow step is shown by an action beat citing one of that step's captures, in order: the
+    // action is first shown no later than the response, the response no later than the result (one
+    // continuous beat may carry all three). A hold or card cannot show a step.
+    const firstShown = {};
+    for (const step of FLOW_STEPS) {
+      const index = board.beats.findIndex((beat) => beat.role === "action" && (beat.source || []).some((id) => source.flow[step].includes(id)));
+      if (index < 0) add("flow-unshown", `no action beat cites a capture of the recorded flow ${step} (${source.flow[step].join(", ")}); a title, card or hold cannot stand in for it`);
+      else firstShown[step] = index;
+    }
+    if (Object.keys(firstShown).length === FLOW_STEPS.length && (firstShown.action > firstShown.response || firstShown.response > firstShown.result)) {
+      add("flow-out-of-order", `the film shows the flow out of order (action first at ${board.beats[firstShown.action].id}, response at ${board.beats[firstShown.response].id}, result at ${board.beats[firstShown.result].id}); show the action before its response and the response before the result, or carry them in one continuous beat`);
+    }
+    // Secondary bound: unsourced brand cards stay within the existing hold share.
+    const unsourcedSec = board.beats.filter((beat) => !(beat.source || []).length).reduce((sum, beat) => sum + Math.max(0, beat.endSec - beat.startSec), 0);
+    const unsourced = unsourcedSec / board.durationSec;
+    if (unsourced > MAX_UNSOURCED_SHARE) add("source-share-low", `beats without real captures take ${(unsourced * 100).toFixed(0)}% of the film; unsourced brand cards may take at most ${MAX_UNSOURCED_SHARE * 100}%`);
   }
   return result(findings.length ? "failed" : "admitted");
 }

@@ -36,9 +36,10 @@ pinned commit in demo or seeded mode, capture real UI states and one user operat
 
 Direct the film around that flow. The product action named in section 2 should be the recorded
 action → response → result, shown in that order by action beats that cite its captures. Map every
-action shot to its captures in `beats[].source`; record crop, zoom, mask and caption choices in the
-beat's `note`. Real material carries at least half of the runtime; title, brand and caption holds
-support it. A shot the captures cannot supply is a missing capture to record, not a scene to draw.
+shot to its captures in `beats[].source`, titles and claims included; record crop, zoom, mask and
+caption choices in the beat's `note`. Only a pure brand card (a `brand-hold` that changes nothing)
+may stay unsourced, within a quarter of the runtime. A shot the captures cannot supply is a missing
+capture to record, not a scene or card to draw.
 
 If the product cannot be run or captured, record `status: "blocked"` with the blocker kind,
 reason and needs, and stop: the workflow returns `blocked` until the owner resolves it. Physical

@@ -87,7 +87,7 @@ const SOURCE = {
 
 const SHOT_HANDOFF = "Read reference.md's observed shots and proposed production. Rewrite storyboard.json using its existing subject, productAction, transformation, motion, choreography, carrier and note fields; note binds source times/frame ids, layer order, real asset paths and unresolved dependencies. Set reference to the source notes. Read references/product-film-direction.md#from-reference-to-producible-shots; the scaffold is an example, not the supplied reference's storyboard. ";
 const usesReference = (state, root) => state.mode === "replicate" || (state.tier !== "quick" && state.decisions?.reference !== "none" && exists(root, "reference.md"));
-const PRODUCT_PLAN = "Build the beats from the admitted captures: list the capture ids each beat is made from in beats[].source, give the recorded flow's action, response and result each an action beat that cites them, and let sourced beats cover at least half the runtime; captions and cards only support that material. ";
+const PRODUCT_PLAN = "Build the beats from the admitted captures: list the capture ids each beat shows in beats[].source (titles, captions and claims sit on real captures; only a pure brand card, a brand-hold with transformation none, may stay unsourced, within a quarter of the film), and show the recorded flow's action, response and result in that order with action beats that cite them. ";
 const PRODUCT_BUILD = "Build from the admitted captures each beat cites in beats[].source: the product's own UI states and operations carry the film, never invented screens, mock UI or stand-in cards. ";
 
 const PLAN = {

@@ -179,6 +179,76 @@ test("admission rejects missing, changed or unpinned material and shots that do 
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
+// Review bypasses of a8ec651: half real captures plus invented result cards, a result only a
+// title-hold claims, flow steps shown out of order, and capture times that only look ordered.
+test("half real captures plus invented result and benefit cards is not admitted", () => {
+  const root = tmp();
+  try {
+    const board = sourcedBoard(root);
+    board.beats[0].source = ["edge-drag"];
+    board.beats[1].source = ["image-rendered", "strip-frame"];
+    board.beats[1].endSec = 6;
+    board.beats[2].startSec = 6;
+    const cards = [
+      [board.beats[2], "card-result", "Ready for review card", "an invented 'Ready for review' result card"],
+      [board.beats[3], "card-benefit", "Saves hours card", "an invented benefit card"],
+    ];
+    for (const [beat, id, to, productAction] of cards) {
+      Object.assign(beat, { id, role: "title-hold", productAction, transformation: { kind: "reveal-in-context", from: "empty card", to } });
+      delete beat.source;
+    }
+    const result = checkStoryboard(board, { ...PROMO, projectRoot: root });
+    assert.equal(result.status, "failed", "50% real captures must not admit invented result cards");
+    assert.equal(result.admission.status, "failed");
+    const missing = result.findings.filter((finding) => finding.code === "shot-source-missing").map((finding) => finding.beatId);
+    assert.deepEqual(missing, ["card-result", "card-benefit"]);
+    assert.match(result.findings.find((finding) => finding.beatId === "card-result").message, /title-hold card-result presents copy or a product claim without real product material/);
+    // A pure brand card (brand-hold that changes nothing) may stay unsourced, within a quarter of the film.
+    assert.equal(checkStoryboard(sourcedBoard(root), { ...PROMO, projectRoot: root }).status, "passed");
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test("each flow step is shown by an action beat citing its capture, in order", () => {
+  const root = tmp();
+  try {
+    const titleResult = sourcedBoard(root);
+    Object.assign(titleResult.beats[3], { role: "title-hold", source: ["strip-frame"] });
+    titleResult.beats[2].source = ["image-rendered"];
+    const claimed = checkStoryboard(titleResult, { ...PROMO, projectRoot: root });
+    assert.equal(claimed.status, "failed");
+    assert.ok(claimed.findings.some((finding) => finding.code === "flow-unshown" && /flow result/.test(finding.message)), JSON.stringify(claimed.findings));
+
+    const reversed = sourcedBoard(root);
+    reversed.beats[0].source = ["strip-frame"];
+    reversed.beats[3].source = ["prompt-typed"];
+    const outOfOrder = checkStoryboard(reversed, { ...PROMO, projectRoot: root });
+    assert.equal(outOfOrder.status, "failed");
+    assert.deepEqual(codes(outOfOrder), ["flow-out-of-order"]);
+
+    const continuous = sourcedBoard(root);
+    continuous.beats[1].source = ["edge-drag", "image-rendered", "strip-frame"];
+    continuous.beats[2].source = ["prompt-typed"];
+    continuous.beats[3].source = ["prompt-typed"];
+    assert.equal(checkStoryboard(continuous, { ...PROMO, projectRoot: root }).status, "passed", "one continuous beat may carry the whole flow");
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test("every capture of a flow step precedes every capture of the next step", () => {
+  const root = tmp();
+  try {
+    const board = sourcedBoard(root);
+    const at = (id, time) => { board.productSource.captures.find((capture) => capture.id === id).capturedAt = time; };
+    at("prompt-typed", "2026-09-19T10:55:10Z");
+    at("edge-drag", "2026-09-19T10:55:30Z");
+    at("image-rendered", "2026-09-19T10:55:20Z");
+    at("strip-frame", "2026-09-19T10:55:40Z");
+    board.productSource.flow.action = ["prompt-typed", "edge-drag"];
+    const result = checkStoryboard(board, { ...PROMO, projectRoot: root });
+    assert.equal(result.status, "failed", "action [10s, 30s], response [20s], result [40s] is not an ordered flow");
+    assert.deepEqual(codes(result), ["product-source-time-order"]);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
 test("a declared-unrunnable product is blocked, never passed, at every evaluation surface", () => {
   const root = tmp();
   try {

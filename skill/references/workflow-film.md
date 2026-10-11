@@ -65,7 +65,8 @@ UI or text cards standing in for it.
 
 The repository is a credential-free URL (no local path); the commit is a full SHA, not a branch,
 tag or short SHA. `flow.action` cites an operation capture; captures follow `run.observedAt`; and
-the flow's captures read action, then response, then result. `next` returns the remaining
+every action capture precedes every response capture, and every response capture every result
+capture. `next` returns the remaining
 `product-source-*` findings, each with its `fix`; a malformed record is reported as
 `product-source-invalid` with the contract message.
 
@@ -148,10 +149,12 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   the existing storyboard and does not create another renderer, gate or acceptance result.
 - In replicate mode fill `storyboard.json.rendering` from the reference: route, requirements,
   reason and material sample times. The storyboard gate rejects incapable declared routes.
-- Product promo: list the capture ids each beat is built from in `beats[].source`
-  (`"source": ["switch-3m"]`). Every action beat cites captures; each flow step (action, response,
-  result) needs an action beat citing one of its captures; beats with `source` cover at least 50%
-  of `durationSec`. A beat without real material becomes a short title/brand hold or is removed.
+- Product promo: list the capture ids each beat shows in `beats[].source`
+  (`"source": ["switch-3m"]`). Every beat cites captures, including titles, captions and result or
+  benefit claims, which sit on real captures; only a pure brand card (`brand-hold` with
+  `transformation.kind: "none"`) may stay unsourced, within a quarter of `durationSec`. The flow's
+  action, response and result are each shown by an action beat citing that step's capture, in that
+  order (one continuous beat may carry all three); a title, card or hold cannot show a step.
   The run log, captures and bound job plan are checked inputs: changing them reopens this check.
 - Carry: every beat whose handoff is `continuation`, `morph`, `camera-carry` or `match-cut` names
   a `carrier` — what survives the boundary and what it becomes ("prompt bar opens into the app

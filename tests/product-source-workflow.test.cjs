@@ -350,7 +350,7 @@ test("the source stage returns admission findings, blocks on a blocked record an
   next = nextAction(dir);
   assert.equal(next.stage, "plan");
   assert.deepEqual(next.completed, ["source"]);
-  assert.match(next.command, /list the capture ids each beat is made from in beats\[\]\.source/);
+  assert.match(next.command, /list the capture ids each beat shows in beats\[\]\.source/);
 });
 
 test("changed product material, or a pass recorded without it, reopens plan and check through their bound inputs", t => {
@@ -419,7 +419,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   next = nextAction(dir);
   assert.equal(next.stage, "plan");
   assert.match(next.command, /beats\[\]\.source/);
-  assert.match(next.command, /at least half the runtime/);
+  assert.match(next.command, /only a pure brand card, a brand-hold with transformation none, may stay unsourced, within a quarter of the film/);
   assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "WORKFLOW_NOT_READY");
   passStoryboard(dir);
 
