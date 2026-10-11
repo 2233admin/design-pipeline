@@ -102,6 +102,15 @@ try {
   const ignoredFiles = (ignoredTracked.stdout || "").split("\0").filter(Boolean);
   report(ignoredTracked.status === 0 && ignoredFiles.length === 0, `Git index excludes ignored local files${ignoredFiles.length ? `: ${ignoredFiles.join(", ")}` : ""}`);
 
+  // Art Motion is project-owned: the former reference project's romanized name stays out of tracked
+  // paths and contents, binaries included. Neither pattern can match this source text.
+  const trackedPaths = run("git", ["ls-files", "-z"], { echo: false });
+  const namedPaths = (trackedPaths.stdout || "").split("\0").filter((file) => /hua[\s_.-]*shu/i.test(file));
+  const namedContents = run("git", ["grep", "-l", "-z", "-i", "-E", "hua[[:space:]_.-]*shu"], { echo: false });
+  const namedFiles = namedContents.status === 0 ? (namedContents.stdout || "").split("\0").filter(Boolean) : [];
+  const formerNameHits = [...new Set([...namedPaths, ...namedFiles])];
+  report(trackedPaths.status === 0 && [0, 1].includes(namedContents.status) && formerNameHits.length === 0, `tracked paths and contents omit the former reference-project name${formerNameHits.length ? `: ${formerNameHits.join(", ")}` : ""}`);
+
   const skillText = fs.readFileSync(path.join(repoRoot, "skill/SKILL.md"), "utf8");
   const frontmatter = skillText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   report(Boolean(frontmatter && /^name:\s*design-pipeline\s*$/m.test(frontmatter[1]) && /^description:\s*\S+/m.test(frontmatter[1])), "skill frontmatter");

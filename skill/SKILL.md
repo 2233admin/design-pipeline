@@ -67,6 +67,7 @@ name a repository. This is triggered by the work's needs, not a required search 
   for the independent native optimizer, frozen cases, diagnostic feedback and reviewable candidates.
 - Detailed route, CLI, gate and receipt contracts: `references/pipeline-reference.md`.
 - `film`, `edit`, and `web` workflow selected by `next`: the matching `references/workflow-*.md`.
+- Web treatment, section briefs and review rules W1-W7: `references/web-direction.md`.
 - Supporting drawing, image placement, text fitting, comparison, motion maps and advanced
   technique sources: `tools/README.md` → one selected guide → its implementation/example.
 - Upstream bundles: follow the selected route in

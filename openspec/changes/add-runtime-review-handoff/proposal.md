@@ -1,5 +1,5 @@
 ---
-status: in-review
+status: approved
 ---
 
 # 对象级 captured runtime review 与开发交接
@@ -20,6 +20,6 @@ status: in-review
 
 ## Impact / Approval
 
-本 change 已经用户 CHECKPOINT 1 明确 Approve 后进入实施与审查。核心接口、输入形状和责任边界仍以 `design.md` 为唯一详细合同；行为 delta 见 `specs/runtime-review/spec.md`。实施 driver 为开发 agent，approver 为用户，经主控呈交；实际核验证据摘要记录在 `tasks.md`（原始实施期证据留在未纳入版本库的本地实施记录，不作为仓库引用），人类 CHECKPOINT 2 尚待，无预设截止日期。
+本 change 已经用户 CHECKPOINT 1 明确 Approve 后进入实施与审查。核心接口、输入形状和责任边界仍以 `design.md` 为唯一详细合同；行为 delta 见 `specs/runtime-review/spec.md`。实施 driver 为开发 agent，approver 为用户，经主控呈交；实际核验证据摘要记录在 `tasks.md`（原始实施期证据留在未纳入版本库的本地实施记录，不作为仓库引用）。人类 CHECKPOINT 2 已于 2026-10-11 由用户在对话中批准。
 
 触达 core、public CLI/help、schema/reference、package resource/test manifest 与用户文档；用户已有 dirty 文件须重新读取并最小接线，不覆盖 quality work。没有 runtime capture 或当前字节核验时，不得显示 pass/verified。成功信号是一个对象反馈能保留三类输入身份交给开发 agent，且任一被检查输入变化不能继承旧的匹配/验收显示。

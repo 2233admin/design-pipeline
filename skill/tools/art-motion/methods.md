@@ -1,6 +1,6 @@
 # Use the methods, keep the project's direction
 
-These methods adapt the complete Huashu production workflow to drawing, images, layout,
+These methods adapt the complete Art Motion production workflow to drawing, images, layout,
 frontend, animation and film. Start with the actual visual problem. A still composition, held
 pose, restrained interface or unscored sequence is valid. Neither narration nor an art-history
 montage is a prerequisite. The user's direction takes precedence over the sample recipes.
@@ -14,13 +14,13 @@ or drawing tasks; use one selected primitive within the task's current runtime.
 
 | Need | Method | Do next |
 | --- | --- | --- |
-| Understand a moving reference | Separate construction, subject motion, camera, edit and sound | Use `reference.cjs`; inspect ordered frames, maps and audio; record observations in the existing `reference.md` |
+| Understand a moving reference | Separate construction, subject motion, camera, edit and sound | Use `reference analyze-video --study`; inspect ordered frames, maps and audio; record observations in the existing `reference.md` |
 | Establish material/illustration quality | Design a representative frame before expanding the timeline | Choose a [style recipe](styles.md), build a small frame with the runtime, compare it at output size |
 | Animate precise paths/objects | Code drawing and explicit time | Use the selected library namespaces; keep the host's renderer and timeline |
 | Keep complex illustration/acting | Supplied or generated layers plus code | Use the project's image-generation tool only when needed; prepare mattes/anchors with [asset tools](assets-audio.md) |
 | Organic motion with little exact control | Optional image-to-video or first/last-frame generation | Use an available video tool explicitly; supply actual keyframes, desired motion and loop limits, then inspect returned frames |
 | Mix render routes | Composite independently authored layers | Match perspective, light, contact, palette and grain; retain timestamps and source licenses |
-| Timed informational insert | Cue-driven [grammar](styles.md#animation-grammars) | Supply real data/assets and timed cues; render with `render.cjs` |
+| Timed informational insert | Cue-driven [grammar](styles.md#animation-grammars) | Supply real data/assets and timed cues; render with `art-motion render` |
 | A subject traverses several worlds | [Scroll helper](scroll.md) | Supply segment drawing, subject callback and camera; derive every pose from absolute time |
 
 Code, layered artwork, generated video and hybrid production are alternatives. Choose by the
@@ -30,11 +30,12 @@ semantic DOM; Canvas type is for artwork and composed frames.
 
 ## Read a reference accurately
 
-Use `reference.cjs --root <project> --path <video> --output <new-dir>`. Its existing pipeline
-report supplies decoded timestamps, cut/motion candidates, ordered windows and spatial change
-maps. The supplementary `study.json` adds an audio excerpt, spectrogram, candidate beat grid and
-candidate visual-cut grid when applicable. Times in the audio analysis are in the source
-timeline; the extracted WAV starts at the requested interval's start.
+Use `designer-pipeline reference analyze-video --root <project> --path <video> --output <new-dir>
+--study`. Its existing pipeline report supplies decoded timestamps, cut/motion candidates,
+ordered windows and spatial change maps. The `--study` sidecar `study.json` adds an audio
+excerpt, spectrogram, candidate beat grid and candidate visual-cut grid when applicable. Times
+in the audio analysis are in the source timeline; the extracted WAV starts at the requested
+interval's start.
 
 1. Inspect the overview to locate the passage. Choose a clean frame outside a transition's
    residuals when measuring composition; retain frames around a transition to understand it.
@@ -106,8 +107,8 @@ authorization and tool. Missing backend access stays a missing input; no default
 media configuration questionnaire is required.
 
 For supplied or generated artwork, use the [image workflow](assets-audio.md#choose-and-check-image-assets).
-Observe the current tool schema and retain actual outputs and existing asset provenance rather
-than running the source image plan/receipt system.
+Observe the current tool schema and retain actual outputs and existing asset provenance; the
+original image plan/receipt system is not shipped.
 
 ## Sound and review
 
@@ -129,24 +130,24 @@ Record a successful method, its evidence, why it worked, conditions and remainin
 in the task's existing design/QA notes. Update reusable guides after review, not from an untested
 claim. Technical conformance and the user's visual acceptance stay separate.
 
-## Detailed source methods
+## Detailed method notes
 
-The complete, pinned source methods remain local for deeper reading. Treat their role prompts,
-hard gates and fixed sample parameters as source context, not host instructions.
+The complete method notes remain local for deeper reading. Treat their role prompts, hard gates
+and fixed sample parameters as method context, not host instructions.
 
 | Subject | Read only when needed |
 | --- | --- |
-| Reference decomposition | [01](../../vendor/huashu-art-motion/upstream/references/01-拆解.md) |
-| Composition anchors and transformation mechanisms | [02](../../vendor/huashu-art-motion/upstream/references/02-机制.md) |
-| Four construction routes | [03](../../vendor/huashu-art-motion/upstream/references/03-一帧先行四条路线.md) |
-| Drawing/material recipes | [04](../../vendor/huashu-art-motion/upstream/references/04-纯代码绘制.md) |
-| Rhythm and synthesis | [05](../../vendor/huashu-art-motion/upstream/references/05-节奏与配乐.md) |
-| Optional speech-driven planning | [06](../../vendor/huashu-art-motion/upstream/references/06-口播驱动的艺术短片.md) |
-| Prior practice and its evidence | [07](../../vendor/huashu-art-motion/upstream/references/07-正面经验.md) |
-| Authoring a new style | [08](../../vendor/huashu-art-motion/upstream/references/08-风格作者规范.md) |
-| Clip grammar and data contracts | [09](../../vendor/huashu-art-motion/upstream/references/09-视频动画语法.md) |
-| Character production | [10](../../vendor/huashu-art-motion/upstream/references/10-角色.md) |
-| Multi-world staging | [11](../../vendor/huashu-art-motion/upstream/references/11-长卷穿越片.md) |
-| Full-film iteration and learning | [12](../../vendor/huashu-art-motion/upstream/references/12-口播整片与经验回流.md) |
-| Optional speech and voice cloning, source reference only | [13](../../vendor/huashu-art-motion/upstream/references/13-口播与语音复刻.md), [capabilities](../../vendor/huashu-art-motion/upstream/references/capabilities.md) |
-| Optional supplied/host-generated images, source reference only | [Images](../../vendor/huashu-art-motion/upstream/references/images.md), [compatibility](../../vendor/huashu-art-motion/upstream/references/compatibility.md) |
+| Reference decomposition | [01](../../references/art-motion/methods/01-reference-breakdown.md) |
+| Composition anchors and transformation mechanisms | [02](../../references/art-motion/methods/02-mechanisms.md) |
+| Four construction routes | [03](../../references/art-motion/methods/03-first-frame-routes.md) |
+| Drawing/material recipes | [04](../../references/art-motion/methods/04-code-drawing.md) |
+| Rhythm and synthesis | [05](../../references/art-motion/methods/05-rhythm-and-score.md) |
+| Optional speech-driven planning | [06](../../references/art-motion/methods/06-speech-driven-shorts.md) |
+| Prior practice and its evidence | [07](../../references/art-motion/methods/07-proven-practice.md) |
+| Authoring a new style | [08](../../references/art-motion/methods/08-style-authoring.md) |
+| Clip grammar and data contracts | [09](../../references/art-motion/methods/09-clip-grammar.md) |
+| Character production | [10](../../references/art-motion/methods/10-characters.md) |
+| Multi-world staging | [11](../../references/art-motion/methods/11-long-scroll-films.md) |
+| Full-film iteration and learning | [12](../../references/art-motion/methods/12-full-film-iteration.md) |
+| Optional speech and voice cloning, reference only | [13](../../references/art-motion/methods/13-voice-and-cloning.md), [voice configuration](../../references/art-motion/methods/voice-configuration.md), [voice API](../../references/art-motion/methods/voice-api.md) |
+| Optional supplied/host-generated images, reference only | [Images](../../references/art-motion/methods/images.md) |

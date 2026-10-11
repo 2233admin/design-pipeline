@@ -1,7 +1,7 @@
 "use strict";
 
 // Pixel diagnostics, shared by still-image comparison and existing video observation reports.
-// Method reference: huashu-art-motion analyze/breakdown.py and engine/compare.py;
+// Method reference: the Art Motion reference breakdown and compare methods (MIT, ../art-motion/LICENSE);
 // this implementation uses the pipeline's PNG codec and source containment.
 const fs = require("node:fs");
 const path = require("node:path");

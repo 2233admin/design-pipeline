@@ -1,5 +1,8 @@
 # Template-library verification
 
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
 ## Scope and frozen implementation
 
 The user prioritizes maintaining reusable templates; runnable brand projects, storyboard generation
@@ -13,7 +16,7 @@ Packaged skill tree: `ab67b55f14f78978daa8bfbf252ab23b3b2481b2`.
 
 Before freezing, `git fetch origin`, both histories and the three-dot PR scope were reviewed.
 There were no incoming main commits; the existing thirteen right-side commits are the previously
-authorized Good CSS/Taste/native/Huashu/film branch. The dirty original checkout at
+authorized Good CSS/Taste/native/Art Motion/film branch. The dirty original checkout at
 `F:\projects\design-pipeline` was preserved; all implementation stays in the clean release worktree.
 
 ## Source and recipe review
@@ -57,7 +60,7 @@ Snapshot digest records content identity, not publisher attestation.
   remaining material finding. Reviewer did not run tests; execution evidence is from primary QA.
 - Frozen-tree npm test: 1,089 repository tests passed, zero failed/cancelled/skipped; actual package resource/archive checks and isolated installation passed; installed-package CLI 12/12 passed with zero skipped; both browser-tool self-tests passed. QA confirmed byte-identical repository status before/after.
 
-Full QA used the persistent isolated FontTools 4.66.1 Python via `HUASHU_PYTHON`, existing
+Full QA used the persistent isolated FontTools 4.66.1 Python via `FONTTOOLS_PYTHON`, existing
 `.env.local` Blender resolution and discovered Chrome. Implementation bytes remained frozen.
 Local logs and source notes are ignored under `.design-pipeline/prompt-motion/`; prior film
 execution evidence remains under its own change and does not validate the new recipe library.

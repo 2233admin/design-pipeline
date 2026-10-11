@@ -29,7 +29,7 @@ observations or turn sampling windows into confirmed shots.
 Review the upstream library/utility implementations and map them to adapted local primitives,
 existing local tools, optional source-specific techniques, or unsupported assumptions. Preserve
 the MIT notice for derived code. Retain the reviewed 17 library modules and small analysis/asset
-scripts under `tools/huashu-art-motion/` as pinned, on-demand technique sources. Their own stage,
+scripts under `tools/art-motion-reference/` as pinned, on-demand technique sources. Their own stage,
 font, Python dependency and asset assumptions are documented; they are not loaded into every
 product or registered as another renderer. This keeps advanced techniques locally inspectable
 without pretending every upstream entry point has been adapted or runtime-verified.

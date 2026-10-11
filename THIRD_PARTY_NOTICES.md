@@ -458,38 +458,42 @@ LICENSE.
 ## Animation craft references
 
 `references/animation-thinking.md` and the original motion-study example draw method inspiration
-from [alchaincyf/huashu-art-motion](https://github.com/alchaincyf/huashu-art-motion) at
-`26dba25b2b495c2138848c29a2c90df356a20325` (MIT, copyright 2026 alchaincyf; reviewed 2026-10-06).
+from MIT-licensed animation work by [alchaincyf](https://github.com/alchaincyf), reviewed at
+revision `26dba25b2b495c2138848c29a2c90df356a20325` on 2026-10-06 (copyright 2026 alchaincyf).
 That guide redistributes no upstream artwork or audio. The guide also links Richard Williams'
 authorized publisher/masterclass descriptions and Toei's public production guidance; no book
 pages, course videos or other training material are bundled.
 
-## alchaincyf/huashu-art-motion tools
+## Art Motion (adapted from work by alchaincyf)
 
-`skill/vendor/huashu-art-motion/` preserves the reviewed code, methods, recipes, examples and
-licensed font resources from https://github.com/alchaincyf/huashu-art-motion at commit
-`57d67608ab458f57d9b153b1a2831b921e22498b` (incremental source review 2026-10-08).
-The snapshot includes media defaults/schema, upstream contract tests and inert release/CI
-materials. Original image plans, media configuration and voice providers remain source
-reference; maintained image workflows use the host tools and existing pipeline evidence.
-Its `manifest.json` records original paths, SHA-256 hashes and exclusions. Code/docs retain
-the MIT license and `Copyright (c) 2026 alchaincyf (花叔 · 花生)` notice. Font resources retain
-their separate SIL Open Font License files under `upstream/scripts/engine/lib/fonts/`;
-stroke-derived data retains `upstream/scripts/engine/reference_films/spacex/spacex_wb/assets/ARPHICPL.TXT`.
-The author's demo-only portrait/frame packs and showcase media are excluded; consumers supply
-their own artwork. Example references to those excluded assets are not packaged asset promises.
+Art Motion is project-owned code and method material adapted from MIT-licensed work by
+[alchaincyf](https://github.com/alchaincyf), last reviewed at revision
+`57d67608ab458f57d9b153b1a2831b921e22498b` (2026-10-08). The original copyright line is
 
-`skill/tools/art-motion/` adapts all 17 library modules, 35 scene studies, eight clip grammars
-and 50 transitions into an isolated static runtime, with asset/font/audio/scroll/render helpers
-and production guides. Generated code embeds the upstream MIT notice. The original bootstrap
-scripts remain reference material; maintained tools replace their global loading, fixed stage,
-unsafe browser flags and overwrite behavior. Named scenes and characters are optional studies,
-not project defaults or claims of creative acceptance.
+```text
+Copyright (c) 2026 alchaincyf (花叔 · 花生)
+```
 
-`skill/tools/visual-craft/canvas.js` adapts arc-length, pressure-stroke, seeded-random and text
-layout methods into caller-owned helpers. Its adjacent `LICENSE.huashu-art-motion` preserves
-the upstream MIT notice. The visual diagnostics implementation borrows the inspection method
-and uses this project's existing PNG codec, sampler and evidence contracts.
+The full MIT copyright and permission notice is in `skill/tools/art-motion/LICENSE`. The generated
+`skill/tools/art-motion/runtime.js` embeds it verbatim, and `composition scaffold` copies it into
+both Art Motion and Visual Craft studies as `LICENSE.art-motion`. The notice covers:
+
+- `skill/tools/art-motion/`: the engine libraries, 35 scene studies, eight clip grammars and
+  50 transitions under `engine/`, the generated isolated runtime, and the asset, font, audio,
+  scroll, render and reference-study helpers. Maintained tools replace the original global
+  loading, fixed stage, unsafe browser flags and overwrite behavior. Named scenes and characters
+  are optional studies, not project defaults or claims of creative acceptance.
+- `skill/references/art-motion.md` and the method, style and grammar notes under
+  `skill/references/art-motion/`.
+- `skill/tools/visual-craft/canvas.js`, which adapts arc-length, pressure-stroke, seeded-random
+  and text layout methods into caller-owned helpers, and the inspection method borrowed by
+  `skill/tools/visual-diagnostics/`, which uses this project's existing PNG codec, sampler and
+  evidence contracts.
+
+Bundled fonts in `skill/tools/art-motion/fonts/` keep their SIL Open Font License 1.1 notices in
+`OFL.txt` and `LICENSES.md` beside them. The Arphic-licensed stroke data, demo films, the
+reference film and the author's portrait/frame packs and showcase media are not distributed;
+consumers supply their own artwork.
 
 ## Strudel (downloaded at runtime, not distributed)
 

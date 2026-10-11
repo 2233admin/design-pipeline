@@ -68,6 +68,9 @@ Anti-slop is not a ban on richness. Run both checks:
 - **Reference-level check:** compare against adjacent human-made work at the same carrier and
   viewing scale. A visible preview must already use real copy, target geometry, and enough authored
   relationships to be judged; promises in a control record do not count.
+- **Web companion:** for web pages the reviewer's rules W2 (adjacent density contrast) and W4
+  (ground or structure change per section) in `references/web-direction.md` complement
+  `template-pattern-density`; they are Visual Acceptance guidance, not a gate.
 
 ## Pipeline use
 

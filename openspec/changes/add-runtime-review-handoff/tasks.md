@@ -1,5 +1,5 @@
 ---
-status: in-review
+status: approved
 ---
 
 # Tasks：已批准实施
@@ -33,7 +33,7 @@ status: in-review
 - [x] 新 `after-review-fixes` HTML：沿用真实历史 `capturedAt=2026-10-03T20:48:50.572Z`，不是 recapture；两方向原生 File.text 延迟竞争均 latest wins，两对象草稿恢复，settings-status 实际映射 `index.html:7/status-card`。same-D raw 下载 SHA `E2960D1330970C8C5459EF8F56B0A86FC5A4B63996F8EE2CDFB476DC3980C712` 经 public record 两次 exit 0；Record SHA `82A3FA3B9182755CAC2432BA28482D414290481EF322E7F5FAD45188F683003E` 与原 contextAtRecord 不变，仍 recorded，非 resolved。详细 Bundle/Record 路径及真实桌面/移动证据见 SSOT。
 - [x] 如实记录 clipboard 限制：当前 file 页 write 报告 copy 成功，但原生 readback 为 `NotAllowedError: Read permission denied`、SDK read unavailable；没有权限绕过，不称最新 clipboard 读回已证明。
 - [x] 按 resolved sync-sprint-status precondition，`story_key` 未设置，显式 skip；未创建 story 或修改 sprint-status。
-- [ ] 人类 CHECKPOINT 2 接受：尚待用户明确接受；OpenSpec status 保持 `in-review`。SSOT `done` 仅表示实现与已执行自动门禁完成，不等于人类接受。
+- [x] 人类 CHECKPOINT 2 接受：2026-10-11 approved by user in chat（用户批准合并 PR #89，即接受本 change）；OpenSpec status 改为 `approved`。
 
 最终文档后门禁由 Main 低输出运行同一 `scripts/qa.cjs`，实际 QA_EXIT_CODE=0（48.84s）；后一次被截断的 stdout 不作 passed 证据。Multica 在原实施期因 server 连接失败 blocked；KB 因工作 registry/locator 缺失未落候选 note，不使用 personal fallback。
 
@@ -41,6 +41,5 @@ status: in-review
 
 - [x] 原分支 `check-project-progress` 落后 main 127 个提交；在最新 `origin/main` 上重新应用 f55fcdd。118ffad 只修改 `_bmad-output/` 本地实施记录，该目录在 main 上被 `.gitignore` 排除且不得提交，故无可移植内容；f55fcdd 中全部 `_bmad-output/` 文件同样排除。
 - [x] 冲突按"保留 main 行为 + 接入本功能"解决：`cli-core.cjs` 只加 import、help 五行、runtime-review 选项校验/命令函数、`COMMANDS` 条目与 dispatch 前置校验，所用 flags 均已在 `KNOWN_OPTIONS`/`BOOLEAN_OPTIONS`；`test-manifest.json`、`package-resources.json` 追加登记；main 已将 `SKILL.md` 改为精简英文路由，故只加一条指向 `references/runtime-review.md` 的入口；`CHANGELOG.md` [Unreleased] 以英文 Added 条目记录（原未发布功能自身的 Fixed 条目并入其中）。
-- [x] 移植后 QA（commit bd0b8b2，基于 origin/main 0160bc9，Node 26.3.1，`HUASHU_PYTHON` 指向按 CONTRIBUTING 隔离的 fonttools 4.66.1 venv）：`npm test` 实际 exit 0——仓库测试 1143 项（122 文件）pass 1140 / fail 0 / skip 3（3 项为可选 GEPA runtime 未配置），其中 `tests/runtime-review.test.cjs` 21/21 pass；reproducible tgz/zip/checksums、安装包 public CLI 12/12、QA 后仓库 status byte-identical 均 OK；browser-automation self-test OK。`npm run specs:check` exit 0（65 passed，含本 change）。首轮未设 `HUASHU_PYTHON` 时唯一失败为系统 Python 缺 fontTools 的 font-subset 环境前提，与本功能无关。
-- [ ] 人类 CHECKPOINT 2 仍待；移植 PR 只提交审阅，不自动合并。
+- [x] 移植后 QA（commit bd0b8b2，基于 origin/main 0160bc9，Node 26.3.1，font-subset 的 Python 环境变量指向按 CONTRIBUTING 隔离的 fonttools 4.66.1 venv）：`npm test` 实际 exit 0——仓库测试 1143 项（122 文件）pass 1140 / fail 0 / skip 3（3 项为可选 GEPA runtime 未配置），其中 `tests/runtime-review.test.cjs` 21/21 pass；reproducible tgz/zip/checksums、安装包 public CLI 12/12、QA 后仓库 status byte-identical 均 OK；browser-automation self-test OK。`npm run specs:check` exit 0（65 passed，含本 change）。首轮未设该变量时唯一失败为系统 Python 缺 fontTools 的 font-subset 环境前提，与本功能无关。
 

@@ -25,6 +25,12 @@ digests and source-frame indices bind the observations. Overview is an index: it
 motion. Ordered windows are sampled, not every source frame. Watch the source at full speed when
 your host supports it; report whether that actually happened.
 
+Add `--study` when sound, edit rhythm or construction also matter. It writes a supplementary
+`study.json`, an audio excerpt and spectrogram when the source has sound, and separate audio/visual
+grid candidates; without the flag the command is unchanged. Read them with the
+[Art Motion reference method](../tools/art-motion/methods.md#read-a-reference-accurately); they are
+candidates for inspection, not observations, and they add no receipt.
+
 Read one window at a time. Identify its objects/regions, contour and thickness, material versus
 light response, occlusion, camera change versus object motion, labels and start/end states. Add
 one observation per named `target` and `property`, with `startSec`, `endSec`, `startState`,

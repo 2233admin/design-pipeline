@@ -1,5 +1,5 @@
 ---
-status: in-review
+status: approved
 ---
 
 # Design：薄对象 review / handoff

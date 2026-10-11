@@ -7,7 +7,6 @@ does not install dependencies, grant execution authority or certify visual quali
 
 | Bundle | Maintained guide | Integrity record |
 | --- | --- | --- |
-| `huashu-art-motion/` | [Drawing and visual technique sources](../references/huashu-art-motion.md) | `manifest.json`, pinned commit and per-file SHA-256 |
 | `mengto-skills/` | [Design and implementation recipes](../references/mengto-skills.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `iart-motion-skills/` | [Motion playbooks](../references/iart-motion-skills.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `interface-discipline/` | [Interface review](../references/interface-discipline.md) | `manifest.json`, snapshot hash |
