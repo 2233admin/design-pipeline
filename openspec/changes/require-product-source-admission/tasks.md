@@ -26,6 +26,7 @@
 - [x] 5.3 Run repository QA with `npm test`.
 - [x] 5.4 Confirm historical films, frozen scores and the archived Tern pair were not modified, and record that admission grants no Visual Acceptance.
 - [x] 5.5 Treat the scaffold's unfilled reference.md template as no reference, so a product promo that scaffolds at source still reaches the reference stage (found in the CERE-515 OpenAlice acceptance run).
+- [x] 5.6 Move the static scaffold note templates and `isUnfilledScaffoldNote` into the dependency-free `skill/scripts/scaffold-notes.cjs`, so the generic reference stage in `workflows/shared.cjs` no longer loads `film-project-core.cjs`; a regression runs it in a fresh process and asserts the film core is not in `require.cache`.
 
 ## Evidence
 

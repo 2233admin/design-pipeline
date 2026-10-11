@@ -13,6 +13,7 @@ const { checkTimeline } = require("./film-timeline-core.cjs");
 const { checkComposition, checkFilmLayout } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
 const { GSAP_VERSION, HYPERFRAMES_VERSION, hyperframesPreview } = require("./film-capture-core.cjs");
+const { SCAFFOLD_NOTES } = require("./scaffold-notes.cjs");
 const { blockNames } = require("./film-blocks-core.cjs");
 const { checkGridAlignment } = require("./score-core.cjs");
 const { checkAudio } = require("./audio-core.cjs");
@@ -100,17 +101,9 @@ const PINS = { gsap: GSAP_VERSION, hyperframes: HYPERFRAMES_VERSION };
 const SETUP = `1. \`npm install\` once (needs network): installs the pinned hyperframes@${HYPERFRAMES_VERSION} and gsap@${GSAP_VERSION}. Afterwards run HyperFrames as \`npx --no-install hyperframes ...\`; lint, check, render and film check then work offline (fonts a composition names but does not declare are still fetched by HyperFrames).`;
 
 const NOTES = {
-  "reference.md": "# Reference\n\n- Primary moving reference (URL/title, role):\n- Observed time ranges (shot scale, motion, cuts, type, sound actually heard):\n- Transfer to this product / keep with the reference:\n- Geometry and material requirements (solid depth, bevel, glaze, relief, angle-dependent color):\n- Rendering route and material inspection angles (references/film-materials.md):\n- Asset inventory and missing shots:\n- Inspection limits:\n",
-  "sound.md": "# Sound\n\n- Energy arc:\n- Music source and reuse basis (auditioned / pending):\n- Entry and exit points:\n- Accents bound to beats (match storyboard soundCues):\n- Intentional silence:\n",
-  "qa.md": "# QA\n\n## Technical (film check)\n\n## Frame review (one frame per second, every frame at full size)\n\n## Creative review (watch uninterrupted at speed)\n\n- Product comprehension:\n- Continuity:\n- Rhythm:\n- Transformation:\n- Identity:\n- Reference fit:\n- Sound:\n\n## User acceptance\n\nPending.\n",
+  ...SCAFFOLD_NOTES,
   "FILM.md": `# Film project\n\n${SETUP}\n2. Fill reference.md and sound.md from real references before editing the storyboard.\n3. Edit storyboard.json, then \`designer-pipeline verify film-storyboard --storyboard storyboard.json\` until it passes.\n4. Build index.html from the beat comments; replace #FROM/#TO/#SUBJECT/#RESULT with real element ids.\n5. \`npx --no-install hyperframes check\`, then \`npx --no-install hyperframes render --output out.mp4\`.\n6. \`designer-pipeline film check --project-root .\` captures timeline.json and runs every film gate; follow each finding's \`fix\`.\n7. Review the draft frame by frame (\`ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png\`, every frame at full size: overlap, clipping, empty frames, edge margins, text size), fix and re-check, and write qa.md. Then ask the owner to accept or reject it. Gates never grant creative acceptance.\n`,
 };
-
-// True while a scaffolded note still holds the template's empty prompts. The source stage of a
-// product promo scaffolds before the reference stage, so an unfilled reference.md is not a study.
-function isUnfilledScaffoldNote(name, text) {
-  return Object.hasOwn(NOTES, name) && String(text).replace(/\r\n/g, "\n").trim() === NOTES[name].trim();
-}
 
 function packageJson(target, board) {
   const file = path.join(target, "package.json");
@@ -304,4 +297,4 @@ function compositionStep(board, frames, layout, layoutNote, options) {
   };
 }
 
-module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, isUnfilledScaffoldNote, layoutTimes, newestRender, scaffoldFilm };
+module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, layoutTimes, newestRender, scaffoldFilm };

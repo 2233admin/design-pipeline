@@ -169,6 +169,8 @@ All notable changes to Design Pipeline are documented here.
   reference stage. A standard/full product promo scaffolds at its `source` stage, so `next` used
   to skip reference and send the plan to the unfilled template (found in the CERE-515 OpenAlice
   acceptance run). The stage now asks for a reference or `decide --stage reference --answer none`.
+  The unfilled-template check lives in the dependency-free `scripts/scaffold-notes.cjs`, so the
+  generic workflow stages no longer load the film project core.
 - Windows native task verification and offline study boundaries now compare physical paths
   consistently across long/short aliases while retaining link and case-sensitive root rejection.
 - Pointer capture retains each native input step after driver delays, with spacing between

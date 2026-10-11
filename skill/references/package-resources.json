@@ -121,6 +121,7 @@
     "scripts/film-capture-core.cjs",
     "scripts/capture-film-timeline.cjs",
     "scripts/film-project-core.cjs",
+    "scripts/scaffold-notes.cjs",
     "scripts/interaction-core.cjs",
     "scripts/interaction-capture-core.cjs",
     "scripts/capture-interaction.cjs",

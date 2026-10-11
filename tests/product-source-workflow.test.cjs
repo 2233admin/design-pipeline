@@ -544,3 +544,24 @@ test("every product-promo stage names a section of the film guide", () => {
     }
   }
 });
+
+test("the generic workflow's reference check decides unfilled templates without loading the film core", (t) => {
+  const dir = project(t);
+  const run = () => JSON.parse(require("node:child_process").execFileSync(process.execPath, ["-e", `
+    const { reference } = require(${JSON.stringify(path.join(__dirname, "../skill/scripts/workflows/shared.cjs"))});
+    const observed = reference("study").finished({ mode: "brief", decisions: {} }, ${JSON.stringify(dir)});
+    console.log(JSON.stringify({ observed, film: Object.keys(require.cache).filter(file => /film-project-core\\.cjs$/.test(file)) }));
+  `], { encoding: "utf8" }));
+  fs.writeFileSync(path.join(dir, "reference.md"), scaffoldNote("reference.md"));
+  assert.deepEqual(run(), { observed: false, film: [] });
+  fs.writeFileSync(path.join(dir, "reference.md"), "# Reference\n\n- Primary moving reference: https://example.com/clip\n");
+  assert.deepEqual(run(), { observed: true, film: [] });
+});
+
+function scaffoldNote(name) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "scaffold-note-"));
+  try {
+    scaffoldFilm(dir, {});
+    return fs.readFileSync(path.join(dir, name), "utf8");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+}

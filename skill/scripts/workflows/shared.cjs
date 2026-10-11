@@ -16,7 +16,7 @@ function referenceObserved(state, root) {
   if (state.mode !== "replicate" && state.decisions?.reference === "none") return true;
   if (!exists(root, "reference.md")) return false;
   // `film scaffold` writes an empty reference.md template; it records no observed reference.
-  if (require("../film-project-core.cjs").isUnfilledScaffoldNote("reference.md", fs.readFileSync(path.join(root, "reference.md"), "utf8"))) return false;
+  if (require("../scaffold-notes.cjs").isUnfilledScaffoldNote("reference.md", fs.readFileSync(path.join(root, "reference.md"), "utf8"))) return false;
   if (!exists(root, "reference-evidence.json")) return true; // Legacy notes have no media binding.
   const { readJson } = require("../contract-utils.cjs");
   const ref = readJson(path.join(root, "reference-evidence.json"), "reference evidence");
