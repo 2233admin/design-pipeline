@@ -244,6 +244,49 @@ test("safe.fill must be a visible CSS colour; translucent fills composite over t
   }
 });
 
+test("render's clip preflight leaves the first recorded frame equal to a fresh runtime's frame", { skip: BROWSER.skip, timeout: 300_000 }, async t => {
+  const root = temporary(t), examples = path.join(tool, "examples");
+  fs.cpSync(path.join(examples, "assets"), path.join(root, "assets"), { recursive: true });
+  const browser = await resolvePuppeteer(repo, BROWSER.puppeteerModule).launch({ executablePath: BROWSER.chrome, headless: true });
+  t.after(() => browser.close());
+  // Same page setup as the render kernel, without its preflight: one fresh runtime draws exactly one frame.
+  const fresh = async (spec, specFile, time) => {
+    const { assets, fonts } = loadInputs(root, spec, specFile), page = await browser.newPage();
+    try {
+      await page.setViewport({ width: spec.width, height: spec.height });
+      await page.setContent("<!doctype html><meta charset=utf-8><canvas id=artCanvas></canvas>");
+      await page.addScriptTag({ content: fs.readFileSync(runtime, "utf8") });
+      const pixels = await page.evaluate(async ({ spec, assets, fonts, time }) => {
+        const loaded = Object.create(null);
+        for (const [key, url] of Object.entries(assets)) { const image = new Image(); image.src = url; await image.decode(); loaded[key] = image; }
+        for (const face of fonts) document.fonts.add(await new FontFace(face.family, `url(${face.url})`, face.desc).load());
+        await document.fonts.ready;
+        const canvas = document.getElementById("artCanvas"); canvas.width = spec.width; canvas.height = spec.height;
+        const context = canvas.getContext("2d");
+        const art = ArtMotion.createArtMotionRuntime({ width: spec.width, height: spec.height, assets: loaded, fonts, seed: spec.seed ?? 1,
+          createCanvas(width, height) { const value = document.createElement("canvas"); value.width = width; value.height = height; return value; },
+          capabilities: { Path2D, DOMMatrix, DOMPoint } });
+        if (["y1_kurzgesagt", "y4_storytime"].includes(spec.grammar)) art.enableDemoArt();
+        await art.libraries.U.loadCmaps(fonts);
+        context.reset(); context.clearRect(0, 0, canvas.width, canvas.height);
+        const { fonts: _fonts, ...clipSpec } = spec;
+        art.drawClip(spec.grammar, context, time, { cues: [], ...clipSpec });
+        return canvas.toDataURL("image/png").split(",")[1];
+      }, { spec, assets, fonts, time });
+      return sha256(Buffer.from(pixels, "base64"));
+    } finally { await page.close(); }
+  };
+  for (const id of CLIPS) {
+    const spec = { ...JSON.parse(fs.readFileSync(path.join(examples, `${id}.json`))), width: 640, height: 360 };
+    // 30% in: past the opening, before the y2/t2 highlight windows whose frames already depend on draw history.
+    const file = `${id}.json`, time = Math.round(spec.duration * 0.3 * spec.fps) / spec.fps;
+    fs.writeFileSync(path.join(root, file), JSON.stringify(spec));
+    const rendered = await render(root, { chrome: BROWSER.chrome, puppeteerModule: BROWSER.puppeteerModule, spec: file, output: id, stills: [time] });
+    const report = JSON.parse(fs.readFileSync(rendered.report));
+    assert.equal(report.frames[0].sha256, await fresh(spec, path.join(root, file), time), `${id} first frame at ${time}s matches a fresh runtime`);
+  }
+});
+
 test("reference analyze-video writes study evidence only with --study", { skip: skipWithoutFfmpeg }, t => {
   const root = temporary(t);
   run("ffmpeg", ["-v", "error", "-n", "-f", "lavfi", "-i", "testsrc2=size=160x90:rate=8:duration=1.5", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=22050:duration=1.5", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", path.join(root, "source.mp4")]);

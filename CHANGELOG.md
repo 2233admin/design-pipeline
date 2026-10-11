@@ -153,7 +153,8 @@ All notable changes to Design Pipeline are documented here.
   colour before. Alpha clips (`"alpha": true`) keep the margins transparent. The fill must be a
   CSS colour Canvas can parse and must paint something: an unparseable value (which Canvas would
   ignore, painting with a stale colour) or a fully transparent one is a contract error, and
-  `art-motion render` reports it before writing any output. Translucent fills tint the margins.
+  `art-motion render` reports it before writing any output, then records frames from a fresh
+  runtime. Translucent fills tint the margins.
 - The eight Art Motion example clip specs select `"fonts": "bundled"`, so
   `designer-pipeline art-motion render --spec tools/art-motion/examples/<grammar>.json` renders them
   as shipped; they failed with a missing font family before.

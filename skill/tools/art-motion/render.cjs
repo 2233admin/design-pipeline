@@ -153,8 +153,9 @@ async function render(root, options) {
         const pixels = canvas.toDataURL("image/png").split(",")[1];
         return { pixels, renderMs: performance.now() - start };
       };
-      // The runtime owns the clip contract (CSS-colour safe.fill and the rest); surface its errors before any output exists.
-      if (clipSpec) window.art.drawClip(spec.grammar, context, 0, clipSpec);
+      // The runtime owns the clip contract (CSS-colour safe.fill and the rest); surface its errors before any output exists,
+      // then start recording from a fresh runtime so the probe's time and grammar state cannot leak into frames.
+      if (clipSpec) { window.art.drawClip(spec.grammar, context, 0, clipSpec); await window.resetArt(); }
     }, { spec, assets: inputs.assets, fonts: inputs.fonts });
     if (errors.length) throw new Error(errors.join("\n"));
     fs.mkdirSync(path.dirname(directory), { recursive: true }); fs.mkdirSync(directory);
