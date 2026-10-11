@@ -39,3 +39,12 @@
 - Historical evidence: no file under the ignored `.design-pipeline/archive/cere-482/` or any frozen
   score was read for writing or modified; the Tern pair keeps Visual Acceptance = rejected-both.
   Gate and admission results report `creativeAcceptance: not-assessed`; owner review stays separate.
+- Review fix (d78dd2c): every beat cites the captures it shows except a pure brand card (brand-hold
+  with transformation none, unsourced total within 25%); each flow step is shown by an action beat
+  citing its capture, in order (`flow-out-of-order`); flow capture times require max(action) ≤
+  min(response) and max(response) ≤ min(result). On a8ec651 the three new regressions fail (half real
+  captures plus invented result cards and the 10 s/30 s/20 s/40 s capture case are admitted; a
+  reversed flow passes); after the fix they pass with `shot-source-missing`, `flow-unshown`,
+  `flow-out-of-order` and `product-source-time-order`. `npm test` exits 0: 1184 tests, 1181 passed,
+  0 failed, 3 skipped (optional GEPA), installed CLI smoke 12/12, byte-identical status;
+  `npm run specs:check` 68 passed, 0 failed.
