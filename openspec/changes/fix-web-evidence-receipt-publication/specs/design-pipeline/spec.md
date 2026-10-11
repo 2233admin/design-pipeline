@@ -23,6 +23,13 @@ Browser/tool adapters SHALL produce existing validated v1 receipts with adapter 
 - **THEN** capture SHALL fail without overwriting that entry or publishing a successful evidence directory
 - **AND** the owned temporary stage SHALL be removed without changing pre-existing final output.
 
+#### Scenario: An artifact traverses a linked parent directory
+
+- **WHEN** an artifact file or a parent below the evidence root is a symbolic link or junction
+- **THEN** capture SHALL reject it before publication, even if its current bytes and hash resolve inside the stage
+- **AND** the owned temporary stage SHALL be removed without publishing a receipt that loses its artifact after rename.
+
+
 #### Scenario: Receipt persistence or directory publication fails
 
 - **WHEN** validated receipt persistence or final directory publication fails

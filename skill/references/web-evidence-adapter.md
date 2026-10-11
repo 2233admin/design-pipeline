@@ -10,7 +10,8 @@ The host starts the adapter in a child process with a bounded environment and JS
 ```
 
 The adapter writes one `design-pipeline.evidence-receipt.v1` JSON object to stdout. All artifact
-paths must stay under `outputRoot`; missing measurements remain `blocked` or `unknown`.
+paths must stay under `outputRoot` and contain no file or parent-directory links, so they
+remain valid after publication; missing measurements remain `blocked` or `unknown`.
 
 The host validates target identity, containment and artifact hashes, then exclusively writes
 `receipt.json` before publishing the staged directory. This filename is host-owned metadata,
