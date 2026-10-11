@@ -106,6 +106,12 @@ const NOTES = {
   "FILM.md": `# Film project\n\n${SETUP}\n2. Fill reference.md and sound.md from real references before editing the storyboard.\n3. Edit storyboard.json, then \`designer-pipeline verify film-storyboard --storyboard storyboard.json\` until it passes.\n4. Build index.html from the beat comments; replace #FROM/#TO/#SUBJECT/#RESULT with real element ids.\n5. \`npx --no-install hyperframes check\`, then \`npx --no-install hyperframes render --output out.mp4\`.\n6. \`designer-pipeline film check --project-root .\` captures timeline.json and runs every film gate; follow each finding's \`fix\`.\n7. Review the draft frame by frame (\`ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png\`, every frame at full size: overlap, clipping, empty frames, edge margins, text size), fix and re-check, and write qa.md. Then ask the owner to accept or reject it. Gates never grant creative acceptance.\n`,
 };
 
+// True while a scaffolded note still holds the template's empty prompts. The source stage of a
+// product promo scaffolds before the reference stage, so an unfilled reference.md is not a study.
+function isUnfilledScaffoldNote(name, text) {
+  return Object.hasOwn(NOTES, name) && String(text).replace(/\r\n/g, "\n").trim() === NOTES[name].trim();
+}
+
 function packageJson(target, board) {
   const file = path.join(target, "package.json");
   const existing = fs.existsSync(file) ? readJson(file, "package.json") : null;
@@ -298,4 +304,4 @@ function compositionStep(board, frames, layout, layoutNote, options) {
   };
 }
 
-module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, layoutTimes, newestRender, scaffoldFilm };
+module.exports = { CHECK_SCHEMA, carryContinuity, checkFilmProject, compositionHtml, isUnfilledScaffoldNote, layoutTimes, newestRender, scaffoldFilm };

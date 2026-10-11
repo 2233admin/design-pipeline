@@ -25,6 +25,7 @@
 - [x] 5.2 Run `npm exec -- openspec validate require-product-source-admission --strict` and `npm run specs:check`.
 - [x] 5.3 Run repository QA with `npm test`.
 - [x] 5.4 Confirm historical films, frozen scores and the archived Tern pair were not modified, and record that admission grants no Visual Acceptance.
+- [x] 5.5 Treat the scaffold's unfilled reference.md template as no reference, so a product promo that scaffolds at source still reaches the reference stage (found in the CERE-515 OpenAlice acceptance run).
 
 ## Evidence
 
@@ -57,3 +58,11 @@
   zones report the contract error and the regression passes. `npm test` exits 0: 1185 tests, 1182
   passed, 0 failed, 3 skipped (optional GEPA), installed CLI smoke 12/12, byte-identical status;
   `npm run specs:check` 68 passed, 0 failed.
+- Reference-template fix (5.5): in the CERE-515 OpenAlice run on main c72ddab, `next` after the
+  admitted source returned `concepts` with `completed: [intake, source, reference]`; the only
+  reference.md was the empty template `film scaffold` writes, and the storyboard gate then hashed
+  it. The new regression ("a standard product promo scaffolded at source still asks for its
+  reference") fails on c72ddab (`actual: 'concepts', expected: 'reference'`) and passes after the
+  fix. `npm test` exits 0: 1186 tests, 1183 passed, 0 failed, 3 skipped (optional GEPA), installed
+  CLI smoke 12/12, byte-identical status; `openspec validate require-product-source-admission
+  --strict` is valid.

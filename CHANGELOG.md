@@ -165,6 +165,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Film `next`: the empty `reference.md` template that `film scaffold` writes no longer completes the
+  reference stage. A standard/full product promo scaffolds at its `source` stage, so `next` used
+  to skip reference and send the plan to the unfilled template (found in the CERE-515 OpenAlice
+  acceptance run). The stage now asks for a reference or `decide --stage reference --answer none`.
 - Windows native task verification and offline study boundaries now compare physical paths
   consistently across long/short aliases while retaining link and case-sensitive root rejection.
 - Pointer capture retains each native input step after driver delays, with spacing between

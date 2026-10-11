@@ -160,6 +160,12 @@ Product-launch-video films SHALL use stages source, plan, build, check, review a
 - **WHEN** sample.mp4 or productSource changes after an accept verdict
 - **THEN** that verdict no longer finishes the sample stage and a new sample decision is required
 
+#### Scenario: Scaffolded before the reference stage
+
+- **GIVEN** a standard or full product promo whose source stage ran `film scaffold`
+- **WHEN** reference.md still holds the scaffold's empty template and no `decide --stage reference --answer none` is recorded
+- **THEN** `next` returns the reference stage instead of completing it
+
 #### Scenario: Non-product film stages
 
 - **WHEN** the bound form is not product-launch-video

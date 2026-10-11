@@ -14,6 +14,7 @@ const { bindStateJobPlan, decide, initState, nextAction, projectJobPlan, readSta
 const { canonicalJson, sha256, sortValue } = require("../skill/scripts/contract-utils.cjs");
 const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs");
 const { productSourceFiles } = require("../skill/scripts/film-core.cjs");
+const { scaffoldFilm } = require("../skill/scripts/film-project-core.cjs");
 const { stages } = require("../skill/scripts/workflows/film.cjs");
 const { INTAKE, gateStatus } = require("../skill/scripts/workflows/shared.cjs");
 
@@ -351,6 +352,30 @@ test("the source stage returns admission findings, blocks on a blocked record an
   assert.equal(next.stage, "plan");
   assert.deepEqual(next.completed, ["source"]);
   assert.match(next.command, /list the capture ids each beat shows in beats\[\]\.source/);
+});
+
+// The source stage scaffolds before the reference stage; the scaffold's empty reference.md
+// template must not count as a studied reference, or `next` skips straight to concepts.
+test("a standard product promo scaffolded at source still asks for its reference", t => {
+  const dir = project(t);
+  writePlan(dir, PRODUCT_QUERY);
+  initState(dir, { deliverable: "film", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "default" });
+  assert.match(nextAction(dir).command, /^designer-pipeline film scaffold --output \.; then /);
+  scaffoldFilm(dir);
+  assert.ok(fs.existsSync(path.join(dir, "reference.md")), "the scaffold writes the reference template");
+  writeStoryboard(dir, admittedSource(dir));
+  let next = nextAction(dir);
+  assert.equal(next.stage, "reference", "an unfilled template is not a reference study");
+  assert.deepEqual(next.completed, ["intake", "source"]);
+  assert.match(next.then, /decide --project-root \. --stage reference --answer none/);
+  touch(dir, "reference.md", fs.readFileSync(path.join(dir, "reference.md"), "utf8").replace(/\n/g, "\r\n"));
+  assert.equal(nextAction(dir).stage, "reference", "a CRLF copy of the template is still unfilled");
+
+  touch(dir, "reference.md", "# Reference\n\n- Primary moving reference: product walkthrough, 0:00-0:12, one continuous take.\n");
+  next = nextAction(dir);
+  assert.equal(next.stage, "concepts");
+  assert.deepEqual(next.completed, ["intake", "source", "reference"]);
 });
 
 test("changed product material, or a pass recorded without it, reopens plan and check through their bound inputs", t => {
