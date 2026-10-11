@@ -209,12 +209,15 @@ ${modules.join('\n')}
     function drawClip(id, ctx, time, spec) {
       getContext(ctx); if (!Number.isFinite(time)) throw new TypeError('clip time must be finite');
       if (ctx.canvas.width !== width || ctx.canvas.height !== height) throw new RangeError('clip context dimensions must match the runtime constructor');
-      const valid = validateClipSpec(id, spec), clip = loadClip(id), cues = valid.cues;
+      const valid = validateClipSpec(id, spec), clip = loadClip(id), specKey = JSON.stringify(spec);
+      // Grammars keep the cue objects init saw and compare them by identity (y2 own/newer, t2 cues.indexOf), so every
+      // draw of the same spec must reuse those objects; fresh copies per draw made frames depend on which draw ran init.
+      const initialized = clipInitialized.get(id), reuse = initialized && initialized.specKey === specKey, cues = reuse ? initialized.cues : valid.cues;
       if (id === 'y1_kurzgesagt' || id === 'y4_storytime') loadDemoArt();
       for (const family of clip.fonts || []) {
         if (!fonts.some(face => face.family === family)) throw new Error('Clip ' + id + ' requires font family "' + family + '"; provide it in runtime fonts');
       }
-      for (const cue of cues) if (cue.kind === 'number') { const caption = cue.text ?? cue.sub ?? (cue.data && cue.data.text); if (caption != null) { cue.text = caption; cue.sub = caption; } }
+      if (!reuse) for (const cue of cues) if (cue.kind === 'number') { const caption = cue.text ?? cue.sub ?? (cue.data && cue.data.text); if (caption != null) { cue.text = caption; cue.sub = caption; } }
       const safe = { top: 0, bottom: 0, left: 0, right: 0, ...(spec.safe || {}) };
       const box = { x: safe.left, y: safe.top, w: width - safe.left - safe.right, h: height - safe.top - safe.bottom };
       const helper = state.CLIP || (state.CLIP = {});
@@ -227,8 +230,7 @@ ${modules.join('\n')}
         u: Math.min(width, height) / 1080, portrait: height > width, alpha: !!spec.alpha, IMG: assets,
         dur: spec.duration, safe, box, of: (...kinds) => cues.filter(q => kinds.includes(q.kind)),
         lt: (t, at) => helper.lt(t, at, valid.fps), p: (t, at, duration) => helper.p(t, at, duration, valid.fps) };
-      const specKey = JSON.stringify(spec);
-      if (clipInitialized.get(id) !== specKey) { if (clip.init) clip.init(clipCtx); clipInitialized.set(id, specKey); }
+      if (!reuse) { if (clip.init) clip.init(clipCtx); clipInitialized.set(id, { specKey, cues }); }
       ctx.save(); try { clip.draw(ctx, time, clipCtx); } finally { ctx.restore(); }
       if (safe.fill && !spec.alpha) paintSafeFill(ctx, safe.fill, box);
       return clipCtx;

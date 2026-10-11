@@ -155,6 +155,11 @@ All notable changes to Design Pipeline are documented here.
   ignore, painting with a stale colour) or a fully transparent one is a contract error, and
   `art-motion render` reports it before writing any output, then records frames from a fresh
   runtime. Translucent fills tint the margins.
+- Art Motion clip frames are a pure function of spec and time. `drawClip` made new cue objects
+  on every draw, but grammars keep the ones their `init` saw and match cues by identity. Only the
+  draw that ran `init` showed the `y2_vox` and `t2_keynote_ui` highlights: exported videos lost
+  them after frame 0, and a still seeked into a highlight failed `art-motion render` with
+  `cold/reordered frame mismatch`. Draws of the same spec now reuse the initialized cues.
 - The eight Art Motion example clip specs select `"fonts": "bundled"`, so
   `designer-pipeline art-motion render --spec tools/art-motion/examples/<grammar>.json` renders them
   as shipped; they failed with a missing font family before.

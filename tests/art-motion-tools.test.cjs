@@ -244,46 +244,71 @@ test("safe.fill must be a visible CSS colour; translucent fills composite over t
   }
 });
 
-test("render's clip preflight leaves the first recorded frame equal to a fresh runtime's frame", { skip: BROWSER.skip, timeout: 300_000 }, async t => {
-  const root = temporary(t), examples = path.join(tool, "examples");
-  fs.cpSync(path.join(examples, "assets"), path.join(root, "assets"), { recursive: true });
-  const browser = await resolvePuppeteer(repo, BROWSER.puppeteerModule).launch({ executablePath: BROWSER.chrome, headless: true });
-  t.after(() => browser.close());
-  // Same page setup as the render kernel, without its preflight: one fresh runtime draws exactly one frame.
-  const fresh = async (spec, specFile, time) => {
-    const { assets, fonts } = loadInputs(root, spec, specFile), page = await browser.newPage();
-    try {
-      await page.setViewport({ width: spec.width, height: spec.height });
-      await page.setContent("<!doctype html><meta charset=utf-8><canvas id=artCanvas></canvas>");
-      await page.addScriptTag({ content: fs.readFileSync(runtime, "utf8") });
-      const pixels = await page.evaluate(async ({ spec, assets, fonts, time }) => {
-        const loaded = Object.create(null);
-        for (const [key, url] of Object.entries(assets)) { const image = new Image(); image.src = url; await image.decode(); loaded[key] = image; }
-        for (const face of fonts) document.fonts.add(await new FontFace(face.family, `url(${face.url})`, face.desc).load());
-        await document.fonts.ready;
-        const canvas = document.getElementById("artCanvas"); canvas.width = spec.width; canvas.height = spec.height;
-        const context = canvas.getContext("2d");
+// Example clip specs at 640x360 in a temporary project root (with their image assets).
+function exampleRoot(t) {
+  const root = temporary(t);
+  fs.cpSync(path.join(tool, "examples/assets"), path.join(root, "assets"), { recursive: true });
+  const write = id => {
+    const spec = { ...JSON.parse(fs.readFileSync(path.join(tool, "examples", `${id}.json`))), width: 640, height: 360 };
+    fs.writeFileSync(path.join(root, `${id}.json`), JSON.stringify(spec)); return { spec, file: `${id}.json` };
+  };
+  return { root, write };
+}
+// Same page setup as the render kernel, without its preflight. For each time a fresh runtime draws that frame twice;
+// returns the PNG sha256 of both draws.
+async function drawTwice(browser, root, spec, file, times) {
+  const { assets, fonts } = loadInputs(root, spec, path.join(root, file)), page = await browser.newPage();
+  try {
+    await page.setViewport({ width: spec.width, height: spec.height });
+    await page.setContent("<!doctype html><meta charset=utf-8><canvas id=artCanvas></canvas>");
+    await page.addScriptTag({ content: fs.readFileSync(runtime, "utf8") });
+    const frames = await page.evaluate(async ({ spec, assets, fonts, times }) => {
+      const loaded = Object.create(null);
+      for (const [key, url] of Object.entries(assets)) { const image = new Image(); image.src = url; await image.decode(); loaded[key] = image; }
+      for (const face of fonts) document.fonts.add(await new FontFace(face.family, `url(${face.url})`, face.desc).load());
+      await document.fonts.ready;
+      const canvas = document.getElementById("artCanvas"); canvas.width = spec.width; canvas.height = spec.height;
+      const context = canvas.getContext("2d"), { fonts: _fonts, ...clipSpec } = spec, result = [];
+      for (const time of times) {
         const art = ArtMotion.createArtMotionRuntime({ width: spec.width, height: spec.height, assets: loaded, fonts, seed: spec.seed ?? 1,
           createCanvas(width, height) { const value = document.createElement("canvas"); value.width = width; value.height = height; return value; },
           capabilities: { Path2D, DOMMatrix, DOMPoint } });
         if (["y1_kurzgesagt", "y4_storytime"].includes(spec.grammar)) art.enableDemoArt();
         await art.libraries.U.loadCmaps(fonts);
-        context.reset(); context.clearRect(0, 0, canvas.width, canvas.height);
-        const { fonts: _fonts, ...clipSpec } = spec;
-        art.drawClip(spec.grammar, context, time, { cues: [], ...clipSpec });
-        return canvas.toDataURL("image/png").split(",")[1];
-      }, { spec, assets, fonts, time });
-      return sha256(Buffer.from(pixels, "base64"));
-    } finally { await page.close(); }
-  };
+        const draw = () => { context.reset(); context.clearRect(0, 0, canvas.width, canvas.height); art.drawClip(spec.grammar, context, time, { cues: [], ...clipSpec }); return canvas.toDataURL("image/png").split(",")[1]; };
+        result.push([draw(), draw()]); art.dispose();
+      }
+      return result;
+    }, { spec, assets, fonts, times });
+    return frames.map(pair => pair.map(pixels => sha256(Buffer.from(pixels, "base64"))));
+  } finally { await page.close(); }
+}
+const launchBrowser = async t => { const browser = await resolvePuppeteer(repo, BROWSER.puppeteerModule).launch({ executablePath: BROWSER.chrome, headless: true }); t.after(() => browser.close()); return browser; };
+
+test("render's clip preflight leaves the first recorded frame equal to a fresh runtime's frame", { skip: BROWSER.skip, timeout: 300_000 }, async t => {
+  const { root, write } = exampleRoot(t), browser = await launchBrowser(t);
   for (const id of CLIPS) {
-    const spec = { ...JSON.parse(fs.readFileSync(path.join(examples, `${id}.json`))), width: 640, height: 360 };
-    // 30% in: past the opening, before the y2/t2 highlight windows whose frames already depend on draw history.
-    const file = `${id}.json`, time = Math.round(spec.duration * 0.3 * spec.fps) / spec.fps;
-    fs.writeFileSync(path.join(root, file), JSON.stringify(spec));
+    const { spec, file } = write(id), time = Math.round(spec.duration * 0.3 * spec.fps) / spec.fps;
     const rendered = await render(root, { chrome: BROWSER.chrome, puppeteerModule: BROWSER.puppeteerModule, spec: file, output: id, stills: [time] });
     const report = JSON.parse(fs.readFileSync(rendered.report));
-    assert.equal(report.frames[0].sha256, await fresh(spec, path.join(root, file), time), `${id} first frame at ${time}s matches a fresh runtime`);
+    assert.equal(report.frames[0].sha256, (await drawTwice(browser, root, spec, file, [time]))[0][0], `${id} first frame at ${time}s matches a fresh runtime`);
+  }
+});
+
+test("every example clip frame is a pure function of its spec and time", { skip: BROWSER.skip, timeout: 600_000 }, async t => {
+  const { root, write } = exampleRoot(t), browser = await launchBrowser(t);
+  // Highlight windows whose frames used to depend on which draw initialized the grammar; other clips sample 30/50/80%.
+  const windows = { y2_vox: [3.5, 4.5, 5.2], t2_keynote_ui: [8.5, 9, 9.9] };
+  for (const id of CLIPS) {
+    const { spec, file } = write(id), times = [];
+    for (let time = 0; time < spec.duration; time += 0.5) times.push(time);
+    const drift = (await drawTwice(browser, root, spec, file, times)).flatMap(([first, second], i) => first === second ? [] : [times[i]]);
+    assert.deepEqual(drift, [], `${id}: drawing the same frame twice on one runtime changes it at these seconds`);
+    const stills = windows[id] || [0.3, 0.5, 0.8].map(k => Math.round(spec.duration * k * spec.fps) / spec.fps);
+    for (const time of stills) {
+      const rendered = await render(root, { chrome: BROWSER.chrome, puppeteerModule: BROWSER.puppeteerModule, spec: file, output: `${id}-${time}`, stills: [time] });
+      assert.equal(rendered.coldAndReorderedMatch, true, `${id} still at ${time}s`);
+    }
   }
 });
 
