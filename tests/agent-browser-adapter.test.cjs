@@ -143,12 +143,25 @@ test("the adapter fails closed without an explicit tool inside the project", () 
   assert.deepEqual(calls(elsewhere), []);
 });
 
-test("the public CLI forwards --agent-browser and --chrome to the capture host", () => {
-  const fixture = project();
-  const result = spawnSync(process.execPath, [cli, "evidence", "capture", "--project-root", fixture.root, "--adapter-path", adapter, "--output-root", fixture.output, "--url", "https://example.com/", "--agent-browser", fixture.tool, "--chrome", fixture.chrome, "--json"], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
-  assert.equal(result.status, 0, result.stdout || result.stderr);
-  assert.equal(JSON.parse(result.stdout).receipt.status, "complete");
-});
+for (const [status, config] of [["complete", {}], ["partial", { fail: ["a11y"] }]]) {
+  test(`public capture publishes a ${status} receipt accepted by the file-checking consumer`, (t) => {
+    const fixture = project(config);
+    t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
+    const result = spawnSync(process.execPath, [cli, "evidence", "capture", "--project-root", fixture.root, "--adapter-path", adapter, "--output-root", fixture.output, "--url", "https://example.com/", "--agent-browser", fixture.tool, "--chrome", fixture.chrome, "--json"], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
+    assert.equal(result.status, 0, result.stdout || result.stderr);
+    const receipt = JSON.parse(result.stdout).receipt;
+    assert.equal(receipt.schema, "design-pipeline.evidence-receipt.v1");
+    assert.equal(receipt.status, status);
+    const saved = path.join(fixture.output, "receipt.json");
+    assert.deepEqual(JSON.parse(fs.readFileSync(saved, "utf8")), receipt);
+    const checked = spawnSync(process.execPath, [cli, "evidence", "check", "--receipt", saved, "--evidence-root", fixture.output, "--require-files", "--json"], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
+    assert.equal(checked.status, 0, checked.stdout || checked.stderr);
+    assert.equal(JSON.parse(checked.stdout).receipt.status, status);
+    fs.appendFileSync(path.join(fixture.output, receipt.artifacts.dom), "tampered");
+    const corrupted = spawnSync(process.execPath, [cli, "evidence", "check", "--receipt", saved, "--evidence-root", fixture.output, "--require-files", "--json"], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
+    assert.notEqual(corrupted.status, 0, corrupted.stdout || corrupted.stderr);
+  });
+}
 
 test("a failed close is named in the probe without discarding complete evidence", () => {
   const fixture = project({ closeFail: true });
@@ -222,12 +235,15 @@ test("saved browser state outside the project, for another adapter, or without a
   assert.deepEqual(calls(fixture), []);
 });
 
-test("the public CLI forwards --agent-browser-state to the capture host", () => {
+test("public capture consumes saved state without copying credentials into its receipt", (t) => {
   const fixture = project();
+  t.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
   const state = path.join(fixture.root, "state.json");
-  fs.writeFileSync(state, "{}");
+  fs.writeFileSync(state, '{"cookies":[{"value":"private-state-secret"}]}');
   const result = spawnSync(process.execPath, [cli, "evidence", "capture", "--project-root", fixture.root, "--adapter-path", adapter, "--output-root", fixture.output, "--url", "https://example.com/", "--agent-browser", fixture.tool, "--agent-browser-state", state, "--json"], { cwd: fixture.root, encoding: "utf8", windowsHide: true });
   assert.equal(result.status, 0, result.stdout || result.stderr);
-  // The CLI envelope nests the kernel envelope: the receipt itself is at receipt.receipt.
-  assert.match(JSON.parse(result.stdout).receipt.receipt.adapter.probe.message, /state preloaded from state\.json/);
+  const receipt = JSON.parse(result.stdout).receipt;
+  assert.match(receipt.adapter.probe.message, /state preloaded from state\.json/);
+  assert.equal(result.stdout.includes("private-state-secret"), false);
+  assert.equal(fs.readFileSync(path.join(fixture.output, "receipt.json"), "utf8").includes("private-state-secret"), false);
 });

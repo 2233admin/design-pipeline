@@ -134,6 +134,7 @@ function capture(options) {
     if (receipt.target.url !== url || receipt.target.viewport.width !== width || receipt.target.viewport.height !== height) {
       fail("evidence capture", "adapter receipt target does not match the capture request", { code: "ADAPTER_FAILED" });
     }
+    fs.writeFileSync(path.join(stage, "receipt.json"), `${JSON.stringify(receipt, null, 2)}\n`, { flag: "wx" });
     if (fs.existsSync(outputRoot)) fail("evidence capture", "--output-root appeared during capture");
     fs.renameSync(stage, outputRoot);
     return receipt;

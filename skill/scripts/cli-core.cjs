@@ -864,7 +864,7 @@ function evidenceCommand(parsed, root, action) {
     // receipt validation and cleanup, so a long capture is not killed by the default kernel timeout.
     const captureTimeout = Number(option(parsed, "--timeout-ms") || 30000);
     const kernel = runKernel("capture-web-evidence.cjs", args, projectRoot, { timeout: Math.max(60000, (Number.isFinite(captureTimeout) ? captureTimeout : 0) + 30000) });
-    return { result: { status: kernelStatusLabel(kernel.exitCode, "captured"), receipt: kernel.value }, exitCode: kernel.exitCode };
+    return { result: { status: kernelStatusLabel(kernel.exitCode, "captured"), receipt: kernel.value.receipt }, exitCode: kernel.exitCode };
   }
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }

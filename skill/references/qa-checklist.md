@@ -41,9 +41,9 @@ changed by this task; reuse its existing harness and stable selectors instead of
 Record commands, inputs/actions, actual exit codes, observed results and untested operations in
 `qa.md`. Keep logs/captures in a new project-contained directory under ignored `.design-pipeline/`;
 keep native output/check snapshots at their plan paths. Inspect artifacts rather than their names.
-For web captures, `evidence capture` writes artifacts and prints a CLI envelope; it does not write
-a receipt file. The raw evidence receipt is its stdout envelope's `receipt.receipt` field.
-`evidence check --receipt <raw-receipt.json> --evidence-root <capture-dir> --require-files --json`
+For web captures, `evidence capture` publishes artifacts and host-owned `receipt.json`, and prints
+a CLI envelope whose `receipt` member is the bare v1 evidence receipt.
+`evidence check --receipt <capture-dir>/receipt.json --evidence-root <capture-dir> --require-files --json`
 checks files and hashes. The built-in Playwright adapter captures screenshot/DOM/console/trace,
 but writes an empty network list and unknown accessibility/performance; its receipt is `partial`.
 A partial receipt can validate with exit 0: neither that exit nor `captured` proves full behavior.

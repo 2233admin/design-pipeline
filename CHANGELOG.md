@@ -6,6 +6,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Web capture publishes the validated v1 `receipt.json` with its evidence and returns the bare
+  receipt under the public CLI's single envelope. Adapter metadata collisions and linked
+  artifact parents fail closed before publication; complete/partial status, artifact hashes
+  and saved-state privacy remain intact (#69).
 - The production video inventory test authors shot and observation intervals against the
   measured sampling endpoint, not the nominal generated clip length. Production bounds
   remain strict, with an out-of-range shot regression retained (#81).

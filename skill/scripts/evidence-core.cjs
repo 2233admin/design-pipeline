@@ -51,7 +51,10 @@ function validateReceipt(receipt, options = {}) {
       if (options.requireFiles && !fs.existsSync(target)) fail("evidence", `artifacts.${key} is missing`);
       if (options.requireFiles) {
         const realTarget = fs.realpathSync(target);
-        if (!pathInside(evidenceRoot, realTarget) || fs.lstatSync(target).isSymbolicLink()) fail("evidence", `artifacts.${key} resolves outside evidence root or is a link`);
+        if (!pathInside(evidenceRoot, realTarget)) fail("evidence", `artifacts.${key} resolves outside evidence root`);
+        for (let entry = target; entry !== evidenceRoot; entry = path.dirname(entry)) {
+          if (fs.lstatSync(entry).isSymbolicLink()) fail("evidence", `artifacts.${key} is a link or has a linked parent`);
+        }
         if (!fs.statSync(realTarget).isFile()) fail("evidence", `artifacts.${key} must be a file`);
         const actualHash = crypto.createHash("sha256").update(fs.readFileSync(realTarget)).digest("hex");
         if (actualHash !== receipt.hashes[key].toLowerCase()) fail("evidence", `hashes.${key} does not match the artifact`);
