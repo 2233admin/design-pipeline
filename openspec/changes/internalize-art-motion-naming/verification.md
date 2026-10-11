@@ -111,3 +111,32 @@ findings the first pass recorded outside this change are fixed, and guides no lo
   visual-review tests, each with `task did not reach expected state within 60s` while the machine was loaded.
   That file passed 18 of 18 when run alone, and it does not touch Art Motion.
 - `npm run specs:check`: 66 passed, 0 failed.
+
+### Unusable `safe.fill` values
+
+Tested at `db074fb` (tree `14122c6e2a5ea4bc5351a8fd9add883fc91cee26`). Canvas ignores an unparseable `fillStyle` and
+keeps the previous one, so a `string`-only check let `"not-a-color"` paint the margins with a stale colour.
+
+- `drawClip` assigns the fill after two different sentinels. If the two results differ, Canvas rejected the value:
+  `clipSpec.safe.fill must be a CSS color: "not-a-color"`. It then paints the fill on a 1x1 probe. A fill whose
+  pixel alpha is 0 (`transparent`, `rgba(…, 0)`) is rejected: `clipSpec.safe.fill is fully transparent; omit fill
+  to leave the margins unpainted`. Valid fills are cached per instance.
+- Transparent decision: reject, not clear. Painting is source-over, so a transparent fill would leave the grammar
+  visible and paint nothing. Clearing the margins of an opaque H.264 clip would encode them as black. Transparent
+  margins come from `alpha: true`. Translucent fills still tint over the grammar. `09-clip-grammar.md` and the tool
+  README document this.
+- `art-motion render` keeps its Node `typeof` check and then calls the runtime's `drawClip` once in the page before
+  creating the output directory. The runtime stays the only colour parser, and contract errors leave no output.
+  CLI sample: `cli: clipSpec.safe.fill must be a CSS color: "not-a-color"` (exit 1, `KERNEL_FAILED`); `oklch(0.7 0.2
+  330)` renders.
+- Fail before, at `5753d3d` with only the new tests applied:
+  `safe.fill must be a visible CSS colour; translucent fills composite over the grammar` failed with `Missing
+  expected rejection: module rejects not-a-color`, and the runtime catalog test failed with `clipSpec validation
+  failed to reject unparseable safe fill`. Pass after, at `db074fb`: both pass. The new test asserts module and CLI
+  rejection of `not-a-color`, `transparent` and `rgba(255, 0, 255, 0)` with an unchanged directory listing, and
+  that `rgba(255, 0, 255, 0.5)` margins equal the average of the fill and the unfilled render within ±1 per channel,
+  while box pixels are unchanged. The runtime test adds the same three rejections.
+- `runtime.js`: 15,651 lines, 1,288,698 bytes, SHA-256 `cb7df2a8dd74df119301e323af42312a837df8f9223daf4815c84e332c7fc9b7`.
+  The rebuild is `Unchanged` on a second run.
+- `npm test`: exit 0, every QA check OK (naming policy, isolated install, installed CLI smoke, unchanged status).
+  Repository tests: 1,133 tests, 1,130 passed, 0 failed, 3 skipped (GEPA). `npm run specs:check`: 66 passed, 0 failed.

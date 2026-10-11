@@ -27,3 +27,4 @@
 - [x] 7.3 List every `composition scaffold` template in the CLI help from the scaffold's own template list; assert it in the CLI help test.
 - [x] 7.4 Rewrite guide passages that pointed at unshipped demo films, overview images, harness files and scripts so they describe only shipped material; keep the method content.
 - [x] 7.5 Re-run `npm test` with the isolated `fonttools==4.66.1` and `npm run specs:check`; record the results in `verification.md`.
+- [x] 7.6 Reject an unparseable or fully transparent `safe.fill` in `drawClip` (two-sentinel Canvas probe plus a painted-alpha check); have `art-motion render` run the runtime's clip contract before writing output; cover the CLI and module errors and translucent compositing by pixels; document the rule; re-run `npm test` and `npm run specs:check`.

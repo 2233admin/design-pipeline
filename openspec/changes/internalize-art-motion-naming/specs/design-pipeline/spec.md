@@ -44,6 +44,10 @@ Art Motion rendering and the audiovisual reference study SHALL run through `desi
 - **THEN** the margins outside the content box are painted with `fill` after the grammar draws
 - **AND** with `alpha: true` the margins are left unpainted
 
+#### Scenario: Unusable safe fill
+- **WHEN** `safe.fill` is not a CSS colour Canvas can parse, or is fully transparent
+- **THEN** `drawClip` and `art-motion render` fail with the contract error before any output is written
+
 #### Scenario: Invalid render request
 - **WHEN** the spec is invalid, the output exists or escapes the root, or an unregistered option is passed
 - **THEN** the command exits 1 with the contract error and preserves existing files
