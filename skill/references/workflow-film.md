@@ -7,10 +7,99 @@ names the current stage; read only that section. Stage order:
   render, but it ends with the owner's verdict on the checked draft, not with a passing check.
 - `standard` and `full`: intake, reference, concepts, plan, build, check, review, deliver.
 
+A product promo (Stage 0 `deliverableForm: product-launch-video`; bind the plan with
+`next --project-root . --job-plan job-plan.json`) is built from the real product:
+
+- `quick`: source, plan, build, check, review (replicate: reference, source, plan, build, check,
+  review).
+- `standard` and `full`: intake, source, reference, concepts, plan, sample, build, check, review,
+  deliver.
+
+Real product material is an admission precondition, not a score. Until
+`storyboard.json.productSource` is admitted, `film check`, `verify film-storyboard` and
+`verify film-render` return only the admission findings and evaluate nothing else; `film-eval`
+leaves the run unmeasured. Other films keep the stage orders above.
+
 ## intake
 
 Ask the four intake questions in one numbered round, each with its recommendation; record the
-reply with `decide --stage intake`. Details: `product-film-direction.md`.
+reply with `decide --stage intake`. Details: `product-film-direction.md`. For a product promo the
+assets question asks for the product's repository and how to run it; the recommendation is the
+product's own repository, run at a pinned commit, with its real UI captured and nothing invented.
+
+## source
+
+Product promos only. The film is built from the product itself, never from invented screens, mock
+UI or text cards standing in for it.
+
+1. Run `film scaffold --output .` first if `storyboard.json` is missing.
+2. Clone the product's repository and check out one full commit SHA. Start the run log with the
+   output of `git -C <checkout> rev-parse HEAD`, then the start command and its output.
+3. Run it in demo or seeded mode with local fixture data. Never sign in to live accounts or make
+   real trades, payments or messages to obtain a capture.
+4. Capture at least one real UI state (`ui-state`) and one user operation (`operation`) with its
+   visible response and result. Keep the run log and captures inside the project, e.g. `source/`.
+5. Record `storyboard.json.productSource` with each file's sha256 and actual capture time, as RFC 3339
+   date-times with seconds and `Z` or `±hh:mm` (a time without an offset is rejected, because each
+   machine would read it in its own timezone):
+
+```json
+"productSource": {
+  "status": "admitted",
+  "repository": "https://github.com/TraderAlice/OpenAlice",
+  "commit": "3fe612277df7e149fbb48c3bbe5fd30770052857",
+  "run": { "command": "pnpm --dir ui dev --mode demo", "observedAt": "2026-09-19T10:54:00Z",
+           "log": { "path": "source/run.log", "sha256": "<sha256 of the file>" },
+           "url": "http://localhost:5173" },
+  "captures": [
+    { "id": "market", "kind": "ui-state", "path": "source/market.png", "sha256": "<sha256>",
+      "shows": "Market tab, NVDA 1Y, 251 candles", "capturedAt": "2026-09-19T10:55:00Z" },
+    { "id": "switch-3m", "kind": "operation", "path": "source/switch-3m.mp4", "sha256": "<sha256>",
+      "shows": "user clicks 3M", "capturedAt": "2026-09-19T10:56:00Z" },
+    { "id": "candles-63", "kind": "ui-state", "path": "source/candles-63.png", "sha256": "<sha256>",
+      "shows": "chart redraws with 63 candles", "capturedAt": "2026-09-19T10:56:10Z" },
+    { "id": "pinned", "kind": "ui-state", "path": "source/pinned.png", "sha256": "<sha256>",
+      "shows": "3M range pinned on the watchlist", "capturedAt": "2026-09-19T10:56:30Z" }
+  ],
+  "flow": { "action": ["switch-3m"], "response": ["candles-63"], "result": ["pinned"] }
+}
+```
+
+The repository is a credential-free URL (no local path); the commit is a full SHA, not a branch,
+tag or short SHA. `flow.action` cites an operation capture; captures follow `run.observedAt`; and
+every action capture precedes every response capture, and every response capture every result
+capture. `next` returns the remaining
+`product-source-*` findings, each with its `fix`; a malformed record is reported as
+`product-source-invalid` with the contract message.
+
+If the product cannot be run or captured, record why and stop:
+
+```json
+"productSource": {
+  "status": "blocked",
+  "repository": "https://github.com/example/product",
+  "blocker": { "kind": "needs-credentials", "reason": "The dashboard requires a live broker login.",
+               "needs": "A demo mode or seeded test account from the owner." }
+}
+```
+
+| `blocker.kind` | Use when |
+|---|---|
+| `no-repository` | No source repository exists or was supplied, including physical products |
+| `access-denied` | The repository or required assets cannot be accessed |
+| `build-failed` | Install or build fails at the pinned commit |
+| `run-failed` | The product does not start or crashes before the flow |
+| `needs-credentials` | Running or capturing needs accounts, keys or live services you may not use |
+| `capture-failed` | It runs, but the UI state or operation cannot be captured |
+
+A blocked record carries no `run`, `captures` or `flow`. `next` then returns `type: "blocked"`
+with the blocker, exits 2 and does not advance; ask the user for what `needs` names and replace
+the record with an admitted one. Never continue with invented scenes meanwhile. Non-software
+products have no repository and are blocked (`no-repository`) under this contract.
+
+Limits: gates hash the recorded files and check that the run log names the commit; they cannot
+prove that captured pixels came from the product. Capture honestly from the recorded run; the
+owner judges the material in the sample and review.
 
 ## reference
 
@@ -62,6 +151,13 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   the existing storyboard and does not create another renderer, gate or acceptance result.
 - In replicate mode fill `storyboard.json.rendering` from the reference: route, requirements,
   reason and material sample times. The storyboard gate rejects incapable declared routes.
+- Product promo: list the capture ids each beat shows in `beats[].source`
+  (`"source": ["switch-3m"]`). Every beat cites captures, including titles, captions and result or
+  benefit claims, which sit on real captures; only a pure brand card (`brand-hold` with
+  `transformation.kind: "none"`) may stay unsourced, within a quarter of `durationSec`. The flow's
+  action, response and result are each shown by an action beat citing that step's capture, in that
+  order (one continuous beat may carry all three); a title, card or hold cannot show a step.
+  The run log, captures and bound job plan are checked inputs: changing them reopens this check.
 - Carry: every beat whose handoff is `continuation`, `morph`, `camera-carry` or `match-cut` names
   a `carrier` — what survives the boundary and what it becomes ("prompt bar opens into the app
   window"). A claimed carry with nothing named for it to carry is a placeholder, not a plan.
@@ -70,6 +166,17 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   intent in beat `note`, inspect it at speed and keep or revise it based on the actual effect.
 - `verify film-storyboard --storyboard storyboard.json` must pass. Editing the storyboard later
   reopens this stage until the gate passes again.
+
+## sample
+
+Standard and full product promos. Before building the whole film, cut a 5–8 s `sample.mp4` at the
+project root from the captures cited in `beats[].source`, showing the action, the response and
+the result. Use the real captures with crops, zooms, masks and captions; no invented cards or
+redrawn UI. `next` then asks the owner to view `sample.mp4` beside its capture files; record the
+reply with `decide --stage sample --verdict accept|reject [--answer "<reason>"]`. A rejection
+needs `--answer` and becomes a project rule. Acceptance binds the sample bytes and the
+`productSource` record; replacing either asks again. The sample verdict settles the material
+direction only; it is not the film's Visual Acceptance.
 
 ## build
 
@@ -83,6 +190,10 @@ Pick the lowest-rung tool that reaches each beat:
 | Enamel, solid bevels, angle-dependent materials | WebGL/Three.js + GLSL or Blender | `film-materials.md` |
 | Music as code | `film score --project-root . --bpm <n> --template <name>` | `film-score.md` |
 | Loudness and fades | `audio master --input <audio> --output <wav>` | `audio-gate.md` |
+
+Product promo: build from the admitted captures cited in `beats[].source`. Place the recorded
+screens and clips, then crop, zoom, mask, sequence and caption them; never redraw the product's UI
+or invent screens, data or cards. Motion and type support the product's own material.
 
 For a new movement choice, render a short study before extending the film. Inspect key poses,
 spacing, contact and handoff at speed and by frame; a smooth ease alone does not design an action.
@@ -102,6 +213,9 @@ under legible text, resting text within 4% of the frame edge and text under 2.4%
 height are review prompts. Deliberate layering takes `data-layout-allow-overlap`; deliberate
 warnings take `film check --allow <code>`. Static UI layout: `composition capture` then
 `verify composition` (`composition-gate.md`). A re-render reopens this stage.
+
+For a product promo the check stops at the storyboard step, with only the admission findings,
+until `productSource` is admitted; the run log, captures and bound job plan are hashed inputs.
 
 ## review
 

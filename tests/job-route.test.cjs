@@ -17,6 +17,7 @@ const {
   PLAN_SCHEMA,
   ROUTE_SCHEMA,
   buildJobPlan,
+  classifyDeliverableForm,
   loadJobRegistry,
   routeJob,
   validateJobPlan,
@@ -300,6 +301,85 @@ test("product video variants select motion-graphics and product-launch-video", (
     assert.equal(result.job, "motion-graphics", query);
     assert.equal(result.deliverableForm, "product-launch-video", query);
   }
+});
+
+test("product promo film phrasings select product-launch-video in English and Chinese", () => {
+  for (const query of [
+    "Make a 12-second promotional film for a node-canvas app where a typed prompt connects to a generated image and the image drops into a storyboard strip. Use the design-pipeline skill.",
+    "Make a 15-second launch film for a developer CLI that turns a messy log into a clean report with one command. Use the design-pipeline skill.",
+    "制作一支 Tern 产品宣传动画（product animation / product launch video）",
+    "Make a promotional film for our app",
+    "Make a promo film for our app",
+    "Cut a promo reel",
+    "Make promo clips for socials",
+    "Make a launch trailer",
+    "Make a launch teaser",
+    "Create promotional videos",
+    "Create a promotional movie",
+    "Create a product trailer",
+    "Create a product teaser",
+    "Make a product film",
+    "Make a product launch trailer",
+    "Make a product walkthrough video",
+    "Make a product tour video",
+    "Make a showcase video for our app",
+    "Make a showcase reel",
+    "做一个宣传视频",
+    "做一个推广视频",
+    "推广片",
+    "广告片",
+    "做一个宣传短片",
+    "做一个广告视频",
+    "产品介绍短片",
+    "产品演示片",
+  ]) {
+    const result = routeJob({ query });
+    assert.equal(result.status, "ready", query);
+    assert.equal(result.deliverableForm, "product-launch-video", query);
+    assert.equal(result.job, "motion-graphics", query);
+  }
+  for (const query of ["Make a product promo for X", "Make a launch-film", "Make a 30-second promo spot", "Create a product feature film"]) {
+    assert.equal(classifyDeliverableForm(query), "product-launch-video", query);
+  }
+});
+
+test("promo language for pages, offers and UI keeps its non-video form", () => {
+  for (const query of [
+    "product promo code",
+    "Add a product promo code field",
+    "Build a product promo page",
+    "Create a product promo landing page",
+    "Write a product promo email",
+    "Plan a product promo campaign",
+    "Design a promo banner",
+    "Build a launch page",
+    "产品推广方案",
+    "产品宣传册",
+    "宣传海报",
+    "Add a showcase animation to the hero section",
+    "Build a product showcase landing page",
+    "制作产品宣传页面",
+  ]) {
+    const result = routeJob({ query });
+    assert.equal(result.deliverableForm, "ui-motion", query);
+    assert.notEqual(result.job, "motion-graphics", query);
+  }
+});
+
+test("a persisted plan whose query now classifies as a product promo is rejected, not rewritten", () => {
+  const query = "Make a promotional film for our app";
+  const plan = buildJobPlan(routeJob({ query }));
+  assert.equal(plan.deliverableForm, "product-launch-video");
+  const { planSha256, ...body } = { ...plan, deliverableForm: "motion-graphics-video" };
+  const stale = { ...body, planSha256: sha256(canonicalJson(body)) };
+  const snapshot = JSON.stringify(stale);
+  assert.throws(() => validateJobPlan(stale), (error) => {
+    assert.match(error.message, /deliverable-form conflict/);
+    assert.match(error.message, /stored motion-graphics-video, query classifies as product-launch-video/);
+    assert.match(error.message, /re-plan/);
+    return true;
+  });
+  assert.equal(JSON.stringify(stale), snapshot);
 });
 
 test("job plans reject missing or blank route queries before classification", () => {
