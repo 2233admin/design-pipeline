@@ -19,13 +19,13 @@ genre and a soundtrack are optional. Read this guide, then the one method or rec
 | Exact-time stills, exact-frame video and transparency | [Render](#render-a-style-or-clip) |
 | Frame comparison, spatial motion maps, acceptance | [Visual diagnostics](../visual-diagnostics/README.md), existing film/composition/audio checks |
 
-The 13 numbered source methods cover first-frame construction choices, reference analysis,
+The 13 numbered method notes cover first-frame construction choices, reference analysis,
 material-aware motion, character production, music/timing, optional speech-driven work and
-review/experience reuse. The [complete source index](../../references/huashu-art-motion.md)
-records provenance and limitations. The original voice providers/configuration and image
-plan/receipt system are source reference, not maintained service integrations. Our image route
-uses actual host tools and existing asset evidence; the maintained voice entry processes local
-audio only. Source instructions do not replace project policy.
+review/experience reuse. The [Art Motion index](../../references/art-motion.md) lists every
+method, style and grammar note, the code layout and its attribution. Voice providers/configuration
+and the image plan/receipt system of the original work are not shipped. Our image route uses
+actual host tools and existing asset evidence; the maintained voice entry processes local audio
+only. Method notes do not replace project policy.
 
 ## Try an editable study
 
@@ -38,16 +38,18 @@ node "<skill-root>/scripts/designer-pipeline.cjs" composition scaffold \
 
 Open the generated `index.html`. The study has a keyboard-accessible time slider, caller-sized
 Canvas, seeded watercolor and a dry-brush contour. It has no external assets or autoplay.
-The same directory includes a JSON chart example. Outputs must be new paths.
+The same directory includes `runtime.js`, a JSON chart example and `LICENSE.art-motion`.
+Outputs must be new paths.
 
 ## Canvas runtime
 
-Load `huashu-runtime.js` as a browser script (`HuashuArtMotion`) or CommonJS module. All library
-state is instance-local. The host supplies Canvas creation and platform types; there are no
-global `U`, `PAINT` or asset variables, dynamic code loaders or implicit font downloads.
+Load `runtime.js` as a browser script (global `ArtMotion`) or CommonJS module
+(`{ createArtMotionRuntime }`). All library state is instance-local. The host supplies Canvas
+creation and platform types; there are no global `U`, `PAINT` or asset variables, dynamic code
+loaders or implicit font downloads.
 
 ```js
-const runtime = HuashuArtMotion.createHuashuRuntime({
+const runtime = ArtMotion.createArtMotionRuntime({
   width: canvas.width, height: canvas.height, seed: 31,
   assets: {}, fonts: [],
   createCanvas(width, height) {
@@ -65,24 +67,25 @@ PAINT.brush(context, [[20, 30], [90, 70], [170, 45]], {
 runtime.dispose();
 ```
 
-The 17 source modules are adapted into the static runtime. These local implementation links
-provide each operation's parameters and examples; read one, not the entire bundle:
+The runtime is generated from the library modules in `engine/lib/`. These local implementation
+links provide each operation's parameters and examples; read one, not the entire bundle:
 
 | Namespace | Operations and parameter source |
 | --- | --- |
-| `U` | [Math, text measurement, image fitting and glyph checks](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/util.js) |
-| `PAINT` | [Paint and fields](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/paint.js), [brushes](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/brush.js), [lighting/image treatment](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/render.js), [post effects](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/post.js) |
-| `KIT` | [Material and construction helpers](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/kit.js) |
-| `MO`, `CAM` | [Motion](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/motion.js), [camera](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/camera.js) |
-| `DG`, `TY`, `CH`, `UI`, `CL` | [Diagram](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/diagram.js), [type](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/typo.js), [chart](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/chart.js), [UI](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/ui.js), [collage](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/collage.js) |
-| `RIG` | [General rig and occlusion](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/rig.js) |
-| Opt-in `TOON`, `HUASHU` | [Cartoon construction](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/toon.js), [source character sample](../../vendor/huashu-art-motion/upstream/scripts/engine/lib/rig_huashu.js) via `enableDemoArt()`; y1/y4 select their own sample characters |
+| `U` | [Math, text measurement, image fitting and glyph checks](engine/lib/util.js) |
+| `PAINT` | [Paint and fields](engine/lib/paint.js), [brushes](engine/lib/brush.js), [lighting/image treatment](engine/lib/render.js), [post effects](engine/lib/post.js) |
+| `KIT` | [Material and construction helpers](engine/lib/kit.js) |
+| `MO`, `CAM` | [Motion](engine/lib/motion.js), [camera](engine/lib/camera.js) |
+| `DG`, `TY`, `CH`, `UI`, `CL` | [Diagram](engine/lib/diagram.js), [type](engine/lib/typo.js), [chart](engine/lib/chart.js), [UI](engine/lib/ui.js), [collage](engine/lib/collage.js) |
+| `RIG` | [General rig and occlusion](engine/lib/rig.js) |
+| Opt-in `TOON` | [Cartoon construction](engine/lib/toon.js); `enableDemoArt()` returns `{ TOON }`. The y1/y4 grammars load it themselves |
 
 For choosing/acquiring a family, start with [font sources and selection](../fonts.md), including
 FontLab and primary open-source/publisher sources. Bundled sample aliases are not project defaults.
 Load caller-selected font faces with `FontFace`, then call `await runtime.libraries.U.loadCmaps(faces)`
 using explicit `{family,url}` mappings. There is no default font download. Some named presets use
-specific font families; `render.cjs` can resolve these from the bundled, licensed catalogue.
+specific font families; `art-motion render` resolves these from the bundled, licensed
+[font catalogue](fonts/catalog.json).
 Keep product controls and reading text in semantic DOM; these text operations create artwork.
 For minimum-size/overflow-aware text fitting use [Visual Craft](../visual-craft/README.md).
 
@@ -94,14 +97,17 @@ pixels after forward/reverse seeks when combining stateful project code.
 
 ## Render a style or clip
 
-Copy and edit [clip.example.json](clip.example.json), or author a spec with exactly one `scene`
-or `grammar`, plus explicit `width`, `height`, `duration` and integer `fps` (1–120). Duration ×
-fps must be an integer. Nothing requires a particular aspect, character or narration.
+Copy and edit [clip.example.json](clip.example.json) or one grammar's spec in `examples/`, or
+author a spec with exactly one `scene` or `grammar`, plus explicit `width`, `height`, `duration`
+and integer `fps` (1–120). Duration × fps must be an integer. Nothing requires a particular
+aspect, character or narration. The example specs select `"fonts": "bundled"` and render as
+shipped, e.g. `--spec <skill-root>/tools/art-motion/examples/t3_finance_chart.json` with the
+skill root inside `--root`.
 
 ```sh
-node "<skill-root>/tools/art-motion/render.cjs" --root "<project>" \
+node "<skill-root>/scripts/designer-pipeline.cjs" art-motion render --root "<project>" \
   --spec material-study/clip.example.json --output build/clip-stills --stills 0,1,3.5
-node "<skill-root>/tools/art-motion/render.cjs" --root "<project>" \
+node "<skill-root>/scripts/designer-pipeline.cjs" art-motion render --root "<project>" \
   --spec material-study/clip.example.json --output build/clip-video
 ```
 
@@ -119,26 +125,34 @@ names or `{family,file,weight?,style?}` descriptors; `"bundled"` opts into the f
 Glyph inspection supports WOFF1/TTF/OTF. Missing preset fonts/glyphs are errors to resolve.
 
 `safe` reserves a positive clip content box; background and decorative elements can still fill
-the canvas. Inspect actual text/subject placement per grammar. Authored scene samples retain
-their original composition; contain/cover fits a study and does not reflow it. Use the library
-operations to recompose original work. The ninth presenter grammar is a reference method,
-implemented by combining supplied character frames with these drawing/timing tools.
+the canvas unless `safe.fill` is set, which paints the margins outside the box with that CSS
+colour over the grammar (source-over) after it draws, never with `alpha:true`. A fill Canvas
+cannot parse, or one that paints nothing (`transparent`, alpha 0), is a contract error raised
+before any output is written; omit `fill` to leave the margins as drawn, or use `alpha:true` for
+transparent margins. Inspect actual text/subject placement
+per grammar. Authored scene samples retain their original composition; contain/cover fits a
+study and does not reflow it. Use the library operations to recompose original work. The ninth
+presenter grammar is a reference method, implemented by combining supplied character frames
+with these drawing/timing tools.
 
-Each output includes source/input hashes, frame timestamps/hashes/costs, first/last PNGs and
-a cold/reordered repeat check. A frame cost includes PNG readback, not just drawing. These are
-diagnostics, not a new gate/receipt or visual certification. Inspect intended holds, jumps,
-texture stability and actual playback; use existing film/audio/composition checks for delivery.
+Each output includes a `render-report.json` with `runtimeSha256` (the SHA-256 of `runtime.js`),
+input hashes, frame timestamps/hashes/costs, first/last PNGs and a cold/reordered repeat check.
+The command exits 0 when rendered and 1 for a contract or usage error. A frame cost includes
+PNG readback, not just drawing. These are diagnostics, not a new gate/receipt or visual
+certification. Inspect intended holds, jumps, texture stability and actual playback; use
+existing film/audio/composition checks for delivery.
 
 ## Reference analysis
 
 ```sh
-node "<skill-root>/tools/art-motion/reference.cjs" --root "<project>" \
-  --path references/source.mp4 --output qa/reference-study --start 2 --end 6 --fps 24 --max-frames 120
+node "<skill-root>/scripts/designer-pipeline.cjs" reference analyze-video --root "<project>" \
+  --path references/source.mp4 --output qa/reference-study --start 2 --end 6 --fps 24 --max-frames 120 --study
 ```
 
-This extends the existing reference analyzer with a `study.json` sidecar, an audio excerpt and
-spectrogram when the source has sound, and separate audio/visual grid candidates. Existing
-reports retain their original schema, source hash, ordered viewers and pixel-change heatmaps.
+`--study` extends the existing reference analyzer with a `study.json` sidecar, an audio excerpt
+and spectrogram when the source has sound, and separate audio/visual grid candidates. Without
+the flag the command is unchanged. Existing reports retain their original schema, source hash,
+ordered viewers and pixel-change heatmaps.
 For silent sources audio is explicitly absent. Read [methods](methods.md) before interpreting
 cuts, motion maps or beat candidates; they are not object tracking or confirmed music theory.
 

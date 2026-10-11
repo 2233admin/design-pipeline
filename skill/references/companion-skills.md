@@ -14,7 +14,7 @@ coverage is reachable here:
 | PixiJS, Phaser and graphics/runtime selection | `pixijs-rendering.md`, `phaser-v4.md`, `graphics-runtime-routing.md` |
 | Layout, typography, color, interaction and design systems | `interface-discipline.md`, `impeccable-contract.md`, `prism-system.md` |
 | New websites, existing-project redesign, taste, style, reference-to-code and image/brand concepts | [Built-in Taste suite](taste-skill.md); thirteen complete local methods with task and output boundaries |
-| Additional drawing, material and animation techniques | `huashu-art-motion.md`, `mengto-skills.md`, `iart-motion-skills.md`; adapt the selected source |
+| Additional drawing, material and animation techniques | `art-motion.md`, `mengto-skills.md`, `iart-motion-skills.md`; adapt the selected source |
 
 The last row exposes source methods, not a claim that every recipe is a tested callable helper.
 

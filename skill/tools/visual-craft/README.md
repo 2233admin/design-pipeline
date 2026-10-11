@@ -17,7 +17,7 @@ node "$SKILL_ROOT/scripts/designer-pipeline.cjs" \
   composition scaffold --root "$PWD" --template visual-craft --output "visual-craft-study"
 ```
 
-This copies `index.html`, `canvas.js` and `LICENSE.huashu-art-motion` into that new directory.
+This copies `index.html`, `canvas.js` and `LICENSE.art-motion` into that new directory.
 It refuses to replace an existing path and does not create film or workflow state. Open the
 copied `index.html` in a browser; it uses the sibling helper and native Canvas. For installation
 and upgrade instructions, see [Install and upgrade](../../references/installation.md).
@@ -47,7 +47,7 @@ per point. Otherwise the profile rises and falls along the path. Progress reveal
 seed and jitter control stable edge variation. Supply actual path geometry: this is a continuous
 variable-width ribbon, not a fluid simulation, auto-smoothed calligraphy or a full brush engine.
 Sharp reversals can self-intersect. Split deliberately disconnected marks into separate paths.
-More material methods are local in `../../vendor/huashu-art-motion/upstream/scripts/engine/lib/brush.js` and `paint.js`.
+More material methods are local in `../art-motion/engine/lib/brush.js` and `paint.js`.
 
 Coordinates are caller-owned. Resize or transform them intentionally; regenerate paper grain
 with the same seed in the same material coordinates when a moving object should carry its
@@ -79,7 +79,7 @@ given minimum and returns `ok`, `overflow`, `overflowReasons`, `font`, `size`, `
 `lines` and `widths`. Inputs/work are bounded. This is label layout, not a full typesetter:
 inspect punctuation, fallback glyphs, script shaping and optical alignment at final size.
 Font availability, glyph coverage and licensing are separate from fitting. Local font methods
-are indexed in `../../references/huashu-art-motion.md`.
+are indexed in `../../references/art-motion.md`.
 
 ## Place an image or choose a frame
 
@@ -102,6 +102,6 @@ legibility and clipping. Compare cold and reordered progress samples; static gra
 Use `../visual-diagnostics/README.md` for original-pixel comparisons. Share source-sized output
 with the lead for visual review. A helper's deterministic geometry does not prove good drawing.
 
-Adapted methods retain the source MIT notice in `LICENSE.huashu-art-motion`; copy that notice
-with `canvas.js` if extracting it into a project. The pinned source and method index live in
-`../../vendor/huashu-art-motion/`.
+Adapted methods retain the MIT notice copied from `../art-motion/LICENSE` as `LICENSE.art-motion`;
+copy that notice with `canvas.js` if extracting it into a project. The method index lives in
+`../../references/art-motion.md`.

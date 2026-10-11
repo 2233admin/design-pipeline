@@ -92,13 +92,14 @@ the file paths in its loaded instructions identify which copy it is using.
 - Art Motion's browser study and Canvas runtime also run without npm dependencies. Use
   `--template art-motion` for its editable material study and clip example; load its
   [tool guide](../tools/art-motion/README.md) only when needed.
-- Headless Art Motion rendering uses the existing project-local `puppeteer-core` and Chrome
-  resolver. An existing HyperFrames project provides both. Otherwise install `puppeteer-core`
-  in the consuming project and pass `--chrome <existing-browser-path>`; `--puppeteer-module`
-  can select an existing module explicitly. No global npm install is needed.
+- Headless Art Motion rendering (`designer-pipeline art-motion render`) uses the existing
+  project-local `puppeteer-core` and Chrome resolver. An existing HyperFrames project provides
+  both. Otherwise install `puppeteer-core` in the consuming project and pass
+  `--chrome <existing-browser-path>`; `--puppeteer-module` can select an existing module
+  explicitly. No global npm install is needed.
 - Font subsetting alone needs FontTools: invoke its script with scoped
   `uv run --with fonttools python`. For repository tests, run
   `uv run --with fonttools --python 3.14 node scripts/qa.cjs`, then `npm run test:browser`.
-  Alternatively set `HUASHU_PYTHON` to an existing Python with FontTools for `npm test`.
+  Alternatively set `FONTTOOLS_PYTHON` to an existing Python with FontTools for `npm test`.
 - The global skill installation provides the agent instructions and CLI entry point. It is not an
   independent executable; invoke the CLI through `node` and the installed absolute path.

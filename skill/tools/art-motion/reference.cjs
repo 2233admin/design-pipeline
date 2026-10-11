@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 "use strict";
 
 const fs = require("node:fs");
@@ -8,7 +7,8 @@ const { analyzeMusic } = require("../../scripts/edit-core.cjs");
 const { probe, run } = require("../../scripts/film-core.cjs");
 const { resolveInside, sha256 } = require("../../scripts/contract-utils.cjs");
 
-// Adapted from Huashu's breakdown.py, MIT. Largest plausible grid, not a claimed musical tempo.
+// Cut-grid method adapted from MIT-licensed work by alchaincyf; see LICENSE in this directory.
+// Largest plausible grid, not a claimed musical tempo.
 function fitCutGrid(times, { minStepSec = 0.05, maxStepSec = 2, toleranceSec = 0.025, stepSec = 0.001, inlierShare = 0.8 } = {}) {
   if (!Array.isArray(times) || times.length > 256 || times.some((time, i) => !Number.isFinite(time) || time < 0 || (i && time <= times[i - 1]))) throw new Error("cut times must be up to 256 strictly ordered, finite seconds");
   for (const [name, value] of Object.entries({ minStepSec, maxStepSec, toleranceSec, stepSec, inlierShare })) if (!Number.isFinite(value) || value <= 0) throw new Error(`${name} must be positive and finite`);
@@ -62,19 +62,6 @@ function analyzeReference(root, options) {
   if (sha256(fs.readFileSync(file)) !== result.report.source.sha256) throw new Error("source changed during audio analysis; discard this incomplete output and rerun");
   fs.writeFileSync(path.join(directory, "study.json"), `${JSON.stringify(study, null, 2)}\n`, { flag: "wx" });
   return { ...result, studyPath: path.relative(root, path.join(directory, "study.json")).replaceAll("\\", "/"), audioAvailable: Boolean(audio) };
-}
-
-if (require.main === module) {
-  try {
-    const names = { "--root": "root", "--path": "path", "--output": "output", "--start": "startSec", "--end": "endSec", "--fps": "sampleFps", "--max-frames": "maxFrames" }, options = {};
-    for (let i = 2; i < process.argv.length; i += 2) {
-      const key = names[process.argv[i]], value = process.argv[i + 1];
-      if (!key || value === undefined || value.startsWith("--") || Object.hasOwn(options, key)) throw new Error(`invalid option ${process.argv[i]}`);
-      options[key] = ["startSec", "endSec", "sampleFps", "maxFrames"].includes(key) ? Number(value) : value;
-    }
-    const result = analyzeReference(options.root || process.cwd(), options);
-    console.log(JSON.stringify({ status: result.status, reference: result.descriptor, viewerPath: result.viewerPath, studyPath: result.studyPath, audioAvailable: result.audioAvailable }, null, 2));
-  } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 
 module.exports = { fitCutGrid, analyzeReference };

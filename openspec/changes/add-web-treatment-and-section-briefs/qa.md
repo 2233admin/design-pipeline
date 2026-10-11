@@ -1,5 +1,8 @@
 # QA record: add-web-treatment-and-section-briefs
 
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
 ## Conformance on the port onto main (2026-10-10)
 
 - Implementation commit `48a94bdc973261326ba71826c1d52644342e6984`, tested tree
@@ -9,8 +12,8 @@
   (the optional pinned GEPA runtime is not installed on this machine). Reproducible TGZ, ZIP and
   checksums; the archive contains `references/web-direction.md`; isolated install; installed-package
   public CLI smoke 12 of 12; repository status byte-identical. The font-subset test needs Python with
-  `fonttools==4.66.1` (`CONTRIBUTING.md`); `HUASHU_PYTHON` pointed at such an environment outside the
-  repository.
+  `fonttools==4.66.1` (`CONTRIBUTING.md`); the font-subset Python variable (now `FONTTOOLS_PYTHON`)
+  pointed at such an environment outside the repository.
 - Baseline on the same machine: main `f41da71` in a clean worktree, without that Python, gave 1,109
   tests, 1,105 passed, 1 failed (`No module named 'fontTools'` in the font-subset test) and 3
   skipped. The port adds five tests and no failure.
