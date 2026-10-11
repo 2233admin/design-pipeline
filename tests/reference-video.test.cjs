@@ -202,12 +202,13 @@ test("production inventory requires every declared shot property and resolves on
   const created = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "color=blue:s=32x24:r=24:d=2", "-threads", "1", "-c:v", "ffv1", path.join(root, "input.mkv")], { windowsHide: true, encoding: "utf8" });
   assert.equal(created.status, 0, created.stderr);
   const sampled = analyzeVideo(root, { path: "input.mkv", output: "analysis" }), report = sampled.report;
+  const endSec = report.sampling.endSec;
   const file = path.join(root, sampled.descriptor.path);
   const save = (value = report) => { fs.writeFileSync(file, JSON.stringify(value)); return { path: sampled.descriptor.path, sha256: sha256(fs.readFileSync(file)) }; };
   const own = (start, end) => report.frames.filter(frame => frame.atSec >= start && frame.atSec < end).map(frame => frame.id);
   const observation = (id, target, property, start, end, frameIds) => ({ id, target, property, startSec: start, endSec: end, frameIds, startState: "Visible first local state", endState: "Visible last local state", basis: "observed", description: "Authored local observation for evidence-contract testing, not automatic pixel recognition.", uncertainties: [] });
-  const a = own(0, 1), b = own(1, 2);
-  report.observations = [observation("logo-a", "logo", "geometry.contour", 0, 1, a.slice(0, 1)), observation("logo-b", "logo", "geometry.contour", 1, 2, b.slice(0, 1))];
+  const a = own(0, 1), b = own(1, endSec);
+  report.observations = [observation("logo-a", "logo", "geometry.contour", 0, 1, a.slice(0, 1)), observation("logo-b", "logo", "geometry.contour", 1, endSec, b.slice(0, 1))];
   const legacy = save();
   assert.equal(checkVideoAnalysis(root, legacy, report.source).status, "ready", "historical inspection remains readable without shots");
   const needsInventory = checkVideoAnalysis(root, legacy, report.source, { requireProduction: true });
@@ -217,7 +218,7 @@ test("production inventory requires every declared shot property and resolves on
   assert.ok(needsInventory.nextActions[0].images.every(image => image.mimeType === "image/png"));
   report.shots = [
     { id: "shot-a", startSec: 0, endSec: 1, frameIds: a, targets: [{ target: "logo", properties: ["geometry.contour"] }, { target: "camera", properties: ["motion.translation"] }] },
-    { id: "shot-b", startSec: 1, endSec: 2, frameIds: b, targets: [{ target: "logo", properties: ["geometry.contour"] }, { target: "camera", properties: ["motion.translation"] }] },
+    { id: "shot-b", startSec: 1, endSec, frameIds: b, targets: [{ target: "logo", properties: ["geometry.contour"] }, { target: "camera", properties: ["motion.translation"] }] },
   ];
   const missing = checkVideoAnalysis(root, save(), report.source, { requireProduction: true });
   assert.equal(missing.status, "pending", "one observed logo does not complete the declared camera property");
@@ -227,7 +228,7 @@ test("production inventory requires every declared shot property and resolves on
   ]);
   assert.equal(missing.nextActions[0].kind, "observe-shot-property");
   assert.deepEqual(missing.nextActions[0].images.map(frame => frame.id), a);
-  report.observations.push(observation("camera-a", "camera", "motion.translation", 0, 1, a.slice(0, 2)), observation("camera-b", "camera", "motion.translation", 1, 2, b.slice(0, 2)));
+  report.observations.push(observation("camera-a", "camera", "motion.translation", 0, 1, a.slice(0, 2)), observation("camera-b", "camera", "motion.translation", 1, endSec, b.slice(0, 2)));
   const valid = structuredClone(report);
   const ready = checkVideoAnalysis(root, save(), report.source, { requireProduction: true });
   assert.equal(ready.status, "ready"); assert.equal(ready.semanticAcceptance, "not-assessed");
@@ -247,6 +248,7 @@ test("production inventory requires every declared shot property and resolves on
   assert.equal(resolveVideoObservation(root, binding, { target: "logo", property: "geometry.contour", cache }).observations[0].description, changed.observations[0].description, "a report edit cannot reuse the prior cached report hash");
   for (const mutate of [
     value => { value.shots[1].startSec = 1.1; },
+    value => { value.shots[1].endSec = endSec + 0.01; },
     value => { value.shots[1].id = "shot-a"; },
     value => { value.shots[0].frameIds = [b.at(-1)]; },
     value => { value.shots[0].frameIds.reverse(); },
@@ -263,7 +265,7 @@ test("production inventory requires every declared shot property and resolves on
   const crossShot = structuredClone(valid); crossShot.observations[0].endSec = 1.5; crossShot.observations[0].frameIds = [b[0]];
   assert.equal(checkVideoAnalysis(root, save(crossShot), report.source, { requireProduction: true }).unobservedProperties.some(item => item.shotId === "shot-a" && item.target === "logo"), true, "frames from another shot cannot prove this shot's property");
   const staticGraphic = structuredClone(valid);
-  staticGraphic.shots = [{ id: "static", startSec: 0, endSec: 2, frameIds: report.frames.map(frame => frame.id), targets: [{ target: "logo", properties: ["geometry.contour"] }] }];
+  staticGraphic.shots = [{ id: "static", startSec: 0, endSec, frameIds: report.frames.map(frame => frame.id), targets: [{ target: "logo", properties: ["geometry.contour"] }] }];
   staticGraphic.observations = staticGraphic.observations.slice(0, 2);
   assert.equal(checkVideoAnalysis(root, save(staticGraphic), report.source, { requireProduction: true }).status, "ready", "static geometry does not invent other property categories");
   save(valid);
