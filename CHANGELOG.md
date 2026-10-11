@@ -4,6 +4,12 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Web capture publishes the validated v1 `receipt.json` with its evidence and returns the bare
+  receipt under the public CLI's single envelope. Adapter metadata collisions fail closed;
+  complete/partial status, artifact hashes and saved-state privacy remain intact (#69).
+
 ### Added
 
 - `film check` (change `fix-film-workflow-usability`): the existing composition gate also samples

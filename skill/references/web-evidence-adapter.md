@@ -12,6 +12,18 @@ The host starts the adapter in a child process with a bounded environment and JS
 The adapter writes one `design-pipeline.evidence-receipt.v1` JSON object to stdout. All artifact
 paths must stay under `outputRoot`; missing measurements remain `blocked` or `unknown`.
 
+The host validates target identity, containment and artifact hashes, then exclusively writes
+`receipt.json` before publishing the staged directory. This filename is host-owned metadata,
+not an artifact or an entry in `hashes`; adapters must not create a file or link at that path.
+A collision fails capture and removes the stage instead of overwriting adapter output.
+The public CLI returns the bare v1 receipt at `result.receipt` (JSON output: `receipt`), not
+`receipt.receipt`. Complete and partial receipts keep their measured status.
+
+```bash
+designer-pipeline evidence check --receipt .design-pipeline/evidence/<id>/receipt.json \
+  --evidence-root .design-pipeline/evidence/<id> --require-files --json
+```
+
 ## Bundled adapters
 
 Tools reach an adapter only through explicit host options, forwarded as environment variables.
