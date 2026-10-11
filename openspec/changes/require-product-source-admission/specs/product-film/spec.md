@@ -148,7 +148,7 @@ Film workflow state SHALL bind jobId, jobPlanSha256, jobPlanPath and deliverable
 
 ### Requirement: Product promos source and sample before building
 
-Product-launch-video films SHALL source and sample before building. Before the owner is asked, sample.mp4 MUST fully decode as video and its video stream MUST run 5–8 s inclusive, else `next` returns findings with a recut fix and decide refuses with SAMPLE_INVALID; an accept recorded earlier of an invalid file no longer finishes the stage. Owner `decide --stage sample` MUST bind the sample bytes and productSource hash; plan and check MUST hash the run log, captures and plan.
+Product-launch-video films SHALL source, and at standard and full also sample, before building. Before asking the owner, sample.mp4 MUST fully decode as video and its video stream MUST run 5–8 s inclusive, else `next` returns findings with a recut fix and decide refuses with SAMPLE_INVALID; an earlier accept of an invalid file no longer finishes the stage. Owner `decide --stage sample` MUST bind the sample bytes and productSource hash; plan and check MUST hash the run log, captures and plan.
 
 #### Scenario: Stage lists
 

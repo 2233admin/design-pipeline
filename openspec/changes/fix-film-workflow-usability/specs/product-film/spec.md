@@ -64,6 +64,10 @@ A `next` action's `command`, when present, SHALL be only an executable command, 
 - **WHEN** the command of a product promo's source action is run from an unrelated directory with `--root <project>`
 - **THEN** it starts the CLI, because the path is absolute and `designer-pipeline` need not be on PATH
 
+#### Scenario: Plan ids cannot carry shell syntax into a command
+- **WHEN** a visual design plan names a task `id` outside `[A-Za-z0-9][A-Za-z0-9_.-]*`, such as `a;rm -rf x`, `a b`, `$(x)` or `-x`
+- **THEN** plan validation fails with `phases[<i>].id must be a path- and shell-safe identifier`, so the visual-task `command` and `record` that carry the id never contain shell syntax from the plan
+
 ### Requirement: film scaffold of a bound product promo lists its next steps
 `film scaffold` for a project bound to a `product-launch-video` job plan SHALL add the `productSource` record step and the sample step to `next[]`; other scaffolds SHALL keep their `next[]`.
 

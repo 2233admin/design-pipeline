@@ -105,6 +105,19 @@ test("visual verification paths stay contained and bind normalized declared path
   }
 });
 
+test("visual task ids are path- and shell-safe identifiers before they reach a runnable command", () => {
+  for (const id of ["a;rm -rf x", "a b", "$(x)", "a&b", "-x", "a/b", ".."]) {
+    const plan = interactionVisualPlan();
+    plan.phases[0].id = id;
+    assert.throws(() => validatePlan(plan, { requireVisualTasks: true }), /phases\[0\]\.id must be a path- and shell-safe identifier/, id);
+  }
+  for (const id of ["hero-1", "nav.focus", "t_2"]) {
+    const plan = interactionVisualPlan();
+    plan.phases[0].id = id;
+    assert.equal(validatePlan(plan, { requireVisualTasks: true }), plan, id);
+  }
+});
+
 test("persisted control plans must remain governed and runnable", () => {
   const changeRoot = root();
   const plan = compileDesignPlan(manifest());

@@ -577,7 +577,9 @@ The implementation-local plan reuses design-plan.v1; each phase adds `goal` and
 not a whole build, with real reference paths and applicable packaged guides. `scope` names editable
 source paths; `outputs` and `visual.checks` name separate immutable per-task evidence paths, so a
 later source edit cannot overwrite an accepted upstream snapshot. The governed phase registry stays
-unchanged; this local plan is not handed to the governed `run` command.
+unchanged; this local plan is not handed to the governed `run` command. Each phase `id` must match
+`[A-Za-z0-9][A-Za-z0-9_.-]*`: it names the task's `<id>-completion.json` and appears unquoted in
+the returned `decide --choice <id>` command, so other ids fail plan validation.
 
 For video references, add `sourceObservation: {report, shotId, observationIds}`. The contained
 `report` path must also appear in `visual.references`; bind only observed records matching this

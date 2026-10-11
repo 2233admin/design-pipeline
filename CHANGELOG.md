@@ -194,6 +194,10 @@ All notable changes to Design Pipeline are documented here.
   edit analyze, web concepts, build and probe, ui work, native decomposition and task windows) move
   to a new `instruction` field; an action with no command carries only `instruction`, and `line`
   summarizes both. Agents reading `command` for prose now read `instruction`.
+- Visual design plans: each task `id` must match `[A-Za-z0-9][A-Za-z0-9_.-]*`; any other id fails
+  plan validation with `phases[<i>].id must be a path- and shell-safe identifier`. The id goes
+  unquoted into the runnable `decide --choice <id>` command and names `<id>-completion.json`, so a
+  plan can no longer put shell syntax into a `next` command.
 - `film scaffold` for a project bound to a `product-launch-video` plan (state or `job-plan.json`)
   adds the `productSource` record and the sample steps to its `next[]`; other scaffolds are
   unchanged.
