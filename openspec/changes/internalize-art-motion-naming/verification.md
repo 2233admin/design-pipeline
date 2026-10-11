@@ -161,8 +161,42 @@ now calls the existing `window.resetArt()` (the cold-redraw reset). There is no 
   with or without the preflight. `render.cjs` from `bdb1ae8`, before the preflight, also fails y2_vox at 4.5 s
   with `cold/reordered frame mismatch`. A successful render always has a first frame equal to a fresh runtime's.
   The reset makes this hold by construction rather than only being checked.
-- Finding outside this fix: the y2_vox and t2_keynote_ui `highlight` frames depend on draw history. Seeking a
-  still into those windows fails the cold/reordered check, and sequential video frames there may differ from
-  seeked frames.
+- Finding outside this fix, fixed below: the y2_vox and t2_keynote_ui `highlight` frames depended on draw history.
 - `npm test`: exit 0, every QA check OK. Repository tests: 1,134 tests, 1,131 passed, 0 failed, 3 skipped (GEPA).
+  `npm run specs:check`: 66 passed, 0 failed.
+
+### Clip frames as a pure function of spec and time
+
+Tested at `6360a7c` (tree `b632645b5961a5ca25804ef7e08afae00c3cddb3`).
+
+- Root cause: `drawClip` validated the spec on every draw and passed the grammar new cue objects (`valid.cues`), but
+  it ran `init` only on the first draw of a spec. Grammars keep the cue objects init saw and match against the
+  current draw's cues by identity: y2_vox `own !== q` and `… === q` (`clips/y2_vox.js:121,126`), and t2_keynote_ui
+  `ctx.cues.indexOf(q)` (`clips/t2_keynote_ui.js:185`). Only the draw that ran init drew the highlight. Later draws
+  skipped it: y2 lost its marker and red ring, and in t2 `indexOf` returned -1, so the card's highlight window
+  closed early. No cache, random, accumulator or library function was involved. Stubbing `CL.highlight`,
+  `DG.drawPartial`, `CAM.motionBlur`, `UI.sheen` and `UI.backdrop` did not remove the difference, and every library
+  call on the path is pure.
+- Consequences before the fix: a seeked still in a highlight window failed `art-motion render` (Main reproduced it on
+  `87b0304`: y2_vox `--stills 4.5` exits 1 with `cold/reordered frame mismatch`). In a sequential video only frame 0
+  ran init, so neither clip ever showed its highlight. On the old runtime, a forward and a backward pass over every
+  frame agreed everywhere except the first frame each pass drew, which confirms the highlight was missing in both
+  passes.
+- Fix (`scripts/build-art-motion-runtime.cjs`): `drawClip` keeps `{specKey, cues}` per clip and reuses the
+  initialized cue objects for every draw of the same spec. A changed spec re-runs init with new cues, as before.
+  Grammar sources are unchanged. y3_whiteboard also calls `cues.indexOf`, but only inside `init`, so it was already
+  consistent. `runtime.js`: 15,653 lines, 1,289,054 bytes, SHA-256
+  `90a91bda402b2672f6f61b0b996aefd9294f7477c87b1affdc3d5cc395c5184d`. The rebuild reports `Unchanged` on a second run.
+- Test `every example clip frame is a pure function of its spec and time`. For each of the 8 examples at 640x360, a
+  fresh runtime draws the frame twice every 0.5 s and the two hashes must match. It also renders single stills
+  through the kernel, each with `coldAndReorderedMatch` true: y2_vox at 3.5/4.5/5.2 s, t2_keynote_ui at 8.5/9/9.9 s,
+  and the others at 30/50/80 %. Before, with the `87b0304` runtime: `✖ … t2_keynote_ui: drawing the same frame twice
+  on one runtime changes it at these seconds` with `[8.5, 9, 9.5]`. After, at `6360a7c`: ✔. The preflight test now
+  shares the same fresh-runtime helper.
+- Sweep over all 8 grammars at `6360a7c`: every frame drawn forward on one runtime and backward on another gives
+  identical pixel hashes (t1 300, t2 300, t3 210, y1 300, y2 270, y3 300, y4 255, y5 240 frames; 0 mismatches). The
+  earlier every-frame draw-twice probe found drift only in y2 and t2, and only in their highlight windows. No other
+  grammar needed a fix. CLI stills of y2_vox at 4.5 s and t2_keynote_ui at 9 s now render with the highlight,
+  `coldAndReorderedMatch: true`.
+- `npm test`: exit 0, every QA check OK. Repository tests: 1,135 tests, 1,132 passed, 0 failed, 3 skipped (GEPA).
   `npm run specs:check`: 66 passed, 0 failed.
