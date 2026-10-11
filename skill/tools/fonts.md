@@ -94,11 +94,11 @@ kerning, language-specific forms or readability: inspect the actual output.
 
 ## Bundled sample aliases are not font identity
 
-Huashu sample clips retain `PuHui-Medium/Bold/Heavy/Black` compatibility aliases. Their bundled
+Art Motion sample clips retain `PuHui-Medium/Bold/Heavy/Black` compatibility aliases. Their bundled
 files are **Noto Sans SC** subsets at 500/700/800/900, not Alibaba PuHui. `NotoSansSC` and
-`NotoSerifSC` sample files cover only source-demo text; `NotoSerifJP-600` is not a general
-simplified-Chinese font. Check the [bundled font notices](../vendor/huashu-art-motion/upstream/scripts/engine/lib/fonts/LICENSES.md)
-and actual text instead of assuming coverage from a family label.
+`NotoSerifSC` sample files cover only sample text; `NotoSerifJP-600` is not a general
+simplified-Chinese font. Check the [bundled font notices](art-motion/fonts/LICENSES.md) and
+actual text instead of assuming coverage from a family label.
 
 New artwork should use its real project font names. When deliberately adapting an existing
 clip, its declared alias can map to a caller-supplied, appropriately licensed font file; record

@@ -1,5 +1,8 @@
 # Film methods delivery verification
 
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
 ## Frozen implementation and scope
 
 Implementation commit: `5c6bb65302a6d12f6251eb451527b5db76847801`.
@@ -45,7 +48,7 @@ was rerun successfully. No global Python environment or committed machine path w
 The source suite reconstructs original pinned Git commits offline and exercises dirty, wrong,
 missing and malformed import rejection without replacing the previous snapshot. It also
 compares all 167 new source blobs byte-for-byte after extraction from the actual release TGZ.
-Windows system tar failed to extract preexisting Huashu Chinese paths from the whole archive;
+Windows system tar failed to extract preexisting Art Motion reference Chinese paths from the whole archive;
 that diagnostic remains in `source-tar-failure.log`. The new ASCII vendor trees passed that tar
 extraction; full ZIP extraction and the existing QA's full JavaScript TGZ extraction passed.
 This is not a claim that Windows system tar handles every package path.

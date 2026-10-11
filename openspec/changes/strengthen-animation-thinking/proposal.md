@@ -1,8 +1,11 @@
 # Strengthen animation thinking
 
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
 ## Why
 
-The user requested learning from huashu-art-motion, then clarified the priority: professional
+The user requested learning from the Art Motion reference project, then clarified the priority: professional
 animation thinking transferable to PV, MAD, authored films and explanations. Narration and
 whiteboard are possible materials, not a mandatory structure or style. Implementation may be
 delegated to inexpensive models; direction and evidence-based acceptance stay with the lead.
@@ -25,7 +28,7 @@ holds and cut-to-onset share) can reject deliberately authored timing.
 
 ## Sources and boundary
 
-huashu-art-motion at `26dba25b2b495c2138848c29a2c90df356a20325` is accepted-optional
+The Art Motion reference at `26dba25b2b495c2138848c29a2c90df356a20325` is accepted-optional
 as method inspiration (MIT): style lives in how subjects move, deterministic seeking, short
 motion studies and visual review. No upstream runtime/assets/instructions are copied.
 Richard Williams' authorized publisher/masterclass summaries and Toei's public production

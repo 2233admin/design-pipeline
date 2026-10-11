@@ -1,5 +1,8 @@
 # Skill structure and OpenSpec alignment
 
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
 ## Purpose and scope
 
 Make the skill's task entry, maintained tools, upstream sources and workflow requirements agree.
@@ -64,7 +67,7 @@ changes merely because their checkboxes are checked.
 | Check | Result |
 | --- | --- |
 | `openspec validate --all --strict --json` | 40/40 valid: 39 changes and one main spec; two informational archive prerequisites remain below |
-| Moved-file SHA-256 comparison | 1,508 files unchanged; the maintained Huashu README moved to `references/huashu-art-motion.md` and its links were updated |
+| Moved-file SHA-256 comparison | 1,508 files unchanged; the maintained Art Motion reference README moved to `references/art-motion-reference.md` and its links were updated |
 | Source catalogs and Canvas checks | 34/34 pass, including a real browser study at two sizes and reordered frame sampling |
 | Maintained Markdown links and anchors | 80 checked, no missing targets |
 | `node scripts/qa.cjs` | Exit 0: 913 passed, 0 failed, 1 skipped across 105 test files; 914 test cases are not 914 features |

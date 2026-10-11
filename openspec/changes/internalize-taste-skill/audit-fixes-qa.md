@@ -1,7 +1,11 @@
 # Audit fixes and delivery verification
 
-Date: 2026-10-08. This follow-up addresses the Skill Creator and reviewed Huashu
-media audits through `internalize-taste-skill` and `complete-huashu-internalization`.
+Naming note (2026-10-11): the reference project's name was replaced with neutral wording by
+internalize-art-motion-naming; paths describe the layout at the time.
+
+Date: 2026-10-08. This follow-up addresses the Skill Creator and reviewed Art Motion
+reference media audits through `internalize-taste-skill` and
+`complete-art-motion-internalization`.
 The user authorized canonical installation synchronization, pushing the existing
 branch and updating PR #85; merging, release creation and deployment are outside
 this delivery. The original working checkout's unrelated changes were preserved.
@@ -23,7 +27,7 @@ relabelled as a test of that later Git tree. Final-commit CI is recorded in PR #
   and missing-reference behavior. Wrong state, absent signal and absent artifact
   controls are rejected. Frozen outputs stay outside the published skill; other
   manifest cases retain routing/manifest coverage only.
-- Huashu is pinned to reviewed `57d67608ab458f57d9b153b1a2831b921e22498b`.
+- The Art Motion reference is pinned to reviewed `57d67608ab458f57d9b153b1a2831b921e22498b`.
   All 343 retained source files match that revision's committed Git bytes. The
   importer retains 19 additional media dependencies and related source materials;
   `.gitattributes` protects those raw bytes. Runtime algorithms did not change;
@@ -37,8 +41,8 @@ relabelled as a test of that later Git tree. Final-commit CI is recorded in PR #
   schema, target resolver or policy digest was added.
 
 See [behavior coverage](skill-behavior-review.md),
-[source/render verification](../complete-huashu-internalization/verification.md) and
-[offline audio verification](../complete-huashu-internalization/koubo-verification.md).
+[source/render verification](../complete-art-motion-internalization/verification.md) and
+[offline audio verification](../complete-art-motion-internalization/koubo-verification.md).
 
 ## Local verification
 
@@ -52,7 +56,7 @@ in ignored local evidence, not added to source or configuration.
 | Official Skill Creator `quick_validate.py skill` | Valid; structural validation only |
 | Focused existing skill eval suite | 9 passed, 0 skipped; browser cases executed |
 | Maintained offline audio regressions | 6 passed, 0 skipped; actual FFmpeg |
-| Existing Huashu source/browser/render suites | 19 passed, 0 skipped |
+| Existing Art Motion source/browser/render suites | 19 passed, 0 skipped |
 | Visual Craft and CLI suites | 18 passed, 0 skipped |
 | Imported upstream local/mock contracts | 61 passed; no real provider calls |
 | `npm run sources:check` | 45 passed, 0 skipped |
@@ -136,7 +140,7 @@ canonical `.codex` target after full QA passed.
 Detailed local evidence remains ignored: `.design-pipeline/audit-fixes-qa/` (full
 QA, source/spec logs, review and isolated forward tests),
 `.design-pipeline/skill-behavior-review/`, `.design-pipeline/koubo-review/`,
-`.design-pipeline/huashu-update-review/` and `.design-pipeline/install-review/`
+`.design-pipeline/art-motion-update-review/` and `.design-pipeline/install-review/`
 (both recoverable backups, before/after inventories and installed smoke output).
 No private captures, credentials or machine-specific configuration were published.
 

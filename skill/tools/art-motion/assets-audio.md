@@ -22,9 +22,9 @@ require refreshed downstream render evidence under the current pipeline contract
 Use the explicit `assets` map in [render specs](README.md#render-a-style-or-clip) or the project's
 renderer; the maintained render report records input hashes. For matte/crop/sprite work, continue
 below. Review the actual composed output with existing composition checks and visual review.
-The original [image guide](../../vendor/huashu-art-motion/upstream/references/images.md), defaults,
-schema and scripts are preserved for research; do not run their separate plan/receipt/config
-fingerprint workflow or introduce a new media configuration questionnaire.
+The [image method note](../../references/art-motion/methods/images.md) is reference only
+(authorization and review principles). Do not add a plan/receipt/config-fingerprint workflow or a
+new media configuration questionnaire.
 
 ## Process a supplied voice track
 
@@ -33,11 +33,11 @@ can fit duration within the original ±10% fine-adjustment limit, level-match a 
 target, or prepare a 24 kHz mono PCM WAV. It needs Python plus FFmpeg/ffprobe on PATH.
 
 ```sh
-python "<skill-root>/tools/art-motion/koubo.py" --root "<project>" \
+python "<skill-root>/tools/art-motion/voice.py" --root "<project>" \
   --input assets/voice.wav --output build/voice-fitted.wav --fit-seconds 3.5
-python "<skill-root>/tools/art-motion/koubo.py" --root "<project>" \
+python "<skill-root>/tools/art-motion/voice.py" --root "<project>" \
   --input assets/voice.wav --output build/voice-level.wav --match-db -30
-python "<skill-root>/tools/art-motion/koubo.py" --root "<project>" \
+python "<skill-root>/tools/art-motion/voice.py" --root "<project>" \
   --input assets/voice.wav --output build/voice-prepared.wav --prepare
 ```
 
@@ -47,8 +47,9 @@ or replacement; failed processing cleans newly created files and preserves suppl
 The stdout measurements are diagnostics, not another receipt. Use existing `verify audio` and
 listen with the picture; duration/level measurements do not verify speech accuracy or quality.
 
-The original macOS/Volcengine synthesis, training, private media configuration and voice registry
-remain source reference. This entry does not connect a voice provider, train, upload or request
+Speech synthesis, voice training, private media configuration and a voice registry are not
+shipped; the [voice configuration note](../../references/art-motion/methods/voice-configuration.md)
+is reference only. This entry does not connect a voice provider, train, upload or request
 credentials. If new speech is needed, use an actually available, explicitly selected tool under
 the task's existing authorization; absent backend access remains a missing input.
 
@@ -132,7 +133,9 @@ delivery requirements.
 Use the existing `designer-pipeline film score` and `score-grid.json` for the full musical bed,
 musical events, BPM and storyboard alignment. `audio.cjs` adds short, deterministic cues that can
 sit as a separate audio layer in the existing composition; `audio-core.cjs` remains the delivery
-measurement/mastering path.
+measurement/mastering path. For a worked method of breaking down and writing a code-synthesized
+score on a strict BPM grid, read the [soundtrack synthesis note](../../references/art-motion/styles/soundtrack-synthesis.md);
+build its instruments and cues from `audio.cjs` events.
 
 ```js
 const fs = require("node:fs");

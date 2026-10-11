@@ -6,7 +6,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
-const { resolveInside, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const VisualCraft = require("../skill/tools/visual-craft/canvas.js");
 
 function fakeContext() {
@@ -139,17 +138,11 @@ test("image placement returns centered contain/cropped cover rectangles and spri
   assert.throws(() => VisualCraft.spriteFrame(-0.1, 4, 10), /time/);
 });
 
-test("bundled technique sources retain their pinned bytes and license", () => {
-  const sourceRoot = path.join(__dirname, "../skill/vendor/huashu-art-motion");
-  const manifest = JSON.parse(fs.readFileSync(path.join(sourceRoot, "manifest.json")));
-  assert.match(manifest.sourceCommit, /^[a-f0-9]{40}$/);
-  assert.equal(new Set(manifest.files.map(file => file.localPath)).size, manifest.files.length);
-  for (const file of manifest.files) {
-    const local = resolveInside(sourceRoot, file.localPath, "source method", { mustExist: true });
-    assert.equal(sha256(fs.readFileSync(local)), file.sha256, file.localPath);
-  }
-  assert.match(fs.readFileSync(path.join(sourceRoot, "LICENSE"), "utf8"), /Copyright \(c\) 2026 alchaincyf/);
-  assert.deepEqual(fs.readFileSync(path.join(sourceRoot, "LICENSE")), fs.readFileSync(path.join(__dirname, "../skill/tools/visual-craft/LICENSE.huashu-art-motion")));
+test("the canonical Art Motion license keeps the MIT notice that canvas.js names", () => {
+  const license = fs.readFileSync(path.join(__dirname, "../skill/tools/art-motion/LICENSE"), "utf8");
+  assert.match(license, /Copyright \(c\) 2026 alchaincyf/);
+  assert.match(license, /The above copyright notice and this permission notice shall be included in all\s+copies or substantial portions of the Software\./);
+  assert.match(fs.readFileSync(path.join(__dirname, "../skill/tools/visual-craft/canvas.js"), "utf8"), /LICENSE\.art-motion/);
 });
 
 let browserTools;

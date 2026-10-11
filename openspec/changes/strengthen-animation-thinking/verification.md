@@ -9,7 +9,7 @@ reviewed their changes and the rendered evidence. No model ID or mandatory style
 
 The Williams references are authorized publisher/masterclass summaries, not a claim to have read
 the complete book or watched the paid course. Toei production/interview sources and the pinned
-huashu-art-motion revision are linked in the guide. No artwork, book pages, course media or
+Art Motion reference revision are linked in the guide. No artwork, book pages, course media or
 upstream runtime is copied.
 
 ## Runtime evidence
