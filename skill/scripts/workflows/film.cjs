@@ -148,8 +148,10 @@ function sampleBinding(root) {
   } catch { return null; }
 }
 
-// The sample is the owner's first look at the real material, so it must decode and run 5–8 s; an
-// unreadable or off-length file never reaches the verdict. Findings carry the fix, like the gates'.
+// The sample is the owner's first look at the real material, so its video must decode and run 5–8 s;
+// an unreadable or off-length file never reaches the verdict. Findings carry the fix, like the gates'.
+// Only the video stream's own duration is judged, so a longer audio track cannot stretch a short cut;
+// a stream that reports none is a finding, never measured by the container.
 // ffprobe reads only metadata, so a full video decode proves the frames; the decode fails when ffmpeg exits non-zero.
 const SAMPLE_SECONDS = [5, 8];
 function inspectSample(root) {
@@ -162,7 +164,9 @@ function inspectSample(root) {
   try {
     const media = probe(file, tools);
     const [min, max] = SAMPLE_SECONDS;
-    if (!(media.durationSec >= min && media.durationSec <= max)) return { findings: [finding("sample-duration", `${SAMPLE_FILE} runs ${Number(media.durationSec.toFixed(2))} s; the sample must run ${min}–${max} s.`, recut)] };
+    const seconds = media.videoDurationSec;
+    if (seconds === null) return { findings: [finding("sample-duration-unknown", `The video stream of ${SAMPLE_FILE} reports no duration, so its length cannot be checked.`, recut)] };
+    if (!(seconds >= min && seconds <= max)) return { findings: [finding("sample-duration", `${SAMPLE_FILE} runs ${Number(seconds.toFixed(2))} s; the sample must run ${min}–${max} s.`, recut)] };
     run(tools.ffmpeg, ["-v", "error", "-xerror", "-i", file, "-map", "0:v:0", "-f", "null", "-"]);
     return { findings: [] };
   } catch (error) {

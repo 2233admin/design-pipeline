@@ -6,6 +6,7 @@
 - [x] Migrate maintained CLI/core/execution fixtures and add behavioral regressions.
 - [x] Update public handoff documentation and changelog.
 - [x] `route --write` for a film plan returns the `next --deliverable film --job-plan` handoff (`action: "bind-film"`) instead of a `toolchain request`; non-film plans keep it; `tests/job-route.test.cjs` routes one plan per form in a fresh root, runs the returned argv and checks the bound plan hash; `stages.md` states the film handoff.
+- [x] The film handoff argv passes `--root <root>` with `--project-root <root>`, so `next` resolves the project from the argv rather than the caller's working directory; `tests/job-route.test.cjs` runs the argv from a temp directory outside the project and checks the bound plan hash.
 
 ## Verification
 - [x] Run focused tests and public CLI binding scenarios.

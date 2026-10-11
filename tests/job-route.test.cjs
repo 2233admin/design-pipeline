@@ -454,7 +454,7 @@ test("a persisted film route hands off to the film workflow, not a toolchain req
       assert.equal(handoff.command, "next");
       assert.equal(handoff.requestPath, undefined);
       assert.match(handoff.note, /defaults to standard/);
-      assert.deepEqual(handoff.argv.slice(2), ["next", "--project-root", root, "--deliverable", "film", "--job-plan", "job-plan.json"]);
+      assert.deepEqual(handoff.argv.slice(2), ["next", "--root", root, "--project-root", root, "--deliverable", "film", "--job-plan", "job-plan.json"]);
       const child = spawnSync(handoff.argv[0], handoff.argv.slice(1), { cwd: root, encoding: "utf8", windowsHide: true });
       assert.equal(child.status, 0, child.stdout || child.stderr);
       assert.equal(JSON.parse(child.stdout).deliverable, "film");
@@ -466,6 +466,26 @@ test("a persisted film route hands off to the film workflow, not a toolchain req
     }
   }
   assert.equal(exercised, cases.length);
+});
+
+test("the film handoff binds the plan when run from outside the project", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-film-handoff-root-"));
+  const elsewhere = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-film-handoff-cwd-"));
+  try {
+    const routed = run(["route", "--root", root, "--query", "制作产品宣传动画", "--write", "--output", "job-plan.json"]);
+    assert.equal(routed.status, 0, routed.stdout);
+    const { handoff } = routed.output;
+    assert.equal(handoff.action, "bind-film");
+    const child = spawnSync(handoff.argv[0], handoff.argv.slice(1), { cwd: elsewhere, encoding: "utf8", windowsHide: true });
+    assert.equal(child.status, 0, child.stdout || child.stderr);
+    assert.equal(JSON.parse(child.stdout).deliverable, "film");
+    const state = JSON.parse(fs.readFileSync(path.join(root, ".design-pipeline/state.json"), "utf8"));
+    assert.equal(state.jobPlan.jobPlanSha256, routed.output.planSha256);
+    assert.equal(fs.existsSync(path.join(elsewhere, ".design-pipeline")), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(elsewhere, { recursive: true, force: true });
+  }
 });
 
 test("request handoff rejects missing choices, binding drift and unsafe output before writing", () => {

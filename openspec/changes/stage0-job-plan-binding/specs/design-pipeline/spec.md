@@ -45,5 +45,10 @@ English and Chinese HTML product launch/showcase video requests MUST select the 
 
 #### Scenario: Persisted film route hands off to the film workflow
 - **WHEN** `route --write` persists a plan whose form is `product-launch-video` or `motion-graphics-video`
-- **THEN** its handoff is `command: "next"`, `action: "bind-film"` with an executable argv `next --project-root <root> --deliverable film --job-plan <plan>`, and no `toolchain request` handoff or choices file
+- **THEN** its handoff is `command: "next"`, `action: "bind-film"` with an executable argv `next --root <root> --project-root <root> --deliverable film --job-plan <plan>`, and no `toolchain request` handoff or choices file
 - **AND** running that argv binds the plan in film state, while a non-film plan keeps its `toolchain request` handoff
+
+#### Scenario: Film handoff runs from any working directory
+- **WHEN** the returned film handoff argv is run from a working directory outside the project
+- **THEN** it MUST bind the plan in that project's film state, because the argv names the project as both `--root` and `--project-root`
+- **AND** nothing is written to the working directory

@@ -178,8 +178,8 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
 Standard and full product promos. Before building the whole film, cut a 5–8 s `sample.mp4` at the
 project root from the captures cited in `beats[].source`, showing the action, the response and
 the result. Use the real captures with crops, zooms, masks and captions; no invented cards or
-redrawn UI. `next` first checks `sample.mp4` with an ffprobe duration of 5–8 s inclusive and a full ffmpeg video decode judged by its exit status; otherwise it returns
-findings with a recut fix (`sample-not-video`, `sample-duration`; `sample-probe-unavailable` when
+redrawn UI. `next` first checks `sample.mp4` with an ffprobe video-stream duration of 5–8 s inclusive (a longer audio track does not count, and a stream that reports no duration is never measured by the container) and a full ffmpeg video decode judged by its exit status; otherwise it returns
+findings with a recut fix (`sample-not-video`, `sample-duration`, `sample-duration-unknown`; `sample-probe-unavailable` when
 ffmpeg/ffprobe are missing) and `decide` refuses. Then it asks the owner to view `sample.mp4` beside its capture files; record the
 reply with `decide --stage sample --verdict accept|reject [--answer "<reason>"]`. A rejection
 needs `--answer` and becomes a project rule. Acceptance binds the sample bytes and the

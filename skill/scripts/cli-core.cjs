@@ -1540,8 +1540,8 @@ function jobRouteCommand(parsed, root) {
       handoff = {
         command: "next",
         action: "bind-film",
-        argv: [process.execPath, cli, "next", "--project-root", root, "--deliverable", "film", "--job-plan", planRel],
-        note: `Add --tier quick|standard|full to choose the size (omitted, --tier defaults to standard). An existing film project rebinds with next --project-root <dir> --job-plan ${planRel}. Follow the action next returns; binding the plan grants no visual acceptance.`,
+        argv: [process.execPath, cli, "next", "--root", root, "--project-root", root, "--deliverable", "film", "--job-plan", planRel],
+        note: `Add --tier quick|standard|full to choose the size (omitted, --tier defaults to standard). An existing film project rebinds with next --root <dir> --project-root <dir> --job-plan ${planRel}. Follow the action next returns; binding the plan grants no visual acceptance.`,
       };
     } else {
       const [choicesPath, requestPath] = ["stack-input.json", "toolchain-request.json"].map((name) => {

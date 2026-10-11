@@ -176,9 +176,17 @@ All notable changes to Design Pipeline are documented here.
   verdict. Failures return findings with a recut fix, `decide --stage sample` refuses with
   `SAMPLE_INVALID`, and an earlier accept of an off-length file no longer finishes the stage.
 - `route --write` for a film plan (`product-launch-video`, `motion-graphics-video`) now hands off
-  to `next --project-root <root> --deliverable film --job-plan <plan>` (`handoff.action:
+  to `next --root <root> --project-root <root> --deliverable film --job-plan <plan>` (`handoff.action:
   "bind-film"`) instead of a `toolchain request` that needs stack choices a film never uses.
   Non-film plans keep the toolchain handoff.
+- `route --write` film handoff: the `bind-film` argv now also passes `--root <root>`, so it binds
+  the plan when run from any working directory; before, `next` took `--root` from the caller's cwd
+  and rejected the absolute `--project-root` as outside it.
+- Film `sample` stage: the 5–8 s check now reads the video stream's duration instead of the
+  container's, so a 4 s video under a 6.5 s audio track is refused and a 6 s video under a longer
+  audio track passes. A video stream that reports no duration returns `sample-duration-unknown`
+  rather than being measured by the container. `probe()` adds `videoDurationSec`; `durationSec`
+  keeps its container meaning.
 - Film, edit, web and ui `next` actions: `command` now holds only an executable command, and it is
   `node <absolute path of designer-pipeline.cjs> ...` (`designer-pipeline` is not on PATH), so it
   runs as given from any directory; the `record` template of an `ask` action uses the same form.

@@ -41,20 +41,22 @@ const stateFile = dir => path.join(dir, ".design-pipeline/state.json");
 const hasFfmpeg = ["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0);
 const cuts = new Map();
 // A real H.264 clip of the given length; `tag` changes its bytes, and the same arguments reproduce them.
-function cutBytes(seconds, tag = "cut") {
-  const key = `${seconds}:${tag}`;
+// `audioSeconds` adds an AAC tone of that length, so the container can outlast the video stream.
+function cutBytes(seconds, tag = "cut", audioSeconds = null) {
+  const key = `${seconds}:${tag}:${audioSeconds}`;
   if (!cuts.has(key)) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "sample-cut-"));
     try {
       const out = path.join(dir, "cut.mp4");
-      const made = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", `testsrc=size=160x90:rate=10:duration=${seconds}`, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-fflags", "+bitexact", "-flags:v", "+bitexact", "-metadata", `comment=${tag}`, out], { encoding: "utf8", windowsHide: true });
+      const audio = audioSeconds === null ? [] : ["-f", "lavfi", "-i", `sine=frequency=440:duration=${audioSeconds}`, "-c:a", "aac"];
+      const made = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", `testsrc=size=160x90:rate=10:duration=${seconds}`, ...audio, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-fflags", "+bitexact", "-flags:v", "+bitexact", "-metadata", `comment=${tag}`, out], { encoding: "utf8", windowsHide: true });
       assert.equal(made.status, 0, made.stderr);
       cuts.set(key, fs.readFileSync(out));
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
   return cuts.get(key);
 }
-const cut = (dir, seconds, tag) => { fs.writeFileSync(path.join(dir, "sample.mp4"), cutBytes(seconds, tag)); };
+const cut = (dir, seconds, tag, audioSeconds) => { fs.writeFileSync(path.join(dir, "sample.mp4"), cutBytes(seconds, tag, audioSeconds)); };
 
 // The walk exercises the sample stage with a stand-in for ffmpeg/ffprobe, so its verdict, hash,
 // delivery and admission assertions run on runners without them. film-core binds `spawnSync` when it
@@ -62,8 +64,10 @@ const cut = (dir, seconds, tag) => { fs.writeFileSync(path.join(dir, "sample.mp4
 // there), so the workflow graph is loaded afresh while `child_process.spawnSync` answers those two
 // names from the file's bytes; every other command goes to the real one. The shared module cache is
 // restored afterwards, so no other test sees the stand-in. Real decoding stays with the media test.
+// Like real ffprobe, the stand-in reports the video stream's own duration; a cut written with
+// `streamDuration: false` reports only the container's, as a stream whose duration is N/A does.
 const FAKE_CUT = "fake-mp4";
-const fakeCut = (dir, seconds, tag) => fs.writeFileSync(path.join(dir, "sample.mp4"), `${FAKE_CUT} duration=${seconds} tag=${tag}`);
+const fakeCut = (dir, seconds, tag, { streamDuration = true } = {}) => fs.writeFileSync(path.join(dir, "sample.mp4"), `${FAKE_CUT} duration=${seconds} tag=${tag}${streamDuration ? "" : " stream-duration=none"}`);
 function workflowWithFakeMedia() {
   const childProcess = require("node:child_process");
   const scripts = path.resolve(__dirname, "../skill/scripts") + path.sep;
@@ -78,7 +82,8 @@ function workflowWithFakeMedia() {
     const text = fs.readFileSync(file, "utf8");
     const seconds = text.startsWith(FAKE_CUT) ? /duration=([\d.]+)/.exec(text)?.[1] : null;
     if (!seconds) return { status: 1, stdout: "", stderr: `${file}: Invalid data found when processing input\n` };
-    const stdout = bin === "ffprobe" ? JSON.stringify({ format: { duration: seconds }, streams: [{ codec_type: "video", r_frame_rate: "10/1" }] }) : "";
+    const video = { codec_type: "video", r_frame_rate: "10/1", ...(text.includes("stream-duration=none") ? {} : { duration: seconds }) };
+    const stdout = bin === "ffprobe" ? JSON.stringify({ format: { duration: seconds }, streams: [video] }) : "";
     return { status: 0, stdout, stderr: "" };
   };
   try { return { ...require("../skill/scripts/workflow-core.cjs"), calls }; }
@@ -577,6 +582,34 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.ok(calls.includes("ffprobe") && calls.includes("ffmpeg"), "the sample stage inspected the cuts through the stand-in");
 });
 
+test("a sample whose video stream reports no duration is not measured by its container", t => {
+  const { decide, nextAction } = workflowWithFakeMedia();
+  const dir = project(t);
+  writePlan(dir, PRODUCT_QUERY);
+  initState(dir, { deliverable: "film", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "default" });
+  writeStoryboard(dir, admittedSource(dir));
+  decide(dir, { stage: "reference", answer: "none" });
+  touch(dir, "concepts.md");
+  decide(dir, { stage: "concept", choice: "1" });
+  passStoryboard(dir);
+
+  // The container reports 6 s, but that may be a longer audio track over a short cut.
+  fakeCut(dir, 6, "no stream duration", { streamDuration: false });
+  const next = nextAction(dir);
+  assert.equal(next.stage, "sample");
+  assert.equal(next.type, "run", "the owner is not asked");
+  assert.deepEqual(codes(next), ["sample-duration-unknown"]);
+  assert.match(next.findings[0].message, /video stream of sample\.mp4 reports no duration/);
+  assert.match(next.findings[0].fix, /Recut sample\.mp4 .* 5–8 s/);
+  const before = fs.readFileSync(stateFile(dir));
+  assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
+  assert.deepEqual(fs.readFileSync(stateFile(dir)), before, "no verdict is recorded");
+
+  fakeCut(dir, 6, "stream duration");
+  assert.equal(nextAction(dir).type, "ask");
+});
+
 test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { skip: !hasFfmpeg }, t => {
   const dir = project(t);
   writePlan(dir, PRODUCT_QUERY);
@@ -595,6 +628,8 @@ test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { sk
     ["sample-not-video", () => { fs.writeFileSync(path.join(dir, "sample.mp4"), truncated.subarray(0, Math.floor(truncated.length * 0.6))); }],
     ["sample-duration", () => cut(dir, 1)],
     ["sample-duration", () => cut(dir, 30)],
+    // The video stream runs 4 s; a longer audio track stretches the container to 6.5 s.
+    ["sample-duration", () => cut(dir, 4, "cut", 6.5)],
   ];
   for (const [code, write] of refused) {
     write();
@@ -609,6 +644,10 @@ test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { sk
     assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
     assert.deepEqual(fs.readFileSync(stateFile(dir)), before, "no verdict is recorded");
   }
+
+  // The video stream decides the length: 6 s of video passes under a 9 s audio track.
+  cut(dir, 6, "cut", 9);
+  assert.equal(nextAction(dir).type, "ask");
 
   cut(dir, 7.64);
   assert.equal(nextAction(dir).type, "ask");

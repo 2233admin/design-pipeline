@@ -148,7 +148,7 @@ Film workflow state SHALL bind jobId, jobPlanSha256, jobPlanPath and deliverable
 
 ### Requirement: Product promos source and sample before building
 
-Product-launch-video films SHALL source and sample before building. Before the owner is asked, sample.mp4 MUST fully decode as video and run 5–8 s inclusive, else `next` returns findings with a recut fix and decide refuses with SAMPLE_INVALID; an accept recorded earlier of an invalid file no longer finishes the stage. Owner `decide --stage sample` MUST bind the sample bytes and productSource hash; plan and check MUST hash the run log, captures and plan.
+Product-launch-video films SHALL source and sample before building. Before the owner is asked, sample.mp4 MUST fully decode as video and its video stream MUST run 5–8 s inclusive, else `next` returns findings with a recut fix and decide refuses with SAMPLE_INVALID; an accept recorded earlier of an invalid file no longer finishes the stage. Owner `decide --stage sample` MUST bind the sample bytes and productSource hash; plan and check MUST hash the run log, captures and plan.
 
 #### Scenario: Stage lists
 
@@ -164,6 +164,12 @@ Product-launch-video films SHALL source and sample before building. Before the o
 
 - **WHEN** sample.mp4 is not a video, fails to decode, or runs under 5 s or over 8 s
 - **THEN** `next` returns a run action whose findings carry a recut fix and does not ask the owner, `decide --stage sample` fails with `SAMPLE_INVALID`, and an earlier accept of such a file no longer finishes the stage
+
+#### Scenario: A longer audio track does not stretch the sample
+
+- **WHEN** sample.mp4's video stream runs under 5 s or over 8 s while its audio track makes the container run 5–8 s, or its video stream runs 5–8 s under a longer audio track
+- **THEN** the sample length is the video stream's: the first is refused with `sample-duration` and the second reaches the owner
+- **AND** a video stream that reports no duration yields `sample-duration-unknown` and no verdict, never a container-measured length
 
 #### Scenario: Source changed after sample acceptance
 

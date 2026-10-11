@@ -58,10 +58,11 @@ Product promos (`deliverableForm === "product-launch-video"`) use:
 `{ type: "blocked", blocker, why, record }` (CLI exit 2) and never advances. `sample` asks for a
 short sample cut from the cited captures (action → response → result) and an owner `decide --stage
 sample --verdict accept|reject`. Before asking, the stage checks `sample.mp4`: the existing film
-probe (`ffprobe`) must report a duration of 5–8 s inclusive, and a full `ffmpeg` video decode
+probe (`ffprobe`) must report a video-stream duration of 5–8 s inclusive (never the container's,
+which a longer audio track stretches), and a full `ffmpeg` video decode
 (`-v error -xerror -map 0:v:0 -f null -`) must exit 0; the decode is judged by exit status, not by
 stderr text. Otherwise `next` returns a `run` action whose findings (`sample-not-video`,
-`sample-duration`, `sample-probe-unavailable`) carry the `fix`, and `decide` refuses with
+`sample-duration`, `sample-duration-unknown`, `sample-probe-unavailable`) carry the `fix`, and `decide` refuses with
 `SAMPLE_INVALID`. An accepted verdict finishes the stage only while the file still passes the check
 (no result is cached between calls). Acceptance binds the
 sample bytes and the canonical `productSource` hash, so changing either reopens it. Plan and check

@@ -13,8 +13,9 @@ references and existing assets, plan sound and picture, then apply its audiovisu
 review in addition to runtime QA; the user need not name film techniques or separately request music.
 Bind the persisted plan to the film workflow with `designer-pipeline next --project-root .
 --deliverable film --tier standard --job-plan job-plan.json` (an existing film project rebinds
-with `next --project-root . --job-plan job-plan.json`). `route --write` returns exactly this `next`
-command as its `handoff` (`action: "bind-film"`) for a film plan (`product-launch-video` or
+with `next --project-root . --job-plan job-plan.json`). `route --write` returns this `next`
+command as its `handoff` (`action: "bind-film"`), spelled with the absolute `--root` and
+`--project-root` so it runs from any directory, for a film plan (`product-launch-video` or
 `motion-graphics-video`). A product promo is admitted to evaluation
 only after the real product is sourced: see `references/workflow-film.md#source`.
 
@@ -304,9 +305,9 @@ bindings, changed plan content, and escaping output paths fail before request de
 
 For a film plan (`product-launch-video`, `motion-graphics-video`), `route --write` instead returns
 `handoff: { command: "next", action: "bind-film", argv }`; `argv` runs
-`next --project-root <root> --deliverable film --job-plan <plan>`, which binds the plan and returns
-the first film action. It needs no `stack-input.json` or toolchain request; add `--tier` to pick the
-size and follow the action `next` returns.
+`next --root <root> --project-root <root> --deliverable film --job-plan <plan>`, which binds the plan
+and returns the first film action from any working directory. It needs no `stack-input.json` or
+toolchain request; add `--tier` to pick the size and follow the action `next` returns.
 
 For the first-wave guided multi-surface flow, use these commands:
 
