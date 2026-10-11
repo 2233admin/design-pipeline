@@ -148,17 +148,39 @@ Film workflow state SHALL bind jobId, jobPlanSha256, jobPlanPath and deliverable
 
 ### Requirement: Product promos source and sample before building
 
-Product-launch-video films SHALL use stages source, plan, build, check, review at quick and intake, source, reference, concepts, plan, sample, build, check, review, deliver at standard and full. Sample SHALL be accepted only by owner `decide --stage sample` bound to the sample bytes and productSource hash. Plan and check MUST hash the run log, captures and bound plan.
+Product-launch-video films SHALL source, and at standard and full also sample, before building. Before asking the owner, sample.mp4 MUST fully decode as video and its video stream MUST run 5–8 s inclusive, else `next` returns findings with a recut fix and decide refuses with SAMPLE_INVALID; an earlier accept of an invalid file no longer finishes the stage. Owner `decide --stage sample` MUST bind the sample bytes and productSource hash; plan and check MUST hash the run log, captures and plan.
+
+#### Scenario: Stage lists
+
+- **WHEN** a product-launch-video film is walked
+- **THEN** its stages are source, plan, build, check, review at quick and intake, source, reference, concepts, plan, sample, build, check, review, deliver at standard and full
 
 #### Scenario: Sample rejected
 
 - **WHEN** the owner records `decide --stage sample --verdict reject --answer <reason>`
 - **THEN** the reason becomes a project rule and sample stays open
 
+#### Scenario: Sample is not a decodable 5–8 s video
+
+- **WHEN** sample.mp4 is not a video, fails to decode, or runs under 5 s or over 8 s
+- **THEN** `next` returns a run action whose findings carry a recut fix and does not ask the owner, `decide --stage sample` fails with `SAMPLE_INVALID`, and an earlier accept of such a file no longer finishes the stage
+
+#### Scenario: A longer audio track does not stretch the sample
+
+- **WHEN** sample.mp4's video stream runs under 5 s or over 8 s while its audio track makes the container run 5–8 s, or its video stream runs 5–8 s under a longer audio track
+- **THEN** the sample length is the video stream's: the first is refused with `sample-duration` and the second reaches the owner
+- **AND** a video stream that reports no duration yields `sample-duration-unknown` and no verdict, never a container-measured length
+
 #### Scenario: Source changed after sample acceptance
 
 - **WHEN** sample.mp4 or productSource changes after an accept verdict
 - **THEN** that verdict no longer finishes the sample stage and a new sample decision is required
+
+#### Scenario: Scaffolded before the reference stage
+
+- **GIVEN** a standard or full product promo whose source stage ran `film scaffold`
+- **WHEN** reference.md still holds the scaffold's empty template and no `decide --stage reference --answer none` is recorded
+- **THEN** `next` returns the reference stage instead of completing it
 
 #### Scenario: Non-product film stages
 

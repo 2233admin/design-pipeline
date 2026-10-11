@@ -59,6 +59,27 @@ test("scaffold writes a gate-passing storyboard, a composition wired to its beat
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("a product promo's scaffold also points at the productSource record and the sample; other output is unchanged", () => {
+  const plain = tmp(), promo = tmp(), other = tmp(), study = tmp(), plainStudy = tmp();
+  try {
+    const base = scaffoldFilm(plain).next;
+    const next = scaffoldFilm(promo, { deliverableForm: "product-launch-video" }).next;
+    const productSteps = next.filter((line) => line.startsWith("Product promo: "));
+    assert.equal(productSteps.length, 2);
+    assert.deepEqual(next.filter((line) => !line.startsWith("Product promo: ")), base, "every plain step stays, in order");
+    const [source, sample] = productSteps;
+    assert.match(source, /storyboard\.json\.productSource/);
+    assert.match(source, /references\/workflow-film\.md#source/);
+    assert.match(sample, /sample\.mp4/);
+    assert.match(sample, /decide --stage sample/);
+    assert.match(sample, /references\/workflow-film\.md#sample/);
+    assert.ok(next.indexOf(source) < next.findIndex((line) => line.startsWith("2. Fill reference.md")), "the source record comes before reference and storyboard");
+    assert.ok(next.indexOf(sample) < next.findIndex((line) => line.startsWith("4. Build index.html")), "the sample comes before the build");
+    assert.deepEqual(scaffoldFilm(other, { deliverableForm: "motion-graphics-video" }).next, base);
+    assert.deepEqual(scaffoldFilm(study, { template: "motion-study", deliverableForm: "product-launch-video" }).next, scaffoldFilm(plainStudy, { template: "motion-study" }).next);
+  } finally { for (const dir of [plain, promo, other, study, plainStudy]) fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("scaffold pins the reviewed runtime and loads GSAP from the local install", () => {
   const dir = tmp();
   try {

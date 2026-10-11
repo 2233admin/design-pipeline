@@ -41,6 +41,8 @@ function visualTaskPaths(values, label, nonEmpty = true) {
 function validateVisualTask(phase, index) {
   const label = `phases[${index}]`;
   if (Object.hasOwn(Object.prototype, phase.id)) fail("design plan", `${label}.id is reserved for object prototype records`);
+  // The id names the task's completion file and is spliced into the runnable `next` command.
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(phase.id)) fail("design plan", `${label}.id must be a path- and shell-safe identifier ([A-Za-z0-9][A-Za-z0-9_.-]*)`);
   assertString(phase.goal, `${label}.goal`, "design plan");
   const keys = ["target", "property", "references", "scope", "guides", "checks"];
   assertKeys(phase.visual, keys, [...keys, "review", "sourceObservation", "verification"], `${label}.visual`, "design plan");

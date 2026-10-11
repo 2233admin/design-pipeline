@@ -25,6 +25,10 @@
 - [x] 5.2 Run `npm exec -- openspec validate require-product-source-admission --strict` and `npm run specs:check`.
 - [x] 5.3 Run repository QA with `npm test`.
 - [x] 5.4 Confirm historical films, frozen scores and the archived Tern pair were not modified, and record that admission grants no Visual Acceptance.
+- [x] 5.5 Treat the scaffold's unfilled reference.md template as no reference, so a product promo that scaffolds at source still reaches the reference stage (found in the CERE-515 OpenAlice acceptance run).
+- [x] 5.6 Move the static scaffold note templates and `isUnfilledScaffoldNote` into the dependency-free `skill/scripts/scaffold-notes.cjs`, so the generic reference stage in `workflows/shared.cjs` no longer loads `film-project-core.cjs`; a regression runs it in a fresh process and asserts the film core is not in `require.cache`.
+- [x] 5.7 Check `sample.mp4` before the owner is asked: `ffprobe` duration of 5–8 s inclusive plus a full `ffmpeg` video decode judged by its exit status, else findings with a recut fix and `SAMPLE_INVALID` from `decide`; an older accept of an invalid file no longer finishes the stage; regressions cover a non-video, a truncated file, 1 s, 30 s, a qualifying 7.64 s clip and an older accept of an off-length file.
+- [x] 5.8 Judge the sample's 5–8 s by its video stream's duration alone: `probe()` also returns `videoDurationSec` (the video stream's `duration`, `null` when the stream reports none); a `null` is the finding `sample-duration-unknown` with the recut fix and `SAMPLE_INVALID`, never the container's `durationSec`, so a 4 s video under a 6.5 s audio track is refused, a 6 s video under a 9 s audio track passes, and a stream without a duration in a 6 s container never reaches the owner; `durationSec` keeps its container meaning for the render gates.
 
 ## Evidence
 
@@ -57,3 +61,11 @@
   zones report the contract error and the regression passes. `npm test` exits 0: 1185 tests, 1182
   passed, 0 failed, 3 skipped (optional GEPA), installed CLI smoke 12/12, byte-identical status;
   `npm run specs:check` 68 passed, 0 failed.
+- Reference-template fix (5.5): in the CERE-515 OpenAlice run on main c72ddab, `next` after the
+  admitted source returned `concepts` with `completed: [intake, source, reference]`; the only
+  reference.md was the empty template `film scaffold` writes, and the storyboard gate then hashed
+  it. The new regression ("a standard product promo scaffolded at source still asks for its
+  reference") fails on c72ddab (`actual: 'concepts', expected: 'reference'`) and passes after the
+  fix. `npm test` exits 0: 1186 tests, 1183 passed, 0 failed, 3 skipped (optional GEPA), installed
+  CLI smoke 12/12, byte-identical status; `openspec validate require-product-source-admission
+  --strict` is valid.

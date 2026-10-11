@@ -31,7 +31,7 @@ const CONCEPTS = {
   finished: (state) => Boolean(state.decisions?.concept),
   action: (state, root) => (exists(root, "concepts.md")
     ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose section arc best serves what the visitor should do first.", record: `${CLI} decide --project-root . --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "The first of two human decisions." }
-    : { type: "run", command: "Write concepts.md: three cards whose central ideas differ; not the same layout restyled. Each card starts with the central idea as one sentence about the page (for example 'one cursor becomes the whole product tour'), then the section arc in one line per section (what it is for and its dominant element), what carries the eye down the page, look, tools (one line), and any missing license. Render the first viewport of each card. After the pick, extend the chosen card with `## Treatment` (references/web-direction.md).", why: "Divergence before convergence; the user picks one." }),
+    : { type: "run", instruction: "Write concepts.md: three cards whose central ideas differ; not the same layout restyled. Each card starts with the central idea as one sentence about the page (for example 'one cursor becomes the whole product tour'), then the section arc in one line per section (what it is for and its dominant element), what carries the eye down the page, look, tools (one line), and any missing license. Render the first viewport of each card. After the pick, extend the chosen card with `## Treatment` (references/web-direction.md).", why: "Divergence before convergence; the user picks one." }),
 };
 
 const BUILD = {
@@ -40,7 +40,7 @@ const BUILD = {
   action: (state) => ({
     type: "run",
     // Quick and replicate have no concepts stage, so there is no chosen card to extend.
-    command: `${state.tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and " : ""}${state.tier !== "quick" && state.mode !== "replicate" ? "extend the chosen card in concepts.md with `## Treatment` and write the section briefs (references/web-direction.md) before you " : ""}build index.html from ${state.mode === "replicate" ? "the reference and its invariants" : "the chosen concept"}; motion follows references/web-motion.md, design tokens and components from references/pipeline-reference.md. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. File delivery and engineering checks do not grant visual acceptance.`,
+    instruction: `${state.tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and " : ""}${state.tier !== "quick" && state.mode !== "replicate" ? "extend the chosen card in concepts.md with `## Treatment` and write the section briefs (references/web-direction.md) before you " : ""}build index.html from ${state.mode === "replicate" ? "the reference and its invariants" : "the chosen concept"}; motion follows references/web-motion.md, design tokens and components from references/pipeline-reference.md. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. File delivery and engineering checks do not grant visual acceptance.`,
     why: state.tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the motion and token conventions.",
   }),
 };
@@ -50,7 +50,7 @@ const PROBE = {
   gate: { name: "interaction", inputs: () => ["interaction.json", "index.html"] },
   action: (state, root) => (exists(root, "interaction.json")
     ? { type: "run", command: `${CLI} verify interaction --probe interaction.json`, why: "Apply each finding's fix, then run next again." }
-    : { type: "run", command: "Write interaction.json: one probe per key interaction (schema in references/workflow-web.md)", why: "Every key interaction is verified against the real page, not eyeballed." }),
+    : { type: "run", instruction: "Write interaction.json: one probe per key interaction (schema in references/workflow-web.md)", why: "Every key interaction is verified against the real page, not eyeballed." }),
 };
 
 const DELIVER = {

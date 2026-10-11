@@ -13,7 +13,7 @@ const ANALYZE = {
   finished: (state, root) => exists(root, path.join("edit", "analysis.json")),
   action: (state, root) => (exists(root, "sources")
     ? { type: "run", command: `${CLI} film-edit analyze --project-root . --audio <music file>`, why: "Beat grid and footage shots first; record footage licenses in sources/licenses.json." }
-    : { type: "run", command: "Put the footage in sources/ and the music in assets/, with sources/licenses.json", why: "An edit starts from real footage and music." }),
+    : { type: "run", instruction: "Put the footage in sources/ and the music in assets/, with sources/licenses.json", why: "An edit starts from real footage and music." }),
 };
 
 // Replicate mode only: measure the reference edit before cutting.

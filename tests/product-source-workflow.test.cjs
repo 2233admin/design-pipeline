@@ -10,12 +10,14 @@ const test = require("node:test");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { spawnSync } = require("node:child_process");
 const { bindStateJobPlan, decide, initState, nextAction, projectJobPlan, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { canonicalJson, sha256, sortValue } = require("../skill/scripts/contract-utils.cjs");
 const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs");
 const { productSourceFiles } = require("../skill/scripts/film-core.cjs");
-const { stages } = require("../skill/scripts/workflows/film.cjs");
-const { INTAKE, gateStatus } = require("../skill/scripts/workflows/shared.cjs");
+const { scaffoldFilm } = require("../skill/scripts/film-project-core.cjs");
+const { sampleBinding, stages } = require("../skill/scripts/workflows/film.cjs");
+const { CLI, INTAKE, gateStatus } = require("../skill/scripts/workflows/shared.cjs");
 
 const PRODUCT_QUERY = "制作产品宣传动画"; // Stage 0 classifies it as product-launch-video.
 const MOTION_QUERY = "Create a kinetic typography video"; // ... and this as motion-graphics-video.
@@ -33,6 +35,64 @@ function project(t) {
 const touch = (dir, rel, body = "x") => { fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true }); fs.writeFileSync(path.join(dir, rel), body); };
 const hex = (dir, rel) => sha256(fs.readFileSync(path.join(dir, rel)));
 const stateFile = dir => path.join(dir, ".design-pipeline/state.json");
+
+// Only the media test below decodes a real sample.mp4 with ffmpeg/ffprobe, which CI runners lack
+// (AGENTS.md); it and the tests that `cut()` real clips skip without them.
+const hasFfmpeg = ["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0);
+const cuts = new Map();
+// A real H.264 clip of the given length; `tag` changes its bytes, and the same arguments reproduce them.
+// `audioSeconds` adds an AAC tone of that length, so the container can outlast the video stream.
+function cutBytes(seconds, tag = "cut", audioSeconds = null) {
+  const key = `${seconds}:${tag}:${audioSeconds}`;
+  if (!cuts.has(key)) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "sample-cut-"));
+    try {
+      const out = path.join(dir, "cut.mp4");
+      const audio = audioSeconds === null ? [] : ["-f", "lavfi", "-i", `sine=frequency=440:duration=${audioSeconds}`, "-c:a", "aac"];
+      const made = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", `testsrc=size=160x90:rate=10:duration=${seconds}`, ...audio, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-fflags", "+bitexact", "-flags:v", "+bitexact", "-metadata", `comment=${tag}`, out], { encoding: "utf8", windowsHide: true });
+      assert.equal(made.status, 0, made.stderr);
+      cuts.set(key, fs.readFileSync(out));
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  }
+  return cuts.get(key);
+}
+const cut = (dir, seconds, tag, audioSeconds) => { fs.writeFileSync(path.join(dir, "sample.mp4"), cutBytes(seconds, tag, audioSeconds)); };
+
+// The walk exercises the sample stage with a stand-in for ffmpeg/ffprobe, so its verdict, hash,
+// delivery and admission assertions run on runners without them. film-core binds `spawnSync` when it
+// loads and the stage runs the bare `ffmpeg`/`ffprobe` names (CreateProcess cannot run a script
+// there), so the workflow graph is loaded afresh while `child_process.spawnSync` answers those two
+// names from the file's bytes; every other command goes to the real one. The shared module cache is
+// restored afterwards, so no other test sees the stand-in. Real decoding stays with the media test.
+// Like real ffprobe, the stand-in reports the video stream's own duration; a cut written with
+// `streamDuration: false` reports only the container's, as a stream whose duration is N/A does.
+const FAKE_CUT = "fake-mp4";
+const fakeCut = (dir, seconds, tag, { streamDuration = true } = {}) => fs.writeFileSync(path.join(dir, "sample.mp4"), `${FAKE_CUT} duration=${seconds} tag=${tag}${streamDuration ? "" : " stream-duration=none"}`);
+function workflowWithFakeMedia() {
+  const childProcess = require("node:child_process");
+  const scripts = path.resolve(__dirname, "../skill/scripts") + path.sep;
+  const loaded = () => Object.keys(require.cache).filter(key => key.startsWith(scripts));
+  const saved = loaded().map(key => [key, require.cache[key]]);
+  for (const [key] of saved) delete require.cache[key];
+  const realSpawnSync = childProcess.spawnSync, calls = [];
+  childProcess.spawnSync = (bin, args, options) => {
+    if (bin !== "ffmpeg" && bin !== "ffprobe") return realSpawnSync(bin, args, options);
+    calls.push(bin);
+    const file = bin === "ffprobe" ? args.at(-1) : args[args.indexOf("-i") + 1];
+    const text = fs.readFileSync(file, "utf8");
+    const seconds = text.startsWith(FAKE_CUT) ? /duration=([\d.]+)/.exec(text)?.[1] : null;
+    if (!seconds) return { status: 1, stdout: "", stderr: `${file}: Invalid data found when processing input\n` };
+    const video = { codec_type: "video", r_frame_rate: "10/1", ...(text.includes("stream-duration=none") ? {} : { duration: seconds }) };
+    const stdout = bin === "ffprobe" ? JSON.stringify({ format: { duration: seconds }, streams: [video] }) : "";
+    return { status: 0, stdout, stderr: "" };
+  };
+  try { return { ...require("../skill/scripts/workflow-core.cjs"), calls }; }
+  finally {
+    childProcess.spawnSync = realSpawnSync;
+    for (const key of loaded()) delete require.cache[key];
+    for (const [key, entry] of saved) require.cache[key] = entry;
+  }
+}
 const ids = state => stages(state).map(stage => stage.id);
 const codes = action => action.findings.map(finding => finding.code);
 
@@ -192,7 +252,7 @@ test("initState rejects a plan for another deliverable and an invalid, missing o
   touch(tampered, "job-plan.json", canonicalJson({ ...plan, query: MOTION_QUERY }));
   for (const options of [{ jobPlan: "job-plan.json" }, {}]) {
     assert.throws(() => initState(tampered, { deliverable: "film", ...options }), error => error.code === "CONTRACT_INVALID"
-      && error.message.includes("the Stage 0 job plan job-plan.json is invalid: job plan hash does not match contents. Fix: re-plan from the original brief with `designer-pipeline route --query \"<brief>\" --write --output job-plan.json`"));
+      && error.message.includes(`the Stage 0 job plan job-plan.json is invalid: job plan hash does not match contents. Fix: re-plan from the original brief with \`${CLI} route --query "<brief>" --write --output job-plan.json\``));
     assert.equal(fs.existsSync(stateFile(tampered)), false);
   }
 
@@ -245,7 +305,7 @@ test("a stale Stage 0 binding throws JOB_PLAN_STALE from next, decide and projec
   const stale = reason => error => error.code === "JOB_PLAN_STALE"
     && error.message.startsWith("workflow: the bound Stage 0 job plan job-plan.json is stale: ")
     && reason.test(error.message)
-    && error.message.endsWith(". Fix: re-plan from the original brief with `designer-pipeline route --query \"<brief>\" --write --output job-plan.json`, then rebind with `designer-pipeline next --project-root . --job-plan job-plan.json`");
+    && error.message.endsWith(`. Fix: re-plan from the original brief with \`${CLI} route --query "<brief>" --write --output job-plan.json\`, then rebind with \`${CLI} next --project-root . --job-plan job-plan.json\``);
   // Hand-made and correctly hashed, but its stored form is no longer what Stage 0 classifies its
   // query as (a classifier change after it was bound).
   const reclassified = () => {
@@ -298,14 +358,16 @@ test("the source stage returns admission findings, blocks on a blocked record an
   assert.equal(next.type, "run");
   assert.equal(next.stage, "source");
   assert.equal(next.guide, "references/workflow-film.md#source");
-  assert.match(next.command, /^designer-pipeline film scaffold --output \.; then Source the real product: /);
-  assert.match(next.command, /full commit SHA.*git -C <checkout> rev-parse HEAD.*one user operation/);
+  assert.equal(next.command, `${CLI} film scaffold --output .`);
+  assert.match(next.instruction, /^Run the command first, then: Source the real product: /);
+  assert.match(next.instruction, /full commit SHA.*git -C <checkout> rev-parse HEAD.*one user operation/);
   assert.deepEqual(codes(next), ["product-source-missing"], "a card-only film has no product record");
   assert.ok(next.findings.every(finding => finding.fix));
 
   writeStoryboard(dir);
   next = nextAction(dir);
-  assert.match(next.command, /^Source the real product: /, "an existing storyboard is not scaffolded again");
+  assert.equal(next.command, undefined, "an existing storyboard is not scaffolded again");
+  assert.match(next.instruction, /^Source the real product: /);
   assert.deepEqual(codes(next), ["product-source-missing"]);
 
   const source = admittedSource(dir);
@@ -337,7 +399,7 @@ test("the source stage returns admission findings, blocks on a blocked record an
   assert.equal(next.stage, "source");
   assert.deepEqual(next.blocker, blocker);
   assert.equal(next.command, undefined);
-  assert.ok(next.why && next.record);
+  assert.ok(next.why && next.instruction);
   assert.deepEqual(next.completed, []);
   assert.equal(next.line, `film/quick: source (1/5) - blocked (needs-credentials): ${blocker.reason} Needs: ${blocker.needs}`);
   for (const options of [{ stage: "review", verdict: "accept" }, { stage: "review", verdict: "reject", answer: "Not the product." }, { stage: "deliver", answer: "out.mp4" }, { stage: "sample", verdict: "accept" }]) {
@@ -350,7 +412,32 @@ test("the source stage returns admission findings, blocks on a blocked record an
   next = nextAction(dir);
   assert.equal(next.stage, "plan");
   assert.deepEqual(next.completed, ["source"]);
-  assert.match(next.command, /list the capture ids each beat shows in beats\[\]\.source/);
+  assert.match(next.instruction, /list the capture ids each beat shows in beats\[\]\.source/);
+});
+
+// The source stage scaffolds before the reference stage; the scaffold's empty reference.md
+// template must not count as a studied reference, or `next` skips straight to concepts.
+test("a standard product promo scaffolded at source still asks for its reference", t => {
+  const dir = project(t);
+  writePlan(dir, PRODUCT_QUERY);
+  initState(dir, { deliverable: "film", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "default" });
+  assert.equal(nextAction(dir).command, `${CLI} film scaffold --output .`);
+  assert.match(nextAction(dir).instruction, /^Run the command first, then: /);
+  scaffoldFilm(dir);
+  assert.ok(fs.existsSync(path.join(dir, "reference.md")), "the scaffold writes the reference template");
+  writeStoryboard(dir, admittedSource(dir));
+  let next = nextAction(dir);
+  assert.equal(next.stage, "reference", "an unfilled template is not a reference study");
+  assert.deepEqual(next.completed, ["intake", "source"]);
+  assert.match(next.then, /decide --project-root \. --stage reference --answer none/);
+  touch(dir, "reference.md", fs.readFileSync(path.join(dir, "reference.md"), "utf8").replace(/\n/g, "\r\n"));
+  assert.equal(nextAction(dir).stage, "reference", "a CRLF copy of the template is still unfilled");
+
+  touch(dir, "reference.md", "# Reference\n\n- Primary moving reference: product walkthrough, 0:00-0:12, one continuous take.\n");
+  next = nextAction(dir);
+  assert.equal(next.stage, "concepts");
+  assert.deepEqual(next.completed, ["intake", "source", "reference"]);
 });
 
 test("changed product material, or a pass recorded without it, reopens plan and check through their bound inputs", t => {
@@ -366,7 +453,7 @@ test("changed product material, or a pass recorded without it, reopens plan and 
   passStoryboard(dir);
   next = nextAction(dir);
   assert.equal(next.stage, "build");
-  assert.match(next.command, /^Build from the admitted captures each beat cites in beats\[\]\.source/);
+  assert.match(next.instruction, /^Build from the admitted captures each beat cites in beats\[\]\.source/);
   touch(dir, "out.mp4", "draft");
   passFilm(dir);
   assert.equal(nextAction(dir).stage, "review");
@@ -395,6 +482,7 @@ test("changed product material, or a pass recorded without it, reopens plan and 
 });
 
 test("a standard product promo walks source and an owner-viewed sample to done with its admission", t => {
+  const { decide, nextAction, calls } = workflowWithFakeMedia();
   const dir = project(t);
   writePlan(dir, PRODUCT_QUERY);
   initState(dir, { deliverable: "film", tier: "standard", director: "claude-opus-5-5" });
@@ -418,8 +506,8 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   decide(dir, { stage: "concept", choice: "1" });
   next = nextAction(dir);
   assert.equal(next.stage, "plan");
-  assert.match(next.command, /beats\[\]\.source/);
-  assert.match(next.command, /only a pure brand card, a brand-hold with transformation none, may stay unsourced, within a quarter of the film/);
+  assert.match(next.instruction, /beats\[\]\.source/);
+  assert.match(next.instruction, /only a pure brand card, a brand-hold with transformation none, may stay unsourced, within a quarter of the film/);
   assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "WORKFLOW_NOT_READY");
   passStoryboard(dir);
 
@@ -427,13 +515,13 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(next.stage, "sample");
   assert.equal(next.type, "run");
   assert.equal(next.guide, "references/workflow-film.md#sample");
-  assert.match(next.command, /5–8 s sample from the real captures cited in beats\[\]\.source/);
-  assert.match(next.command, /sample\.mp4 at the project root/);
+  assert.match(next.instruction, /5–8 s sample from the real captures cited in beats\[\]\.source/);
+  assert.match(next.instruction, /sample\.mp4 at the project root/);
   let before = fs.readFileSync(stateFile(dir));
   assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "INPUT_MISSING");
   assert.deepEqual(fs.readFileSync(stateFile(dir)), before);
 
-  touch(dir, "sample.mp4", "first cut");
+  fakeCut(dir, 6, "first cut");
   next = nextAction(dir);
   assert.equal(next.type, "ask");
   assert.equal(next.first, undefined);
@@ -450,7 +538,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.deepEqual(rejected.next.rules, [rejection]);
   assert.deepEqual(readState(dir).rules, [{ text: rejection, from: "sample 1", scope: "project" }]);
 
-  touch(dir, "sample.mp4", "second cut");
+  fakeCut(dir, 6, "second cut");
   assert.equal(nextAction(dir).first, undefined, "a new cut is asked about afresh");
   decide(dir, { stage: "sample", verdict: "accept" });
   const samples = readState(dir).decisions.samples;
@@ -459,11 +547,11 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(samples[1].sourceSha256, `sha256:${sha256(canonicalJson(board.productSource))}`);
   next = nextAction(dir);
   assert.equal(next.stage, "build");
-  assert.match(next.command, /admitted captures each beat cites in beats\[\]\.source/);
+  assert.match(next.instruction, /admitted captures each beat cites in beats\[\]\.source/);
 
-  touch(dir, "sample.mp4", "third cut");
+  fakeCut(dir, 6, "third cut");
   assert.equal(nextAction(dir).stage, "sample", "a changed sample asks again");
-  touch(dir, "sample.mp4", "second cut");
+  fakeCut(dir, 6, "second cut");
   assert.equal(nextAction(dir).stage, "build", "the accepted bytes are accepted");
 
   // A changed product record reopens plan, then the sample cut from the old record.
@@ -491,6 +579,87 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(done.type, "done");
   assert.deepEqual(done.completed, PRODUCT_STANDARD);
   assert.deepEqual(done.admission, { required: true, status: "admitted", form: "product-launch-video", repository: source.repository, commit: COMMIT });
+  assert.ok(calls.includes("ffprobe") && calls.includes("ffmpeg"), "the sample stage inspected the cuts through the stand-in");
+});
+
+test("a sample whose video stream reports no duration is not measured by its container", t => {
+  const { decide, nextAction } = workflowWithFakeMedia();
+  const dir = project(t);
+  writePlan(dir, PRODUCT_QUERY);
+  initState(dir, { deliverable: "film", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "default" });
+  writeStoryboard(dir, admittedSource(dir));
+  decide(dir, { stage: "reference", answer: "none" });
+  touch(dir, "concepts.md");
+  decide(dir, { stage: "concept", choice: "1" });
+  passStoryboard(dir);
+
+  // The container reports 6 s, but that may be a longer audio track over a short cut.
+  fakeCut(dir, 6, "no stream duration", { streamDuration: false });
+  const next = nextAction(dir);
+  assert.equal(next.stage, "sample");
+  assert.equal(next.type, "run", "the owner is not asked");
+  assert.deepEqual(codes(next), ["sample-duration-unknown"]);
+  assert.match(next.findings[0].message, /video stream of sample\.mp4 reports no duration/);
+  assert.match(next.findings[0].fix, /Recut sample\.mp4 .* 5–8 s/);
+  const before = fs.readFileSync(stateFile(dir));
+  assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
+  assert.deepEqual(fs.readFileSync(stateFile(dir)), before, "no verdict is recorded");
+
+  fakeCut(dir, 6, "stream duration");
+  assert.equal(nextAction(dir).type, "ask");
+});
+
+test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { skip: !hasFfmpeg }, t => {
+  const dir = project(t);
+  writePlan(dir, PRODUCT_QUERY);
+  initState(dir, { deliverable: "film", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "default" });
+  writeStoryboard(dir, admittedSource(dir));
+  decide(dir, { stage: "reference", answer: "none" });
+  touch(dir, "concepts.md");
+  decide(dir, { stage: "concept", choice: "1" });
+  passStoryboard(dir);
+  assert.equal(nextAction(dir).stage, "sample");
+
+  const truncated = cutBytes(7, "truncated");
+  const refused = [
+    ["sample-not-video", () => touch(dir, "sample.mp4", "not a video at all")],
+    ["sample-not-video", () => { fs.writeFileSync(path.join(dir, "sample.mp4"), truncated.subarray(0, Math.floor(truncated.length * 0.6))); }],
+    ["sample-duration", () => cut(dir, 1)],
+    ["sample-duration", () => cut(dir, 30)],
+    // The video stream runs 4 s; a longer audio track stretches the container to 6.5 s.
+    ["sample-duration", () => cut(dir, 4, "cut", 6.5)],
+  ];
+  for (const [code, write] of refused) {
+    write();
+    const next = nextAction(dir);
+    assert.equal(next.stage, "sample");
+    assert.equal(next.type, "run", `${code}: the owner is not asked`);
+    assert.deepEqual(codes(next), [code]);
+    assert.match(next.findings[0].fix, /Recut sample\.mp4 .* 5–8 s/);
+    assert.equal(next.command, undefined);
+    assert.ok(next.instruction.startsWith(next.findings[0].fix));
+    const before = fs.readFileSync(stateFile(dir));
+    assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
+    assert.deepEqual(fs.readFileSync(stateFile(dir)), before, "no verdict is recorded");
+  }
+
+  // The video stream decides the length: 6 s of video passes under a 9 s audio track.
+  cut(dir, 6, "cut", 9);
+  assert.equal(nextAction(dir).type, "ask");
+
+  cut(dir, 7.64);
+  assert.equal(nextAction(dir).type, "ask");
+  decide(dir, { stage: "sample", verdict: "accept" });
+  assert.equal(nextAction(dir).stage, "build");
+
+  // A verdict recorded before this check on an off-length file no longer finishes the stage.
+  cut(dir, 30);
+  const state = readState(dir);
+  state.decisions.samples = [{ verdict: "accept", reason: null, at: "2026-10-10T00:00:00.000Z", ...sampleBinding(dir) }];
+  fs.writeFileSync(stateFile(dir), JSON.stringify(state));
+  assert.deepEqual(codes(nextAction(dir)), ["sample-duration"]);
 });
 
 test("a recorded blocked check reports blocked rather than incomplete", t => {
@@ -519,3 +688,24 @@ test("every product-promo stage names a section of the film guide", () => {
     }
   }
 });
+
+test("the generic workflow's reference check decides unfilled templates without loading the film core", (t) => {
+  const dir = project(t);
+  const run = () => JSON.parse(require("node:child_process").execFileSync(process.execPath, ["-e", `
+    const { reference } = require(${JSON.stringify(path.join(__dirname, "../skill/scripts/workflows/shared.cjs"))});
+    const observed = reference("study").finished({ mode: "brief", decisions: {} }, ${JSON.stringify(dir)});
+    console.log(JSON.stringify({ observed, film: Object.keys(require.cache).filter(file => /film-project-core\\.cjs$/.test(file)) }));
+  `], { encoding: "utf8" }));
+  fs.writeFileSync(path.join(dir, "reference.md"), scaffoldNote("reference.md"));
+  assert.deepEqual(run(), { observed: false, film: [] });
+  fs.writeFileSync(path.join(dir, "reference.md"), "# Reference\n\n- Primary moving reference: https://example.com/clip\n");
+  assert.deepEqual(run(), { observed: true, film: [] });
+});
+
+function scaffoldNote(name) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "scaffold-note-"));
+  try {
+    scaffoldFilm(dir, {});
+    return fs.readFileSync(path.join(dir, name), "utf8");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+}

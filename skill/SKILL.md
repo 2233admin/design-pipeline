@@ -17,9 +17,13 @@ resources stay relative to `<skill-root>` regardless of the working directory.
   not require a film project, narration, a fixed canvas, or a particular subject or style.
 - **Complete deliverable:** start with `designer-pipeline next --project-root <project>`. It returns
   one action at a time: do the returned `run`, ask the returned `ask` question and record the reply
-  with its `record` command, or report the returned `done` evidence. Obey prior user rejections in
+  with its `record` command, or report the returned `done` evidence. A `run` action's `command` is
+  only an executable command, already spelled `node <absolute path>/designer-pipeline.cjs ...`
+  (the CLI is not on PATH); its `instruction` is the prose to follow, and a `run` with no `command`
+  is an instruction alone. Obey prior user rejections in
   `rules`; apply each gate finding's `fix` and rerun its check before showing a draft. A returned
-  `blocked` action (exit 2) names what is missing; ask the user for it and never work around it.
+  `blocked` action (exit 2) names what is missing in `blocker` and `instruction`; ask the user for
+  it and never work around it.
 
 For a new complete deliverable, choose its kind and tier from the request; let the user override.
 Use `--mode replicate` when reproducing a supplied reference, and `--mode freeform` when the user

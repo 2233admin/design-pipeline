@@ -461,13 +461,16 @@ function run(bin, args, options = {}) {
 }
 
 function probe(video, tools) {
-  const out = run(tools.ffprobe, ["-v", "error", "-show_entries", "format=duration:stream=codec_type,r_frame_rate", "-of", "json", video]).stdout;
+  const out = run(tools.ffprobe, ["-v", "error", "-show_entries", "format=duration:stream=codec_type,r_frame_rate,duration", "-of", "json", video]).stdout;
   const info = JSON.parse(out);
   const streams = info.streams || [];
   const videoStream = streams.find((stream) => stream.codec_type === "video");
   if (!videoStream) fail("film render", "file has no video stream");
   const [num, den] = String(videoStream.r_frame_rate || "0/1").split("/").map(Number);
-  return { durationSec: Number(info.format?.duration || 0), fps: den ? num / den : 0, hasAudio: streams.some((stream) => stream.codec_type === "audio") };
+  // durationSec is the container's, as long as its longest stream; videoDurationSec is the video
+  // stream's own, null when the stream reports none (ffprobe prints N/A or omits it).
+  const streamSec = videoStream.duration == null ? NaN : Number(videoStream.duration);
+  return { durationSec: Number(info.format?.duration || 0), videoDurationSec: Number.isFinite(streamSec) ? streamSec : null, fps: den ? num / den : 0, hasAudio: streams.some((stream) => stream.codec_type === "audio") };
 }
 
 function detectCuts(video, tools, threshold) {

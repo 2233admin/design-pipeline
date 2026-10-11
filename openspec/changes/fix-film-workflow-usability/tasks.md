@@ -14,8 +14,14 @@
 - [x] 3.1 Export the HyperFrames/GSAP pins; default preview and catalog calls to them.
 - [x] 3.2 Write `package.json` from `film scaffold`, load GSAP from `node_modules`, use `npx --no-install` in guides and actions.
 
-## 4. Verify
+## 4. Action commands and product-promo scaffold steps
 
-- [x] 4.1 Focused tests: `tests/film-layout.test.cjs`, `tests/film-project.test.cjs`, `tests/workflow-next.test.cjs`, `tests/film-catalog-3d.test.cjs`, `tests/hyperframes-routing.test.cjs`; record the red result against f41da71.
-- [x] 4.2 `npm run specs:check` and `node scripts/qa.cjs` from the clean worktree.
-- [x] 4.3 Smoke: fresh scaffold, `npm install`, `npx --no-install hyperframes --version`, quick `next` review step, `film check` flags an injected boundary overlap.
+- [x] 4.1 `next` actions keep `command` for an executable command only, spelled `node <absolute path of designer-pipeline.cjs> ...` (the `record` template of an `ask` action likewise), and move free text to a new `instruction` field; an action with nothing to execute carries only `instruction`, `line` shows both, and `blocked` actions explain in `instruction`. `CLI` in `workflows/shared.cjs` derives the path from `__dirname`. `tests/workflow-action-commands.test.cjs` walks film, edit, web and ui and asserts every `command`/`record` starts with that invocation and that one returned command runs from another directory; tests in `workflow-next` and `product-source-workflow` that matched prose in `command` now read `instruction`. `SKILL.md`, `stages.md` and `workflow-film.md` describe the fields.
+- [x] 4.2 `film scaffold` for a project bound to a `product-launch-video` plan adds the `productSource` record step before the reference/storyboard steps and the sample step before the build step to `next[]`; other scaffolds keep their output. `tests/film-project.test.cjs` covers it and the action-commands test checks the scaffold run from a `next` command.
+- [x] 4.3 `validatePlan` rejects a visual task whose `id` is outside `[A-Za-z0-9][A-Za-z0-9_.-]*` with `phases[i].id must be a path- and shell-safe identifier`, because the id is spliced unquoted into the runnable visual-task `command` and ask `record` and names its `<id>-completion.json`. `tests/design-control-runtime.test.cjs` rejects `a;rm -rf x`, `a b`, `$(x)`, `a&b`, `-x`, `a/b`, `..` and accepts `hero-1`, `nav.focus`, `t_2`.
+
+## 5. Verify
+
+- [x] 5.1 Focused tests: `tests/film-layout.test.cjs`, `tests/film-project.test.cjs`, `tests/workflow-next.test.cjs`, `tests/film-catalog-3d.test.cjs`, `tests/hyperframes-routing.test.cjs`, `tests/workflow-action-commands.test.cjs`; record the red result against f41da71.
+- [x] 5.2 `npm run specs:check` and `node scripts/qa.cjs` from the clean worktree.
+- [x] 5.3 Smoke: fresh scaffold, `npm install`, `npx --no-install hyperframes --version`, quick `next` review step, `film check` flags an injected boundary overlap.

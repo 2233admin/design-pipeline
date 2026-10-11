@@ -82,6 +82,7 @@
     "interaction-cli.test.cjs",
     "workflow-next.test.cjs",
     "product-source-workflow.test.cjs",
+    "workflow-action-commands.test.cjs",
     "palette-foundation.test.cjs",
     "package-release.test.cjs",
     "pending-source.test.cjs",

@@ -52,3 +52,27 @@ default to the reviewed release.
 #### Scenario: Existing package.json
 - **WHEN** the target already has a `package.json`
 - **THEN** scaffolding SHALL refuse without an explicit replace flag, and with it SHALL keep the existing fields and only set the pins and missing scripts
+
+### Requirement: Next actions separate runnable commands from instructions
+A `next` action's `command`, when present, SHALL be only an executable command, spelled `node <absolute path of designer-pipeline.cjs> ...` (quoted when the path needs it) so it runs as given from any directory; an `ask` action's `record` SHALL use the same invocation. Free-text steps MUST be in a separate `instruction` field, an action with nothing to execute MUST carry only `instruction`, and the one-line `line` summary MUST include both. This holds for film, edit, web and ui actions.
+
+#### Scenario: Prose is not a command
+- **WHEN** `next` returns the film source, plan, sample, build or delivery action, an edit analyze action without sources, or a web concepts, build or probe action
+- **THEN** the prose steps are in `instruction` and `command` is absent or one runnable `node <absolute path> ...` command
+
+#### Scenario: Command runs as given
+- **WHEN** the command of a product promo's source action is run from an unrelated directory with `--root <project>`
+- **THEN** it starts the CLI, because the path is absolute and `designer-pipeline` need not be on PATH
+
+#### Scenario: Plan ids cannot carry shell syntax into a command
+- **WHEN** a visual design plan names a task `id` outside `[A-Za-z0-9][A-Za-z0-9_.-]*`, such as `a;rm -rf x`, `a b`, `$(x)` or `-x`
+- **THEN** plan validation fails with `phases[<i>].id must be a path- and shell-safe identifier`, so the visual-task `command` and `record` that carry the id never contain shell syntax from the plan
+
+### Requirement: film scaffold of a bound product promo lists its next steps
+`film scaffold` for a project bound to a `product-launch-video` job plan SHALL add the `productSource` record step and the sample step to `next[]`; other scaffolds SHALL keep their `next[]`.
+
+#### Scenario: Scaffold of a bound product promo
+- **GIVEN** a project bound to a `product-launch-video` job plan
+- **WHEN** `film scaffold` runs
+- **THEN** its `next[]` also names the `productSource` record (before reference and storyboard) and the sample step (before the build), each citing its section of `workflow-film.md`
+- **AND** the scaffold of a project with another or no bound form has the same `next[]` as before

@@ -8,13 +8,24 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, resolveInside, sha256 } = require("../contract-utils.cjs");
 
-const CLI = "designer-pipeline";
+// designer-pipeline is not on PATH, so every command a next action returns is the runnable
+// `node <absolute path of designer-pipeline.cjs> ...`, derived from this file's location. Forward
+// slashes keep the path valid in cmd, PowerShell and POSIX shells; a path with spaces or shell
+// characters is double-quoted.
+function shellPath(file) {
+  const slashed = file.split(path.sep).join("/");
+  if (/^[\w@%+=:,./-]+$/.test(slashed)) return slashed;
+  return `"${process.platform === "win32" ? slashed : slashed.replace(/(["$`\\])/g, "\\$1")}"`;
+}
+const CLI = `node ${shellPath(path.resolve(__dirname, "..", "designer-pipeline.cjs"))}`;
 
 const exists = (root, rel) => fs.existsSync(path.join(root, rel));
 
 function referenceObserved(state, root) {
   if (state.mode !== "replicate" && state.decisions?.reference === "none") return true;
   if (!exists(root, "reference.md")) return false;
+  // `film scaffold` writes an empty reference.md template; it records no observed reference.
+  if (require("../scaffold-notes.cjs").isUnfilledScaffoldNote("reference.md", fs.readFileSync(path.join(root, "reference.md"), "utf8"))) return false;
   if (!exists(root, "reference-evidence.json")) return true; // Legacy notes have no media binding.
   const { readJson } = require("../contract-utils.cjs");
   const ref = readJson(path.join(root, "reference-evidence.json"), "reference evidence");
@@ -108,7 +119,7 @@ function reference(study, context = {}) {
       return {
         type: "run",
         study, images, guides,
-        command: `${study} ${work}${context.instruction ? ` ${context.instruction}` : ""} Read the applicable guides: ${guides.join(", ")}.`,
+        instruction: `${study} ${work}${context.instruction ? ` ${context.instruction}` : ""} Read the applicable guides: ${guides.join(", ")}.`,
         why: state.mode === "replicate" ? "Replicate mode: the reference is what we reproduce, so it is measured first." : "Direction comes from watched references, not from a familiar template.",
         ...(observation ? { observation, ...(observation.viewerPath ? { show: [observation.viewerPath] } : {}) } : {}),
         ...(state.mode === "replicate" ? {} : { then: `Or, if the user gave no references and wants none: ${CLI} decide --project-root . --stage reference --answer none` }),
@@ -122,7 +133,7 @@ const CONCEPTS = {
   finished: (state) => Boolean(state.decisions?.concept),
   action: (state, root) => (exists(root, "concepts.md")
     ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose carrier best demonstrates the product action.", record: `${CLI} decide --project-root . --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "The first of two human decisions." }
-    : { type: "run", command: "Write concepts.md: three cards whose central ideas differ; not the same scenes retold three ways. Each card starts with the central idea as one sentence about the picture (for example 'one dot becomes every screen of the app'), then what carries attention between beats, look, tools (one line), and any missing license. Render one key frame per card.", why: "Divergence before convergence; the user picks one." }),
+    : { type: "run", instruction: "Write concepts.md: three cards whose central ideas differ; not the same scenes retold three ways. Each card starts with the central idea as one sentence about the picture (for example 'one dot becomes every screen of the app'), then what carries attention between beats, look, tools (one line), and any missing license. Render one key frame per card.", why: "Divergence before convergence; the user picks one." }),
 };
 
 const REVIEW = {
