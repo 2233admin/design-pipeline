@@ -18,7 +18,8 @@ resources stay relative to `<skill-root>` regardless of the working directory.
 - **Complete deliverable:** start with `designer-pipeline next --project-root <project>`. It returns
   one action at a time: do the returned `run`, ask the returned `ask` question and record the reply
   with its `record` command, or report the returned `done` evidence. Obey prior user rejections in
-  `rules`; apply each gate finding's `fix` and rerun its check before showing a draft.
+  `rules`; apply each gate finding's `fix` and rerun its check before showing a draft. A returned
+  `blocked` action (exit 2) names what is missing; ask the user for it and never work around it.
 
 For a new complete deliverable, choose its kind and tier from the request; let the user override.
 Use `--mode replicate` when reproducing a supplied reference, and `--mode freeform` when the user

@@ -6,6 +6,18 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Product source admission for product-promo films (change `require-product-source-admission`,
+  CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional
+  `productSource` — the real product's repository, full commit SHA, hashed run log, `ui-state`
+  and `operation` captures (run and capture times are RFC 3339 with `Z` or `±hh:mm`; timezone-less
+  times are contract errors) and an action → response → result flow — and `beats[].source` citing
+  capture ids. The existing storyboard gate reports `product-source-*`, `shot-source-missing`
+  (every beat cites captures except a pure brand card), `flow-unshown`, `flow-out-of-order` and
+  `source-share-low` (unsourced brand cards over a quarter of the film) with fixes. An
+  unrunnable product is recorded as `status: "blocked"` with one of six blocker kinds. Film `next`
+  binds the Stage 0 job plan (`--job-plan`) and gives product promos a `source` stage and, at
+  standard/full, an owner-decided real-material `sample` (`decide --stage sample`). No new gate,
+  schema, resolver or digest; gates bind records and hashes and cannot prove pixels are real.
 - `film check` (change `fix-film-workflow-usability`): the existing composition gate also samples
   the captured composition's visible text five times a second and on both sides of every beat
   boundary. Text-on-text overlap held for two samples fails; overlap caught in passing, a faint
@@ -99,6 +111,16 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- Product-promo films (Stage 0 `product-launch-video`) are evaluated only after their product
+  source is admitted (change `require-product-source-admission`): until then `film check`,
+  `verify film-storyboard` and `verify film-render` return only the admission findings, and
+  `film-eval measure` leaves the run unmeasured so the benchmark reports `blocked`. A blocked
+  source makes `next` return `type: "blocked"` (exit 2) without advancing. Run log, captures and
+  the bound job plan are checked inputs. The Stage 0 classifier recognizes more English and Chinese
+  promo-film phrasings; a persisted plan whose form changes fails the existing deliverable-form
+  conflict and must be re-planned. The fictional-product eval scenarios `canvas-launch` and
+  `cli-launch` are now unmeasured; `repair-slideshow` stays measured. Non-product films, earlier
+  results and frozen scores are unchanged; owner Visual Acceptance stays separate.
 - Art Motion is project-owned (change `internalize-art-motion-naming`). Its engine source, fonts,
   examples and license moved from `skill/vendor/` to `skill/tools/art-motion/`, and its method,
   style and grammar notes to `skill/references/art-motion/`. `npm run art-motion:build` regenerates

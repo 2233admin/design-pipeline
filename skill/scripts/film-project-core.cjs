@@ -168,15 +168,32 @@ function layoutTimes(board) {
 }
 
 // capture(compositionFile, url) -> timeline manifest and layout(compositionFile, url, times) ->
-// visible-text samples; both injected so the CLI can run them in a kernel.
+// visible-text samples; both injected so the CLI can run them in a kernel. options.deliverableForm
+// is the project's Stage 0 form: a product-launch-video film is evaluated only after its storyboard's
+// product source is admitted, so no timeline, render or composition result can offset it.
 function checkFilmProject(dir, options = {}) {
   const root = path.resolve(dir);
   const steps = [];
   const storyboardFile = path.join(root, "storyboard.json");
   if (!fs.existsSync(storyboardFile)) fail("film check", `no storyboard.json in ${root}. Fix: run \`designer-pipeline film scaffold --output ${dir}\` or write storyboard.json first`, { code: "INPUT_MISSING" });
   const board = readJson(storyboardFile, "film storyboard");
-  const storyboard = checkStoryboard(board, { blockNames: blockNames(root) || undefined });
+  const storyboard = checkStoryboard(board, { blockNames: blockNames(root) || undefined, deliverableForm: options.deliverableForm, projectRoot: root });
   steps.push({ gate: "storyboard", status: storyboard.status, findings: storyboard.findings });
+  if (storyboard.admission && storyboard.admission.status !== "admitted") {
+    const fixes = storyboard.findings.map((finding) => ({ gate: "storyboard", code: finding.code, severity: finding.severity, fix: finding.fix }));
+    return {
+      schema: CHECK_SCHEMA,
+      id: board.id,
+      status: storyboard.status,
+      steps,
+      fixes,
+      admission: storyboard.admission,
+      creativeAcceptance: "not-assessed",
+      next: storyboard.status === "blocked"
+        ? "The product could not be sourced: resolve the blocker with the user, record the admitted productSource, then re-run `film check`. Nothing else was evaluated."
+        : "Product-promo films are evaluated only after storyboard.json.productSource is admitted: apply each fix, then re-run `film check`. Timeline, render, audio and composition were not evaluated.",
+    };
+  }
 
   // A Strudel score exports its exact event grid; cuts and accent cues are checked against it.
   const gridFile = path.join(root, "score-grid.json");
@@ -215,7 +232,7 @@ function checkFilmProject(dir, options = {}) {
   let stale = false;
   if (!timeline && fs.existsSync(timelineFile)) { stale = Boolean(timelineNote); timeline = readJson(timelineFile, "film timeline"); timelineNote = timelineNote ? `${timelineNote}; used existing timeline.json` : "existing timeline.json"; }
   if (timeline) {
-    const result = checkTimeline(timeline, board);
+    const result = checkTimeline(timeline, board, { deliverableForm: options.deliverableForm, projectRoot: root });
     steps.push({ gate: "timeline", status: result.status, ...(stale ? { stale: true, next: "Fix the capture error above and re-run film check; this result comes from an old timeline.json." } : {}), source: timelineNote, findings: result.findings, metrics: { carriedHandoffs: result.metrics.carriedHandoffs, proceduralBeats: result.metrics.proceduralBeats, proceduralHandoffs: result.metrics.proceduralHandoffs } });
   } else {
     steps.push({ gate: "timeline", status: "skipped", reason: timelineNote || "no index.html or timeline.json", next: "Build index.html, then re-run `film check` to capture timeline.json." });
@@ -226,7 +243,7 @@ function checkFilmProject(dir, options = {}) {
     // Procedurally driven beats are sampled at their start and end too (progress 0, 0.5, 1).
     const procedural = (steps.find((step) => step.gate === "timeline")?.metrics?.proceduralBeats) || [];
     const extraSamples = Object.fromEntries(procedural.map((id) => [id, [0.05, 0.95]]));
-    const result = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence"), extraSamples });
+    const result = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence"), extraSamples, deliverableForm: options.deliverableForm, projectRoot: root });
     steps.push({ gate: "render", status: result.status, video: path.relative(root, video), findings: result.findings, motion: result.motion, contactSheet: result.contactSheet && path.join("evidence", result.contactSheet.sheet), audio: result.audio, cuts: result.cuts });
     if (board.sound.mode !== "silent" || result.audio.present) {
       const audio = checkAudio(video, { storyboard: board, target: options.audioTarget || "web" });
@@ -259,6 +276,7 @@ function checkFilmProject(dir, options = {}) {
     status: failed ? "failed" : skipped ? "incomplete" : "passed",
     steps,
     fixes,
+    ...(storyboard.admission ? { admission: storyboard.admission } : {}),
     creativeAcceptance: "not-assessed",
     next: failed ? "Apply each entry in fixes, then re-run `film check`." : skipped ? steps.filter((step) => step.next).map((step) => step.next).join(" ") : "All film gates pass; this is not acceptance. Review the draft frame by frame (one frame per second), fix and re-check what you find, record the creative review in qa.md, then ask the owner to accept or reject it.",
   };

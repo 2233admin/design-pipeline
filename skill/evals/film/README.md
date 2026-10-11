@@ -29,3 +29,17 @@ evidence writes `evidence/contact-sheet.png` beside the run for human or multimo
 
 Scores measure absence of known failure shapes. They are not creative acceptance; compare the
 contact sheets and watch the films before concluding one model directs better than another.
+
+## Product-promo admission
+
+`film-eval measure` classifies each scenario prompt with the Stage 0 classifier. A product-promo
+scenario (`product-launch-video`) is measured only when its run's `storyboard.json` carries an
+admitted `productSource`: the real product's repository at a pinned commit, a hashed run log and
+captures inside the run directory, and beats built from them (`references/workflow-film.md#source`).
+Otherwise the run is left unmeasured and listed under `admission` in the result, and `benchmark
+evaluate` reports `blocked`; no score is computed from invented screens or cards.
+
+`canvas-launch` and `cli-launch` describe fictional products, so their runs are inadmissible by
+design and stay unmeasured unless a real product source is supplied. `repair-slideshow` remains
+measured. Earlier scores of fictional-product films remain diagnostics only. Admission binds
+records and hashes; it cannot prove that captured pixels are real.

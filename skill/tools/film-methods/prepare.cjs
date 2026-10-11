@@ -45,7 +45,7 @@ function prepareFilmMethods(projectRoot, request, options = {}) {
   assertString(request.concept, "concept", scope);
   const boardPath = path.join(project, "storyboard.json");
   const board = readJson(boardPath, scope);
-  const storyboard = checkStoryboard(board);
+  const storyboard = checkStoryboard(board, { projectRoot: project });
   if (storyboard.status !== "passed") fail(scope, "storyboard must pass the existing film-storyboard gate before method preparation", { code: "STORYBOARD_FAILED", result: storyboard });
   for (const name of ["brand", "components"]) if (request[name] !== undefined && !Array.isArray(request[name])) fail(scope, `${name} must be an array`);
   const brand = (request.brand || []).map((item) => {

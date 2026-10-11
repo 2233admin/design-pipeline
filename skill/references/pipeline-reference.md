@@ -483,6 +483,8 @@ Ordinary React UI work does not trigger Next.js methods; a Next.js visual change
 ## Stage 0: Repo Read
 
 Canonical stage procedure: [`stages.md#stage-0-repo-read`](stages.md#stage-0-repo-read).
+Product-promo films (`product-launch-video`) are evaluated only after the real product is sourced:
+[`workflow-film.md#source`](workflow-film.md#source).
 
 ## Direction and Copy Rules
 
