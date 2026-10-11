@@ -148,7 +148,12 @@ Film workflow state SHALL bind jobId, jobPlanSha256, jobPlanPath and deliverable
 
 ### Requirement: Product promos source and sample before building
 
-Product-launch-video films SHALL use stages source, plan, build, check, review at quick and intake, source, reference, concepts, plan, sample, build, check, review, deliver at standard and full. Sample SHALL be accepted only by owner `decide --stage sample` bound to the sample bytes and productSource hash. Plan and check MUST hash the run log, captures and bound plan.
+Product-launch-video films SHALL source and sample before building. Before the owner is asked, sample.mp4 MUST fully decode as video and run 5–8 s inclusive, else `next` returns findings with a recut fix and decide refuses with SAMPLE_INVALID; an accept recorded earlier of an invalid file no longer finishes the stage. Owner `decide --stage sample` MUST bind the sample bytes and productSource hash; plan and check MUST hash the run log, captures and plan.
+
+#### Scenario: Stage lists
+
+- **WHEN** a product-launch-video film is walked
+- **THEN** its stages are source, plan, build, check, review at quick and intake, source, reference, concepts, plan, sample, build, check, review, deliver at standard and full
 
 #### Scenario: Sample rejected
 

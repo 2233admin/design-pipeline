@@ -174,7 +174,8 @@ test("native visual next asks for a concrete decomposition without creating lega
   assert.equal(action.template.phases[0].visual.property, "menu.selection");
   assert.deepEqual(action.template.phases[0].visual.guides, ["guides/qa.md"]);
   assert.match(action.template.phases[0].goal, /open.*select.*clos.*Escape.*focus/i);
-  assert.match(action.command, /sourceObservation.*report.*shotId.*observationIds/);
+  assert.match(action.instruction, /sourceObservation.*report.*shotId.*observationIds/);
+  assert.equal(action.command, `${shared.CLI} next --change-root <change> --plan <file>`);
   assert.equal(fs.existsSync(path.join(dir, ".design-pipeline/state.json")), false);
 });
 
@@ -1075,8 +1076,8 @@ test("quick film skips intake and concepts", () => {
     for (const board of [null, "{}"]) {
       if (board) touch(project, "storyboard.json", board);
       const action = nextAction(project);
-      assert.match(action.command, /brief|chosen direction/);
-      assert.doesNotMatch(action.command, /observed shots|frame ids|Set reference/);
+      assert.match(action.instruction, /brief|chosen direction/);
+      assert.doesNotMatch(action.instruction, /observed shots|frame ids|Set reference/);
     }
   }
 });
@@ -1122,13 +1123,13 @@ test("replicate film requires material routing before build and returns the reco
     recordGate(dir, "storyboard", "passed");
     const missing = nextAction(dir);
     assert.equal(missing.stage, "plan");
-    assert.match(missing.command, /storyboard.json.rendering/);
+    assert.match(missing.instruction, /storyboard.json.rendering/);
     touch(dir, "storyboard.json", JSON.stringify({ rendering: { route: "webgl", requirements: ["clearcoat", "view-dependent-color"], reason: "Enamel reference", samples: [] } }));
     recordGate(dir, "storyboard", "passed");
     const build = nextAction(dir);
     assert.equal(build.stage, "build");
-    assert.match(build.command, /clearcoat.*view-dependent-color.*webgl/);
-    assert.match(build.command, /enamel.mjs/);
+    assert.match(build.instruction, /clearcoat.*view-dependent-color.*webgl/);
+    assert.match(build.instruction, /enamel.mjs/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -1136,7 +1137,9 @@ test("edit asks mad or pv as its first decision and routes to film-edit commands
   const dir = tmp();
   initState(dir, { deliverable: "edit", tier: "standard" });
   decide(dir, { stage: "intake", answer: "default" });
-  assert.match(nextAction(dir).command, /sources\//);
+  const noSources = nextAction(dir);
+  assert.match(noSources.instruction, /sources\//);
+  assert.equal(noSources.command, undefined, "putting footage in place has no command");
   fs.mkdirSync(path.join(dir, "sources"));
   assert.match(nextAction(dir).command, /film-edit analyze/);
   touch(dir, "edit/analysis.json", "{}");
@@ -1149,11 +1152,11 @@ test("edit asks mad or pv as its first decision and routes to film-edit commands
 test("ui uses OpenSpec only at the full tier", () => {
   const quick = tmp();
   initState(quick, { deliverable: "ui", tier: "quick" });
-  assert.doesNotMatch(nextAction(quick).command, /OpenSpec change/);
+  assert.doesNotMatch(nextAction(quick).instruction, /OpenSpec change/);
   const full = tmp();
   initState(full, { deliverable: "ui", tier: "full" });
   decide(full, { stage: "intake", answer: "default" });
-  assert.match(nextAction(full).command, /OpenSpec change/);
+  assert.match(nextAction(full).instruction, /OpenSpec change/);
 });
 
 test("art director mode routes the concept and review asks to the director", () => {
@@ -1574,8 +1577,8 @@ test("replicate film adapts the scaffold before building and reference edits reo
   };
   const unadapted = runNext();
   assert.equal(unadapted.stage, "plan", "a structurally passing renamed sample is still the source example");
-  assert.match(unadapted.command, /reference\.md/);
-  assert.match(unadapted.command, /subject.*productAction.*transformation/);
+  assert.match(unadapted.instruction, /reference\.md/);
+  assert.match(unadapted.instruction, /subject.*productAction.*transformation/);
   assert.ok(unadapted.guides.includes("references/product-film-direction.md#from-reference-to-producible-shots"));
   board.beats[0].subject = "badge enamel face";
   board.beats[0].productAction = "The enamel face turns into the light";
@@ -1596,10 +1599,10 @@ test("quick frontend replication observes the reference before existing output a
       const observed = nextAction(dir);
       assert.equal(observed.stage, "reference", `${deliverable} must observe before continuing existing output`);
       assert.equal(observed.then, undefined);
-      assert.match(observed.command, /reference-spec\.md/);
-      assert.match(observed.command, /reconstruction-spec\.md/);
-      assert.match(observed.command, /bounded graybox/);
-      assert.match(observed.command, /document delivery.*not.*verified observation/);
+      assert.match(observed.instruction, /reference-spec\.md/);
+      assert.match(observed.instruction, /reconstruction-spec\.md/);
+      assert.match(observed.instruction, /bounded graybox/);
+      assert.match(observed.instruction, /document delivery.*not.*verified observation/);
       assert.throws(() => decide(dir, { stage: "reference", answer: "none" }), /replicate mode cannot skip/);
       touch(dir, "reference.md", "Observed structure and motion; measurements remain to be checked.");
       recordGate(dir, "reference", "failed");
@@ -1619,9 +1622,9 @@ test("frontend replication uses the reference at every tier without replacement 
         touch(dir, "reference.md");
         const build = nextAction(dir);
         assert.equal(build.stage, deliverable === "web" ? "build" : "work");
-        assert.match(build.command, /reference.*invariants/);
-        assert.doesNotMatch(build.command, /chosen concept/);
-        assert.equal(/OpenSpec change/.test(build.command), tier === "full");
+        assert.match(build.instruction, /reference.*invariants/);
+        assert.doesNotMatch(build.instruction, /chosen concept/);
+        assert.equal(/OpenSpec change/.test(build.instruction), tier === "full");
         assert.equal(readState(dir).decisions.concept, undefined);
       } finally { fs.rmSync(dir, { recursive: true, force: true }); }
     }
@@ -1635,13 +1638,13 @@ test("frontend actions define bounded visual tasks and keep polish dependent on 
       initState(dir, { deliverable, tier: "quick", mode: "replicate" });
       touch(dir, "reference.md");
       const build = nextAction(dir);
-      assert.match(build.command, /tasks\.md/);
+      assert.match(build.instruction, /tasks\.md/);
       for (const field of ["reference region", "scene node", "goal", "invariants", "inputs", "literal modification scope", "outputs", "runtime", "comparison", "failure return"]) {
-        assert.ok(build.command.includes(field), `${deliverable} task instruction must include ${field}`);
+        assert.ok(build.instruction.includes(field), `${deliverable} task instruction must include ${field}`);
       }
-      assert.match(build.command, /bounded graybox.*structure and occlusion/);
-      assert.match(build.command, /complete results.*reference check.*reconstruction check.*scene check/);
-      assert.match(build.command, /not ready.*repair.*before material.*polish.*motion/);
+      assert.match(build.instruction, /bounded graybox.*structure and occlusion/);
+      assert.match(build.instruction, /complete results.*reference check.*reconstruction check.*scene check/);
+      assert.match(build.instruction, /not ready.*repair.*before material.*polish.*motion/);
       assert.equal(nextAction(dir).stage, build.stage, "task instructions do not create a file-existence completion gate");
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
@@ -1690,7 +1693,7 @@ test("web quick walks build then probe; standard adds intake, reference, concept
   assert.equal(nextAction(dir).type, "ask");
   decide(dir, { stage: "concept", choice: 2 });
   assert.equal(stage(), "build");
-  assert.doesNotMatch(nextAction(dir).command, /OpenSpec change/);
+  assert.doesNotMatch(nextAction(dir).instruction, /OpenSpec change/);
   touch(dir, "index.html");
   assert.equal(stage(), "probe");
 
@@ -1700,7 +1703,7 @@ test("web quick walks build then probe; standard adds intake, reference, concept
   decide(full, { stage: "reference", answer: "none" });
   touch(full, "concepts.md");
   decide(full, { stage: "concept", choice: 1 });
-  assert.match(nextAction(full).command, /OpenSpec change/);
+  assert.match(nextAction(full).instruction, /OpenSpec change/);
 });
 
 test("probe asks to write interaction.json when missing, then routes to verify interaction", () => {
@@ -1709,8 +1712,8 @@ test("probe asks to write interaction.json when missing, then routes to verify i
   touch(dir, "index.html");
   const missing = nextAction(dir);
   assert.equal(missing.stage, "probe");
-  assert.match(missing.command, /interaction\.json/);
-  assert.doesNotMatch(missing.command, /verify interaction/);
+  assert.match(missing.instruction, /interaction\.json/);
+  assert.equal(missing.command, undefined, "writing the probe is not a command");
   touch(dir, "interaction.json", "{}");
   assert.match(nextAction(dir).command, /verify interaction --probe interaction\.json/);
   recordGate(dir, "interaction", "failed");
@@ -1746,7 +1749,7 @@ test("a rejected web draft reopens probe", () => {
   assert.equal(nextAction(dir).stage, "probe", "a rejection reopens probe");
 });
 
-const PROMPT_FIELDS = ["question", "questions", "recommended", "options", "record", "why", "command"];
+const PROMPT_FIELDS = ["question", "questions", "recommended", "options", "record", "why", "command", "instruction"];
 const promptOf = (action) => Object.fromEntries(PROMPT_FIELDS.filter((key) => key in action).map((key) => [key, action[key]]));
 
 test("web intake asks product, audience, scope and assets, with no duration or film wording", () => {
@@ -1772,9 +1775,9 @@ test("web concepts asks for a section arc and a treatment, then keeps the shared
     const write = nextAction(dir);
     assert.equal(write.stage, "concepts");
     assert.equal(write.type, "run");
-    assert.match(write.command, /section/i);
-    assert.match(write.command, /## Treatment/);
-    assert.doesNotMatch(write.command, /between beats|the picture/i);
+    assert.match(write.instruction, /section/i);
+    assert.match(write.instruction, /## Treatment/);
+    assert.doesNotMatch(write.instruction, /between beats|the picture/i);
     touch(dir, "concepts.md");
     const choose = nextAction(dir);
     assert.equal(choose.type, "ask");
@@ -1832,7 +1835,7 @@ test("web build at standard and full extends the chosen card with a treatment; q
       decide(dir, { stage: "concept", choice: 1 });
       const build = nextAction(dir);
       assert.equal(build.stage, "build", tier);
-      assert.match(build.command, /## Treatment/, tier);
+      assert.match(build.instruction, /## Treatment/, tier);
       assert.equal(build.remaining, 4, `${tier}: build, probe, review, deliver`);
     }
     const quick = tmp();
@@ -1840,7 +1843,7 @@ test("web build at standard and full extends the chosen card with a treatment; q
     initState(quick, { deliverable: "web", tier: "quick" });
     const quickBuild = nextAction(quick);
     assert.equal(quickBuild.stage, "build");
-    assert.doesNotMatch(quickBuild.command, /Treatment/i);
+    assert.doesNotMatch(quickBuild.instruction, /Treatment/i);
 
     const replicate = tmp();
     dirs.push(replicate);
@@ -1849,7 +1852,7 @@ test("web build at standard and full extends the chosen card with a treatment; q
     touch(replicate, "reference.md");
     const replicateBuild = nextAction(replicate);
     assert.equal(replicateBuild.stage, "build");
-    assert.doesNotMatch(replicateBuild.command, /Treatment/i, "replicate has no concept card to extend");
+    assert.doesNotMatch(replicateBuild.instruction, /Treatment/i, "replicate has no concept card to extend");
   } finally { for (const dir of dirs) fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

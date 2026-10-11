@@ -28,11 +28,10 @@ const STATE = path.join(".design-pipeline", "state.json");
 const DELIVERABLES = ["film", "edit", "web", "ui"];
 const TIERS = ["quick", "standard", "full"];
 const MODES = ["brief", "replicate", "freeform"];
-const CLI = "designer-pipeline";
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { INTAKE, REVIEW, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const { CLI, INTAKE, REVIEW, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -43,7 +42,8 @@ function codeStages(state) {
     finished: (state) => Boolean(state.decisions?.delivered),
     action: () => ({
       type: "run",
-      command: `${tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md" : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing)`}${mode === "replicate" ? "; reproduce the reference and its invariants" : ""}. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. Verify the rendered surface; file delivery and engineering checks do not grant visual acceptance. When verified: ${CLI} decide --project-root . --stage deliver --answer <evidence>`,
+      instruction: `${tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md" : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing)`}${mode === "replicate" ? "; reproduce the reference and its invariants" : ""}. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. Verify the rendered surface; file delivery and engineering checks do not grant visual acceptance. When verified, run the command to record the delivery (replace <evidence>).`,
+      command: `${CLI} decide --project-root . --stage deliver --answer <evidence>`,
       ...(mode === "replicate" ? { guide: "references/pipeline-reference.md" } : {}),
       why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates.",
     }),
@@ -143,11 +143,11 @@ function initState(root, options = {}) {
   return state;
 }
 
-// One line per action: the question (after any first step), the blocker, or the command.
+// One line per action: the question (after any first step), the blocker, or the instruction and its command.
 function actionLine(action) {
   if (action.type === "ask") return `${action.first ? `${action.first} ` : ""}${action.question}`;
   if (action.type === "blocked") return `blocked (${action.blocker.kind}): ${action.blocker.reason} Needs: ${action.blocker.needs}`;
-  return action.command;
+  return action.instruction && action.command ? `${action.instruction} Command: ${action.command}` : action.instruction || action.command;
 }
 
 function nextAction(root) {
@@ -196,8 +196,10 @@ function decide(root, options = {}) {
     // The verdict binds the sample bytes and the product record they were cut from.
     const binding = SUB_WORKFLOWS.film.sampleBinding(root);
     if (!binding) fail("workflow", "there is no sample.mp4 to judge. Fix: cut sample.mp4 at the project root from the admitted captures, then follow next", { code: "INPUT_MISSING" });
-    const sampleFindings = SUB_WORKFLOWS.film.sampleFindings(root);
-    if (sampleFindings.length) fail("workflow", `${sampleFindings[0].message} Fix: ${sampleFindings[0].fix}`, { code: "SAMPLE_INVALID" });
+    if (next.type !== "ask") {
+      const first = next.findings?.[0];
+      fail("workflow", first ? `${first.message} Fix: ${first.fix}` : "the sample is not ready to be judged. Fix: follow next.", { code: first ? "SAMPLE_INVALID" : "WORKFLOW_NOT_READY" });
+    }
     state.decisions.samples = [...(state.decisions.samples || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), ...binding }];
     if (options.verdict === "reject") state.rules = [...(state.rules || []), { text: options.answer, from: `sample ${state.decisions.samples.length}`, scope: "project" }];
   } else if (stage === "review") {
@@ -459,7 +461,8 @@ function currentVisual(context) {
 function visualDecomposition(context) {
   return {
     type: "run", stage: "decompose", visualAcceptance: "not-evaluated",
-    command: "Write a design-plan.v1 with one observed property per phase. This example checks a menu's declared open, selection, close, Escape and focus states through the documented eight-step interaction.json journey in a stable #menu-demo wrapper; use #menu-trigger, #sort-menu, #sort-default, #sort-updated and #selection-value, reading the loaded QA method copied to guides/qa.md. It does not prove structural fidelity, backend persistence or visual acceptance. Bind reference files, scope, outputs, checks and dependencies. Bind each local-web check through visual.verification: interaction probe input, exact local page output and check result path. Guides must name actual readable method files. A video report reference requires visual.sourceObservation with report, confirmed shotId and observed observationIds; its target/property must match. Then run next --change-root <change> --plan <file> before working in an owned Git window.",
+    instruction: "Write a design-plan.v1 with one observed property per phase. This example checks a menu's declared open, selection, close, Escape and focus states through the documented eight-step interaction.json journey in a stable #menu-demo wrapper; use #menu-trigger, #sort-menu, #sort-default, #sort-updated and #selection-value, reading the loaded QA method copied to guides/qa.md. It does not prove structural fidelity, backend persistence or visual acceptance. Bind reference files, scope, outputs, checks and dependencies. Bind each local-web check through visual.verification: interaction probe input, exact local page output and check result path. Guides must name actual readable method files. A video report reference requires visual.sourceObservation with report, confirmed shotId and observed observationIds; its target/property must match. Then run the command (replace <change> and <file>) before working in an owned Git window.",
+    command: `${CLI} next --change-root <change> --plan <file>`,
     ...(context.missingPlan ? { missingPlan: context.missingPlan } : {}),
     template: { schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: "sort-menu", input_hash: "sha256:" + "0".repeat(64), mode: "greenfield", fidelity: "adaptive", phases: [{ id: "menu-selection", depends_on: [], inputs: ["brief.md", "interaction.json", "guides/qa.md"], outputs: ["index.html"], gates: [], goal: "Open the menu, select 按更新时间, close it, then use Escape to restore focus while preserving the selected value.", visual: { target: "sort-menu", property: "menu.selection", references: ["brief.md"], scope: ["index.html", "implementation.md"], guides: ["guides/qa.md"], checks: ["evidence/menu-check.json"], review: true, verification: [{ kind: "interaction", probe: "interaction.json", target: "index.html", check: "evidence/menu-check.json" }] } }] },
   };
@@ -517,7 +520,8 @@ function nextVisualTask(changeRoot, options = {}) {
     ...(blocker ? { status: "blocked", blockers: [blocker] } : {}),
     ...visualFailureFeedback(context, current, inputHashes),
     ...(context.progress.completed[current.id]?.status === "stale" ? { previousArtifacts: context.progress.completed[current.id].artifacts } : {}),
-    command: `Work only on ${current.id}: ${current.goal} Read the named guides and references; keep this execution window owned and changes inside its scope. Produce the declared outputs, then decide --change-root <change> --choice ${current.id} --verdict complete --artifact ${taskMetadataPath(current)}. Completion runs the bound browser verifier and writes artifact.v1 metadata itself. A technical completion never grants visual acceptance.`,
+    instruction: `Work only on ${current.id}: ${current.goal} Read the named guides and references; keep this execution window owned and changes inside its scope. Produce the declared outputs, then run the command (replace <change>). Completion runs the bound browser verifier and writes artifact.v1 metadata itself. A technical completion never grants visual acceptance.`,
+    command: `${CLI} decide --change-root <change> --choice ${current.id} --verdict complete --artifact ${taskMetadataPath(current)}`,
   };
 }
 

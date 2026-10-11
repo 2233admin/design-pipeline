@@ -39,3 +39,11 @@ English and Chinese HTML product launch/showcase video requests MUST select the 
 #### Scenario: Ordinary hover animation
 - **WHEN** a dashboard requests a subtle hover animation without a video deliverable
 - **THEN** it MUST remain on ordinary UI motion and MUST NOT activate HyperFrames
+
+### Requirement: Film routes hand off to the film workflow
+`route --write` for a film plan (product-launch-video or motion-graphics-video) MUST return a handoff to `next --deliverable film --job-plan` instead of a toolchain request, because a film has no stack choices; plans of other forms MUST keep the toolchain handoff. The handoff note MUST NOT claim that the tier follows the request: an omitted `--tier` defaults to standard.
+
+#### Scenario: Persisted film route hands off to the film workflow
+- **WHEN** `route --write` persists a plan whose form is `product-launch-video` or `motion-graphics-video`
+- **THEN** its handoff is `command: "next"`, `action: "bind-film"` with an executable argv `next --project-root <root> --deliverable film --job-plan <plan>`, and no `toolchain request` handoff or choices file
+- **AND** running that argv binds the plan in film state, while a non-film plan keeps its `toolchain request` handoff

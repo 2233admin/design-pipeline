@@ -105,3 +105,9 @@ Compatibility: an existing `package.json` is refused like the other scaffold fil
 `--replace` it keeps its fields and only gains the pins and missing scripts. The motion-study
 template's reference HTML now loads GSAP from `node_modules` too; it is only used through the
 scaffold.
+
+## 4. Commands apart from instructions; scaffold next steps for product promos
+
+`next` actions split `command` from `instruction`. `command` is only an executable command spelled `node <absolute path of designer-pipeline.cjs> ...` (`CLI` in `workflows/shared.cjs`, derived from `__dirname`, with forward slashes and quoting only when the path needs it), so it runs as given from any directory; an `ask` action's `record` uses the same invocation. Prose moves to `instruction`; an action with nothing to execute (writing `concepts.md`, cutting `sample.mp4`) carries only `instruction`, and a `blocked` action's next step is its `instruction`. Where an action has both, the instruction says whether the command runs first or last; `line` shows the instruction followed by `Command: <command>`. No alias for the old prose-in-`command` shape remains.
+
+`film scaffold` receives the bound form (`workflow.projectJobPlan`, like `film check`) and, for a product promo, adds the `productSource` record step before the reference/storyboard steps and the sample step before the build step to `next[]`; other scaffolds, including `motion-study`, keep their output.

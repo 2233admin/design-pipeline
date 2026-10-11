@@ -8,6 +8,9 @@ route(query) -> hash-bound job-plan(query, deliverableForm) -> toolchain request
 
 One deterministic classifier supplies product-launch-video, motion-graphics-video, scrollytelling-page, interactive-page, or ui-motion. Explicit scrollytelling and interactive-page signals take precedence over product terms; generic motion/video follows product-video terms; otherwise the form is ui-motion. The toolchain brief is classified independently. A request cannot change the persisted form, and a plan with an inconsistent query/form is invalid even if rehashed.
 
+## Film handoff
+`route --write` for a film plan (`product-launch-video`, `motion-graphics-video`; a private set in `cli-core.cjs`) returns the handoff `{command: "next", action: "bind-film", argv}` rather than a `toolchain request`, because a film has no stack choices; `next --deliverable film --job-plan` binds the plan. Non-film plans keep the toolchain handoff. The note says an omitted `--tier` defaults to standard.
+
 ## Alternatives and consequences
 | Option | Enforcement | Compatibility | Decision |
 | --- | --- | --- | --- |

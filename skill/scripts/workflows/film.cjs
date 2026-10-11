@@ -79,9 +79,10 @@ const SOURCE = {
     const admission = sourceAdmission(root);
     if (admission.status === "blocked") {
       const { kind, reason, needs } = storyboard(root).productSource.blocker;
-      return { type: "blocked", blocker: { kind, reason, needs }, why: "The product could not be sourced, so this film is not planned, built or evaluated; invented screens or cards would misrepresent it.", record: "Resolve what the blocker needs with the user, replace storyboard.json.productSource with the admitted record, then run next again." };
+      return { type: "blocked", blocker: { kind, reason, needs }, why: "The product could not be sourced, so this film is not planned, built or evaluated; invented screens or cards would misrepresent it.", instruction: "Resolve what the blocker needs with the user, replace storyboard.json.productSource with the admitted record, then run next again." };
     }
-    return { type: "run", command: `${exists(root, "storyboard.json") ? "" : `${CLI} film scaffold --output .; then `}${SOURCE_STEPS}`, findings: admission.findings, why: "A product promo is evaluated only when it is built from the real product, run at a pinned commit and captured; text, cards or invented screens cannot stand in for it.", record: "fix each finding, then run next again" };
+    const scaffold = !exists(root, "storyboard.json");
+    return { type: "run", ...(scaffold ? { command: `${CLI} film scaffold --output .` } : {}), instruction: `${scaffold ? "Run the command first, then: " : ""}${SOURCE_STEPS} Fix each finding, then run next again.`, findings: admission.findings, why: "A product promo is evaluated only when it is built from the real product, run at a pinned commit and captured; text, cards or invented screens cannot stand in for it." };
   },
 };
 
@@ -99,8 +100,8 @@ const PLAN = {
     const handoff = `${fromReference ? SHOT_HANDOFF : "Author storyboard.json from the brief or chosen direction using references/product-film-direction.md and the existing choreography. "}${productPromo(state) ? PRODUCT_PLAN : ""}`;
     const guides = [fromReference ? SHOT_GUIDE : "references/product-film-direction.md#3-write-an-audiovisual-storyboard", "references/film-choreography/registry.json"];
     return exists(root, "storyboard.json")
-      ? { type: "run", command: `${handoff}${state.mode === "replicate" && !renderingPlan(root) ? "Record storyboard.json.rendering (route, requirements, reason, samples) from the reference using references/film-materials.md, then: " : ""}${CLI} verify film-storyboard --storyboard storyboard.json`, guides, why: "Author the actual direction before checking its structure and material route; a passing example does not prove reference reconstruction.", record: "fix each finding, then run next again" }
-      : { type: "run", command: `${CLI} film scaffold --output .; then ${handoff}`, guides, why: "Create editable files, then author the actual storyboard." };
+      ? { type: "run", command: `${CLI} verify film-storyboard --storyboard storyboard.json`, instruction: `${handoff}${state.mode === "replicate" && !renderingPlan(root) ? "Record storyboard.json.rendering (route, requirements, reason, samples) from the reference using references/film-materials.md. " : ""}Then run the command; fix each finding, then run next again.`, guides, why: "Author the actual direction before checking its structure and material route; a passing example does not prove reference reconstruction." }
+      : { type: "run", command: `${CLI} film scaffold --output .`, instruction: `Run the command first, then: ${handoff}`, guides, why: "Create editable files, then author the actual storyboard." };
   },
 };
 
@@ -111,7 +112,7 @@ const BUILD = {
     const rendering = renderingPlan(root);
     const material = rendering?.requirements.length
       ? `Implement ${rendering.requirements.join(", ")} using the recorded ${rendering.route} route. Read references/film-materials.md${rendering.route === "webgl" ? " and reuse references/film-materials/enamel.mjs for enamel" : ""}; inspect the planned material samples before full rendering. ` : "";
-    return { type: "run", command: `${material}${productPromo(state) ? PRODUCT_BUILD : ""}Use references/animation-thinking.md to define the action's key poses and timing/spacing; test an uncertain movement as a short study before extending it. Build index.html from the storyboard beats, then: npx --no-install hyperframes render --output out.mp4`, why: "The subject's action, camera and edit each need an intended effect; choose the simplest route that preserves it and the required material response." };
+    return { type: "run", instruction: `${material}${productPromo(state) ? PRODUCT_BUILD : ""}Use references/animation-thinking.md to define the action's key poses and timing/spacing; test an uncertain movement as a short study before extending it. Build index.html from the storyboard beats, then: npx --no-install hyperframes render --output out.mp4`, why: "The subject's action, camera and edit each need an intended effect; choose the simplest route that preserves it and the required material response." };
   },
 };
 
@@ -130,7 +131,7 @@ const FILM_REVIEW = { ...REVIEW, action: (state, root) => ({ first: frameReview(
 const DELIVER = {
   id: "deliver",
   finished: deliveryRecorded,
-  action: () => ({ type: "run", command: `Render the final quality (npx --no-install hyperframes render --quality high --output final.mp4), then: ${CLI} decide --project-root . --stage deliver --answer final.mp4`, why: "Drafts are cheap; the final render happens once, after acceptance." }),
+  action: () => ({ type: "run", command: `${CLI} decide --project-root . --stage deliver --answer final.mp4`, instruction: "Render the final quality first (npx --no-install hyperframes render --quality high --output final.mp4), then run the command to record it.", why: "Drafts are cheap; the final render happens once, after acceptance." }),
 };
 
 // A product promo's first owner-viewed cut is a short sample from the real captures. A verdict binds
@@ -149,48 +150,38 @@ function sampleBinding(root) {
 
 // The sample is the owner's first look at the real material, so it must decode and run 5–8 s; an
 // unreadable or off-length file never reaches the verdict. Findings carry the fix, like the gates'.
-// ffprobe reads only metadata, so a full video decode (any decoder error counts) proves the frames.
+// ffprobe reads only metadata, so a full video decode proves the frames; the decode fails when ffmpeg exits non-zero.
 const SAMPLE_SECONDS = [5, 8];
-const sampleChecks = new Map(); // sha256 of the file -> findings, so each next call does not decode it again
-function sampleFindings(root) {
+function inspectSample(root) {
   const finding = (code, message, fix) => ({ code, severity: "error", message, fix });
   const recut = `Recut ${SAMPLE_FILE} as a decodable video of ${SAMPLE_SECONDS[0]}–${SAMPLE_SECONDS[1]} s at the project root, then run next again.`;
-  const notVideo = detail => [finding("sample-not-video", `${SAMPLE_FILE} cannot be decoded as video: ${detail}`, recut)];
+  const notVideo = detail => ({ findings: [finding("sample-not-video", `${SAMPLE_FILE} cannot be decoded as video: ${detail}`, recut)] });
   const tools = { ffmpeg: "ffmpeg", ffprobe: "ffprobe" };
-  let file, key;
-  try {
-    file = resolveInside(root, SAMPLE_FILE, "sample", { scope: "workflow", mustExist: true });
-    key = sha256(fs.readFileSync(file));
-  } catch (error) { return notVideo(error.message); }
-  if (sampleChecks.has(key)) return sampleChecks.get(key);
-  let findings;
+  let file;
+  try { file = resolveInside(root, SAMPLE_FILE, "sample", { scope: "workflow", mustExist: true }); } catch (error) { return notVideo(error.message); }
   try {
     const media = probe(file, tools);
     const [min, max] = SAMPLE_SECONDS;
-    if (!(media.durationSec >= min && media.durationSec <= max)) findings = [finding("sample-duration", `${SAMPLE_FILE} runs ${Number(media.durationSec.toFixed(2))} s; the sample must run ${min}–${max} s.`, recut)];
-    else {
-      const errors = String(run(tools.ffmpeg, ["-v", "error", "-xerror", "-i", file, "-map", "0:v:0", "-f", "null", "-"]).stderr || "").trim();
-      findings = errors ? notVideo(errors.split(/\r?\n/)[0]) : [];
-    }
+    if (!(media.durationSec >= min && media.durationSec <= max)) return { findings: [finding("sample-duration", `${SAMPLE_FILE} runs ${Number(media.durationSec.toFixed(2))} s; the sample must run ${min}–${max} s.`, recut)] };
+    run(tools.ffmpeg, ["-v", "error", "-xerror", "-i", file, "-map", "0:v:0", "-f", "null", "-"]);
+    return { findings: [] };
   } catch (error) {
-    if (error.code === "TOOL_MISSING") return [finding("sample-probe-unavailable", error.message, "Install ffmpeg and ffprobe on PATH so the sample can be checked, then run next again.")];
-    findings = notVideo(String(error.message).split(/\r?\n/)[0].slice(0, 300));
+    if (error.code === "TOOL_MISSING") return { findings: [finding("sample-probe-unavailable", error.message, "Install ffmpeg and ffprobe on PATH so the sample can be checked, then run next again.")] };
+    return notVideo(String(error.message).split(/\r?\n/)[0].slice(0, 300));
   }
-  sampleChecks.set(key, findings);
-  return findings;
 }
 
 const SAMPLE = {
   id: "sample",
   finished: (state, root) => {
     const latest = state.decisions?.samples?.at(-1), current = sampleBinding(root);
-    return latest?.verdict === "accept" && Boolean(current) && latest.sha256 === current.sha256 && latest.sourceSha256 === current.sourceSha256 && sampleFindings(root).length === 0;
+    return latest?.verdict === "accept" && Boolean(current) && latest.sha256 === current.sha256 && latest.sourceSha256 === current.sourceSha256 && inspectSample(root).findings.length === 0;
   },
   action: (state, root) => {
     const current = sampleBinding(root);
-    if (!current) return { type: "run", command: `Cut a ${SAMPLE_SECONDS[0]}–${SAMPLE_SECONDS[1]} s sample from the real captures cited in beats[].source that shows the recorded action, then its response, then the result; crop, zoom, mask and caption the captures, but add no invented cards or redrawn UI. Save it as ${SAMPLE_FILE} at the project root, then run next again.`, why: "The owner judges the real material on a short cut before the whole film is built from it." };
-    const findings = sampleFindings(root);
-    if (findings.length) return { type: "run", command: findings[0].fix, findings, why: `The owner is shown ${SAMPLE_FILE} only once it decodes and runs ${SAMPLE_SECONDS[0]}–${SAMPLE_SECONDS[1]} s.`, record: "fix each finding, then run next again" };
+    if (!current) return { type: "run", instruction: `Cut a ${SAMPLE_SECONDS[0]}–${SAMPLE_SECONDS[1]} s sample from the real captures cited in beats[].source that shows the recorded action, then its response, then the result; crop, zoom, mask and caption the captures, but add no invented cards or redrawn UI. Save it as ${SAMPLE_FILE} at the project root, then run next again.`, why: "The owner judges the real material on a short cut before the whole film is built from it." };
+    const { findings } = inspectSample(root);
+    if (findings.length) return { type: "run", instruction: `${findings[0].fix} Apply each finding's fix, then run next again.`, findings, why: `The owner is shown ${SAMPLE_FILE} only once it decodes and runs ${SAMPLE_SECONDS[0]}–${SAMPLE_SECONDS[1]} s.` };
     const latest = state.decisions?.samples?.at(-1);
     const captures = storyboard(root).productSource.captures;
     const show = [SAMPLE_FILE, ...(Array.isArray(captures) ? captures.map(capture => capture?.path) : [])].flatMap(rel => {
@@ -240,4 +231,4 @@ function doneFields(state, root) {
   return { admission: findings.length ? { ...admission, findings } : admission };
 }
 
-module.exports = { doneFields, sampleBinding, sampleFindings, stages };
+module.exports = { doneFields, sampleBinding, stages };

@@ -1,7 +1,11 @@
 # Film workflow
 
 Generated promo, explainer, logo sting, feature demo or 3D product shot. `designer-pipeline next`
-names the current stage; read only that section. Stage order:
+names the current stage; read only that section. Each `run` action is a `command` (always
+`node <absolute path>/designer-pipeline.cjs ...`, runnable as given) and/or an `instruction` (the
+prose; where both are present it says whether the command comes first). Stages with nothing to
+execute, such as writing `concepts.md` or cutting `sample.mp4`, return only the `instruction`.
+Stage order:
 
 - `quick`: plan, build, check, review (replicate mode adds reference first). Quick has no delivery
   render, but it ends with the owner's verdict on the checked draft, not with a passing check.
@@ -33,6 +37,8 @@ Product promos only. The film is built from the product itself, never from inven
 UI or text cards standing in for it.
 
 1. Run `film scaffold --output .` first if `storyboard.json` is missing.
+   For a project bound to a product-promo job plan, the scaffold's `next` list also points at the
+   `productSource` record and the `sample` step.
 2. Clone the product's repository and check out one full commit SHA. Start the run log with the
    output of `git -C <checkout> rev-parse HEAD`, then the start command and its output.
 3. Run it in demo or seeded mode with local fixture data. Never sign in to live accounts or make
@@ -93,7 +99,7 @@ If the product cannot be run or captured, record why and stop:
 | `capture-failed` | It runs, but the UI state or operation cannot be captured |
 
 A blocked record carries no `run`, `captures` or `flow`. `next` then returns `type: "blocked"`
-with the blocker, exits 2 and does not advance; ask the user for what `needs` names and replace
+with the blocker and an `instruction`, exits 2 and does not advance; ask the user for what `needs` names and replace
 the record with an admitted one. Never continue with invented scenes meanwhile. Non-software
 products have no repository and are blocked (`no-repository`) under this contract.
 
@@ -172,7 +178,7 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
 Standard and full product promos. Before building the whole film, cut a 5–8 s `sample.mp4` at the
 project root from the captures cited in `beats[].source`, showing the action, the response and
 the result. Use the real captures with crops, zooms, masks and captions; no invented cards or
-redrawn UI. `next` first checks that `sample.mp4` decodes and runs 5–8 s; otherwise it returns
+redrawn UI. `next` first checks `sample.mp4` with an ffprobe duration of 5–8 s inclusive and a full ffmpeg video decode judged by its exit status; otherwise it returns
 findings with a recut fix (`sample-not-video`, `sample-duration`; `sample-probe-unavailable` when
 ffmpeg/ffprobe are missing) and `decide` refuses. Then it asks the owner to view `sample.mp4` beside its capture files; record the
 reply with `decide --stage sample --verdict accept|reject [--answer "<reason>"]`. A rejection

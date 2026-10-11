@@ -17,7 +17,7 @@ const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs"
 const { productSourceFiles } = require("../skill/scripts/film-core.cjs");
 const { scaffoldFilm } = require("../skill/scripts/film-project-core.cjs");
 const { sampleBinding, stages } = require("../skill/scripts/workflows/film.cjs");
-const { INTAKE, gateStatus } = require("../skill/scripts/workflows/shared.cjs");
+const { CLI, INTAKE, gateStatus } = require("../skill/scripts/workflows/shared.cjs");
 
 const PRODUCT_QUERY = "制作产品宣传动画"; // Stage 0 classifies it as product-launch-video.
 const MOTION_QUERY = "Create a kinetic typography video"; // ... and this as motion-graphics-video.
@@ -213,7 +213,7 @@ test("initState rejects a plan for another deliverable and an invalid, missing o
   touch(tampered, "job-plan.json", canonicalJson({ ...plan, query: MOTION_QUERY }));
   for (const options of [{ jobPlan: "job-plan.json" }, {}]) {
     assert.throws(() => initState(tampered, { deliverable: "film", ...options }), error => error.code === "CONTRACT_INVALID"
-      && error.message.includes("the Stage 0 job plan job-plan.json is invalid: job plan hash does not match contents. Fix: re-plan from the original brief with `designer-pipeline route --query \"<brief>\" --write --output job-plan.json`"));
+      && error.message.includes(`the Stage 0 job plan job-plan.json is invalid: job plan hash does not match contents. Fix: re-plan from the original brief with \`${CLI} route --query "<brief>" --write --output job-plan.json\``));
     assert.equal(fs.existsSync(stateFile(tampered)), false);
   }
 
@@ -266,7 +266,7 @@ test("a stale Stage 0 binding throws JOB_PLAN_STALE from next, decide and projec
   const stale = reason => error => error.code === "JOB_PLAN_STALE"
     && error.message.startsWith("workflow: the bound Stage 0 job plan job-plan.json is stale: ")
     && reason.test(error.message)
-    && error.message.endsWith(". Fix: re-plan from the original brief with `designer-pipeline route --query \"<brief>\" --write --output job-plan.json`, then rebind with `designer-pipeline next --project-root . --job-plan job-plan.json`");
+    && error.message.endsWith(`. Fix: re-plan from the original brief with \`${CLI} route --query "<brief>" --write --output job-plan.json\`, then rebind with \`${CLI} next --project-root . --job-plan job-plan.json\``);
   // Hand-made and correctly hashed, but its stored form is no longer what Stage 0 classifies its
   // query as (a classifier change after it was bound).
   const reclassified = () => {
@@ -319,14 +319,16 @@ test("the source stage returns admission findings, blocks on a blocked record an
   assert.equal(next.type, "run");
   assert.equal(next.stage, "source");
   assert.equal(next.guide, "references/workflow-film.md#source");
-  assert.match(next.command, /^designer-pipeline film scaffold --output \.; then Source the real product: /);
-  assert.match(next.command, /full commit SHA.*git -C <checkout> rev-parse HEAD.*one user operation/);
+  assert.equal(next.command, `${CLI} film scaffold --output .`);
+  assert.match(next.instruction, /^Run the command first, then: Source the real product: /);
+  assert.match(next.instruction, /full commit SHA.*git -C <checkout> rev-parse HEAD.*one user operation/);
   assert.deepEqual(codes(next), ["product-source-missing"], "a card-only film has no product record");
   assert.ok(next.findings.every(finding => finding.fix));
 
   writeStoryboard(dir);
   next = nextAction(dir);
-  assert.match(next.command, /^Source the real product: /, "an existing storyboard is not scaffolded again");
+  assert.equal(next.command, undefined, "an existing storyboard is not scaffolded again");
+  assert.match(next.instruction, /^Source the real product: /);
   assert.deepEqual(codes(next), ["product-source-missing"]);
 
   const source = admittedSource(dir);
@@ -358,7 +360,7 @@ test("the source stage returns admission findings, blocks on a blocked record an
   assert.equal(next.stage, "source");
   assert.deepEqual(next.blocker, blocker);
   assert.equal(next.command, undefined);
-  assert.ok(next.why && next.record);
+  assert.ok(next.why && next.instruction);
   assert.deepEqual(next.completed, []);
   assert.equal(next.line, `film/quick: source (1/5) - blocked (needs-credentials): ${blocker.reason} Needs: ${blocker.needs}`);
   for (const options of [{ stage: "review", verdict: "accept" }, { stage: "review", verdict: "reject", answer: "Not the product." }, { stage: "deliver", answer: "out.mp4" }, { stage: "sample", verdict: "accept" }]) {
@@ -371,7 +373,7 @@ test("the source stage returns admission findings, blocks on a blocked record an
   next = nextAction(dir);
   assert.equal(next.stage, "plan");
   assert.deepEqual(next.completed, ["source"]);
-  assert.match(next.command, /list the capture ids each beat shows in beats\[\]\.source/);
+  assert.match(next.instruction, /list the capture ids each beat shows in beats\[\]\.source/);
 });
 
 // The source stage scaffolds before the reference stage; the scaffold's empty reference.md
@@ -381,7 +383,8 @@ test("a standard product promo scaffolded at source still asks for its reference
   writePlan(dir, PRODUCT_QUERY);
   initState(dir, { deliverable: "film", tier: "standard" });
   decide(dir, { stage: "intake", answer: "default" });
-  assert.match(nextAction(dir).command, /^designer-pipeline film scaffold --output \.; then /);
+  assert.equal(nextAction(dir).command, `${CLI} film scaffold --output .`);
+  assert.match(nextAction(dir).instruction, /^Run the command first, then: /);
   scaffoldFilm(dir);
   assert.ok(fs.existsSync(path.join(dir, "reference.md")), "the scaffold writes the reference template");
   writeStoryboard(dir, admittedSource(dir));
@@ -411,7 +414,7 @@ test("changed product material, or a pass recorded without it, reopens plan and 
   passStoryboard(dir);
   next = nextAction(dir);
   assert.equal(next.stage, "build");
-  assert.match(next.command, /^Build from the admitted captures each beat cites in beats\[\]\.source/);
+  assert.match(next.instruction, /^Build from the admitted captures each beat cites in beats\[\]\.source/);
   touch(dir, "out.mp4", "draft");
   passFilm(dir);
   assert.equal(nextAction(dir).stage, "review");
@@ -463,8 +466,8 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   decide(dir, { stage: "concept", choice: "1" });
   next = nextAction(dir);
   assert.equal(next.stage, "plan");
-  assert.match(next.command, /beats\[\]\.source/);
-  assert.match(next.command, /only a pure brand card, a brand-hold with transformation none, may stay unsourced, within a quarter of the film/);
+  assert.match(next.instruction, /beats\[\]\.source/);
+  assert.match(next.instruction, /only a pure brand card, a brand-hold with transformation none, may stay unsourced, within a quarter of the film/);
   assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "WORKFLOW_NOT_READY");
   passStoryboard(dir);
 
@@ -472,8 +475,8 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(next.stage, "sample");
   assert.equal(next.type, "run");
   assert.equal(next.guide, "references/workflow-film.md#sample");
-  assert.match(next.command, /5–8 s sample from the real captures cited in beats\[\]\.source/);
-  assert.match(next.command, /sample\.mp4 at the project root/);
+  assert.match(next.instruction, /5–8 s sample from the real captures cited in beats\[\]\.source/);
+  assert.match(next.instruction, /sample\.mp4 at the project root/);
   let before = fs.readFileSync(stateFile(dir));
   assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "INPUT_MISSING");
   assert.deepEqual(fs.readFileSync(stateFile(dir)), before);
@@ -504,7 +507,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(samples[1].sourceSha256, `sha256:${sha256(canonicalJson(board.productSource))}`);
   next = nextAction(dir);
   assert.equal(next.stage, "build");
-  assert.match(next.command, /admitted captures each beat cites in beats\[\]\.source/);
+  assert.match(next.instruction, /admitted captures each beat cites in beats\[\]\.source/);
 
   cut(dir, 6, "third cut");
   assert.equal(nextAction(dir).stage, "sample", "a changed sample asks again");
@@ -564,7 +567,8 @@ test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { sk
     assert.equal(next.type, "run", `${code}: the owner is not asked`);
     assert.deepEqual(codes(next), [code]);
     assert.match(next.findings[0].fix, /Recut sample\.mp4 .* 5–8 s/);
-    assert.equal(next.command, next.findings[0].fix);
+    assert.equal(next.command, undefined);
+    assert.ok(next.instruction.startsWith(next.findings[0].fix));
     const before = fs.readFileSync(stateFile(dir));
     assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
     assert.deepEqual(fs.readFileSync(stateFile(dir)), before, "no verdict is recorded");

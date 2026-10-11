@@ -1517,6 +1517,9 @@ function prismCommand(parsed, action) {
   fail("cli", `unknown prism action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
+// The forms the film workflow builds; `next --deliverable film --job-plan` binds only these.
+const FILM_JOB_FORMS = new Set(["product-launch-video", "motion-graphics-video"]);
+
 function jobRouteCommand(parsed, root) {
   const registryPath = option(parsed, "--registry");
   const result = routeJob({
@@ -1530,21 +1533,33 @@ function jobRouteCommand(parsed, root) {
     const plan = buildJobPlan(result);
     output = writeResult(parsed, root, plan);
     planSha256 = plan.planSha256;
-    const [choicesPath, requestPath] = ["stack-input.json", "toolchain-request.json"].map((name) => {
-      let candidate = name;
-      let suffix = 0;
-      while (sameFilePath(output, path.join(root, candidate))) candidate = name.replace(/\.json$/, `.${++suffix}.json`);
-      return candidate;
-    });
-    handoff = {
-      command: "toolchain",
-      action: "request",
-      argv: [process.execPath, path.join(__dirname, "designer-pipeline.cjs"), "toolchain", "request", "--root", root, "--plan", path.relative(root, output).split(path.sep).join("/"), "--artifact", choicesPath, "--write", "--output", requestPath, "--json"],
-      choicesPath,
-      requestPath,
-      requiredInputs: ["framework", ...(plan.primaryKnowledge.id === "graphics-runtime" ? ["graphics.family or graphics.adapter (or existing.graphics)"] : [])],
-      note: `Write explicit project choices first; request preparation does not probe a runtime or grant visual acceptance. Then run toolchain resolve --artifact ${requestPath}.`,
-    };
+    const planRel = path.relative(root, output).split(path.sep).join("/");
+    const cli = path.join(__dirname, "designer-pipeline.cjs");
+    if (FILM_JOB_FORMS.has(plan.deliverableForm)) {
+      // A film is built by the workflow, which binds this plan; it needs no stack choices.
+      handoff = {
+        command: "next",
+        action: "bind-film",
+        argv: [process.execPath, cli, "next", "--project-root", root, "--deliverable", "film", "--job-plan", planRel],
+        note: `Add --tier quick|standard|full to choose the size (omitted, --tier defaults to standard). An existing film project rebinds with next --project-root <dir> --job-plan ${planRel}. Follow the action next returns; binding the plan grants no visual acceptance.`,
+      };
+    } else {
+      const [choicesPath, requestPath] = ["stack-input.json", "toolchain-request.json"].map((name) => {
+        let candidate = name;
+        let suffix = 0;
+        while (sameFilePath(output, path.join(root, candidate))) candidate = name.replace(/\.json$/, `.${++suffix}.json`);
+        return candidate;
+      });
+      handoff = {
+        command: "toolchain",
+        action: "request",
+        argv: [process.execPath, cli, "toolchain", "request", "--root", root, "--plan", planRel, "--artifact", choicesPath, "--write", "--output", requestPath, "--json"],
+        choicesPath,
+        requestPath,
+        requiredInputs: ["framework", ...(plan.primaryKnowledge.id === "graphics-runtime" ? ["graphics.family or graphics.adapter (or existing.graphics)"] : [])],
+        note: `Write explicit project choices first; request preparation does not probe a runtime or grant visual acceptance. Then run toolchain resolve --artifact ${requestPath}.`,
+      };
+    }
   }
   return {
     result: { ...result, ...(output ? { output, planSha256, handoff } : {}) },
@@ -2108,7 +2123,11 @@ const COMMANDS = {
       },
       scaffold: {
         required: ["--output"],
-        run: ({ parsed, root }) => ({ result: scaffoldFilm(contained(root, option(parsed, "--output"), "--output", false), { template: option(parsed, "--template"), replace: option(parsed, "--replace") === true }), exitCode: 0 }),
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--output"), "--output", false);
+          // The bound Stage 0 form (as `film check` reads it) adds a product promo's source and sample steps.
+          return { result: scaffoldFilm(project, { template: option(parsed, "--template"), replace: option(parsed, "--replace") === true, deliverableForm: workflow.projectJobPlan(project)?.deliverableForm }), exitCode: 0 };
+        },
       },
       "capture-timeline": {
         required: [],

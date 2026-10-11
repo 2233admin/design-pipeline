@@ -171,10 +171,24 @@ All notable changes to Design Pipeline are documented here.
   acceptance run). The stage now asks for a reference or `decide --stage reference --answer none`.
   The unfilled-template check lives in the dependency-free `scripts/scaffold-notes.cjs`, so the
   generic workflow stages no longer load the film project core.
-- Film `sample` stage: `next` now checks that `sample.mp4` decodes (full ffmpeg decode) and runs
-  5–8 s before asking the owner; any file, a 1 s clip or a 30 s clip used to go straight to the
+- Film `sample` stage: `next` now checks `sample.mp4` (ffprobe duration of 5–8 s inclusive plus a
+  full ffmpeg video decode judged by exit status) before asking the owner; any file, a 1 s clip or a 30 s clip used to go straight to the
   verdict. Failures return findings with a recut fix, `decide --stage sample` refuses with
   `SAMPLE_INVALID`, and an earlier accept of an off-length file no longer finishes the stage.
+- `route --write` for a film plan (`product-launch-video`, `motion-graphics-video`) now hands off
+  to `next --project-root <root> --deliverable film --job-plan <plan>` (`handoff.action:
+  "bind-film"`) instead of a `toolchain request` that needs stack choices a film never uses.
+  Non-film plans keep the toolchain handoff.
+- Film, edit, web and ui `next` actions: `command` now holds only an executable command, and it is
+  `node <absolute path of designer-pipeline.cjs> ...` (`designer-pipeline` is not on PATH), so it
+  runs as given from any directory; the `record` template of an `ask` action uses the same form.
+  Free-text steps that used to sit in `command` (film source, plan, build, sample and delivery,
+  edit analyze, web concepts, build and probe, ui work, native decomposition and task windows) move
+  to a new `instruction` field; an action with no command carries only `instruction`, and `line`
+  summarizes both. Agents reading `command` for prose now read `instruction`.
+- `film scaffold` for a project bound to a `product-launch-video` plan (state or `job-plan.json`)
+  adds the `productSource` record and the sample steps to its `next[]`; other scaffolds are
+  unchanged.
 - Windows native task verification and offline study boundaries now compare physical paths
   consistently across long/short aliases while retaining link and case-sensitive root rejection.
 - Pointer capture retains each native input step after driver delays, with spacing between

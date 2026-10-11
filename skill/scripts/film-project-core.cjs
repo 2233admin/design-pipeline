@@ -8,7 +8,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { fail, readJson } = require("./contract-utils.cjs");
-const { checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
+const { PRODUCT_PROMO_FORM, checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { checkComposition, checkFilmLayout } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
@@ -99,6 +99,10 @@ ${beats}
 const GSAP_SRC = "node_modules/gsap/dist/gsap.min.js";
 const PINS = { gsap: GSAP_VERSION, hyperframes: HYPERFRAMES_VERSION };
 const SETUP = `1. \`npm install\` once (needs network): installs the pinned hyperframes@${HYPERFRAMES_VERSION} and gsap@${GSAP_VERSION}. Afterwards run HyperFrames as \`npx --no-install hyperframes ...\`; lint, check, render and film check then work offline (fonts a composition names but does not declare are still fetched by HyperFrames).`;
+// A product promo (Stage 0 form product-launch-video) is built from the real product, so its scaffold
+// also points at the productSource record and the owner-viewed sample.
+const PRODUCT_SOURCE_STEP = "Product promo: before reference.md and the storyboard, record the real product in storyboard.json.productSource (repository, pinned commit, run log, captures, flow), or its blocker if it cannot be sourced; invented screens or cards cannot stand in for it (references/workflow-film.md#source).";
+const PRODUCT_SAMPLE_STEP = "Product promo: before building index.html, cut a 5-8 s sample.mp4 from the cited captures and get the owner's verdict with `decide --stage sample --verdict accept|reject` (references/workflow-film.md#sample).";
 
 const NOTES = {
   ...SCAFFOLD_NOTES,
@@ -144,7 +148,10 @@ function scaffoldFilm(dir, options = {}) {
     fs.mkdirSync(path.dirname(path.join(target, name)), { recursive: true });
     fs.writeFileSync(path.join(target, name), content);
   }
-  return { status: "scaffolded", root: target, files: Object.keys(files), kept, runtime: { ...PINS, install: "npm install", run: "npx --no-install hyperframes" }, next: guide.split("\n").filter((line) => /^\d\./.test(line)) };
+  const steps = guide.split("\n").filter((line) => /^\d\./.test(line));
+  const productPromo = !study && options.deliverableForm === PRODUCT_PROMO_FORM;
+  const next = productPromo ? steps.flatMap((line) => (line.startsWith("2.") ? [PRODUCT_SOURCE_STEP, line] : line.startsWith("4.") ? [PRODUCT_SAMPLE_STEP, line] : [line])) : steps;
+  return { status: "scaffolded", root: target, files: Object.keys(files), kept, runtime: { ...PINS, install: "npm install", run: "npx --no-install hyperframes" }, next };
 }
 
 function newestRender(dir) {

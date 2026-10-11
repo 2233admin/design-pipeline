@@ -32,8 +32,8 @@ test("a written reference note cannot skip video sampling and observation before
   fs.writeFileSync(path.join(dir, "reference-evidence.json"), JSON.stringify(ref));
   const action = nextAction(dir);
   assert.equal(action.stage, "reference");
-  assert.match(action.command, /reference analyze-video/);
-  assert.match(action.command, /project inspect/);
+  assert.match(action.instruction, /reference analyze-video/);
+  assert.match(action.instruction, /project inspect/);
 });
 
 test("public project inspection returns source relationships and evidence-bound artifact metadata", t => {
@@ -94,7 +94,7 @@ test("public video preparation and pending-source resolution preserve real dimen
   const pendingAction = nextAction(dir);
   assert.equal(pendingAction.stage, "reference");
   assert.equal(pendingAction.observation.windowId, result.report.segments[0].id);
-  assert.match(pendingAction.command, /Inspect window-001 \(1–2s\)/);
+  assert.match(pendingAction.instruction, /Inspect window-001 \(1–2s\)/);
   assert.deepEqual(pendingAction.observation.frameIds, result.report.segments[0].frameIds);
   assert.deepEqual(pendingAction.show, [result.report.segments[0].viewerPath]);
   const frame = result.report.frames[0];
@@ -135,17 +135,17 @@ test("public film reference carries real PNG inputs and matching guides without 
   assert.deepEqual(action.observation.source, result.report.source);
   assert.equal(action.observation.sourceRange.endSec, result.report.durationSec);
   assert.match(action.study, /Study 1-3 moving references/);
-  assert.ok(action.command.includes(action.study), "the original film study remains alongside the bounded window action");
-  assert.match(action.command, /host.*image.*tool/i);
-  assert.match(action.command, /observed facts/);
-  assert.match(action.command, /proposed production/);
+  assert.ok(action.instruction.includes(action.study), "the original film study remains alongside the bounded window action");
+  assert.match(action.instruction, /host.*image.*tool/i);
+  assert.match(action.instruction, /observed facts/);
+  assert.match(action.instruction, /proposed production/);
   assert.ok(action.guides.some(guide => guide.split("#")[0] === "references/animation-thinking.md"));
   assert.ok(action.guides.some(guide => guide.startsWith("references/product-film-direction.md")));
   for (const guide of action.guides) assert.equal(fs.existsSync(path.resolve(__dirname, "../skill", guide.split("#")[0])), true, guide);
   assert.equal(action.observation.semanticAcceptance, undefined, "instructions do not invent semantic approval");
   const generic = require("../skill/scripts/workflows/shared.cjs").reference("Generic reference study").action({ mode: "replicate" }, dir);
   assert.equal(generic.guides.some(guide => guide.split("#")[0] === "references/animation-thinking.md"), false, "generic and edit references do not inherit film production instructions");
-  assert.doesNotMatch(generic.command, /proposed production/);
+  assert.doesNotMatch(generic.instruction, /proposed production/);
 });
 
 test("all production reference callers reject coarse legacy readiness and request exact missing shot properties", { skip: !mediaAvailable }, t => {
@@ -176,7 +176,7 @@ test("all production reference callers reject coarse legacy readiness and reques
   assert.equal(missing.observation.kind, "observe-shot-property");
   assert.equal(missing.observation.target, "camera"); assert.equal(missing.observation.property, "motion.translation");
   assert.deepEqual(missing.images.map(frame => frame.id), report.shots[0].frameIds);
-  assert.match(missing.command, /camera.*motion\.translation/);
+  assert.match(missing.instruction, /camera.*motion\.translation/);
   report.observations.push({ ...report.observations[0], id: "camera", target: "camera", property: "motion.translation", frameIds: report.frames.slice(0, 2).map(frame => frame.id) });
   save();
   assert.equal(stage.finished({ mode: "replicate" }, dir), true);

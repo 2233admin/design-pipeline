@@ -13,7 +13,9 @@ references and existing assets, plan sound and picture, then apply its audiovisu
 review in addition to runtime QA; the user need not name film techniques or separately request music.
 Bind the persisted plan to the film workflow with `designer-pipeline next --project-root .
 --deliverable film --tier standard --job-plan job-plan.json` (an existing film project rebinds
-with `next --project-root . --job-plan job-plan.json`). A product promo is admitted to evaluation
+with `next --project-root . --job-plan job-plan.json`). `route --write` returns exactly this `next`
+command as its `handoff` (`action: "bind-film"`) for a film plan (`product-launch-video` or
+`motion-graphics-video`). A product promo is admitted to evaluation
 only after the real product is sourced: see `references/workflow-film.md#source`.
 
 Before writing design artifacts or code:
@@ -26,7 +28,8 @@ designer-pipeline route --query "<brief>" --write --output job-plan.json --json
 
 Route readiness is job classification only; it does not establish project or toolchain readiness.
 Carry its persisted plan through the explicit stack-choice, request, resolve, and probe steps below
-before invoking an external runtime.
+before invoking an external runtime. A film plan is the exception: its handoff binds it to the film
+workflow (`next --deliverable film --job-plan`), which has no stack choices to make.
 
   Open only the returned primary knowledge door. Kernel steps in `next` always run. Secondaries
   stay reference-only and do not become a second primary. Do not search every catalog. Add a new
@@ -87,7 +90,7 @@ before invoking an external runtime.
   `references/reference-spec.md#video-content-and-project-analysis`.
 - Write explicit project stack choices to `stack-input.json`, including `framework`; for a graphics
   primary, include `graphics.family` or `graphics.adapter` (or the existing project's `existing.graphics`).
-  Follow route's `handoff`, or run `designer-pipeline toolchain request --plan job-plan.json
+  Follow route's `handoff` (a non-film plan's `toolchain request`), or run `designer-pipeline toolchain request --plan job-plan.json
   --artifact stack-input.json --write --output toolchain-request.json`. This binds the plan's
   original query and four Stage 0 fields without guessing a framework or library; conflicting
   bindings fail. See `pipeline-reference.md#public-cli-surfaces` for the example. Then run
@@ -224,6 +227,14 @@ These paths preserve native state/event transactions and existing artifact.v1 li
 stale evidence does not advance. Legacy project-root `next`/`decide` remain deliverable-level
 actions and do not themselves execute the native subtask plan.
 
+A project-root `next` action keeps a command apart from its prose. `command`, when present, is
+only an executable command and starts `node <absolute path>/designer-pipeline.cjs ...`, because
+`designer-pipeline` is not on PATH; an `ask` action's `record` is the same kind of command, a
+template with `<placeholders>` or `a|b` choices to fill. Everything else the agent must do is the
+`instruction` field (a `run` action with no `command`, such as writing `concepts.md`, carries only
+an instruction, and a blocked action's next step is its `instruction`). The instruction says
+whether the command comes before or after the other work, and `line` summarizes both.
+
 Project-root film/edit/web checks bind the actual checked file bytes in the existing workflow
 state. Missing or changed inputs, including content changes with unchanged timestamps, reopen
 their check. Timestamp-only legacy passes remain readable but must be rerun. Review uses the
@@ -283,13 +294,19 @@ designer-pipeline playground check --stage integration --change-root <change-roo
 designer-pipeline scene check --change-root <change-root> --json
 ```
 
-`route --write` returns an executable `handoff.argv` and required choices. Create `stack-input.json`
+For any other plan, `route --write` returns an executable `handoff.argv` and required choices. Create `stack-input.json`
 from project evidence before running it. For example, an explicitly chosen framework-free Three.js
 project can use `{"framework":"agnostic","graphics":{"adapter":"threejs"}}`; agnostic is a
 choice, not a default. Ordinary UI work may omit graphics. Do not pass HTML, Markdown, or route JSON
 as the choices artifact. Preparation validates and binds the existing request; it does not probe or
 install a runtime and grants no component or visual acceptance. Missing framework, conflicting
 bindings, changed plan content, and escaping output paths fail before request delivery.
+
+For a film plan (`product-launch-video`, `motion-graphics-video`), `route --write` instead returns
+`handoff: { command: "next", action: "bind-film", argv }`; `argv` runs
+`next --project-root <root> --deliverable film --job-plan <plan>`, which binds the plan and returns
+the first film action. It needs no `stack-input.json` or toolchain request; add `--tier` to pick the
+size and follow the action `next` returns.
 
 For the first-wave guided multi-surface flow, use these commands:
 
