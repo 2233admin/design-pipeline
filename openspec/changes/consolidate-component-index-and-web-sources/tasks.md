@@ -344,7 +344,7 @@ After: tests 3; pass 3; fail 0; exit 0
 
 ### PR review regression — source categories and first explicit decision
 
-- [x] 10.3 Bind each manifest entry's source category to the recorded `componentSources`: `project` for a contained project file or an indexed project-owned record, `github` for a decision-named GitHub URL, `index` for any other indexed record. An indexed record whose repository or alias is named in the decision fits either `github` or `index`; `platform` records and scratch manifests keep their existing rules. The validator message names the entry, its category and the recorded set. Existing tests that paired a project file or GitHub URL entry with an `index` decision now record the matching choice.
+- [x] 10.3 Bind each manifest entry's source category to the recorded `componentSources`, judged by how the entry cites its source: `project` for a contained project file or the indexed project-owned `project-components` record, `github` for a decision-named GitHub URL, `index` for every other indexed `sourceId`, platform records included. Scratch manifests keep their existing rules. The validator message names the entry, its category and the recorded set, and tells a github-only set to cite the named repository by url. Existing tests that paired a project file or GitHub URL entry with an `index` decision now record the matching choice.
 - [x] 10.4 Record the first explicit components decision as a change too: a legacy web state with a checked page but no components decision loses its interaction pass and delivery, so a quick workflow returns to probe instead of reporting done. A fresh project has no checked evidence, so nothing changes there; identical re-records still change nothing.
 
 ```text
@@ -376,3 +376,20 @@ tests 168; pass 167; fail 0; skipped 1
 ```
 
 The skip is the preexisting host filesystem case-alias collision test. Full QA and strict specs validation run on the committed tree.
+
+- [x] 10.5 Follow the PR review's exact rule (CodeRabbit: an entry resolved to an indexed source by sourceId is rejected when componentSources omits index). 10.3's first version let an indexed sourceId for a decision-named repository satisfy github and left platform records unconstrained; both now count as index.
+
+```text
+node --test --test-name-pattern "category regression" tests/workflow-components.test.cjs
+Before (updated assertions on the 10.3 validator): tests 1; pass 0; fail 1; exit 1
+✖ category regression: each entry's source category must be in the recorded componentSources
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+  (github (shadcn-ui/ui) + indexed shadcn-ui/ui was accepted; tests/workflow-components.test.cjs:509)
+
+node --test tests/workflow-components.test.cjs
+After: tests 47; pass 47; fail 0; skipped 0; exit 0
+github (shadcn-ui/ui) + indexed shadcn-ui/ui: rejected: entries[0] source category index is not in the recorded componentSources github; cite a named GitHub repository by url instead of sourceId
+github (shadcn-ui/ui) + the same library by url:  accepted
+project + native-dom (platform):                 rejected: entries[0] source category index is not in the recorded componentSources project
+index + native-dom (platform):                   accepted
+```

@@ -506,11 +506,15 @@ test("category regression: each entry's source category must be in the recorded 
   checkManifest(root, "Use src/components", { entries: [realEntry()] }, /entries\[0\] source category index is not in the recorded componentSources project/, "project");
   checkManifest(root, "Search the index", { entries: [owned()] }, /entries\[0\] source category project is not in the recorded componentSources index/, "index");
   checkManifest(root, "Use https://github.com/example/library", { entries: [realEntry()] }, /entries\[0\] source category index is not in the recorded componentSources github/, "github");
-  checkManifest(root, "Use https://github.com/shadcn-ui/ui", { entries: [realEntry()] }, null, "github");
+  checkManifest(root, "Use https://github.com/shadcn-ui/ui", { entries: [realEntry()] }, /entries\[0\] source category index is not in the recorded componentSources github; cite a named GitHub repository by url/, "github");
+  const byUrl = { ...realEntry(), url: "https://github.com/shadcn-ui/ui" };
+  delete byUrl.sourceId;
+  checkManifest(root, "Use https://github.com/shadcn-ui/ui", { entries: [byUrl] }, null, "github");
   checkManifest(root, "Use https://github.com/shadcn-ui/ui and the index", { entries: [realEntry()] }, null, "index");
   checkManifest(root, "Use project components, then the index", { entries: [owned(), realEntry()] }, null, "project,index");
   const platform = { ...entry(), sourceId: "native-dom", license: { state: "platform" } };
-  for (const choice of ["project", "index"]) checkManifest(root, "Use native DOM", { entries: [platform] }, null, choice);
+  checkManifest(root, "Use native DOM", { entries: [platform] }, /entries\[0\] source category index is not in the recorded componentSources project/, "project");
+  checkManifest(root, "Use native DOM", { entries: [platform] }, null, "index");
 });
 
 test("lineage regression: first explicit components decision invalidates a legacy interaction pass", t => {

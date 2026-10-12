@@ -159,11 +159,11 @@ For each entry:
   `license.state` is `verified`, `unverified`, `commercial`, `project-owned` or `platform`.
   An indexed source's license state matches the index, including when identified by its named
   GitHub repository URL. Project files use project-owned availability and license state.
-- Each entry's source category must be in the recorded `componentSources`: `project` for a
-  project file or an indexed project-owned record, `github` for a decision-named GitHub URL, and
-  `index` for any other indexed record. An indexed record whose repository or alias is named in
-  the decision counts under either `github` or `index`. Indexed `platform` records, such as
-  `native-dom`, fit any selection; scratch keeps its own rules below.
+- Each entry's source category must be in the recorded `componentSources`, judged by how it cites
+  its source: `project` for a contained project file or the indexed `project-components` record,
+  `github` for a decision-named GitHub URL, and `index` for every other indexed `sourceId`,
+  `platform` records such as `native-dom` included. To use a named GitHub library under a
+  `github`-only set, cite it by `url`, not by its indexed `sourceId`. Scratch keeps its own rules below.
 - Every `usedIn` has an existing contained `file`, a nonempty `marker` that literally appears in
   that file, and a nonempty `how`. Choose a real import path, class name, custom element name or
   component identifier as the marker, not a fabricated usage description.

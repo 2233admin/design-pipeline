@@ -108,10 +108,10 @@ Web build SHALL require index.html and a valid component-manifest.json. Sources 
 
 #### Scenario: An entry substitutes an unselected source category
 
-- **WHEN** a nonscratch entry is a project file or project-owned indexed record without project selected, a decision-named GitHub URL without github, or another indexed record without index
+- **WHEN** a nonscratch entry is a contained project file or the project-owned indexed record without project selected, a decision-named GitHub URL without github, or any other indexed sourceId, platform records included, without index
 - **THEN** build SHALL remain unfinished and the validator message SHALL name the entry, its category and the recorded componentSources set
-- **AND** an indexed record whose repository or alias is named in the decision SHALL satisfy either github or index
-- **AND** platform-licensed indexed records and scratch manifests SHALL keep their existing rules.
+- **AND** a named GitHub library under a github-only set SHALL be cited by url, not by its indexed sourceId
+- **AND** scratch manifests SHALL keep their existing rules.
 
 #### Scenario: License handling is recorded for real adoption
 

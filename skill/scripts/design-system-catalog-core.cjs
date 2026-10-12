@@ -187,14 +187,14 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
     if (record && entry.license.state !== record.license?.state) manifestInvalid(label + ".license.state must match the indexed source");
     if (projectOwned && (entry.license.state !== "project-owned" || entry.availability !== "project-owned")) manifestInvalid(label + " project files require project-owned availability and license.state");
     if (fromScratch && !projectOwned) manifestInvalid(label + " external source contradicts fromScratch");
-    // Each entry must come from a category the owner selected; platform primitives stay unconstrained.
-    if (!componentSources.includes("scratch") && record?.license?.state !== "platform") {
-      const named = namedUrl || Boolean(record) && sourceRepositories(record).some(repository => namedRepositories.includes(repository));
-      const category = projectOwned ? "project" : named ? "github" : "index";
-      // An indexed record for a named repository satisfies either the github or the index choice.
-      const accepted = category === "github" && !namedUrl ? ["github", "index"] : [category];
-      if (!accepted.some(value => componentSources.includes(value))) {
-        manifestInvalid(label + " source category " + category + " is not in the recorded componentSources " + componentSources.join(","));
+    // Each entry must come from a category the owner selected, judged by how it cites its source:
+    // a decision-named GitHub url needs github; a contained file or the indexed project-components
+    // record needs project; every other indexed sourceId, platform records included, needs index.
+    if (!componentSources.includes("scratch")) {
+      const category = namedUrl ? "github" : projectOwned ? "project" : "index";
+      if (!componentSources.includes(category)) {
+        manifestInvalid(label + " source category " + category + " is not in the recorded componentSources " + componentSources.join(",")
+          + (category === "index" && componentSources.includes("github") ? "; cite a named GitHub repository by url instead of sourceId" : ""));
       }
     }
     if (!Array.isArray(entry.usedIn) || !entry.usedIn.length) manifestInvalid(label + ".usedIn must be nonempty");
