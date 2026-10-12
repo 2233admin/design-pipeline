@@ -209,6 +209,8 @@ function decide(root, options = {}) {
     if (answer === "none" && state.mode === "replicate") fail("workflow", "replicate mode cannot skip the reference. Fix: write reference.md from the reference you are reproducing");
     state.decisions.reference = answer;
   } else if (stage === "components") {
+    // Only web has a components stage; refuse before touching another workflow's evidence.
+    if (state.deliverable !== "web") fail("workflow", `--stage components applies only to web workflows; this project is a ${state.deliverable} workflow. Fix: follow next.`);
     if (typeof options.answer !== "string" || !options.answer.trim()) fail("workflow", "--answer is required: the user's component source choice");
     const allowed = ["project", "github", "index", "scratch"];
     if (typeof options.choice !== "string" || !options.choice.trim()) fail("workflow", "--choice is required: project|github|index|scratch, comma-separated");

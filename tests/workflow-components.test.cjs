@@ -530,3 +530,19 @@ test("lineage regression: first explicit components decision invalidates a legac
   assert.equal(readState(root).gates.interaction, undefined);
   assert.equal(nextAction(root).stage, "probe");
 });
+
+test("components decisions are rejected outside web workflows and leave their state untouched", t => {
+  for (const deliverable of ["film", "edit", "ui"]) {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "non-web-components-"));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    initState(root, { deliverable, tier: "quick", mode: "brief" });
+    const file = path.join(root, STATE);
+    const seeded = JSON.parse(fs.readFileSync(file, "utf8"));
+    seeded.gates = { ...(seeded.gates || {}), [deliverable === "ui" ? "interaction" : deliverable]: { status: "passed", inputHashes: { "out.bin": "sha256:0" } } };
+    seeded.decisions = { ...(seeded.decisions || {}), delivered: true };
+    fs.writeFileSync(file, JSON.stringify(seeded));
+    const before = fs.readFileSync(file, "utf8");
+    assert.throws(() => decide(root, { stage: "components", choice: "index", answer: "Search the index" }), /--stage components applies only to web workflows/, deliverable);
+    assert.equal(fs.readFileSync(file, "utf8"), before, `${deliverable} state must stay byte-identical`);
+  }
+});

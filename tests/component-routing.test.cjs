@@ -155,3 +155,16 @@ test("keeps user-curated references metadata-only and preserves mixed-license re
   assert.equal(result.routes[0].selected.install, undefined);
   assert.equal(result.routes[0].selected.sourceCode, undefined);
 });
+
+test("route validates routing metadata on every component entry, including ones web ranking filters out", () => {
+  const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8"));
+  const hidden = raw.components.find((entry) => entry.routing);
+  hidden.webRanking = false;
+  hidden.routing.capabilities = "app-ui";
+  const malformed = normalizeSnapshot(raw);
+  const id = malformed.entries.find((entry) => entry.webRanking === false && typeof entry.routing?.capabilities === "string").id;
+  assert.throws(
+    () => routeComponents({ catalog: malformed, brief: "SaaS dashboard app UI", platform: "web" }),
+    new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing\\.capabilities must be a non-empty string array`),
+  );
+});

@@ -393,3 +393,18 @@ github (shadcn-ui/ui) + the same library by url:  accepted
 project + native-dom (platform):                 rejected: entries[0] source category index is not in the recorded componentSources project
 index + native-dom (platform):                   accepted
 ```
+
+- [x] 10.6 Follow two further PR review findings. Route validates every component entry's routing metadata before filtering candidates, restoring the v1 order, so malformed metadata on an entry filtered out by web ranking or record type still fails. `decide --stage components` is refused for film, edit and ui workflows before it can change their state or drop their gates and delivery.
+
+```text
+node --test --test-name-pattern "filters out|outside web workflows" tests/component-routing.test.cjs tests/workflow-components.test.cjs
+Before: tests 2; pass 0; fail 2; exit 1
+✖ route validates routing metadata on every component entry, including ones web ranking filters out
+  AssertionError [ERR_ASSERTION]: Missing expected exception. (tests/component-routing.test.cjs:166)
+✖ components decisions are rejected outside web workflows and leave their state untouched
+  AssertionError [ERR_ASSERTION]: Missing expected exception: film (tests/workflow-components.test.cjs:545)
+
+After: both pass
+✔ route validates routing metadata on every component entry, including ones web ranking filters out
+✔ components decisions are rejected outside web workflows and leave their state untouched
+```

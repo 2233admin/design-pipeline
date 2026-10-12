@@ -23,6 +23,9 @@ All notable changes to Design Pipeline are documented here.
   web review verdicts bind the components decision they judged, so `next` returns to probe and then
   review instead of reporting done. Recorded review verdicts are never rewritten; re-recording an
   identical decision leaves all evidence unchanged.
+- `decide --stage components` is refused for film, edit and ui workflows instead of recording a
+  decision nothing consumes and dropping their gates and delivery. Component routing validates every
+  component entry's routing metadata before filtering candidates, as the v1 contract did.
 - Saved gate `next` commands use the same absolute project binding as finding repairs, without
   rewriting persisted gate evidence.
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or

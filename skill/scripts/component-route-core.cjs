@@ -55,12 +55,13 @@ function validateRouteEntry(entry) {
 
 function routeEntries(catalog, platform) {
   validateCatalog(catalog);
-  const entries = catalog.entries.filter((entry) => entry.kind === "component"
+  // Validate every entry's routing metadata first, as v1 did, so malformed metadata on a record
+  // that is filtered out below still fails instead of being silently accepted.
+  catalog.entries.forEach(validateRouteEntry);
+  return catalog.entries.filter((entry) => entry.kind === "component"
     && (entry.recordType === undefined || entry.recordType === "component")
     && (platform !== "web" || entry.webRanking !== false)
     && isObject(entry.routing));
-  entries.forEach(validateRouteEntry);
-  return entries;
 }
 
 function evidenceScore(status) {

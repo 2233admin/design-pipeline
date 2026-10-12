@@ -17,6 +17,11 @@ The existing component-source catalog SHALL register canonical source identities
 - **AND** local pointers SHALL resolve to existing files inside the skill package
 - **AND** film and GEPA SHALL remain discoverable without entering web component ranking.
 
+#### Scenario: Component routing metadata is malformed
+
+- **WHEN** any component entry carries invalid routing metadata, including one that web ranking or record type filters out of the candidates
+- **THEN** route SHALL fail validation before selecting candidates, as the v1 contract did.
+
 ### Requirement: Source licensing remains explicit and auditable
 
 Source records SHALL separate license state from license identifier and evidence. States SHALL be verified, unverified, commercial, project-owned or platform. Revision and Git tree provenance SHALL remain distinct from content-hash scope. An uncertain or commercial license SHALL NOT authorize copying code.
@@ -58,7 +63,8 @@ Every quick, standard and full web workflow in brief, freeform and replicate mod
 - **WHEN** decide uses `--stage components --choice index,project,index --answer "<the owner's reply>"`
 - **THEN** decisions.componentSources SHALL be `["project","index"]` and decisions.components SHALL preserve the answer unchanged
 - **AND** canonical ordering SHALL be project, github, index, scratch, restricted to selected choices.
-- **AND** missing or unknown choices, scratch combined with another choice, or github without an HTTPS GitHub owner/repo URL in the answer SHALL be rejected.
+- **AND** missing or unknown choices, scratch combined with another choice, or github without an HTTPS GitHub owner/repo URL in the answer SHALL be rejected
+- **AND** a components decision on a film, edit or ui workflow SHALL be rejected before any state or evidence changes.
 
 #### Scenario: Legacy answer-only decision reaches build
 
