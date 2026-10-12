@@ -2,10 +2,12 @@
  * ascii-art.js: plays ascii.rest pieces from an explicit time for design-pipeline compositions.
  *
  * A piece (https://github.com/bas3line/ascii, MIT, Copyright (c) 2026 bas3line; see
- * LICENSE.ascii-rest) is `frame(t, env)`. Mono pieces are drawn as text in a <pre>; pieces with a
- * palette are drawn onto a canvas through a glyph atlas adapted from ascii.rest's dist/mount.js.
- * Both draw in the monospace subset that font.js embeds (see LICENSE.font), never a host font: a
- * host font without a box-drawing glyph falls back to a wider face and pushes the row off the grid.
+ * LICENSE.ascii-rest) is `frame(t, env)`. Every preset is drawn in colour by default, one colour a
+ * cell, onto a canvas through a glyph atlas adapted from ascii.rest's dist/mount.js: a scene with a
+ * palette fills `env.color` itself, and a text piece's cells are coloured by its preset's `paint`
+ * rules. A text preset asked for `mono` is drawn as text in a <pre> in its one ink instead. Both draw
+ * in the monospace subset that font.js embeds (see LICENSE.font), never a host font: a host font
+ * without a box-drawing glyph falls back to a wider face and pushes the row off the grid.
  * Frames sit on the preset's sample grid and are evaluated by replaying a fresh piece from 0, so
  * the same time gives the same frame after cold, repeated and reordered seeks: some pieces carry
  * a simulation or a colour cache from one call to the next. Load as a classic script for
@@ -24,7 +26,10 @@
   const TIMELINE_ID = "ascii-art";
   const NAME = /^[a-z0-9][a-z0-9-]*$/;
   const HEX = /^#[0-9a-f]{6}$/i;
-  const PRESET_KEYS = new Set(["name", "piece", "options", "fps", "cols", "rows", "ink", "ground", "duration"]);
+  const PRESET_KEYS = new Set(["name", "piece", "options", "fps", "cols", "rows", "ink", "ground", "duration", "paint", "mono"]);
+  const RULE_KEYS = new Set(["glyphs", "rows", "by", "colours"]);
+  const BY = ["glyph", "row", "column"];
+  const MAX_COLOURS = 64; // as many as an ascii.rest palette may hold
 
   // --- Parts that need no DOM --------------------------------------------------------------
 
@@ -49,7 +54,86 @@
     for (const key of ["ink", "ground"]) if (typeof preset[key] !== "string" || !HEX.test(preset[key])) throw new TypeError(`${where}: ${key} must be a #rrggbb colour`);
     if (typeof preset.duration !== "number" || !Number.isFinite(preset.duration) || preset.duration <= 0) throw new TypeError(`${where}: duration must be a positive number of seconds`);
     if (preset.duration * preset.fps > MAX_FRAMES) throw new RangeError(`${where}: duration × fps is ${preset.duration * preset.fps}; one seek replays at most ${MAX_FRAMES} frames, so shorten the duration or lower the fps`);
+    if (preset.mono !== undefined && typeof preset.mono !== "boolean") throw new TypeError(`${where}: mono must be true or false`);
+    if (preset.paint !== undefined) checkPaint(preset, where);
     return preset;
+  }
+
+  // paint: the rules that colour a text piece's cells. The first rule whose glyphs and rows hold a
+  // drawn cell colours it; a cell no rule holds is drawn in the ink.
+  function checkPaint(preset, where) {
+    if (!Array.isArray(preset.paint) || preset.paint.length === 0) throw new TypeError(`${where}: paint must be a non-empty array of rules`);
+    preset.paint.forEach((rule, n) => {
+      const at = `${where}: paint rule ${n + 1}`;
+      if (!rule || typeof rule !== "object" || Array.isArray(rule)) throw new TypeError(`${at} must be an object`);
+      for (const key of Object.keys(rule)) if (!RULE_KEYS.has(key)) throw new TypeError(`${at} has an unknown field "${key}"; fields are ${[...RULE_KEYS].join(", ")}`);
+      const { glyphs, rows, by, colours } = rule;
+      if (!Array.isArray(colours) || colours.length === 0 || !colours.every((colour) => typeof colour === "string" && HEX.test(colour))) throw new TypeError(`${at}: colours must be a non-empty array of #rrggbb colours`);
+      if (glyphs !== undefined) {
+        if (!Array.isArray(glyphs) || glyphs.length === 0 || !glyphs.every((group) => typeof group === "string" && group.length > 0 && !group.includes("\n"))) throw new TypeError(`${at}: glyphs must be a non-empty array of non-empty strings`);
+        const seen = new Set();
+        for (const char of glyphs.join("")) {
+          if (seen.has(char)) throw new TypeError(`${at}: glyph ${JSON.stringify(char)} is listed twice`);
+          seen.add(char);
+        }
+      }
+      if (rows !== undefined && !(Array.isArray(rows) && rows.length === 2 && rows.every(Number.isInteger) && rows[0] >= 0 && rows[0] <= rows[1] && rows[1] < preset.rows)) throw new TypeError(`${at}: rows must be [first, last] with 0 ≤ first ≤ last < ${preset.rows}`);
+      if (by === undefined) {
+        if (colours.length > 1) throw new TypeError(`${at}: ${colours.length} colours need by "${BY.join('", "')}" to choose between them`);
+      } else if (!BY.includes(by)) {
+        throw new TypeError(`${at}: by must be "${BY.join('", "')}"`);
+      } else if (by === "glyph" && (!glyphs || glyphs.length !== colours.length)) {
+        throw new TypeError(`${at}: by "glyph" gives each glyphs string the colour at its place, so glyphs and colours need the same length`);
+      }
+    });
+  }
+
+  // A preset's paint as a palette (the ink first) and fill(text, color), which writes each cell's
+  // palette index the way a scene fills env.color. A colour depends on the cell's glyph and place
+  // only, so a frame's colours are as repeatable as its text. by "row" spreads the colours evenly
+  // over the rule's rows, by "column" over the grid's columns; neither blends between them.
+  function paintFor(preset, meta) {
+    const palette = [preset.ink.toLowerCase()];
+    const indexOf = (colour) => {
+      const hex = colour.toLowerCase();
+      if (!palette.includes(hex)) palette.push(hex);
+      return palette.indexOf(hex);
+    };
+    const rules = preset.paint.map((rule) => {
+      const level = rule.glyphs ? new Map() : null;
+      if (level) rule.glyphs.forEach((group, i) => { for (let k = 0; k < group.length; k++) level.set(group.charCodeAt(k), i); });
+      const [first, last] = rule.rows || [0, meta.rows - 1];
+      return { by: rule.by, level, first, last, stops: rule.colours.map(indexOf) };
+    });
+    if (palette.length > MAX_COLOURS) throw new RangeError(`ascii-art: preset "${preset.name}" paints in ${palette.length} colours with its ink; at most ${MAX_COLOURS}`);
+    const spread = (stops, at, span) => stops[span > 0 ? Math.round((at / span) * (stops.length - 1)) : 0];
+    return {
+      palette,
+      fill(text, color) {
+        for (let k = 0, x = 0, y = 0; k < text.length; k++) {
+          const code = text.charCodeAt(k);
+          if (code === 10) {
+            x = 0;
+            y++;
+            continue;
+          }
+          let index = 0;
+          if (code !== 32) {
+            for (const rule of rules) {
+              const level = rule.level ? rule.level.get(code) : 0;
+              if (level === undefined || y < rule.first || y > rule.last) continue;
+              if (rule.by === "glyph") index = rule.stops[level];
+              else if (rule.by === "row") index = spread(rule.stops, y - rule.first, rule.last - rule.first);
+              else if (rule.by === "column") index = spread(rule.stops, x, meta.cols - 1);
+              else index = rule.stops[0];
+              break;
+            }
+          }
+          color[y * meta.cols + x] = index;
+          x++;
+        }
+      },
+    };
   }
 
   function checkPresets(presets) {
@@ -74,16 +158,25 @@
   // The frame at time t: the preset's sample grid holds frames k / fps, and frame k is the k-th call
   // of a fresh piece played from 0 with one persistent env, as mount.js would play it. Seeking forward
   // continues; seeking back starts a fresh piece. The result never depends on the order of seeks.
-  function createFrames(piece, preset) {
+  // Coloured (the default), a frame carries one palette index a cell: a scene's own, or its preset's
+  // paint for a text piece. With mono a text piece is one ink and the frame has no colour.
+  function createFrames(piece, preset, { mono = Boolean(preset.mono) } = {}) {
     const meta = checkPiece(piece, preset);
     const options = Object.assign({}, meta.options || {}, preset.options || {});
-    const palette = Array.isArray(meta.palette) ? meta.palette : null;
-    const paper = palette ? !isDark(preset.ground) : isDark(preset.ink);
-    let frame = null, color, index = -1, text = "";
+    const scene = Array.isArray(meta.palette);
+    if (scene && preset.paint) throw new TypeError(`ascii-art: preset "${preset.name}" has paint, but piece "${preset.piece}" colours its own cells; remove paint`);
+    if (scene && mono) throw new RangeError(`ascii-art: piece "${preset.piece}" is a coloured scene with no one-ink form; mono is for text pieces`);
+    if (!scene && !mono && !preset.paint) throw new TypeError(`ascii-art: preset "${preset.name}" has no paint rules for text piece "${preset.piece}"; add paint, or mono: true for one ink`);
+    const paint = scene || mono ? null : paintFor(preset, meta);
+    const palette = scene ? meta.palette : paint ? paint.palette : null;
+    const paper = !isDark(preset.ground); // the same in both modes, so mono and colour draw the same text
+    const painted = paint ? new Uint8Array(meta.cols * meta.rows) : undefined; // a text frame's colours
+    let frame = null, color, index = -1, text = "", filled = -1;
     const restart = () => {
       frame = piece.default(options);
-      color = palette ? new Uint8Array(meta.cols * meta.rows) : undefined;
+      color = scene ? new Uint8Array(meta.cols * meta.rows) : undefined;
       index = -1;
+      filled = -1;
     };
     const step = () => {
       index += 1;
@@ -97,11 +190,16 @@
       fps: preset.fps,
       paper,
       coloured: Boolean(palette),
+      palette,
       at(t) {
         const target = frameIndex(t, preset.fps);
         if (!frame || target < index) restart();
         while (index < target) step();
-        return { index, time: index / preset.fps, text, color };
+        if (paint && filled !== index) {
+          paint.fill(text, painted);
+          filled = index;
+        }
+        return { index, time: index / preset.fps, text, color: paint ? painted : color };
       },
     };
   }
@@ -196,16 +294,20 @@
       };
     };
 
-    const canvasRenderer = (preset, meta) => {
-      const palette = meta.palette;
+    // A scene's cell shape is its own (meta.cell); a text piece's cell is two widths tall, as in a <pre>.
+    const canvasRenderer = (preset, meta, palette) => {
       const cellShape = meta.cell === 1 ? 1 : 2;
       const context = canvas.getContext("2d");
       const atlas = doc.createElement("canvas");
       const glyphs = atlas.getContext("2d");
       const slots = new Map();
-      let cw = 0, ch = 0;
+      let cw = 0, ch = 0, baseline = 0;
       // Each (character, colour) pair is drawn once into an atlas slot the size of one cell and
       // copied from there, as mount.js does; cells sit on whole device pixels, so they tile exactly.
+      // A glyph sits in its cell as in a <pre> line box, the face's ascent-to-descent box centred on
+      // the cell, so block glyphs (taller than a cell) fill it from top to bottom. Across, the face's
+      // antialiased edge would leave a seam between neighbouring blocks, so the block elements
+      // (U+2580 to U+259F) are drawn half a pixel wider on each side, still inside their cell.
       const slot = (code, colour) => {
         const key = code * 256 + colour;
         let found = slots.get(key);
@@ -220,11 +322,10 @@
         glyphs.beginPath();
         glyphs.rect(x, y, cw, ch);
         glyphs.clip();
-        glyphs.font = `${cw / 0.6}px ${font}`;
-        glyphs.textAlign = "center";
-        glyphs.textBaseline = "middle";
         glyphs.fillStyle = palette[colour] || palette[0];
-        glyphs.fillText(String.fromCharCode(code), x + cw / 2, y + ch / 2);
+        glyphs.translate(x + cw / 2, y + baseline);
+        if (code >= 0x2580 && code <= 0x259f) glyphs.scale((cw + 1) / cw, 1);
+        glyphs.fillText(String.fromCharCode(code), 0, 0);
         glyphs.restore();
         slots.set(key, found);
         return found;
@@ -243,6 +344,11 @@
             canvas.height = meta.rows * ch;
             atlas.width = 32 * cw;
             atlas.height = 32 * ch;
+            glyphs.font = `${cw / 0.6}px ${font}`;
+            glyphs.textAlign = "center";
+            glyphs.textBaseline = "alphabetic";
+            const face = glyphs.measureText("M");
+            baseline = ch / 2 + (face.fontBoundingBoxAscent - face.fontBoundingBoxDescent) / 2;
             slots.clear();
           }
           canvas.style.width = `${canvas.width / ratio}px`;
@@ -345,8 +451,8 @@
         const piece = await modules.get(preset.piece);
         if (token !== selecting) return null;
         const meta = checkPiece(piece, preset);
-        const frames = createFrames(piece, preset);
-        const renderer = meta.palette ? canvasRenderer(preset, meta) : textRenderer(meta);
+        const frames = createFrames(piece, preset, { mono: monoFromLocation() || Boolean(preset.mono) });
+        const renderer = frames.palette ? canvasRenderer(preset, meta, frames.palette) : textRenderer(meta);
         current = { preset, meta, frames, renderer };
         html.style.setProperty("--ink", preset.ink);
         html.style.setProperty("--ground", preset.ground);
@@ -380,6 +486,14 @@
         }
       }
       return new URLSearchParams(win.location.search).get("preset");
+    };
+
+    // ?mono (or ?mono=1) draws a text preset in its one ink, whatever its row says.
+    const monoFromLocation = () => {
+      const value = new URLSearchParams(win.location.search).get("mono");
+      if (value === null) return false;
+      if (value === "" || value === "1") return true;
+      throw new RangeError(`ascii-art: ?mono=${value} is not understood; write ?mono or ?mono=1 for one ink, or leave it out for colour`);
     };
 
     const hook = {

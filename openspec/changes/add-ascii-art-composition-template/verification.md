@@ -52,3 +52,13 @@ The synthwave limit above was fixed after this record: both renderers now draw i
 JetBrains Mono subset (`design.md`, Bundled font). The regression's failing run against the player
 at `ae32602` and its passing run are recorded in `tasks.md` section 5. That fix's full QA and
 OpenSpec runs are reported with its commit, not in this file.
+
+## Follow-up — coloured glyphs
+
+After the cell-grid fix, coloured glyphs became the default for every preset (`design.md`,
+Colour): text presets are drawn on the canvas in their presets' paint colours, one-ink text in a
+`<pre>` is the `?mono` / `mono: true` option, and the `aurora-fjord` scene was vendored from the
+same tarball (the bundle is now 16 files, 133,730 bytes). The regressions' failing run against the
+player at `5527373` and their passing run are recorded in `tasks.md` section 6. That change's full
+QA and OpenSpec runs are reported with its commit, not in this file; its stills grant no visual
+acceptance.

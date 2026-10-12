@@ -13,9 +13,10 @@ copied byte for byte from the release. The license declares no Reserved Font Nam
 | License | `OFL.txt` from that zip (sha256 `30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad`) |
 | Subset | `JetBrainsMono-ascii-art.woff`, 7,488 bytes, sha256 `3910700deb57f048f7a90af38c73425984ce8857c9151279900be9e6aff584b1` |
 
-The subset holds printable ASCII (U+0020 to U+007E) and every non-ASCII character in the eleven
+The subset holds printable ASCII (U+0020 to U+007E) and every non-ASCII character in the twelve
 vendored ascii.rest piece modules (`skill/vendor/ascii-rest/upstream/dist/pieces/*.js`): 137
-characters, each 600 of 1000 units wide. It was made with fontTools 4.66.1:
+characters, each 600 of 1000 units wide. It was cut from the first eleven modules; the twelfth,
+`aurora-fjord.js`, adds no character they lack. It was made with fontTools 4.66.1:
 
 ```sh
 python -m fontTools.subset JetBrainsMono-Regular.ttf --unicodes=<the 137 code points> \

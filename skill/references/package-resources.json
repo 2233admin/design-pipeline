@@ -116,6 +116,7 @@
     "vendor/ascii-rest/upstream/dist/pieces/synthwave.js",
     "vendor/ascii-rest/upstream/dist/pieces/tunnel.js",
     "vendor/ascii-rest/upstream/dist/pieces/tv-static.js",
+    "vendor/ascii-rest/upstream/dist/pieces/aurora-fjord.js",
     "vendor/ascii-rest/upstream/dist/pieces/night-coast.js",
     "vendor/ascii-rest/upstream/dist/pieces/ocean-sunset.js",
     "tools/visual-diagnostics/diagnostics.cjs",

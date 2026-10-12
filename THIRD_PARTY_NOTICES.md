@@ -611,7 +611,7 @@ The bundled ASCII art pieces and the adapted canvas glyph atlas were derived fro
 - License: MIT
 
 `skill/vendor/ascii-rest/upstream/` keeps the package's `LICENSE`, `package.json`,
-`dist/types.d.ts`, `dist/mount.js` and eleven `dist/pieces/` modules byte for byte; the rest of the
+`dist/types.d.ts`, `dist/mount.js` and twelve `dist/pieces/` modules byte for byte; the rest of the
 package is not bundled. `composition scaffold --template ascii-art` copies the pieces' exact text
 into the project's `pieces.js` with this notice as `LICENSE.ascii-rest`.
 `skill/tools/ascii-art/ascii-art.js` adapts the canvas glyph atlas from `dist/mount.js`.

@@ -63,3 +63,62 @@ After, with the bundled font:
 ℹ pass 1
 ℹ fail 0
 ```
+
+## 6. Coloured glyphs by default
+
+- [x] 6.1 Record why the template read as monochrome (ascii.rest's colour comes from its full-colour scenes; nine of the eleven presets were one-ink text) and the colour design in `design.md` (Colour), including the reversal of the `<pre>` default.
+- [x] 6.2 Add `paint` rules (`glyphs`, `rows`, `by` glyph/row/column, `colours`) and `mono` to the preset fields in `ascii-art.js`: validate them, compile a text preset's paint into a palette and a per-cell fill, draw every coloured frame on the canvas atlas, keep `?mono` / `mono: true` as the one-ink `<pre>`, take `paper` from the ground in both modes, and refuse paint or mono on a scene and a text preset with neither.
+- [x] 6.3 Place canvas glyphs as a `<pre>` line box places them (ascent-to-descent box centred on the cell) and draw block elements half a pixel wider on each side, so block glyphs tile without seams.
+- [x] 6.4 Give each text preset in `presets.js` a palette mapped by glyph, row or column (doom fire by heat, synthwave sun and floor by row, fireworks by column, the rest by glyph).
+- [x] 6.5 Vendor `dist/pieces/aurora-fjord.js` from the same integrity-checked `ascii.rest@0.4.0` tarball (bytes equal to the `1848fa5` build), with its manifest record (`palette-cache`, confirmed by the history test), snapshot counts, package resource and preset row; it adds no character to the font subset.
+- [x] 6.6 Add the regressions `in colour, the default, every preset draws at least three palette colours among its drawn cells mid-sequence` (each on at least 2% of the drawn cells at duration / 2, and no glyph a text preset draws in its duration falling back to the ink), `mono draws a text preset as the same text in one ink, by preset field or by option, and a scene refuses it` and `the page draws every preset in its palette colours, and a text preset with ?mono in its ink alone`; run the grid test in both modes with each mode's renderer asserted; update the page, capture and refusal tests for the coloured default.
+- [x] 6.7 Update the tool README, spec delta, proposal, CHANGELOG, third-party notice, font provenance, installation note and tools index.
+
+Regression run with `node --test --test-name-pattern="in colour, the default|mono draws a text preset|palette colours, and a text preset" tests/ascii-art.test.cjs`
+(same Windows host, viewport 1280 × 720).
+
+Before, the new test file against the player and presets at `5527373`: every text preset draws its
+one ink, on the `<pre>`, and there is no mono option to ask for.
+
+```text
+✖ in colour, the default, every preset draws at least three palette colours among its drawn cells mid-sequence (1005.0319ms)
+✖ mono draws a text preset as the same text in one ink, by preset field or by option, and a scene refuses it (0.4982ms)
+✖ the page draws every preset in its palette colours, and a text preset with ?mono in its ink alone (2520.4194ms)
+ℹ tests 3
+ℹ pass 0
+ℹ fail 3
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + [
+  +   'donut at 4s: 1 colour(s) on 2% or more of 474 drawn cells (#f4efe6 ×474)',
+  +   'donut-paper at 4s: 1 colour(s) on 2% or more of 474 drawn cells (#22201c ×474)',
+  +   'doom-fire at 4s: 1 colour(s) on 2% or more of 383 drawn cells (#ff8a3d ×383)',
+  +   'fireworks at 4s: 1 colour(s) on 2% or more of 52 drawn cells (#fff3d6 ×52)',
+  +   'matrix-rain at 4s: 1 colour(s) on 2% or more of 320 drawn cells (#5dfc8d ×320)',
+  +   'rotozoomer at 4s: 1 colour(s) on 2% or more of 1275 drawn cells (#e0c9a6 ×1275)',
+  +   'sparks at 4s: 1 colour(s) on 2% or more of 480 drawn cells (#ffc861 ×480)',
+  +   'synthwave at 4s: 1 colour(s) on 2% or more of 880 drawn cells (#ff5fd2 ×880)',
+  +   'tunnel at 4s: 1 colour(s) on 2% or more of 1531 drawn cells (#8fd3ff ×1531)',
+  +   'tv-static at 4s: 1 colour(s) on 2% or more of 871 drawn cells (#e8e8e8 ×871)'
+  + ]
+  - []
+  AssertionError [ERR_ASSERTION]: donut is coloured by default
+  false !== true
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + [
+  +   'donut at 4s: drawn on the pre, 0 palette colour(s) on the canvas',
+  …   (the same line for donut-paper, doom-fire, fireworks, matrix-rain, rotozoomer, sparks, synthwave and tunnel)
+  +   'tv-static at 4s: drawn on the pre, 0 palette colour(s) on the canvas'
+  + ]
+  - []
+```
+
+After, with paint rules and the mono option:
+
+```text
+✔ in colour, the default, every preset draws at least three palette colours among its drawn cells mid-sequence (1842.1975ms)
+✔ mono draws a text preset as the same text in one ink, by preset field or by option, and a scene refuses it (1331.545ms)
+✔ the page draws every preset in its palette colours, and a text preset with ?mono in its ink alone (3138.1376ms)
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+```

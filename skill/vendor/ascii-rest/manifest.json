@@ -19,16 +19,17 @@
     "license": "MIT",
     "copyright": "Copyright (c) 2026 bas3line (https://github.com/bas3line)",
     "reviewedAt": "2026-10-13",
-    "scope": "LICENSE, package.json, dist/types.d.ts, dist/mount.js and the eleven dist/pieces modules listed in pieces"
+    "scope": "LICENSE, package.json, dist/types.d.ts, dist/mount.js and the twelve dist/pieces modules listed in pieces"
   },
   "snapshot": {
     "root": "upstream",
-    "fileCount": 15,
-    "byteCount": 108359,
-    "treeSha256": "dbc296c4a8c1e0ad6ba606df11cf890c8fed990f71cb9b412a54e380ba605db6"
+    "fileCount": 16,
+    "byteCount": 133730,
+    "treeSha256": "47f67b2deca7adad745e478adf8c29f5c6f083701967b70b6a73cf078e60f119"
   },
   "files": [
     { "path": "dist/mount.js", "bytes": 8871, "sha256": "4df42109f560fc0a25af57b003aec673174ebbe4582610c6e0c98d00263446eb" },
+    { "path": "dist/pieces/aurora-fjord.js", "bytes": 25371, "sha256": "d17d114ecec2b0782466f4e0a4b1545ad77a4e17370b0a71a700d8acba3c5432" },
     { "path": "dist/pieces/donut.js", "bytes": 2453, "sha256": "47099c1153c98ba073f802e100a37331c59e2a94c5313d08b79a0fa2b5eaff2f" },
     { "path": "dist/pieces/doom-fire.js", "bytes": 6111, "sha256": "b0e1a4f6383725963e20f363717689b1827acbc54abb6aab4a66814d78238394" },
     { "path": "dist/pieces/fireworks.js", "bytes": 9234, "sha256": "2ef30c392d50202f58c823a3d57534be83a073993b1a2e22a5790d1ea8b993bf" },
@@ -54,6 +55,7 @@
     { "slug": "synthwave", "category": "effects", "coloured": false, "history": "none" },
     { "slug": "tunnel", "category": "effects", "coloured": false, "history": "none" },
     { "slug": "tv-static", "category": "effects", "coloured": false, "history": "none" },
+    { "slug": "aurora-fjord", "category": "scenes", "coloured": true, "history": "palette-cache" },
     { "slug": "night-coast", "category": "scenes", "coloured": true, "history": "palette-cache" },
     { "slug": "ocean-sunset", "category": "scenes", "coloured": true, "history": "palette-cache" }
   ],

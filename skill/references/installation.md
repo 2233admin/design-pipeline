@@ -92,9 +92,9 @@ the file paths in its loaded instructions identify which copy it is using.
 - Art Motion's browser study and Canvas runtime also run without npm dependencies. Use
   `--template art-motion` for its editable material study and clip example; load its
   [tool guide](../tools/art-motion/README.md) only when needed.
-- `--template ascii-art` copies a seekable ASCII art page with twelve presets from the vendored
-  ascii.rest pieces. It opens from disk with no npm dependency or network; see its
-  [tool guide](../tools/ascii-art/README.md).
+- `--template ascii-art` copies a seekable ASCII art page with thirteen presets from the vendored
+  ascii.rest pieces, drawn in coloured glyphs by default. It opens from disk with no npm dependency
+  or network; see its [tool guide](../tools/ascii-art/README.md).
 - Headless Art Motion rendering (`designer-pipeline art-motion render`) uses the existing
   project-local `puppeteer-core` and Chrome resolver. An existing HyperFrames project provides
   both. Otherwise install `puppeteer-core` in the consuming project and pass

@@ -18,18 +18,20 @@ earlier frames, so asking a piece for time t directly is not repeatable.
 
 - Vendor the needed upstream bytes of npm `ascii.rest@0.4.0` under `skill/vendor/ascii-rest/`:
   the MIT `LICENSE`, `package.json`, the piece contract `dist/types.d.ts`, the reference renderer
-  `dist/mount.js` and eleven self-contained piece modules (donut, the eight effects pieces,
-  night-coast and ocean-sunset). `manifest.json` records the package version, tarball integrity,
-  upstream repository and revision `1848fa5`, the user's fork as an alias, a sha256 per file and
-  each piece's call-history behaviour.
+  `dist/mount.js` and twelve self-contained piece modules (donut, the eight effects pieces and the
+  aurora-fjord, night-coast and ocean-sunset scenes). `manifest.json` records the package version,
+  tarball integrity, upstream repository and revision `1848fa5`, the user's fork as an alias, a
+  sha256 per file and each piece's call-history behaviour.
 - Add `--template ascii-art` to the existing `composition scaffold`. Its maintained files live in
   `skill/tools/ascii-art/`. The copied project opens from disk without network: `pieces.js`
   carries the exact text of the vendored piece modules and the page evaluates them itself.
-- The page draws `frame(t, env)` for an explicit time into a `<pre>` (mono pieces) or onto a canvas
-  (pieces with a palette), from a preset table (piece, options, sample rate, grid, ink, ground,
-  duration) chosen by URL hash or query, a control, or a `data-preset` attribute. Both draw in a
-  bundled JetBrains Mono subset (OFL 1.1) that `font.js` carries as a `data:` URL, so a host font
-  without a box-drawing glyph cannot push a row off the cell grid.
+- The page draws `frame(t, env)` for an explicit time in coloured glyphs by default, one colour a
+  cell on a canvas: a scene in its own palette, a text piece in the colours its preset's `paint`
+  rules give each cell by glyph, row or column. `?mono` or a row's `mono: true` draws a text piece as
+  one-ink text in a `<pre>` instead. Presets (piece, options, sample rate, grid, ink, ground,
+  duration, paint, mono) are chosen by URL hash or query, a control, or a `data-preset` attribute.
+  Both renderers draw in a bundled JetBrains Mono subset (OFL 1.1) that `font.js` carries as a
+  `data:` URL, so a host font without a box-drawing glyph cannot push a row off the cell grid.
 - Reuse the existing capture contract: `window.renderStudy(progress)` and the
   `window.__timelines` seek hook that `composition capture --seek` calls. A seek replays the piece on
   the preset's sample grid, so the same time gives the same frame in any seek order. A live preview
@@ -46,8 +48,8 @@ None.
 ### Modified Capabilities
 
 - `design-pipeline`: adds requirements for the ASCII art composition template, its pinned vendored
-  source, time-addressed frames, the cell grid and bundled font, the capture contract and the
-  reduced-motion live preview.
+  source, time-addressed frames, coloured glyphs by default with one ink as an option, the cell grid
+  and bundled font, the capture contract and the reduced-motion live preview.
 
 ## Impact
 

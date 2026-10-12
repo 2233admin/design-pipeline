@@ -44,19 +44,23 @@ All notable changes to Design Pipeline are documented here.
 ### Added
 
 - `composition scaffold --template ascii-art` (change `add-ascii-art-composition-template`): an
-  ASCII art page built on eleven vendored ascii.rest 0.4.0 pieces (MIT; the npm bytes match a
+  ASCII art page built on twelve vendored ascii.rest 0.4.0 pieces (MIT; the npm bytes match a
   build of upstream `1848fa5`, with per-file hashes in `skill/vendor/ascii-rest/manifest.json`).
-  `index.html` draws `frame(t, env)` for an explicit time into a `<pre>`, or onto a canvas for
-  pieces with a palette. Twelve presets (donut, the eight effects, two coloured scenes) are chosen
-  by `#name`, `?preset=`, the Preset control or `data-preset`. `renderStudy(progress)` and the
-  `__timelines["ascii-art"]` seek that `composition capture --seek` calls replay the piece on the
-  preset's sample grid, so a time gives the same frame in any seek order, including doom fire's
-  simulation and the scenes' colour cache. The copied project opens from disk without network;
-  its live preview honours `prefers-reduced-motion`. No new CLI flag, gate or schema; captures
-  grant no visual acceptance.
+  Thirteen presets (donut, the eight effects, and the aurora-fjord, night-coast and ocean-sunset
+  scenes) are chosen by `#name`, `?preset=`, the Preset control or `data-preset`.
+  `renderStudy(progress)` and the `__timelines["ascii-art"]` seek that `composition capture --seek`
+  calls replay the piece on the preset's sample grid, so a time gives the same frame in any seek
+  order, including doom fire's simulation and the scenes' colour cache. The copied project opens
+  from disk without network; its live preview honours `prefers-reduced-motion`. No new CLI flag,
+  gate or schema; captures grant no visual acceptance.
   Every preset draws in a bundled JetBrains Mono subset (OFL 1.1, 7,488 bytes, embedded in the
   scaffold's `font.js` as a data URL with `LICENSE.font`), so a host font without a box-drawing
   glyph no longer pushes mono rows past the grid and glyph shapes no longer depend on host fonts.
+  Glyphs are coloured by default, one colour a cell on a canvas: the scenes in their own palettes
+  (`aurora-fjord` is the ascii.rest home page's hero), and each text preset in its own palette,
+  mapped by glyph, row or column through its row's `paint` rules (fire by heat, the synthwave sun
+  and floor by row, fireworks by column). One-ink text in a `<pre>` is an option: `?mono` or a row's
+  `mono: true`.
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional
   `productSource` — the real product's repository, full commit SHA, hashed run log, `ui-state`

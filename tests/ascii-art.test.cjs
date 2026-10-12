@@ -27,8 +27,26 @@ const sha256 = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex"
 const walk = (directory, base = "") => fs.readdirSync(directory, { withFileTypes: true })
   .flatMap((entry) => entry.isDirectory() ? walk(path.join(directory, entry.name), `${base}${entry.name}/`) : [`${base}${entry.name}`]);
 const vendoredPiece = (slug) => ({ source: fs.readFileSync(path.join(upstream, `dist/pieces/${slug}.js`), "utf8") });
-// One frame as the reader sees it: the text and, for a coloured piece, every cell's palette index.
+// One frame as the reader sees it: the text and, for a coloured frame, every cell's palette index.
 const fingerprint = (frame) => sha256(Buffer.concat([Buffer.from(frame.text), Buffer.from(frame.color || [])]));
+// How many drawn (non-space) cells each colour covers in a frame: a cell's palette entry when the
+// frame carries colour, or else the preset's ink, the one colour a <pre> draws text in.
+function drawnColours(frame, palette, ink) {
+  const counts = new Map();
+  let drawn = 0;
+  for (let k = 0, cell = 0; k < frame.text.length; k++) {
+    const char = frame.text[k];
+    if (char === "\n") continue;
+    if (char !== " ") {
+      const colour = frame.color ? palette[frame.color[cell]] : ink;
+      counts.set(colour, (counts.get(colour) || 0) + 1);
+      drawn++;
+    }
+    cell++;
+  }
+  return { drawn, counts };
+}
+const isScene = (slug) => manifest.pieces.find((entry) => entry.slug === slug).coloured;
 
 function scaffold(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "ascii-art-"));
@@ -166,6 +184,59 @@ test("a seek into doom fire shows the fire as played, not a fresh piece's frozen
   assert.equal(seeked.at(2).text, text);
 });
 
+// The default look is coloured glyphs: a scene in its own palette, a text piece in its preset's
+// paint. Two colours on stray cells would pass a bare count, so each colour counted covers at least
+// 2% of the drawn cells.
+test("in colour, the default, every preset draws at least three palette colours among its drawn cells mid-sequence", async () => {
+  const flat = [], unpainted = new Map();
+  for (const preset of PRESETS) {
+    const piece = await AsciiArt.loadPiece(vendoredPiece(preset.piece), preset.piece);
+    const frames = AsciiArt.createFrames(piece, preset);
+    const palette = frames.palette || piece.meta.palette;
+    const time = preset.duration / 2;
+    const { drawn, counts } = drawnColours(frames.at(time), palette, preset.ink);
+    const shown = [...counts].filter(([, cells]) => cells >= 0.02 * drawn);
+    if (shown.length < 3) flat.push(`${preset.name} at ${time}s: ${shown.length} colour(s) on 2% or more of ${drawn} drawn cells (${[...counts].map(([colour, cells]) => `${colour} ×${cells}`).join(", ")})`);
+    // A text preset's palette starts with its ink, the colour of a cell no paint rule holds; every
+    // glyph a shipped preset draws in its duration is held by a rule.
+    if (isScene(preset.piece) || !frames.palette) continue;
+    for (let k = 0; k < preset.duration * preset.fps; k++) {
+      const frame = frames.at(k / preset.fps);
+      for (let i = 0, cell = 0; i < frame.text.length; i++) {
+        if (frame.text[i] === "\n") continue;
+        const char = frame.text[i];
+        if (char !== " " && frame.color[cell] === 0 && !unpainted.has(preset.name + char)) unpainted.set(preset.name + char, `${preset.name} draws ${JSON.stringify(char)} at ${frame.time}s`);
+        cell++;
+      }
+    }
+  }
+  assert.deepEqual(flat, []);
+  assert.deepEqual([...unpainted.values()], [], "no drawn glyph falls back to the ink");
+});
+
+test("mono draws a text preset as the same text in one ink, by preset field or by option, and a scene refuses it", async () => {
+  for (const preset of PRESETS) {
+    const piece = await AsciiArt.loadPiece(vendoredPiece(preset.piece), preset.piece);
+    if (isScene(preset.piece)) {
+      assert.throws(() => AsciiArt.createFrames(piece, preset, { mono: true }), /coloured scene with no one-ink form/, preset.name);
+      assert.throws(() => AsciiArt.createFrames(piece, { ...preset, mono: true }), /coloured scene with no one-ink form/, preset.name);
+      continue;
+    }
+    const colour = AsciiArt.createFrames(piece, preset);
+    assert.equal(colour.coloured, true, `${preset.name} is coloured by default`);
+    for (const mono of [AsciiArt.createFrames(piece, preset, { mono: true }), AsciiArt.createFrames(piece, AsciiArt.checkPreset({ ...preset, mono: true }))]) {
+      assert.deepEqual([mono.coloured, mono.palette], [false, null], `${preset.name} mono has no palette`);
+      for (const time of [1, preset.duration / 2]) {
+        const frame = mono.at(time);
+        assert.equal(frame.color, undefined, `${preset.name} at ${time}s carries no colour`);
+        assert.deepEqual([...drawnColours(frame, null, preset.ink).counts.keys()], [preset.ink], `${preset.name} at ${time}s draws one ink`);
+        assert.equal(frame.text, colour.at(time).text, `${preset.name} at ${time}s draws the same text in both modes`);
+      }
+    }
+    assert.equal(AsciiArt.createFrames(piece, { ...preset, mono: true }, { mono: false }).coloured, true, "the option overrides the preset field");
+  }
+});
+
 test("presets that disagree with the table's fields or with their piece are refused", async () => {
   const donut = PRESETS.find((preset) => preset.name === "donut");
   assert.throws(() => AsciiArt.checkPresets([donut, { ...donut }]), /preset name "donut" is used twice/);
@@ -173,9 +244,30 @@ test("presets that disagree with the table's fields or with their piece are refu
   assert.throws(() => AsciiArt.checkPreset({ ...donut, ink: "white" }), /ink must be a #rrggbb colour/);
   assert.throws(() => AsciiArt.checkPreset({ ...donut, fps: 0 }), /fps must be more than 0/);
   assert.throws(() => AsciiArt.checkPreset({ ...donut, duration: 600 }), /replays at most 3600 frames/);
+  assert.throws(() => AsciiArt.checkPreset({ ...donut, mono: "yes" }), /mono must be true or false/);
+  const rule = donut.paint[0];
+  for (const [paint, message] of [
+    [[], /paint must be a non-empty array/],
+    [[{ ...rule, shade: 1 }], /paint rule 1 has an unknown field "shade"/],
+    [[{ ...rule, colours: ["red"] }], /colours must be a non-empty array of #rrggbb/],
+    [[{ ...rule, glyphs: ".,-~:;=!*#$@" }], /glyphs must be a non-empty array of non-empty strings/],
+    [[{ ...rule, glyphs: [".,", ",-", ":;", "=!", "*#", "$@"] }], /glyph "," is listed twice/],
+    [[{ ...rule, glyphs: rule.glyphs.slice(1) }], /glyphs and colours need the same length/],
+    [[{ colours: ["#ffffff", "#000000"] }], /2 colours need by/],
+    [[{ by: "depth", colours: ["#ffffff", "#000000"] }], /by must be "glyph", "row", "column"/],
+    [[{ rows: [0, 22], colours: ["#ffffff"] }], /rows must be \[first, last\] with 0 ≤ first ≤ last < 22/],
+  ]) assert.throws(() => AsciiArt.checkPreset({ ...donut, paint }), message);
   const piece = await AsciiArt.loadPiece(vendoredPiece("donut"), "donut");
   assert.throws(() => AsciiArt.createFrames(piece, { ...donut, cols: 41 }), /says 41x22 but piece "donut" draws 40x22/);
   assert.throws(() => AsciiArt.createFrames(piece, donut).at(-1), /finite number of seconds/);
+  const { paint, ...unpainted } = donut;
+  assert.throws(() => AsciiArt.createFrames(piece, unpainted), /preset "donut" has no paint rules for text piece "donut"; add paint, or mono: true/);
+  assert.equal(AsciiArt.createFrames(piece, { ...unpainted, mono: true }).coloured, false, "an unpainted text preset may be mono");
+  const many = Array.from({ length: 64 }, (_, i) => `#0000${i.toString(16).padStart(2, "0")}`);
+  assert.throws(() => AsciiArt.createFrames(piece, { ...donut, paint: [{ by: "row", colours: many }] }), /paints in 65 colours with its ink; at most 64/);
+  const coast = PRESETS.find((preset) => preset.name === "night-coast");
+  const scene = await AsciiArt.loadPiece(vendoredPiece("night-coast"), "night-coast");
+  assert.throws(() => AsciiArt.createFrames(scene, { ...coast, paint }), /piece "night-coast" colours its own cells; remove paint/);
 });
 
 test("the scaffolded page plays offline from file:// and redraws the same frame for the same time", { skip: BROWSER.skip }, async (t) => {
@@ -202,20 +294,29 @@ test("the scaffolded page plays offline from file:// and redraws the same frame 
       return { state, picture, controls: getComputedStyle(document.querySelector("form")).display, playing: window.asciiArt.playing };
     }, progress);
 
-    const mono = await open("");
-    assert.equal((await ready(mono)).preset, "donut", "data-preset chooses the default");
-    const forward = await sample(mono, 0.25);
-    assert.deepEqual([forward.state.renderer, forward.state.time, forward.controls, forward.playing], ["pre", 2, "none", false]);
-    const lines = forward.picture.split("\n");
+    const donut = await open("");
+    assert.equal((await ready(donut)).preset, "donut", "data-preset chooses the default");
+    const forward = await sample(donut, 0.25);
+    assert.deepEqual([forward.state.renderer, forward.state.time, forward.controls, forward.playing], ["canvas", 2, "none", false], "the default is coloured glyphs on the canvas");
+    await sample(donut, 0.9);
+    await sample(donut, 0.1);
+    assert.deepEqual(await sample(donut, 0.25), forward);
+    assert.notEqual((await sample(donut, 0.5)).picture, forward.picture);
+    const coldDonut = await open("");
+    await ready(coldDonut);
+    assert.deepEqual(await sample(coldDonut, 0.25), forward);
+
+    const mono = await open("?mono");
+    assert.equal((await ready(mono)).renderer, "pre", "?mono draws the text in a <pre>");
+    const text = await sample(mono, 0.25);
+    const lines = text.picture.split("\n");
     assert.equal(lines.length, 22);
     assert.ok(lines.every((line) => line.length === 40));
     await sample(mono, 0.9);
-    await sample(mono, 0.1);
-    assert.deepEqual(await sample(mono, 0.25), forward);
-    assert.notEqual((await sample(mono, 0.5)).picture, forward.picture);
-    const coldMono = await open("");
-    await ready(coldMono);
-    assert.deepEqual(await sample(coldMono, 0.25), forward);
+    assert.deepEqual(await sample(mono, 0.25), text);
+    assert.equal((await ready(await open("?mono=1#doom-fire"))).renderer, "pre", "?mono holds for a preset named by hash");
+    assert.match((await ready(await open("?mono#night-coast"))).error, /coloured scene with no one-ink form/);
+    assert.match((await ready(await open("?mono=no"))).error, /\?mono=no is not understood/);
 
     const colour = await open("#night-coast");
     assert.equal((await ready(colour)).renderer, "canvas");
@@ -254,8 +355,10 @@ test("the scaffolded page plays offline from file:// and redraws the same frame 
   }
 });
 
-// Every row of a mono piece must be exactly cols cells wide. A host monospace font without a
-// box-drawing glyph falls back to a wider face for that glyph and pushes the row past the grid.
+// Every row of a text preset drawn mono must be exactly cols cells wide. A host monospace font without
+// a box-drawing glyph falls back to a wider face for that glyph and pushes the row past the grid.
+// In colour, the default, each glyph is copied into a whole-pixel canvas cell. Each mode is checked
+// to have drawn with its own renderer, so a mode that silently fell back cannot pass on nothing.
 test("every preset draws each row on the cell grid, whatever monospace fonts the host has", { skip: BROWSER.skip }, async (t) => {
   const { directory } = scaffold(t);
   const puppeteer = require(BROWSER.puppeteerModule);
@@ -265,8 +368,8 @@ test("every preset draws each row on the cell grid, whatever monospace fonts the
     const page = await browser.newPage();
     await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
     await page.setViewport({ width: 1280, height: 720 });
-    for (const preset of PRESETS) {
-      await page.goto(`${pathToFileURL(path.join(directory, "index.html")).href}?preset=${preset.name}`, { waitUntil: "load" });
+    for (const [preset, mode] of PRESETS.flatMap((preset) => isScene(preset.piece) ? [[preset, "colour"]] : [[preset, "colour"], [preset, "mono"]])) {
+      await page.goto(`${pathToFileURL(path.join(directory, "index.html")).href}?preset=${preset.name}${mode === "mono" ? "&mono" : ""}`, { waitUntil: "load" });
       const samples = await page.evaluate(async (progresses) => {
         await window.asciiArt.ready;
         return progresses.map((progress) => {
@@ -296,7 +399,8 @@ test("every preset draws each row on the cell grid, whatever monospace fonts the
         });
       }, [0.1, 0.45, 0.8]);
       for (const { state, grid, rows, cells } of samples) {
-        const at = `${preset.name} at ${state.time}s`;
+        const at = `${preset.name} (${mode}) at ${state.time}s`;
+        if (state.renderer !== (mode === "mono" ? "pre" : "canvas")) offGrid.push(`${at}: drawn on the ${state.renderer}`);
         if (cells) {
           if (!cells.every(Number.isInteger)) offGrid.push(`${at}: canvas cell ${cells.join(" x ")} is not whole pixels`);
           continue;
@@ -311,6 +415,71 @@ test("every preset draws each row on the cell grid, whatever monospace fonts the
     await browser.close();
   }
   assert.deepEqual(offGrid, []);
+});
+
+// What the page puts on screen. In colour, a glyph is one palette colour over the ground, so a pixel
+// it half covers or more is that colour blended toward the ground: the canvas must hold such pixels
+// of at least three palette colours (shade glyphs are dithers that seldom cover a whole pixel, so an
+// exact-colour count would undercount them). With ?mono, a text preset is one text node in a <pre>
+// whose colour is the ink.
+test("the page draws every preset in its palette colours, and a text preset with ?mono in its ink alone", { skip: BROWSER.skip }, async (t) => {
+  const { directory } = scaffold(t);
+  const puppeteer = require(BROWSER.puppeteerModule);
+  const browser = await puppeteer.launch({ executablePath: BROWSER.chrome, headless: true });
+  const wrong = [];
+  const rgb = (hex) => `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(", ")})`;
+  try {
+    const page = await browser.newPage();
+    await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+    await page.setViewport({ width: 1280, height: 720 });
+    const href = pathToFileURL(path.join(directory, "index.html")).href;
+    for (const preset of PRESETS) {
+      const piece = await AsciiArt.loadPiece(vendoredPiece(preset.piece), preset.piece);
+      const palette = AsciiArt.createFrames(piece, preset).palette || piece.meta.palette || [];
+      await page.goto(`${href}?preset=${preset.name}`, { waitUntil: "load" });
+      const colour = await page.evaluate(async (colours, ground) => {
+        await window.asciiArt.ready;
+        const state = window.renderStudy(0.5);
+        const canvas = document.querySelector("canvas");
+        const data = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+        const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+        const g = rgb(ground);
+        const inks = colours.map((hex) => {
+          const c = rgb(hex), d = c.map((v, ch) => v - g[ch]);
+          const ch = [0, 1, 2].reduce((best, k) => (Math.abs(d[k]) > Math.abs(d[best]) ? k : best), 0);
+          return { hex, d, ch, pixels: 0 };
+        });
+        // Each pixel counts for the one colour it is nearest to being, blended toward the ground by
+        // its coverage a (fixed by the channel that colour moves most): colours in line with the
+        // ground, as a grey ramp is, would otherwise all claim the same pixel.
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i] === g[0] && data[i + 1] === g[1] && data[i + 2] === g[2]) continue;
+          let best = null, score = Infinity;
+          for (const ink of inks) {
+            const a = ink.d[ink.ch] ? (data[i + ink.ch] - g[ink.ch]) / ink.d[ink.ch] : 0;
+            if (a < 0.5 || a > 1.02) continue;
+            const off = Math.max(Math.abs(data[i] - g[0] - a * ink.d[0]), Math.abs(data[i + 1] - g[1] - a * ink.d[1]), Math.abs(data[i + 2] - g[2] - a * ink.d[2]));
+            if (off <= 3 && off + 10 * Math.abs(1 - a) < score) (best = ink), (score = off + 10 * Math.abs(1 - a));
+          }
+          if (best) best.pixels++;
+        }
+        return { state, shown: inks.filter((ink) => ink.pixels >= 20).map((ink) => ink.hex) };
+      }, palette, preset.ground);
+      if (colour.state.renderer !== "canvas" || colour.shown.length < 3) wrong.push(`${preset.name} at ${colour.state.time}s: drawn on the ${colour.state.renderer}, ${colour.shown.length} palette colour(s) on the canvas`);
+      if (isScene(preset.piece)) continue;
+      await page.goto(`${href}?preset=${preset.name}&mono`, { waitUntil: "load" });
+      const mono = await page.evaluate(async () => {
+        await window.asciiArt.ready;
+        const state = window.renderStudy(0.5);
+        const pre = document.querySelector("pre");
+        return { state, ink: getComputedStyle(pre).color, nodes: [...pre.childNodes].map((node) => node.nodeName), canvas: document.querySelector("canvas").hidden };
+      });
+      if (mono.state.renderer !== "pre" || mono.ink !== rgb(preset.ink) || mono.nodes.join() !== "#text" || !mono.canvas) wrong.push(`${preset.name} with ?mono: drawn on the ${mono.state.renderer} in ${mono.ink} as ${mono.nodes.join(", ")}`);
+    }
+  } finally {
+    await browser.close();
+  }
+  assert.deepEqual(wrong, []);
 });
 
 test("the bundled font covers every character the pieces contain or draw, at one cell wide", { skip: BROWSER.skip }, async (t) => {
@@ -389,28 +558,35 @@ function pixels(file) {
   return { png, colours, total: png.width * png.height };
 }
 
-test("composition capture --seek photographs the seeked frame of a mono and a coloured preset", { skip: BROWSER.skip }, async (t) => {
+test("composition capture --seek photographs the seeked frame of the coloured default, a mono and a scene preset", { skip: BROWSER.skip }, async (t) => {
   const { project, directory } = scaffold(t);
   const capture = (target, seek, output) => runCli(["composition", "capture", "--root", project, ...target, "--seek", String(seek), "--width", "960", "--height", "540", "--output", output, "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule]);
   const shot = (output) => path.join(project, output, "screenshot.png");
 
-  // The default mono preset, captured from the file as composition capture --composition opens it.
+  // The default preset, captured from the file as composition capture --composition opens it.
   const file = ["--composition", "ascii/index.html"];
   for (const [seek, output] of [[1, "captures/donut-1"], [2, "captures/donut-2"], [1, "captures/donut-1-again"]]) {
     const result = await capture(file, seek, output);
     assert.equal(result.status, 0, JSON.stringify(result.output));
   }
   const donut = pixels(shot("captures/donut-1"));
-  const donutInk = PRESETS.find((preset) => preset.name === "donut").ink;
+  const donutPreset = PRESETS.find((preset) => preset.name === "donut");
+  const paint = (AsciiArt.createFrames(await AsciiArt.loadPiece(vendoredPiece("donut"), "donut"), donutPreset).palette || []).slice(1); // past the ink
   assert.ok((donut.colours.get("#101010") || 0) / donut.total < 0.97, "the ground is not the whole frame");
-  assert.ok((donut.colours.get(donutInk) || 0) > 200, "glyphs are drawn in the preset ink");
+  assert.ok(paint.filter((colour) => (donut.colours.get(colour) || 0) > 50).length >= 3, "glyphs are drawn in at least three of the preset's paint colours");
   assert.notDeepEqual(pixels(shot("captures/donut-2")).png.data, donut.png.data, "--seek reaches the page: another time is another frame");
   assert.deepEqual(pixels(shot("captures/donut-1-again")).png.data, donut.png.data, "the same --seek gives the same pixels in a fresh browser");
 
-  // A coloured preset selected by URL from a local static server.
+  // The same preset in one ink, and a coloured scene, selected by URL from a local static server.
   const server = await serve(directory);
   t.after(() => server.close());
   const url = (query) => ["--url", `http://127.0.0.1:${server.address().port}/index.html${query}`];
+  const mono = await capture(url("?preset=donut&mono"), 1, "captures/donut-mono-1");
+  assert.equal(mono.status, 0, JSON.stringify(mono.output));
+  const ink = pixels(shot("captures/donut-mono-1"));
+  assert.ok((ink.colours.get(donutPreset.ink) || 0) > 200, "with ?mono the glyphs are drawn in the preset ink");
+  assert.deepEqual(paint.filter((colour) => ink.colours.has(colour)), [], "and in none of its paint colours");
+
   const night = await capture(url("?preset=night-coast"), 2, "captures/night-coast-2");
   assert.equal(night.status, 0, JSON.stringify(night.output));
   const coast = pixels(shot("captures/night-coast-2"));
