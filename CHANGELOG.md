@@ -24,9 +24,9 @@ All notable changes to Design Pipeline are documented here.
   review instead of reporting done. Recorded review verdicts are never rewritten; re-recording an
   identical decision leaves all evidence unchanged.
 - `decide --stage components` is refused for film, edit and ui workflows instead of recording a
-  decision nothing consumes and dropping their gates and delivery. Component routing validates every
-  component entry's routing metadata before filtering candidates, as the v1 contract did, and refuses
-  routing metadata on source, method and template records instead of ignoring it.
+  decision nothing consumes and dropping their gates and delivery. Component routing shape-checks the
+  routing metadata of every catalog record before filtering candidates, as the v1 contract did, so
+  malformed routing on a source, method or template record fails instead of being skipped.
 - Saved gate `next` commands use the same absolute project binding as finding repairs, without
   rewriting persisted gate evidence.
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or

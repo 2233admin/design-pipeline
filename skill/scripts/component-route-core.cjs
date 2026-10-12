@@ -26,12 +26,8 @@ function normalizePlatform(value) {
 }
 
 function validateRouteEntry(entry) {
-  // Only component records are routed; routing on a source, method or template record would be
-  // silently ignored, so it is refused rather than skipped.
-  if (entry.kind !== "component") {
-    if (entry.routing !== undefined) routeFail(`${entry.id}.routing is only allowed on component records`);
-    return;
-  }
+  // Shape-check routing wherever it appears. Source, method and template records may carry routing
+  // but never enter component ranking; malformed metadata on them must still fail, not be skipped.
   const route = entry.routing;
   if (!isObject(route)) return;
   strings(route.capabilities, `${entry.id}.routing.capabilities`);

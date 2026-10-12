@@ -409,13 +409,15 @@ After: both pass
 ✔ components decisions are rejected outside web workflows and leave their state untouched
 ```
 
-- [x] 10.7 Close the remaining path of the routing finding: `validateRouteEntry` skipped every non-component entry, so a source record (`recordType: "source"`, stored as `kind: "doc"`) with malformed `routing.capabilities` was still accepted after 10.6. Routing on source, method or template records is now refused, since only component records are routed.
+- [x] 10.7 Close the remaining path of the routing finding: `validateRouteEntry` skipped every non-component entry, so a source record (`recordType: "source"`, stored as `kind: "doc"`) with malformed `routing.capabilities` was still accepted after 10.6. Routing metadata is now shape-checked on every record that carries it. Well-formed routing on method and template records stays valid and is still excluded from component ranking, as the existing "explicit method and template records cannot enter component implementation ranking" test requires.
 
 ```text
-node --test --test-name-pattern "refuses routing metadata" tests/component-routing.test.cjs
-Before (10.6 code): tests 1; pass 0; fail 1; exit 1
-✖ route refuses routing metadata on source, method and template records instead of ignoring it
-  AssertionError [ERR_ASSERTION]: Missing expected exception. (tests/component-routing.test.cjs:178)
+node --test --test-name-pattern "malformed routing metadata on a" tests/component-routing.test.cjs
+Before (10.6 code): the source case fails; method and template already reach the shape check
+✖ route rejects malformed routing metadata on a source record instead of skipping it
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
 
-After: tests 1; pass 1; fail 0
+After: tests 3; pass 3; fail 0
+node --test tests/component-routing.test.cjs tests/component-source-routing.test.cjs tests/component-source-completeness.test.cjs tests/component-source-metadata.test.cjs tests/design-system-provider.test.cjs tests/frontend-stack-routing.test.cjs tests/component-fit-matrix.test.cjs
+tests 108; pass 108; fail 0
 ```

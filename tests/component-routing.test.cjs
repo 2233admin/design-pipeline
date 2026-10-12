@@ -169,14 +169,18 @@ test("route validates routing metadata on every component entry, including ones 
   );
 });
 
-test("route refuses routing metadata on source, method and template records instead of ignoring it", () => {
-  const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8"));
-  const source = raw.docs.find((entry) => entry.recordType === "source");
-  source.routing = { capabilities: "bad", platforms: ["web"], mode: "package" };
-  const malformed = normalizeSnapshot(raw);
-  const id = malformed.entries.find((entry) => entry.kind !== "component" && entry.routing).id;
-  assert.throws(
-    () => routeComponents({ catalog: malformed, brief: "SaaS dashboard app UI", platform: "web" }),
-    new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing is only allowed on component records`),
-  );
-});
+for (const recordType of ["source", "method", "template"]) {
+  test(`route rejects malformed routing metadata on a ${recordType} record instead of skipping it`, () => {
+    const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8"));
+    const record = recordType === "source"
+      ? raw.docs.find((entry) => entry.recordType === "source")
+      : Object.assign(raw.components.find((entry) => entry.routing), { recordType });
+    record.routing = { ...(record.routing || {}), capabilities: "bad", platforms: ["web"], mode: "package" };
+    const malformed = normalizeSnapshot(raw);
+    const id = malformed.entries.find((entry) => entry.recordType === recordType && entry.routing).id;
+    assert.throws(
+      () => routeComponents({ catalog: malformed, brief: "SaaS dashboard app UI", platform: "web" }),
+      new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing\\.capabilities must be a non-empty string array`),
+    );
+  });
+}
