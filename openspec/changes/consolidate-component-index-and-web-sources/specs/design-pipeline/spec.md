@@ -72,6 +72,12 @@ Every quick, standard and full web workflow in brief, freeform and replicate mod
 - **AND** index discovery SHALL use design-system route and design-system search with the page brief and platform web
 - **AND** the instruction SHALL require component-manifest.json before index.html.
 
+#### Scenario: Changed decision invalidates checked evidence
+
+- **WHEN** a different components answer or source set is recorded after interaction, review or delivery evidence exists
+- **THEN** that evidence SHALL be invalidated and next SHALL return to the probe or review boundary
+- **AND** re-recording an identical decision SHALL leave the evidence intact.
+
 ### Requirement: Component provenance is an existing build completion condition
 
 Web build SHALL require index.html and a valid component-manifest.json with entries. Sources SHALL resolve to indexed records, decision-named GitHub repositories or project files. Usage SHALL identify contained files and real markers; indexed license states SHALL match. Scratch SHALL require fromScratch true and project-owned entries only, allowing none. Nonscratch SHALL forbid fromScratch true and require nonempty entries. This SHALL NOT introduce a new gate.

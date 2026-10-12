@@ -170,6 +170,14 @@ function nextAction(root) {
   return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
 }
 
+// Drop checked-output gates and the delivery bound to them, so the next pass is rechecked.
+function invalidateCheckedEvidence(state) {
+  state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
+  delete state.decisions.delivered;
+  delete state.decisions.deliveryInputHashes;
+  delete state.decisions.deliveredSha256;
+}
+
 function decide(root, options = {}) {
   const state = readState(root);
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
@@ -208,7 +216,14 @@ function decide(root, options = {}) {
     if (choices.some(value => !allowed.includes(value))) fail("workflow", "--choice must be a comma-separated subset of project,github,index,scratch");
     if (choices.includes("scratch") && choices.some(value => value !== "scratch")) fail("workflow", "--choice scratch cannot be combined with any other value");
     if (choices.includes("github") && !/https:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+/i.test(options.answer)) fail("workflow", "--choice github requires at least one https://github.com/<owner>/<repo> URL in --answer");
-    state.decisions.componentSources = allowed.filter(value => choices.includes(value));
+    const sources = allowed.filter(value => choices.includes(value));
+    const previous = state.decisions.components;
+    if (previous !== undefined && (previous !== options.answer || canonicalJson(state.decisions.componentSources ?? null) !== canonicalJson(sources))) {
+      // A different source decision changes what the checked page must prove; recheck and re-review it.
+      invalidateCheckedEvidence(state);
+      for (const draft of state.decisions.drafts || []) delete draft.inputHashes;
+    }
+    state.decisions.componentSources = sources;
     state.decisions.components = options.answer;
   } else if (stage === "concept") {
     if (!options.choice) fail("workflow", "--choice is required: the concept number, or mad/pv for an edit");
@@ -240,10 +255,7 @@ function decide(root, options = {}) {
     if (options.verdict === "reject") {
       state.rules = [...(state.rules || []), { text: options.answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
       // A rejected draft must be rebuilt and rechecked.
-      state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
-      delete state.decisions.delivered;
-      delete state.decisions.deliveryInputHashes;
-      delete state.decisions.deliveredSha256;
+      invalidateCheckedEvidence(state);
     }
   } else if (stage === "deliver") {
     const next = nextAction(root);

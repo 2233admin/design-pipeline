@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { initState, nextAction, decide, readState } = require("../skill/scripts/workflow-core.cjs");
+const { initState, nextAction, decide, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { validateComponentManifest } = require("../skill/scripts/design-system-catalog-core.cjs");
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const tiers = ["quick", "standard", "full"];
@@ -445,4 +445,54 @@ test("round3 regression: returned search command excludes film-only records for 
   assert.ok(Array.isArray(value.results));
   assert.deepEqual(value.results.filter(record => record.webRanking === false).map(record => record.sourceId), []);
   assert.match(command, /--platform web/);
+});
+
+function checkedPage(root, choice = "index", answer = "Search the index") {
+  decide(root, { stage: "components", choice, answer });
+  fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><h1>Page</h1>");
+  manifest(root, [entry()]);
+  fs.writeFileSync(path.join(root, "interaction.json"), "{}");
+  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"]);
+}
+const deliveryFields = state => ({ delivered: state.decisions.delivered, deliveryInputHashes: state.decisions.deliveryInputHashes, deliveredSha256: state.decisions.deliveredSha256 });
+
+test("lineage regression: changed components decision invalidates a quick interaction pass", t => {
+  const root = fixture(t);
+  checkedPage(root);
+  assert.equal(nextAction(root).type, "done");
+  decide(root, { stage: "components", choice: "project", answer: "Use existing project components" });
+  assert.equal(nextAction(root).stage, "probe");
+  assert.equal(readState(root).gates.interaction, undefined);
+  assert.deepEqual(readState(root).decisions.componentSources, ["project"]);
+});
+
+test("lineage regression: changed components decision unbinds review and delivery", t => {
+  const root = fixture(t, "standard");
+  checkedPage(root);
+  decide(root, { stage: "review", verdict: "accept" });
+  decide(root, { stage: "deliver", answer: "https://example.test/page" });
+  assert.equal(nextAction(root).type, "done");
+  decide(root, { stage: "components", choice: "project", answer: "Search the index" });
+  assert.equal(nextAction(root).stage, "probe");
+  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"]);
+  assert.equal(nextAction(root).stage, "review", "the earlier accept no longer covers the new decision");
+  const state = readState(root);
+  assert.deepEqual(deliveryFields(state), { delivered: undefined, deliveryInputHashes: undefined, deliveredSha256: undefined });
+  assert.equal(state.decisions.drafts.length, 1, "review history is preserved");
+  assert.equal(state.decisions.drafts[0].inputHashes, undefined);
+});
+
+test("lineage regression: identical components re-record keeps checked evidence", t => {
+  const root = fixture(t, "standard");
+  checkedPage(root, "project,index", "Use project components, then the index");
+  decide(root, { stage: "review", verdict: "accept" });
+  decide(root, { stage: "deliver", answer: "https://example.test/page" });
+  const before = readState(root);
+  decide(root, { stage: "components", choice: "index,project,index", answer: "Use project components, then the index" });
+  const after = readState(root);
+  assert.deepEqual(after.gates, before.gates);
+  assert.deepEqual(after.decisions.drafts, before.decisions.drafts);
+  assert.deepEqual(deliveryFields(after), deliveryFields(before));
+  assert.deepEqual(after.decisions.componentSources, ["project", "index"]);
+  assert.equal(nextAction(root).type, "done");
 });

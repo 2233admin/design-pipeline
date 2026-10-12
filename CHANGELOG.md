@@ -15,6 +15,9 @@ All notable changes to Design Pipeline are documented here.
   forbid that flag being true and require entries. Invalid build evidence exposes the validator
   message in the instruction and existing `CONTRACT_INVALID` error finding with remediation.
   Component-index route and search both use platform web.
+- Recording a different web components answer or source set now drops the interaction pass and
+  delivery and unbinds earlier review drafts, so `next` returns to probe and then review instead of
+  reporting done; re-recording an identical decision leaves that evidence unchanged.
 - Saved gate `next` commands use the same absolute project binding as finding repairs, without
   rewriting persisted gate evidence.
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or

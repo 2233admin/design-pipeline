@@ -302,3 +302,27 @@ duration_ms 558.8762
 ```
 
 The added regression validates the manifest through the public validator and executes the actual `next --json` CLI, observing stage `probe` for the indexed project-owned scratch entry. This is item 1's permitted project-owned-only behavior, not a new source policy.
+
+### Integration regression — components decision lineage
+
+- [x] 10.1 Invalidate downstream evidence when a different components answer or source set is recorded: reuse the review-rejection invalidation (drop film/edit/interaction gates and delivery fields) through one helper, and remove `inputHashes` from recorded review drafts so an earlier accept becomes an unbound review that needs a fresh checkpoint. An identical answer and canonical set changes nothing. A legacy answer-only state has no recorded set, so any re-record there invalidates; that state already asks components again.
+
+```text
+node --test --test-name-pattern "lineage regression" tests/workflow-components.test.cjs
+Before: tests 3; pass 1; fail 2; skipped 0; exit 1
+✖ lineage regression: changed components decision invalidates a quick interaction pass
+  AssertionError [ERR_ASSERTION]: 'done' !== 'probe' (tests/workflow-components.test.cjs:464)
+✖ lineage regression: changed components decision unbinds review and delivery
+  AssertionError [ERR_ASSERTION]: 'done' !== 'probe' (tests/workflow-components.test.cjs:476)
+✔ lineage regression: identical components re-record keeps checked evidence
+
+After: tests 3; pass 3; fail 0; skipped 0; exit 0
+✔ lineage regression: changed components decision invalidates a quick interaction pass
+✔ lineage regression: changed components decision unbinds review and delivery
+✔ lineage regression: identical components re-record keeps checked evidence
+
+node --test tests/workflow-components.test.cjs
+tests 45; pass 45; fail 0; skipped 0; exit 0
+```
+
+Before the fix, the changed decision left the passed interaction gate, the accepted draft and the delivery bound to unchanged page hashes, so `next` reported done. After it, the quick tier returns to probe with no interaction gate; on the standard tier, re-recording an interaction pass with identical hashes returns to review with the delivery fields removed and the draft history preserved without bindings.
