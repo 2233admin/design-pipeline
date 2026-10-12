@@ -131,32 +131,24 @@ function githubRepository(value) {
   } catch { return null; }
 }
 
-function decisionNamesSource(decision, records) {
-  if (/https?:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+/i.test(decision)) return true;
-  for (const record of records) {
-    if (record.recordType !== "source" || ["project-owned", "platform"].includes(record.license?.state)) continue;
-    const repository = githubRepository(record.provenance?.repository) || githubRepository(record.provenance?.url);
-    const repositoryName = repository?.split("/")[1];
-    const names = [record.sourceId, record.name, repositoryName, repositoryName?.replace(/[-_]/g, " ")];
-    for (const name of names) {
-      if (typeof name !== "string" || name.length < 3) continue;
-      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      if (new RegExp("(^|[^a-z0-9])" + escaped + "([^a-z0-9]|$)", "i").test(decision)) return true;
-    }
-  }
-  return false;
-}
 
-function validateComponentManifest(manifest, { root, decision } = {}) {
+function validateComponentManifest(manifest, { root, decision, componentSources } = {}) {
   if (!isObject(manifest) || !Array.isArray(manifest.entries)) manifestInvalid("entries must be an array");
   if (typeof root !== "string" || !root.trim()) manifestInvalid("root must name the project directory");
   if (typeof decision !== "string" || !decision.trim()) manifestInvalid("a recorded components decision is required");
+  if (!Array.isArray(componentSources) || !componentSources.length
+    || componentSources.some(value => !["project", "github", "index", "scratch"].includes(value))
+    || componentSources.includes("scratch") && componentSources.length !== 1) manifestInvalid("a recorded componentSources set is required; scratch cannot be combined");
   if (manifest.fromScratch !== undefined && typeof manifest.fromScratch !== "boolean") manifestInvalid("fromScratch must be a boolean");
   const snapshot = JSON.parse(fs.readFileSync(path.join(__dirname, "../references/component-source-catalog.json"), "utf8"));
   const records = Object.keys(COLLECTIONS).flatMap(key => snapshot[key] || []);
   const fromScratch = manifest.fromScratch === true;
-  if (fromScratch && decisionNamesSource(decision, records)) manifestInvalid("fromScratch contradicts the library named in the components decision");
-  if (!fromScratch && manifest.entries.length === 0) manifestInvalid("empty entries require explicit fromScratch: true");
+  if (componentSources.includes("scratch")) {
+    if (!fromScratch) manifestInvalid("scratch choice requires explicit fromScratch: true");
+  } else {
+    if (fromScratch) manifestInvalid("fromScratch: true contradicts the recorded reuse or discovery componentSources");
+    if (manifest.entries.length === 0) manifestInvalid("reuse or discovery componentSources require non-empty entries");
+  }
   const nonempty = value => typeof value === "string" && Boolean(value.trim());
   const namedRepositories = (decision.match(/https:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+\/?/gi) || []).map(githubRepository);
   for (const [index, entry] of manifest.entries.entries()) {
@@ -185,6 +177,7 @@ function validateComponentManifest(manifest, { root, decision } = {}) {
         projectOwned = true;
       }
     }
+    if (record?.availability === "project-owned" && record.license?.state === "project-owned") projectOwned = true;
     if (record && entry.license.state !== record.license?.state) manifestInvalid(label + ".license.state must match the indexed source");
     if (projectOwned && (entry.license.state !== "project-owned" || entry.availability !== "project-owned")) manifestInvalid(label + " project files require project-owned availability and license.state");
     if (fromScratch && !projectOwned) manifestInvalid(label + " external source contradicts fromScratch");

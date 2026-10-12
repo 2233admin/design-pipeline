@@ -58,7 +58,7 @@ function rewriteSameTime(root, file, body) {
 }
 
 function prepareWebComponents(root) {
-  decide(root, { stage: "components", answer: "Write from scratch" });
+  decide(root, { stage: "components", choice: "scratch", answer: "Write from scratch" });
   touch(root, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
 }
 

@@ -61,7 +61,7 @@ function walk(deliverable, tier, mode) {
     reference: () => (mode === "replicate" ? touch(dir, "reference.md", "Observed enamel at three angles.") : decide(dir, { stage: "reference", answer: "none" })),
     concepts: () => (fs.existsSync(path.join(dir, "concepts.md")) ? decide(dir, { stage: "concept", choice: "1" }) : touch(dir, "concepts.md")),
     style: () => decide(dir, { stage: "concept", choice: "pv" }),
-    components: () => decide(dir, { stage: "components", answer: "Write from scratch" }),
+    components: () => decide(dir, { stage: "components", choice: "scratch", answer: "Write from scratch" }),
     analyze: () => (fs.existsSync(path.join(dir, "sources")) ? touch(dir, "edit/analysis.json", "{}") : fs.mkdirSync(path.join(dir, "sources"))),
     cut: () => touch(dir, "edit.json", "{}"),
     render: () => touch(dir, "renders/edit.mp4", "draft"),

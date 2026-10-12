@@ -79,14 +79,19 @@ Immediately before build in every web tier and mode, ask where the components sh
 4. Write from scratch.
 
 Recommend the project's own components first, then search the index. Preserve the user's exact
-nonempty reply in `decisions.components`; earlier intake does not replace this decision. Set
-`SKILL_ROOT` to the installed skill's absolute path and `PROJECT_ROOT` to the project's absolute
+nonempty reply in `decisions.components`; earlier intake does not replace this decision. Supply
+`--choice` as a comma-separated set of `project`, `github`, `index` or `scratch`. Missing or unknown
+choices are rejected; duplicates are removed and `decisions.componentSources` is stored in canonical
+`project,github,index,scratch` order. `scratch` is exclusive. Selecting `github` requires an HTTPS
+GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
+Legacy answer-only web decisions ask again; do not infer the source set from prose.
+Set `SKILL_ROOT` to the installed skill's absolute path and `PROJECT_ROOT` to the project's absolute
 path, then record the reply using the returned command, equivalent to:
 
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" decide \
   --root "$PROJECT_ROOT" --project-root "$PROJECT_ROOT" \
-  --stage components --answer "<the user's reply>"
+  --stage components --choice project,index --answer "<the user's reply>"
 ```
 
 ## build
@@ -100,19 +105,20 @@ reference and its invariants in replicate mode. Motion follows
 come from `pipeline-reference.md`. At the `full` tier, open an OpenSpec change under
 `openspec/changes/<id>/` first and build inside it.
 
-Honor `decisions.components`: reuse the specified project paths, inspect the named GitHub library,
-search the index, or author the components from scratch as requested. When searching the index:
+Honor `decisions.components` and its explicit `decisions.componentSources` set: reuse the specified
+project paths, inspect the named GitHub library, search the index, or author the components from
+scratch as selected. When searching the index:
 
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \
   --root "$PROJECT_ROOT" --query "<page brief>" --platform web
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system search \
   --root "$SKILL_ROOT" --snapshot "$SKILL_ROOT/references/component-source-catalog.json" \
-  --query "<page brief>"
+  --query "<page brief>" --platform web
 ```
 
-The route defaults to the component-source index; search without that explicit snapshot still
-uses Astryx. Load only the returned entries and needed source guides/implementations, not every
+The route and search with `--platform web` use the component-source index; search without a
+platform or explicit snapshot retains Astryx. Load only returned entries and needed source guides/implementations, not every
 catalog. Keep catalog artifacts inside the selected root.
 
 Before writing `index.html`, write project-local `component-manifest.json`. Its `entries` array
@@ -160,15 +166,18 @@ For each entry:
   This documents handling; validation does not independently audit legal compliance or verify
   a non-indexed repository's declared license.
 
-For scratch implementation, write `{"fromScratch":true,"entries":[]}`. The recorded decision
-still exists, but no English phrase match is required: `从零写` works. A named library/repository
-in the decision or an external-source entry contradicts `fromScratch: true` and keeps build
-unfinished. Without the explicit flag, an empty manifest fails even for `Write from scratch`.
+For the exclusive `scratch` set, write `{"fromScratch":true,"entries":[]}` or include only
+project-owned entries satisfying the same per-entry rules. `fromScratch: true` is required;
+the answer language (including `从零写`) does not determine scratch status. For every nonscratch
+set, `fromScratch: true` is forbidden and `entries` must be nonempty. These rules use the explicit
+source set, not inferred library names or phrases in the answer.
 
 Build finishes only when `index.html` and a valid manifest both exist. Invalid evidence returns
-the build instructions; repair the source identity, license declaration or file/marker provenance
-before running `next` again. This is Component Conformance stage-completion evidence, not a new
-gate or receipt schema, and does not grant Visual Acceptance.
+the build instructions with the validator message and an existing finding whose `code` is
+`CONTRACT_INVALID`, `severity` is `error`, `message` is that validator message, and `fix` gives
+remediation. Repair the reported manifest/source-set, source identity, license declaration or
+file/marker provenance before running `next` again. This is Component Conformance stage-completion
+evidence, not a new gate or receipt schema, and does not grant Visual Acceptance.
 
 Apply the selected Taste source through the approved design and existing component/runtime owners.
 Keep complete requested artifacts, real content and loading/empty/error/focus states. Bind

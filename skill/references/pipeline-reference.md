@@ -99,11 +99,17 @@ Use the public CLI for the complete lifecycle:
 - `design-system decide` records `reference`, `adopt`, `substitute`, or `custom`; runtime use
   requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
 
-For web components, first record the exact user decision immediately before build; see
-[workflow-web.md#components](workflow-web.md#components) for choices and recommendation, and
-[workflow-web.md#build](workflow-web.md#build) for the manifest fields, enums, license guard and
-stage completion condition. With absolute `SKILL_ROOT` and `PROJECT_ROOT`, these commands work
-from outside the project:
+For web components, first record the exact user decision immediately before build with explicit
+`--choice project,index` (or the selected comma-separated set of `project,github,index,scratch`).
+Missing/unknown choices fail; deduplicate and store canonical order in `decisions.componentSources`.
+`scratch` is exclusive; `github` requires an HTTPS GitHub owner/repo URL in the unchanged answer.
+Legacy answer-only web decisions ask again. See [workflow-web.md#components](workflow-web.md#components)
+for choices and recommendation, and [workflow-web.md#build](workflow-web.md#build) for per-entry rules.
+The scratch set requires `fromScratch: true` and project-owned entries only (empty allowed);
+nonscratch sets forbid `fromScratch: true` and require nonempty entries. Invalid evidence includes
+the validator message in the build instruction and an existing `CONTRACT_INVALID` error finding
+with that message and a remediation `fix`. With absolute `SKILL_ROOT` and `PROJECT_ROOT`, these
+commands work from outside the project:
 
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \

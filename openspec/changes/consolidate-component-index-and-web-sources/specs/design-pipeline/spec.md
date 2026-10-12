@@ -45,7 +45,7 @@ The maintained MengTo catalog SHALL match the current vendor manifest's revision
 
 ### Requirement: Web build follows an explicit component source decision
 
-Every quick, standard and full web workflow in brief, freeform and replicate modes SHALL ask components immediately before build. The choices SHALL cover project components with paths, a named GitHub library, searching the existing index and scratch implementation. The recommendation SHALL prefer project components, then the index.
+Every quick, standard and full web workflow in brief, freeform and replicate modes SHALL ask components immediately before build. Decide SHALL require explicit comma-separated choices from project, github, index and scratch, preserving the answer and storing a canonical deduplicated componentSources set. Scratch SHALL be exclusive; github SHALL require an HTTPS GitHub owner/repo URL in the answer. The recommendation SHALL prefer project components, then the index.
 
 #### Scenario: Next reaches a build boundary
 
@@ -53,33 +53,46 @@ Every quick, standard and full web workflow in brief, freeform and replicate mod
 - **THEN** next SHALL return the components ask before build
 - **AND** its decide command SHALL bind the absolute project path and work outside that directory.
 
+#### Scenario: Decide validates and records explicit sources
+
+- **WHEN** decide uses `--stage components --choice index,project,index --answer "<the owner's reply>"`
+- **THEN** decisions.componentSources SHALL be `["project","index"]` and decisions.components SHALL preserve the answer unchanged
+- **AND** canonical ordering SHALL be project, github, index, scratch, restricted to selected choices.
+- **AND** missing or unknown choices, scratch combined with another choice, or github without an HTTPS GitHub owner/repo URL in the answer SHALL be rejected.
+
+#### Scenario: Legacy answer-only decision reaches build
+
+- **WHEN** a web state has a components answer but no explicit componentSources set
+- **THEN** next SHALL ask components again rather than infer sources from the answer.
+
 #### Scenario: Build follows a recorded reply
 
-- **WHEN** decide records the owner's components reply
+- **WHEN** decide records the owner's components reply with a valid explicit `--choice` set
 - **THEN** the build instruction SHALL follow that reply and explicitly name references/component-source-catalog.json
-- **AND** index discovery SHALL use design-system route with the page brief and platform web, plus design-system search
+- **AND** index discovery SHALL use design-system route and design-system search with the page brief and platform web
 - **AND** the instruction SHALL require component-manifest.json before index.html.
 
 ### Requirement: Component provenance is an existing build completion condition
 
-Web build SHALL require index.html and a valid component-manifest.json with an entries array. Sources SHALL resolve to indexed records, decision-named GitHub repositories or existing project-owned files. Usage SHALL identify existing contained files and markers present in their contents. Indexed license states SHALL match. Explicit fromScratch MAY permit empty entries without contradicting the recorded decision. This SHALL NOT introduce a new gate.
+Web build SHALL require index.html and a valid component-manifest.json with entries. Sources SHALL resolve to indexed records, decision-named GitHub repositories or project files. Usage SHALL identify contained files and real markers; indexed license states SHALL match. Scratch SHALL require fromScratch true and project-owned entries only, allowing none. Nonscratch SHALL forbid fromScratch true and require nonempty entries. This SHALL NOT introduce a new gate.
 
 #### Scenario: HTML exists without valid provenance
 
 - **WHEN** index.html exists but the manifest is absent, malformed or lacks required entry fields
-- **THEN** build SHALL remain unfinished.
+- **THEN** build SHALL remain unfinished
+- **AND** its instruction SHALL include the validator message and its existing finding SHALL use code `CONTRACT_INVALID`, severity `error`, that validator message as message, and remediation as fix.
 
 #### Scenario: Scratch implementation is explicitly chosen
 
-- **WHEN** a components decision such as `从零写` is recorded and index.html plus a manifest with `fromScratch: true` and an empty entries array exist
+- **WHEN** decide records `--stage components --choice scratch --answer "从零写"` and index.html plus a manifest with `fromScratch: true` and an empty entries array exist
 - **THEN** the component provenance completion condition SHALL be satisfied
-- **AND** technical completion SHALL NOT grant Component Conformance or Visual Acceptance.
+- **AND** technical completion SHALL NOT grant Component Conformance or Visual Acceptance
+- **AND** scratch manifests MAY instead contain only project-owned entries satisfying the existing per-entry rules; missing fromScratch true or external-source entries SHALL keep build unfinished.
 
 #### Scenario: Reuse or discovery is chosen without manifest entries
 
-- **WHEN** the recorded components answer names project components, a GitHub library or index discovery and the manifest has no entries
-- **THEN** build SHALL remain unfinished
-- **AND** `fromScratch: true` SHALL NOT contradict a decision naming a library or reuse source.
+- **WHEN** the explicit componentSources set selects project, github or index and the manifest has no entries or has `fromScratch: true`
+- **THEN** build SHALL remain unfinished regardless of the answer's wording.
 
 #### Scenario: Fabricated provenance or usage is supplied
 

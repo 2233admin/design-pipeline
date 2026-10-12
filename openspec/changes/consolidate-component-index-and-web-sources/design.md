@@ -1,6 +1,6 @@
 ## Decision and scope
 
-The owner adopted survey Option A: extend `skill/references/component-source-catalog.json`, not a second source table. The brief is `D:/projects/design-pipeline/.design-pipeline/component-survey/BRIEF-implement.md`; the survey is the adjacent `report.md`. Existing v1 gates, receipt lineage, target resolution and policy digests remain authoritative.
+The owner adopted survey Option A: extend `skill/references/component-source-catalog.json`, not a second source table. The brief is `<main-checkout>/.design-pipeline/component-survey/BRIEF-implement.md`; the survey is the adjacent `report.md`. Existing v1 gates, receipt lineage, target resolution and policy digests remain authoritative.
 
 ## Context
 
@@ -28,9 +28,9 @@ The MengTo projection has 176 methods in nine categories at revision `83a47fee32
 
 ## Workflow contract
 
-All nine web tier/mode stage lists ask `components` immediately before build. The owner can choose existing project components with paths, a named GitHub library, this index, or scratch implementation; project components then index are recommended. Existing `decide` records the reply. `cliCommand()` and `shellPath()` preserve absolute project binding outside the project directory.
+All nine web tier/mode stage lists ask `components` immediately before build. The owner can choose existing project components with paths, a named GitHub library, this index, or scratch implementation; project components then index are recommended. Existing `decide --stage components --choice <project|github|index|scratch, comma-separated> --answer "<the user's reply>"` records the unchanged reply and canonical `state.decisions.componentSources` array. Scratch is exclusive; github requires a repository URL in the answer. Legacy answer-only states ask again. `cliCommand()` and `shellPath()` preserve absolute project binding outside the project directory.
 
-Build instructions consume the decision, explicitly name the catalog and provide existing design-system route/search commands. Search/decompose retain their Astryx defaults; the returned unified-source search command therefore passes the absolute index as `--snapshot` under the absolute installed skill root. Before HTML, write `component-manifest.json`; each entry identifies name, sourceId or URL, availability, `license.state` and `usedIn: [{file, marker, how}]`. The existing catalog core owns internal validation and web build calls it. Sources must resolve to indexed identities, decision-named GitHub repositories or contained existing project-owned paths; indexed license states must match. Each usage file exists inside the project and contains its marker. Verified adoption records attribution/license-notice handling; unverified/commercial references permit study/reimplementation only. Explicit `fromScratch: true` allows empty entries for a recorded scratch answer, including Chinese, but not a contradicting library/reuse decision. No gate or receipt is introduced.
+Build instructions consume the recorded source set, explicitly name the catalog and provide existing design-system route/search commands with `--platform web`. Searches without a platform and decompose retain their Astryx defaults; the returned unified-source search command passes the absolute index as `--snapshot` under the absolute installed skill root. Before HTML, write `component-manifest.json`; each entry identifies name, sourceId or URL, availability, `license.state` and `usedIn: [{file, marker, how}]`. The existing catalog core owns internal validation and web build calls it. Sources must resolve to indexed identities, decision-named GitHub repositories or contained existing project-owned paths; indexed license states must match. Each usage file exists inside the project and contains its marker. Verified adoption records attribution/license-notice handling; unverified/commercial references permit study/reimplementation only. The `[scratch]` source set requires `fromScratch: true` and permits empty or project-owned entries only. Other source sets reject `fromScratch: true` and require nonempty entries. Answer text does not determine source selection. Invalid manifests leave build unfinished and expose validator messages through existing action findings and readable instructions. No gate or receipt is introduced.
 
 UI has no equivalent HTML/build stage: `workflow-core.cjs` uses a generic `work` stage completed by `decisions.delivered` and the existing `deliver --answer <evidence>` contract for arbitrary artifacts. That runtime contract remains unchanged; workflow guides explain why the web manifest rule is not forced onto UI.
 
@@ -50,7 +50,7 @@ No vendor refresh, new source format, execution permission, automatic dependency
 
 ## Acceptance
 
-Each brief item has an owner above. Tests must show failing-before/passing-after results; complete QA uses `FONTTOOLS_PYTHON=D:/Temp/dp-fonttools-venv/Scripts/python.exe npm test`, plus `npm run specs:check` and strict change validation. The parent commits only verified changes, does not push, and writes the requested external report with commit SHA and unresolved licenses.
+Each brief item has an owner above. Tests must show failing-before/passing-after results; complete QA uses `FONTTOOLS_PYTHON=<fonttools-python> npm test`, plus `npm run specs:check` and strict change validation. The parent commits only verified changes, does not push, and writes the requested external report with commit SHA and unresolved licenses.
 
 ## Round 2 decisions and ownership
 

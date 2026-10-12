@@ -8,8 +8,13 @@ All notable changes to Design Pipeline are documented here.
 
 - Component manifests now resolve real sources and project-contained usage files, require markers
   present in those files and license-notice handling for verified adoption, and reject copying
-  unverified or commercial references. Explicit `fromScratch` supports Chinese scratch decisions
-  without allowing contradictory library-reuse decisions to finish build.
+  unverified or commercial references. Components decisions require an explicit canonical,
+  deduplicated source set; scratch is exclusive, GitHub selection requires an HTTPS owner/repo URL
+  in the unchanged answer, and legacy answer-only web decisions ask again. Scratch manifests
+  require `fromScratch: true` and project-owned entries only (empty allowed); nonscratch manifests
+  forbid that flag being true and require entries. Invalid build evidence exposes the validator
+  message in the instruction and existing `CONTRACT_INVALID` error finding with remediation.
+  Component-index route and search both use platform web.
 - Saved gate `next` commands use the same absolute project binding as finding repairs, without
   rewriting persisted gate evidence.
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or

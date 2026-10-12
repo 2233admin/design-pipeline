@@ -10,8 +10,8 @@
 ## Verification and delivery
 
 - [x] 7. Record targeted regressions' failing-before and passing-after output, plus actual outside-directory CLI smoke evidence.
-- [x] 8. Run `FONTTOOLS_PYTHON=D:/Temp/dp-fonttools-venv/Scripts/python.exe npm test`, `npm run specs:check`, and `npm exec -- openspec validate consolidate-component-index-and-web-sources --strict`.
-- [x] 9. Commit verified repository changes without pushing and write `D:/projects/design-pipeline/.design-pipeline/component-survey/report-implement.md` with items 1–3, QA figures, commit SHA and unresolved license decisions.
+- [x] 8. Run `FONTTOOLS_PYTHON=<fonttools-python> npm test`, `npm run specs:check`, and `npm exec -- openspec validate consolidate-component-index-and-web-sources --strict`.
+- [x] 9. Commit verified repository changes without pushing and write `<main-checkout>/.design-pipeline/component-survey/report-implement.md` with items 1–3, QA figures, commit SHA and unresolved license decisions.
 
 ## Evidence
 
@@ -76,7 +76,7 @@ After: tests 62; pass 62; fail 0; skipped 0; duration_ms 5732.2859; exit 0
 
 Only explicit `Write from scratch`, ignoring case/outer whitespace, permits empty entries. Project paths, index discovery, named GitHub and mixed replies remain build without usage entries.
 
-Parent public-CLI smoke ran from `D:/projects/design-pipeline`, outside the smoke project in this worktree: next returned components even when HTML existed; the returned absolute decide command preserved the answer; HTML without a manifest stayed build; scratch plus `{\"entries\":[]}` reached probe; changing the reply to index discovery returned build despite the same empty manifest; explicit scratch reached probe again. Explicit source search found GEPA as a doc with webRanking false. Returned route/search commands also executed successfully in the workflow regression.
+Parent public-CLI smoke ran from `<main-checkout>`, outside the smoke project in this worktree: next returned components even when HTML existed; the returned absolute decide command preserved the answer; HTML without a manifest stayed build; scratch plus `{\"entries\":[]}` reached probe; changing the reply to index discovery returned build despite the same empty manifest; explicit scratch reached probe again. Explicit source search found GEPA as a doc with webRanking false. Returned route/search commands also executed successfully in the workflow regression.
 
 ### Full QA and delivery
 
@@ -108,7 +108,7 @@ Final public CLI smoke from outside the worktree routed `depth carousel` as revi
 Final post-edit QA command exited 0 in 707.80 seconds:
 
 ```text
-FONTTOOLS_PYTHON=D:/Temp/dp-fonttools-venv/Scripts/python.exe npm test
+FONTTOOLS_PYTHON=<fonttools-python> npm test
 Repository: 133 files, 1314 tests, 1310 pass, 0 fail, 4 skipped
 Repository runner duration_ms: 657986.989
 Installed-package CLI smoke: 12 tests, 12 pass, 0 fail, 0 skipped
@@ -125,7 +125,7 @@ npm exec -- openspec validate consolidate-component-index-and-web-sources --stri
 Change 'consolidate-component-index-and-web-sources' is valid; exit 0
 ```
 
-The four repository skips are three optional native GEPA runtime scenarios (`GEPA_PYTHON` not prepared) and the Windows case-variant collision scenario (filesystem aliases case). No component-index/workflow regression was skipped. Final full output is `artifact://156`; strict specs output is `artifact://159`. `git diff --name-only -- skill/vendor` reported only `skill/vendor/README.md`, proving vendor manifests/upstream files were not changed. Temporary smoke HTML, manifest and state were removed after observation.
+The four repository skips are three optional native GEPA runtime scenarios (`GEPA_PYTHON` not prepared) and the Windows case-variant collision scenario (filesystem aliases case). No component-index/workflow regression was skipped. Full QA and strict specs figures are recorded above. `git diff --name-only -- skill/vendor` reported only `skill/vendor/README.md`, proving vendor manifests/upstream files were not changed. Temporary smoke HTML, manifest and state were removed after observation.
 
 Delivery report was written to the requested absolute path after the local implementation commit. This checklist closeout is included in that local commit; the final non-self-referential commit SHA is recorded in the external report. No push was executed. The report lists all six canonical commercial/unverified sources plus Depth Carousel identity, linked shadcn.io implementations and separately paid scope boundaries requiring the owner's decision. Repository status was clean after the implementation commit and is checked again after checklist closeout.
 
@@ -221,7 +221,7 @@ Actual npm/ESM smoke installed seven packages only in an ignored temporary evide
 Implementation commit: `8377bacfc1577503d02ce58eb8be72d0ff2a7445`. Tested Git tree: `d9dda1b24328bc2543e27d4cab7260a852bbde83`; `git write-tree` returned the same value before and after full verification. All workers had finished and implementation, tests and source documentation were frozen during both checks.
 
 ```text
-cmd /d /c "set FONTTOOLS_PYTHON=D:/Temp/dp-fonttools-venv/Scripts/python.exe&&npm test"
+cmd /d /c "set FONTTOOLS_PYTHON=<fonttools-python>&&npm test"
 Exit 0; wall time 664.47 seconds
 Repository: 133 files; 1342 tests; 1338 pass; 0 fail; 4 skipped
 Repository duration_ms: 620975.5948
@@ -231,14 +231,74 @@ Installed source/catalog checks: passed
 QA repository status preservation: byte-identical
 Browser adapter self-test: OK
 BuilderPort self-test: OK
-Full output: artifact://63
+Full output figures recorded above.
 
 npm run specs:check
 71 passed; 0 failed; exit 0
 Includes strict validation of this change
-Full output: artifact://65
+Full output figures recorded above.
 ```
 
-The four skips are three optional native GEPA scenarios without prepared GEPA_PYTHON and one filesystem case-alias collision scenario. No round-2 acceptance regression was skipped. Parent public CLI smoke from `D:/Temp` additionally routed spring animation successfully (`artifact://66`) and searched HyperFrames with platform web to an empty result (`artifact://67`), both exit 0.
+The four skips are three optional native GEPA scenarios without prepared GEPA_PYTHON and one filesystem case-alias collision scenario. No round-2 acceptance regression was skipped. Parent public CLI smoke from an unrelated temporary directory additionally routed spring animation successfully and searched HyperFrames with platform web to an empty result, both exit 0.
 
-The external report is `D:/projects/design-pipeline/.design-pipeline/component-survey/report-implement-round2.md`. The implementation is committed locally; no push occurred. This final tasks closeout is evidence-only, after the tested implementation commit, and does not change code, tests, catalog or source guides. Its final non-self-referential delivery SHA is recorded in the external report. Technical Component Conformance evidence is separate from Visual Acceptance, which was not assessed.
+The external report is `<main-checkout>/.design-pipeline/component-survey/report-implement-round2.md`. The implementation is committed locally; no push occurred. This final tasks closeout is evidence-only, after the tested implementation commit, and does not change code, tests, catalog or source guides. Its final non-self-referential delivery SHA is recorded in the external report. Technical Component Conformance evidence is separate from Visual Acceptance, which was not assessed.
+
+## Round 3 items 1–3 implementation and focused evidence
+
+- [x] 9.1 Record required explicit component source choices in canonical `project,github,index,scratch` order; preserve the user's answer, reject invalid combinations and missing GitHub URLs, and reask legacy answer-only states.
+- [x] 9.2 Replace answer-name inference with the recorded source set in the existing manifest validator; preserve all per-entry provenance, usage and license rules.
+- [x] 9.3 Return invalid-manifest validator messages in existing build action findings and readable instructions, without a new gate or status.
+- [x] 9.4 Scope the returned index search to `--platform web`; migrate existing test callers and update workflow guides, spec scenarios, CLI help and CHANGELOG.
+
+The authorized public seams are CLI/next/decide/search and the existing manifest validator. All 14 round-3 contract regressions are independent of ffmpeg.
+
+```text
+node --test --test-name-pattern "round3 regression" tests/workflow-components.test.cjs
+Before runtime changes: tests 14; pass 1; fail 13; skipped 0; exit 1
+duration_ms 493.2488
+After runtime changes: tests 14; pass 14; fail 0; skipped 0; exit 0
+duration_ms 520.4962
+```
+
+Before: invalid choices were accepted; componentSources was absent; legacy answer-only state reached probe; all three specified scratch answers stayed at build; project/index choices accepted a scratch manifest; fabricated-source actions omitted the validator message; the returned search included cinetic, Prompt Motion and product-film records disabled for web ranking. The GitHub scratch contradiction already failed under the old URL heuristic, accounting for the one passing baseline test. After: every regression passes, including persisted canonical deduplication, unchanged answer bytes, source-set-only scratch behavior, existing finding shape and execution of the returned search command with query `film`.
+
+An intermediate green run had tests 14; pass 13; fail 1; exit 1 (`duration_ms 485.0153`): findings carried the correct validator message but the readable build instruction omitted it. Prefixing the instruction with the existing finding message and fix resolved that failure; it was not suppressed. Exact local outputs are `.design-pipeline/round3-red.txt` and `.design-pipeline/round3-intermediate-green.txt`.
+
+```text
+COMPONENT_MANIFEST_SMOKE_LOG=.design-pipeline/round3-cli-smoke.jsonl node --test --test-name-pattern "actual CLI outside the project|round3 regression: returned search" tests/workflow-components.test.cjs
+tests 2; pass 2; fail 0; skipped 0; exit 0
+duration_ms 1215.7457
+```
+
+The smoke executed 12 public CLI commands from a directory outside the temporary project: components ask, scratch choice recording, invalid scratch manifest remaining at build, valid scratch reaching probe, index choice and fabricated/missing-usage manifests remaining at build with validator diagnostics, and valid indexed/project-owned/decision-named GitHub manifests reaching probe. Every CLI command exited 0; invalid manifests correctly remained unfinished rather than becoming usage errors. The additional search smoke executed the command returned in the build instruction with query `film`, exit 0, and found no web-disabled records. Exact ignored local evidence: `.design-pipeline/round3-cli-smoke.jsonl` and `.design-pipeline/round3-cli-smoke-output.txt`.
+
+```text
+node --test tests/workflow-components.test.cjs tests/workflow-action-commands.test.cjs
+tests 74; pass 73; fail 0; skipped 1; exit 0
+duration_ms 3460.1285
+node --test --test-name-pattern "web" tests/workflow-next.test.cjs
+tests 7; pass 7; fail 0; skipped 0; exit 0
+duration_ms 143.6617
+```
+
+The one skip is the preexisting host filesystem case-alias collision test. An earlier combined command (`node --test tests/workflow-components.test.cjs tests/workflow-next.test.cjs tests/workflow-action-commands.test.cjs`) reached the tool's 120-second deadline without a final summary; all printed component/action tests passed, but that invocation is not claimed as successful. Focused affected files and all web-next cases completed with the figures above; the integration owner still runs the complete frozen QA suite. A preliminary Windows smoke invocation with escaped filter quotes matched no individual smoke cases (only the file runner); it is not counted as smoke evidence. The subsequent correctly supplied filter executed and passed both named cases.
+
+The integration owner normalized preexisting machine-specific paths and session-only references, preserving commands and observed numbers. Full QA and strict specs validation run on the frozen final tree; the local external report records their results and the delivery commit SHA. No post-verification repository evidence edit is required.
+
+
+### Integration regression — indexed project-owned scratch boundary
+
+The indexed `project-components` record is explicitly project-owned in both availability and license state. Scratch permits that boundary as well as contained project paths; external records remain forbidden. Integration found and corrected the local ownership flag so it also recognizes this existing indexed boundary.
+
+```text
+node --test --test-name-pattern "scratch accepts the indexed" tests/workflow-components.test.cjs
+Before: tests 1; pass 0; fail 1; skipped 0; exit 1
+duration_ms 61.9446
+Error: component manifest: entries[0] external source contradicts fromScratch
+
+node --test --test-name-pattern "round3 regression" tests/workflow-components.test.cjs
+After: tests 15; pass 15; fail 0; skipped 0; exit 0
+duration_ms 558.8762
+```
+
+The added regression validates the manifest through the public validator and executes the actual `next --json` CLI, observing stage `probe` for the indexed project-owned scratch entry. This is item 1's permitted project-owned-only behavior, not a new source policy.

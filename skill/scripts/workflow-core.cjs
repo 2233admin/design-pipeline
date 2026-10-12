@@ -202,6 +202,13 @@ function decide(root, options = {}) {
     state.decisions.reference = answer;
   } else if (stage === "components") {
     if (typeof options.answer !== "string" || !options.answer.trim()) fail("workflow", "--answer is required: the user's component source choice");
+    const allowed = ["project", "github", "index", "scratch"];
+    if (typeof options.choice !== "string" || !options.choice.trim()) fail("workflow", "--choice is required: project|github|index|scratch, comma-separated");
+    const choices = options.choice.split(",").map(value => value.trim());
+    if (choices.some(value => !allowed.includes(value))) fail("workflow", "--choice must be a comma-separated subset of project,github,index,scratch");
+    if (choices.includes("scratch") && choices.some(value => value !== "scratch")) fail("workflow", "--choice scratch cannot be combined with any other value");
+    if (choices.includes("github") && !/https:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+/i.test(options.answer)) fail("workflow", "--choice github requires at least one https://github.com/<owner>/<repo> URL in --answer");
+    state.decisions.componentSources = allowed.filter(value => choices.includes(value));
     state.decisions.components = options.answer;
   } else if (stage === "concept") {
     if (!options.choice) fail("workflow", "--choice is required: the concept number, or mad/pv for an edit");
