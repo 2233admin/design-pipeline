@@ -45,7 +45,7 @@ function gateStatus(state, root, gate, inputs = []) {
   const context = { gate, recordedStatus: result?.status || null };
   // Bind our catalog recovery command when projecting saved findings; preserve cached evidence.
   const recordedFindings = result?.findings?.map(item => typeof item.fix === "string" && item.fix.includes("designer-pipeline film blocks")
-    ? { ...item, fix: item.fix.replaceAll("designer-pipeline film blocks", `${cliCommand()} film blocks --root ${shellPath(path.resolve(root))}`) } : item);
+    ? { ...item, fix: item.fix.replaceAll("designer-pipeline film blocks", `${cliCommand()} film blocks --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`) } : item);
   const finding = (code, message, fix, file) => ({ code, severity: "error", message, fix, ...(file ? { path: file } : {}) });
   if (result?.status !== "passed") return {
     ...context, status: ["failed", "blocked"].includes(result?.status) ? result.status : "incomplete",

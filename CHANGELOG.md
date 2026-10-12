@@ -8,14 +8,20 @@ All notable changes to Design Pipeline are documented here.
 
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or
   `brief.md` (matched case-insensitively) no longer skips it, and intake refuses with
-  `OUTPUT_COLLISION` instead of overwriting a brief it did not write. Applies to film, edit,
-  web and ui.
+  `OUTPUT_COLLISION` instead of overwriting a brief it did not write. Hard-linked briefs are
+  also refused without changing linked files or state; owned updates use same-directory
+  temporary files and rename replacement instead of writing through the old inode. Applies
+  to film, edit, web and ui.
 - Commands and `record` templates returned by `next` bind the project's absolute path
   (`--root <abs> --project-root <abs>`) instead of `--project-root .`, so they run as given from
   any working directory. Invalid and stale job-plan recovery now names a complete, quoted retry
   for the same plan file. Edit analyze/auto/render handoffs use the actual `film-edit` group;
   score mastering, Blender checks, foundation initialization/validators, catalog repairs and
   standalone reference resampling also retain the selected project outside its directory.
+  Migrated old catalog findings bind both required roots in their `film blocks` repairs;
+  command-contract regressions run independently of ffmpeg availability.
+  Native visual decomposition, completion and review templates also bind absolute
+  `--root` and `--change-root`, so their change selection works from unrelated directories.
   On Windows, command generation rejects paths containing `$`, backticks, `"`, `%`, `!` or
   controls with `CONTRACT_INVALID` and move/rename remediation; an unsafe installation still
   imports successfully because CLI validation is lazy. POSIX shell escaping is unchanged.

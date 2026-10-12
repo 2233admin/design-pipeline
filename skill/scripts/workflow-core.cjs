@@ -183,11 +183,18 @@ function decide(root, options = {}) {
     const file = path.join(root, collisions[0] || "brief.md");
     // Only a byte-bound intake record owns this brief. Legacy decisions still complete intake,
     // but neither a decision alone nor matching answer text grants permission to overwrite.
-    const owned = collisions.length === 1 && fs.lstatSync(file).isFile()
+    const existing = collisions.length === 1 ? fs.lstatSync(file) : null;
+    const owned = existing?.isFile() && existing.nlink === 1
       && state.decisions.intake?.briefSha256 === "sha256:" + sha256(fs.readFileSync(file));
     if (collisions.length && !owned) fail("workflow", "brief.md collides (case-insensitively) with a file not written by this intake, or changed since intake wrote it. Fix: rename or move the existing brief outside this name, then record intake again; the existing file and state are unchanged.", { code: "OUTPUT_COLLISION" });
     const brief = `# Brief\n\n${options.answer}\n`;
-    fs.writeFileSync(file, brief, { flag: collisions.length ? "w" : "wx" });
+    const temporary = path.join(root, `.brief-${require("node:crypto").randomUUID()}.tmp`);
+    try {
+      fs.writeFileSync(temporary, brief, { flag: "wx" });
+      fs.renameSync(temporary, file);
+    } finally {
+      fs.rmSync(temporary, { force: true });
+    }
     state.decisions.intake = { answer: options.answer, briefSha256: "sha256:" + sha256(brief) };
   } else if (stage === "reference") {
     const answer = options.answer || "none";
@@ -470,8 +477,8 @@ function currentVisual(context) {
 function visualDecomposition(context) {
   return {
     type: "run", stage: "decompose", visualAcceptance: "not-evaluated",
-    instruction: "Write a design-plan.v1 with one observed property per phase. This example checks a menu's declared open, selection, close, Escape and focus states through the documented eight-step interaction.json journey in a stable #menu-demo wrapper; use #menu-trigger, #sort-menu, #sort-default, #sort-updated and #selection-value, reading the loaded QA method copied to guides/qa.md. It does not prove structural fidelity, backend persistence or visual acceptance. Bind reference files, scope, outputs, checks and dependencies. Bind each local-web check through visual.verification: interaction probe input, exact local page output and check result path. Guides must name actual readable method files. A video report reference requires visual.sourceObservation with report, confirmed shotId and observed observationIds; its target/property must match. Then run the command (replace <change> and <file>) before working in an owned Git window.",
-    command: `${cliCommand()} next --change-root <change> --plan <file>`,
+    instruction: "Write a design-plan.v1 with one observed property per phase. This example checks a menu's declared open, selection, close, Escape and focus states through the documented eight-step interaction.json journey in a stable #menu-demo wrapper; use #menu-trigger, #sort-menu, #sort-default, #sort-updated and #selection-value, reading the loaded QA method copied to guides/qa.md. It does not prove structural fidelity, backend persistence or visual acceptance. Bind reference files, scope, outputs, checks and dependencies. Bind each local-web check through visual.verification: interaction probe input, exact local page output and check result path. Guides must name actual readable method files. A video report reference requires visual.sourceObservation with report, confirmed shotId and observed observationIds; its target/property must match. Then run the command (replace <file>) before working in an owned Git window.",
+    command: `${cliCommand()} next --root ${shellPath(context.root)} --change-root ${shellPath(context.root)} --plan <file>`,
     ...(context.missingPlan ? { missingPlan: context.missingPlan } : {}),
     template: { schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: "sort-menu", input_hash: "sha256:" + "0".repeat(64), mode: "greenfield", fidelity: "adaptive", phases: [{ id: "menu-selection", depends_on: [], inputs: ["brief.md", "interaction.json", "guides/qa.md"], outputs: ["index.html"], gates: [], goal: "Open the menu, select 按更新时间, close it, then use Escape to restore focus while preserving the selected value.", visual: { target: "sort-menu", property: "menu.selection", references: ["brief.md"], scope: ["index.html", "implementation.md"], guides: ["guides/qa.md"], checks: ["evidence/menu-check.json"], review: true, verification: [{ kind: "interaction", probe: "interaction.json", target: "index.html", check: "evidence/menu-check.json" }] } }] },
   };
@@ -518,7 +525,7 @@ function nextVisualTask(changeRoot, options = {}) {
       artifacts, evidence, show: evidence.outputs.map(metadata => resolveInside(context.root, metadata.path, "review output", { scope: "workflow", mustExist: true })),
       technicalCompletion: "passed", visualAcceptance: "not-evaluated",
       question: `Inspect only ${current.visual.target}'s ${current.visual.property}: ${current.goal} Accept this exact evidence version, or reject it with the concrete difference to repair. This decision covers this target property, not the whole component or film.`,
-      record: `${cliCommand()} decide --change-root <change> --choice ${current.id} --verdict accept|reject --artifact <metadata.json> [--answer "<concrete feedback>"]`,
+      record: `${cliCommand()} decide --root ${shellPath(context.root)} --change-root ${shellPath(context.root)} --choice ${current.id} --verdict accept|reject --artifact <metadata.json> [--answer "<concrete feedback>"]`,
     };
   }
   return {
@@ -529,8 +536,8 @@ function nextVisualTask(changeRoot, options = {}) {
     ...(blocker ? { status: "blocked", blockers: [blocker] } : {}),
     ...visualFailureFeedback(context, current, inputHashes),
     ...(context.progress.completed[current.id]?.status === "stale" ? { previousArtifacts: context.progress.completed[current.id].artifacts } : {}),
-    instruction: `Work only on ${current.id}: ${current.goal} Read the named guides and references; keep this execution window owned and changes inside its scope. Produce the declared outputs, then run the command (replace <change>). Completion runs the bound browser verifier and writes artifact.v1 metadata itself. A technical completion never grants visual acceptance.`,
-    command: `${cliCommand()} decide --change-root <change> --choice ${current.id} --verdict complete --artifact ${taskMetadataPath(current)}`,
+    instruction: `Work only on ${current.id}: ${current.goal} Read the named guides and references; keep this execution window owned and changes inside its scope. Produce the declared outputs, then run the command. Completion runs the bound browser verifier and writes artifact.v1 metadata itself. A technical completion never grants visual acceptance.`,
+    command: `${cliCommand()} decide --root ${shellPath(context.root)} --change-root ${shellPath(context.root)} --choice ${current.id} --verdict complete --artifact ${taskMetadataPath(current)}`,
   };
 }
 

@@ -383,3 +383,161 @@ commit or push were performed by this repair worker.
   are recorded above; the final full run used an explicit Windows `cmd` binding
   verified before execution.
 
+
+## Review fixes round 2
+
+- [x] 9.1 Refuse multiply-linked intake briefs and replace owned briefs through a same-directory temporary file and rename.
+- [x] 9.2 Bind both roots in migrated catalog repair commands; execute the regression independently of ffmpeg.
+- [x] 9.3 Audit all returned commands for required root bindings and repair omissions.
+- [x] 9.4 Run full repository QA with the requested fonttools override and strict OpenSpec checks; commit without pushing and write the external report (commit SHA and report delivery recorded in the external report).
+
+### Intake regression: red and green
+
+Command for both runs:
+
+```text
+node --test --test-reporter=spec --test-name-pattern="intake hardlink|intake owned rewrite" tests/workflow-action-commands.test.cjs
+```
+
+Before implementation (exit 1):
+
+```text
+✖ intake hardlink collision preserves external bytes and state through the CLI (165.2846ms)
+✖ intake owned rewrite replaces the brief entry through the CLI (157.2331ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1538.7603
+```
+
+The hard-link case changed the external file from 22 to 41 bytes. The owned rewrite
+retained inode `26740122792498531n`, proving in-place mutation.
+
+After implementation (exit 0):
+
+```text
+✔ intake hardlink collision preserves external bytes and state through the CLI (178.3898ms)
+✔ intake owned rewrite replaces the brief entry through the CLI (180.3893ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 478.956
+```
+
+The tests exercise the actual CLI, external linked-file bytes, unchanged rejected
+state, successful owned rewrite contents/state and replacement file identity.
+Hard-link creation skips only on hosts that do not support it; neither case depends
+on ffmpeg.
+
+### Catalog projection regression
+
+Command: `node --test --test-name-pattern="legacy catalog repair projection" tests/returned-command-audit.test.cjs`.
+
+Before (exit 1):
+
+```text
+✖ legacy catalog repair projection runs from unrelated cwd without media tools (96.5855ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 205.3632
+AssertionError [ERR_ASSERTION]: {"schema":"design-pipeline.cli-result.v1","ok":false,"error":{"code":"CONTRACT_INVALID","message":"cli: --project-root requires a path","details":{}}}
+1 !== 0
+```
+
+After (exit 0):
+
+```text
+✔ legacy catalog repair projection runs from unrelated cwd without media tools (88.3089ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 195.3424
+```
+
+The projected CLI runs with Node-only PATH, a spaced project and cached catalog;
+query, saved finding/state and unrelated directory remain intact.
+
+### Returned-command audit
+
+Audited installed CLI builders, historical templates, root flags, scaffold rewrites
+and resampling argv in audio, Blender, CLI, design synthesis, edit, film hints/project,
+reference video, score, workflow core, shared/film/edit/web workflows and skill/tools.
+Three additional native visual templates lacked `--root`: decomposition `next`,
+task completion `decide`, and review record. They now bind both `--root` and
+`--change-root`. Native handlers do not use `--project-root`. Root-only media/toolchain
+commands and standalone synthesis's project-root-only parser are intentional.
+Scaffold guide rewrites and reference resampling argv already bind correctly.
+
+Command: `node --test --test-name-pattern="native returned .* command selects" tests/workflow-next.test.cjs`.
+
+Before (exit 1):
+
+```text
+✖ native returned decompose command selects its change from unrelated cwd without media tools (559.6701ms)
+✖ native returned complete command selects its change from unrelated cwd without media tools (510.3873ms)
+✖ native returned review command selects its change from unrelated cwd without media tools (1388.2342ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2570.4664
+```
+
+All three failed `CONTRACT_INVALID: --change-root must stay inside <unrelated cwd>`.
+After (exit 0):
+
+```text
+✔ native returned decompose command selects its change from unrelated cwd without media tools (288.3992ms)
+✔ native returned complete command selects its change from unrelated cwd without media tools (1439.5129ms)
+✔ native returned review command selects its change from unrelated cwd without media tools (1592.2929ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3429.4304
+```
+
+Completion reaches gate-blocked exit 2 rather than root-validation exit 1;
+decomposition and review succeed without changing the unrelated directory.
+
+### No-media command-contract verification
+
+`cmd /d /c "set PATH=C:/Program Files/nodejs&&node --test tests/returned-command-audit.test.cjs"`:
+exit 0, tests 5, pass 3, fail 0, skipped 2 (audio and real video decoding).
+Pure Windows frame-review assertions remain exercised without media tools.
+The real decode test now follows `hasFfmpeg`/skip: its no-media before run had
+tests 2, pass 1, fail 1, skipped 0 (absent ffmpeg spawn); after had tests 2,
+pass 1, fail 0, skipped 1.
+
+`cmd /d /c "set PATH=C:/Program Files/nodejs;C:/Program Files/Git/cmd&&node --test --test-name-pattern=native.returned.*command.selects tests/workflow-next.test.cjs"`:
+exit 0, tests 3, pass 3, fail 0, skipped 0, with no ffmpeg/ffprobe on PATH.
+
+### Round 2 parent integration verification
+
+- Integrated actual-CLI regressions: `node --test --test-name-pattern="intake hardlink|intake owned rewrite|legacy catalog repair projection|native returned .* command selects" tests/workflow-action-commands.test.cjs tests/returned-command-audit.test.cjs tests/workflow-next.test.cjs`; exit 0, tests 6, pass 6, fail 0, skipped 0.
+- Full requested QA: `cmd /d /c "set FONTTOOLS_PYTHON=D:/Temp/dp-fonttools-venv/Scripts/python.exe&&npm test"`; exit 0. Repository: 130 files, 1256 tests, 1252 passed, 0 failed, 4 skipped. Installed public CLI smoke: 12 passed, 0 failed, 0 skipped. Browser adapter and BuilderPort self-tests passed; QA left repository status byte-identical.
+- `npm run specs:check`: exit 0, 70 passed, 0 failed.
+- These are technical/command-contract checks, not Component Conformance or Visual Acceptance claims.
