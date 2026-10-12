@@ -28,10 +28,18 @@ test("routes Expo numeric content through the native package and web numeric con
   assert.ok(web.routes.filter((route) => route.selected).every((route) => route.selected.id === "frontend-component-sources:component:native/dom-numeric-transition"));
 });
 
-test("routes depth carousel as a reviewable web reference and blocks it on Expo", () => {
+test("routes the proven public React Bits depth carousel as ready and blocks it on Expo", () => {
   const web = routeComponents({ catalog: catalog(), brief: "depth carousel", platform: "web" });
-  assert.equal(web.status, "review");
-  assert.equal(web.routes.find((route) => route.capability === "depth-carousel").selected.id, "frontend-component-sources:component:reactbits-pro/depth-carousel");
+  assert.equal(web.status, "ready");
+  const selected = web.routes.find((route) => route.capability === "depth-carousel").selected;
+  assert.equal(selected.id, "frontend-component-sources:component:reactbits/depth-carousel");
+  assert.equal(selected.sourceId, "davidhdev/react-bits");
+  assert.equal(selected.licenseEvidence.state, "verified");
+  assert.equal(selected.licenseEvidence.id, "LicenseRef-MIT-Commons-Clause");
+  assert.match(selected.install, /@react-bits\/DepthCarousel-TS-TW/);
+  assert.match(selected.sourceCode, /496968c4117e21278f13917201b7d615bc5e7450/);
+  assert.match(selected.licenseNotice, /redistribut/i);
+  assert.equal(catalog().entries.some((entry) => entry.localId === "reactbits-pro/depth-carousel"), false);
 
   const expo = routeComponents({ catalog: catalog(), brief: "depth carousel", platform: "expo" });
   assert.equal(expo.status, "blocked");

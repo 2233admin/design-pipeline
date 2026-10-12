@@ -261,8 +261,9 @@ test("bundled design-system knowledge is agent-discoverable without installing A
 test("component route selects platform-specific sources without copying remote code", () => {
   const web = run(["design-system", "route", "--root", repoRoot, "--query", "depth carousel", "--platform", "web"]);
   assert.equal(web.status, 0, web.stderr || web.stdout);
-  assert.equal(web.output.status, "review");
+  assert.equal(web.output.status, "ready");
   assert.equal(web.output.routes.find(({ capability }) => capability === "depth-carousel").selected.source, "React Bits");
+  assert.equal(web.output.routes.find(({ capability }) => capability === "depth-carousel").selected.sourceId, "davidhdev/react-bits");
 
   const expo = run(["design-system", "route", "--root", repoRoot, "--query", "animated numeric stat", "--platform", "expo"]);
   assert.equal(expo.status, 0, expo.stderr || expo.stdout);

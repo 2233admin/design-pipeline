@@ -128,3 +128,90 @@ Change 'consolidate-component-index-and-web-sources' is valid; exit 0
 The four repository skips are three optional native GEPA runtime scenarios (`GEPA_PYTHON` not prepared) and the Windows case-variant collision scenario (filesystem aliases case). No component-index/workflow regression was skipped. Final full output is `artifact://156`; strict specs output is `artifact://159`. `git diff --name-only -- skill/vendor` reported only `skill/vendor/README.md`, proving vendor manifests/upstream files were not changed. Temporary smoke HTML, manifest and state were removed after observation.
 
 Delivery report was written to the requested absolute path after the local implementation commit. This checklist closeout is included in that local commit; the final non-self-referential commit SHA is recorded in the external report. No push was executed. The report lists all six canonical commercial/unverified sources plus Depth Carousel identity, linked shadcn.io implementations and separately paid scope boundaries requiring the owner's decision. Repository status was clean after the implementation commit and is checked again after checklist closeout.
+
+## Round 2 implementation and acceptance
+
+- [x] 9. Apply the user's dated license decisions, verify Motion/anime.js and expose usable animation discovery; resolve Depth Carousel identity only with public evidence.
+- [x] 10. Use the existing catalog core to validate real manifest sources, contained usage files, markers and license handling; support explicit scratch manifests and reject contradictory decisions.
+- [x] 11. Project saved gate next text and finding fixes through the same absolute command helper without changing saved evidence; prove external-directory execution.
+- [x] 12. Check both web route and search exclude film/GEPA/Prompt Motion/HyperFrames methods and templates; fix only observed leakage.
+- [ ] 13. Record focused failing-before/passing-after evidence and real CLI smokes, then freeze implementation bytes for full QA and strict specs validation.
+- [ ] 14. Commit verified changes locally without pushing and write report-implement-round2.md with the final commit SHA.
+
+### Round 2 acceptance boundaries
+
+Items 9–12 correspond directly to brief items 1–4. Tests exercise real discovery, workflow completion and projected command execution rather than fixture field presence. Pure command-contract assertions do not require ffmpeg. License evidence is a technical source decision, not paid entitlement. Component Conformance and Visual Acceptance are reported separately; neither is inferred from repository QA.
+
+The initial working tree was clean. `git fetch origin` succeeded; `git log --left-right --oneline origin/main...HEAD` showed only local merge `d62d0c2` and round-1 implementation `99aa5f3`, with no incoming target-only commit. The three-dot scope was the existing 37-file component-source/web-provenance change. `npm ci` installed the locked 145 packages; npm reported esbuild's install script blocked by its existing allowScripts policy.
+
+### Round 2 manifest regression and smoke evidence
+
+```text
+node --test --test-name-pattern="round2 regression:" tests/workflow-components.test.cjs
+Before: tests 6; pass 0; fail 6; skipped 0; exit 1
+Log: .design-pipeline/round2-manifest-before.txt
+```
+
+The fabricated sourceId, missing consuming file, absent marker, unverified copy and contradictory scratch manifest incorrectly advanced to probe; Chinese scratch incorrectly remained at build. The same six assertions pass after the validator cutover.
+
+```text
+node --test tests/workflow-components.test.cjs
+First after: tests 26; pass 25; fail 1; exit 1
+Log: .design-pipeline/round2-manifest-first-after-failure.txt
+After: tests 27; pass 27; fail 0; skipped 0; exit 0
+Log: .design-pipeline/round2-manifest-after.txt
+```
+
+The first-after failure exposed spaced `React Bits` names missing the hyphenated repository-name contradiction check; matching the spaced identity fixed it. Additional direct validator checks cover contained real paths, named GitHub repositories, indexed state agreement, license notices and commercial adoption boundaries.
+
+Actual public CLI smoke made 12 calls from outside its separate temporary project, all exit 0: Chinese decide recorded; missing scratch flag stayed at build; explicit scratch advanced to probe; fabricated source and missing file stayed at build; valid indexed, project-owned and named GitHub study manifests advanced to probe. Exact executable paths, roots, stdout/stderr and statuses are in `.design-pipeline/round2-manifest-cli-smoke.jsonl`.
+
+```text
+node --test --test-name-pattern="web quick walks|a rejected web draft|every command and record template|edit and web stages return" tests/workflow-next.test.cjs tests/workflow-action-commands.test.cjs
+After fixture migration: tests 4; pass 4; fail 0; skipped 0; exit 0
+Log: .design-pipeline/round2-manifest-fixture-compatibility.txt
+```
+
+### Round 2 saved gate regression and smoke evidence
+
+```text
+node --test --test-name-pattern="saved gate next|recorded gate repair" tests/workflow-action-commands.test.cjs
+Before: tests 3; pass 1; fail 2; skipped 0; exit 1
+Log: .design-pipeline/round2-gate-before.log
+After: tests 3; pass 3; fail 0; skipped 0; exit 0
+Log: .design-pipeline/round2-gate-after.log
+```
+
+The baseline returned the bare saved command; actual execution failed because Windows could not resolve `designer-pipeline`. After projection, the same saved gate's returned command executes from an unrelated directory using both absolute roots and a project path with spaces. Actual film blocks output is found/cached with catalogSize 1 and camera-orbit. Both projection and execution preserve state bytes; the unrelated directory stays empty. The existing offline catalog cache removes network and ffmpeg prerequisites from this contract smoke.
+
+### Round 2 licensing, discovery and typed web evidence
+
+```text
+node --test tests/component-source-routing.test.cjs
+Before discovery/filtering: tests 6; pass 4; fail 2; exit 1
+Log: .design-pipeline/round2-license/before-routing.txt
+node --test --test-name-pattern="owner decisions|GSAP" tests/component-source-routing.test.cjs
+Before license decisions: tests 2; pass 0; fail 2; exit 1
+Log: .design-pipeline/round2-license/before-license-routing.txt
+node --test --test-name-pattern="proven public" tests/component-routing.test.cjs
+Before public identity: tests 1; pass 0; fail 1; exit 1
+Log: .design-pipeline/round2-license/before-depth-routing.txt
+node --test tests/component-source-routing.test.cjs tests/component-routing.test.cjs tests/component-source-completeness.test.cjs
+After: tests 22; pass 22; fail 0; skipped 0; exit 0
+Log: .design-pipeline/round2-license/after-routing.txt
+node --test --test-name-pattern="component route selects platform-specific" tests/designer-pipeline-cli.test.cjs
+After public identity caller: tests 1; pass 1; fail 0; exit 0
+Log: .design-pipeline/round2-license/after-depth-cli-test.txt
+```
+
+`gh api repos/motiondivision/motion/license` returned MIT, blob `81110442c72270dd317667cc52181522647401f2`, observed repository revision `e6bf03ead39cae7a2c5f8fe902ce8a9c1a9a22e8`. `gh api repos/juliangarnier/anime/license` returned MIT, blob `f999fa58ebdda6d8d0f3ae581ebdfe821f09603a`, observed revision `01b81be1df6843ccfe0a71c0699a746bf740dd77`; its existing pinned license is identical. Raw and decoded responses are under `.design-pipeline/round2-license/`.
+
+GSAP uses `LicenseRef-GSAP-Standard-No-Charge`, with notice and competing no-code visual-animation-tool consent conditions recorded; it is not MIT. User decisions dated 2026-10-12 preserve all unverified/commercial study/reimplementation boundaries and no paid entitlement. Free verified scopes remain usable; Transitions Pro/Business, beUI Pro, Magic UI Pro and shadcn.io's 75 linked implementations do not inherit free-source permission.
+
+Depth Carousel live JS-CSS and TS-TW registry objects match public repository objects and component contents at `496968c4117e21278f13917201b7d615bc5e7450`. License blob `6425315416e94469f28d0223a09f7285b2f785ab` is MIT + Commons Clause. Evidence: `.design-pipeline/round2-license/depth-carousel-identity-observations.json`. The public identity replaces the incorrect Pro identity without an alias.
+
+Actual external-cwd public CLI evidence: `.design-pipeline/round2-license/before-cli.json` contains 14 baseline commands; `after-cli.json` contains 24 final commands covering route, default platform search and explicit-index platform search for spring animation, scroll reveal, timeline, film, GEPA, Prompt Motion, HyperFrames and depth carousel. Motion/anime.js are ready/findable for all three animation queries; GSAP for scroll/timeline. Search excludes all four non-web method/reference sources; source-only route queries return expected blocked exit 2. Public Depth Carousel routes ready. Search without platform retains Astryx.
+
+Actual npm/ESM smoke installed seven packages only in an ignored temporary evidence prefix, then imported Motion 14.1.0, animejs 4.5.0 and GSAP 3.15.0. `motion.animate`, `motion.spring`, `animejs.animate`, `animejs.createTimeline` and `gsap.gsap.to` were observed functions; exit 0. Full setup/runtime output: `.design-pipeline/round2-license/import-smoke.txt`. These package versions are smoke observations, not new project dependency pins.
+
+`git diff --exit-code HEAD -- skill/vendor` exited 0 before freezing: no vendor byte changes in round 2.

@@ -89,8 +89,9 @@ Use the public CLI for the complete lifecycle:
   zero-result does not prove exhaustion when capability searches find candidates.
 - `design-system route` defaults to the component-source index and selects project, platform,
   package, or attributed reference routes for the decomposed component capabilities.
-- `design-system search` searches Astryx by default; pass the component-source index explicitly
-  with `--snapshot` to search that index instead.
+- `design-system search` without `--platform` searches Astryx by default; pass `--snapshot`
+  to search another index. With `--platform web`, it defaults to the component-source index
+  and filters to web-reusable components/libraries, including when an index is supplied.
 - `design-system normalize` converts a supplied snapshot into the strict namespaced catalog.
 - `design-system acquire` runs an explicit contained local provider or the bundled Astryx adapter
   against an existing contained Astryx CLI. It never installs or downloads that CLI.
@@ -109,8 +110,32 @@ node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \
   --root "$PROJECT_ROOT" --query "<page brief>" --platform web
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system search \
   --root "$SKILL_ROOT" --snapshot "$SKILL_ROOT/references/component-source-catalog.json" \
-  --query "<page brief>"
+  --query "<page brief>" --platform web
 ```
+
+Web route/search excludes source-only, method and template references such as film, GEPA,
+Prompt Motion and HyperFrames. Motion (`npm install motion`, ESM `motion`/`motion/react`)
+and anime.js (`npm install animejs`, ESM `animejs`) are verified MIT library candidates for
+spring animation, scroll reveal and timeline; preserve their copyright/license notices.
+GSAP (`npm install gsap`, ESM `gsap`) is usable under the GSAP Standard "No Charge" License,
+**not MIT**: retain proprietary notices and do not build a competing no-code visual-animation
+tool without written consent; follow the complete terms recorded in the index.
+
+The owner's **2026-10-12** decision is recorded in each affected index record's license evidence:
+awesome-ux-skills, Prompt Motion, React Bits Pro, the Shadcnblocks full catalog and Aceternity Pro
+are study/reimplementation references only, **never copy code**. No paid-library entitlement
+was stated, so React Bits Pro, Aceternity Pro, Shadcnblocks paid items, Transitions Pro/Business,
+beUI Pro and Magic UI Pro must not be adopted. The 75 external implementations linked from
+shadcn.io are also study/reimplementation-only, not MIT by inheriting their link index's grant.
+Verified free/public scopes remain usable under their actual licenses; these decisions do not
+upgrade an unverified license or grant any paid entitlement.
+
+`reactbits/depth-carousel` now names the proven public React Bits component: its live public
+registry content matches the pinned public repository implementation. It is separate from Pro,
+usable under **MIT + Commons Clause**, not plain MIT; retain notices and do not redistribute the
+component by itself, in component bundles or as a port. Its GSAP dependency retains the separate
+Standard No Charge conditions above. The index records the pinned implementation and license
+evidence; no upstream bytes were changed.
 
 Keep catalog artifacts root-contained. This discovery does not replace the job dispatcher:
 load only returned entries and needed pointers on demand, never eagerly open all catalogs.

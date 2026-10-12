@@ -40,17 +40,23 @@ function referenceObserved(state, root) {
   return video.status === "ready" && video.coverage.fullSource;
 }
 
+// Bind legacy catalog recovery commands only in the returned projection, not cached evidence.
+function projectGateCommand(text, root) {
+  return typeof text === "string" && text.includes("designer-pipeline film blocks")
+    ? text.replaceAll("designer-pipeline film blocks", `${cliCommand()} film blocks --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`)
+    : text;
+}
+
 function gateStatus(state, root, gate, inputs = []) {
   const result = state.gates && state.gates[gate];
   const context = { gate, recordedStatus: result?.status || null };
-  // Bind our catalog recovery command when projecting saved findings; preserve cached evidence.
-  const recordedFindings = result?.findings?.map(item => typeof item.fix === "string" && item.fix.includes("designer-pipeline film blocks")
-    ? { ...item, fix: item.fix.replaceAll("designer-pipeline film blocks", `${cliCommand()} film blocks --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`) } : item);
+  const recordedFindings = result?.findings?.map(item => typeof item.fix === "string"
+    ? { ...item, fix: projectGateCommand(item.fix, root) } : item);
   const finding = (code, message, fix, file) => ({ code, severity: "error", message, fix, ...(file ? { path: file } : {}) });
   if (result?.status !== "passed") return {
     ...context, status: ["failed", "blocked"].includes(result?.status) ? result.status : "incomplete",
     findings: recordedFindings?.length ? recordedFindings : [finding("workflow-check-required", `No current passed ${gate} check is recorded.`, "Run the returned check and apply its findings before continuing.")],
-    next: result?.next || "Run the returned verification command and apply its reported fixes.",
+    next: projectGateCommand(result?.next, root) || "Run the returned verification command and apply its reported fixes.",
   };
   if (!result.inputHashes || !Object.keys(result.inputHashes).length) return {
     ...context, status: "stale", findings: [finding("workflow-pass-unbound", "The recorded pass has no checked-file bindings.", "Rerun the returned check; do not edit cached state to mark it passed.")],

@@ -801,12 +801,14 @@ before build in every tier and mode. Ask for project component paths, a named Gi
 an index search, or scratch implementation; recommend project components first, then the index.
 Record the exact nonempty answer and honor it. Before `index.html`, write the
 `component-manifest.json` described in [workflow-web.md#build](workflow-web.md#build), including
-source identity, availability, license state and file/use provenance. Index search explicitly
-uses `references/component-source-catalog.json`; load returned sources only on demand.
-Unverified/commercial sources may be studied and reimplemented, never copied. An empty manifest
-requires the recorded answer `"Write from scratch"` (case-insensitive, surrounding whitespace
-ignored); all other decisions require at least one entry. HTML plus a valid manifest is web build
-completion evidence, not a new gate.
+resolved source identity, indexed license-state agreement, and existing contained files with real
+`usedIn.marker` evidence and `how` provenance. Index search explicitly uses
+`references/component-source-catalog.json`; load returned sources only on demand.
+Unverified/commercial sources may only be studied and reimplemented, never copied or imported.
+Verified imports/copies document attribution/license-notice handling in `how`. An empty manifest
+requires explicit `"fromScratch": true`, independent of the decision language (including `从零写`),
+and must not contradict a library/repository named in that decision. HTML plus a valid manifest is
+Component Conformance build-completion evidence, not a new gate or Visual Acceptance.
 
 The `ui` route has a generic `work` stage completed by recording delivery evidence, with
 arbitrary project file shapes, not a web `build` stage or an `index.html` output contract.

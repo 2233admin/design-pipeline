@@ -59,7 +59,7 @@ function rewriteSameTime(root, file, body) {
 
 function prepareWebComponents(root) {
   decide(root, { stage: "components", answer: "Write from scratch" });
-  touch(root, "component-manifest.json", JSON.stringify({ entries: [] }));
+  touch(root, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
 }
 
 function checkedWorkflowFixture(deliverable, tier = "standard") {

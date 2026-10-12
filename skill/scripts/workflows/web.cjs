@@ -5,6 +5,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { validateComponentManifest } = require("../design-system-catalog-core.cjs");
 const { cliCommand, shellPath, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
@@ -54,25 +55,16 @@ const COMPONENTS = {
   }),
 };
 
-const AVAILABILITIES = ["bundled-implementation", "reference-link", "metadata-only", "project-owned"];
-const LICENSE_STATES = ["verified", "unverified", "commercial", "project-owned", "platform"];
-const nonempty = (value) => typeof value === "string" && Boolean(value.trim());
-
 function buildFinished(state, root) {
   if (!COMPONENTS.finished(state)) return false;
   try {
     if (!fs.statSync(path.join(root, "index.html")).isFile()) return false;
-    const manifest = JSON.parse(fs.readFileSync(path.join(root, "component-manifest.json"), "utf8"));
-    if (Array.isArray(manifest?.entries) && manifest.entries.length === 0) {
-      return state.decisions.components.trim().toLowerCase() === "write from scratch";
-    }
-    return Array.isArray(manifest?.entries) && manifest.entries.every(entry =>
-      entry && nonempty(entry.name) && (nonempty(entry.sourceId) || nonempty(entry.url))
-      && AVAILABILITIES.includes(entry.availability) && LICENSE_STATES.includes(entry.license?.state)
-      && Array.isArray(entry.usedIn) && entry.usedIn.length > 0
-      && entry.usedIn.every(use => use && nonempty(use.file) && nonempty(use.how)));
+    validateComponentManifest(JSON.parse(fs.readFileSync(path.join(root, "component-manifest.json"), "utf8")), {
+      root, decision: state.decisions.components,
+    });
+    return true;
   } catch (error) {
-    if (error instanceof SyntaxError || ["ENOENT", "ENOTDIR", "EISDIR"].includes(error.code)) return false;
+    if (error instanceof SyntaxError || ["CONTRACT_INVALID", "ENOENT", "ENOTDIR", "EISDIR"].includes(error.code)) return false;
     throw error;
   }
 }
@@ -80,7 +72,7 @@ function buildFinished(state, root) {
 function componentInstruction(state, root) {
   const skillRoot = path.resolve(__dirname, "../..");
   const index = path.join(skillRoot, "references/component-source-catalog.json");
-  return `Follow the recorded component decision exactly: ${JSON.stringify(state.decisions.components)}. Reuse the specified project paths, inspect the named GitHub library, search the index, or write from scratch as requested; do not silently substitute another source. When searching, the single discovery index is references/component-source-catalog.json: run \`${cliCommand()} design-system route --root ${shellPath(path.resolve(root))} --query "<page brief>" --platform web\`, then \`${cliCommand()} design-system search --root ${shellPath(skillRoot)} --snapshot ${shellPath(index)} --query "<page brief>"\`. Read only the returned source entries and their pointed guides/manifests/implementations. Before building index.html, write component-manifest.json with an entries array: each entry needs name, sourceId or url, availability (${AVAILABILITIES.join("|")}), license: {state: ${LICENSE_STATES.join("|")}}, and usedIn: [{file, how}] identifying the consuming file and usage. Entries may be empty only when the recorded components answer is "Write from scratch" (case-insensitive, surrounding whitespace ignored); all other decisions require at least one entry. Components with unverified or commercial licenses may only be studied and reimplemented, never copied. Build is unfinished until both index.html and a valid component-manifest.json exist.`;
+  return `Follow the recorded component decision exactly: ${JSON.stringify(state.decisions.components)}. Reuse the specified project paths, inspect the named GitHub library, search the index, or write from scratch as requested; do not silently substitute another source. When searching, the single discovery index is references/component-source-catalog.json: run \`${cliCommand()} design-system route --root ${shellPath(path.resolve(root))} --query "<page brief>" --platform web\`, then \`${cliCommand()} design-system search --root ${shellPath(skillRoot)} --snapshot ${shellPath(index)} --query "<page brief>"\`. Read only the returned source entries and their pointed guides/manifests/implementations. Before building index.html, write component-manifest.json with an entries array: each entry needs name, sourceId or url, availability (bundled-implementation|reference-link|metadata-only|project-owned), license: {state: verified|unverified|commercial|project-owned|platform}, and usedIn: [{file, marker, how}]. sourceId must resolve in the index or name an existing contained project-owned file; a GitHub repository url must appear in the components decision. Indexed license.state must match the index. Every usedIn.file must exist inside the project, and marker (import path/class/custom element/component identifier) must actually appear in it. For verified imports/copies, how records attribution/license-notice handling. Explicit fromScratch: true permits empty entries, including for a Chinese scratch answer, but must not contradict a library named in the decision or entries. Components with unverified or commercial licenses may only be studied and reimplemented, never copied. Build is unfinished until both index.html and a valid component-manifest.json exist.`;
 }
 
 const BUILD = {

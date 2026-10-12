@@ -6,6 +6,12 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Component manifests now resolve real sources and project-contained usage files, require markers
+  present in those files and license-notice handling for verified adoption, and reject copying
+  unverified or commercial references. Explicit `fromScratch` supports Chinese scratch decisions
+  without allowing contradictory library-reuse decisions to finish build.
+- Saved gate `next` commands use the same absolute project binding as finding repairs, without
+  rewriting persisted gate evidence.
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or
   `brief.md` (matched case-insensitively) no longer skips it, and intake refuses with
   `OUTPUT_COLLISION` instead of overwriting a brief it did not write. Hard-linked briefs are
@@ -52,6 +58,9 @@ All notable changes to Design Pipeline are documented here.
   completion. UI retains its generic work/delivery-evidence contract because it has no equivalent
   HTML build stage. Unverified or commercial sources remain study/reimplementation references,
   not copying permission.
+- Animation discovery records Motion and anime.js license evidence and npm/ESM usage, and keeps
+  GSAP's actual Standard No Charge License conditions. Dated owner decisions keep paid or
+  unverified sources study/reimplementation-only; web discovery excludes methods and templates.
 
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional

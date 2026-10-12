@@ -116,34 +116,59 @@ uses Astryx. Load only the returned entries and needed source guides/implementat
 catalog. Keep catalog artifacts inside the selected root.
 
 Before writing `index.html`, write project-local `component-manifest.json`. Its `entries` array
-records every component source used, with a nonempty `name`, `sourceId` or `url`, `availability`,
-`license.state`, and nonempty `usedIn` entries naming the file and how the source is used:
+records every component source used. The existing catalog core's `validateComponentManifest`
+checks this evidence; the web workflow stays at build if it is invalid.
 
 ```json
 {
   "entries": [
     {
       "name": "Project navigation",
-      "url": "file:///absolute/project/src/components/Navigation.tsx",
+      "sourceId": "src/components/Navigation.tsx",
       "availability": "project-owned",
       "license": { "state": "project-owned" },
-      "usedIn": [{ "file": "index.html", "how": "Adapt the project's navigation structure" }]
+      "usedIn": [{
+        "file": "index.html",
+        "marker": "Navigation",
+        "how": "Adapt the project's Navigation component"
+      }]
     }
   ]
 }
 ```
 
-`availability` is one of `bundled-implementation`, `reference-link`, `metadata-only`,
-`project-owned`; `license.state` is one of `verified`, `unverified`, `commercial`,
-`project-owned`, `platform`. Sources marked `unverified` or `commercial` may only be studied and
-reimplemented, never copied. Availability does not grant permission to copy.
+The example requires the source file to exist and `Navigation` to appear in `index.html`.
+For each entry:
 
-An empty array is allowed only when the recorded answer is `"Write from scratch"`
-(case-insensitive, surrounding whitespace ignored). Write `{"entries":[]}` and author the page
-without copied components. All other decisions require at least one entry. Build finishes only
-when `index.html` and a valid `component-manifest.json` both exist: `entries` is an array and each
-entry has the required fields above. This is stage
-completion evidence, not a new gate or receipt schema, and does not grant visual acceptance.
+- `name` is nonempty. `sourceId` resolves to an indexed source in
+  `references/component-source-catalog.json`, or names an existing project-owned file inside the
+  project. Alternatively, `url` names a GitHub repository URL present in the recorded components
+  decision, or a contained project-owned file path/file URL. Arbitrary URLs and invented IDs do
+  not resolve. Containment follows real paths, so a symlink cannot point outside the project.
+- `availability` is `bundled-implementation`, `reference-link`, `metadata-only` or `project-owned`.
+  `license.state` is `verified`, `unverified`, `commercial`, `project-owned` or `platform`.
+  An indexed source's license state matches the index, including when identified by its named
+  GitHub repository URL. Project files use project-owned availability and license state.
+- Every `usedIn` has an existing contained `file`, a nonempty `marker` that literally appears in
+  that file, and a nonempty `how`. Choose a real import path, class name, custom element name or
+  component identifier as the marker, not a fabricated usage description.
+- `how` describes use. Unverified/commercial sources allow only study/reimplementation, never
+  copying or importing; availability does not grant permission. For example:
+  `Study and reimplement the Navigation interaction independently`.
+- For verified imports/copies, `how` explicitly records attribution/license-notice handling,
+  for example `Import Navigation; retain upstream copyright/license notices in LICENSES.md`.
+  This documents handling; validation does not independently audit legal compliance or verify
+  a non-indexed repository's declared license.
+
+For scratch implementation, write `{"fromScratch":true,"entries":[]}`. The recorded decision
+still exists, but no English phrase match is required: `从零写` works. A named library/repository
+in the decision or an external-source entry contradicts `fromScratch: true` and keeps build
+unfinished. Without the explicit flag, an empty manifest fails even for `Write from scratch`.
+
+Build finishes only when `index.html` and a valid manifest both exist. Invalid evidence returns
+the build instructions; repair the source identity, license declaration or file/marker provenance
+before running `next` again. This is Component Conformance stage-completion evidence, not a new
+gate or receipt schema, and does not grant Visual Acceptance.
 
 Apply the selected Taste source through the approved design and existing component/runtime owners.
 Keep complete requested artifacts, real content and loading/empty/error/focus states. Bind
