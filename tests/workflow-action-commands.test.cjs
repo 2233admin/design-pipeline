@@ -385,3 +385,48 @@ test("intake duplicate case collisions refuse even with an owned brief", t => {
   assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\nowned answer\n");
   assert.deepEqual(fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), before);
 });
+
+test("intake hardlink collision preserves external bytes and state through the CLI", t => {
+  const dir = tmp(), external = path.join(tmp(), "user-brief.md");
+  initState(dir, { deliverable: "web", tier: "standard" });
+  const record = answer => spawnSync(process.execPath, [cliFile, "decide", "--root", dir, "--project-root", dir, "--stage", "intake", "--answer", answer, "--json"], { encoding: "utf8", windowsHide: true });
+  const initial = record("owned answer");
+  assert.equal(initial.status, 0, initial.stdout + initial.stderr);
+  const file = path.join(dir, "brief.md");
+  fs.renameSync(file, external);
+  try { fs.linkSync(external, file); }
+  catch (error) {
+    if (["EPERM", "EACCES", "ENOTSUP", "EOPNOTSUPP", "ENOSYS"].includes(error.code)) return t.skip(`Host cannot create file hardlinks: ${error.code}`);
+    throw error;
+  }
+  assert.ok(fs.lstatSync(file).nlink > 1, "fixture must share the external file's inode");
+  const bytes = fs.readFileSync(external);
+  const stateFile = path.join(dir, ".design-pipeline/state.json"), before = fs.readFileSync(stateFile);
+  const entries = fs.readdirSync(dir);
+  const result = record("must not replace external bytes");
+  assert.deepEqual(fs.readFileSync(external), bytes, "external file bytes must remain unchanged");
+  assert.deepEqual(fs.readFileSync(file), bytes, "the rejected brief must remain unchanged");
+  assert.deepEqual(fs.readFileSync(stateFile), before, "state must remain unchanged");
+  assert.deepEqual(fs.readdirSync(dir), entries, "refusal must not leave temporary files");
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.equal(JSON.parse(result.stdout).error.code, "OUTPUT_COLLISION");
+});
+
+test("intake owned rewrite replaces the brief entry through the CLI", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  const record = answer => spawnSync(process.execPath, [cliFile, "decide", "--root", dir, "--project-root", dir, "--stage", "intake", "--answer", answer, "--json"], { encoding: "utf8", windowsHide: true });
+  const initial = record("owned answer");
+  assert.equal(initial.status, 0, initial.stdout + initial.stderr);
+  const file = path.join(dir, "brief.md"), before = fs.lstatSync(file, { bigint: true });
+  assert.equal(before.nlink, 1n);
+  const entries = fs.readdirSync(dir);
+  const result = record("updated answer");
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(JSON.parse(result.stdout).status, "recorded");
+  assert.equal(fs.readFileSync(file, "utf8"), "# Brief\n\nupdated answer\n");
+  assert.equal(readState(dir).decisions.intake.answer, "updated answer");
+  assert.equal(fs.lstatSync(file, { bigint: true }).dev, before.dev);
+  assert.notEqual(fs.lstatSync(file, { bigint: true }).ino, before.ino, "rewrite must replace rather than truncate the existing inode");
+  assert.deepEqual(fs.readdirSync(dir), entries, "accepted rewrite must not leave temporary files");
+});

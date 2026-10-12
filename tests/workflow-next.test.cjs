@@ -183,6 +183,58 @@ test("native visual next asks for a concrete decomposition without creating lega
   assert.equal(fs.existsSync(path.join(dir, ".design-pipeline/state.json")), false);
 });
 
+for (const route of ["decompose", "complete", "review"]) {
+  test(`native returned ${route} command selects its change from unrelated cwd without media tools`, t => {
+    const fixture = visualFixture(), elsewhere = tmp();
+    t.after(() => {
+      fs.rmSync(fixture.dir, { recursive: true, force: true });
+      fs.rmSync(elsewhere, { recursive: true, force: true });
+    });
+    let action;
+    if (route === "decompose") {
+      action = nextVisualTask(fixture.dir);
+    } else {
+      if (route === "review") {
+        const plan = JSON.parse(fs.readFileSync(path.join(fixture.dir, fixture.plan)));
+        plan.phases[0].visual.review = true;
+        touch(fixture.dir, fixture.plan, canonicalJson(plan));
+      }
+      action = nextVisualTask(fixture.dir, { plan: fixture.plan });
+      if (route === "review") {
+        touch(fixture.dir, "outline.html", visualHtml);
+        const completed = decideVisualTask(fixture.dir, { choice: "outline", verdict: "complete", artifact: "outline-completion.json" });
+        assert.equal(completed.status, "recorded", completed.failure);
+        action = completed.next;
+        assert.equal(action.stage, "visual-review");
+      }
+    }
+    const root = fs.realpathSync.native(fixture.dir).split(path.sep).join("/");
+    const command = (action.record || action.command)
+      .replace("<change>", `"${root}"`)
+      .replace("<file>", "missing-plan.json")
+      .replace("accept|reject", "accept")
+      .replace("<metadata.json>", "outline-completion.json")
+      .replace(' [--answer "<concrete feedback>"]', "");
+    const child = spawnSync(command + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+    assert.equal(child.status, route === "complete" ? 2 : 0, child.stdout + child.stderr);
+    const result = JSON.parse(child.stdout);
+    if (route === "decompose") assert.equal(result.stage, "decompose");
+    if (route === "complete") {
+      assert.equal(result.status, "blocked", "an unfinished task still fails its own verification, not root validation");
+      assert.match(result.failure, /Completion requires an actual task change within its source scope or declared outputs/);
+    }
+    if (route === "review") {
+      assert.equal(result.status, "recorded");
+      assert.equal(result.review.valid, true);
+      assert.equal(result.next.task.id, "surface");
+    }
+    assert.ok(command.includes(`--root ${root}`) || command.includes(`--root "${root}"`), command);
+    assert.ok(command.includes(`--change-root ${root}`) || command.includes(`--change-root "${root}"`), command);
+    assert.deepEqual(fs.readdirSync(elsewhere), []);
+    assert.equal(fs.existsSync(path.join(fixture.dir, ".design-pipeline/state.json")), false);
+  });
+}
+
 test("public native failures retain measured fixes and bound repeated attempts to input/output bytes", t => {
   const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
   let chrome, puppeteerModule;

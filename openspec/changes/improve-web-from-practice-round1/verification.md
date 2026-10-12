@@ -1,6 +1,17 @@
 # Practice round 1 verification
 
-## Tested revision
+## Review fixes round 2 tested revision
+
+- Tested implementation commit: `af7c0acbeae7b71046cefe6fa6fef5367e7f5cc2`.
+- Tested Git tree: `02adfa47ec83010e62275438efdb5105864c830d`.
+- Full QA: `cmd /d /c "set FONTTOOLS_PYTHON=D:/Temp/dp-fonttools-venv/Scripts/python.exe&&npm test"`, exit 0; 130 registered files, 1256 tests, 1252 passed, 0 failed, 4 skipped.
+- Installed-package CLI smoke: 12 passed, 0 failed, 0 skipped; browser adapter and BuilderPort self-tests passed.
+- `npm run specs:check`: exit 0, 70 passed, 0 failed.
+- Parent integrated actual-CLI regressions: 6 passed, 0 failed, 0 skipped.
+- All tracked files were frozen during this final QA. The subsequent evidence-only commit updates only this verification record; it was not itself full-QA tested. Its runtime/test bytes are unchanged from the tested implementation. The external report records the final delivery SHA.
+- No push. No Component Conformance or Visual Acceptance claim.
+
+## Original practice tested revision (historical)
 
 - Branch: `fix/web-practice-round1`; no push performed.
 - Implementation commit: `e3ffb1c4192a35f7e8df3d81937c0a36ed40b90c`.

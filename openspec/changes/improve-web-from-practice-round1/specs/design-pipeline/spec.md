@@ -19,6 +19,16 @@ Workflow intake SHALL finish only from its recorded state decision. Intake writi
 - **WHEN** a project has the recorded intake decision and its generated brief
 - **THEN** intake SHALL remain complete and an explicit subsequent intake answer MAY update its own brief
 
+#### Scenario: A generated brief is replaced by a hard link
+
+- **WHEN** the existing generated `brief.md` has more than one hard link, even with the recorded bytes
+- **THEN** intake SHALL refuse with `OUTPUT_COLLISION`, leaving the external linked file and workflow state unchanged
+
+#### Scenario: An owned brief is updated safely
+
+- **WHEN** intake updates its owned single-link brief
+- **THEN** it SHALL write a temporary file in the same directory and rename it over the target, replacing the directory entry rather than writing through the previous inode
+
 ### Requirement: Workflow commands bind the selected project
 
 Every runnable command and record template returned by a workflow or project helper SHALL bind the selected absolute project root using shell-path quoting and the installed CLI. Commands SHALL remain correct outside that project, including paths with spaces. Edit handoffs SHALL use `film-edit`; invalid/stale plan recovery SHALL preserve the plan file and existing arguments.
@@ -47,6 +57,16 @@ Every runnable command and record template returned by a workflow or project hel
 
 - **WHEN** score, Blender, foundation, catalog or reference analysis returns an executable command
 - **THEN** it SHALL use the installed script and the selected absolute root wherever supported, quote file paths and preserve command arguments instead of relying on PATH or the shell's current directory
+
+#### Scenario: An old catalog finding supplies a repair command
+
+- **WHEN** an old-format finding is projected into a `film blocks` repair command
+- **THEN** it SHALL bind both absolute `--root` and `--project-root`, retain the query and run from an unrelated directory without requiring ffmpeg
+
+#### Scenario: Native visual workflow commands run outside the change
+
+- **WHEN** native visual decomposition, task completion or review returns a command or record template
+- **THEN** it SHALL bind absolute `--root` and `--change-root`; executing it from an unrelated directory SHALL reach the selected change's workflow or gate without changing the unrelated directory
 
 ### Requirement: Windows command paths fail closed at generation
 
