@@ -20,6 +20,6 @@
 ## 4. Verification
 
 - [x] 4.1 Add `tests/ascii-art.test.cjs` to `scripts/test-manifest.json` and `npm run sources:check`, and update the CLI help assertion in `tests/designer-pipeline-cli.test.cjs`.
-- [ ] 4.2 Run `node --test tests/ascii-art.test.cjs tests/designer-pipeline-cli.test.cjs`, then full `npm test` (with `FONTTOOLS_PYTHON` set to `<fonttools-python>`) and `npm run specs:check` on the committed tree; record the results in `verification.md`.
-- [ ] 4.3 Smoke the real CLI from a project directory: scaffold, capture stills of at least four presets including both coloured scenes with `composition capture --seek`, and record the commands, outputs and limits in local `.design-pipeline/` evidence.
-- [ ] 4.4 Report Component Conformance and Visual Acceptance separately; visual acceptance belongs to the user.
+- [x] 4.2 Run `node --test tests/ascii-art.test.cjs tests/designer-pipeline-cli.test.cjs`, then full `npm test` (with `FONTTOOLS_PYTHON` set to `<fonttools-python>`) and `npm run specs:check` on the committed tree; record the results in `verification.md`.
+- [x] 4.3 Smoke the real CLI from a project directory: scaffold, capture stills of at least four presets including both coloured scenes with `composition capture --seek`, and record the commands, outputs and limits in local `.design-pipeline/` evidence.
+- [x] 4.4 Report Component Conformance and Visual Acceptance separately; visual acceptance belongs to the user.
