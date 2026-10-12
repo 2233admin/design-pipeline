@@ -3,9 +3,10 @@
 Motion-first websites and pages. `designer-pipeline next` names the current stage; read only that
 section. Stage order:
 
-- `quick` brief/freeform: build, probe; `quick` replicate: reference, build, probe.
-- `standard` and `full`: intake, reference, concepts, build, probe, review, deliver.
-  Replicate keeps the reference direction and omits replacement concepts.
+- `quick` brief/freeform: components, build, probe; `quick` replicate: reference, components, build, probe.
+- `standard` and `full` brief/freeform: intake, reference, concepts, components, build, probe, review, deliver.
+  Replicate keeps the reference direction and omits replacement concepts: intake, reference,
+  components, build, probe, review, deliver.
 
 For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
 to select and read the complete built-in method. On an existing site, audit brand, routes, content,
@@ -68,15 +69,81 @@ When a Taste method is selected, record its exact entry, brief/dial read and ada
 these cards. For an explicitly requested web concept-image set, produce separate readable
 horizontal images per section; do not confuse those images with implemented or tested UI.
 
+## components
+
+Immediately before build in every web tier and mode, ask where the components should come from:
+
+1. The project's existing components (ask for their paths).
+2. A GitHub component library the user names.
+3. Search this skill's component source index, `references/component-source-catalog.json`.
+4. Write from scratch.
+
+Recommend the project's own components first, then search the index. Preserve the user's exact
+nonempty reply in `decisions.components`; earlier intake does not replace this decision. Set
+`SKILL_ROOT` to the installed skill's absolute path and `PROJECT_ROOT` to the project's absolute
+path, then record the reply using the returned command, equivalent to:
+
+```sh
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" decide \
+  --root "$PROJECT_ROOT" --project-root "$PROJECT_ROOT" \
+  --stage components --answer "<the user's reply>"
+```
+
 ## build
 
 At `standard` and `full`, unless replicating, first extend the chosen card in `concepts.md` with
 `## Treatment` and write a brief per section (`web-direction.md`); the briefs land in `design.md`,
-`motion.md`, `component-state-matrix.json` and `interaction.json`. Then build `index.html` from the
-chosen concept, or from the reference and its invariants in replicate mode. Motion follows
+`motion.md`, `component-state-matrix.json` and `interaction.json`. Follow the component decision and
+write the manifest below before building `index.html` from the chosen concept, or from the
+reference and its invariants in replicate mode. Motion follows
 `web-motion.md` (spring-damper parameters, stepped motion as a style); design tokens and components
 come from `pipeline-reference.md`. At the `full` tier, open an OpenSpec change under
 `openspec/changes/<id>/` first and build inside it.
+
+Honor `decisions.components`: reuse the specified project paths, inspect the named GitHub library,
+search the index, or author the components from scratch as requested. When searching the index:
+
+```sh
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \
+  --root "$PROJECT_ROOT" --query "<page brief>" --platform web
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system search \
+  --root "$SKILL_ROOT" --snapshot "$SKILL_ROOT/references/component-source-catalog.json" \
+  --query "<page brief>"
+```
+
+The route defaults to the component-source index; search without that explicit snapshot still
+uses Astryx. Load only the returned entries and needed source guides/implementations, not every
+catalog. Keep catalog artifacts inside the selected root.
+
+Before writing `index.html`, write project-local `component-manifest.json`. Its `entries` array
+records every component source used, with a nonempty `name`, `sourceId` or `url`, `availability`,
+`license.state`, and nonempty `usedIn` entries naming the file and how the source is used:
+
+```json
+{
+  "entries": [
+    {
+      "name": "Project navigation",
+      "url": "file:///absolute/project/src/components/Navigation.tsx",
+      "availability": "project-owned",
+      "license": { "state": "project-owned" },
+      "usedIn": [{ "file": "index.html", "how": "Adapt the project's navigation structure" }]
+    }
+  ]
+}
+```
+
+`availability` is one of `bundled-implementation`, `reference-link`, `metadata-only`,
+`project-owned`; `license.state` is one of `verified`, `unverified`, `commercial`,
+`project-owned`, `platform`. Sources marked `unverified` or `commercial` may only be studied and
+reimplemented, never copied. Availability does not grant permission to copy.
+
+An empty array is allowed only when the recorded answer is `"Write from scratch"`
+(case-insensitive, surrounding whitespace ignored). Write `{"entries":[]}` and author the page
+without copied components. All other decisions require at least one entry. Build finishes only
+when `index.html` and a valid `component-manifest.json` both exist: `entries` is an array and each
+entry has the required fields above. This is stage
+completion evidence, not a new gate or receipt schema, and does not grant visual acceptance.
 
 Apply the selected Taste source through the approved design and existing component/runtime owners.
 Keep complete requested artifacts, real content and loading/empty/error/focus states. Bind

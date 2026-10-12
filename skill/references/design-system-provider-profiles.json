@@ -6,6 +6,7 @@
       "id": "astryx",
       "name": "Astryx",
       "officialUrl": "https://astryx.atmeta.com/",
+      "sourceId": "facebook/astryx",
       "repositoryUrl": "https://github.com/facebook/astryx",
       "license": "MIT",
       "apiVersions": ["1"],

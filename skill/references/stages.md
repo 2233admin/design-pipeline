@@ -796,6 +796,22 @@ against actual outputs and checks; tasks.md existence does not verify decomposit
 
 Implement directly from `design.md` and `tasks.md`.
 
+For a web deliverable, follow [workflow-web.md#components](workflow-web.md#components) immediately
+before build in every tier and mode. Ask for project component paths, a named GitHub library,
+an index search, or scratch implementation; recommend project components first, then the index.
+Record the exact nonempty answer and honor it. Before `index.html`, write the
+`component-manifest.json` described in [workflow-web.md#build](workflow-web.md#build), including
+source identity, availability, license state and file/use provenance. Index search explicitly
+uses `references/component-source-catalog.json`; load returned sources only on demand.
+Unverified/commercial sources may be studied and reimplemented, never copied. An empty manifest
+requires the recorded answer `"Write from scratch"` (case-insensitive, surrounding whitespace
+ignored); all other decisions require at least one entry. HTML plus a valid manifest is web build
+completion evidence, not a new gate.
+
+The `ui` route has a generic `work` stage completed by recording delivery evidence, with
+arbitrary project file shapes, not a web `build` stage or an `index.html` output contract.
+Keep its runtime and evidence requirements unchanged; do not force HTML or the web manifest.
+
 For web design, redesign, style or image/brand work, read the selected complete source through
 `references/taste-skill.md` and implement its agreed decisions in the existing stack. An authorized
 image-only deliverable uses an available provider and retains its output boundary. Do not generate

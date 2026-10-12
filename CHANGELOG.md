@@ -37,6 +37,16 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- A single component-source discovery index extends the existing v1 catalog with canonical source
+  identities, availability, package pointers and auditable license evidence. External registries
+  reference the index without moving their execution contracts; the MengTo projection now follows
+  its pinned vendor manifest. Film and optimization methods remain discoverable outside web ranking.
+- Web workflows ask for component sources immediately before build, prefer existing project
+  components then index discovery, and require `component-manifest.json` with `index.html` for build
+  completion. UI retains its generic work/delivery-evidence contract because it has no equivalent
+  HTML build stage. Unverified or commercial sources remain study/reimplementation references,
+  not copying permission.
+
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional
   `productSource` — the real product's repository, full commit SHA, hashed run log, `ui-state`

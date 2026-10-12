@@ -14,7 +14,7 @@ const PROVIDER_STATUSES = new Set(["ready", "review", "experimental"]);
 const FRAMEWORKS = new Set(["agnostic", "react", "vue", "nuxt", "svelte", "solid"]);
 const HASH = /^[a-f0-9]{64}$/;
 const PROVIDER_REGISTRY_KEYS = new Set(["schema", "version", "reviewedAt", "providers"]);
-const PROVIDER_KEYS = new Set(["id", "label", "frameworks", "interfaces", "capabilities", "packages", "mode", "status", "source"]);
+const PROVIDER_KEYS = new Set(["id", "label", "frameworks", "interfaces", "capabilities", "packages", "mode", "status", "source", "sourceId"]);
 const PROJECT_INVENTORY_KEYS = new Set(["schema", "status", "framework", "projectRoot", "declarationFile", "components", "componentInventory"]);
 const PROJECT_COMPONENT_KEYS = new Set(["id", "file", "framework", "capabilities", "provenance", "accessibility", "status"]);
 const PROJECT_COMPONENT_STATUSES = new Set(["ready", "review", "blocked"]);
@@ -372,6 +372,7 @@ function providerCandidates(providers, capability, request, directionLock) {
       id: entry.id,
       source: entry.provenance.source,
       sourceUrl: entry.provenance.url,
+      ...(provider.sourceId !== undefined ? { sourceId: provider.sourceId } : {}),
       name: entry.name,
       role: provider.mode === "project-owned" ? "project-owned" : "provider",
       status,
@@ -468,6 +469,9 @@ function providerEntries(input) {
     }
     if (!["project-owned", "project-pinned-adapter"].includes(provider.mode)) fail("component-fit", `${provider.id}.mode is invalid`);
     assertString(provider.source, `provider.${provider.id}.source`);
+    if (provider.sourceId !== undefined && (typeof provider.sourceId !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)?$/.test(provider.sourceId))) {
+      fail("component-fit", `provider.${provider.id}.sourceId must be a canonical lowercase slug`);
+    }
     if (!PROVIDER_STATUSES.has(provider.status)) fail("component-fit", `${provider.id}.status is invalid`);
     return sortValue(provider);
   }).sort((a, b) => a.id.localeCompare(b.id));

@@ -17,6 +17,11 @@ const KINDS = Object.freeze(Object.values(COLLECTIONS));
 const FORBIDDEN_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 const LOCAL_ID = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 const NAMESPACE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const SOURCE_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)?$/;
+const RECORD_TYPES = new Set(["source", "component", "method", "template"]);
+const AVAILABILITIES = new Set(["bundled-implementation", "reference-link", "metadata-only", "project-owned"]);
+const LICENSE_STATES = new Set(["verified", "unverified", "commercial", "project-owned", "platform"]);
+const LOCAL_PATH_MEMBERS = new Set(["guide", "manifest", "catalog", "implementation"]);
 
 function invalid(message) {
   fail("design system catalog", message);
@@ -62,7 +67,7 @@ function requireVersionedDocument(value, schema, label) {
 function validateRelativePath(value, label) {
   if (typeof value !== "string" || !value.trim()) invalid(`${label} must be a non-empty relative path`);
   const segments = value.split(/[\\/]/);
-  if (path.win32.isAbsolute(value) || path.posix.isAbsolute(value) || segments.includes("..") || value.includes("\0")) {
+  if (path.win32.parse(value).root || path.posix.isAbsolute(value) || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value) || segments.includes("..") || value.includes("\0")) {
     invalid(`${label} must not escape its snapshot root`);
   }
 }
@@ -71,7 +76,14 @@ function validatePaths(value, label) {
   if (Array.isArray(value)) return value.forEach((item, index) => validatePaths(item, `${label}[${index}]`));
   if (!isObject(value)) return;
   for (const [key, item] of Object.entries(value)) {
-    if (/paths?$/i.test(key)) {
+    if (key === "localPaths") {
+      ownObject(item, `${label}.localPaths`);
+      for (const [member, candidate] of Object.entries(item)) {
+        if (!LOCAL_PATH_MEMBERS.has(member)) invalid(`${label}.localPaths has unsupported member ${member}`);
+        validateRelativePath(candidate, `${label}.localPaths.${member}`);
+      }
+    }
+    else if (/paths?$/i.test(key)) {
       const paths = Array.isArray(item) ? item : [item];
       paths.forEach((candidate, index) => validateRelativePath(candidate, `${label}.${key}${Array.isArray(item) ? `[${index}]` : ""}`));
     }
@@ -79,12 +91,39 @@ function validatePaths(value, label) {
   }
 }
 
-function validateProvenance(value, label) {
+function validateProvenance(value, label, partial = false) {
   ownObject(value, label);
-  if (typeof value.source !== "string" || !value.source.trim()) invalid(`${label}.source must be a non-empty string`);
-  if (typeof value.license !== "string" || !value.license.trim()) invalid(`${label}.license must be a non-empty string`);
-  for (const key of ["url", "attribution"]) {
+  for (const key of ["source", "license"]) {
+    if (!partial || value[key] !== undefined) {
+      if (typeof value[key] !== "string" || !value[key].trim()) invalid(`${label}.${key} must be a non-empty string`);
+    }
+  }
+  for (const key of ["url", "attribution", "revision", "gitTree", "hashScope"]) {
     if (value[key] !== undefined && (typeof value[key] !== "string" || !value[key].trim())) invalid(`${label}.${key} must be a non-empty string`);
+  }
+}
+
+function validateEntryMetadata(entry, kind, label) {
+  if (entry.sourceId !== undefined && (typeof entry.sourceId !== "string" || !SOURCE_ID.test(entry.sourceId))) {
+    invalid(`${label}.sourceId must be a canonical lowercase slug`);
+  }
+  if (entry.recordType !== undefined && !RECORD_TYPES.has(entry.recordType)) invalid(`${label}.recordType is invalid`);
+  if (entry.recordType === "source" && kind !== "doc") invalid(`${label}.recordType source must be stored as a doc`);
+  if (entry.availability !== undefined && !AVAILABILITIES.has(entry.availability)) invalid(`${label}.availability is invalid`);
+  if (entry.webRanking !== undefined && typeof entry.webRanking !== "boolean") invalid(`${label}.webRanking must be boolean`);
+  if (entry.license !== undefined) {
+    const license = entry.license;
+    ownObject(license, `${label}.license`);
+    const extras = Object.keys(license).filter((key) => !["state", "id", "evidence"].includes(key));
+    if (extras.length) invalid(`${label}.license has unsupported properties: ${extras.join(", ")}`);
+    if (!LICENSE_STATES.has(license.state)) invalid(`${label}.license.state is invalid`);
+    if (license.id !== undefined && (typeof license.id !== "string" || !license.id.trim())) invalid(`${label}.license.id must be a non-empty string`);
+    if (!Array.isArray(license.evidence) || !license.evidence.length) {
+      invalid(`${label}.license.evidence must be a non-empty string array`);
+    }
+    for (const item of license.evidence) {
+      if (typeof item !== "string" || !item.trim()) invalid(`${label}.license.evidence must be a non-empty string array`);
+    }
   }
 }
 
@@ -110,7 +149,8 @@ function validateSnapshot(snapshot) {
       const label = `snapshot.${collection}[${index}]`;
       ownObject(entry, label);
       if (typeof entry.id !== "string" || !LOCAL_ID.test(entry.id)) invalid(`${label}.id is invalid`);
-      if (entry.provenance !== undefined) ownObject(entry.provenance, `${label}.provenance`);
+      if (entry.provenance !== undefined) validateProvenance(entry.provenance, `${label}.provenance`, true);
+      validateEntryMetadata(entry, COLLECTIONS[collection], label);
       validatePaths(entry, label);
       count += 1;
     });
@@ -160,6 +200,7 @@ function validateCatalog(catalog) {
     if (ids.has(entry.id)) invalid(`duplicate catalog id ${entry.id}`);
     ids.add(entry.id);
     validateProvenance(entry.provenance, `${label}.provenance`);
+    validateEntryMetadata(entry, entry.kind, label);
     validatePaths(entry, label);
     if (!/^[a-f0-9]{64}$/.test(entry.hash || "")) invalid(`${label}.hash must be SHA-256`);
     const hashInput = safeClone(entry, label);

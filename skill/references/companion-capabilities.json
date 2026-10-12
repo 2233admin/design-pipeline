@@ -145,6 +145,7 @@
       "name": "Anime.js v4.5 orchestration",
       "skill": "animejs",
       "level": "optional",
+      "sourceId": "juliangarnier/anime",
       "source": "https://animejs.com/documentation/",
       "sourceMeta": {
         "id": "animejs-documentation-v4-5",
@@ -174,6 +175,7 @@
       "name": "HyperFrames HTML composition contract",
       "skill": "hyperframes",
       "level": "optional",
+      "sourceId": "heygen-com/hyperframes",
       "source": "https://github.com/heygen-com/hyperframes",
       "sourceMeta": {
         "id": "hyperframes-skill-main",
@@ -204,6 +206,7 @@
         "pixijs-environments"
       ],
       "level": "optional",
+      "sourceId": "pixijs/pixijs-skills",
       "source": "https://github.com/pixijs/pixijs-skills",
       "sourceMeta": {
         "id": "pixijs-skills-v8",
@@ -289,6 +292,7 @@
       "name": "Visual direction and anti-template review",
       "skill": "design-pipeline",
       "level": "enhancement",
+      "sourceId": "leonxlnx/taste-skill",
       "source": "https://github.com/Leonxlnx/taste-skill/tree/b482f7a970abb98c4108d4a9f761e458c64cefc8",
       "sourceMeta": {
         "id": "taste-skill",
@@ -317,6 +321,7 @@
       "name": "Impeccable design contract and bounded polish",
       "skill": "impeccable",
       "level": "enhancement",
+      "sourceId": "pbakaus/impeccable",
       "source": "https://github.com/pbakaus/impeccable",
       "sourceMeta": {
         "id": "impeccable-skill-v4",
@@ -347,6 +352,7 @@
       "name": "Motion accessibility and review",
       "skills": ["design-motion-principles", "review-animations"],
       "level": "enhancement",
+      "sourceId": "emilkowalski/skills",
       "source": "installed companion skill contracts",
       "sourceMeta": {
         "id": "motion-review-skill-contracts",
@@ -383,6 +389,7 @@
       "name": "UX research method reference",
       "skill": "design-pipeline",
       "level": "enhancement",
+      "sourceId": "tommyjepsen/awesome-ux-skills",
       "source": "https://github.com/tommyjepsen/awesome-ux-skills/blob/4e5d0925e1a0d34894734611b225205aa10e5a2f/ux-research-methods.md",
       "sourceMeta": {
         "id": "awesome-ux-research-methods",
@@ -405,6 +412,7 @@
       "name": "AI interaction pattern reference",
       "skill": "design-pipeline",
       "level": "enhancement",
+      "sourceId": "tommyjepsen/awesome-ux-skills",
       "source": "https://github.com/tommyjepsen/awesome-ux-skills/tree/4e5d0925e1a0d34894734611b225205aa10e5a2f",
       "sourceMeta": {
         "id": "awesome-ux-ai-interaction",
@@ -427,6 +435,7 @@
       "name": "Animation opportunity and review reference",
       "skill": "design-pipeline",
       "level": "enhancement",
+      "sourceId": "emilkowalski/skills",
       "source": "https://github.com/emilkowalski/skills/tree/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
       "sourceMeta": {
         "id": "emilkowalski-animation-review",
@@ -456,6 +465,7 @@
       "name": "UI UX Pro Max companion baseline",
       "skill": "ui-ux-pro-max",
       "level": "enhancement",
+      "sourceId": "nextlevelbuilder/ui-ux-pro-max-skill",
       "source": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
       "sourceMeta": {
         "id": "ui-ux-pro-max",
@@ -477,6 +487,7 @@
       "name": "GSAP production motion suite",
       "skills": ["gsap-core", "gsap-timeline", "gsap-scrolltrigger", "gsap-react", "gsap-performance"],
       "level": "optional",
+      "sourceId": "greensock/gsap",
       "source": "https://gsap.com/docs/v3/",
       "sourceMeta": {
         "id": "gsap-documentation-v3",
@@ -506,6 +517,7 @@
       "name": "Next.js current design-engineering loop",
       "skills": ["next-dev-loop", "next-cache-components-adoption", "next-cache-components-optimizer"],
       "level": "optional",
+      "sourceId": "vercel/next.js",
       "source": "https://nextjs.org/docs",
       "sourceMeta": {
         "id": "nextjs-design-engineering-docs",
@@ -531,6 +543,7 @@
       "name": "gstack-style learn, spec, review, and ship flow",
       "skills": ["gstack-learn", "gstack-spec", "gstack-review", "gstack-ship"],
       "level": "optional",
+      "sourceId": "garrytan/gstack",
       "source": "installed gstack workflow contracts",
       "sourceMeta": {
         "id": "gstack-workflow-contracts",
@@ -558,6 +571,7 @@
       "name": "Built-in good-css implementation reference",
       "skill": "design-pipeline",
       "level": "enhancement",
+      "sourceId": "vojtaholik/good-css",
       "source": "https://github.com/vojtaholik/good-css/tree/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
       "sourceMeta": {
         "id": "good-css",

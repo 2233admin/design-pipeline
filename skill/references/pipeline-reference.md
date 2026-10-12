@@ -73,9 +73,10 @@ requires those foundations.
 ## Design-System Knowledge and Adoption
 
 Treat component systems as candidate knowledge providers, not automatic project dependencies.
-The bundled Astryx snapshot is an attributed, inert reference surface that agents may search before
-inventing components. It does not override project `DESIGN.md`, `MOTION.md`, existing components,
-tokens, or runtime choices.
+`references/component-source-catalog.json` is the unified discovery index; its source pointers
+lead to guides, manifests, catalogs or implementations only when needed. It does not override
+project `DESIGN.md`, `MOTION.md`, existing components, tokens, or runtime choices. The bundled
+Astryx snapshot remains an attributed, inert reference surface.
 
 Use the public CLI for the complete lifecycle:
 
@@ -86,15 +87,35 @@ Use the public CLI for the complete lifecycle:
 - `design-system profiles` lists governed providers and compatibility constraints.
 - `design-system decompose` converts a product brief into a durable capability inventory; a direct
   zero-result does not prove exhaustion when capability searches find candidates.
-- `design-system route` selects project, platform, package, or attributed reference routes for the
-  decomposed component capabilities.
-- `design-system search` searches the bundled Astryx catalog by text, kind, category, or status.
+- `design-system route` defaults to the component-source index and selects project, platform,
+  package, or attributed reference routes for the decomposed component capabilities.
+- `design-system search` searches Astryx by default; pass the component-source index explicitly
+  with `--snapshot` to search that index instead.
 - `design-system normalize` converts a supplied snapshot into the strict namespaced catalog.
 - `design-system acquire` runs an explicit contained local provider or the bundled Astryx adapter
   against an existing contained Astryx CLI. It never installs or downloads that CLI.
 - `design-system project-tokens` emits DTCG-compatible tokens plus an explicit loss report.
 - `design-system decide` records `reference`, `adopt`, `substitute`, or `custom`; runtime use
   requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
+
+For web components, first record the exact user decision immediately before build; see
+[workflow-web.md#components](workflow-web.md#components) for choices and recommendation, and
+[workflow-web.md#build](workflow-web.md#build) for the manifest fields, enums, license guard and
+stage completion condition. With absolute `SKILL_ROOT` and `PROJECT_ROOT`, these commands work
+from outside the project:
+
+```sh
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \
+  --root "$PROJECT_ROOT" --query "<page brief>" --platform web
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system search \
+  --root "$SKILL_ROOT" --snapshot "$SKILL_ROOT/references/component-source-catalog.json" \
+  --query "<page brief>"
+```
+
+Keep catalog artifacts root-contained. This discovery does not replace the job dispatcher:
+load only returned entries and needed pointers on demand, never eagerly open all catalogs.
+Generic `ui` work completed by recording delivery evidence keeps its existing project artifact
+shape rather than adopting the web HTML/manifest completion contract.
 
 DesignMD Directory is an ingestible local knowledge source for five resource kinds: skills,
 templates, design examples, guides, and tools. The GitHub example set from `dimabraven/design-md`

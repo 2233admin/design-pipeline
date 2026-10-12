@@ -9,14 +9,16 @@ const { resolveFrontendStack, validateRegistry } = require("../skill/scripts/fro
 const references = path.resolve(__dirname, "../skill/references");
 const registry = JSON.parse(fs.readFileSync(path.join(references, "frontend-stack-registry.json"), "utf8"));
 const skills = JSON.parse(fs.readFileSync(path.join(references, "mengto-skills-catalog.json"), "utf8"));
+const manifest = JSON.parse(fs.readFileSync(path.join(references, "../vendor/mengto-skills/manifest.json"), "utf8"));
 
 test("registry internalizes every requested styling, UI, preset, and skill source", () => {
   validateRegistry(registry);
   assert.equal(registry.styling.length, 5);
   assert.equal(registry.uiLibraries.length, 15);
   assert.deepEqual(Object.keys(registry.shadcn.defaults), registry.shadcn.styles);
-  assert.equal(skills.count, 127);
-  assert.equal(Object.values(skills.categories).flat().length, 127);
+  assert.equal(skills.count, manifest.skills.length);
+  assert.equal(Object.values(skills.categories).flat().length, manifest.skills.length);
+  assert.equal(skills.revision, manifest.source.revision);
   for (const id of ["hi5jeff/deepclonewebsite", "wevm/frog", "MengTo/skills", "koboyo/icons"]) assert.ok(registry.tools.some((tool) => tool.id === id));
 });
 

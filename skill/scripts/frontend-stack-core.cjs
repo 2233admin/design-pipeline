@@ -2,6 +2,7 @@
 
 const { canonicalJson, fail, isObject, sha256, sortValue } = require("./contract-utils.cjs");
 const { resolvePolicy } = require("./adaptation-core.cjs");
+const { loadMengToCatalog } = require("./mengto-skills-core.cjs");
 
 const REGISTRY_SCHEMA = "design-pipeline.frontend-stack-registry.v1";
 const REQUEST_SCHEMA = "design-pipeline.frontend-stack-request.v1";
@@ -120,6 +121,22 @@ function routeTools(request, registry, capabilities, skillCatalog) {
   return { routes: sortValue(ranked), primaryRoute, recommendedSkills };
 }
 
+function validateSkillCatalog(skillCatalog) {
+  if (!isObject(skillCatalog) || skillCatalog.schema !== "design-pipeline.skill-catalog.v1" || !isObject(skillCatalog.categories)) {
+    invalid("MengTo skill catalog is invalid");
+  }
+  const { manifest } = loadMengToCatalog();
+  const categories = {};
+  for (const skill of manifest.skills) (categories[skill.category] ||= []).push(skill.name);
+  if (skillCatalog.source !== manifest.source.repository
+    || skillCatalog.revision !== manifest.source.revision
+    || skillCatalog.license !== manifest.source.license
+    || skillCatalog.count !== manifest.skills.length
+    || canonicalJson(skillCatalog.categories) !== canonicalJson(categories)) {
+    invalid("MengTo skill catalog does not match its bundled manifest");
+  }
+}
+
 function resolveFrontendStack(request, registry, skillCatalog) {
   validateRegistry(registry);
   if (!isObject(request) || request.schema !== REQUEST_SCHEMA) invalid("unsupported request");
@@ -143,7 +160,7 @@ function resolveFrontendStack(request, registry, skillCatalog) {
   let shadcnPreset = null;
   if (ui.id === "shadcn-ui") shadcnPreset = normalizePreset(wanted.shadcnPreset ?? existing.shadcnPreset, registry);
   else if (wanted.shadcnPreset !== undefined || existing.shadcnPreset !== undefined) invalid("shadcnPreset requires shadcn-ui");
-  if (!isObject(skillCatalog) || skillCatalog.schema !== "design-pipeline.skill-catalog.v1" || Object.values(skillCatalog.categories || {}).flat().length !== skillCatalog.count || skillCatalog.count !== 127) invalid("MengTo skill catalog is invalid");
+  validateSkillCatalog(skillCatalog);
   const capabilities = requestedCapabilities(request, styling);
   const toolRouting = routeTools(request, registry, capabilities, skillCatalog);
   const routeReviews = toolRouting.routes

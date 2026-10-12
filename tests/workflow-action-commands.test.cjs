@@ -61,11 +61,15 @@ function walk(deliverable, tier, mode) {
     reference: () => (mode === "replicate" ? touch(dir, "reference.md", "Observed enamel at three angles.") : decide(dir, { stage: "reference", answer: "none" })),
     concepts: () => (fs.existsSync(path.join(dir, "concepts.md")) ? decide(dir, { stage: "concept", choice: "1" }) : touch(dir, "concepts.md")),
     style: () => decide(dir, { stage: "concept", choice: "pv" }),
+    components: () => decide(dir, { stage: "components", answer: "Write from scratch" }),
     analyze: () => (fs.existsSync(path.join(dir, "sources")) ? touch(dir, "edit/analysis.json", "{}") : fs.mkdirSync(path.join(dir, "sources"))),
     cut: () => touch(dir, "edit.json", "{}"),
     render: () => touch(dir, "renders/edit.mp4", "draft"),
     plan: () => (fs.existsSync(path.join(dir, "storyboard.json")) ? recordGate(dir, "storyboard", "passed", ["storyboard.json"]) : touch(dir, "storyboard.json", "{}")),
-    build: () => touch(dir, deliverable === "web" ? "index.html" : "out.mp4", "draft"),
+    build: () => {
+      touch(dir, deliverable === "web" ? "index.html" : "out.mp4", "draft");
+      if (deliverable === "web") touch(dir, "component-manifest.json", JSON.stringify({ entries: [] }));
+    },
     probe: () => (fs.existsSync(path.join(dir, "interaction.json")) ? recordGate(dir, "interaction", "passed", ["interaction.json", "index.html"]) : touch(dir, "interaction.json", "{}")),
     check: () => (deliverable === "edit" ? recordGate(dir, "edit", "passed", ["edit.json", "edit/analysis.json", "renders/edit.mp4"]) : recordGate(dir, "film", "passed", ["storyboard.json", "out.mp4"])),
     review: () => decide(dir, { stage: "review", verdict: "accept" }),

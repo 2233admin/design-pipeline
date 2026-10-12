@@ -73,6 +73,9 @@ name a repository. This is triggered by the work's needs, not a required search 
 - Detailed route, CLI, gate and receipt contracts: `references/pipeline-reference.md`.
 - `film`, `edit`, and `web` workflow selected by `next`: the matching `references/workflow-*.md`.
 - Web treatment, section briefs and review rules W1-W7: `references/web-direction.md`.
+- Web component-source choice before build and source manifest: `references/workflow-web.md#components`
+  and `#build`; index routing/search: `references/pipeline-reference.md#design-system-knowledge-and-adoption`.
+  Load only returned component-source entries and their needed pointers, not the whole catalog.
 - Supporting drawing, image placement, text fitting, comparison, motion maps and advanced
   technique sources: `tools/README.md` → one selected guide → its implementation/example.
 - Upstream bundles: follow the selected route in

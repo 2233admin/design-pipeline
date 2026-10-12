@@ -134,6 +134,16 @@ test("keeps user-curated references metadata-only and preserves mixed-license re
     assert.equal(entry.provenance.sourceCode, undefined);
   }
   const shadcnblocks = curated.find((entry) => entry.localId === "shadcnblocks/reference-library");
-  assert.equal(shadcnblocks.provenance.license, "unverified");
   assert.equal(shadcnblocks.routing.requiresLicense, true);
+  const result = routeComponents({
+    catalog: { ...catalog(), entries: [shadcnblocks] },
+    brief: "Curated reference", platform: "web", capabilities: [shadcnblocks.routing.capabilities[0]],
+  });
+  assert.equal(result.status, "review");
+  assert.equal(result.routes[0].status, "review");
+  assert.equal(result.routes[0].selected.id, shadcnblocks.id);
+  assert.equal(result.routes[0].selected.requiresLicense, true);
+  assert.equal(result.routes[0].selected.package, undefined);
+  assert.equal(result.routes[0].selected.install, undefined);
+  assert.equal(result.routes[0].selected.sourceCode, undefined);
 });

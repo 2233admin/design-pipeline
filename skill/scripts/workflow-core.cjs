@@ -175,7 +175,7 @@ function decide(root, options = {}) {
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
   stateJobPlan(root, state); // A stale Stage 0 binding records nothing.
   const stage = options.stage;
-  assertEnum(stage, ["intake", "reference", "concept", "sample", "review", "deliver"], "stage", "workflow");
+  assertEnum(stage, ["intake", "reference", "concept", "components", "sample", "review", "deliver"], "stage", "workflow");
   state.decisions = state.decisions || {};
   if (stage === "intake") {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
@@ -193,6 +193,9 @@ function decide(root, options = {}) {
     const answer = options.answer || "none";
     if (answer === "none" && state.mode === "replicate") fail("workflow", "replicate mode cannot skip the reference. Fix: write reference.md from the reference you are reproducing");
     state.decisions.reference = answer;
+  } else if (stage === "components") {
+    if (typeof options.answer !== "string" || !options.answer.trim()) fail("workflow", "--answer is required: the user's component source choice");
+    state.decisions.components = options.answer;
   } else if (stage === "concept") {
     if (!options.choice) fail("workflow", "--choice is required: the concept number, or mad/pv for an edit");
     state.decisions.concept = String(options.choice);

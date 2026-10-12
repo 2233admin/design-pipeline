@@ -10,10 +10,10 @@
     "version": { "const": "1" },
     "namespace": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
     "provenance": { "$ref": "#/$defs/provenance" },
-    "components": { "$ref": "#/$defs/entries" },
+    "components": { "$ref": "#/$defs/nonSourceEntries" },
     "docs": { "$ref": "#/$defs/entries" },
-    "templates": { "$ref": "#/$defs/entries" },
-    "hooks": { "$ref": "#/$defs/entries" }
+    "templates": { "$ref": "#/$defs/nonSourceEntries" },
+    "hooks": { "$ref": "#/$defs/nonSourceEntries" }
   },
   "anyOf": [
     { "required": ["components"] },
@@ -26,28 +26,81 @@
       "type": "object",
       "required": ["source", "license"],
       "properties": {
-        "source": { "type": "string", "minLength": 1 },
-        "license": { "type": "string", "minLength": 1 },
-        "url": { "type": "string", "minLength": 1 },
-        "attribution": { "type": "string", "minLength": 1 }
+        "source": { "$ref": "#/$defs/nonEmptyText" },
+        "license": { "$ref": "#/$defs/nonEmptyText" },
+        "url": { "$ref": "#/$defs/nonEmptyText" },
+        "attribution": { "$ref": "#/$defs/nonEmptyText" },
+        "revision": { "$ref": "#/$defs/nonEmptyText" },
+        "gitTree": { "$ref": "#/$defs/nonEmptyText" },
+        "hashScope": { "$ref": "#/$defs/nonEmptyText" }
       }
     },
     "entries": { "type": "array", "items": { "$ref": "#/$defs/entry" } },
+    "nonSourceEntries": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/entry" },
+          { "not": { "required": ["recordType"], "properties": { "recordType": { "const": "source" } } } }
+        ]
+      }
+    },
     "entry": {
       "type": "object",
       "required": ["id"],
       "properties": {
         "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$" },
-        "provenance": { "$ref": "#/$defs/provenanceOverride" }
+        "provenance": { "$ref": "#/$defs/provenanceOverride" },
+        "sourceId": { "$ref": "#/$defs/sourceId" },
+        "recordType": { "$ref": "#/$defs/recordType" },
+        "availability": { "$ref": "#/$defs/availability" },
+        "localPaths": { "$ref": "#/$defs/localPaths" },
+        "license": { "$ref": "#/$defs/license" },
+        "webRanking": { "type": "boolean" }
       }
     },
     "provenanceOverride": {
       "type": "object",
       "properties": {
-        "source": { "type": "string", "minLength": 1 },
-        "license": { "type": "string", "minLength": 1 },
-        "url": { "type": "string", "minLength": 1 },
-        "attribution": { "type": "string", "minLength": 1 }
+        "source": { "$ref": "#/$defs/nonEmptyText" },
+        "license": { "$ref": "#/$defs/nonEmptyText" },
+        "url": { "$ref": "#/$defs/nonEmptyText" },
+        "attribution": { "$ref": "#/$defs/nonEmptyText" },
+        "revision": { "$ref": "#/$defs/nonEmptyText" },
+        "gitTree": { "$ref": "#/$defs/nonEmptyText" },
+        "hashScope": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "nonEmptyText": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "sourceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:[._-][a-z0-9]+)*)?$" },
+    "recordType": { "enum": ["source", "component", "method", "template"] },
+    "availability": { "enum": ["bundled-implementation", "reference-link", "metadata-only", "project-owned"] },
+    "relativePath": {
+      "$ref": "#/$defs/nonEmptyText",
+      "allOf": [
+        { "not": { "pattern": "^(?:[A-Za-z][A-Za-z0-9+.-]*:|[\\\\/])" } },
+        { "not": { "pattern": "(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$)" } },
+        { "not": { "pattern": "\\u0000" } }
+      ]
+    },
+    "localPaths": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "guide": { "$ref": "#/$defs/relativePath" },
+        "manifest": { "$ref": "#/$defs/relativePath" },
+        "catalog": { "$ref": "#/$defs/relativePath" },
+        "implementation": { "$ref": "#/$defs/relativePath" }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "evidence"],
+      "properties": {
+        "state": { "enum": ["verified", "unverified", "commercial", "project-owned", "platform"] },
+        "id": { "$ref": "#/$defs/nonEmptyText" },
+        "evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonEmptyText" } }
       }
     }
   }
