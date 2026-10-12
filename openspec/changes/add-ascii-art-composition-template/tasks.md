@@ -23,3 +23,43 @@
 - [x] 4.2 Run `node --test tests/ascii-art.test.cjs tests/designer-pipeline-cli.test.cjs`, then full `npm test` (with `FONTTOOLS_PYTHON` set to `<fonttools-python>`) and `npm run specs:check` on the committed tree; record the results in `verification.md`.
 - [x] 4.3 Smoke the real CLI from a project directory: scaffold, capture stills of at least four presets including both coloured scenes with `composition capture --seek`, and record the commands, outputs and limits in local `.design-pipeline/` evidence.
 - [x] 4.4 Report Component Conformance and Visual Acceptance separately; visual acceptance belongs to the user.
+
+## 5. Cell grid
+
+- [x] 5.1 Choose between drawing mono pieces on the canvas grid and bundling a font; record the choice and the reason in `design.md` (Bundled font).
+- [x] 5.2 Subset JetBrains Mono 2.304 Regular (OFL 1.1) to printable ASCII and the 42 non-ASCII characters of the eleven pieces into `skill/tools/ascii-art/fonts/` with `OFL.txt` and `LICENSES.md`; add the files to `package-resources.json`, `.gitattributes` and `THIRD_PARTY_NOTICES.md`.
+- [x] 5.3 Write `font.js` (a `data:` URL) and `LICENSE.font` from `scaffold.cjs`; load the face in `ascii-art.js` before the first frame for both renderers and fail without it.
+- [x] 5.4 Add the regression `every preset draws each row on the cell grid, whatever monospace fonts the host has` (each preset at progress 0.1, 0.45 and 0.8; every `<pre>` row against a `'0'.repeat(cols)` probe within 0.1 px; whole-pixel canvas cells) and `the bundled font covers every character the pieces contain or draw, at one cell wide` (including a copy without `font.js`).
+
+Regression run with `node --test --test-name-pattern="cell grid" tests/ascii-art.test.cjs`
+(Windows host whose monospace font is Consolas, viewport 1280 × 720).
+
+Before, the new test file against the player at `ae32602`: fails with 34 rows off the grid.
+
+```text
+✖ every preset draws each row on the cell grid, whatever monospace fonts the host has (2531.3473ms)
+ℹ tests 1
+ℹ pass 0
+ℹ fail 1
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + [
+  +   'sparks at 0.8s: row 6 is 981.89px, the 64-cell grid is 971.19px ("▜█▒")',
+  +   'sparks at 0.8s: row 8 is 981.89px, the 64-cell grid is 971.19px ("▝▀▄▄▄▄▄▄·")',
+  +   'sparks at 0.8s: row 9 is 992.61px, the 64-cell grid is 971.19px ("▗▄▓▓▀▀▀▀▀▀▓▓▄▖")',
+  …   (27 more sparks rows at 0.8 s, 3.6 s and 6.4 s, 981.89 to 1046.17 px)
+  +   'synthwave at 0.8s: row 19 is 1165.22px, the 65-cell grid is 704.03px ("▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔│▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔")',
+  +   'synthwave at 3.6s: row 17 is 1165.22px, the 65-cell grid is 704.03px ("▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔│▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔")',
+  +   'synthwave at 3.6s: row 20 is 821.16px, the 65-cell grid is 704.03px ("▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁│▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁")',
+  +   'synthwave at 6.4s: row 22 is 825.48px, the 65-cell grid is 704.03px ("▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁│▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁")'
+  + ]
+  - []
+```
+
+After, with the bundled font:
+
+```text
+✔ every preset draws each row on the cell grid, whatever monospace fonts the host has (3302.659ms)
+ℹ tests 1
+ℹ pass 1
+ℹ fail 0
+```

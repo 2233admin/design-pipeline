@@ -4,6 +4,8 @@
  * A piece (https://github.com/bas3line/ascii, MIT, Copyright (c) 2026 bas3line; see
  * LICENSE.ascii-rest) is `frame(t, env)`. Mono pieces are drawn as text in a <pre>; pieces with a
  * palette are drawn onto a canvas through a glyph atlas adapted from ascii.rest's dist/mount.js.
+ * Both draw in the monospace subset that font.js embeds (see LICENSE.font), never a host font: a
+ * host font without a box-drawing glyph falls back to a wider face and pushes the row off the grid.
  * Frames sit on the preset's sample grid and are evaluated by replaying a fresh piece from 0, so
  * the same time gives the same frame after cold, repeated and reordered seeks: some pieces carry
  * a simulation or a colour cache from one call to the next. Load as a classic script for
@@ -17,7 +19,6 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  const FONT = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
   const LINE_HEIGHT = 1.2; // a text cell is about twice as tall as it is wide, as ascii.rest draws it
   const MAX_FRAMES = 3600; // duration × fps: the most frames one cold seek replays
   const TIMELINE_ID = "ascii-art";
@@ -114,6 +115,21 @@
     return piece;
   }
 
+  // Adds the monospace subset from font.js to the page and resolves with the font stack to draw in,
+  // once the face has loaded. A data: URL works from file:// pages, where Chromium refuses a font
+  // file. Without the face, the art would quietly fall back to whatever the host has, so it fails.
+  async function loadFont(doc, entry) {
+    if (!entry || typeof entry.family !== "string" || typeof entry.source !== "string") throw new TypeError("ascii-art: font.js is missing; keep it next to index.html");
+    const face = new doc.defaultView.FontFace(entry.family, `url("${entry.source}")`);
+    try {
+      await face.load();
+    } catch {
+      throw new Error(`ascii-art: the "${entry.family}" font in font.js did not load`);
+    }
+    doc.fonts.add(face);
+    return `"${entry.family}", monospace`;
+  }
+
   // --- The page ------------------------------------------------------------------------------
 
   function start(options = {}) {
@@ -125,6 +141,7 @@
     const canvas = doc.querySelector("[data-ascii-canvas]");
     const status = doc.querySelector("[data-ascii-status]");
     const controls = doc.querySelector("[data-ascii-controls]");
+    let font = "monospace", fontReady = null; // the font stack, set once the bundled face has loaded
     const { preset: picker, play: playButton, time: scrub, clock } = controls.elements;
     const reducedMotion = win.matchMedia("(prefers-reduced-motion: reduce)");
     const modules = new Map();
@@ -163,7 +180,7 @@
 
     const textRenderer = (meta) => {
       const measure = doc.createElement("canvas").getContext("2d");
-      measure.font = `100px ${FONT}`;
+      measure.font = `100px ${font}`;
       const advance = measure.measureText("M").width / 100 || 0.6;
       return {
         kind: "pre",
@@ -203,7 +220,7 @@
         glyphs.beginPath();
         glyphs.rect(x, y, cw, ch);
         glyphs.clip();
-        glyphs.font = `${cw / 0.6}px ${FONT}`;
+        glyphs.font = `${cw / 0.6}px ${font}`;
         glyphs.textAlign = "center";
         glyphs.textBaseline = "middle";
         glyphs.fillStyle = palette[colour] || palette[0];
@@ -319,6 +336,9 @@
       failure = null;
       status.hidden = true;
       try {
+        font = await fontReady;
+        if (token !== selecting) return null;
+        pre.style.fontFamily = font;
         const preset = presets.find((item) => item.name === name);
         if (!preset) throw new RangeError(`ascii-art: unknown preset "${name}"; choose one of ${presets.map((item) => item.name).join(", ")}`);
         if (!modules.has(preset.piece)) modules.set(preset.piece, loadPiece(sources[preset.piece], preset.piece));
@@ -392,6 +412,8 @@
     try {
       presets = checkPresets(options.presets || win.ASCII_ART_PRESETS);
       sources = options.pieces || win.ASCII_ART_PIECES || {};
+      fontReady = loadFont(doc, options.font || win.ASCII_ART_FONT);
+      fontReady.catch(() => {});
       for (const preset of presets) picker.add(new win.Option(preset.name, preset.name));
       started = select(nameFromLocation() || html.dataset.preset || presets[0].name);
     } catch (error) {
@@ -454,5 +476,5 @@
     };
   }
 
-  return { FONT, MAX_FRAMES, TIMELINE_ID, isDark, frameIndex, checkPreset, checkPresets, checkPiece, createFrames, loadPiece, start };
+  return { MAX_FRAMES, TIMELINE_ID, isDark, frameIndex, checkPreset, checkPresets, checkPiece, createFrames, loadPiece, loadFont, start };
 });

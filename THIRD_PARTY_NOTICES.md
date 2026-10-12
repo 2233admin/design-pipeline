@@ -637,3 +637,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## JetBrains Mono (ASCII art template font)
+
+`skill/tools/ascii-art/fonts/JetBrainsMono-ascii-art.woff` is a subset of JetBrains Mono 2.304
+Regular from https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304, holding printable
+ASCII and the box-drawing, block and dot characters of the vendored ascii.rest pieces.
+
+- Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
+- License: SIL Open Font License 1.1, no Reserved Font Name. Full original license:
+  `skill/tools/ascii-art/fonts/OFL.txt`; release and file hashes and the subset command:
+  `skill/tools/ascii-art/fonts/LICENSES.md`.
+
+`composition scaffold --template ascii-art` embeds the subset in the project's `font.js` and copies
+the license as `LICENSE.font`.

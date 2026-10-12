@@ -27,7 +27,9 @@ earlier frames, so asking a piece for time t directly is not repeatable.
   carries the exact text of the vendored piece modules and the page evaluates them itself.
 - The page draws `frame(t, env)` for an explicit time into a `<pre>` (mono pieces) or onto a canvas
   (pieces with a palette), from a preset table (piece, options, sample rate, grid, ink, ground,
-  duration) chosen by URL hash or query, a control, or a `data-preset` attribute.
+  duration) chosen by URL hash or query, a control, or a `data-preset` attribute. Both draw in a
+  bundled JetBrains Mono subset (OFL 1.1) that `font.js` carries as a `data:` URL, so a host font
+  without a box-drawing glyph cannot push a row off the cell grid.
 - Reuse the existing capture contract: `window.renderStudy(progress)` and the
   `window.__timelines` seek hook that `composition capture --seek` calls. A seek replays the piece on
   the preset's sample grid, so the same time gives the same frame in any seek order. A live preview
@@ -44,7 +46,8 @@ None.
 ### Modified Capabilities
 
 - `design-pipeline`: adds requirements for the ASCII art composition template, its pinned vendored
-  source, time-addressed frames, the capture contract and the reduced-motion live preview.
+  source, time-addressed frames, the cell grid and bundled font, the capture contract and the
+  reduced-motion live preview.
 
 ## Impact
 
@@ -52,6 +55,7 @@ None.
 - Changed: `skill/tools/visual-craft/scaffold.cjs` (template list and copy table), the CLI help it
   feeds, the help assertion in `tests/designer-pipeline-cli.test.cjs`, `.gitignore` (the package's
   `dist/` layout under the vendor bundle), `.gitattributes`, `package.json` (`sources:check`),
+  `THIRD_PARTY_NOTICES.md` (JetBrains Mono),
   `scripts/test-manifest.json`, `skill/references/package-resources.json` and documentation.
 - Reused: `composition scaffold` containment and refusal rules, `composition capture` and its seek
   hook, the composition gate. No new CLI flag, gate, receipt schema, target resolver or policy

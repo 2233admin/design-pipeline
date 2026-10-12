@@ -22,7 +22,8 @@ Vendored size: 15 files, 108,359 bytes.
 | `skill/vendor/ascii-rest/upstream/**` | upstream bytes | never edited; refreshed only from a reviewed revision |
 | `skill/vendor/ascii-rest/manifest.json` | this repository | provenance, per-file hashes, piece behaviour |
 | `skill/tools/ascii-art/study.html`, `ascii-art.js`, `presets.js` | this repository | copied unchanged as `index.html`, `ascii-art.js`, `presets.js` |
-| `skill/tools/ascii-art/scaffold.cjs` | this repository | writes `pieces.js` from the vendor bundle, verifying each hash |
+| `skill/tools/ascii-art/scaffold.cjs` | this repository | writes `pieces.js` from the vendor bundle and `font.js` from the font subset, verifying each hash |
+| `skill/tools/ascii-art/fonts/**` | this repository | JetBrains Mono subset (OFL 1.1), its verbatim `OFL.txt` and `LICENSES.md` provenance; rebuilt only with the recorded subset command |
 | `skill/tools/visual-craft/scaffold.cjs` | this repository | owns the template list for `composition scaffold` |
 
 The visual-craft and art-motion templates keep their files and behaviour. No artifact shape, path or
@@ -76,12 +77,40 @@ pages would duplicate the page and drift.
 
 ## Drawing
 
-A mono piece is text in a `<pre>` in the preset's ink, `line-height: 1.2` and the font stack
-ascii.rest uses, sized from the measured advance to fit the stage. A piece with a palette is drawn
-on a canvas as ascii.rest's `mount()` does: each (character, colour) pair is drawn once into an atlas
-slot and copied into its cell. Cells are whole device pixels, so they tile exactly, and every frame
-is redrawn in full on the preset's ground, so the pixels depend only on the frame, not on what was
-drawn before.
+A mono piece is text in a `<pre>` in the preset's ink and `line-height: 1.2`, sized from the
+measured advance to fit the stage. A piece with a palette is drawn on a canvas as ascii.rest's
+`mount()` does: each (character, colour) pair is drawn once into an atlas slot and copied into its
+cell. Cells are whole device pixels, so they tile exactly, and every frame is redrawn in full on the
+preset's ground, so the pixels depend only on the frame, not on what was drawn before.
+
+### Bundled font
+
+The first version drew in the host's monospace stack (`ui-monospace, SFMono-Regular, Menlo,
+Consolas, monospace`). Consolas lacks the quadrant blocks of sparks and the `▁`/`▔` rows of
+synthwave, so Chrome drew those characters in a wider fallback face and those rows ran past the
+grid; the canvas atlas only stayed aligned because each glyph is clipped to its cell, but its
+shapes still came from the host. Two fixes were considered:
+
+- (a) draw mono pieces on the canvas cell grid as well, with a visually hidden text copy. This
+  aligns the cells, but a fallback glyph is still drawn (and clipped) in whatever face the host
+  picks, so captures still differ between machines and a missing glyph is cut rather than fixed.
+- (b) bundle one OFL monospace subset covering every character the eleven pieces contain, and draw
+  both renderers in it. Chosen: every glyph has the same 600/1000 advance, so a `<pre>` row is
+  exactly `cols` cells; glyph shapes no longer depend on which fonts the host has installed, which
+  is the only option that removes the font from the cross-machine difference (the rasterizer's
+  antialiasing stays host-specific; cross-machine identity was not measured, only one machine was
+  available); and the `<pre>` keeps real, selectable text for assistive technology without a second
+  copy.
+
+The font is JetBrains Mono 2.304 Regular (SIL OFL 1.1, no Reserved Font Name), which covers all 42
+non-ASCII characters of the pieces. The subset keeps printable ASCII plus those characters (137
+glyphs, 7,488-byte WOFF) and drops the layout tables, so programming ligatures such as `->` never
+merge two cells. `fonts/LICENSES.md` records the release URL, the zip, TTF, license and subset
+hashes and the exact fontTools command. Chromium refuses font files requested from a `file://`
+page, so the scaffold embeds the subset in a classic `font.js` as a `data:` URL, as `pieces.js`
+carries the pieces, and copies the license as `LICENSE.font`. The player adds it with the
+`FontFace` API and draws nothing until it has loaded: without `font.js`, or with bytes that do not
+decode, the page shows the error and the capture hooks throw instead of drawing in a host font.
 
 ## Live preview
 

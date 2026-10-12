@@ -21,7 +21,7 @@ const tool = path.join(repo, "skill/tools/ascii-art");
 const vendor = path.join(repo, "skill/vendor/ascii-rest");
 const manifest = JSON.parse(fs.readFileSync(path.join(vendor, "manifest.json"), "utf8"));
 const upstream = path.join(vendor, manifest.snapshot.root);
-const SCAFFOLD_FILES = ["LICENSE.ascii-rest", "ascii-art.js", "index.html", "pieces.js", "presets.js"];
+const SCAFFOLD_FILES = ["LICENSE.ascii-rest", "LICENSE.font", "ascii-art.js", "font.js", "index.html", "pieces.js", "presets.js"];
 
 const sha256 = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex");
 const walk = (directory, base = "") => fs.readdirSync(directory, { withFileTypes: true })
@@ -101,6 +101,12 @@ test("ascii-art scaffold writes a self-contained project with the exact vendored
     assert.equal(sha256(fs.readFileSync(path.join(directory, destination))), sha256(fs.readFileSync(path.join(tool, source))), destination);
   }
   assert.equal(sha256(fs.readFileSync(path.join(directory, "LICENSE.ascii-rest"))), manifest.files.find((file) => file.path === "LICENSE").sha256);
+  assert.equal(sha256(fs.readFileSync(path.join(directory, "LICENSE.font"))), sha256(fs.readFileSync(path.join(tool, "fonts/OFL.txt"))));
+  assert.ok(fs.readFileSync(path.join(directory, "font.js")).every((byte) => byte < 0x80), "font.js is ASCII");
+  const font = require(path.join(directory, "font.js"));
+  const woff = fs.readFileSync(path.join(tool, "fonts/JetBrainsMono-ascii-art.woff"));
+  assert.deepEqual(Buffer.from(font.source.replace(/^data:font\/woff;base64,/, ""), "base64"), woff, "font.js embeds the bundled subset");
+  assert.equal(font.sha256, sha256(woff));
 
   const bundle = fs.readFileSync(path.join(directory, "pieces.js"));
   assert.ok(bundle.every((byte) => byte < 0x80), "pieces.js is ASCII, so a file:// page decodes it under any charset");
@@ -243,6 +249,106 @@ test("the scaffolded page plays offline from file:// and redraws the same frame 
 
     assert.deepEqual(remote, [], "no request leaves the project directory");
     assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
+});
+
+// Every row of a mono piece must be exactly cols cells wide. A host monospace font without a
+// box-drawing glyph falls back to a wider face for that glyph and pushes the row past the grid.
+test("every preset draws each row on the cell grid, whatever monospace fonts the host has", { skip: BROWSER.skip }, async (t) => {
+  const { directory } = scaffold(t);
+  const puppeteer = require(BROWSER.puppeteerModule);
+  const browser = await puppeteer.launch({ executablePath: BROWSER.chrome, headless: true });
+  const offGrid = [];
+  try {
+    const page = await browser.newPage();
+    await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+    await page.setViewport({ width: 1280, height: 720 });
+    for (const preset of PRESETS) {
+      await page.goto(`${pathToFileURL(path.join(directory, "index.html")).href}?preset=${preset.name}`, { waitUntil: "load" });
+      const samples = await page.evaluate(async (progresses) => {
+        await window.asciiArt.ready;
+        return progresses.map((progress) => {
+          const state = window.renderStudy(progress);
+          if (state.renderer === "canvas") {
+            // Coloured pieces copy each glyph into a whole-pixel cell, so the canvas is cols × rows cells.
+            const canvas = document.querySelector("canvas");
+            return { state, cells: [canvas.width / state.cols, canvas.height / state.rows] };
+          }
+          const pre = document.querySelector("pre");
+          const style = getComputedStyle(pre);
+          const probe = document.createElement("span");
+          Object.assign(probe.style, { position: "absolute", whiteSpace: "pre", fontFamily: style.fontFamily, fontSize: style.fontSize, fontKerning: "none", fontVariantLigatures: "none" });
+          probe.textContent = "0".repeat(state.cols);
+          document.body.append(probe);
+          const grid = probe.getBoundingClientRect().width;
+          probe.remove();
+          const node = pre.firstChild, range = document.createRange(), rows = [];
+          let start = 0;
+          for (const line of node.data.split("\n")) {
+            range.setStart(node, start);
+            range.setEnd(node, start + line.length);
+            rows.push({ line, width: range.getBoundingClientRect().width });
+            start += line.length + 1;
+          }
+          return { state, grid, rows };
+        });
+      }, [0.1, 0.45, 0.8]);
+      for (const { state, grid, rows, cells } of samples) {
+        const at = `${preset.name} at ${state.time}s`;
+        if (cells) {
+          if (!cells.every(Number.isInteger)) offGrid.push(`${at}: canvas cell ${cells.join(" x ")} is not whole pixels`);
+          continue;
+        }
+        if (rows.length !== preset.rows) offGrid.push(`${at}: ${rows.length} rows, expected ${preset.rows}`);
+        rows.forEach(({ line, width }, row) => {
+          if (Math.abs(width - grid) > 0.1) offGrid.push(`${at}: row ${row} is ${width.toFixed(2)}px, the ${preset.cols}-cell grid is ${grid.toFixed(2)}px (${JSON.stringify(line.replace(/[\x20-\x7e]/g, ""))})`);
+        });
+      }
+    }
+  } finally {
+    await browser.close();
+  }
+  assert.deepEqual(offGrid, []);
+});
+
+test("the bundled font covers every character the pieces contain or draw, at one cell wide", { skip: BROWSER.skip }, async (t) => {
+  const { project, directory } = scaffold(t);
+  // A copy that lost its font fails rather than drawing in a host font.
+  fs.cpSync(directory, path.join(project, "fontless"), { recursive: true });
+  fs.rmSync(path.join(project, "fontless/font.js"));
+  const characters = new Set();
+  for (let code = 0x20; code < 0x7f; code++) characters.add(String.fromCharCode(code));
+  for (const { slug } of manifest.pieces) for (const char of vendoredPiece(slug).source) if (char.charCodeAt(0) > 0x7e) characters.add(char);
+  for (const preset of PRESETS) {
+    const frames = AsciiArt.createFrames(await AsciiArt.loadPiece(vendoredPiece(preset.piece), preset.piece), preset);
+    for (let k = 0; k < preset.duration * preset.fps; k++) for (const char of frames.at(k / preset.fps).text) if (char !== "\n") characters.add(char);
+  }
+  const puppeteer = require(BROWSER.puppeteerModule);
+  const browser = await puppeteer.launch({ executablePath: BROWSER.chrome, headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.goto(pathToFileURL(path.join(directory, "index.html")).href, { waitUntil: "load" });
+    const result = await page.evaluate(async (list) => {
+      await window.asciiArt.ready;
+      const face = [...document.fonts].find((item) => item.family.replace(/"/g, "") === window.ASCII_ART_FONT.family);
+      const context = document.createElement("canvas").getContext("2d");
+      // A character the face lacks falls back to serif or sans-serif; only the face draws it 60px wide in both.
+      const wide = list.filter((char) => ["serif", "sans-serif"].some((fallback) => {
+        context.font = `100px "${window.ASCII_ART_FONT.family}", ${fallback}`;
+        return Math.abs(context.measureText(char).width - 60) > 0.01;
+      }));
+      return { status: face && face.status, pre: getComputedStyle(document.querySelector("pre")).fontFamily, wide };
+    }, [...characters]);
+    assert.equal(result.status, "loaded");
+    assert.equal(result.pre, "\"ascii-art mono\", monospace");
+    assert.deepEqual(result.wide, []);
+
+    const fontless = await browser.newPage();
+    await fontless.goto(pathToFileURL(path.join(project, "fontless/index.html")).href, { waitUntil: "load" });
+    assert.match(await fontless.evaluate(() => window.asciiArt.ready.then(() => "drew", (error) => error.message)), /font\.js is missing/);
+    await assert.rejects(fontless.evaluate(() => window.renderStudy(0.5)), /font\.js is missing/);
   } finally {
     await browser.close();
   }

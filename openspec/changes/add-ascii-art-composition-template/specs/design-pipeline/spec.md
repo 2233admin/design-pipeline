@@ -4,12 +4,13 @@
 
 `composition scaffold --template ascii-art --output <new-dir>` SHALL create, in a new directory of
 the project, a page, its player, a preset table, the exact text of each vendored ascii.rest piece
-module and the MIT notice, without network access, package installation or workflow state.
+module, the bundled monospace font and the MIT and font notices, without network access, package
+installation or workflow state.
 
 #### Scenario: Scaffold an offline project
 - **GIVEN** an installed or source skill and a project directory
 - **WHEN** `composition scaffold --template ascii-art --output ascii` runs for that project
-- **THEN** the directory holds `index.html`, `ascii-art.js`, `presets.js`, `pieces.js` and `LICENSE.ascii-rest`, each piece's text hashes to the vendor manifest, and the page opened from disk draws its default preset without any request leaving the directory
+- **THEN** the directory holds `index.html`, `ascii-art.js`, `presets.js`, `pieces.js`, `font.js`, `LICENSE.ascii-rest` and `LICENSE.font`, each piece's text hashes to the vendor manifest, and the page opened from disk draws its default preset without any request leaving the directory
 
 #### Scenario: Preserve authored work and refuse altered sources
 - **GIVEN** an existing output directory, or a vendored piece whose bytes no longer match its manifest hash
@@ -48,6 +49,23 @@ earlier calls.
 - **GIVEN** a preset whose grid differs from its piece, an unknown field, an unknown piece or an unknown preset name
 - **WHEN** the page loads it
 - **THEN** it shows the error on the page and the capture hooks throw instead of drawing a frame
+
+### Requirement: ASCII art glyphs sit on an exact cell grid
+
+The page SHALL draw every preset in the monospace font bundled with the scaffold, which SHALL cover
+every character the vendored pieces contain at one cell's width, so every row of a mono piece is
+exactly the preset's columns wide whatever fonts the host has, and SHALL refuse to draw when that
+font is missing or does not load.
+
+#### Scenario: A host font lacks box-drawing glyphs
+- **GIVEN** a host whose monospace font lacks some block or box-drawing characters the pieces draw
+- **WHEN** each preset is drawn at several times
+- **THEN** every row of a mono preset measures its columns times the cell width, and a coloured preset's canvas is a whole number of device pixels per cell
+
+#### Scenario: The font file is missing
+- **GIVEN** a scaffolded copy without `font.js`
+- **WHEN** the page opens
+- **THEN** it shows the error and the capture hooks throw instead of drawing in a host font
 
 ### Requirement: ASCII art page exposes the composition capture contract
 

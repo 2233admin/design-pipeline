@@ -45,3 +45,10 @@ was assembled from 30 seek captures with ffmpeg (1280×720, 15 fps, 30 frames).
 Vendored size: 15 files, 108,359 bytes. Mono pieces render in the system monospace font; in the
 synthwave still two rows run past the grid where a glyph fell back to a wider face. Pixels differ
 between machines. Visual Acceptance is not evaluated and belongs to the user.
+
+## Follow-up — cell grid
+
+The synthwave limit above was fixed after this record: both renderers now draw in the bundled
+JetBrains Mono subset (`design.md`, Bundled font). The regression's failing run against the player
+at `ae32602` and its passing run are recorded in `tasks.md` section 5. That fix's full QA and
+OpenSpec runs are reported with its commit, not in this file.

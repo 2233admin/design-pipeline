@@ -54,6 +54,9 @@ All notable changes to Design Pipeline are documented here.
   simulation and the scenes' colour cache. The copied project opens from disk without network;
   its live preview honours `prefers-reduced-motion`. No new CLI flag, gate or schema; captures
   grant no visual acceptance.
+  Every preset draws in a bundled JetBrains Mono subset (OFL 1.1, 7,488 bytes, embedded in the
+  scaffold's `font.js` as a data URL with `LICENSE.font`), so a host font without a box-drawing
+  glyph no longer pushes mono rows past the grid and glyph shapes no longer depend on host fonts.
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional
   `productSource` — the real product's repository, full commit SHA, hashed run log, `ui-state`

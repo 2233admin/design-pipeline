@@ -13,9 +13,21 @@ node "$SKILL_ROOT/scripts/designer-pipeline.cjs" \
 ```
 
 The new directory holds `index.html`, `ascii-art.js` (the player), `presets.js` (the preset table),
-`pieces.js` (the exact text of each vendored piece module) and `LICENSE.ascii-rest`. Open
-`index.html` straight from disk: `ascii-art.js` evaluates each piece through a `data:` URL import,
-because Chromium refuses ES-module files on `file://` pages. No request leaves the directory.
+`pieces.js` (the exact text of each vendored piece module), `font.js` (the bundled monospace font
+as a `data:` URL), `LICENSE.ascii-rest` and `LICENSE.font`. Open `index.html` straight from disk:
+`ascii-art.js` evaluates each piece through a `data:` URL import and loads the font from a `data:`
+URL, because Chromium refuses ES-module and font files on `file://` pages. No request leaves the
+directory.
+
+## Font and grid
+
+Both renderers draw in a subset of JetBrains Mono 2.304 Regular (SIL Open Font License 1.1; source,
+hashes and the subset command in [`fonts/LICENSES.md`](fonts/LICENSES.md)), never a host font. It
+covers printable ASCII and every character the vendored pieces contain, each one cell wide, so every
+row of a mono piece is exactly `cols` cells and glyph shapes are the same on every machine. A host
+monospace font often lacks some box-drawing or block characters; the browser then draws those in a
+wider face and the row runs past the grid. The page draws nothing until the font has loaded; without
+`font.js` it shows the error and the capture hooks throw.
 
 ## Presets
 
@@ -89,13 +101,17 @@ runtime, so neither belongs in an offline capture.
 To play another of the package's 217 pieces here, add a `pieces.js` entry whose `source` is the
 module file's text as a string (for example `JSON.stringify(fs.readFileSync(file, "utf8"))`), then a
 preset row. A piece that reads the real time (`meta.clock`) is refused because it cannot be seeked.
+A piece that draws characters outside the bundled subset needs a new subset (see `fonts/LICENSES.md`);
+otherwise those characters fall back to a host font and leave the grid.
 
 ## Limits
 
-- Glyphs come from the system monospace font (`ui-monospace, SFMono-Regular, Menlo, Consolas,
-  monospace`), so captures differ between operating systems; compare pixels from one machine.
-- A box-drawing or block character missing from that font falls back to another face and may not
-  line up.
+- Glyph shapes come from the bundled font, but the rasterizer is the host's: antialiasing can still
+  differ slightly between operating systems and Chrome builds, so compare pixels from one machine.
+- Block and box-drawing glyphs are drawn at the font's own height (1.32 em) in a 1.2 em row, so in a
+  `<pre>` they overlap the next row slightly instead of leaving gaps. Neighbouring full blocks (`█`)
+  can still show a faint antialiased seam at cell edges, and diagonals (`/`, `╱`) do not join
+  across rows.
 - Canvas cells are whole device pixels; a small viewport makes the 200 × 100 scenes' dots small.
 - Determinism and a passing capture are technical results. They do not grant visual acceptance.
 
