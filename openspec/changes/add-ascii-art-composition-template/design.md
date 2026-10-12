@@ -77,6 +77,12 @@ from a copy of `index.html` with another `data-preset`. Adding a capture flag or
 `--composition` would change a shared CLI contract for one template, and generated per-preset entry
 pages would duplicate the page and drift.
 
+The shipped page names `aurora-fjord` as its `data-preset` default: the full-colour scene the
+ascii.rest home page leads with, so the page opened from disk and a `--composition` capture show
+the template's coloured look first. The table keeps its order (text presets, then scenes), so the
+first row (`donut`) is the fallback only for a page whose `data-preset` was removed; a text preset
+is one `?preset=` away, and a scene default makes a bare `?mono` an error rather than a one-ink page.
+
 ## Drawing
 
 Every preset is drawn by default on a canvas as ascii.rest's `mount()` draws a coloured piece: each

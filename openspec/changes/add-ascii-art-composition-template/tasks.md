@@ -122,3 +122,47 @@ After, with paint rules and the mono option:
 ℹ pass 3
 ℹ fail 0
 ```
+
+## 7. Full-colour default preset
+
+- [x] 7.1 Name `aurora-fjord`, the full-colour scene the ascii.rest home page leads with, as the `data-preset` default in `study.html`, and start the page's pre-script `--ink` / `--ground` on its colours; keep the preset table's order (text presets, then scenes), so `donut` stays the first-row fallback only for a page without `data-preset` (`design.md`, Capture contract and preset selection).
+- [x] 7.2 Update the tests that assumed `donut` as the default: the scaffold test checks the copied page names `aurora-fjord`; the page test checks the default is `aurora-fjord` on the canvas and that a bare `?mono` is refused for the default scene, and takes its `<pre>` checks from `?preset=donut&mono`; the capture test checks the `--composition` default in at least eight of the scene's palette colours, and captures `?preset=donut` in its paint and `?preset=donut&mono` in its ink through `--url`.
+- [x] 7.3 Update the tool README, the spec delta's `Capture a seeked frame` scenario, `design.md` and the CHANGELOG entry.
+- [x] 7.4 Capture the default (`--composition`, `--seek 4`) and `matrix-rain`, `tunnel`, `fireworks`, `sparks` and `rotozoomer` (`--url`, `--seek 4`, each at half its duration) at 1920 × 1080 from a fresh scaffold into local `.design-pipeline/` evidence for review; the stills grant no visual acceptance.
+
+Focused run: `node --test tests/ascii-art.test.cjs tests/designer-pipeline-cli.test.cjs` (same Windows host).
+
+Before, at `8b46745` with `donut` as the default:
+
+```text
+ℹ tests 26
+ℹ pass 26
+ℹ fail 0
+```
+
+The updated tests against the page still naming `donut` (`--test-name-pattern="scaffold writes|plays offline|composition capture --seek"`):
+
+```text
+✖ ascii-art scaffold writes a self-contained project with the exact vendored pieces (85.5291ms)
+✖ the scaffolded page plays offline from file:// and redraws the same frame for the same time (537.4211ms)
+✖ composition capture --seek photographs the seeked frame of the default scene, a text preset in paint and in one ink, and another scene (7382.8237ms)
+ℹ tests 3
+ℹ pass 0
+ℹ fail 3
+  AssertionError [ERR_ASSERTION]: the page's default preset is the aurora-fjord scene
+  AssertionError [ERR_ASSERTION]: data-preset chooses the default, the ascii.rest home page's full-colour scene
+  + 'donut'
+  - 'aurora-fjord'
+  AssertionError [ERR_ASSERTION]: cells carry at least eight of the scene's own palette colours (0)
+```
+
+After, with `aurora-fjord` as the default:
+
+```text
+✔ ascii-art scaffold writes a self-contained project with the exact vendored pieces (161.5817ms)
+✔ the scaffolded page plays offline from file:// and redraws the same frame for the same time (5101.8213ms)
+✔ composition capture --seek photographs the seeked frame of the default scene, a text preset in paint and in one ink, and another scene (28559.4458ms)
+ℹ tests 26
+ℹ pass 26
+ℹ fail 0
+```

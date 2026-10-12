@@ -74,20 +74,21 @@ hooks throw.
 | `ocean-sunset` | ocean-sunset | 15 | 200 × 100 | the scene's 43-colour palette |
 
 Choose one without editing code: `index.html#night-coast`, `index.html?preset=night-coast`, the
-Preset control, or `data-preset` on `<html>` (the default when the URL names none; `donut` as
-shipped). A hash wins over the query. Each row of `presets.js` has `name`, `piece`, `options`
-(overrides of the piece's option defaults), `fps` (the sample rate), `cols`/`rows` (must equal the
-piece's grid), `ink` (the colour of a mono preset, of a cell no paint rule holds, and of the
-controls), `ground` (the colour behind the art), `duration` (the seconds `renderStudy` and the live
-loop cover; duration × fps ≤ 3600), `paint` (a text piece's colour rules; required unless the row
-is mono) and optionally `mono`. An unknown field, piece or preset, a grid mismatch, a malformed
+Preset control, or `data-preset` on `<html>` (the default when the URL names none; `aurora-fjord`,
+the full-colour scene of the ascii.rest home page, as shipped; the table's first row only when
+`data-preset` is absent). A hash wins over the query. Each row of `presets.js` has `name`, `piece`,
+`options` (overrides of the piece's option defaults), `fps` (the sample rate), `cols`/`rows` (must
+equal the piece's grid), `ink` (the colour of a mono preset, of a cell no paint rule holds, and of
+the controls), `ground` (the colour behind the art), `duration` (the seconds `renderStudy` and the
+live loop cover; duration × fps ≤ 3600), `paint` (a text piece's colour rules; required unless the
+row is mono) and optionally `mono`. An unknown field, piece or preset, a grid mismatch, a malformed
 paint rule, or paint on a scene, is shown on the page and makes the capture hooks throw.
 
 ## Capture
 
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" composition capture --root "$PWD" \
-  --composition ascii-art/index.html --seek 2.5 --output qa/ascii-donut
+  --composition ascii-art/index.html --seek 4 --output qa/ascii-aurora-fjord
 ```
 
 `--seek <s>` calls `window.__timelines["ascii-art"].seek(s)`; `window.renderStudy(progress)` draws
@@ -99,8 +100,8 @@ writing an empty image.
 `--composition` opens the file without a query, so it captures the `data-preset` default, in colour
 unless its row says `mono: true`. For another preset, copy `index.html` and change `data-preset`, or
 serve the directory on this machine (for example `python -m http.server 8123 --bind 127.0.0.1` run
-inside it) and pass `--url "http://127.0.0.1:8123/index.html?preset=night-coast"` (add `&mono` for
-one ink).
+inside it) and pass `--url "http://127.0.0.1:8123/index.html?preset=night-coast"` (for a text
+preset, add `&mono` for one ink).
 
 ## Time
 

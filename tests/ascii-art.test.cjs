@@ -136,6 +136,9 @@ test("ascii-art scaffold writes a self-contained project with the exact vendored
     assert.equal(entry.sha256, record.sha256);
   }
   for (const preset of require(path.join(directory, "presets.js"))) assert.ok(pieces[preset.piece], `${preset.name} plays a copied piece`);
+  const page = fs.readFileSync(path.join(directory, "index.html"), "utf8");
+  assert.match(page, /<html lang="en" data-preset="aurora-fjord">/, "the page's default preset is the aurora-fjord scene");
+  assert.ok(PRESETS.some((preset) => preset.name === "aurora-fjord" && isScene(preset.piece)), "the default names a shipped scene preset");
 
   fs.writeFileSync(path.join(directory, "index.html"), "authored work");
   assert.equal(spawnSync(process.execPath, args, { encoding: "utf8", windowsHide: true }).status, 1);
@@ -294,20 +297,21 @@ test("the scaffolded page plays offline from file:// and redraws the same frame 
       return { state, picture, controls: getComputedStyle(document.querySelector("form")).display, playing: window.asciiArt.playing };
     }, progress);
 
-    const donut = await open("");
-    assert.equal((await ready(donut)).preset, "donut", "data-preset chooses the default");
-    const forward = await sample(donut, 0.25);
+    const fjord = await open("");
+    assert.equal((await ready(fjord)).preset, "aurora-fjord", "data-preset chooses the default, the ascii.rest home page's full-colour scene");
+    const forward = await sample(fjord, 0.25);
     assert.deepEqual([forward.state.renderer, forward.state.time, forward.controls, forward.playing], ["canvas", 2, "none", false], "the default is coloured glyphs on the canvas");
-    await sample(donut, 0.9);
-    await sample(donut, 0.1);
-    assert.deepEqual(await sample(donut, 0.25), forward);
-    assert.notEqual((await sample(donut, 0.5)).picture, forward.picture);
-    const coldDonut = await open("");
-    await ready(coldDonut);
-    assert.deepEqual(await sample(coldDonut, 0.25), forward);
+    await sample(fjord, 0.9);
+    await sample(fjord, 0.1);
+    assert.deepEqual(await sample(fjord, 0.25), forward);
+    assert.notEqual((await sample(fjord, 0.5)).picture, forward.picture);
+    const coldFjord = await open("");
+    await ready(coldFjord);
+    assert.deepEqual(await sample(coldFjord, 0.25), forward);
+    assert.match((await ready(await open("?mono"))).error, /coloured scene with no one-ink form/, "the default scene has no one-ink form");
 
-    const mono = await open("?mono");
-    assert.equal((await ready(mono)).renderer, "pre", "?mono draws the text in a <pre>");
+    const mono = await open("?preset=donut&mono");
+    assert.equal((await ready(mono)).renderer, "pre", "?mono draws a text preset's text in a <pre>");
     const text = await sample(mono, 0.25);
     const lines = text.picture.split("\n");
     assert.equal(lines.length, 22);
@@ -558,29 +562,38 @@ function pixels(file) {
   return { png, colours, total: png.width * png.height };
 }
 
-test("composition capture --seek photographs the seeked frame of the coloured default, a mono and a scene preset", { skip: BROWSER.skip }, async (t) => {
+test("composition capture --seek photographs the seeked frame of the default scene, a text preset in paint and in one ink, and another scene", { skip: BROWSER.skip }, async (t) => {
   const { project, directory } = scaffold(t);
   const capture = (target, seek, output) => runCli(["composition", "capture", "--root", project, ...target, "--seek", String(seek), "--width", "960", "--height", "540", "--output", output, "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule]);
   const shot = (output) => path.join(project, output, "screenshot.png");
 
-  // The default preset, captured from the file as composition capture --composition opens it.
+  // The default preset, the aurora-fjord scene, captured from the file as composition capture --composition opens it.
   const file = ["--composition", "ascii/index.html"];
-  for (const [seek, output] of [[1, "captures/donut-1"], [2, "captures/donut-2"], [1, "captures/donut-1-again"]]) {
+  for (const [seek, output] of [[1, "captures/aurora-fjord-1"], [2, "captures/aurora-fjord-2"], [1, "captures/aurora-fjord-1-again"]]) {
     const result = await capture(file, seek, output);
     assert.equal(result.status, 0, JSON.stringify(result.output));
   }
-  const donut = pixels(shot("captures/donut-1"));
-  const donutPreset = PRESETS.find((preset) => preset.name === "donut");
-  const paint = (AsciiArt.createFrames(await AsciiArt.loadPiece(vendoredPiece("donut"), "donut"), donutPreset).palette || []).slice(1); // past the ink
-  assert.ok((donut.colours.get("#101010") || 0) / donut.total < 0.97, "the ground is not the whole frame");
-  assert.ok(paint.filter((colour) => (donut.colours.get(colour) || 0) > 50).length >= 3, "glyphs are drawn in at least three of the preset's paint colours");
-  assert.notDeepEqual(pixels(shot("captures/donut-2")).png.data, donut.png.data, "--seek reaches the page: another time is another frame");
-  assert.deepEqual(pixels(shot("captures/donut-1-again")).png.data, donut.png.data, "the same --seek gives the same pixels in a fresh browser");
+  const fjord = pixels(shot("captures/aurora-fjord-1"));
+  const fjordPreset = PRESETS.find((preset) => preset.name === "aurora-fjord");
+  const fjordPalette = (await AsciiArt.loadPiece(vendoredPiece("aurora-fjord"), "aurora-fjord")).meta.palette;
+  const fjordGround = (fjord.colours.get(fjordPreset.ground) || 0) / fjord.total;
+  assert.ok(fjordGround < 0.97, `the ground is not the whole frame (${fjordGround})`);
+  const fjordShown = fjordPalette.filter((colour) => (fjord.colours.get(colour) || 0) > 50);
+  assert.ok(fjordShown.length >= 8, `cells carry at least eight of the scene's own palette colours (${fjordShown.length})`);
+  assert.notDeepEqual(pixels(shot("captures/aurora-fjord-2")).png.data, fjord.png.data, "--seek reaches the page: another time is another frame");
+  assert.deepEqual(pixels(shot("captures/aurora-fjord-1-again")).png.data, fjord.png.data, "the same --seek gives the same pixels in a fresh browser");
 
-  // The same preset in one ink, and a coloured scene, selected by URL from a local static server.
+  // A text preset in its paint and in one ink, and another scene, selected by URL from a local static server.
   const server = await serve(directory);
   t.after(() => server.close());
   const url = (query) => ["--url", `http://127.0.0.1:${server.address().port}/index.html${query}`];
+  const donutPreset = PRESETS.find((preset) => preset.name === "donut");
+  const paint = (AsciiArt.createFrames(await AsciiArt.loadPiece(vendoredPiece("donut"), "donut"), donutPreset).palette || []).slice(1); // past the ink
+  const painted = await capture(url("?preset=donut"), 1, "captures/donut-1");
+  assert.equal(painted.status, 0, JSON.stringify(painted.output));
+  const donut = pixels(shot("captures/donut-1"));
+  assert.ok((donut.colours.get(donutPreset.ground) || 0) / donut.total < 0.97, "the donut's ground is not the whole frame");
+  assert.ok(paint.filter((colour) => (donut.colours.get(colour) || 0) > 50).length >= 3, "glyphs are drawn in at least three of the preset's paint colours");
   const mono = await capture(url("?preset=donut&mono"), 1, "captures/donut-mono-1");
   assert.equal(mono.status, 0, JSON.stringify(mono.output));
   const ink = pixels(shot("captures/donut-mono-1"));

@@ -57,10 +57,10 @@ All notable changes to Design Pipeline are documented here.
   scaffold's `font.js` as a data URL with `LICENSE.font`), so a host font without a box-drawing
   glyph no longer pushes mono rows past the grid and glyph shapes no longer depend on host fonts.
   Glyphs are coloured by default, one colour a cell on a canvas: the scenes in their own palettes
-  (`aurora-fjord` is the ascii.rest home page's hero), and each text preset in its own palette,
-  mapped by glyph, row or column through its row's `paint` rules (fire by heat, the synthwave sun
-  and floor by row, fireworks by column). One-ink text in a `<pre>` is an option: `?mono` or a row's
-  `mono: true`.
+  (`aurora-fjord`, the ascii.rest home page's hero, is the page's default preset), and each text
+  preset in its own palette, mapped by glyph, row or column through its row's `paint` rules (fire
+  by heat, the synthwave sun and floor by row, fireworks by column). One-ink text in a `<pre>` is
+  an option: `?mono` or a row's `mono: true`.
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional
   `productSource` — the real product's repository, full commit SHA, hashed run log, `ui-state`

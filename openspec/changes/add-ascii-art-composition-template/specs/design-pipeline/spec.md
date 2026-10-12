@@ -106,9 +106,9 @@ hook that `composition capture --seek` drives, SHALL stop live playback and hide
 either is called, and SHALL use no network request or render-time clock to draw the captured frame.
 
 #### Scenario: Capture a seeked frame
-- **GIVEN** a scaffolded project
+- **GIVEN** a scaffolded project, whose page names the `aurora-fjord` scene as its `data-preset` default
 - **WHEN** `composition capture --composition <dir>/index.html --seek 1` runs twice and `--seek 2` once
-- **THEN** both 1 s images are pixel-identical, the 2 s image differs, and the glyphs are drawn in at least three of the default preset's paint colours on its ground
+- **THEN** both 1 s images are pixel-identical, the 2 s image differs, and the cells are drawn in at least eight of the scene's own palette colours on its ground
 
 #### Scenario: Capture another preset or one ink without editing code
 - **GIVEN** the scaffolded directory served on the local machine
