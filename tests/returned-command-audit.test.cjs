@@ -9,6 +9,8 @@ const { spawnSync } = require("node:child_process");
 const { checkDesignFoundation } = require("../skill/scripts/design-synthesis-core.cjs");
 const { checkAudio } = require("../skill/scripts/audio-core.cjs");
 const { scaffoldFilm } = require("../skill/scripts/film-project-core.cjs");
+// Media checks need ffmpeg and ffprobe on PATH and skip without them (AGENTS.md); CI runners have neither.
+const hasFfmpeg = ["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0);
 
 const temporary = t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "command audit "));
@@ -32,7 +34,7 @@ test("missing foundation initialization command selects the same spaced project 
   assert.deepEqual(fs.readdirSync(elsewhere), []);
 });
 
-test("audio loudness recovery command masters the same spaced file outside cwd", t => {
+test("audio loudness recovery command masters the same spaced file outside cwd", { skip: !hasFfmpeg && "ffmpeg not installed" }, t => {
   const root = temporary(t), elsewhere = temporary(t);
   const input = path.join(root, "quiet score.wav");
   const generated = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", input], { encoding: "utf8", windowsHide: true });

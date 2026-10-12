@@ -7,6 +7,8 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { analyzeProject } = require("../skill/scripts/edit-project-core.cjs");
+// Media checks need ffmpeg and ffprobe on PATH and skip without them (AGENTS.md); CI runners have neither.
+const hasFfmpeg = ["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0);
 
 const temporary = t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "edit handoff "));
@@ -23,7 +25,7 @@ const execute = (command, cwd) => {
   return JSON.parse(result.stdout);
 };
 
-test("edit analyze and auto handoffs execute outside the spaced project and render returns a bound check", t => {
+test("edit analyze and auto handoffs execute outside the spaced project and render returns a bound check", { skip: !hasFfmpeg && "ffmpeg not installed" }, t => {
   const root = temporary(t), elsewhere = temporary(t);
   fs.mkdirSync(path.join(root, "sources"));
   ff(["-f", "lavfi", "-i", "testsrc2=s=160x90:r=30", "-t", "4", "-pix_fmt", "yuv420p", path.join(root, "sources", "bars.mp4")]);
