@@ -9,9 +9,9 @@
 
 ## Integrated verification and delivery
 
-- [ ] 5. Exercise the integrated public workflow CLI; run complete QA with the required FONTTOOLS_PYTHON and record totals.
-- [ ] 6. Run pinned strict OpenSpec change validation and `npm run specs:check`.
-- [ ] 7. Commit this change on `fix/web-practice-round1` without pushing and write the requested external report.
+- [x] 5. Exercise the integrated public workflow CLI; run complete QA with the required FONTTOOLS_PYTHON and record totals.
+- [x] 6. Run pinned strict OpenSpec change validation and `npm run specs:check`.
+- [x] 7. Commit this change on `fix/web-practice-round1` without pushing and write the requested external report.
 
 ## Regression evidence
 
@@ -129,6 +129,26 @@ documentation-only; no runtime or new test is needed.
   removed that spelling assertion, leaving real sample-stage behavior to its workflow tests.
   `node --test tests/film-project.test.cjs` → 13 passed, 0 failed, exit 0.
 - Initial strict checks: pinned change validation passed; `npm run specs:check`
-  → 70 passed, 0 failed. Full QA must be rerun on the corrected tree.
+  → 70 passed, 0 failed. The corrected-tree full rerun is recorded below.
 - Skipped cases: three optional native GEPA runtime tests (no prepared `GEPA_PYTHON`);
   one separate-case duplicate-brief test (this Windows filesystem aliases case variants).
+
+## Frozen implementation full QA
+
+Implementation commit: `e3ffb1c4192a35f7e8df3d81937c0a36ed40b90c`.
+Tested Git tree: `328e5427908e48a4c1179d7fe77e46c366553866`.
+The implementation and test bytes remained frozen during the full rerun.
+
+| Check | Observed result |
+| --- | --- |
+| Complete `npm test` with requested local `FONTTOOLS_PYTHON` | exit 0 |
+| Registered repository tests | 126 files; 1,227 tests; 1,223 passed; 0 failed; 4 skipped |
+| Installed-package public CLI smoke | 12 passed; 0 failed; 0 skipped |
+| Browser automation workspace | prewalk adapter self-test and BuilderPort self-test both OK |
+| Reproducible packaging | `.tgz`, `.zip` and checksums all identical between builds |
+| Repository status preservation | QA leaves repository status byte-identical |
+| `npm run specs:check` | 70 passed; 0 failed; exit 0 |
+| Pinned strict change validation | valid; exit 0 |
+
+The four skips are the same explicit environment boundaries listed above, not failures.
+Subsequent changes are verification records only; they do not change runtime or test bytes.
