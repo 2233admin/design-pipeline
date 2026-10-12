@@ -31,14 +31,28 @@ function gitBuffer(source, args, input = null) {
   return child.stdout;
 }
 
-function readHeadEntries(source) {
-  return git(source, ["ls-tree", "-rz", "-l", "HEAD"])
+// Lists HEAD blobs without -l: in a partial clone, size lookup would fetch every excluded blob.
+function readHeadEntries(source, include) {
+  const listed = git(source, ["ls-tree", "-rz", "HEAD"])
     .split("\0")
     .filter(Boolean)
     .map((entry) => {
-      const match = entry.match(/^(\d{6}) blob ([a-f0-9]{40,64})\s+(\d+)\t([\s\S]+)$/);
+      const match = entry.match(/^(\d{6}) blob ([a-f0-9]{40,64})\t([\s\S]+)$/);
       if (!match) fail(`unsupported Git tree entry: ${entry}`);
-      return { mode: match[1], oid: match[2], size: Number.parseInt(match[3], 10), path: match[4] };
+      return { mode: match[1], oid: match[2], path: match[3] };
+    })
+    .filter((entry) => include(entry.path));
+  if (!listed.length) return [];
+  const sizes = gitBuffer(source, ["cat-file", "--batch-check"], Buffer.from(`${listed.map((entry) => entry.oid).join("\n")}\n`))
+    .toString("utf8")
+    .split("\n")
+    .filter(Boolean);
+  if (sizes.length !== listed.length) fail("unexpected Git blob size listing");
+  return listed
+    .map((entry, index) => {
+      const header = sizes[index].match(/^([a-f0-9]{40,64}) blob (\d+)$/);
+      if (!header || header[1] !== entry.oid) fail(`unexpected Git blob size header: ${entry.path}`);
+      return { mode: entry.mode, oid: entry.oid, size: Number.parseInt(header[2], 10), path: entry.path };
     })
     .sort((left, right) => left.path.localeCompare(right.path));
 }
@@ -85,11 +99,13 @@ function canonicalTree(root, files) {
   return crypto.createHash("sha256").update(entries.join(""), "utf8").digest("hex");
 }
 
-function inspectCheckout(source) {
+function inspectCheckout(source, options = {}) {
+  const include = options.include || (() => true);
+  if (typeof include !== "function") fail("inspectCheckout include must be a function");
   if (!fs.existsSync(path.join(source, ".git"))) fail(`not a git checkout: ${source}`);
   const dirty = git(source, ["status", "--porcelain", "--untracked-files=no"]);
   if (dirty) fail(`source has tracked working-tree changes: ${source}`);
-  const indexEntries = readHeadEntries(source);
+  const indexEntries = readHeadEntries(source, include);
   if (!indexEntries.length) fail(`source has no tracked files: ${source}`);
   return {
     source: path.resolve(source),

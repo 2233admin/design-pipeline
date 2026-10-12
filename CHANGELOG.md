@@ -43,6 +43,18 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Built-in UI craft sources (change `internalize-ui-craft-sources`): pinned, scoped,
+  license-attributed snapshots of `emil-design-eng`, `make-interfaces-feel-better`,
+  `fixing-accessibility`, `12-principles-of-animation`, `shadcn` and `playwright-cli`, routed by
+  `references/ui-craft-sources.md` with stage use, precedence below project and pipeline
+  contracts, resolved checklist conflicts and execution boundaries. The web `build` and `review`
+  sections, the skill index, stage guidance, capability routing and companion tables point at it;
+  `emil-design-eng` no longer depends on a global install, and the self-check no longer lists it
+  as a missing Visual taste companion. React Doctor stays unbundled for license reasons and is
+  cited through the pinned reference-only `references/react-doctor.md`.
+  shadcn, `playwright-cli` and React Doctor run only in projects that already use them or with
+  user approval; no gate, receipt field or CLI flag is added, and their output is never Component
+  Conformance or Visual Acceptance.
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional
   `productSource` — the real product's repository, full commit SHA, hashed run log, `ui-state`

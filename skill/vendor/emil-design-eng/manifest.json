@@ -1,0 +1,61 @@
+{
+  "schema": "design-pipeline.ui-craft-source.v1",
+  "name": "emil-design-eng",
+  "source": {
+    "repository": "https://github.com/emilkowalski/skills",
+    "revision": "2d228630ba1446365f614a108cb8252f1feda202",
+    "gitTree": "a8f01f03c19a9ec7e737494dff7b8e416e326bd2",
+    "committedAt": "2026-10-11T15:58:32+02:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-13",
+    "scope": [
+      "skills/emil-design-eng/**",
+      "LICENSE"
+    ],
+    "contentHashScope": "selected skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Emil Kowalski"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 2,
+    "byteCount": 28193,
+    "treeSha256": "16edf049c960e6ea6d96ec4fa2d436c420183c7f33f2dc1b2f8491273218c674",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "57b46f1fd11dc62351ea548104a88aa3f659c11b",
+        "size": 1070,
+        "sha256": "4ff5bdb7887ec1435c9cab0e8d1a7caee704d894d65c2a008ccc68b1cc2f260b"
+      },
+      {
+        "path": "skills/emil-design-eng/SKILL.md",
+        "mode": "100644",
+        "oid": "62ce902af8dd32c590ea7203e9ab2edb1d6ef81a",
+        "size": 27123,
+        "sha256": "ffbe68e6007fb42cb8149f089b400a1ca007d59ba23e8948e2be4476f3175939"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "emil-design-eng",
+      "path": "upstream/skills/emil-design-eng/SKILL.md",
+      "description": "This skill encodes Emil Kowalski's philosophy on UI polish, component design, animation decisions, and the invisible details that make software feel great."
+    }
+  ],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "executesUpstreamCommands": false,
+    "fetchesRemotePrompts": false,
+    "changesProjectRuntime": false
+  }
+}

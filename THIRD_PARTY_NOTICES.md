@@ -597,3 +597,91 @@ its separate runtime license. The maintained adaptation gives project-owned desi
 components, claims and user choices priority, using the pipeline's existing render and evidence
 tools. Upstream Bun/uv/Remotion scripts remain readable source; native Windows and WSL pipeline
 execution is unverified and the package does not install their dependencies.
+
+## emilkowalski/skills (emil-design-eng)
+
+The byte-preserved scoped snapshot under `skill/vendor/emil-design-eng/upstream/` is from
+https://github.com/emilkowalski/skills at reviewed commit
+`2d228630ba1446365f614a108cb8252f1feda202` (reviewed 2026-10-13).
+Only `skills/emil-design-eng/**` and the root `LICENSE` are retained (2 files); sibling skills,
+the repository README and other root files are excluded.
+
+MIT, Copyright (c) 2026 Emil Kowalski. The complete original license is
+`skill/vendor/emil-design-eng/upstream/LICENSE`. `skill/vendor/emil-design-eng/manifest.json`
+records the scoped original Git blobs and hashes.
+
+## jakubkrehel/make-interfaces-feel-better
+
+The byte-preserved scoped snapshot under `skill/vendor/make-interfaces-feel-better/upstream/` is
+from https://github.com/jakubkrehel/make-interfaces-feel-better at reviewed commit
+`35545ea1512ad59fa463e6b1f95ca9c052981fe6` (reviewed 2026-10-13).
+Only `skills/make-interfaces-feel-better/**` (the skill, its five topic guides and agent metadata),
+the root `README.md` and the root `LICENSE` are retained (9 files); repository-root `AGENTS.md`
+and `CLAUDE.md` are excluded.
+
+MIT, Copyright (c) 2026 Jakub Krehel. The complete original license is
+`skill/vendor/make-interfaces-feel-better/upstream/LICENSE`.
+
+## ibelick/ui-skills (fixing-accessibility)
+
+The byte-preserved scoped snapshot under `skill/vendor/fixing-accessibility/upstream/` is from
+https://github.com/ibelick/ui-skills at reviewed commit
+`f2264c30213a8a55bd0a6a7668d0438e4564e090` (reviewed 2026-10-13).
+Only `skills/fixing-accessibility/**` and the root `LICENSE` are retained (2 files); the website,
+CLI, sibling skills and repository-root agent files are excluded.
+
+MIT, Copyright (c) 2026 Julien Thibeaut. The complete original license is
+`skill/vendor/fixing-accessibility/upstream/LICENSE`.
+
+## raphaelsalaja/skill (12-principles-of-animation)
+
+The byte-preserved scoped snapshot under `skill/vendor/12-principles-of-animation/upstream/` is
+from https://github.com/raphaelsalaja/skill at reviewed commit
+`dc9eef22f13635df77d9b9e67c82aa85d52a97b7` (reviewed 2026-10-13).
+Only `skills/12-principles-of-animation/**` and the root `README.md` are retained (2 files);
+sibling skills are excluded.
+
+The repository contains no LICENSE file at this revision and publishes no copyright line. The
+only license evidence is the frontmatter line `license: MIT` in
+`skill/vendor/12-principles-of-animation/upstream/skills/12-principles-of-animation/SKILL.md`,
+which is retained unmodified. The manifest records that declaration as the license evidence.
+
+## shadcn-ui/ui (shadcn skill)
+
+The byte-preserved scoped snapshot under `skill/vendor/shadcn/upstream/` is from
+https://github.com/shadcn-ui/ui at reviewed commit `993eb2c3151997ce08a49635c10fd8c8ef3713c7`
+(reviewed 2026-10-13). Only `skills/shadcn/**` (the skill, its guides, rules, showcase assets,
+evals, coverage script and agent metadata) and the root `LICENSE.md` are retained (22 files); the
+application, registry and package sources of the monorepo are excluded.
+
+MIT, Copyright (c) 2023 shadcn. The complete original license is
+`skill/vendor/shadcn/upstream/LICENSE.md`. The package does not run the shadcn CLI, its MCP server
+or the bundled coverage script, and does not install shadcn/ui into a project.
+
+## microsoft/playwright-cli
+
+The byte-preserved scoped snapshot under `skill/vendor/playwright-cli/upstream/` is from
+https://github.com/microsoft/playwright-cli at reviewed commit
+`b85c7a736bb473bf55b584e54a09ffa698d6d871` (reviewed 2026-10-13).
+Only `skills/playwright-cli/**` (the skill and its ten reference guides), the root `README.md` and
+the root `LICENSE` are retained (13 files); the CLI source, tests, CI and repository-root agent
+files are excluded.
+
+Licensed under the Apache License, Version 2.0. Copyright (c) Microsoft Corporation. The complete
+unmodified license text, including that copyright line, is
+`skill/vendor/playwright-cli/upstream/LICENSE`; a copy of the license is also available at
+http://www.apache.org/licenses/LICENSE-2.0. No NOTICE file exists at the reviewed revision. The
+files are redistributed unmodified; the package does not install or run playwright-cli.
+
+## millionco/react-doctor (referenced, not distributed)
+
+https://github.com/millionco/react-doctor is licensed under a Modified MIT License, Copyright (c)
+2026 Million Software, Inc. Its modification requires prior written permission from the copyright
+holder for using the software, its source code or derivative works as training, fine-tuning or
+evaluation data, or as input to any automated pipeline for training or improving a machine
+learning model or AI system, and for selling it or offering it as a paid, hosted or managed
+product or service whose value derives entirely or substantially from the software.
+
+This package bundles none of its files. `skill/references/react-doctor.md` is a project-written,
+reference-only record of a pinned revision; an optional run of the public CLI is a user-approved
+action in the user's own project.

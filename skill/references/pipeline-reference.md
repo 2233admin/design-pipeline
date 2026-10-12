@@ -350,7 +350,7 @@ Impeccable product-design capability map: `references/impeccable-product-design.
 `references/impeccable-product-design.md`.
 
 Use these design lenses in this order; external companions apply when installed, while Taste
-is built in:
+and `emil-design-eng` are built in:
 
 1. `impeccable`: command vocabulary, surface modes, refinement semantics, bounded verification, and design-detector workflow.
 2. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
@@ -358,12 +358,18 @@ is built in:
    redesign, style or visual assets; adapt its rules within project contracts.
 4. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
 5. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
-6. `emil-design-eng`: motion, transitions, input feedback, perceived quality, interaction details.
+6. [Built-in `emil-design-eng`](ui-craft-sources.md#emil-design-eng): motion, transitions, input
+   feedback, perceived quality, interaction details; no companion installation.
+
+The same [UI craft guide](ui-craft-sources.md) routes the other built-in sources
+(`make-interfaces-feel-better`, `fixing-accessibility`, `12-principles-of-animation`, `shadcn`,
+`playwright-cli`) and the reference-only React Doctor record by stage and precedence.
 
 For dynamic UI, interaction motion, and animation-specific work, apply these motion skills:
 
 - `design-motion-principles`: primary create/audit workflow for purposeful UI motion.
-- `emil-design-eng`: design-engineering judgment for animation and interaction polish.
+- `emil-design-eng`: built-in design-engineering judgment for animation and interaction polish
+  ([ui-craft-sources.md](ui-craft-sources.md#emil-design-eng)).
 - `animation-vocabulary`: translate vague motion intent into precise timing, easing, choreography, and behavior language.
 - `review-animations`: strict post-implementation animation review.
 - `references/animation-opportunity-and-review.md`: project-owned gate for screening opportunities before implementation, naming vocabulary/curves, and recording review evidence.

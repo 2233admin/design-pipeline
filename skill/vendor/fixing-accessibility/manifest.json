@@ -1,0 +1,61 @@
+{
+  "schema": "design-pipeline.ui-craft-source.v1",
+  "name": "fixing-accessibility",
+  "source": {
+    "repository": "https://github.com/ibelick/ui-skills",
+    "revision": "f2264c30213a8a55bd0a6a7668d0438e4564e090",
+    "gitTree": "477e37b34f19b7f5c7380219c6b54c0b99aed81e",
+    "committedAt": "2026-10-12T18:28:03+02:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-13",
+    "scope": [
+      "skills/fixing-accessibility/**",
+      "LICENSE"
+    ],
+    "contentHashScope": "selected skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Julien Thibeaut"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 2,
+    "byteCount": 5790,
+    "treeSha256": "bc4375b2fce2417ccf354e00b08cc7365e7bd11cd3ce6b5d501ff82a7d15fcd4",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "cac7c466df604fc44527fd89d9662626bab57354",
+        "size": 1072,
+        "sha256": "c615621c4cc1676ccde194e7a01b6469ba477780251bd71e007fc473a49c2c2b"
+      },
+      {
+        "path": "skills/fixing-accessibility/SKILL.md",
+        "mode": "100644",
+        "oid": "e2dcd7004645277488a142be152878b7310437e1",
+        "size": 4718,
+        "sha256": "549261e8a53b53a1a20c0ddbf736821e5fc0876ad82eee76e0efab8e9ee9dadf"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "fixing-accessibility",
+      "path": "upstream/skills/fixing-accessibility/SKILL.md",
+      "description": "Audit and fix HTML accessibility issues including ARIA labels, keyboard navigation, focus management, color contrast, and form errors. Use when adding interactive controls, forms, dialogs, or reviewing WCAG compliance."
+    }
+  ],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "executesUpstreamCommands": false,
+    "fetchesRemotePrompts": false,
+    "changesProjectRuntime": false
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline-companions.v1",
-  "updatedAt": "2026-10-08",
+  "updatedAt": "2026-10-13",
   "groups": [
     {
       "name": "Core pipeline",
@@ -15,10 +15,9 @@
         "impeccable",
         "frontend-design",
         "ui-ux-pro-max",
-        "web-design-guidelines",
-        "emil-design-eng"
+        "web-design-guidelines"
       ],
-      "fallback": "Use references/taste-skill.md and the built-in visual, UX, accessibility, and motion checks.",
+      "fallback": "Use references/taste-skill.md, references/ui-craft-sources.md (bundled emil-design-eng) and the built-in visual, UX, accessibility, and motion checks.",
       "install": [
         "Install Impeccable from: https://github.com/pbakaus/impeccable",
         "Install UI/UX Pro Max from: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",

@@ -1,0 +1,111 @@
+{
+  "schema": "design-pipeline.ui-craft-source.v1",
+  "name": "make-interfaces-feel-better",
+  "source": {
+    "repository": "https://github.com/jakubkrehel/make-interfaces-feel-better",
+    "revision": "35545ea1512ad59fa463e6b1f95ca9c052981fe6",
+    "gitTree": "178b8d6fe1643aa0cafad3fc20d665f666352d4f",
+    "committedAt": "2026-08-29T18:59:35+02:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-13",
+    "scope": [
+      "skills/make-interfaces-feel-better/**",
+      "LICENSE",
+      "README.md"
+    ],
+    "contentHashScope": "selected skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Jakub Krehel"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 9,
+    "byteCount": 43641,
+    "treeSha256": "d60a83f0eccb7d6e5b6a1e4eab47e1e1ee9d0a985f4737c8d34decc88db16961",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "6a067e906e1346e640a0cda6ed37c5fb793104e4",
+        "size": 1069,
+        "sha256": "ed1dfe988fc40511b4845ccd9050a143a2002fee3bedc8064c47fa342b5d8d4f"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "201b1b7f498864b09479be10b3421d43cefa8744",
+        "size": 661,
+        "sha256": "d1357d0aa07aa105bab5775c23124c197ab0b921891cf6876a05e5afb24255bd"
+      },
+      {
+        "path": "skills/make-interfaces-feel-better/agents/openai.yaml",
+        "mode": "100644",
+        "oid": "e4ce76ae96b3709bf19bf4603ad8ec3a3666f0eb",
+        "size": 130,
+        "sha256": "3f5ae62f7339814fef24715c700a97c07458ec3ae15dbaa7ce12fde3ba7e9ec3"
+      },
+      {
+        "path": "skills/make-interfaces-feel-better/animations.md",
+        "mode": "100644",
+        "oid": "d319874bb69b596b25c23f9bfcb5a933ab3e4dc0",
+        "size": 12711,
+        "sha256": "248ad6d995b4a80038c7fec2ec2c4761fdad49738aca070bd3ca727e19a5f2c8"
+      },
+      {
+        "path": "skills/make-interfaces-feel-better/icons.md",
+        "mode": "100644",
+        "oid": "6bdc0078c08cb6a6c0c2ebd7b4957870d0043554",
+        "size": 2277,
+        "sha256": "746601dcf81a322c8ba5cc5730f991496dd94dc63279bc363f781666f84fa6b0"
+      },
+      {
+        "path": "skills/make-interfaces-feel-better/performance.md",
+        "mode": "100644",
+        "oid": "c12257a2ba29c5f6275dfda77467f688a0339b11",
+        "size": 3046,
+        "sha256": "f1e8b9f22de1081d1d22cd2923fdec4441ff6192082dc6988435310635e76e8f"
+      },
+      {
+        "path": "skills/make-interfaces-feel-better/SKILL.md",
+        "mode": "100644",
+        "oid": "e47b87b369396655fa6bea7240c17f108ea494d5",
+        "size": 11818,
+        "sha256": "c1d508fa7bef8e47ee682b4f214c7a4ed1416b91d05a97285e555bad1c41a23e"
+      },
+      {
+        "path": "skills/make-interfaces-feel-better/surfaces.md",
+        "mode": "100644",
+        "oid": "e66d44cb83ff614d286b06b71fef8084b608d1cf",
+        "size": 7239,
+        "sha256": "36d7845774eb331d9889112c5339c80bbe72a342c61dd941372e5e168b9ebf45"
+      },
+      {
+        "path": "skills/make-interfaces-feel-better/typography.md",
+        "mode": "100644",
+        "oid": "a9505359425ed0af9c8b6053937e3fa96f1142b2",
+        "size": 4690,
+        "sha256": "518cae9f0d48d48081cd87739993d76e145c0fe2394bb9f95cbde2b003c44549"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "make-interfaces-feel-better",
+      "path": "upstream/skills/make-interfaces-feel-better/SKILL.md",
+      "description": "Design engineering principles for making interfaces feel polished. Use when building UI components, reviewing frontend code, implementing animations, hover states, shadows, borders, typography, icons, micro-interactions, enter/exit animations, or any visual detail work. Supports quick and full review modes. Triggers on UI polish, design details, \"make it feel better\", \"feels off\", stagger animations, border radius, optical alignment, font smoothing, tabular numbers, image outlines, box shadows, icons, icon stroke weight, icon states, motion restraint."
+    }
+  ],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "executesUpstreamCommands": false,
+    "fetchesRemotePrompts": false,
+    "changesProjectRuntime": false
+  }
+}

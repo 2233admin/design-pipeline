@@ -127,6 +127,7 @@
     "taste-skill.test.cjs",
     "art-motion-voice.test.cjs",
     "film-sources.test.cjs",
+    "ui-craft-sources.test.cjs",
     "film-methods.test.cjs",
     "film-methods-eval.test.cjs",
     "prompt-motion-index.test.cjs",

@@ -95,6 +95,12 @@ offline specimen builder for a bounded study; keep film seeking and interaction 
 their existing routes. In probe/review, record applied entries and actual fallback, focus,
 content/viewport and reduced-motion observations in the existing QA evidence.
 
+For components, polish and accessibility, follow `ui-craft-sources.md` and load only the matched
+sources: the component source from the catalog and `design-system route`, plus `shadcn` rules only
+in a shadcn project or a selected shadcn-registry route; `emil-design-eng` and
+`make-interfaces-feel-better` details expressed in the existing styling system; and
+`fixing-accessibility` for every added control, form or dialog.
+
 Use the task fields in `stages.md#stage-4-tasks`: one visual goal with explicit inputs, scope,
 outputs, checks and repair path. For references, first render bounded structure/occlusion in a
 graybox. Then read complete `reference check`, `reconstruction check` and applicable `scene check`
@@ -130,6 +136,11 @@ Then `verify interaction --probe interaction.json`. Apply each finding's `fix` a
 `interaction.json` or the page afterwards reopens this stage.
 
 ## review
+
+Before showing the page, run the agent-side checks from `ui-craft-sources.md`:
+`fixing-accessibility` on changed controls, `12-principles-of-animation` on changed motion and a
+`make-interfaces-feel-better` polish pass. Record a conflicting rule as not applicable; these
+results are Conformance evidence in `qa.md`, never Visual Acceptance.
 
 Show the page, its motion at full speed and a one-paragraph gate summary. When the build used a
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and

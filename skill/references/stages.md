@@ -344,7 +344,9 @@ Read `references/pipeline-method.md` for the state, artifact, and invalidation c
   websites, redesign, selected style, reference-to-code, Stitch rules, image/brand concepts and
   complete output. Read the relevant entry; v2 is experimental and v1 is explicit compatibility.
   Its method rules adapt to project authority and reuse these stages without an ambient install.
-- `ui-ux-pro-max`, `web-design-guidelines`, and `emil-design-eng` add companion detail when installed.
+- `emil-design-eng` is built in as a pinned source routed by
+  [ui-craft-sources.md](ui-craft-sources.md), with five other UI craft sources and the React
+  Doctor reference; `ui-ux-pro-max` and `web-design-guidelines` add companion detail when installed.
 - For React/Next.js, use the governed Vercel/Next.js companions listed in
   `references/companion-skills.md`.
 - Use `references/capability-routing.md` and `references/job-registry.json` for motion, graphics,
@@ -808,6 +810,11 @@ before implementation. Preserve project tokens, semantic controls and existing r
 test newer features and their fallbacks against the actual target browser. The local specimen
 builder in `tools/good-css/` provides bounded studies without an external skill installation.
 
+For components, interaction polish and accessibility, load only the matched built-in source from
+`references/ui-craft-sources.md`: shadcn rules only in a shadcn project or selected shadcn-registry
+route, polish in the existing styling system, and `fixing-accessibility` for new controls, forms
+and dialogs.
+
 For a bounded drawing, image, typography, layout or rendering task, use `tools/README.md` as a
 progressive tool index. Load one relevant guide and implementation; keep the selected project
 runtime and existing evidence contract. Give workers real inputs and a visible goal, and have
@@ -910,6 +917,10 @@ For changed styles, include the applied good-css entries, browser/fallback obser
 content and RTL/CJK/zoom checks where relevant, keyboard/focus and reduced-motion behavior. Reuse
 the existing interface, composition and interaction checks; source integrity does not establish
 Component Conformance or Visual Acceptance.
+
+For changed UI, record the matched `references/ui-craft-sources.md` checks (accessibility on
+changed controls, motion principles on changed motion, polish pass) in the existing interface
+review; a conflicting checklist rule is not applicable, and none of it is Visual Acceptance.
 
 - Visual gate: composition is non-generic, brand/product signal is clear, palette is not one-note, typography fits the surface.
 - Impeccable gate: the selected visitor mode is explicit, refinement has not become a hidden

@@ -78,7 +78,7 @@ shadcn controls, or `gifenc` automatic project dependencies.
 | `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility |
 | `ui-ux-pro-max` | `nextlevelbuilder/ui-ux-pro-max-skill` | UX heuristics, searchable style/color/type system, repeatable choices |
 | `design-taste-frontend` | Built-in pinned `Leonxlnx/taste-skill` | [Local v2 experimental method](taste-skill.md#design-taste-frontend); no companion installation |
-| `emil-design-eng` | `emilkowalski/skills` | Motion, easing, feedback, interaction polish |
+| `emil-design-eng` | Built-in pinned `emilkowalski/skills` | [Local design-engineering source](ui-craft-sources.md#emil-design-eng); no companion installation |
 
 ## Motion / Animation Set
 
@@ -87,7 +87,7 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 | Skill | Source | Pipeline role |
 | --- | --- | --- |
 | `design-motion-principles` | `kylezantos/design-motion-principles` (was design-engineer-auditor-package) | Dedicated motion create/audit workflow for UI animation, micro-interactions, Framer Motion, CSS, and app transitions |
-| `emil-design-eng` | `emilkowalski/skills` | Design-engineering motion judgment, UI polish, component feel |
+| `emil-design-eng` | Built-in pinned `emilkowalski/skills` | [Local design-engineering source](ui-craft-sources.md#emil-design-eng); no companion installation |
 | `animation-vocabulary` | `emilkowalski/skills` | Converts vague motion direction into precise animation language |
 | `review-animations` | `emilkowalski/skills` | Strict animation quality review with production standards |
 | `apple-design` | `emilkowalski/skills` | Apple HIG-inspired interface principles and fluid motion for web, from WWDC talks |
@@ -152,8 +152,7 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 2. `web-design-guidelines`
 3. `frontend-design`
 4. `ui-ux-pro-max`
-5. `emil-design-eng`
-6. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
+5. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
 
 ## Built-In Taste-Skill Suite
 

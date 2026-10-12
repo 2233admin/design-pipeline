@@ -16,14 +16,17 @@ sourceMeta:
 # Animation Opportunity and Review
 
 This project-owned reference turns motion intent into a bounded design decision and an evidence-backed
-review. It distills the supplied Emil motion skills without installing or copying their upstream skill
-files. Use it with `references/motion-foundation.md` and `references/motion-spec.md`; the foundation and
-change spec remain authoritative for project primitives and detailed fields.
+review. It distills the four supplied Emil motion skills named below without installing or copying
+their upstream skill files. Use it with `references/motion-foundation.md` and
+`references/motion-spec.md`; the foundation and change spec remain authoritative for project
+primitives and detailed fields.
 
 Source concepts: `improve-animations`, `find-animation-opportunities`, `animation-vocabulary`, and
 `review-animations` from [emilkowalski/skills](https://github.com/emilkowalski/skills/tree/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7). This reference
 is an internal operating contract, not a replacement skill package. Do not install, import, copy, or
-execute upstream content.
+execute upstream content from these four skills. `emil-design-eng`, a different skill from the same
+repository, is bundled separately as an inert pinned snapshot; see
+[ui-craft-sources.md](ui-craft-sources.md#emil-design-eng).
 
 ## 1. Opportunity screen before implementation
 
@@ -113,5 +116,5 @@ bounded timing/easing, handled interruption, and respected reduced motion.
 - `animate-expo`, `write-swift`, and `ask-sonner` are not default web-pipeline capabilities. Use a
   platform-specific or library-specific route only when the project explicitly requires that platform
   or dependency.
-- Do not install external repositories, duplicate upstream skill files, or add a second animation
-  runtime without distinct ownership and a documented reason.
+- Do not install external repositories, duplicate the four distilled upstream motion skill files, or
+  add a second animation runtime without distinct ownership and a documented reason.

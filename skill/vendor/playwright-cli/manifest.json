@@ -1,0 +1,140 @@
+{
+  "schema": "design-pipeline.ui-craft-source.v1",
+  "name": "playwright-cli",
+  "source": {
+    "repository": "https://github.com/microsoft/playwright-cli",
+    "revision": "b85c7a736bb473bf55b584e54a09ffa698d6d871",
+    "gitTree": "36df4035a96234a35900b4f221277a617ab4f51b",
+    "committedAt": "2026-09-28T16:22:31-07:00",
+    "license": "Apache-2.0",
+    "reviewedAt": "2026-10-13",
+    "scope": [
+      "skills/playwright-cli/**",
+      "LICENSE",
+      "README.md"
+    ],
+    "contentHashScope": "selected skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "Apache-2.0",
+      "copyright": "Copyright (c) Microsoft Corporation.",
+      "notice": "No NOTICE file exists at the reviewed revision."
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 13,
+    "byteCount": 105918,
+    "treeSha256": "5edf4c1784bf591cbfc13b06775c07667f6132c2efbfbc504840c5c03362972e",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "cefe596afef12e19a8e5e923f1a04c7da3188760",
+        "size": 11552,
+        "sha256": "9a7110fc2d2f964038e5dc49128f908f29f47a574c961cba16085914e879cbda"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "9595a2d8735726383662102aadd839ab788920e4",
+        "size": 25617,
+        "sha256": "45680e2004227e89dec1e2764722acb3cb3576db3d65f80ca74f64f6dce97f5e"
+      },
+      {
+        "path": "skills/playwright-cli/references/element-attributes.md",
+        "mode": "100644",
+        "oid": "4e9fa6b99103bbe4e1262c37a9c4a664dfe1dbd5",
+        "size": 665,
+        "sha256": "bf19aa4671e0a50a0fefa9c790f39124e803060eefe395042b723c29fcb7faa2"
+      },
+      {
+        "path": "skills/playwright-cli/references/playwright-tests.md",
+        "mode": "100644",
+        "oid": "bec2ec90e4adbc6ed56f06ab19c34916ce7f736b",
+        "size": 1690,
+        "sha256": "c5b0719fef2cfdff50bd744051b2f9afc119775db4b48e9b2882c1cf3886797c"
+      },
+      {
+        "path": "skills/playwright-cli/references/pr-attachments.md",
+        "mode": "100644",
+        "oid": "91663b58bccf34b1cd2790ef8ae335d45b3d99df",
+        "size": 2830,
+        "sha256": "24b118e74598be72e73e24fe223d295b9099c85b1860a7c8f6e5690c9038fa2a"
+      },
+      {
+        "path": "skills/playwright-cli/references/request-mocking.md",
+        "mode": "100644",
+        "oid": "9005fda67dfc4af13848fd9ebedee08420aeec97",
+        "size": 2182,
+        "sha256": "54e801c9663fc2b6d68ceb058cb1c360724c2499f42acc7852a68e83e5b5f37c"
+      },
+      {
+        "path": "skills/playwright-cli/references/running-code.md",
+        "mode": "100644",
+        "oid": "5bf7e8cfb52112da2ecd9600631fa8365fbb90f1",
+        "size": 5913,
+        "sha256": "3029569ed6ddaeffc0b87badde967efdc2973b1677f078830098146eb3b78ebe"
+      },
+      {
+        "path": "skills/playwright-cli/references/session-management.md",
+        "mode": "100644",
+        "oid": "eb1bde35d9ce619d5cd939384d656e5c91310ebd",
+        "size": 5929,
+        "sha256": "a4f16271f95d3eec7bc56e659d8adbb8f6ad7d603a6fa15efdcdd071a50c6ce3"
+      },
+      {
+        "path": "skills/playwright-cli/references/storage-state.md",
+        "mode": "100644",
+        "oid": "bb5021a09097127c051eaad83a262ff755e62971",
+        "size": 5198,
+        "sha256": "9ac47f9ae4a1aedcd2077f8ac9ab1ba6bee1962cb83ff51adcd36fb6d83b5ec6"
+      },
+      {
+        "path": "skills/playwright-cli/references/test-generation.md",
+        "mode": "100644",
+        "oid": "33ae38be7b16027df11a963b5cd35af0677cf492",
+        "size": 16070,
+        "sha256": "27ecb11ef647999bd7486695bb1aacc3682097e6bb5742804cb6c8769c2b5364"
+      },
+      {
+        "path": "skills/playwright-cli/references/tracing.md",
+        "mode": "100644",
+        "oid": "51b8d30489a66c5f4d1b559cd68a41267e92831e",
+        "size": 3456,
+        "sha256": "ef73e71bee792e341df9cd4f60529c929ade48b538ac76e033f4f20843e8dbda"
+      },
+      {
+        "path": "skills/playwright-cli/references/video-recording.md",
+        "mode": "100644",
+        "oid": "f0b528ab1a70f2e8d5a828862a3dd89b8644239b",
+        "size": 9388,
+        "sha256": "1c800b897824cb54394c34265d8ebffdbb530adfc8d612c5d798b667a1799f48"
+      },
+      {
+        "path": "skills/playwright-cli/SKILL.md",
+        "mode": "100644",
+        "oid": "0a75c909eb7c8d93d9f81954b1b6dc5165c963f4",
+        "size": 15428,
+        "sha256": "9bba755285a4c9ad72a4a41b9c7baef6fb516d329c0b44ed0573715f4479b906"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "playwright-cli",
+      "path": "upstream/skills/playwright-cli/SKILL.md",
+      "description": "Automate browser interactions, test web pages and work with Playwright tests."
+    }
+  ],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "executesUpstreamCommands": false,
+    "fetchesRemotePrompts": false,
+    "changesProjectRuntime": false
+  }
+}
