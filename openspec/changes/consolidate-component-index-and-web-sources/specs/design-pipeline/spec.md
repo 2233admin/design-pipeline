@@ -19,7 +19,7 @@ The existing component-source catalog SHALL register canonical source identities
 
 #### Scenario: Component routing metadata is malformed
 
-- **WHEN** any catalog record carries invalid routing metadata, including a component that web ranking or record type filters out of the candidates and a source, method or template record
+- **WHEN** any catalog record carries invalid or non-object routing metadata, including a component that web ranking or record type filters out of the candidates and a source, method or template record
 - **THEN** route SHALL fail validation before selecting candidates, as the v1 contract did for every entry
 - **AND** well-formed routing on method and template records SHALL remain valid and excluded from component ranking.
 

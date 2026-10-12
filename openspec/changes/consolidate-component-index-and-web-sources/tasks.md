@@ -418,6 +418,19 @@ Before (10.6 code): the source case fails; method and template already reach the
   AssertionError [ERR_ASSERTION]: Missing expected exception.
 
 After: tests 3; pass 3; fail 0
+```
+
+- [x] 10.8 Routing that is present but not an object (for example `routing: "bad"`) was also skipped silently, on every record type. It now fails with `<id>.routing must be an object`; absent routing still means the record is not routed.
+
+```text
+node --test --test-name-pattern "non-object routing" tests/component-routing.test.cjs
+Before: tests 2; pass 0; fail 2; exit 1
+✖ route rejects non-object routing metadata on a component record
+  AssertionError [ERR_ASSERTION]: Missing expected exception. (tests/component-routing.test.cjs:195)
+✖ route rejects non-object routing metadata on a source record
+  AssertionError [ERR_ASSERTION]: Missing expected exception. (tests/component-routing.test.cjs:195)
+
+After: tests 2; pass 2; fail 0
 node --test tests/component-routing.test.cjs tests/component-source-routing.test.cjs tests/component-source-completeness.test.cjs tests/component-source-metadata.test.cjs tests/design-system-provider.test.cjs tests/frontend-stack-routing.test.cjs tests/component-fit-matrix.test.cjs
-tests 108; pass 108; fail 0
+tests 110; pass 110; fail 0
 ```

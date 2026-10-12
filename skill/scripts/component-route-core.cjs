@@ -29,7 +29,8 @@ function validateRouteEntry(entry) {
   // Shape-check routing wherever it appears. Source, method and template records may carry routing
   // but never enter component ranking; malformed metadata on them must still fail, not be skipped.
   const route = entry.routing;
-  if (!isObject(route)) return;
+  if (route === undefined) return;
+  if (!isObject(route)) routeFail(`${entry.id}.routing must be an object`);
   strings(route.capabilities, `${entry.id}.routing.capabilities`);
   strings(route.platforms, `${entry.id}.routing.platforms`);
   if (!ROUTE_MODES.has(route.mode)) routeFail(`${entry.id}.routing.mode is invalid`);

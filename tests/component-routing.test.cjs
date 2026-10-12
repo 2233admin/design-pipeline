@@ -184,3 +184,17 @@ for (const recordType of ["source", "method", "template"]) {
     );
   });
 }
+
+for (const collection of ["components", "docs"]) {
+  test(`route rejects non-object routing metadata on a ${collection === "docs" ? "source" : "component"} record`, () => {
+    const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8"));
+    const record = collection === "docs" ? raw.docs.find((entry) => entry.recordType === "source") : raw.components.find((entry) => entry.routing);
+    record.routing = "bad";
+    const malformed = normalizeSnapshot(raw);
+    const id = malformed.entries.find((entry) => entry.routing === "bad").id;
+    assert.throws(
+      () => routeComponents({ catalog: malformed, brief: "SaaS dashboard app UI", platform: "web" }),
+      new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing must be an object`),
+    );
+  });
+}
