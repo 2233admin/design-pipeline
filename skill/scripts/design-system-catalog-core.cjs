@@ -1,6 +1,8 @@
 "use strict";
 
 const path = require("node:path");
+const fs = require("node:fs");
+const { fileURLToPath } = require("node:url");
 const {
   canonicalJson,
   fail,
@@ -17,6 +19,11 @@ const KINDS = Object.freeze(Object.values(COLLECTIONS));
 const FORBIDDEN_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 const LOCAL_ID = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 const NAMESPACE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const SOURCE_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)?$/;
+const RECORD_TYPES = new Set(["source", "component", "method", "template"]);
+const AVAILABILITIES = new Set(["bundled-implementation", "reference-link", "metadata-only", "project-owned"]);
+const LICENSE_STATES = new Set(["verified", "unverified", "commercial", "project-owned", "platform"]);
+const LOCAL_PATH_MEMBERS = new Set(["guide", "manifest", "catalog", "implementation"]);
 
 function invalid(message) {
   fail("design system catalog", message);
@@ -62,7 +69,7 @@ function requireVersionedDocument(value, schema, label) {
 function validateRelativePath(value, label) {
   if (typeof value !== "string" || !value.trim()) invalid(`${label} must be a non-empty relative path`);
   const segments = value.split(/[\\/]/);
-  if (path.win32.isAbsolute(value) || path.posix.isAbsolute(value) || segments.includes("..") || value.includes("\0")) {
+  if (path.win32.parse(value).root || path.posix.isAbsolute(value) || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value) || segments.includes("..") || value.includes("\0")) {
     invalid(`${label} must not escape its snapshot root`);
   }
 }
@@ -71,7 +78,14 @@ function validatePaths(value, label) {
   if (Array.isArray(value)) return value.forEach((item, index) => validatePaths(item, `${label}[${index}]`));
   if (!isObject(value)) return;
   for (const [key, item] of Object.entries(value)) {
-    if (/paths?$/i.test(key)) {
+    if (key === "localPaths") {
+      ownObject(item, `${label}.localPaths`);
+      for (const [member, candidate] of Object.entries(item)) {
+        if (!LOCAL_PATH_MEMBERS.has(member)) invalid(`${label}.localPaths has unsupported member ${member}`);
+        validateRelativePath(candidate, `${label}.localPaths.${member}`);
+      }
+    }
+    else if (/paths?$/i.test(key)) {
       const paths = Array.isArray(item) ? item : [item];
       paths.forEach((candidate, index) => validateRelativePath(candidate, `${label}.${key}${Array.isArray(item) ? `[${index}]` : ""}`));
     }
@@ -79,12 +93,164 @@ function validatePaths(value, label) {
   }
 }
 
-function validateProvenance(value, label) {
+
+// Internal build evidence, not a gate or a second catalog/schema.
+function manifestInvalid(message) {
+  fail("component manifest", message);
+}
+
+function manifestFile(root, value, label) {
+  if (typeof value !== "string" || !value.trim()) manifestInvalid(label + " must name a project file");
+  let candidate = value;
+  if (value.startsWith("file:")) {
+    try { candidate = fileURLToPath(value); } catch { manifestInvalid(label + " has an invalid file URL"); }
+  }
+  if (/^[a-z][a-z0-9+.-]*:/i.test(candidate) && !path.isAbsolute(candidate)) manifestInvalid(label + " must name a project file");
+  const realRoot = fs.realpathSync(root);
+  let realFile;
+  try { realFile = fs.realpathSync(path.resolve(root, candidate)); }
+  catch (error) {
+    if (["ENOENT", "ENOTDIR", "EINVAL"].includes(error.code)) manifestInvalid(label + " must exist inside the project");
+    throw error;
+  }
+  const relative = path.relative(realRoot, realFile);
+  if (relative === ".." || relative.startsWith(".." + path.sep) || path.isAbsolute(relative) || !fs.statSync(realFile).isFile()) {
+    manifestInvalid(label + " must be a file contained inside the project");
+  }
+  return realFile;
+}
+
+function githubRepository(value) {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || url.hostname.toLowerCase() !== "github.com" || url.port || url.username || url.password || url.search || url.hash) return null;
+    const match = url.pathname.match(/^\/([a-z0-9_.-]+)\/([a-z0-9_.-]+)\/?$/i);
+    if (!match) return null;
+    return (match[1] + "/" + match[2].replace(/\.git$/i, "")).toLowerCase();
+  } catch { return null; }
+}
+
+function sourceRepositories(record) {
+  return [record.provenance?.repository, record.provenance?.url, ...(record.aliases || [])].map(githubRepository).filter(Boolean);
+}
+
+
+function validateComponentManifest(manifest, { root, decision, componentSources } = {}) {
+  if (!isObject(manifest) || !Array.isArray(manifest.entries)) manifestInvalid("entries must be an array");
+  if (typeof root !== "string" || !root.trim()) manifestInvalid("root must name the project directory");
+  if (typeof decision !== "string" || !decision.trim()) manifestInvalid("a recorded components decision is required");
+  if (!Array.isArray(componentSources) || !componentSources.length
+    || componentSources.some(value => !["project", "github", "index", "scratch"].includes(value))
+    || componentSources.includes("scratch") && componentSources.length !== 1) manifestInvalid("a recorded componentSources set is required; scratch cannot be combined");
+  if (manifest.fromScratch !== undefined && typeof manifest.fromScratch !== "boolean") manifestInvalid("fromScratch must be a boolean");
+  const snapshot = JSON.parse(fs.readFileSync(path.join(__dirname, "../references/component-source-catalog.json"), "utf8"));
+  const records = Object.keys(COLLECTIONS).flatMap(key => snapshot[key] || []);
+  const fromScratch = manifest.fromScratch === true;
+  if (componentSources.includes("scratch")) {
+    if (!fromScratch) manifestInvalid("scratch choice requires explicit fromScratch: true");
+  } else {
+    if (fromScratch) manifestInvalid("fromScratch: true contradicts the recorded reuse or discovery componentSources");
+    if (manifest.entries.length === 0) manifestInvalid("reuse or discovery componentSources require non-empty entries");
+  }
+  const nonempty = value => typeof value === "string" && Boolean(value.trim());
+  const namedRepositories = (decision.match(/https:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+\/?/gi) || []).map(githubRepository);
+  for (const [index, entry] of manifest.entries.entries()) {
+    const label = "entries[" + index + "]";
+    if (!isObject(entry) || !nonempty(entry.name) || !AVAILABILITIES.has(entry.availability) || !LICENSE_STATES.has(entry.license?.state)) {
+      manifestInvalid(label + " requires name, availability and license.state");
+    }
+    if (!nonempty(entry.sourceId) && !nonempty(entry.url)) manifestInvalid(label + " requires sourceId or url");
+    let record;
+    let projectOwned = false;
+    let namedUrl = false;
+    if (nonempty(entry.sourceId)) {
+      record = records.find(candidate => candidate.recordType === "source" && candidate.sourceId === entry.sourceId)
+        || records.find(candidate => candidate.sourceId === entry.sourceId);
+      if (!record) {
+        manifestFile(root, entry.sourceId, label + ".sourceId");
+        projectOwned = true;
+      }
+    } else {
+      const repository = githubRepository(entry.url);
+      if (repository) {
+        if (!namedRepositories.includes(repository)) manifestInvalid(label + ".url must be a GitHub repository named in the components decision");
+        namedUrl = true;
+        record = records.find(candidate => candidate.recordType === "source" && sourceRepositories(candidate).includes(repository));
+        if (["project-owned", "platform"].includes(entry.license.state)) manifestInvalid(label + " GitHub source cannot claim project-owned/platform licensing");
+      } else {
+        manifestFile(root, entry.url, label + ".url");
+        projectOwned = true;
+      }
+    }
+    if (record?.availability === "project-owned" && record.license?.state === "project-owned") projectOwned = true;
+    if (record && entry.license.state !== record.license?.state) manifestInvalid(label + ".license.state must match the indexed source");
+    if (projectOwned && (entry.license.state !== "project-owned" || entry.availability !== "project-owned")) manifestInvalid(label + " project files require project-owned availability and license.state");
+    if (fromScratch && !projectOwned) manifestInvalid(label + " external source contradicts fromScratch");
+    // Each entry must come from a category the owner selected, judged by how it cites its source:
+    // a decision-named GitHub url needs github; a contained file or the indexed project-components
+    // record needs project; every other indexed sourceId, platform records included, needs index.
+    if (!componentSources.includes("scratch")) {
+      const category = namedUrl ? "github" : projectOwned ? "project" : "index";
+      if (!componentSources.includes(category)) {
+        manifestInvalid(label + " source category " + category + " is not in the recorded componentSources " + componentSources.join(",")
+          + (category === "index" && componentSources.includes("github") ? "; cite a named GitHub repository by url instead of sourceId" : ""));
+      }
+    }
+    if (!Array.isArray(entry.usedIn) || !entry.usedIn.length) manifestInvalid(label + ".usedIn must be nonempty");
+    for (const [useIndex, use] of entry.usedIn.entries()) {
+      const useLabel = label + ".usedIn[" + useIndex + "]";
+      if (!isObject(use) || !nonempty(use.how) || !nonempty(use.marker)) manifestInvalid(useLabel + " requires how and marker");
+      const file = manifestFile(root, use.file, useLabel + ".file");
+      if (!fs.readFileSync(file, "utf8").includes(use.marker)) manifestInvalid(useLabel + ".marker must actually appear in its file");
+      const copied = /\b(?:copy|copied|copying|paste|pasted|vendored)\b|复制|拷贝|粘贴/i.test(use.how);
+      const imported = /\b(?:import|imported|importing|require|install|installed)\b|导入|引入|安装/i.test(use.how);
+      if (["unverified", "commercial"].includes(entry.license.state)) {
+        if (copied || imported) manifestInvalid(useLabel + " unverified/commercial sources cannot be copied or imported");
+        if (!/\b(?:study|studied|reimplement|reimplemented|reimplementation)\b|研究|学习|重写|重新实现/i.test(use.how)) manifestInvalid(useLabel + " unverified/commercial sources allow only study/reimplementation");
+      }
+      if (entry.license.state === "verified" && (copied || imported)
+        && !/\b(?:attribution|copyright|licen[cs]e[ -]notices?|notices?)\b|署名|版权|许可声明/i.test(use.how)) {
+        manifestInvalid(useLabel + ".how must document attribution/license-notice handling for verified imports/copies");
+      }
+    }
+  }
+  return manifest;
+}
+
+function validateProvenance(value, label, partial = false) {
   ownObject(value, label);
-  if (typeof value.source !== "string" || !value.source.trim()) invalid(`${label}.source must be a non-empty string`);
-  if (typeof value.license !== "string" || !value.license.trim()) invalid(`${label}.license must be a non-empty string`);
-  for (const key of ["url", "attribution"]) {
+  for (const key of ["source", "license"]) {
+    if (!partial || value[key] !== undefined) {
+      if (typeof value[key] !== "string" || !value[key].trim()) invalid(`${label}.${key} must be a non-empty string`);
+    }
+  }
+  for (const key of ["url", "attribution", "revision", "gitTree", "hashScope"]) {
     if (value[key] !== undefined && (typeof value[key] !== "string" || !value[key].trim())) invalid(`${label}.${key} must be a non-empty string`);
+  }
+}
+
+function validateEntryMetadata(entry, kind, label) {
+  if (entry.sourceId !== undefined && (typeof entry.sourceId !== "string" || !SOURCE_ID.test(entry.sourceId))) {
+    invalid(`${label}.sourceId must be a canonical lowercase slug`);
+  }
+  if (entry.recordType !== undefined && !RECORD_TYPES.has(entry.recordType)) invalid(`${label}.recordType is invalid`);
+  if (entry.recordType === "source" && kind !== "doc") invalid(`${label}.recordType source must be stored as a doc`);
+  if (entry.availability !== undefined && !AVAILABILITIES.has(entry.availability)) invalid(`${label}.availability is invalid`);
+  if (entry.webRanking !== undefined && typeof entry.webRanking !== "boolean") invalid(`${label}.webRanking must be boolean`);
+  if (entry.license !== undefined) {
+    const license = entry.license;
+    ownObject(license, `${label}.license`);
+    const extras = Object.keys(license).filter((key) => !["state", "id", "evidence"].includes(key));
+    if (extras.length) invalid(`${label}.license has unsupported properties: ${extras.join(", ")}`);
+    if (!LICENSE_STATES.has(license.state)) invalid(`${label}.license.state is invalid`);
+    if (license.id !== undefined && (typeof license.id !== "string" || !license.id.trim())) invalid(`${label}.license.id must be a non-empty string`);
+    if (!Array.isArray(license.evidence) || !license.evidence.length) {
+      invalid(`${label}.license.evidence must be a non-empty string array`);
+    }
+    for (const item of license.evidence) {
+      if (typeof item !== "string" || !item.trim()) invalid(`${label}.license.evidence must be a non-empty string array`);
+    }
   }
 }
 
@@ -110,7 +276,8 @@ function validateSnapshot(snapshot) {
       const label = `snapshot.${collection}[${index}]`;
       ownObject(entry, label);
       if (typeof entry.id !== "string" || !LOCAL_ID.test(entry.id)) invalid(`${label}.id is invalid`);
-      if (entry.provenance !== undefined) ownObject(entry.provenance, `${label}.provenance`);
+      if (entry.provenance !== undefined) validateProvenance(entry.provenance, `${label}.provenance`, true);
+      validateEntryMetadata(entry, COLLECTIONS[collection], label);
       validatePaths(entry, label);
       count += 1;
     });
@@ -160,6 +327,7 @@ function validateCatalog(catalog) {
     if (ids.has(entry.id)) invalid(`duplicate catalog id ${entry.id}`);
     ids.add(entry.id);
     validateProvenance(entry.provenance, `${label}.provenance`);
+    validateEntryMetadata(entry, entry.kind, label);
     validatePaths(entry, label);
     if (!/^[a-f0-9]{64}$/.test(entry.hash || "")) invalid(`${label}.hash must be SHA-256`);
     const hashInput = safeClone(entry, label);
@@ -173,14 +341,19 @@ function searchCatalog(catalog, options = {}) {
   validateCatalog(catalog);
   ownObject(options, "search options");
   safeClone(options, "search options");
-  const allowed = ["query", "kind", "category", "status", "limit"];
+  const allowed = ["query", "kind", "category", "status", "limit", "platform"];
   const extras = Object.keys(options).filter((key) => !allowed.includes(key));
   if (extras.length) invalid(`search has unsupported options: ${extras.join(", ")}`);
   const query = options.query === undefined ? "" : String(options.query).trim().toLowerCase();
   if (options.kind !== undefined && !KINDS.includes(options.kind)) invalid("search kind is invalid");
+  if (options.platform !== undefined && !["web", "react-native", "expo"].includes(options.platform)) invalid("search platform is invalid");
   if (options.limit !== undefined && (!Number.isInteger(options.limit) || options.limit < 1)) invalid("search limit must be a positive integer");
   for (const key of ["category", "status"]) if (options[key] !== undefined && (typeof options[key] !== "string" || !options[key].trim())) invalid(`search ${key} must be a non-empty string`);
   const matches = catalog.entries.filter((entry) => {
+    if (options.platform && (entry.kind !== "component"
+      || (entry.recordType !== undefined && entry.recordType !== "component")
+      || (options.platform === "web" && entry.webRanking === false)
+      || !entry.routing?.platforms?.includes(options.platform))) return false;
     if (options.kind && entry.kind !== options.kind) return false;
     if (options.category && entry.category !== options.category) return false;
     if (options.status && entry.status !== options.status) return false;
@@ -230,6 +403,9 @@ const CAPABILITY_TERMS = Object.freeze({
   "dither-background": ["dither background", "dithering", "dither", "抖动背景", "抖动"],
   "animated-background": ["animated background", "动态背景"], "shader-background": ["shader background", "webgl background", "着色器背景"],
   smoothui: ["smoothui", "smooth ui"], "react-bits": ["react bits", "reactbits"], "decrypted-text": ["decrypted text", "decryptedtext", "decrypting text"],
+  "spring-animation": ["spring animation", "spring physics", "spring"],
+  "scroll-reveal": ["scroll reveal", "scroll animation", "scroll-triggered"],
+  timeline: ["timeline", "animation timeline", "sequenced animation"],
   "text-animation": ["text animation", "animated text", "scramble text", "reveal text", "glitch text", "typewriter text", "文字动画"],
   transition: ["transition", "page transition", "scene transition", "过渡"],
   "numeric-content-transition": ["numeric text", "numeric", "counter", "animated number", "count up", "ticker", "changing number"],
@@ -317,5 +493,6 @@ module.exports = {
   searchDesignSystemCatalog: searchCatalog,
   serializeCatalog,
   validateCatalog,
+  validateComponentManifest,
   validateSnapshot,
 };

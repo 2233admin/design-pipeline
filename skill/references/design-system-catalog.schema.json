@@ -20,8 +20,20 @@
           "localId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$" },
           "kind": { "enum": ["component", "doc", "template", "hook"] },
           "provenance": { "$ref": "#/$defs/provenance" },
-          "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
-        }
+          "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "sourceId": { "$ref": "#/$defs/sourceId" },
+          "recordType": { "$ref": "#/$defs/recordType" },
+          "availability": { "$ref": "#/$defs/availability" },
+          "localPaths": { "$ref": "#/$defs/localPaths" },
+          "license": { "$ref": "#/$defs/license" },
+          "webRanking": { "type": "boolean" }
+        },
+        "allOf": [
+          {
+            "if": { "required": ["recordType"], "properties": { "recordType": { "const": "source" } } },
+            "then": { "properties": { "kind": { "const": "doc" } } }
+          }
+        ]
       }
     }
   },
@@ -30,10 +42,45 @@
       "type": "object",
       "required": ["source", "license"],
       "properties": {
-        "source": { "type": "string", "minLength": 1 },
-        "license": { "type": "string", "minLength": 1 },
-        "url": { "type": "string", "minLength": 1 },
-        "attribution": { "type": "string", "minLength": 1 }
+        "source": { "$ref": "#/$defs/nonEmptyText" },
+        "license": { "$ref": "#/$defs/nonEmptyText" },
+        "url": { "$ref": "#/$defs/nonEmptyText" },
+        "attribution": { "$ref": "#/$defs/nonEmptyText" },
+        "revision": { "$ref": "#/$defs/nonEmptyText" },
+        "gitTree": { "$ref": "#/$defs/nonEmptyText" },
+        "hashScope": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "nonEmptyText": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "sourceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:[._-][a-z0-9]+)*)?$" },
+    "recordType": { "enum": ["source", "component", "method", "template"] },
+    "availability": { "enum": ["bundled-implementation", "reference-link", "metadata-only", "project-owned"] },
+    "relativePath": {
+      "$ref": "#/$defs/nonEmptyText",
+      "allOf": [
+        { "not": { "pattern": "^(?:[A-Za-z][A-Za-z0-9+.-]*:|[\\\\/])" } },
+        { "not": { "pattern": "(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$)" } },
+        { "not": { "pattern": "\\u0000" } }
+      ]
+    },
+    "localPaths": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "guide": { "$ref": "#/$defs/relativePath" },
+        "manifest": { "$ref": "#/$defs/relativePath" },
+        "catalog": { "$ref": "#/$defs/relativePath" },
+        "implementation": { "$ref": "#/$defs/relativePath" }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "evidence"],
+      "properties": {
+        "state": { "enum": ["verified", "unverified", "commercial", "project-owned", "platform"] },
+        "id": { "$ref": "#/$defs/nonEmptyText" },
+        "evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonEmptyText" } }
       }
     }
   }

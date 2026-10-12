@@ -3,13 +3,27 @@
   "version": "1",
   "namespace": "frontend-component-sources",
   "provenance": {
-    "source": "Curated frontend component source metadata",
+    "source": "Curated component and method source discovery index",
     "license": "mixed",
-    "attribution": "Metadata only; no remote implementation is vendored"
+    "attribution": "Discovery metadata; linked vendor bundles retain their own manifest scopes and original bytes. Availability is explicit per record."
   },
   "components": [
     {
       "id": "smoothui/animated-components",
+      "sourceId": "educlopez/smoothui",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/educlopez/smoothui/license",
+          "https://github.com/educlopez/smoothui/blob/main/LICENSE",
+          "https://api.github.com/repos/educlopez/smoothui/git/blobs/dee522da2952b47b437e37f03f1fa2ab351eb5f1"
+        ]
+      },
+      "licenseScope": "Repository is expressly declared by both catalog and stack metadata. Successful current license API returns complete MIT grant, Copyright (c) 2024 Eduardo Calvo; retain license/copyright notices. Unify SmoothUI animated-components/components and stack docs URL to this one evidence object. This is current license/blob evidence, not a historical pin.",
       "name": "SmoothUI animated React components",
       "category": "animated-ui",
       "status": "stable",
@@ -39,6 +53,20 @@
     },
     {
       "id": "react-bits/decrypted-text",
+      "sourceId": "davidhdev/react-bits",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-MIT-Commons-Clause",
+        "evidence": [
+          "https://api.github.com/repos/DavidHDev/react-bits/license",
+          "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md",
+          "https://api.github.com/repos/DavidHDev/react-bits/git/blobs/6425315416e94469f28d0223a09f7285b2f785ab"
+        ]
+      },
+      "licenseScope": "Repository is expressly declared by catalog/stack metadata. Decoded current LICENSE.md grants commercial application/website/product incorporation with retained notices, but prohibits selling, sublicensing or redistributing components alone, in bundles or ported versions. GitHub SPDX response is NOASSERTION; actual custom license text establishes the restricted grant, never plain MIT. DecryptedText and Dither share this evidence; paid React Bits Pro is not covered.",
       "name": "React Bits DecryptedText",
       "category": "text-animation",
       "status": "stable",
@@ -72,6 +100,17 @@
     },
     {
       "id": "native/dom-numeric-transition",
+      "sourceId": "native-dom",
+      "recordType": "component",
+      "availability": "project-owned",
+      "localPaths": {},
+      "license": {
+        "state": "platform",
+        "evidence": [
+          "Browser DOM/CSS platform primitives; no third-party component implementation."
+        ]
+      },
+      "licenseScope": "Browser platform; no third-party component implementation.",
       "name": { "en": "DOM numeric transition", "zh": "DOM 数字过渡" },
       "category": "motion",
       "status": "stable",
@@ -90,6 +129,18 @@
     },
     {
       "id": "beautiful-ui/reference-library",
+      "sourceId": "beautifului",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://www.beautifului.dev/license"
+        ]
+      },
+      "licenseScope": "Official product license page publishes the complete MIT grant, Copyright (c) 2026 Shane Levine, with required copyright/license notice retention. This is current unpinned website-component evidence, not verification of any historical snapshot or of an unrelated similarly named GitHub project. No official repository was needed once the first-party full grant was found.",
       "name": { "en": "Beautiful UI reference library", "zh": "Beautiful UI 参考组件库" },
       "category": "app-ui",
       "status": "stable",
@@ -104,12 +155,26 @@
       "provenance": {
         "source": "Beautiful UI",
         "url": "https://www.beautifului.dev/",
-        "license": "unverified",
+        "license": "MIT",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "beui/reference-library",
+      "sourceId": "starc007/ui-components",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://beui.dev/",
+          "https://github.com/starc007/ui-components/blob/main/LICENSE",
+        "2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+        ]
+      },
+      "licenseScope": "Official beUI homepage links this repository and explicitly links its LICENSE; fetched main/LICENSE contains complete MIT grant, Copyright (c) 2026 Saurabh Chauhan. Covers the public free component source only. The website explicitly states beUI Pro has a separate paid license; this grant must not cover pro.beui.dev. 2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license.",
       "name": { "en": "beUI animated component library", "zh": "beUI 动效组件库" },
       "category": "animated-ui",
       "status": "stable",
@@ -130,12 +195,26 @@
       "provenance": {
         "source": "beUI",
         "url": "https://beui.dev/",
-        "license": "unverified",
+        "license": "MIT",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "rareui/reference-library",
+      "sourceId": "swamimalode07/rare-ui",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-Rare-UI-MIT-Commons-Clause-Attribution",
+        "evidence": [
+          "https://www.rareui.com/",
+          "https://github.com/swamimalode07/rare-ui/blob/main/README.md",
+          "https://github.com/swamimalode07/rare-ui/blob/main/LICENSE"
+        ]
+      },
+      "licenseScope": "Official website HTML links this repository and its README links rareui.com. Actual current LICENSE is MIT + Commons Clause + Attribution, not plain MIT: use in applications/websites/products including commercial use is granted, but selling/sublicensing/redistributing components alone, bundled, or ported is prohibited. Any shipping project must visibly credit Rare UI with a rareui.com link and retain source notices. Names/logo/site design are excluded. Keep reference/adaptation review; verified means the restricted grant was observed, not an unrestricted copying endorsement.",
       "name": { "en": "Rare UI animated component library", "zh": "Rare UI 动效组件库" },
       "category": "animated-ui",
       "status": "stable",
@@ -156,12 +235,27 @@
       "provenance": {
         "source": "Rare UI",
         "url": "https://rareui.com/",
-        "license": "unverified",
+        "license": "LicenseRef-Rare-UI-MIT-Commons-Clause-Attribution",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "transitions/reference-library",
+      "sourceId": "jakubantalik/transitions.dev",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-Transitions-dev",
+        "evidence": [
+          "https://transitions.dev/",
+          "https://github.com/Jakubantalik/transitions.dev/blob/main/LICENSE",
+          "https://transitions.dev/terms.html",
+        "2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+        ]
+      },
+      "licenseScope": "Official homepage links this repository; repo metadata reports main as default and transitions.dev as homepage. Actual LICENSE separates scopes: transitions/, skills/, and published transition snippets have a custom free personal/commercial end-product grant with no competing-library redistribution; only agent/, cli/, cli-legacy/, refine/, build/, scripts/ are MIT. Pro transitions and paid agent features require appropriate Pro/Business entitlement, and sold templates/themes require Pro/Business/Lifetime with additional conditions. Website design, branding and logo are all-rights-reserved. Use this verified state only for the free/public reference scope; preserve reference-only boundaries and never label the transition library MIT. 2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license.",
       "name": { "en": "Transitions.dev UI transition library", "zh": "Transitions.dev UI 过渡库" },
       "category": "motion",
       "status": "stable",
@@ -182,12 +276,29 @@
       "provenance": {
         "source": "Transitions.dev",
         "url": "https://transitions.dev/",
-        "license": "unverified",
+        "license": "LicenseRef-Transitions-dev",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "shadcn/ui",
+      "sourceId": "shadcn-ui/ui",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/shadcn-ui/ui/license",
+          "https://github.com/shadcn-ui/ui/blob/main/LICENSE.md",
+          "https://api.github.com/repos/shadcn-ui/ui/git/blobs/fad4d887a681dd49233e5ed01ee2c7a1513089a0",
+          "https://ui.shadcn.com/",
+          "https://github.com/shadcn-ui/ui",
+          "https://github.com/shadcn-ui/ui/blob/a85299a9edd2a961e32f01ced86963a852652bd2/LICENSE.md"
+        ]
+      },
+      "licenseScope": "MIT license text verified at existing registry revision a85299a9edd2a961e32f01ced86963a852652bd2; retain copyright and license notices. Paid products, linked source and unrelated hosted-site assets are not licensed by this root grant.",
       "name": { "en": "shadcn/ui component primitives", "zh": "shadcn/ui 组件基元" },
       "category": "component-library",
       "status": "stable",
@@ -208,12 +319,27 @@
       "provenance": {
         "source": "shadcn/ui",
         "url": "https://ui.shadcn.com/",
-        "license": "unverified",
+        "license": "MIT",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "shadcnblocks/reference-library",
+      "sourceId": "shadcnblocks",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "commercial",
+        "id": "LicenseRef-Shadcnblocks",
+        "evidence": [
+          "https://www.shadcnblocks.com/",
+          "https://www.shadcnblocks.com/license",
+          "https://github.com/shadcnblocks/shadcn-ui-blocks/blob/master/LICENSE.md",
+        "2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+        ]
+      },
+      "licenseScope": "The indexed website is a premium catalog with a purchased Standard/Team license and restrictions on component/derivative redistribution, competing libraries, templates, marketplaces and AI site-building platforms. Its free-block GitHub repository has a separate MIT + Commons Clause grant, not blanket MIT for the full site/catalog. Keep this broad website source commercial/reference-only; do not alias it to the narrower free repository as if their grants were identical. 2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged.",
       "name": { "en": "Shadcnblocks UI blocks", "zh": "Shadcnblocks UI 区块库" },
       "category": "page-block",
       "status": "stable",
@@ -235,12 +361,28 @@
       "provenance": {
         "source": "Shadcnblocks",
         "url": "https://shadcnblocks.com/",
-        "license": "unverified",
+        "license": "commercial-license-required",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "magicui/reference-library",
+      "sourceId": "magicuidesign/magicui",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://magicui.design/",
+          "https://api.github.com/repos/magicuidesign/magicui/license",
+          "https://github.com/magicuidesign/magicui/blob/main/LICENSE.md",
+          "https://api.github.com/repos/magicuidesign/magicui/git/blobs/30efc351ba9c469535dc012930ba6ee30c23f957",
+        "2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+        ]
+      },
+      "licenseScope": "Official homepage links this repository. LICENSE file_read returned 404 because actual file is LICENSE.md; successful current license API returned complete MIT grant, Copyright (c) Magic UI, blob SHA 30efc351ba9c469535dc012930ba6ee30c23f957. The blob is not a reviewed historical commit. The grant covers public repo components only, not separately promoted Magic UI Pro templates/blocks. 2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license.",
       "name": { "en": "Magic UI animated components", "zh": "Magic UI 动效组件库" },
       "category": "animated-ui",
       "status": "stable",
@@ -261,12 +403,26 @@
       "provenance": {
         "source": "Magic UI",
         "url": "https://magicui.design/",
-        "license": "unverified",
+        "license": "MIT",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "aceternity/reference-library",
+      "sourceId": "aceternity",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "commercial",
+        "id": "LicenseRef-Aceternity",
+        "evidence": [
+          "https://ui.aceternity.com/",
+          "https://ui.aceternity.com/licence",
+        "2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+        ]
+      },
+      "licenseScope": "Official /licence publishes a custom Aceternity UI Pro agreement for items purchased/downloaded from this website, with non-exclusive end-product rights and prohibitions on redistributing source items, marketplace redistribution, and sale of derived themes/templates. Third-party components retain their own terms. No official repository LICENSE proving a blanket MIT grant for this broad free-and-premium website source was identified. Preserve commercial/reference-only scope, not MIT by analogy or by an unrelated boilerplate repository. 2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged.",
       "name": { "en": "Aceternity UI effects and components", "zh": "Aceternity UI 特效组件库" },
       "category": "animated-ui",
       "status": "stable",
@@ -287,12 +443,26 @@
       "provenance": {
         "source": "Aceternity UI",
         "url": "https://ui.aceternity.com/",
-        "license": "unverified",
+        "license": "commercial-license-required",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "ai-sdk-elements/reference-library",
+      "sourceId": "vercel/ai-elements",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://elements.ai-sdk.dev/",
+          "https://github.com/vercel/ai-elements/blob/main/README.md",
+          "https://github.com/vercel/ai-elements/blob/main/LICENSE"
+        ]
+      },
+      "licenseScope": "Primary Vercel repository README identifies AI Elements and links elements.ai-sdk.dev. Actual main/LICENSE explicitly says Copyright 2023 Vercel, Inc. and Apache License Version 2.0. It is not inherited MIT merely because components build on shadcn/ui. Current unpinned source grant only; retain applicable Apache obligations and separate third-party notices.",
       "name": { "en": "AI SDK Elements", "zh": "AI SDK Elements AI 组件库" },
       "category": "ai-ui",
       "status": "stable",
@@ -313,12 +483,26 @@
       "provenance": {
         "source": "AI SDK Elements",
         "url": "https://elements.ai-sdk.dev/",
-        "license": "unverified",
+        "license": "Apache-2.0",
         "attribution": "User-provided reference; metadata only"
       }
     },
     {
       "id": "expo-content-transition/numeric-text",
+      "sourceId": "rit3zh/expo-content-transition",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/rit3zh/expo-content-transition/license",
+          "https://github.com/rit3zh/expo-content-transition/blob/main/LICENSE",
+          "https://api.github.com/repos/rit3zh/expo-content-transition/git/blobs/30b20e3b5f0f470947ba9480d90587ba07c137b4"
+        ]
+      },
+      "licenseScope": "Successful current repository license API returns full MIT grant, Copyright (c) 2015-present 650 Industries, Inc. (aka Expo), with notice retention. Source repository is explicitly declared by the NumericText catalog record. Current unpinned evidence, not independent review of every dependency or hosted asset.",
       "name": { "en": "NumericText", "zh": "原生数字文本过渡" },
       "category": "motion",
       "status": "stable",
@@ -340,18 +524,31 @@
     },
     {
       "id": "reactbits-pro/app-ui",
+      "sourceId": "reactbits-pro",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "commercial",
+        "id": "LicenseRef-React-Bits-Pro",
+        "evidence": [
+          "https://reactbits.dev/pro/app-ui",
+          "https://pro.reactbits.dev/docs/app-ui",
+          "https://pro.reactbits.dev/license",
+        "2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+        ]
+      },
+      "licenseScope": "Indexed App UI URL redirects to pro.reactbits.dev/docs/app-ui. Official license, updated 2026-09-11, explicitly covers components, page/app blocks, templates, Agent Kit, registries/tooling/docs/previews and grants a single-developer license subject to full payment. Redistribution/sharing/source reuse limits apply. Keep commercial/reference-only, separate from public DavidHDev/react-bits. 2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged.",
       "name": { "en": "React Bits Pro app UI blocks", "zh": "React Bits Pro 应用 UI 区块" },
       "category": "page-block",
       "status": "stable",
       "routing": {
         "capabilities": ["animated-ui", "app-ui", "cta", "faq", "features", "hero", "navigation", "page-block", "pricing", "stats"],
         "platforms": ["web"],
-        "mode": "registry-copy",
+        "mode": "reference-adaptation",
         "evidenceStatus": "verified",
         "requiresLicense": true,
-        "package": "@reactbits-pro",
-        "install": "npx shadcn@latest add @reactbits-pro/<name>",
-        "fallback": "Use the project-owned catalog and CSS motion primitives when the license is unavailable."
+        "fallback": "Study and reimplement without copying; use project-owned components and CSS motion primitives."
       },
       "provenance": {
         "source": "React Bits Pro",
@@ -362,6 +559,20 @@
     },
     {
       "id": "reactbits/dither",
+      "sourceId": "davidhdev/react-bits",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-MIT-Commons-Clause",
+        "evidence": [
+          "https://api.github.com/repos/DavidHDev/react-bits/license",
+          "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md",
+          "https://api.github.com/repos/DavidHDev/react-bits/git/blobs/6425315416e94469f28d0223a09f7285b2f785ab"
+        ]
+      },
+      "licenseScope": "Repository is expressly declared by catalog/stack metadata. Decoded current LICENSE.md grants commercial application/website/product incorporation with retained notices, but prohibits selling, sublicensing or redistributing components alone, in bundles or ported versions. GitHub SPDX response is NOASSERTION; actual custom license text establishes the restricted grant, never plain MIT. DecryptedText and Dither share this evidence; paid React Bits Pro is not covered.",
       "name": { "en": "React Bits Dither background", "zh": "React Bits Dither 抖动背景" },
       "category": "background",
       "status": "stable",
@@ -386,6 +597,20 @@
     },
     {
       "id": "smoothui/components",
+      "sourceId": "educlopez/smoothui",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/educlopez/smoothui/license",
+          "https://github.com/educlopez/smoothui/blob/main/LICENSE",
+          "https://api.github.com/repos/educlopez/smoothui/git/blobs/dee522da2952b47b437e37f03f1fa2ab351eb5f1"
+        ]
+      },
+      "licenseScope": "Repository is expressly declared by both catalog and stack metadata. Successful current license API returns complete MIT grant, Copyright (c) 2024 Eduardo Calvo; retain license/copyright notices. Unify SmoothUI animated-components/components and stack docs URL to this one evidence object. This is current license/blob evidence, not a historical pin.",
       "name": {
         "en": "SmoothUI component catalog",
         "zh": "SmoothUI 动效组件目录"
@@ -4081,26 +4306,2386 @@
       }
     },
     {
-      "id": "reactbits-pro/depth-carousel",
-      "name": { "en": "React Bits depth carousel", "zh": "React Bits 深度轮播" },
+      "id": "reactbits/depth-carousel",
+      "sourceId": "davidhdev/react-bits",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-MIT-Commons-Clause",
+        "evidence": [
+          "https://api.github.com/repos/DavidHDev/react-bits/license",
+          "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md",
+          "https://api.github.com/repos/DavidHDev/react-bits/git/blobs/6425315416e94469f28d0223a09f7285b2f785ab",
+          "https://github.com/DavidHDev/react-bits/blob/496968c4117e21278f13917201b7d615bc5e7450/LICENSE.md",
+          "https://reactbits.dev/r/DepthCarousel-TS-TW.json",
+          "https://github.com/DavidHDev/react-bits/blob/496968c4117e21278f13917201b7d615bc5e7450/src/ts-tailwind/Components/DepthCarousel/DepthCarousel.tsx",
+          "2026-10-12 identity verified: live public JS-CSS and TS-TW registry JSON equal pinned public repository registry files; component content equals corresponding pinned source files."
+        ]
+      },
+      "licenseScope": "Repository is expressly declared by catalog/stack metadata. Decoded current LICENSE.md grants commercial application/website/product incorporation with retained notices, but prohibits selling, sublicensing or redistributing components alone, in bundles or ported versions. GitHub SPDX response is NOASSERTION; actual custom license text establishes the restricted grant, never plain MIT. DecryptedText and Dither share this evidence; paid React Bits Pro is not covered. 2026-10-12 identity resolved from exact live public registry/pinned source equality: this is the public DepthCarousel-TS-TW component at revision 496968c4117e21278f13917201b7d615bc5e7450, not React Bits Pro. Preserve copyright/license notices; no standalone/bundled/ported component redistribution. Its GSAP dependency is governed separately by the user-authorized GSAP Standard No Charge terms.",
+      "name": {
+        "en": "React Bits depth carousel",
+        "zh": "React Bits 深度轮播"
+      },
       "category": "carousel",
       "status": "stable",
       "routing": {
-        "capabilities": ["3d-depth", "carousel", "depth-carousel", "interactive-card", "parallax-carousel"],
-        "platforms": ["web"],
+        "capabilities": [
+          "3d-depth",
+          "carousel",
+          "depth-carousel",
+          "interactive-card",
+          "parallax-carousel"
+        ],
+        "platforms": [
+          "web"
+        ],
         "mode": "registry-copy",
-        "evidenceStatus": "user-provided",
-        "requiresLicense": true,
-        "package": "@reactbits-pro",
-        "install": "npx shadcn@latest add @reactbits-pro/<name>",
-        "fallback": "Use CSS perspective plus keyboard-operable semantic carousel controls."
+        "evidenceStatus": "verified",
+        "fallback": "Use project-owned CSS perspective with keyboard-operable semantic carousel controls when either public React Bits or GSAP terms do not fit.",
+        "install": "npx shadcn@latest add @react-bits/DepthCarousel-TS-TW",
+        "dependencies": [
+          "gsap"
+        ]
       },
       "provenance": {
         "source": "React Bits",
         "url": "https://reactbits.dev/components/depth-carousel",
-        "license": "commercial-license-required",
-        "attribution": "User-provided reference; metadata only"
+        "repository": "https://github.com/DavidHDev/react-bits",
+        "revision": "496968c4117e21278f13917201b7d615bc5e7450",
+        "sourceCode": "https://github.com/DavidHDev/react-bits/blob/496968c4117e21278f13917201b7d615bc5e7450/src/ts-tailwind/Components/DepthCarousel/DepthCarousel.tsx",
+        "license": "MIT + Commons Clause",
+        "licenseNotice": "Retain copyright/license notices. Do not sell, sublicense or redistribute components themselves alone, bundled or ported. GSAP dependency follows Standard No Charge terms; competing no-code animation tools need written consent.",
+        "attribution": "Public React Bits component identity verified against matching registry and pinned implementation; no upstream bytes copied into this index."
       }
+    },
+    {
+      "id": "motion/animation-library",
+      "sourceId": "motiondivision/motion",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/motiondivision/motion/license",
+          "https://github.com/motiondivision/motion/blob/e6bf03ead39cae7a2c5f8fe902ce8a9c1a9a22e8/LICENSE.md",
+          "https://api.github.com/repos/motiondivision/motion/git/blobs/81110442c72270dd317667cc52181522647401f2",
+          "2026-10-12 verified with gh api repos/motiondivision/motion/license; full MIT grant decoded and pinned license inspected; retain copyright and permission notices."
+        ]
+      },
+      "licenseScope": "2026-10-12 gh api repos/motiondivision/motion/license returned MIT, blob 81110442c72270dd317667cc52181522647401f2; root and packages/motion/LICENSE.md agree at the recorded revision. Copyright (c) 2024 Motion B.V.; retain copyright and permission notices when importing or copying. npm motion 14.1.0 exposes ESM motion and motion/react. This library grant does not license unrelated paid products or hosted-site assets.",
+      "name": "Motion",
+      "category": "animation-library",
+      "status": "stable",
+      "keywords": [
+        "Motion",
+        "spring animation",
+        "scroll reveal",
+        "timeline",
+        "JavaScript",
+        "React",
+        "ESM"
+      ],
+      "description": "Reusable web spring animation, scroll reveal and timeline library; npm package motion with ESM DOM and React entry points.",
+      "routing": {
+        "capabilities": [
+          "spring-animation",
+          "scroll-reveal",
+          "timeline"
+        ],
+        "platforms": [
+          "web"
+        ],
+        "mode": "package",
+        "evidenceStatus": "verified",
+        "package": "motion",
+        "install": "npm install motion"
+      },
+      "alignment": {
+        "framework": "JavaScript/ESM",
+        "imports": [
+          "import { animate, scroll, spring } from \"motion\"",
+          "import { motion } from \"motion/react\""
+        ]
+      },
+      "provenance": {
+        "source": "Motion",
+        "url": "https://github.com/motiondivision/motion",
+        "repository": "https://github.com/motiondivision/motion",
+        "revision": "e6bf03ead39cae7a2c5f8fe902ce8a9c1a9a22e8",
+        "license": "MIT",
+        "licenseNotice": "Retain Motion copyright and MIT permission notices for copied or substantially included library software.",
+        "attribution": "Verified npm/ESM library metadata; no remote implementation is vendored."
+      }
+    },
+    {
+      "id": "animejs/animation-library",
+      "sourceId": "juliangarnier/anime",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://animejs.com/documentation/",
+          "https://github.com/juliangarnier/anime/blob/2c9cf8ea00329f6768c7d7902252ed977d75ce42/LICENSE.md",
+          "https://api.github.com/repos/juliangarnier/anime/license",
+          "https://github.com/juliangarnier/anime/blob/01b81be1df6843ccfe0a71c0699a746bf740dd77/LICENSE.md",
+          "https://api.github.com/repos/juliangarnier/anime/git/blobs/f999fa58ebdda6d8d0f3ae581ebdfe821f09603a",
+          "2026-10-12 verified with gh api repos/juliangarnier/anime/license; full MIT grant decoded and pinned license inspected; retain copyright and permission notices."
+        ]
+      },
+      "licenseScope": "Official documentation HTML links juliangarnier/anime. The pinned LICENSE filename was unavailable; the official root listing identified LICENSE.md, whose full MIT grant was retrieved at requested revision 2c9cf8ea00329f6768c7d7902252ed977d75ce42. This verifies the library snapshot, not a blanket license to copy animejs.com site assets or its hosted documentation. 2026-10-12 gh api repos/juliangarnier/anime/license returned the complete MIT grant, blob f999fa58ebdda6d8d0f3ae581ebdfe821f09603a; bytes match the existing pinned license. npm animejs 4.5.0 ESM package was independently observed at revision 01b81be1df6843ccfe0a71c0699a746bf740dd77. Retain Copyright (c) 2025 Julian Garnier and permission notices when importing or copying.",
+      "name": "anime.js",
+      "category": "animation-library",
+      "status": "stable",
+      "keywords": [
+        "anime.js",
+        "animejs",
+        "spring animation",
+        "scroll reveal",
+        "timeline",
+        "JavaScript",
+        "ESM"
+      ],
+      "description": "Reusable web spring animation, scroll reveal and timeline library; npm package animejs with ESM animate, onScroll and createTimeline.",
+      "routing": {
+        "capabilities": [
+          "spring-animation",
+          "scroll-reveal",
+          "timeline"
+        ],
+        "platforms": [
+          "web"
+        ],
+        "mode": "package",
+        "evidenceStatus": "verified",
+        "package": "animejs",
+        "install": "npm install animejs"
+      },
+      "alignment": {
+        "framework": "JavaScript/ESM",
+        "imports": [
+          "import { animate, createTimeline, onScroll, spring } from \"animejs\""
+        ]
+      },
+      "provenance": {
+        "source": "anime.js",
+        "url": "https://github.com/juliangarnier/anime",
+        "repository": "https://github.com/juliangarnier/anime",
+        "revision": "2c9cf8ea00329f6768c7d7902252ed977d75ce42",
+        "license": "MIT",
+        "licenseNotice": "Retain Julian Garnier copyright and MIT permission notices for copied or substantially included library software.",
+        "attribution": "Verified npm/ESM library metadata; no remote implementation is vendored."
+      }
+    },
+    {
+      "id": "gsap/animation-library",
+      "sourceId": "greensock/gsap",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {},
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-GSAP-Standard-No-Charge",
+        "evidence": [
+          "https://gsap.com/docs/v3/",
+          "https://api.github.com/repos/greensock/GreenSock-JS",
+          "https://github.com/greensock/gsap/blob/master/README.md",
+          "https://gsap.com/community/standard-license/",
+          "2026-10-12 user decision: GSAP Standard No Charge License permitted uses authorized; retain proprietary notices, not MIT; competing no-code visual-animation tools require written consent."
+        ]
+      },
+      "licenseScope": "Official docs link greensock/GreenSock-JS, whose repository metadata resolves to greensock/GSAP. License API returned HTTP 404; root listing has no LICENSE, and the README explicitly links the standard no-charge GSAP license. Current terms (effective 2025-04-30, modified 2025-05-30) allow commercial projects at no charge for Permitted Uses, but prohibit Webflow-competing no-code visual-animation tools without written consent, restrict reverse engineering for Competitive Products, and preserve proprietary notices. Verified here means the actual conditional Standard No Charge grant is established and user-authorized, not MIT or an unrestricted open-source grant. No blanket license is established for hosted documentation/site assets, or for older versions. 2026-10-12 user decision: use GSAP under the GSAP Standard No Charge License for permitted uses; not MIT. Preserve proprietary notices and obtain written consent before a competing no-code visual-animation tool.",
+      "name": "GSAP",
+      "category": "animation-library",
+      "status": "stable",
+      "keywords": [
+        "GSAP",
+        "scroll reveal",
+        "timeline",
+        "Standard No Charge",
+        "JavaScript",
+        "ESM"
+      ],
+      "description": "Reusable web scroll reveal and timeline library, user-authorized under GSAP Standard No Charge terms, not MIT.",
+      "routing": {
+        "capabilities": [
+          "scroll-reveal",
+          "timeline"
+        ],
+        "platforms": [
+          "web"
+        ],
+        "mode": "package",
+        "evidenceStatus": "verified",
+        "package": "gsap",
+        "install": "npm install gsap"
+      },
+      "alignment": {
+        "framework": "JavaScript/ESM",
+        "imports": [
+          "import { gsap } from \"gsap\"",
+          "import { ScrollTrigger } from \"gsap/ScrollTrigger\""
+        ]
+      },
+      "provenance": {
+        "source": "GSAP",
+        "url": "https://github.com/greensock/gsap",
+        "repository": "https://github.com/greensock/gsap",
+        "license": "LicenseRef-GSAP-Standard-No-Charge",
+        "licenseNotice": "GSAP Standard No Charge, not MIT. Preserve proprietary notices; competing no-code visual-animation tools require written consent. Follow full Standard License terms.",
+        "attribution": "Verified npm/ESM library metadata; no remote implementation is vendored."
+      }
+    }
+  ],
+  "docs": [
+    {
+      "id": "source/aceternity",
+      "sourceId": "aceternity",
+      "recordType": "source",
+      "name": "aceternity",
+      "availability": "reference-link",
+      "aliases": [
+        "https://ui.aceternity.com/",
+        "https://ui.aceternity.com"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "aceternity",
+        "license": "LicenseRef-Aceternity",
+        "url": "https://ui.aceternity.com"
+      },
+      "license": {
+        "state": "commercial",
+        "id": "LicenseRef-Aceternity",
+        "evidence": [
+          "https://ui.aceternity.com/",
+          "https://ui.aceternity.com/licence",
+        "2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+        ]
+      },
+      "licenseScope": "Official /licence publishes a custom Aceternity UI Pro agreement for items purchased/downloaded from this website, with non-exclusive end-product rights and prohibitions on redistributing source items, marketplace redistribution, and sale of derived themes/templates. Third-party components retain their own terms. No official repository LICENSE proving a blanket MIT grant for this broad free-and-premium website source was identified. Preserve commercial/reference-only scope, not MIT by analogy or by an unrelated boilerplate repository. 2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+    },
+    {
+      "id": "source/adobe/react-spectrum",
+      "sourceId": "adobe/react-spectrum",
+      "recordType": "source",
+      "name": "React Aria",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/adobe/react-spectrum"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "React Aria",
+        "license": "Apache-2.0",
+        "url": "https://github.com/adobe/react-spectrum"
+      },
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://api.github.com/repos/adobe/react-spectrum/license",
+          "https://github.com/adobe/react-spectrum/blob/main/LICENSE",
+          "https://api.github.com/repos/adobe/react-spectrum/git/blobs/e3af6041dce3ff35457db0cfded595ec7421300e"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit Apache-2.0 license text; observed license blob SHA e3af6041dce3ff35457db0cfded595ec7421300e (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/ant-design/ant-design",
+      "sourceId": "ant-design/ant-design",
+      "recordType": "source",
+      "name": "Ant Design",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/ant-design/ant-design"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Ant Design",
+        "license": "MIT",
+        "url": "https://github.com/ant-design/ant-design"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/ant-design/ant-design/license",
+          "https://github.com/ant-design/ant-design/blob/master/LICENSE",
+          "https://api.github.com/repos/ant-design/ant-design/git/blobs/9b563deb0073e49fbbba1067fb2cbdd5ad3453a4"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 9b563deb0073e49fbbba1067fb2cbdd5ad3453a4 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/appariciojunior/prismsystem",
+      "sourceId": "appariciojunior/prismsystem",
+      "recordType": "source",
+      "name": "prism-system",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/appariciojunior/PrismSystem",
+        "https://github.com/appariciojunior/prismsystem"
+      ],
+      "localPaths": {
+        "guide": "references/prism-system.md",
+        "manifest": "vendor/prism-system/manifest.json",
+        "implementation": "vendor/prism-system/upstream"
+      },
+      "provenance": {
+        "source": "prism-system",
+        "license": "MIT",
+        "url": "https://github.com/appariciojunior/prismsystem",
+        "revision": "e93f2a3019162f1da19a9a8c3a5db0f1fba48631",
+        "contentHash": "bebf354edf8a1849089c37fefe908d9e49ca3b7a4918ec56894c03c641e88a14",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/appariciojunior/PrismSystem/blob/e93f2a3019162f1da19a9a8c3a5db0f1fba48631/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: LICENSE and packages/tokens/.agents/skills/** snapshot."
+    },
+    {
+      "id": "source/beautifului",
+      "sourceId": "beautifului",
+      "recordType": "source",
+      "name": "beautiful-ui",
+      "availability": "reference-link",
+      "aliases": [
+        "https://www.beautifului.dev/",
+        "https://beautifului.dev",
+        "https://beautifului.dev/",
+        "https://www.beautifului.dev"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "beautiful-ui",
+        "license": "MIT",
+        "url": "https://beautifului.dev"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://www.beautifului.dev/license"
+        ]
+      },
+      "licenseScope": "Official product license page publishes the complete MIT grant, Copyright (c) 2026 Shane Levine, with required copyright/license notice retention. This is current unpinned website-component evidence, not verification of any historical snapshot or of an unrelated similarly named GitHub project. No official repository was needed once the first-party full grant was found."
+    },
+    {
+      "id": "source/starc007/ui-components",
+      "sourceId": "starc007/ui-components",
+      "recordType": "source",
+      "name": "beUI public components (Pro scope excluded)",
+      "availability": "reference-link",
+      "aliases": [
+        "https://beui.dev/",
+        "https://github.com/starc007/ui-components",
+        "https://beui.dev"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "beui",
+        "license": "MIT",
+        "url": "https://github.com/starc007/ui-components"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://beui.dev/",
+          "https://github.com/starc007/ui-components/blob/main/LICENSE",
+        "2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+        ]
+      },
+      "licenseScope": "Official beUI homepage links this repository and explicitly links its LICENSE; fetched main/LICENSE contains complete MIT grant, Copyright (c) 2026 Saurabh Chauhan. Covers the public free component source only. The website explicitly states beUI Pro has a separate paid license; this grant must not cover pro.beui.dev. 2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+    },
+    {
+      "id": "source/chakra-ui/ark",
+      "sourceId": "chakra-ui/ark",
+      "recordType": "source",
+      "name": "Ark UI",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/chakra-ui/ark"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Ark UI",
+        "license": "MIT",
+        "url": "https://github.com/chakra-ui/ark"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/chakra-ui/ark/license",
+          "https://github.com/chakra-ui/ark/blob/main/LICENSE",
+          "https://api.github.com/repos/chakra-ui/ark/git/blobs/25b352f406e72ee5f70acd4ae393a09f4de1d7c2"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 25b352f406e72ee5f70acd4ae393a09f4de1d7c2 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/chakra-ui/chakra-ui",
+      "sourceId": "chakra-ui/chakra-ui",
+      "recordType": "source",
+      "name": "Chakra UI",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/chakra-ui/chakra-ui"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Chakra UI",
+        "license": "MIT",
+        "url": "https://github.com/chakra-ui/chakra-ui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/chakra-ui/chakra-ui/license",
+          "https://github.com/chakra-ui/chakra-ui/blob/main/LICENSE",
+          "https://api.github.com/repos/chakra-ui/chakra-ui/git/blobs/79c996c1a09caaf2ea65e94e9ab47ecd19b68b03"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 79c996c1a09caaf2ea65e94e9ab47ecd19b68b03 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/chakra-ui/park-ui",
+      "sourceId": "chakra-ui/park-ui",
+      "recordType": "source",
+      "name": "Park UI",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/chakra-ui/park-ui"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Park UI",
+        "license": "MIT",
+        "url": "https://github.com/chakra-ui/park-ui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/chakra-ui/park-ui/license",
+          "https://github.com/chakra-ui/park-ui/blob/main/LICENSE",
+          "https://api.github.com/repos/chakra-ui/park-ui/git/blobs/223edc969ddc4f35c8dd7a615fc3377aaf3f9988"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 223edc969ddc4f35c8dd7a615fc3377aaf3f9988 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/davidhdev/react-bits",
+      "sourceId": "davidhdev/react-bits",
+      "recordType": "source",
+      "name": "react-bits",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/DavidHDev/react-bits",
+        "https://reactbits.dev/text-animations/decrypted-text",
+        "https://reactbits.dev/backgrounds/dither",
+        "https://github.com/DavidHDev/react-bits/tree/main/src/ts-tailwind/Backgrounds/Dither",
+        "https://github.com/davidhdev/react-bits",
+        "https://reactbits.dev/components/depth-carousel"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "react-bits",
+        "license": "MIT + Commons Clause",
+        "url": "https://github.com/davidhdev/react-bits"
+      },
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-MIT-Commons-Clause",
+        "evidence": [
+          "https://api.github.com/repos/DavidHDev/react-bits/license",
+          "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md",
+          "https://api.github.com/repos/DavidHDev/react-bits/git/blobs/6425315416e94469f28d0223a09f7285b2f785ab",
+          "https://github.com/DavidHDev/react-bits/blob/496968c4117e21278f13917201b7d615bc5e7450/LICENSE.md"
+        ]
+      },
+      "licenseScope": "Repository is expressly declared by catalog/stack metadata. Decoded current LICENSE.md grants commercial application/website/product incorporation with retained notices, but prohibits selling, sublicensing or redistributing components alone, in bundles or ported versions. GitHub SPDX response is NOASSERTION; actual custom license text establishes the restricted grant, never plain MIT. DecryptedText and Dither share this evidence; paid React Bits Pro is not covered."
+    },
+    {
+      "id": "source/dimabraven/design-md",
+      "sourceId": "dimabraven/design-md",
+      "recordType": "source",
+      "name": "design-md",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/dimabraven/design-md"
+      ],
+      "localPaths": {
+        "guide": "references/design-md.md",
+        "manifest": "vendor/design-md/manifest.json",
+        "implementation": "vendor/design-md/upstream"
+      },
+      "provenance": {
+        "source": "design-md",
+        "license": "MIT",
+        "url": "https://github.com/dimabraven/design-md",
+        "revision": "f74ca151f92af178f1e0b93f2191e5ec77b33203",
+        "gitTree": "a48c343f49eb774062044e514335e95c569f5f57",
+        "contentHash": "dbddce90459c6bb62889cdf23f616e180ff479486ea19024e0f320e63f5a02d4",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/dimabraven/design-md/blob/f74ca151f92af178f1e0b93f2191e5ec77b33203/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Complete tracked design-md snapshot."
+    },
+    {
+      "id": "source/educlopez/smoothui",
+      "sourceId": "educlopez/smoothui",
+      "recordType": "source",
+      "name": "smoothui",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/educlopez/smoothui",
+        "https://smoothui.dev/docs/components"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "smoothui",
+        "license": "MIT",
+        "url": "https://github.com/educlopez/smoothui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/educlopez/smoothui/license",
+          "https://github.com/educlopez/smoothui/blob/main/LICENSE",
+          "https://api.github.com/repos/educlopez/smoothui/git/blobs/dee522da2952b47b437e37f03f1fa2ab351eb5f1"
+        ]
+      },
+      "licenseScope": "Repository is expressly declared by both catalog and stack metadata. Successful current license API returns complete MIT grant, Copyright (c) 2024 Eduardo Calvo; retain license/copyright notices. Unify SmoothUI animated-components/components and stack docs URL to this one evidence object. This is current license/blob evidence, not a historical pin."
+    },
+    {
+      "id": "source/emilkowalski/skills",
+      "sourceId": "emilkowalski/skills",
+      "recordType": "source",
+      "name": "Animation opportunity and review reference",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/emilkowalski/skills",
+        "https://github.com/emilkowalski/skills/tree/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Animation opportunity and review reference",
+        "license": "MIT",
+        "url": "https://github.com/emilkowalski/skills",
+        "revision": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+        "contentHash": "fff4cfc7619acb1467b0e3fafac6a4075fead4f7e90711a772af2c0280090139",
+        "hashScope": "ordered UTF-8 sourceFiles with path-and-newline separators"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/emilkowalski/skills/blob/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7/LICENSE"
+        ]
+      },
+      "licenseScope": "Explicit MIT grant retrieved at requested revision d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/facebook/astryx",
+      "sourceId": "facebook/astryx",
+      "recordType": "source",
+      "name": "Astryx",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/facebook/astryx",
+        "https://astryx.atmeta.com/",
+        "https://astryx.atmeta.com"
+      ],
+      "localPaths": {
+        "catalog": "references/astryx-design-system-snapshot.json"
+      },
+      "provenance": {
+        "source": "Astryx",
+        "license": "MIT",
+        "url": "https://github.com/facebook/astryx",
+        "revision": "921d3db31ae4323e0625d2f5a95c32fe07a3d5d7"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/facebook/astryx/blob/921d3db31ae4323e0625d2f5a95c32fe07a3d5d7/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Official Astryx source snapshot provenance; not a blanket grant for site assets or third-party integrations. Alias https://astryx.atmeta.com unifies repository identity only; it does not expand licensed scope. Snapshot provenance attribution mentions Meta Platforms, Inc. and affiliates; fetched LICENSE instead states Copyright (c) 2026 Meta Platforms, Inc."
+    },
+    {
+      "id": "source/gepa-ai/gepa",
+      "sourceId": "gepa-ai/gepa",
+      "recordType": "source",
+      "name": "gepa",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/gepa-ai/gepa"
+      ],
+      "localPaths": {
+        "guide": "references/gepa.md",
+        "manifest": "vendor/gepa/manifest.json",
+        "implementation": "vendor/gepa/upstream"
+      },
+      "provenance": {
+        "source": "gepa",
+        "license": "MIT",
+        "url": "https://github.com/gepa-ai/gepa",
+        "revision": "462e437a09be67d2acb59564cc0ea59132f5777c",
+        "gitTree": "105cafea9959b259f1fa63ca0b5b375bcc611b9e",
+        "contentHash": "c8bc85080ff2179e42879d573a29fa4f7d779e179da67a9d37528b8d2cfc2795",
+        "hashScope": "selected official skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/gepa-ai/gepa/blob/462e437a09be67d2acb59564cc0ea59132f5777c/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "adoptionBoundary": {
+        "mode": "built-in-reference-adaptation",
+        "installsUpstreamDependencies": false,
+        "executesUpstreamScripts": false,
+        "executesDeployment": false,
+        "changesProjectRuntime": false
+      },
+      "licenseScope": "Exact pinned LICENSE contains the full explicit MIT grant, notice-retention condition and warranty disclaimer, despite lacking a MIT License heading. Scope: Selected .claude/skills/gepa-optimize-anything/**, LICENSE, README.md and pyproject.toml; optimizer reference, outside web-component ranking."
+    },
+    {
+      "id": "source/greensock/gsap",
+      "sourceId": "greensock/gsap",
+      "recordType": "source",
+      "name": "GSAP production motion suite",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/greensock/GSAP",
+        "https://gsap.com/docs/v3/",
+        "https://github.com/greensock/gsap",
+        "https://github.com/greensock/greensock-js",
+        "https://github.com/greensock/GreenSock-JS/",
+        "https://gsap.com/docs/v3"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "GSAP production motion suite",
+        "license": "LicenseRef-GSAP-Standard-No-Charge",
+        "url": "https://github.com/greensock/gsap"
+      },
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-GSAP-Standard-No-Charge",
+        "evidence": [
+          "https://gsap.com/docs/v3/",
+          "https://api.github.com/repos/greensock/GreenSock-JS",
+          "https://github.com/greensock/gsap/blob/master/README.md",
+          "https://gsap.com/community/standard-license/",
+        "2026-10-12 user decision: GSAP Standard No Charge License permitted uses authorized; retain proprietary notices, not MIT; competing no-code visual-animation tools require written consent."
+        ]
+      },
+      "licenseScope": "Official docs link greensock/GreenSock-JS, whose repository metadata resolves to greensock/GSAP. License API returned HTTP 404; root listing has no LICENSE, and the README explicitly links the standard no-charge GSAP license. Current terms (effective 2025-04-30, modified 2025-05-30) allow commercial projects at no charge for Permitted Uses, but prohibit Webflow-competing no-code visual-animation tools without written consent, restrict reverse engineering for Competitive Products, and preserve proprietary notices. Verified here means the actual conditional Standard No Charge grant is established and user-authorized, not MIT or an unrestricted open-source grant. No blanket license is established for hosted documentation/site assets, or for older versions. 2026-10-12 user decision: use GSAP under the GSAP Standard No Charge License for permitted uses; not MIT. Preserve proprietary notices and obtain written consent before a competing no-code visual-animation tool."
+    },
+    {
+      "id": "source/heroui-inc/heroui",
+      "sourceId": "heroui-inc/heroui",
+      "recordType": "source",
+      "name": "HeroUI (formerly NextUI)",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/heroui-inc/heroui"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "HeroUI (formerly NextUI)",
+        "license": "Apache-2.0",
+        "url": "https://github.com/heroui-inc/heroui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://api.github.com/repos/heroui-inc/heroui/license",
+          "https://github.com/heroui-inc/heroui/blob/v3/LICENSE",
+          "https://api.github.com/repos/heroui-inc/heroui/git/blobs/bf4dfe2e9c9943535853e1e3725e6a38c320792f"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit Apache-2.0 license text; observed license blob SHA bf4dfe2e9c9943535853e1e3725e6a38c320792f (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings. Current v3 license is Apache-2.0, not the registry's MIT label; no historical MIT grant is inferred."
+    },
+    {
+      "id": "source/heygen-com/hyperframes",
+      "sourceId": "heygen-com/hyperframes",
+      "recordType": "source",
+      "name": "heygen-com/hyperframes",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/heygen-com/hyperframes"
+      ],
+      "localPaths": {
+        "guide": "references/hyperframes.md"
+      },
+      "provenance": {
+        "source": "heygen-com/hyperframes",
+        "license": "Apache-2.0",
+        "url": "https://github.com/heygen-com/hyperframes",
+        "revision": "d09e003b17610177b71e340ec0bac95c9dde3e64"
+      },
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://github.com/heygen-com/hyperframes/blob/d09e003b17610177b71e340ec0bac95c9dde3e64/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Explicit Apache-2.0 grant retrieved at requested revision d09e003b17610177b71e340ec0bac95c9dde3e64; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/hi5jeff/deepclonewebsite",
+      "sourceId": "hi5jeff/deepclonewebsite",
+      "recordType": "source",
+      "name": "deepclonewebsite",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/hi5jeff/deepclonewebsite"
+      ],
+      "localPaths": {
+        "guide": "references/deepclonewebsite.md",
+        "manifest": "vendor/deepclonewebsite/manifest.json",
+        "implementation": "vendor/deepclonewebsite/upstream"
+      },
+      "provenance": {
+        "source": "deepclonewebsite",
+        "license": "MIT",
+        "url": "https://github.com/hi5jeff/deepclonewebsite",
+        "revision": "ab180fbe14a0f86c478bf033b375b1d40fabe6b1",
+        "gitTree": "6deeff7edb181ed4f50dff024c3620fe138e32a7",
+        "contentHash": "367261a81cf3ef5a3cf4c087664af8a7fafbc8d422ef63a064ab233970006658",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/hi5jeff/deepclonewebsite/blob/ab180fbe14a0f86c478bf033b375b1d40fabe6b1/LICENSE",
+          "https://github.com/hi5jeff/deepclonewebsite/blob/ab180fbe14a0f86c478bf033b375b1d40fabe6b1/open-lovable/LICENSE"
+        ]
+      },
+      "adoptionBoundary": {
+        "passiveReferenceOnly": true,
+        "addsRuntimeDependency": false,
+        "executesUpstreamCode": false,
+        "bundlesOpenLovableApplication": false
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Selected LICENSE, README.zh-CN.md, open-lovable package/i18n/crawl/site-clone source metadata; does not grant rights to cloned third-party sites. Root LICENSE explicitly identifies open-lovable-derived portions, Copyright (c) 2024 Mendable, and points to open-lovable/LICENSE. The latter was fetched at the same pin and contains MIT with an incomplete copyright line (Copyright (c) 2024), not a named holder; retain both notices."
+    },
+    {
+      "id": "source/huntabyte/shadcn-svelte",
+      "sourceId": "huntabyte/shadcn-svelte",
+      "recordType": "source",
+      "name": "shadcn-svelte",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/huntabyte/shadcn-svelte"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "shadcn-svelte",
+        "license": "MIT",
+        "url": "https://github.com/huntabyte/shadcn-svelte"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/huntabyte/shadcn-svelte/license",
+          "https://github.com/huntabyte/shadcn-svelte/blob/main/LICENSE.md",
+          "https://api.github.com/repos/huntabyte/shadcn-svelte/git/blobs/a9c907ccf4c06ed640c167fda09212133a92e130"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA a9c907ccf4c06ed640c167fda09212133a92e130 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/iart-ai/ad-video-skills",
+      "sourceId": "iart-ai/ad-video-skills",
+      "recordType": "source",
+      "name": "iart ad-video-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/ad-video-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/ad-video-skills"
+      },
+      "provenance": {
+        "source": "iart ad-video-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/ad-video-skills",
+        "revision": "0de0f2a1c1f42a98103fc0ec436509276428372c",
+        "gitTree": "553d0cb2bc1132ab389c46713ecb2fac3e8a5b90"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/ad-video-skills/blob/0de0f2a1c1f42a98103fc0ec436509276428372c/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/iart-ai/data-animation-skills",
+      "sourceId": "iart-ai/data-animation-skills",
+      "recordType": "source",
+      "name": "iart data-animation-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/data-animation-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/data-animation-skills"
+      },
+      "provenance": {
+        "source": "iart data-animation-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/data-animation-skills",
+        "revision": "8ce2709c3992490251e8a991535b1945f01c6865",
+        "gitTree": "c29a617cb7b2b152a16337b1c9f892fb713e5db5"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/data-animation-skills/blob/8ce2709c3992490251e8a991535b1945f01c6865/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/iart-ai/ecommerce-video-skills",
+      "sourceId": "iart-ai/ecommerce-video-skills",
+      "recordType": "source",
+      "name": "iart ecommerce-video-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/ecommerce-video-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/ecommerce-video-skills"
+      },
+      "provenance": {
+        "source": "iart ecommerce-video-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/ecommerce-video-skills",
+        "revision": "2bd0dd19c9b2df5230f5d8f7453861b9681e49b4",
+        "gitTree": "4964058fd2886d1d3529ba5cb9b8123dadfa3cef"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/ecommerce-video-skills/blob/2bd0dd19c9b2df5230f5d8f7453861b9681e49b4/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/iart-ai/explainer-video-skills",
+      "sourceId": "iart-ai/explainer-video-skills",
+      "recordType": "source",
+      "name": "iart explainer-video-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/explainer-video-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/explainer-video-skills"
+      },
+      "provenance": {
+        "source": "iart explainer-video-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/explainer-video-skills",
+        "revision": "3e2d411b725d9a72939cf8e5eb81579e751373e7",
+        "gitTree": "4bd354428641721d0dc5ad27d074895752323ec0"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/explainer-video-skills/blob/3e2d411b725d9a72939cf8e5eb81579e751373e7/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/iart-ai/freelance-motion-skills",
+      "sourceId": "iart-ai/freelance-motion-skills",
+      "recordType": "source",
+      "name": "iart freelance-motion-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/freelance-motion-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/freelance-motion-skills"
+      },
+      "provenance": {
+        "source": "iart freelance-motion-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/freelance-motion-skills",
+        "revision": "d85c2b484693d0387333c778d9c95230fa1856ce",
+        "gitTree": "ca87cc8f6a7d8db8d29b2bbd9d315f674b9da6c7"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/freelance-motion-skills/blob/d85c2b484693d0387333c778d9c95230fa1856ce/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included ops pack."
+    },
+    {
+      "id": "source/iart-ai/kinetic-typography-skills",
+      "sourceId": "iart-ai/kinetic-typography-skills",
+      "recordType": "source",
+      "name": "iart kinetic-typography-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/kinetic-typography-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/kinetic-typography-skills"
+      },
+      "provenance": {
+        "source": "iart kinetic-typography-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/kinetic-typography-skills",
+        "revision": "fccc94bd325d824235ee9e715e65abde57b6513a",
+        "gitTree": "6fb27cc6ff3df15e127b9c69e01a1dd9f7dea159"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/kinetic-typography-skills/blob/fccc94bd325d824235ee9e715e65abde57b6513a/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included web-motion pack."
+    },
+    {
+      "id": "source/iart-ai/manim-skills",
+      "sourceId": "iart-ai/manim-skills",
+      "recordType": "source",
+      "name": "iart manim-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/manim-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/manim-skills"
+      },
+      "provenance": {
+        "source": "iart manim-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/manim-skills",
+        "revision": "a15833c44de5108a3ee68f178a1fca126aa7c6d8",
+        "gitTree": "91c6408abe2eff68733d3ec365e32a72f83f5317"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/manim-skills/blob/a15833c44de5108a3ee68f178a1fca126aa7c6d8/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/iart-ai/map-animation-skills",
+      "sourceId": "iart-ai/map-animation-skills",
+      "recordType": "source",
+      "name": "iart map-animation-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/map-animation-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/map-animation-skills"
+      },
+      "provenance": {
+        "source": "iart map-animation-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/map-animation-skills",
+        "revision": "390ca98bbcf2ea88a430a69c0dcbf423e43d075d",
+        "gitTree": "4f6d546945e8c53be9a0904ab35270994a299b3c"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/map-animation-skills/blob/390ca98bbcf2ea88a430a69c0dcbf423e43d075d/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/iart-ai/motion-design-skills",
+      "sourceId": "iart-ai/motion-design-skills",
+      "recordType": "source",
+      "name": "iart motion-design-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/motion-design-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/motion-design-skills"
+      },
+      "provenance": {
+        "source": "iart motion-design-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/motion-design-skills",
+        "revision": "3c129f769d90a1328c209c386492333c9ac62312",
+        "gitTree": "82fc32426d562a5adddf503e2a58bdd8d11288a5"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/motion-design-skills/blob/3c129f769d90a1328c209c386492333c9ac62312/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-design pack."
+    },
+    {
+      "id": "source/iart-ai/motion-skills",
+      "sourceId": "iart-ai/motion-skills",
+      "recordType": "source",
+      "name": "iart motion-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/motion-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/motion-skills"
+      },
+      "provenance": {
+        "source": "iart motion-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/motion-skills",
+        "revision": "945c4c70f7cf82a4502cfe3877ff8466972d2842",
+        "gitTree": "60edc823df97972df4b87c2bf7115ef6a96317bc"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/motion-skills/blob/945c4c70f7cf82a4502cfe3877ff8466972d2842/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Motion pack index only; linked packs assessed separately."
+    },
+    {
+      "id": "source/iart-ai/text-message-video-skills",
+      "sourceId": "iart-ai/text-message-video-skills",
+      "recordType": "source",
+      "name": "iart text-message-video-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/text-message-video-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/text-message-video-skills"
+      },
+      "provenance": {
+        "source": "iart text-message-video-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/text-message-video-skills",
+        "revision": "3a800e1e9b9635fa196a07b0143c80f7e9648558",
+        "gitTree": "da64f7b71887bfe3c88ac36f95444dc331d9e800"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/text-message-video-skills/blob/3a800e1e9b9635fa196a07b0143c80f7e9648558/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/iart-ai/tiktok-video-skills",
+      "sourceId": "iart-ai/tiktok-video-skills",
+      "recordType": "source",
+      "name": "iart tiktok-video-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/tiktok-video-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/tiktok-video-skills"
+      },
+      "provenance": {
+        "source": "iart tiktok-video-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/tiktok-video-skills",
+        "revision": "2a775336b5a638cbf8a61dbd785f9a1b649be016",
+        "gitTree": "61aae28da0a8adaaff22ad0bef62f3c2c5de6e05"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/tiktok-video-skills/blob/2a775336b5a638cbf8a61dbd785f9a1b649be016/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/iart-ai/web-animation-skills",
+      "sourceId": "iart-ai/web-animation-skills",
+      "recordType": "source",
+      "name": "iart web-animation-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/web-animation-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/web-animation-skills"
+      },
+      "provenance": {
+        "source": "iart web-animation-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/web-animation-skills",
+        "revision": "b6dba3eb759726845a44163ff0bad70dd9e7fbb6",
+        "gitTree": "b3716d4c1f9da41c60f17c8018f5f9ff41baf284"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/web-animation-skills/blob/b6dba3eb759726845a44163ff0bad70dd9e7fbb6/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included web-motion pack."
+    },
+    {
+      "id": "source/iart-ai/webgl-animation-skills",
+      "sourceId": "iart-ai/webgl-animation-skills",
+      "recordType": "source",
+      "name": "iart webgl-animation-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/webgl-animation-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/webgl-animation-skills"
+      },
+      "provenance": {
+        "source": "iart webgl-animation-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/webgl-animation-skills",
+        "revision": "50697d659fbf70152f48f9f8aadf1efe78bbdde1",
+        "gitTree": "be55aec884d7c76562ddaf59ee368c48c70acd84"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/webgl-animation-skills/blob/50697d659fbf70152f48f9f8aadf1efe78bbdde1/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included webgl pack."
+    },
+    {
+      "id": "source/iart-ai/youtube-video-skills",
+      "sourceId": "iart-ai/youtube-video-skills",
+      "recordType": "source",
+      "name": "iart youtube-video-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/iart-ai/youtube-video-skills"
+      ],
+      "localPaths": {
+        "guide": "references/iart-motion-skills.md",
+        "manifest": "vendor/iart-motion-skills/manifest.json",
+        "implementation": "vendor/iart-motion-skills/upstream/youtube-video-skills"
+      },
+      "provenance": {
+        "source": "iart youtube-video-skills",
+        "license": "MIT",
+        "url": "https://github.com/iart-ai/youtube-video-skills",
+        "revision": "f3df381d65abe5078f5ed410bbc3ed72e7cb92bd",
+        "gitTree": "d20eeb9c6022206b94073b98cb7799ee90ea7918"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/iart-ai/youtube-video-skills/blob/f3df381d65abe5078f5ed410bbc3ed72e7cb92bd/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
+    },
+    {
+      "id": "source/jakubkrehel/skills",
+      "sourceId": "jakubkrehel/skills",
+      "recordType": "source",
+      "name": "interface-discipline",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/jakubkrehel/skills"
+      ],
+      "localPaths": {
+        "guide": "references/interface-discipline.md",
+        "manifest": "vendor/interface-discipline/manifest.json",
+        "implementation": "vendor/interface-discipline/upstream"
+      },
+      "provenance": {
+        "source": "interface-discipline",
+        "license": "MIT",
+        "url": "https://github.com/jakubkrehel/skills",
+        "revision": "0c1f1e5b2481e86c168301bebb6aa3869691ac78",
+        "contentHash": "ad58bc29530deb65c6a5025c604262f32e42828f8837ed86e87376ed3e4abee6",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/jakubkrehel/skills/blob/0c1f1e5b2481e86c168301bebb6aa3869691ac78/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: LICENSE, README.md and skills/** snapshot."
+    },
+    {
+      "id": "source/jal-co/holosticker",
+      "sourceId": "jal-co/holosticker",
+      "recordType": "source",
+      "name": "holosticker",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/jal-co/holosticker"
+      ],
+      "localPaths": {
+        "guide": "references/holosticker.md",
+        "manifest": "vendor/holosticker/manifest.json",
+        "implementation": "vendor/holosticker/upstream"
+      },
+      "provenance": {
+        "source": "holosticker",
+        "license": "MIT",
+        "url": "https://github.com/jal-co/holosticker",
+        "revision": "34688eb3fd2986c6721ff270a00ca9267f8a195c",
+        "gitTree": "11a1e9e0622d5a14a28a139c7dbcf17501eb1e0f",
+        "contentHash": "24731fd5a771719deada5412acafe8e7df0526e8970a579d7427e20e4bf7b95e",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/jal-co/holosticker/blob/34688eb3fd2986c6721ff270a00ca9267f8a195c/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Complete tracked repository snapshot, not separately linked external assets."
+    },
+    {
+      "id": "source/juliangarnier/anime",
+      "sourceId": "juliangarnier/anime",
+      "recordType": "source",
+      "name": "Anime.js v4.5 orchestration",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/juliangarnier/anime",
+        "https://animejs.com/documentation/",
+        "https://animejs.com/documentation"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Anime.js v4.5 orchestration",
+        "license": "MIT",
+        "url": "https://github.com/juliangarnier/anime",
+        "revision": "2c9cf8ea00329f6768c7d7902252ed977d75ce42"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://animejs.com/documentation/",
+          "https://github.com/juliangarnier/anime/blob/2c9cf8ea00329f6768c7d7902252ed977d75ce42/LICENSE.md",
+          "https://api.github.com/repos/juliangarnier/anime/license",
+          "https://github.com/juliangarnier/anime/blob/01b81be1df6843ccfe0a71c0699a746bf740dd77/LICENSE.md",
+          "https://api.github.com/repos/juliangarnier/anime/git/blobs/f999fa58ebdda6d8d0f3ae581ebdfe821f09603a",
+          "2026-10-12 verified with gh api repos/juliangarnier/anime/license; full MIT grant decoded and pinned license inspected; retain copyright and permission notices."
+        ]
+      },
+      "licenseScope": "Official documentation HTML links juliangarnier/anime. The pinned LICENSE filename was unavailable; the official root listing identified LICENSE.md, whose full MIT grant was retrieved at requested revision 2c9cf8ea00329f6768c7d7902252ed977d75ce42. This verifies the library snapshot, not a blanket license to copy animejs.com site assets or its hosted documentation. 2026-10-12 gh api repos/juliangarnier/anime/license returned the complete MIT grant, blob f999fa58ebdda6d8d0f3ae581ebdfe821f09603a; bytes match the existing pinned license. npm animejs 4.5.0 ESM package was independently observed at revision 01b81be1df6843ccfe0a71c0699a746bf740dd77. Retain Copyright (c) 2025 Julian Garnier and permission notices when importing or copying."
+    },
+    {
+      "id": "source/koboyo-icons",
+      "sourceId": "koboyo-icons",
+      "recordType": "source",
+      "name": "koboyo/icons",
+      "availability": "reference-link",
+      "aliases": [
+        "https://koboyo.com/icons"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "koboyo/icons",
+        "license": "Koboyo Icons License",
+        "url": "https://koboyo.com/icons"
+      },
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-Koboyo-Icons",
+        "evidence": [
+          "https://koboyo.com/icons/license",
+          "https://koboyo.com/icons/license.html"
+        ]
+      },
+      "licenseScope": "First-party explicit icon license grants free personal/commercial use, modification, and incorporation into larger products/client work/templates, without attribution. It prohibits redistribution of the library or a substantial part as an icon collection, competing icon/canvas/whiteboard/diagram/presentation/drawing products, and apps whose feature lets users pick/extract/download/re-share icons. This is a custom restricted icon grant, not MIT and not blanket rights to Koboyo app/site/brand."
+    },
+    {
+      "id": "source/leonxlnx/cinetic",
+      "sourceId": "leonxlnx/cinetic",
+      "recordType": "source",
+      "name": "cinetic",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/Leonxlnx/cinetic",
+        "https://github.com/leonxlnx/cinetic"
+      ],
+      "localPaths": {
+        "guide": "references/film-methods.md",
+        "manifest": "vendor/cinetic/manifest.json",
+        "implementation": "vendor/cinetic/upstream"
+      },
+      "provenance": {
+        "source": "cinetic",
+        "license": "MIT",
+        "url": "https://github.com/leonxlnx/cinetic",
+        "revision": "bee5d7807205d5543472c38312507f9bf366cbbf",
+        "gitTree": "6bf9bcdfbc1af302f3d9233f7438bc0d38d4dfc1",
+        "contentHash": "08a00027789a3452f030919e8c2d3ababdf44162c1934dfa9a45b35c505c9a75",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/Leonxlnx/cinetic/blob/bee5d7807205d5543472c38312507f9bf366cbbf/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "adoptionBoundary": {
+        "mode": "built-in-reference-adaptation",
+        "installsUpstreamDependencies": false,
+        "activatesUpstreamPlugin": false,
+        "runsUpstreamPipeline": false,
+        "changesProjectRuntime": false,
+        "externalMedia": "README gallery media-branch videos and linked dependencies are outside this reviewed Git tree; none are mirrored.",
+        "platform": "Upstream bash pipeline targets macOS/Linux; native Windows and WSL are unverified. Packaged Python/Node scripts are source, not a promise of installed dependencies or pipeline compatibility."
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Tracked film skill source; README gallery media-branch videos and linked dependencies excluded."
+    },
+    {
+      "id": "source/leonxlnx/taste-skill",
+      "sourceId": "leonxlnx/taste-skill",
+      "recordType": "source",
+      "name": "taste-skill",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/Leonxlnx/taste-skill",
+        "https://github.com/leonxlnx/taste-skill",
+        "https://github.com/Leonxlnx/taste-skill/tree/b482f7a970abb98c4108d4a9f761e458c64cefc8"
+      ],
+      "localPaths": {
+        "guide": "references/taste-skill.md",
+        "manifest": "vendor/taste-skill/manifest.json",
+        "implementation": "vendor/taste-skill/upstream"
+      },
+      "provenance": {
+        "source": "taste-skill",
+        "license": "MIT",
+        "url": "https://github.com/leonxlnx/taste-skill",
+        "revision": "b482f7a970abb98c4108d4a9f761e458c64cefc8",
+        "gitTree": "2589404b7fd08979aafbeb8074d4bc416fe428a3",
+        "contentHash": "5c05edf236140ec2152a02c95f079911ce4636dd1b15089ad9292be9d0b5a40a",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/Leonxlnx/taste-skill/blob/b482f7a970abb98c4108d4a9f761e458c64cefc8/LICENSE"
+        ]
+      },
+      "adoptionBoundary": {
+        "mode": "built-in-reference-adaptation",
+        "installsUpstreamDependencies": false,
+        "executesDeployment": false,
+        "executesUpstreamScripts": false,
+        "changesProjectRuntime": false
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Complete tracked snapshot, excluding independently licensed third-party material."
+    },
+    {
+      "id": "source/magicuidesign/magicui",
+      "sourceId": "magicuidesign/magicui",
+      "recordType": "source",
+      "name": "magicui",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/magicuidesign/magicui",
+        "https://magicui.design/",
+        "https://magicui.design"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "magicui",
+        "license": "MIT",
+        "url": "https://github.com/magicuidesign/magicui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://magicui.design/",
+          "https://api.github.com/repos/magicuidesign/magicui/license",
+          "https://github.com/magicuidesign/magicui/blob/main/LICENSE.md",
+          "https://api.github.com/repos/magicuidesign/magicui/git/blobs/30efc351ba9c469535dc012930ba6ee30c23f957",
+        "2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+        ]
+      },
+      "licenseScope": "Official homepage links this repository. LICENSE file_read returned 404 because actual file is LICENSE.md; successful current license API returned complete MIT grant, Copyright (c) Magic UI, blob SHA 30efc351ba9c469535dc012930ba6ee30c23f957. The blob is not a reviewed historical commit. The grant covers public repo components only, not separately promoted Magic UI Pro templates/blocks. 2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+    },
+    {
+      "id": "source/mantinedev/mantine",
+      "sourceId": "mantinedev/mantine",
+      "recordType": "source",
+      "name": "Mantine",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/mantinedev/mantine"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Mantine",
+        "license": "MIT",
+        "url": "https://github.com/mantinedev/mantine"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/mantinedev/mantine/license",
+          "https://github.com/mantinedev/mantine/blob/master/LICENSE",
+          "https://api.github.com/repos/mantinedev/mantine/git/blobs/c2b1d20b47003d10e738777879caf8d2771b034a"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA c2b1d20b47003d10e738777879caf8d2771b034a (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/mengto/skills",
+      "sourceId": "mengto/skills",
+      "recordType": "source",
+      "name": "mengto-skills",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/MengTo/skills",
+        "https://github.com/mengto/skills"
+      ],
+      "localPaths": {
+        "guide": "references/mengto-skills.md",
+        "manifest": "vendor/mengto-skills/manifest.json",
+        "implementation": "vendor/mengto-skills/upstream",
+        "catalog": "references/mengto-skills-catalog.json"
+      },
+      "provenance": {
+        "source": "mengto-skills",
+        "license": "MIT",
+        "url": "https://github.com/mengto/skills",
+        "revision": "83a47fee32f0b6349bff1fede99257a5ef03dc93",
+        "gitTree": "4c231bc88ecbad19627105dcd8a16fd122ddf5e7",
+        "contentHash": "856f257256ae8022de29a9518df9adebe1e67043d2d1e5a8b442b4c4b7a9ed4c",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/MengTo/Skills/blob/83a47fee32f0b6349bff1fede99257a5ef03dc93/LICENSE",
+          "https://github.com/MengTo/Skills/blob/83a47fee32f0b6349bff1fede99257a5ef03dc93/agent-skills/web-design/scroll-world-storytelling/demo/threejs/assets/THREE-LICENSE.txt"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Complete tracked snapshot; nested third-party THREE-LICENSE.txt requires separate attribution. The pinned nested THREE-LICENSE.txt independently grants MIT for bundled three.js material, Copyright © 2010-2025 three.js authors; preserve that notice as well as the repository notice."
+    },
+    {
+      "id": "source/mui/base-ui",
+      "sourceId": "mui/base-ui",
+      "recordType": "source",
+      "name": "Base UI",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/mui/base-ui"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Base UI",
+        "license": "MIT",
+        "url": "https://github.com/mui/base-ui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/mui/base-ui/license",
+          "https://github.com/mui/base-ui/blob/master/LICENSE",
+          "https://api.github.com/repos/mui/base-ui/git/blobs/510c55e0f0e2777fe1c55257b71d4c402bd73dca"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 510c55e0f0e2777fe1c55257b71d4c402bd73dca (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/mui/material-ui",
+      "sourceId": "mui/material-ui",
+      "recordType": "source",
+      "name": "MUI",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/mui/material-ui"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "MUI",
+        "license": "MIT",
+        "url": "https://github.com/mui/material-ui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/mui/material-ui/license",
+          "https://github.com/mui/material-ui/blob/master/LICENSE",
+          "https://api.github.com/repos/mui/material-ui/git/blobs/eba5d9e7bf7686fc77dadc6d4d347bf49afd934e"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA eba5d9e7bf7686fc77dadc6d4d347bf49afd934e (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/native-dom",
+      "sourceId": "native-dom",
+      "recordType": "source",
+      "name": "Native DOM platform",
+      "availability": "project-owned",
+      "aliases": [],
+      "localPaths": {},
+      "provenance": {
+        "source": "Native DOM platform",
+        "license": "platform"
+      },
+      "license": {
+        "state": "platform",
+        "evidence": [
+          "Browser DOM/CSS platform primitives; no third-party component implementation."
+        ]
+      },
+      "boundary": "platform"
+    },
+    {
+      "id": "source/nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceId": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "recordType": "source",
+      "name": "UI UX Pro Max companion baseline",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "UI UX Pro Max companion baseline",
+        "license": "MIT",
+        "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "revision": "e4f45473691e4b389519ee4bc359a3d6df666c26"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/e4f45473691e4b389519ee4bc359a3d6df666c26/LICENSE"
+        ]
+      },
+      "licenseScope": "Explicit MIT grant retrieved at requested revision e4f45473691e4b389519ee4bc359a3d6df666c26; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/pbakaus/impeccable",
+      "sourceId": "pbakaus/impeccable",
+      "recordType": "source",
+      "name": "Impeccable design contract and bounded polish",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/pbakaus/impeccable"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Impeccable design contract and bounded polish",
+        "license": "Apache-2.0",
+        "url": "https://github.com/pbakaus/impeccable",
+        "revision": "ae388ac58fb33aade50fc47e2be07c3192dcaabd"
+      },
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://github.com/pbakaus/impeccable/blob/ae388ac58fb33aade50fc47e2be07c3192dcaabd/LICENSE"
+        ]
+      },
+      "licenseScope": "Explicit Apache-2.0 grant retrieved at requested revision ae388ac58fb33aade50fc47e2be07c3192dcaabd; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/pixijs/pixijs-skills",
+      "sourceId": "pixijs/pixijs-skills",
+      "recordType": "source",
+      "name": "PixiJS v8 production 2D rendering",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/pixijs/pixijs-skills"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "PixiJS v8 production 2D rendering",
+        "license": "MIT",
+        "url": "https://github.com/pixijs/pixijs-skills",
+        "revision": "83760c6f53462ca9cecd68055041f5a8c94758ce"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/pixijs/pixijs-skills/blob/83760c6f53462ca9cecd68055041f5a8c94758ce/LICENSE"
+        ]
+      },
+      "licenseScope": "Explicit MIT grant retrieved at requested revision 83760c6f53462ca9cecd68055041f5a8c94758ce; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/project-components",
+      "sourceId": "project-components",
+      "recordType": "source",
+      "name": "Project-owned components",
+      "availability": "project-owned",
+      "aliases": [],
+      "localPaths": {},
+      "provenance": {
+        "source": "Project-owned components",
+        "license": "project-owned"
+      },
+      "license": {
+        "state": "project-owned",
+        "evidence": [
+          "Project code and project authority determine reuse."
+        ]
+      },
+      "boundary": "project-owned",
+      "description": "Use the current project component paths and authority; this source is not an external dependency."
+    },
+    {
+      "id": "source/prompt-motion",
+      "sourceId": "prompt-motion",
+      "recordType": "source",
+      "name": "Prompt Motion case and template library",
+      "availability": "metadata-only",
+      "aliases": [
+        "https://www.prompt-motion.com/",
+        "https://prompt-motion.com",
+        "https://prompt-motion.com/",
+        "https://www.prompt-motion.com"
+      ],
+      "localPaths": {
+        "guide": "references/prompt-motion.md",
+        "catalog": "references/prompt-motion/source-index.json"
+      },
+      "provenance": {
+        "source": "Prompt Motion case and template library",
+        "license": "unverified",
+        "url": "https://prompt-motion.com",
+        "pageHash": "be13be183f615fb944f9607359bf1b64e4b42d07b8b55031d76b315a39019a46",
+        "hashScope": "Reviewed homepage bytes only; not case repositories or embedded media."
+      },
+      "license": {
+        "state": "unverified",
+        "evidence": [
+          "https://www.prompt-motion.com/",
+          "https://prompt-motion.com/twoclipping-221cab",
+          "https://prompt-motion.com/tags/charts",
+        "2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+        ]
+      },
+      "webRanking": false,
+      "licenseScope": "Current official root, creator-attributed case and category page were inspected. Copy/customize controls and public prompts/media do not establish a blanket license for all prompts, templates, creator films, music or other assets; no common repository/license covering the library was established. Preserve metadata/reference-only use, and review rights for each selected creator work. The historical local guide reports creator ownership, but that exact footer text was not re-observed in the inspected current pages and is not asserted as current proof. 2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+    },
+    {
+      "id": "source/radix-ui/primitives",
+      "sourceId": "radix-ui/primitives",
+      "recordType": "source",
+      "name": "Radix UI",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/radix-ui/primitives"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Radix UI",
+        "license": "MIT",
+        "url": "https://github.com/radix-ui/primitives"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/radix-ui/primitives/license",
+          "https://github.com/radix-ui/primitives/blob/main/LICENSE",
+          "https://api.github.com/repos/radix-ui/primitives/git/blobs/a18858fb7b014098cba85703e66609be66a26ef5"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA a18858fb7b014098cba85703e66609be66a26ef5 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/swamimalode07/rare-ui",
+      "sourceId": "swamimalode07/rare-ui",
+      "recordType": "source",
+      "name": "Rare UI public components (visible-link attribution required)",
+      "availability": "reference-link",
+      "aliases": [
+        "https://rareui.com/",
+        "https://github.com/swamimalode07/rare-ui",
+        "https://rareui.com",
+        "https://www.rareui.com",
+        "https://www.rareui.com/"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "rareui",
+        "license": "LicenseRef-Rare-UI-MIT-Commons-Clause-Attribution",
+        "url": "https://github.com/swamimalode07/rare-ui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-Rare-UI-MIT-Commons-Clause-Attribution",
+        "evidence": [
+          "https://www.rareui.com/",
+          "https://github.com/swamimalode07/rare-ui/blob/main/README.md",
+          "https://github.com/swamimalode07/rare-ui/blob/main/LICENSE"
+        ]
+      },
+      "licenseScope": "Official website HTML links this repository and its README links rareui.com. Actual current LICENSE is MIT + Commons Clause + Attribution, not plain MIT: use in applications/websites/products including commercial use is granted, but selling/sublicensing/redistributing components alone, bundled, or ported is prohibited. Any shipping project must visibly credit Rare UI with a rareui.com link and retain source notices. Names/logo/site design are excluded. Keep reference/adaptation review; verified means the restricted grant was observed, not an unrestricted copying endorsement."
+    },
+    {
+      "id": "source/reactbits-pro",
+      "sourceId": "reactbits-pro",
+      "recordType": "source",
+      "name": "reactbits-pro",
+      "availability": "reference-link",
+      "aliases": [
+        "https://reactbits.dev/pro",
+        "https://reactbits.dev/pro/app-ui",
+        "https://pro.reactbits.dev",
+        "https://pro.reactbits.dev/",
+        "https://pro.reactbits.dev/docs/app-ui"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "reactbits-pro",
+        "license": "LicenseRef-React-Bits-Pro",
+        "url": "https://pro.reactbits.dev"
+      },
+      "license": {
+        "state": "commercial",
+        "id": "LicenseRef-React-Bits-Pro",
+        "evidence": [
+          "https://reactbits.dev/pro/app-ui",
+          "https://pro.reactbits.dev/docs/app-ui",
+          "https://pro.reactbits.dev/license",
+          "2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+        ]
+      },
+      "licenseScope": "Indexed App UI URL redirects to pro.reactbits.dev/docs/app-ui. Official license, updated 2026-09-11, explicitly covers components, page/app blocks, templates, Agent Kit, registries/tooling/docs/previews and grants a single-developer license subject to full payment. Redistribution/sharing/source reuse limits apply. Keep commercial/reference-only, separate from public DavidHDev/react-bits. 2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+    },
+    {
+      "id": "source/rieranthony/product-film-skill",
+      "sourceId": "rieranthony/product-film-skill",
+      "recordType": "source",
+      "name": "product-film-skill",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/Rieranthony/product-film-skill",
+        "https://github.com/rieranthony/product-film-skill"
+      ],
+      "localPaths": {
+        "guide": "references/film-methods.md",
+        "manifest": "vendor/product-film-skill/manifest.json",
+        "implementation": "vendor/product-film-skill/upstream"
+      },
+      "provenance": {
+        "source": "product-film-skill",
+        "license": "MIT",
+        "url": "https://github.com/rieranthony/product-film-skill",
+        "revision": "fe11efc429d5903e37274d0b294e1b95745b2881",
+        "gitTree": "ca1b16a4091528f90059b1ed2c0bb1afb8b5769f",
+        "contentHash": "6ed8d4b4e6da3e00c82b7e86472c01c23d7c5748a4d2e063bf28b563cf559089",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/Rieranthony/product-film-skill/blob/fe11efc429d5903e37274d0b294e1b95745b2881/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "adoptionBoundary": {
+        "mode": "built-in-reference-adaptation",
+        "installsUpstreamDependencies": false,
+        "activatesUpstreamPlugin": false,
+        "runsUpstreamPipeline": false,
+        "changesProjectRuntime": false,
+        "externalMedia": "Project fonts, music, Remotion and on-demand Python dependencies are not in this reviewed Git tree; none are mirrored.",
+        "platform": "Upstream entrypoints require Bun, Remotion and uv-managed Python packages; native Windows and WSL execution is unverified. The render script's npx subprocess also needs a Windows command-launch adaptation."
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Tracked product-film source snapshot; external project fonts, music, Remotion and downloaded dependencies excluded."
+    },
+    {
+      "id": "source/rit3zh/expo-content-transition",
+      "sourceId": "rit3zh/expo-content-transition",
+      "recordType": "source",
+      "name": "expo-content-transition",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/rit3zh/expo-content-transition"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "expo-content-transition",
+        "license": "MIT",
+        "url": "https://github.com/rit3zh/expo-content-transition"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/rit3zh/expo-content-transition/license",
+          "https://github.com/rit3zh/expo-content-transition/blob/main/LICENSE",
+          "https://api.github.com/repos/rit3zh/expo-content-transition/git/blobs/30b20e3b5f0f470947ba9480d90587ba07c137b4"
+        ]
+      },
+      "licenseScope": "Successful current repository license API returns full MIT grant, Copyright (c) 2015-present 650 Industries, Inc. (aka Expo), with notice retention. Source repository is explicitly declared by the NumericText catalog record. Current unpinned evidence, not independent review of every dependency or hosted asset."
+    },
+    {
+      "id": "source/saadeghi/daisyui",
+      "sourceId": "saadeghi/daisyui",
+      "recordType": "source",
+      "name": "daisyUI",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/saadeghi/daisyui"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "daisyUI",
+        "license": "MIT",
+        "url": "https://github.com/saadeghi/daisyui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/saadeghi/daisyui/license",
+          "https://github.com/saadeghi/daisyui/blob/master/LICENSE",
+          "https://api.github.com/repos/saadeghi/daisyui/git/blobs/232b9a3f6fe8ccf533576c7e39b2ab31ce699c67"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 232b9a3f6fe8ccf533576c7e39b2ab31ce699c67 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/shadcn-ui/ui",
+      "sourceId": "shadcn-ui/ui",
+      "recordType": "source",
+      "name": "shadcn",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/shadcn-ui/ui",
+        "https://ui.shadcn.com/",
+        "https://ui.shadcn.com"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "shadcn",
+        "license": "MIT",
+        "url": "https://github.com/shadcn-ui/ui",
+        "revision": "a85299a9edd2a961e32f01ced86963a852652bd2"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/shadcn-ui/ui/license",
+          "https://github.com/shadcn-ui/ui/blob/main/LICENSE.md",
+          "https://api.github.com/repos/shadcn-ui/ui/git/blobs/fad4d887a681dd49233e5ed01ee2c7a1513089a0",
+          "https://ui.shadcn.com/",
+          "https://github.com/shadcn-ui/ui",
+          "https://github.com/shadcn-ui/ui/blob/a85299a9edd2a961e32f01ced86963a852652bd2/LICENSE.md"
+        ]
+      },
+      "licenseScope": "MIT license text verified at existing registry revision a85299a9edd2a961e32f01ced86963a852652bd2; retain copyright and license notices. Paid products, linked source and unrelated hosted-site assets are not licensed by this root grant."
+    },
+    {
+      "id": "source/shadcnblocks",
+      "sourceId": "shadcnblocks",
+      "recordType": "source",
+      "name": "shadcnblocks",
+      "availability": "reference-link",
+      "aliases": [
+        "https://shadcnblocks.com/",
+        "https://shadcnblocks.com",
+        "https://www.shadcnblocks.com",
+        "https://www.shadcnblocks.com/"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "shadcnblocks",
+        "license": "LicenseRef-Shadcnblocks",
+        "url": "https://shadcnblocks.com"
+      },
+      "license": {
+        "state": "commercial",
+        "id": "LicenseRef-Shadcnblocks",
+        "evidence": [
+          "https://www.shadcnblocks.com/",
+          "https://www.shadcnblocks.com/license",
+          "https://github.com/shadcnblocks/shadcn-ui-blocks/blob/master/LICENSE.md",
+        "2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+        ]
+      },
+      "licenseScope": "The indexed website is a premium catalog with a purchased Standard/Team license and restrictions on component/derivative redistribution, competing libraries, templates, marketplaces and AI site-building platforms. Its free-block GitHub repository has a separate MIT + Commons Clause grant, not blanket MIT for the full site/catalog. Keep this broad website source commercial/reference-only; do not alias it to the narrower free repository as if their grants were identical. 2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+    },
+    {
+      "id": "source/shadcnio/react-shadcn-components",
+      "sourceId": "shadcnio/react-shadcn-components",
+      "recordType": "source",
+      "name": "shadcnio-react-components",
+      "availability": "metadata-only",
+      "aliases": [
+        "https://github.com/shadcnio/react-shadcn-components"
+      ],
+      "localPaths": {
+        "guide": "references/shadcnio-react-components.md",
+        "manifest": "vendor/shadcnio-react-components/manifest.json",
+        "catalog": "vendor/shadcnio-react-components/upstream/README.md"
+      },
+      "provenance": {
+        "source": "shadcnio-react-components",
+        "license": "MIT",
+        "url": "https://github.com/shadcnio/react-shadcn-components",
+        "revision": "2dc66e0e7b159fa92e761c84f3c5325c9700c415",
+        "contentHash": "7c198506533a7aea74de1f7e71bae2a09a2f090c5c039419e0582e84deb5242c",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/shadcnio/react-shadcn-components/blob/2dc66e0e7b159fa92e761c84f3c5325c9700c415/LICENSE",
+          "https://github.com/shadcnio/react-shadcn-components/blob/2dc66e0e7b159fa92e761c84f3c5325c9700c415/README.md",
+        "2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+        ]
+      },
+      "adoptionBoundary": {
+        "implementationLicense": "unverified",
+        "use": "README/license catalog only; linked implementations require independent license review; no local implementation is bundled."
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: LICENSE and README.md metadata only; not the 75 linked implementations. Pinned README is a categorized list of links to shadcn.io; its metadata grant supplies no license evidence for those 75 external implementations. Those rights remain unassessed, not MIT by inheritance. 2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+    },
+    {
+      "id": "source/tailwindlabs/headlessui",
+      "sourceId": "tailwindlabs/headlessui",
+      "recordType": "source",
+      "name": "Headless UI",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/tailwindlabs/headlessui"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Headless UI",
+        "license": "MIT",
+        "url": "https://github.com/tailwindlabs/headlessui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/tailwindlabs/headlessui/license",
+          "https://github.com/tailwindlabs/headlessui/blob/main/LICENSE",
+          "https://api.github.com/repos/tailwindlabs/headlessui/git/blobs/634e7f20855319d08ba17e062386c3394708142c"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 634e7f20855319d08ba17e062386c3394708142c (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/tommyjepsen/awesome-ux-skills",
+      "sourceId": "tommyjepsen/awesome-ux-skills",
+      "recordType": "source",
+      "name": "UX research method reference",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/tommyjepsen/awesome-ux-skills",
+        "https://github.com/tommyjepsen/awesome-ux-skills/blob/4e5d0925e1a0d34894734611b225205aa10e5a2f/ux-research-methods.md",
+        "https://github.com/tommyjepsen/awesome-ux-skills/tree/4e5d0925e1a0d34894734611b225205aa10e5a2f"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "UX research method reference",
+        "license": "unverified",
+        "url": "https://github.com/tommyjepsen/awesome-ux-skills",
+        "revision": "4e5d0925e1a0d34894734611b225205aa10e5a2f",
+        "contentHash": "396572fd3133134972196037484def6b553fa28a2b69a7aba2f3aceeaf1cf711",
+        "hashScope": "Reviewed profile source content; no Git tree identity implied."
+      },
+      "license": {
+        "state": "unverified",
+        "evidence": [
+          "https://github.com/tommyjepsen/awesome-ux-skills/tree/4e5d0925e1a0d34894734611b225205aa10e5a2f",
+          "https://api.github.com/repos/tommyjepsen/awesome-ux-skills/contents?ref=4e5d0925e1a0d34894734611b225205aa10e5a2f",
+          "https://github.com/tommyjepsen/awesome-ux-skills/blob/4e5d0925e1a0d34894734611b225205aa10e5a2f/README.md",
+        "2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+        ]
+      },
+      "licenseScope": "Explicitly unverified in both assigned profiles. LICENSE at the requested revision returned HTTP 404. The root listing contains no license-named file or license directory, and the README does not state an explicit reuse grant. No license is inferred from public availability; preserve reference-only/no install-import-copy-execution boundary for both profiles. 2026-10-12 user decision: study and reimplement only, never copy code. no entitlement to paid libraries was stated; paid scopes are reference only and never adopted. License state remains unchanged."
+    },
+    {
+      "id": "source/jakubantalik/transitions.dev",
+      "sourceId": "jakubantalik/transitions.dev",
+      "recordType": "source",
+      "name": "Transitions.dev public transition library (custom restricted grant)",
+      "availability": "reference-link",
+      "aliases": [
+        "https://transitions.dev/",
+        "https://github.com/jakubantalik/transitions.dev",
+        "https://transitions.dev"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "transitions",
+        "license": "LicenseRef-Transitions-dev",
+        "url": "https://github.com/jakubantalik/transitions.dev"
+      },
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-Transitions-dev",
+        "evidence": [
+          "https://transitions.dev/",
+          "https://github.com/Jakubantalik/transitions.dev/blob/main/LICENSE",
+          "https://transitions.dev/terms.html",
+        "2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+        ]
+      },
+      "licenseScope": "Official homepage links this repository; repo metadata reports main as default and transitions.dev as homepage. Actual LICENSE separates scopes: transitions/, skills/, and published transition snippets have a custom free personal/commercial end-product grant with no competing-library redistribution; only agent/, cli/, cli-legacy/, refine/, build/, scripts/ are MIT. Pro transitions and paid agent features require appropriate Pro/Business entitlement, and sold templates/themes require Pro/Business/Lifetime with additional conditions. Website design, branding and logo are all-rights-reserved. Use this verified state only for the free/public reference scope; preserve reference-only boundaries and never label the transition library MIT. 2026-10-12 user decision: paid products and unassessed linked implementations are study and reimplement only, never copy code; no entitlement to paid libraries was stated, so paid scopes are reference only and never adopted. Verified free/public scope remains usable under its actual license."
+    },
+    {
+      "id": "source/vercel/ai-elements",
+      "sourceId": "vercel/ai-elements",
+      "recordType": "source",
+      "name": "ai-sdk-elements",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/vercel/ai-elements",
+        "https://elements.ai-sdk.dev/",
+        "https://elements.ai-sdk.dev"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "ai-sdk-elements",
+        "license": "Apache-2.0",
+        "url": "https://github.com/vercel/ai-elements"
+      },
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://elements.ai-sdk.dev/",
+          "https://github.com/vercel/ai-elements/blob/main/README.md",
+          "https://github.com/vercel/ai-elements/blob/main/LICENSE"
+        ]
+      },
+      "licenseScope": "Primary Vercel repository README identifies AI Elements and links elements.ai-sdk.dev. Actual main/LICENSE explicitly says Copyright 2023 Vercel, Inc. and Apache License Version 2.0. It is not inherited MIT merely because components build on shadcn/ui. Current unpinned source grant only; retain applicable Apache obligations and separate third-party notices."
+    },
+    {
+      "id": "source/vercel/next.js",
+      "sourceId": "vercel/next.js",
+      "recordType": "source",
+      "name": "Next.js current design-engineering loop",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/vercel/next.js",
+        "https://nextjs.org/docs",
+        "https://nextjs.org/docs/"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Next.js current design-engineering loop",
+        "license": "MIT",
+        "url": "https://github.com/vercel/next.js"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://nextjs.org/docs",
+          "https://api.github.com/repos/vercel/next.js/license",
+          "https://github.com/vercel/next.js/blob/canary/license.md",
+          "https://api.github.com/repos/vercel/next.js/git/blobs/5948ee9bd0de5064423688a2967ab3111c2658ed"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 5948ee9bd0de5064423688a2967ab3111c2658ed (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings. The official docs identify vercel/next.js through GitHub Discussions. Repository license does not establish a blanket grant for externally hosted documentation/site assets or third-party examples."
+    },
+    {
+      "id": "source/vitejs/devtools",
+      "sourceId": "vitejs/devtools",
+      "recordType": "source",
+      "name": "vitejs/devtools",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/vitejs/devtools",
+        "https://devtools.vite.dev/",
+        "https://devtools.vite.dev"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "vitejs/devtools",
+        "license": "MIT",
+        "url": "https://github.com/vitejs/devtools"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://devtools.vite.dev/",
+          "https://api.github.com/repos/vitejs/devtools/license",
+          "https://github.com/vitejs/devtools/blob/main/LICENSE",
+          "https://api.github.com/repos/vitejs/devtools/git/blobs/2d4522da97f437cd6ca6b73b589c40c62ab3407f"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 2d4522da97f437cd6ca6b73b589c40c62ab3407f (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings. Official documentation directly links vitejs/devtools; this verifies the devtools repository license, not all hosted-site assets or every ecosystem integration."
+    },
+    {
+      "id": "source/vojtaholik/good-css",
+      "sourceId": "vojtaholik/good-css",
+      "recordType": "source",
+      "name": "good-css",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/vojtaholik/good-css",
+        "https://github.com/vojtaholik/good-css/tree/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef"
+      ],
+      "localPaths": {
+        "guide": "references/good-css.md",
+        "manifest": "vendor/good-css/manifest.json",
+        "implementation": "vendor/good-css/upstream"
+      },
+      "provenance": {
+        "source": "good-css",
+        "license": "MIT AND OFL-1.1",
+        "url": "https://github.com/vojtaholik/good-css",
+        "revision": "6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
+        "gitTree": "a14bae52fb7bd2374faefaf6c62f575aeff8dad5",
+        "contentHash": "fe50d90bf5b9bcbd30d9696886f8f1c67fb3d3cfadc4a4a564f321adc7929a08",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT AND OFL-1.1",
+        "evidence": [
+          "https://github.com/vojtaholik/good-css/blob/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef/LICENSE",
+          "https://github.com/vojtaholik/good-css/blob/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef/harness/public/fonts/Inter-OFL.txt",
+          "https://github.com/vojtaholik/good-css/blob/6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef/harness/public/fonts/GeistMono-OFL.txt"
+        ]
+      },
+      "adoptionBoundary": {
+        "mode": "built-in-reference-adaptation",
+        "installsUpstreamDependencies": false,
+        "executesDeployment": false,
+        "changesProjectRuntime": false
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Tracked code snapshot; Inter and GeistMono fonts have separate OFL-1.1 boundaries. Both harness/public/fonts/Inter-OFL.txt and GeistMono-OFL.txt were fetched at the same pin and contain explicit SIL OFL 1.1 grants: fonts cannot be sold alone, retain OFL and notices, and modified fonts respect any reserved names. MIT is not a font grant."
+    },
+    {
+      "id": "source/vuetifyjs/0",
+      "sourceId": "vuetifyjs/0",
+      "recordType": "source",
+      "name": "Vuetify0",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/vuetifyjs/0"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Vuetify0",
+        "license": "MIT",
+        "url": "https://github.com/vuetifyjs/0"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/vuetifyjs/0/license",
+          "https://github.com/vuetifyjs/0/blob/master/LICENSE.md",
+          "https://api.github.com/repos/vuetifyjs/0/git/blobs/783b19eb5765ff381455997bfd319efa545c6ebf"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 783b19eb5765ff381455997bfd319efa545c6ebf (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings. GitHub classifies the license as NOASSERTION, but the returned LICENSE.md explicitly contains the full MIT grant; the classification alone is not used."
+    },
+    {
+      "id": "source/wevm/frog",
+      "sourceId": "wevm/frog",
+      "recordType": "source",
+      "name": "wevm/frog",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/wevm/frog"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "wevm/frog",
+        "license": "MIT",
+        "url": "https://github.com/wevm/frog",
+        "revision": "702c4eadefe175a208290a99c36e7f4ac1390e53"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/wevm/frog/blob/702c4eadefe175a208290a99c36e7f4ac1390e53/LICENSE"
+        ]
+      },
+      "licenseScope": "The stack tool is pinned at 702c4eadefe175a208290a99c36e7f4ac1390e53. Actual LICENSE was fetched at that exact revision and contains complete MIT grant, Copyright (c) 2025-present weth, LLC, with notice retention. This supersedes the external slice initial current-main evidence; it does not grant rights to external services or linked materials."
+    },
+    {
+      "id": "source/garrytan/gstack",
+      "sourceId": "garrytan/gstack",
+      "recordType": "source",
+      "name": "gstack-style learn, spec, review, and ship flow",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/garrytan/gstack"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "gstack-style learn, spec, review, and ship flow",
+        "license": "MIT",
+        "url": "https://github.com/garrytan/gstack"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/garrytan/gstack/license",
+          "https://github.com/garrytan/gstack/blob/main/LICENSE",
+          "https://api.github.com/repos/garrytan/gstack/git/blobs/35029511144443297cad2d26e4bac17d0e352f93"
+        ]
+      },
+      "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 35029511144443297cad2d26e4bac17d0e352f93 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/motiondivision/motion",
+      "sourceId": "motiondivision/motion",
+      "recordType": "source",
+      "name": "Motion web animation library",
+      "availability": "reference-link",
+      "aliases": [
+        "https://motion.dev/",
+        "https://motion.dev/docs",
+        "https://github.com/motiondivision/motion"
+      ],
+      "localPaths": {},
+      "provenance": {
+        "source": "Motion",
+        "license": "MIT",
+        "url": "https://github.com/motiondivision/motion",
+        "revision": "e6bf03ead39cae7a2c5f8fe902ce8a9c1a9a22e8"
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://api.github.com/repos/motiondivision/motion/license",
+          "https://github.com/motiondivision/motion/blob/e6bf03ead39cae7a2c5f8fe902ce8a9c1a9a22e8/LICENSE.md",
+          "https://api.github.com/repos/motiondivision/motion/git/blobs/81110442c72270dd317667cc52181522647401f2",
+          "2026-10-12 verified with gh api repos/motiondivision/motion/license; full MIT grant decoded and pinned license inspected; retain copyright and permission notices."
+        ]
+      },
+      "licenseScope": "2026-10-12 gh api repos/motiondivision/motion/license returned MIT, blob 81110442c72270dd317667cc52181522647401f2; root and packages/motion/LICENSE.md agree at the recorded revision. Copyright (c) 2024 Motion B.V.; retain copyright and permission notices when importing or copying. npm motion 14.1.0 exposes ESM motion and motion/react. This library grant does not license unrelated paid products or hosted-site assets."
     }
   ]
 }

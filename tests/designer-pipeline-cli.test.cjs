@@ -193,7 +193,8 @@ test("help, doctor, foundation, and stable JSON error envelopes work", () => {
 test("bundled design-system knowledge is agent-discoverable without installing Astryx", () => {
   const options = run(["design-system", "options", "--root", repoRoot]);
   assert.equal(options.status, 0, options.stderr || options.stdout);
-  assert.deepEqual(options.output.counts, { styling: 5, uiLibraries: 15, shadcnPresets: 8, iconSources: 1, indexedSkills: 127 });
+  const mengtoManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/vendor/mengto-skills/manifest.json"), "utf8"));
+  assert.deepEqual(options.output.counts, { styling: 5, uiLibraries: 15, shadcnPresets: 8, iconSources: 1, indexedSkills: mengtoManifest.skills.length });
 
   const profiles = run(["design-system", "profiles", "--root", repoRoot]);
   assert.equal(profiles.status, 0, profiles.stderr || profiles.stdout);
@@ -260,8 +261,9 @@ test("bundled design-system knowledge is agent-discoverable without installing A
 test("component route selects platform-specific sources without copying remote code", () => {
   const web = run(["design-system", "route", "--root", repoRoot, "--query", "depth carousel", "--platform", "web"]);
   assert.equal(web.status, 0, web.stderr || web.stdout);
-  assert.equal(web.output.status, "review");
+  assert.equal(web.output.status, "ready");
   assert.equal(web.output.routes.find(({ capability }) => capability === "depth-carousel").selected.source, "React Bits");
+  assert.equal(web.output.routes.find(({ capability }) => capability === "depth-carousel").selected.sourceId, "davidhdev/react-bits");
 
   const expo = run(["design-system", "route", "--root", repoRoot, "--query", "animated numeric stat", "--platform", "expo"]);
   assert.equal(expo.status, 0, expo.stderr || expo.stdout);

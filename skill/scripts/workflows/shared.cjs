@@ -40,17 +40,23 @@ function referenceObserved(state, root) {
   return video.status === "ready" && video.coverage.fullSource;
 }
 
+// Bind legacy catalog recovery commands only in the returned projection, not cached evidence.
+function projectGateCommand(text, root) {
+  return typeof text === "string" && text.includes("designer-pipeline film blocks")
+    ? text.replaceAll("designer-pipeline film blocks", `${cliCommand()} film blocks --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`)
+    : text;
+}
+
 function gateStatus(state, root, gate, inputs = []) {
   const result = state.gates && state.gates[gate];
   const context = { gate, recordedStatus: result?.status || null };
-  // Bind our catalog recovery command when projecting saved findings; preserve cached evidence.
-  const recordedFindings = result?.findings?.map(item => typeof item.fix === "string" && item.fix.includes("designer-pipeline film blocks")
-    ? { ...item, fix: item.fix.replaceAll("designer-pipeline film blocks", `${cliCommand()} film blocks --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`) } : item);
+  const recordedFindings = result?.findings?.map(item => typeof item.fix === "string"
+    ? { ...item, fix: projectGateCommand(item.fix, root) } : item);
   const finding = (code, message, fix, file) => ({ code, severity: "error", message, fix, ...(file ? { path: file } : {}) });
   if (result?.status !== "passed") return {
     ...context, status: ["failed", "blocked"].includes(result?.status) ? result.status : "incomplete",
     findings: recordedFindings?.length ? recordedFindings : [finding("workflow-check-required", `No current passed ${gate} check is recorded.`, "Run the returned check and apply its findings before continuing.")],
-    next: result?.next || "Run the returned verification command and apply its reported fixes.",
+    next: projectGateCommand(result?.next, root) || "Run the returned verification command and apply its reported fixes.",
   };
   if (!result.inputHashes || !Object.keys(result.inputHashes).length) return {
     ...context, status: "stale", findings: [finding("workflow-pass-unbound", "The recorded pass has no checked-file bindings.", "Rerun the returned check; do not edit cached state to mark it passed.")],
@@ -144,12 +150,20 @@ const CONCEPTS = {
     : { type: "run", instruction: "Write concepts.md: three cards whose central ideas differ; not the same scenes retold three ways. Each card starts with the central idea as one sentence about the picture (for example 'one dot becomes every screen of the app'), then what carries attention between beats, look, tools (one line), and any missing license. Render one key frame per card.", why: "Divergence before convergence; the user picks one." }),
 };
 
+// A web review verdict binds the components decision it judged; a changed decision needs a fresh review.
+function componentDecisionDigest(state) {
+  return state.deliverable === "web" && typeof state.decisions?.components === "string"
+    ? "sha256:" + sha256(canonicalJson({ answer: state.decisions.components, sources: state.decisions.componentSources ?? null }))
+    : null;
+}
+
 const REVIEW = {
   id: "review",
   finished: (state) => {
     const draft = state.decisions?.drafts?.at(-1);
     return draft?.verdict === "accept" && Boolean(draft.inputHashes)
-      && canonicalJson(draft.inputHashes) === canonicalJson(reviewInputHashes(state));
+      && canonicalJson(draft.inputHashes) === canonicalJson(reviewInputHashes(state))
+      && (draft.componentDecision ?? null) === componentDecisionDigest(state);
   },
   action: (state, root) => {
     const web = state.deliverable === "web";
@@ -164,4 +178,4 @@ const REVIEW = {
   },
 };
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };

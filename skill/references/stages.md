@@ -796,6 +796,31 @@ against actual outputs and checks; tasks.md existence does not verify decomposit
 
 Implement directly from `design.md` and `tasks.md`.
 
+For a web deliverable, follow [workflow-web.md#components](workflow-web.md#components) immediately
+before build in every tier and mode. Ask for project component paths, a named GitHub library,
+an index search, or scratch implementation; recommend project components first, then the index.
+Record the exact nonempty answer with explicit `--choice project,index` (or the selected
+comma-separated set of `project,github,index,scratch`). Missing/unknown choices fail; deduplicate
+and store canonical order in `decisions.componentSources`. `scratch` is exclusive; `github`
+requires an HTTPS GitHub owner/repo URL in the unchanged answer. Legacy answer-only web decisions
+ask again. Before `index.html`, write the
+`component-manifest.json` described in [workflow-web.md#build](workflow-web.md#build), including
+resolved source identity, indexed license-state agreement, and existing contained files with real
+`usedIn.marker` evidence and `how` provenance. Index route and search use `--platform web`, and
+search explicitly uses `references/component-source-catalog.json`; load returned sources only on demand.
+Unverified/commercial sources may only be studied and reimplemented, never copied or imported.
+Verified imports/copies document attribution/license-notice handling in `how`. The explicit
+`scratch` set requires `"fromScratch": true` and project-owned entries only (empty entries allowed).
+Nonscratch sets forbid that flag being true and require nonempty entries; answer language does
+not determine the set. Invalid build evidence includes the validator message in the instruction
+and an existing `CONTRACT_INVALID` error finding with that message and a remediation `fix`.
+HTML plus a valid manifest is Component Conformance build-completion evidence, not a new gate
+or Visual Acceptance.
+
+The `ui` route has a generic `work` stage completed by recording delivery evidence, with
+arbitrary project file shapes, not a web `build` stage or an `index.html` output contract.
+Keep its runtime and evidence requirements unchanged; do not force HTML or the web manifest.
+
 For web design, redesign, style or image/brand work, read the selected complete source through
 `references/taste-skill.md` and implement its agreed decisions in the existing stack. An authorized
 image-only deliverable uses an available provider and retains its output boundary. Do not generate

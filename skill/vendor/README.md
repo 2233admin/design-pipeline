@@ -15,6 +15,11 @@ does not install dependencies, grant execution authority or certify visual quali
 | `deepclonewebsite/` | [Website analysis methods](../references/deepclonewebsite.md) | `manifest.json` |
 | `design-md/` | [Design-system examples](../references/design-md.md) | `manifest.json` |
 | `shadcnio-react-components/` | [Component reference catalog](../references/shadcnio-react-components.md) | `manifest.json` |
+| `taste-skill/` | [Visual direction and interface recipes](../references/taste-skill.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
+| `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `product-film-skill/` | [Product film methods](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `gepa/` | [Optimization method](../references/gepa.md) | `manifest.json`, scoped snapshot hashes and upstream Git tree |
 
 Keep each bundle's relative layout, license and original bytes together. Update snapshots using
 the existing importers and integrity checks. Adapt a selected technique into project-owned code

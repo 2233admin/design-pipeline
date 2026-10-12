@@ -6,6 +6,30 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Component manifests now resolve real sources and project-contained usage files, require markers
+  present in those files and license-notice handling for verified adoption, and reject copying
+  unverified or commercial references. Components decisions require an explicit canonical,
+  deduplicated source set; scratch is exclusive, GitHub selection requires an HTTPS owner/repo URL
+  in the unchanged answer, and legacy answer-only web decisions ask again. Scratch manifests
+  require `fromScratch: true` and project-owned entries only (empty allowed); nonscratch manifests
+  forbid that flag being true and require entries. Invalid build evidence exposes the validator
+  message in the instruction and existing `CONTRACT_INVALID` error finding with remediation.
+  Component-index route and search both use platform web. Each manifest entry's source category,
+  judged by how it cites its source (contained project file or the `project-components` record,
+  decision-named GitHub URL, any other indexed `sourceId` including platform records), must be one
+  of the recorded `componentSources`.
+- Recording a different web components answer or source set, or the first explicit decision on a
+  legacy state that already holds a checked page, now drops the interaction pass and delivery, and
+  web review verdicts bind the components decision they judged, so `next` returns to probe and then
+  review instead of reporting done. Recorded review verdicts are never rewritten; re-recording an
+  identical decision leaves all evidence unchanged.
+- `decide --stage components` is refused for film, edit and ui workflows instead of recording a
+  decision nothing consumes and dropping their gates and delivery. Component routing shape-checks the
+  routing metadata of every catalog record before filtering candidates, as the v1 contract did, so
+  malformed or non-object routing on any record, source, method and template records included,
+  fails instead of being skipped.
+- Saved gate `next` commands use the same absolute project binding as finding repairs, without
+  rewriting persisted gate evidence.
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or
   `brief.md` (matched case-insensitively) no longer skips it, and intake refuses with
   `OUTPUT_COLLISION` instead of overwriting a brief it did not write. Hard-linked briefs are
@@ -42,6 +66,19 @@ All notable changes to Design Pipeline are documented here.
   remain strict, with an out-of-range shot regression retained (#81).
 
 ### Added
+
+- A single component-source discovery index extends the existing v1 catalog with canonical source
+  identities, availability, package pointers and auditable license evidence. External registries
+  reference the index without moving their execution contracts; the MengTo projection now follows
+  its pinned vendor manifest. Film and optimization methods remain discoverable outside web ranking.
+- Web workflows ask for component sources immediately before build, prefer existing project
+  components then index discovery, and require `component-manifest.json` with `index.html` for build
+  completion. UI retains its generic work/delivery-evidence contract because it has no equivalent
+  HTML build stage. Unverified or commercial sources remain study/reimplementation references,
+  not copying permission.
+- Animation discovery records Motion and anime.js license evidence and npm/ESM usage, and keeps
+  GSAP's actual Standard No Charge License conditions. Dated owner decisions keep paid or
+  unverified sources study/reimplementation-only; web discovery excludes methods and templates.
 
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional

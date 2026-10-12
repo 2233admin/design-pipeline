@@ -11,7 +11,7 @@ const {
   loadProfiles,
   runProviderCommand,
 } = require("../skill/scripts/design-system-provider-core.cjs");
-const { validateSnapshot } = require("../skill/scripts/design-system-catalog-core.cjs");
+const { normalizeSnapshot, validateSnapshot } = require("../skill/scripts/design-system-catalog-core.cjs");
 
 const fixture = path.resolve(__dirname, "fixtures", "design-system-provider", "fake-adapter.js");
 const officialFixture = path.resolve(__dirname, "fixtures", "design-system-provider", "fake-astryx-cli.mjs");
@@ -30,18 +30,18 @@ function workspaceWithAstryxCli() {
   return { root, cli };
 }
 
-test("Astryx profile pins its official and compatibility contract", () => {
+test("Astryx profile references canonical provenance and consumer compatibility", () => {
   const profile = loadProfiles().profiles.find(({ id }) => id === "astryx");
-  assert.deepEqual(profile, {
-    id: "astryx",
-    name: "Astryx",
-    officialUrl: "https://astryx.atmeta.com/",
-    repositoryUrl: "https://github.com/facebook/astryx",
-    license: "MIT",
-    apiVersions: ["1"],
-    compatibility: { react: ">=19", "react-dom": ">=19", "@stylexjs/stylex": "^0.19" },
-    canary: { default: "deny" },
-  });
+  assert.equal(profile.officialUrl, "https://astryx.atmeta.com/");
+  assert.equal(profile.repositoryUrl, "https://github.com/facebook/astryx");
+  assert.equal(profile.sourceId, "facebook/astryx");
+  const catalog = normalizeSnapshot(JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8")));
+  const source = catalog.entries.find((entry) => entry.recordType === "source" && entry.sourceId === profile.sourceId);
+  assert.ok(source, "profile must refer to a canonical source record");
+  assert.equal(source.provenance.url, profile.repositoryUrl);
+  assert.ok(profile.apiVersions.includes("1"));
+  assert.deepEqual(profile.compatibility, { react: ">=19", "react-dom": ">=19", "@stylexjs/stylex": "^0.19" });
+  assert.equal(profile.canary.default, "deny");
 });
 
 test("local adapter acquisition is deterministic and records generic collections and hashes", () => {
