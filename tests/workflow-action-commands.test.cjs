@@ -1,8 +1,8 @@
 "use strict";
 
 // `next` actions keep a runnable command apart from prose: `command` (and a `record` template) is
-// `node <absolute designer-pipeline.cjs> ...`, which works from any directory because the CLI is not
-// on PATH; explanations live in `instruction`.
+// `node <absolute designer-pipeline.cjs> ...`, binding the absolute project root as well as the CLI.
+// Both work from unrelated directories; explanations live in `instruction`.
 
 const assert = require("node:assert/strict");
 const test = require("node:test");
@@ -10,13 +10,12 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { decide, initState, nextAction, recordGate } = require("../skill/scripts/workflow-core.cjs");
+const { decide, initState, nextAction, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { canonicalJson } = require("../skill/scripts/contract-utils.cjs");
 const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs");
 const film = require("../skill/scripts/workflows/film.cjs");
 const edit = require("../skill/scripts/workflows/edit.cjs");
 const web = require("../skill/scripts/workflows/web.cjs");
-const { CLI } = require("../skill/scripts/workflows/shared.cjs");
 
 const cliFile = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs").split(path.sep).join("/");
 // The runnable invocation, spelled independently of shared.cjs: quoted only when the path needs it.
@@ -117,7 +116,6 @@ test("product promo actions keep prose out of command: scaffold, source, plan, s
   initState(dir, { deliverable: "film", tier: "quick" });
   const source = nextAction(dir);
   assert.equal(source.stage, "source");
-  assert.equal(source.command, `${CLI} film scaffold --output .`);
   assert.match(source.instruction, /^Run the command first, then: Source the real product: /);
   assert.ok(runnable(source.command));
   // The same prose with a storyboard in place has no command at all.
@@ -125,13 +123,9 @@ test("product promo actions keep prose out of command: scaffold, source, plan, s
   const unscaffolded = nextAction(dir);
   assert.equal(unscaffolded.command, undefined);
   assert.match(unscaffolded.instruction, /^Source the real product: /);
-  // Plan and delivery commands of a plain film.
+  // Plan command of a plain film.
   const plan = film.stages({ deliverable: "film", tier: "quick", decisions: {}, gates: {}, rules: [] }).find((stage) => stage.id === "plan").action({ deliverable: "film", tier: "quick", decisions: {}, gates: {}, rules: [] }, dir);
-  assert.equal(plan.command, `${CLI} verify film-storyboard --storyboard storyboard.json`);
   assert.match(plan.instruction, /Author storyboard\.json/);
-  const deliver = film.stages({ deliverable: "film", tier: "standard", decisions: {}, gates: {}, rules: [] }).find((stage) => stage.id === "deliver").action();
-  assert.equal(deliver.command, `${CLI} decide --project-root . --stage deliver --answer final.mp4`);
-  assert.match(deliver.instruction, /hyperframes render --quality high --output final\.mp4/);
 });
 
 test("edit and web stages return the command or the instruction, never prose as a command", () => {
@@ -160,11 +154,275 @@ test("the command a product promo's source stage returns runs as given and repor
   assert.equal(action.stage, "source");
   const elsewhere = tmp();
   // From a different directory, so it works only because the path is absolute.
-  const child = spawnSync(`${action.command} --root "${dir}" --json`, { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+  const child = spawnSync(`${action.command} --json`, { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
   assert.equal(child.status, 0, child.stdout + child.stderr);
   const result = JSON.parse(child.stdout);
   assert.equal(result.status, "scaffolded");
   assert.ok(result.next.some((line) => /storyboard\.json\.productSource/.test(line)), "the scaffold points at the product source record");
-  assert.ok(result.next.some((line) => /sample\.mp4/.test(line) && /decide --stage sample/.test(line)), "and at the sample step");
   assert.equal(nextAction(dir).stage, "source", "the scaffold alone does not admit a product");
+});
+
+for (const deliverable of ["film", "edit", "web", "ui"]) {
+  for (const name of ["BRIEF.md", "brief.md"]) {
+    test("intake collision " + deliverable + "/" + name + " neither skips intake nor changes user bytes or state", () => {
+      const dir = tmp();
+      initState(dir, { deliverable, tier: "standard" });
+      const bytes = Buffer.from("User assignment\r\nKeep punctuation and bytes.\r\n");
+      touch(dir, name, bytes);
+      const stateFile = path.join(dir, ".design-pipeline/state.json");
+      const before = fs.readFileSync(stateFile);
+      assert.equal(nextAction(dir).stage, "intake");
+      assert.throws(() => decide(dir, { stage: "intake", answer: "new answer" }), error => {
+        assert.equal(error.code, "OUTPUT_COLLISION");
+        assert.match(error.message, /rename|move/i);
+        return true;
+      });
+      assert.deepEqual(fs.readFileSync(path.join(dir, name)), bytes);
+      assert.deepEqual(fs.readFileSync(stateFile), before);
+    });
+  }
+  test("intake provenance " + deliverable + " records completion and permits only unchanged owned brief re-records", () => {
+    const dir = tmp();
+    initState(dir, { deliverable, tier: "standard" });
+    decide(dir, { stage: "intake", answer: "first answer" });
+    assert.ok(readState(dir).decisions.intake);
+    decide(dir, { stage: "intake", answer: "corrected answer" });
+    assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ncorrected answer\n");
+    fs.unlinkSync(path.join(dir, "brief.md"));
+    assert.notEqual(nextAction(dir).stage, "intake", "state, not file presence, completes intake");
+    decide(dir, { stage: "intake", answer: "restored answer" });
+    touch(dir, "brief.md", "User edited this file");
+    const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
+    assert.throws(() => decide(dir, { stage: "intake", answer: "must not replace" }), { code: "OUTPUT_COLLISION" });
+    assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "User edited this file");
+    assert.deepEqual(fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), before);
+  });
+}
+
+test("intake legacy decisions complete the stage but never authorize a user brief overwrite", () => {
+  const dir = tmp();
+  const state = initState(dir, { deliverable: "web", tier: "standard" });
+  state.decisions.intake = "default";
+  touch(dir, ".design-pipeline/state.json", canonicalJson(state));
+  touch(dir, "brief.md", "# Brief\n\ndefault\n");
+  const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
+  assert.notEqual(nextAction(dir).stage, "intake");
+  assert.throws(() => decide(dir, { stage: "intake", answer: "replacement" }), { code: "OUTPUT_COLLISION" });
+  assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ndefault\n");
+  assert.deepEqual(fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), before);
+});
+
+test("intake refuses colliding directories without writing state", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  fs.mkdirSync(path.join(dir, "BRIEF.md"));
+  const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
+  assert.throws(() => decide(dir, { stage: "intake", answer: "replacement" }), { code: "OUTPUT_COLLISION" });
+  assert.deepEqual(fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), before);
+});
+
+for (const deliverable of ["film", "edit", "web", "ui"]) {
+  test("project root record " + deliverable + " executes unchanged from unrelated cwd with a spaced project", () => {
+    const dir = path.join(tmp(), "selected project with spaces");
+    fs.mkdirSync(dir);
+    const elsewhere = tmp();
+    initState(dir, { deliverable, tier: "standard" });
+    const record = nextAction(dir).record.replace("<the user's reply>", "copied answer");
+    const child = spawnSync(record + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+    assert.equal(child.status, 0, child.stdout + child.stderr);
+    assert.equal(JSON.parse(child.stdout).status, "recorded");
+    assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ncopied answer\n");
+    assert.ok(readState(dir).decisions.intake);
+    assert.deepEqual(fs.readdirSync(elsewhere), [], "nothing is created in the shell cwd");
+  });
+}
+
+test("project root binds all emitted workflow command and record routes including validators", () => {
+  const dir = path.join(tmp(), "selected project with spaces");
+  fs.mkdirSync(dir);
+  const expected = '"' + dir.split(path.sep).join("/") + '"';
+  const assertBound = action => {
+    for (const field of ["command", "record"]) {
+      if (!action[field]) continue;
+      assert.ok(action[field].includes("--root " + expected), action[field]);
+      if (action[field].includes("--project-root")) assert.ok(action[field].includes("--project-root " + expected), action[field]);
+      assert.ok(!/--project-root \.(?: |$)/.test(action[field]), action[field]);
+    }
+    for (const field of ["instruction", "first", "then"]) {
+      const text = action[field];
+      if (!text) continue;
+      if (text.includes("node " + cliFile)) assert.ok(text.includes("--root " + expected), text);
+      if (text.includes("npx --no-install")) assert.ok(text.includes("--prefix " + expected), text);
+      if (text.includes("ffmpeg -i")) assert.ok(text.includes(expected.slice(0, -1) + "/"), text);
+    }
+  };
+  assertBound(nextAction(dir));
+  for (const deliverable of ["film", "edit", "web", "ui"]) {
+    for (const tier of ["quick", "standard", "full"]) {
+      for (const mode of ["brief", "replicate", "freeform"]) {
+        const state = { deliverable, tier, mode, decisions: {}, gates: {}, rules: [] };
+        if (deliverable === "ui") {
+          const selected = path.join(dir, tier + "-" + mode);
+          fs.mkdirSync(selected);
+          initState(selected, state);
+          const action = nextAction(selected);
+          assert.ok((action.record || action.command || action.instruction).includes('"' + selected.split(path.sep).join("/") + '"'));
+        } else {
+          const workflow = { film, edit, web }[deliverable];
+          for (const withFiles of [false, true]) {
+            if (withFiles) for (const name of ["concepts.md", "storyboard.json", "interaction.json", "sources/a.mp4", "out.mp4"]) touch(dir, name, "{}");
+            for (const stage of workflow.stages(state)) assertBound(stage.action(state, dir));
+          }
+        }
+      }
+    }
+  }
+});
+
+test("project root storyboard validator runs as returned from unrelated cwd", () => {
+  const dir = path.join(tmp(), "selected project with spaces");
+  fs.mkdirSync(dir);
+  const elsewhere = tmp();
+  initState(dir, { deliverable: "film", tier: "quick" });
+  fs.copyFileSync(path.resolve(__dirname, "../skill/references/film-choreography/storyboard.example.json"), path.join(dir, "storyboard.json"));
+  const action = nextAction(dir);
+  assert.equal(action.stage, "plan");
+  const child = spawnSync(action.command + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+  assert.equal(child.status, 0, child.stdout + child.stderr);
+  assert.equal(JSON.parse(child.stdout).status, "passed");
+  assert.equal(readState(dir).gates.storyboard.status, "passed");
+  assert.deepEqual(fs.readdirSync(elsewhere), []);
+});
+
+test("project root scaffold handoffs bind runtime and sample record to the selected project", () => {
+  const dir = path.join(tmp(), "selected project with spaces");
+  fs.mkdirSync(dir);
+  const elsewhere = tmp();
+  writePlan(dir, "制作产品宣传动画");
+  initState(dir, { deliverable: "film", tier: "quick" });
+  const action = nextAction(dir);
+  const child = spawnSync(action.command + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+  assert.equal(child.status, 0, child.stdout + child.stderr);
+  const result = JSON.parse(child.stdout);
+  const root = '"' + dir.split(path.sep).join("/") + '"';
+  assert.ok(result.runtime.install.includes(root), result.runtime.install);
+  assert.ok(result.runtime.run.includes(root), result.runtime.run);
+  const sample = result.next.find(line => line.includes("--stage sample"));
+  assert.ok(sample.includes("--root " + root), sample);
+  assert.ok(sample.includes("--project-root " + root), sample);
+  assert.deepEqual(fs.readdirSync(elsewhere), []);
+});
+
+test("project root reference resample handoff executes from unrelated cwd", {
+  skip: !["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0),
+}, () => {
+  const dir = path.join(tmp(), "selected project with spaces");
+  fs.mkdirSync(dir);
+  const elsewhere = tmp();
+  initState(dir, { deliverable: "web", tier: "standard", mode: "replicate" });
+  decide(dir, { stage: "intake", answer: "default" });
+  const created = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "testsrc2=size=32x24:rate=10:duration=1", "-c:v", "ffv1", path.join(dir, "input.mkv")], { encoding: "utf8", windowsHide: true });
+  assert.equal(created.status, 0, created.stderr);
+  const sampled = require("../skill/scripts/reference-video-core.cjs").analyzeVideo(dir, { path: "input.mkv", output: "analysis" });
+  touch(dir, "reference-evidence.json", canonicalJson({ videoAnalysis: sampled.descriptor }));
+  const action = nextAction(dir);
+  assert.equal(action.stage, "reference");
+  const resample = action.observation.resample;
+  assert.ok(resample.args.includes("--root"), "attached resampling must also bind the selected project");
+  const args = resample.args.map(arg => arg === "<new-evidence-dir>" ? "resampled" : arg);
+  const child = spawnSync(resample.command + " " + args.map(arg => '"' + arg + '"').join(" ") + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+  assert.equal(child.status, 0, child.stdout + child.stderr);
+  assert.equal(JSON.parse(child.stdout).status, "prepared");
+  assert.ok(fs.existsSync(path.join(dir, "resampled")));
+  assert.deepEqual(fs.readdirSync(elsewhere), []);
+});
+
+test("project root recorded gate repair command binds the block catalog to the selected project", () => {
+  const dir = path.join(tmp(), "selected project with spaces");
+  fs.mkdirSync(dir);
+  const elsewhere = tmp();
+  initState(dir, { deliverable: "film", tier: "quick" });
+  const board = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/film-choreography/storyboard.example.json"), "utf8"));
+  board.beats[0].block = "unknown-practice-block";
+  touch(dir, "storyboard.json", canonicalJson(board));
+  const report = require("../skill/scripts/film-core.cjs").checkStoryboard(board, { blockNames: new Set(["known-example-block"]), projectRoot: dir });
+  recordGate(dir, "storyboard", report.status, ["storyboard.json"], report);
+  const finding = nextAction(dir).verification.findings.find(item => item.code === "block-unknown");
+  assert.ok(finding);
+  const expected = '"' + dir.split(path.sep).join("/") + '"';
+  assert.ok(finding.fix.includes("--root " + expected), finding.fix);
+  assert.ok(finding.fix.includes("node " + cliFile), finding.fix);
+  assert.deepEqual(fs.readdirSync(elsewhere), []);
+});
+
+test("intake symlink collision cannot claim ownership from matching brief bytes", t => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "owned answer" });
+  const file = path.join(dir, "brief.md"), target = path.join(dir, "intake-copy.md");
+  fs.renameSync(file, target);
+  try { fs.symlinkSync(target, file, "file"); }
+  catch (error) { if (error.code === "EPERM" || error.code === "EACCES") return t.skip("Host cannot create file symlinks"); throw error; }
+  const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), bytes = fs.readFileSync(target);
+  assert.throws(() => decide(dir, { stage: "intake", answer: "must not replace target" }), { code: "OUTPUT_COLLISION" });
+  assert.deepEqual(fs.readFileSync(target), bytes);
+  assert.deepEqual(fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), before);
+});
+
+test("intake duplicate case collisions refuse even with an owned brief", t => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  decide(dir, { stage: "intake", answer: "owned answer" });
+  try { fs.writeFileSync(path.join(dir, "BRIEF.md"), "user assignment", { flag: "wx" }); }
+  catch (error) { if (error.code === "EEXIST") return t.skip("Host filesystem aliases case variants"); throw error; }
+  const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
+  assert.throws(() => decide(dir, { stage: "intake", answer: "must not replace" }), { code: "OUTPUT_COLLISION" });
+  assert.equal(fs.readFileSync(path.join(dir, "BRIEF.md"), "utf8"), "user assignment");
+  assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\nowned answer\n");
+  assert.deepEqual(fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), before);
+});
+
+test("intake hardlink collision preserves external bytes and state through the CLI", t => {
+  const dir = tmp(), external = path.join(tmp(), "user-brief.md");
+  initState(dir, { deliverable: "web", tier: "standard" });
+  const record = answer => spawnSync(process.execPath, [cliFile, "decide", "--root", dir, "--project-root", dir, "--stage", "intake", "--answer", answer, "--json"], { encoding: "utf8", windowsHide: true });
+  const initial = record("owned answer");
+  assert.equal(initial.status, 0, initial.stdout + initial.stderr);
+  const file = path.join(dir, "brief.md");
+  fs.renameSync(file, external);
+  try { fs.linkSync(external, file); }
+  catch (error) {
+    if (["EPERM", "EACCES", "ENOTSUP", "EOPNOTSUPP", "ENOSYS"].includes(error.code)) return t.skip(`Host cannot create file hardlinks: ${error.code}`);
+    throw error;
+  }
+  assert.ok(fs.lstatSync(file).nlink > 1, "fixture must share the external file's inode");
+  const bytes = fs.readFileSync(external);
+  const stateFile = path.join(dir, ".design-pipeline/state.json"), before = fs.readFileSync(stateFile);
+  const entries = fs.readdirSync(dir);
+  const result = record("must not replace external bytes");
+  assert.deepEqual(fs.readFileSync(external), bytes, "external file bytes must remain unchanged");
+  assert.deepEqual(fs.readFileSync(file), bytes, "the rejected brief must remain unchanged");
+  assert.deepEqual(fs.readFileSync(stateFile), before, "state must remain unchanged");
+  assert.deepEqual(fs.readdirSync(dir), entries, "refusal must not leave temporary files");
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.equal(JSON.parse(result.stdout).error.code, "OUTPUT_COLLISION");
+});
+
+test("intake owned rewrite replaces the brief entry through the CLI", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "web", tier: "standard" });
+  const record = answer => spawnSync(process.execPath, [cliFile, "decide", "--root", dir, "--project-root", dir, "--stage", "intake", "--answer", answer, "--json"], { encoding: "utf8", windowsHide: true });
+  const initial = record("owned answer");
+  assert.equal(initial.status, 0, initial.stdout + initial.stderr);
+  const file = path.join(dir, "brief.md"), before = fs.lstatSync(file, { bigint: true });
+  assert.equal(before.nlink, 1n);
+  const entries = fs.readdirSync(dir);
+  const result = record("updated answer");
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(JSON.parse(result.stdout).status, "recorded");
+  assert.equal(fs.readFileSync(file, "utf8"), "# Brief\n\nupdated answer\n");
+  assert.equal(readState(dir).decisions.intake.answer, "updated answer");
+  assert.equal(fs.lstatSync(file, { bigint: true }).dev, before.dev);
+  assert.notEqual(fs.lstatSync(file, { bigint: true }).ino, before.ino, "rewrite must replace rather than truncate the existing inode");
+  assert.deepEqual(fs.readdirSync(dir), entries, "accepted rewrite must not leave temporary files");
 });

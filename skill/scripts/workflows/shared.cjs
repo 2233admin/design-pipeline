@@ -6,18 +6,23 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { canonicalJson, resolveInside, sha256 } = require("../contract-utils.cjs");
+const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 
 // designer-pipeline is not on PATH, so every command a next action returns is the runnable
 // `node <absolute path of designer-pipeline.cjs> ...`, derived from this file's location. Forward
-// slashes keep the path valid in cmd, PowerShell and POSIX shells; a path with spaces or shell
-// characters is double-quoted.
-function shellPath(file) {
+// slashes keep the path valid in cmd, PowerShell and POSIX shells. Windows expansion characters
+// cannot be made safe for both cmd and PowerShell by double quotes, so command generation refuses them.
+function shellPath(file, platform = process.platform) {
+  if (platform === "win32" && /[$`"%!\p{Cc}]/u.test(file)) {
+    fail("shell command", `unsafe Windows path: ${file}. Fix: move or rename the project or installation directory to a path without $, backtick, double quote, %, ! or control characters`);
+  }
   const slashed = file.split(path.sep).join("/");
   if (/^[\w@%+=:,./-]+$/.test(slashed)) return slashed;
-  return `"${process.platform === "win32" ? slashed : slashed.replace(/(["$`\\])/g, "\\$1")}"`;
+  return `"${platform === "win32" ? slashed : slashed.replace(/(["$`\\])/g, "\\$1")}"`;
 }
-const CLI = `node ${shellPath(path.resolve(__dirname, "..", "designer-pipeline.cjs"))}`;
+function cliCommand(file = path.resolve(__dirname, "..", "designer-pipeline.cjs"), platform = process.platform) {
+  return `node ${shellPath(file, platform)}`;
+}
 
 const exists = (root, rel) => fs.existsSync(path.join(root, rel));
 
@@ -38,10 +43,13 @@ function referenceObserved(state, root) {
 function gateStatus(state, root, gate, inputs = []) {
   const result = state.gates && state.gates[gate];
   const context = { gate, recordedStatus: result?.status || null };
+  // Bind our catalog recovery command when projecting saved findings; preserve cached evidence.
+  const recordedFindings = result?.findings?.map(item => typeof item.fix === "string" && item.fix.includes("designer-pipeline film blocks")
+    ? { ...item, fix: item.fix.replaceAll("designer-pipeline film blocks", `${cliCommand()} film blocks --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`) } : item);
   const finding = (code, message, fix, file) => ({ code, severity: "error", message, fix, ...(file ? { path: file } : {}) });
   if (result?.status !== "passed") return {
     ...context, status: ["failed", "blocked"].includes(result?.status) ? result.status : "incomplete",
-    findings: result?.findings?.length ? result.findings : [finding("workflow-check-required", `No current passed ${gate} check is recorded.`, "Run the returned check and apply its findings before continuing.")],
+    findings: recordedFindings?.length ? recordedFindings : [finding("workflow-check-required", `No current passed ${gate} check is recorded.`, "Run the returned check and apply its findings before continuing.")],
     next: result?.next || "Run the returned verification command and apply its reported fixes.",
   };
   if (!result.inputHashes || !Object.keys(result.inputHashes).length) return {
@@ -61,7 +69,7 @@ function gateStatus(state, root, gate, inputs = []) {
       findings.push(finding("workflow-input-unavailable", `Checked input is unreadable or outside the project: ${rel}`, "Repair the contained input path, then rerun the returned check.", rel));
     }
   }
-  return { ...context, status: findings.length ? "stale" : "passed", findings, ...(result.findings?.length ? { previousFindings: result.findings } : {}) };
+  return { ...context, status: findings.length ? "stale" : "passed", findings, ...(recordedFindings?.length ? { previousFindings: recordedFindings } : {}) };
 }
 
 const gatePassed = (...args) => gateStatus(...args).status === "passed";
@@ -83,8 +91,8 @@ function deliveryRecorded(state, root) {
 
 const INTAKE = {
   id: "intake",
-  finished: (state, root) => exists(root, "brief.md"),
-  action: () => ({
+  finished: (state) => Boolean(state.decisions?.intake),
+  action: (_state, root) => ({
     type: "ask",
     question: "Answer in one reply; \"default\" accepts every recommendation.",
     questions: [
@@ -93,7 +101,7 @@ const INTAKE = {
       { id: "duration", ask: "How long?", recommended: "15-30 s for a promo, 30-60 s for an edit." },
       { id: "assets", ask: "Which footage, screenshots, models, logos or music can be used, and are they licensed for this use?", recommended: "Only material you own; missing pieces are generated." },
     ],
-    record: `${CLI} decide --project-root . --stage intake --answer "<the user's reply>"`,
+    record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage intake --answer "<the user's reply>"`,
     why: "Only facts that change the result are asked; style comes from references and judgment.",
   }),
 };
@@ -115,14 +123,14 @@ function reference(study, context = {}) {
         ? observation.kind === "observe-window"
           ? `Inspect ${observation.windowId} (${observation.startSec}–${observation.endSec}s) in ${observation.viewerPath || observation.reportPath}, using frames ${observation.frameIds.join(", ")}. ${observation.instruction} Update observations in ${observation.reportPath}, refresh videoAnalysis.sha256 in reference-evidence.json, and record actual findings in reference.md. Use the attached resample arguments if needed.`
           : `${observation.instruction}${observation.resample ? " Use the attached resample arguments." : ""} Current report: ${observation.reportPath}.`
-        : `For a local video first run ${CLI} reference analyze-video --path <contained-video> --output <new-evidence-dir>; inspect the ordered timed windows, confirm shot bounds and applicable target properties, and fill observations in its report, then bind videoAnalysis.path/sha256 in reference-evidence.json. Resample uncertain intervals with --start <sec> --end <sec> --fps 24 into a new directory. In an existing project run ${CLI} project inspect --project-root . --write --output .design-pipeline/project-analysis-v1.json and read the relevant source lines before proposing changes.`;
+        : `For a local video first run ${cliCommand()} reference analyze-video --root ${shellPath(path.resolve(root))} --path <contained-video> --output <new-evidence-dir>; inspect the ordered timed windows, confirm shot bounds and applicable target properties, and fill observations in its report, then bind videoAnalysis.path/sha256 in reference-evidence.json. Resample uncertain intervals with --start <sec> --end <sec> --fps 24 into a new directory. In an existing project run ${cliCommand()} project inspect --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --write --output .design-pipeline/project-analysis-v1.json and read the relevant source lines before proposing changes.`;
       return {
         type: "run",
         study, images, guides,
         instruction: `${study} ${work}${context.instruction ? ` ${context.instruction}` : ""} Read the applicable guides: ${guides.join(", ")}.`,
         why: state.mode === "replicate" ? "Replicate mode: the reference is what we reproduce, so it is measured first." : "Direction comes from watched references, not from a familiar template.",
         ...(observation ? { observation, ...(observation.viewerPath ? { show: [observation.viewerPath] } : {}) } : {}),
-        ...(state.mode === "replicate" ? {} : { then: `Or, if the user gave no references and wants none: ${CLI} decide --project-root . --stage reference --answer none` }),
+        ...(state.mode === "replicate" ? {} : { then: `Or, if the user gave no references and wants none: ${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage reference --answer none` }),
       };
     },
   };
@@ -132,7 +140,7 @@ const CONCEPTS = {
   id: "concepts",
   finished: (state) => Boolean(state.decisions?.concept),
   action: (state, root) => (exists(root, "concepts.md")
-    ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose carrier best demonstrates the product action.", record: `${CLI} decide --project-root . --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "The first of two human decisions." }
+    ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose carrier best demonstrates the product action.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "The first of two human decisions." }
     : { type: "run", instruction: "Write concepts.md: three cards whose central ideas differ; not the same scenes retold three ways. Each card starts with the central idea as one sentence about the picture (for example 'one dot becomes every screen of the app'), then what carries attention between beats, look, tools (one line), and any missing license. Render one key frame per card.", why: "Divergence before convergence; the user picks one." }),
 };
 
@@ -152,8 +160,8 @@ const REVIEW = {
         return fs.statSync(file).isFile() ? [file] : [];
       } catch { return []; }
     });
-    return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${CLI} decide --project-root . --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The second human decision${(state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : ""}.` };
+    return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The second human decision${(state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : ""}.` };
   },
 };
 
-module.exports = { CLI, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, gatePassed, gateStatus, reference, reviewInputHashes };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };

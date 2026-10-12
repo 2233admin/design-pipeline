@@ -342,7 +342,7 @@ function checkStoryboard(board, options = {}) {
   const choreography = options.choreographyIds || loadChoreographyIds();
   const filmRhythm = options.filmRhythm !== false;
   const findings = [];
-  const add = (code, message, beatId) => findings.push(withFix("storyboard", { code, message, ...(beatId ? { beatId } : {}), ...(RHYTHM_WARNINGS.has(code) ? { severity: "warn" } : {}) }));
+  const add = (code, message, beatId) => findings.push(withFix("storyboard", { code, message, ...(beatId ? { beatId } : {}), ...(RHYTHM_WARNINGS.has(code) ? { severity: "warn" } : {}) }, options.projectRoot));
   const beats = board.beats;
   const total = board.durationSec;
   if (board.rendering) {

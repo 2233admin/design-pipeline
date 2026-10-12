@@ -377,6 +377,7 @@ test("a persisted plan whose query now classifies as a product promo is rejected
     assert.match(error.message, /deliverable-form conflict/);
     assert.match(error.message, /stored motion-graphics-video, query classifies as product-launch-video/);
     assert.match(error.message, /re-plan/);
+    assert.doesNotMatch(error.message, /`designer-pipeline /, "project-less plan validation must not advertise an unbound command");
     return true;
   });
   assert.equal(JSON.stringify(stale), snapshot);

@@ -17,6 +17,11 @@ Ask the four intake questions in one numbered round, each with its recommendatio
 reply with `decide --stage intake`. For an edit, the asset question matters most: footage and
 music must be licensed for the use.
 
+Intake is complete only when `decisions.intake` is recorded in `.design-pipeline/state.json`;
+`brief.md` or `BRIEF.md` alone does not complete it. If recording refuses a case-insensitive
+`brief.md` collision with a file intake did not write, preserve that file by moving or renaming it,
+then retry the returned intake record command. Refusal leaves the existing brief and state unchanged.
+
 ## analyze
 
 Put the footage in `sources/`, the music in `assets/`, and each clip's license in

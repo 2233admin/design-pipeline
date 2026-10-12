@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { fileURLToPath } = require("node:url");
 const { spawnSync } = require("node:child_process");
+const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 const {
   advanceChange,
   clearStaleLock,
@@ -613,7 +614,7 @@ function changeCommand(parsed, root, action) {
       path: path.relative(root, file).split(path.sep).join("/"),
       status: "ready",
       sha256: sha256(fs.readFileSync(file)),
-      validator: `designer-pipeline foundation check --kind ${kind}`,
+      validator: `${cliCommand()} foundation check --root ${shellPath(root)} --project-root ${shellPath(root)} --kind ${kind}`,
     };
   }
   if (action === "advance") {
@@ -1541,7 +1542,7 @@ function jobRouteCommand(parsed, root) {
         command: "next",
         action: "bind-film",
         argv: [process.execPath, cli, "next", "--root", root, "--project-root", root, "--deliverable", "film", "--job-plan", planRel],
-        note: `Add --tier quick|standard|full to choose the size (omitted, --tier defaults to standard). An existing film project rebinds with next --root <dir> --project-root <dir> --job-plan ${planRel}. Follow the action next returns; binding the plan grants no visual acceptance.`,
+        note: `Add --tier quick|standard|full to choose the size (omitted, --tier defaults to standard). An existing film project rebinds with \`${cliCommand()} next --root ${shellPath(root)} --project-root ${shellPath(root)} --job-plan ${shellPath(planRel)}\`. Follow the action next returns; binding the plan grants no visual acceptance.`,
       };
     } else {
       const [choicesPath, requestPath] = ["stack-input.json", "toolchain-request.json"].map((name) => {
@@ -1557,7 +1558,7 @@ function jobRouteCommand(parsed, root) {
         choicesPath,
         requestPath,
         requiredInputs: ["framework", ...(plan.primaryKnowledge.id === "graphics-runtime" ? ["graphics.family or graphics.adapter (or existing.graphics)"] : [])],
-        note: `Write explicit project choices first; request preparation does not probe a runtime or grant visual acceptance. Then run toolchain resolve --artifact ${requestPath}.`,
+        note: `Write explicit project choices first; request preparation does not probe a runtime or grant visual acceptance. Then run \`${cliCommand()} toolchain resolve --root ${shellPath(root)} --artifact ${shellPath(requestPath)}\`.`,
       };
     }
   }

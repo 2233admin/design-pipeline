@@ -1,6 +1,6 @@
 "use strict";
 
-// `film edit`: the project workflow for music-led edits.
+// `film-edit`: the project workflow for music-led edits.
 //   analyze  music + sources/ -> edit/analysis.json (beat grid, bars, energy; shots and motion peaks)
 //   auto     analysis -> edit.json (shots placed on the grid, style mad or pv)
 //   render   edit.json -> renders/edit.mp4 (ffmpeg)
@@ -15,6 +15,7 @@ const { evaluateFilmRender } = require("./film-core.cjs");
 const { checkAudio } = require("./audio-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
+const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 
 const VIDEO = /\.(mp4|mov|webm|mkv|m4v)$/i;
 const ANALYSIS = path.join("edit", "analysis.json");
@@ -53,7 +54,7 @@ function analyzeProject(root, options = {}) {
     bars: music.bars.length,
     sources: sources.map(({ id, durationSec, segments, license }) => ({ id, durationSec, shots: segments.length, license })),
     next: [
-      `designer-pipeline film edit auto --project-root . --style mad|pv [--duration <sec>]`,
+      `${cliCommand()} film-edit auto --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --style mad|pv [--duration <sec>]`,
       unlicensed.length ? `Record licenses in sources/licenses.json for: ${unlicensed.join(", ")} ({"<file>": {"license": "...", "commercialUse": true}}); unrecorded footage is treated as non-commercial.` : "All sources record commercial-use licenses.",
     ],
   };
@@ -68,14 +69,14 @@ function autoProject(root, options = {}) {
   const edit = autoEdit(analysis.music, analysis.sources, { style: options.style, durationSec: options.durationSec, musicFile: analysis.music.file, width: options.width, height: options.height, id: options.id });
   fs.writeFileSync(editFile, `${JSON.stringify(edit, null, 2)}\n`);
   const check = checkEdit(edit, analysis.music, Object.fromEntries(analysis.sources.map((source) => [source.id, source])));
-  return { status: "edited", edit: "edit.json", style: edit.style, shots: edit.clips.length, durationSec: edit.durationSec, check, next: ["designer-pipeline film edit render --project-root .", "Adjust edit.json by hand where the automatic choice is wrong; every cut must stay on a beat."] };
+  return { status: "edited", edit: "edit.json", style: edit.style, shots: edit.clips.length, durationSec: edit.durationSec, check, next: [`${cliCommand()} film-edit render --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`, "Adjust edit.json by hand where the automatic choice is wrong; every cut must stay on a beat."] };
 }
 
 function renderProject(root, options = {}) {
   const edit = readJson(path.join(root, "edit.json"), "edit list");
   const output = path.join(root, options.output || path.join("renders", "edit.mp4"));
   (options.render || renderEdit)(edit, root, output);
-  return { status: "rendered", output: path.relative(root, output).split(path.sep).join("/"), next: ["designer-pipeline film edit check --project-root ."] };
+  return { status: "rendered", output: path.relative(root, output).split(path.sep).join("/"), next: [`${cliCommand()} film-edit check --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`] };
 }
 
 function checkProject(root, options = {}) {

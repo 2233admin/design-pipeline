@@ -31,6 +31,11 @@ reply with `decide --stage intake`. Details: `product-film-direction.md`. For a 
 assets question asks for the product's repository and how to run it; the recommendation is the
 product's own repository, run at a pinned commit, with its real UI captured and nothing invented.
 
+Intake is complete only when `decisions.intake` is recorded in `.design-pipeline/state.json`;
+`brief.md` or `BRIEF.md` alone does not complete it. If recording refuses a case-insensitive
+`brief.md` collision with a file intake did not write, preserve that file by moving or renaming it,
+then retry the returned intake record command. Refusal leaves the existing brief and state unchanged.
+
 ## source
 
 Product promos only. The film is built from the product itself, never from invented screens, mock

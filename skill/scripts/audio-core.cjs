@@ -7,8 +7,10 @@
 // mix balance and whether the score suits the film remain creative review.
 
 const fs = require("node:fs");
+const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { assertEnum, fail } = require("./contract-utils.cjs");
+const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 
 const SCHEMA = "design-pipeline.audio-check.v1";
 const SCOPE = "audio";
@@ -25,11 +27,11 @@ const SILENCE_MIN_SEC = 0.75;
 
 const FIX = {
   "audio-missing": "The file has no audio stream. Add the score to the composition (<audio data-start data-duration>) and re-render, or set sound.mode to silent with a reason.",
-  "loudness-off-target": "Normalize the score to the delivery target: designer-pipeline audio master --input <score> --output <score-mastered.wav> --target {target} (two-pass loudnorm to {lufs} LUFS, {tp} dBTP), then point the composition at the mastered file and re-render.",
-  "true-peak-over": "Lower the peaks below {tp} dBTP: designer-pipeline audio master --input <score> --output <mastered.wav> --target {target}, or add a true-peak limiter before export.",
+  "loudness-off-target": "Normalize the score to the delivery target: `{master}` (two-pass loudnorm to {lufs} LUFS, {tp} dBTP), then point the composition at the mastered file and re-render.",
+  "true-peak-over": "Lower the peaks below {tp} dBTP: `{master}`, or add a true-peak limiter before export.",
   "clipping": "The waveform is flat-topped at its peak. Reduce gain before the master bus or re-export the stem at lower level; clipped audio cannot be repaired by normalization afterwards.",
   "unexpected-silence": "Silence appears mid-film without a planned silence cue. Extend or loop the music across the gap, or add a sound cue of kind silence at this time if the pause is intended.",
-  "abrupt-end": "Audio is still loud at the last frame. Fade out the last 0.5-1.5 s (designer-pipeline audio master ... --fade-out 1, or afade=t=out:st={start}:d=1) or end on a resolved hit.",
+  "abrupt-end": "Audio is still loud at the last frame. Fade out the last 0.5-1.5 s (`{master}`, or afade=t=out:st={start}:d=1) or end on a resolved hit.",
   "entry-late": "Music starts later than the storyboard's entry cue. Move the audio element's data-start or trim leading silence (atrim/silenceremove) so sound arrives on the cue.",
   "exit-early": "Music ends before the storyboard's exit cue. Extend the track, loop a section, or move the exit cue to where the music actually ends.",
   "license-unrecorded": "Record each sound asset in storyboard sound.assets with id, license and commercialUse, so reuse rights can be checked.",
@@ -116,7 +118,15 @@ function checkAudio(file, options = {}) {
   const board = options.storyboard || null;
   const sound = board ? board.sound : null;
   const findings = [];
-  const add = (code, severity, message, values) => findings.push({ code, severity, message, fix: hint(code, values) });
+  const add = (code, severity, message, values = {}) => {
+    if (["loudness-off-target", "true-peak-over", "abrupt-end"].includes(code)) {
+      const input = path.resolve(file);
+      const root = path.dirname(input);
+      const output = path.join(root, `${path.parse(input).name}-mastered.wav`);
+      values = { ...values, master: `${cliCommand()} audio master --root ${shellPath(root)} --input ${shellPath(input)} --output ${shellPath(output)} --target ${targetName}${code === "abrupt-end" ? " --fade-out 1" : ""}` };
+    }
+    findings.push({ code, severity, message, fix: hint(code, values) });
+  };
 
   if (!hasAudio(file, tools)) {
     if (!sound || sound.mode === "scored") add("audio-missing", "error", "no audio stream in the file");

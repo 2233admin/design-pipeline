@@ -11,6 +11,7 @@ const path = require("node:path");
 const { fail, readJson } = require("./contract-utils.cjs");
 const { checkStoryboard } = require("./film-core.cjs");
 const { checkGridAlignment, cpsFor, ensureStrudel, scoreFromTemplate, summarizeGrid } = require("./score-core.cjs");
+const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 
 const PATTERN = "score.strudel.js";
 const GRID = "score-grid.json";
@@ -71,7 +72,7 @@ function scoreFilm(projectDir, options = {}) {
     asset,
     recorded: Boolean(options.write),
     next: [
-      `designer-pipeline audio master --input ${relative} --output ${relative.replace(/\.wav$/, "-mastered.wav")} --target web --fade-out 1`,
+      `${cliCommand()} audio master --root ${shellPath(root)} --input ${shellPath(relative)} --output ${shellPath(relative.replace(/\.wav$/, "-mastered.wav"))} --target web --fade-out 1`,
       `Host it: <audio src="${relative.replace(/\.wav$/, "-mastered.wav")}" data-start="0" data-duration="${board.durationSec}"></audio>`,
       alignment.findings.length ? "Apply each alignment fix (snap cuts/cues to the grid), then re-run film score." : "Cuts and accent cues sit on the musical grid.",
       options.write ? "Storyboard sound.assets now records the score's license." : "Pass --write to record the score as a licensed asset in the storyboard.",

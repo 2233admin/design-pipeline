@@ -6,6 +6,33 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or
+  `brief.md` (matched case-insensitively) no longer skips it, and intake refuses with
+  `OUTPUT_COLLISION` instead of overwriting a brief it did not write. Hard-linked briefs are
+  also refused without changing linked files or state; owned updates use same-directory
+  temporary files and rename replacement instead of writing through the old inode. Applies
+  to film, edit, web and ui.
+- Commands and `record` templates returned by `next` bind the project's absolute path
+  (`--root <abs> --project-root <abs>`) instead of `--project-root .`, so they run as given from
+  any working directory. Invalid and stale job-plan recovery now names a complete, quoted retry
+  for the same plan file. Edit analyze/auto/render handoffs use the actual `film-edit` group;
+  score mastering, Blender checks, foundation initialization/validators, catalog repairs and
+  standalone reference resampling also retain the selected project outside its directory.
+  Migrated old catalog findings bind both required roots in their `film blocks` repairs;
+  command-contract regressions run independently of ffmpeg availability.
+  Native visual decomposition, completion and review templates also bind absolute
+  `--root` and `--change-root`, so their change selection works from unrelated directories.
+  On Windows, command generation rejects paths containing `$`, backticks, `"`, `%`, `!` or
+  controls with `CONTRACT_INVALID` and move/rename remediation; an unsafe installation still
+  imports successfully because CLI validation is lazy. POSIX shell escaping is unchanged.
+  Windows per-second draft review uses the existing bound video analyzer rather than a shell
+  percent-pattern filename, preserving earlier decoded review evidence.
+- Web concepts: the three cards must differ in first-screen structure (layout skeleton, focal
+  element, type position, image role), and the agent pre-screens a same-size contact sheet
+  before asking; a pre-screen is not visual acceptance.
+- `reference-spec.md` adds how to learn layout relations from references: measure at the
+  native aspect ratio, record subject position/scale, the scene region under the lockup and the
+  lockup–subject distance together, and never let metrics replace the visual check.
 - Web capture publishes the validated v1 `receipt.json` with its evidence and returns the bare
   receipt under the public CLI's single envelope. Adapter metadata collisions and linked
   artifact parents fail closed before publication; complete/partial status, artifact hashes

@@ -131,6 +131,38 @@ record the relevant repository path/symbol, the implementation evidence, the mis
 and how to verify the change. Reuse a suitable existing renderer and animation mechanism; leave
 unresolved ownership/alias/runtime facts explicit rather than guessing a new stack.
 
+## Learning layout relations from references
+
+Study the reference at its native aspect ratio before adapting it. Record its dimensions and
+measure positions and scale against that frame; do not stretch or remap a 16:10 study into 16:9.
+Treat another output ratio as a separate recomposition after the native-ratio study, with its changed
+relationships stated explicitly. Letterboxing may aid comparison; it is not full-bleed adaptation.
+
+Record these three coupled relations together in `reference.md`'s composition evidence and fidelity
+invariants, rather than measuring only the text box. Name the reference and observation behind each:
+
+| Relation | Record |
+| --- | --- |
+| Subject position and scale | Main-subject centre and visible width/height relative to the frame; relevant crops such as upper body or face, and ranges when studying several references |
+| Scene region holding the lockup | The actual shadow, ground, fog, object surface or other region behind the text; its detail, contrast, depth and continuity with the rest of the scene |
+| Lockup–subject clearance | Minimum distance to the relevant subject silhouette or face, using consistent frame-relative units; which regions must not overlap, and any observed intentional interleaving |
+
+Apply the relations as a set. Keep the subject's presence and scale while placing the lockup in
+the scene region that supports it. A low-detail region still belongs to the scene: do not hollow it
+into an empty slab or corner the subject merely to make room for text. Preserve observed scene
+continuity, depth and intentional overlap without obscuring the face or other protected regions.
+
+Keep the lockup's reading order and legibility intact. Treat logo, label and title groupings as
+readable units; do not split a word, reorder characters or force spacing to hit a bounding box.
+Rework the composition or type treatment when the measured box conflicts with readable design.
+
+Before presenting, put references and the study on one same-size thumbnail contact sheet at the
+native ratio, without stretching. Pre-screen subject presence, proportions, scene continuity,
+lockup integration and reading hierarchy; redo failed studies before showing them. Review any
+target-ratio adaptation separately. Position/scale, clearance, contrast and detail metrics support
+this visual judgement; zero box error or a favourable metric is neither a visual pass nor owner
+acceptance. This method adds no gate, schema or acceptance record.
+
 ## Required Decision
 
 Record four independent decisions before selecting exactly one route:

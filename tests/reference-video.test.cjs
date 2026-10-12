@@ -9,6 +9,7 @@ const { test } = require("node:test");
 const { sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { decodePng } = require("../skill/scripts/png-core.cjs");
 const { analyzeVideo, checkVideoAnalysis, localMotionCandidates, probeVideoSource, resolveVideoObservation } = require("../skill/scripts/reference-video-core.cjs");
+const { shellPath } = require("../skill/scripts/workflows/shared.cjs");
 
 const available = ["ffmpeg", "ffprobe"].every(bin => spawnSync(bin, ["-version"], { windowsHide: true }).status === 0);
 
@@ -117,6 +118,45 @@ test("local resampling reports partial coverage and budget-limited sampling stay
   assert.ok(checked.nextActions.some(action => action.kind === "prepare-full-source"), "local evidence must identify the remaining full-source preparation");
   assert.throws(() => analyzeVideo(root, { path: "input.mkv", output: "../outside" }), /contained/);
   assert.throws(() => analyzeVideo(root, { path: "input.mkv", output: "local", startSec: 2, endSec: 1 }), /range/);
+});
+
+test("direct reference video resample handoffs bind every kind to the selected project from unrelated cwd", { skip: !available }, t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "reference video selected project "));
+  const elsewhere = fs.mkdtempSync(path.join(os.tmpdir(), "reference video unrelated cwd "));
+  t.after(() => { fs.rmSync(root, { recursive: true, force: true }); fs.rmSync(elsewhere, { recursive: true, force: true }); });
+  const created = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "testsrc2=size=32x24:rate=50:duration=3", "-c:v", "ffv1", path.join(root, "input.mkv")], { windowsHide: true, encoding: "utf8" });
+  assert.equal(created.status, 0, created.stderr);
+  const sampled = analyzeVideo(root, { path: "input.mkv", output: "local analysis", startSec: .5, endSec: 1.5, sampleFps: 12, maxFrames: 3 });
+  const report = sampled.report, reportPath = path.join(root, sampled.descriptor.path);
+  assert.equal(report.sampling.budgetLimited, true);
+  report.shots = [{ id: "local-shot", startSec: .5, endSec: 1.5, frameIds: report.frames.map(frame => frame.id), targets: [{ target: "subject", properties: ["geometry.contour"] }] }];
+  fs.writeFileSync(reportPath, JSON.stringify(report));
+  const originalReportBytes = fs.readFileSync(reportPath);
+  const checked = checkVideoAnalysis(root, { path: sampled.descriptor.path, sha256: sha256(originalReportBytes) }, report.source, { requireProduction: true });
+  const actions = checked.nextActions.filter(action => action.resample);
+  const expectedArgs = {
+    "observe-window": ["--start", "0.5", "--end", "1.5", "--fps", "24"],
+    "observe-shot-property": ["--start", "0.5", "--end", "1.5", "--fps", "24"],
+    "resample-budget": ["--start", "0.5", "--end", "1.5", "--fps", "12", "--max-frames", "400"],
+    "prepare-full-source": ["--max-frames", "400"],
+  };
+  assert.deepEqual(actions.map(action => action.kind), Object.keys(expectedArgs), "the direct API fixture must exercise every returned resample kind");
+  for (const { kind, resample } of actions) {
+    assert.match(resample.command, /^node /, `${kind} must invoke the installed CLI without a PATH alias`);
+    assert.ok(resample.command.includes(path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs").split(path.sep).join("/")), `${kind} must name the installed absolute CLI path`);
+    assert.deepEqual(resample.args, ["--root", fs.realpathSync(root), "reference", "analyze-video", "--path", "input.mkv", ...expectedArgs[kind], "--output", "<new-evidence-dir>"], `${kind} must bind the selected root without changing the sampling arguments`);
+    const output = `resampled ${kind}`;
+    const args = resample.args.map(arg => arg === "<new-evidence-dir>" ? output : arg);
+    const child = spawnSync(`${resample.command} ${args.map(arg => shellPath(arg)).join(" ")} --json`, { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+    assert.equal(child.status, 0, `${kind}: ${child.stdout}${child.stderr}`);
+    const result = JSON.parse(child.stdout);
+    assert.equal(result.status, "prepared", kind);
+    assert.equal(result.semanticAcceptance, "not-assessed", kind);
+    assert.equal(result.descriptor.path, `${output}/report.json`, kind);
+    assert.ok(fs.existsSync(path.join(root, result.descriptor.path)), `${kind} must write its new evidence under the selected project`);
+    assert.deepEqual(fs.readdirSync(elsewhere), [], `${kind} must not create evidence in the unrelated cwd`);
+    assert.deepEqual(fs.readFileSync(reportPath), originalReportBytes, `${kind} must preserve the original analysis`);
+  }
 });
 
 test("high-fps change candidates retain source/24fps context before filling the frame budget", { skip: !available }, t => {

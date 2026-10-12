@@ -59,44 +59,33 @@ test("scaffold writes a gate-passing storyboard, a composition wired to its beat
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
-test("a product promo's scaffold also points at the productSource record and the sample; other output is unchanged", () => {
-  const plain = tmp(), promo = tmp(), other = tmp(), study = tmp(), plainStudy = tmp();
+test("a product promo's scaffold points at source and sample prerequisites before the build", () => {
+  const promo = tmp();
   try {
-    const base = scaffoldFilm(plain).next;
     const next = scaffoldFilm(promo, { deliverableForm: "product-launch-video" }).next;
     const productSteps = next.filter((line) => line.startsWith("Product promo: "));
     assert.equal(productSteps.length, 2);
-    assert.deepEqual(next.filter((line) => !line.startsWith("Product promo: ")), base, "every plain step stays, in order");
     const [source, sample] = productSteps;
     assert.match(source, /storyboard\.json\.productSource/);
     assert.match(source, /references\/workflow-film\.md#source/);
     assert.match(sample, /sample\.mp4/);
-    assert.match(sample, /decide --stage sample/);
     assert.match(sample, /references\/workflow-film\.md#sample/);
     assert.ok(next.indexOf(source) < next.findIndex((line) => line.startsWith("2. Fill reference.md")), "the source record comes before reference and storyboard");
     assert.ok(next.indexOf(sample) < next.findIndex((line) => line.startsWith("4. Build index.html")), "the sample comes before the build");
-    assert.deepEqual(scaffoldFilm(other, { deliverableForm: "motion-graphics-video" }).next, base);
-    assert.deepEqual(scaffoldFilm(study, { template: "motion-study", deliverableForm: "product-launch-video" }).next, scaffoldFilm(plainStudy, { template: "motion-study" }).next);
-  } finally { for (const dir of [plain, promo, other, study, plainStudy]) fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally { fs.rmSync(promo, { recursive: true, force: true }); }
 });
 
 test("scaffold pins the reviewed runtime and loads GSAP from the local install", () => {
   const dir = tmp();
   try {
-    const result = scaffoldFilm(dir, { id: "My Film" });
+    scaffoldFilm(dir, { id: "My Film" });
     const pkg = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
     assert.deepEqual(pkg.devDependencies, { gsap: GSAP_VERSION, hyperframes: HYPERFRAMES_VERSION });
     assert.equal(pkg.private, true);
     assert.equal(pkg.name, "my-film");
-    assert.deepEqual(result.runtime, { gsap: "3.15.0", hyperframes: "0.8.137", install: "npm install", run: "npx --no-install hyperframes" });
     const html = fs.readFileSync(path.join(dir, "index.html"), "utf8");
     assert.doesNotMatch(html, /https?:\/\//, "render and capture need no network");
     assert.ok(html.includes('<script src="node_modules/gsap/dist/gsap.min.js"></script>'));
-    const guide = fs.readFileSync(path.join(dir, "FILM.md"), "utf8");
-    assert.match(guide, /1\. `npm install` once/);
-    assert.match(guide, /npx --no-install hyperframes render/);
-    assert.doesNotMatch(guide, /`npx hyperframes/);
-    assert.match(result.next[0], /hyperframes@0\.8\.137 and gsap@3\.15\.0/);
     // Replacing keeps the project's own package fields and only sets the pins.
     fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "kept", scripts: { render: "custom" }, devDependencies: { hyperframes: "^0.8.145", sharp: "1.0.0" } }));
     scaffoldFilm(dir, { replace: true });

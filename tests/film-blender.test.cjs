@@ -128,6 +128,8 @@ test("film blender renders into the project, converts keyframes and checks frame
     assert.equal(result.motion, "assets/product-turntable-motion.json");
     assert.equal(result.composition.length, 3);
     assert.ok(result.composition.every((frame) => frame.status === "passed"));
+    assert.match(result.next[0], /^node .*designer-pipeline\.cjs film check --root .* --project-root /);
+    assert.ok(result.next[0].includes(dir.split(path.sep).join("/")), result.next[0]);
     assert.throws(() => renderBlenderShot(dir, {}), /--template is required/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

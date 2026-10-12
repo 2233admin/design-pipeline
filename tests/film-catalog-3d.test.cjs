@@ -89,8 +89,16 @@ test("catalog is cached per project and storyboards naming unknown blocks get a 
     assert.equal(checkStoryboard(blockBoard(), { blockNames: names }).status, "passed");
     const board = blockBoard();
     board.beats[0].block = "made-up-block";
-    const finding = checkStoryboard(board, { blockNames: names }).findings.find((f) => f.code === "block-unknown");
-    assert.match(finding.fix, /film blocks --query/);
+    const finding = checkStoryboard(board, { blockNames: names, projectRoot: dir }).findings.find((f) => f.code === "block-unknown");
+    assert.match(finding.fix, /node .*designer-pipeline\.cjs film blocks --root .* --project-root .* --query/);
+    assert.ok(finding.fix.includes(dir.split(path.sep).join("/")), finding.fix);
+    const elsewhere = tmp();
+    try {
+      const command = finding.fix.match(/`([^`]+)`/)[1].replace("<action>", "camera");
+      const run = spawnSync(`${command} --json`, { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+      assert.equal(run.status, 0, run.stdout + run.stderr);
+      assert.deepEqual(fs.readdirSync(elsewhere), []);
+    } finally { fs.rmSync(elsewhere, { recursive: true, force: true }); }
     assert.equal(checkStoryboard(board).status, "passed", "without a catalog the block name is not judged");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

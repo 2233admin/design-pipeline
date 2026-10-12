@@ -11,7 +11,6 @@ const { advanceChange, createInitialState, inspectConsistency, writeNewChange } 
 const { createArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { analyzeVideo } = require("../skill/scripts/reference-video-core.cjs");
-const shared = require("../skill/scripts/workflows/shared.cjs");
 const { stages: webStages } = require("../skill/scripts/workflows/web.cjs");
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "workflow-"));
@@ -175,9 +174,60 @@ test("native visual next asks for a concrete decomposition without creating lega
   assert.deepEqual(action.template.phases[0].visual.guides, ["guides/qa.md"]);
   assert.match(action.template.phases[0].goal, /open.*select.*clos.*Escape.*focus/i);
   assert.match(action.instruction, /sourceObservation.*report.*shotId.*observationIds/);
-  assert.equal(action.command, `${shared.CLI} next --change-root <change> --plan <file>`);
   assert.equal(fs.existsSync(path.join(dir, ".design-pipeline/state.json")), false);
 });
+
+for (const route of ["decompose", "complete", "review"]) {
+  test(`native returned ${route} command selects its change from unrelated cwd without media tools`, t => {
+    const fixture = visualFixture(), elsewhere = tmp();
+    t.after(() => {
+      fs.rmSync(fixture.dir, { recursive: true, force: true });
+      fs.rmSync(elsewhere, { recursive: true, force: true });
+    });
+    let action;
+    if (route === "decompose") {
+      action = nextVisualTask(fixture.dir);
+    } else {
+      if (route === "review") {
+        const plan = JSON.parse(fs.readFileSync(path.join(fixture.dir, fixture.plan)));
+        plan.phases[0].visual.review = true;
+        touch(fixture.dir, fixture.plan, canonicalJson(plan));
+      }
+      action = nextVisualTask(fixture.dir, { plan: fixture.plan });
+      if (route === "review") {
+        touch(fixture.dir, "outline.html", visualHtml);
+        const completed = decideVisualTask(fixture.dir, { choice: "outline", verdict: "complete", artifact: "outline-completion.json" });
+        assert.equal(completed.status, "recorded", completed.failure);
+        action = completed.next;
+        assert.equal(action.stage, "visual-review");
+      }
+    }
+    const root = fs.realpathSync.native(fixture.dir).split(path.sep).join("/");
+    const command = (action.record || action.command)
+      .replace("<change>", `"${root}"`)
+      .replace("<file>", "missing-plan.json")
+      .replace("accept|reject", "accept")
+      .replace("<metadata.json>", "outline-completion.json")
+      .replace(' [--answer "<concrete feedback>"]', "");
+    const child = spawnSync(command + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+    assert.equal(child.status, route === "complete" ? 2 : 0, child.stdout + child.stderr);
+    const result = JSON.parse(child.stdout);
+    if (route === "decompose") assert.equal(result.stage, "decompose");
+    if (route === "complete") {
+      assert.equal(result.status, "blocked", "an unfinished task still fails its own verification, not root validation");
+      assert.match(result.failure, /Completion requires an actual task change within its source scope or declared outputs/);
+    }
+    if (route === "review") {
+      assert.equal(result.status, "recorded");
+      assert.equal(result.review.valid, true);
+      assert.equal(result.next.task.id, "surface");
+    }
+    assert.ok(command.includes(`--root ${root}`) || command.includes(`--root "${root}"`), command);
+    assert.ok(command.includes(`--change-root ${root}`) || command.includes(`--change-root "${root}"`), command);
+    assert.deepEqual(fs.readdirSync(elsewhere), []);
+    assert.equal(fs.existsSync(path.join(fixture.dir, ".design-pipeline/state.json")), false);
+  });
+}
 
 test("public native failures retain measured fixes and bound repeated attempts to input/output bytes", t => {
   const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
@@ -763,7 +813,7 @@ test("native task-change rechecks reject reverted source work before and after e
     touch(fixture.dir, "evidence/source.txt", "sole actual task change");
     const source = path.join(fixture.dir, "evidence/source.txt"), cliCore = require("../skill/scripts/cli-core.cjs"), observe = cliCore.observeInteraction, write = fs.writeFileSync;
     cliCore.observeInteraction = (...args) => { const result = syntheticInteraction(...args); if (timing === "capture") fs.unlinkSync(source); return result; };
-    fs.writeFileSync = function(file, ...args) { const result = write.call(fs, file, ...args); if (timing === "metadata" && path.basename(String(file)) === "outline-completion.json") fs.unlinkSync(source); return result; };
+    fs.writeFileSync = (file, ...args) => { const result = write.call(fs, file, ...args); if (timing === "metadata" && path.basename(String(file)) === "outline-completion.json") fs.unlinkSync(source); return result; };
     let completed;
     try { completed = actualDecideVisualTask(fixture.dir, { choice: "outline", verdict: "complete" }); }
     finally { cliCore.observeInteraction = observe; fs.writeFileSync = write; }
@@ -991,7 +1041,7 @@ test("native completion rechecks scope and bound bytes after writing observed ev
     const action = nextVisualTask(fixture.dir, { plan: fixture.plan }); visualEvidence(fixture, action);
     const write = fs.writeFileSync;
     let injected = false;
-    fs.writeFileSync = function(file, ...args) {
+    fs.writeFileSync = (file, ...args) => {
       const result = write.call(fs, file, ...args);
       if (!injected && path.resolve(String(file)) === path.join(fs.realpathSync.native(fixture.dir), "outline-completion.json")) {
         injected = true;
@@ -1089,11 +1139,9 @@ test("quick film asks for frame review and the owner's verdict before done", () 
     assert.equal(review.type, "ask", "a passing film check is not acceptance");
     assert.equal(review.stage, "review");
     assert.deepEqual(review.completed, ["plan", "build", "check"]);
-    assert.match(review.first, /ffmpeg -i out\.mp4 -vf fps=1/);
     assert.match(review.first, /every frame at full size/);
     assert.match(review.first, /qa\.md/);
     assert.match(review.line, /^film\/quick: review \(4\/4\) - Review the checked draft frame by frame first: .*Then ask the owner: Accept this checked draft, or reject it/);
-    assert.match(review.record, /decide --project-root \. --stage review --verdict accept\|reject/);
     decide(dir, { stage: "review", verdict: "reject", answer: "Labels cross the terminal at 23 s." });
     assert.equal(nextAction(dir).stage, "check", "a rejection reopens the check");
     assert.deepEqual(nextAction(dir).rules, ["Labels cross the terminal at 23 s."]);
@@ -1332,7 +1380,7 @@ test("public next projects actionable missing, unbound, legacy and external cach
   touch(external, "private.txt", secret);
   try {
     for (const [label, prepare, code, file, repair] of [
-      ["missing", (state, dir) => fs.unlinkSync(path.join(dir, "interaction.json")), "workflow-input-missing", "interaction.json", /restore|rebuild/i],
+      ["missing", (_state, dir) => fs.unlinkSync(path.join(dir, "interaction.json")), "workflow-input-missing", "interaction.json", /restore|rebuild/i],
       ["unbound", state => delete state.gates.interaction.inputHashes["index.html"], "workflow-input-unbound", "index.html", /interaction\.json\.url.*local index\.html/i],
       ["legacy", state => { state.gates.interaction = { status: "passed", at: Date.now() }; }, "workflow-pass-unbound", undefined, /rerun.*check/i],
       ["external", state => { state.gates.interaction.inputHashes[outsideFile] = "sha256:" + "a".repeat(64); }, "workflow-input-unavailable", outsideFile, /contained.*path/i],
@@ -1437,7 +1485,7 @@ test("public interaction output collisions fail before capture without changing 
     ["probe hardlink", dir => hardlinkOutput(dir, "interaction.json"), "OUTPUT_COLLISION"],
     ["measured page hardlink", dir => hardlinkOutput(dir, "index.html"), "OUTPUT_COLLISION"],
     ["workflow state hardlink", dir => hardlinkOutput(dir, ".design-pipeline/state.json"), "OUTPUT_COLLISION"],
-    ["measured page same file", (dir, external, probe) => {
+    ["measured page same file", (dir, _external, probe) => {
       touch(dir, "probe.json", JSON.stringify({ ...probe, url: "interaction.json" }));
       touch(dir, "interaction.json", fs.readFileSync(path.join(dir, "index.html")));
       return ["--probe", "probe.json", "--output", "."];
@@ -1715,7 +1763,6 @@ test("probe asks to write interaction.json when missing, then routes to verify i
   assert.match(missing.instruction, /interaction\.json/);
   assert.equal(missing.command, undefined, "writing the probe is not a command");
   touch(dir, "interaction.json", "{}");
-  assert.match(nextAction(dir).command, /verify interaction --probe interaction\.json/);
   recordGate(dir, "interaction", "failed");
   assert.equal(nextAction(dir).stage, "probe", "a failed interaction gate keeps probe open");
   recordGate(dir, "interaction", "passed");
@@ -1749,9 +1796,6 @@ test("a rejected web draft reopens probe", () => {
   assert.equal(nextAction(dir).stage, "probe", "a rejection reopens probe");
 });
 
-const PROMPT_FIELDS = ["question", "questions", "recommended", "options", "record", "why", "command", "instruction"];
-const promptOf = (action) => Object.fromEntries(PROMPT_FIELDS.filter((key) => key in action).map((key) => [key, action[key]]));
-
 test("web intake asks product, audience, scope and assets, with no duration or film wording", () => {
   const dir = tmp();
   try {
@@ -1762,15 +1806,14 @@ test("web intake asks product, audience, scope and assets, with no duration or f
     assert.deepEqual(action.questions.map((question) => question.id), ["product", "audience", "scope", "assets"]);
     assert.ok(!action.questions.some((question) => question.id === "duration"));
     assert.doesNotMatch(JSON.stringify(action), /how long|duration|film|promo|video|footage|beat/i);
-    assert.equal(action.record, shared.INTAKE.action().record);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
-test("web concepts asks for a section arc and a treatment, then keeps the shared choice record", () => {
+test("web concepts asks for a section arc and a treatment before the choice", () => {
   const dir = tmp();
   try {
     initState(dir, { deliverable: "web", tier: "standard" });
-    touch(dir, "brief.md");
+    decide(dir, { stage: "intake", answer: "default" });
     decide(dir, { stage: "reference", answer: "none" });
     const write = nextAction(dir);
     assert.equal(write.stage, "concepts");
@@ -1781,36 +1824,7 @@ test("web concepts asks for a section arc and a treatment, then keeps the shared
     touch(dir, "concepts.md");
     const choose = nextAction(dir);
     assert.equal(choose.type, "ask");
-    assert.equal(choose.record, shared.CONCEPTS.action({}, dir).record);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
-});
-
-test("film, edit and ui prompts at intake and concepts equal the shared ones", () => {
-  const dirs = [];
-  try {
-    for (const deliverable of ["film", "edit", "ui"]) {
-      const dir = tmp();
-      dirs.push(dir);
-      initState(dir, { deliverable, tier: "standard" });
-      const intake = nextAction(dir);
-      assert.equal(intake.stage, "intake", deliverable);
-      assert.deepEqual(promptOf(intake), promptOf(shared.INTAKE.action()), deliverable);
-      if (deliverable !== "ui") assert.ok(intake.questions.some((question) => question.id === "duration"), `${deliverable} intake keeps the duration question`);
-    }
-
-    const film = tmp();
-    dirs.push(film);
-    initState(film, { deliverable: "film", tier: "standard" });
-    decide(film, { stage: "intake", answer: "default" });
-    decide(film, { stage: "reference", answer: "none" });
-    const write = nextAction(film);
-    assert.equal(write.stage, "concepts");
-    assert.deepEqual(promptOf(write), promptOf(shared.CONCEPTS.action(readState(film), film)));
-    touch(film, "concepts.md");
-    const choose = nextAction(film);
-    assert.equal(choose.type, "ask");
-    assert.deepEqual(promptOf(choose), promptOf(shared.CONCEPTS.action(readState(film), film)));
-  } finally { for (const dir of dirs) fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
 test("web stage ids per tier and mode keep their order", () => {

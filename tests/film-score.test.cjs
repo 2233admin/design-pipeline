@@ -86,6 +86,8 @@ test("film score writes the pattern, grid and license record, and refuses to ove
     assert.equal(asset.commercialUse, true);
     assert.match(asset.license, /AGPL-3\.0 tool, not bundled/);
     assert.match(result.next[0], /audio master/);
+    assert.match(result.next[0], /^node .*designer-pipeline\.cjs audio master --root /);
+    assert.ok(result.next[0].includes(dir.split(path.sep).join("/")), result.next[0]);
     assert.throws(() => scoreFilm(dir, { template: "calm-build", bpm: 90, ensure: fakeEnsure, render: fakeRender() }), /--replace/);
     assert.throws(() => scoreFilm(dir, { ensure: fakeEnsure, render: fakeRender() }), /--bpm is required/);
     const check = checkFilmProject(dir);

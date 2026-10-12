@@ -13,6 +13,7 @@ const { fail } = require("./contract-utils.cjs");
 const { encodeFrames, probeToTimeline, renderTemplate } = require("./blender-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
+const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 
 const HOME = path.join(".design-pipeline", "blender");
 
@@ -87,7 +88,7 @@ function renderBlenderShot(projectDir, options = {}) {
     hdri: hdriFile ? rel(hdriFile) : "studio",
     composition,
     next: [
-      "Run designer-pipeline film check --project-root . to apply the render, motion, composition and audio gates to the shot.",
+      `${cliCommand()} film check --root ${shellPath(root)} --project-root ${shellPath(root)}`,
       hasComposition ? `Host the shot in index.html as a <video src="${rel(output)}"> clip at its beat, or drive a three.js block from ${fs.existsSync(motionFile) ? rel(motionFile) : "the baked motion"}.` : "The storyboard's beats are judged against timeline.json converted from the Blender keyframes.",
     ],
   };
