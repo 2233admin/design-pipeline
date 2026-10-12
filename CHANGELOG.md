@@ -16,8 +16,9 @@ All notable changes to Design Pipeline are documented here.
   message in the instruction and existing `CONTRACT_INVALID` error finding with remediation.
   Component-index route and search both use platform web.
 - Recording a different web components answer or source set now drops the interaction pass and
-  delivery and unbinds earlier review drafts, so `next` returns to probe and then review instead of
-  reporting done; re-recording an identical decision leaves that evidence unchanged.
+  delivery, and web review verdicts bind the components decision they judged, so `next` returns to
+  probe and then review instead of reporting done. Recorded review verdicts are never rewritten;
+  re-recording an identical decision leaves all evidence unchanged.
 - Saved gate `next` commands use the same absolute project binding as finding repairs, without
   rewriting persisted gate evidence.
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or

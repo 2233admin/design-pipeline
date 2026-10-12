@@ -466,20 +466,22 @@ test("lineage regression: changed components decision invalidates a quick intera
   assert.deepEqual(readState(root).decisions.componentSources, ["project"]);
 });
 
-test("lineage regression: changed components decision unbinds review and delivery", t => {
+test("lineage regression: changed components decision requires a fresh review and delivery", t => {
   const root = fixture(t, "standard");
   checkedPage(root);
   decide(root, { stage: "review", verdict: "accept" });
   decide(root, { stage: "deliver", answer: "https://example.test/page" });
   assert.equal(nextAction(root).type, "done");
+  const recordedDrafts = structuredClone(readState(root).decisions.drafts);
   decide(root, { stage: "components", choice: "project", answer: "Search the index" });
   assert.equal(nextAction(root).stage, "probe");
   recordGate(root, "interaction", "passed", ["interaction.json", "index.html"]);
   assert.equal(nextAction(root).stage, "review", "the earlier accept no longer covers the new decision");
   const state = readState(root);
   assert.deepEqual(deliveryFields(state), { delivered: undefined, deliveryInputHashes: undefined, deliveredSha256: undefined });
-  assert.equal(state.decisions.drafts.length, 1, "review history is preserved");
-  assert.equal(state.decisions.drafts[0].inputHashes, undefined);
+  assert.deepEqual(state.decisions.drafts, recordedDrafts, "recorded review verdicts and their bindings are never rewritten");
+  decide(root, { stage: "review", verdict: "accept" });
+  assert.equal(nextAction(root).stage, "deliver", "a fresh accept under the new decision completes review");
 });
 
 test("lineage regression: identical components re-record keeps checked evidence", t => {

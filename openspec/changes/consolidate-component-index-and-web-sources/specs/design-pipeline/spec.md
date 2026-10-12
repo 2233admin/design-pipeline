@@ -75,7 +75,8 @@ Every quick, standard and full web workflow in brief, freeform and replicate mod
 #### Scenario: Changed decision invalidates checked evidence
 
 - **WHEN** a different components answer or source set is recorded after interaction, review or delivery evidence exists
-- **THEN** that evidence SHALL be invalidated and next SHALL return to the probe or review boundary
+- **THEN** the interaction pass and delivery SHALL be invalidated and next SHALL return to the probe or review boundary
+- **AND** recorded review verdicts SHALL stay unchanged but SHALL NOT complete review for the new decision
 - **AND** re-recording an identical decision SHALL leave the evidence intact.
 
 ### Requirement: Component provenance is an existing build completion condition

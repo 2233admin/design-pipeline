@@ -150,12 +150,20 @@ const CONCEPTS = {
     : { type: "run", instruction: "Write concepts.md: three cards whose central ideas differ; not the same scenes retold three ways. Each card starts with the central idea as one sentence about the picture (for example 'one dot becomes every screen of the app'), then what carries attention between beats, look, tools (one line), and any missing license. Render one key frame per card.", why: "Divergence before convergence; the user picks one." }),
 };
 
+// A web review verdict binds the components decision it judged; a changed decision needs a fresh review.
+function componentDecisionDigest(state) {
+  return state.deliverable === "web" && typeof state.decisions?.components === "string"
+    ? "sha256:" + sha256(canonicalJson({ answer: state.decisions.components, sources: state.decisions.componentSources ?? null }))
+    : null;
+}
+
 const REVIEW = {
   id: "review",
   finished: (state) => {
     const draft = state.decisions?.drafts?.at(-1);
     return draft?.verdict === "accept" && Boolean(draft.inputHashes)
-      && canonicalJson(draft.inputHashes) === canonicalJson(reviewInputHashes(state));
+      && canonicalJson(draft.inputHashes) === canonicalJson(reviewInputHashes(state))
+      && (draft.componentDecision ?? null) === componentDecisionDigest(state);
   },
   action: (state, root) => {
     const web = state.deliverable === "web";
@@ -170,4 +178,4 @@ const REVIEW = {
   },
 };
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };

@@ -31,7 +31,7 @@ const MODES = ["brief", "replicate", "freeform"];
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { cliCommand, shellPath, INTAKE, REVIEW, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -219,9 +219,9 @@ function decide(root, options = {}) {
     const sources = allowed.filter(value => choices.includes(value));
     const previous = state.decisions.components;
     if (previous !== undefined && (previous !== options.answer || canonicalJson(state.decisions.componentSources ?? null) !== canonicalJson(sources))) {
-      // A different source decision changes what the checked page must prove; recheck and re-review it.
+      // A different source decision changes what the checked page must prove: recheck and redeliver it.
+      // Recorded review verdicts stay as they were; they bind the old decision, so review is asked again.
       invalidateCheckedEvidence(state);
-      for (const draft of state.decisions.drafts || []) delete draft.inputHashes;
     }
     state.decisions.componentSources = sources;
     state.decisions.components = options.answer;
@@ -251,7 +251,8 @@ function decide(root, options = {}) {
     if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
       fail("workflow", `Cannot record review while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     }
-    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)) }];
+    const componentDecision = componentDecisionDigest(state);
+    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}) }];
     if (options.verdict === "reject") {
       state.rules = [...(state.rules || []), { text: options.answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
       // A rejected draft must be rebuilt and rechecked.

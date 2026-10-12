@@ -305,7 +305,7 @@ The added regression validates the manifest through the public validator and exe
 
 ### Integration regression — components decision lineage
 
-- [x] 10.1 Invalidate downstream evidence when a different components answer or source set is recorded: reuse the review-rejection invalidation (drop film/edit/interaction gates and delivery fields) through one helper, and remove `inputHashes` from recorded review drafts so an earlier accept becomes an unbound review that needs a fresh checkpoint. An identical answer and canonical set changes nothing. A legacy answer-only state has no recorded set, so any re-record there invalidates; that state already asks components again.
+- [x] 10.1 Invalidate downstream evidence when a different components answer or source set is recorded: reuse the review-rejection invalidation (drop film/edit/interaction gates and delivery fields) through one helper. An identical answer and canonical set changes nothing. A legacy answer-only state has no recorded set, so any re-record there invalidates; that state already asks components again.
 
 ```text
 node --test --test-name-pattern "lineage regression" tests/workflow-components.test.cjs
@@ -325,4 +325,19 @@ node --test tests/workflow-components.test.cjs
 tests 45; pass 45; fail 0; skipped 0; exit 0
 ```
 
-Before the fix, the changed decision left the passed interaction gate, the accepted draft and the delivery bound to unchanged page hashes, so `next` reported done. After it, the quick tier returns to probe with no interaction gate; on the standard tier, re-recording an interaction pass with identical hashes returns to review with the delivery fields removed and the draft history preserved without bindings.
+Before the fix, the changed decision left the passed interaction gate, the accepted draft and the delivery bound to unchanged page hashes, so `next` reported done. After it, the quick tier returns to probe with no interaction gate; on the standard tier, re-recording an interaction pass with identical hashes returns to review with the delivery fields removed.
+
+- [x] 10.2 Never rewrite recorded review verdicts. Web review drafts record `componentDecision`, the sha256 of the canonical components answer and source set they judged; review completes only when the last accept carries the current digest (film and edit carry none). A changed decision therefore leaves every draft byte-identical yet requires a fresh review, replacing 10.1's first approach of deleting `inputHashes` from history.
+
+```text
+node --test --test-name-pattern "lineage regression" tests/workflow-components.test.cjs
+Before (10.1 code): tests 3; pass 2; fail 1; exit 1
+✖ lineage regression: changed components decision requires a fresh review and delivery
+  AssertionError [ERR_ASSERTION]: recorded review verdicts and their bindings are never rewritten
+  (actual draft lacks inputHashes; tests/workflow-components.test.cjs:482)
+
+After: tests 3; pass 3; fail 0; exit 0
+✔ lineage regression: changed components decision invalidates a quick interaction pass
+✔ lineage regression: changed components decision requires a fresh review and delivery
+✔ lineage regression: identical components re-record keeps checked evidence
+```
