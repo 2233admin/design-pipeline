@@ -38,3 +38,6 @@ NUL
 
 # This tracked upstream source must survive personal *.bin ignore rules.
 !/skill/vendor/mengto-skills/upstream/agent-skills/game-combat/water-crystal-skill-vfx/demo/layout/layout.bin
+
+# The reviewed ascii.rest package keeps its built modules in dist/; keep that layout tracked.
+!/skill/vendor/ascii-rest/upstream/dist/

@@ -597,3 +597,43 @@ its separate runtime license. The maintained adaptation gives project-owned desi
 components, claims and user choices priority, using the pipeline's existing render and evidence
 tools. Upstream Bun/uv/Remotion scripts remain readable source; native Windows and WSL pipeline
 execution is unverified and the package does not install their dependencies.
+
+## bas3line/ascii (ascii.rest)
+
+The bundled ASCII art pieces and the adapted canvas glyph atlas were derived from:
+
+- Source: https://github.com/bas3line/ascii, also published as the fork
+  https://github.com/2233admin/ascii at the same commit
+- Reviewed commit: `1848fa567573e922caa76f95a158b3b7a19043dc` (reviewed 2026-10-13)
+- Package version: npm `ascii.rest` `0.4.0`; its `dist/` is byte-identical to a TypeScript 7.0.2
+  build of the reviewed commit
+- Original copyright: Copyright (c) 2026 bas3line (https://github.com/bas3line)
+- License: MIT
+
+`skill/vendor/ascii-rest/upstream/` keeps the package's `LICENSE`, `package.json`,
+`dist/types.d.ts`, `dist/mount.js` and eleven `dist/pieces/` modules byte for byte; the rest of the
+package is not bundled. `composition scaffold --template ascii-art` copies the pieces' exact text
+into the project's `pieces.js` with this notice as `LICENSE.ascii-rest`.
+`skill/tools/ascii-art/ascii-art.js` adapts the canvas glyph atlas from `dist/mount.js`.
+
+MIT License
+
+Copyright (c) 2026 bas3line (https://github.com/bas3line)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

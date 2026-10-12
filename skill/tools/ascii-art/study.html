@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-preset="donut">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ASCII art composition</title>
+  <style>
+    :root { color-scheme: dark; --ink: #f4efe6; --ground: #101010; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { height: 100%; margin: 0; }
+    body { overflow: hidden; background: var(--ground); color: var(--ink); font: 14px/1.4 system-ui, sans-serif; }
+    .stage { position: fixed; inset: 0; display: grid; place-items: center; margin: 0; padding: 4vmin 4vmin calc(4vmin + var(--reserve, 0px)); }
+    .art { grid-area: 1 / 1; }
+    pre.art { margin: 0; color: var(--ink); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; line-height: 1.2; white-space: pre; font-kerning: none; font-variant-ligatures: none; }
+    canvas.art { display: block; }
+    .status { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(46ch, calc(100% - 32px)); margin: 0; padding: 12px 16px; border: 1px solid currentColor; border-radius: 8px; line-height: 1.5; }
+    .controls { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: center; width: max-content; max-width: calc(100% - 32px); padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--ground) 88%, var(--ink)); }
+    .controls label { display: flex; gap: 8px; align-items: center; }
+    select, button { min-height: 32px; padding: 4px 10px; border: 1px solid color-mix(in srgb, var(--ink) 45%, transparent); border-radius: 8px; color: var(--ink); background: transparent; font: inherit; }
+    button { min-width: 11ch; cursor: pointer; }
+    input[type="range"] { width: min(32vw, 280px); accent-color: var(--ink); }
+    output { min-width: 7ch; font-variant-numeric: tabular-nums; }
+    :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+    /* A capture hook (renderStudy or the __timelines seek) leaves only the art on the page. */
+    html[data-mode="capture"] .controls { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <figure class="stage" data-ascii-stage role="img" aria-label="ASCII art">
+      <pre class="art" data-ascii-text hidden></pre>
+      <canvas class="art" data-ascii-canvas hidden></canvas>
+    </figure>
+    <p class="status" data-ascii-status role="alert">The player did not start. Keep presets.js, pieces.js and ascii-art.js next to this page, with JavaScript enabled.</p>
+  </main>
+  <form class="controls" data-ascii-controls aria-label="Preview">
+    <label>Preset <select name="preset"></select></label>
+    <button type="button" name="play" aria-pressed="false">Play</button>
+    <label>Time <input type="range" name="time" min="0" max="8" step="any" value="0"></label>
+    <output name="clock">0.00 s</output>
+  </form>
+  <script>
+    // Until ascii-art.js has drawn its first frame, the capture hooks throw, so a capture fails
+    // instead of photographing an empty page.
+    (function () {
+      var notStarted = function () { throw new Error("ascii-art did not start: keep presets.js, pieces.js and ascii-art.js next to index.html"); };
+      window.__timelines = window.__timelines || {};
+      window.__timelines["ascii-art"] = { seek: notStarted, time: function () { return 0; }, duration: function () { return 0; }, pause: function () { return this; } };
+      window.renderStudy = notStarted;
+    })();
+  </script>
+  <script src="presets.js"></script>
+  <script src="pieces.js"></script>
+  <script src="ascii-art.js"></script>
+  <script>window.asciiArt = AsciiArt.start();</script>
+</body>
+</html>

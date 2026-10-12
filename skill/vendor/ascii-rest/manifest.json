@@ -1,0 +1,65 @@
+{
+  "schema": "design-pipeline.ascii-rest-source.v1",
+  "source": {
+    "package": "ascii.rest",
+    "version": "0.4.0",
+    "tarball": "https://registry.npmjs.org/ascii.rest/-/ascii.rest-0.4.0.tgz",
+    "integrity": "sha512-lqKcesbm3Ij5ENvgs/CTRWF3HrjAogOoMJdqOh8rlRmdzG3uRSyqS/3chfnjJfcIeqj69MWI8+NstMZ/Br9Ivw==",
+    "repository": "https://github.com/bas3line/ascii",
+    "revision": "1848fa567573e922caa76f95a158b3b7a19043dc",
+    "gitTree": "d05e3c8d570898a9f8da87b51f4ddcab2ad61035",
+    "aliases": [
+      {
+        "repository": "https://github.com/2233admin/ascii",
+        "relation": "fork with no commits of its own",
+        "revision": "1848fa567573e922caa76f95a158b3b7a19043dc"
+      }
+    ],
+    "build": "The tarball's dist/ is byte-identical to `tsc -p tsconfig.build.json` run at the revision with its lock-pinned TypeScript 7.0.2.",
+    "license": "MIT",
+    "copyright": "Copyright (c) 2026 bas3line (https://github.com/bas3line)",
+    "reviewedAt": "2026-10-13",
+    "scope": "LICENSE, package.json, dist/types.d.ts, dist/mount.js and the eleven dist/pieces modules listed in pieces"
+  },
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 15,
+    "byteCount": 108359,
+    "treeSha256": "dbc296c4a8c1e0ad6ba606df11cf890c8fed990f71cb9b412a54e380ba605db6"
+  },
+  "files": [
+    { "path": "dist/mount.js", "bytes": 8871, "sha256": "4df42109f560fc0a25af57b003aec673174ebbe4582610c6e0c98d00263446eb" },
+    { "path": "dist/pieces/donut.js", "bytes": 2453, "sha256": "47099c1153c98ba073f802e100a37331c59e2a94c5313d08b79a0fa2b5eaff2f" },
+    { "path": "dist/pieces/doom-fire.js", "bytes": 6111, "sha256": "b0e1a4f6383725963e20f363717689b1827acbc54abb6aab4a66814d78238394" },
+    { "path": "dist/pieces/fireworks.js", "bytes": 9234, "sha256": "2ef30c392d50202f58c823a3d57534be83a073993b1a2e22a5790d1ea8b993bf" },
+    { "path": "dist/pieces/matrix-rain.js", "bytes": 4025, "sha256": "417da688d06df22e3468a1ae8ac3d1ad0647a423179685efd2b7b94fb39d07af" },
+    { "path": "dist/pieces/night-coast.js", "bytes": 16960, "sha256": "d08647b56db9ab0732399c5b6a6a7f47248ca93f6eeaf8226acde24074b0e18a" },
+    { "path": "dist/pieces/ocean-sunset.js", "bytes": 24587, "sha256": "1cc4f30472cf188775a0d6594a650733262e40006228874b633429d39342fffe" },
+    { "path": "dist/pieces/rotozoomer.js", "bytes": 2947, "sha256": "b7a8873b2de078fbd4f56800e5c82d81af1c2f9a6daa1bb53a9e1942dbbddbec" },
+    { "path": "dist/pieces/sparks.js", "bytes": 8464, "sha256": "00139f9ec65f4ac87887340c151f94ec7b1dc4edaf683fffe64d77de880ebf9b" },
+    { "path": "dist/pieces/synthwave.js", "bytes": 6067, "sha256": "7bf50667412c689f97ed5474ec8ec811a6fcfaca65aede6830f6f2214a2ffa00" },
+    { "path": "dist/pieces/tunnel.js", "bytes": 4619, "sha256": "cb3a1b681dde88aae56db925671f36e0804c9e880d56b94e1ae24148012c216b" },
+    { "path": "dist/pieces/tv-static.js", "bytes": 8085, "sha256": "476e8fbcf113eee0db96f38dc08d896f0ce2f8639596618eb5981bb5835245e3" },
+    { "path": "dist/types.d.ts", "bytes": 2058, "sha256": "11c34115a24b146f90730cae72fbce268343dd0bde73cd6ea02db0d9868119cd" },
+    { "path": "LICENSE", "bytes": 1095, "sha256": "d5af6735a633d3cb73496e62dee74bd490120345660a88be68752e03f00a75a6" },
+    { "path": "package.json", "bytes": 2783, "sha256": "ef0a71d142874158f7ada40c882cc0f636f178f2832a713f57957e93498b30d2" }
+  ],
+  "pieces": [
+    { "slug": "donut", "category": "shapes", "coloured": false, "history": "none" },
+    { "slug": "doom-fire", "category": "effects", "coloured": false, "history": "simulation" },
+    { "slug": "fireworks", "category": "effects", "coloured": false, "history": "none" },
+    { "slug": "matrix-rain", "category": "effects", "coloured": false, "history": "none" },
+    { "slug": "rotozoomer", "category": "effects", "coloured": false, "history": "none" },
+    { "slug": "sparks", "category": "effects", "coloured": false, "history": "none" },
+    { "slug": "synthwave", "category": "effects", "coloured": false, "history": "none" },
+    { "slug": "tunnel", "category": "effects", "coloured": false, "history": "none" },
+    { "slug": "tv-static", "category": "effects", "coloured": false, "history": "none" },
+    { "slug": "night-coast", "category": "scenes", "coloured": true, "history": "palette-cache" },
+    { "slug": "ocean-sunset", "category": "scenes", "coloured": true, "history": "palette-cache" }
+  ],
+  "history": {
+    "none": "The same instance returns the same frame for the same t in any call order.",
+    "simulation": "frame(t) advances an internal simulation by the clamped time since the previous call, so a frame depends on every earlier call.",
+    "palette-cache": "The text depends on t alone; env.color comes from a per-instance nearest-colour cache filled by the first exact colour seen in each bucket, so colour indices depend on earlier calls."
+  }
+}

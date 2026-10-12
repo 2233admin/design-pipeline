@@ -70,6 +70,7 @@
     "film-layout.test.cjs",
     "visual-diagnostics.test.cjs",
     "visual-craft.test.cjs",
+    "ascii-art.test.cjs",
     "audio-gate.test.cjs",
     "film-catalog-3d.test.cjs",
     "film-score.test.cjs",

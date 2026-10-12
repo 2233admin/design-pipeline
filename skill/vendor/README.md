@@ -15,6 +15,7 @@ does not install dependencies, grant execution authority or certify visual quali
 | `deepclonewebsite/` | [Website analysis methods](../references/deepclonewebsite.md) | `manifest.json` |
 | `design-md/` | [Design-system examples](../references/design-md.md) | `manifest.json` |
 | `shadcnio-react-components/` | [Component reference catalog](../references/shadcnio-react-components.md) | `manifest.json` |
+| `ascii-rest/` | [ASCII art composition](../tools/ascii-art/README.md) | `manifest.json`, npm tarball integrity, upstream revision, per-file and snapshot hashes |
 
 Keep each bundle's relative layout, license and original bytes together. Update snapshots using
 the existing importers and integrity checks. Adapt a selected technique into project-owned code

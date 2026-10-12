@@ -7,6 +7,7 @@ skill/vendor/good-css/upstream/harness/public/fonts/GeistMono-OFL.txt -whitespac
 skill/vendor/taste-skill/upstream/** -text
 skill/vendor/cinetic/upstream/** -text
 skill/vendor/product-film-skill/upstream/** -text
+skill/vendor/ascii-rest/upstream/** -text
 # Preserve the reviewed source's original trailing blank line.
 skill/vendor/cinetic/upstream/skills/cinetic/references/technique-library.md -whitespace
 # Preserve original Markdown hard breaks and whitespace in the pinned Taste source.

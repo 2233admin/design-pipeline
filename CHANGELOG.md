@@ -43,6 +43,17 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- `composition scaffold --template ascii-art` (change `add-ascii-art-composition-template`): an
+  ASCII art page built on eleven vendored ascii.rest 0.4.0 pieces (MIT; the npm bytes match a
+  build of upstream `1848fa5`, with per-file hashes in `skill/vendor/ascii-rest/manifest.json`).
+  `index.html` draws `frame(t, env)` for an explicit time into a `<pre>`, or onto a canvas for
+  pieces with a palette. Twelve presets (donut, the eight effects, two coloured scenes) are chosen
+  by `#name`, `?preset=`, the Preset control or `data-preset`. `renderStudy(progress)` and the
+  `__timelines["ascii-art"]` seek that `composition capture --seek` calls replay the piece on the
+  preset's sample grid, so a time gives the same frame in any seek order, including doom fire's
+  simulation and the scenes' colour cache. The copied project opens from disk without network;
+  its live preview honours `prefers-reduced-motion`. No new CLI flag, gate or schema; captures
+  grant no visual acceptance.
 - Product source admission for product-promo films (change `require-product-source-admission`,
   CERE-515). `storyboard.json` (`design-pipeline.film-storyboard.v1`) gains optional
   `productSource` — the real product's repository, full commit SHA, hashed run log, `ui-state`
