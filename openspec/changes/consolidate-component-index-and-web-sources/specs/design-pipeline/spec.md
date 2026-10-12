@@ -74,14 +74,14 @@ Every quick, standard and full web workflow in brief, freeform and replicate mod
 
 #### Scenario: Changed decision invalidates checked evidence
 
-- **WHEN** a different components answer or source set is recorded after interaction, review or delivery evidence exists
+- **WHEN** a different components answer or source set is recorded after interaction, review or delivery evidence exists, or a first explicit decision is recorded on a legacy state that already holds such evidence
 - **THEN** the interaction pass and delivery SHALL be invalidated and next SHALL return to the probe or review boundary
 - **AND** recorded review verdicts SHALL stay unchanged but SHALL NOT complete review for the new decision
 - **AND** re-recording an identical decision SHALL leave the evidence intact.
 
 ### Requirement: Component provenance is an existing build completion condition
 
-Web build SHALL require index.html and a valid component-manifest.json with entries. Sources SHALL resolve to indexed records, decision-named GitHub repositories or project files. Usage SHALL identify contained files and real markers; indexed license states SHALL match. Scratch SHALL require fromScratch true and project-owned entries only, allowing none. Nonscratch SHALL forbid fromScratch true and require nonempty entries. This SHALL NOT introduce a new gate.
+Web build SHALL require index.html and a valid component-manifest.json. Sources SHALL resolve to indexed records, decision-named GitHub repositories or project files in a recorded componentSources category. Usage SHALL identify contained files and real markers; indexed license states SHALL match. Scratch SHALL require fromScratch true and only project-owned entries, if any. Nonscratch SHALL forbid fromScratch true and require entries. This SHALL NOT introduce a new gate.
 
 #### Scenario: HTML exists without valid provenance
 
@@ -105,6 +105,13 @@ Web build SHALL require index.html and a valid component-manifest.json with entr
 
 - **WHEN** a source cannot resolve, an indexed license state differs, a usage file is missing or outside the project, or its marker does not appear in that file
 - **THEN** build SHALL remain unfinished.
+
+#### Scenario: An entry substitutes an unselected source category
+
+- **WHEN** a nonscratch entry is a project file or project-owned indexed record without project selected, a decision-named GitHub URL without github, or another indexed record without index
+- **THEN** build SHALL remain unfinished and the validator message SHALL name the entry, its category and the recorded componentSources set
+- **AND** an indexed record whose repository or alias is named in the decision SHALL satisfy either github or index
+- **AND** platform-licensed indexed records and scratch manifests SHALL keep their existing rules.
 
 #### Scenario: License handling is recorded for real adoption
 

@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { initState, nextAction, decide, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
+const { STATE, initState, nextAction, decide, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { validateComponentManifest } = require("../skill/scripts/design-system-catalog-core.cjs");
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const tiers = ["quick", "standard", "full"];
@@ -199,19 +199,19 @@ test("real manifest resolves indexed, decision-named GitHub and project-owned so
   fs.writeFileSync(path.join(root, "src/Navigation.js"), 'export const Navigation = "nav";');
   checkManifest(root, "Search the index", { entries: [realEntry()] });
   const owned = { ...entry(), sourceId: "src/Navigation.js" };
-  checkManifest(root, "Use src/Navigation.js", { entries: [owned] });
+  checkManifest(root, "Use src/Navigation.js", { entries: [owned] }, null, "project");
   const fileUrl = { ...owned, url: require("node:url").pathToFileURL(path.join(root, "src/Navigation.js")).href };
   delete fileUrl.sourceId;
-  checkManifest(root, "Use project navigation", { entries: [fileUrl] });
+  checkManifest(root, "Use project navigation", { entries: [fileUrl] }, null, "project");
   const github = { ...realEntry(), url: "https://github.com/example/component-library" };
   delete github.sourceId;
   github.license.state = "unverified";
   github.usedIn[0].how = "Study and reimplement Navigation independently";
-  checkManifest(root, "Use https://github.com/example/component-library", { entries: [github] });
-  checkManifest(root, "Use https://github.com/example/other-library", { entries: [github] }, /GitHub repository named/);
-  checkManifest(root, "Use https://github.com/example/component-library-extra", { entries: [github] }, /GitHub repository named/);
+  checkManifest(root, "Use https://github.com/example/component-library", { entries: [github] }, null, "github");
+  checkManifest(root, "Use https://github.com/example/other-library", { entries: [github] }, /GitHub repository named/, "github");
+  checkManifest(root, "Use https://github.com/example/component-library-extra", { entries: [github] }, /GitHub repository named/, "github");
   github.url = "https://example.com/components";
-  checkManifest(root, "Use https://example.com/components", { entries: [github] }, /project file/);
+  checkManifest(root, "Use https://example.com/components", { entries: [github] }, /project file/, "project");
 });
 
 test("manifest enforces indexed license states even through a named repository URL", t => {
@@ -222,7 +222,7 @@ test("manifest enforces indexed license states even through a named repository U
   checkManifest(root, "Search the index", { entries: [value] }, /must match the indexed source/);
   value.url = "https://github.com/shadcn-ui/ui";
   delete value.sourceId;
-  checkManifest(root, "Use https://github.com/shadcn-ui/ui", { entries: [value] }, /must match the indexed source/);
+  checkManifest(root, "Use https://github.com/shadcn-ui/ui", { entries: [value] }, /must match the indexed source/, "github");
 });
 
 test("verified imports and copies explicitly record notice handling in how", t => {
@@ -262,7 +262,7 @@ test("project source and usedIn paths must be contained existing files, includin
   fs.symlinkSync(outside, path.join(root, "escape"), "junction");
   for (const file of [path.join(outside, "outside.html"), path.relative(root, path.join(outside, "outside.html")), "escape/outside.html", ".", "missing.html"]) {
     const owned = { ...entry(), sourceId: file };
-    checkManifest(root, "Use project components", { entries: [owned] }, /inside the project/);
+    checkManifest(root, "Use project components", { entries: [owned] }, /inside the project/, "project");
     const used = realEntry(); used.usedIn[0].file = file;
     checkManifest(root, "Search the index", { entries: [used] }, /inside the project/);
   }
@@ -447,7 +447,7 @@ test("round3 regression: returned search command excludes film-only records for 
   assert.match(command, /--platform web/);
 });
 
-function checkedPage(root, choice = "index", answer = "Search the index") {
+function checkedPage(root, choice = "project", answer = "Use project components") {
   decide(root, { stage: "components", choice, answer });
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><h1>Page</h1>");
   manifest(root, [entry()]);
@@ -497,4 +497,32 @@ test("lineage regression: identical components re-record keeps checked evidence"
   assert.deepEqual(deliveryFields(after), deliveryFields(before));
   assert.deepEqual(after.decisions.componentSources, ["project", "index"]);
   assert.equal(nextAction(root).type, "done");
+});
+
+test("category regression: each entry's source category must be in the recorded componentSources", t => {
+  const root = fixture(t);
+  fs.writeFileSync(path.join(root, "index.html"), '<nav class="Navigation">Page</nav>');
+  const owned = () => ({ ...entry(), sourceId: "index.html" });
+  checkManifest(root, "Use src/components", { entries: [realEntry()] }, /entries\[0\] source category index is not in the recorded componentSources project/, "project");
+  checkManifest(root, "Search the index", { entries: [owned()] }, /entries\[0\] source category project is not in the recorded componentSources index/, "index");
+  checkManifest(root, "Use https://github.com/example/library", { entries: [realEntry()] }, /entries\[0\] source category index is not in the recorded componentSources github/, "github");
+  checkManifest(root, "Use https://github.com/shadcn-ui/ui", { entries: [realEntry()] }, null, "github");
+  checkManifest(root, "Use https://github.com/shadcn-ui/ui and the index", { entries: [realEntry()] }, null, "index");
+  checkManifest(root, "Use project components, then the index", { entries: [owned(), realEntry()] }, null, "project,index");
+  const platform = { ...entry(), sourceId: "native-dom", license: { state: "platform" } };
+  for (const choice of ["project", "index"]) checkManifest(root, "Use native DOM", { entries: [platform] }, null, choice);
+});
+
+test("lineage regression: first explicit components decision invalidates a legacy interaction pass", t => {
+  const root = fixture(t);
+  checkedPage(root);
+  const file = path.join(root, STATE);
+  const legacy = JSON.parse(fs.readFileSync(file, "utf8"));
+  delete legacy.decisions.components;
+  delete legacy.decisions.componentSources;
+  fs.writeFileSync(file, JSON.stringify(legacy));
+  assert.equal(readState(root).gates.interaction.status, "passed");
+  decide(root, { stage: "components", choice: "project", answer: "Use project components" });
+  assert.equal(readState(root).gates.interaction, undefined);
+  assert.equal(nextAction(root).stage, "probe");
 });

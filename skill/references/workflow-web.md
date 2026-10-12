@@ -85,9 +85,10 @@ choices are rejected; duplicates are removed and `decisions.componentSources` is
 `project,github,index,scratch` order. `scratch` is exclusive. Selecting `github` requires an HTTPS
 GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
 Legacy answer-only web decisions ask again; do not infer the source set from prose. Recording a
-different answer or set later drops the interaction pass and delivery; earlier review verdicts stay
-recorded but no longer complete review. `next` then returns to probe, not build, so update
-`index.html` and `component-manifest.json` for the new decision yourself before rechecking.
+different answer or set later, or the first explicit decision on a legacy state that already has a
+checked page, drops the interaction pass and delivery; earlier review verdicts stay recorded but no
+longer complete review. `next` then returns to probe, not build, so update `index.html` and
+`component-manifest.json` for the new decision yourself before rechecking.
 Set `SKILL_ROOT` to the installed skill's absolute path and `PROJECT_ROOT` to the project's absolute
 path, then record the reply using the returned command, equivalent to:
 
@@ -158,6 +159,11 @@ For each entry:
   `license.state` is `verified`, `unverified`, `commercial`, `project-owned` or `platform`.
   An indexed source's license state matches the index, including when identified by its named
   GitHub repository URL. Project files use project-owned availability and license state.
+- Each entry's source category must be in the recorded `componentSources`: `project` for a
+  project file or an indexed project-owned record, `github` for a decision-named GitHub URL, and
+  `index` for any other indexed record. An indexed record whose repository or alias is named in
+  the decision counts under either `github` or `index`. Indexed `platform` records, such as
+  `native-dom`, fit any selection; scratch keeps its own rules below.
 - Every `usedIn` has an existing contained `file`, a nonempty `marker` that literally appears in
   that file, and a nonempty `how`. Choose a real import path, class name, custom element name or
   component identifier as the marker, not a fabricated usage description.

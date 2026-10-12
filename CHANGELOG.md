@@ -14,11 +14,15 @@ All notable changes to Design Pipeline are documented here.
   require `fromScratch: true` and project-owned entries only (empty allowed); nonscratch manifests
   forbid that flag being true and require entries. Invalid build evidence exposes the validator
   message in the instruction and existing `CONTRACT_INVALID` error finding with remediation.
-  Component-index route and search both use platform web.
-- Recording a different web components answer or source set now drops the interaction pass and
-  delivery, and web review verdicts bind the components decision they judged, so `next` returns to
-  probe and then review instead of reporting done. Recorded review verdicts are never rewritten;
-  re-recording an identical decision leaves all evidence unchanged.
+  Component-index route and search both use platform web. Each manifest entry's source category
+  (project file or project-owned record, decision-named GitHub repository, other indexed record)
+  must be one of the recorded `componentSources`; an indexed record for a named repository fits
+  either `github` or `index`, and platform records stay unconstrained.
+- Recording a different web components answer or source set, or the first explicit decision on a
+  legacy state that already holds a checked page, now drops the interaction pass and delivery, and
+  web review verdicts bind the components decision they judged, so `next` returns to probe and then
+  review instead of reporting done. Recorded review verdicts are never rewritten; re-recording an
+  identical decision leaves all evidence unchanged.
 - Saved gate `next` commands use the same absolute project binding as finding repairs, without
   rewriting persisted gate evidence.
 - Intake completes only when `decide --stage intake` was recorded; a user's own `BRIEF.md` or

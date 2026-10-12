@@ -218,8 +218,9 @@ function decide(root, options = {}) {
     if (choices.includes("github") && !/https:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+/i.test(options.answer)) fail("workflow", "--choice github requires at least one https://github.com/<owner>/<repo> URL in --answer");
     const sources = allowed.filter(value => choices.includes(value));
     const previous = state.decisions.components;
-    if (previous !== undefined && (previous !== options.answer || canonicalJson(state.decisions.componentSources ?? null) !== canonicalJson(sources))) {
-      // A different source decision changes what the checked page must prove: recheck and redeliver it.
+    if (previous !== options.answer || canonicalJson(state.decisions.componentSources ?? null) !== canonicalJson(sources)) {
+      // A first or different source decision changes what the checked page must prove: recheck and redeliver it.
+      // A fresh project has no checked evidence yet; a legacy one must not keep a pass made without a decision.
       // Recorded review verdicts stay as they were; they bind the old decision, so review is asked again.
       invalidateCheckedEvidence(state);
     }

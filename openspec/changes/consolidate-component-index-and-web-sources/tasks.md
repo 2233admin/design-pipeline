@@ -341,3 +341,38 @@ After: tests 3; pass 3; fail 0; exit 0
 ✔ lineage regression: changed components decision requires a fresh review and delivery
 ✔ lineage regression: identical components re-record keeps checked evidence
 ```
+
+### PR review regression — source categories and first explicit decision
+
+- [x] 10.3 Bind each manifest entry's source category to the recorded `componentSources`: `project` for a contained project file or an indexed project-owned record, `github` for a decision-named GitHub URL, `index` for any other indexed record. An indexed record whose repository or alias is named in the decision fits either `github` or `index`; `platform` records and scratch manifests keep their existing rules. The validator message names the entry, its category and the recorded set. Existing tests that paired a project file or GitHub URL entry with an `index` decision now record the matching choice.
+- [x] 10.4 Record the first explicit components decision as a change too: a legacy web state with a checked page but no components decision loses its interaction pass and delivery, so a quick workflow returns to probe instead of reporting done. A fresh project has no checked evidence, so nothing changes there; identical re-records still change nothing.
+
+```text
+node --test --test-name-pattern "category regression|lineage regression" tests/workflow-components.test.cjs
+Before: tests 5; pass 3; fail 2; exit 1
+✖ category regression: each entry's source category must be in the recorded componentSources
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+  (project-only decision accepted indexed shadcn-ui/ui; tests/workflow-components.test.cjs:506)
+✖ lineage regression: first explicit components decision invalidates a legacy interaction pass
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal
+  (the interaction gate survived the first decide; tests/workflow-components.test.cjs:526)
+
+validateComponentManifest per case, before -> after:
+project + indexed shadcn-ui/ui:                 accepted -> rejected: entries[0] source category index is not in the recorded componentSources project
+index + contained project file:                 accepted -> rejected: entries[0] source category project is not in the recorded componentSources index
+github (example/library) + indexed shadcn-ui/ui: accepted -> rejected: entries[0] source category index is not in the recorded componentSources github
+github (shadcn-ui/ui) + indexed shadcn-ui/ui:    accepted -> accepted
+project,index + one entry of each:              accepted -> accepted
+
+After: tests 5; pass 5; fail 0; exit 0
+✔ lineage regression: changed components decision invalidates a quick interaction pass
+✔ lineage regression: changed components decision requires a fresh review and delivery
+✔ lineage regression: identical components re-record keeps checked evidence
+✔ category regression: each entry's source category must be in the recorded componentSources
+✔ lineage regression: first explicit components decision invalidates a legacy interaction pass
+
+node --test tests/workflow-components.test.cjs tests/workflow-next.test.cjs tests/workflow-action-commands.test.cjs
+tests 168; pass 167; fail 0; skipped 1
+```
+
+The skip is the preexisting host filesystem case-alias collision test. Full QA and strict specs validation run on the committed tree.

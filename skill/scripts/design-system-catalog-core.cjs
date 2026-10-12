@@ -131,6 +131,10 @@ function githubRepository(value) {
   } catch { return null; }
 }
 
+function sourceRepositories(record) {
+  return [record.provenance?.repository, record.provenance?.url, ...(record.aliases || [])].map(githubRepository).filter(Boolean);
+}
+
 
 function validateComponentManifest(manifest, { root, decision, componentSources } = {}) {
   if (!isObject(manifest) || !Array.isArray(manifest.entries)) manifestInvalid("entries must be an array");
@@ -159,6 +163,7 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
     if (!nonempty(entry.sourceId) && !nonempty(entry.url)) manifestInvalid(label + " requires sourceId or url");
     let record;
     let projectOwned = false;
+    let namedUrl = false;
     if (nonempty(entry.sourceId)) {
       record = records.find(candidate => candidate.recordType === "source" && candidate.sourceId === entry.sourceId)
         || records.find(candidate => candidate.sourceId === entry.sourceId);
@@ -170,7 +175,8 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
       const repository = githubRepository(entry.url);
       if (repository) {
         if (!namedRepositories.includes(repository)) manifestInvalid(label + ".url must be a GitHub repository named in the components decision");
-        record = records.find(candidate => candidate.recordType === "source" && [candidate.provenance?.repository, candidate.provenance?.url, ...(candidate.aliases || [])].some(url => githubRepository(url) === repository));
+        namedUrl = true;
+        record = records.find(candidate => candidate.recordType === "source" && sourceRepositories(candidate).includes(repository));
         if (["project-owned", "platform"].includes(entry.license.state)) manifestInvalid(label + " GitHub source cannot claim project-owned/platform licensing");
       } else {
         manifestFile(root, entry.url, label + ".url");
@@ -181,6 +187,16 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
     if (record && entry.license.state !== record.license?.state) manifestInvalid(label + ".license.state must match the indexed source");
     if (projectOwned && (entry.license.state !== "project-owned" || entry.availability !== "project-owned")) manifestInvalid(label + " project files require project-owned availability and license.state");
     if (fromScratch && !projectOwned) manifestInvalid(label + " external source contradicts fromScratch");
+    // Each entry must come from a category the owner selected; platform primitives stay unconstrained.
+    if (!componentSources.includes("scratch") && record?.license?.state !== "platform") {
+      const named = namedUrl || Boolean(record) && sourceRepositories(record).some(repository => namedRepositories.includes(repository));
+      const category = projectOwned ? "project" : named ? "github" : "index";
+      // An indexed record for a named repository satisfies either the github or the index choice.
+      const accepted = category === "github" && !namedUrl ? ["github", "index"] : [category];
+      if (!accepted.some(value => componentSources.includes(value))) {
+        manifestInvalid(label + " source category " + category + " is not in the recorded componentSources " + componentSources.join(","));
+      }
+    }
     if (!Array.isArray(entry.usedIn) || !entry.usedIn.length) manifestInvalid(label + ".usedIn must be nonempty");
     for (const [useIndex, use] of entry.usedIn.entries()) {
       const useLabel = label + ".usedIn[" + useIndex + "]";
