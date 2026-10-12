@@ -168,3 +168,15 @@ test("route validates routing metadata on every component entry, including ones 
     new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing\\.capabilities must be a non-empty string array`),
   );
 });
+
+test("route refuses routing metadata on source, method and template records instead of ignoring it", () => {
+  const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8"));
+  const source = raw.docs.find((entry) => entry.recordType === "source");
+  source.routing = { capabilities: "bad", platforms: ["web"], mode: "package" };
+  const malformed = normalizeSnapshot(raw);
+  const id = malformed.entries.find((entry) => entry.kind !== "component" && entry.routing).id;
+  assert.throws(
+    () => routeComponents({ catalog: malformed, brief: "SaaS dashboard app UI", platform: "web" }),
+    new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing is only allowed on component records`),
+  );
+});

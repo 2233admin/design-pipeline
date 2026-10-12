@@ -408,3 +408,14 @@ After: both pass
 ✔ route validates routing metadata on every component entry, including ones web ranking filters out
 ✔ components decisions are rejected outside web workflows and leave their state untouched
 ```
+
+- [x] 10.7 Close the remaining path of the routing finding: `validateRouteEntry` skipped every non-component entry, so a source record (`recordType: "source"`, stored as `kind: "doc"`) with malformed `routing.capabilities` was still accepted after 10.6. Routing on source, method or template records is now refused, since only component records are routed.
+
+```text
+node --test --test-name-pattern "refuses routing metadata" tests/component-routing.test.cjs
+Before (10.6 code): tests 1; pass 0; fail 1; exit 1
+✖ route refuses routing metadata on source, method and template records instead of ignoring it
+  AssertionError [ERR_ASSERTION]: Missing expected exception. (tests/component-routing.test.cjs:178)
+
+After: tests 1; pass 1; fail 0
+```

@@ -26,7 +26,12 @@ function normalizePlatform(value) {
 }
 
 function validateRouteEntry(entry) {
-  if (entry.kind !== "component") return;
+  // Only component records are routed; routing on a source, method or template record would be
+  // silently ignored, so it is refused rather than skipped.
+  if (entry.kind !== "component") {
+    if (entry.routing !== undefined) routeFail(`${entry.id}.routing is only allowed on component records`);
+    return;
+  }
   const route = entry.routing;
   if (!isObject(route)) return;
   strings(route.capabilities, `${entry.id}.routing.capabilities`);
