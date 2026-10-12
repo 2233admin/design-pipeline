@@ -571,16 +571,28 @@ node skill/scripts/designer-pipeline.cjs toolchain receipt-check \
 {
   "schema": "design-pipeline.execution-request.v1",
   "id": "react-settings",
-  "toolchainPlanSha256": "<64-hex>",
+  "toolchainPlanSha256": "<toolchain-plan.json 的 canonical JSON SHA256，64 位小写十六进制>",
+  "jobPlanSha256": "<与 toolchain-request 完全相同的 jobPlanSha256>",
+  "routeId": "<toolchain-plan.json 的 primaryRouteId>",
   "preferredMode": "auto",
   "isolation": "optional",
-  "slices": [{ "id": "ui", "owner": "frontend", "scope": ["src/"] }]
+  "slices": [{ "id": "ui", "owner": "<同一个 primaryRouteId>", "scope": ["src/"] }]
 }
 ```
 
+绑定字段必须从前面步骤的实际产物复制，不要手写常量：
+
+- `toolchainPlanSha256` 是**解析后**的 toolchain-plan.json 规范 JSON 的 SHA256，不是该文件原始
+  字节的哈希：`sha256(canonicalJson(JSON.parse(raw)))`，即按 JSON 解析后再做键排序、2 空格缩进
+  并追加换行后计算。
+- `jobPlanSha256` 从上面的 toolchain-request.json（`plan.planSha256`）原样复制，与 toolchain plan
+  中携带的值必须一致；执行请求与 toolchain plan 缺一即失败。
+- `routeId` 取 `toolchain-plan.json` 的 `primaryRouteId`；每个执行片的 `owner` 必须等于同一个
+  `primaryRouteId`，否则该路由无权执行。存在 primary route 时 `routeId` 必填。
+
 ```bash
 node skill/scripts/designer-pipeline.cjs execution route --root . \
-  --artifact .design-pipeline/execution-request.json --plan .design-pipeline/toolchain-plan.json \
+  --artifact .design-pipeline/execution-request.json --plan toolchain-plan.json \
   --write --output .design-pipeline/execution-plan.json --json
 
 node skill/scripts/designer-pipeline.cjs execution prepare --root . \
