@@ -8,6 +8,7 @@ const { assertKeys, assertString, assertStringArray, fail, pngDimensions, readJs
 const { run, probe, detectCuts, motionProfile } = require("./film-core.cjs");
 const { encodePng } = require("./png-core.cjs");
 const { sampleImage, motionMap } = require("../tools/visual-diagnostics/diagnostics.cjs");
+const { cliCommand } = require("./workflows/shared.cjs");
 const SCOPE = "video reference";
 const HASH = /^[a-f0-9]{64}$/i;
 const EPS = 1e-6;
@@ -430,7 +431,7 @@ function checkVideoAnalysis(rootInput, descriptor, source, options = {}) {
     sourceRange: { startSec: 0, endSec: report.durationSec, timeOriginSec: report.timeOriginSec },
     targets: report.observations.filter(observation => observation.startSec < segment.endSec && observation.endSec > segment.startSec).map(({ target, property, basis }) => ({ target, property, basis })),
     instruction: "Use the host's image viewing tool to inspect the actual PNG inputs in their time order; reading a file path, JSON or the HTML viewer is not evidence of seeing those pixels. This 2s sampling window is not a confirmed source shot. Record one visible target and one property per observation, with local start/end evidence. Keep camera motion separate from object motion; describe visible material changes before inferring their cause. If the interval is unclear, resample it into a new directory.",
-    resample: { command: "designer-pipeline", args: ["reference", "analyze-video", "--path", report.source.path, "--start", String(segment.startSec), "--end", String(segment.endSec), "--fps", String(Math.min(60, Math.max(12, report.sampling.sampleFps * 2))), "--output", "<new-evidence-dir>"] },
+    resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--start", String(segment.startSec), "--end", String(segment.endSec), "--fps", String(Math.min(60, Math.max(12, report.sampling.sampleFps * 2))), "--output", "<new-evidence-dir>"] },
   }));
   const unobservedProperties = [];
   const inventoryMissing = options.requireProduction === true && !report.shots?.length;
@@ -449,7 +450,7 @@ function checkVideoAnalysis(rootInput, descriptor, source, options = {}) {
         kind: "observe-shot-property", shotId: shot.id, target: target.target, property, reportPath: descriptor.path,
         startSec: shot.startSec, endSec: shot.endSec, frameIds: shot.frameIds, images: shot.frameIds.map(id => images.get(id)), source: { ...report.source },
         instruction: `Use the host's image viewing tool to inspect the actual shot-local PNG inputs for ${target.target}'s ${property}. Add an observed record with this exact target/property, an interval inside ${shot.id}, and frames from this shot; motion needs two distinct times. Inference or an observation of another object/property cannot complete this requirement. Refresh videoAnalysis.sha256 and preserve uncertainties and actual findings in reference.md.`,
-        resample: { command: "designer-pipeline", args: ["reference", "analyze-video", "--path", report.source.path, "--start", String(shot.startSec), "--end", String(shot.endSec), "--fps", String(Math.min(24, report.nominalFps)), "--output", "<new-evidence-dir>"] },
+        resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--start", String(shot.startSec), "--end", String(shot.endSec), "--fps", String(Math.min(24, report.nominalFps)), "--output", "<new-evidence-dir>"] },
       });
     }
   }
@@ -457,12 +458,12 @@ function checkVideoAnalysis(rootInput, descriptor, source, options = {}) {
     kind: "resample-budget", reportPath: descriptor.path, startSec: report.sampling.startSec, endSec: report.sampling.endSec,
     instruction: "This report is budget-limited even if its windows have observations. Reprepare this interval in a new directory with a larger bounded frame budget; inspect the retained limitations. If 400 frames still cannot cover the cadence and candidate sequences, reduce cadence or inspect shorter intervals. Preserve this report and refresh the adopted report binding after actual inspection.",
     limitations: report.sampling.limitations,
-    resample: { command: "designer-pipeline", args: ["reference", "analyze-video", "--path", report.source.path, "--start", String(report.sampling.startSec), "--end", String(report.sampling.endSec), "--fps", String(report.sampling.sampleFps), "--max-frames", "400", "--output", "<new-evidence-dir>"] },
+    resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--start", String(report.sampling.startSec), "--end", String(report.sampling.endSec), "--fps", String(report.sampling.sampleFps), "--max-frames", "400", "--output", "<new-evidence-dir>"] },
   });
   if (!coverage.fullSource) nextActions.push({
     kind: "prepare-full-source", reportPath: descriptor.path, startSec: 0, endSec: report.durationSec,
     instruction: "This report covers only a local interval. Prepare and observe the whole source before completing the reference workflow; retain this local report as detail evidence. A local ready status does not complete the whole-source requirement.",
-    resample: { command: "designer-pipeline", args: ["reference", "analyze-video", "--path", report.source.path, "--max-frames", "400", "--output", "<new-evidence-dir>"] },
+    resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--max-frames", "400", "--output", "<new-evidence-dir>"] },
   });
   const reasons = [...(unobservedSegments.length ? ["video-observations-incomplete"] : []), ...(inventoryMissing ? ["video-production-inventory-missing"] : []), ...(unobservedProperties.length ? ["video-production-properties-incomplete"] : []), ...(report.sampling.budgetLimited ? ["sampling-budget-limited"] : [])];
   return { ...base, status: reasons.length ? "pending" : "ready", reasons, unobservedSegments, unobservedProperties, nextActions, unknownObservations: report.observations.filter(observation => observation.basis === "unknown").map(observation => observation.id), warnings: [...report.sampling.limitations, ...(!coverage.fullSource ? ["Only the declared sampling interval is checked; this is not analysis of the whole source."] : [])] };

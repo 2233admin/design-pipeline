@@ -345,7 +345,7 @@ test("project root recorded gate repair command binds the block catalog to the s
   const board = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/film-choreography/storyboard.example.json"), "utf8"));
   board.beats[0].block = "unknown-practice-block";
   touch(dir, "storyboard.json", canonicalJson(board));
-  const report = require("../skill/scripts/film-core.cjs").checkStoryboard(board, { blockNames: new Set(["known-example-block"]) });
+  const report = require("../skill/scripts/film-core.cjs").checkStoryboard(board, { blockNames: new Set(["known-example-block"]), projectRoot: dir });
   recordGate(dir, "storyboard", report.status, ["storyboard.json"], report);
   const finding = nextAction(dir).verification.findings.find(item => item.code === "block-unknown");
   assert.ok(finding);

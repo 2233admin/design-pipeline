@@ -4,7 +4,7 @@
 // Guide: references/workflow-web.md (one section per stage id).
 
 const path = require("node:path");
-const { CLI, shellPath, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
+const { cliCommand, shellPath, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -22,7 +22,7 @@ const INTAKE = {
       { id: "scope", ask: "Which pages or sections does the page need, and what should the visitor be able to do first?", recommended: "One landing page: a first screen that shows the product, proof, one call to action." },
       { id: "assets", ask: "Which copy, screenshots, product UI, logos, fonts and brand rules can be used, and are they licensed for this use?", recommended: "Only material you own; missing pieces are generated." },
     ],
-    record: `${CLI} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage intake --answer "<the user's reply>"`,
+    record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage intake --answer "<the user's reply>"`,
     why: "Only facts that change the result are asked; style comes from references and judgment.",
   }),
 };
@@ -31,7 +31,7 @@ const CONCEPTS = {
   id: "concepts",
   finished: (state) => Boolean(state.decisions?.concept),
   action: (state, root) => (exists(root, "concepts.md")
-    ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose section arc best serves what the visitor should do first.", record: `${CLI} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "Before asking the user, agent-pre-screen the three same-size first screens on one contact sheet. Require genuinely different layout skeletons, focal elements, type positions and image roles, each declared in a one-line skeleton. Redo any card with the same skeleton, a common template or hierarchy that collapses without showing it to the user. A pre-screen is not Visual Acceptance; the user selects the direction." }
+    ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose section arc best serves what the visitor should do first.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "Before asking the user, agent-pre-screen the three same-size first screens on one contact sheet. Require genuinely different layout skeletons, focal elements, type positions and image roles, each declared in a one-line skeleton. Redo any card with the same skeleton, a common template or hierarchy that collapses without showing it to the user. A pre-screen is not Visual Acceptance; the user selects the direction." }
     : { type: "run", instruction: "Write concepts.md: three cards with genuinely different first-screen structures (layout skeleton, focal element, type position and image role, including no image), not just copy or colour. Each card starts with its central idea in one sentence and a one-line skeleton declaring those choices, then the section arc in one line per section (what it is for and its dominant element), what carries the eye down the page, look, tools (one line), and any missing license. Render all three first viewports at the same size and combine them into one contact sheet. Agent-pre-screen before asking the user; redo cards with the same skeleton, a common template or hierarchy that collapses, rerender and compare without showing failed cards to the user. A pre-screen is not Visual Acceptance. After the pick, extend the chosen card with `## Treatment` (references/web-direction.md).", why: "Structural divergence and agent screening before convergence; only the user picks a direction." }),
 };
 
@@ -50,14 +50,14 @@ const PROBE = {
   id: "probe",
   gate: { name: "interaction", inputs: () => ["interaction.json", "index.html"] },
   action: (state, root) => (exists(root, "interaction.json")
-    ? { type: "run", command: `${CLI} verify interaction --root ${shellPath(path.resolve(root))} --probe interaction.json`, why: "Apply each finding's fix, then run next again." }
+    ? { type: "run", command: `${cliCommand()} verify interaction --root ${shellPath(path.resolve(root))} --probe interaction.json`, why: "Apply each finding's fix, then run next again." }
     : { type: "run", instruction: "Write interaction.json: one probe per key interaction (schema in references/workflow-web.md)", why: "Every key interaction is verified against the real page, not eyeballed." }),
 };
 
 const DELIVER = {
   id: "deliver",
   finished: deliveryRecorded,
-  action: (_state, root) => ({ type: "run", command: `${CLI} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
+  action: (_state, root) => ({ type: "run", command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
 };
 
 function stages(state) {

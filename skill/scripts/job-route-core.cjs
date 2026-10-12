@@ -242,7 +242,7 @@ function validateJobPlan(plan) {
   if (planSha256 !== sha256(canonicalJson(sortValue(body)))) invalid("job plan hash does not match contents");
   const classified = classifyDeliverableForm(plan.query);
   if (classified !== plan.deliverableForm) {
-    invalid(`deliverable-form conflict: job plan query does not match its form (stored ${plan.deliverableForm}, query classifies as ${classified}); re-plan from the original brief with \`designer-pipeline route --query "<brief>" --write\``);
+    invalid(`deliverable-form conflict: job plan query does not match its form (stored ${plan.deliverableForm}, query classifies as ${classified}); re-plan from the original brief, then rebind the plan to its project`);
   }
   return plan;
 }

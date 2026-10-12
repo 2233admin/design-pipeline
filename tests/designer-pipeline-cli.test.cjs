@@ -349,6 +349,11 @@ test("change init, status/resume, advance, migrate, and legacy repair are execut
   assert.equal(advance.status, 0, advance.stderr || advance.stdout);
   assert.equal(advance.output.state.phase, "brief");
   assert.equal(advance.output.state.foundations.motion.sha256, sha(path.join(root, "MOTION.md")));
+  for (const kind of ["design", "motion"]) {
+    const command = advance.output.state.foundations[kind].validator;
+    assert.match(command, /^node .*designer-pipeline\.cjs foundation check --root .* --project-root .* --kind /);
+    assert.ok(command.includes(root.split(path.sep).join("/")), command);
+  }
   assert.deepEqual(advance.output.state.evidence, ["qa/brief.json"]);
 
   const legacyRoot = path.join(root, "legacy"); fs.mkdirSync(legacyRoot);

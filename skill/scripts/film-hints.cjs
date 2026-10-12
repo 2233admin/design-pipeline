@@ -2,6 +2,8 @@
 
 // One concrete repair per film-gate finding, keyed by gate and code. Findings carry the hint in
 // `fix` so an agent can act on a gate result without reading the direction reference first.
+const path = require("node:path");
+const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 
 const HINTS = {
   storyboard: {
@@ -31,7 +33,7 @@ const HINTS = {
     "transformation-endpoints": "Fill transformation.from and transformation.to with the subject's state before and after the beat.",
     "surface-only-motion": "Replace fade/scale/slide with motion that changes the subject; start from a registered choreography such as continuous-morph, ui-demo or camera-push.",
     "choreography-unknown": "Use an id from references/film-choreography/registry.json, or remove the choreography field and describe the motion.",
-    "block-unknown": "Use a block name from `designer-pipeline film blocks --query <action>` (the HyperFrames catalog), or remove the block field.",
+    "block-unknown": "Use a block name from `{blocks}` (the HyperFrames catalog), or remove the block field.",
     "hold-dominant": "Review the held images at playback speed: keep readable staging or deliberate tension, shorten empty waiting. Record the intention and observed effect in qa.md; 25% is a review trigger, not a quota.",
     "hold-chain": "Review whether successive held poses develop the idea or tension. Keep purposeful limited animation; merge redundant holds or add a motivated action.",
     "slideshow-handoffs": "Check whether resets/dissolves create a deliberate montage or disconnected panels. Strengthen the visual relationship where it is missing; do not force a continuous take on an authored edit.",
@@ -70,8 +72,12 @@ const HINTS = {
   },
 };
 
-function withFix(gate, finding) {
-  const fix = HINTS[gate] && HINTS[gate][finding.code];
+function withFix(gate, finding, projectRoot) {
+  let fix = HINTS[gate] && HINTS[gate][finding.code];
+  if (fix?.includes("{blocks}")) {
+    const root = shellPath(path.resolve(projectRoot || process.cwd()));
+    fix = fix.replace("{blocks}", `${cliCommand()} film blocks --root ${root} --project-root ${root} --query "<action>"`);
+  }
   return fix ? { ...finding, fix } : finding;
 }
 

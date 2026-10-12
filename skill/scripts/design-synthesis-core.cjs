@@ -3,6 +3,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 
 const CHANGE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ARTIFACT_ROOTS = [
@@ -374,7 +375,7 @@ function checkDesignFoundation(options = {}) {
       projectRoot,
       designFile: designFile.relative,
       nextCommand:
-        "node <design-pipeline>/scripts/init-design-synthesis.cjs --change-id <change-id> --problem <problem> --project-root .",
+        `${cliCommand(path.resolve(__dirname, "init-design-synthesis.cjs"))} --change-id <change-id> --problem "<problem>" --project-root ${shellPath(projectRoot)} --output ${shellPath(designFile.relative)}`,
     };
   }
   if (!fs.statSync(designFile.absolute).isFile()) fail("--design-file must identify a file");

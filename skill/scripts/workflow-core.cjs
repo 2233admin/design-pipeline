@@ -31,7 +31,7 @@ const MODES = ["brief", "replicate", "freeform"];
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { CLI, shellPath, INTAKE, REVIEW, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, INTAKE, REVIEW, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -43,7 +43,7 @@ function codeStages(state) {
     action: (_state, root) => ({
       type: "run",
       instruction: `${tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md" : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing)`}${mode === "replicate" ? "; reproduce the reference and its invariants" : ""}. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. Verify the rendered surface; file delivery and engineering checks do not grant visual acceptance. When verified, run the command to record the delivery (replace <evidence>).`,
-      command: `${CLI} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <evidence>`,
+      command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <evidence>`,
       ...(mode === "replicate" ? { guide: "references/pipeline-reference.md" } : {}),
       why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates.",
     }),
@@ -75,12 +75,12 @@ function writeState(root, state) {
 // routed under; every later call re-verifies it, and a plan is never rewritten here.
 const JOB_PLAN = "job-plan.json";
 const reasonOf = error => String(error?.message ?? error).replace(/^[\w .-]+: /, "").replace(/\.$/, "");
-const replanFix = (root, where) => `re-plan from the original brief with \`${CLI} route --root ${shellPath(path.resolve(root))} --query "<brief>" --write --output ${shellPath(where)}\``;
+const replanFix = (root, where) => `re-plan from the original brief with \`${cliCommand()} route --root ${shellPath(path.resolve(root))} --query "<brief>" --write --output ${shellPath(where)}\``;
 const planBinding = (plan, where) => ({ jobId: plan.jobId, jobPlanSha256: plan.planSha256, jobPlanPath: where, deliverableForm: plan.deliverableForm });
 const readPlan = (root, rel) => readJson(resolveInside(root, rel, "Stage 0 job plan", { scope: "workflow", mustExist: true }), "job plan");
 
 function staleJobPlan(root, where, error) {
-  fail("workflow", `the bound Stage 0 job plan ${where} is stale: ${reasonOf(error)}. Fix: ${replanFix(root, where)}, then rebind with \`${CLI} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --job-plan ${shellPath(where)}\``, { code: "JOB_PLAN_STALE" });
+  fail("workflow", `the bound Stage 0 job plan ${where} is stale: ${reasonOf(error)}. Fix: ${replanFix(root, where)}, then rebind with \`${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --job-plan ${shellPath(where)}\``, { code: "JOB_PLAN_STALE" });
 }
 
 // A plan to bind now: contained, valid, and recorded by its project-relative posix path.
@@ -88,7 +88,7 @@ function newJobPlan(root, file) {
   const target = resolveInside(root, file, "Stage 0 job plan", { scope: "workflow", mustExist: true });
   const where = path.relative(root, target).split(path.sep).join("/");
   try { return planBinding(validateJobPlan(readJson(target, "job plan")), where); }
-  catch (error) { fail("workflow", `the Stage 0 job plan ${where} is invalid: ${reasonOf(error)}. Fix: ${replanFix(root, where)}, then rerun next with --job-plan ${where}`); }
+  catch (error) { fail("workflow", `the Stage 0 job plan ${where} is invalid: ${reasonOf(error)}. Fix: ${replanFix(root, where)}, then rerun \`${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --job-plan ${shellPath(where)}\``); }
 }
 
 // The film's binding re-verified against the bound file (missing, edited, replaced, or its query now
@@ -153,7 +153,7 @@ function actionLine(action) {
 function nextAction(root) {
   const state = readState(root);
   if (!state) {
-    return { type: "ask", stage: "start", question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${CLI} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
+    return { type: "ask", stage: "start", question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
   }
   stateJobPlan(root, state);
   const stages = stagesFor(state);
@@ -471,7 +471,7 @@ function visualDecomposition(context) {
   return {
     type: "run", stage: "decompose", visualAcceptance: "not-evaluated",
     instruction: "Write a design-plan.v1 with one observed property per phase. This example checks a menu's declared open, selection, close, Escape and focus states through the documented eight-step interaction.json journey in a stable #menu-demo wrapper; use #menu-trigger, #sort-menu, #sort-default, #sort-updated and #selection-value, reading the loaded QA method copied to guides/qa.md. It does not prove structural fidelity, backend persistence or visual acceptance. Bind reference files, scope, outputs, checks and dependencies. Bind each local-web check through visual.verification: interaction probe input, exact local page output and check result path. Guides must name actual readable method files. A video report reference requires visual.sourceObservation with report, confirmed shotId and observed observationIds; its target/property must match. Then run the command (replace <change> and <file>) before working in an owned Git window.",
-    command: `${CLI} next --change-root <change> --plan <file>`,
+    command: `${cliCommand()} next --change-root <change> --plan <file>`,
     ...(context.missingPlan ? { missingPlan: context.missingPlan } : {}),
     template: { schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: "sort-menu", input_hash: "sha256:" + "0".repeat(64), mode: "greenfield", fidelity: "adaptive", phases: [{ id: "menu-selection", depends_on: [], inputs: ["brief.md", "interaction.json", "guides/qa.md"], outputs: ["index.html"], gates: [], goal: "Open the menu, select 按更新时间, close it, then use Escape to restore focus while preserving the selected value.", visual: { target: "sort-menu", property: "menu.selection", references: ["brief.md"], scope: ["index.html", "implementation.md"], guides: ["guides/qa.md"], checks: ["evidence/menu-check.json"], review: true, verification: [{ kind: "interaction", probe: "interaction.json", target: "index.html", check: "evidence/menu-check.json" }] } }] },
   };
@@ -518,7 +518,7 @@ function nextVisualTask(changeRoot, options = {}) {
       artifacts, evidence, show: evidence.outputs.map(metadata => resolveInside(context.root, metadata.path, "review output", { scope: "workflow", mustExist: true })),
       technicalCompletion: "passed", visualAcceptance: "not-evaluated",
       question: `Inspect only ${current.visual.target}'s ${current.visual.property}: ${current.goal} Accept this exact evidence version, or reject it with the concrete difference to repair. This decision covers this target property, not the whole component or film.`,
-      record: `${CLI} decide --change-root <change> --choice ${current.id} --verdict accept|reject --artifact <metadata.json> [--answer "<concrete feedback>"]`,
+      record: `${cliCommand()} decide --change-root <change> --choice ${current.id} --verdict accept|reject --artifact <metadata.json> [--answer "<concrete feedback>"]`,
     };
   }
   return {
@@ -530,7 +530,7 @@ function nextVisualTask(changeRoot, options = {}) {
     ...visualFailureFeedback(context, current, inputHashes),
     ...(context.progress.completed[current.id]?.status === "stale" ? { previousArtifacts: context.progress.completed[current.id].artifacts } : {}),
     instruction: `Work only on ${current.id}: ${current.goal} Read the named guides and references; keep this execution window owned and changes inside its scope. Produce the declared outputs, then run the command (replace <change>). Completion runs the bound browser verifier and writes artifact.v1 metadata itself. A technical completion never grants visual acceptance.`,
-    command: `${CLI} decide --change-root <change> --choice ${current.id} --verdict complete --artifact ${taskMetadataPath(current)}`,
+    command: `${cliCommand()} decide --change-root <change> --choice ${current.id} --verdict complete --artifact ${taskMetadataPath(current)}`,
   };
 }
 

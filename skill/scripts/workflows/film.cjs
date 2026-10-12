@@ -9,7 +9,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, isObject, resolveInside, sha256 } = require("../contract-utils.cjs");
-const { CLI, shellPath, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
+const { cliCommand, shellPath, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
 const { newestRender } = require("../film-project-core.cjs");
 const { PRODUCT_PROMO_FORM, probe, productSourceAdmission, productSourceFiles, run } = require("../film-core.cjs");
 
@@ -82,7 +82,7 @@ const SOURCE = {
       return { type: "blocked", blocker: { kind, reason, needs }, why: "The product could not be sourced, so this film is not planned, built or evaluated; invented screens or cards would misrepresent it.", instruction: "Resolve what the blocker needs with the user, replace storyboard.json.productSource with the admitted record, then run next again." };
     }
     const scaffold = !exists(root, "storyboard.json");
-    return { type: "run", ...(scaffold ? { command: `${CLI} film scaffold --root ${shellPath(path.resolve(root))} --output .` } : {}), instruction: `${scaffold ? "Run the command first, then: " : ""}${SOURCE_STEPS} Fix each finding, then run next again.`, findings: admission.findings, why: "A product promo is evaluated only when it is built from the real product, run at a pinned commit and captured; text, cards or invented screens cannot stand in for it." };
+    return { type: "run", ...(scaffold ? { command: `${cliCommand()} film scaffold --root ${shellPath(path.resolve(root))} --output .` } : {}), instruction: `${scaffold ? "Run the command first, then: " : ""}${SOURCE_STEPS} Fix each finding, then run next again.`, findings: admission.findings, why: "A product promo is evaluated only when it is built from the real product, run at a pinned commit and captured; text, cards or invented screens cannot stand in for it." };
   },
 };
 
@@ -100,8 +100,8 @@ const PLAN = {
     const handoff = `${fromReference ? SHOT_HANDOFF : "Author storyboard.json from the brief or chosen direction using references/product-film-direction.md and the existing choreography. "}${productPromo(state) ? PRODUCT_PLAN : ""}`;
     const guides = [fromReference ? SHOT_GUIDE : "references/product-film-direction.md#3-write-an-audiovisual-storyboard", "references/film-choreography/registry.json"];
     return exists(root, "storyboard.json")
-      ? { type: "run", command: `${CLI} verify film-storyboard --root ${shellPath(path.resolve(root))} --storyboard storyboard.json`, instruction: `${handoff}${state.mode === "replicate" && !renderingPlan(root) ? "Record storyboard.json.rendering (route, requirements, reason, samples) from the reference using references/film-materials.md. " : ""}Then run the command; fix each finding, then run next again.`, guides, why: "Author the actual direction before checking its structure and material route; a passing example does not prove reference reconstruction." }
-      : { type: "run", command: `${CLI} film scaffold --root ${shellPath(path.resolve(root))} --output .`, instruction: `Run the command first, then: ${handoff}`, guides, why: "Create editable files, then author the actual storyboard." };
+      ? { type: "run", command: `${cliCommand()} verify film-storyboard --root ${shellPath(path.resolve(root))} --storyboard storyboard.json`, instruction: `${handoff}${state.mode === "replicate" && !renderingPlan(root) ? "Record storyboard.json.rendering (route, requirements, reason, samples) from the reference using references/film-materials.md. " : ""}Then run the command; fix each finding, then run next again.`, guides, why: "Author the actual direction before checking its structure and material route; a passing example does not prove reference reconstruction." }
+      : { type: "run", command: `${cliCommand()} film scaffold --root ${shellPath(path.resolve(root))} --output .`, instruction: `Run the command first, then: ${handoff}`, guides, why: "Create editable files, then author the actual storyboard." };
   },
 };
 
@@ -119,19 +119,30 @@ const BUILD = {
 const CHECK = {
   id: "check",
   gate: { name: "film", inputs: (state, root) => ["storyboard.json", draftRender(root), ...["index.html", "timeline.json", "score-grid.json"].filter(file => exists(root, file)), ...sourceInputs(state, root)] },
-  action: (_state, root) => ({ type: "run", command: `${CLI} film check --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`, why: "Every error gate must pass before anyone sees the draft; apply each finding's fix and rerun." }),
+  action: (_state, root) => ({ type: "run", command: `${cliCommand()} film check --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`, why: "Every error gate must pass before anyone sees the draft; apply each finding's fix and rerun." }),
 };
 
 // Every film tier ends in the owner's verdict on the checked draft. Before asking, the agent
 // reviews the draft one frame per second: the gates sample beats and text layout, not every
 // frame, and they never grant acceptance.
-const frameReview = (root) => `Review the checked draft frame by frame first: ffmpeg -i ${shellPath(path.resolve(root, draftRender(root) || "out.mp4"))} -vf fps=1 ${shellPath(path.resolve(root, "evidence/second-%03d.png"))}, then open every frame at full size and look for text overlap, clipping, empty transitional frames, edge crowding, too-small text and wrong values. Fix what you find, re-render and rerun film check; write the frame and creative review in qa.md. Then ask the owner:`;
+const frameReview = (root) => {
+  const draft = draftRender(root) || "out.mp4";
+  let command;
+  if (process.platform === "win32") {
+    let output = "evidence/second-frames", suffix = 0;
+    while (exists(root, output)) output = `evidence/second-frames-${++suffix}`;
+    command = `${cliCommand()} reference analyze-video --root ${shellPath(path.resolve(root))} --path ${shellPath(draft)} --fps 1 --output ${shellPath(output)}`;
+  } else {
+    command = `ffmpeg -i ${shellPath(path.resolve(root, draft))} -vf fps=1 ${shellPath(path.resolve(root, "evidence/second-%03d.png"))}`;
+  }
+  return `Review the checked draft frame by frame first: \`${command}\`, then open every frame at full size and look for text overlap, clipping, empty transitional frames, edge crowding, too-small text and wrong values. Fix what you find, re-render and rerun film check; write the frame and creative review in qa.md. Then ask the owner:`;
+};
 const FILM_REVIEW = { ...REVIEW, action: (state, root) => ({ first: frameReview(root), ...REVIEW.action(state, root) }) };
 
 const DELIVER = {
   id: "deliver",
   finished: deliveryRecorded,
-  action: (_state, root) => ({ type: "run", command: `${CLI} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer final.mp4`, instruction: `Render the final quality first (npx --no-install --prefix ${shellPath(path.resolve(root))} hyperframes render ${shellPath(path.resolve(root))} --quality high --output ${shellPath(path.resolve(root, "final.mp4"))}), then run the command to record it.`, why: "Drafts are cheap; the final render happens once, after acceptance." }),
+  action: (_state, root) => ({ type: "run", command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer final.mp4`, instruction: `Render the final quality first (npx --no-install --prefix ${shellPath(path.resolve(root))} hyperframes render ${shellPath(path.resolve(root))} --quality high --output ${shellPath(path.resolve(root, "final.mp4"))}), then run the command to record it.`, why: "Drafts are cheap; the final render happens once, after acceptance." }),
 };
 
 // A product promo's first owner-viewed cut is a short sample from the real captures. A verdict binds
@@ -201,7 +212,7 @@ const SAMPLE = {
       question: "Does this sample, cut only from the real captures, show the product the way the film should? Accept it, or reject it with one sentence on what is wrong?",
       show,
       recommended: `Watch ${SAMPLE_FILE} at full speed beside its capture files; accept only if every frame is the product's own material.`,
-      record: `${CLI} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage sample --verdict accept|reject [--answer "<reason>"]`,
+      record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage sample --verdict accept|reject [--answer "<reason>"]`,
       why: "The owner sees the real material before the full build. This verdict settles the material direction only; it is not a gate result or the film's Visual Acceptance.",
     };
   },

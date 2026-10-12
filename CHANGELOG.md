@@ -12,7 +12,15 @@ All notable changes to Design Pipeline are documented here.
   web and ui.
 - Commands and `record` templates returned by `next` bind the project's absolute path
   (`--root <abs> --project-root <abs>`) instead of `--project-root .`, so they run as given from
-  any working directory.
+  any working directory. Invalid and stale job-plan recovery now names a complete, quoted retry
+  for the same plan file. Edit analyze/auto/render handoffs use the actual `film-edit` group;
+  score mastering, Blender checks, foundation initialization/validators, catalog repairs and
+  standalone reference resampling also retain the selected project outside its directory.
+  On Windows, command generation rejects paths containing `$`, backticks, `"`, `%`, `!` or
+  controls with `CONTRACT_INVALID` and move/rename remediation; an unsafe installation still
+  imports successfully because CLI validation is lazy. POSIX shell escaping is unchanged.
+  Windows per-second draft review uses the existing bound video analyzer rather than a shell
+  percent-pattern filename, preserving earlier decoded review evidence.
 - Web concepts: the three cards must differ in first-screen structure (layout skeleton, focal
   element, type position, image role), and the agent pre-screens a same-size contact sheet
   before asking; a pre-screen is not visual acceptance.

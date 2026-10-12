@@ -116,7 +116,7 @@ async function withComposition(compositionFile, options, run) {
     await page.evaluateOnNewDocument(() => { window.__timelines = window.__timelines || {}; });
     await page.goto(options.url || pathToFileURL(file).href, { waitUntil: "networkidle0", timeout: options.timeoutMs || 30000 });
     const nested = await page.evaluate(() => ({ hosts: document.querySelectorAll("[data-composition-src]").length, runtime: Boolean(window.__hyperframes) }));
-    if (nested.hosts && !nested.runtime) fail(SCOPE, `${nested.hosts} nested composition(s) (data-composition-src) do not load without the HyperFrames runtime, so their motion would be missing. Fix: capture through the preview server: "designer-pipeline film check" does this automatically for projects with hyperframes.json, or pass --url <serverUrl>/api/projects/<id>/preview`);
+    if (nested.hosts && !nested.runtime) fail(SCOPE, `${nested.hosts} nested composition(s) (data-composition-src) do not load without the HyperFrames runtime, so their motion would be missing. Fix: capture through the preview server; the film project checker does this automatically for projects with hyperframes.json, or pass --url <serverUrl>/api/projects/<id>/preview`);
     // A cold preview registers timelines after its scenes load; wait for the one we probe.
     await page.waitForFunction((id) => Boolean(window.__timelines && window.__timelines[id]), { timeout: nested.runtime ? 30000 : 5000 }, compositionId).catch(() => {});
     const missing = await page.evaluate((id) => (window.__timelines && window.__timelines[id] ? null : Object.keys(window.__timelines || {})), compositionId);

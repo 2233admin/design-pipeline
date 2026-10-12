@@ -25,3 +25,7 @@ No artifact paths, schemas, gates or receipt formats change. Existing projects w
 ## Verification
 
 Each runtime fix and action-text change gets a focused failing-before/passing-after regression at existing public seams. Review C/D against the six supplied evidence documents. Parent exercises the CLI from an unrelated cwd, then runs `npm test` with the requested local `FONTTOOLS_PYTHON` environment, the pinned strict change validation and `npm run specs:check`. Keep machine-specific paths and local logs out of committed documents. Commit on the current branch without pushing; the original worktree is read-only except the explicitly requested practice report.
+
+## Review fix: accepted intake interruption risk
+
+Intake's `brief.md` write and state persistence are not atomic. This review accepts the interruption window and does not change intake code: if execution stops after writing the brief but before persisting its ownership decision, recovery fails closed with `OUTPUT_COLLISION`. The user must manually move the file before retrying intake; the existing file cannot be overwritten without authorisation. This is a recovery inconvenience, not permission to infer ownership from the file's existence or to bypass the collision check.

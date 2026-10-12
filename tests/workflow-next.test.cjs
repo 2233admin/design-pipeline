@@ -11,7 +11,6 @@ const { advanceChange, createInitialState, inspectConsistency, writeNewChange } 
 const { createArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { analyzeVideo } = require("../skill/scripts/reference-video-core.cjs");
-const shared = require("../skill/scripts/workflows/shared.cjs");
 const { stages: webStages } = require("../skill/scripts/workflows/web.cjs");
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "workflow-"));
@@ -175,7 +174,6 @@ test("native visual next asks for a concrete decomposition without creating lega
   assert.deepEqual(action.template.phases[0].visual.guides, ["guides/qa.md"]);
   assert.match(action.template.phases[0].goal, /open.*select.*clos.*Escape.*focus/i);
   assert.match(action.instruction, /sourceObservation.*report.*shotId.*observationIds/);
-  assert.equal(action.command, `${shared.CLI} next --change-root <change> --plan <file>`);
   assert.equal(fs.existsSync(path.join(dir, ".design-pipeline/state.json")), false);
 });
 
