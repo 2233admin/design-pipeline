@@ -40,6 +40,12 @@ function referenceObserved(state, root) {
   return video.status === "ready" && video.coverage.fullSource;
 }
 
+// The project's design-token sources. An interaction pass binds the ones present; one that appears
+// after the pass reopens the gate.
+const TOKEN_SOURCES = ["DESIGN.md", "MOTION.md"];
+const LINEAGE_FIELDS = ["files", "tokens", "absent", "remote"];
+const validLineage = lineage => lineage !== null && typeof lineage === "object" && LINEAGE_FIELDS.every(field => Array.isArray(lineage[field]) && lineage[field].every(item => typeof item === "string"));
+
 function gateStatus(state, root, gate, inputs = []) {
   const result = state.gates && state.gates[gate];
   const context = { gate, recordedStatus: result?.status || null };
@@ -55,9 +61,19 @@ function gateStatus(state, root, gate, inputs = []) {
   if (!result.inputHashes || !Object.keys(result.inputHashes).length) return {
     ...context, status: "stale", findings: [finding("workflow-pass-unbound", "The recorded pass has no checked-file bindings.", "Rerun the returned check; do not edit cached state to mark it passed.")],
   };
+  // An interaction pass also binds what the page loaded and the design tokens. A record without that
+  // lineage predates it; a token source or a page file that was missing and has since appeared is
+  // an input the pass never checked.
+  let lineageInputs = [];
+  if (gate === "interaction") {
+    if (!validLineage(result.lineage)) return {
+      ...context, status: "stale", findings: [finding("workflow-lineage-missing", "The recorded interaction pass does not bind the files the page loaded or the project's DESIGN.md and MOTION.md.", "Rerun the returned verify interaction command; it binds the page's stylesheets, scripts, fonts, images and design tokens. Do not edit cached state.")],
+    };
+    lineageInputs = [...TOKEN_SOURCES, ...result.lineage.absent].filter(rel => exists(root, rel));
+  }
   const key = rel => process.platform === "win32" ? rel.toLowerCase() : rel;
   const inputHashes = Object.fromEntries(Object.entries(result.inputHashes).map(([rel, hash]) => [key(rel), hash]));
-  const files = new Map([...Object.keys(result.inputHashes), ...inputs.filter(Boolean)].map(rel => [key(rel), rel]));
+  const files = new Map([...Object.keys(result.inputHashes), ...inputs.filter(Boolean), ...lineageInputs].map(rel => [key(rel), rel]));
   const findings = [];
   for (const rel of files.values()) {
     try {
@@ -164,4 +180,4 @@ const REVIEW = {
   },
 };
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };

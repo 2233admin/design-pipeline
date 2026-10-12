@@ -111,14 +111,15 @@ Creating files or passing engineering checks does not grant visual acceptance.
 
 ## probe
 
-If `interaction.json` is missing, write it: one probe per key interaction (a section with no driver
-has none, but the page keeps at least one; see `web-direction.md`), schema
-`design-pipeline.interaction-probe.v1`.
+If `interaction.json` is missing, write it, schema `design-pipeline.interaction-probe.v1`: one probe
+per key interaction (a section with no driver has none, but the page keeps at least one; see
+`web-direction.md`) and one audit probe for the page. Every tier needs the audit: while the file
+has none, `next` asks for it instead of returning the verify command.
 
 ```json
 {
   "schema": "design-pipeline.interaction-probe.v1",
-  "id": "hero-card-tilt",
+  "id": "landing",
   "url": "index.html",
   "viewport": { "width": 1280, "height": 800 },
   "probes": [
@@ -127,20 +128,78 @@ has none, but the page keeps at least one; see `web-direction.md`), schema
       "target": "#card",
       "input": { "kind": "pointer-sweep", "from": [200, 400], "to": [1080, 400], "durationMs": 600 },
       "expect": { "responds": true, "settleWithinMs": 1200, "returnsToRest": true, "response": "spring" }
+    },
+    {
+      "id": "page-audit",
+      "kind": "audit",
+      "viewports": [{ "width": 1280, "height": 800 }, { "width": 390, "height": 844 }],
+      "thresholds": { "fonts": ["Inter"], "fontSizes": [12, 14, 16, 20, 24, 32, 48], "minTargetPx": 24 },
+      "declare": {
+        "numbers": [".price"],
+        "stacks": [".features", ".plans"],
+        "controlContainers": [".toolbar"],
+        "alignGroups": [{ "selector": ".hero", "items": ".hero > *", "edge": "start" }],
+        "contentBoxes": [".card"]
+      }
     }
   ]
 }
 ```
 
-Then `verify interaction --probe interaction.json`. Apply each finding's `fix` and rerun; editing
-`interaction.json` or the page afterwards reopens this stage.
+The audit measures the rendered page at each of its `viewports` (default: the file's `viewport`),
+after a fresh load, the fonts and two frames, against the codes in
+`ui-craft-sources.md#measured-audit`. It needs the bindable local page: `url` names the project's
+local `index.html`, and every asset the page loads (stylesheets, scripts, fonts, images, data) is a
+file inside the project. An `http(s)` page or a page outside the project is a contract error before
+the browser starts.
+
+- `thresholds`: copy them from `DESIGN.md`; a list replaces its default. `fonts` is required: the
+  approved families from `DESIGN.md`, so `audit.font-family` always runs. Defaults: `minFontPx` 12,
+  `minTargetPx` 24, `minControlGapPx`, `minControlInsetPx` and `minLayoutGapPx` 8,
+  `contrastNormal` 4.5 and `contrastLarge` 3 (text of 24 px, or bold at 18.67 px); the `fontSizes`
+  scale has none.
+- `declare`: selectors for what the markup means, so the delivered page carries no audit
+  attributes: `numbers` (changing or compared values; numeric table cells are found without it),
+  `stacks`, `controlContainers`, `alignGroups` (`edge` is `start`, `center` or `end`),
+  `radiusPairs` (`outer`, `inner`) and `contentBoxes`. A declared selector that matches nothing
+  fails, so a typo cannot pass.
+
+No probe field can skip a subtree, suppress a finding or waive a result; any other field is
+rejected before the browser starts. Unresolved results are fixed in the page, not in the probe.
+
+Each check reports, per viewport, `passed`, `failed`, `not-declared`, `not-applicable` (nothing
+visible in scope) or `indeterminate`, with a `checked` count; nothing checked is never `passed`.
+Six optional checks measure only what is declared: `audit.tabular-numbers` (`numbers`, or the
+page's numeric table cells), `audit.content-overflow` (`contentBoxes`), `audit.control-inset`
+(`controlContainers`), `audit.layout-gap` (`stacks`), `audit.layout-alignment` (`alignGroups`) and
+`audit.nested-radius` (`radiusPairs`). Without their declaration they report `not-declared` in the
+coverage with a hint naming what to declare: it is never counted as passed and does not fail the
+audit. Once declared, an optional check is judged like the others. `indeterminate` means the page
+could not be measured, for example text over a gradient, image, translucent layer, filter, blend
+mode or shadow; it fails the audit with the fix to put the text on a measurable solid surface or
+scrim. A CDN or dev-server URL, or a file outside the project, fails the verifier's existing
+`external-request` finding once per audit probe; copy the resource into the project and reference
+it locally. The audit fails on any `failed` or `indeterminate` result at any viewport.
+
+Then run the `verify interaction` command `next` returns. It exits 2 when a probe fails, and 1 for a
+malformed probe, a page the audit cannot bind or a selector the page rejects; neither records a
+pass. In `evidence/interaction.json` each finding has its `code`, the element `selector` (a request
+finding has none), the `viewport`, the measured `actual`, the `expected` threshold and a `fix`; the
+audit row's `coverage` lists every check's status and count, with the hint of each `not-declared`
+check. Apply the fix or declare what was not declared, and rerun. A pass binds the hashes of the
+local files the page loaded and of `DESIGN.md` and `MOTION.md`; remote URLs (only a probe file
+without an audit can pass with them) are recorded but never fetched or hashed. Editing
+`interaction.json`, the page, any local file it loaded or the project's `DESIGN.md` and `MOTION.md`
+afterwards reopens this stage, and with it review and delivery.
 
 ## review
 
-Before showing the page, run the agent-side checks from `ui-craft-sources.md`:
-`fixing-accessibility` on changed controls, `12-principles-of-animation` on changed motion and a
-`make-interfaces-feel-better` polish pass. Record a conflicting rule as not applicable; these
-results are Conformance evidence in `qa.md`, never Visual Acceptance.
+Before showing the page, walk the `UC-` items of `ui-craft-sources.md#review-checklist` that apply
+to what changed (motion feel and timing, focus, semantics, forms, copy, states). Record each result
+by its id in `qa.md` as Component Conformance evidence, never as Visual Acceptance; record a rule
+that conflicts with the project's precedence as not applicable. The measured audit already covered
+the codes in `ui-craft-sources.md#measured-audit`. Name in `qa.md` the surfaces left unmeasured by
+`not-declared` checks.
 
 Show the page, its motion at full speed and a one-paragraph gate summary. When the build used a
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and

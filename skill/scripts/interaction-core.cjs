@@ -5,7 +5,8 @@
 // real browser) says what it did. `evaluateSamples` joins the two and is deliberately pure -- no
 // filesystem, no browser, no clock -- so every threshold below is testable without Chrome.
 
-const { assertEnum, assertKeys, assertObject, assertString, fail } = require("./contract-utils.cjs");
+const { assertEnum, assertKeys, assertObject, assertString, fail, isObject } = require("./contract-utils.cjs");
+const { AUDIT_CODES, OPTIONAL_CODES, auditViewports, summarizeAudit, validateAuditProbe } = require("./interaction-audit.cjs");
 
 const SCHEMA = "design-pipeline.interaction-probe.v1";
 const RESULT_SCHEMA = "design-pipeline.interaction-result.v1";
@@ -41,6 +42,10 @@ const ASSERTION_KINDS = ["visible", "text", "attribute", "focused"];
 const MAX_JOURNEY_ROWS = 16;
 const DEFAULT_STEP_MS = 1000;
 const MAX_JOURNEY_MS = 15000;
+// An audit check passes when it measured and passed or had nothing in scope. An optional check
+// left `not-declared` neither passes nor fails; a required check is never `not-declared`.
+const AUDIT_PASSING = ["passed", "not-applicable"];
+const auditCheckSettled = (check) => AUDIT_PASSING.includes(check?.status) || (check?.status === "not-declared" && OPTIONAL_CODES.includes(check.code));
 
 // One concrete repair per finding, in the shape film-hints.cjs uses: the agent reading a gate
 // result should know what to change without opening the reference first.
@@ -204,6 +209,14 @@ function validateProbeFile(doc) {
   const ids = new Set();
   const probes = doc.probes.map((probe, index) => {
     const label = `probes[${index}]`;
+    // An audit probe names its kind; motion and journey probes keep their key-shaped contracts.
+    if (isObject(probe) && Object.hasOwn(probe, "kind")) {
+      const errors = validateAuditProbe(probe, { label });
+      if (errors.length) fail(SCOPE, errors.join("; "));
+      if (ids.has(probe.id)) fail(SCOPE, `${label} duplicates probe id ${probe.id}`);
+      ids.add(probe.id);
+      return { ...probe, viewports: auditViewports(probe, viewport) };
+    }
     const journey = Object.hasOwn(probe, "steps");
     const keys = journey ? ["id", "target", "steps"] : ["id", "target", "input", "expect"];
     assertKeys(probe, keys, keys, label, SCOPE);
@@ -522,7 +535,39 @@ function journeyResultFailure(probe, row) {
   } catch (error) { return error.message; }
 }
 
-function evaluateProbeFile(doc, capture) {
+// Native completion re-reads the audit row against the normalized declaration: every declared
+// viewport, every check, each one passed, not applicable or (optional only) not declared. The
+// row's own status is never trusted alone.
+function auditResultFailure(probe, row) {
+  const label = `Interaction audit ${probe.id}`;
+  if (!isObject(row) || row.id !== probe.id || row.kind !== "audit" || row.status !== "passed" || !Array.isArray(row.findings) || row.findings.some(finding => finding?.severity === "error") || !Array.isArray(row.coverage) || row.coverage.length !== probe.viewports.length) return `${label} is failed or incomplete.`;
+  for (const [index, viewport] of probe.viewports.entries()) {
+    const entry = row.coverage[index];
+    const checks = Array.isArray(entry?.checks) ? entry.checks : [];
+    if (entry?.viewport?.width !== viewport.width || entry?.viewport?.height !== viewport.height || checks.map(check => check?.code).join() !== AUDIT_CODES.join()
+      || checks.some(check => !auditCheckSettled(check) || !Number.isInteger(check.checked) || check.checked < 0 || (check.status === "passed" && check.checked === 0) || (check.status === "not-declared" && check.checked !== 0))) {
+      return `${label} at ${viewport.width}x${viewport.height} does not cover every audit check with a passing status.`;
+    }
+  }
+  return null;
+}
+
+// One audit row per probe: the page measured at every declared viewport, summarized into a
+// status per check per viewport. A selector the page itself rejects is a probe-contract error.
+function evaluateAudit(probe, shot, project) {
+  assertKeys(shot, ["id", "kind", "viewports", "requests"], ["id", "kind", "viewports", "requests"], `capture ${probe.id}`, SCOPE);
+  if (shot.kind !== "audit" || !Array.isArray(shot.viewports) || shot.viewports.length !== probe.viewports.length) fail(SCOPE, `capture ${probe.id} has incomplete audit viewports`);
+  probe.viewports.forEach((viewport, index) => {
+    const recorded = shot.viewports[index]?.viewport;
+    if (recorded?.width !== viewport.width || recorded?.height !== viewport.height) fail(SCOPE, `capture ${probe.id} audit viewport ${index} is missing or reordered`);
+  });
+  const summary = summarizeAudit(probe.id, shot.viewports, project);
+  if (summary.contractErrors.length) fail(SCOPE, `probe ${probe.id}: ${summary.contractErrors.join("; ")}. Fix: correct the selector in the audit probe, then rerun`, { code: "AUDIT_SELECTOR_INVALID" });
+  return { id: probe.id, kind: "audit", status: summary.status, coverage: summary.coverage, findings: summary.findings };
+}
+
+// `options.project` is the project root an audited page may load files from.
+function evaluateProbeFile(doc, capture, options = {}) {
   const normalized = validateProbeFile(doc);
   assertObject(capture, "capture", SCOPE);
   if (!Array.isArray(capture.probes)) fail(SCOPE, "capture.probes must be an array");
@@ -547,6 +592,7 @@ function evaluateProbeFile(doc, capture) {
     const shot = recorded.get(probe.id);
     if (!shot) fail(SCOPE, `capture is missing probe ${probe.id}`);
     if (probe.steps) return evaluateJourney(probe, shot, capture.pageOrigin);
+    if (probe.kind === "audit") return evaluateAudit(probe, shot, options.project);
     const result = evaluateSamples({ ...probe, pageOrigin: capture.pageOrigin }, shot.samples, shot.requests ?? []);
     const samples = shot.samples;
     return {
@@ -567,4 +613,4 @@ function evaluateProbeFile(doc, capture) {
   };
 }
 
-module.exports = { SCHEMA, RESULT_SCHEMA, HINTS, validateProbeFile, evaluateSamples, evaluateProbeFile, journeyResultFailure };
+module.exports = { SCHEMA, RESULT_SCHEMA, HINTS, validateProbeFile, evaluateSamples, evaluateProbeFile, journeyResultFailure, auditResultFailure };

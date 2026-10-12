@@ -40,6 +40,7 @@ function gitFixture(root, ...args) {
 const visualHtml = '<!doctype html><button id="target" style="position:absolute;left:20px;top:20px;width:80px;height:40px" onclick="this.style.transform=\'translateX(20px)\'">target</button>';
 
 // Synthetic passes exercise workflow branches; the public CLI test below runs the actual verifier.
+// An interaction pass carries the rendered-dependency lineage the real verifier records.
 function recordGate(root, gate, status) {
   const state = readState(root);
   const inputs = {
@@ -48,8 +49,11 @@ function recordGate(root, gate, status) {
     edit: ["edit.json", "edit/analysis.json", "renders/edit.mp4"],
     interaction: ["interaction.json", "index.html"],
   }[gate] || [];
-  return recordWorkflowGate(root, gate, status, inputs);
+  return recordWorkflowGate(root, gate, status, inputs, {}, gate === "interaction" ? { files: ["index.html"], tokens: [], absent: [], remote: [] } : null);
 }
+
+// The smallest probe file the web probe stage accepts: it audits the page.
+const webProbeFile = JSON.stringify({ schema: "design-pipeline.interaction-probe.v1", id: "page", url: "index.html", probes: [{ id: "page-audit", kind: "audit", thresholds: { fonts: ["Inter"] } }] });
 
 function rewriteSameTime(root, file, body) {
   const absolute = path.join(root, file), before = fs.statSync(absolute);
@@ -77,7 +81,7 @@ function checkedWorkflowFixture(deliverable, tier = "standard") {
     recordGate(root, "edit", "passed");
   } else {
     touch(root, "index.html");
-    touch(root, "interaction.json", "{}");
+    touch(root, "interaction.json", webProbeFile);
     recordGate(root, "interaction", "passed");
   }
   return root;
@@ -1423,11 +1427,13 @@ test("real browser verification binds the page it opened rather than another wor
   const dir = tmp();
   try {
     initState(dir, { deliverable: "web", tier: "quick" });
-    const html = '<!doctype html><button id="target" style="position:absolute;left:20px;top:20px;width:80px;height:40px">target</button>';
+    const html = '<!doctype html><html style="background:#fff;font-family:sans-serif"><button id="target" style="position:absolute;left:20px;top:20px;width:80px;height:40px;font-family:inherit">target</button></html>';
     touch(dir, "index.html", html);
     touch(dir, "other.html", html);
-    // A real static click records the visited surface; this does not claim a motion response.
-    const probe = { schema: "design-pipeline.interaction-probe.v1", id: "page-binding", url: "index.html", probes: [{ id: "static-click", target: "#target", input: { kind: "click", at: [50, 40] }, expect: { responds: false } }] };
+    // A real static click records the visited surface; this does not claim a motion response. The
+    // page audit the web probe stage requires runs beside it; its optional checks are not declared.
+    const audit = { id: "page-audit", kind: "audit", thresholds: { fonts: ["sans-serif"] } };
+    const probe = { schema: "design-pipeline.interaction-probe.v1", id: "page-binding", url: "index.html", probes: [{ id: "static-click", target: "#target", input: { kind: "click", at: [50, 40] }, expect: { responds: false } }, audit] };
     const verify = () => {
       touch(dir, "interaction.json", JSON.stringify(probe));
       const result = spawnSync(process.execPath, [cli, "verify", "interaction", "--root", dir, "--probe", "interaction.json", "--chrome", chrome, "--puppeteer-module", puppeteerModule, "--json"], { encoding: "utf8", windowsHide: true, timeout: 30000 });
@@ -1761,8 +1767,10 @@ test("probe asks to write interaction.json when missing, then routes to verify i
   const missing = nextAction(dir);
   assert.equal(missing.stage, "probe");
   assert.match(missing.instruction, /interaction\.json/);
+  assert.match(missing.instruction, /audit probe/, "the first probe file already asks for the page audit");
   assert.equal(missing.command, undefined, "writing the probe is not a command");
-  touch(dir, "interaction.json", "{}");
+  touch(dir, "interaction.json", webProbeFile);
+  assert.match(nextAction(dir).command, / verify interaction /);
   recordGate(dir, "interaction", "failed");
   assert.equal(nextAction(dir).stage, "probe", "a failed interaction gate keeps probe open");
   recordGate(dir, "interaction", "passed");
@@ -1773,7 +1781,7 @@ test("a passed interaction gate goes stale when index.html changes", () => {
   const dir = tmp();
   initState(dir, { deliverable: "web", tier: "quick" });
   touch(dir, "index.html");
-  touch(dir, "interaction.json", "{}");
+  touch(dir, "interaction.json", webProbeFile);
   recordGate(dir, "interaction", "passed");
   assert.equal(nextAction(dir).type, "done");
   rewriteSameTime(dir, "index.html", "a rebuilt page");
@@ -1788,7 +1796,7 @@ test("a rejected web draft reopens probe", () => {
   touch(dir, "concepts.md");
   decide(dir, { stage: "concept", choice: 1 });
   touch(dir, "index.html");
-  touch(dir, "interaction.json", "{}");
+  touch(dir, "interaction.json", webProbeFile);
   recordGate(dir, "interaction", "passed");
   const review = nextAction(dir);
   assert.equal(review.stage, "review");

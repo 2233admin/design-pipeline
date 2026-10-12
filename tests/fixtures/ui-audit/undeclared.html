@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit fixture: undeclared</title>
+<link rel="icon" href="data:,">
+<style>
+/* Passes every required check; its probe declares only the fonts, so the six optional checks
+   report not-declared: listed with a hint, never passed and never failing the audit. */
+@font-face { font-family: "Inter"; src: url("fonts/Inter-var.woff") format("woff"); font-weight: 100 900; font-display: block; }
+html { background: #fff; color: #18181b; font: 16px/1.5 Inter, sans-serif; }
+body { margin: 0; padding: 24px 16px; }
+main { max-width: 640px; margin: 0 auto; }
+h1 { margin: 0 0 16px; font-size: 32px; line-height: 1.25; }
+p { margin: 0 0 16px; }
+a { color: #1d4ed8; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 8px; background: #1d4ed8; color: #fff; font: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Nothing declared yet</h1>
+  <p>This page passes every required check. Its probe declares only the fonts, so the optional checks report <a href="#top">not declared</a>.</p>
+  <div class="actions"><button type="button">Continue</button><button type="button">Back</button></div>
+</main>
+</body>
+</html>

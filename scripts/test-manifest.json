@@ -80,6 +80,7 @@
     "interaction-evaluate.test.cjs",
     "interaction-capture.test.cjs",
     "interaction-cli.test.cjs",
+    "interaction-audit.test.cjs",
     "workflow-next.test.cjs",
     "product-source-workflow.test.cjs",
     "workflow-action-commands.test.cjs",

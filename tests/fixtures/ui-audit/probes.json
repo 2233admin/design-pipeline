@@ -1,0 +1,36 @@
+{
+  "clean": {
+    "id": "page-audit",
+    "kind": "audit",
+    "viewports": [{ "width": 1280, "height": 800 }, { "width": 390, "height": 844 }],
+    "thresholds": { "fonts": ["Inter"], "fontSizes": [12, 14, 16, 20, 24, 32] },
+    "declare": {
+      "numbers": [".price"],
+      "stacks": [".stack", ".cards"],
+      "controlContainers": [".toolbar"],
+      "alignGroups": [{ "selector": ".hero", "items": ".hero > *", "edge": "start" }],
+      "radiusPairs": [{ "outer": ".media", "inner": ".media > .media-inner" }],
+      "contentBoxes": [".card"]
+    }
+  },
+  "violating": {
+    "id": "page-audit",
+    "kind": "audit",
+    "viewports": [{ "width": 1280, "height": 800 }, { "width": 390, "height": 844 }],
+    "thresholds": { "fonts": ["Inter"], "fontSizes": [12, 14, 16, 20, 24, 32] },
+    "declare": {
+      "numbers": [".price"],
+      "stacks": [".tight", ".no-such-stack"],
+      "controlContainers": [".toolbar"],
+      "alignGroups": [{ "selector": ".group", "items": ".group > p", "edge": "start" }],
+      "radiusPairs": [{ "outer": ".media", "inner": ".media > .media-inner" }],
+      "contentBoxes": [".box"]
+    }
+  },
+  "undeclared": {
+    "id": "page-audit",
+    "kind": "audit",
+    "viewports": [{ "width": 1280, "height": 800 }, { "width": 390, "height": 844 }],
+    "thresholds": { "fonts": ["Inter"] }
+  }
+}

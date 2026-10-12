@@ -43,6 +43,29 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Measured UI craft audit (change `audit-rendered-ui-craft`): `interaction.json`
+  (`design-pipeline.interaction-probe.v1`) accepts `"kind": "audit"` probes, and
+  `verify interaction` measures the rendered page at each declared viewport for 17 `audit.*`
+  checks: font family, loading and size, tabular and aligned numbers, WCAG 2 text contrast, root
+  background, horizontal overflow, viewport bounds, clipping, declared content boxes, a 24 px
+  target floor, control gaps and insets, stack gaps, alignment groups and nested radius. An audited
+  page must be the local `index.html` and may load only assets inside the project: a CDN or
+  dev-server asset, or a file outside the project, fails the existing `external-request` finding,
+  so **CDN fonts, styles and scripts must be self-hosted**. Motion and journey probes already
+  failed requests outside the page origin; the audit applies the rule to every web page.
+  Thresholds and selectors are probe inputs copied from `DESIGN.md` with documented defaults, and
+  font families are required. Unresolvable contrast fails the audit, undeclared optional checks are
+  reported as `not-declared` rather than passed, and no probe field can skip or waive a result.
+  The logic is adapted from lintapple (MIT) without its files or axe-core. The web `probe` stage
+  now requires a passing audit probe at every tier, and the `interaction` gate binds the hashes of
+  the local files the page loaded plus `DESIGN.md` and `MOTION.md`; a record without that lineage
+  is stale, so in-flight web projects re-verify. **Pages that passed `probe` before may now fail
+  it**, with findings naming the measured value, threshold and fix.
+  `references/ui-craft-sources.md` becomes
+  the project-owned rule index: each audit code with its sources, a `UC-` review checklist for
+  motion, focus, semantics, forms, copy and states, and the resolved conflicts. Audit and
+  checklist results are Component Conformance evidence, never Visual Acceptance; no CLI flag,
+  gate, receipt schema or dependency is added.
 - Built-in UI craft sources (change `internalize-ui-craft-sources`): pinned, scoped,
   license-attributed snapshots of `emil-design-eng`, `make-interfaces-feel-better`,
   `fixing-accessibility`, `12-principles-of-animation`, `shadcn` and `playwright-cli`, routed by

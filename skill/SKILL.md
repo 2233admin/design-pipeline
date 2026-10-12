@@ -69,8 +69,9 @@ name a repository. This is triggered by the work's needs, not a required search 
 - CSS authoring or review in any stack: `references/good-css.md` for the complete built-in
   practice library, project adaptations and offline specimens; load its matched source entries.
 - UI polish, accessibility fixes, motion-principle checks, shadcn/ui projects and browser
-  driving: `references/ui-craft-sources.md` routes six built-in pinned sources and the React
-  Doctor reference; load only the matched source within project and pipeline precedence.
+  driving: `references/ui-craft-sources.md` is the project rule index: the measured page audit
+  (`verify interaction`, required in web `probe`), the `UC-` review checklist and the six pinned
+  sources plus React Doctor as provenance; load a source only when a rule needs it.
 - Explicit offline improvement of a design prompt or skill instruction: `references/gepa.md`
   for the independent native optimizer, frozen cases, diagnostic feedback and reviewable candidates.
 - Detailed route, CLI, gate and receipt contracts: `references/pipeline-reference.md`.

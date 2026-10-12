@@ -1,0 +1,52 @@
+/* Clean audit fixture: passes every audit check at 1280x800 and 390x844 with the declarations in
+   probes.json. Inter is the bundled skill/tools/art-motion/fonts/Inter-var.woff (OFL), which the
+   tests stage next to the page as fonts/Inter-var.woff. */
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-var.woff") format("woff");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+html { background: #fff; color: #18181b; font: 16px/1.5 Inter, sans-serif; }
+body { margin: 0; padding: 24px 16px; }
+a { color: #1d4ed8; }
+
+.site { max-width: 960px; margin: 0 auto 24px; }
+.nav { display: flex; flex-wrap: wrap; gap: 16px; }
+.nav a { display: inline-flex; align-items: center; min-height: 32px; padding: 0 8px; font-size: 14px; }
+
+.stack { display: flex; flex-direction: column; gap: 32px; max-width: 960px; margin: 0 auto; }
+
+.hero { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.hero h1 { margin: 0; font-size: 32px; line-height: 1.25; }
+.hero p { margin: 0; }
+/* The three false-positive guards: decorative aria-hidden text, clipped screen-reader text and
+   content parked off screen are not visible text, so their 10px and 13px sizes are not measured. */
+.ornament { color: #d4d4d8; font-size: 10px; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; font-size: 13px; }
+.offscreen { position: absolute; left: -9999px; top: 0; font-size: 13px; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px; border-radius: 12px; background: #f4f4f5; }
+button { min-height: 40px; padding: 0 16px; border: 1px solid #1d4ed8; border-radius: 8px; background: #1d4ed8; color: #fff; font: inherit; }
+button.secondary { background: #fff; color: #1d4ed8; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.card { overflow: hidden; padding: 16px; border-radius: 12px; background: #f4f4f5; }
+.card h2 { margin: 0 0 8px; font-size: 20px; line-height: 1.4; }
+.card p { margin: 0; }
+.price { font-size: 24px; font-variant-numeric: tabular-nums; }
+
+.media { padding: 8px; border-radius: 16px; background: #e4e4e7; }
+.media-inner { padding: 16px; border-radius: 8px; background: #fff; }
+.media-inner p { margin: 0; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px; border-bottom: 1px solid #d4d4d8; font-size: 14px; text-align: left; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.contact { display: flex; flex-direction: column; gap: 8px; }
+.contact label { font-size: 14px; }
+.field { display: flex; flex-wrap: wrap; gap: 12px; }
+.field input { flex: 1 1 200px; min-width: 0; min-height: 40px; padding: 0 12px; border: 1px solid #71717a; border-radius: 8px; background: #fff; color: #18181b; font: inherit; }
+.field input::placeholder { color: #52525b; opacity: 1; }

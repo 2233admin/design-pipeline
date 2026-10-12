@@ -16,7 +16,7 @@ const { assertEnum, canonicalJson, fail, readJson, resolveInside, sha256 } = req
 const { validatePlan } = require("./plan-core.cjs");
 const { createArtifactMetadata, validateArtifactMetadata } = require("./artifact-core.cjs");
 const { captureGitSnapshot, inspectGitChanges, samePath } = require("./execution-target-core.cjs");
-const { RESULT_SCHEMA, validateProbeFile, journeyResultFailure } = require("./interaction-core.cjs");
+const { RESULT_SCHEMA, validateProbeFile, journeyResultFailure, auditResultFailure } = require("./interaction-core.cjs");
 const { advanceChange } = require("./pipeline-state-core.cjs");
 const { readState: readNativeState } = require("./control-runtime-core.cjs");
 const { downstreamPhases, invalidateDownstream } = require("./invalidation-core.cjs");
@@ -253,10 +253,13 @@ function decide(root, options = {}) {
 
 // Gates report back here so `next` knows a check passed without rerunning it.
 // ponytail: hashes cover declared primary files; add explicit asset dependencies when coverage requires them.
-function recordGate(root, gate, status, inputs = [], report = {}) {
+// `lineage` (the interaction gate) names what the checked page actually loaded and the project's
+// design-token sources; a pass hashes those too and keeps the lineage for gateStatus.
+function recordGate(root, gate, status, inputs = [], report = {}, lineage = null) {
   const state = readState(root);
   if (!state) return;
-  const inputHashes = status === "passed" ? Object.fromEntries(inputs.filter(Boolean).map(input => {
+  const bound = lineage ? [...inputs, ...lineage.files, ...lineage.tokens] : inputs;
+  const inputHashes = status === "passed" ? Object.fromEntries(bound.filter(Boolean).map(input => {
     const file = resolveInside(root, input, "checked input", { scope: "workflow", mustExist: true });
     return [path.relative(root, file).split(path.sep).join("/"), "sha256:" + sha256(fs.readFileSync(file))];
   })) : {};
@@ -265,10 +268,11 @@ function recordGate(root, gate, status, inputs = [], report = {}) {
     ...(step.findings || []).map(item => ({ gate: step.gate, ...item })),
     ...((step.stale || step.status === "skipped") && (step.reason || step.source) ? [{ code: "workflow-step-blocked", severity: "error", gate: step.gate, message: step.reason || step.source, fix: step.next || report.next || "Repair this step, then rerun the returned check." }] : []),
   ]) : report.fixes) || [];
-  const fields = ["code", "severity", "message", "fix", "gate", "beatId", "probeId", "shot"];
+  const fields = ["code", "severity", "message", "fix", "gate", "beatId", "probeId", "shot", "selector", "expected", "actual", "viewport", "related"];
   const findings = Array.isArray(rawFindings) ? rawFindings.filter(item => item && typeof item === "object").map(item => Object.fromEntries(fields.filter(field => typeof item[field] === "string").map(field => [field, item[field]]))) : [];
   const next = typeof report.next === "string" ? report.next : steps.filter(step => typeof step.next === "string").map(step => step.next).join(" ");
-  state.gates = { ...(state.gates || {}), [gate]: { status, at: Date.now(), inputHashes, findings, ...(next ? { next } : {}) } };
+  const lineageRecord = status === "passed" && lineage ? { lineage: { files: [...lineage.files], tokens: [...lineage.tokens], absent: [...lineage.absent], remote: [...lineage.remote] } } : {};
+  state.gates = { ...(state.gates || {}), [gate]: { status, at: Date.now(), inputHashes, findings, ...(next ? { next } : {}), ...lineageRecord } };
   writeState(root, state);
 }
 
@@ -404,6 +408,12 @@ function interactionResultFailure(report, rawProbe) {
     const row = report.probes[index], samples = row?.samples;
     if (probe.probes[index].steps) {
       const failure = journeyResultFailure(probe.probes[index], row);
+      if (failure) return failure;
+      continue;
+    }
+    // Audit rows carry per-viewport check coverage, never motion samples.
+    if (probe.probes[index].kind === "audit") {
+      const failure = auditResultFailure(probe.probes[index], row);
       if (failure) return failure;
       continue;
     }

@@ -673,6 +673,44 @@ unmodified license text, including that copyright line, is
 http://www.apache.org/licenses/LICENSE-2.0. No NOTICE file exists at the reviewed revision. The
 files are redistributed unmodified; the package does not install or run playwright-cli.
 
+## gholtzap/lintapple (adapted)
+
+The measured page audit in `skill/scripts/interaction-audit.cjs` adapts lintapple's in-page
+visibility, geometry and page-design rule logic (`src/visibility.js` and the page-design rules of
+`src/audit.js`), rewritten as CommonJS with project thresholds, selector declarations and a 24 px
+target floor:
+
+- Source: https://github.com/gholtzap/lintapple
+- Reviewed commit: `90ddc736af6f2712903d53dd9a463445e109f586`
+- Original copyright: Copyright (c) 2026 Gavin Holtzapple
+- License: MIT
+
+No lintapple files are distributed: the package carries no lintapple source, policy file, CLI or
+Playwright helper, and none of its dependencies, including axe-core. Its accessibility and
+interaction rules and its `copy` rule were not ported.
+
+MIT License
+
+Copyright (c) 2026 Gavin Holtzapple
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ## millionco/react-doctor (referenced, not distributed)
 
 https://github.com/millionco/react-doctor is licensed under a Modified MIT License, Copyright (c)

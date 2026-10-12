@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit fixture: violating</title>
+<link rel="icon" href="data:,">
+<!-- external-request: a stylesheet from a server the gate cannot hash (nothing listens). -->
+<link rel="stylesheet" href="http://127.0.0.1:9/cdn.css">
+<style>
+/* Every audit code fires here, at 1280x800 and at 390x844. Each rule names the code it trips. */
+@font-face { font-family: "Inter"; src: url("fonts/Inter-var.woff") format("woff"); font-weight: 100 900; font-display: block; }
+/* audit.font-loading: this face has no file. */
+@font-face { font-family: "Broken Face"; src: url("fonts/missing-face.woff2") format("woff2"); }
+/* audit.root-background: html paints nothing; the body color still gives text a background. */
+html { color: #18181b; font: 16px/1.5 Inter, sans-serif; }
+body { margin: 0; padding: 16px; background: #fff; }
+p { margin: 0 0 16px; }
+/* audit.font-family */
+.serif { margin: 0 0 16px; font-family: Georgia, serif; font-size: 32px; font-weight: 400; }
+.broken { font-family: "Broken Face", sans-serif; }
+/* audit.font-size: below the floor, and off the declared scale. */
+.tiny-text { font-size: 10px; }
+.off-scale { font-size: 15px; }
+/* audit.tabular-numbers: Inter's default figures are proportional. */
+.price { font-size: 24px; }
+/* audit.numeric-alignment */
+td { padding: 4px 8px; }
+.left-num { text-align: left; }
+/* audit.text-contrast: failed, then indeterminate over a gradient. */
+.faint { color: #b4b4b4; }
+.gradient { margin: 0 0 16px; padding: 16px; background: linear-gradient(90deg, #1e3a8a, #9333ea); color: #fff; }
+.gradient p { margin: 0; }
+/* audit.horizontal-overflow and audit.viewport-bounds */
+.wide { width: 2000px; margin: 0 0 16px; }
+.nudged { position: relative; left: -40px; margin: 0 0 16px; }
+/* audit.content-clipping */
+.clip { width: 120px; margin: 0 0 16px; overflow: hidden; white-space: nowrap; }
+/* audit.content-overflow (declared .box) */
+.box { width: 120px; margin: 0 0 16px; }
+/* audit.target-size and audit.control-gap */
+button { min-height: 32px; padding: 0 12px; border: 0; background: #1d4ed8; color: #fff; font: inherit; }
+.cramped { margin: 0 0 16px; }
+.cramped button { margin-right: 2px; }
+.cramped .tiny { width: 16px; height: 16px; min-height: 0; padding: 0; font-size: 12px; }
+/* audit.control-inset (declared .toolbar) */
+.toolbar { display: flex; gap: 12px; margin: 0 0 16px; padding: 2px; background: #f4f4f5; }
+/* audit.layout-alignment (declared .group) */
+.group { margin: 0 0 16px; }
+.group p { margin: 0; }
+.group .shifted { margin-left: 24px; }
+/* audit.nested-radius (declared .media): 16px - 4px inset should give 12px, not 16px. */
+.media { margin: 0 0 16px; padding: 4px; border-radius: 16px; background: #e4e4e7; }
+.media-inner { padding: 8px; border-radius: 16px; background: #fff; }
+/* audit.layout-gap (declared .tight) */
+.tight p { margin: 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1 class="serif">Old style headline</h1>
+  <p class="broken">Text in a font whose file is missing</p>
+  <p class="tiny-text">Fine print at ten pixels</p>
+  <p class="off-scale">Fifteen pixel text off the scale</p>
+  <p>Total <span class="price">$1,111.11</span></p>
+  <table><tr><td>Visits</td><td class="left-num">12,480</td></tr></table>
+  <p class="faint">Faint grey text on white</p>
+  <div class="gradient"><p>Text on a gradient</p></div>
+  <div class="wide">A block wider than any viewport</div>
+  <div class="nudged">Pushed past the left edge</div>
+  <div class="clip">This sentence is far too long for its clipping box</div>
+  <div class="box">Supercalifragilisticexpialidocious-antidisestablishmentarianism</div>
+  <div class="cramped"><button type="button" class="tiny">x</button><button type="button">Two</button></div>
+  <div class="toolbar"><button type="button">Edge</button></div>
+  <div class="group"><p>Start edge</p><p class="shifted">Shifted item</p></div>
+  <div class="media"><div class="media-inner">Inner surface</div></div>
+  <div class="tight"><p>One</p><p>Two</p></div>
+</main>
+</body>
+</html>
