@@ -5,6 +5,20 @@ page, a brief per section, and seven review rules. It adds no artifact, gate, fi
 or schema; every field below lands in a file the web workflow already writes. The `quick` tier and
 `replicate` mode skip it: neither has a concept card to extend, and a replica follows its reference.
 
+## Concept pre-screen
+
+Before the user picks, compare the three cards in `concepts.md` by first-screen structure. Each
+declares its layout skeleton, focal element, type position and image role (or no image) in one
+`Skeleton:` line. Compare those choices together: the structures must genuinely diverge.
+Different copy, colour or styling on the same spatial skeleton does not count.
+
+Render the first screens at the same viewport size and put them on one contact sheet. The agent
+pre-screens the comparison for structural divergence, a product-specific focal point and readable
+hierarchy. Redo same-skeleton, common-template and collapsed-hierarchy cards, then rerender and
+compare before presenting the three surviving cards and contact sheet. Do not ask the user to
+screen failed cards. This is preparation for the concept decision, not Visual Acceptance, a gate
+or an additional W rule; only the user's reply selects the direction.
+
 ## Treatment
 
 The treatment is a `## Treatment` section under the chosen card of `concepts.md`. Write it after the
@@ -86,7 +100,7 @@ Screenshots are the 375x812, 768x1024 and 1440x900 sets from Browser / Visual Ch
 
 | Rule | Evidence read | Looks right |
 | --- | --- | --- |
-| W1 One dominant element per section; the first viewport carries a signal | Component inventory row per section; first-viewport screenshots at 1440x900 and 375x812; composition `no-focal-point`, `flat-hierarchy`; the direction-preview signature | One element is clearly the largest or highest-contrast in each section; the first viewport shows the named signature at both sizes |
+| W1 One dominant element per section; the first viewport carries a signal | Component inventory row per section; first-viewport screenshots at 1440x900 and 375x812; composition `no-focal-point`, `flat-hierarchy`; the direction-preview signature; chosen concept's `Skeleton:` line | One element is clearly the largest or highest-contrast in each section; the first viewport shows the named signature and chosen focal hierarchy at both sizes; the concept pre-screen does not establish acceptance of the built page |
 | W2 Adjacent sections differ in density | Layout grid density column; the three screenshot sets side by side; composition `dead-band`, `clutter`; anti-slop item `template-pattern-density` | No two adjacent sections share a density; one section is visibly denser or sparser than both neighbours; a run of identical card grids is a revision finding |
 | W3 One section is deliberately empty | The treatment's negative-space line; composition `dead-band` (allowed with `--allow dead-band` and a reason in `qa.md`); screenshots | The empty section is named in the treatment, does one job (a pause before the landing, or a statement) and is neither first nor last |
 | W4 Each section changes ground or structure | The seed's ground per section; `design.md` Color tokens and Layout grid; 1440x900 screenshots; composition `weak-separation` | Every boundary changes the ground's luminance or hue, or the grid or alignment axis; changing copy alone does not count |

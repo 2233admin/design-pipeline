@@ -22,6 +22,11 @@ which devices), `scope` (which pages or sections it needs and what the visitor s
 first), `assets` (copy, screenshots, product UI, logos, fonts, brand rules, licensing). Record the
 reply with `decide --stage intake`.
 
+Intake is complete only when `decisions.intake` is recorded in `.design-pipeline/state.json`;
+`brief.md` or `BRIEF.md` alone does not complete it. If recording refuses a case-insensitive
+`brief.md` collision with a file intake did not write, preserve that file by moving or renaming it,
+then retry the returned intake record command. Refusal leaves the existing brief and state unchanged.
+
 ## reference
 
 For a local video run `reference analyze-video --path <contained-video> --output <new-dir>`.
@@ -44,12 +49,20 @@ do not require that aggregate to be ready before building the bounded graybox.
 
 ## concepts
 
-Write `concepts.md` with three cards whose central ideas differ, not the same layout restyled
-three ways. Each card starts with the central idea as one sentence about the page, then the section
-arc (one line per section: what it is for and its dominant element), what carries the eye down the
-page, the look, tools in one line, and any missing license. Render the first viewport of each card.
-The user picks one (`decide --stage concept --choice 1|2|3`). After the pick, extend the chosen card
-with `## Treatment` (`web-direction.md`).
+Write `concepts.md` with three genuinely different first-screen structures: vary the layout
+skeleton, focal element, type position and image role (including no image), not just copy, colour
+or styling. Each card starts with its central idea as one sentence about the page and a one-line
+`Skeleton:` declaration naming those four choices. Then record the section arc (one line per
+section: what it is for and its dominant element), what carries the eye down the page, the look,
+tools in one line, and any missing license.
+
+Render all three first viewports at the same size and combine them into one contact sheet. Before
+asking the user, the agent pre-screens it for structural divergence, a clear focal point and readable
+hierarchy. Redo any same-skeleton, common-template or collapsed-hierarchy card, rerender and compare
+again without showing failed cards to the user (`web-direction.md`). This pre-screen is not Visual
+Acceptance and adds no gate or schema. Show the surviving three cards and contact sheet; the user
+picks one (`decide --stage concept --choice 1|2|3`). After the pick, extend the chosen card with
+`## Treatment`.
 
 When a Taste method is selected, record its exact entry, brief/dial read and adapted decisions in
 these cards. For an explicitly requested web concept-image set, produce separate readable

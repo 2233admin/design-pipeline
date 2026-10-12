@@ -8,6 +8,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { fail, readJson } = require("./contract-utils.cjs");
+const { CLI, shellPath } = require("./workflows/shared.cjs");
 const { PRODUCT_PROMO_FORM, checkStoryboard, evaluateFilmRender } = require("./film-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { checkComposition, checkFilmLayout } = require("./composition-core.cjs");
@@ -148,10 +149,18 @@ function scaffoldFilm(dir, options = {}) {
     fs.mkdirSync(path.dirname(path.join(target, name)), { recursive: true });
     fs.writeFileSync(path.join(target, name), content);
   }
-  const steps = guide.split("\n").filter((line) => /^\d\./.test(line));
+  const project = shellPath(target);
+  const boundGuide = guide.replaceAll("npm install", `npm --prefix ${project} install`)
+    .replaceAll("npx --no-install hyperframes ...", `npx --no-install --prefix ${project} hyperframes <command> ${project} ...`)
+    .replaceAll("npx --no-install hyperframes check", `npx --no-install --prefix ${project} hyperframes check ${project}`)
+    .replaceAll("npx --no-install hyperframes render --output out.mp4", `npx --no-install --prefix ${project} hyperframes render ${project} --output ${shellPath(path.join(target, "out.mp4"))}`)
+    .replaceAll("ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png", `ffmpeg -i ${shellPath(path.join(target, "out.mp4"))} -vf fps=1 ${shellPath(path.join(target, "evidence/second-%03d.png"))}`)
+    .replaceAll("designer-pipeline ", `${CLI} --root ${project} `)
+    .replaceAll("--project-root .", `--project-root ${project}`);
+  const steps = boundGuide.split("\n").filter((line) => /^\d\./.test(line));
   const productPromo = !study && options.deliverableForm === PRODUCT_PROMO_FORM;
-  const next = productPromo ? steps.flatMap((line) => (line.startsWith("2.") ? [PRODUCT_SOURCE_STEP, line] : line.startsWith("4.") ? [PRODUCT_SAMPLE_STEP, line] : [line])) : steps;
-  return { status: "scaffolded", root: target, files: Object.keys(files), kept, runtime: { ...PINS, install: "npm install", run: "npx --no-install hyperframes" }, next };
+  const next = productPromo ? steps.flatMap((line) => (line.startsWith("2.") ? [PRODUCT_SOURCE_STEP, line] : line.startsWith("4.") ? [PRODUCT_SAMPLE_STEP.replace("decide --stage sample", `${CLI} decide --root ${project} --project-root ${project} --stage sample`), line] : [line])) : steps;
+  return { status: "scaffolded", root: target, files: Object.keys(files), kept, runtime: { ...PINS, install: `npm --prefix ${project} install`, run: `npx --no-install --prefix ${project} hyperframes` }, next };
 }
 
 function newestRender(dir) {
@@ -181,7 +190,7 @@ function checkFilmProject(dir, options = {}) {
   const root = path.resolve(dir);
   const steps = [];
   const storyboardFile = path.join(root, "storyboard.json");
-  if (!fs.existsSync(storyboardFile)) fail("film check", `no storyboard.json in ${root}. Fix: run \`designer-pipeline film scaffold --output ${dir}\` or write storyboard.json first`, { code: "INPUT_MISSING" });
+  if (!fs.existsSync(storyboardFile)) fail("film check", `no storyboard.json in ${root}. Fix: run \`${CLI} film scaffold --root ${shellPath(root)} --output ${shellPath(root)}\` or write storyboard.json first`, { code: "INPUT_MISSING" });
   const board = readJson(storyboardFile, "film storyboard");
   const storyboard = checkStoryboard(board, { blockNames: blockNames(root) || undefined, deliverableForm: options.deliverableForm, projectRoot: root });
   steps.push({ gate: "storyboard", status: storyboard.status, findings: storyboard.findings });
@@ -196,8 +205,8 @@ function checkFilmProject(dir, options = {}) {
       admission: storyboard.admission,
       creativeAcceptance: "not-assessed",
       next: storyboard.status === "blocked"
-        ? "The product could not be sourced: resolve the blocker with the user, record the admitted productSource, then re-run `film check`. Nothing else was evaluated."
-        : "Product-promo films are evaluated only after storyboard.json.productSource is admitted: apply each fix, then re-run `film check`. Timeline, render, audio and composition were not evaluated.",
+        ? `The product could not be sourced: resolve the blocker with the user, record the admitted productSource, then re-run ${CLI} film check --root ${shellPath(root)} --project-root ${shellPath(root)}. Nothing else was evaluated.`
+        : `Product-promo films are evaluated only after storyboard.json.productSource is admitted: apply each fix, then re-run ${CLI} film check --root ${shellPath(root)} --project-root ${shellPath(root)}. Timeline, render, audio and composition were not evaluated.`,
     };
   }
 
@@ -239,9 +248,9 @@ function checkFilmProject(dir, options = {}) {
   if (!timeline && fs.existsSync(timelineFile)) { stale = Boolean(timelineNote); timeline = readJson(timelineFile, "film timeline"); timelineNote = timelineNote ? `${timelineNote}; used existing timeline.json` : "existing timeline.json"; }
   if (timeline) {
     const result = checkTimeline(timeline, board, { deliverableForm: options.deliverableForm, projectRoot: root });
-    steps.push({ gate: "timeline", status: result.status, ...(stale ? { stale: true, next: "Fix the capture error above and re-run film check; this result comes from an old timeline.json." } : {}), source: timelineNote, findings: result.findings, metrics: { carriedHandoffs: result.metrics.carriedHandoffs, proceduralBeats: result.metrics.proceduralBeats, proceduralHandoffs: result.metrics.proceduralHandoffs } });
+    steps.push({ gate: "timeline", status: result.status, ...(stale ? { stale: true, next: `Fix the capture error above and re-run ${CLI} film check --root ${shellPath(root)} --project-root ${shellPath(root)}; this result comes from an old timeline.json.` } : {}), source: timelineNote, findings: result.findings, metrics: { carriedHandoffs: result.metrics.carriedHandoffs, proceduralBeats: result.metrics.proceduralBeats, proceduralHandoffs: result.metrics.proceduralHandoffs } });
   } else {
-    steps.push({ gate: "timeline", status: "skipped", reason: timelineNote || "no index.html or timeline.json", next: "Build index.html, then re-run `film check` to capture timeline.json." });
+    steps.push({ gate: "timeline", status: "skipped", reason: timelineNote || "no index.html or timeline.json", next: `Build index.html, then re-run ${CLI} film check --root ${shellPath(root)} --project-root ${shellPath(root)} to capture timeline.json.` });
   }
 
   const video = newestRender(root);
@@ -262,7 +271,7 @@ function checkFilmProject(dir, options = {}) {
     });
     if (frames.length) steps.push(compositionStep(board, frames, layout, layoutNote, options));
   } else {
-    steps.push({ gate: "render", status: "skipped", reason: "no out.mp4 or renders/*.mp4", next: "Run `npx --no-install hyperframes render --output out.mp4`, then re-run `film check`." });
+    steps.push({ gate: "render", status: "skipped", reason: "no out.mp4 or renders/*.mp4", next: `Run npx --no-install --prefix ${shellPath(root)} hyperframes render ${shellPath(root)} --output ${shellPath(path.join(root, "out.mp4"))}, then re-run ${CLI} film check --root ${shellPath(root)} --project-root ${shellPath(root)}.` });
     if (layout || layoutNote) steps.push(compositionStep(board, [], layout, layoutNote, options));
   }
 
@@ -284,7 +293,7 @@ function checkFilmProject(dir, options = {}) {
     fixes,
     ...(storyboard.admission ? { admission: storyboard.admission } : {}),
     creativeAcceptance: "not-assessed",
-    next: failed ? "Apply each entry in fixes, then re-run `film check`." : skipped ? steps.filter((step) => step.next).map((step) => step.next).join(" ") : "All film gates pass; this is not acceptance. Review the draft frame by frame (one frame per second), fix and re-check what you find, record the creative review in qa.md, then ask the owner to accept or reject it.",
+    next: failed ? `Apply each entry in fixes, then re-run ${CLI} film check --root ${shellPath(root)} --project-root ${shellPath(root)}.` : skipped ? steps.filter((step) => step.next).map((step) => step.next).join(" ") : "All film gates pass; this is not acceptance. Review the draft frame by frame (one frame per second), fix and re-check what you find, record the creative review in qa.md, then ask the owner to accept or reject it.",
   };
 }
 

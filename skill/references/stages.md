@@ -378,6 +378,12 @@ The live design panel is the reviewable projection, not the chat transcript. The
 limited to project-contained Web and Mobile evidence and metadata; it does not claim screenshot,
 URL, visual embedding, or Game support.
 
+For the `next`/`decide` UI workflow, intake is complete only when `decisions.intake` is recorded
+in `.design-pipeline/state.json`, not when `brief.md` or `BRIEF.md` exists. If recording refuses a
+case-insensitive `brief.md` collision with a file intake did not write, preserve it by moving or
+renaming it, then retry the returned intake record command. Refusal leaves the existing brief and
+state unchanged. This does not replace DesignBrief confirmation in the guided first-wave flow above.
+
 Create or update `brief.md` with:
 
 - Goal: what UI outcome the user wants.
