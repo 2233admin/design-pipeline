@@ -135,8 +135,8 @@ Delivery report was written to the requested absolute path after the local imple
 - [x] 10. Use the existing catalog core to validate real manifest sources, contained usage files, markers and license handling; support explicit scratch manifests and reject contradictory decisions.
 - [x] 11. Project saved gate next text and finding fixes through the same absolute command helper without changing saved evidence; prove external-directory execution.
 - [x] 12. Check both web route and search exclude film/GEPA/Prompt Motion/HyperFrames methods and templates; fix only observed leakage.
-- [ ] 13. Record focused failing-before/passing-after evidence and real CLI smokes, then freeze implementation bytes for full QA and strict specs validation.
-- [ ] 14. Commit verified changes locally without pushing and write report-implement-round2.md with the final commit SHA.
+- [x] 13. Record focused failing-before/passing-after evidence and real CLI smokes, then freeze implementation bytes for full QA and strict specs validation.
+- [x] 14. Commit verified changes locally without pushing and write report-implement-round2.md with the final commit SHA.
 
 ### Round 2 acceptance boundaries
 
@@ -215,3 +215,30 @@ Actual external-cwd public CLI evidence: `.design-pipeline/round2-license/before
 Actual npm/ESM smoke installed seven packages only in an ignored temporary evidence prefix, then imported Motion 14.1.0, animejs 4.5.0 and GSAP 3.15.0. `motion.animate`, `motion.spring`, `animejs.animate`, `animejs.createTimeline` and `gsap.gsap.to` were observed functions; exit 0. Full setup/runtime output: `.design-pipeline/round2-license/import-smoke.txt`. These package versions are smoke observations, not new project dependency pins.
 
 `git diff --exit-code HEAD -- skill/vendor` exited 0 before freezing: no vendor byte changes in round 2.
+
+### Round 2 frozen-tree full verification and delivery
+
+Implementation commit: `8377bacfc1577503d02ce58eb8be72d0ff2a7445`. Tested Git tree: `d9dda1b24328bc2543e27d4cab7260a852bbde83`; `git write-tree` returned the same value before and after full verification. All workers had finished and implementation, tests and source documentation were frozen during both checks.
+
+```text
+cmd /d /c "set FONTTOOLS_PYTHON=D:/Temp/dp-fonttools-venv/Scripts/python.exe&&npm test"
+Exit 0; wall time 664.47 seconds
+Repository: 133 files; 1342 tests; 1338 pass; 0 fail; 4 skipped
+Repository duration_ms: 620975.5948
+Installed-package CLI smoke: 12 tests; 12 pass; 0 fail; 0 skipped
+Reproducible tgz, zip and checksums: passed
+Installed source/catalog checks: passed
+QA repository status preservation: byte-identical
+Browser adapter self-test: OK
+BuilderPort self-test: OK
+Full output: artifact://63
+
+npm run specs:check
+71 passed; 0 failed; exit 0
+Includes strict validation of this change
+Full output: artifact://65
+```
+
+The four skips are three optional native GEPA scenarios without prepared GEPA_PYTHON and one filesystem case-alias collision scenario. No round-2 acceptance regression was skipped. Parent public CLI smoke from `D:/Temp` additionally routed spring animation successfully (`artifact://66`) and searched HyperFrames with platform web to an empty result (`artifact://67`), both exit 0.
+
+The external report is `D:/projects/design-pipeline/.design-pipeline/component-survey/report-implement-round2.md`. The implementation is committed locally; no push occurred. This final tasks closeout is evidence-only, after the tested implementation commit, and does not change code, tests, catalog or source guides. Its final non-self-referential delivery SHA is recorded in the external report. Technical Component Conformance evidence is separate from Visual Acceptance, which was not assessed.
