@@ -77,7 +77,10 @@ test("audio loudness recovery command masters the same spaced file outside cwd",
   assert.deepEqual(fs.readdirSync(elsewhere), []);
 });
 
-test("Windows frame-review command contract binds its root without media tools", { skip: process.platform !== "win32" && "Windows shell percent-pattern contract" }, t => {
+test("Windows frame-review command contract binds its root without media tools", t => {
+  const platform = Object.getOwnPropertyDescriptor(process, "platform");
+  Object.defineProperty(process, "platform", { ...platform, value: "win32" });
+  t.after(() => Object.defineProperty(process, "platform", platform));
   const root = temporary(t);
   const scaffold = scaffoldFilm(root);
   const step = scaffold.next.find(value => value.includes("reference analyze-video"));

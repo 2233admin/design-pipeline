@@ -541,3 +541,13 @@ exit 0, tests 3, pass 3, fail 0, skipped 0, with no ffmpeg/ffprobe on PATH.
 - Full requested QA: `cmd /d /c "set FONTTOOLS_PYTHON=D:/Temp/dp-fonttools-venv/Scripts/python.exe&&npm test"`; exit 0. Repository: 130 files, 1256 tests, 1252 passed, 0 failed, 4 skipped. Installed public CLI smoke: 12 passed, 0 failed, 0 skipped. Browser adapter and BuilderPort self-tests passed; QA left repository status byte-identical.
 - `npm run specs:check`: exit 0, 70 passed, 0 failed.
 - These are technical/command-contract checks, not Component Conformance or Visual Acceptance claims.
+
+### Final verification correction
+
+The pure Windows frame-review contract now injects win32 and restores the original
+platform descriptor; it has no OS or ffmpeg skip and runs on Linux CI too.
+The actual decoding test retains its host/media prerequisites.
+Node-only PATH audit rerun: exit 0, tests 5, pass 3, fail 0, skipped 2.
+The earlier full QA began before documentation edits finished, so final delivery
+uses a fresh full QA and specs run after freezing all committed files.
+Final frozen-tree result and commit SHA are recorded in the external report.
