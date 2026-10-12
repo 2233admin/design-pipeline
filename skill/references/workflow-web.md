@@ -85,8 +85,9 @@ choices are rejected; duplicates are removed and `decisions.componentSources` is
 `project,github,index,scratch` order. `scratch` is exclusive. Selecting `github` requires an HTTPS
 GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
 Legacy answer-only web decisions ask again; do not infer the source set from prose. Recording a
-different answer or set later drops the interaction pass and delivery, and earlier review verdicts
-stay recorded but no longer complete review, so rebuild, recheck and review the page again.
+different answer or set later drops the interaction pass and delivery; earlier review verdicts stay
+recorded but no longer complete review. `next` then returns to probe, not build, so update
+`index.html` and `component-manifest.json` for the new decision yourself before rechecking.
 Set `SKILL_ROOT` to the installed skill's absolute path and `PROJECT_ROOT` to the project's absolute
 path, then record the reply using the returned command, equivalent to:
 
