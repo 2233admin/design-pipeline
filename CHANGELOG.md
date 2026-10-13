@@ -35,7 +35,7 @@ All notable changes to Design Pipeline are documented here.
   `OUTPUT_COLLISION` instead of overwriting a brief it did not write. Hard-linked briefs are
   also refused without changing linked files or state; owned updates use same-directory
   temporary files and rename replacement instead of writing through the old inode. Applies
-  to film, edit, web and ui.
+  to film, edit and ui; web intake no longer writes a brief (see Changed).
 - Commands and `record` templates returned by `next` bind the project's absolute path
   (`--root <abs> --project-root <abs>`) instead of `--project-root .`, so they run as given from
   any working directory. Invalid and stale job-plan recovery now names a complete, quoted retry
@@ -128,11 +128,11 @@ All notable changes to Design Pipeline are documented here.
   identities, availability, package pointers and auditable license evidence. External registries
   reference the index without moving their execution contracts; the MengTo projection now follows
   its pinned vendor manifest. Film and optimization methods remain discoverable outside web ranking.
-- Web workflows ask for component sources immediately before build, prefer existing project
-  components then index discovery, and require `component-manifest.json` with `index.html` for build
-  completion. UI retains its generic work/delivery-evidence contract because it has no equivalent
-  HTML build stage. Unverified or commercial sources remain study/reimplementation references,
-  not copying permission.
+- Web workflows ask for component sources before build (at standard and full, before the approved
+  description; see Changed), prefer existing project components then index discovery, and require
+  `component-manifest.json` with `index.html` for build completion. UI retains its generic
+  work/delivery-evidence contract because it has no equivalent HTML build stage. Unverified or
+  commercial sources remain study/reimplementation references, not copying permission.
 - Animation discovery records Motion and anime.js license evidence and npm/ESM usage, and keeps
   GSAP's actual Standard No Charge License conditions. Dated owner decisions keep paid or
   unverified sources study/reimplementation-only; web discovery excludes methods and templates.
@@ -242,6 +242,44 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- The web workflow is a conversation before it builds (change `make-web-workflow-conversational`).
+  Standard and full web stages are intake, reference, concepts, components, description, build,
+  probe, review and deliver (replicate without concepts); quick gains a first intake stage.
+  - Intake opens with a skip line and one open question, asks one open question per message,
+    looks facts up instead of asking, and ends in a 200-300 word playback that marks what the
+    owner said and what the agent guessed. `decide --stage intake` takes `--verdict accept
+    --answer "<playback>"`, `--verdict reject --answer "<correction>"` or `--choice skip --answer
+    "<the line telling the owner what was decided for them>"`; quick records that stated line.
+    Bare go-aheads (`default`, `ok`, `yes`, `skip`, `默认` …) and a bare `--answer` are refused, and
+    web intake no longer writes `brief.md`.
+  - Concepts builds `concepts.html`, a variants page with `data-variant="A"`, `"B"` and `"C"` first
+    screens flipped by the new packaged variant switcher (`skill/tools/variant-switcher/`).
+    `decide --stage concept` takes `--choice B`, `--choice B,C --answer "<what to take from each>"`
+    or `--verdict reject --answer`; numbers are refused for web (film keeps them, edit keeps
+    `mad|pv`). Build stays open with `variant-switcher-shipped` while `index.html` contains the
+    switcher.
+  - Components is one numbered round with recommended answers: the sections in build order (standard
+    and full) and the component source. The component record is unchanged.
+  - A new `description` stage is the hard gate before building: `brief.md` is the one-page
+    description, approved with `decide --stage description --verdict accept --choice <section ids>`
+    (each id named in `brief.md`). The approval binds the brief bytes, the confirmed playback, the
+    chosen variant and the component decision; changing any of them asks again.
+  - Standard and full build the first screen first, then one section at a time inside
+    `data-section` markers; the owner reviews each with `decide --stage section --choice <id>
+    --verdict accept|reject [--answer] [--evidence <runtime-review record>]`. Section verdicts bind
+    the current description approval and are not Visual Acceptance; the final review stays.
+  - Every rejection on the way (playback, variants, description, section) becomes a project rule,
+    as a rejected draft does (`from`: `playback N`, `variants N`, `description N`,
+    `section <id> N`).
+  - Section comments can cite recorded runtime-review Feedback with `--evidence`, but only projects
+    that already carry runtime-review inputs can produce it. Ordinary web projects comment in text
+    that names elements; element picking on the live page needs a separate runtime-review change.
+  - Migration: in-flight web projects keep their intake, concept and components records (an intake
+    or pick recorded before this change still counts). Standard and full projects are asked to
+    approve the description and then to review each section; an existing `index.html` gains
+    `data-section` markers as the loop reaches each section. Quick projects first record the stated
+    line. `decide --stage description|section` is refused for film, edit and ui; no new state
+    schema or CLI flag.
 - Product-promo films (Stage 0 `product-launch-video`) are evaluated only after their product
   source is admitted (change `require-product-source-admission`): until then `film check`,
   `verify film-storyboard` and `verify film-render` return only the admission findings, and
@@ -270,12 +308,12 @@ All notable changes to Design Pipeline are documented here.
   - Scaffolded `art-motion` and `visual-craft` studies contain `runtime.js` and `LICENSE.art-motion`;
     `tools/art-motion/koubo.py` is now `voice.py`; the font-subset test reads `FONTTOOLS_PYTHON`;
     the npm scripts are `art-motion:build` and `test:art-motion`.
-- Web `next` prompts (`add-web-treatment-and-section-briefs`): the web intake asks product,
-  audience, scope and assets instead of a duration and no longer uses film wording; web concepts
-  asks for a section arc and a first-viewport frame per card and says the chosen card is extended
-  with `## Treatment`; web build at standard and full writes the treatment first, except in
-  replicate mode. Film, edit and ui prompts are unchanged; the `ui` deliverable's intake still asks
-  for a duration.
+- Web `next` prompts (`add-web-treatment-and-section-briefs`): web intake no longer asks for a
+  duration or uses film wording (the conversational web flow above replaces its question round);
+  web concepts asks for a section arc and a first-viewport frame per card and says the chosen card
+  is extended with `## Treatment`; web build at standard and full writes the treatment first,
+  except in replicate mode. Film, edit and ui prompts are unchanged; the `ui` deliverable's intake
+  still asks for a duration.
 - Quick film tier is now plan, build, check, review: after `film check` passes, `next` asks for
   the owner's verdict (`decide --stage review`) with an instruction to review the draft one frame
   per second and record it in `qa.md` first, and returns `done` only after an accepted draft.

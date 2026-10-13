@@ -7,23 +7,26 @@ or schema; every field below lands in a file the web workflow already writes. Th
 
 ## Concept pre-screen
 
-Before the user picks, compare the three cards in `concepts.md` by first-screen structure. Each
-declares its layout skeleton, focal element, type position and image role (or no image) in one
-`Skeleton:` line. Compare those choices together: the structures must genuinely diverge.
-Different copy, colour or styling on the same spatial skeleton does not count.
+Before the owner picks, compare the three variants, A, B and C, by first-screen structure. Each card
+in `concepts.md` declares its layout skeleton, focal element, type position and image role (or no
+image) in one `Skeleton:` line. Compare those choices together: the structures must genuinely
+diverge. Different copy, colour or styling on the same spatial skeleton does not count.
 
 Render the first screens at the same viewport size and put them on one contact sheet. The agent
 pre-screens the comparison for structural divergence, a product-specific focal point and readable
-hierarchy. Redo same-skeleton, common-template and collapsed-hierarchy cards, then rerender and
-compare before presenting the three surviving cards and contact sheet. Do not ask the user to
-screen failed cards. This is preparation for the concept decision, not Visual Acceptance, a gate
-or an additional W rule; only the user's reply selects the direction.
+hierarchy. Redo same-skeleton, common-template and collapsed-hierarchy variants, then rerender and
+compare. Only then is the owner shown the variants page, `concepts.html`, where the three surviving
+first screens are real markup flipped with the variant switcher
+([workflow-web.md#concepts](workflow-web.md#concepts)). Do not ask the owner to screen failed
+variants. This is preparation for the variant pick, not Visual Acceptance, a gate or an additional W
+rule; only the owner's reply selects the direction.
 
 ## Treatment
 
-The treatment is a `## Treatment` section under the chosen card of `concepts.md`. Write it after the
-pick and before `index.html`. It is the one place the page's intent is stated; sections, tokens and
-motion refer back to it.
+The treatment is a `## Treatment` section under the chosen card of `concepts.md`; when the owner
+combined variants, it goes under the first card named and says what it takes from the others. Write
+it after the pick and before the first section is built. It is the one place the page's intent is
+stated; sections, tokens and motion refer back to it.
 
 | Field | Content |
 | --- | --- |
@@ -40,8 +43,10 @@ treatment: a missing one shows up as unreadable evidence in the review.
 
 ## Section briefs
 
-One brief per section of the arc, self-contained so sections can be built separately. A brief names
-the section id and never restates a value another artifact owns.
+One brief per section of the arc, self-contained so sections can be built separately: the build
+goes section by section, first screen first, each reviewed by the owner before the next
+([workflow-web.md#build](workflow-web.md#build)). A brief names the section id and never restates
+a value another artifact owns.
 
 | Brief key | Lands in |
 | --- | --- |

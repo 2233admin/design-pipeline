@@ -3,10 +3,22 @@
 Motion-first websites and pages. `designer-pipeline next` names the current stage; read only that
 section. Stage order:
 
-- `quick` brief/freeform: components, build, probe; `quick` replicate: reference, components, build, probe.
-- `standard` and `full` brief/freeform: intake, reference, concepts, components, build, probe, review, deliver.
-  Replicate keeps the reference direction and omits replacement concepts: intake, reference,
-  components, build, probe, review, deliver.
+- `quick` brief/freeform: intake, components, build, probe; `quick` replicate: intake, reference,
+  components, build, probe.
+- `standard` and `full` brief/freeform: intake, reference, concepts, components, description, build,
+  probe, review, deliver. Replicate keeps the reference direction and omits replacement concepts:
+  intake, reference, components, description, build, probe, review, deliver.
+
+At `standard` and `full` the agent talks before it builds: a conversation that ends in a playback
+the owner confirms, three switchable first-screen variants (not in replicate), one round of
+concrete decisions with recommended answers, and a one-page description the owner approves. Only
+then is the page built, one section at a time, each reviewed by the owner, before the final
+review. `quick` states what was decided for the owner instead of asking.
+
+Every "no" the owner gives on the way becomes a project rule in `state.rules`, the same record a
+rejected draft makes, with `from` set to `playback N`, `variants N`, `description N` or
+`section <id> N`. `next` lists the rule texts in `rules` on every later action. Rules are never
+removed; the owner's later decisions refine them.
 
 For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
 to select and read the complete built-in method. On an existing site, audit brand, routes, content,
@@ -17,16 +29,44 @@ reference/concept inputs through the existing workflow. No external Taste instal
 
 ## intake
 
-Ask the four web questions in one numbered round, each with its recommendation: `product` (what it
-is and the one thing a visitor should do or understand), `audience` (who visits, from where, on
-which devices), `scope` (which pages or sections it needs and what the visitor should be able to do
-first), `assets` (copy, screenshots, product UI, logos, fonts, brand rules, licensing). Record the
-reply with `decide --stage intake`.
+Facts are the agent's job. Before asking, take what you can from the conversation and the
+project's files (README, existing pages, `DESIGN.md`, brand assets; in an existing project run
+`project inspect`), and never ask the owner for something you can look up.
 
-Intake is complete only when `decisions.intake` is recorded in `.design-pipeline/state.json`;
-`brief.md` or `BRIEF.md` alone does not complete it. If recording refuses a case-insensitive
-`brief.md` collision with a file intake did not write, preserve that file by moving or renaming it,
-then retry the returned intake record command. Refusal leaves the existing brief and state unchanged.
+At `standard` and `full`, `next` returns an ask with no question list, options or recommended
+answer. Send its opening as its own message: the `first` line ("If you'd rather skip the questions
+and have me start, say so."), then its one open `question` ("Is there a site you saw recently that
+felt exactly like this one should? What about it?"; in replicate mode, "What about the page you
+want reproduced must stay exactly as it is, and what would you change?"). Then:
+
+- Ask one open question per message, with no list of example answers unless the owner is stuck.
+- Anchor on real specifics (a site they saw, the moment a visitor arrives). Ask what would make
+  them wince (the anti-goals) and what they have seen elsewhere and loved or hated.
+- When you can describe the page, play it back in about 200-300 words: who it is for, what a
+  visitor should do, what it should feel like. Mark what the owner said as theirs and what you
+  guessed as your guess, and end by asking what is wrong or missing.
+
+Record each reply with the command the ask returns:
+
+| Owner's reply | Record | Effect |
+| --- | --- | --- |
+| Confirms the playback | `record`: `decide --stage intake --verdict accept --answer "<the playback the owner confirmed>"` | `decisions.intake` holds the playback, marked `playback: "confirmed"`; intake is done |
+| Corrects it | `correction`: `decide --stage intake --verdict reject --answer "<what the owner said is wrong or missing>"` | The correction becomes a project rule (`playback N`) and intake stays open: play it back again with the corrections applied, then ask "What is wrong or missing in this?" |
+| Asks you to just start | `skip`: `decide --stage intake --choice skip --answer "<the line telling the owner what you decided on their behalf>"` | Tell the owner that line first; `decisions.intake` holds it, marked `skipped: true` |
+
+Each record is appended to `decisions.playbacks`, and a later correction reopens intake. The answer
+must say something: a bare go-ahead such as `default`, `ok`, `yes`, `skip`, `just start`, `默认` or
+`好` is refused, and so is a web `--answer` without `--verdict` or `--choice skip`.
+
+At `quick`, `next` returns a run instead: do not interview the owner. A quick piece is settled by
+the request, the conversation and the project's files. Tell the owner in one plain line what you
+decided on their behalf (what you will build, for whom, the look or reference you follow), then
+record that line with `decide --stage intake --choice skip --answer "<the line you told the owner>"`.
+Ask first only about something essential that you can neither look up nor reasonably decide.
+
+Web intake writes no `brief.md`: the brief is written later as the [description](#description).
+An intake recorded before playbacks existed (no `decisions.playbacks` history) still completes
+intake; a `quick` project started before quick intake existed records its stated line first.
 
 ## reference
 
@@ -50,20 +90,49 @@ do not require that aggregate to be ready before building the bounded graybox.
 
 ## concepts
 
-Write `concepts.md` with three genuinely different first-screen structures: vary the layout
-skeleton, focal element, type position and image role (including no image), not just copy, colour
-or styling. Each card starts with its central idea as one sentence about the page and a one-line
-`Skeleton:` declaration naming those four choices. Then record the section arc (one line per
-section: what it is for and its dominant element), what carries the eye down the page, the look,
-tools in one line, and any missing license.
+Write `concepts.md` with three cards, `A`, `B` and `C`, with genuinely different first-screen
+structures: vary the layout skeleton, focal element, type position and image role (including no
+image), not just copy, colour or styling. Each card starts with its central idea as one sentence
+about the page and a one-line `Skeleton:` declaration naming those four choices. Then record the
+section arc (one line per section: what it is for and its dominant element), what carries the eye
+down the page, the look, tools in one line, and any missing license.
 
-Render all three first viewports at the same size and combine them into one contact sheet. Before
-asking the user, the agent pre-screens it for structural divergence, a clear focal point and readable
-hierarchy. Redo any same-skeleton, common-template or collapsed-hierarchy card, rerender and compare
-again without showing failed cards to the user (`web-direction.md`). This pre-screen is not Visual
-Acceptance and adds no gate or schema. Show the surviving three cards and contact sheet; the user
-picks one (`decide --stage concept --choice 1|2|3`). After the pick, extend the chosen card with
-`## Treatment`.
+Then build `concepts.html`, the variants page: one self-contained page with the three first screens
+as real markup, each in an element marked `data-variant="A"`, `"B"` or `"C"` (with a short
+`data-variant-name`), one shown at a time by `?variant=A|B|C`. Inline the packaged switcher,
+`tools/variant-switcher/variant-switcher.js` ([how to use it](../tools/variant-switcher/README.md)):
+it adds a floating bar with left and right arrows around the variant label, and the ← → keys do the
+same. Until the page marks all three variants and contains the switcher (`data-variant-switcher`),
+`next` returns a run with the finding `variants-incomplete` or `variant-switcher-missing` and its
+fix.
+
+Before asking the owner, pre-screen the three variants: render each first viewport at the same size
+and combine them into one contact sheet. Check it for structural divergence, a clear focal point and
+readable hierarchy. Redo any same-skeleton, common-template or collapsed-hierarchy variant, rerender
+and compare again without showing failed variants to the owner (`web-direction.md`). This
+pre-screen is not Visual Acceptance and adds no gate or schema; only the owner picks a direction.
+
+Then ask the owner to open `concepts.html`, flip through A, B and C with the arrows or the ← → keys,
+and say which first screen to build or what to combine from them (for example B's header with C's
+layout). Recommend the variant whose structure best serves what the visitor should do first, and
+say why. Record:
+
+- a pick: `decide --stage concept --choice B`;
+- a mix: `decide --stage concept --choice B,C --answer "<what to take from each, in the owner's words>"`.
+  Combining requires the answer, kept as `decisions.conceptNotes`;
+- a rejection: `decide --stage concept --verdict reject --answer "<what is wrong, in the owner's words>"`.
+  It becomes a project rule (`variants N`) and reopens the stage. While `concepts.html` is
+  unchanged, `next` tells you to redo what the rule rules out and pre-screen again before asking.
+
+Letters are case-insensitive; numbers are refused. A pick is refused (`WORKFLOW_NOT_READY`) until
+`next` has reached the variants ask. `decisions.concept` holds the pick (`B` or `B,C`) and
+`decisions.variants` the history; a pick recorded before variant history existed still counts.
+`quick` and replicate have no concepts stage and refuse concept records.
+
+The variants are throwaway prototypes. Fold the chosen variant, and anything combined from the
+others, into the real page, rewritten properly; the switcher never ships in `index.html`
+([build](#build)). After the pick, extend the chosen card with `## Treatment` (`web-direction.md`);
+for a combination, extend the first card named and say what it takes from the others.
 
 When a Taste method is selected, record its exact entry, brief/dial read and adapted decisions in
 these cards. For an explicitly requested web concept-image set, produce separate readable
@@ -71,14 +140,29 @@ horizontal images per section; do not confuse those images with implemented or t
 
 ## components
 
-Immediately before build in every web tier and mode, ask where the components should come from:
+One grilling round of concrete decisions, each with your recommended answer. At `standard` and
+`full` it follows the variants (the reference in replicate mode) and comes before the
+[description](#description); at `quick` it comes immediately before build. The ask's `questions`
+are:
 
-1. The project's existing components (ask for their paths).
-2. A GitHub component library the user names.
-3. Search this skill's component source index, `references/component-source-catalog.json`.
-4. Let the agent find maintained open-source component libraries and icon sets on GitHub beyond
-   the index (`discover`).
-5. Write from scratch.
+- `sections` (`standard` and `full` only): which sections the page should have, in build order,
+  starting with the first screen. Recommend the chosen variant's section arc from `concepts.md`, or
+  in replicate mode the reference's sections in its order. The sections the owner settles go into
+  the description.
+- `components`: where the components should come from:
+  1. The project's existing components (name the paths you found).
+  2. A GitHub component library the user names.
+  3. Search this skill's component source index, `references/component-source-catalog.json`.
+  4. Let the agent find maintained open-source component libraries and icon sets on GitHub beyond
+     the index (`discover`).
+  5. Write from scratch.
+
+Ask them as one numbered round: one `❓ Qn` per question with its body and options, then `➡️` your
+recommended answer, and wait for the reply. Settle facts yourself first: find the project's
+existing components and their paths, and the assets and their licenses, and name what you found
+instead of asking for it. Add a question only for a concrete decision you can neither look up nor
+settle from the conversation, such as whether supplied material is licensed for this use. A
+question whose answer depends on another one still open waits for the next round.
 
 Recommend the project's own components first, then the index, then letting the agent find more:
 `project,index,discover`. Preserve the user's exact nonempty reply in `decisions.components`;
@@ -92,8 +176,10 @@ license in the manifest (see [build](#build)).
 Legacy answer-only web decisions ask again; do not infer the source set from prose. Recording a
 different answer or set later, or the first explicit decision on a legacy state that already has a
 checked page, drops the interaction pass and delivery; earlier review verdicts stay recorded but no
-longer complete review. `next` then returns to probe, not build, so update `index.html` and
-`component-manifest.json` for the new decision yourself before rechecking.
+longer complete review. At `quick`, `next` then returns to probe, not build, so update `index.html`
+and `component-manifest.json` for the new decision yourself before rechecking. At `standard` and
+`full` the change also makes the description approval stale: `next` returns to the
+[description](#description), then reviews each section again before probe.
 Set `SKILL_ROOT` to the installed skill's absolute path and `PROJECT_ROOT` to the project's absolute
 path, then record the reply using the returned command, equivalent to:
 
@@ -103,16 +189,102 @@ node "$SKILL_ROOT/scripts/designer-pipeline.cjs" decide \
   --stage components --choice project,index,discover --answer "<the user's reply>"
 ```
 
+## description
+
+`standard` and `full` only: the hard gate before building. Nothing is built until the owner
+approves a written description of it.
+
+While `brief.md` is missing, `next` returns a run to write it. An owner-supplied brief with
+different casing, such as `BRIEF.md`, is extended in place: keep the owner's words and extend them
+rather than replacing them. `brief.md` is one page in plain words that a builder could work from
+without asking again:
+
+- what the page is and why;
+- who it is for and the one thing a visitor should do;
+- how it should feel, in the owner's words;
+- goals, non-goals and anti-goals (what would make the owner wince, and the project rules);
+- the chosen first screen (the variant and anything combined from the others), or in replicate mode
+  what is reproduced, its invariants and what changes;
+- the sections in build order, first screen first, each with its id and one line on its job;
+- where the components come from;
+- constraints such as devices, assets and their licenses;
+- which choices are the owner's and which are your calls, marked as yours.
+
+Show it and ask: "Here is the one-page description of what I will build (brief.md). Approve it, or
+tell me what is wrong?" Record:
+
+- an approval: `decide --stage description --verdict accept --choice first-screen,proof,close`
+  (optionally `--answer "<the owner's words>"`). `--choice` lists the section ids in build order,
+  first screen first. Each id is a lowercase slug (letters, digits and hyphens), listed once, and
+  must be named in `brief.md`. The approval is refused (`WORKFLOW_NOT_READY`) unless `next` is at
+  the description ask.
+- a rejection: `decide --stage description --verdict reject --answer "<what is wrong, in the owner's words>"`.
+  It becomes a project rule (`description N`); while `brief.md` is unchanged, `next` asks you to
+  revise it before asking again.
+
+The approval binds the `brief.md` bytes, the confirmed playback, the chosen variant and its notes,
+and the component decision, and fixes the sections the page is built in. A changed `brief.md` (a
+typo fix included), a new playback, a re-picked variant or a different component decision makes it
+stale: `next` returns here, asks you to bring `brief.md` up to date and asks for approval again. A
+new approval makes every section ask for review again. History in `decisions.descriptions`.
+
 ## build
 
-At `standard` and `full`, unless replicating, first extend the chosen card in `concepts.md` with
-`## Treatment` and write a brief per section (`web-direction.md`); the briefs land in `design.md`,
-`motion.md`, `component-state-matrix.json` and `interaction.json`. Follow the component decision and
-write the manifest below before building `index.html` from the chosen concept, or from the
-reference and its invariants in replicate mode. Motion follows
-`web-motion.md` (spring-damper parameters, stepped motion as a style); design tokens and components
-come from `pipeline-reference.md`. At the `full` tier, open an OpenSpec change under
-`openspec/changes/<id>/` first and build inside it.
+At `quick` build the whole page in one pass: `index.html` from the decisions you told the owner, or
+in replicate mode from the reference and its invariants. At the `full` tier, open an OpenSpec
+change under `openspec/changes/<id>/` first and build inside it.
+
+At `standard` and `full` the page is built in the sections of the approved description, first
+screen first, and the owner reviews each section before the next one starts:
+
+1. **First screen only.** Unless replicating, first extend the chosen card in `concepts.md` with
+   `## Treatment` and write a brief per section (`web-direction.md`); the briefs land in
+   `design.md`, `motion.md`, `component-state-matrix.json` and `interaction.json`. At `full`, open
+   the OpenSpec change first. Then build only the first section into `index.html`, from the chosen
+   variant and the approved description (in replicate mode, from the reference and its
+   invariants), inside an element marked `data-section="<id>"`, with the component manifest below.
+2. **Review it.** Once the page and its manifest are valid and the section's marker is in
+   `index.html`, `next` asks about that section (the action carries `section: <id>`). Open
+   `index.html` at the section in a real browser and let the owner look and interact; ask them to
+   point at each element they comment on by its text, label or place. Record
+   `decide --stage section --choice <id> --verdict accept` only when nothing in the section needs to
+   change. Any change they ask for is a rejection:
+   `decide --stage section --choice <id> --verdict reject --answer "<the owner's comments>"`. Each
+   comment becomes a project rule (`section <id> N`). Revise the section before asking again: while
+   the page (`index.html`, its manifest and the local files it names) is unchanged since the
+   rejection, `next` tells you to revise first.
+3. **Next section.** `next` returns a run with `section: <id>` for the next approved section: build
+   it from its brief inside its own `data-section` element, keep the accepted sections as the owner
+   accepted them unless a project rule requires a change, and add every component it uses to
+   `component-manifest.json`. Then review it as in step 2.
+
+A section can be accepted only while `next` asks about it (`WORKFLOW_NOT_READY` otherwise); any
+built section of the approved description can be rejected again later, which reopens it. A page
+that drops a section's marker returns to building that section. Verdicts bind the current
+description approval, so re-approving makes every section ask again. Rules apply going forward and
+never silently reopen accepted sections. With `--director`, the section asks go to the art
+director. History in `decisions.sections`.
+
+When the project already carries runtime-review inputs ([runtime-review.md](runtime-review.md)),
+build a runtime-review bundle for the section so the owner can pick its elements and export
+Feedback, record each with `runtime-review record`, and cite the recorded files on the rejection
+with `--evidence runtime-review/feedback/<hash>.json` (repeatable, with or without `--answer`).
+Each cited file must be a contained `design-pipeline.runtime-review-record.v1` record with
+lifecycle `recorded` and a Feedback naming `objectId`, category `component-conformance` or
+`visual-acceptance`, `actual` and `expected`; each becomes a project rule
+`<objectId>: <actual> Expected: <expected>`. The workflow reads only the record's shape;
+`runtime-review check` stays the authority on its bundle lineage. Ordinary web projects do not have
+those inputs: runtime-review needs a component-first artifact, UI IR, tokens, a design-code map
+and a captured observation, which this workflow does not produce. Their comments are therefore text
+that names elements by their text, label or place; picking elements on the live page is not
+available.
+
+A section verdict is the owner's review of work in progress, not Visual Acceptance of the page; the
+final [review](#review) is.
+
+Follow the component decision and write the manifest below before building `index.html`. Motion
+follows `web-motion.md` (spring-damper parameters, stepped motion as a style); design tokens and
+components come from `pipeline-reference.md`.
 
 Honor `decisions.components` and its explicit `decisions.componentSources` set: reuse the specified
 project paths, inspect the named GitHub library, search the index, find open-source sources, or
@@ -246,7 +418,11 @@ the answer language (including `从零写`) does not determine scratch status. F
 set, `fromScratch: true` is forbidden and `entries` must be nonempty. These rules use the explicit
 source set, not inferred library names or phrases in the answer.
 
-Build finishes only when `index.html` and a valid manifest both exist. Invalid evidence returns
+Build finishes only when `index.html` and a valid manifest both exist, `index.html` does not carry
+the variant switcher and, at `standard` and `full`, every approved section is accepted under the
+current description approval. While `index.html` contains `data-variant-switcher`, at every tier,
+build stays open with the error finding `variant-switcher-shipped`: remove the switcher and its
+script; they belong only in `concepts.html`. Invalid evidence returns
 the build instructions with the validator message and an existing finding whose `code` is
 `CONTRACT_INVALID`, `severity` is `error`, `message` is that validator message, and `fix` gives
 remediation. Repair the reported manifest/source-set, source identity, license declaration or
@@ -369,6 +545,9 @@ without an audit can pass with them) are recorded but never fetched or hashed. E
 afterwards reopens this stage, and with it review and delivery.
 
 ## review
+
+Final acceptance of the whole checked page, after each section was reviewed in the build. The
+section verdicts do not replace it.
 
 Before showing the page, walk the `UC-` items of `ui-craft-sources.md#review-checklist` that apply
 to what changed (motion feel and timing, focus, semantics, forms, copy, states). Record each result
