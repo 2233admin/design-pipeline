@@ -116,8 +116,9 @@ All notable changes to Design Pipeline are documented here.
   revision. It may be copied or imported only when verified under an SPDX
   `license.id` of MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Zlib, Unlicense or CC0-1.0
   with a contained, non-empty `license.file` holding the license text; anything else is
-  study/reimplementation only. A `usedIn.how` that bundles, vendors, self-hosts or downloads any
-  source counts as copying. The validator checks this auditable shape offline and does not
+  study/reimplementation only. A discovered entry with availability `bundled-implementation` counts
+  as copied whatever its `how` says, and a `usedIn.how` that bundles, vendors, self-hosts or
+  downloads any source counts as copying. The validator checks this auditable shape offline and does not
   authenticate the upstream. Other URLs do not resolve, and URLs of indexed sources are still
   cited by their `sourceId`. Web build instructions search the index first, route font choice
   through `tools/fonts.md` without a silent system-stack fallback, record the chosen family under

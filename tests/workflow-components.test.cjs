@@ -695,6 +695,7 @@ test("discovery: discovered GitHub sources with pinned license provenance comple
   checkDiscovery(root, "discover", "Find maintained open-source icons", { entries: [studiedIcons()] });
   const commercial = carousel();
   commercial.license = { state: "commercial", id: "LicenseRef-Commercial", evidence: [`https://github.com/davidjerleke/embla-carousel/blob/${CAROUSEL_SHA}/LICENSE`] };
+  commercial.availability = "reference-link";
   commercial.usedIn[0].how = "Study the carousel's drag physics and reimplement them";
   checkDiscovery(root, "discover", "Find maintained open-source options", { entries: [commercial] });
   // license.id is needed to copy or import; a study-only entry may leave it out.
@@ -878,10 +879,13 @@ test("discovery: copying or importing a discovered source requires a verified pe
     const value = carousel();
     value.license.id = id;
     checkDiscovery(root, "discover", answer, { entries: [value] }, /copying or importing a discovered source requires license\.state verified and a permissive license\.id/);
+    value.usedIn[0].how = "Study the carousel's drag physics and reimplement them";
+    // bundled-implementation ships the code whatever how says.
+    checkDiscovery(root, "discover", answer, { entries: [value] }, /copying or importing a discovered source requires license\.state verified/);
+    value.availability = "reference-link";
+    checkDiscovery(root, "discover", answer, { entries: [value] });
     value.usedIn[0].how = "Adapt the carousel markup";
     checkDiscovery(root, "discover", answer, { entries: [value] }, /allows only study\/reimplementation/);
-    value.usedIn[0].how = "Study the carousel's drag physics and reimplement them";
-    checkDiscovery(root, "discover", answer, { entries: [value] });
   }
   const unverified = carousel();
   unverified.license.state = "unverified";
@@ -898,6 +902,7 @@ test("discovery: copying or importing a discovered source requires license.file"
     delete value.license.file;
     checkDiscovery(root, "discover", answer, { entries: [value] },
       /entries\[0\]\.usedIn\[0\] copying or importing a discovered source requires license\.file naming the project file that holds its license text/);
+    value.availability = "reference-link";
     value.usedIn[0].how = "Adapt the markup";
     checkDiscovery(root, "discover", answer, { entries: [value] }, /entries\[0\]\.usedIn\[0\] a discovered source without license\.state verified, a permissive license\.id and license\.file allows only study\/reimplementation/);
   }

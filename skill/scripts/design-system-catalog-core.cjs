@@ -287,7 +287,9 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
       if (!isObject(use) || !nonempty(use.how) || !nonempty(use.marker)) manifestInvalid(useLabel + " requires how and marker");
       const file = manifestFile(root, use.file, useLabel + ".file");
       if (!fs.readFileSync(file, "utf8").includes(use.marker)) manifestInvalid(useLabel + ".marker must actually appear in its file");
-      const copied = /\b(?:copy|copied|copying|paste|pasted|vendor|vendored|vendoring|bundle|bundled|bundling|self-host|self-hosted|self-hosting|download|downloaded|downloading)\b|复制|拷贝|粘贴|打包|自托管|下载/i.test(use.how);
+      // A discovered entry declaring bundled-implementation ships its code, whatever how says.
+      const copied = (discovered && entry.availability === "bundled-implementation")
+        || /\b(?:copy|copied|copying|paste|pasted|vendor|vendored|vendoring|bundle|bundled|bundling|self-host|self-hosted|self-hosting|download|downloaded|downloading)\b|复制|拷贝|粘贴|打包|自托管|下载/i.test(use.how);
       const imported = /\b(?:import|imported|importing|require|install|installed)\b|导入|引入|安装/i.test(use.how);
       const studied = /\b(?:study|studied|reimplement|reimplemented|reimplementation)\b|研究|学习|重写|重新实现/i.test(use.how);
       if (discovered && (copied || imported)) {
