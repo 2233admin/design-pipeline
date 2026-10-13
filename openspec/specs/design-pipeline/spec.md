@@ -4,7 +4,9 @@
 
 Define the durable, design-first contracts used to plan, implement, validate, package, and improve
 the design pipeline without making optional tools or hosted integrations part of the core runtime.
+
 ## Requirements
+
 ### Requirement: Design-first scope
 
 The pipeline SHALL optimize for design outcomes and SHALL NOT become a general-purpose skill marketplace.
@@ -1006,6 +1008,18 @@ All project paths SHALL remain below explicit `--root` after link resolution.
 - **THEN** the command SHALL fail before reading or writing it
 - **AND** the JSON error envelope SHALL remain machine-readable.
 
+#### Scenario: Interaction output escapes through a default directory or report link
+
+- **WHEN** the default or explicit interaction output directory, or its final report file, resolves outside `--root`
+- **THEN** verification SHALL reject the destination before capture or writing the report
+- **AND** no gate pass or external report SHALL be produced
+
+#### Scenario: A destination contains an unresolved filesystem link
+
+- **WHEN** a project destination contains a filesystem link whose target does not exist
+- **THEN** the CLI SHALL reject it as an unresolved containment boundary before reading or writing that destination
+- **AND** interaction verification SHALL NOT start capture or record a gate pass
+
 ### Requirement: Runtime evidence is explicit and adapter-neutral
 
 Browser/tool adapters SHALL produce validated receipts with adapter identity, capability probe,
@@ -1117,7 +1131,7 @@ Graphics catalogs SHALL reference registry IDs rather than duplicate facts.
 
 Release QA SHALL prove manifest parity, syntax, complete tests, deterministic package bytes,
 archive completeness, failure atomicity, isolated package installation, installed public CLI
-behavior, and unchanged repository status.
+behavior, and unchanged repository status. Long test batches SHALL expose progress before completion. CI SHALL exercise Windows path identity and storyboard regressions, with unavailable optional filesystem capabilities explicitly skipped.
 
 #### Scenario: Packaging fails after a previous successful build
 
@@ -1125,14 +1139,38 @@ behavior, and unchanged repository status.
 - **THEN** packaging SHALL fail without corrupting the prior artifacts
 - **AND** no source-tree mutation SHALL be introduced by QA.
 
+#### Scenario: Full test batch is running
+
+- **WHEN** the repository tests emit output before exiting
+- **THEN** that output SHALL be visible through QA and available to the caller's redirected log
+- **AND** a failed test batch SHALL still fail QA.
+
+#### Scenario: Windows physical path spelling differs
+
+- **WHEN** CI runs the Windows path-identity regression
+- **THEN** it SHALL exercise a distinct spelling of the same physical root and reject a different physical identity
+- **AND** absent optional filesystem capabilities SHALL be reported explicitly rather than counted as successful assertions.
+
 ### Requirement: Contribution standards
 
-The repository SHALL document how contributors propose changes, validate changes, and handle external skill intake.
+The repository SHALL document how contributors propose changes, reconcile the PR target and review scope before freezing a full-QA tree, validate changes with canonical maintenance commands, and handle external skill intake. Evidence SHALL identify its tested revision and SHALL NOT be presented as covering later integrated code without verification.
 
 #### Scenario: Contributor proposes an external skill
 
 - **WHEN** a contributor proposes a new external skill source
 - **THEN** the contribution SHALL classify it using the curation policy outcomes before it can be accepted.
+
+#### Scenario: Contributor prepares full QA
+
+- **WHEN** a contributor prepares the publication tree for full QA
+- **THEN** they SHALL fetch the intended PR target and review divergent commits and the proposed diff before freezing the tested revision
+- **AND** contribution guidance and the PR template SHALL use `npm test` and `npm run specs:check`.
+
+#### Scenario: Integration changes the tested code
+
+- **WHEN** target-branch integration changes code after a successful full-QA run
+- **THEN** the old full-QA result SHALL remain scoped to its tested revision
+- **AND** verification of the integrated code SHALL be reported separately.
 
 ### Requirement: Security guidance
 
@@ -1530,8 +1568,7 @@ The pipeline SHALL require a machine-readable implementation-authority contract 
 
 ### Requirement: Companion self-check covers the design profile
 
-The design-pipeline self-check MUST detect the full companion set when installed via the team `design` profile.
-Missing optional companions remain fallback-safe; missing required `design-pipeline` skill still fails the check.
+The design-pipeline self-check MUST detect the companion set when installed via the team `design` profile and detect bundled Taste and UI craft sources through the required core package. Missing optional companions remain fallback-safe; missing required `design-pipeline` resources still fail the check.
 
 #### Scenario: The full design profile is installed
 
@@ -1542,10 +1579,10 @@ Missing optional companions remain fallback-safe; missing required `design-pipel
 **Visual taste**
 
 - `frontend-design`
-- `design-taste-frontend`
 - `ui-ux-pro-max`
 - `web-design-guidelines`
-- `emil-design-eng`
+- The complete Taste-Skill suite is built into `design-pipeline`; a separate `design-taste-frontend` installation is not required.
+- `emil-design-eng` is built into `design-pipeline` with the other UI craft sources; a separate installation is not required.
 
 **Motion design**
 
@@ -1579,9 +1616,20 @@ Missing optional companions remain fallback-safe; missing required `design-pipel
 #### Scenario: An optional companion is missing
 
 - **WHEN** one or more optional companions are unavailable
-- **THEN** self-check SHALL report `WARN`, identify the missing capability or marker, preserve the
-  documented fallback, and remain usable
+- **THEN** self-check SHALL report `WARN`, identify the missing capability or marker, preserve the documented fallback, and remain usable
 - **AND** a missing required `design-pipeline` skill SHALL still fail the check.
+
+#### Scenario: Ambient Taste skills are absent
+
+- **WHEN** a complete packaged pipeline is installed in an otherwise empty skill root
+- **THEN** its existing visual-direction profile SHALL check the built-in Taste entry
+- **AND** it SHALL NOT request an external Taste installation to provide that coverage.
+
+#### Scenario: Ambient UI craft skills are absent
+
+- **WHEN** a complete packaged pipeline is installed in an otherwise empty skill root
+- **THEN** self-check SHALL NOT report a missing `emil-design-eng` companion or request its installation
+- **AND** the bundled `emil-design-eng` snapshot SHALL remain reachable through the UI craft guide.
 
 ### Requirement: Reference classification separates geometry, camera, interaction, and output
 
@@ -2302,3 +2350,2016 @@ Every change with a reference SHALL record the difference between the values wri
 - **WHEN** no specified value changed during implementation
 - **THEN** an empty reconciliation table SHALL be a valid result.
 
+### Requirement: Composition structure is enumerated per region
+
+The pipeline SHALL require a per-region structural breakdown for every change with a visual
+reference, authored independently for each region.
+
+#### Scenario: A reference contains repeated regions
+
+- **WHEN** a reference contains two or more comparable regions
+- **THEN** `reference.md` SHALL record rows, columns, left-to-right contents, and what each region
+  breaks from
+- **AND** each region SHALL be described from the reference rather than by reference to another
+  region.
+
+#### Scenario: Uniformity is claimed
+
+- **WHEN** a per-region breakdown is recorded
+- **THEN** it SHALL answer explicitly whether every region shares the same row and column structure
+- **AND** any exception SHALL be named in the same table as the regions it breaks from.
+
+#### Scenario: The uniformity claim contradicts the regions
+
+- **WHEN** `composition.uniform` is `true`
+- **AND** any region records a non-empty `breaksFrom`, or regions differ in rows or columns
+- **THEN** reference validation SHALL fail with a composition contradiction.
+
+#### Scenario: A structural claim is compared to a render
+
+- **WHEN** a graybox capture exists for the change
+- **THEN** the graybox comparison SHALL address the recorded region ids by name.
+
+### Requirement: Component-first v2 binds one target snapshot through chained receipts
+
+The future v2 gate SHALL bind stack, component, Playground, page, and browser evidence to one target
+identity, snapshot digest, and policy digest. An upstream digest change SHALL invalidate downstream
+receipts. Prototype evidence SHALL require an explicit promotion receipt before satisfying a
+production target. Component conformance SHALL remain distinct from visual acceptance.
+
+#### Scenario: An upstream target snapshot changes
+
+- **WHEN** a component or target snapshot digest differs from the digest bound by a downstream page
+  or browser receipt
+- **THEN** the downstream receipt SHALL become stale and SHALL NOT satisfy component conformance
+- **AND** visual acceptance SHALL remain a separate result rather than being inferred.
+
+### Requirement: Progressive skill entry point
+The packaged skill MUST expose a concise `skill/SKILL.md` front door that is no more than 500 lines and routes each supported intent to the references required for that intent.
+
+#### Scenario: Route-specific loading
+
+- **WHEN** a user requests a supported design-pipeline route
+- **THEN** the front door MUST identify the route and its required references
+- **AND** it MUST NOT require reading unrelated module instructions
+
+#### Scenario: Packaged references
+
+- **WHEN** the skill is packaged and installed
+- **THEN** every reference named by the front door MUST be present in the installed archive
+- **AND** existing public command and reference paths MUST remain usable
+
+### Requirement: Skill evaluation manifest
+The repository MUST provide a versioned, offline-validatable evaluation manifest for representative skill prompts.
+
+#### Scenario: Valid evaluation set
+
+- **WHEN** `scripts/validate-evals.cjs` validates `evals/evals.json`
+- **THEN** it MUST verify the schema, unique IDs, known workflow routes, canonical job IDs from the bundled job registry, expected downstream state, prompts, signals, and contained fixture paths
+- **AND** it MUST return a deterministic passing result without network or model access
+
+#### Scenario: Invalid evaluation set
+
+- **WHEN** an evaluation has a duplicate ID, unknown route, empty prompt, empty required signal, or escaping fixture path
+- **THEN** validation MUST fail with a machine-readable reason
+
+### Requirement: Subject-grounded design routing
+The front door MUST route open-ended visual work through the existing subject-grounding, audience, single-job, product-specific-signature, and iterative-critique contracts.
+
+#### Scenario: Open visual direction
+
+- **WHEN** a user requests a new visual direction or redesign
+- **THEN** the route MUST point to the existing direction and synthesis contracts
+- **AND** the route MUST require a product-specific signature decision before implementation
+- **AND** it MUST preserve responsive, focus, and reduced-motion verification
+
+### Requirement: Browser evidence routing
+The front door MUST route dynamic web verification to the existing browser evidence adapter and its reconnaissance sequence.
+
+#### Scenario: Dynamic local web application
+
+- **WHEN** a target is a dynamic local web application
+- **THEN** the route MUST wait for runtime readiness and network idle before DOM inspection
+- **AND** it MUST capture or verify the applicable DOM, screenshot, console, accessibility, network, and performance evidence
+- **AND** it MUST not replace behavioral verification with a static screenshot alone
+
+### Requirement: Complete Stage 0 toolchain binding
+Public toolchain resolve and probe requests MUST include jobId, jobPlanSha256, jobPlanPath, and deliverableForm. The CLI MUST read the referenced plan inside the declared root. The resolver MUST validate plan contents, the actual canonical plan hash, and job identity before producing a ready plan or probing tools.
+
+#### Scenario: Missing or partial binding
+- **WHEN** a toolchain request omits any required binding field
+- **THEN** resolution MUST fail with a missing Stage 0 binding error and MUST NOT report ready
+
+#### Scenario: Missing file or stale identity
+- **WHEN** the plan file cannot be read, its content/hash is invalid, or jobId/hash differs from the request
+- **THEN** resolve and probe MUST reject the request before capability execution
+
+#### Scenario: Valid binding retains lineage
+- **WHEN** a valid plan and matching request are resolved
+- **THEN** the toolchain plan MUST retain that jobId, jobPlanSha256, and deliverableForm, without substituting jobId for primaryRouteId
+- **AND** execution MUST continue using the same jobPlanSha256
+
+### Requirement: Query-bound deliverable form
+Route results and job plans MUST contain a deterministic deliverableForm from product-launch-video, motion-graphics-video, scrollytelling-page, interactive-page, or ui-motion. Job plans MUST preserve the original query and include query/form in their canonical hash. The toolchain request form and independently classified brief MUST match the plan form.
+
+#### Scenario: Video rewritten as a page
+- **GIVEN** a controller-generated product-launch-video plan
+- **WHEN** an English or Chinese toolchain brief requests a scrollytelling or interactive page
+- **THEN** resolution MUST fail with a deliverable-form conflict and MUST NOT report ready
+
+#### Scenario: Query or form tampering
+- **WHEN** a job plan query or form changes without updating its hash
+- **THEN** plan validation MUST reject hash drift
+- **AND** a rehashed plan whose query and form disagree MUST also be rejected
+
+### Requirement: Generic product-promotion routing
+English and Chinese HTML product launch/showcase video requests MUST select the existing motion-graphics job and include the HyperFrames frontend route using its existing product-launch-video contract. Routing MUST NOT depend on a project name.
+
+#### Scenario: Product promotion in either language
+- **WHEN** an English or Chinese HTML product-promotion video brief is routed
+- **THEN** Stage 0 MUST select motion-graphics and frontend tool routes MUST include heygen-com/hyperframes
+
+#### Scenario: Ordinary hover animation
+- **WHEN** a dashboard requests a subtle hover animation without a video deliverable
+- **THEN** it MUST remain on ordinary UI motion and MUST NOT activate HyperFrames
+
+### Requirement: Film routes hand off to the film workflow
+`route --write` for a film plan (product-launch-video or motion-graphics-video) MUST return a handoff to `next --deliverable film --job-plan` instead of a toolchain request, because a film has no stack choices; plans of other forms MUST keep the toolchain handoff. The handoff note MUST NOT claim that the tier follows the request: an omitted `--tier` defaults to standard.
+
+#### Scenario: Persisted film route hands off to the film workflow
+- **WHEN** `route --write` persists a plan whose form is `product-launch-video` or `motion-graphics-video`
+- **THEN** its handoff is `command: "next"`, `action: "bind-film"` with an executable argv `next --root <root> --project-root <root> --deliverable film --job-plan <plan>`, and no `toolchain request` handoff or choices file
+- **AND** running that argv binds the plan in film state, while a non-film plan keeps its `toolchain request` handoff
+
+#### Scenario: Film handoff runs from any working directory
+- **WHEN** the returned film handoff argv is run from a working directory outside the project
+- **THEN** it MUST bind the plan in that project's film state, because the argv names the project as both `--root` and `--project-root`
+- **AND** nothing is written to the working directory
+
+### Requirement: code-carried capability
+New design, composition, motion or film capability SHALL be delivered as at least one of:
+a deterministic gate whose findings carry a concrete fix, a parameterized template, or a
+cross-model evaluation under the existing benchmark contract.
+
+#### Scenario: New capability is delivered
+- **WHEN** a new design, composition, motion, or film capability is added
+- **THEN** it SHALL include at least one of: a deterministic gate whose findings carry a concrete fix, a parameterized template, or a cross-model evaluation under the existing benchmark contract
+
+### Requirement: acceptance separation
+Gates, templates and evaluations SHALL NOT report creative or user acceptance. Those remain
+separate recorded states.
+
+#### Scenario: Capability evidence is reported
+- **WHEN** a gate, template, or evaluation reports its result
+- **THEN** it SHALL NOT report creative or user acceptance, which remain separate recorded states
+
+### Requirement: deliverable sub-workflows
+Film and edit work SHALL each follow a sub-workflow whose guide lists, per stage, only the
+commands that stage needs, and every `next` action for these deliverables SHALL name its guide
+section.
+
+#### Scenario: Film or edit action is returned
+- **WHEN** a `next` action is returned for film or edit work
+- **THEN** the applicable guide SHALL list only the commands needed per stage
+- **AND** the action SHALL name its guide section
+
+### Requirement: fresh gate results
+A recorded gate result SHALL count toward finishing a stage only when it is not older than the
+files it checked.
+
+#### Scenario: Gate result predates checked files
+- **WHEN** a recorded gate result is older than any file it checked
+- **THEN** it SHALL NOT count toward finishing the stage
+
+### Requirement: replicate mode
+In replicate mode a film SHALL NOT waive its reference study, and an edit SHALL study the
+reference edit before cutting.
+
+#### Scenario: Replicate film or edit work begins
+- **WHEN** work is in replicate mode
+- **THEN** a film SHALL NOT waive its reference study and an edit SHALL study the reference edit before cutting
+
+### Requirement: named carriers
+A storyboard beat joined to the previous beat by a carried handoff SHALL name what survives the
+boundary.
+
+#### Scenario: Carried handoff is declared
+- **WHEN** a storyboard beat is joined to the previous beat by a carried handoff
+- **THEN** the beat SHALL name what survives the boundary
+
+### Requirement: rhythm
+The storyboard gate SHALL reject near-uniform beat lengths in films of four or more beats and
+films of eight seconds or more without any rest.
+
+#### Scenario: Film rhythm violates a threshold
+- **WHEN** a film has four or more beats with near-uniform lengths, or lasts eight seconds or more without any rest
+- **THEN** the storyboard gate SHALL reject it
+
+### Requirement: measured continuity
+Film check SHALL report a continuity score over carried boundaries and SHALL fail when a planned
+carry renders as a scene cut or when the score is below 0.6 with three or more carried boundaries.
+
+#### Scenario: Planned carry renders as a cut
+- **WHEN** a planned carry renders as a scene cut
+- **THEN** film check SHALL fail and report continuity over carried boundaries
+
+#### Scenario: Continuity score is too low
+- **WHEN** at least three carried boundaries exist and their continuity score is below 0.6
+- **THEN** film check SHALL fail and report the score
+
+### Requirement: measured interaction
+The pipeline SHALL verify declared web interactions by driving real input in a headless browser
+and SHALL fail interactions that do not respond, do not settle, drift from their rest position, only
+change opacity, or load resources from other origins.
+
+#### Scenario: Interaction fails to behave correctly
+- **WHEN** an interaction does not respond, does not settle, drifts from its rest position, changes only opacity, or loads resources from other origins
+- **THEN** the pipeline SHALL fail the interaction
+
+#### Scenario: Interaction is verified
+- **WHEN** a declared web interaction is verified
+- **THEN** the pipeline SHALL drive real input in a headless browser
+
+### Requirement: web sub-workflow
+Web work SHALL follow a sub-workflow whose guide lists each stage's commands, and SHALL not show a
+draft before its interaction probe passes.
+
+#### Scenario: Web workflow reaches draft review
+- **WHEN** web work progresses toward showing a draft
+- **THEN** its guide SHALL list each stage's commands and the interaction probe SHALL pass before the draft is shown
+
+### Requirement: real interface captures in golden cases
+A golden case that shows another product's interface SHALL declare its capture script, its pinned
+source (repository, full commit and license) and its captured files. Captured files SHALL be
+regenerated locally and SHALL NOT be committed. Repository QA SHALL fail when any captured file
+is tracked.
+
+#### Scenario: Golden case shows another interface
+- **WHEN** a golden case shows another product's interface
+- **THEN** it SHALL declare its capture script, pinned source repository, full commit, license, and captured files
+- **AND** captured files SHALL be regenerated locally and SHALL NOT be committed
+
+#### Scenario: Captured file is tracked
+- **WHEN** any captured file is tracked
+- **THEN** repository QA SHALL fail
+
+### Requirement: cuts between still frames
+The render gate SHALL treat a one-step change as an instant replacement when both of its
+neighbouring steps are under a tenth of it. This applies in addition to steps that stand out from
+their 2 s window.
+
+#### Scenario: One-step replacement is isolated
+- **WHEN** a one-step change has both neighboring steps under one tenth of its magnitude
+- **THEN** the render gate SHALL treat it as an instant replacement, in addition to detecting steps that stand out from their two-second window
+
+### Requirement: generated art in golden cases
+A golden case that uses art made by an image model SHALL declare its generation script, the tool
+and the generated files. Generated files SHALL NOT be committed, and render verification SHALL NOT
+run the generation script implicitly. Repository QA SHALL fail when any generated file is tracked.
+
+#### Scenario: Golden uses generated art
+- **WHEN** a golden case uses art made by an image model
+- **THEN** it SHALL declare its generation script, tool, and generated files
+- **AND** generated files SHALL NOT be committed
+- **AND** render verification SHALL NOT run the generation script implicitly
+
+#### Scenario: Generated file is tracked
+- **WHEN** any generated file is tracked
+- **THEN** repository QA SHALL fail
+
+### Requirement: mastering keeps section dynamics and codec headroom
+`audio master` SHALL master under the target's true-peak ceiling by a codec headroom (1.5 dB by
+default). When a linear gain to the target loudness would exceed that ceiling, it SHALL limit the
+transients before the gain, by at most 10 dB, and report the limiting as `limiterDb`. It SHALL
+measure the mastered output's true peak and increase the limiting while the peak is over the
+ceiling.
+
+#### Scenario: Linear gain would exceed the ceiling
+- **WHEN** linear gain to target loudness would exceed the target's true-peak ceiling after the caller-selected codec headroom (1.5 dB by default)
+- **THEN** `audio master` SHALL limit transients before the gain by at most 10 dB and report the limiting as `limiterDb`
+
+#### Scenario: Mastered output is measured
+- **WHEN** `audio master` finishes applying gain and limiting
+- **THEN** it SHALL measure the mastered output's true peak
+- **AND** it SHALL increase limiting while the measured peak is over the target's true-peak ceiling after codec headroom
+
+### Requirement: The agent-browser adapter fills every web evidence artifact
+
+The bundled `adapters/agent-browser.cjs` SHALL capture screenshot, trace, DOM, console,
+network, accessibility and performance artifacts into the existing evidence receipt. It SHALL
+run only the agent-browser executable and browser that the caller selected explicitly.
+
+#### Scenario: Every measurement is captured
+
+- **WHEN** every capture command succeeds
+- **THEN** the receipt SHALL be `complete` with all seven artifacts hashed
+- **AND** `accessibility.json` SHALL hold the axe-core violations and incomplete results.
+
+#### Scenario: A measurement fails
+
+- **WHEN** any capture command fails
+- **THEN** its artifact SHALL be `null`, the receipt SHALL be `partial`
+- **AND** the probe message SHALL name the failed commands.
+
+#### Scenario: Network evidence may carry credentials
+
+- **WHEN** network requests are recorded
+- **THEN** request and response headers SHALL be removed
+- **AND** the receipt redaction SHALL be `applied` with a note saying so.
+
+#### Scenario: The tool is not selected explicitly
+
+- **WHEN** `--agent-browser` is missing or resolves outside the project root
+- **THEN** the capture SHALL fail closed without starting a browser.
+
+### Requirement: Task-scoped skill guidance
+
+The skill SHALL use one entry to select bounded supporting tools or a complete deliverable.
+Supporting tool use SHALL retain the user's existing workflow. Stage documentation SHALL inherit
+the selected scope and SHALL NOT impose OpenSpec on every downstream task.
+
+#### Scenario: A caller needs text fitting only
+- **WHEN** a caller selects the Canvas text-fitting helper for an existing project
+- **THEN** guidance leads to that helper and its relevant check without initializing a film or full workflow
+
+#### Scenario: A complete deliverable reads a stage guide
+- **WHEN** the selected deliverable opens a detailed stage guide
+- **THEN** the guide preserves the selected tier and links to one maintained body for each stage
+- **AND** technical completion does not record visual acceptance
+
+### Requirement: Attributed source bundles have a distinct location
+
+The package SHALL keep original upstream bundles under `vendor/` and maintained callable helpers
+under `tools/`. Moving a bundle SHALL preserve source bytes, revisions, licenses and manifest hashes.
+Existing catalog commands SHALL resolve and verify the moved bundles in an installed skill.
+
+#### Scenario: An installed catalog finds a source
+- **WHEN** a catalog search or inspection returns a bundled source path
+- **THEN** that path exists inside the installed skill and its existing integrity check passes
+
+#### Scenario: A moved source is corrupted
+- **WHEN** source bytes differ from the bundle's recorded manifest
+- **THEN** the existing verifier rejects the bundle instead of treating relocation as verification
+
+### Requirement: Current OpenSpec configuration carries project context
+
+The repository SHALL maintain planning context and artifact rules in `openspec/config.yaml`, using
+the installed stable OpenSpec schema. Active change specs SHALL pass strict validation. Generated
+local agent instructions SHALL remain excluded from Git, and existing archives SHALL remain intact.
+
+#### Scenario: An agent requests proposal instructions
+- **WHEN** OpenSpec generates instructions for this change
+- **THEN** the result includes this project's context and proposal rules from config.yaml
+
+#### Scenario: Legacy active spec syntax is encountered
+- **WHEN** an active change lacks a valid delta or scenario heading
+- **THEN** migration repairs the syntax and preserves its stated behavior
+- **AND** it does not bypass validation with skip_specs or archive the change to hide the failure
+
+### Requirement: Installed visual tools work in the caller's project
+
+The skill SHALL locate its bundled helpers from the installed root and write project outputs
+through the existing contained-path contract, without requiring a deliverable workflow.
+
+#### Scenario: Portable visual-craft study
+- **Given** a source or installed skill and an independent project directory
+- **When** `composition scaffold --template visual-craft --output <new-dir>` runs for that project
+- **Then** it creates a runnable HTML entry, its local Canvas helper and license in that directory, without workflow state or dependencies.
+
+#### Scenario: Preserve authored work
+- **Given** an existing output, unsupported template or output outside the project
+- **When** scaffolding is requested
+- **Then** it fails without overwriting project contents or creating an out-of-scope output.
+
+### Requirement: Skill installation is documented and verified
+
+The project SHALL ship a single discoverable skill with on-demand tools, installation and
+upgrade instructions, and evidence from the installed entry rather than source tests alone.
+
+#### Scenario: Install the current local skill
+- **Given** the user requests skill installation and a previous canonical installation exists
+- **When** the existing installer replaces it after a preserved backup
+- **Then** the installed entry and tool files match the intended source, doctor and project scaffolding work, and separate compatibility consumers remain intact.
+
+#### Scenario: Select the skill explicitly
+- **Given** a skills CLI installation from a local or published repository
+- **When** the documented command selects `design-pipeline`
+- **Then** the complete selected bundle is installed and nested third-party skills are not separately selected; documentation distinguishes current local changes from published versions.
+
+### Requirement: Cross-surface visual craft is executable
+
+The skill SHALL expose reusable, locally executable drawing, typography and image-placement
+methods for graphics and frontend work without requiring a film deliverable or a fixed style.
+
+#### Scenario: Progressive tool loading
+- **Given** an existing graphics, drawing, image, layout or frontend task
+- **When** an agent needs a supporting visual capability
+- **Then** it can follow a short tools index to one guide and implementation without loading the whole source library or creating a film workflow.
+
+#### Scenario: Bounded implementation by a smaller model
+- **Given** an observed visual goal and supplied geometry, colors, text and dimensions
+- **When** an agent selects the applicable bundled primitive
+- **Then** it can render that goal with explicit inputs and obtain repeatable visual evidence.
+
+#### Scenario: Invalid or unreadable authoring data
+- **Given** non-finite geometry, excessive work or text that cannot fit above the minimum size
+- **When** the helper runs
+- **Then** it rejects invalid geometry before drawing or reports text overflow without a false success.
+
+### Requirement: Visual differences are observable evidence
+
+The system SHALL provide spatial image and sampled-motion diagnostics through the existing
+composition and reference-analysis surfaces while preserving source lineage and acceptance boundaries.
+
+#### Scenario: Compare equal-size images
+- **Given** two contained PNG images with a local change
+- **When** composition comparison runs
+- **Then** it renders the original pair and localizes the change, records source digests, and grants no creative acceptance.
+
+#### Scenario: Inspect motion in sampled reference frames
+- **Given** a local video prepared by the existing reference analyzer
+- **When** the agent opens a spatial motion map
+- **Then** the map names its source frames and sampling limits without claiming object identity or full-frame-rate motion analysis.
+
+#### Scenario: Preserve evidence integrity
+- **Given** mismatched dimensions, unsafe or existing output paths, or a changed diagnostic file
+- **When** the comparison or reference validator runs
+- **Then** it refuses unsafe comparison/overwrite or invalidates the changed evidence using the existing report contract.
+
+### Requirement: Blender discovery distinguishes absence from failure
+
+The pipeline SHALL discover supported Blender executables through explicit configuration, PATH and
+platform defaults. It SHALL keep custom paths outside shipped source and report detected executable
+or rendering failures rather than hiding them as missing-tool skips.
+
+#### Scenario: Blender is available on PATH
+
+- **WHEN** no explicit executable is selected and PATH contains a supported Blender
+- **THEN** the existing film adapter SHALL use it and the native render check SHALL run
+
+#### Scenario: A selected executable fails
+
+- **WHEN** the configured Blender cannot execute or its render fails
+- **THEN** the check SHALL fail with the diagnostic cause instead of claiming Blender is uninstalled
+
+### Requirement: Repository maintenance has one npm entry
+
+The repository SHALL expose its maintained npm packages through a private root workspace, one
+lockfile and root commands for dependency inspection, tests and existing capability/source checks.
+Installing the packaged skill SHALL NOT require installing the repository maintenance workspace.
+
+#### Scenario: Maintainer installs the toolchain
+
+- **WHEN** a maintainer runs npm ci from the repository root
+- **THEN** npm SHALL install the locked workspace dependencies without requiring separate installs
+- **AND** root npm scripts SHALL invoke the maintained verification commands
+
+#### Scenario: A user installs only the skill
+
+- **WHEN** the skill is packaged and installed outside this repository
+- **THEN** its callable tools SHALL retain their existing dependency and path contracts
+
+#### Scenario: Continuous integration verifies the repository
+
+- **WHEN** CI or the release workflow verifies a checkout
+- **THEN** it SHALL install the root lockfile and required browser dependencies first
+- **AND** it SHALL invoke the root specification, test and package commands
+
+### Requirement: Frontend capability updates have bounded evidence
+
+Frontend and animation updates SHALL record primary upstream provenance, preserve source licenses
+and integrity, and verify affected runtime behavior before raising the supported baseline. A version
+query or successful package install alone SHALL NOT establish API compatibility or visual acceptance.
+
+#### Scenario: A runtime or source snapshot changes
+
+- **WHEN** an integrated animation capability is refreshed
+- **THEN** the update SHALL use its existing manifest/registry and run affected checks
+- **AND** source revisions, compatibility limits and rendered evidence SHALL remain inspectable
+
+#### Scenario: An update cannot be verified
+
+- **WHEN** upstream behavior or required runtime evidence is unavailable
+- **THEN** the capability SHALL remain unresolved or pinned with a stated reason
+- **AND** existing approved visual evidence SHALL NOT be silently replaced
+
+#### Scenario: Latest stable versions are requested
+
+- **WHEN** the user requests current stable animation and graphics dependencies
+- **THEN** maintained dependencies and optional adapter provenance SHALL use verified stable releases
+- **AND** optional runtimes SHALL be tested without becoming unconditional packaged-skill dependencies
+
+### Requirement: Referenced skills have portable local guidance
+
+Reusable reference-skill methods SHALL enter the existing bundled guides and routes with source
+provenance and applicable checks. Shipped guidance SHALL NOT claim host-specific installation
+state. Optional companion presence, upstream currency and local capability coverage SHALL remain
+separate observations.
+
+#### Scenario: A companion is missing or stale
+
+- **WHEN** a GSAP, Anime.js or PixiJS task lacks a current companion skill
+- **THEN** the route SHALL start from its bundled guide or selected local source playbook
+- **AND** remaining API uncertainty SHALL use version-matched primary documentation
+- **AND** the companion diagnostic SHALL NOT be changed to current by the fallback
+
+#### Scenario: A referenced upstream skill changes
+
+- **WHEN** a maintainer reviews a new reference-skill revision
+- **THEN** the review SHALL distinguish reusable methods, version-dependent APIs and source-specific assumptions
+- **AND** an unchanged source-integrity check or npm version SHALL NOT prove the skill content current
+
+### Requirement: Comparison reports identify their metric
+
+The existing browser comparison report SHALL identify the library version, metric and options
+used to calculate pixel differences. A metric upgrade SHALL preserve earlier evidence and SHALL
+NOT make values from different metrics interchangeable or grant visual acceptance.
+
+#### Scenario: Pixelmatch changes its color metric
+
+- **WHEN** a new comparison runs with pixelmatch 8
+- **THEN** its existing v1 report SHALL record the OKLab/HyAB metric and effective options
+- **AND** prior reports and approved golden assets SHALL remain unchanged
+
+#### Scenario: Comparison inputs contain a visible change
+
+- **WHEN** the maintained comparator receives identical images or a known changed region
+- **THEN** identical images SHALL produce zero difference and the changed region SHALL be detected
+
+### Requirement: Motion is authored from intention and poses
+
+The system SHALL support authored pose timing, spacing and holds in the existing choreography
+runtime, with deterministic seeking and validation before timeline mutation.
+
+#### Scenario: Independent timing and spacing
+- **Given** two pose sequences with the same endpoints and duration but different intermediate keys
+- **When** pose-to-pose adds them to a paused composition
+- **Then** they follow their authored spacing and retain exact endpoint timing under arbitrary seeks.
+
+#### Scenario: Held drawing and secondary action
+- **Given** a held incoming key and a delayed sequence on a separate target
+- **When** the scene is rendered
+- **Then** the preceding pose stays until the authored key and the secondary action keeps its offset.
+
+#### Scenario: Invalid authoring data
+- **Given** non-finite values, unknown properties, inconsistent pose channels or non-increasing keys
+- **When** a pattern is called
+- **Then** it rejects before mutating the timeline.
+
+#### Scenario: Held poses still act
+- **Given** a sequence of zero-duration numeric transform sets on one subject
+- **When** later poses change from an earlier pose
+- **Then** the timeline gate recognizes discrete action, while initialization, identical poses,
+  fade/scale-only changes and broken planned continuous carry remain insufficient.
+
+### Requirement: Stylistic timing remains a creative decision
+
+The system SHALL distinguish rhythm review heuristics from implementation failures and SHALL
+keep technical gate results separate from creative acceptance.
+
+#### Scenario: Deliberate rhythm
+- **Given** a structurally valid film/edit with regular pulses, long holds, sparse sound accents
+  or off-beat cuts
+- **When** existing gates run
+- **Then** heuristics produce actionable review warnings rather than claim that this style is invalid.
+
+#### Scenario: Broken implementation
+- **Given** a timeline gap, property conflict, absent subject action or broken planned carry
+- **When** the same gates run
+- **Then** the objective failure still blocks conformance.
+
+#### Scenario: Authored sound accent
+- **Given** an explicit downbeat, accent or impact cue and the score's event grid
+- **When** the declared cue misses every event by more than one frame
+- **Then** cue misalignment remains an error even though an off-grid picture cut is only a warning.
+
+#### Scenario: Technical result is not acceptance
+- **Given** passing checks and a rendered motion study
+- **When** results are reported
+- **Then** runtime evidence and visual acceptance are reported separately; user acceptance is not set.
+
+### Requirement: Locally distributed video inspection candidates
+Video sampling SHALL retain candidate context from locally prominent pixel changes across the requested interval, within the existing frame budget. Candidate times SHALL remain inspection hints, not confirmed shots. Omitted context SHALL be reported rather than silently treated as observed.
+
+#### Scenario: Fast opening masks a later transition
+- **WHEN** an opening has sustained large pixel changes and a later interval has a locally prominent transition
+- **THEN** the later transition SHALL remain eligible for contextual sampling despite the global opening baseline.
+
+#### Scenario: Frame budget cannot retain context
+- **WHEN** candidate context exceeds the requested frame budget
+- **THEN** sampling SHALL retain provenance and report omissions; it SHALL NOT assert complete production readiness.
+
+### Requirement: Confirmed video production inventory
+Production readiness for a video reference SHALL require confirmed shots covering the analyzed interval and an explicit inventory of applicable target properties. Every declared property SHALL have observed, local frame evidence. Historical reports SHALL remain readable, but coarse window observations alone SHALL NOT satisfy current production readiness.
+
+#### Scenario: One observation hides another object
+- **WHEN** a shot declares text geometry and camera motion but only text geometry is observed
+- **THEN** production readiness SHALL remain pending and identify the missing camera property.
+
+#### Scenario: A static graphic has no material animation
+- **WHEN** a shot declares only the visible geometry properties of a static graphic and those properties have local evidence
+- **THEN** the checker SHALL NOT invent a requirement for material, lighting or motion observations.
+
+#### Scenario: Historical report starts new production
+- **WHEN** a valid historical video report has no confirmed shot inventory
+- **THEN** inspection SHALL remain available and production callers SHALL request decomposition instead of proceeding.
+
+### Requirement: Evidence bound video visual tasks
+Visual tasks referencing a video analysis SHALL bind a confirmed shot and observation IDs in the existing design plan. Dispatch and completion SHALL verify matching target, atomic property, time range and frame evidence. Declared guides, source report, source media and selected frames SHALL participate in existing input hashes and downstream invalidation.
+
+#### Scenario: A task binds the wrong observation
+- **WHEN** a task's observation belongs to another target, property or shot
+- **THEN** dispatch and completion SHALL block with a concrete binding error.
+
+#### Scenario: Method or source evidence changes
+- **WHEN** a bound guide, source report or frame changes after technical completion
+- **THEN** the existing receipt chain SHALL invalidate that completion and affected downstream work.
+
+#### Scenario: A rebuilt asset is still unavailable
+- **WHEN** a task declares an absent asset input or an unfinished dependency output
+- **THEN** existing input checks SHALL block dispatch; a placeholder SHALL NOT count as the final asset.
+
+#### Scenario: Structurally complete production evidence
+- **WHEN** all required properties and task bindings pass their structural checks
+- **THEN** the result SHALL keep semantic and visual acceptance unassessed until human review.
+
+### Requirement: Usable preserved method entries
+Declared bundled method paths and required packaging resources SHALL resolve to the current preserved source topology. License copies SHALL retain the same pinned bytes; repairing paths SHALL NOT alter upstream implementations or weaken provenance checks.
+
+#### Scenario: Preserved upstream engine directory changes
+- **WHEN** a preserved method is present under its current engine directory but an existing package requirement or method link names an obsolete directory
+- **THEN** the existing requirement and link SHALL be updated to the preserved file while its source hash remains verified.
+
+### Requirement: Agent-browser evidence can start from saved browser state
+
+`evidence capture` SHALL accept `--agent-browser-state <file>`, an agent-browser state file inside
+`--project-root`, and load it when the agent-browser session starts. The host SHALL read the file
+once into a private copy outside the evidence and the adapter SHALL load that copy. The receipt
+SHALL name the file and the sha256 of the copied bytes and SHALL NOT copy its contents.
+
+#### Scenario: Saved state is preloaded
+
+- **WHEN** `--agent-browser-state` names a file inside the project and `--agent-browser` is set
+- **THEN** the adapter SHALL start the session with `--state` pointing at the host's copy
+- **AND** the probe message SHALL name the file and its sha256
+- **AND** the copy SHALL be removed after the capture, whether or not it succeeded.
+
+#### Scenario: The state file changes during the capture
+
+- **WHEN** the project's state file is rewritten after the host read it
+- **THEN** the browser SHALL load the bytes the host read
+- **AND** the probe message SHALL name the sha256 of those bytes.
+
+#### Scenario: The state file is outside the project
+
+- **WHEN** `--agent-browser-state` resolves outside `--project-root`
+- **THEN** the capture SHALL fail closed without starting a browser.
+
+#### Scenario: Another adapter would ignore the state
+
+- **WHEN** `--agent-browser-state` is given with an `--adapter-path` other than the packaged
+  `adapters/agent-browser.cjs`, or without `--agent-browser`
+- **THEN** the capture SHALL fail closed without starting the adapter.
+
+### Requirement: Native completion observes its required verification
+
+Native task completion SHALL run each supported required verifier through its trusted public completion operation and use the observed result before promotion. Caller-written reports, receipt invocation fields and producer labels SHALL NOT substitute for that execution. Failed, missing, partial or unsupported verification SHALL block completion.
+
+#### Scenario: Correctly hashed self-written evidence is submitted
+
+- **WHEN** a caller submits a passed report or success receipt without observed verification
+- **THEN** completion SHALL run the declared supported verifier or remain blocked
+- **AND** the report alone SHALL NOT authorize technical completion or owner review
+
+#### Scenario: The existing browser interaction check runs
+
+- **WHEN** the current local web task has a supported interaction verification binding
+- **THEN** completion SHALL use actual browser measurements and the existing evaluator verdict
+- **AND** missing tools, failed capture, timeout or incomplete measurements SHALL block promotion
+
+#### Scenario: The probe targets a different page
+
+- **WHEN** the first-slice probe targets a remote URL or a local page other than its declared task output
+- **THEN** native completion SHALL reject the verification binding
+- **AND** the probe and actual output SHALL be included in the checked snapshot rather than substituting an unrelated default page
+
+### Requirement: Native task scope uses a preserved observed baseline
+
+Before native task work, the tool SHALL capture a task-bound baseline and at completion compare actual observable changes with that task's literal scope and explicitly declared artifact paths. Unchanged pre-existing edits SHALL NOT count as new task changes. A missing baseline or unobservable target SHALL block scope-verified completion.
+
+#### Scenario: A pre-existing dirty file is unchanged
+
+- **WHEN** another dirty file existed before dispatch and retains its exact content and status
+- **THEN** it SHALL NOT be counted as a new out-of-scope task change
+- **AND** modifying that same dirty file afterward SHALL be detected even if its Git status stays unchanged
+
+#### Scenario: Only staged contents change
+
+- **WHEN** a file's Git index contents change while its working bytes and porcelain status remain unchanged
+- **THEN** the change SHALL be included in the observed task delta
+- **AND** unresolved merge stages SHALL block scope-verified completion
+
+#### Scenario: An out-of-scope commit is reverted
+
+- **WHEN** the attempt commits an out-of-scope change and later reverts it in another visible commit
+- **THEN** the changed paths in that commit history SHALL still block completion
+- **AND** an unverifiable history replacement SHALL NOT establish a clean task delta
+
+#### Scenario: Work escapes the current task scope
+
+- **WHEN** the observed task delta contains an out-of-scope file, including a file belonging to a different task
+- **THEN** completion SHALL be blocked before review and SHALL retain the changed files and diagnostic evidence
+- **AND** another task's scope SHALL NOT authorize the change
+
+#### Scenario: The caller repeats next or retries failed work
+
+- **WHEN** next is repeated or an unfinished attempt fails
+- **THEN** the original active baseline SHALL remain bound to that attempt
+- **AND** repeating dispatch SHALL NOT adopt an out-of-scope edit into a fresh baseline
+
+#### Scenario: A changed plan expands the allowed scope
+
+- **WHEN** the plan changes while an attempt has unresolved changes
+- **THEN** the tool SHALL inspect that attempt against its preserved original authorization before adopting a new window
+- **AND** the new scope SHALL NOT retroactively authorize an old out-of-scope edit
+
+### Requirement: Native verification commits one current evidence snapshot
+
+Observed verification and scope results SHALL bind the current target, task, plan, inputs, outputs and artifacts. A changed binding during verification SHALL prevent completion. Upstream drift SHALL invalidate dependent technical evidence and review. Existing state/event transaction and artifact lineage SHALL remain authoritative.
+
+#### Scenario: Output changes while verification runs
+
+- **WHEN** an input, output, task or plan changes between verification start and completion commit
+- **THEN** the observed result SHALL NOT be bound to the changed version
+- **AND** completion SHALL return a repair or rerun action rather than passed
+
+#### Scenario: The report destination aliases another bound file
+
+- **WHEN** the proposed check report aliases any bound input, declared output, another check destination, active plan, native state or event ledger
+- **THEN** completion SHALL reject the destination before capture and preserve those files
+
+#### Scenario: Probe expectations change after a pass
+
+- **WHEN** the probe bytes change after observed verification
+- **THEN** the task's previous check and dependent review SHALL become stale and require verification of the new expectations
+
+#### Scenario: Completion evidence changes after review
+
+- **WHEN** a completed task's observed evidence or bound output changes
+- **THEN** the task and affected downstream evidence SHALL become stale
+- **AND** previous owner acceptance SHALL NOT authorize the changed version
+
+### Requirement: Native verification exposes its coverage and recovery
+
+Native next SHALL return one concrete supported action with missing prerequisites or verifier failure context. Technical results SHALL identify the observed check and scope coverage and SHALL NOT imply producer authentication outside the trusted execution boundary, complete filesystem write policing, Component Conformance or Visual Acceptance.
+
+#### Scenario: An old plan has only report paths
+
+- **WHEN** a native plan or completion record lacks an executable verification binding or task baseline
+- **THEN** it SHALL remain readable and require explicit binding and fresh verification before advancement
+- **AND** next SHALL identify the required repair without deleting history
+
+#### Scenario: Verification is outside the supported first slice
+
+- **WHEN** the task needs an unsupported verifier or its scope cannot be observed
+- **THEN** next SHALL report blocked with the missing capability
+- **AND** an agent narrative or an unknown result SHALL NOT substitute for a pass
+
+#### Scenario: An observed technical check passes
+
+- **WHEN** required verification and observable scope checks pass for the same snapshot
+- **THEN** the existing exact-version owner review SHALL remain applicable
+- **AND** Component Conformance and Visual Acceptance SHALL be reported separately from that technical pass
+
+### Requirement: Workflow next preserves actionable check context
+
+Project-root next SHALL return recovery context for its existing pending verification gate, identifying missing, unbound or changed files when evaluating a recorded pass with checked-file bindings and retaining available prior verifier findings, fixes and recovery instructions. Diagnostics SHALL NOT change pass criteria, grant acceptance or write state. Older gate records without diagnostics SHALL remain readable and resume through the existing action.
+
+#### Scenario: A failed check is resumed in another command
+
+- **WHEN** a public verifier records a failed check and next is called again
+- **THEN** next SHALL retain that gate's actionable findings and fixes with its existing check command
+
+#### Scenario: Checked bytes change
+
+- **WHEN** a current pending gate's checked input changes after a pass
+- **THEN** next SHALL name the changed input and require a fresh check without writing state
+
+#### Scenario: A pass measured another input
+
+- **WHEN** an existing pass lacks a required input binding
+- **THEN** next SHALL identify that input and explain how to verify it rather than treating the old pass as current
+
+#### Scenario: Required files are missing or unavailable
+
+- **WHEN** a recorded pass with checked-file bindings references required inputs that cannot be read inside the project
+- **THEN** next SHALL name the affected path and recovery action without advancing or exposing external file contents
+
+### Requirement: Workflow review points to checked output files
+
+Shared project-root review SHALL show the actual contained checked web page or film/edit video rather than generic placeholders. Supplemental evidence SHALL be listed only when it exists inside the project, and its existence SHALL NOT establish freshness, conformance or owner Visual Acceptance. Review decisions SHALL keep their existing snapshot bindings.
+
+#### Scenario: Web draft awaits its owner
+
+- **WHEN** the current web draft passes its check and awaits review
+- **THEN** next SHALL show its actual checked page and request inspection of the affected interactions
+
+#### Scenario: Multiple film renders exist
+
+- **WHEN** a checked film draft awaits review with multiple render files present
+- **THEN** next SHALL show the render bound to that current check
+
+#### Scenario: Supplemental evidence is missing or escaping
+
+- **WHEN** an optional review evidence file is missing or resolves outside the project
+- **THEN** it SHALL NOT be listed as an available review file
+
+### Requirement: Engineering guidance uses runnable vertical verification
+
+Packaged QA guidance SHALL teach one observable behavior per implementation step, public-interface regression checks with independent expectations, observed failure before a fix, focused reruns and root-cause diagnosis before repeated retries. Existing user authorization and established project interfaces SHALL be reused; deterministic tests SHALL NOT substitute for visual acceptance.
+
+#### Scenario: Agent changes a runtime behavior
+
+- **WHEN** an agent fixes or extends a deterministic tool behavior
+- **THEN** it SHALL exercise the relevant established public interface and complete one observed failing-check-to-fix cycle before adding another behavior
+
+#### Scenario: A check repeats without progress
+
+- **WHEN** the same command completes but the workflow remains blocked
+- **THEN** the agent SHALL inspect returned recovery context and test a concrete cause before retrying unchanged inputs
+
+### Requirement: Interaction verification preserves measurement inputs
+
+Interaction verification SHALL reject a report destination that aliases its probe, resolved local page or existing workflow state before browser execution. Rejection SHALL preserve their bytes and SHALL NOT record a gate pass.
+
+#### Scenario: Report aliases a measured page or state
+
+- **WHEN** the report destination names the measured local page or workflow state through an exact path, hard link or symbolic link
+- **THEN** verification SHALL return a machine-readable contract error before capture
+- **AND** the probe, page and state SHALL remain unchanged
+
+#### Scenario: A separate contained report is requested
+
+- **WHEN** the report destination is contained and distinct from the measurement inputs and state
+- **THEN** verification SHALL retain its existing capture, evaluation and measured-page binding behavior
+- **AND** a gate pass SHALL NOT grant owner Visual Acceptance
+
+### Requirement: Workflow passes bind current checked inputs
+
+Workflow gate passes SHALL bind the current bytes of their declared checked files. Missing, changed or unbound required files SHALL reopen the existing check. The workflow and verifier SHALL use the same existing film render selection. A timestamp or a check of a different output SHALL NOT substitute for this binding.
+
+#### Scenario: Changed content retains its timestamp
+
+- **WHEN** a checked file changes while its original timestamp is restored
+- **THEN** the workflow SHALL return the corresponding check rather than done
+
+#### Scenario: Required input disappears or only legacy time is recorded
+
+- **WHEN** a required checked file is missing or the stored pass contains only status and time
+- **THEN** the workflow SHALL require fresh verification without deleting the old state
+
+#### Scenario: A newer film render is present
+
+- **WHEN** the existing verifier selects a newer nonempty film render
+- **THEN** the workflow SHALL bind that same render and SHALL NOT reuse a check of an older video
+
+#### Scenario: A custom edit output was checked
+
+- **WHEN** a successful edit check targeted another output file
+- **THEN** its pass SHALL NOT complete the default draft's check stage
+
+#### Scenario: Interaction verification targets another page
+
+- **WHEN** a probe measures a different local page or a remote URL
+- **THEN** its pass SHALL NOT substitute an unrelated local index.html as the measured input
+
+#### Scenario: Verification output would overwrite its input
+
+- **WHEN** interaction output names the same file as its probe, including a filesystem alias
+- **THEN** verification SHALL reject the output before capture and preserve the probe and workflow state
+
+### Requirement: Workflow review belongs to the current draft
+
+Draft acceptance SHALL bind the current checked-input snapshot and use the latest review decision. Rejection or a changed checked snapshot SHALL reopen review and any dependent standard delivery. Engineering checks SHALL NOT produce owner Visual Acceptance.
+
+#### Scenario: An accepted draft is rejected
+
+- **WHEN** the owner rejects the currently accepted draft with feedback
+- **THEN** the workflow SHALL preserve both decisions and require a new review after rechecking
+
+#### Scenario: Accepted output changes and passes another check
+
+- **WHEN** an accepted draft changes and its new version passes engineering checks
+- **THEN** the previous acceptance SHALL NOT authorize delivery of the new version
+
+### Requirement: Delivery cannot bypass workflow prerequisites
+
+Delivery recording SHALL reject unfinished prerequisites without writing state. Film and edit delivery SHALL name an existing contained file. Standard delivery SHALL bind its current check snapshot and local film/edit output. UI's existing work-stage declaration SHALL remain available with Visual Acceptance unevaluated; quick workflows MAY record delivery after all applicable stages finish.
+
+#### Scenario: Delivery is recorded before verification
+
+- **WHEN** delivery is requested while a prerequisite action remains
+- **THEN** the command SHALL return a contract error naming that action and leave state unchanged
+
+#### Scenario: Film or edit output is missing or escaping
+
+- **WHEN** film/edit delivery names a missing file, directory or path outside the project
+- **THEN** the command SHALL reject it without recording delivery
+
+#### Scenario: A delivered standard output changes
+
+- **WHEN** its check snapshot or bound delivery file changes
+- **THEN** the previous delivery SHALL NOT complete the changed workflow
+
+#### Scenario: Legacy UI records its bounded work
+
+- **WHEN** UI reaches work after its intake and reference prerequisites
+- **THEN** it MAY record the existing completion declaration and SHALL report Visual Acceptance as not evaluated
+
+### Requirement: Agent verification instructions drive the real surface
+
+The packaged QA guidance SHALL teach launch, readiness checks, real user-path verification, retained evidence, owned-process cleanup and failure recovery through existing commands. It SHALL distinguish partial capture, evidence integrity, functional checks and owner Visual Acceptance. The maintained instructions SHALL be exercised on at least one real public-command path before delivery.
+
+#### Scenario: A partial capture validates structurally
+
+- **WHEN** a capture is partial or an evidence validator exits successfully without exercising behavior
+- **THEN** the agent SHALL retain that scope and SHALL NOT report full functional verification
+
+#### Scenario: Verification cannot run
+
+- **WHEN** a required instance, input, tool or observation is unavailable
+- **THEN** the agent SHALL report the missing check and recovery action without inventing a passing result
+
+### Requirement: Interaction journeys observe ordered business states
+
+The existing interaction verifier SHALL support a bounded ordered DOM-state journey driven by real browser input in one page instance. It SHALL compare captured visible, text, attribute and focus values against declared literal expectations. Legacy motion probes SHALL retain their existing behavior and measurement requirements.
+
+#### Scenario: Menu selection follows opening
+
+- **WHEN** a journey observes initial closure, opens a menu, selects an item and closes it
+- **THEN** the verifier SHALL retain state between steps and verify each declared result
+- **AND** selection SHALL update the declared visible value and survive subsequent closing input
+
+#### Scenario: Menu animates without applying selection
+
+- **WHEN** the menu moves correctly but its selected value differs from the declared expectation
+- **THEN** verification SHALL fail with the step, actual value, expected value and repair finding
+- **AND** motion success SHALL NOT establish the missing business state
+
+#### Scenario: Keyboard closes the menu
+
+- **WHEN** the journey drives Escape on an open menu
+- **THEN** the verifier SHALL observe closure and the declared focus recovery through real keyboard input
+
+#### Scenario: State observations are incomplete or malformed
+
+- **WHEN** a required step or assertion is missing, duplicated, reordered or has an invalid actual value
+- **THEN** the verifier SHALL NOT return a passed journey
+- **AND** a missing element SHALL NOT satisfy an expected false or null value
+
+#### Scenario: A journey requests unbounded or executable assertions
+
+- **WHEN** the request exceeds the step, assertion or observation budgets, mixes motion and journey shapes, or supplies an unsupported action or expression
+- **THEN** contract validation SHALL reject it before browser execution
+
+#### Scenario: A journey navigates elsewhere
+
+- **WHEN** an ordered operation changes the actual local page to another target
+- **THEN** capture SHALL retain the existing canonical-page rejection
+- **AND** the other page's states SHALL NOT authorize native completion
+
+#### Scenario: Missing journey provenance hides external requests
+
+- **WHEN** a journey capture omits its page origin, declares another origin, or supplies an unsupported or mismatched capture URL
+- **THEN** evaluation SHALL reject it before its values can establish a passed journey
+- **AND** supported journey capture SHALL retain external-request checks while legacy-only capture compatibility remains unchanged
+
+### Requirement: Native completion verifies declared journey coverage
+
+Native completion SHALL validate the observed interaction result against the normalized original probe, including every ordered state assertion. It SHALL retain existing task/input/output/report binding, preserved scope, CAS and exact-version review. Journey results SHALL NOT fabricate motion frames or relax legacy motion completeness.
+
+#### Scenario: A caller labels a partial report as state-only
+
+- **WHEN** a caller supplies a state-only label without the complete declared journey observations
+- **THEN** native completion SHALL remain blocked
+- **AND** the original probe declaration SHALL determine required evidence
+
+#### Scenario: The accepted probe changes
+
+- **WHEN** a step input or literal expectation changes after observed completion
+- **THEN** the completion and dependent review SHALL become stale under existing input invalidation
+
+### Requirement: Native repair feedback is actionable and snapshot-bound
+
+Native next SHALL expose actual verifier findings with concrete repair guidance while preserving legacy failure text. Consecutive observed failures SHALL bind the measured input/output snapshot; after three identical failures the returned action SHALL stop blind repetition. Recovery SHALL NOT bypass completion checks or reset a failed authorization window.
+
+#### Scenario: The same failed snapshot is verified again
+
+- **WHEN** actual verification fails repeatedly on identical bound input/output bytes
+- **THEN** the stored observed attempt count SHALL increase
+- **AND** the third failure SHALL return stop-repeating guidance with the failing check and repair action
+
+#### Scenario: The implementation is repaired
+
+- **WHEN** output bytes change before another observed failed verification
+- **THEN** the consecutive count SHALL restart for that new snapshot
+- **AND** a restored modification timestamp SHALL NOT hide the byte change
+
+#### Scenario: Next is repeated without verification
+
+- **WHEN** next is repeated, a tool is missing, scope is blocked or native CAS conflicts
+- **THEN** no additional observed verifier attempt SHALL be claimed
+- **AND** the existing active scope window and applicable recovery SHALL remain intact
+
+### Requirement: Native task examples match supported proof
+
+Native task templates and guides SHALL use an observable goal whose declared checks can establish it, and SHALL state uncovered behavior. A real menu trial SHALL retain agent-produced output, independent browser findings and repaired version evidence while keeping Component Conformance and owner Visual Acceptance separate.
+
+#### Scenario: The agent follows the menu example
+
+- **WHEN** the example task is dispatched, implemented and verified
+- **THEN** its proof SHALL exercise actual open, selection, close and keyboard/focus states
+- **AND** owner acceptance SHALL require a real reply on the exact displayed version
+
+#### Scenario: A selection defect is deliberately injected
+
+- **WHEN** a trial uses a fault injection to test repair feedback
+- **THEN** the record SHALL identify it as an injected counterexample
+- **AND** scripted fixtures SHALL NOT be described as real model-produced output
+
+### Requirement: Publication preserves required tracked upstream source
+
+Publication SHALL preserve required tracked upstream source bytes despite personal ignore patterns. Repository exceptions SHALL name exact source paths and SHALL retain the existing tracked-ignored-file audit without changing global preferences.
+
+#### Scenario: A personal binary ignore hides required tracked source
+
+- **WHEN** a published tracked upstream layout source matches a personal binary ignore rule
+- **THEN** the repository SHALL explicitly include that exact source path without modifying its bytes or global preferences
+- **AND** the existing tracked-ignored-file audit SHALL remain enforced
+
+### Requirement: Physical path identity survives Windows aliases
+
+Existing Git scope and native completion SHALL identify one physical repository consistently when Windows paths use long or short directory spellings, while retaining containment, link, root, branch and history checks.
+
+#### Scenario: Equivalent root spellings reach a native task
+
+- **WHEN** a task and Git root refer to the same physical directory through different Windows spellings
+- **THEN** snapshot identity and change-to-Git coordinates SHALL remain consistent
+- **AND** baseline capture and verified completion SHALL not be rejected solely for that alias.
+
+#### Scenario: A path escapes its physical root
+
+- **WHEN** an external link, different Git root or uncontained target is selected
+- **THEN** the existing verifier SHALL reject the path and preserve prior evidence.
+
+#### Scenario: Offline study output aliases the preserved source
+
+- **WHEN** study source and nested output use different Windows spellings of one physical directory
+- **THEN** the builder SHALL reject that output before writing and preserve every source byte.
+
+### Requirement: Repository QA observes actual browser motion
+
+Pointer capture SHALL apply every planned intermediate native input with step spacing after delayed delivery. Driver stalls SHALL not create elapsed-time catch-up jumps or bursts. Capture SHALL retain real browser samples, timestamps and safety bounds without weakening existing gate conditions.
+
+#### Scenario: Pointer capture runs under variable frame scheduling
+
+- **WHEN** the supported browser drives and observes the existing pointer specimen
+- **THEN** the driver SHALL retain the intermediate coordinates rather than skip directly to a later elapsed-time position
+- **AND** measurements SHALL reflect the actual input duration and observed frames.
+
+#### Scenario: Motion is actually discontinuous or absent
+
+- **WHEN** the specimen jumps or ignores the pointer
+- **THEN** capture SHALL retain the actual discontinuity observations
+- **AND** a motionless target SHALL retain its failed motion-response finding.
+
+### Requirement: Complete pinned good-css source
+
+The pipeline SHALL ship the complete reviewed good-css Git tree as byte-preserved source with
+revision, Git tree, per-object identities, canonical hash and license evidence. It SHALL use the
+existing snapshot, package-resource and source-check mechanisms without automatic upstream installation.
+
+#### Scenario: Clean reviewed source is imported
+
+- **WHEN** the selected clean revision is imported
+- **THEN** every tracked file, practice, reference, specimen and attributed asset SHALL be packaged
+- **AND** the snapshot SHALL match Git blob identities and the locked tree hash.
+
+#### Scenario: Source evidence is incomplete or changed
+
+- **WHEN** the source is dirty or a locked file is missing, added or modified
+- **THEN** import or integrity verification SHALL fail without relabeling the source as current
+- **AND** existing published artifacts SHALL not be silently overwritten by a failed import.
+
+### Requirement: Reachable project-adapted CSS practices
+
+CSS authoring and review SHALL route through the built-in good-css guide without requiring an
+ambient skill. Every reviewed practice SHALL have a source link, relevant use, specimen and
+verification/adaptation condition. Project tokens, semantics, browser support and existing v1
+evidence and acceptance contracts SHALL remain authoritative.
+
+#### Scenario: CSS is written through any authoring system
+
+- **WHEN** a page or component uses CSS, utility classes, inline styles or CSS-in-JS
+- **THEN** the agent SHALL load applicable original entries and adapt their complete conditions
+- **AND** existing stage/web/tool and QA routes SHALL expose the guide offline.
+
+#### Scenario: A technique cannot satisfy the target contract
+
+- **WHEN** a feature lacks target-browser support or conflicts with accessibility, tokens or film seeking
+- **THEN** the agent SHALL retain a usable verified fallback and record the limitation
+- **AND** it SHALL NOT infer visual acceptance or deterministic playback from a CSS example.
+
+### Requirement: Offline good-css specimen studies
+
+The pipeline SHALL provide a maintained Node tool that builds all reviewed live specimens with
+local assets into a new caller-owned directory without new dependencies or upstream deployment.
+Existing output SHALL be preserved on rejection. Browser results SHALL remain scoped evidence.
+
+#### Scenario: A clean isolated installation builds a study
+
+- **WHEN** only the packaged skill and Node are available
+- **THEN** every practice SHALL resolve to its runnable offline specimen and required assets
+- **AND** a navigation specimen SHALL have its required second document.
+
+#### Scenario: An output already exists or a feature is unsupported
+
+- **WHEN** the builder receives an existing output or the browser cannot run an advanced feature
+- **THEN** the builder SHALL refuse overwrite and the browser limitation SHALL remain explicit
+- **AND** source/structural checks SHALL NOT be presented as Component Conformance or Visual Acceptance.
+
+### Requirement: Native verification preserves physical root identity
+
+The existing containment and Git snapshot helpers SHALL recognize equivalent physical Windows directory spellings without treating an outside link or a distinct case-sensitive directory as the same authorized root. Native task coordinates SHALL remain consistent with the observed Git baseline. Existing snapshot, scope and receipt lineage SHALL remain authoritative.
+
+#### Scenario: A task root has a Windows short-name alias
+
+- **WHEN** native dispatch and Git discovery use different spellings of the same physical directory
+- **THEN** dispatch SHALL retain that directory's physical identity and interpret task scope within the observed Git root
+- **AND** equivalent spelling SHALL NOT itself block task verification
+
+#### Scenario: An artifact uses an absolute spelling of its junction-root directory
+
+- **WHEN** an accepted absolute path identifies a file within the caller's physical root using another spelling
+- **THEN** the existing resolver SHALL return its equivalent path in the caller-root coordinates
+- **AND** generated artifact metadata SHALL remain a contained relative path without a parent-directory escape
+
+#### Scenario: An alias crosses an unauthorized boundary
+
+- **WHEN** a path uses an external junction, linked ancestor, unresolved link or distinct case-sensitive root
+- **THEN** existing containment and identity checks SHALL reject that path
+- **AND** spelling normalization SHALL NOT expand the task's authorization
+- **AND** a relative path outside the caller's lexical root SHALL NOT be accepted as an absolute physical alias
+
+### Requirement: Native QA reports actual failed observations
+
+Native QA SHALL report the failed attempt's code and reason when a run has no notice, and SHALL distinguish a measured semantic failure from unavailable, incomplete or drifted verification. A failed verification SHALL NOT be interpreted as user visual acceptance or rewritten as passed by a successful focused rerun.
+
+#### Scenario: A handled task failure has no run notice
+
+- **WHEN** a component run fails and an assertion expects review or completion
+- **THEN** the assertion SHALL retain its expected-status failure with the latest attempt's diagnostic code and reason
+- **AND** an undefined message SHALL NOT mask it with a separate argument-type error
+
+#### Scenario: Verification cannot observe a changed output
+
+- **WHEN** a changed output's capture or tool operation blocks before a complete semantic measurement
+- **THEN** native progress SHALL preserve the previous observed failure evidence and SHALL NOT count a new semantic attempt
+- **AND** QA SHALL expose the blocking reason before interpreting the failure counter
+
+### Requirement: Complete pinned Taste source
+
+The pipeline SHALL ship the complete reviewed Taste-Skill Git tree with all thirteen skills, research and supporting files, preserving original bytes and modes. Provenance SHALL bind revision, Git tree, per-object identities, canonical hash and MIT license through existing snapshot and resource mechanisms.
+
+#### Scenario: Reviewed source is internalized
+
+- **WHEN** a clean explicitly reviewed revision is imported
+- **THEN** the complete source inventory and all thirteen skill names SHALL match the preserved Git blobs
+- **AND** required package resources SHALL include their complete local source.
+
+#### Scenario: An import or snapshot cannot be trusted
+
+- **WHEN** the source is dirty, unreviewed, incomplete or a locked blob is changed, missing or added
+- **THEN** import or source verification SHALL fail without approving a new baseline
+- **AND** a failed import SHALL preserve the prior snapshot.
+
+### Requirement: Task-selected built-in Taste capability
+
+The pipeline SHALL expose all thirteen Taste capabilities through a maintained local selection/adaptation guide and its existing entry, frontend, brand and visual-asset routes. Installed packages SHALL provide the source without external Taste skills. Every entry SHALL identify its output, project use and verification boundary.
+
+#### Scenario: A clean installation selects a capability
+
+- **WHEN** only the packaged design-pipeline skill is installed
+- **THEN** existing entry/routing guidance SHALL reach the appropriate complete local skill
+- **AND** source, guide and resource checks SHALL establish built-in availability independently of host Taste installations.
+
+#### Scenario: A source preference conflicts with the task
+
+- **WHEN** upstream style, framework, randomness, image-first or copy preferences conflict with user references, project design or accessibility requirements
+- **THEN** the maintained guide SHALL adapt the selected method within the existing project contracts
+- **AND** source availability or a successful gate SHALL NOT imply Visual Acceptance.
+
+#### Scenario: An image-only capability is selected
+
+- **WHEN** the request selects web concepts, mobile concepts or a brand board
+- **THEN** the guide SHALL use the available image-generation capability and distinguish image output from implemented behavior
+- **AND** lack of an image provider SHALL remain explicit rather than claiming images were produced.
+
+### Requirement: Capability-selected engineering companions
+
+The pipeline SHALL select engineering companions by the current framework and requested or required capability. Next.js methods SHALL require a Next.js project. Cache Components adoption SHALL require authorized adoption or demonstrated task need; optimization SHALL require affected existing cache boundaries.
+
+#### Scenario: Ordinary UI work does not need specialized caching
+
+- **WHEN** an ordinary React component or Next.js visual change has no cache adoption or optimization need
+- **THEN** engineering guidance SHALL select only the capabilities needed for that task
+- **AND** the presence of an installed companion SHALL NOT require its unrelated procedure.
+
+#### Scenario: An applicable companion is absent
+
+- **WHEN** a selected engineering companion is unavailable
+- **THEN** the pipeline SHALL use applicable project and bundled guidance with a relevant fallback record
+- **AND** only missing inputs or services required by the requested output SHALL block that work.
+
+### Requirement: Observable skill eval coverage
+
+The skill eval suite SHALL check actual state, observable behavior signals and nonempty artifacts for its named supporting CSS, quick Chinese UI and missing-reference cases. Deterministic fixture/CLI regressions SHALL be reported separately from independent-agent forward tests and other cases' manifest/routing coverage. Neither SHALL grant Visual Acceptance.
+
+#### Scenario: Named behavior expectations are executed
+
+- **WHEN** the supporting CSS or quick Chinese UI regression runs with available browser tooling
+- **THEN** it SHALL execute the actual rendered fixture and applicable public workflow
+- **AND** wrong expected state, a missing required signal or a missing required artifact SHALL fail
+- **AND** quick UI completion SHALL retain `visualAcceptance: not-evaluated`.
+
+#### Scenario: Required reference input is unavailable
+
+- **WHEN** the missing-reference regression checks pending source input and attempts resolution without its file
+- **THEN** the public check SHALL return blocked with exit 2 and source-pending reason
+- **AND** failed resolution SHALL preserve the pending input bytes and null source path/hash.
+
+#### Scenario: A browser prerequisite is absent
+
+- **WHEN** a named rendered-fixture regression cannot obtain its existing browser tooling
+- **THEN** the skipped case SHALL remain visible and SHALL NOT be reported as a behavioral pass.
+
+### Requirement: Complete film method source snapshots
+
+The packaged skill SHALL preserve both reviewed redistributable film-method Git trees with original bytes, file inventories, hashes and notices. Import SHALL reject an unreviewed revision or altered checkout and preserve the previous snapshot on failure.
+
+#### Scenario: Complete sources travel with an isolated installation
+
+- **WHEN** the package is installed without ambient Cinetic or product-film-skill
+- **THEN** every reviewed tracked blob SHALL remain readable locally and match its locked identity
+- **AND** excluded external media SHALL have a stated boundary.
+
+#### Scenario: Arbitrary source refresh is refused
+
+- **WHEN** an import uses an unreviewed revision or modified source
+- **THEN** it SHALL fail without replacing the previous snapshot.
+
+### Requirement: Film methods activate within existing task contracts
+
+Film adaptations SHALL activate only for explicit applicable film or motion-loop tasks and map selected methods into existing artifacts and verification. Project brand, components, constraints and engine selection SHALL remain authoritative; source scripts SHALL not become runtime dependencies merely by being packaged.
+
+#### Scenario: A product film is planned
+
+- **WHEN** a product-film method is selected
+- **THEN** planning SHALL discover real design/component sources, record provenance and produce an existing-contract plan suitable for actual rendering and validation
+- **AND** it SHALL distinguish callable adaptations from source-only scripts and technical checks from Visual Acceptance.
+
+#### Scenario: An ordinary interface task is selected
+
+- **WHEN** the task is ordinary UI or CSS work
+- **THEN** film methods SHALL NOT take over its workflow or require a soundtrack, storyboard, Remotion or higher frame rate.
+
+#### Scenario: A short loop uses Cinetic methods
+
+- **WHEN** an explicit short loop selects a technique and timing method
+- **THEN** its plan SHALL preserve user constraints and use existing timeline/render verification
+- **AND** randomness or upstream style bans SHALL NOT silently determine the result.
+
+### Requirement: Prompt Motion references retain observation limits
+
+Prompt Motion case references SHALL identify author, original repository, applicable tasks, transferable methods, observed content and observation limits. They SHALL enter the existing reference evidence flow without mirroring works lacking redistribution authority.
+
+#### Scenario: Only a case page was read
+
+- **WHEN** an agent has read page text without watching its video or hearing its soundtrack
+- **THEN** motion and audio SHALL remain unobserved
+- **AND** proposed transfers SHALL be labelled adaptations rather than measured case facts.
+
+### Requirement: Maintained film tools have bounded execution evidence
+
+New maintained film tools SHALL have reproducible selection, planning, actual artifact and existing validation evidence for a branded product task and a short motion task. Platform and provider claims SHALL be limited to executed environments and observed outputs.
+
+#### Scenario: Windows execution evidence is reported
+
+- **WHEN** a maintained helper and selected existing renderer pass on Windows
+- **THEN** the claim SHALL cover those entries only
+- **AND** unexecuted upstream scripts, WSL, cloud services and unheard audio SHALL remain explicitly unverified.
+
+### Requirement: Maintained case and recipe library
+The pipeline SHALL keep source-attributed Prompt Motion discovery candidates separate from curated recipe templates. Recipes SHALL state task fit, replaceable inputs, sequence, motion invariants and observation limits. Library inclusion SHALL NOT imply a runnable project or visual acceptance.
+
+#### Scenario: Prompt becomes a maintained recipe
+- **WHEN** a source prompt is reviewed
+- **THEN** an authored recipe records the exact case source and adaptation, without mirroring its video or treating page text as observed motion
+
+#### Scenario: Case is indexed but not reviewed
+- **WHEN** a homepage card is inventoried
+- **THEN** it is labelled a candidate and does not acquire a curated or rendered status
+
+### Requirement: Offline read-only template access
+The existing film CLI SHALL search curated recipes and show a selected template from the installed package without network access or writes. Discovery candidates SHALL require an explicit selection. Invalid IDs or malformed catalog data SHALL fail as contract errors.
+
+#### Scenario: Relocated library selection
+- **WHEN** a clean relocated installation searches or selects a template
+- **THEN** it resolves bundled recipes and sources and retains recipe-only, unrendered and unobserved limits
+
+#### Scenario: Unknown template
+- **WHEN** a nonexistent template ID is requested
+- **THEN** selection fails without modifying project files
+
+### Requirement: Reviewable index maintenance
+Refreshing source discovery SHALL produce reviewable added, changed and removed case metadata from a supplied homepage snapshot. It SHALL NOT execute source scripts, approve recipes, delete curated templates or overwrite existing output. Malformed or duplicate source entries SHALL be rejected.
+
+#### Scenario: Upstream case changes or disappears
+- **WHEN** the refreshed homepage changes metadata or omits a recorded case
+- **THEN** the candidate diff records the change for review while curated recipes remain intact
+
+#### Scenario: Unsafe refresh input
+- **WHEN** source records are missing, malformed or duplicated, or the output already exists
+- **THEN** maintenance fails without replacing the reviewed index or existing output
+
+### Requirement: GEPA is a packaged independent supporting tool
+
+The pipeline SHALL expose a separately runnable guidance optimizer through the supporting-tool path, with the complete pinned official source skill, license and byte-verifiable provenance. Optimization SHALL use the reviewed native engine and SHALL NOT become a mandatory production stage or require a global skill installation.
+
+#### Scenario: Explicit guidance optimization
+
+- **WHEN** a user requests offline improvement of a bounded design instruction
+- **THEN** the supporting-tool route SHALL provide the packaged guide and callable optimizer
+- **AND** ordinary design delivery SHALL retain its existing workflow.
+
+#### Scenario: Source revision or bytes drift
+
+- **WHEN** import receives a dirty or unreviewed source, or packaged source bytes drift
+- **THEN** verification SHALL fail while preserving the previously imported snapshot.
+
+#### Scenario: Installed runtime provenance is unknown or unreviewed
+
+- **WHEN** the selected Python environment lacks the recorded Git commit matching the bundled source manifest, or imports GEPA from another location
+- **THEN** optimization SHALL fail before invoking the native engine or creating experiment output
+- **AND** a package version label alone SHALL NOT establish the reviewed runtime.
+
+### Requirement: Optimization experiments freeze independent case splits
+
+Each optimization SHALL require a seed, a trusted task evaluator, nonempty disjoint training, validation and final-test fixtures with unique ids, an explicit proposer or reflection model, and a finite positive evaluation budget. Inputs SHALL be validated before optimization and bound by hashes in the local experiment record.
+
+#### Scenario: Missing or overlapping fixtures
+
+- **WHEN** fixture ids overlap, a split is empty, or required inputs are missing
+- **THEN** the request SHALL fail before optimization or output-directory creation.
+
+#### Scenario: Final-test evidence remains independent
+
+- **WHEN** candidates are generated and selected
+- **THEN** final-test fixtures SHALL remain outside search and selection
+- **AND** the seed and selected candidate SHALL be compared on final-test fixtures outside search, with the comparison available after search.
+
+### Requirement: Native optimization produces reviewable candidates
+
+The optimizer SHALL feed finite evaluator scores and diagnostic feedback into native candidate search, retain native history and parent relationships, and export the selected candidate and seed diff. Outputs SHALL use a fresh local experiment directory, preserve failed-run evidence and SHALL NOT overwrite the seed or frozen inputs.
+
+#### Scenario: Synthetic native search succeeds
+
+- **WHEN** a deterministic evaluator and proposer expose an improving candidate
+- **THEN** native search SHALL evaluate and select it, export its diff and retain candidate lineage
+- **AND** the result SHALL be identified as integration evidence rather than design-quality improvement.
+
+#### Scenario: Invalid score or existing output
+
+- **WHEN** an evaluator returns a non-finite score or output already exists
+- **THEN** execution SHALL fail without replacing earlier results or reporting success.
+
+### Requirement: Search results preserve existing adoption authority
+
+Search outputs SHALL remain reviewable proposals. Packaged guidance adoption SHALL use the feedback/OpenSpec maintainer workflow; finite project/user adaptation SHALL retain its existing lifecycle. Component Conformance and Visual Acceptance SHALL remain separate; search scores SHALL NOT grant gate passage, visual acceptance or installed-skill promotion.
+
+#### Scenario: Search score improves
+
+- **WHEN** the optimizer selects a higher-scoring guidance candidate
+- **THEN** its output SHALL remain proposed until independent applicable checks and review
+- **AND** it SHALL NOT change evaluation criteria, constraints, gates, policy digests or live installed skills.
+
+#### Scenario: Required evidence fails or is unknown
+
+- **WHEN** candidate evaluation has failed or unknown required evidence
+- **THEN** existing checks SHALL retain that outcome regardless of aggregate search score
+- **AND** the evaluator SHALL not turn missing evidence into a successful observation.
+
+### Requirement: Native completion requires task work beyond verifier evidence
+
+Native completion SHALL observe at least one task-window change within the current task's source scope or declared outputs before verification writes and through snapshot rechecks. Exact verifier-owned check reports, completion metadata and native state/event controls SHALL NOT count as task work. Dispatch and scope repair SHALL preserve their existing baseline behavior.
+
+#### Scenario: A pre-existing good page is submitted unchanged
+
+- **WHEN** a dispatched task has a passing output but no new task change
+- **THEN** completion SHALL remain blocked before browser execution or report/metadata writes
+- **AND** repeating next or completion SHALL retain the original baseline
+
+#### Scenario: Only verifier-owned files change inside a broad source scope
+
+- **WHEN** the only task-window changes are exact reports, completion metadata or native state/event controls
+- **THEN** completion SHALL remain blocked
+- **AND** a real source or declared output edit in the same directory SHALL remain eligible
+
+#### Scenario: A real task edit is measured repeatedly
+
+- **WHEN** an actual scoped edit is retained while a failed verifier is rerun
+- **THEN** existing observed failure evidence and counts SHALL remain valid for the measured snapshot
+- **AND** a passing supported verifier SHALL complete that current snapshot without granting Visual Acceptance
+
+### Requirement: Native contract rejection checks do not require a browser
+
+Repository tests SHALL exercise browser-independent native contract failures without resolving Chrome. Scenarios that execute the browser SHALL use existing tool resolution and skip only when required tools are unavailable.
+
+#### Scenario: Chrome is unavailable during contract rejection checks
+
+- **WHEN** missing-plan, guide-conflict or report-only fixtures reject before browser execution
+- **THEN** those checks SHALL run and assert their contract failures even if Chrome resolution would fail
+
+### Requirement: Windows namespace aliases preserve contained artifact coordinates
+
+The existing containment and artifact v1 helpers SHALL accept equivalent Windows namespace paths in either direction while retaining caller-root coordinates and physical identity checks. Namespace root traversal SHALL terminate safely. Artifact metadata and receipt lineage SHALL remain unchanged.
+
+#### Scenario: Existing and future paths use the other namespace spelling
+
+- **WHEN** an absolute existing or future path identifies a location within the caller's physical root using its equivalent namespace spelling
+- **THEN** the resolver SHALL return that location within the caller's lexical root
+- **AND** namespace volume-root traversal SHALL NOT throw an unrelated filesystem error
+
+#### Scenario: An artifact caller uses a namespace root
+
+- **WHEN** artifact creation or validation receives a namespace caller root and a contained file
+- **THEN** metadata SHALL retain a relative contained path with the actual file hash
+- **AND** subsequent validation SHALL retain its ready status without changing dependencies or input hashes
+
+#### Scenario: Namespace spelling attempts to bypass containment
+
+- **WHEN** a namespace path uses an external junction, linked ancestor, distinct physical directory, unavailable identity or relative parent traversal outside the caller's root
+- **THEN** existing containment checks SHALL reject that path
+- **AND** namespace handling SHALL NOT expand the authorized root
+
+### Requirement: Active design capability discovery
+During planning, production or rendered review, the agent SHALL identify unmet visual goals and actively investigate missing methods. It SHALL reuse adequate project/local capabilities, otherwise inspect relevant upstream implementations, test a bounded study and integrate the useful part under existing adoption contracts. The user need not name a repository.
+
+#### Scenario: Local capabilities cannot meet the visible goal
+- **WHEN** an observed or specified design need is not adequately supported by the current project and bundled methods
+- **THEN** the agent searches relevant primary documentation and GitHub source beyond the local catalogue, checks the chosen revision and makes a task-specific study before adoption
+- **AND** actual output and relevant playback are reviewed against the goal rather than treating source discovery or package import as visual success
+
+#### Scenario: Existing methods already fit
+- **WHEN** native CSS or an existing project helper fully covers a bounded change
+- **THEN** the agent uses it without a mandatory repository search or extra overlapping dependency
+
+#### Scenario: The gap is perceptual or the source is unverified
+- **WHEN** the work has weak composition or motion decisions, or a candidate lacks source/license/compatibility evidence
+- **THEN** the agent resolves the relevant method or evidence gap without hiding it under new effects or treating the candidate as an admitted runtime
+
+### Requirement: Task-driven design source discovery
+The skill SHALL offer the user's design directory as a progressively loaded source for references, assets and operations. Selected works SHALL feed existing reference, study and preview methods. The directory SHALL NOT mandate styles, services, source quotas or a new evidence schema.
+
+#### Scenario: A visual question needs a source
+- **WHEN** an agent needs composition, typography, motion, lighting or material references
+- **THEN** it opens the relevant category, inspects a specific work and records an observable mechanism and intended adaptation in the existing task notes
+- **AND** it reuses a suitable installed operation or project renderer instead of assuming the linked service is bundled
+
+#### Scenario: A listed destination cannot be inspected
+- **WHEN** a source is unavailable, access-restricted or only renders a loading shell
+- **THEN** the agent records that limitation and uses an accessible source without claiming unseen content was inspected
+
+### Requirement: Project-driven font discovery and use
+The skill SHALL support task-driven font selection from FontLab and primary font sources. It SHALL distinguish discovery from licensing, preserve actual family identity, and route chosen project-local fonts to existing layout, glyph and subset tools. No catalogue or bundled font SHALL mandate a project typeface.
+
+#### Scenario: A curated font fits the visual direction
+- **WHEN** a font is found in FontLab or another collection
+- **THEN** the agent checks its official source and intended embedding/modification use, compares the project's actual text, and records the selected family in existing design notes
+- **AND** free availability alone does not label it open source or authorize subsetting
+
+#### Scenario: Existing example font alias is reused
+- **WHEN** an Art Motion clip requests a bundled PuHui family alias
+- **THEN** the agent identifies its actual Noto Sans SC font file and does not claim Alibaba PuHui is bundled
+
+#### Scenario: Custom interface typography is requested
+- **WHEN** the project's direction selects an appropriate custom CJK family
+- **THEN** it can be used with verified glyph coverage, loading, readable layout and fallback instead of imposing the unspecific system-font default
+
+### Requirement: Complete Art Motion capability access
+The installed skill SHALL provide usable local entry points for the complete reviewed Art Motion capability set, combining adapted helpers with existing pipeline tools. It SHALL distinguish runnable functionality, method guidance, optional sample assets and measured verification limits.
+
+#### Scenario: An advanced drawing method is requested
+- **WHEN** an agent needs an Art Motion material, camera, chart, collage, rig, typography or post effect
+- **THEN** the tool guide identifies a callable local implementation and its inputs instead of requiring the agent to first port the raw source
+
+#### Scenario: A style or grammar is selected
+- **WHEN** the user requests an existing style or animation grammar
+- **THEN** the installed skill provides its recipe, implementation/example and required assets through progressive lookup
+- **AND** examples do not enforce the original narrator, character, scene composition or creative quotas
+
+### Requirement: Portable isolated art tools
+Art tool instances SHALL use caller-owned dimensions, time, context and assets without polluting host globals or silently fetching dependencies. Source examples MAY retain their authored coordinate system when explicitly selected and clearly fitted to the caller's output.
+
+#### Scenario: Multiple sizes and reordered time
+- **WHEN** independent tool instances render at different sizes or seek backwards
+- **THEN** dimensions, cached state and frame results do not leak between instances
+
+#### Scenario: Missing or unsafe inputs
+- **WHEN** required assets are absent, numeric inputs are invalid or an output would overwrite or escape the chosen root
+- **THEN** the tool reports the unmet requirement and preserves existing files
+
+### Requirement: Complete source and capability verification
+The package SHALL preserve reviewed source provenance and licenses and SHALL verify representative adapted algorithms, supplied presets and actual outputs. Numeric diagnostics SHALL remain separate from visual acceptance.
+
+#### Scenario: Source refresh and packaging
+- **WHEN** the source snapshot or adapted implementation is rebuilt
+- **THEN** committed source bytes and the reviewed revision are checked before changing derived artifacts
+- **AND** the installed package retains all required guides, tools and source resources
+
+#### Scenario: Technical checks complete
+- **WHEN** structural or rendering tests pass
+- **THEN** the report states what was exercised and any asset, portability or visual limits without claiming user acceptance
+
+### Requirement: Reviewed Art Motion media source and routing
+The skill SHALL retain committed media defaults/schema, contract tests and release source from the reviewed Art Motion reference revision. Optional images SHALL use actual host tools and existing asset evidence; original provider/configuration and plan/receipt mechanisms SHALL remain source reference without adding a parallel pipeline contract.
+
+#### Scenario: Importing the reviewed media increment
+- **WHEN** the source refresh imports revision `57d67608ab458f57d9b153b1a2831b921e22498b`
+- **THEN** defaults/schema and related source tests are retained with original bytes, the runtime and render report identify that revision, and historical manual adaptations retain their original attribution
+- **AND** later remote commits are not imported without separate review
+
+#### Scenario: A task needs an image
+- **WHEN** supplied artwork is suitable or authorized generation/editing is requested
+- **THEN** the agent uses the supplied file or the current host tool's real schema, checks the actual file and records its source/hash in existing asset evidence
+- **AND** changed references/assets require downstream evidence refresh without importing upstream plan/receipt/config fingerprint machinery
+
+### Requirement: Safe maintained offline voice processing
+Maintained offline audio operations SHALL use closed-handle temporary files beside the output, clean failed new outputs and preserve supplied files and existing output/sidecar. They SHALL expose local fit, level-match and PCM preparation only; voice providers, training and media configuration SHALL remain source reference.
+
+#### Scenario: System temporary directory is on another filesystem
+- **WHEN** a supplied audio file is processed into a fresh output while the system temporary directory is elsewhere
+- **THEN** processing stages beside the output with closed file handles and publishes exclusively without a cross-filesystem replacement
+
+#### Scenario: Processing fails or the destination already exists
+- **WHEN** FFmpeg or fit validation fails, or the requested output or its JSON sidecar already exists
+- **THEN** the operation preserves source/existing files, refuses overwrite and removes only its own new temporary or failed output files
+
+### Requirement: Project-owned Art Motion capability
+The skill SHALL ship the Art Motion runtime, engine source, fonts, examples, tools and method notes as project-owned material under `skill/tools/art-motion` and `skill/references/art-motion` with neutral names. No upstream mirror, importer, pinned upstream revision or reference-project name SHALL remain in tracked paths or contents, and no capability reached by a test, guide or CLI path SHALL be lost.
+
+#### Scenario: Zero-hit naming acceptance
+- **WHEN** tracked paths and file contents are searched case-insensitively for the former reference-project name
+- **THEN** there are no matches
+- **AND** repository QA fails its naming policy check if the name reappears
+
+#### Scenario: Capability retained after the move
+- **WHEN** the runtime is regenerated from the owned engine and exercised in a browser at caller-chosen sizes
+- **THEN** all 35 style studies, eight grammars and the transition registry render with instance isolation as before
+- **AND** rerunning the build reproduces the committed runtime byte for byte
+
+#### Scenario: Former mirror material without a consumer
+- **WHEN** a former mirror file has no test, guide, tool or CLI consumer
+- **THEN** it is deleted instead of being packaged as a required resource
+
+### Requirement: Retained attribution for adapted work
+The package SHALL keep the original MIT copyright line and permission notice verbatim beside the adapted code and in every generated or scaffolded copy, and SHALL keep each bundled font's license beside the fonts. Notices SHALL attribute by copyright holder and license; a license text SHALL NOT be edited to remove a name.
+
+#### Scenario: Generated runtime and scaffolded study
+- **WHEN** the runtime is built or an `art-motion` or `visual-craft` study is scaffolded
+- **THEN** the runtime header and the copied `LICENSE.art-motion` contain the canonical license text unchanged
+
+#### Scenario: A license would need the removed name
+- **WHEN** a retained license text itself contains the removed name
+- **THEN** the license text stays unchanged and the conflict is reported instead of edited
+
+### Requirement: Art Motion entry points through the pipeline CLI
+Art Motion rendering and the audiovisual reference study SHALL run through `designer-pipeline` commands whose options are registered in the CLI option table. They SHALL reuse the existing reference analyzer and render kernel mechanism and return diagnostics without a new gate, receipt or schema.
+
+#### Scenario: Render a style or grammar
+- **WHEN** `art-motion render --spec <file> --output <new-dir>` runs with a valid spec
+- **THEN** stills or exact-frame video and a `render-report.json` naming the runtime by `runtimeSha256` are written to the new directory
+
+#### Scenario: Render a shipped example clip spec
+- **WHEN** `art-motion render` runs on any `skill/tools/art-motion/examples/<grammar>.json` as shipped
+- **THEN** it renders without extra inputs because the spec selects the bundled fonts
+
+#### Scenario: Grammar clip with safe margins and fill
+- **WHEN** a grammar spec sets `safe` edges with a `fill` colour and `alpha` is not true
+- **THEN** the margins outside the content box are painted with `fill` after the grammar draws
+- **AND** with `alpha: true` the margins are left unpainted
+
+#### Scenario: Unusable safe fill
+- **WHEN** `safe.fill` is not a CSS colour Canvas can parse, or is fully transparent
+- **THEN** `drawClip` and `art-motion render` fail with the contract error before any output is written
+
+#### Scenario: Invalid render request
+- **WHEN** the spec is invalid, the output exists or escapes the root, or an unregistered option is passed
+- **THEN** the command exits 1 with the contract error and preserves existing files
+
+#### Scenario: Reference study requested
+- **WHEN** `reference analyze-video --path <video> --output <new-dir> --study` runs
+- **THEN** the existing analyzer report is written together with `study.json` and audio evidence when the source has sound
+- **AND** the same command without `--study` produces the unchanged analyzer output
+
+### Requirement: Intake completion preserves user briefs
+
+Workflow intake SHALL finish only from its recorded state decision. Intake writing SHALL refuse case-insensitive collisions with brief files it did not write, return a contract error explaining recovery, and preserve the user's file and workflow state. This applies to web and the shared film/edit/UI intake without adding an ownership schema.
+
+#### Scenario: Only an assignment brief exists
+
+- **WHEN** a project contains user-owned `BRIEF.md` but no intake decision
+- **THEN** `next` SHALL ask intake and SHALL NOT list intake as completed
+
+#### Scenario: Intake would overwrite a user brief
+
+- **WHEN** intake is recorded with an unowned case-insensitive `brief.md` collision
+- **THEN** it SHALL refuse with a contract error explaining how to move or rename the file, preserving both bytes and state
+
+#### Scenario: Intake wrote the existing brief
+
+- **WHEN** a project has the recorded intake decision and its generated brief
+- **THEN** intake SHALL remain complete and an explicit subsequent intake answer MAY update its own brief
+
+#### Scenario: A generated brief is replaced by a hard link
+
+- **WHEN** the existing generated `brief.md` has more than one hard link, even with the recorded bytes
+- **THEN** intake SHALL refuse with `OUTPUT_COLLISION`, leaving the external linked file and workflow state unchanged
+
+#### Scenario: An owned brief is updated safely
+
+- **WHEN** intake updates its owned single-link brief
+- **THEN** it SHALL write a temporary file in the same directory and rename it over the target, replacing the directory entry rather than writing through the previous inode
+
+### Requirement: Workflow commands bind the selected project
+
+Every runnable command and record template returned by a workflow or project helper SHALL bind the selected absolute project root using shell-path quoting and the installed CLI. Commands SHALL remain correct outside that project, including paths with spaces. Edit handoffs SHALL use `film-edit`; invalid/stale plan recovery SHALL preserve the plan file and existing arguments.
+
+#### Scenario: A returned record runs outside the project
+
+- **WHEN** the returned decision command is executed from an unrelated temporary directory
+- **THEN** it SHALL record the selected project's decision without initializing or changing the unrelated directory
+
+#### Scenario: A returned verifier uses contained inputs
+
+- **WHEN** a workflow returns a verification command naming project-local inputs
+- **THEN** executing it outside the project SHALL resolve those inputs within the selected absolute project root
+
+#### Scenario: An invalid or stale plan has a spaced filename
+
+- **WHEN** a plan in `plans/job plan with spaces.json` is invalid or its bound bytes become stale
+- **THEN** the error SHALL provide a complete `next` retry with absolute `--root` and `--project-root` and a quoted plan path; after repair it SHALL rebind that file from an unrelated directory
+
+#### Scenario: Edit results hand off to the next command
+
+- **WHEN** analyze returns an auto template, auto returns render, or render returns check
+- **THEN** each SHALL use the installed `film-edit` command group and absolute root bindings; executing the filled analyze/auto handoffs outside the project SHALL write only to the selected project
+
+#### Scenario: Other project helpers return recovery commands
+
+- **WHEN** score, Blender, foundation, catalog or reference analysis returns an executable command
+- **THEN** it SHALL use the installed script and the selected absolute root wherever supported, quote file paths and preserve command arguments instead of relying on PATH or the shell's current directory
+
+#### Scenario: An old catalog finding supplies a repair command
+
+- **WHEN** an old-format finding is projected into a `film blocks` repair command
+- **THEN** it SHALL bind both absolute `--root` and `--project-root`, retain the query and run from an unrelated directory without requiring ffmpeg
+
+#### Scenario: Native visual workflow commands run outside the change
+
+- **WHEN** native visual decomposition, task completion or review returns a command or record template
+- **THEN** it SHALL bind absolute `--root` and `--change-root`; executing it from an unrelated directory SHALL reach the selected change's workflow or gate without changing the unrelated directory
+
+### Requirement: Windows command paths fail closed at generation
+
+On win32, shell-path command generation SHALL reject `$`, backtick, double quote, `%`, `!` and control characters with existing `CONTRACT_INVALID`, naming the path and requiring a safe project/installation move or rename. Importing an unsafe installation SHALL NOT throw; validation SHALL occur lazily during command generation. Platform injection SHALL allow Windows tests on any OS. POSIX escaping SHALL remain unchanged.
+
+#### Scenario: A Windows path could expand inside double quotes
+
+- **WHEN** a generated path contains `$(x)`, a backtick, `%PATH%`, `!x!`, a double quote or a control character
+- **THEN** generation SHALL refuse it with `CONTRACT_INVALID` and path-specific move/rename remediation before returning a shell command
+
+#### Scenario: The Windows path only contains spaces
+
+- **WHEN** a normal Windows project or installation path contains spaces
+- **THEN** it SHALL remain quoted and its returned command SHALL run from an unrelated directory
+
+#### Scenario: The installation path itself is unsafe
+
+- **WHEN** the shared command module is imported from an unsafe installation path
+- **THEN** import SHALL succeed but Windows command generation SHALL fail closed; POSIX generation SHALL retain its existing escaping
+
+#### Scenario: Windows frame review does not require a shell percent pattern
+
+- **WHEN** film scaffolding or the checked-draft review returns its per-second frame-review command on Windows
+- **THEN** it SHALL use the existing bound reference-video analyzer with contained relative inputs instead of an unsafe ffmpeg percent-pattern path; a later review SHALL preserve existing evidence in a distinct available directory
+
+### Requirement: Web concept screening precedes the user choice
+
+Web concept guidance and action text SHALL require three different first-screen structures and a one-line skeleton per card. The agent SHALL render equal-size first screens into one contact sheet, pre-screen for same skeletons, common templates and collapsed hierarchy, and redo failed cards before asking. Screening SHALL NOT grant Visual Acceptance or add a gate/schema.
+
+#### Scenario: Cards differ only in copy and colour
+
+- **WHEN** concepts share layout skeleton, focal placement, type position and image role
+- **THEN** the agent SHALL redo the failed cards rather than present them as divergent options
+
+#### Scenario: The concept document exists
+
+- **WHEN** `next` returns the concept-choice ask
+- **THEN** its guidance SHALL still require the agent's contact-sheet pre-screen before showing the options, without claiming acceptance
+
+### Requirement: Reference layout learning preserves coupled relations
+
+Reference layout guidance SHALL measure the native aspect ratio and separate adaptation. It SHALL record subject position/scale, lockup scene region and minimum lockup–subject distance/no-overlap together; preserve reading order and legibility; and require same-size thumbnail pre-screening. Metrics SHALL support, never replace, visual judgement or acceptance.
+
+#### Scenario: A reference is adapted to another ratio
+
+- **WHEN** a 16:10 reference is studied for a 16:9 deliverable
+- **THEN** relations SHALL first be studied at 16:10 and the 16:9 composition SHALL be a separately reviewed adaptation
+
+#### Scenario: Text metrics match but the composition breaks
+
+- **WHEN** size matching splits reading order, hollows the scene or pushes the subject away
+- **THEN** the agent SHALL redo the composition after thumbnail review rather than treat zero metric error as a pass
+
+### Requirement: Bundled UI craft sources
+
+The pipeline SHALL ship pinned, scoped, byte-preserved and license-attributed snapshots of
+`emil-design-eng`, `make-interfaces-feel-better`, `fixing-accessibility`,
+`12-principles-of-animation`, `shadcn` and `playwright-cli`, readable without a global skill
+install or network access, and SHALL route them through one maintained guide.
+
+#### Scenario: Fresh standalone installation builds a web page
+
+- **WHEN** a user installs only `design-pipeline` and `next` reaches the web `build` stage
+- **THEN** the returned guide section SHALL route to the bundled UI craft guide
+- **AND** every bundled source that guide names SHALL exist in the package with its manifest and
+  license evidence, while each reference-only source SHALL resolve to its packaged, pinned
+  reference record.
+
+#### Scenario: A snapshot drifts or is incomplete
+
+- **WHEN** a vendored file is changed, removed or added, or a manifest is rehashed without matching
+  bytes
+- **THEN** the source integrity test SHALL fail
+- **AND** the importer SHALL reject an unreviewed revision, a dirty checkout or an invalid review date
+  without replacing the existing snapshot.
+
+#### Scenario: Upstream guidance conflicts with pipeline contracts
+
+- **WHEN** a bundled source disagrees with project tokens, the interface review protocol, the motion
+  gate or Good CSS
+- **THEN** the project and pipeline contract SHALL govern, and the conflicting rule SHALL be recorded
+  as not applicable rather than as a finding
+- **AND** upstream persona text, slash-command usage and output formats SHALL NOT replace the
+  existing review record.
+
+### Requirement: Tool-running UI sources stay opt-in and advisory
+
+Guidance that runs an external tool (the shadcn CLI, `playwright-cli` or React Doctor) SHALL run it
+only in a project that already uses that tool or after the user approves. It SHALL NOT install
+dependencies, fetch remote prompts, add a gate or receipt field, or report tool output as Component
+Conformance or Visual Acceptance.
+
+#### Scenario: The project does not use shadcn
+
+- **WHEN** Stage 0 finds no `components.json` and no selected component route installs from a
+  shadcn registry
+- **THEN** the pipeline SHALL NOT run the shadcn CLI or execute the bundled skill's context-injection
+  command
+- **AND** it SHALL keep the project's existing component owner.
+
+#### Scenario: An approved tool reports results
+
+- **WHEN** React Doctor or `playwright-cli` runs with approval
+- **THEN** its findings SHALL be recorded as advisory evidence in the existing QA record
+- **AND** interaction evidence SHALL still come from `verify interaction`, and acceptance from the
+  owner's review.
+
+### Requirement: License-restricted UI sources are referenced, not bundled
+
+A requested UI source whose license restricts use as input to automated AI pipelines SHALL stay
+out of the package and SHALL be cited through a pinned, hashed, reference-only record.
+
+#### Scenario: React Doctor is routed
+
+- **WHEN** the pipeline routes a React health check
+- **THEN** it SHALL cite the pinned `millionco/react-doctor` revision and content hash without
+  vendoring upstream files
+- **AND** it SHALL NOT use React Doctor source text as evaluation or optimization data.
+
+### Requirement: Interaction verification audits rendered UI craft
+
+The existing interaction verifier SHALL accept an `audit` probe that measures the rendered page for
+typography, contrast, overflow, clipping, target size, control spacing, alignment and nested radius
+at declared viewports. Thresholds and selectors SHALL be probe inputs with documented defaults. Each
+check SHALL report passed, failed, not-declared, not-applicable or indeterminate with a checked count.
+
+#### Scenario: A page violates measured craft rules
+
+- **WHEN** `verify interaction` runs an audit probe against a page with failing measurements
+- **THEN** each failure SHALL be a finding with its code, element selector, measured value,
+  threshold, viewport and fix
+- **AND** the verifier SHALL exit 2 and SHALL NOT record a gate pass.
+
+#### Scenario: Evidence is unresolved
+
+- **WHEN** text sits on a gradient, image or translucent background, or a declared selector matches
+  no element
+- **THEN** contrast SHALL report `indeterminate` with a fix to place the text on a measurable surface,
+  or the check SHALL fail, and the audit SHALL fail
+- **AND** no probe field SHALL suppress the result or mark the check as passed.
+
+#### Scenario: An optional check is not declared
+
+- **WHEN** a selector-based optional check has no declared selectors
+- **THEN** it SHALL report `not-declared` in the audit coverage
+- **AND** it SHALL NOT be reported as passed.
+
+#### Scenario: An audit probe is malformed
+
+- **WHEN** an audit probe has an unknown field, no `thresholds.fonts`, an empty selector, a
+  non-positive threshold, a duplicate viewport, or a page that is not a local file inside the project
+- **THEN** validation SHALL reject it before any browser starts
+- **AND** existing motion and journey probes SHALL keep their current behavior.
+
+### Requirement: Web probe stage requires a page audit
+
+The web workflow's `probe` stage SHALL require at least one passing audit probe at every tier. When
+the probe file lacks one, `next` SHALL return an instruction to add it, and the stage SHALL NOT
+finish.
+
+#### Scenario: A legacy probe file has no audit
+
+- **WHEN** a web project reaches `probe` with an `interaction.json` that has no audit probe
+- **THEN** `next` SHALL ask for an audit probe instead of returning the verify command
+- **AND** `review` and `deliver` SHALL stay unavailable.
+
+### Requirement: Interaction gate binds rendered dependencies and design tokens
+
+A recorded interaction gate SHALL bind the hashes of local files the page loaded and of the
+project's `DESIGN.md` and `MOTION.md` when present. A record without that lineage, with a changed
+hash, or missing a token source that now exists SHALL be stale. An audited page SHALL load only
+resources the gate can hash.
+
+#### Scenario: A stylesheet changes after verification
+
+- **WHEN** a stylesheet loaded by the verified page is edited
+- **THEN** the interaction gate SHALL be stale
+- **AND** `probe`, `review` and `deliver` SHALL reopen.
+
+#### Scenario: A gate was recorded before lineage existed
+
+- **WHEN** an interaction gate record has no dependency lineage
+- **THEN** it SHALL be treated as stale and require re-verification.
+
+#### Scenario: An audited page loads an unbindable resource
+
+- **WHEN** an audited page requests an `http(s)` resource or a `file:` outside the project
+- **THEN** the audit SHALL fail with the verifier's existing `external-request` finding, listing each
+  such resource once per audit probe with a fix to copy it into the project
+- **AND** the verifier SHALL exit 2 and SHALL NOT record a gate pass.
+
+#### Scenario: A motion or journey probe loads a file outside the project
+
+- **WHEN** a motion or journey probe on a local page loads a `file:` resource outside the project
+- **THEN** that probe SHALL fail with an `external-request` finding listing the file
+- **AND** the verifier SHALL exit 2 and SHALL NOT record a gate pass.
+
+### Requirement: UI craft rules are project-owned
+
+The pipeline SHALL keep one project-owned UI craft rule index that maps each audit code to its
+sources and holds a deduplicated review checklist with stable ids for rules the audit does not
+measure. The web review SHALL record checklist results as Component Conformance evidence.
+
+#### Scenario: A reviewer checks an unmeasured rule
+
+- **WHEN** the web review covers motion feel, focus, semantics, copy or states
+- **THEN** it SHALL use the checklist ids from the rule index and record results in `qa.md`
+- **AND** it SHALL NOT report them as Visual Acceptance.
+
+### Requirement: Tracking HUD film reference has locked provenance
+
+The packaged skill SHALL carry the complete reviewed ff-tracking Git tree with original bytes, inventory, hashes and MIT and font notices, registered with the existing film source importer and checks. Import SHALL reject an unreviewed revision or altered checkout and keep the previous snapshot. The vendored tree SHALL stay reference and provenance; it is never edited, built or run by the skill.
+
+#### Scenario: The template travels with an isolated installation
+
+- **WHEN** the package is installed without an ambient ff-tracking checkout
+- **THEN** every reviewed tracked blob SHALL be readable locally and match its locked identity
+- **AND** the manifest SHALL record the upstream repository, commit, license and render boundary.
+
+#### Scenario: Arbitrary template refresh is refused
+
+- **WHEN** an import uses an unreviewed commit, a modified checkout or an invalid review date
+- **THEN** it SHALL fail without replacing the previous snapshot.
+
+### Requirement: Tracking HUD films are built with the HyperFrames template
+
+The film build guidance SHALL route a terminal or agent-screen tracking HUD film to `film scaffold --template tracking-hud`. The scaffold SHALL write a HyperFrames project whose one config drives the typed script, palettes, shots, camera and timing, and whose storyboard, composition and sound are rebuilt from that config. The film SHALL be rendered by HyperFrames and judged by the existing film stages, with no new gate or receipt.
+
+#### Scenario: An agent-terminal tracking film is requested
+
+- **WHEN** a film task asks for a camera filming an agent's terminal while a tracker locks onto typed glyphs
+- **THEN** the agent SHALL scaffold the template, edit its config, rebuild, master the sound with `audio master` and render with HyperFrames
+- **AND** the rendered video SHALL pass through `film check`, frame review and `decide`, reporting Component Conformance and Visual Acceptance separately.
+
+#### Scenario: The upstream toolchain is not used
+
+- **WHEN** the task uses the template
+- **THEN** the agent SHALL NOT build or run the vendored Rust, fframes or Python pipeline and SHALL NOT install Rust, LLVM, FFmpeg development builds or Python packages for it.
+
+#### Scenario: An unknown scaffold template is refused
+
+- **WHEN** `film scaffold` receives a template other than `default`, `motion-study` or `tracking-hud`
+- **THEN** it SHALL fail with the allowed values and write nothing.
+
+#### Scenario: An ordinary film or interface task is selected
+
+- **WHEN** the task is not a terminal or agent-screen tracking film
+- **THEN** the template SHALL NOT replace the existing HyperFrames film route or interface workflow.
+
+### Requirement: Tracker picture and sound share one camera and event source
+
+The template's tracks module SHALL be the only source of shot timing, typed glyph cells, tracker boxes, lock events and per-frame camera. The flat pass, lens uniforms, overlay, storyboard and sound SHALL read it. Tracker labels SHALL state the real projected output pixel of their box, computed with the lens camera, and a config whose targets leave the frame or whose lines leave the screen SHALL be refused.
+
+#### Scenario: A label is checked against the filmed glyph
+
+- **WHEN** the self-test films a target glyph through the full lens with and without that glyph
+- **THEN** the measured glyph centre SHALL lie within the declared pixel tolerance of the labelled projection
+- **AND** a larger error SHALL fail the self-test, and no label alignment SHALL be claimed for the film.
+
+#### Scenario: A config breaks the camera or screen invariants
+
+- **WHEN** an edited config puts a tracked target outside the safe frame area or a typed line past the screen edge
+- **THEN** the build SHALL fail with the shot and frame and write no storyboard, composition or sound.
+
+#### Scenario: The port is compared with the reference
+
+- **WHEN** the default config is evaluated
+- **THEN** its focus, camera and projected focus for every frame SHALL match the vendored reference fixtures within their print precision and the declared single-precision error.
+
+### Requirement: Tracking HUD builds refuse content that breaks the film
+
+The template build SHALL refuse, writing nothing and naming the shot or frame, the value and the limit, a config whose typed line leaves the screen area, whose lock ping lies within 0.1 s of a cut, whose palette text stop is below 3:1 on its background, whose Done label overflows its pill, whose last frame does not show its whole subject, or that draws a character the vendored font lacks.
+
+#### Scenario: New text uses glyphs JetBrains Mono does not have
+
+- **WHEN** a typed line, the title, a log line or the Done label contains a character outside the vendored font, or one that is not one 0.6 em cell wide
+- **THEN** the build SHALL fail with the character, its code point and the font, and SHALL NOT write a storyboard, composition or sound.
+
+#### Scenario: A shot names the word it locks on
+
+- **WHEN** `shots[].lock` is not part of the typed line, or the locked word or its LOCK label is cut by the frame or covered by another label on every lock frame
+- **THEN** the config SHALL be refused; a lock taken implicitly from the last word that does not read SHALL only be reported as a warning.
+
+#### Scenario: A palette or final shot would render blank
+
+- **WHEN** a used palette's text stop is below 3:1 against its background stop, or the last frame cuts into the Done pill or target box
+- **THEN** the build SHALL refuse the config before any render, independently of the composition gate.
+
+### Requirement: Tracking HUD renders are claimed only when deterministic
+
+A tracking HUD render SHALL be claimed only after the self-test renders sampled frames twice, in one page after reordered seeks and in a second browser process, and finds identical pixels. The WebGL renderer used SHALL be recorded. A missing WebGL2 context SHALL stop each frame with a named error, drawing only an error card, never a substitute picture.
+
+#### Scenario: A frame differs between renders
+
+- **WHEN** a sampled frame hashes differently across seeks or processes
+- **THEN** the self-test SHALL fail and the agent SHALL NOT claim a deterministic render or deliver it as verified.
+
+#### Scenario: WebGL2 is unavailable
+
+- **WHEN** the browser cannot create a WebGL2 context
+- **THEN** the composition SHALL report the missing context by name, the agent SHALL report it as a blocker, and no film SHALL be claimed.
+
+### Requirement: Film render samples stay inside the video
+
+The film render evidence SHALL sample beat midpoints and procedural-beat samples no later than the start of the video's last frame, so a short final beat yields a sampled frame instead of a missing evidence file.
+
+#### Scenario: A short final procedural beat is sampled
+
+- **WHEN** a procedural beat's 95% sample falls after the start of the last frame
+- **THEN** the render gate SHALL sample the last frame and `film check` SHALL complete with its gate results instead of failing on a missing frame.
+
+### Requirement: Planned hard cuts are found regardless of brightness
+
+The render gate SHALL count a planned hard or match cut that the scene threshold and the one-step pixel detector miss when, within one frame of the boundary, a frame shares less than half its structure with the frame before (r² < 0.5) and the step before is at least four times calmer. It SHALL NOT count a dissolve or a camera that ramps into the boundary.
+
+#### Scenario: A cut between two dark, grainy, moving shots is planned
+
+- **WHEN** the scene score at the boundary stays under 0.3 and grain keeps every 10 fps pixel step busy
+- **THEN** the render gate SHALL report the cut in `cuts.structureCutsSec` and SHALL NOT count it as missed.
+
+#### Scenario: A planned cut renders as a dissolve or a whip
+
+- **WHEN** the change at a planned boundary builds up over several frames, as in a 0.3 s dissolve or a camera that accelerates into a match cut
+- **THEN** the cut SHALL stay missed and `planned-cuts-missing` SHALL apply as before.
