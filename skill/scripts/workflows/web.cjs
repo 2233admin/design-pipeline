@@ -59,7 +59,7 @@ const reason = (answer, what, flag) => meaningful(answer, 3, what, flag);
 
 // --- intake: a conversation that ends in a confirmed playback, or a stated skip ----------------------
 
-const SKIP_LINE = "If you'd rather skip the questions and have me start, say so.";
+const SKIP_LINE = "If you'd rather skip these questions, say so: I'll tell you what I assumed, then show you options.";
 const OPENING = {
   page: "What site have you seen recently that felt the way this page should, and what about it?",
   replicate: "What must stay exactly as it is in the page you want reproduced?",
