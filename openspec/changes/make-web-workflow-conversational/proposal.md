@@ -33,40 +33,56 @@ The owner approved, in plain language, a conversational flow modelled on obra/su
 
 - **Intake.** Web intake opens with the skip line and one open question. It ends with a confirmed
   playback (`decide --stage intake --verdict accept`) or a stated skip (`--choice skip` with the
-  one-line decision). Corrections (`--verdict reject`) become rules and reopen intake.
+  one-line decision). Corrections (`--verdict reject`) become rules and reopen intake. Anti-goals go
+  with the confirmed playback or the skip as `--anti-goal "<text>"`, the one new CLI flag, and become
+  rules. A stated decision needs at least six words and every "no" at least three (the
+  minimum-content rule), so a bare go-ahead is refused.
 - **Quick tier.** Quick web work starts by telling the owner, in one line, what was decided for them,
-  and records that line.
+  and records that line. Quick keeps its short path (owner-approved): it states its decisions
+  (point 4) and asks only the component sources; it has no opening question, playback, variants,
+  description approval or section reviews.
 - **Variants.** `concepts` produces `concepts.html`: three structurally different first screens
   marked `data-variant` A/B/C, one shown at a time by `?variant=`, with a new packaged floating
   switcher in `skill/tools/variant-switcher/`. The owner picks one variant, combines several
-  (`--choice B,C --answer`) or rejects them (a rule). The switcher may never ship in `index.html`.
-- **Concrete-decision round.** The components ask becomes one grilling round of numbered questions
-  with recommendations: the sections in build order at standard/full, and the component sources.
-  The PR #100 source decision and its validation are unchanged.
+  (`--choice B,C --answer`) or rejects them (a rule). The switcher keeps hidden variants hidden
+  whatever the page's own CSS says, and it never ships in `index.html` in any form: no variant
+  panels, no switcher markup or script, inline or loaded.
+- **Concrete-decision rounds.** The components ask becomes numbered grilling rounds with
+  recommendations: the sections in build order at standard/full, and the component sources, offered
+  in plain words. Questions that depended on earlier answers may get further rounds, and each "no"
+  in a round is recorded with a new correction command and becomes a rule. The PR #100 source
+  decision and its validation are unchanged.
 - **Description gate.** New `description` stage at standard/full. `brief.md` becomes the one-page
-  description. `decide --stage description --verdict accept --choice <section ids>` approves it and
-  binds the brief bytes, the playback, the variant pick and the component decision. Nothing is
-  built before the approval.
+  description, with a `## Sections` list in build order.
+  `decide --stage description --verdict accept --choice <section ids>` must name exactly that list;
+  it approves the description and binds the brief bytes, the playback, the variant pick and the
+  component decision. The project rules stay in `state.rules` and are not copied into the brief.
+  Nothing is built before the approval.
 - **Section build.** Build at standard/full is a section loop. The first screen comes first, each
   section is marked `data-section`, and `next` asks the owner to review each built section
-  (`decide --stage section`) before building the next one. A section verdict may cite
-  runtime-review Feedback records with `--evidence`.
-- **Rules.** Every rejection (playback, variants, description, section, draft) appends to the
-  existing `state.rules`.
+  (`decide --stage section`) before building the next one. The owner comments in text that names
+  each element by its text, label or place. A section verdict may cite runtime-review Feedback
+  records with `--evidence`, checked with runtime-review's own validator.
+- **Rules.** Every "no" appends to the existing `state.rules`: playback corrections, anti-goals,
+  variants rejections, decision-round corrections, description and section rejections, and draft
+  rejections.
 - **Unchanged.** Probe, the final review, delivery and their lineage stay as they are; the final
   review's reason now names final acceptance.
-- **Docs.** `workflow-web.md`, `web-direction.md`, `stages.md`, `pipeline-reference.md`, the tools
-  index, the CLI help and the CHANGELOG are updated.
+- **Docs.** `SKILL.md`, `workflow-web.md`, `web-direction.md`, `stages.md`, `pipeline-reference.md`,
+  the tools index, the CLI help and the CHANGELOG are updated.
 
 ## Capabilities
 
 - `design-pipeline`: MODIFIED `single next step` (a web conversation may ask an open question
   without a recommendation), `two human decisions` (web standard/full asks at each conversational
   checkpoint; film/edit keep two decisions) and `Web build follows an explicit component source
-  decision` (at standard/full, asked in the concrete-decision round before the description).
+  decision` (at standard/full, asked in the concrete-decision rounds before the description).
 - `web-workflow`: MODIFIED intake, concepts, stage-order, treatment and build requirements, plus
-  ADDED requirements for the playback, quick stated decision, variants page, decision round,
-  description gate, section loop, runtime-review Feedback citation and rule recording.
+  ADDED requirements for the playback, the minimum-content rule, anti-goals, the quick stated
+  decision, the variants page, the switcher that never ships, the decision rounds with their
+  plain-language options and corrections, the description gate and its `## Sections` list, rules
+  kept out of the description, the section loop, runtime-review Feedback citation and its
+  validation, rule recording, and projects finished before this change.
 
 ## Reuse
 
@@ -78,7 +94,8 @@ The change adds no gate, receipt schema or feedback system. It reuses:
 - the components decision and manifest validator;
 - the interaction gate, review binding and delivery binding;
 - `brief.md` as the project brief;
-- runtime-review Feedback records, cited rather than reimplemented.
+- runtime-review Feedback records, cited and checked with runtime-review's own validator rather than
+  reimplemented.
 
 ## Impact
 
@@ -87,7 +104,11 @@ The change adds no gate, receipt schema or feedback system. It reuses:
 - **In-flight standard/full web projects:** they keep their intake, concept and components records,
   but must have the description approved and each section reviewed before probe.
 - **In-flight quick web projects:** they record a stated decision first.
+- **Projects finished before this change:** left alone. A changed page, a review rejection or a new
+  component decision ends that, and the in-flight migration applies.
 - **Unchanged:** film, edit and ui behaviour.
-- **Known limit:** runtime-review needs a Playground selection and component-first lineage that
-  ordinary web projects lack, so section comments are recorded through `decide`, and element-level
-  Feedback is cited only when a project already has runtime-review inputs (see design.md, Decision 6).
+- **Planned follow-up (point 8, step 2):** point 8 ships in two steps (owner decision). This change:
+  section comments are text that names elements, and Feedback is cited when a project already has
+  runtime-review inputs. Planned follow-up: a separate change that extends runtime-review so the
+  owner clicks elements on a captured screenshot of the section and the click produces the Feedback
+  that `--evidence` cites (see design.md, Decision 6).

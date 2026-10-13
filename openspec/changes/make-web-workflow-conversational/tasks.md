@@ -4,10 +4,13 @@
   delta MODIFIES `two human decisions`, `single next step` and the component decision requirement
   instead of adding a parallel workflow.
 - [x] 1.2 `npm exec -- openspec validate make-web-workflow-conversational --strict` is valid and
-  `npm run specs:check` passes (75 passed, 0 failed). Archive must follow the archive of
-  `redesign-user-workflow`, `add-web-treatment-and-section-briefs` and
-  `let-agents-discover-open-source-resources`, whose requirements this delta modifies (the validator
-  reports this as INFO).
+  `npm run specs:check` passes (75 passed, 0 failed). The validator's INFO lines come from the
+  archive order in 1.3.
+- [ ] 1.3 Archive after redesign-user-workflow, consolidate-component-index-and-web-sources,
+  let-agents-discover-open-source-resources and add-web-treatment-and-section-briefs (in that
+  order); this delta MODIFIES requirements they add.
+- [ ] 1.4 After the archive chain lands, RENAME the `two human decisions` header to one that names
+  the web checkpoints.
 
 ## 2. Workflow behaviour
 
@@ -19,7 +22,7 @@
   `description`/`section` outside web and routes section asks to an art director. Variant picks and
   rejections are refused until the owner has been shown the variants page.
 - [x] 2.3 Web final review states final acceptance; `cli-core.cjs` help names the new stages and
-  passes repeatable `--evidence` to decide (no new flag).
+  passes repeatable `--evidence` to decide (no new flag; 7.6 later adds the repeatable `--anti-goal`).
 - [x] 2.4 `skill/tools/variant-switcher/` switcher and guide; build stays unfinished while
   `index.html` ships the switcher.
 
@@ -39,6 +42,7 @@
   legacy states) and `tests/variant-switcher.test.cjs` (6 real-browser tests), registered in
   `scripts/test-manifest.json`. Twelve deliberate faults in a scratch copy of `web.cjs` each failed at
   least one flow test.
+  Both files are folded into existing suites by 7.12.
 - [x] 4.2 Existing web tests migrated to the shared `tests/helpers/web-flow.cjs` walk:
   `workflow-components` 67/67, `workflow-next` 87/87 (one wording pin of the old four-question intake
   deleted), `workflow-action-commands` 30 pass + 1 platform skip (web brief-ownership cases moved to
@@ -48,14 +52,15 @@
 ## 5. Verification
 
 - [x] 5.1 `npm test` with TEMP/TMP on D: (local Windows): repository tests 1447, pass 1439, fail 4,
-  skipped 4; browser self-tests 12/12. All four failures are the known Windows `EPERM ... rename`
-  flake in the palette-foundation and website-cloning temp directories, unrelated to this change.
-  "QA leaves repository status byte-identical" also failed because the branch was committed while
-  QA ran. CI is the authority.
+  skipped 4; browser self-tests 12/12. Five checks failed in all. The four failed repository tests
+  are the known Windows `EPERM ... rename` flake in the palette-foundation and website-cloning temp
+  directories, unrelated to this change. The fifth is the separate QA check "QA leaves repository
+  status byte-identical" (`scripts/qa.cjs` reports it apart from the repository tests), which failed
+  because the branch was committed while QA ran. CI is the authority.
 - [x] 5.2 Real CLI smoke in scratch projects on D: (outside the repository), walking the standard
   flow to `done` with a real `verify interaction` in Chrome, plus the quick and standard skip paths.
   Transcript (commands as run with `--root <project> --project-root <project> --json`; long lines
-  cut):
+  cut). It predates the PR #102 review fixes (section 7), so it shows the earlier texts and refusals:
 
 ```text
 ## standard web
@@ -131,7 +136,7 @@ $ designer-pipeline decide --stage review --verdict accept
 $ designer-pipeline decide --stage deliver --answer index.html
 $ designer-pipeline next
   exit 0 stage=done type=done
-  rules: ["playback 1: It is for team leads choosing a plan, not for developers","variants 1: A looks like every SaaS template","description 1: Say plainly that there is no sales call","section hero 1: Start trial must read as the one main action"]
+  state.json `rules` (shown as `from: text`): ["playback 1: It is for team leads choosing a plan, not for developers","variants 1: A looks like every SaaS template","description 1: Say plainly that there is no sales call","section hero 1: Start trial must read as the one main action"]
 
 ## quick web
 $ designer-pipeline next --deliverable web --tier quick
@@ -152,3 +157,36 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
 
 - [x] 5.3 Pushed `feat/conversational-web-flow` and opened PR #102. CI run 38391510746 on a258b56:
   `qa-and-package` and `windows-path-regressions` both succeeded, with no rerun.
+
+## 6. Planned follow-up
+
+- [ ] 6.1 Follow-up change (owner-approved, not in this PR): extend runtime-review with clickable
+  element regions on a captured section screenshot; the click produces the Feedback that section
+  verdicts cite with --evidence.
+
+## 7. PR #102 review fixes
+
+- [ ] 7.1 The variant switcher forces hidden variants out of the layout, so a page's own `display`
+  rules cannot show them.
+- [ ] 7.2 Build rejects a shipped switcher in any form: `data-variant` panels, switcher markup or
+  inline script, a `<script src>` that names it, or a local script file that carries it.
+- [ ] 7.3 `brief.md` carries a `## Sections` list that the description approval must match exactly,
+  and an approval can be recorded again to correct it.
+- [ ] 7.4 The description no longer copies the project rules, so a rule recorded mid-build needs no
+  brief edit and does not reset accepted sections.
+- [ ] 7.5 Web projects finished under the earlier flow are left alone until a changed page, a review
+  rejection or a new component decision ends that.
+- [ ] 7.6 Decision-round corrections and the anti-goals of a confirmed playback or a skip (the new
+  repeatable `--anti-goal`) become project rules.
+- [ ] 7.7 A minimum-content rule replaces the go-ahead word list: six words for a stated decision and
+  three for every "no".
+- [ ] 7.8 Section and variant markers inside HTML comments no longer count.
+- [ ] 7.9 Prompt texts: the opening asks one question with no `first`, `first` is always a step for
+  the agent, build steps are whole sentences, and no prompt claims element picking (point 8, step 1).
+- [ ] 7.10 The component sources are offered as plain-language options, and the ids stay in the
+  record command.
+- [ ] 7.11 Section verdicts check cited Feedback with runtime-review's exported `validateShape`,
+  tested against a real recorded fixture.
+- [ ] 7.12 The flow and switcher tests are folded into existing suites, and no new test file remains.
+- [ ] 7.13 proposal.md, design.md and both spec deltas describe the fixed behaviour, the point-8
+  follow-up and the archive order.
