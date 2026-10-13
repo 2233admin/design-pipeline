@@ -234,6 +234,11 @@ test("summaries fail on failed and indeterminate results, report not-declared wi
   assert.equal(unbound.status, "failed");
   assert.deepEqual(unbound.findings.map((finding) => [finding.code, finding.severity, finding.probeId, finding.urls]), [["external-request", "error", "page-audit", ["https://cdn.example/font.woff2", "http://localhost:5173/app.js", fileUrl(outsider, "brand.css")]]]);
   assert.match(unbound.findings[0].fix, /^Copy every listed resource into the project/);
+  // The probe's whole log counts too: a file the page loaded while the viewport was restored, after
+  // the last viewport's measurement, is in no viewport log.
+  const restored = audit.summarizeAudit("page-audit", [entry(passing())], project, [fileUrl(project, "index.html"), fileUrl(outsider, "wide.css")]);
+  assert.equal(restored.status, "failed");
+  assert.deepEqual(restored.findings.map((finding) => [finding.code, finding.urls]), [["external-request", [fileUrl(outsider, "wide.css")]]]);
 
   assert.throws(() => audit.summarizeAudit("page-audit", [{ viewport, result: { viewport, elements: 1, checks: passing(), contractErrors: [] } }], project), /has no request log/);
   const rejected = audit.summarizeAudit("page-audit", [{ viewport, result: { viewport, contractErrors: ['declare.stacks[0] "[" is not a selector this page accepts'] } }], project);
@@ -380,8 +385,8 @@ test("a journey that loads a file outside the project on click fails verify inte
   const outside = tmp(t);
   fs.writeFileSync(path.join(outside, "brand.css"), "p { letter-spacing: 0; }\n");
   const brand = require("node:url").pathToFileURL(path.join(outside, "brand.css")).href;
-  // The journey's own origin check accepts any file: request; only the run-wide project bound sees
-  // that the click loaded a file the gate could neither hash nor watch.
+  // The journey's own origin check alone accepts any file: request; the project bound it carries
+  // fails the probe whose click loaded a file the gate could neither hash nor watch.
   const html = `<!doctype html><html lang="en"><body><div id="wrapper"><button id="load" type="button">Load</button><p id="status">idle</p></div>
 <script>document.getElementById("load").addEventListener("click", () => { const link = document.createElement("link"); link.rel = "stylesheet"; link.href = ${JSON.stringify(brand)}; document.head.appendChild(link); document.getElementById("status").textContent = "loaded"; });</script></body></html>`;
   const journey = { id: "load", target: "#wrapper", steps: [
@@ -391,12 +396,12 @@ test("a journey that loads a file outside the project on click fails verify inte
   const dir = stage(t, "journey", probeDoc("journey-outside", journey), { web: true, html });
   const result = verify(dir);
   assert.equal(result.status, 2, result.text);
-  assert.deepEqual(result.output.probes.map((probe) => probe.status), ["passed"], "the journey's own assertions pass");
+  assert.deepEqual(result.output.probes.map((probe) => probe.status), ["failed"], "the journey that loaded the file fails");
   const gate = readState(dir).gates.interaction;
   assert.equal(gate.status, "failed");
   assert.equal(gate.lineage, undefined, "a failed run binds no lineage");
-  assert.deepEqual(gate.findings.map((finding) => [finding.code, finding.actual]), [["external-request", brand]]);
-  assert.match(gate.findings[0].fix, /^Copy every listed resource into the project/);
+  assert.deepEqual(gate.findings.map((finding) => [finding.code, finding.probeId, finding.actual]), [["external-request", "load", brand]]);
+  assert.match(gate.findings[0].message, /went outside the project/);
 });
 
 test("editing a loaded stylesheet or DESIGN.md makes the gate stale; a pass without lineage is stale", { skip: tools.skip }, (t) => {

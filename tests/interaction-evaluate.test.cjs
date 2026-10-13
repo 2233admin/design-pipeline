@@ -405,7 +405,7 @@ test("journey origin completeness cannot hide off-origin requests while motion s
   assert.equal(evaluateProbeFile(old.document, old.capture).status, "passed", "legacy motion's missing-origin behavior is unchanged");
 });
 
-test("a local page's run that loads a file outside the project fails external-request, whichever probe asked", (t) => {
+test("a motion or journey probe on a local page that loads a file outside the project fails with external-request", (t) => {
   const tmp = (prefix) => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
     t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -415,20 +415,18 @@ test("a local page's run that loads a file outside the project fails external-re
   const page = pathToFileURL(path.join(project, "index.html")).href;
   const inside = pathToFileURL(path.join(project, "app.js")).href;
   const outside = pathToFileURL(path.join(tmp("interaction-outside-"), "brand.js")).href;
-  const run = (probeRequests, runRequests = probeRequests) => {
+  const run = (requests) => {
     const capture = menuCapture();
-    capture.probes[0].requests = probeRequests;
-    capture.requests = runRequests;
+    capture.probes[0].requests = requests;
     return evaluateProbeFile(menuDocument(), capture, { project });
   };
-  // The journey's own origin check passes every file: request; the run still fails, once.
+  // The journey's own recording carries the project bound, so the outside file fails that probe.
   const loaded = run([page, inside, outside]);
   assert.equal(loaded.status, "failed");
-  assert.deepEqual(loaded.probes.map((probe) => probe.status), ["passed"]);
-  assert.deepEqual(loaded.findings.map((finding) => [finding.code, finding.severity, finding.actual, finding.urls]), [["external-request", "error", outside, [outside]]]);
-  assert.match(loaded.findings[0].fix, /^Copy every listed resource into the project/);
-  // A request after the probe stopped recording is in the run log only, and fails the same way.
-  assert.deepEqual(run([page], [page, outside]).findings.map((finding) => finding.actual), [outside]);
+  assert.deepEqual(loaded.probes.map((probe) => probe.status), ["failed"]);
+  assert.deepEqual(loaded.findings.map((finding) => [finding.probeId, finding.code, finding.severity, finding.actual, finding.urls]), [["menu", "external-request", "error", outside, [outside]]]);
+  assert.match(loaded.findings[0].message, /^1 request went outside the project$/);
+  assert.equal(loaded.findings[0].fix, HINTS["external-request"]);
   assert.equal(run([page, inside]).status, "passed", "files inside the project, present or not, pass");
 });
 

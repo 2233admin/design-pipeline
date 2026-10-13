@@ -214,9 +214,9 @@ async function settleForAudit() {
 }
 
 // One fresh navigation per declared viewport at device scale 1, then the in-page audit. Each
-// viewport keeps the requests of its own load; the audit fails any the gate cannot hash with the
-// verifier's external-request finding. The document viewport is restored afterwards for the
-// probes that follow.
+// viewport keeps the requests of its own load, and the probe's whole log also holds what the page
+// requested while the document viewport was restored for the probes that follow; the audit fails
+// any the gate cannot hash with the verifier's external-request finding.
 async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assertLocalTarget, restore) {
   const mark = recordedRequests.length;
   const options = auditOptions(probe);
@@ -330,8 +330,10 @@ async function captureInteraction(probeFile, options = {}) {
     page.on("request", (request) => { if (isNetworkUrl(request.url())) requests.push(request.url()); });
     const probes = [];
     for (const probe of doc.probes) probes.push(await recordProbe(page, probe, url, requests, options.timeoutMs || 30000, viewport));
-    // Every request of the run, in order: the gate binds the local files the page loaded.
-    return { schema: CAPTURE_SCHEMA, url: url.startsWith("file:") ? page.url() : url, pageOrigin, probes, requests };
+    // Every request of the run, in order: the gate binds the local files the page loaded. Each probe
+    // sliced its own log from this one with no gap between probes, so every entry was judged by a
+    // probe. The snapshot keeps requests made while the browser closes out, since no probe saw them.
+    return { schema: CAPTURE_SCHEMA, url: url.startsWith("file:") ? page.url() : url, pageOrigin, probes, requests: requests.slice() };
   } finally {
     await browser.close();
   }

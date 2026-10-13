@@ -930,8 +930,8 @@ function observeInteraction(root, options = {}) {
 // What the verified page depended on, read from the kernel's request log: the local files it
 // loaded inside the project (the gate hashes them), local files it asked for that did not exist
 // (their arrival reopens the gate), the project's design-token sources, and the remote URLs, which
-// are recorded but never fetched or hashed. A file outside the project never reaches a pass:
-// evaluateProbeFile fails that run with external-request, so it is not bound here.
+// are recorded but never fetched or hashed. A file outside the project never reaches a pass: the
+// probe whose log holds it fails with external-request, so it is not bound here.
 function interactionLineage(project, requests) {
   const files = new Set(), absent = new Set(), remote = new Set();
   for (const raw of Array.isArray(requests) ? requests : []) {

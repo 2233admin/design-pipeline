@@ -289,8 +289,8 @@ could not be measured, for example text over a gradient, image, translucent laye
 mode or shadow; it fails the audit with the fix to put the text on a measurable solid surface or
 scrim. A CDN or dev-server URL, or a file outside the project, fails the verifier's existing
 `external-request` finding once per audit probe; copy the resource into the project and reference
-it locally. A file outside the project that any other probe's interaction loads fails the run the
-same way. The audit fails on any `failed` or `indeterminate` result at any viewport.
+it locally. A file outside the project that a motion or journey probe's interaction loads fails
+that probe the same way. The audit fails on any `failed` or `indeterminate` result at any viewport.
 
 Then run the `verify interaction` command `next` returns. It exits 2 when a probe fails, and 1 for a
 malformed probe, a page the audit cannot bind or a selector the page rejects; neither records a

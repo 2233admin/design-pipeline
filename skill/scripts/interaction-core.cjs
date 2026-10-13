@@ -309,8 +309,10 @@ function hasSpeedPeak(steps) {
 
 // `data:`, `blob:` and `about:` are not network fetches from another origin, so they never count as
 // external. Everything else is compared by origin, favicons included: a favicon pulled from another
-// origin is exactly the remote runtime dependency this gate exists to catch.
-function externalUrls(requests, pageOrigin) {
+// origin is exactly the remote runtime dependency this gate exists to catch. On a local page whose
+// project is known, `insideProject` also makes a `file:` outside the project external: it shares the
+// page's origin, but the gate can neither hash it nor see it change.
+function externalUrls(requests, pageOrigin, insideProject = null) {
   if (!pageOrigin || !Array.isArray(requests)) return [];
   const seen = new Set();
   const external = [];
@@ -324,7 +326,7 @@ function externalUrls(requests, pageOrigin) {
     } catch {
       origin = null;
     }
-    const outside = pageOrigin === "file:" ? !/^file:/i.test(url) : origin !== pageOrigin;
+    const outside = pageOrigin === "file:" ? !/^file:/i.test(url) || (insideProject !== null && !insideProject(url)) : origin !== pageOrigin;
     if (!outside || seen.has(url)) continue;
     seen.add(url);
     external.push(url);
@@ -332,9 +334,17 @@ function externalUrls(requests, pageOrigin) {
   return external;
 }
 
-// Pure: one normalized probe (optionally carrying `pageOrigin` from the capture), the frames the
-// recorder produced, and the request URLs the page made. No I/O, so the gate's arithmetic can be
-// unit-tested with synthetic recordings.
+// One external-request finding for a probe's own requests. `actual` repeats the URLs because the
+// gate record keeps a finding's string fields only.
+function externalFinding(external, pageOrigin, bounded) {
+  const urls = external.slice(0, MAX_LISTED_URLS);
+  return { code: "external-request", severity: "error", message: `${external.length} request${external.length === 1 ? "" : "s"} went outside ${bounded ? "the project" : `the page origin ${pageOrigin}`}`, fix: HINTS["external-request"], actual: urls.join(", "), urls };
+}
+
+// Pure: one normalized probe (optionally carrying `pageOrigin` from the capture and `insideProject`,
+// the project bound for its `file:` requests), the frames the recorder produced, and the request
+// URLs the page made. No I/O of its own, so the gate's arithmetic can be unit-tested with synthetic
+// recordings.
 function evaluateSamples(probe, samples, requests = []) {
   assertObject(probe, "probe", SCOPE);
   const expectation = probe.expect ?? {};
@@ -458,10 +468,8 @@ function evaluateSamples(probe, samples, requests = []) {
   if (opacityDeltaMax > OPACITY_EPS && !boxChanged && !transformChanged) {
     add("opacity-only", "error", `only opacity responded (by ${opacityDeltaMax.toFixed(3)}); the box stayed within ${MOVE_EPS_PX} px and the computed transform never changed`);
   }
-  const external = externalUrls(requests, probe.pageOrigin);
-  if (external.length) {
-    add("external-request", "error", `${external.length} request${external.length === 1 ? "" : "s"} went outside the page origin ${probe.pageOrigin}`, { urls: external.slice(0, MAX_LISTED_URLS) });
-  }
+  const external = externalUrls(requests, probe.pageOrigin, probe.insideProject ?? null);
+  if (external.length) findings.push(externalFinding(external, probe.pageOrigin, Boolean(probe.insideProject)));
 
   return {
     id: probe.id,
@@ -487,7 +495,7 @@ function compareObservation(assertion, observation, label) {
   return observation.actual === assertion.equals;
 }
 
-function evaluateJourney(probe, shot, pageOrigin) {
+function evaluateJourney(probe, shot, pageOrigin, insideProject = null) {
   assertKeys(shot, ["id", "steps", "requests"], ["id", "steps", "requests"], `capture ${probe.id}`, SCOPE);
   if (shot.id !== probe.id || !Array.isArray(shot.steps) || shot.steps.length !== probe.steps.length) fail(SCOPE, `capture ${probe.id} has incomplete journey steps`);
   if (!Array.isArray(shot.requests) || shot.requests.some(url => typeof url !== "string")) fail(SCOPE, `capture ${probe.id}.requests must be recorded URL strings`);
@@ -509,8 +517,8 @@ function evaluateJourney(probe, shot, pageOrigin) {
     return { id: step.id, status: findings.length ? "failed" : "passed", elapsedMs: recorded.elapsedMs, assertions, findings };
   });
   const findings = steps.flatMap(step => step.findings.map(finding => ({ stepId: step.id, ...finding })));
-  const external = externalUrls(shot.requests, pageOrigin);
-  if (external.length) findings.push({ code: "external-request", severity: "error", message: `${external.length} requests went outside the page origin ${pageOrigin}`, fix: HINTS["external-request"], urls: external.slice(0, MAX_LISTED_URLS) });
+  const external = externalUrls(shot.requests, pageOrigin, insideProject);
+  if (external.length) findings.push(externalFinding(external, pageOrigin, Boolean(insideProject)));
   return { id: probe.id, status: findings.length ? "failed" : "passed", steps, findings };
 }
 
@@ -561,21 +569,9 @@ function evaluateAudit(probe, shot, project) {
     const recorded = shot.viewports[index]?.viewport;
     if (recorded?.width !== viewport.width || recorded?.height !== viewport.height) fail(SCOPE, `capture ${probe.id} audit viewport ${index} is missing or reordered`);
   });
-  const summary = summarizeAudit(probe.id, shot.viewports, project);
+  const summary = summarizeAudit(probe.id, shot.viewports, project, shot.requests);
   if (summary.contractErrors.length) fail(SCOPE, `probe ${probe.id}: ${summary.contractErrors.join("; ")}. Fix: correct the selector in the audit probe, then rerun`, { code: "AUDIT_SELECTOR_INVALID" });
   return { id: probe.id, kind: "audit", status: summary.status, coverage: summary.coverage, findings: summary.findings };
-}
-
-// A local page's run may load files only from inside the project, whichever probe asked: a file
-// outside it shares the page's `file:` origin, so the per-probe origin check lets it through, and
-// the gate could neither hash it nor notice it change. The run log also holds requests made after
-// a probe stopped recording. Audit rows already list the ones their own loads made.
-function outsideProjectFiles(capture, project, findings) {
-  if (!project || capture.pageOrigin !== "file:") return [];
-  const listed = new Set(findings.flatMap((finding) => (finding.code === "external-request" && Array.isArray(finding.urls) ? finding.urls : [])));
-  const logs = [capture.requests, ...capture.probes.map((shot) => shot?.requests)];
-  const requested = new Set(logs.flatMap((log) => (Array.isArray(log) ? log : [])).filter((url) => typeof url === "string"));
-  return [...requested].filter((url) => /^file:/i.test(url) && !listed.has(url) && !bindable(url, project));
 }
 
 // `options.project` is the project root a local page may load files from.
@@ -600,12 +596,13 @@ function evaluateProbeFile(doc, capture, options = {}) {
   for (const entry of capture.probes) {
     if (entry !== null && typeof entry === "object" && typeof entry.id === "string") recorded.set(entry.id, entry);
   }
+  const insideProject = options.project && capture.pageOrigin === "file:" ? (url) => bindable(url, options.project) : null;
   const probes = normalized.probes.map((probe) => {
     const shot = recorded.get(probe.id);
     if (!shot) fail(SCOPE, `capture is missing probe ${probe.id}`);
-    if (probe.steps) return evaluateJourney(probe, shot, capture.pageOrigin);
+    if (probe.steps) return evaluateJourney(probe, shot, capture.pageOrigin, insideProject);
     if (probe.kind === "audit") return evaluateAudit(probe, shot, options.project);
-    const result = evaluateSamples({ ...probe, pageOrigin: capture.pageOrigin }, shot.samples, shot.requests ?? []);
+    const result = evaluateSamples({ ...probe, pageOrigin: capture.pageOrigin, insideProject }, shot.samples, shot.requests ?? []);
     const samples = shot.samples;
     return {
       id: result.id,
@@ -615,19 +612,13 @@ function evaluateProbeFile(doc, capture, options = {}) {
       findings: result.findings,
     };
   });
-  const findings = probes.flatMap((probe) => probe.findings.map((finding) => ({ probeId: probe.id, ...finding })));
-  const outside = outsideProjectFiles(capture, options.project, findings);
-  if (outside.length) {
-    const urls = outside.slice(0, MAX_LISTED_URLS);
-    findings.push({ code: "external-request", severity: "error", message: `${outside.length} request${outside.length === 1 ? "" : "s"} loaded a file outside the project`, expected: "only files inside the project", actual: urls.join(", "), fix: EXTERNAL_FIX, urls });
-  }
   return {
     schema: RESULT_SCHEMA,
     id: normalized.id,
     url: normalized.url,
-    status: outside.length || probes.some((probe) => probe.status === "failed") ? "failed" : "passed",
+    status: probes.some((probe) => probe.status === "failed") ? "failed" : "passed",
     probes,
-    findings,
+    findings: probes.flatMap((probe) => probe.findings.map((finding) => ({ probeId: probe.id, ...finding }))),
   };
 }
 

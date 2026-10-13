@@ -121,11 +121,13 @@ finding (exit 2): one finding per audit probe that lists each URL once, with the
 resource into the project and reference it locally. Motion and journey probes already raise that
 finding for requests outside the page origin; an audit's boundary is the project, so it also
 covers outside-project files, which share the `file:` origin. No new code is added for it. The
-same bound holds for a local page's whole verification run: a file outside the project that any
-probe's interaction, or a late request after a probe stopped recording, loads fails the run with one
-run-level `external-request` finding, since the gate could neither hash it nor see it change. An
-audited pass therefore records an empty `remote` list. Probe files without audit probes keep their
-current URL behavior for remote URLs and keep recording them without hashing them.
+same bound holds for motion and journey probes on a local page: a file outside the project that a
+probe's own recording requested fails that probe with `external-request`, since the gate could
+neither hash it nor see it change. Each probe's log is sliced from the run log with no gap between
+probes, and an audit probe judges its whole log, including loads while the viewport is restored,
+so every request the gate's lineage reads was judged by a probe. An audited pass therefore records
+an empty `remote` list. Probe files without audit probes keep their current URL behavior for remote
+URLs and keep recording them without hashing them.
 
 `gateStatus` treats an `interaction` record as stale when its lineage is missing (records written
 before this change), when any recorded hash differs, when an `absent` file now exists, or when

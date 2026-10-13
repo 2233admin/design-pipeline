@@ -72,11 +72,10 @@ resources the gate can hash.
   such resource once per audit probe with a fix to copy it into the project
 - **AND** the verifier SHALL exit 2 and SHALL NOT record a gate pass.
 
-#### Scenario: Any probe loads a file outside the project
+#### Scenario: A motion or journey probe loads a file outside the project
 
-- **WHEN** a motion or journey probe on a local page, or a request after a probe stopped recording,
-  loads a `file:` resource outside the project
-- **THEN** the verification run SHALL fail with an `external-request` finding listing that file
+- **WHEN** a motion or journey probe on a local page loads a `file:` resource outside the project
+- **THEN** that probe SHALL fail with an `external-request` finding listing the file
 - **AND** the verifier SHALL exit 2 and SHALL NOT record a gate pass.
 
 ### Requirement: UI craft rules are project-owned

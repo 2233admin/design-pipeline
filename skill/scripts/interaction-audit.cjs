@@ -109,10 +109,9 @@ const MAX_CONTRAST = 21;
 const PASSING = ["passed", "not-applicable"];
 // The verifier's external-request finding, bounded by the project rather than the page origin: a
 // CDN, a dev server and a file outside the project all escape the gate's hashes. It lists as many
-// URLs as the verifier's other external-request findings. interaction-core.cjs applies the same
-// bound and fix to a local page's whole run.
+// URLs as the verifier's other external-request findings.
 const MAX_LISTED_URLS = 20;
-const EXTERNAL_FIX = "Copy every listed resource into the project, next to the page, and reference it with a relative URL: a verified local page may load only files the gate can hash, so fonts, styles and scripts are self-hosted.";
+const EXTERNAL_FIX = "Copy every listed resource into the project, next to the page, and reference it with a relative URL: an audited page may load only files the gate can hash, so fonts, styles and scripts are self-hosted.";
 
 // What to declare so a `not-declared` check measures the page: the coverage carries it as a hint.
 const NOT_DECLARED_HINT = Object.freeze({
@@ -1027,10 +1026,10 @@ function bindable(url, project) {
 
 // Turns per-viewport page measurements and request logs into one audit row: a status per check
 // per viewport, error findings for failed and indeterminate items, a hint for each optional check
-// left not-declared, and any selector the page rejected (contract errors). Every URL the page
-// requested at any viewport that the gate cannot hash is listed once, in request order, in one
-// external-request finding that fails the row; `project` bounds the files the page may load.
-function summarizeAudit(probeId, viewportResults, project) {
+// left not-declared, and any selector the page rejected (contract errors). Every URL in the
+// viewport logs and the probe's whole `requests` log that the gate cannot hash is listed once, in
+// request order, in one external-request finding that fails the row; `project` bounds the files.
+function summarizeAudit(probeId, viewportResults, project, requests = []) {
   if (!nonEmpty(probeId)) fail(SCOPE, "audit summary needs the probe id");
   if (!nonEmpty(project)) fail(SCOPE, `audit ${probeId} needs the project root that bounds the files its page may load`);
   if (!Array.isArray(viewportResults) || !viewportResults.length) fail(SCOPE, `audit ${probeId} has no viewport results`);
@@ -1065,6 +1064,8 @@ function summarizeAudit(probeId, viewportResults, project) {
     });
     coverage.push({ viewport, elements: result.elements, checks });
   }
+  if (!Array.isArray(requests) || !requests.every((url) => typeof url === "string")) fail(SCOPE, `audit ${probeId} has no request log`);
+  for (const url of requests) requested.add(url);
   const unbound = [...requested].filter((url) => !bindable(url, project));
   if (unbound.length) {
     const urls = unbound.slice(0, MAX_LISTED_URLS);
@@ -1077,4 +1078,4 @@ function summarizeAudit(probeId, viewportResults, project) {
   return { status, coverage, findings, contractErrors };
 }
 
-module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, EXTERNAL_FIX, validateAuditProbe, auditOptions, auditViewports, auditPage, bindable, summarizeAudit };
+module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, validateAuditProbe, auditOptions, auditViewports, auditPage, bindable, summarizeAudit };
