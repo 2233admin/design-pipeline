@@ -90,7 +90,8 @@ name a repository. This is triggered by the work's needs, not a required search 
   existing governed route permits adaptation or execution.
 - Installation, upgrade and skill location: `references/installation.md`.
 - Animation decisions: `references/animation-thinking.md` and, when required by the route,
-  `references/animation-opportunity-and-review.md`.
+  `references/animation-opportunity-and-review.md`. For ordinary UI state changes, also read
+  `references/ui-transition-rules.md` before selecting effects and during rendered review.
 - Film direction and storyboards: `references/product-film-direction.md` and
   `references/film-choreography/`.
 - Built-in Cinetic/Product Film methods: `references/film-methods.md` for explicit film/loop

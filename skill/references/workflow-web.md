@@ -514,6 +514,10 @@ in a shadcn project or a selected shadcn-registry route; `emil-design-eng` and
 `make-interfaces-feel-better` details expressed in the existing styling system; and
 `fixing-accessibility` for every added control, form or dialog.
 
+Before selecting a non-trivial UI state transition, read [UI transition rules](ui-transition-rules.md):
+choose from the actual content/layout/overlay/navigation/list/value change, or explicitly keep it
+static. Reuse the existing opportunity screen, project motion tokens and motion/task record.
+
 Use the task fields in `stages.md#stage-4-tasks`: one visual goal with explicit inputs, scope,
 outputs, checks and repair path. For references, first render bounded structure/occlusion in a
 graybox. Then read complete `reference check`, `reconstruction check` and applicable `scene check`
@@ -617,6 +621,11 @@ by its id in `qa.md` as Component Conformance evidence, never as Visual Acceptan
 that conflicts with the project's precedence as not applicable. The measured audit already covered
 the codes in `ui-craft-sources.md#measured-audit`. Name in `qa.md` the surfaces left unmeasured by
 `not-declared` checks.
+
+For changed UI transitions, also run the applicable manual cases in
+[UI transition rules](ui-transition-rules.md#manual-review-matrix) and record the `TR-` ids and
+observations alongside UC findings without duplicating them. These cases are not automated
+`audit.*` checks or Visual Acceptance.
 
 Show the page, its motion at full speed and a one-paragraph gate summary. When the build used a
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and

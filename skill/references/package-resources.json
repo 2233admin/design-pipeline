@@ -6,6 +6,7 @@
     "scripts/install-local.cjs"
   ],
   "required": [
+    "references/ui-transition-rules.md",
     "references/gepa.md",
     "tools/gepa/optimize.py",
     "tools/gepa/requirements.txt",
