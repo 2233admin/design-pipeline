@@ -22,6 +22,7 @@ const { readState: readNativeState } = require("./control-runtime-core.cjs");
 const { downstreamPhases, invalidateDownstream } = require("./invalidation-core.cjs");
 const { resolveVideoObservation } = require("./reference-video-core.cjs");
 const { bindJobPlan, validateJobPlan } = require("./job-route-core.cjs");
+const { COMPONENT_SOURCES } = require("./design-system-catalog-core.cjs");
 
 const SCHEMA = "design-pipeline.workflow-state.v1";
 const STATE = path.join(".design-pipeline", "state.json");
@@ -212,10 +213,11 @@ function decide(root, options = {}) {
     // Only web has a components stage; refuse before touching another workflow's evidence.
     if (state.deliverable !== "web") fail("workflow", `--stage components applies only to web workflows; this project is a ${state.deliverable} workflow. Fix: follow next.`);
     if (typeof options.answer !== "string" || !options.answer.trim()) fail("workflow", "--answer is required: the user's component source choice");
-    const allowed = ["project", "github", "index", "scratch"];
-    if (typeof options.choice !== "string" || !options.choice.trim()) fail("workflow", "--choice is required: project|github|index|scratch, comma-separated");
+    // Canonical stored order; discover lets the agent find and record open-source sources itself.
+    const allowed = COMPONENT_SOURCES;
+    if (typeof options.choice !== "string" || !options.choice.trim()) fail("workflow", `--choice is required: ${allowed.join("|")}, comma-separated`);
     const choices = options.choice.split(",").map(value => value.trim());
-    if (choices.some(value => !allowed.includes(value))) fail("workflow", "--choice must be a comma-separated subset of project,github,index,scratch");
+    if (choices.some(value => !allowed.includes(value))) fail("workflow", `--choice must be a comma-separated subset of ${allowed.join(",")}`);
     if (choices.includes("scratch") && choices.some(value => value !== "scratch")) fail("workflow", "--choice scratch cannot be combined with any other value");
     if (choices.includes("github") && !/https:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+/i.test(options.answer)) fail("workflow", "--choice github requires at least one https://github.com/<owner>/<repo> URL in --answer");
     const sources = allowed.filter(value => choices.includes(value));

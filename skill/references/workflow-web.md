@@ -76,14 +76,19 @@ Immediately before build in every web tier and mode, ask where the components sh
 1. The project's existing components (ask for their paths).
 2. A GitHub component library the user names.
 3. Search this skill's component source index, `references/component-source-catalog.json`.
-4. Write from scratch.
+4. Let the agent find maintained open-source component libraries and icon sets on GitHub beyond
+   the index (`discover`).
+5. Write from scratch.
 
-Recommend the project's own components first, then search the index. Preserve the user's exact
-nonempty reply in `decisions.components`; earlier intake does not replace this decision. Supply
-`--choice` as a comma-separated set of `project`, `github`, `index` or `scratch`. Missing or unknown
-choices are rejected; duplicates are removed and `decisions.componentSources` is stored in canonical
-`project,github,index,scratch` order. `scratch` is exclusive. Selecting `github` requires an HTTPS
-GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
+Recommend the project's own components first, then the index, then letting the agent find more:
+`project,index,discover`. Preserve the user's exact nonempty reply in `decisions.components`;
+earlier intake does not replace this decision. Supply `--choice` as a comma-separated set of
+`project`, `github`, `index`, `discover` or `scratch`. Missing or unknown choices are rejected;
+duplicates are removed and `decisions.componentSources` is stored in canonical
+`project,github,index,discover,scratch` order. `scratch` is exclusive. Selecting `github` requires
+an HTTPS GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
+`discover` needs no URL: the agent finds GitHub repositories and records each one with its pinned
+license in the manifest (see [build](#build)).
 Legacy answer-only web decisions ask again; do not infer the source set from prose. Recording a
 different answer or set later, or the first explicit decision on a legacy state that already has a
 checked page, drops the interaction pass and delivery; earlier review verdicts stay recorded but no
@@ -95,7 +100,7 @@ path, then record the reply using the returned command, equivalent to:
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" decide \
   --root "$PROJECT_ROOT" --project-root "$PROJECT_ROOT" \
-  --stage components --choice project,index --answer "<the user's reply>"
+  --stage components --choice project,index,discover --answer "<the user's reply>"
 ```
 
 ## build
@@ -110,8 +115,8 @@ come from `pipeline-reference.md`. At the `full` tier, open an OpenSpec change u
 `openspec/changes/<id>/` first and build inside it.
 
 Honor `decisions.components` and its explicit `decisions.componentSources` set: reuse the specified
-project paths, inspect the named GitHub library, search the index, or author the components from
-scratch as selected. When searching the index:
+project paths, inspect the named GitHub library, search the index, find open-source sources, or
+author the components from scratch as selected. When searching, search the index first:
 
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \
@@ -125,9 +130,22 @@ The route and search with `--platform web` use the component-source index; searc
 platform or explicit snapshot retains Astryx. Load only returned entries and needed source guides/implementations, not every
 catalog. Keep catalog artifacts inside the selected root.
 
+When `discover` is selected and nothing indexed fits, look for maintained open-source component
+libraries or icon sets on GitHub yourself, using the method in `tools/open-source-design.md`. Read
+the repository's license at the exact commit or tag you will use and record its manifest entry
+before using it. Prefer genuinely reusing a fitting source over hand-writing an equivalent. Without
+`discover`, stay within the selected sources.
+
+Choose fonts through `tools/fonts.md`; do not silently fall back to the system stack unless the
+treatment (in quick and replicate builds, the page's direction) deliberately calls for it. Record
+the chosen family under Typography in `DESIGN.md`, where the audit probe's `thresholds.fonts`
+reads the approved families ([probe](#probe)). Bundle or self-host discovered code and fonts
+inside the project and keep their license notices: the page loads no CDN scripts or remote fonts
+at runtime (`web-motion.md#self-contained-pages`).
+
 Before writing `index.html`, write project-local `component-manifest.json`. Its `entries` array
-records every component source used. The existing catalog core's `validateComponentManifest`
-checks this evidence; the web workflow stays at build if it is invalid.
+records every component source used. The existing catalog core's
+`validateComponentManifest` checks this evidence; the web workflow stays at build if it is invalid.
 
 ```json
 {
@@ -147,33 +165,80 @@ checks this evidence; the web workflow stays at build if it is invalid.
 }
 ```
 
-The example requires the source file to exist and `Navigation` to appear in `index.html`.
+The example requires the source file to exist and `Navigation` to appear in `index.html`. A
+discovered library copied into the page looks like this; the angle-bracket values are the ones you
+checked:
+
+```json
+{
+  "name": "<library>",
+  "url": "https://github.com/<owner>/<repo>",
+  "revision": "<commit SHA or tag>",
+  "availability": "bundled-implementation",
+  "license": {
+    "state": "verified",
+    "id": "MIT",
+    "evidence": ["https://github.com/<owner>/<repo>/blob/<commit SHA or tag>/LICENSE"],
+    "file": "licenses/<repo>.txt"
+  },
+  "usedIn": [{
+    "file": "index.html",
+    "marker": "<import path or class>",
+    "how": "Copy <library> into vendor/<repo>.js; keep its MIT license notice in licenses/<repo>.txt"
+  }]
+}
+```
+
 For each entry:
 
 - `name` is nonempty. `sourceId` resolves to an indexed source in
   `references/component-source-catalog.json`, or names an existing project-owned file inside the
   project. Alternatively, `url` names a GitHub repository URL present in the recorded components
-  decision, or a contained project-owned file path/file URL. Arbitrary URLs and invented IDs do
-  not resolve. Containment follows real paths, so a symlink cannot point outside the project.
+  decision, a discovered GitHub repository (below), or a contained project-owned file path/file
+  URL. Cite an indexed source by its `sourceId`: a URL of its GitHub repository, or a deep link into
+  it, is rejected unless it is the decision-named repository URL, and a deep link inside a named
+  repository is rejected in favour of the repository URL. Other URLs (npm pages, project
+  homepages, other hosts), URLs with credentials and invented IDs do not resolve. Containment
+  follows real paths, so a symlink cannot point outside the project.
 - `availability` is `bundled-implementation`, `reference-link`, `metadata-only` or `project-owned`.
   `license.state` is `verified`, `unverified`, `commercial`, `project-owned` or `platform`.
   An indexed source's license state matches the index, including when identified by its named
   GitHub repository URL. Project files use project-owned availability and license state.
+- Any other `https://github.com/<owner>/<repo>` URL (neither named in the decision nor indexed) is a
+  discovered source; GitHub pages such as `topics`, `orgs`, `sponsors` or `marketplace` are not
+  repositories. It needs availability `bundled-implementation`, `reference-link` or
+  `metadata-only`, a `revision` (the commit SHA or tag you checked, never `HEAD`, `main` or
+  `master`), `license.evidence` (a non-empty array of https URLs, at least one on the same
+  repository whose `blob`, `tree`, `raw`, `commit`, `releases/tag` or `archive` ref is exactly the
+  revision, such as `https://github.com/<owner>/<repo>/blob/<revision>/LICENSE`; the URL path is
+  compared undecoded) and `license.state` `verified`, `unverified` or `commercial`, never
+  `project-owned` or `platform`.
+  Record `license.id`, the SPDX expression at that revision, whenever you know it; copying or
+  importing requires it (below). Validation checks this auditable shape offline; it does not fetch
+  the evidence or authenticate the upstream repository, revision or license.
 - Each entry's source category must be in the recorded `componentSources`, judged by how it cites
   its source: `project` for a contained project file or the indexed `project-components` record,
-  `github` for a decision-named GitHub URL, and `index` for every other indexed `sourceId`,
-  `platform` records such as `native-dom` included. To use a named GitHub library under a
-  `github`-only set, cite it by `url`, not by its indexed `sourceId`. Scratch keeps its own rules below.
+  `github` for a decision-named GitHub URL, `discover` for a discovered GitHub repository, and
+  `index` for every other indexed `sourceId`, `platform` records such as `native-dom` included. To
+  use a named GitHub library under a `github`-only set, cite it by `url`, not by its indexed
+  `sourceId`. Scratch keeps its own rules below.
 - Every `usedIn` has an existing contained `file`, a nonempty `marker` that literally appears in
   that file, and a nonempty `how`. Choose a real import path, class name, custom element name or
   component identifier as the marker, not a fabricated usage description.
 - `how` describes use. Unverified/commercial sources allow only study/reimplementation, never
-  copying or importing; availability does not grant permission. For example:
+  copying or importing; availability does not grant permission. A `how` that bundles, vendors,
+  self-hosts or downloads the source counts as copying. For example:
   `Study and reimplement the Navigation interaction independently`.
 - For verified imports/copies, `how` explicitly records attribution/license-notice handling,
   for example `Import Navigation; retain upstream copyright/license notices in LICENSES.md`.
   This documents handling; validation does not independently audit legal compliance or verify
   a non-indexed repository's declared license.
+- Copying or importing a discovered source requires `license.state: verified`, a permissive
+  `license.id` (`MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`, `ISC`, `0BSD`, `Zlib`,
+  `Unlicense` or `CC0-1.0`; the whole id, case-insensitive) and `license.file`: a non-empty file
+  contained in the project that holds the copied license text. Validation does not read the text
+  to recognise the license. Anything else, including compound expressions such as
+  `MIT OR Apache-2.0`, allows only study/reimplementation.
 
 For the exclusive `scratch` set, write `{"fromScratch":true,"entries":[]}` or include only
 project-owned entries satisfying the same per-entry rules. `fromScratch: true` is required;
