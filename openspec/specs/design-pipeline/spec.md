@@ -1008,6 +1008,18 @@ All project paths SHALL remain below explicit `--root` after link resolution.
 - **THEN** the command SHALL fail before reading or writing it
 - **AND** the JSON error envelope SHALL remain machine-readable.
 
+#### Scenario: Interaction output escapes through a default directory or report link
+
+- **WHEN** the default or explicit interaction output directory, or its final report file, resolves outside `--root`
+- **THEN** verification SHALL reject the destination before capture or writing the report
+- **AND** no gate pass or external report SHALL be produced
+
+#### Scenario: A destination contains an unresolved filesystem link
+
+- **WHEN** a project destination contains a filesystem link whose target does not exist
+- **THEN** the CLI SHALL reject it as an unresolved containment boundary before reading or writing that destination
+- **AND** interaction verification SHALL NOT start capture or record a gate pass
+
 ### Requirement: Runtime evidence is explicit and adapter-neutral
 
 Browser/tool adapters SHALL produce validated receipts with adapter identity, capability probe,
@@ -2839,3 +2851,514 @@ NOT make values from different metrics interchangeable or grant visual acceptanc
 
 - **WHEN** the maintained comparator receives identical images or a known changed region
 - **THEN** identical images SHALL produce zero difference and the changed region SHALL be detected
+
+### Requirement: Motion is authored from intention and poses
+
+The system SHALL support authored pose timing, spacing and holds in the existing choreography
+runtime, with deterministic seeking and validation before timeline mutation.
+
+#### Scenario: Independent timing and spacing
+- **Given** two pose sequences with the same endpoints and duration but different intermediate keys
+- **When** pose-to-pose adds them to a paused composition
+- **Then** they follow their authored spacing and retain exact endpoint timing under arbitrary seeks.
+
+#### Scenario: Held drawing and secondary action
+- **Given** a held incoming key and a delayed sequence on a separate target
+- **When** the scene is rendered
+- **Then** the preceding pose stays until the authored key and the secondary action keeps its offset.
+
+#### Scenario: Invalid authoring data
+- **Given** non-finite values, unknown properties, inconsistent pose channels or non-increasing keys
+- **When** a pattern is called
+- **Then** it rejects before mutating the timeline.
+
+#### Scenario: Held poses still act
+- **Given** a sequence of zero-duration numeric transform sets on one subject
+- **When** later poses change from an earlier pose
+- **Then** the timeline gate recognizes discrete action, while initialization, identical poses,
+  fade/scale-only changes and broken planned continuous carry remain insufficient.
+
+### Requirement: Stylistic timing remains a creative decision
+
+The system SHALL distinguish rhythm review heuristics from implementation failures and SHALL
+keep technical gate results separate from creative acceptance.
+
+#### Scenario: Deliberate rhythm
+- **Given** a structurally valid film/edit with regular pulses, long holds, sparse sound accents
+  or off-beat cuts
+- **When** existing gates run
+- **Then** heuristics produce actionable review warnings rather than claim that this style is invalid.
+
+#### Scenario: Broken implementation
+- **Given** a timeline gap, property conflict, absent subject action or broken planned carry
+- **When** the same gates run
+- **Then** the objective failure still blocks conformance.
+
+#### Scenario: Authored sound accent
+- **Given** an explicit downbeat, accent or impact cue and the score's event grid
+- **When** the declared cue misses every event by more than one frame
+- **Then** cue misalignment remains an error even though an off-grid picture cut is only a warning.
+
+#### Scenario: Technical result is not acceptance
+- **Given** passing checks and a rendered motion study
+- **When** results are reported
+- **Then** runtime evidence and visual acceptance are reported separately; user acceptance is not set.
+
+### Requirement: Locally distributed video inspection candidates
+Video sampling SHALL retain candidate context from locally prominent pixel changes across the requested interval, within the existing frame budget. Candidate times SHALL remain inspection hints, not confirmed shots. Omitted context SHALL be reported rather than silently treated as observed.
+
+#### Scenario: Fast opening masks a later transition
+- **WHEN** an opening has sustained large pixel changes and a later interval has a locally prominent transition
+- **THEN** the later transition SHALL remain eligible for contextual sampling despite the global opening baseline.
+
+#### Scenario: Frame budget cannot retain context
+- **WHEN** candidate context exceeds the requested frame budget
+- **THEN** sampling SHALL retain provenance and report omissions; it SHALL NOT assert complete production readiness.
+
+### Requirement: Confirmed video production inventory
+Production readiness for a video reference SHALL require confirmed shots covering the analyzed interval and an explicit inventory of applicable target properties. Every declared property SHALL have observed, local frame evidence. Historical reports SHALL remain readable, but coarse window observations alone SHALL NOT satisfy current production readiness.
+
+#### Scenario: One observation hides another object
+- **WHEN** a shot declares text geometry and camera motion but only text geometry is observed
+- **THEN** production readiness SHALL remain pending and identify the missing camera property.
+
+#### Scenario: A static graphic has no material animation
+- **WHEN** a shot declares only the visible geometry properties of a static graphic and those properties have local evidence
+- **THEN** the checker SHALL NOT invent a requirement for material, lighting or motion observations.
+
+#### Scenario: Historical report starts new production
+- **WHEN** a valid historical video report has no confirmed shot inventory
+- **THEN** inspection SHALL remain available and production callers SHALL request decomposition instead of proceeding.
+
+### Requirement: Evidence bound video visual tasks
+Visual tasks referencing a video analysis SHALL bind a confirmed shot and observation IDs in the existing design plan. Dispatch and completion SHALL verify matching target, atomic property, time range and frame evidence. Declared guides, source report, source media and selected frames SHALL participate in existing input hashes and downstream invalidation.
+
+#### Scenario: A task binds the wrong observation
+- **WHEN** a task's observation belongs to another target, property or shot
+- **THEN** dispatch and completion SHALL block with a concrete binding error.
+
+#### Scenario: Method or source evidence changes
+- **WHEN** a bound guide, source report or frame changes after technical completion
+- **THEN** the existing receipt chain SHALL invalidate that completion and affected downstream work.
+
+#### Scenario: A rebuilt asset is still unavailable
+- **WHEN** a task declares an absent asset input or an unfinished dependency output
+- **THEN** existing input checks SHALL block dispatch; a placeholder SHALL NOT count as the final asset.
+
+#### Scenario: Structurally complete production evidence
+- **WHEN** all required properties and task bindings pass their structural checks
+- **THEN** the result SHALL keep semantic and visual acceptance unassessed until human review.
+
+### Requirement: Usable preserved method entries
+Declared bundled method paths and required packaging resources SHALL resolve to the current preserved source topology. License copies SHALL retain the same pinned bytes; repairing paths SHALL NOT alter upstream implementations or weaken provenance checks.
+
+#### Scenario: Preserved upstream engine directory changes
+- **WHEN** a preserved method is present under its current engine directory but an existing package requirement or method link names an obsolete directory
+- **THEN** the existing requirement and link SHALL be updated to the preserved file while its source hash remains verified.
+
+### Requirement: Agent-browser evidence can start from saved browser state
+
+`evidence capture` SHALL accept `--agent-browser-state <file>`, an agent-browser state file inside
+`--project-root`, and load it when the agent-browser session starts. The host SHALL read the file
+once into a private copy outside the evidence and the adapter SHALL load that copy. The receipt
+SHALL name the file and the sha256 of the copied bytes and SHALL NOT copy its contents.
+
+#### Scenario: Saved state is preloaded
+
+- **WHEN** `--agent-browser-state` names a file inside the project and `--agent-browser` is set
+- **THEN** the adapter SHALL start the session with `--state` pointing at the host's copy
+- **AND** the probe message SHALL name the file and its sha256
+- **AND** the copy SHALL be removed after the capture, whether or not it succeeded.
+
+#### Scenario: The state file changes during the capture
+
+- **WHEN** the project's state file is rewritten after the host read it
+- **THEN** the browser SHALL load the bytes the host read
+- **AND** the probe message SHALL name the sha256 of those bytes.
+
+#### Scenario: The state file is outside the project
+
+- **WHEN** `--agent-browser-state` resolves outside `--project-root`
+- **THEN** the capture SHALL fail closed without starting a browser.
+
+#### Scenario: Another adapter would ignore the state
+
+- **WHEN** `--agent-browser-state` is given with an `--adapter-path` other than the packaged
+  `adapters/agent-browser.cjs`, or without `--agent-browser`
+- **THEN** the capture SHALL fail closed without starting the adapter.
+
+### Requirement: Native completion observes its required verification
+
+Native task completion SHALL run each supported required verifier through its trusted public completion operation and use the observed result before promotion. Caller-written reports, receipt invocation fields and producer labels SHALL NOT substitute for that execution. Failed, missing, partial or unsupported verification SHALL block completion.
+
+#### Scenario: Correctly hashed self-written evidence is submitted
+
+- **WHEN** a caller submits a passed report or success receipt without observed verification
+- **THEN** completion SHALL run the declared supported verifier or remain blocked
+- **AND** the report alone SHALL NOT authorize technical completion or owner review
+
+#### Scenario: The existing browser interaction check runs
+
+- **WHEN** the current local web task has a supported interaction verification binding
+- **THEN** completion SHALL use actual browser measurements and the existing evaluator verdict
+- **AND** missing tools, failed capture, timeout or incomplete measurements SHALL block promotion
+
+#### Scenario: The probe targets a different page
+
+- **WHEN** the first-slice probe targets a remote URL or a local page other than its declared task output
+- **THEN** native completion SHALL reject the verification binding
+- **AND** the probe and actual output SHALL be included in the checked snapshot rather than substituting an unrelated default page
+
+### Requirement: Native task scope uses a preserved observed baseline
+
+Before native task work, the tool SHALL capture a task-bound baseline and at completion compare actual observable changes with that task's literal scope and explicitly declared artifact paths. Unchanged pre-existing edits SHALL NOT count as new task changes. A missing baseline or unobservable target SHALL block scope-verified completion.
+
+#### Scenario: A pre-existing dirty file is unchanged
+
+- **WHEN** another dirty file existed before dispatch and retains its exact content and status
+- **THEN** it SHALL NOT be counted as a new out-of-scope task change
+- **AND** modifying that same dirty file afterward SHALL be detected even if its Git status stays unchanged
+
+#### Scenario: Only staged contents change
+
+- **WHEN** a file's Git index contents change while its working bytes and porcelain status remain unchanged
+- **THEN** the change SHALL be included in the observed task delta
+- **AND** unresolved merge stages SHALL block scope-verified completion
+
+#### Scenario: An out-of-scope commit is reverted
+
+- **WHEN** the attempt commits an out-of-scope change and later reverts it in another visible commit
+- **THEN** the changed paths in that commit history SHALL still block completion
+- **AND** an unverifiable history replacement SHALL NOT establish a clean task delta
+
+#### Scenario: Work escapes the current task scope
+
+- **WHEN** the observed task delta contains an out-of-scope file, including a file belonging to a different task
+- **THEN** completion SHALL be blocked before review and SHALL retain the changed files and diagnostic evidence
+- **AND** another task's scope SHALL NOT authorize the change
+
+#### Scenario: The caller repeats next or retries failed work
+
+- **WHEN** next is repeated or an unfinished attempt fails
+- **THEN** the original active baseline SHALL remain bound to that attempt
+- **AND** repeating dispatch SHALL NOT adopt an out-of-scope edit into a fresh baseline
+
+#### Scenario: A changed plan expands the allowed scope
+
+- **WHEN** the plan changes while an attempt has unresolved changes
+- **THEN** the tool SHALL inspect that attempt against its preserved original authorization before adopting a new window
+- **AND** the new scope SHALL NOT retroactively authorize an old out-of-scope edit
+
+### Requirement: Native verification commits one current evidence snapshot
+
+Observed verification and scope results SHALL bind the current target, task, plan, inputs, outputs and artifacts. A changed binding during verification SHALL prevent completion. Upstream drift SHALL invalidate dependent technical evidence and review. Existing state/event transaction and artifact lineage SHALL remain authoritative.
+
+#### Scenario: Output changes while verification runs
+
+- **WHEN** an input, output, task or plan changes between verification start and completion commit
+- **THEN** the observed result SHALL NOT be bound to the changed version
+- **AND** completion SHALL return a repair or rerun action rather than passed
+
+#### Scenario: The report destination aliases another bound file
+
+- **WHEN** the proposed check report aliases any bound input, declared output, another check destination, active plan, native state or event ledger
+- **THEN** completion SHALL reject the destination before capture and preserve those files
+
+#### Scenario: Probe expectations change after a pass
+
+- **WHEN** the probe bytes change after observed verification
+- **THEN** the task's previous check and dependent review SHALL become stale and require verification of the new expectations
+
+#### Scenario: Completion evidence changes after review
+
+- **WHEN** a completed task's observed evidence or bound output changes
+- **THEN** the task and affected downstream evidence SHALL become stale
+- **AND** previous owner acceptance SHALL NOT authorize the changed version
+
+### Requirement: Native verification exposes its coverage and recovery
+
+Native next SHALL return one concrete supported action with missing prerequisites or verifier failure context. Technical results SHALL identify the observed check and scope coverage and SHALL NOT imply producer authentication outside the trusted execution boundary, complete filesystem write policing, Component Conformance or Visual Acceptance.
+
+#### Scenario: An old plan has only report paths
+
+- **WHEN** a native plan or completion record lacks an executable verification binding or task baseline
+- **THEN** it SHALL remain readable and require explicit binding and fresh verification before advancement
+- **AND** next SHALL identify the required repair without deleting history
+
+#### Scenario: Verification is outside the supported first slice
+
+- **WHEN** the task needs an unsupported verifier or its scope cannot be observed
+- **THEN** next SHALL report blocked with the missing capability
+- **AND** an agent narrative or an unknown result SHALL NOT substitute for a pass
+
+#### Scenario: An observed technical check passes
+
+- **WHEN** required verification and observable scope checks pass for the same snapshot
+- **THEN** the existing exact-version owner review SHALL remain applicable
+- **AND** Component Conformance and Visual Acceptance SHALL be reported separately from that technical pass
+
+### Requirement: Workflow next preserves actionable check context
+
+Project-root next SHALL return recovery context for its existing pending verification gate, identifying missing, unbound or changed files when evaluating a recorded pass with checked-file bindings and retaining available prior verifier findings, fixes and recovery instructions. Diagnostics SHALL NOT change pass criteria, grant acceptance or write state. Older gate records without diagnostics SHALL remain readable and resume through the existing action.
+
+#### Scenario: A failed check is resumed in another command
+
+- **WHEN** a public verifier records a failed check and next is called again
+- **THEN** next SHALL retain that gate's actionable findings and fixes with its existing check command
+
+#### Scenario: Checked bytes change
+
+- **WHEN** a current pending gate's checked input changes after a pass
+- **THEN** next SHALL name the changed input and require a fresh check without writing state
+
+#### Scenario: A pass measured another input
+
+- **WHEN** an existing pass lacks a required input binding
+- **THEN** next SHALL identify that input and explain how to verify it rather than treating the old pass as current
+
+#### Scenario: Required files are missing or unavailable
+
+- **WHEN** a recorded pass with checked-file bindings references required inputs that cannot be read inside the project
+- **THEN** next SHALL name the affected path and recovery action without advancing or exposing external file contents
+
+### Requirement: Workflow review points to checked output files
+
+Shared project-root review SHALL show the actual contained checked web page or film/edit video rather than generic placeholders. Supplemental evidence SHALL be listed only when it exists inside the project, and its existence SHALL NOT establish freshness, conformance or owner Visual Acceptance. Review decisions SHALL keep their existing snapshot bindings.
+
+#### Scenario: Web draft awaits its owner
+
+- **WHEN** the current web draft passes its check and awaits review
+- **THEN** next SHALL show its actual checked page and request inspection of the affected interactions
+
+#### Scenario: Multiple film renders exist
+
+- **WHEN** a checked film draft awaits review with multiple render files present
+- **THEN** next SHALL show the render bound to that current check
+
+#### Scenario: Supplemental evidence is missing or escaping
+
+- **WHEN** an optional review evidence file is missing or resolves outside the project
+- **THEN** it SHALL NOT be listed as an available review file
+
+### Requirement: Engineering guidance uses runnable vertical verification
+
+Packaged QA guidance SHALL teach one observable behavior per implementation step, public-interface regression checks with independent expectations, observed failure before a fix, focused reruns and root-cause diagnosis before repeated retries. Existing user authorization and established project interfaces SHALL be reused; deterministic tests SHALL NOT substitute for visual acceptance.
+
+#### Scenario: Agent changes a runtime behavior
+
+- **WHEN** an agent fixes or extends a deterministic tool behavior
+- **THEN** it SHALL exercise the relevant established public interface and complete one observed failing-check-to-fix cycle before adding another behavior
+
+#### Scenario: A check repeats without progress
+
+- **WHEN** the same command completes but the workflow remains blocked
+- **THEN** the agent SHALL inspect returned recovery context and test a concrete cause before retrying unchanged inputs
+
+### Requirement: Interaction verification preserves measurement inputs
+
+Interaction verification SHALL reject a report destination that aliases its probe, resolved local page or existing workflow state before browser execution. Rejection SHALL preserve their bytes and SHALL NOT record a gate pass.
+
+#### Scenario: Report aliases a measured page or state
+
+- **WHEN** the report destination names the measured local page or workflow state through an exact path, hard link or symbolic link
+- **THEN** verification SHALL return a machine-readable contract error before capture
+- **AND** the probe, page and state SHALL remain unchanged
+
+#### Scenario: A separate contained report is requested
+
+- **WHEN** the report destination is contained and distinct from the measurement inputs and state
+- **THEN** verification SHALL retain its existing capture, evaluation and measured-page binding behavior
+- **AND** a gate pass SHALL NOT grant owner Visual Acceptance
+
+### Requirement: Workflow passes bind current checked inputs
+
+Workflow gate passes SHALL bind the current bytes of their declared checked files. Missing, changed or unbound required files SHALL reopen the existing check. The workflow and verifier SHALL use the same existing film render selection. A timestamp or a check of a different output SHALL NOT substitute for this binding.
+
+#### Scenario: Changed content retains its timestamp
+
+- **WHEN** a checked file changes while its original timestamp is restored
+- **THEN** the workflow SHALL return the corresponding check rather than done
+
+#### Scenario: Required input disappears or only legacy time is recorded
+
+- **WHEN** a required checked file is missing or the stored pass contains only status and time
+- **THEN** the workflow SHALL require fresh verification without deleting the old state
+
+#### Scenario: A newer film render is present
+
+- **WHEN** the existing verifier selects a newer nonempty film render
+- **THEN** the workflow SHALL bind that same render and SHALL NOT reuse a check of an older video
+
+#### Scenario: A custom edit output was checked
+
+- **WHEN** a successful edit check targeted another output file
+- **THEN** its pass SHALL NOT complete the default draft's check stage
+
+#### Scenario: Interaction verification targets another page
+
+- **WHEN** a probe measures a different local page or a remote URL
+- **THEN** its pass SHALL NOT substitute an unrelated local index.html as the measured input
+
+#### Scenario: Verification output would overwrite its input
+
+- **WHEN** interaction output names the same file as its probe, including a filesystem alias
+- **THEN** verification SHALL reject the output before capture and preserve the probe and workflow state
+
+### Requirement: Workflow review belongs to the current draft
+
+Draft acceptance SHALL bind the current checked-input snapshot and use the latest review decision. Rejection or a changed checked snapshot SHALL reopen review and any dependent standard delivery. Engineering checks SHALL NOT produce owner Visual Acceptance.
+
+#### Scenario: An accepted draft is rejected
+
+- **WHEN** the owner rejects the currently accepted draft with feedback
+- **THEN** the workflow SHALL preserve both decisions and require a new review after rechecking
+
+#### Scenario: Accepted output changes and passes another check
+
+- **WHEN** an accepted draft changes and its new version passes engineering checks
+- **THEN** the previous acceptance SHALL NOT authorize delivery of the new version
+
+### Requirement: Delivery cannot bypass workflow prerequisites
+
+Delivery recording SHALL reject unfinished prerequisites without writing state. Film and edit delivery SHALL name an existing contained file. Standard delivery SHALL bind its current check snapshot and local film/edit output. UI's existing work-stage declaration SHALL remain available with Visual Acceptance unevaluated; quick workflows MAY record delivery after all applicable stages finish.
+
+#### Scenario: Delivery is recorded before verification
+
+- **WHEN** delivery is requested while a prerequisite action remains
+- **THEN** the command SHALL return a contract error naming that action and leave state unchanged
+
+#### Scenario: Film or edit output is missing or escaping
+
+- **WHEN** film/edit delivery names a missing file, directory or path outside the project
+- **THEN** the command SHALL reject it without recording delivery
+
+#### Scenario: A delivered standard output changes
+
+- **WHEN** its check snapshot or bound delivery file changes
+- **THEN** the previous delivery SHALL NOT complete the changed workflow
+
+#### Scenario: Legacy UI records its bounded work
+
+- **WHEN** UI reaches work after its intake and reference prerequisites
+- **THEN** it MAY record the existing completion declaration and SHALL report Visual Acceptance as not evaluated
+
+### Requirement: Agent verification instructions drive the real surface
+
+The packaged QA guidance SHALL teach launch, readiness checks, real user-path verification, retained evidence, owned-process cleanup and failure recovery through existing commands. It SHALL distinguish partial capture, evidence integrity, functional checks and owner Visual Acceptance. The maintained instructions SHALL be exercised on at least one real public-command path before delivery.
+
+#### Scenario: A partial capture validates structurally
+
+- **WHEN** a capture is partial or an evidence validator exits successfully without exercising behavior
+- **THEN** the agent SHALL retain that scope and SHALL NOT report full functional verification
+
+#### Scenario: Verification cannot run
+
+- **WHEN** a required instance, input, tool or observation is unavailable
+- **THEN** the agent SHALL report the missing check and recovery action without inventing a passing result
+
+### Requirement: Interaction journeys observe ordered business states
+
+The existing interaction verifier SHALL support a bounded ordered DOM-state journey driven by real browser input in one page instance. It SHALL compare captured visible, text, attribute and focus values against declared literal expectations. Legacy motion probes SHALL retain their existing behavior and measurement requirements.
+
+#### Scenario: Menu selection follows opening
+
+- **WHEN** a journey observes initial closure, opens a menu, selects an item and closes it
+- **THEN** the verifier SHALL retain state between steps and verify each declared result
+- **AND** selection SHALL update the declared visible value and survive subsequent closing input
+
+#### Scenario: Menu animates without applying selection
+
+- **WHEN** the menu moves correctly but its selected value differs from the declared expectation
+- **THEN** verification SHALL fail with the step, actual value, expected value and repair finding
+- **AND** motion success SHALL NOT establish the missing business state
+
+#### Scenario: Keyboard closes the menu
+
+- **WHEN** the journey drives Escape on an open menu
+- **THEN** the verifier SHALL observe closure and the declared focus recovery through real keyboard input
+
+#### Scenario: State observations are incomplete or malformed
+
+- **WHEN** a required step or assertion is missing, duplicated, reordered or has an invalid actual value
+- **THEN** the verifier SHALL NOT return a passed journey
+- **AND** a missing element SHALL NOT satisfy an expected false or null value
+
+#### Scenario: A journey requests unbounded or executable assertions
+
+- **WHEN** the request exceeds the step, assertion or observation budgets, mixes motion and journey shapes, or supplies an unsupported action or expression
+- **THEN** contract validation SHALL reject it before browser execution
+
+#### Scenario: A journey navigates elsewhere
+
+- **WHEN** an ordered operation changes the actual local page to another target
+- **THEN** capture SHALL retain the existing canonical-page rejection
+- **AND** the other page's states SHALL NOT authorize native completion
+
+#### Scenario: Missing journey provenance hides external requests
+
+- **WHEN** a journey capture omits its page origin, declares another origin, or supplies an unsupported or mismatched capture URL
+- **THEN** evaluation SHALL reject it before its values can establish a passed journey
+- **AND** supported journey capture SHALL retain external-request checks while legacy-only capture compatibility remains unchanged
+
+### Requirement: Native completion verifies declared journey coverage
+
+Native completion SHALL validate the observed interaction result against the normalized original probe, including every ordered state assertion. It SHALL retain existing task/input/output/report binding, preserved scope, CAS and exact-version review. Journey results SHALL NOT fabricate motion frames or relax legacy motion completeness.
+
+#### Scenario: A caller labels a partial report as state-only
+
+- **WHEN** a caller supplies a state-only label without the complete declared journey observations
+- **THEN** native completion SHALL remain blocked
+- **AND** the original probe declaration SHALL determine required evidence
+
+#### Scenario: The accepted probe changes
+
+- **WHEN** a step input or literal expectation changes after observed completion
+- **THEN** the completion and dependent review SHALL become stale under existing input invalidation
+
+### Requirement: Native repair feedback is actionable and snapshot-bound
+
+Native next SHALL expose actual verifier findings with concrete repair guidance while preserving legacy failure text. Consecutive observed failures SHALL bind the measured input/output snapshot; after three identical failures the returned action SHALL stop blind repetition. Recovery SHALL NOT bypass completion checks or reset a failed authorization window.
+
+#### Scenario: The same failed snapshot is verified again
+
+- **WHEN** actual verification fails repeatedly on identical bound input/output bytes
+- **THEN** the stored observed attempt count SHALL increase
+- **AND** the third failure SHALL return stop-repeating guidance with the failing check and repair action
+
+#### Scenario: The implementation is repaired
+
+- **WHEN** output bytes change before another observed failed verification
+- **THEN** the consecutive count SHALL restart for that new snapshot
+- **AND** a restored modification timestamp SHALL NOT hide the byte change
+
+#### Scenario: Next is repeated without verification
+
+- **WHEN** next is repeated, a tool is missing, scope is blocked or native CAS conflicts
+- **THEN** no additional observed verifier attempt SHALL be claimed
+- **AND** the existing active scope window and applicable recovery SHALL remain intact
+
+### Requirement: Native task examples match supported proof
+
+Native task templates and guides SHALL use an observable goal whose declared checks can establish it, and SHALL state uncovered behavior. A real menu trial SHALL retain agent-produced output, independent browser findings and repaired version evidence while keeping Component Conformance and owner Visual Acceptance separate.
+
+#### Scenario: The agent follows the menu example
+
+- **WHEN** the example task is dispatched, implemented and verified
+- **THEN** its proof SHALL exercise actual open, selection, close and keyboard/focus states
+- **AND** owner acceptance SHALL require a real reply on the exact displayed version
+
+#### Scenario: A selection defect is deliberately injected
+
+- **WHEN** a trial uses a fault injection to test repair feedback
+- **THEN** the record SHALL identify it as an injected counterexample
+- **AND** scripted fixtures SHALL NOT be described as real model-produced output
+
+### Requirement: Publication preserves required tracked upstream source
+
+Publication SHALL preserve required tracked upstream source bytes despite personal ignore patterns. Repository exceptions SHALL name exact source paths and SHALL retain the existing tracked-ignored-file audit without changing global preferences.
+
+#### Scenario: A personal binary ignore hides required tracked source
+
+- **WHEN** a published tracked upstream layout source matches a personal binary ignore rule
+- **THEN** the repository SHALL explicitly include that exact source path without modifying its bytes or global preferences
+- **AND** the existing tracked-ignored-file audit SHALL remain enforced
