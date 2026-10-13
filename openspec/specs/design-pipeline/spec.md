@@ -4,7 +4,9 @@
 
 Define the durable, design-first contracts used to plan, implement, validate, package, and improve
 the design pipeline without making optional tools or hosted integrations part of the core runtime.
+
 ## Requirements
+
 ### Requirement: Design-first scope
 
 The pipeline SHALL optimize for design outcomes and SHALL NOT become a general-purpose skill marketplace.
@@ -2302,3 +2304,148 @@ Every change with a reference SHALL record the difference between the values wri
 - **WHEN** no specified value changed during implementation
 - **THEN** an empty reconciliation table SHALL be a valid result.
 
+### Requirement: Composition structure is enumerated per region
+
+The pipeline SHALL require a per-region structural breakdown for every change with a visual
+reference, authored independently for each region.
+
+#### Scenario: A reference contains repeated regions
+
+- **WHEN** a reference contains two or more comparable regions
+- **THEN** `reference.md` SHALL record rows, columns, left-to-right contents, and what each region
+  breaks from
+- **AND** each region SHALL be described from the reference rather than by reference to another
+  region.
+
+#### Scenario: Uniformity is claimed
+
+- **WHEN** a per-region breakdown is recorded
+- **THEN** it SHALL answer explicitly whether every region shares the same row and column structure
+- **AND** any exception SHALL be named in the same table as the regions it breaks from.
+
+#### Scenario: The uniformity claim contradicts the regions
+
+- **WHEN** `composition.uniform` is `true`
+- **AND** any region records a non-empty `breaksFrom`, or regions differ in rows or columns
+- **THEN** reference validation SHALL fail with a composition contradiction.
+
+#### Scenario: A structural claim is compared to a render
+
+- **WHEN** a graybox capture exists for the change
+- **THEN** the graybox comparison SHALL address the recorded region ids by name.
+
+### Requirement: Component-first v2 binds one target snapshot through chained receipts
+
+The future v2 gate SHALL bind stack, component, Playground, page, and browser evidence to one target
+identity, snapshot digest, and policy digest. An upstream digest change SHALL invalidate downstream
+receipts. Prototype evidence SHALL require an explicit promotion receipt before satisfying a
+production target. Component conformance SHALL remain distinct from visual acceptance.
+
+#### Scenario: An upstream target snapshot changes
+
+- **WHEN** a component or target snapshot digest differs from the digest bound by a downstream page
+  or browser receipt
+- **THEN** the downstream receipt SHALL become stale and SHALL NOT satisfy component conformance
+- **AND** visual acceptance SHALL remain a separate result rather than being inferred.
+
+### Requirement: Progressive skill entry point
+The packaged skill MUST expose a concise `skill/SKILL.md` front door that is no more than 500 lines and routes each supported intent to the references required for that intent.
+
+#### Scenario: Route-specific loading
+
+- **WHEN** a user requests a supported design-pipeline route
+- **THEN** the front door MUST identify the route and its required references
+- **AND** it MUST NOT require reading unrelated module instructions
+
+#### Scenario: Packaged references
+
+- **WHEN** the skill is packaged and installed
+- **THEN** every reference named by the front door MUST be present in the installed archive
+- **AND** existing public command and reference paths MUST remain usable
+
+### Requirement: Skill evaluation manifest
+The repository MUST provide a versioned, offline-validatable evaluation manifest for representative skill prompts.
+
+#### Scenario: Valid evaluation set
+
+- **WHEN** `scripts/validate-evals.cjs` validates `evals/evals.json`
+- **THEN** it MUST verify the schema, unique IDs, known workflow routes, canonical job IDs from the bundled job registry, expected downstream state, prompts, signals, and contained fixture paths
+- **AND** it MUST return a deterministic passing result without network or model access
+
+#### Scenario: Invalid evaluation set
+
+- **WHEN** an evaluation has a duplicate ID, unknown route, empty prompt, empty required signal, or escaping fixture path
+- **THEN** validation MUST fail with a machine-readable reason
+
+### Requirement: Subject-grounded design routing
+The front door MUST route open-ended visual work through the existing subject-grounding, audience, single-job, product-specific-signature, and iterative-critique contracts.
+
+#### Scenario: Open visual direction
+
+- **WHEN** a user requests a new visual direction or redesign
+- **THEN** the route MUST point to the existing direction and synthesis contracts
+- **AND** the route MUST require a product-specific signature decision before implementation
+- **AND** it MUST preserve responsive, focus, and reduced-motion verification
+
+### Requirement: Browser evidence routing
+The front door MUST route dynamic web verification to the existing browser evidence adapter and its reconnaissance sequence.
+
+#### Scenario: Dynamic local web application
+
+- **WHEN** a target is a dynamic local web application
+- **THEN** the route MUST wait for runtime readiness and network idle before DOM inspection
+- **AND** it MUST capture or verify the applicable DOM, screenshot, console, accessibility, network, and performance evidence
+- **AND** it MUST not replace behavioral verification with a static screenshot alone
+
+### Requirement: Complete Stage 0 toolchain binding
+Public toolchain resolve and probe requests MUST include jobId, jobPlanSha256, jobPlanPath, and deliverableForm. The CLI MUST read the referenced plan inside the declared root. The resolver MUST validate plan contents, the actual canonical plan hash, and job identity before producing a ready plan or probing tools.
+
+#### Scenario: Missing or partial binding
+- **WHEN** a toolchain request omits any required binding field
+- **THEN** resolution MUST fail with a missing Stage 0 binding error and MUST NOT report ready
+
+#### Scenario: Missing file or stale identity
+- **WHEN** the plan file cannot be read, its content/hash is invalid, or jobId/hash differs from the request
+- **THEN** resolve and probe MUST reject the request before capability execution
+
+#### Scenario: Valid binding retains lineage
+- **WHEN** a valid plan and matching request are resolved
+- **THEN** the toolchain plan MUST retain that jobId, jobPlanSha256, and deliverableForm, without substituting jobId for primaryRouteId
+- **AND** execution MUST continue using the same jobPlanSha256
+
+### Requirement: Query-bound deliverable form
+Route results and job plans MUST contain a deterministic deliverableForm from product-launch-video, motion-graphics-video, scrollytelling-page, interactive-page, or ui-motion. Job plans MUST preserve the original query and include query/form in their canonical hash. The toolchain request form and independently classified brief MUST match the plan form.
+
+#### Scenario: Video rewritten as a page
+- **GIVEN** a controller-generated product-launch-video plan
+- **WHEN** an English or Chinese toolchain brief requests a scrollytelling or interactive page
+- **THEN** resolution MUST fail with a deliverable-form conflict and MUST NOT report ready
+
+#### Scenario: Query or form tampering
+- **WHEN** a job plan query or form changes without updating its hash
+- **THEN** plan validation MUST reject hash drift
+- **AND** a rehashed plan whose query and form disagree MUST also be rejected
+
+### Requirement: Generic product-promotion routing
+English and Chinese HTML product launch/showcase video requests MUST select the existing motion-graphics job and include the HyperFrames frontend route using its existing product-launch-video contract. Routing MUST NOT depend on a project name.
+
+#### Scenario: Product promotion in either language
+- **WHEN** an English or Chinese HTML product-promotion video brief is routed
+- **THEN** Stage 0 MUST select motion-graphics and frontend tool routes MUST include heygen-com/hyperframes
+
+#### Scenario: Ordinary hover animation
+- **WHEN** a dashboard requests a subtle hover animation without a video deliverable
+- **THEN** it MUST remain on ordinary UI motion and MUST NOT activate HyperFrames
+
+### Requirement: Film routes hand off to the film workflow
+`route --write` for a film plan (product-launch-video or motion-graphics-video) MUST return a handoff to `next --deliverable film --job-plan` instead of a toolchain request, because a film has no stack choices; plans of other forms MUST keep the toolchain handoff. The handoff note MUST NOT claim that the tier follows the request: an omitted `--tier` defaults to standard.
+
+#### Scenario: Persisted film route hands off to the film workflow
+- **WHEN** `route --write` persists a plan whose form is `product-launch-video` or `motion-graphics-video`
+- **THEN** its handoff is `command: "next"`, `action: "bind-film"` with an executable argv `next --root <root> --project-root <root> --deliverable film --job-plan <plan>`, and no `toolchain request` handoff or choices file
+- **AND** running that argv binds the plan in film state, while a non-film plan keeps its `toolchain request` handoff
+
+#### Scenario: Film handoff runs from any working directory
+- **WHEN** the returned film handoff argv is run from a working directory outside the project
+- **THEN** it MUST bind the plan in that project's film state, because the argv names the project as both `--root` and `--project-root`
+- **AND** nothing is written to the working directory
