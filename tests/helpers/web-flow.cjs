@@ -55,9 +55,9 @@ function toComponents(root) {
   }
 }
 
-// brief.md as the description, naming every section in build order.
+// brief.md as the description, with its `## Sections` list naming every section in build order.
 function writeDescription(root, sections = SECTIONS) {
-  write(root, "brief.md", `# Brief\n\nA one-page description of the page.\n\nSections in build order: ${sections.join(", ")}.\n`);
+  write(root, "brief.md", `# Brief\n\nA one-page description of the page.\n\n## Sections\n\n${sections.map(id => `- ${id}: what this section is for`).join("\n")}\n`);
 }
 
 function approveDescription(root, sections = SECTIONS) {

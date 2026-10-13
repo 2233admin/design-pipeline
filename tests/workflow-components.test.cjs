@@ -24,6 +24,26 @@ function manifest(root, entries, fromScratch = false) {
   fs.writeFileSync(path.join(root, "component-manifest.json"), JSON.stringify({ entries, fromScratch }));
 }
 const entry = () => ({ name: "Project card", sourceId: "index.html", availability: "project-owned", license: { state: "project-owned" }, usedIn: [{ file: "index.html", marker: "Page", how: "Product feature card" }] });
+const CHOICES = ["project", "github", "index", "discover", "scratch"];
+
+// The components question offers each source by id with a plain label, and recommends the project's
+// own components, then the index, then discovery, by their labels; record keeps the ids.
+function assertComponentsAsk(ask) {
+  const components = ask.questions.find(question => question.id === "components");
+  assert.deepEqual(components.options.map(option => option.choice), CHOICES);
+  for (const { choice, label } of components.options) {
+    assert.ok(typeof label === "string" && label.trim(), `${choice} has a label`);
+    assert.notEqual(label.trim().toLowerCase(), choice, `${choice} is labelled in words, not by its id`);
+  }
+  const label = id => components.options.find(option => option.choice === id).label.toLowerCase();
+  for (const recommended of [components.recommended, ask.recommended]) {
+    const at = ["project", "index", "discover"].map(id => recommended.toLowerCase().indexOf(label(id)));
+    assert.ok(at[0] >= 0 && at[0] < at[1] && at[1] < at[2], `recommends project, index, then discover by label: ${recommended}`);
+  }
+  assert.match(ask.record, /--stage components .*--choice .*--answer /);
+  assert.match(ask.correction, /--stage components --verdict reject/);
+  return components;
+}
 
 for (const tier of tiers) for (const mode of modes) {
   test(`web ${tier}/${mode} asks components before build and follows the recorded answer`, t => {
@@ -32,10 +52,8 @@ for (const tier of tiers) for (const mode of modes) {
     assert.equal(ask.stage, "components");
     assert.equal(ask.type, "ask");
     assert.deepEqual(ask.questions.map(question => question.id), tier === "quick" ? ["components"] : ["sections", "components"]);
-    const components = ask.questions.find(question => question.id === "components");
-    assert.match(components.ask, /components/i);
-    assert.match(JSON.stringify(components.options), /project.*paths.*GitHub.*index.*discover.*scratch/i);
-    assert.match(ask.recommended, /project.*first.*index.*find more/i);
+    const components = assertComponentsAsk(ask);
+    assert.ok(components.ask?.trim(), "the components question is asked");
     assert.match(ask.record, /--stage components.*--choice.*--answer/);
     assert.ok(!ask.record.includes("--project-root ."));
     const answer = 'Use src/components first, then search the index for "pricing"';
@@ -645,11 +663,9 @@ test("discovery: components ask offers discover and recommends project, index, t
   t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
   const ask = nextAction(root);
   assert.equal(ask.stage, "components");
-  const options = ask.questions.find(question => question.id === "components").options;
+  const options = assertComponentsAsk(ask).options;
   assert.equal(options.length, 5);
-  assert.match(options[3], /find.*open-source.*librar.*icon.*GitHub/i);
-  assert.match(ask.recommended, /project.*first.*index.*find more/i);
-  assert.match(ask.recommended, /project,index,discover/);
+  assert.doesNotMatch(ask.recommended, /project,index,discover/, "the recommendation names labels, not ids");
   assert.match(ask.record, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
   assert.match(ask.why, /discover/);
   const answer = "Project components first, then the index, then find more";

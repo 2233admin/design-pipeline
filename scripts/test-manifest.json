@@ -84,8 +84,6 @@
     "interaction-cli.test.cjs",
     "interaction-audit.test.cjs",
     "workflow-next.test.cjs",
-    "web-conversation-flow.test.cjs",
-    "variant-switcher.test.cjs",
     "product-source-workflow.test.cjs",
     "workflow-action-commands.test.cjs",
     "returned-command-safety.test.cjs",

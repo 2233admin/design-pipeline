@@ -334,12 +334,15 @@ for (const deliverable of ["film", "edit", "web", "ui"]) {
     };
     if (deliverable === "web") {
       // The playback, the correction and the stated skip each run as returned; none writes a brief.
-      run(action.record, "copied playback");
-      assert.deepEqual(readState(dir).decisions.intake, { answer: "copied playback", playback: "confirmed" });
-      run(action.correction, "copied correction");
+      // Each answer is a sentence: a recorded decision needs six words and a correction three.
+      const playback = "A copied playback for a bakery preorder page";
+      const stated = "I will build the page from this copied line";
+      run(action.record, playback);
+      assert.deepEqual(readState(dir).decisions.intake, { answer: playback, playback: "confirmed" });
+      run(action.correction, "The copied correction says pickup is weekends only");
       assert.equal(nextAction(dir).stage, "intake");
-      run(action.skip, "copied stated line");
-      assert.deepEqual(readState(dir).decisions.intake, { answer: "copied stated line", skipped: true });
+      run(action.skip, stated);
+      assert.deepEqual(readState(dir).decisions.intake, { answer: stated, skipped: true });
       assert.ok(!fs.readdirSync(dir).some(name => name.toLowerCase() === "brief.md"), "web intake writes no brief");
     } else {
       run(action.record, "copied answer");
