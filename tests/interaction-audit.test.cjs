@@ -385,15 +385,20 @@ test("opacity above the text or its background leaves contrast indeterminate", {
 });
 
 test("an inline link is exempt from target size only beside text in its own inline formatting context", { skip: tools.skip }, async (t) => {
-  // A link after a paragraph, and one beside hidden text, stand alone; a link inside a sentence is
-  // constrained by the line around it.
+  // A link after a paragraph, and links beside text that is not displayed, invisible, transparent or
+  // clipped away, stand alone. A link inside a sentence, even one whose words are hidden only from
+  // assistive technology, is constrained by the line around it.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><body style="margin:0;padding:32px">
 <div><p>Read the release notes before you upgrade.</p><a id="after-paragraph" href="#next">Next</a></div>
 <div><span style="display:none">Hidden words</span><a id="beside-hidden" href="#more">More</a></div>
+<div><span style="visibility:hidden">Invisible words</span><a id="beside-invisible" href="#a">Go</a></div>
+<div><span style="opacity:0">Transparent words</span><a id="beside-transparent" href="#b">Go</a></div>
+<div><span style="clip-path:inset(50%)">Screen reader words</span><a id="beside-clipped" href="#c">Go</a></div>
 <p>Read the <a id="in-sentence" href="#terms">terms</a> first.</p>
+<p><span aria-hidden="true">Read the</span> <a id="beside-decorative" href="#d">notes</a></p>
 </body></html>`;
   const result = await measure(t, "sentence", [{ id: "sentence", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
-  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#after-paragraph", "#beside-hidden"]);
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#after-paragraph", "#beside-hidden", "#beside-invisible", "#beside-transparent", "#beside-clipped"]);
 });
 
 test("verify interaction exits 2 on the violating page, 0 on the clean and undeclared pages and 1 on a selector the page rejects", { skip: tools.skip }, (t) => {

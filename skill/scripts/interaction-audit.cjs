@@ -868,8 +868,9 @@ function auditPage(options) {
   if (overflowPx > tolerance.boundsPx) failed("audit.horizontal-overflow", root, { expected: `no page-level horizontal overflow (within ${tolerance.boundsPx}px)`, actual: `${round2(overflowPx)}px wider than the ${root.clientWidth}px viewport`, message: "the page scrolls sideways", fix: FIX.horizontalOverflow, ...(widest ? { related: widest.el } : {}) });
 
   // ---- targets and control spacing
-  // Sentence text is text in the link's own inline formatting context, outside other controls;
-  // block-level and hidden descendants hold none of it.
+  // Sentence text is visible text in the link's own inline formatting context, outside other
+  // controls; block-level, hidden and invisible descendants hold none of it. Text hidden only from
+  // assistive technology is still painted on the line, so it counts.
   const sentenceText = (el) => {
     let block = el.parentElement;
     while (block && /^(inline|contents)$/.test(styleOf(block).display)) block = block.parentElement;
@@ -878,7 +879,7 @@ function auditPage(options) {
       acceptNode: (node) => (node.nodeType === Node.TEXT_NODE ? NodeFilter.FILTER_ACCEPT : /^(inline|contents)$/.test(styleOf(node).display) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_REJECT),
     });
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      if (!/[\p{L}\p{N}]/u.test(node.textContent)) continue;
+      if (!/[\p{L}\p{N}]/u.test(node.textContent) || !visible(node.parentElement)) continue;
       const owner = node.parentElement?.closest(CONTROL);
       if (owner && owner !== block && block.contains(owner)) continue;
       return true;
