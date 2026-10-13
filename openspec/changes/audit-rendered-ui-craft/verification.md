@@ -3,7 +3,7 @@
 Recorded on 2026-10-13 on a Windows host: through the Third Review Fix on branch
 `feat/internalize-ui-craft-sources`, and after #99 merged, from the Fourth Review Fix on, on branch
 `fix/ui-audit-review-round3` (#101). Sections follow the order the checks ran, and each names the
-tree it ran on; the final implementation is the one in Sixth Review Fix.
+tree it ran on; the final implementation is the one in Seventh Review Fix.
 
 On the round-two tree, before the merge with `main`:
 
@@ -182,9 +182,8 @@ Codex's review of #101 at `5471f6e` raised two P2 findings, fixed in `c5ad554`:
   unshifted box. Such text is now `indeterminate`, and so is sticky generated text with any inset,
   which scrolling can move even at `top: 0`.
 
-The final tested implementation is commit `c5ad5549fd1e6b995468b01836a5eb616cc5dff7`, tree
-`c0e728309efab20b0ae3c65db3eb8854c474a862`. Full QA ran on that tree before it was committed; later
-commits change only these records.
+That fix was tested as commit `c5ad5549fd1e6b995468b01836a5eb616cc5dff7`, tree
+`c0e728309efab20b0ae3c65db3eb8854c474a862`; full QA ran on that tree before it was committed.
 
 | Check | Result |
 | --- | --- |
@@ -192,6 +191,34 @@ commits change only these records.
 | Regression: white generated text moved off its dark host by `position: relative; top: 64px`, and generated text with `position: sticky; top: 0` | The offset text had no finding with the engine of `b3e297a`, and the sticky text had none with the first version of this fix, which counted only non-zero offsets. With the fix both are `indeterminate` ("is relatively positioned", "is sticky"). |
 | `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs tests/workflow-components.test.cjs`, then the native regression in `tests/workflow-next.test.cjs` | 116 and 1 pass, 0 fail. |
 | Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1430, 1426 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 74 passed, 0 failed. |
+
+## Seventh Review Fix
+
+Codex's review of #101 at `250ee46` raised two P2 findings, fixed in `fa74c63`:
+
+- A standalone link beside text in a transparent color, such as `color: transparent`, was exempt
+  from `audit.target-size` and `audit.control-gap`, because the sentence check tested only whether
+  the text's element was visible. Text in a transparent color now counts only when a painting stroke
+  or shadow draws it, or when a background clipped to text paints it, on its element or an ancestor,
+  and no background painted in between covers that.
+- Absolute generated text without its own background was placed by its insets alone, so margins
+  that moved it off its host were ignored. Such text with any non-zero or unresolved margin is now
+  `indeterminate` ("is moved by its margins"). The inset box itself is unchanged.
+
+The final tested implementation is commit `fa74c63c9db521e0f8894b661a4aec830552d1b1`, tree
+`8ed8015c47e05bae2647115f17e5549b90c71e98`. Full QA ran on that tree before it was committed, in a
+separate worktree of `250ee46` holding only this change, because another session had uncommitted
+edits in the main checkout; later commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression: a link beside `color: transparent` text, and white absolute generated text on a dark positioned host with `inset: 0; margin-left: -200px; margin-right: 200px` | With the engine of `250ee46` the link had no `audit.target-size` finding and the generated text no `audit.text-contrast` finding. With the fix the link fails target size and the text is `indeterminate`. |
+| Regression: a link beside transparent text whose only shadow is transparent (`text-shadow: 0 0 transparent`) | The first version of this fix counted any shadow as paint and exempted the link; with the fix it fails target size. |
+| Headless Chrome render: red pixels in the glyph boxes of transparent text under a red `background-clip: text` | Text in the clipped element, and in a `<span>` inside it, both showed 2884; transparent text without a clip, and text under a white background placed between it and the clipped ancestor, showed 0. The fixture pins the nested, unclipped and covered cases, and keeps links beside stroke-outlined or shadow-drawn transparent text exempt. |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs tests/workflow-components.test.cjs` | 116 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes, with `audit.text-contrast` checking 16 texts. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1430, 1426 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 74 passed, 0 failed. |
 

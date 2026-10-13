@@ -34,7 +34,7 @@ Quick web `next` now asks the components question before `build`.
 
 After the review fixes to the interaction gate and the audit (change `audit-rendered-ui-craft`),
 including a merge with `main` that brought in #100, the final tested implementation is commit
-`c5ad5549fd1e6b995468b01836a5eb616cc5dff7`, tree `c0e728309efab20b0ae3c65db3eb8854c474a862`: `npm test`
+`fa74c63c9db521e0f8894b661a4aec830552d1b1`, tree `8ed8015c47e05bae2647115f17e5549b90c71e98`: `npm test`
 with the same temp root gave 1430 tests, 1426 pass, 0 fail, 4 skipped, and `npm run specs:check`
 74 passed. Later commits change only verification records.
 
