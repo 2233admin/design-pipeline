@@ -2,7 +2,7 @@
 
 Recorded on 2026-10-13 on branch `feat/internalize-ui-craft-sources` (Windows host). Sections follow
 the order the checks ran, and each names the tree it ran on; the final implementation is the one in
-Review Fix.
+Second Review Fix.
 
 On the round-two tree, before the merge with `main`:
 
@@ -39,14 +39,30 @@ and the gate's lineage left it out. Motion and journey probes now carry the proj
 file fails the probe that requested it with `external-request` and the fix to copy it into the
 project (commits `75b8894` and `f60fbec`, which replace the first, run-level check of `343826f`). An
 audit probe also judges its whole request log, including loads while the viewport is restored, and
-the capture snapshots its run log before the browser closes. The final tested implementation is
+the capture snapshots its run log before the browser closes. That implementation was tested as
 commit `f60fbecc413c4569f8e8fcf4b059f78ccc60bf19`, tree
-`125e4efcc997213a742a4643e383625f258e5f5b`; later commits change only comments and these records.
+`125e4efcc997213a742a4643e383625f258e5f5b`.
 
 | Check | Result |
 | --- | --- |
 | Regression: a journey whose click appends a stylesheet from outside the project | With `interaction-core.cjs` from before the review (`cc97a72`), `verify interaction` exited 0 and recorded a passed gate. On the final tree it exits 2: the journey probe `load` fails with one `external-request` finding naming the file and the copy-into-the-project fix, and the gate records `failed` with no lineage. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1404, 1400 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Second Review Fix
+
+Codex's review of `c77d0b2` raised no new finding on that fix, and two P2 findings on the audit
+engine. `audit.control-gap` measured layout boxes while `audit.target-size` measured hit areas
+widened by an absolute `::before` or `::after`, so two overlapping widened targets passed both
+checks; and gap checks treated boxes that share neither axis as infinitely apart. Control spacing
+now measures hit areas, and gaps are edge to edge along the diagonal (commit `eb4d7ce`). The final
+tested implementation is commit `eb4d7ce0b5e2d1934bbe52247f9e040555e3612f`, tree
+`86a150c88c8cfdbff826d0bffef261939500c082`; later commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression: two 16px icons widened to 32px targets 8px apart by layout, and two 24px buttons offset 2px on each axis | With the previous engine, no `audit.control-gap` finding. With the fix: `#icon-a` "overlapping it by 8px" and `#corner-a` "2.83px from it"; `audit.target-size` stays clean. The violating, clean and undeclared fixtures keep their results. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1405, 1401 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 73 passed, 0 failed. |
 
 ## Not Verified
