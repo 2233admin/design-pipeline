@@ -182,7 +182,40 @@ test("a planned cut the scene detector misses still counts when one step replace
     // Continuous motion has no cut at 9s at all, so the planned cut is still missing.
     const smooth = evaluateFilmRender(carryBoard("match-cut"), synthesizeContinuous(dir, "smooth.mp4"));
     assert.deepEqual(smooth.cuts.pixelCutsSec, []);
+    assert.deepEqual(smooth.cuts.structureCutsSec, []);
     assert.ok(codes(smooth).includes("planned-cuts-missing"), JSON.stringify(smooth.findings));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+// 12 s at 320x180 with one boundary at 9 s. Dark textures panning under temporal grain keep every
+// step busy, so neither the scene threshold nor the one-step pixel detector can see a cut there.
+const DARK_PAN = "testsrc2=s=480x180:r=30:d=12,crop=320:180:'t*13':0,lutyuv=y=16+val*0.14:u=128:v=128,noise=alls=10:allf=t:all_seed=1";
+const DARK_CELLS = "cellauto=s=320x180:r=30:rule=110:scroll=1:seed=7,trim=duration=12,format=yuv420p,lutyuv=y=16+(val-16)*0.15:u=128:v=128,noise=alls=10:allf=t:all_seed=2";
+function synthesizeBoundary(dir, name, inputs, graph) {
+  const file = path.join(dir, name);
+  const result = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", ...inputs.flatMap((input) => ["-f", "lavfi", "-i", input]), "-filter_complex", graph, "-c:v", "libx264", "-pix_fmt", "yuv420p", file], { windowsHide: true, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  return file;
+}
+
+test("a planned hard cut between two dark, grainy, moving shots is found by its frame structure", { skip }, () => {
+  const dir = tmp("film-structure-cut-");
+  try {
+    const cut = evaluateFilmRender(carryBoard("match-cut"), synthesizeBoundary(dir, "dark-cut.mp4", [DARK_PAN, DARK_CELLS], "[0]trim=end=9,setpts=PTS-STARTPTS[a];[1]trim=end=3,setpts=PTS-STARTPTS[b];[a][b]concat=n=2:v=1"));
+    assert.deepEqual(cut.cuts.detectedSec.filter((at) => Math.abs(at - 9) < 0.2), [], "the scene threshold does not see the dark cut");
+    assert.deepEqual(cut.cuts.pixelCutsSec, [], "grain keeps the pixel step from standing out");
+    assert.deepEqual(cut.cuts.structureCutsSec, [9]);
+    assert.ok(!codes(cut).includes("planned-cuts-missing"), JSON.stringify(cut.findings));
+    // A 0.3 s dissolve between the same shots never jumps, so it is not a hard cut.
+    const dissolve = evaluateFilmRender(carryBoard("match-cut"), synthesizeBoundary(dir, "dissolve.mp4", [DARK_PAN, DARK_CELLS], "[0]trim=end=9.15,setpts=PTS-STARTPTS,format=yuv420p[a];[1]trim=end=3.15,setpts=PTS-STARTPTS,format=yuv420p[b];[a][b]xfade=transition=fade:duration=0.3:offset=8.85"));
+    assert.deepEqual(dissolve.cuts.structureCutsSec, []);
+    assert.ok(codes(dissolve).includes("planned-cuts-missing"), JSON.stringify(dissolve.findings));
+    // A camera that accelerates into a match cut on the same picture and drifts out of it, with
+    // motion blur: the change ramps up before the boundary instead of following a calm frame.
+    const wide = "testsrc2=s=1600x180:r=30:d=12";
+    const whip = evaluateFilmRender(carryBoard("match-cut"), synthesizeBoundary(dir, "whip.mp4", [wide, wide], "[0]crop=320:180:'if(lt(t,8),0,600*pow(t-8,2))':0,trim=end=9,setpts=PTS-STARTPTS[a];[1]crop=320:180:'600+600*(1-pow(1-min(t,1),2))':0,eq=brightness=0.06,trim=end=3,setpts=PTS-STARTPTS[b];[a][b]concat=n=2:v=1,tmix=frames=3"));
+    assert.deepEqual(whip.cuts.structureCutsSec, []);
+    assert.ok(codes(whip).includes("planned-cuts-missing"), JSON.stringify(whip.findings));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

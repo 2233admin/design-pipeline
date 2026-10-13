@@ -1,0 +1,382 @@
+{
+  "schema": "design-pipeline.ff-tracking-source.v1",
+  "source": {
+    "repository": "https://github.com/mrsarac/ff-tracking",
+    "revision": "cc7f4e192eccefb55ae7f18f5a370955122b651b",
+    "gitTree": "0f550821569078a4c91e11b65a1eb575f3bd7453",
+    "committedAt": "2026-10-13T09:04:06+02:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-13",
+    "scope": [
+      "**"
+    ]
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Mustafa Saraç"
+    },
+    {
+      "path": "upstream/licenses/JetBrainsMono-OFL.txt",
+      "license": "OFL-1.1",
+      "copyright": "Copyright 2020 The JetBrains Mono Project Authors"
+    },
+    {
+      "path": "upstream/licenses/MT19937.txt",
+      "license": "BSD-3-Clause",
+      "copyright": "Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 46,
+    "byteCount": 6959604,
+    "treeSha256": "5e1ebba1adcfbf83ebf3c5cc32af4abbec618eaf1a1c3acfe8ce11a4e9b27fe6",
+    "executableFiles": [
+      "tools/render.sh",
+      "tools/score.sh"
+    ],
+    "objects": [
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "oid": "ff1267a091f40312f898cabd7cbdc723c329253b",
+        "size": 88,
+        "sha256": "49803955dcbb15f128b327c7961323f7b42ec53cbf0cf5c4a9eb70c424891c80"
+      },
+      {
+        "path": "Cargo.lock",
+        "mode": "100644",
+        "oid": "901576d2d12e455f37e28719f8f2f587d017e143",
+        "size": 110099,
+        "sha256": "39e43f2feb615363be78a8296d4bc05ed74f8ed1e350b063ed3e2c8cd2750392"
+      },
+      {
+        "path": "Cargo.toml",
+        "mode": "100644",
+        "oid": "45020bcd8a1433619e9cc365f357903f1fb42216",
+        "size": 410,
+        "sha256": "0fa01e399a5accfbd77c2b31e3d2cac66207b7565904ccfb6e327784ae08deea"
+      },
+      {
+        "path": "docs/contrib/fframes-issues.md",
+        "mode": "100644",
+        "oid": "1ac7a105a24114780c8adeae1fac975463e4c05b",
+        "size": 7868,
+        "sha256": "0c0ce546cc9d53fc028f45eae00137f85251725998d8c6c9797d221b62ae6a57"
+      },
+      {
+        "path": "docs/media/hero.webp",
+        "mode": "100644",
+        "oid": "6c374562fb7a2450cf68956d8a6893d2ff282b07",
+        "size": 4038076,
+        "sha256": "d16283b8ded76474d3bf3ca0c9e96c1d09758a652fcc654bb9cea7f9cc7a0b22"
+      },
+      {
+        "path": "docs/media/shots.jpg",
+        "mode": "100644",
+        "oid": "537e2601f1390f8f3e86411ce3f2c07484a9ea90",
+        "size": 393410,
+        "sha256": "5266becd895ce68006d935a4baa148ea46a60cb579b87a656ba19672c850936f"
+      },
+      {
+        "path": "docs/media/stages.jpg",
+        "mode": "100644",
+        "oid": "9f59b87b21700ff45fdd865baf5594f68de40616",
+        "size": 290174,
+        "sha256": "672a92371d98d3b27a786049f7ef196300ab2b1f5376b19003bfe394a7102734"
+      },
+      {
+        "path": "docs/PROMPT.md",
+        "mode": "100644",
+        "oid": "c84a170398cd52eb7cc733ebb858d8c8ffc333e6",
+        "size": 6545,
+        "sha256": "f2e7bbbccdc6da1f1e031dd6419c3426cbf94fa53b221c0e98c2fa239fbe6e8b"
+      },
+      {
+        "path": "docs/superpowers/specs/2026-10-09-tracking-hud-design.md",
+        "mode": "100644",
+        "oid": "3327595ee73a53efb8bcd14799997629ae943124",
+        "size": 6283,
+        "sha256": "482c1307e9949a929dd8e3378b4fb4aaed3a7b5af9ab1022ce9c3c37c1b3efec"
+      },
+      {
+        "path": "docs/WINDOWS.md",
+        "mode": "100644",
+        "oid": "1582655490d4893091aac8f6bfd7ee42828b9969",
+        "size": 2527,
+        "sha256": "17a5b8897c79b8e330591e6f60124203696b93e5c92032e14a216453eac331d2"
+      },
+      {
+        "path": "flat/Cargo.toml",
+        "mode": "100644",
+        "oid": "c239f00031f31ef11d7a51644f7ae54fd075a5e6",
+        "size": 671,
+        "sha256": "9ddf98e02b9788200d227cf1377ea010836b22f54dc73dc106cc12783f4a332b"
+      },
+      {
+        "path": "flat/src/lib.rs",
+        "mode": "100644",
+        "oid": "81c6f2177b9ad57288a89e80ba2cb3b5b6ce5518",
+        "size": 9310,
+        "sha256": "23b29962d3e402f399fb95859eb55f0c03ff0a71dfb58e6e30c72db58ed8eeec"
+      },
+      {
+        "path": "flat/src/main.rs",
+        "mode": "100644",
+        "oid": "24e1bc1001cd46424582f7b8f7a87b452460f1b4",
+        "size": 1832,
+        "sha256": "89a40beabb3e410694b8dfcf1e8b7534427be19fe3f880f0c3d476fdd2f7cd19"
+      },
+      {
+        "path": "hud/Cargo.toml",
+        "mode": "100644",
+        "oid": "a17e1ce07660c94e95bfc9b91fe1c718a1f457f3",
+        "size": 97,
+        "sha256": "00bb2b561cc3d2bfd0420e9817aa5ec7f661152b31ede6496bcada7d1288d447"
+      },
+      {
+        "path": "hud/src/bin/camera.rs",
+        "mode": "100644",
+        "oid": "f49c14238f588d8825bc79ea1e3b4ea1f7486d94",
+        "size": 1177,
+        "sha256": "f5ecbdc6a79788a5fc006e743574950311d4d0eb440c6bba2e23a05039d17d1a"
+      },
+      {
+        "path": "hud/src/bin/tracks.rs",
+        "mode": "100644",
+        "oid": "5d8c1b77bb5551373e0b5eb1832e257fc6baba63",
+        "size": 1383,
+        "sha256": "dc13b33575c897d6945cb29ac5af241c369c67276c338fd9fc9bb3226989ebae"
+      },
+      {
+        "path": "hud/src/lib.rs",
+        "mode": "100644",
+        "oid": "c50bb770a69234717b9511fc74d6293bb67f8057",
+        "size": 22242,
+        "sha256": "595c12b02650d4ac8176be258fd262f0bfe6144f16d9dbc876ab31daf06c9ef6"
+      },
+      {
+        "path": "lens/Cargo.toml",
+        "mode": "100644",
+        "oid": "fc3cf367000278f17186ceb3f548f5039366db75",
+        "size": 671,
+        "sha256": "b1386de780ce54b07e93da569dcd4516b5fd23dfc97b8366bdabd730f29d7b04"
+      },
+      {
+        "path": "lens/shaders/lens.sksl",
+        "mode": "100644",
+        "oid": "1095c97ff9e5e9c2b32e2affed22d59119b44d4b",
+        "size": 6577,
+        "sha256": "baf05f363dd029ad1fa6c97218c0017e8a0c63b63bc44b17d4712295180887d8"
+      },
+      {
+        "path": "lens/src/lib.rs",
+        "mode": "100644",
+        "oid": "8801f69b8c67fc9b083bf3ca2a6d1faedfecb33c",
+        "size": 8101,
+        "sha256": "c29bf7071d645e0fa6a90eb6207073ea5876a7dd04ee3496104878514b055dad"
+      },
+      {
+        "path": "lens/src/main.rs",
+        "mode": "100644",
+        "oid": "c5f6270e5805017bb5c69c617976d8a976c51159",
+        "size": 2281,
+        "sha256": "40207ffd06194da862010b48ad07d93adb9625022e014e7daa82a49ceff163d9"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "1ecc4879bff24b00028f24222d42c5d2b131b939",
+        "size": 1071,
+        "sha256": "868ccb739a0779a1933dd85f4a24dbece770431be01d8709cc9e11b76976961a"
+      },
+      {
+        "path": "licenses/JetBrainsMono-OFL.txt",
+        "mode": "100644",
+        "oid": "5ceee0025da23d2cd5fd14b28569708a8db4db2b",
+        "size": 4399,
+        "sha256": "a76abf002c49097d146e86740a3105a5d00450b1592e820a1109a8c5680cd697"
+      },
+      {
+        "path": "licenses/MT19937.txt",
+        "mode": "100644",
+        "oid": "43f5c740cd00e19f366e5000c75ea538ba76fc29",
+        "size": 1791,
+        "sha256": "71099a856c8f5175851208508d8666889d6afa7fbf55ada21f6b84140970eb37"
+      },
+      {
+        "path": "media/JetBrainsMono-Bold.ttf",
+        "mode": "100644",
+        "oid": "cd1bee0704e05a899cd70f0640a801f1afe046b2",
+        "size": 274096,
+        "sha256": "d22c4f3821d725eb01210d278d95dfcfcaadc34699a06658d47c8a5cc5830ada"
+      },
+      {
+        "path": "media/JetBrainsMono-Regular.ttf",
+        "mode": "100644",
+        "oid": "711830ede02a366f8b99f88e52f3148405e67eaf",
+        "size": 270224,
+        "sha256": "e6fd0d7e91550b3ed2b735d4312474362c4716edc4fc0577a0f61ed782d5aed1"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "1a594608b6882eb78b31a84a376f692abcaa24a6",
+        "size": 14277,
+        "sha256": "7d8110aac55617e8dd38f0aa4ec90a4da962bf045d596352fc0844cf24da52ae"
+      },
+      {
+        "path": "score/Cargo.toml",
+        "mode": "100644",
+        "oid": "b0fd659395e0ec72fe6b3176f125ae6f7bbf5e19",
+        "size": 361,
+        "sha256": "2f51db3821b06c441e6a176fa83fec94e594eebe477e7a930773024e25701f68"
+      },
+      {
+        "path": "score/ff_tracking.slab/project.json",
+        "mode": "100644",
+        "oid": "9216b63338b02a1f7f6ff903d351f224ccc4ff54",
+        "size": 154619,
+        "sha256": "c15dd2bc44e13621e94f2076221da96b4ef92fbda5bad36d0f5f0b59219dd018"
+      },
+      {
+        "path": "score/score.py",
+        "mode": "100644",
+        "oid": "c9c4f55a3a0f9a55ecf0a984a018784e30615b72",
+        "size": 20406,
+        "sha256": "6908e1a1044d9d9621b9f10bfee6c7a209595b743c0db53d71c10aa14763cc1e"
+      },
+      {
+        "path": "score/score.wav",
+        "mode": "100644",
+        "oid": "595123e1f90c4f7614f8bfe175b0402118df1f69",
+        "size": 1152144,
+        "sha256": "3d80bfa9ec6053ada6d15f67b0067e86a2c25b168416c717c1a480765f51a698"
+      },
+      {
+        "path": "score/src/arrangement.rs",
+        "mode": "100644",
+        "oid": "728d6886308dcd0f787c801b6f976d01ae0c5110",
+        "size": 33278,
+        "sha256": "96289386688383db85a9480c643d67624dcf8029814dd0277961bf5d0c7010b3"
+      },
+      {
+        "path": "score/src/lib.rs",
+        "mode": "100644",
+        "oid": "27be49861a1d3dc61be16e6a0db73ea0a204cca6",
+        "size": 3163,
+        "sha256": "81672efa8b00571a750b5a4eb83fb137a3cba92804cdafde8c23ddcb10790fe7"
+      },
+      {
+        "path": "score/src/main.rs",
+        "mode": "100644",
+        "oid": "ce6405c8a7dc95fe1d237409cda9d7e9e9b85db8",
+        "size": 3161,
+        "sha256": "41dcccda43df582506b96634c8688dda806633503ab4ed49f948d329201dd90f"
+      },
+      {
+        "path": "score/src/python_random.rs",
+        "mode": "100644",
+        "oid": "c3bcd50b3f930374b2f5658df5319a5138b44f99",
+        "size": 3086,
+        "sha256": "60beb1dd99d72466cb6674799d65c12b5ae6fc909b06a28bec9555d46352ba17"
+      },
+      {
+        "path": "score/tests/fixtures/camera.json",
+        "mode": "100644",
+        "oid": "52c365e82705411bf870bdb142ca675bf9914e76",
+        "size": 27759,
+        "sha256": "e6a24d034fcdc1731fc585774a35ca95ef7a2f9032e4b873fdae17d4d07316a4"
+      },
+      {
+        "path": "score/tests/fixtures/README.md",
+        "mode": "100644",
+        "oid": "75fc5037b822d7a88cb6f4c21894c7d6bd263a37",
+        "size": 758,
+        "sha256": "415d58a9501283f082627c7ca33cba0c655b77a6bf1bcbe73044d51cfa1b30ab"
+      },
+      {
+        "path": "score/tests/fixtures/resources.json",
+        "mode": "100644",
+        "oid": "0737b0886283e639caaf16ede9b8ddc16eac1bb6",
+        "size": 59713,
+        "sha256": "009c4c752f0bad7d805bbdb9be35a57240704123bab2d9a17e6e085f6373b272"
+      },
+      {
+        "path": "score/tests/fixtures/tracks.json",
+        "mode": "100644",
+        "oid": "6d5e767394bd818513f0e5c13fb5a6957aed8540",
+        "size": 3187,
+        "sha256": "b51592e31f1dd13a12b262434b58a03398d29efab63baa91511d720ccc6cbf9d"
+      },
+      {
+        "path": "score/tests/parity.rs",
+        "mode": "100644",
+        "oid": "9683530a5f1a3159f6194a65adc4d9fd6e4e78f5",
+        "size": 4363,
+        "sha256": "b7fea234250cd616b4fa52e160803cddc0c739462888252595a88c3c4bfdfa73"
+      },
+      {
+        "path": "tools/check_score.py",
+        "mode": "100644",
+        "oid": "2186d7aa3cd9a911cfefc6182b46779e838e3b13",
+        "size": 4727,
+        "sha256": "7a9c8e1429dad17894cf8c2d0db4900fd33efef2178898264320577ebe61206b"
+      },
+      {
+        "path": "tools/readme_media.py",
+        "mode": "100644",
+        "oid": "185b6993f805dc19ef468da9e6c0fa4d9430e516",
+        "size": 3538,
+        "sha256": "43d266252b197b71104ab693f6862b9a2d6d697634df2d73bf3f7b8212c36f71"
+      },
+      {
+        "path": "tools/render.ps1",
+        "mode": "100644",
+        "oid": "4d8228ef89f17afbf008cfb7adde7bae0be98fc1",
+        "size": 1578,
+        "sha256": "1086b71395df0321979f2387b09ae659062e6178e570485865f211b70ad4f540"
+      },
+      {
+        "path": "tools/render.sh",
+        "mode": "100755",
+        "oid": "58a3a157014ae9446826937bba044a8fc4958fa9",
+        "size": 494,
+        "sha256": "75fc8312405e5e009045093b29286f42ba6f8a5d6d6860562341c55bc5ccd187"
+      },
+      {
+        "path": "tools/score.sh",
+        "mode": "100755",
+        "oid": "bd0437af8a494894c1bbc8772a591f41240660ed",
+        "size": 1471,
+        "sha256": "742a7b26557c1664e473e9910cac5485cab2a5fef8789a2a9b00f6ecbeb7cbd2"
+      },
+      {
+        "path": "tools/sfx.py",
+        "mode": "100644",
+        "oid": "a4665c49abe9e912e8aa35f17b1b40a0ddf11e6a",
+        "size": 6118,
+        "sha256": "4550afe49668dfa9971a1ce2097f1442af13eb08fe7dcdf3d474a47c791b6fa4"
+      }
+    ]
+  },
+  "templates": [
+    {
+      "name": "tracking-hud",
+      "path": "upstream/README.md",
+      "description": "A virtual camera films an AI agent's screen while a tracker locks onto every glyph it types."
+    }
+  ],
+  "excluded": [],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "activatesUpstreamPlugin": false,
+    "runsUpstreamPipeline": false,
+    "changesProjectRuntime": false,
+    "externalMedia": "The README demo video is a release asset outside this reviewed Git tree and is not mirrored. Rendered out/ and target/ build output is never part of the snapshot.",
+    "platform": "Upstream tools/render.sh targets macOS/Metal and tools/render.ps1 native Windows/Vulkan; both need Rust, LLVM/libclang, a shared FFmpeg 9.0 development build and Python numpy/scipy, which the skill never installs. Native Windows render and WSL are unverified by this import."
+  }
+}

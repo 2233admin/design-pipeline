@@ -22,6 +22,14 @@ const { withFix } = require("./film-hints.cjs");
 
 const CHECK_SCHEMA = "design-pipeline.film-check.v1";
 const refs = path.join(__dirname, "../references/film-choreography");
+const TEMPLATES = ["default", "motion-study", "tracking-hud"];
+// The tracking HUD template (references/film-tracking-hud-template.md) is the maintained
+// HyperFrames port of the vendored ff-tracking film: its film.config.js rebuilds the storyboard,
+// composition and sound, so the scaffold writes them from that config, not from a storyboard.
+const HUD_TOOL = path.join(__dirname, "../tools/ff-tracking-hud");
+const HUD_VENDOR = path.join(__dirname, "../vendor/ff-tracking/upstream");
+const HUD_TOOL_FILES = ["film.config.js", "build.cjs", "sfx.cjs", "probe.cjs", "lib/tracks.js", "lib/flat.js", "lib/lens.js", "lib/overlay.js"];
+const HUD_VENDOR_FILES = { "assets/fonts/JetBrainsMono-Regular.ttf": "media/JetBrainsMono-Regular.ttf", "assets/fonts/JetBrainsMono-Bold.ttf": "media/JetBrainsMono-Bold.ttf", "assets/fonts/JetBrainsMono-OFL.txt": "licenses/JetBrainsMono-OFL.txt", "LICENSE.ff-tracking": "LICENSE" };
 const CARRIED_HANDOFFS = new Set(["continuation", "morph", "camera-carry"]);
 
 // carryScore: over the planned carried boundaries (not the first beat, not match-cut, which is a
@@ -119,25 +127,45 @@ function packageJson(target, board) {
   return `${JSON.stringify({ ...base, scripts: { check: "hyperframes check", render: "hyperframes render --output out.mp4", ...(base.scripts || {}) }, devDependencies: { ...(base.devDependencies || {}), ...PINS } }, null, 2)}\n`;
 }
 
+// Template files, storyboard, composition and tracks of the tracking HUD port, from its config.
+function trackingHud(id) {
+  const hud = require(path.join(HUD_TOOL, "build.cjs"));
+  const files = Object.fromEntries(HUD_TOOL_FILES.map((name) => [name, fs.readFileSync(path.join(HUD_TOOL, name))]));
+  for (const [name, source] of Object.entries(HUD_VENDOR_FILES)) files[name] = fs.readFileSync(path.join(HUD_VENDOR, source));
+  if (id) files["film.config.js"] = Buffer.from(files["film.config.js"].toString("utf8").replace('id: "tracking-hud",', `id: ${JSON.stringify(id)},`));
+  const T = hud.load(HUD_TOOL);
+  const board = hud.storyboard(T);
+  if (id) board.id = id;
+  files["storyboard.json"] = `${JSON.stringify(board, null, 2)}\n`;
+  files["index.html"] = hud.compositionHtml(T);
+  files["tracks.json"] = `${JSON.stringify(T.tracksJson(), null, 2)}\n`;
+  return { board, files, guide: fs.readFileSync(path.join(HUD_TOOL, "FILM.md"), "utf8") };
+}
+
 function scaffoldFilm(dir, options = {}) {
   const target = path.resolve(dir);
   const template = options.template || "default";
-  if (!["default", "motion-study"].includes(template)) fail("film scaffold", `unknown template ${template}; allowed: default, motion-study`, { code: "INVALID_TEMPLATE" });
+  if (!TEMPLATES.includes(template)) fail("film scaffold", `unknown template ${template}; allowed: ${TEMPLATES.join(", ")}`, { code: "INVALID_TEMPLATE" });
   const study = template === "motion-study";
-  const board = readJson(path.join(refs, study ? "motion-study.storyboard.json" : "storyboard.example.json"), "film storyboard example");
+  const hud = template === "tracking-hud" ? trackingHud(options.id) : null;
+  const board = hud ? hud.board : readJson(path.join(refs, study ? "motion-study.storyboard.json" : "storyboard.example.json"), "film storyboard example");
   if (options.id) board.id = options.id;
-  const guide = study
-    ? `# Motion study\n\nA four-second silent timing/spacing comparison, not a finished film or an artistic quality benchmark.\n\n${SETUP}\n2. Preview index.html through the film runtime and compare the two actions at intended speed.\n3. Edit the authored keys to test your intended read; keep the static SVG origin on the parent group.\n4. Scrub forward/backward and step around preparation, contact and recovery.\n5. \`npx --no-install hyperframes render --output out.mp4\`, then \`designer-pipeline film check --project-root .\`.\n6. Record observations and intentional choices in qa.md; passing gates never grants creative acceptance.\n`
-    : NOTES["FILM.md"];
-  const files = {
-    "package.json": null,
-    "storyboard.json": `${JSON.stringify(board, null, 2)}\n`,
-    "index.html": study ? fs.readFileSync(path.join(refs, "motion-study.html"), "utf8") : compositionHtml(board),
-    "lib/patterns.js": fs.readFileSync(path.join(refs, "patterns.js"), "utf8"),
-    "lib/timeline-probe.js": fs.readFileSync(path.join(refs, "timeline-probe.js"), "utf8"),
-    ...NOTES,
-    "FILM.md": guide,
-  };
+  const guide = hud
+    ? hud.guide
+    : study
+      ? `# Motion study\n\nA four-second silent timing/spacing comparison, not a finished film or an artistic quality benchmark.\n\n${SETUP}\n2. Preview index.html through the film runtime and compare the two actions at intended speed.\n3. Edit the authored keys to test your intended read; keep the static SVG origin on the parent group.\n4. Scrub forward/backward and step around preparation, contact and recovery.\n5. \`npx --no-install hyperframes render --output out.mp4\`, then \`designer-pipeline film check --project-root .\`.\n6. Record observations and intentional choices in qa.md; passing gates never grants creative acceptance.\n`
+      : NOTES["FILM.md"];
+  const files = hud
+    ? { "package.json": null, ...hud.files, ...NOTES, "FILM.md": guide }
+    : {
+        "package.json": null,
+        "storyboard.json": `${JSON.stringify(board, null, 2)}\n`,
+        "index.html": study ? fs.readFileSync(path.join(refs, "motion-study.html"), "utf8") : compositionHtml(board),
+        "lib/patterns.js": fs.readFileSync(path.join(refs, "patterns.js"), "utf8"),
+        "lib/timeline-probe.js": fs.readFileSync(path.join(refs, "timeline-probe.js"), "utf8"),
+        ...NOTES,
+        "FILM.md": guide,
+      };
   // Notes the workflow may already have written (reference.md in the reference stage) are kept;
   // only the package pins, storyboard, composition and libraries are refused without --replace.
   const kept = Object.keys(NOTES).filter((name) => fs.existsSync(path.join(target, name)));
@@ -150,6 +178,7 @@ function scaffoldFilm(dir, options = {}) {
     fs.writeFileSync(path.join(target, name), content);
   }
   const project = shellPath(target);
+  const local = (name) => shellPath(path.join(target, name));
   const boundGuide = guide.replaceAll("npm install", `npm --prefix ${project} install`)
     .replaceAll("npx --no-install hyperframes ...", `npx --no-install --prefix ${project} hyperframes <command> ${project} ...`)
     .replaceAll("npx --no-install hyperframes check", `npx --no-install --prefix ${project} hyperframes check ${project}`)
@@ -158,9 +187,11 @@ function scaffoldFilm(dir, options = {}) {
       ? `${cliCommand()} reference analyze-video --root ${project} --path out.mp4 --fps 1 --output evidence/second-frames`
       : `ffmpeg -i ${shellPath(path.join(target, "out.mp4"))} -vf fps=1 ${shellPath(path.join(target, "evidence/second-%03d.png"))}`)
     .replaceAll("designer-pipeline ", `${cliCommand()} --root ${project} `)
-    .replaceAll("--project-root .", `--project-root ${project}`);
+    .replaceAll("--project-root .", `--project-root ${project}`)
+    .replaceAll("node build.cjs", `node ${local("build.cjs")}`)
+    .replaceAll("node probe.cjs", `node ${local("probe.cjs")}`);
   const steps = boundGuide.split("\n").filter((line) => /^\d\./.test(line));
-  const productPromo = !study && options.deliverableForm === PRODUCT_PROMO_FORM;
+  const productPromo = template === "default" && options.deliverableForm === PRODUCT_PROMO_FORM;
   const next = productPromo ? steps.flatMap((line) => (line.startsWith("2.") ? [PRODUCT_SOURCE_STEP, line] : line.startsWith("4.") ? [PRODUCT_SAMPLE_STEP.replace("decide --stage sample", `${cliCommand()} decide --root ${project} --project-root ${project} --stage sample`), line] : [line])) : steps;
   return { status: "scaffolded", root: target, files: Object.keys(files), kept, runtime: { ...PINS, install: `npm --prefix ${project} install`, run: `npx --no-install --prefix ${project} hyperframes` }, next };
 }

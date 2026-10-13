@@ -25,6 +25,7 @@ does not install dependencies, grant execution authority or certify visual quali
 | `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
 | `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `product-film-skill/` | [Product film methods](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `ff-tracking/` | [Tracking HUD film template](../references/film-tracking-hud-template.md) | `manifest.json`, source Git tree, snapshot hashes and separate font/MT19937 notices |
 | `gepa/` | [Optimization method](../references/gepa.md) | `manifest.json`, scoped snapshot hashes and upstream Git tree |
 
 Keep each bundle's relative layout, license and original bytes together. Update snapshots using
