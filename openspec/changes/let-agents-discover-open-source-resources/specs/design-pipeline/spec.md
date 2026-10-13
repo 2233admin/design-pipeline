@@ -126,7 +126,8 @@ An entry citing by url `https://github.com/<owner>/<repo>` that is neither decis
 - **WHEN** usage copies or imports a discovered source whose license.state is not verified, whose license.id is not one of MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Zlib, Unlicense or CC0-1.0 (matched case-insensitively), or that has no license.file
 - **THEN** build SHALL remain unfinished
 - **AND** such a source SHALL permit only study or reimplementation, and compound expressions such as `MIT OR Apache-2.0` SHALL NOT count as permissive
-- **AND** verified permissive copies and imports SHALL still record attribution or license-notice handling.
+- **AND** verified permissive copies and imports SHALL still record attribution or license-notice handling
+- **AND** a discovered entry with availability `bundled-implementation` SHALL count as copied whatever its usedIn.how says.
 
 #### Scenario: The license file is missing, empty or outside the project
 
