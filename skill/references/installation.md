@@ -4,7 +4,59 @@
 skill directory; the project you are working on remains a separate directory. The command-line
 entry is a Node.js script, not a standalone binary. Use Node.js 22 or newer.
 
-## Install the current checkout
+## Verify a complete publication snapshot
+
+For current-version verification, use a **full copied project-scoped installation from the
+verified publication snapshot**, not a few synchronized files and not the live global developer
+junction. Pin the source commit and `skill/` Git tree, package the complete frozen snapshot,
+record the archive SHA-256, and extract it before installing. A local candidate archive is not
+a published release; `VERSION` and generated `PACKAGE.json` alone do not identify its source
+commit or prove that the copy was evaluated by a model.
+
+From a disposable verification project, install the complete extracted `design-pipeline/`
+directory using the installer bundled in that same archive:
+
+```powershell
+$ExtractedSkill = "C:/verification/extracted/design-pipeline"
+$Project = "C:/verification/project"
+$SkillsRoot = Join-Path $Project ".agents/skills"
+$Installed = Join-Path $SkillsRoot "design-pipeline"
+node "$ExtractedSkill/scripts/install-local.cjs" `
+  --source $ExtractedSkill --root $SkillsRoot --target $Installed
+if ($LASTEXITCODE -ne 0) { throw "Copied installation failed" }
+node "$Installed/scripts/designer-pipeline.cjs" doctor --root $Project --json
+if ($LASTEXITCODE -ne 0) { throw "Installed doctor failed" }
+$PreviousRoots = $env:DESIGN_PIPELINE_SKILL_ROOTS
+$env:DESIGN_PIPELINE_SKILL_ROOTS = $SkillsRoot
+Push-Location $Project
+try {
+  node "$Installed/scripts/check-deps.cjs" --json
+  if ($LASTEXITCODE -ne 0) { throw "Installed dependency check failed" }
+} finally {
+  Pop-Location
+  $env:DESIGN_PIPELINE_SKILL_ROOTS = $PreviousRoots
+}
+```
+
+Use a fresh destination, without `--replace`; compare full extracted and installed file
+inventories and hashes.
+The installer refuses junctions/symlinks, copies the whole directory and checks the staged copy
+with `doctor` before promotion. Its `installed` result does not replace the separate
+project-context checks above. Explicit dependency roots prevent an older global copy from
+winning discovery.
+
+Record path/realpath, source commit/tree, package version and archive digest, generated
+`PACKAGE.json`, installed file inventory/digest, command outputs and exit codes together.
+An agent's loaded `SKILL.md` path must match the intended installation. `doctor`/`check-deps`
+are technical diagnostics, not model experiments or owner Visual Acceptance.
+
+The maintained repository guide,
+[Installation and evaluation provenance](https://github.com/2233admin/design-pipeline/blob/main/docs/installation-and-evaluation-provenance.md),
+contains pinned historical identities and the complete snapshot/package/install procedure.
+Final verification of a newly integrated commit belongs in a new record, not an old experiment
+log. Keep frozen snapshots, logs and original outputs unchanged.
+
+## Install a development checkout
 
 To put the current checkout in the legacy Codex `~/.codex/skills/design-pipeline` location, run
 the repository's local installer from the repository root:
@@ -60,6 +112,11 @@ npx skills add 2233admin/design-pipeline --skill design-pipeline --agent codex -
 That remote form installs the version already pushed to the repository. For changes still in a
 local checkout, use the local installer or the local source path so the installed copy includes
 those changes.
+
+A checkout install is a development copy unless its complete bytes are tied to a verified
+snapshot. A global symlink/junction tracks local edits immediately: preserve it and its source,
+do not treat it as a copied release or replace it to perform verification. If diagnostics fail,
+label that copy development/unverified and record the failures separately.
 
 ## Call a tool from a project
 

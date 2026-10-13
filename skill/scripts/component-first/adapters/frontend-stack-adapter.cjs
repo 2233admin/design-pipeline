@@ -4,6 +4,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { isObject, sortValue } = require("../../contract-utils.cjs");
 const frontendCore = require("../../frontend-stack-core.cjs");
+const frontendWorkflow = require("../../workflows/frontend.cjs");
+const { canonicalJson } = require("../../contract-utils.cjs");
 
 function defaultReferencesRoot() {
   return path.resolve(__dirname, "../../../references");
@@ -34,10 +36,21 @@ function resolveFrontendStackContext(input = {}, options = {}) {
     }
     if (!decision) return { status: "missing", decision: null, runtime: null };
     normalizeDecision(decision);
+    let designSystem = null;
+    const projectRoot = options.projectRoot;
+    const workflow = projectRoot ? frontendWorkflow.projectFrontendState(projectRoot) : null;
+    if (workflow || input.designSystemDecisionPath) {
+      if (!projectRoot) throw new Error("projectRoot is required for a design-system decision path");
+      const bound = workflow ? frontendWorkflow.requireRuntimeDecision(workflow, projectRoot) : frontendWorkflow.boundDecision(projectRoot, input.designSystemDecisionPath);
+      if (bound.value.mode === "reference" && !bound.value.projectAuthority) throw new Error("reference-only evidence cannot authorize runtime adoption");
+      if (canonicalJson(bound.value.frontendStackDecision) !== canonicalJson(decision)) throw new Error("stack differs from the consumed design-system decision");
+      designSystem = { status: "ready", mode: bound.value.mode, path: workflow?.decisions.designSystem.path || input.designSystemDecisionPath, inputHashes: { ...(workflow?.decisions.frontendObservation?.inputHashes || {}), ...bound.inputHashes }, ...(workflow ? { entryDigest: frontendWorkflow.decisionDigest(workflow) } : {}) };
+    }
     return sortValue({
       status: "ready",
       source,
       decision,
+      ...(designSystem ? { designSystem } : {}),
       runtime: {
         framework: decision.framework,
         runtimeStack: decision.framework,

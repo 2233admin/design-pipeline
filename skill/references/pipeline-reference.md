@@ -15,6 +15,21 @@ selected stage and route contracts as needed. Repository behavior changes follow
 OpenSpec policy, while user projects follow their own change process. Verify the actual surface and
 keep technical gate results separate from creative or visual acceptance.
 
+Frontend starts share `next --query "<actual request>" [--url <link>] [--scope <path>]
+[--purpose new|optimize-existing|reference-for-existing|faithful-reproduction]`. Start with bounded
+read-only `observe`; show actual content, functions, constraints and limits before unresolved
+direction-changing questions. A source inspection is not browser verification. Link capture uses
+the host and a real evidence receipt. `decide --stage observe --answer "<actual shared observations>"
+[--artifact <receipt>]` binds current evidence, not visual acceptance. If purpose is unresolved,
+record actual owner clarification with `decide --stage purpose --choice <purpose> --answer
+"<clarification>"`. Generic UI follows frontend questions, not film questions.
+See [the three starts](workflow-web.md#observe) for purpose authority and runnable entry examples.
+
+Installed resources do not prove a technical path was exercised; technical checks do not prove
+model effectiveness or owner visual acceptance. Report each claim with its actual scope and
+limits. See [source-checkout installation and evaluation provenance](../../docs/installation-and-evaluation-provenance.md).
+This frontend repair does not complete deferred issues #65 and #71–#75.
+
 ## Scope
 
 These invariants govern complete deliverables that use this pipeline. Bounded supporting-tool tasks
@@ -56,7 +71,7 @@ reversibility, or confidence that the implementation cannot prove.
 | `design-synthesis` | New UI, redesign, visual direction | `references/design-synthesis.md`, `references/direction-preview.md`, `references/anti-slop-review.md`, `references/impeccable-contract.md` | subject/audience/job, comparable directions, product-specific signature, critique |
 | `reference-reconstruction` | Exact image or pixel-accurate reconstruction | `references/feature-routes.md`, `references/reference-spec.md`, `references/reconstruction-spec.md` | resolved source, graybox, geometry, final fidelity receipt |
 | `website-cloning` | Live-page clone or reverse-engineering | `references/feature-routes.md`, `references/website-cloning.md`, `references/deepclonewebsite.md` | target manifest, palette evidence, foundations, measured clone evaluation |
-| `component-first` | Component or design-system selection | `references/companion-skills.md`, `references/capability-routing.md`, `references/component-capabilities.md`, `references/pipeline-method.md` | capability inventory, provider route, behavioral evidence, conformance |
+| `component-first` | Component or design-system selection | `references/companion-skills.md`, `references/capability-routing.md`, `references/component-capabilities.md`, `references/pipeline-method.md` | validated selection; inventory for capability search, provider route, behavioral evidence, conformance |
 | `motion-graphics` | Motion, animation, WebGL, game, or graphics | `references/capability-routing.md`, `references/animation-opportunity-and-review.md`, `references/stages.md` | runtime ownership, motion spec, reduced motion, performance and cleanup |
 | `dynamic-web-verification` | Dynamic web verification | `references/stages.md`, `references/web-evidence-adapter.md`, `references/qa-checklist.md` | runtime readiness, `networkidle`, DOM, screenshot, console, accessibility, network, performance |
 | `product-foundation` | Requirements-driven product foundation | `references/design-synthesis.md` | reusable `DESIGN.md`, decision evidence, validation |
@@ -96,20 +111,57 @@ Use the public CLI for the complete lifecycle:
 - `design-system acquire` runs an explicit contained local provider or the bundled Astryx adapter
   against an existing contained Astryx CLI. It never installs or downloads that CLI.
 - `design-system project-tokens` emits DTCG-compatible tokens plus an explicit loss report.
-- `design-system decide` records `reference`, `adopt`, `substitute`, or `custom`; runtime use
-  requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
+- `design-system decide` records `reference`, `adopt`, `substitute`, or `custom` in
+  `design-pipeline.design-system-decision.v1`. Runtime use retains the existing provider's
+  compatibility constraints and admitted adapter intake; selection is not permission to install.
 
-For web components, first record the exact user decision: at `quick` immediately before build, at
-`standard` and `full` in the numbered decision round (with further rounds for dependent questions)
-that precedes the description the owner approves (a changed decision makes that approval stale).
-Use explicit `--choice project,index,discover` (or the selected comma-separated set of
+### Selection and current evidence
+
+Consume the validated decision with `decide --stage design-system --artifact <decision.json>`
+before frontend directions, components, description/spec, tasks or implementation. Direct or resumed
+downstream calls do not bypass it. Extend v1 rather than make a second gate or target/policy authority.
+Selection records:
+
+- `basis`: `owner-scratch`, `preserve-existing` or `capability-search`.
+- `authority`: `actor` (`owner` or `agent`), `source` (`request`, `reply` or `project`),
+  `text` (the actual statement), and `choice` (the chosen mode or existing system id).
+- `rationale`: nonempty reason for this selection.
+- `compatibility`: nonempty for fallback/substitution.
+- `compared`: `{id, reason}` candidate comparisons/rejections; may be empty for explicit scratch.
+
+An explicit owner request to write from scratch needs actual owner authority and rationale, but
+no mandatory catalog search or second scratch interview. It bypasses search only: retain the
+existing stack, validation, license and receipt requirements. Preserving an existing project system
+uses its authority without inventing a fresh owner approval. A nonexplicit custom fallback or
+substitution needs actual capability inventory, candidate comparisons/rejections, compatibility,
+rationale and owner selection. Reference-only exploration may have agent authority; it authorizes
+study, not runtime adoption. Unknown or ambiguous library identity needs clarification, not a guess.
+
+Capability inventory must retain the current `catalogHash`, `searchOptions`, actual `matchedIds`
+and matching counts. Validate against the current catalog/search results; prose claiming a search
+is not evidence. A zero-result product query is inconclusive when capability searches find app
+shell, command palette, side navigation, data table, progress, dialog or tabs.
+
+CLI output publishes the resolved `request` plus
+`sourceBindings: {requestPath, inputHashes: {relativePath: "sha256:<digest>"}}`, binding request,
+decision artifact, stack, inventory and catalog inputs as applicable. Workflow consumers require
+these bindings and reread current sources. Core `validateDesignSystemDecision(value, {request?})`
+returns a valid value or throws a contract error: it reruns `decideDesignSystem(request || value.request)`
+and requires canonical equality of authoritative core fields, ignoring only publication fields
+`request` and `sourceBindings`. Shape-valid fabricated choices, booleans and stale cached results
+cannot substitute for replay and current hashes. Changed/removed sources invalidate dependent
+approvals, gates, task inputs and delivery under the existing snapshot/policy/receipt contracts.
+
+For web components, retain the exact actual owner choice and structured source set before build;
+reuse an already explicit choice rather than asking again. Existing standard/full numbered rounds
+ask only unsettled questions before description approval. Record explicit
+`--choice project,index,discover` (or the selected comma-separated set of
 `project,github,index,discover,scratch`). Missing/unknown choices fail; deduplicate and store
 canonical order in `decisions.componentSources`. `scratch` is exclusive; `github` requires an HTTPS
-GitHub owner/repo URL in the unchanged answer; `discover` lets the agent find maintained open-source
-libraries and icon sets on GitHub beyond the index and record each with a pinned revision and
-license evidence. Legacy answer-only web decisions ask again. See
-[workflow-web.md#components](workflow-web.md#components) for choices and recommendation, and
-[workflow-web.md#build](workflow-web.md#build) for per-entry rules, including discovered sources.
+GitHub owner/repo URL in the actual answer. Discovery records pinned revisions and license evidence.
+Legacy answer-only evidence reopens where structured evidence is missing. See
+[workflow-web.md#components](workflow-web.md#components) and
+[workflow-web.md#build](workflow-web.md#build) for web-only source/manifest rules.
 The scratch set requires `fromScratch: true` and project-owned entries only (empty allowed);
 nonscratch sets forbid `fromScratch: true` and require nonempty entries. Invalid evidence includes
 the validator message in the build instruction and an existing `CONTRACT_INVALID` error finding

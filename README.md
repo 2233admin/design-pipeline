@@ -71,6 +71,11 @@ Agent 按返回的动作执行工具与检查，并用 `decide` 记录用户决�
 实际运行时。`reflex-xy` 是目前第一个具备完整生命周期合同的外部图形适配器，不代表
 系统只支持 XY。
 
+“已安装”只说明文件已放到目标位置；“技术检查通过”只覆盖实际运行过的命令、输入和环境。
+模型实验另报模型、任务、结果和限制；作品的视觉验收只来自你看过实际结果后的决定。
+版本、安装位置和各类证据的区别见[安装与评估来源说明](docs/installation-and-evaluation-provenance.md)。
+这次前端入口与组件选择修复不代表六个延期问题（#65、#71–#75）已经完成。
+
 设计依据随项目保存，后续修改可以沿用同一套决定：
 
 - `DESIGN.md` 记录视觉系统：色彩、字体、间距、组件架构。
@@ -102,6 +107,51 @@ node "$HOME/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs" \
 ```
 
 Agent 提示示例：“在当前项目里运行 `composition scaffold --template visual-craft --output visual-craft-study`，用复制出的 Canvas helper 做一个可拖动进度、支持乱序重绘的小型绘画与排版 study；保留 DOM 正文语义，渲染后检查不同尺寸和文本溢出。”轻量脚手架只创建新目录中的 study 文件，不初始化影片或工作流状态。仓库内置其他工具见 [工具索引](skill/tools/README.md)。
+
+### 前端从哪里开始
+
+不用先学设计术语，也不用先给风格参考。把要做的事、已有项目和链接（如有）交给 Agent：
+
+| 你想做什么 | 可以怎么说 | Agent 必须保留什么 |
+| --- | --- | --- |
+| 改善已有前端 | “把这个页面做得更清楚、更好用。” | 业务功能、真实内容和明确的品牌限制；布局、层级和视觉表现可以改进。整体风格的大改仍按原有确认步骤由你决定。 |
+| 用链接作已有前端的参考 | “保留我们的功能和内容，参考这个网站的布局和动效。” | 项目自己的产品内容和功能；参考不等于照抄，也不等于安装参考网站用的库。 |
+| 忠实复现链接 | “按这个链接还原，不另做一套风格。” | 参考的结构、外观、交互与已确定的还原要求；用实际差异和保真证据检查，不以自由改造代替。 |
+
+第一步都是有限范围的只读查看。Agent 先报告看到了哪些内容、功能、约束，以及哪些页面、
+状态或动态效果还没看到；只在会改变方向的事实尚未确定时再问你。只有链接但未说明用途时，
+也是先看，再问它是参考还是还原目标。源码查看不等于浏览器实测；无法采集链接时要说明
+缺失证据，不能编造观察。记录这一步不代表你批准了设计。
+
+在目标项目目录运行下面三种命令之一；把示例链接换成你的真实链接。`--scope src` 只查看该
+路径；项目结构不同就换成实际路径。删掉它可使用默认的有限查看范围。
+
+```bash
+node "$HOME/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs" next \
+  --project-root "$PWD" --deliverable web --tier quick \
+  --query "改善现有页面，保留业务功能和内容" --scope src --purpose optimize-existing
+
+node "$HOME/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs" next \
+  --project-root "$PWD" --deliverable web --tier standard \
+  --query "参考链接的布局，保留我们自己的内容和功能" \
+  --url "https://example.com" --purpose reference-for-existing
+
+node "$HOME/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs" next \
+  --project-root "$PWD" --deliverable web --tier standard \
+  --query "忠实还原所给链接" --url "https://example.com" --purpose faithful-reproduction
+```
+
+普通界面任务把 `--deliverable web` 换成 `--deliverable ui`；它问的是前端需求，不是影片时长
+或素材。新项目可用 `--purpose new`，但有限查看没有发现已有内容时，也必须如实报告范围和限制。
+接着按命令返回的动作操作；`quick`、`standard`、`full` 的轻重和已有设计确认点不变。
+
+在出设计方向、写实现说明或开始实现前，Agent 必须记录并验证组件与设计系统的选择：
+优先尊重已有项目。你明确说“从零写”时，不强迫搜索组件库，也不为这个选择重复采访；
+仍要记录你的原话，并保留已有技术栈、来源和检查证据。不是明确从零写，而是想替换现有系统
+或搜索后自己写时，Agent 要交代实际查过哪些能力、比较并排除了什么、兼容性和理由，取得你的
+实际选择记录。“搜产品名没结果”不能证明没有可用组件。参考学习本身不授权运行时采用。
+后续来源、决策或证据改变或被删除，相关确认与检查结果必须重开，不能沿用旧的通过状态。
+
 
 CSS 写作和审查内置 [Good CSS](skill/references/good-css.md)：完整保留已审核上游的 47 个实践、8 类指南和全部示例素材，逐项说明项目适配与验证条件。[离线示例工具](skill/tools/good-css/README.md) 只需 Node.js，不依赖额外安装的 skill。
 

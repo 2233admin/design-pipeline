@@ -10,4 +10,4 @@
 - [x] `tests/golden-cases.test.cjs` in the test manifest; CHANGELOG [Unreleased].
 - [x] `node evals/cases/verify.cjs --render` and `node scripts/qa.cjs`.
 - [x] User accepted both renders on 2026-09-29; `approval` recorded with each render's sha256.
-- [ ] Later rounds: MAD, UI promo and explainer cases.
+- [x] Later rounds: MAD, UI promo and explainer cases. Existing owner acceptance on 2026-09-29 is bound to the reviewed render SHA-256 in [MAD](../../../evals/cases/mad/openalice-mad-90s/case.json), [UI promo](../../../evals/cases/ui-promo/openalice-promo-15s/case.json) and [explainer](../../../evals/cases/explainer/carry-the-eye-45s/case.json). Status corrected by `align-installed-and-evaluation-provenance`; no new render or broader visual acceptance is claimed.

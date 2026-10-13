@@ -7,6 +7,21 @@ workflow; they do not inherit unrelated stage, `DESIGN.md`, or `MOTION.md` setup
 
 ## Stage 0: Repo Read
 
+For `web` and generic `ui`, begin with the shared frontend entry in
+[workflow-web.md#observe](workflow-web.md#observe). Retain the actual request, project, supplied link
+and bounded scope. The first `next` returns read-only observation; report observed content,
+functions, constraints and limits before only unresolved direction-changing questions. Record actual
+shared observations and current source/capture evidence with the returned `decide --stage observe`.
+Static source reading is not browser verification and observation is not owner design acceptance.
+If a link's role remains unclear, record the owner's actual clarification at `purpose`.
+
+Keep the three intents distinct: improve the existing frontend while protecting function/content/
+explicit brand; use a link as reference without replacing project content; or faithfully reproduce
+the link with fidelity authoritative. Layout and visual improvements are allowed in optimization;
+material overall-style changes use the existing owner choices. Do not require style vocabulary,
+repeat settled facts, or ask UI tasks about footage/duration. These records add no design approval
+and do not change quick/standard/full or film/edit sequencing.
+
 For product promotional films/animations (`product-launch-video`), including HTML previews,
 read `references/product-film-direction.md` before storyboard or template selection. Inspect moving
 references and existing assets, plan sound and picture, then apply its audiovisual proof and creative
@@ -113,10 +128,11 @@ workflow (`next --deliverable film --job-plan`), which has no stack choices to m
   and dirty or isolation-required work to a `codex/*` worktree. Finalize with a structured outcome.
   A successful worktree must be committed, clean, and in scope before it is removed; failures,
   dirty results, scope violations, and cleanup failures retain the worktree and block completion.
-- Run `designer-pipeline design-system decompose --query "<product brief>" --write --output
-  capability-inventory.json`, then `designer-pipeline design-system route --query "<product
-  brief>" --platform <platform>`. Record the selected routes and unavailable capabilities in the
-  design-system decision. This closes the gap between a required Stage 0 search and the actual CLI.
+- For `selection.basis: capability-search`, run `designer-pipeline design-system decompose
+  --query "<product brief>" --write --output capability-inventory.json`, then the applicable
+  `design-system route --query "<product brief>" --platform <platform>`. Retain actual searches,
+  matched candidate ids/counts, current catalog hash and search options. A product-name miss
+  is inconclusive. Explicit owner scratch requires no catalog search; record that actual choice.
 - External tool entries are governed routes, never installation instructions. `deepclonewebsite`
   may be proposed for cloning only after its browser login and model credential requirements are
   explicit; Frog may be proposed for GitHub issue sync only after repository/workflow authority is
@@ -129,15 +145,21 @@ workflow (`next --deliverable film --job-plan`), which has no stack choices to m
   subject to the recorded license constraints; MCP icon search requires a key, should use header
   authentication, and must not persist keys in URLs or logs. Canvas mutations are outside the icon
   route and require separate explicit authority. Recheck the published license before bulk use.
-- Search the design-system catalog when reusable component, hook, template, documentation, or token
-  knowledge could prevent reinvention. Record the adoption mode instead of silently importing a
-  candidate system.
+- Search the design-system catalog when capability search is needed, not as a condition of
+  explicit owner scratch. Record a validated selection rather than silently importing a candidate.
+  From-scratch skips search only, never current stack, source, license, validation or receipt rules.
 - After a direction is selected, create a hash-valid `direction-lock.v1` with the selected preview and direction constraints. Run `designer-pipeline component fit` against the normalized component catalog and project inventory. The matrix evaluates `behavior`, `accessibility`, `framework`, `license`, `visualFit`, and `provenance` per capability; it may reuse project components, adopt verified providers, substitute platform/reference behavior, or block for custom implementation.
 - Never select one library globally for unrelated capabilities. A foundation candidate must be explicitly locked when more than one passes. Reference-only sources remain evidence and adaptation inputs, not direct dependencies. A `review` dimension is not an adoption approval.
-- Run `designer-pipeline design-system decide` with both the ready `frontendStackDecision` and the
-  complete `capabilityInventory` embedded in the request, or reference their contained artifact
-  paths with `frontendStackDecisionPath` and `capabilityInventoryPath`. A non-custom decision
-  without either artifact is blocked; custom mode still requires the frontend-stack decision.
+- Run `designer-pipeline design-system decide` with the current ready frontend-stack decision
+  embedded as `frontendStackDecision` or at `frontendStackDecisionPath`. Include actual
+  `capabilityInventory`/`capabilityInventoryPath` where selection needs capability search.
+  Record structured selection basis, actual authority and rationale; fallback/substitution also
+  requires comparisons/rejections, compatibility and owner choice. Reuse explicit owner scratch
+  from the request without another interview; preserving an existing system uses project authority.
+  Consume the validated, source-bound `design-pipeline.design-system-decision.v1` with
+  `decide --stage design-system --artifact <decision.json>` before frontend directions/spec/tasks/
+  implementation. Reference mode can inform study, not authorize runtime adoption. See
+  [pipeline-reference.md#selection-and-current-evidence](pipeline-reference.md#selection-and-current-evidence).
 - Inspect existing UI patterns before inventing new ones.
 - Check whether the project already has source-of-truth design docs or OpenSpec-style folders.
 - Confirm the graphics selection in `toolchain-plan.json` against
@@ -365,10 +387,20 @@ Before claiming completion, follow `references/lifecycle.md` and `references/qa-
 - record missing companions, fallbacks, feedback drafts, and remaining risks;
 - say whether any remote Issue or PR was published; default: not published.
 
+For frontend evidence, distinguish installed files, actually exercised technical paths, model
+experiment results and owner visual acceptance. Record commands/environment/input limits for
+technical claims and model/task/result limits for experiments; neither grants owner acceptance.
+This entry repair does not complete deferred issues #65 and #71–#75.
+
 The full extraction targets are in `references/pipeline-method.md`, `references/feature-routes.md`,
 `references/lifecycle.md`, and this stage guide. Load only what the selected route requires.
 
 ## Stage 1: Guided Design Intake
+
+For the existing web/UI `next`/`decide` workflow, observation comes first; only then ask unresolved
+frontend questions. Reuse request/project facts and owner decisions. The guided first-wave panel
+below is a separate existing surface, not a substitute for shared entry evidence or a new mandatory
+interview. Its historical first-wave scope does not limit host link capture in frontend entry.
 
 The guided first-wave flow is:
 
@@ -422,6 +454,10 @@ When the brief, handoff, or interface copy asks a person to decide or act, read
 scope, limits, exclusions, uncertainty, unchanged state, and recovery actions in the second pass.
 
 ## Stage 2: Design Directions
+
+Before frontend directions, validate and consume the current bound v1 design-system decision.
+Preserve-existing and owner-scratch selections retain their authority; a reference-only candidate
+is design knowledge, not runtime adoption. Do not choose a direction using stale source evidence.
 
 Read `references/direction-preview.md` and write `direction-preview.json` before selecting a
 direction. For an open whole-surface request, produce three candidates by default in one comparable
@@ -485,6 +521,10 @@ exercise every control and preset in a browser, persist the hash-bound verificat
 comparison. A supported waiver remains explicit and machine-readable.
 
 ## Stage 3: Design Spec
+
+Frontend spec consumes the same current decision as directions. Bind it and its current sources
+through existing artifact input hashes, snapshots and receipt lineage; do not create a parallel
+schema, target resolver or policy. A changed/removed decision or source reopens dependent approval.
 
 Create lowercase change `design.md` using `references/design-spec.md`. It is the selected source of
 truth for visual language and screen-space UI.
@@ -585,6 +625,11 @@ is inspectable or navigable.
 
 ## Stage 4: Tasks
 
+Frontend native phases/tasks consume the same validated decision and source hashes as the
+workflow. Include those as existing artifact/receipt inputs, alongside the normal target/snapshot/
+policy binding. Direct task entry cannot bypass missing or stale frontend evidence. Do not turn
+technical task completion into owner design acceptance.
+
 Execute visual subtasks through the native `next --change-root <change> --plan <tasks-plan>` entry.
 The implementation-local plan reuses design-plan.v1; each phase adds `goal` and
 `visual: {target, property, references, scope, guides, checks, verification?, review?, sourceObservation?}`. Name one observed property,
@@ -662,6 +707,12 @@ the verifier. Read each finding's check/probe/step, actual versus expected value
 
 ### Complete menu task example
 
+First finish shared frontend observation and selection for this real menu request. This example
+assumes the CLI has published a validated, current `decision.json` in the owned change root and
+the native consumer has its existing artifact/receipt source binding. Do not create a mock decision
+for the example; use its actual request/stack/source evidence. Reference-only selection is not
+runtime permission. The plan below includes that decision alongside its task-specific inputs.
+
 Work in an owned Git change root. Create `brief.md` with the requested menu behavior and copy
 the loaded skill's QA method into the real local `guides/qa.md` before dispatch. The menu wrapper
 is `#menu-demo`; its trigger, options, menu and visible selected value all belong inside it.
@@ -730,7 +781,7 @@ const plan = {
   mode: "greenfield", fidelity: "adaptive",
   phases: [{
     id: "menu-selection", depends_on: [],
-    inputs: ["brief.md", "interaction.json", "guides/qa.md"], outputs: ["index.html"], gates: [],
+    inputs: ["brief.md", "decision.json", "interaction.json", "guides/qa.md"], outputs: ["index.html"], gates: [],
     goal: "Open the menu, choose 按更新时间, retain that value after closing, and recover keyboard focus.",
     visual: {
       target: "sort-menu", property: "menu.selection", references: ["brief.md"],
@@ -804,27 +855,27 @@ against actual outputs and checks; tasks.md existence does not verify decomposit
 
 Implement directly from `design.md` and `tasks.md`.
 
-For a web deliverable, follow [workflow-web.md#components](workflow-web.md#components): at `quick`
-immediately before build; at `standard` and `full` in the numbered decision round (the page's
-sections in build order and the component source; a dependent question waits for a further round)
-before the description the owner approves, so a changed component decision makes that approval
-stale and returns to it. Each "no" given in a round is recorded with
-`decide --stage components --verdict reject --answer "<…>"` and becomes a project rule. The
-source options are the project's components (name the paths you found instead of asking for
+For a web deliverable, first consume the current validated design-system decision and follow
+[workflow-web.md#components](workflow-web.md#components). Reuse existing actual owner choices,
+including explicit scratch, without a duplicate interview. Standard/full numbered rounds ask only
+unsettled sections/source questions before description approval. Changed choice or source hashes
+invalidate dependent approval. Each actual "no" is recorded with
+`decide --stage components --verdict reject --answer "<…>"` and becomes a project rule.
+Source options are the project's components (name the paths you found instead of asking for
 them), a named GitHub library, an index search, agent discovery of maintained open-source
-libraries and icon sets on GitHub, or scratch implementation; recommend project components first,
-then the index, then discovery.
+libraries and icon sets on GitHub, or scratch implementation. When the choice is not settled,
+recommend project components first, then the index, then discovery.
 Record the exact nonempty answer with explicit `--choice project,index,discover` (or the selected
 comma-separated set of `project,github,index,discover,scratch`). Missing/unknown choices fail;
 deduplicate and store canonical order in `decisions.componentSources`. `scratch` is exclusive;
-`github` requires an HTTPS GitHub owner/repo URL in the unchanged answer. Legacy answer-only web
-decisions ask again. At `standard` and `full` the page is then built section by section, each
+`github` requires an HTTPS GitHub owner/repo URL in the actual answer. Legacy answer-only evidence
+reopens at missing structured evidence. At `standard` and `full` build section by section, each
 reviewed by the owner ([workflow-web.md#build](workflow-web.md#build)). Before `index.html`, write the
 `component-manifest.json` described in [workflow-web.md#build](workflow-web.md#build), including
 resolved source identity, indexed license-state agreement, and existing contained files with real
-`usedIn.marker` evidence and `how` provenance. Index route and search use `--platform web`, and
-search explicitly uses `references/component-source-catalog.json`; search it first and load
-returned sources only on demand. With `discover`, a GitHub repository found beyond the index records
+`usedIn.marker` evidence and `how` provenance. When `index` is chosen, route/search use
+`--platform web` and `references/component-source-catalog.json`; load returned sources on demand.
+Explicit scratch does not require this search. With `discover`, a GitHub repository beyond the index records
 its `https://github.com/<owner>/<repo>` url, pinned `revision`, https `license.evidence` including
 one on that repository at the revision and, when known, its SPDX `license.id`. A chosen font follows
 [tools/fonts.md](../tools/fonts.md) and is recorded under Typography in `DESIGN.md`, which the audit
@@ -879,10 +930,11 @@ Rules:
   Implementation consumes the bound purpose-aware artifact, never unbound browser state or an
   earlier copied prompt.
 
-- Re-run `design-system resolve-stack`, `design-system decompose`, `design-system route`, and
-  `design-system decide` against the final brief and installed project stack. Stop if the stack or
-  design-system decision is not `ready`, or if its registry hash/selected routes differ from the
-  artifacts approved at Stage 0 without a recorded design change.
+- Revalidate the current frontend stack and replay the bound v1 design-system decision against
+  the final request and current sources. Repeat decompose/route only when capability-search evidence
+  needs refreshing, not for explicit owner scratch. Stop on missing, changed, incompatible or
+  nonready evidence; invalidate dependent approvals/gates/delivery using the existing hashes and
+  receipts. A recorded design change must supply new current evidence, not preserve stale approval.
 - For website-cloning changes, run `scripts/check-website-clone-foundations.cjs --change-root
   <change-root> --json` first and stop unless it reports `ready`.
 - Re-run `scripts/check-design-foundation.cjs` and stop unless it reports `ready`.

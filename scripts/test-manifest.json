@@ -85,6 +85,7 @@
     "interaction-cli.test.cjs",
     "interaction-audit.test.cjs",
     "workflow-next.test.cjs",
+    "frontend-entry.test.cjs",
     "product-source-workflow.test.cjs",
     "workflow-action-commands.test.cjs",
     "returned-command-safety.test.cjs",

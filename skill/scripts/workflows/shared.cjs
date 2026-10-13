@@ -177,7 +177,7 @@ const CONCEPTS = {
 // A web review verdict binds the components decision it judged; a changed decision needs a fresh review.
 function componentDecisionDigest(state) {
   return state.deliverable === "web" && typeof state.decisions?.components === "string"
-    ? "sha256:" + sha256(canonicalJson({ answer: state.decisions.components, sources: state.decisions.componentSources ?? null }))
+    ? "sha256:" + sha256(canonicalJson({ answer: state.decisions.components, sources: state.decisions.componentSources ?? null, designSystem: state.decisions.designSystem ?? null, frontendPurpose: state.decisions.frontendPurpose ?? null, frontendRevision: state.decisions.frontendRevision || 0 }))
     : null;
 }
 

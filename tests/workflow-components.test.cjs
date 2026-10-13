@@ -8,7 +8,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { STATE, initState, nextAction, decide, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { validateComponentManifest } = require("../skill/scripts/design-system-catalog-core.cjs");
-const { acceptSections, approveDescription, toBuild, toComponents } = require("./helpers/web-flow.cjs");
+const { acceptSections, approveDescription, consumeScratchDecision, finishFrontendObservation, prepareFrontend, statedSkip, toBuild, toComponents } = require("./helpers/web-flow.cjs");
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const tiers = ["quick", "standard", "full"];
 const modes = ["brief", "freeform", "replicate"];
@@ -165,6 +165,9 @@ test("ui keeps its generic work and evidence-delivery contract", t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "ui-components-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   initState(root, { deliverable: "ui", tier: "quick" });
+  assert.equal(nextAction(root).stage, "observe");
+  prepareFrontend(root);
+  statedSkip(root);
   const action = nextAction(root);
   assert.equal(action.stage, "work");
   assert.match(action.command, /--stage deliver --answer <evidence>/);
@@ -317,8 +320,11 @@ test("actual CLI outside the project accepts scratch and only valid real manifes
     return JSON.parse(result.stdout);
   }
   try {
-    assert.equal(run(["next", "--deliverable", "web", "--tier", "quick", "--mode", "brief"]).stage, "intake");
+    assert.equal(run(["next", "--deliverable", "web", "--tier", "quick", "--mode", "brief"]).stage, "observe");
+    finishFrontendObservation(root);
     run(["decide", "--stage", "intake", "--choice", "skip", "--answer", "I will build a one-screen navigation page from scratch."]);
+    assert.equal(run(["next"]).stage, "design-system");
+    consumeScratchDecision(root);
     assert.equal(run(["next"]).stage, "components");
     run(["decide", "--stage", "components", "--choice", "scratch", "--answer", "从零写"]);
     fs.writeFileSync(path.join(root, "index.html"), '<nav class="Navigation">Page</nav>');
@@ -567,6 +573,7 @@ test("components decisions are rejected outside web workflows and leave their st
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "non-web-components-"));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     initState(root, { deliverable, tier: "quick", mode: "brief" });
+    if (deliverable === "ui") prepareFrontend(root);
     const file = path.join(root, STATE);
     const seeded = JSON.parse(fs.readFileSync(file, "utf8"));
     seeded.gates = { ...(seeded.gates || {}), [deliverable === "ui" ? "interaction" : deliverable]: { status: "passed", inputHashes: { "out.bin": "sha256:0" } } };
