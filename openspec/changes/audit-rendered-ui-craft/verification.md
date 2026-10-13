@@ -1,9 +1,10 @@
 # Verification
 
 Recorded on 2026-10-13 on a Windows host: through the Third Review Fix on branch
-`feat/internalize-ui-craft-sources`, and after #99 merged, from the Fourth Review Fix on, on branch
-`fix/ui-audit-review-round3` (#101). Sections follow the order the checks ran, and each names the
-tree it ran on; the final implementation is the one in Seventh Review Fix.
+`feat/internalize-ui-craft-sources`; after #99 merged, the Fourth to Seventh Review Fix on branch
+`fix/ui-audit-review-round3` (#101); and after #101 merged, the CodeRabbit Review Fix on branch
+`fix/audit-coderabbit-limits`. Sections follow the order the checks ran, and each names the tree it
+ran on; the final implementation is the one in CodeRabbit Review Fix.
 
 On the round-two tree, before the merge with `main`:
 
@@ -207,10 +208,10 @@ Codex's review of #101 at `250ee46` raised two P2 findings, fixed in `fa74c63`:
   that moved it off its host were ignored. Such text with any non-zero or unresolved margin is now
   `indeterminate` ("is moved by its margins"). The inset box itself is unchanged.
 
-The final tested implementation is commit `fa74c63c9db521e0f8894b661a4aec830552d1b1`, tree
-`8ed8015c47e05bae2647115f17e5549b90c71e98`. Full QA ran on that tree before it was committed, in a
+That fix was tested as commit `fa74c63c9db521e0f8894b661a4aec830552d1b1`, tree
+`8ed8015c47e05bae2647115f17e5549b90c71e98`; full QA ran on that tree before it was committed, in a
 separate worktree of `250ee46` holding only this change, because another session had uncommitted
-edits in the main checkout; later commits change only these records.
+edits in the main checkout.
 
 | Check | Result |
 | --- | --- |
@@ -221,6 +222,47 @@ edits in the main checkout; later commits change only these records.
 | Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes, with `audit.text-contrast` checking 16 texts. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1430, 1426 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 74 passed, 0 failed. |
+
+## CodeRabbit Review Fix
+
+CodeRabbit's review of #101 at `8b6a417` raised three findings, addressed after #101 merged in
+`f672ee9`, on a branch from `main` at `66a7e97`:
+
+- Generated text on its own fill was measured against that fill without checking paint over it, so
+  a translucent sibling over a badge left a definite ratio. Its located box is now checked for
+  overlapping paint like any other text, and generated text on its own fill that cannot be placed
+  (transformed, offset by relative positioning, sticky, or otherwise unplaceable) is
+  `indeterminate`, since paint over it cannot be ruled out.
+- A link was exempt as part of a sentence when any painted text shared its inline formatting
+  context, so `<p>Introduction<br><a>Go</a></p>` exempted a link standing alone on its line. A
+  `<br>` or an in-flow block box now ends the line run, and only text with neither between it and
+  the link counts. A sentence that merely wraps keeps its link exempt, as WCAG 2.5.8 intends, so the
+  result does not depend on the viewport width.
+- The box of an absolute pseudo-element was built from its four insets even when its size
+  over-constrained them, so a small `::after` with an explicit size and negative insets widened its
+  control as if it filled them. The box is now the pseudo-element's border box, placed by its insets
+  and margins, and only when size, margins and insets add up to the containing block; otherwise it
+  widens nothing, and generated text in it cannot be placed. An inline host on one line now uses its
+  own padding box, where `clientWidth` and `clientHeight` had made it zero-size; an inline host that
+  wraps cannot place it.
+
+Because margins are now placed, white generated text that its margins move off a dark host onto the
+white page is measured where it sits, `1:1 (#ffffff on #ffffff)`, instead of "is moved by its
+margins".
+
+The final tested implementation is commit `f672ee90fa034aad40fec13d715e9bebf293ff4d`, tree
+`62eebfe72ec479a1912854ed3f2a1102c471546e`. Full QA ran on that tree before it was committed, in its
+own worktree; later commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression, hit areas: a 16px button whose 2px `::after` over-constrains `inset: -8px`, and an inline link whose `::after` reaches 4px past each edge | With the engine of `66a7e97` the button passed `audit.target-size`, widened to 32px, and the link failed it. With the fix the button fails and the link passes. |
+| Regression, generated text: a white badge on a dark fill under a translucent white veil, a badge moved by `transform: translate(50%, -50%)`, and white text that its margins move off its dark host | With the engine of `66a7e97` neither badge had a finding and the moved text was "moved by its margins". With the fix the veiled badge is `indeterminate` ("#veil paints over or under the text"), the transformed badge is `indeterminate` ("is transformed"), and the moved text fails at `1:1`. |
+| Regression, sentence links: `<p>Read the notes<br><a>Go</a></p>`, and a link in the sentence after such a break | With the engine of `66a7e97` the first link was exempt. With the fix it fails target size; the second stays exempt. |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs tests/workflow-components.test.cjs` | 116 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes, with `audit.text-contrast` checking 16 texts. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1446, 1442 pass, 0 fail, 4 skipped (the same host skips), 136 files; `main` had gained the tests of #103. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 75 passed, 0 failed; `main` had gained change `add-ff-tracking-template`. |
 
 ## Not Verified
 
