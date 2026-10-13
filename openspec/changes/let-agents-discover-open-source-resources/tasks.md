@@ -12,12 +12,12 @@
 
 - [x] 8. Record the regressions' failing-before and passing-after output and a CLI smoke from outside the project.
 - [x] 9. Run the focused component and workflow suites, `npm run specs:check` and `npm exec -- openspec validate let-agents-discover-open-source-resources --strict`.
-- [ ] 10. Run `FONTTOOLS_PYTHON=<fonttools-python> npm test` on the committed implementation tree and record the commit, tree and totals.
-- [ ] 11. Commit on `feat/agent-resource-discovery` without pushing or opening a PR.
+- [x] 10. Run `FONTTOOLS_PYTHON=<fonttools-python> npm test` on the committed implementation tree and record the commit, tree and totals. Not a clean pass: the remaining failures are the workstation's EPERM temp-rename flake, reproduced on unchanged `origin/main` (below).
+- [x] 11. Commit on `feat/agent-resource-discovery` without pushing or opening a PR.
 
 ## Evidence
 
-Checked tasks certify implementation and technical evidence only, not Component Conformance or Visual Acceptance. Raw outputs are local in ignored `.design-pipeline/` (`discovery-before-final.txt`, `discovery-after-1.txt`).
+Checked tasks certify implementation and technical evidence only, not Component Conformance or Visual Acceptance. Raw outputs are local in ignored `.design-pipeline/` (`discovery-before-final.txt`, `discovery-after-final.txt`, `full-qa-1.txt`, `full-qa-2.txt`, `test-browser.txt`).
 
 ### Regression tests, before and after
 
@@ -87,3 +87,31 @@ Change 'let-agents-discover-open-source-resources' is valid
 ```
 
 The INFO is expected: both MODIFIED requirements are still ADDED by the in-flight `consolidate-component-index-and-web-sources`, which validates on its own. Archive that change first.
+
+### Full QA on the frozen implementation tree
+
+Implementation commit `0020b79eec79a6fdb60aa28cfee6af3f2622a955`, tree `8365db76e827687cb620e87d7bba8b2bcc5b51c7`. Only this verification record changed afterwards.
+
+```text
+FONTTOOLS_PYTHON=<fonttools-python> npm test
+Run 1 (system temp on C:): repository tests 1380; pass 1351; fail 25; skipped 4; exit 1
+Run 2 (TEMP/TMP on a D: directory): repository tests 1380; pass 1371; fail 5; skipped 4; exit 1
+  2234 OK checks; the only FAIL is "repository tests (134 files)"; packaging reproducibility,
+  installed-package tests (12/12), installed CLI smoke and byte-identical repository status pass
+npm run test:browser (not reached by npm test after the qa.cjs failure; run separately): exit 0
+  OK prewalk pipeline browser adapter self-test; OK prewalk BuilderPort self-test
+```
+
+Run 1 ran out of disk: the system drive had about 450 MB free, and 24 of its 25 failures are `ENOSPC` or "There is not enough space on the disk" while copying skill trees into the hermetic temp root (check-deps, component-eval, doctor, install, packaged install, Prism, Art Motion and release-archive tests). The 25th is `EPERM: operation not permitted, rename` in `website-cloning-init.test.cjs`. Run 2 moved only the temp root to a drive with free space.
+
+Run 2's five failures are all in the three files with the known Windows temp-rename flake. Three show `EPERM: operation not permitted, rename` on a temporary directory: `carried-forward-defects.test.cjs` F10, `palette-foundation.test.cjs` "palette foundation rejects non-object JSON without crashing" and `website-cloning-init.test.cjs` "isolates primary and reference targets with stable ids". The other two are `website-cloning-init.test.cjs` initializer runs that exited 1 instead of 0: "rejects a damaged manifest instead of treating it as resumable" and "evaluator blocks completion when the project motion foundation disappears". These files load `init-website-clone.cjs`, `evaluate-website-clone.cjs` and the palette/website-cloning cores, none of which require the modules this change edits.
+
+The same three files, run standalone, also fail intermittently on unchanged `origin/main` 66e41c8 (a full `git archive` extraction) with the same temp root:
+
+```text
+66e41c8 run 1: tests 51; pass 48; fail 3 (palette non-object JSON, website-clone complete palette evidence, damaged manifest); 2 EPERM rename errors
+66e41c8 run 2: tests 51; pass 48; fail 3 (legacy complete manifests, explicit authority, manifest commit ordering); 1 EPERM rename error
+This change, standalone: tests 51; pass 48; fail 3 (damaged manifest, unresolved required port, verdict history)
+```
+
+The failing tests change from run to run on both trees, so these failures are environmental and pre-existing, not caused by this change.
