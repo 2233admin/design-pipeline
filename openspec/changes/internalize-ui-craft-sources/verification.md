@@ -33,10 +33,10 @@ The six vendored sources are registered in that index: four new source records, 
 Quick web `next` now asks the components question before `build`.
 
 After the review fixes to the interaction gate and the audit (change `audit-rendered-ui-craft`),
-including a merge with `main` that brought in #100 and a follow-up after #101 merged, the final
-tested implementation is commit `f672ee90fa034aad40fec13d715e9bebf293ff4d`, tree
-`62eebfe72ec479a1912854ed3f2a1102c471546e`: `npm test` with the same temp root gave 1446 tests, 1442
-pass, 0 fail, 4 skipped, and `npm run specs:check` 75 passed. Later commits change only verification
+including merges with `main` that brought in #100, then #102 and #97 in a follow-up after #101
+merged, the final tested implementation is commit `a10e78201873b28e1e2fc59ae2aa41e8e61f6f08`, tree
+`faa6e1dd22873ac7e5f93c6f6cd2cf0082eb270c`: `npm test` with the same temp root gave 1478 tests, 1474
+pass, 0 fail, 4 skipped, and `npm run specs:check` 76 passed. Later commits change only verification
 records.
 
 ## Import Notes

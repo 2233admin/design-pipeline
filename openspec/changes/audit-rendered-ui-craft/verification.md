@@ -250,9 +250,9 @@ Because margins are now placed, white generated text that its margins move off a
 white page is measured where it sits, `1:1 (#ffffff on #ffffff)`, instead of "is moved by its
 margins".
 
-The final tested implementation is commit `f672ee90fa034aad40fec13d715e9bebf293ff4d`, tree
-`62eebfe72ec479a1912854ed3f2a1102c471546e`. Full QA ran on that tree before it was committed, in its
-own worktree; later commits change only these records.
+That fix was tested as commit `f672ee90fa034aad40fec13d715e9bebf293ff4d`, tree
+`62eebfe72ec479a1912854ed3f2a1102c471546e`; full QA ran on that tree before it was committed, in its
+own worktree.
 
 | Check | Result |
 | --- | --- |
@@ -263,6 +263,18 @@ own worktree; later commits change only these records.
 | Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes, with `audit.text-contrast` checking 16 texts. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1446, 1442 pass, 0 fail, 4 skipped (the same host skips), 136 files; `main` had gained the tests of #103. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 75 passed, 0 failed; `main` had gained change `add-ff-tracking-template`. |
+
+Before publishing, `main` gained #102 (the conversational web workflow) and #97. They were merged
+into the branch without conflicts, the one shared file being the setup helpers of
+`tests/interaction-audit.test.cjs`. The final tested implementation is that merge, commit
+`a10e78201873b28e1e2fc59ae2aa41e8e61f6f08`, tree `faa6e1dd22873ac7e5f93c6f6cd2cf0082eb270c`, held
+unchanged during these runs; later commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| The same focused suites | 116 pass, 0 fail. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1478, 1474 pass, 0 fail, 4 skipped (the same host skips), 136 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 76 passed, 0 failed. |
 
 ## Not Verified
 
