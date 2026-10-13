@@ -1063,9 +1063,12 @@ function verifyCommand(parsed, root, action) {
       protectedFiles: [...new Set([path.join(path.dirname(probeFile), workflow.STATE), path.join(project, workflow.STATE)])],
       chrome: option(parsed, "--chrome"), puppeteer: option(parsed, "--puppeteer-module"),
     });
+    // Lineage is read before the report is written: a request that resolves only once the report
+    // exists, through any alias the filesystem accepts, stays absent and reopens the gate.
+    const lineage = interactionLineage(project, kernel.value.capture.requests);
     fs.mkdirSync(outDir, { recursive: true });
     fs.writeFileSync(resultFile, `${JSON.stringify(result, null, 2)}\n`);
-    workflow.recordGate(project, "interaction", result.status, [probeFile, ...(localPage ? [localPage] : [])], result, interactionLineage(project, kernel.value.capture.requests));
+    workflow.recordGate(project, "interaction", result.status, [probeFile, ...(localPage ? [localPage] : [])], result, lineage);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   fail("cli", `unknown verify action ${String(action)}`, { code: "UNKNOWN_COMMAND" });

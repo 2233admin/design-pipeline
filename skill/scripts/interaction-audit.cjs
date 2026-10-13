@@ -755,29 +755,29 @@ function auditPage(options) {
   const textEffects = (style) => (style.textShadow === "none" ? parseFloat(style.webkitTextStrokeWidth) > 0 ? "the text has a stroke" : null : "the text has a shadow");
   // Generated text has no text node. It sits on its pseudo-element's own background when that
   // paints, otherwise on what lies behind its box: the element's box in flow, or the inset box of an
-  // absolute pseudo-element of a positioned element. Any other placement cannot be located.
+  // absolute pseudo-element of a positioned element. A transform moves the text off that box, and
+  // any other placement cannot be located.
   const measureGenerated = (el, pseudo, style) => {
     const selector = `${selectorOf(el)}${pseudo}`;
     const color = parseColor(style.webkitTextFillColor || style.color);
     const effects = textEffects(style)
+      || (parseFloat(style.opacity) < 1 ? `${selector} is translucent (opacity ${style.opacity})` : null)
       || (style.filter !== "none" || style.backdropFilter !== "none" ? `${selector} applies a filter` : null)
       || (style.mixBlendMode === "normal" ? null : `${selector} blends with mix-blend-mode: ${style.mixBlendMode}`)
       || (style.backgroundClip === "text" || style.webkitBackgroundClip === "text" ? `${selector} paints its background through the text (background-clip: text)` : null);
-    const opacity = parseFloat(style.opacity);
     const image = style.backgroundImage !== "none";
     const insetShadow = /\binset\b/.test(style.boxShadow);
     if (image || insetShadow || paintsColor(style.backgroundColor)) {
       const own = parseColor(style.backgroundColor);
-      const reason = opacity < 1 ? `${selector} is translucent (opacity ${style.opacity})`
-        : image ? `${selector} has a background image or gradient`
+      const reason = image ? `${selector} has a background image or gradient`
         : insetShadow ? `${selector} has an inset shadow`
         : own ? own.a < 1 ? `${selector} has a translucent background (${style.backgroundColor})` : groupEffect(el)
         : `the background color of ${selector} (${style.backgroundColor}) could not be read`;
       return measureContrast(el, selector, color, style, [], effects, reason ? { reason } : { color: own });
     }
-    if (color && opacity < 1) color.a *= opacity;
-    const box = /^(absolute|fixed)$/.test(style.position) ? absolutePseudoBox(el, style) : rectOf(el);
-    if (!box || box.right - box.left <= 0 || box.bottom - box.top <= 0) return measureContrast(el, selector, color, style, [], effects, { reason: `the box of ${selector} cannot be located` });
+    const transformed = ["transform", "translate", "rotate", "scale"].some((property) => style[property] !== "none");
+    const box = transformed ? null : /^(absolute|fixed)$/.test(style.position) ? absolutePseudoBox(el, style) : rectOf(el);
+    if (!box || box.right - box.left <= 0 || box.bottom - box.top <= 0) return measureContrast(el, selector, color, style, [], effects, { reason: transformed ? `${selector} is transformed` : `the box of ${selector} cannot be located` });
     measureContrast(el, selector, color, style, [box], effects);
   };
   for (const el of elements) {

@@ -350,21 +350,26 @@ test("spacing measures the hit areas target-size counts and diagonal neighbours 
 
 test("generated text is measured for contrast on its own background or the one behind its box", { skip: tools.skip }, async (t) => {
   // A pale required marker in flow, a badge whose text barely differs from its own fill, readable
-  // generated text, and generated text fixed to the viewport with no background of its own. The
-  // badge's host has no text, which its painted ::after would leave indeterminate.
+  // generated text, generated text fixed to the viewport with no background of its own, generated
+  // text moved off its box by a transform, and translucent generated text. The badge's host has no
+  // text, which its painted ::after would leave indeterminate.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
-<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}</style>
+<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}</style>
 </head><body style="margin:0;padding:32px">
 <p id="email">Email</p>
 <div id="inbox" style="height:24px"></div>
 <p id="note">Read this first</p>
 <p id="draft">Draft</p>
+<div id="lift"></div>
+<p id="soft">Text</p>
 </body></html>`;
   const result = await measure(t, "generated", [{ id: "generated", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
     ["#email::after", "1.47:1 (#d4d4d8 on #ffffff)"],
     ["#inbox::after", "1.13:1 (#fde047 on #fef08a)"],
     ["#draft::after", "not measurable: the box of #draft::after cannot be located"],
+    ["#lift::after", "not measurable: #lift::after is transformed"],
+    ["#soft::after", "not measurable: #soft::after is translucent (opacity 0.8)"],
   ]);
 });
 
@@ -491,6 +496,24 @@ test("verify interaction refuses a report destination the page loaded and leaves
   assert.match(result.output.error.message, /evidence\/interaction\.json, which the page loaded/);
   assert.equal(fs.readFileSync(report, "utf8"), "{}\n", "the loaded bytes stay as they were measured");
   assert.equal(readState(dir).gates?.interaction, undefined, "no gate is recorded");
+});
+
+test("a request that resolves to the report only once it is written stays absent and is refused on the next run", { skip: tools.skip }, (t) => {
+  const html = fs.readFileSync(path.join(fixtures, "clean.html"), "utf8").replace('<link rel="stylesheet" href="clean.css">', '<link rel="stylesheet" href="clean.css">\n<link rel="stylesheet" href="ev/interaction.json">');
+  assert.ok(html.includes('href="ev/interaction.json"'));
+  const dir = stage(t, "clean", probeDoc("audit-report-link", PROBES.clean), { web: true, html });
+  // ev links to the report's directory: nothing is there at capture, and the report lands behind it.
+  fs.mkdirSync(path.join(dir, "evidence"));
+  fs.symlinkSync(path.join(dir, "evidence"), path.join(dir, "ev"), process.platform === "win32" ? "junction" : "dir");
+  const first = verify(dir);
+  assert.equal(first.status, 0, first.text);
+  const lineage = readState(dir).gates.interaction.lineage;
+  assert.deepEqual(lineage.absent, ["ev/interaction.json"], "the request found nothing at capture");
+  assert.ok(!lineage.files.includes("ev/interaction.json"), "the report is not bound as something the page loaded");
+  assert.equal(nextAction(dir).stage, "probe", "the report arriving behind the link reopens the gate");
+  const rerun = verify(dir);
+  assert.equal(rerun.status, 1, rerun.text);
+  assert.equal(rerun.output.error.code, "OUTPUT_COLLISION");
 });
 
 test("editing a loaded stylesheet or DESIGN.md makes the gate stale; a pass without lineage is stale", { skip: tools.skip }, (t) => {
