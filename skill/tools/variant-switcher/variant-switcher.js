@@ -7,6 +7,8 @@
  * floating bar at the bottom centre: a left arrow, the variant label and a right arrow. The arrows and
  * the ← → keys cycle through the variants with wrap-around; the keys are left alone while a form field
  * or editable region has focus. The URL keeps ?variant= so a variant can be shared and reloaded.
+ * Hidden variants are forced out of the layout, so a page rule such as section { display: grid }
+ * cannot show them alongside the chosen one.
  */
 (() => {
   "use strict";
@@ -16,6 +18,11 @@
     const panels = [...document.querySelectorAll("[data-variant]")];
     const keys = [...new Set(panels.map((panel) => panel.getAttribute("data-variant")))].filter(Boolean);
     if (!keys.length || document.querySelector(`[${MARK}]`)) return;
+    // The hidden attribute alone loses to any author rule that sets display.
+    const hide = document.createElement("style");
+    hide.setAttribute(`${MARK}-style`, "");
+    hide.textContent = "[data-variant][hidden] { display: none !important; }";
+    (document.head || document.documentElement).append(hide);
     const names = Object.fromEntries(keys.map((key) => [key, panels.find((panel) => panel.getAttribute("data-variant") === key).getAttribute("data-variant-name") || ""]));
     const requested = String(new URLSearchParams(location.search).get("variant") || "").toLowerCase();
     let current = keys.find((key) => key.toLowerCase() === requested) || keys[0];
