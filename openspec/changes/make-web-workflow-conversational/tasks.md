@@ -212,4 +212,5 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
   intake (ui intake unchanged), and the exceptions are gone from the guide, change records and
   CHANGELOG. With TEMP/TMP on D:, `workflow-next`, `web-concept-screening`, `workflow-components`
   and `workflow-action-commands` together: 224 tests, 223 pass + 1 platform skip, 0 fail. Strict
-  validation passes and `npm run specs:check` reports 75 passed, 0 failed.
+  validation passes and `npm run specs:check` reports 75 passed, 0 failed. PR #102 CI on `9b7065c`
+  (run 38411328427): `windows-path-regressions` and `qa-and-package` both passed.
