@@ -618,6 +618,8 @@ function observeVisualTask(context, task, inputHashes, options) {
   const bindings = task.visual.verification.map(binding => ({
     ...binding, resultFile: binding.check,
     protectedFiles: [...protectedFiles, ...task.visual.checks.filter(check => normalizedVisualPath(check) !== normalizedVisualPath(binding.check)).map(raw => resolveInside(context.root, raw, "other check", { scope: "workflow" }))],
+    // Completion writes every check and its metadata after all observations, so no page may load any.
+    reportFiles: [...task.visual.checks, active.metadataPath],
     chrome: options.chrome, puppeteer: options.puppeteerModule,
   }));
   // Preflight every destination before executing or writing any check.

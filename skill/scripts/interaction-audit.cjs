@@ -755,8 +755,8 @@ function auditPage(options) {
   const textEffects = (style) => (style.textShadow === "none" ? parseFloat(style.webkitTextStrokeWidth) > 0 ? "the text has a stroke" : null : "the text has a shadow");
   // Generated text has no text node. It sits on its pseudo-element's own background when that
   // paints, otherwise on what lies behind its box: the element's box in flow, or the inset box of an
-  // absolute pseudo-element of a positioned element. A transform moves the text off that box, and
-  // any other placement cannot be located.
+  // absolute pseudo-element of a positioned element. A transform or a relative or sticky offset moves
+  // the text off that box, and any other placement cannot be located.
   const measureGenerated = (el, pseudo, style) => {
     const selector = `${selectorOf(el)}${pseudo}`;
     const color = parseColor(style.webkitTextFillColor || style.color);
@@ -775,9 +775,15 @@ function auditPage(options) {
         : `the background color of ${selector} (${style.backgroundColor}) could not be read`;
       return measureContrast(el, selector, color, style, [], effects, reason ? { reason } : { color: own });
     }
-    const transformed = ["transform", "translate", "rotate", "scale"].some((property) => style[property] !== "none");
-    const box = transformed ? null : /^(absolute|fixed)$/.test(style.position) ? absolutePseudoBox(el, style) : rectOf(el);
-    if (!box || box.right - box.left <= 0 || box.bottom - box.top <= 0) return measureContrast(el, selector, color, style, [], effects, { reason: transformed ? `${selector} is transformed` : `the box of ${selector} cannot be located` });
+    const insets = [style.top, style.right, style.bottom, style.left];
+    let displaced = null;
+    if (["transform", "translate", "rotate", "scale"].some((property) => style[property] !== "none")) displaced = `${selector} is transformed`;
+    else if (style.position === "sticky" && insets.some((value) => value !== "auto")) displaced = `${selector} is sticky`;
+    else if (style.position === "relative" && insets.some((value) => value !== "auto" && parseFloat(value) !== 0)) displaced = `${selector} is relatively positioned`;
+    let box = null;
+    if (!displaced && style.position === "absolute") box = absolutePseudoBox(el, style);
+    else if (!displaced && style.position !== "fixed") box = rectOf(el);
+    if (!box || box.right - box.left <= 0 || box.bottom - box.top <= 0) return measureContrast(el, selector, color, style, [], effects, { reason: displaced || `the box of ${selector} cannot be located` });
     measureContrast(el, selector, color, style, [box], effects);
   };
   for (const el of elements) {

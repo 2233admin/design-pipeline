@@ -903,13 +903,16 @@ function preflightInteraction(root, options = {}) {
       fail("interaction capture", `output would overwrite ${path.basename(file)}. Fix: use a separate report destination`, { code: "OUTPUT_COLLISION" });
     }
   }
-  return { doc, probeFile, pageUrl, localPage, targetFile, resultFile, protectedFiles, project };
+  // Every report the caller writes after observing, this result included: the page must have loaded none.
+  if (options.reportFiles !== undefined && !Array.isArray(options.reportFiles)) fail("interaction capture", "reportFiles must be an array");
+  const reportFiles = [...new Set([resultFile, ...(options.reportFiles || []).map(file => contained(root, file, "interaction report", false))])];
+  return { doc, probeFile, pageUrl, localPage, targetFile, resultFile, protectedFiles, reportFiles, project };
 }
 
-// Writing the report over a file the page loaded would replace the bytes it was measured with
-// before the gate or native completion binds them.
-function loadedResultFile(requests, resultFile) {
-  const output = fs.existsSync(resultFile) ? fs.statSync(resultFile, { bigint: true }) : null;
+// Writing a report over a file the page loaded would replace the bytes it was measured with before
+// the gate or native completion binds them.
+function loadedReport(requests, report) {
+  const output = fs.existsSync(report) ? fs.statSync(report, { bigint: true }) : null;
   return (Array.isArray(requests) ? requests : []).some(raw => {
     let file;
     try {
@@ -918,7 +921,7 @@ function loadedResultFile(requests, resultFile) {
       file = fileURLToPath(url);
     } catch { return false; }
     const input = fs.existsSync(file) ? fs.statSync(file, { bigint: true }) : null;
-    return path.relative(file, resultFile) === "" || Boolean(input && output && input.dev === output.dev && input.ino === output.ino);
+    return path.relative(file, report) === "" || Boolean(input && output && input.dev === output.dev && input.ino === output.ino);
   });
 }
 
@@ -939,8 +942,9 @@ function observeInteraction(root, options = {}) {
   if (context.targetFile && !(actualLocalPage && sameFilePath(actualLocalPage, context.targetFile))) {
     fail("interaction capture", "captured page differs from the declared local output target", { code: "INTERACTION_TARGET_MISMATCH" });
   }
-  if (loadedResultFile(capture.requests, context.resultFile)) {
-    fail("interaction capture", `output would overwrite ${path.relative(root, context.resultFile).split(path.sep).join("/")}, which the page loaded. Fix: use a separate report destination`, { code: "OUTPUT_COLLISION" });
+  const loaded = context.reportFiles.find(report => loadedReport(capture.requests, report));
+  if (loaded) {
+    fail("interaction capture", `output would overwrite ${path.relative(root, loaded).split(path.sep).join("/")}, which the page loaded. Fix: keep reports out of what the page loads, or use a separate report destination`, { code: "OUTPUT_COLLISION" });
   }
   const result = evaluateProbeFile(context.doc, capture, { project: context.project });
   return { ...context, result, kernel };

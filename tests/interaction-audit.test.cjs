@@ -351,10 +351,12 @@ test("spacing measures the hit areas target-size counts and diagonal neighbours 
 test("generated text is measured for contrast on its own background or the one behind its box", { skip: tools.skip }, async (t) => {
   // A pale required marker in flow, a badge whose text barely differs from its own fill, readable
   // generated text, generated text fixed to the viewport with no background of its own, generated
-  // text moved off its box by a transform, and translucent generated text. The badge's host has no
-  // text, which its painted ::after would leave indeterminate.
+  // text moved off its box by a transform, translucent generated text, white generated text that a
+  // relative offset moves off its dark host onto the white page, and sticky generated text, which
+  // scrolling can move even at top: 0. The badge's host has no text, which its painted ::after
+  // would leave indeterminate.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
-<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}</style>
+<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}#shift{background:#18181b;color:#fff;padding:4px 8px;margin-bottom:96px}#shift::after{content:" moved";color:#fff;position:relative;top:64px}#stick::after{content:" pinned";color:#3f3f46;position:sticky;top:0}</style>
 </head><body style="margin:0;padding:32px">
 <p id="email">Email</p>
 <div id="inbox" style="height:24px"></div>
@@ -362,6 +364,8 @@ test("generated text is measured for contrast on its own background or the one b
 <p id="draft">Draft</p>
 <div id="lift"></div>
 <p id="soft">Text</p>
+<p id="shift">Dark</p>
+<p id="stick">Stick</p>
 </body></html>`;
   const result = await measure(t, "generated", [{ id: "generated", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
@@ -370,6 +374,8 @@ test("generated text is measured for contrast on its own background or the one b
     ["#draft::after", "not measurable: the box of #draft::after cannot be located"],
     ["#lift::after", "not measurable: #lift::after is transformed"],
     ["#soft::after", "not measurable: #soft::after is translucent (opacity 0.8)"],
+    ["#shift::after", "not measurable: #shift::after is relatively positioned"],
+    ["#stick::after", "not measurable: #stick::after is sticky"],
   ]);
 });
 
