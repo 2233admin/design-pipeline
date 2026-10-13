@@ -617,13 +617,13 @@ test("discovery: adding discover to a recorded decision invalidates checked evid
   const root = discoveryFixture(t);
   decide(root, { stage: "components", choice: "project", answer: "Use project components" });
   fs.writeFileSync(path.join(root, "component-manifest.json"), JSON.stringify({ entries: [ownedNavigation()] }));
-  fs.writeFileSync(path.join(root, "interaction.json"), "{}");
-  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"]);
+  fs.writeFileSync(path.join(root, "interaction.json"), AUDIT_PROBE_FILE);
+  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
   assert.equal(nextAction(root).type, "done");
   decide(root, { stage: "components", choice: "project,discover", answer: "Use project components" });
   assert.equal(readState(root).gates.interaction, undefined);
   assert.equal(nextAction(root).stage, "probe");
-  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"]);
+  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
   decide(root, { stage: "components", choice: "discover,project", answer: "Use project components" });
   assert.equal(readState(root).gates.interaction.status, "passed", "re-recording the identical set keeps the pass");
 });
