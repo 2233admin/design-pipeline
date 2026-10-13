@@ -36,27 +36,23 @@
 
 ## 4. Tests
 
-- [x] 4.1 New behaviour tests `tests/web-conversation-flow.test.cjs` (20 tests: opening ask, stated
-  skip, playback loop before concepts, variants page, decision round, description gate, section order
-  and review, rules from every rejection, runtime-review Feedback citation, lineage invalidation,
-  legacy states) and `tests/variant-switcher.test.cjs` (6 real-browser tests), registered in
-  `scripts/test-manifest.json`. Twelve deliberate faults in a scratch copy of `web.cjs` each failed at
-  least one flow test.
-  Both files are folded into existing suites by 7.12.
-- [x] 4.2 Existing web tests migrated to the shared `tests/helpers/web-flow.cjs` walk:
-  `workflow-components` 67/67, `workflow-next` 87/87 (one wording pin of the old four-question intake
-  deleted), `workflow-action-commands` 30 pass + 1 platform skip (web brief-ownership cases moved to
-  film/edit/ui; a new web test proves intake never touches a brief), `web-concept-screening` 4/4,
-  `interaction-audit` 15/15, `reference-analysis-entry` 6/6.
+- [x] 4.1 The flow and switcher tests live in existing suites (7.12), each run alone with TEMP/TMP
+  on D: at 39cc1da: `workflow-next` 111/111 (intake, description, sections, lineage, rules, earlier
+  and finished projects), `web-concept-screening` 16/16 (concepts, the switcher in real Chrome,
+  every shipped form), `workflow-components` 67/67, `workflow-action-commands` 30 pass + 1 platform
+  skip, `interaction-audit` 15/15, `reference-analysis-entry` 6/6, `runtime-review` 21/21,
+  `designer-pipeline-cli` 12/12.
+- [x] 4.2 Existing web tests walk through the shared `tests/helpers/web-flow.cjs`, whose description
+  now carries a `## Sections` list; wording pins became behaviour assertions.
 
 ## 5. Verification
 
-- [x] 5.1 `npm test` with TEMP/TMP on D: (local Windows): repository tests 1447, pass 1439, fail 4,
-  skipped 4; browser self-tests 12/12. Five checks failed in all. The four failed repository tests
-  are the known Windows `EPERM ... rename` flake in the palette-foundation and website-cloning temp
-  directories, unrelated to this change. The fifth is the separate QA check "QA leaves repository
-  status byte-identical" (`scripts/qa.cjs` reports it apart from the repository tests), which failed
-  because the branch was committed while QA ran. CI is the authority.
+- [x] 5.1 `npm test` at de9b593 with TEMP/TMP on D: (local Windows): repository tests 1457, pass
+  1450, fail 3, skipped 4. All three failures are the known Windows `EPERM ... rename` flake in
+  website-clone and palette temp directories (files this change does not touch; an earlier run failed
+  one different test the same way). "QA leaves repository status byte-identical" and the
+  installed-package smoke passed. QA failed, so the chained browser self-tests did not run locally;
+  CI is the authority (5.3).
 - [x] 5.2 Real CLI smoke in scratch projects on D: (outside the repository), walking the standard
   flow to `done` with a real `verify interaction` in Chrome, plus the quick and standard skip paths.
   Transcript (commands as run with `--root <project> --project-root <project> --json`; long lines
@@ -156,7 +152,9 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
 ```
 
 - [x] 5.3 Pushed `feat/conversational-web-flow` and opened PR #102. CI run 38391510746 on a258b56:
-  `qa-and-package` and `windows-path-regressions` both succeeded, with no rerun.
+  `qa-and-package` and `windows-path-regressions` both succeeded, with no rerun. Review fixes
+  4fe5369, 2079568, 39cc1da, 8b33d52 and de9b593: CI run 38404533542 on de9b593, both jobs
+  succeeded on attempt 1.
 
 ## 6. Planned follow-up
 
@@ -166,27 +164,35 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
 
 ## 7. PR #102 review fixes
 
-- [ ] 7.1 The variant switcher forces hidden variants out of the layout, so a page's own `display`
+- [x] 7.1 The variant switcher forces hidden variants out of the layout, so a page's own `display`
   rules cannot show them.
-- [ ] 7.2 Build rejects a shipped switcher in any form: `data-variant` panels, switcher markup or
+- [x] 7.2 Build rejects a shipped switcher in any form: `data-variant` panels, switcher markup or
   inline script, a `<script src>` that names it, or a local script file that carries it.
-- [ ] 7.3 `brief.md` carries a `## Sections` list that the description approval must match exactly,
+- [x] 7.3 `brief.md` carries a `## Sections` list that the description approval must match exactly,
   and an approval can be recorded again to correct it.
-- [ ] 7.4 The description no longer copies the project rules, so a rule recorded mid-build needs no
+- [x] 7.4 The description no longer copies the project rules, so a rule recorded mid-build needs no
   brief edit and does not reset accepted sections.
-- [ ] 7.5 Web projects finished under the earlier flow are left alone until a changed page, a review
+- [x] 7.5 Web projects finished under the earlier flow are left alone until a changed page, a review
   rejection or a new component decision ends that.
-- [ ] 7.6 Decision-round corrections and the anti-goals of a confirmed playback or a skip (the new
+- [x] 7.6 Decision-round corrections and the anti-goals of a confirmed playback or a skip (the new
   repeatable `--anti-goal`) become project rules.
-- [ ] 7.7 A minimum-content rule replaces the go-ahead word list: six words for a stated decision and
+- [x] 7.7 A minimum-content rule replaces the go-ahead word list: six words for a stated decision and
   three for every "no".
-- [ ] 7.8 Section and variant markers inside HTML comments no longer count.
-- [ ] 7.9 Prompt texts: the opening asks one question with no `first`, `first` is always a step for
+- [x] 7.8 Section and variant markers inside HTML comments no longer count.
+- [x] 7.9 Prompt texts: the opening asks one question with no `first`, `first` is always a step for
   the agent, build steps are whole sentences, and no prompt claims element picking (point 8, step 1).
-- [ ] 7.10 The component sources are offered as plain-language options, and the ids stay in the
+- [x] 7.10 The component sources are offered as plain-language options, and the ids stay in the
   record command.
-- [ ] 7.11 Section verdicts check cited Feedback with runtime-review's exported `validateShape`,
+- [x] 7.11 Section verdicts check cited Feedback with runtime-review's exported `validateShape`,
   tested against a real recorded fixture.
-- [ ] 7.12 The flow and switcher tests are folded into existing suites, and no new test file remains.
-- [ ] 7.13 proposal.md, design.md and both spec deltas describe the fixed behaviour, the point-8
-  follow-up and the archive order.
+- [x] 7.12 The flow and switcher tests are folded into existing suites, and no new test file remains.
+- [x] 7.13 proposal.md, design.md and both spec deltas describe the fixed behaviour, the point-8
+  follow-up and the archive order; strict validation passes and `npm run specs:check` reports 75
+  passed, 0 failed.
+- [x] 7.14 The review repros were replayed on fresh scratch projects outside the repository. The
+  reviewer's switcher scripts show only the chosen variant (`?variant=B` with full-height grid
+  screens: centre B, rendered B). Through the CLI, every shipped-switcher form keeps build open,
+  projects done under main's CLI stay done (state unchanged) and a review rejection migrates them,
+  `pickup,hero,site,story` and a reordered list are refused, "OK, start.", "do it" and "no" are
+  refused, a commented `data-section` stays unbuilt, and a hand-written partial Feedback record is
+  refused while the real one is cited.
