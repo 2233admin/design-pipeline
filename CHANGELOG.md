@@ -84,8 +84,9 @@ All notable changes to Design Pipeline are documented here.
   The logic is adapted from lintapple (MIT) without its files or axe-core. The web `probe` stage
   now requires a passing audit probe at every tier, and the `interaction` gate binds the hashes of
   the local files the page loaded plus `DESIGN.md` and `MOTION.md`; a record without that lineage
-  is stale, so in-flight web projects re-verify. **Pages that passed `probe` before may now fail
-  it**, with findings naming the measured value, threshold and fix.
+  is stale, so in-flight web projects re-verify, and a report destination the page loaded is
+  refused with `OUTPUT_COLLISION` before anything is written. **Pages that passed `probe` before
+  may now fail it**, with findings naming the measured value, threshold and fix.
   `references/ui-craft-sources.md` becomes
   the project-owned rule index: each audit code with its sources, a `UC-` review checklist for
   motion, focus, semantics, forms, copy and states, and the resolved conflicts. Audit and

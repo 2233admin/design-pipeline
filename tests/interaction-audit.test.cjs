@@ -348,6 +348,81 @@ test("spacing measures the hit areas target-size counts and diagonal neighbours 
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), [], "the widened icons meet the 24px floor");
 });
 
+test("generated text is measured for contrast on its own background or the one behind its box", { skip: tools.skip }, async (t) => {
+  // A pale required marker in flow, a badge whose text barely differs from its own fill, readable
+  // generated text, generated text fixed to the viewport with no background of its own, generated
+  // text moved off its box by a transform, translucent generated text, white generated text that a
+  // relative offset moves off its dark host onto the white page, and sticky generated text, which
+  // scrolling can move even at top: 0, and white generated text whose margins move it off its dark
+  // host. The badge's host has no text, which its painted ::after would leave indeterminate.
+  const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
+<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}#shift{background:#18181b;color:#fff;padding:4px 8px;margin-bottom:96px}#shift::after{content:" moved";color:#fff;position:relative;top:64px}#stick::after{content:" pinned";color:#3f3f46;position:sticky;top:0}#slip{position:relative;width:120px;height:32px;margin-left:240px;background:#18181b}#slip::after{content:"Out";color:#fff;position:absolute;top:0;right:0;bottom:0;left:0;margin-left:-200px;margin-right:200px}</style>
+</head><body style="margin:0;padding:32px">
+<p id="email">Email</p>
+<div id="inbox" style="height:24px"></div>
+<p id="note">Read this first</p>
+<p id="draft">Draft</p>
+<div id="lift"></div>
+<p id="soft">Text</p>
+<p id="shift">Dark</p>
+<p id="stick">Stick</p>
+<div id="slip"></div>
+</body></html>`;
+  const result = await measure(t, "generated", [{ id: "generated", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
+    ["#email::after", "1.47:1 (#d4d4d8 on #ffffff)"],
+    ["#inbox::after", "1.13:1 (#fde047 on #fef08a)"],
+    ["#draft::after", "not measurable: the box of #draft::after cannot be located"],
+    ["#lift::after", "not measurable: #lift::after is transformed"],
+    ["#soft::after", "not measurable: #soft::after is translucent (opacity 0.8)"],
+    ["#shift::after", "not measurable: #shift::after is relatively positioned"],
+    ["#stick::after", "not measurable: #stick::after is sticky"],
+    ["#slip::after", "not measurable: #slip::after is moved by its margins"],
+  ]);
+});
+
+test("opacity above the text or its background leaves contrast indeterminate", { skip: tools.skip }, async (t) => {
+  // A badge on a half-transparent host, and text on an opaque card inside a half-transparent
+  // wrapper: both read 17:1 or more against their own backgrounds, but neither is rendered that way.
+  const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
+<style>#beta{position:relative;height:24px;opacity:.5}#beta::after{content:"Beta";background:#18181b;color:#fff;padding:0 4px}</style>
+</head><body style="margin:0;padding:32px">
+<div id="beta"></div>
+<div id="fade" style="opacity:.5"><p id="dim" style="background:#fff;color:#000">Dim</p></div>
+</body></html>`;
+  const result = await measure(t, "translucent", [{ id: "translucent", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
+    ["#beta::after", "not measurable: #beta is translucent (opacity 0.5)"],
+    ["#dim", "not measurable: #fade is translucent (opacity 0.5)"],
+  ]);
+});
+
+test("an inline link is exempt from target size only beside text in its own inline formatting context", { skip: tools.skip }, async (t) => {
+  // A link after a paragraph, and links beside text that is not displayed, invisible, transparent,
+  // clipped away, drawn in a transparent color (with or without a transparent shadow), or
+  // transparent over a background that covers its ancestor's gradient clipped to text, stand alone.
+  // A link inside a sentence, even one whose words are hidden only from assistive technology,
+  // outlined by a stroke, drawn by a shadow, or painted by an ancestor's background clipped to text,
+  // is constrained by the line around it.
+  const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><body style="margin:0;padding:32px">
+<div><p>Read the release notes before you upgrade.</p><a id="after-paragraph" href="#next">Next</a></div>
+<div><span style="display:none">Hidden words</span><a id="beside-hidden" href="#more">More</a></div>
+<div><span style="visibility:hidden">Invisible words</span><a id="beside-invisible" href="#a">Go</a></div>
+<div><span style="opacity:0">Transparent words</span><a id="beside-transparent" href="#b">Go</a></div>
+<div><span style="clip-path:inset(50%)">Screen reader words</span><a id="beside-clipped" href="#c">Go</a></div>
+<div><span style="color:transparent">Clear words</span><a id="beside-clear" href="#e">Go</a></div>
+<div style="background:linear-gradient(#18181b,#3f3f46);-webkit-background-clip:text;background-clip:text;color:transparent"><div style="background:#fff"><span>Covered words</span><a id="beside-covered" href="#g">Go</a></div></div>
+<div><span style="color:transparent;text-shadow:0 0 transparent">Shadowless words</span><a id="beside-shadowless" href="#i">Go</a></div>
+<p>Read the <a id="in-sentence" href="#terms">terms</a> first.</p>
+<p><span aria-hidden="true">Read the</span> <a id="beside-decorative" href="#d">notes</a></p>
+<p style="background:linear-gradient(#18181b,#3f3f46);-webkit-background-clip:text;background-clip:text;color:transparent"><span>Read the</span> <a id="beside-gradient" href="#f">guide</a></p>
+<p><span style="color:transparent;-webkit-text-stroke:1px #18181b">Read the</span> <a id="beside-outlined" href="#h">notes</a></p>
+<p><span style="color:transparent;text-shadow:0 0 2px #18181b">Read the</span> <a id="beside-shadowed" href="#j">notes</a></p>
+</body></html>`;
+  const result = await measure(t, "sentence", [{ id: "sentence", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#after-paragraph", "#beside-hidden", "#beside-invisible", "#beside-transparent", "#beside-clipped", "#beside-clear", "#beside-covered", "#beside-shadowless"]);
+});
+
 test("verify interaction exits 2 on the violating page, 0 on the clean and undeclared pages and 1 on a selector the page rejects", { skip: tools.skip }, (t) => {
   const lineages = {
     clean: { files: ["clean.css", "fonts/Inter-var.woff", "index.html"], tokens: [], absent: [], remote: [] },
@@ -422,6 +497,40 @@ test("a journey that loads a file outside the project on click fails verify inte
   assert.deepEqual(gate.findings.map((finding) => [finding.code, finding.probeId, finding.actual]), [["external-request", "load", brand]]);
   assert.match(gate.findings[0].message, /went outside the project/);
   assert.match(gate.findings[0].fix, /^Copy every listed resource into the project/);
+});
+
+test("verify interaction refuses a report destination the page loaded and leaves it unchanged", { skip: tools.skip }, (t) => {
+  const loaded = '<link rel="stylesheet" href="evidence/interaction.json">';
+  const html = fs.readFileSync(path.join(fixtures, "clean.html"), "utf8").replace('<link rel="stylesheet" href="clean.css">', `<link rel="stylesheet" href="clean.css">\n${loaded}`);
+  assert.ok(html.includes(loaded));
+  const dir = stage(t, "clean", probeDoc("audit-report-loaded", PROBES.clean), { web: true, html });
+  const report = path.join(dir, "evidence/interaction.json");
+  fs.mkdirSync(path.dirname(report));
+  fs.writeFileSync(report, "{}\n");
+  const result = verify(dir);
+  assert.equal(result.status, 1, result.text);
+  assert.equal(result.output.error.code, "OUTPUT_COLLISION");
+  assert.match(result.output.error.message, /evidence\/interaction\.json, which the page loaded/);
+  assert.equal(fs.readFileSync(report, "utf8"), "{}\n", "the loaded bytes stay as they were measured");
+  assert.equal(readState(dir).gates?.interaction, undefined, "no gate is recorded");
+});
+
+test("a request that resolves to the report only once it is written stays absent and is refused on the next run", { skip: tools.skip }, (t) => {
+  const html = fs.readFileSync(path.join(fixtures, "clean.html"), "utf8").replace('<link rel="stylesheet" href="clean.css">', '<link rel="stylesheet" href="clean.css">\n<link rel="stylesheet" href="ev/interaction.json">');
+  assert.ok(html.includes('href="ev/interaction.json"'));
+  const dir = stage(t, "clean", probeDoc("audit-report-link", PROBES.clean), { web: true, html });
+  // ev links to the report's directory: nothing is there at capture, and the report lands behind it.
+  fs.mkdirSync(path.join(dir, "evidence"));
+  fs.symlinkSync(path.join(dir, "evidence"), path.join(dir, "ev"), process.platform === "win32" ? "junction" : "dir");
+  const first = verify(dir);
+  assert.equal(first.status, 0, first.text);
+  const lineage = readState(dir).gates.interaction.lineage;
+  assert.deepEqual(lineage.absent, ["ev/interaction.json"], "the request found nothing at capture");
+  assert.ok(!lineage.files.includes("ev/interaction.json"), "the report is not bound as something the page loaded");
+  assert.equal(nextAction(dir).stage, "probe", "the report arriving behind the link reopens the gate");
+  const rerun = verify(dir);
+  assert.equal(rerun.status, 1, rerun.text);
+  assert.equal(rerun.output.error.code, "OUTPUT_COLLISION");
 });
 
 test("editing a loaded stylesheet or DESIGN.md makes the gate stale; a pass without lineage is stale", { skip: tools.skip }, (t) => {

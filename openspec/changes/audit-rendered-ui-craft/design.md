@@ -45,13 +45,13 @@ distinguished by `"kind": "audit"`. Motion and journey probes keep their current
 | `audit.font-size` | Visible text and generated text are at least `minFontPx`; when `fontSizes` is declared, sizes are on that scale within 0.1 px | `minFontPx` 12 | `thresholds.minFontPx`, `thresholds.fontSizes` |
 | `audit.tabular-numbers` | Declared numbers and inferred numeric table cells render the digits 0-9 at equal advance width within 0.5 px | none | `declare.numbers` |
 | `audit.numeric-alignment` | Inferred numeric table cells align to the end edge | none | none |
-| `audit.text-contrast` | WCAG 2 ratio over a resolved solid background: 4.5:1, or 3:1 for text at least 24 px or bold and at least 18.67 px. Text over gradients, images, translucency, filters, blend modes, shadows or overlapping paint is `indeterminate`, with the fix "put the text on a measurable solid surface or scrim" | 4.5 / 3 | `thresholds.contrastNormal`, `thresholds.contrastLarge` |
+| `audit.text-contrast` | WCAG 2 ratio over a resolved solid background: 4.5:1, or 3:1 for text at least 24 px or bold and at least 18.67 px. Generated `::before`/`::after` text is measured over its own background when it paints one, otherwise over the background behind its box: the element's box in flow, or the inset box of an absolute pseudo-element of a positioned element. Text over gradients, images, translucent backgrounds, shadows or overlapping paint, text under opacity, a filter or a blend mode on its element or any ancestor, and generated text without its own background that is transformed, offset by relative positioning, moved by the margins of an absolute pseudo-element, sticky, or cannot be placed, is `indeterminate`, with the fix "put the text on a measurable solid surface or scrim" | 4.5 / 3 | `thresholds.contrastNormal`, `thresholds.contrastLarge` |
 | `audit.root-background` | The root has an opaque background color | none | none |
 | `audit.horizontal-overflow` | The document is no wider than the viewport by more than 1 px | 1 px | none |
 | `audit.viewport-bounds` | Visible boxes and text stay inside the viewport horizontally; overlays also vertically; clip and scroll ancestors respected | 1 px | none |
 | `audit.content-clipping` | Text is not cut by an `overflow: hidden` or `clip` ancestor without an inner scroller | 1 px | none |
 | `audit.content-overflow` | Text stays inside each declared content box unless it scrolls | 1 px | `declare.contentBoxes` |
-| `audit.target-size` | Each control's hit area (its box widened by an absolutely positioned `::before` or `::after`) is at least `minTargetPx` in each dimension; inline text links are exempt | 24 px | `thresholds.minTargetPx` |
+| `audit.target-size` | Each control's hit area (its box widened by an absolutely positioned `::before` or `::after`) is at least `minTargetPx` in each dimension; an inline link is exempt only beside visible, painted text in its own inline formatting context, not text in block-level descendants of its block or text that is not displayed, invisible, transparent or clipped away. Text in a transparent color counts only when a stroke, a shadow, or a background clipped to text on its element or an ancestor paints it and no background painted in between covers that; text hidden only from assistive technology is still painted on the line and counts | 24 px | `thresholds.minTargetPx` |
 | `audit.control-gap` | The hit areas of controls in one group are separated by at least `minControlGapPx` edge to edge, diagonally when they share neither axis, and do not overlap | 8 px | `thresholds.minControlGapPx` |
 | `audit.control-inset` | Controls inside declared containers keep `minControlInsetPx` from each padding edge | 8 px | `declare.controlContainers` |
 | `audit.layout-gap` | Visible children of declared stacks are separated by at least `minLayoutGapPx` edge to edge, diagonally when they share neither axis | 8 px | `declare.stacks` |
@@ -129,6 +129,15 @@ the probe logs cover the run log; an audit probe judges its whole log, including
 viewport is restored. Every request the gate's lineage reads was therefore judged by a probe. An
 audited pass records an empty `remote` list. Probe files without audit probes keep their current
 URL behavior for remote URLs and keep recording them without hashing them.
+
+A report destination the page loaded is refused before anything is written, since writing the
+report would replace the bytes the page was measured with before the gate binds them. `verify
+interaction` exits 1 with `OUTPUT_COLLISION` and writes no report and no gate. Native completion,
+which shares that observation, checks each page against every check it writes and its metadata,
+not only that page's own check, and stops as `blocked` without writing its checks or failure state.
+Lineage is read before the report is written, so a request that reaches the report only once it
+exists, such as through a directory link, stays `absent` and reopens the gate; the next run then
+refuses it as a loaded report destination.
 
 `gateStatus` treats an `interaction` record as stale when its lineage is missing (records written
 before this change), when any recorded hash differs, when an `absent` file now exists, or when

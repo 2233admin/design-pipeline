@@ -1,8 +1,9 @@
 # Verification
 
-Recorded on 2026-10-13 on branch `feat/internalize-ui-craft-sources` (Windows host). Sections follow
-the order the checks ran, and each names the tree it ran on; the final implementation is the one in
-Second Review Fix.
+Recorded on 2026-10-13 on a Windows host: through the Third Review Fix on branch
+`feat/internalize-ui-craft-sources`, and after #99 merged, from the Fourth Review Fix on, on branch
+`fix/ui-audit-review-round3` (#101). Sections follow the order the checks ran, and each names the
+tree it ran on; the final implementation is the one in Seventh Review Fix.
 
 On the round-two tree, before the merge with `main`:
 
@@ -56,15 +57,170 @@ engine. `audit.control-gap` measured layout boxes while `audit.target-size` meas
 widened by an absolute `::before` or `::after`, so two overlapping widened targets passed both
 checks; and gap checks treated controls or stacked items that share neither axis as infinitely
 apart. Control spacing now measures hit areas, and gaps are edge to edge along the diagonal (commit
-`eb4d7ce`; `c901a79` extends the regression to a declared stack). The final tested implementation
-is commit `c901a796d6df8ba3431a1a5464240e8b594cf9dc`, tree
-`4207c64495e015827a78bcbae039014341a788cf`; later commits change only these records.
+`eb4d7ce`; `c901a79` extends the regression to a declared stack). That implementation was tested
+as commit `c901a796d6df8ba3431a1a5464240e8b594cf9dc`, tree
+`4207c64495e015827a78bcbae039014341a788cf`.
 
 | Check | Result |
 | --- | --- |
 | Regression: two 16px icons widened to 32px targets 8px apart by layout, two 24px buttons offset 2px on each axis, and two tiles of a declared grid stack offset 2px on each axis | With the previous engine, no `audit.control-gap` or `audit.layout-gap` finding. With the fix: control gaps `#icon-a` "overlapping it by 8px" and `#corner-a` "2.83px from it", and the stack gap `#tile-a` "2.83px from it"; `audit.target-size` stays clean. The violating, clean and undeclared fixtures keep their results. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1405, 1401 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 73 passed, 0 failed. |
+
+## Third Review Fix
+
+Codex's review of `a1c6498` raised three P2 findings, all confirmed and fixed in `82fb16c`:
+
+- Generated `::before` and `::after` text has no text node, so `audit.text-contrast` never measured
+  it, although `audit.font-size` did. It is now measured over its pseudo-element's own background
+  when that paints, otherwise over the background behind its box; generated text the engine cannot
+  place is `indeterminate`.
+- The inline-link exemption from `audit.target-size` and `audit.control-gap` counted any text in the
+  link's block, so a standalone link after a paragraph, or beside hidden text, was exempt. It now
+  counts only text in the link's own inline formatting context.
+- `verify interaction` wrote its report before hashing the files the page loaded, so a page that
+  loaded the report destination had the new report bound instead of the bytes it was measured with.
+  Observation now refuses that destination with `OUTPUT_COLLISION` before anything is written. The
+  observation is shared with native completion, which then stops as `blocked`.
+
+Checking the generated-text fix showed that the background resolver stopped at the first opaque
+background, so opacity, a filter or a blend mode above it, including on the host of a badge with
+its own background, still produced a definite ratio. `7b53b12` makes such text `indeterminate`, as
+the contrast rule states. That implementation was tested as commit
+`7b53b127274ca5714bc89acb667b66ec859faeaf`, tree `b30e3d4d3a782843bc7c04a0ca068b5ecd950a86`; full QA
+ran on that tree before it was committed.
+
+| Check | Result |
+| --- | --- |
+| Regression: a pale in-flow required marker, a badge whose text barely differs from its own fill, readable generated text, and generated text fixed to the viewport | With the engine of `a1c6498`, no `audit.text-contrast` finding. With the fix: `#email::after` "1.47:1 (#d4d4d8 on #ffffff)", `#inbox::after` "1.13:1 (#fde047 on #fef08a)", and `#draft::after` `indeterminate` because its box cannot be located; the readable `#note::before` passes. |
+| Regression: a badge with its own dark fill on a host at `opacity: .5`, and text on an opaque card inside a wrapper at `opacity: .5` | With the engine of `82fb16c`, no finding. With the fix both are `indeterminate`, naming `#beta` and `#fade` as translucent. |
+| Regression: a 16px link after a paragraph, one beside hidden text, and one inside a sentence | With the engine of `a1c6498`, no `audit.target-size` finding. With the fix: `#after-paragraph` and `#beside-hidden`; the link inside the sentence stays exempt. |
+| Regression: a clean page that also loads `evidence/interaction.json`, the default report destination | With the code of `a1c6498`, `verify interaction` exited 0, overwrote the file and recorded a passed gate. With the fix it exits 1 with `OUTPUT_COLLISION` naming `evidence/interaction.json`, leaves the file's bytes unchanged and records no gate. |
+| `node --test tests/interaction-audit.test.cjs`, then `tests/interaction-cli.test.cjs` with `tests/ui-craft-sources.test.cjs` | 19 and 29 pass, 0 fail, including the violating, clean and undeclared fixtures and the shared preflight and observation that native completion uses. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes; `audit.text-contrast` checks 16 elements at 1280x800. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1409, 1405 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Fourth Review Fix
+
+PR #99 merged at `a1c6498`, so the Third Review Fix and this one reach `main` through #101.
+Codex's review of #101 at `06e78ec` raised two P2 findings:
+
+- The inline-link exemption still accepted text hidden by `visibility`, `opacity` or clipping, so a
+  standalone link beside it skipped `audit.target-size` and `audit.control-gap`. `5095850` counts
+  only visible text. Text hidden only from assistive technology is still painted on the line, so it
+  keeps the exemption.
+- A link the page requests that dangles at capture, and resolves to the report once it is written,
+  was said to let a pass bind the report. Not adopted: every probe on a local page judges its
+  `file:` requests against the project bound, which cannot contain an unresolved symlink. Reproduced
+  on `7b53b12` with `page.css -> evidence/interaction.json`: `verify interaction` exits 2 with
+  `external-request` on `page.css`, and the gate records `failed` with no lineage.
+
+That implementation was tested as commit `50958502aed31213698e039d44789d394e7e8dbb`, tree
+`42b44b21002d4a135c94f0fd80af8be2f0f03946`; full QA ran on that tree before it was committed.
+
+| Check | Result |
+| --- | --- |
+| Regression: 16px links beside text that is not displayed, invisible, transparent or clipped away, a link inside a sentence, and one beside words hidden only from assistive technology | With the engine of `7b53b12`, `audit.target-size` flagged only `#after-paragraph` and `#beside-hidden`. With the fix it also flags `#beside-invisible`, `#beside-transparent` and `#beside-clipped`; both sentence links stay exempt. |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs` | 48 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1409, 1405 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Fifth Review Fix
+
+Codex's review of #101 at `a38f417` raised three P2 findings:
+
+- Generated text without its own background was measured at its untransformed box when a
+  `transform` moved it elsewhere, and generated text below opacity 1 had that opacity folded into
+  its text alpha, so either could pass. Both are now `indeterminate` (`b3e297a`), like other text
+  under those effects. Generated text with its own opaque background keeps its measurement under a
+  transform, since the background moves with the text.
+- Lineage was read after the report was written, so a request that reaches the report only once it
+  exists could be bound as something the page loaded. Codex's trailing-dot example does not hold
+  here: Node on this Windows host does not open `interaction.json` or `evidence` with a trailing
+  period or a trailing space as the existing report. It opens a case variant, which
+  `path.win32.relative` already treats as the same path. A directory link does reproduce the
+  problem, and `b3e297a` reads lineage before the report is written: the request stays `absent`
+  and reopens the gate, and the next run refuses it with `OUTPUT_COLLISION`.
+
+That implementation was tested as commit `b3e297a923999285b0090b1ff051d719ddbdb480`, tree
+`519347a65e52fb5323d627d1add0a7b4e5dd4567`; full QA ran on that tree before it was committed.
+
+| Check | Result |
+| --- | --- |
+| Regression: generated text moved by `transform: translateY(-200%)`, and generated text at `opacity: .8`, both without their own background | With the engine of `5095850`, no finding. With the fix: `#lift::after` "is transformed" and `#soft::after` "is translucent (opacity 0.8)", both `indeterminate`. |
+| Regression: a clean page that requests `ev/interaction.json`, where `ev` links to the empty report directory | With the code of `5095850`, `verify interaction` exited 0 and the lineage's `absent` list was empty, because the request was read after the report existed. With the fix it exits 0 with `ev/interaction.json` in `absent`, `next` reopens `probe`, and a rerun exits 1 with `OUTPUT_COLLISION`. |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs` | 49 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1410, 1406 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Merge With #100
+
+`main` gained #100 (agent resource discovery) after that run. #100 changed no file this change
+touches except `CHANGELOG.md` and one help line in `cli-core.cjs`, and both merged without
+conflicts. That merge was tested as commit `eb8ff216dcb62c756a3914bbcf0ffb9a1e14f0ab`, tree
+`a69186028cbee2c05c509863278beb0c9b0621e5`.
+
+| Check | Result |
+| --- | --- |
+| `node --test tests/workflow-components.test.cjs tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs` | 98 pass, 0 fail, including #100's discovery and lineage cases on audited pages. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1429, 1425 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 74 passed, 0 failed. |
+
+## Sixth Review Fix
+
+Codex's review of #101 at `5471f6e` raised two P2 findings, fixed in `c5ad554`:
+
+- Each observation checked only its own check file, so with two verification bindings a page could
+  load the other binding's existing check, both observations passed, and completion then overwrote
+  that check. Observation now checks the page against every report the caller writes afterwards:
+  native completion passes all of its checks and its metadata, and stops as `blocked` with
+  `OUTPUT_COLLISION` before writing any check.
+- Generated text without its own background that relative positioning offsets was measured at its
+  unshifted box. Such text is now `indeterminate`, and so is sticky generated text with any inset,
+  which scrolling can move even at `top: 0`.
+
+That fix was tested as commit `c5ad5549fd1e6b995468b01836a5eb616cc5dff7`, tree
+`c0e728309efab20b0ae3c65db3eb8854c474a862`; full QA ran on that tree before it was committed.
+
+| Check | Result |
+| --- | --- |
+| Regression: a native task with two pages, where the first page loads the second binding's existing check | With the code of `b3e297a`, completion returned `recorded` and rewrote that check. With the fix it returns `blocked` naming `second-check.json`, which keeps its bytes, and no check is written. |
+| Regression: white generated text moved off its dark host by `position: relative; top: 64px`, and generated text with `position: sticky; top: 0` | The offset text had no finding with the engine of `b3e297a`, and the sticky text had none with the first version of this fix, which counted only non-zero offsets. With the fix both are `indeterminate` ("is relatively positioned", "is sticky"). |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs tests/workflow-components.test.cjs`, then the native regression in `tests/workflow-next.test.cjs` | 116 and 1 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1430, 1426 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 74 passed, 0 failed. |
+
+## Seventh Review Fix
+
+Codex's review of #101 at `250ee46` raised two P2 findings, fixed in `fa74c63`:
+
+- A standalone link beside text in a transparent color, such as `color: transparent`, was exempt
+  from `audit.target-size` and `audit.control-gap`, because the sentence check tested only whether
+  the text's element was visible. Text in a transparent color now counts only when a painting stroke
+  or shadow draws it, or when a background clipped to text paints it, on its element or an ancestor,
+  and no background painted in between covers that.
+- Absolute generated text without its own background was placed by its insets alone, so margins
+  that moved it off its host were ignored. Such text with any non-zero or unresolved margin is now
+  `indeterminate` ("is moved by its margins"). The inset box itself is unchanged.
+
+The final tested implementation is commit `fa74c63c9db521e0f8894b661a4aec830552d1b1`, tree
+`8ed8015c47e05bae2647115f17e5549b90c71e98`. Full QA ran on that tree before it was committed, in a
+separate worktree of `250ee46` holding only this change, because another session had uncommitted
+edits in the main checkout; later commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression: a link beside `color: transparent` text, and white absolute generated text on a dark positioned host with `inset: 0; margin-left: -200px; margin-right: 200px` | With the engine of `250ee46` the link had no `audit.target-size` finding and the generated text no `audit.text-contrast` finding. With the fix the link fails target size and the text is `indeterminate`. |
+| Regression: a link beside transparent text whose only shadow is transparent (`text-shadow: 0 0 transparent`) | The first version of this fix counted any shadow as paint and exempted the link; with the fix it fails target size. |
+| Headless Chrome render: red pixels in the glyph boxes of transparent text under a red `background-clip: text` | Text in the clipped element, and in a `<span>` inside it, both showed 2884; transparent text without a clip, and text under a white background placed between it and the clipped ancestor, showed 0. The fixture pins the nested, unclipped and covered cases, and keeps links beside stroke-outlined or shadow-drawn transparent text exempt. |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs tests/workflow-components.test.cjs` | 116 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes, with `audit.text-contrast` checking 16 texts. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1430, 1426 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 74 passed, 0 failed. |
 
 ## Not Verified
 
