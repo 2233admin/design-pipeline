@@ -755,8 +755,9 @@ function auditPage(options) {
   const textEffects = (style) => (style.textShadow === "none" ? parseFloat(style.webkitTextStrokeWidth) > 0 ? "the text has a stroke" : null : "the text has a shadow");
   // Generated text has no text node. It sits on its pseudo-element's own background when that
   // paints, otherwise on what lies behind its box: the element's box in flow, or the inset box of an
-  // absolute pseudo-element of a positioned element. A transform or a relative or sticky offset moves
-  // the text off that box, and any other placement cannot be located.
+  // absolute pseudo-element of a positioned element. A transform, a relative or sticky offset, or the
+  // margins of an absolute pseudo-element move the text off that box, and any other placement
+  // cannot be located.
   const measureGenerated = (el, pseudo, style) => {
     const selector = `${selectorOf(el)}${pseudo}`;
     const color = parseColor(style.webkitTextFillColor || style.color);
@@ -780,6 +781,7 @@ function auditPage(options) {
     if (["transform", "translate", "rotate", "scale"].some((property) => style[property] !== "none")) displaced = `${selector} is transformed`;
     else if (style.position === "sticky" && insets.some((value) => value !== "auto")) displaced = `${selector} is sticky`;
     else if (style.position === "relative" && insets.some((value) => value !== "auto" && parseFloat(value) !== 0)) displaced = `${selector} is relatively positioned`;
+    else if (style.position === "absolute" && [style.marginTop, style.marginRight, style.marginBottom, style.marginLeft].some((value) => !/^-?[\d.]+px$/.test(value) || parseFloat(value) !== 0)) displaced = `${selector} is moved by its margins`;
     let box = null;
     if (!displaced && style.position === "absolute") box = absolutePseudoBox(el, style);
     else if (!displaced && style.position !== "fixed") box = rectOf(el);
@@ -874,9 +876,22 @@ function auditPage(options) {
   if (overflowPx > tolerance.boundsPx) failed("audit.horizontal-overflow", root, { expected: `no page-level horizontal overflow (within ${tolerance.boundsPx}px)`, actual: `${round2(overflowPx)}px wider than the ${root.clientWidth}px viewport`, message: "the page scrolls sideways", fix: FIX.horizontalOverflow, ...(widest ? { related: widest.el } : {}) });
 
   // ---- targets and control spacing
-  // Sentence text is visible text in the link's own inline formatting context, outside other
-  // controls; block-level, hidden and invisible descendants hold none of it. Text hidden only from
+  // Sentence text is painted, visible text in the link's own inline formatting context, outside
+  // other controls; block-level, hidden and invisible descendants hold none of it. Text in a
+  // transparent color paints only through a stroke, a shadow, or a background clipped to text on
+  // its element or an ancestor that no background painted in between covers. Text hidden only from
   // assistive technology is still painted on the line, so it counts.
+  const paintsText = (el) => {
+    const style = styleOf(el);
+    if (paintsColor(style.webkitTextFillColor || style.color)) return true;
+    if (style.textShadow !== "none" && (style.textShadow.match(/[a-z-]+\([^)]*\)/gi) ?? [style.textShadow]).some((color) => paintsColor(color))) return true;
+    if (parseFloat(style.webkitTextStrokeWidth) > 0 && paintsColor(style.webkitTextStrokeColor)) return true;
+    for (let node = el; node; node = node.parentElement) {
+      const own = styleOf(node);
+      if (own.backgroundImage !== "none" || paintsColor(own.backgroundColor)) return own.backgroundClip === "text" || own.webkitBackgroundClip === "text";
+    }
+    return false;
+  };
   const sentenceText = (el) => {
     let block = el.parentElement;
     while (block && /^(inline|contents)$/.test(styleOf(block).display)) block = block.parentElement;
@@ -885,7 +900,7 @@ function auditPage(options) {
       acceptNode: (node) => (node.nodeType === Node.TEXT_NODE ? NodeFilter.FILTER_ACCEPT : /^(inline|contents)$/.test(styleOf(node).display) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_REJECT),
     });
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      if (!/[\p{L}\p{N}]/u.test(node.textContent) || !visible(node.parentElement)) continue;
+      if (!/[\p{L}\p{N}]/u.test(node.textContent) || !visible(node.parentElement) || !paintsText(node.parentElement)) continue;
       const owner = node.parentElement?.closest(CONTROL);
       if (owner && owner !== block && block.contains(owner)) continue;
       return true;

@@ -353,10 +353,10 @@ test("generated text is measured for contrast on its own background or the one b
   // generated text, generated text fixed to the viewport with no background of its own, generated
   // text moved off its box by a transform, translucent generated text, white generated text that a
   // relative offset moves off its dark host onto the white page, and sticky generated text, which
-  // scrolling can move even at top: 0. The badge's host has no text, which its painted ::after
-  // would leave indeterminate.
+  // scrolling can move even at top: 0, and white generated text whose margins move it off its dark
+  // host. The badge's host has no text, which its painted ::after would leave indeterminate.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
-<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}#shift{background:#18181b;color:#fff;padding:4px 8px;margin-bottom:96px}#shift::after{content:" moved";color:#fff;position:relative;top:64px}#stick::after{content:" pinned";color:#3f3f46;position:sticky;top:0}</style>
+<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}#shift{background:#18181b;color:#fff;padding:4px 8px;margin-bottom:96px}#shift::after{content:" moved";color:#fff;position:relative;top:64px}#stick::after{content:" pinned";color:#3f3f46;position:sticky;top:0}#slip{position:relative;width:120px;height:32px;margin-left:240px;background:#18181b}#slip::after{content:"Out";color:#fff;position:absolute;top:0;right:0;bottom:0;left:0;margin-left:-200px;margin-right:200px}</style>
 </head><body style="margin:0;padding:32px">
 <p id="email">Email</p>
 <div id="inbox" style="height:24px"></div>
@@ -366,6 +366,7 @@ test("generated text is measured for contrast on its own background or the one b
 <p id="soft">Text</p>
 <p id="shift">Dark</p>
 <p id="stick">Stick</p>
+<div id="slip"></div>
 </body></html>`;
   const result = await measure(t, "generated", [{ id: "generated", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
@@ -376,6 +377,7 @@ test("generated text is measured for contrast on its own background or the one b
     ["#soft::after", "not measurable: #soft::after is translucent (opacity 0.8)"],
     ["#shift::after", "not measurable: #shift::after is relatively positioned"],
     ["#stick::after", "not measurable: #stick::after is sticky"],
+    ["#slip::after", "not measurable: #slip::after is moved by its margins"],
   ]);
 });
 
@@ -396,20 +398,29 @@ test("opacity above the text or its background leaves contrast indeterminate", {
 });
 
 test("an inline link is exempt from target size only beside text in its own inline formatting context", { skip: tools.skip }, async (t) => {
-  // A link after a paragraph, and links beside text that is not displayed, invisible, transparent or
-  // clipped away, stand alone. A link inside a sentence, even one whose words are hidden only from
-  // assistive technology, is constrained by the line around it.
+  // A link after a paragraph, and links beside text that is not displayed, invisible, transparent,
+  // clipped away, drawn in a transparent color (with or without a transparent shadow), or
+  // transparent over a background that covers its ancestor's gradient clipped to text, stand alone.
+  // A link inside a sentence, even one whose words are hidden only from assistive technology,
+  // outlined by a stroke, drawn by a shadow, or painted by an ancestor's background clipped to text,
+  // is constrained by the line around it.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><body style="margin:0;padding:32px">
 <div><p>Read the release notes before you upgrade.</p><a id="after-paragraph" href="#next">Next</a></div>
 <div><span style="display:none">Hidden words</span><a id="beside-hidden" href="#more">More</a></div>
 <div><span style="visibility:hidden">Invisible words</span><a id="beside-invisible" href="#a">Go</a></div>
 <div><span style="opacity:0">Transparent words</span><a id="beside-transparent" href="#b">Go</a></div>
 <div><span style="clip-path:inset(50%)">Screen reader words</span><a id="beside-clipped" href="#c">Go</a></div>
+<div><span style="color:transparent">Clear words</span><a id="beside-clear" href="#e">Go</a></div>
+<div style="background:linear-gradient(#18181b,#3f3f46);-webkit-background-clip:text;background-clip:text;color:transparent"><div style="background:#fff"><span>Covered words</span><a id="beside-covered" href="#g">Go</a></div></div>
+<div><span style="color:transparent;text-shadow:0 0 transparent">Shadowless words</span><a id="beside-shadowless" href="#i">Go</a></div>
 <p>Read the <a id="in-sentence" href="#terms">terms</a> first.</p>
 <p><span aria-hidden="true">Read the</span> <a id="beside-decorative" href="#d">notes</a></p>
+<p style="background:linear-gradient(#18181b,#3f3f46);-webkit-background-clip:text;background-clip:text;color:transparent"><span>Read the</span> <a id="beside-gradient" href="#f">guide</a></p>
+<p><span style="color:transparent;-webkit-text-stroke:1px #18181b">Read the</span> <a id="beside-outlined" href="#h">notes</a></p>
+<p><span style="color:transparent;text-shadow:0 0 2px #18181b">Read the</span> <a id="beside-shadowed" href="#j">notes</a></p>
 </body></html>`;
   const result = await measure(t, "sentence", [{ id: "sentence", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
-  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#after-paragraph", "#beside-hidden", "#beside-invisible", "#beside-transparent", "#beside-clipped"]);
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#after-paragraph", "#beside-hidden", "#beside-invisible", "#beside-transparent", "#beside-clipped", "#beside-clear", "#beside-covered", "#beside-shadowless"]);
 });
 
 test("verify interaction exits 2 on the violating page, 0 on the clean and undeclared pages and 1 on a selector the page rejects", { skip: tools.skip }, (t) => {
