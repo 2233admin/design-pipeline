@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { evaluateFilmRender, instantReplacement } = require("../skill/scripts/film-core.cjs");
+const { evaluateFilmRender, instantReplacement, structureCut, structureSteps } = require("../skill/scripts/film-core.cjs");
 const { HINTS } = require("../skill/scripts/film-hints.cjs");
 const { carryContinuity, checkFilmProject } = require("../skill/scripts/film-project-core.cjs");
 const { TIMELINE_SCHEMA } = require("../skill/scripts/film-timeline-core.cjs");
@@ -216,6 +216,50 @@ test("a planned hard cut between two dark, grainy, moving shots is found by its 
     const whip = evaluateFilmRender(carryBoard("match-cut"), synthesizeBoundary(dir, "whip.mp4", [wide, wide], "[0]crop=320:180:'if(lt(t,8),0,600*pow(t-8,2))':0,trim=end=9,setpts=PTS-STARTPTS[a];[1]crop=320:180:'600+600*(1-pow(1-min(t,1),2))':0,eq=brightness=0.06,trim=end=3,setpts=PTS-STARTPTS[b];[a][b]concat=n=2:v=1,tmix=frames=3"));
     assert.deepEqual(whip.cuts.structureCutsSec, []);
     assert.ok(codes(whip).includes("planned-cuts-missing"), JSON.stringify(whip.findings));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("structure cuts require strictly less than half shared structure for either correlation sign", () => {
+  const lower = 1 - Math.SQRT1_2;
+  const upper = 1 + Math.SQRT1_2;
+  const epsilon = 1e-8;
+  const candidate = (change, before = 0, after = 0) => [
+    { atSec: 8.967, change: before },
+    { atSec: 9, change },
+    { atSec: 9.033, change: after },
+  ];
+  for (const change of [0, lower - epsilon, lower, upper, upper + epsilon, 1.9, 2]) {
+    assert.equal(structureCut(candidate(change), 9, 30), null, `change ${change} retains at least half its structure`);
+  }
+  for (const change of [lower + epsilon, 0.5, 1, 1.5, upper - epsilon]) {
+    assert.ok(structureCut(candidate(change), 9, 30), `change ${change} has less than half shared structure`);
+  }
+  assert.equal(structureCut(candidate(null), 9, 30), null, "a flat candidate has no structure");
+  assert.equal(structureCut(candidate(1, null), 9, 30), null, "a flat preceding frame has no structure");
+  assert.equal(structureCut(candidate(1, 0.26), 9, 30), null, "the preceding step must be at least four times calmer");
+  assert.deepEqual(structureCut(candidate(1, 0.25, 2), 9, 30), { atSec: 9, change: 1, before: 0.25 }, "only the preceding step must be calm, including exact four-times calmness");
+});
+
+test("a structurally preserved contrast inversion cannot satisfy a planned cut through structure detection", { skip }, () => {
+  const dir = tmp("film-structure-inversion-");
+  try {
+    const video = path.join(dir, "inversion.mkv");
+    // Lossless gray stripes invert from 40/44 to 44/40 at 9s. Their four-level difference stays
+    // below the pixel detector's strict >4 threshold; variance remains measurable and r = -1.
+    const input = "nullsrc=s=160x90:r=30:d=12,format=gray,geq=lum='42+2*if(lt(T,9),1,-1)*if(lt(mod(X,32),16),1,-1)'";
+    const encoded = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", input, "-c:v", "ffv1", "-pix_fmt", "gray", video], { windowsHide: true, encoding: "utf8" });
+    assert.equal(encoded.status, 0, encoded.stderr);
+    const steps = structureSteps(video, { ffmpeg: "ffmpeg" }, [9], 30);
+    const index = steps.findIndex((step) => step.atSec === 9);
+    assert.ok(index > 0, JSON.stringify(steps));
+    assert.ok(steps[index].change > 1 + Math.SQRT1_2, "the actual decoded correlation is strongly negative");
+    assert.ok(steps[index - 1].change < 0.01, "the preceding decoded step is calm");
+    const result = evaluateFilmRender(carryBoard("match-cut"), video);
+    assert.deepEqual(result.cuts.detectedSec, [], "the scene detector does not see this low-contrast inversion");
+    assert.deepEqual(result.cuts.pixelCutsSec, [], "the pixel detector does not see the four-level inversion");
+    assert.deepEqual(result.cuts.structureCutsSec, [], "negative correlation alone is not structural replacement");
+    assert.deepEqual(result.cuts.missedSec, [9]);
+    assert.ok(codes(result).includes("planned-cuts-missing"), JSON.stringify(result.findings));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

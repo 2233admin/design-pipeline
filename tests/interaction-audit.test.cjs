@@ -363,11 +363,13 @@ test("generated text is measured for contrast on its own background or the one b
   // scrolling can move even at top: 0, white generated text that its margins move off its dark host,
   // measured where they put it, a badge under a translucent veil, a transformed badge, a badge under
   // a positioned child of its host or under its host's other pseudo-element and, measured as usual,
-  // badges over an in-flow child or over a ::before layer. The badge hosts have no text, which their
-  // painted pseudo-elements would leave indeterminate.
+  // badges over an in-flow child or over a ::before layer. In-flow own-fill markers fill their
+  // host box so hit testing samples their surface; one is covered by a positioned child while
+  // controls have no child paint above their surface, or paint outside the host box.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
 <style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}#shift{background:#18181b;color:#fff;padding:4px 8px;margin-bottom:96px}#shift::after{content:" moved";color:#fff;position:relative;top:64px}#stick::after{content:" pinned";color:#3f3f46;position:sticky;top:0}#slip{position:relative;width:120px;height:32px;margin-left:240px;background:#18181b}#slip::after{content:"Out";color:#fff;position:absolute;top:0;right:0;bottom:0;left:0;margin-left:-200px;margin-right:200px}#mail{position:relative;height:24px}#mail::after{content:"9";position:absolute;top:0;left:0;padding:0 4px;background:#18181b;color:#fff}#tag{position:relative;height:24px;margin-top:24px}#tag::after{content:"Hot";position:absolute;top:0;left:0;padding:0 4px;background:#18181b;color:#fff;transform:translate(50%,-50%)}</style>
 <style>#bell,#ring,#chip,#pill{position:relative;height:24px}#bell::before,#chip::before,#ring::after,#pill::after{position:absolute;top:0;left:0;padding:0 4px;background:#18181b;color:#fff}#bell::before{content:"5"}#ring::after{content:"7"}#chip::before{content:"8"}#chip::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:rgba(255,255,255,.8)}#pill::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:#e4e4e7}#pill::after{content:"9"}</style>
+<style>#flow,#flow-clear,#flow-below,#flow-outside{position:relative;z-index:0;width:48px;height:24px}#flow::before,#flow-clear::before,#flow-below::before,#flow-outside::before{content:"5";display:inline-block;box-sizing:border-box;width:100%;height:100%;padding:0 4px;background:#18181b;color:#fff}.flow-veil{position:absolute;top:0;left:0;width:48px;height:24px;background:rgba(255,255,255,.8)}#flow-veil{z-index:1}#flow-below-veil{z-index:-1}#flow-outside-veil{left:64px;z-index:1}</style>
 </head><body style="margin:0;padding:32px">
 <p id="email">Email</p>
 <div id="inbox" style="height:24px"></div>
@@ -384,6 +386,12 @@ test("generated text is measured for contrast on its own background or the one b
 <div id="ring"><span style="display:inline-block;width:48px;height:24px;background:#e4e4e7"></span></div>
 <div id="chip"></div>
 <div id="pill"></div>
+<div style="position:absolute;top:0;left:32px;display:flex;gap:16px">
+<div id="flow"><span id="flow-veil" class="flow-veil"></span></div>
+<div id="flow-clear"></div>
+<div id="flow-below"><span id="flow-below-veil" class="flow-veil"></span></div>
+<div id="flow-outside"><span id="flow-outside-veil" class="flow-veil"></span></div>
+</div>
 </body></html>`;
   const result = await measure(t, "generated", [{ id: "generated", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
@@ -399,7 +407,12 @@ test("generated text is measured for contrast on its own background or the one b
     ["#tag::after", "not measurable: #tag::after is transformed"],
     ["#bell::before", "not measurable: #bell-veil paints over or under the text"],
     ["#chip::before", "not measurable: #chip::after paints over or under the text"],
+    ["#flow::before", "not measurable: #flow-veil paints over or under the text"],
   ]);
+  assert.equal(result.findings.find((finding) => finding.selector === "#flow::before").severity, "error");
+  for (const selector of ["#ring::after", "#pill::after", "#flow-clear::before", "#flow-below::before", "#flow-outside::before"]) {
+    assert.ok(!result.findings.some((finding) => finding.code === "audit.text-contrast" && finding.selector === selector), `${selector} remains measurable without paint above its surface`);
+  }
 });
 
 test("opacity above the text or its background leaves contrast indeterminate", { skip: tools.skip }, async (t) => {

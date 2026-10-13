@@ -97,6 +97,14 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- The UI craft audit now checks positioned host-descendant paint over in-flow generated text on
+  its own fill, not only absolutely positioned text. Covered text is `indeterminate`; uncovered
+  controls remain measurable (change `fix-generated-text-descendant-occlusion`).
+- The film structure-cut detector now enforces both strict correlation bounds for `r² < 0.5`,
+  rejecting preserved contrast inversions and exact-boundary correlations. The tracking HUD
+  alignment followup explicitly keeps camera-stage marker/glyph acceptance separate from reported
+  LED/full-lens centroid shifts, while retaining full-lens determinism checks
+  (change `fix-film-alignment-and-correlation-contracts`).
 - The installed dependency self-check now discovers standard Skills CLI user and project
   `.agents/skills` installations by default, while preserving legacy Codex roots and exclusive
   explicit root overrides (change `fix-standard-skills-install-discovery`).

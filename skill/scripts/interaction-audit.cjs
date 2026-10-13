@@ -811,10 +811,10 @@ function auditPage(options) {
         : own ? own.a < 1 ? `${selector} has a translucent background (${style.backgroundColor})` : groupEffect(el)
         : `the background color of ${selector} (${style.backgroundColor}) could not be read`;
       // Its own fill holds wherever the text sits, but paint over the text is ruled out only over a
-      // located box, so text it cannot place stays indeterminate as well. The element's descendants
-      // are weighed only over the box of an absolute pseudo-element; in flow its box is the element's.
+      // located box, so text it cannot place stays indeterminate as well. Include descendant paint
+      // for every own-fill pseudo; in flow the host box remains a conservative boundary.
       const over = reason || !box ? null : pseudoOver(el, pseudo, style, box);
-      return measureContrast(el, selector, color, style, box ? [box] : [], effects, reason || !box || over ? { reason: reason || over || unplaced } : { color: own, provider: el, generated: style.position === "absolute" });
+      return measureContrast(el, selector, color, style, box ? [box] : [], effects, reason || !box || over ? { reason: reason || over || unplaced } : { color: own, provider: el, generated: true });
     }
     if (!box) return measureContrast(el, selector, color, style, [], effects, { reason: unplaced });
     measureContrast(el, selector, color, style, [box], effects);
