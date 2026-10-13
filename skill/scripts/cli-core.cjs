@@ -421,7 +421,7 @@ function publicHelp() {
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
     "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|concept|components|sample|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
-    "    components requires --choice <project|github|index|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer",
+    "    components requires --choice <project|github|index|discover|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer; discover lets the agent find open-source GitHub repositories and record each with a pinned revision and license evidence",
     "  film blender (lists templates) | film blender --project-root <dir> --template product-turntable [--params params.json] [--engine eevee|cycles] [--output renders/shot.mp4] [--audio score.wav] [--blender <exe>]",
     "  film-edit analyze --project-root <dir> --audio <music> [--sources sources]   (beat grid + footage shots)",
     "  film-edit auto --project-root <dir> --style mad|pv [--duration <sec>] [--width 1280 --height 720] [--replace]",

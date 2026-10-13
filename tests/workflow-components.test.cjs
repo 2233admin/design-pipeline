@@ -124,7 +124,7 @@ test("returned component decision and index commands work from outside the proje
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-components-"));
   t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
   const answer = "Project components first, then search the index";
-  const record = nextAction(root).record.replace("<project|github|index|scratch, comma-separated>", "project,index").replace('"<the user\'s reply>"', JSON.stringify(answer));
+  const record = nextAction(root).record.replace("<project|github|index|discover|scratch, comma-separated>", "project,index").replace('"<the user\'s reply>"', JSON.stringify(answer));
   const decided = spawnSync(record, { cwd: outside, shell: true, encoding: "utf8", windowsHide: true });
   assert.equal(decided.status, 0, decided.stdout + decided.stderr);
   assert.equal(readState(root).decisions.components, answer);
@@ -366,8 +366,8 @@ test("round3 regression: legacy answer-only decisions ask components again", t =
   const action = nextAction(root);
   assert.equal(action.stage, "components");
   assert.equal(action.type, "ask");
-  assert.equal(action.options.length, 4);
-  assert.match(action.record, /--choice <project\|github\|index\|scratch, comma-separated>/);
+  assert.equal(action.options.length, 5);
+  assert.match(action.record, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
   assert.match(JSON.stringify(action), /https:\/\/github\.com\/<owner>\/<repo>/);
 });
 
@@ -548,4 +548,421 @@ test("components decisions are rejected outside web workflows and leave their st
     assert.throws(() => decide(root, { stage: "components", choice: "index", answer: "Search the index" }), /--stage components applies only to web workflows/, deliverable);
     assert.equal(fs.readFileSync(file, "utf8"), before, `${deliverable} state must stay byte-identical`);
   }
+});
+
+// Change let-agents-discover-open-source-resources: the components decision's `discover` source and
+// discovered manifest entries extend the existing v1 decision and validateComponentManifest.
+const PERMISSIVE = ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD", "Zlib", "Unlicense", "CC0-1.0"];
+const DISCOVERY_PAGE = '<!doctype html><nav class="Navigation"><i class="ph-arrow-right"></i><div class="embla">Page</div></nav>';
+const CAROUSEL_SHA = "4c3b2a19f8e7d6c5b4a39281706f5e4d3c2b1a09";
+
+function discoveryFixture(t) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "web-discovery-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  initState(root, { deliverable: "web", tier: "quick", mode: "brief" });
+  fs.writeFileSync(path.join(root, "index.html"), DISCOVERY_PAGE);
+  fs.mkdirSync(path.join(root, "licenses"));
+  fs.writeFileSync(path.join(root, "licenses/phosphor-core.txt"), "MIT License\n\nCopyright (c) Phosphor Icons\n");
+  fs.writeFileSync(path.join(root, "licenses/embla-carousel.txt"), "MIT License\n\nCopyright (c) David Jerleke\n");
+  return root;
+}
+const ownedNavigation = () => ({
+  name: "Project navigation", sourceId: "index.html", availability: "project-owned", license: { state: "project-owned" },
+  usedIn: [{ file: "index.html", marker: "Navigation", how: "Project navigation markup" }],
+});
+const icons = () => ({
+  name: "Phosphor icons", url: "https://github.com/phosphor-icons/core", revision: "v2.1.1", availability: "reference-link",
+  license: { state: "verified", id: "MIT", evidence: ["https://github.com/phosphor-icons/core/blob/v2.1.1/LICENSE"], file: "licenses/phosphor-core.txt" },
+  usedIn: [{ file: "index.html", marker: "ph-arrow-right", how: "Import the arrow-right icon; keep the MIT copyright and license notice in licenses/phosphor-core.txt" }],
+});
+const carousel = () => ({
+  name: "Embla carousel", url: "https://github.com/davidjerleke/embla-carousel", revision: CAROUSEL_SHA, availability: "bundled-implementation",
+  license: { state: "verified", id: "MIT", evidence: [`https://github.com/davidjerleke/embla-carousel/blob/${CAROUSEL_SHA}/LICENSE`], file: "licenses/embla-carousel.txt" },
+  usedIn: [{ file: "index.html", marker: "embla", how: "Copy the carousel core into the page bundle; keep its MIT license notice in licenses/embla-carousel.txt" }],
+});
+const studiedIcons = () => ({
+  ...icons(),
+  license: { state: "unverified", id: "NOASSERTION", evidence: ["https://github.com/phosphor-icons/core/tree/v2.1.1"] },
+  usedIn: [{ file: "index.html", marker: "ph-arrow-right", how: "Study the arrow icon's geometry and reimplement it independently" }],
+});
+
+// Records the decision through the real decide, then checks that the validator and next agree.
+function checkDiscovery(root, choice, answer, value, error) {
+  decide(root, { stage: "components", choice, answer });
+  fs.writeFileSync(path.join(root, "component-manifest.json"), JSON.stringify(value));
+  const options = { root, decision: answer, componentSources: readState(root).decisions.componentSources };
+  if (error) assert.throws(() => validateComponentManifest(value, options), error);
+  else assert.equal(validateComponentManifest(value, options), value);
+  assert.equal(nextAction(root).stage, error ? "build" : "probe");
+}
+
+test("discovery: decide records discover in canonical order and keeps scratch exclusive", t => {
+  const root = discoveryFixture(t);
+  decide(root, { stage: "components", choice: "discover,index,project,discover", answer: "Our components, then the index, then find more" });
+  assert.deepEqual(readState(root).decisions.componentSources, ["project", "index", "discover"]);
+  decide(root, { stage: "components", choice: "discover,index,github,project", answer: "Use https://github.com/example/library, then find more" });
+  assert.deepEqual(readState(root).decisions.componentSources, ["project", "github", "index", "discover"]);
+  decide(root, { stage: "components", choice: "discover", answer: "Find maintained open-source options" });
+  assert.deepEqual(readState(root).decisions.componentSources, ["discover"]);
+  for (const choice of ["scratch,discover", "discover,scratch"]) {
+    assert.throws(() => decide(root, { stage: "components", choice, answer: "Write from scratch" }), /scratch cannot be combined/);
+  }
+  assert.deepEqual(readState(root).decisions.componentSources, ["discover"], "a rejected choice records nothing");
+  const result = spawnSync(process.execPath, [cli, "decide", "--root", root, "--project-root", root, "--stage", "components", "--choice", "discover,library", "--answer", "Find more", "--json"], { encoding: "utf8", windowsHide: true });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout + result.stderr, /project,github,index,discover,scratch/);
+});
+
+test("discovery: adding discover to a recorded decision invalidates checked evidence through the existing lineage", t => {
+  const root = discoveryFixture(t);
+  decide(root, { stage: "components", choice: "project", answer: "Use project components" });
+  fs.writeFileSync(path.join(root, "component-manifest.json"), JSON.stringify({ entries: [ownedNavigation()] }));
+  fs.writeFileSync(path.join(root, "interaction.json"), AUDIT_PROBE_FILE);
+  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
+  assert.equal(nextAction(root).type, "done");
+  decide(root, { stage: "components", choice: "project,discover", answer: "Use project components" });
+  assert.equal(readState(root).gates.interaction, undefined);
+  assert.equal(nextAction(root).stage, "probe");
+  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
+  decide(root, { stage: "components", choice: "discover,project", answer: "Use project components" });
+  assert.equal(readState(root).gates.interaction.status, "passed", "re-recording the identical set keeps the pass");
+});
+
+test("discovery: components ask offers discover and recommends project, index, then discover", t => {
+  const root = discoveryFixture(t);
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-discovery-"));
+  t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
+  const ask = nextAction(root);
+  assert.equal(ask.stage, "components");
+  assert.equal(ask.options.length, 5);
+  assert.match(ask.options[3], /find.*open-source.*librar.*icon.*GitHub/i);
+  assert.match(ask.recommended, /project.*first.*index.*find more/i);
+  assert.match(ask.recommended, /project,index,discover/);
+  assert.match(ask.record, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
+  assert.match(ask.why, /discover/);
+  const answer = "Project components first, then the index, then find more";
+  const record = ask.record.replace("<project|github|index|discover|scratch, comma-separated>", "project,index,discover").replace('"<the user\'s reply>"', JSON.stringify(answer));
+  const decided = spawnSync(record, { cwd: outside, shell: true, encoding: "utf8", windowsHide: true });
+  assert.equal(decided.status, 0, decided.stdout + decided.stderr);
+  assert.deepEqual(readState(root).decisions.componentSources, ["project", "index", "discover"]);
+  const help = spawnSync(process.execPath, [cli, "--help"], { encoding: "utf8", windowsHide: true });
+  assert.match(help.stdout, /components requires --choice <project\|github\|index\|discover\|scratch, comma-separated>/);
+});
+
+test("discovery: build instruction searches the index first, routes discovery to GitHub and fonts to their guide", t => {
+  const root = discoveryFixture(t);
+  decide(root, { stage: "components", choice: "project,index,discover", answer: "Project components, the index, then find more" });
+  const instruction = nextAction(root).instruction;
+  assert.match(instruction, /search the index first/i);
+  assert.match(instruction, /nothing indexed fits.*maintained open-source.*GitHub/s);
+  assert.match(instruction, /pinned revision/);
+  assert.match(instruction, /record its entry before using it/);
+  assert.match(instruction, /prefer genuinely reusing/i);
+  assert.match(instruction, /tools\/open-source-design\.md/);
+  assert.match(instruction, /https:\/\/github\.com\/<owner>\/<repo>/);
+  assert.match(instruction, /blob\/<revision>\/LICENSE/);
+  assert.match(instruction, /license\.file/);
+  assert.match(instruction, new RegExp(PERMISSIVE.slice(0, -1).join(", ").replace(/[.-]/g, "\\$&") + ",? or CC0-1\\.0"));
+  assert.doesNotMatch(instruction, /OFL|npm|official project page|\bkind\b|font-family/);
+  assert.match(instruction, /tools\/fonts\.md/);
+  assert.match(instruction, /rather than silently defaulting to the system stack, and record the chosen family under Typography in DESIGN\.md, where the audit probe's thresholds\.fonts reads the approved families; use the system stack only when the page's direction deliberately calls for it/);
+  assert.match(instruction, /not HEAD, main or master/);
+  assert.match(instruction, /bundles, vendors, self-hosts or downloads the source counts as copying/);
+  assert.match(instruction, /self-host/);
+  assert.match(instruction, /references\/web-motion\.md#self-contained-pages/);
+  assert.match(instruction, /permits empty or project-owned-only entries; every other source set forbids fromScratch: true and requires non-empty entries/);
+  decide(root, { stage: "components", choice: "project,index", answer: "Project components, then the index" });
+  const withoutDiscover = nextAction(root).instruction;
+  assert.doesNotMatch(withoutDiscover, /nothing indexed fits/);
+  assert.match(withoutDiscover, /tools\/fonts\.md/);
+  // Standard and full brief builds extend a treatment, which is what may call for the system stack.
+  const standard = fs.mkdtempSync(path.join(os.tmpdir(), "web-discovery-standard-"));
+  t.after(() => fs.rmSync(standard, { recursive: true, force: true }));
+  initState(standard, { deliverable: "web", tier: "standard", mode: "brief" });
+  decide(standard, { stage: "intake", answer: "A product page" });
+  decide(standard, { stage: "reference", answer: "none" });
+  fs.writeFileSync(path.join(standard, "concepts.md"), "# Concepts");
+  decide(standard, { stage: "concept", choice: "1" });
+  decide(standard, { stage: "components", choice: "project,index,discover", answer: "Project components, the index, then find more" });
+  const treatment = nextAction(standard);
+  assert.equal(treatment.stage, "build");
+  assert.match(treatment.instruction, /use the system stack only when the treatment deliberately calls for it/);
+});
+
+test("discovery: discovered GitHub sources with pinned license provenance complete build", t => {
+  const root = discoveryFixture(t);
+  checkDiscovery(root, "project,index,discover", "Project components, the index, then find more", { entries: [ownedNavigation(), icons(), carousel()] });
+  checkDiscovery(root, "discover", "Find maintained open-source icons", { entries: [studiedIcons()] });
+  const commercial = carousel();
+  commercial.license = { state: "commercial", id: "LicenseRef-Commercial", evidence: [`https://github.com/davidjerleke/embla-carousel/blob/${CAROUSEL_SHA}/LICENSE`] };
+  commercial.availability = "reference-link";
+  commercial.usedIn[0].how = "Study the carousel's drag physics and reimplement them";
+  checkDiscovery(root, "discover", "Find maintained open-source options", { entries: [commercial] });
+  // license.id is needed to copy or import; a study-only entry may leave it out.
+  const unidentified = studiedIcons();
+  delete unidentified.license.id;
+  checkDiscovery(root, "discover", "Find maintained open-source icons", { entries: [unidentified] });
+});
+
+test("discovery: a discovered source without pinned license provenance is rejected with the missing field", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source icons";
+  for (const [mutate, rule] of [
+    [value => { delete value.revision; }, /entries\[0\]\.revision must pin/],
+    [value => { value.revision = " "; }, /entries\[0\]\.revision must pin/],
+    [value => { value.license.id = " "; }, /entries\[0\]\.license\.id, when given, must be the SPDX/],
+    [value => { delete value.license.id; }, /entries\[0\]\.usedIn\[0\] copying or importing a discovered source requires license\.state verified and a permissive license\.id/],
+    [value => { delete value.license.evidence; }, /entries\[0\]\.license\.evidence must be a non-empty array of https URLs/],
+    [value => { value.license.evidence = []; }, /entries\[0\]\.license\.evidence must be a non-empty array of https URLs/],
+    [value => { value.license.evidence = ["LICENSE"]; }, /entries\[0\]\.license\.evidence must be a non-empty array of https URLs/],
+    [value => { value.license.evidence = ["http://github.com/phosphor-icons/core/blob/v2.1.1/LICENSE"]; }, /entries\[0\]\.license\.evidence must be a non-empty array of https URLs/],
+    [value => { value.license.state = "project-owned"; }, /entries\[0\] discovered sources use license\.state verified, unverified or commercial/],
+    [value => { value.license.state = "platform"; }, /entries\[0\] discovered sources use license\.state verified, unverified or commercial/],
+  ]) {
+    const value = icons();
+    mutate(value);
+    checkDiscovery(root, "discover", answer, { entries: [value] }, rule);
+  }
+});
+
+test("discovery: a discovered url must be a GitHub repository URL", t => {
+  const root = discoveryFixture(t);
+  for (const url of [
+    "https://www.npmjs.com/package/embla-carousel",
+    "https://www.embla-carousel.com/",
+    "https://phosphoricons.com/",
+    "https://github.com/phosphor-icons/core/tree/main/assets",
+    "https://github.com/phosphor-icons",
+    "https://gitlab.com/phosphor-icons/core",
+    "http://github.com/phosphor-icons/core",
+    "https://user:secret@github.com/phosphor-icons/core",
+    "ftp://example.com/library",
+  ]) {
+    checkDiscovery(root, "discover", "Find maintained open-source icons", { entries: [{ ...studiedIcons(), url }] },
+      /entries\[0\]\.url must be a GitHub repository URL https:\/\/github\.com\/<owner>\/<repo> or a project file/);
+  }
+});
+
+test("discovery: license evidence must include the repository's license at the pinned revision", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source icons";
+  const rule = /entries\[0\]\.license\.evidence must include a URL on https:\/\/github\.com\/phosphor-icons\/core whose blob, tree, raw, commit, releases\/tag or archive ref is the revision v2\.1\.1/;
+  for (const evidence of [
+    ["https://github.com/phosphor-icons/core/blob/main/LICENSE"],
+    ["https://github.com/phosphor-icons/core/blob/v2.1.10/LICENSE"],
+    ["https://github.com/someone/core-fork/blob/v2.1.1/LICENSE"],
+    ["https://phosphoricons.com/v2.1.1/LICENSE"],
+    ["https://raw.githubusercontent.com/phosphor-icons/core/v2.1.1/LICENSE"],
+    // The revision must be the ref right after blob/tree/raw/commit/releases/tag/archive, compared undecoded.
+    ["https://github.com/phosphor-icons/core/blob/main/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/blob/main%2Fv2.1.1%2F/LICENSE"],
+    ["https://github.com/phosphor-icons/core/blob/main/tree/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/releases/v2.1.1"],
+  ]) {
+    const value = icons();
+    value.license.evidence = evidence;
+    checkDiscovery(root, "discover", answer, { entries: [value] }, rule);
+    const studied = studiedIcons();
+    studied.license.evidence = evidence;
+    checkDiscovery(root, "discover", answer, { entries: [studied] }, rule);
+  }
+  for (const evidence of [
+    ["https://phosphoricons.com/license", "https://github.com/Phosphor-Icons/Core/blob/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/tree/v2.1.1"],
+    ["https://github.com/phosphor-icons/core/releases/tag/v2.1.1"],
+    ["https://github.com/phosphor-icons/core/raw/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/commit/v2.1.1"],
+    ["https://github.com/phosphor-icons/core/archive/v2.1.1.zip"],
+    ["https://github.com/phosphor-icons/core/archive/refs/tags/v2.1.1.tar.gz"],
+  ]) {
+    const value = icons();
+    value.license.evidence = evidence;
+    checkDiscovery(root, "discover", answer, { entries: [value] });
+  }
+});
+
+test("discovery: a path segment of the evidence URL other than its ref does not pin the revision", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source icons";
+  for (const [revision, evidence] of [
+    ["LICENSE", "https://github.com/phosphor-icons/core/blob/main/LICENSE"],
+    ["blob", "https://github.com/phosphor-icons/core/blob/main/LICENSE"],
+    ["deadbeef", "https://github.com/phosphor-icons/core/blob/main%2Fdeadbeef%2F/LICENSE"],
+  ]) {
+    const value = icons();
+    value.revision = revision;
+    value.license.evidence = [evidence];
+    checkDiscovery(root, "discover", answer, { entries: [value] }, new RegExp(`entries\\[0\\]\\.license\\.evidence must include a URL on https://github\\.com/phosphor-icons/core whose blob, tree, raw, commit, releases/tag or archive ref is the revision ${revision}`));
+  }
+});
+
+test("discovery: a moving ref such as HEAD, main or master does not pin the revision", t => {
+  const root = discoveryFixture(t);
+  for (const revision of ["HEAD", "main", "master", "Main"]) {
+    const value = icons();
+    value.revision = revision;
+    value.license.evidence = [`https://github.com/phosphor-icons/core/blob/${revision}/LICENSE`];
+    checkDiscovery(root, "discover", "Find maintained open-source icons", { entries: [value] },
+      new RegExp(`entries\\[0\\]\\.revision must pin a commit SHA or tag, not the moving ref ${revision}`));
+  }
+});
+
+test("discovery: GitHub pages that are not repositories are not discovered sources", t => {
+  const root = discoveryFixture(t);
+  for (const owner of ["topics", "orgs", "sponsors", "marketplace", "settings", "features", "collections", "explore", "enterprise", "login", "apps", "users", "search", "Topics"]) {
+    const url = `https://github.com/${owner}/widgets`;
+    const value = { ...studiedIcons(), url, revision: "v1.0.0", license: { state: "unverified", evidence: [`${url}/blob/v1.0.0/LICENSE`] } };
+    checkDiscovery(root, "discover", "Find maintained open-source widgets", { entries: [value] },
+      /entries\[0\]\.url must be a GitHub repository URL https:\/\/github\.com\/<owner>\/<repo> or a project file/);
+  }
+});
+
+test("discovery: a discovered source uses bundled-implementation, reference-link or metadata-only availability", t => {
+  const root = discoveryFixture(t);
+  for (const availability of ["bundled-implementation", "reference-link", "metadata-only"]) {
+    checkDiscovery(root, "discover", "Find a maintained open-source carousel", { entries: [{ ...carousel(), availability }] });
+  }
+  checkDiscovery(root, "discover", "Find a maintained open-source carousel", { entries: [{ ...carousel(), availability: "project-owned" }] },
+    /entries\[0\] discovered sources use availability bundled-implementation, reference-link or metadata-only/);
+});
+
+test("discovery: bundling, vendoring, self-hosting or downloading a source counts as copying", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source options";
+  for (const how of [
+    "Studied the API, then bundled dist into vendor/widgets.js",
+    "Studied and vendor it as vendor/widgets.js",
+    "Bundled into vendor/widgets.js",
+    "Study the drag physics, then self-host the build",
+    "Studied it and self-hosted the dist files",
+    "Downloaded the release and studied it",
+    "VENDORING the core after studying it",
+    "研究后打包进项目",
+  ]) {
+    const gpl = carousel();
+    gpl.license.id = "GPL-3.0-only";
+    gpl.usedIn[0].how = how;
+    checkDiscovery(root, "discover", answer, { entries: [gpl] }, /copying or importing a discovered source requires license\.state verified and a permissive license\.id/);
+    const unverified = carousel();
+    unverified.license.state = "unverified";
+    unverified.usedIn[0].how = how;
+    checkDiscovery(root, "discover", answer, { entries: [unverified] }, /copying or importing a discovered source requires license\.state verified and a permissive license\.id/);
+    const permissive = carousel();
+    permissive.usedIn[0].how = how;
+    checkDiscovery(root, "discover", answer, { entries: [permissive] }, /entries\[0\]\.usedIn\[0\]\.how must document attribution\/license-notice handling/);
+    permissive.usedIn[0].how = how + "; keep its MIT license notice in licenses/embla-carousel.txt";
+    checkDiscovery(root, "discover", answer, { entries: [permissive] });
+    const indexed = { ...realEntry(), sourceId: "tommyjepsen/awesome-ux-skills", license: { state: "unverified" } };
+    indexed.usedIn[0].how = how;
+    checkDiscovery(root, "index", "Search the index", { entries: [indexed] }, /entries\[0\]\.usedIn\[0\] unverified\/commercial sources cannot be copied or imported/);
+  }
+});
+
+test("discovery: an entry outside the recorded componentSources names the discover category", t => {
+  const root = discoveryFixture(t);
+  checkDiscovery(root, "project,index", "Project components, then the index", { entries: [ownedNavigation(), icons()] }, /entries\[1\] source category discover is not in the recorded componentSources project,index/);
+  checkDiscovery(root, "github", "Use https://github.com/example/library", { entries: [carousel()] }, /entries\[0\] source category discover is not in the recorded componentSources github/);
+  checkDiscovery(root, "scratch", "Write from scratch", { fromScratch: true, entries: [icons()] }, /entries\[0\] external source contradicts fromScratch/);
+  checkDiscovery(root, "project,index,discover", "Project components, the index, then find more", { entries: [ownedNavigation(), icons()] });
+});
+
+test("discovery: copying or importing a discovered source requires a verified permissive license", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source options";
+  for (const id of [...PERMISSIVE, "mit"]) {
+    const value = carousel();
+    value.license.id = id;
+    checkDiscovery(root, "discover", answer, { entries: [value] });
+  }
+  for (const id of ["OFL-1.1", "GPL-3.0-only", "MIT OR Apache-2.0", "LicenseRef-Custom"]) {
+    const value = carousel();
+    value.license.id = id;
+    checkDiscovery(root, "discover", answer, { entries: [value] }, /copying or importing a discovered source requires license\.state verified and a permissive license\.id/);
+    value.usedIn[0].how = "Study the carousel's drag physics and reimplement them";
+    // bundled-implementation ships the code whatever how says.
+    checkDiscovery(root, "discover", answer, { entries: [value] }, /copying or importing a discovered source requires license\.state verified/);
+    value.availability = "reference-link";
+    checkDiscovery(root, "discover", answer, { entries: [value] });
+    value.usedIn[0].how = "Adapt the carousel markup";
+    checkDiscovery(root, "discover", answer, { entries: [value] }, /allows only study\/reimplementation/);
+  }
+  const unverified = carousel();
+  unverified.license.state = "unverified";
+  checkDiscovery(root, "discover", answer, { entries: [unverified] }, /requires license\.state verified and a permissive license\.id/);
+  const unnoticed = carousel();
+  unnoticed.usedIn[0].how = "Copy the carousel core into the page bundle";
+  checkDiscovery(root, "discover", answer, { entries: [unnoticed] }, /notice handling/);
+});
+
+test("discovery: copying or importing a discovered source requires license.file", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source options";
+  for (const value of [carousel(), icons()]) {
+    delete value.license.file;
+    checkDiscovery(root, "discover", answer, { entries: [value] },
+      /entries\[0\]\.usedIn\[0\] copying or importing a discovered source requires license\.file naming the project file that holds its license text/);
+    value.availability = "reference-link";
+    value.usedIn[0].how = "Adapt the markup";
+    checkDiscovery(root, "discover", answer, { entries: [value] }, /entries\[0\]\.usedIn\[0\] a discovered source without license\.state verified, a permissive license\.id and license\.file allows only study\/reimplementation/);
+  }
+  const studied = studiedIcons();
+  assert.equal(studied.license.file, undefined);
+  checkDiscovery(root, "discover", "Find maintained open-source icons", { entries: [studied] });
+});
+
+test("discovery: license.file must be a non-empty file contained in the project", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source options";
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-license-"));
+  t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(outside, "LICENSE"), "MIT License\n");
+  fs.writeFileSync(path.join(root, "licenses/empty.txt"), "");
+  fs.writeFileSync(path.join(root, "licenses/blank.txt"), " \n\t\n");
+  for (const [file, rule] of [
+    ["licenses/empty.txt", /entries\[0\]\.license\.file must not be empty/],
+    ["licenses/blank.txt", /entries\[0\]\.license\.file must not be empty/],
+    [path.join(outside, "LICENSE"), /entries\[0\]\.license\.file must be a file contained inside the project/],
+    [path.relative(root, path.join(outside, "LICENSE")), /entries\[0\]\.license\.file must be a file contained inside the project/],
+    ["licenses", /entries\[0\]\.license\.file must be a file contained inside the project/],
+    ["licenses/missing.txt", /entries\[0\]\.license\.file must exist inside the project/],
+    ["https://github.com/davidjerleke/embla-carousel/blob/main/LICENSE", /entries\[0\]\.license\.file must name a project file/],
+    [" ", /entries\[0\]\.license\.file must name a project file/],
+  ]) {
+    const value = carousel();
+    value.license.file = file;
+    checkDiscovery(root, "discover", answer, { entries: [value] }, rule);
+  }
+});
+
+test("discovery: a complete copied discovered entry is accepted", t => {
+  const root = discoveryFixture(t);
+  checkDiscovery(root, "discover", "Find a maintained open-source carousel", { entries: [carousel()] });
+  const imported = icons();
+  imported.license.file = path.join(root, "licenses/phosphor-core.txt");
+  checkDiscovery(root, "index,discover", "Search the index, then find more", { entries: [imported, carousel()] });
+});
+
+test("discovery: a GitHub URL of an indexed source keeps the existing citation rule", t => {
+  const root = discoveryFixture(t);
+  const answer = "Search the index, then find more";
+  const cited = url => ({
+    ...carousel(), name: "Navigation", url,
+    license: { state: "verified", id: "MIT", evidence: ["https://github.com/shadcn-ui/ui/blob/a85299a9edd2a961e32f01ced86963a852652bd2/LICENSE.md"], file: "licenses/embla-carousel.txt" },
+  });
+  for (const url of ["https://github.com/shadcn-ui/ui", "https://github.com/Shadcn-UI/ui.git", "https://github.com/shadcn-ui/ui/tree/main/apps/v4"]) {
+    checkDiscovery(root, "index,discover", answer, { entries: [cited(url)] }, /entries\[0\]\.url matches the indexed source shadcn-ui\/ui: cite it by sourceId/);
+  }
+  const named = { ...cited("https://github.com/shadcn-ui/ui"), license: { state: "verified" } };
+  delete named.revision;
+  checkDiscovery(root, "github,discover", "Use https://github.com/shadcn-ui/ui", { entries: [named] });
+  named.license.state = "unverified";
+  named.usedIn[0].how = "Study and reimplement Navigation";
+  checkDiscovery(root, "github,discover", "Use https://github.com/shadcn-ui/ui", { entries: [named] }, /must match the indexed source/);
+  checkDiscovery(root, "github,discover", "Use https://github.com/example/library", { entries: [cited("https://github.com/example/library/tree/main/src")] },
+    /entries\[0\]\.url links inside the named GitHub repository example\/library; cite the repository URL https:\/\/github\.com\/example\/library/);
+  const bySourceId = { ...named, sourceId: "shadcn-ui/ui", license: { state: "verified" } };
+  delete bySourceId.url;
+  bySourceId.usedIn = [{ file: "index.html", marker: "Navigation", how: "Install the Navigation component; keep the MIT copyright and license notices in LICENSES.md" }];
+  checkDiscovery(root, "index,discover", answer, { entries: [bySourceId] });
 });

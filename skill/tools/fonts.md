@@ -29,7 +29,10 @@ For example, [Google Sans Flex](https://github.com/googlefonts/googlesans-flex) 
 the publisher's [MiSans agreement](https://hyperos.mi.com/font/download) has its own conditions.
 Do not apply one family's modification/embedding permission to another. Record the release or
 commit, source URL, actual filename/family, license and chosen weight/axes in existing project
-asset/design notes. This source list was checked on 2026-10-07; verify the selected release on use.
+asset/design notes. A web build also records its chosen family under Typography in the project's
+`DESIGN.md`, where the audit probe's `thresholds.fonts` reads the approved families
+([workflow-web.md#probe](../references/workflow-web.md#probe)). This source list was checked on
+2026-10-07; verify the selected release on use.
 
 Acquire only the needed files into the consuming project's asset directory, with their notices.
 Use an existing local font when its identity and intended-use rights are known. Do not install
