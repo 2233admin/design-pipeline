@@ -2,7 +2,7 @@
 
 Recorded on 2026-10-13 on branch `feat/internalize-ui-craft-sources` (Windows host). Sections follow
 the order the checks ran, and each names the tree it ran on; the final implementation is the one in
-Second Review Fix.
+Third Review Fix.
 
 On the round-two tree, before the merge with `main`:
 
@@ -56,14 +56,48 @@ engine. `audit.control-gap` measured layout boxes while `audit.target-size` meas
 widened by an absolute `::before` or `::after`, so two overlapping widened targets passed both
 checks; and gap checks treated controls or stacked items that share neither axis as infinitely
 apart. Control spacing now measures hit areas, and gaps are edge to edge along the diagonal (commit
-`eb4d7ce`; `c901a79` extends the regression to a declared stack). The final tested implementation
-is commit `c901a796d6df8ba3431a1a5464240e8b594cf9dc`, tree
-`4207c64495e015827a78bcbae039014341a788cf`; later commits change only these records.
+`eb4d7ce`; `c901a79` extends the regression to a declared stack). That implementation was tested
+as commit `c901a796d6df8ba3431a1a5464240e8b594cf9dc`, tree
+`4207c64495e015827a78bcbae039014341a788cf`.
 
 | Check | Result |
 | --- | --- |
 | Regression: two 16px icons widened to 32px targets 8px apart by layout, two 24px buttons offset 2px on each axis, and two tiles of a declared grid stack offset 2px on each axis | With the previous engine, no `audit.control-gap` or `audit.layout-gap` finding. With the fix: control gaps `#icon-a` "overlapping it by 8px" and `#corner-a` "2.83px from it", and the stack gap `#tile-a` "2.83px from it"; `audit.target-size` stays clean. The violating, clean and undeclared fixtures keep their results. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1405, 1401 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Third Review Fix
+
+Codex's review of `a1c6498` raised three P2 findings, all confirmed and fixed in `82fb16c`:
+
+- Generated `::before` and `::after` text has no text node, so `audit.text-contrast` never measured
+  it, although `audit.font-size` did. It is now measured over its pseudo-element's own background
+  when that paints, otherwise over the background behind its box; generated text the engine cannot
+  place is `indeterminate`.
+- The inline-link exemption from `audit.target-size` and `audit.control-gap` counted any text in the
+  link's block, so a standalone link after a paragraph, or beside hidden text, was exempt. It now
+  counts only text in the link's own inline formatting context.
+- `verify interaction` wrote its report before hashing the files the page loaded, so a page that
+  loaded the report destination had the new report bound instead of the bytes it was measured with.
+  Observation now refuses that destination with `OUTPUT_COLLISION` before anything is written. The
+  observation is shared with native completion, which then stops as `blocked`.
+
+Checking the generated-text fix showed that the background resolver stopped at the first opaque
+background, so opacity, a filter or a blend mode above it, including on the host of a badge with
+its own background, still produced a definite ratio. `7b53b12` makes such text `indeterminate`, as
+the contrast rule states. The final tested implementation is commit
+`7b53b127274ca5714bc89acb667b66ec859faeaf`, tree `b30e3d4d3a782843bc7c04a0ca068b5ecd950a86`. Full QA
+ran on that tree before it was committed; later commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression: a pale in-flow required marker, a badge whose text barely differs from its own fill, readable generated text, and generated text fixed to the viewport | With the engine of `a1c6498`, no `audit.text-contrast` finding. With the fix: `#email::after` "1.47:1 (#d4d4d8 on #ffffff)", `#inbox::after` "1.13:1 (#fde047 on #fef08a)", and `#draft::after` `indeterminate` because its box cannot be located; the readable `#note::before` passes. |
+| Regression: a badge with its own dark fill on a host at `opacity: .5`, and text on an opaque card inside a wrapper at `opacity: .5` | With the engine of `82fb16c`, no finding. With the fix both are `indeterminate`, naming `#beta` and `#fade` as translucent. |
+| Regression: a 16px link after a paragraph, one beside hidden text, and one inside a sentence | With the engine of `a1c6498`, no `audit.target-size` finding. With the fix: `#after-paragraph` and `#beside-hidden`; the link inside the sentence stays exempt. |
+| Regression: a clean page that also loads `evidence/interaction.json`, the default report destination | With the code of `a1c6498`, `verify interaction` exited 0, overwrote the file and recorded a passed gate. With the fix it exits 1 with `OUTPUT_COLLISION` naming `evidence/interaction.json`, leaves the file's bytes unchanged and records no gate. |
+| `node --test tests/interaction-audit.test.cjs`, then `tests/interaction-cli.test.cjs` with `tests/ui-craft-sources.test.cjs` | 19 and 29 pass, 0 fail, including the violating, clean and undeclared fixtures and the shared preflight and observation that native completion uses. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes; `audit.text-contrast` checks 16 elements at 1280x800. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1409, 1405 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 73 passed, 0 failed. |
 
 ## Not Verified

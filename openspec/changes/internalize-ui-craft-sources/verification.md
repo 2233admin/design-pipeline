@@ -31,11 +31,11 @@ The six vendored sources are registered in that index: four new source records, 
 `emilkowalski/skills` and `shadcn-ui/ui` link their vendor manifests and keep their existing pins.
 Quick web `next` now asks the components question before `build`.
 
-After the review fixes to the interaction gate and the audit's spacing checks (change
-`audit-rendered-ui-craft`), the final tested implementation is commit
-`c901a796d6df8ba3431a1a5464240e8b594cf9dc`, tree `4207c64495e015827a78bcbae039014341a788cf`:
-`npm test` with the same temp root gave 1405 tests, 1401 pass, 0 fail, 4 skipped, and
-`npm run specs:check` 73 passed. Later commits change only verification records.
+After the review fixes to the interaction gate and the audit (change `audit-rendered-ui-craft`),
+the final tested implementation is commit `7b53b127274ca5714bc89acb667b66ec859faeaf`, tree
+`b30e3d4d3a782843bc7c04a0ca068b5ecd950a86`: `npm test` with the same temp root gave 1409 tests,
+1405 pass, 0 fail, 4 skipped, and `npm run specs:check` 73 passed. Later commits change only
+verification records.
 
 ## Import Notes
 
