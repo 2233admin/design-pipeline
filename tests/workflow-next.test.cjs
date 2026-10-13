@@ -61,6 +61,11 @@ function rewriteSameTime(root, file, body) {
   fs.utimesSync(absolute, before.atime, before.mtime);
 }
 
+function prepareWebComponents(root) {
+  decide(root, { stage: "components", choice: "scratch", answer: "Write from scratch" });
+  touch(root, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
+}
+
 function checkedWorkflowFixture(deliverable, tier = "standard") {
   const root = tmp();
   initState(root, { deliverable, tier });
@@ -80,6 +85,7 @@ function checkedWorkflowFixture(deliverable, tier = "standard") {
     touch(root, "renders/edit.mp4");
     recordGate(root, "edit", "passed");
   } else {
+    if (deliverable === "web") prepareWebComponents(root);
     touch(root, "index.html");
     touch(root, "interaction.json", webProbeFile);
     recordGate(root, "interaction", "passed");
@@ -1427,6 +1433,7 @@ test("real browser verification binds the page it opened rather than another wor
   const dir = tmp();
   try {
     initState(dir, { deliverable: "web", tier: "quick" });
+    prepareWebComponents(dir);
     const html = '<!doctype html><html style="background:#fff;font-family:sans-serif"><button id="target" style="position:absolute;left:20px;top:20px;width:80px;height:40px;font-family:inherit">target</button></html>';
     touch(dir, "index.html", html);
     touch(dir, "other.html", html);
@@ -1519,6 +1526,7 @@ test("public interaction output collisions fail before capture without changing 
     const dir = tmp(), external = tmp();
     try {
       initState(dir, { deliverable: "web", tier: "quick" });
+      prepareWebComponents(dir);
       touch(dir, "index.html", '<!doctype html><button id="target">target</button>');
       const probe = { schema: "design-pipeline.interaction-probe.v1", id: "output-collision", url: "index.html", probes: [{ id: "click", target: "#target", input: { kind: "click", at: [20, 20] }, expect: { responds: false } }] };
       touch(dir, "interaction.json", JSON.stringify(probe));
@@ -1660,7 +1668,11 @@ test("quick frontend replication observes the reference before existing output a
       assert.throws(() => decide(dir, { stage: "reference", answer: "none" }), /replicate mode cannot skip/);
       touch(dir, "reference.md", "Observed structure and motion; measurements remain to be checked.");
       recordGate(dir, "reference", "failed");
-      assert.equal(nextAction(dir).stage, deliverable === "web" ? "probe" : "work", "aggregate checks must not deadlock observation before graybox exists");
+      assert.equal(nextAction(dir).stage, deliverable === "web" ? "components" : "work", "aggregate checks must not deadlock observation before graybox exists");
+      if (deliverable === "web") {
+        prepareWebComponents(dir);
+        assert.equal(nextAction(dir).stage, "probe");
+      }
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
 });
@@ -1674,6 +1686,10 @@ test("frontend replication uses the reference at every tier without replacement 
         if (tier !== "quick") decide(dir, { stage: "intake", answer: "default" });
         assert.equal(nextAction(dir).stage, "reference");
         touch(dir, "reference.md");
+        if (deliverable === "web") {
+          assert.equal(nextAction(dir).stage, "components");
+          prepareWebComponents(dir);
+        }
         const build = nextAction(dir);
         assert.equal(build.stage, deliverable === "web" ? "build" : "work");
         assert.match(build.instruction, /reference.*invariants/);
@@ -1691,6 +1707,7 @@ test("frontend actions define bounded visual tasks and keep polish dependent on 
     try {
       initState(dir, { deliverable, tier: "quick", mode: "replicate" });
       touch(dir, "reference.md");
+      if (deliverable === "web") prepareWebComponents(dir);
       const build = nextAction(dir);
       assert.match(build.instruction, /tasks\.md/);
       for (const field of ["reference region", "scene node", "goal", "invariants", "inputs", "literal modification scope", "outputs", "runtime", "comparison", "failure return"]) {
@@ -1710,7 +1727,11 @@ test("brief and freeform frontend work preserve their quick and concept workflow
       const dir = tmp();
       try {
         initState(dir, { deliverable, tier: "quick", mode });
-        assert.equal(nextAction(dir).stage, deliverable === "web" ? "build" : "work");
+        assert.equal(nextAction(dir).stage, deliverable === "web" ? "components" : "work");
+        if (deliverable === "web") {
+          prepareWebComponents(dir);
+          assert.equal(nextAction(dir).stage, "build");
+        }
       } finally { fs.rmSync(dir, { recursive: true, force: true }); }
     }
     for (const tier of ["standard", "full"]) {
@@ -1727,9 +1748,12 @@ test("brief and freeform frontend work preserve their quick and concept workflow
   }
 });
 
-test("web quick walks build then probe; standard adds intake, reference, concepts, review, deliver; full opens OpenSpec at build", () => {
+test("web quick walks components, build then probe; standard adds intake, reference, concepts, review, deliver; full opens OpenSpec at build", () => {
   const quick = tmp();
   initState(quick, { deliverable: "web", tier: "quick" });
+  assert.equal(nextAction(quick).stage, "components");
+  assert.equal(nextAction(quick).remaining, 3);
+  prepareWebComponents(quick);
   assert.equal(nextAction(quick).stage, "build");
   assert.equal(nextAction(quick).remaining, 2);
   touch(quick, "index.html");
@@ -1746,6 +1770,8 @@ test("web quick walks build then probe; standard adds intake, reference, concept
   touch(dir, "concepts.md");
   assert.equal(nextAction(dir).type, "ask");
   decide(dir, { stage: "concept", choice: 2 });
+  assert.equal(stage(), "components");
+  prepareWebComponents(dir);
   assert.equal(stage(), "build");
   assert.doesNotMatch(nextAction(dir).instruction, /OpenSpec change/);
   touch(dir, "index.html");
@@ -1757,12 +1783,15 @@ test("web quick walks build then probe; standard adds intake, reference, concept
   decide(full, { stage: "reference", answer: "none" });
   touch(full, "concepts.md");
   decide(full, { stage: "concept", choice: 1 });
+  assert.equal(nextAction(full).stage, "components");
+  prepareWebComponents(full);
   assert.match(nextAction(full).instruction, /OpenSpec change/);
 });
 
 test("probe asks to write interaction.json when missing, then routes to verify interaction", () => {
   const dir = tmp();
   initState(dir, { deliverable: "web", tier: "quick" });
+  prepareWebComponents(dir);
   touch(dir, "index.html");
   const missing = nextAction(dir);
   assert.equal(missing.stage, "probe");
@@ -1780,6 +1809,7 @@ test("probe asks to write interaction.json when missing, then routes to verify i
 test("a passed interaction gate goes stale when index.html changes", () => {
   const dir = tmp();
   initState(dir, { deliverable: "web", tier: "quick" });
+  prepareWebComponents(dir);
   touch(dir, "index.html");
   touch(dir, "interaction.json", webProbeFile);
   recordGate(dir, "interaction", "passed");
@@ -1795,6 +1825,7 @@ test("a rejected web draft reopens probe", () => {
   decide(dir, { stage: "reference", answer: "none" });
   touch(dir, "concepts.md");
   decide(dir, { stage: "concept", choice: 1 });
+  prepareWebComponents(dir);
   touch(dir, "index.html");
   touch(dir, "interaction.json", webProbeFile);
   recordGate(dir, "interaction", "passed");
@@ -1836,11 +1867,11 @@ test("web concepts asks for a section arc and a treatment before the choice", ()
 });
 
 test("web stage ids per tier and mode keep their order", () => {
-  assert.deepEqual(webStages({ tier: "quick" }).map((stage) => stage.id), ["build", "probe"]);
-  assert.deepEqual(webStages({ tier: "quick", mode: "replicate" }).map((stage) => stage.id), ["reference", "build", "probe"]);
+  assert.deepEqual(webStages({ tier: "quick" }).map((stage) => stage.id), ["components", "build", "probe"]);
+  assert.deepEqual(webStages({ tier: "quick", mode: "replicate" }).map((stage) => stage.id), ["reference", "components", "build", "probe"]);
   for (const tier of ["standard", "full"]) {
-    assert.deepEqual(webStages({ tier }).map((stage) => stage.id), ["intake", "reference", "concepts", "build", "probe", "review", "deliver"], tier);
-    assert.deepEqual(webStages({ tier, mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "build", "probe", "review", "deliver"], `${tier} replicate`);
+    assert.deepEqual(webStages({ tier }).map((stage) => stage.id), ["intake", "reference", "concepts", "components", "build", "probe", "review", "deliver"], tier);
+    assert.deepEqual(webStages({ tier, mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "components", "build", "probe", "review", "deliver"], `${tier} replicate`);
   }
 });
 
@@ -1855,6 +1886,7 @@ test("web build at standard and full extends the chosen card with a treatment; q
       decide(dir, { stage: "reference", answer: "none" });
       touch(dir, "concepts.md");
       decide(dir, { stage: "concept", choice: 1 });
+      prepareWebComponents(dir);
       const build = nextAction(dir);
       assert.equal(build.stage, "build", tier);
       assert.match(build.instruction, /## Treatment/, tier);
@@ -1863,6 +1895,7 @@ test("web build at standard and full extends the chosen card with a treatment; q
     const quick = tmp();
     dirs.push(quick);
     initState(quick, { deliverable: "web", tier: "quick" });
+    prepareWebComponents(quick);
     const quickBuild = nextAction(quick);
     assert.equal(quickBuild.stage, "build");
     assert.doesNotMatch(quickBuild.instruction, /Treatment/i);
@@ -1872,6 +1905,7 @@ test("web build at standard and full extends the chosen card with a treatment; q
     initState(replicate, { deliverable: "web", tier: "standard", mode: "replicate" });
     decide(replicate, { stage: "intake", answer: "default" });
     touch(replicate, "reference.md");
+    prepareWebComponents(replicate);
     const replicateBuild = nextAction(replicate);
     assert.equal(replicateBuild.stage, "build");
     assert.doesNotMatch(replicateBuild.instruction, /Treatment/i, "replicate has no concept card to extend");

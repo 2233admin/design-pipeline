@@ -28,10 +28,18 @@ test("routes Expo numeric content through the native package and web numeric con
   assert.ok(web.routes.filter((route) => route.selected).every((route) => route.selected.id === "frontend-component-sources:component:native/dom-numeric-transition"));
 });
 
-test("routes depth carousel as a reviewable web reference and blocks it on Expo", () => {
+test("routes the proven public React Bits depth carousel as ready and blocks it on Expo", () => {
   const web = routeComponents({ catalog: catalog(), brief: "depth carousel", platform: "web" });
-  assert.equal(web.status, "review");
-  assert.equal(web.routes.find((route) => route.capability === "depth-carousel").selected.id, "frontend-component-sources:component:reactbits-pro/depth-carousel");
+  assert.equal(web.status, "ready");
+  const selected = web.routes.find((route) => route.capability === "depth-carousel").selected;
+  assert.equal(selected.id, "frontend-component-sources:component:reactbits/depth-carousel");
+  assert.equal(selected.sourceId, "davidhdev/react-bits");
+  assert.equal(selected.licenseEvidence.state, "verified");
+  assert.equal(selected.licenseEvidence.id, "LicenseRef-MIT-Commons-Clause");
+  assert.match(selected.install, /@react-bits\/DepthCarousel-TS-TW/);
+  assert.match(selected.sourceCode, /496968c4117e21278f13917201b7d615bc5e7450/);
+  assert.match(selected.licenseNotice, /redistribut/i);
+  assert.equal(catalog().entries.some((entry) => entry.localId === "reactbits-pro/depth-carousel"), false);
 
   const expo = routeComponents({ catalog: catalog(), brief: "depth carousel", platform: "expo" });
   assert.equal(expo.status, "blocked");
@@ -134,6 +142,59 @@ test("keeps user-curated references metadata-only and preserves mixed-license re
     assert.equal(entry.provenance.sourceCode, undefined);
   }
   const shadcnblocks = curated.find((entry) => entry.localId === "shadcnblocks/reference-library");
-  assert.equal(shadcnblocks.provenance.license, "unverified");
   assert.equal(shadcnblocks.routing.requiresLicense, true);
+  const result = routeComponents({
+    catalog: { ...catalog(), entries: [shadcnblocks] },
+    brief: "Curated reference", platform: "web", capabilities: [shadcnblocks.routing.capabilities[0]],
+  });
+  assert.equal(result.status, "review");
+  assert.equal(result.routes[0].status, "review");
+  assert.equal(result.routes[0].selected.id, shadcnblocks.id);
+  assert.equal(result.routes[0].selected.requiresLicense, true);
+  assert.equal(result.routes[0].selected.package, undefined);
+  assert.equal(result.routes[0].selected.install, undefined);
+  assert.equal(result.routes[0].selected.sourceCode, undefined);
 });
+
+test("route validates routing metadata on every component entry, including ones web ranking filters out", () => {
+  const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8"));
+  const hidden = raw.components.find((entry) => entry.routing);
+  hidden.webRanking = false;
+  hidden.routing.capabilities = "app-ui";
+  const malformed = normalizeSnapshot(raw);
+  const id = malformed.entries.find((entry) => entry.webRanking === false && typeof entry.routing?.capabilities === "string").id;
+  assert.throws(
+    () => routeComponents({ catalog: malformed, brief: "SaaS dashboard app UI", platform: "web" }),
+    new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing\\.capabilities must be a non-empty string array`),
+  );
+});
+
+for (const recordType of ["source", "method", "template"]) {
+  test(`route rejects malformed routing metadata on a ${recordType} record instead of skipping it`, () => {
+    const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8"));
+    const record = recordType === "source"
+      ? raw.docs.find((entry) => entry.recordType === "source")
+      : Object.assign(raw.components.find((entry) => entry.routing), { recordType });
+    record.routing = { ...(record.routing || {}), capabilities: "bad", platforms: ["web"], mode: "package" };
+    const malformed = normalizeSnapshot(raw);
+    const id = malformed.entries.find((entry) => entry.recordType === recordType && entry.routing).id;
+    assert.throws(
+      () => routeComponents({ catalog: malformed, brief: "SaaS dashboard app UI", platform: "web" }),
+      new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing\\.capabilities must be a non-empty string array`),
+    );
+  });
+}
+
+for (const collection of ["components", "docs"]) {
+  test(`route rejects non-object routing metadata on a ${collection === "docs" ? "source" : "component"} record`, () => {
+    const raw = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8"));
+    const record = collection === "docs" ? raw.docs.find((entry) => entry.recordType === "source") : raw.components.find((entry) => entry.routing);
+    record.routing = "bad";
+    const malformed = normalizeSnapshot(raw);
+    const id = malformed.entries.find((entry) => entry.routing === "bad").id;
+    assert.throws(
+      () => routeComponents({ catalog: malformed, brief: "SaaS dashboard app UI", platform: "web" }),
+      new RegExp(`${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.routing must be an object`),
+    );
+  });
+}

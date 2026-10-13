@@ -67,11 +67,15 @@ function walk(deliverable, tier, mode) {
     reference: () => (mode === "replicate" ? touch(dir, "reference.md", "Observed enamel at three angles.") : decide(dir, { stage: "reference", answer: "none" })),
     concepts: () => (fs.existsSync(path.join(dir, "concepts.md")) ? decide(dir, { stage: "concept", choice: "1" }) : touch(dir, "concepts.md")),
     style: () => decide(dir, { stage: "concept", choice: "pv" }),
+    components: () => decide(dir, { stage: "components", choice: "scratch", answer: "Write from scratch" }),
     analyze: () => (fs.existsSync(path.join(dir, "sources")) ? touch(dir, "edit/analysis.json", "{}") : fs.mkdirSync(path.join(dir, "sources"))),
     cut: () => touch(dir, "edit.json", "{}"),
     render: () => touch(dir, "renders/edit.mp4", "draft"),
     plan: () => (fs.existsSync(path.join(dir, "storyboard.json")) ? recordGate(dir, "storyboard", "passed", ["storyboard.json"]) : touch(dir, "storyboard.json", "{}")),
-    build: () => touch(dir, deliverable === "web" ? "index.html" : "out.mp4", "draft"),
+    build: () => {
+      touch(dir, deliverable === "web" ? "index.html" : "out.mp4", "draft");
+      if (deliverable === "web") touch(dir, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
+    },
     probe: () => {
       const file = path.join(dir, "interaction.json");
       if (!fs.existsSync(file)) return touch(dir, "interaction.json", motionProbeFile);
@@ -367,6 +371,54 @@ test("project root recorded gate repair command binds the block catalog to the s
   const expected = '"' + dir.split(path.sep).join("/") + '"';
   assert.ok(finding.fix.includes("--root " + expected), finding.fix);
   assert.ok(finding.fix.includes("node " + cliFile), finding.fix);
+  assert.deepEqual(fs.readdirSync(elsewhere), []);
+});
+
+function savedBlockRecovery() {
+  const dir = path.join(tmp(), "selected project with spaces");
+  fs.mkdirSync(dir);
+  initState(dir, { deliverable: "film", tier: "quick" });
+  touch(dir, "storyboard.json", fs.readFileSync(path.resolve(__dirname, "../skill/references/film-choreography/storyboard.example.json"), "utf8"));
+  const command = 'designer-pipeline film blocks --query "camera" --json';
+  recordGate(dir, "storyboard", "failed", ["storyboard.json"], {
+    findings: [{ code: "block-unknown", severity: "error", message: "Choose a catalog block.", fix: `Run ${command}` }],
+    next: command,
+  });
+  return { dir, command, stateFile: path.join(dir, ".design-pipeline", "state.json") };
+}
+
+test("saved gate next projects legacy film blocks without rewriting evidence", () => {
+  const { dir, command, stateFile } = savedBlockRecovery();
+  const saved = fs.readFileSync(stateFile);
+  const verification = nextAction(dir).verification;
+  const root = '"' + dir.split(path.sep).join("/") + '"';
+  assert.ok(runnable(verification.next), verification.next);
+  assert.ok(verification.next.includes("--root " + root), verification.next);
+  assert.ok(verification.next.includes("--project-root " + root), verification.next);
+  assert.ok(verification.next.endsWith('--query "camera" --json'), verification.next);
+  assert.equal(verification.findings[0].fix, `Run ${verification.next}`);
+  assert.deepEqual(fs.readFileSync(stateFile), saved);
+  assert.equal(readState(dir).gates.storyboard.next, command);
+});
+
+test("saved gate next legacy film blocks executes from unrelated cwd", () => {
+  const { dir, stateFile } = savedBlockRecovery();
+  const elsewhere = tmp();
+  // Use the existing offline catalog cache contract: no rendering tools or network are needed.
+  touch(dir, ".design-pipeline/hyperframes-catalog.json", canonicalJson({
+    schema: "design-pipeline.hyperframes-catalog-cache.v1",
+    items: [{ name: "camera-orbit", title: "Camera orbit", type: "block", tags: ["camera"], description: "An orbit." }],
+  }));
+  const saved = fs.readFileSync(stateFile);
+  const command = nextAction(dir).verification.next;
+  const child = spawnSync(command, { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+  assert.equal(child.status, 0, child.stdout + child.stderr);
+  const result = JSON.parse(child.stdout);
+  assert.equal(result.status, "found");
+  assert.equal(result.cached, true);
+  assert.equal(result.catalogSize, 1);
+  assert.equal(result.results[0].name, "camera-orbit");
+  assert.deepEqual(fs.readFileSync(stateFile), saved);
   assert.deepEqual(fs.readdirSync(elsewhere), []);
 });
 

@@ -420,7 +420,8 @@ function publicHelp() {
     "  film templates [--query <terms> | --template <id>] [--all]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
-    "  decide --project-root . --stage intake|reference|concept|sample|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
+    "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|concept|components|sample|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
+    "    components requires --choice <project|github|index|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer",
     "  film blender (lists templates) | film blender --project-root <dir> --template product-turntable [--params params.json] [--engine eevee|cycles] [--output renders/shot.mp4] [--audio score.wav] [--blender <exe>]",
     "  film-edit analyze --project-root <dir> --audio <music> [--sources sources]   (beat grid + footage shots)",
     "  film-edit auto --project-root <dir> --style mad|pv [--duration <sec>] [--width 1280 --height 720] [--replace]",
@@ -1316,8 +1317,9 @@ function designSystemCommand(parsed, root, action) {
     return { result: { status: "valid", catalog, ...(output ? { output } : {}) }, exitCode: 0 };
   }
   if (action === "search") {
-    const catalog = designSystemCatalog(parsed, root);
+    const catalog = option(parsed, "--platform") ? componentSourceCatalog(parsed, root) : designSystemCatalog(parsed, root);
     const results = searchDesignSystemCatalog(catalog, {
+      ...(option(parsed, "--platform") ? { platform: option(parsed, "--platform") } : {}),
       ...(option(parsed, "--query") ? { query: option(parsed, "--query") } : {}),
       ...(option(parsed, "--kind") ? { kind: option(parsed, "--kind") } : {}),
       ...(option(parsed, "--category") ? { category: option(parsed, "--category") } : {}),
@@ -2108,7 +2110,7 @@ const COMMANDS = {
       check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) },
       resolve: { run: ({ parsed, root }) => referenceResolveCommand(parsed, root) },
       "analyze-video": { required: ["--path", "--output"], run: ({ parsed, root }) => {
-        const options = { path: option(parsed, "--path"), output: option(parsed, "--output"), ...(option(parsed, "--start") !== null ? { startSec: Number(option(parsed, "--start")) } : {}), ...(option(parsed, "--end") !== null ? { endSec: Number(option(parsed, "--end")) } : {}), ...(option(parsed, "--fps") !== null ? { sampleFps: Number(option(parsed, "--fps")) } : {}), ...(option(parsed, "--max-frames") !== null ? { maxFrames: Number(option(parsed, "--max-frames")) } : {}) };
+        const options = { path: option(parsed, "--path"), output: option(parsed, "--output"), ...(option(parsed, "--start") === null ? {} : { startSec: Number(option(parsed, "--start")) }), ...(option(parsed, "--end") === null ? {} : { endSec: Number(option(parsed, "--end")) }), ...(option(parsed, "--fps") === null ? {} : { sampleFps: Number(option(parsed, "--fps")) }), ...(option(parsed, "--max-frames") === null ? {} : { maxFrames: Number(option(parsed, "--max-frames")) }) };
         // --study adds study.json, an audio excerpt and spectrogram when the source has sound, and cut-grid candidates.
         const result = option(parsed, "--study") === true
           ? require("../tools/art-motion/reference.cjs").analyzeReference(analysisRoot(parsed, root), options)

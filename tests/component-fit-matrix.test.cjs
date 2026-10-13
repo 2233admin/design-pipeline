@@ -114,20 +114,34 @@ test("does not reuse blocked project components", () => {
 });
 
 test("keeps unverified and visually unapproved references out of direct adoption", () => {
+  const uncertainCatalog = normalizeSnapshot({
+    schema: "design-pipeline.design-system-snapshot.v1",
+    version: "1",
+    namespace: "uncertain-license-fixture",
+    provenance: { source: "Explicit uncertain-license fixture", license: "unverified" },
+    components: [{
+      id: "dialog",
+      name: "Uncertain reference dialog",
+      category: "app-ui",
+      status: "stable",
+      routing: { mode: "reference", capabilities: ["dialog"], platforms: ["web"] },
+      alignment: { framework: "react" },
+    }],
+  });
   const result = buildComponentFitMatrix({
     framework: "react",
     platform: "web",
     capabilities: ["dialog"],
     directionLock: directionLock(),
-    catalog: catalog(),
+    catalog: uncertainCatalog,
   });
 
-  const shadcn = result.rows[0].candidates.find((candidate) => candidate.id.endsWith(":shadcn/ui"));
-  assert.ok(shadcn);
-  assert.equal(shadcn.role, "reference-only");
-  assert.equal(shadcn.dimensions.license.status, "review");
-  assert.equal(shadcn.dimensions.visualFit.status, "review");
-  assert.notEqual(result.decisions[0].candidate, shadcn.id);
+  const reference = result.rows[0].candidates.find((candidate) => candidate.id === "uncertain-license-fixture:component:dialog");
+  assert.ok(reference);
+  assert.equal(reference.role, "reference-only");
+  assert.equal(reference.dimensions.license.status, "review");
+  assert.equal(reference.dimensions.visualFit.status, "review");
+  assert.notEqual(result.decisions[0].candidate, reference.id);
 });
 test("negative accessibility evidence cannot become an adopted candidate", () => {
   const source = catalog();
@@ -241,6 +255,8 @@ test("includes governed framework providers alongside catalog sources for capabi
   assert.equal(row.decision.candidate, "provider:project-dom");
   assert.equal(result.providerHash.length, 64);
   const reactAria = row.candidates.find((candidate) => candidate.id === "provider:react-aria");
+  assert.equal(reactAria.sourceId, "adobe/react-spectrum");
+  assert.equal(row.candidates.find((candidate) => candidate.id === "provider:project-dom").sourceId, "project-components");
   assert.equal(reactAria.dimensions.license.status, "fail");
   assert.equal(reactAria.status, "blocked");
   const reordered = buildComponentFitMatrix({
@@ -320,6 +336,33 @@ test("keeps selected non-ready foundations blocked and self-validating", () => {
   assert.match(result.foundation.blocker.reason, /not ready/);
   assert.doesNotThrow(() => validateComponentFitMatrix(result));
 });
+test("keeps optional provider source identity strict without granting license authority", () => {
+  const governed = providerRegistry();
+  const input = {
+    framework: "react", platform: "web", capabilities: ["overlay.dialog"],
+    directionLock: directionLock(), catalog: catalog(),
+  };
+  for (const sourceId of [null, "", "Adobe/react-spectrum", "../react-spectrum", 42]) {
+    assert.throws(() => buildComponentFitMatrix({
+      ...input,
+      providers: { ...governed, providers: governed.providers.map((provider) => ({ ...provider, sourceId })) },
+    }), /sourceId must be a canonical lowercase slug/);
+  }
+  const withoutSourceIds = {
+    ...governed,
+    providers: governed.providers.map(({ sourceId, ...provider }) => provider),
+  };
+  const result = buildComponentFitMatrix({ ...input, providers: withoutSourceIds });
+  const candidate = result.rows[0].candidates.find(({ id }) => id === "provider:react-aria");
+  assert.equal(Object.hasOwn(candidate, "sourceId"), false);
+  assert.equal(candidate.dimensions.license.status, "fail");
+  assert.equal(candidate.status, "blocked");
+  assert.throws(() => buildComponentFitMatrix({
+    ...input,
+    providers: { ...governed, providers: governed.providers.map((provider) => ({ ...provider, unexpected: true })) },
+  }), /provider contains unsupported fields/);
+});
+
 test("rejects malformed capabilities, direction-lock options, providers, and matrix structure", () => {
   assert.throws(() => buildComponentFitMatrix({ capabilities: "button", directionLock: directionLock(), catalog: catalog() }), /capabilities must contain/);
   assert.throws(() => createDirectionLock({

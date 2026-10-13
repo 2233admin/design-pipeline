@@ -31,7 +31,7 @@ const MODES = ["brief", "replicate", "freeform"];
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { cliCommand, shellPath, INTAKE, REVIEW, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, gateStatus, reference, reviewInputHashes } = require("./workflows/shared.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -170,12 +170,20 @@ function nextAction(root) {
   return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
 }
 
+// Drop checked-output gates and the delivery bound to them, so the next pass is rechecked.
+function invalidateCheckedEvidence(state) {
+  state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
+  delete state.decisions.delivered;
+  delete state.decisions.deliveryInputHashes;
+  delete state.decisions.deliveredSha256;
+}
+
 function decide(root, options = {}) {
   const state = readState(root);
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
   stateJobPlan(root, state); // A stale Stage 0 binding records nothing.
   const stage = options.stage;
-  assertEnum(stage, ["intake", "reference", "concept", "sample", "review", "deliver"], "stage", "workflow");
+  assertEnum(stage, ["intake", "reference", "concept", "components", "sample", "review", "deliver"], "stage", "workflow");
   state.decisions = state.decisions || {};
   if (stage === "intake") {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
@@ -200,6 +208,26 @@ function decide(root, options = {}) {
     const answer = options.answer || "none";
     if (answer === "none" && state.mode === "replicate") fail("workflow", "replicate mode cannot skip the reference. Fix: write reference.md from the reference you are reproducing");
     state.decisions.reference = answer;
+  } else if (stage === "components") {
+    // Only web has a components stage; refuse before touching another workflow's evidence.
+    if (state.deliverable !== "web") fail("workflow", `--stage components applies only to web workflows; this project is a ${state.deliverable} workflow. Fix: follow next.`);
+    if (typeof options.answer !== "string" || !options.answer.trim()) fail("workflow", "--answer is required: the user's component source choice");
+    const allowed = ["project", "github", "index", "scratch"];
+    if (typeof options.choice !== "string" || !options.choice.trim()) fail("workflow", "--choice is required: project|github|index|scratch, comma-separated");
+    const choices = options.choice.split(",").map(value => value.trim());
+    if (choices.some(value => !allowed.includes(value))) fail("workflow", "--choice must be a comma-separated subset of project,github,index,scratch");
+    if (choices.includes("scratch") && choices.some(value => value !== "scratch")) fail("workflow", "--choice scratch cannot be combined with any other value");
+    if (choices.includes("github") && !/https:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+/i.test(options.answer)) fail("workflow", "--choice github requires at least one https://github.com/<owner>/<repo> URL in --answer");
+    const sources = allowed.filter(value => choices.includes(value));
+    const previous = state.decisions.components;
+    if (previous !== options.answer || canonicalJson(state.decisions.componentSources ?? null) !== canonicalJson(sources)) {
+      // A first or different source decision changes what the checked page must prove: recheck and redeliver it.
+      // A fresh project has no checked evidence yet; a legacy one must not keep a pass made without a decision.
+      // Recorded review verdicts stay as they were; they bind the old decision, so review is asked again.
+      invalidateCheckedEvidence(state);
+    }
+    state.decisions.componentSources = sources;
+    state.decisions.components = options.answer;
   } else if (stage === "concept") {
     if (!options.choice) fail("workflow", "--choice is required: the concept number, or mad/pv for an edit");
     state.decisions.concept = String(options.choice);
@@ -226,14 +254,12 @@ function decide(root, options = {}) {
     if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
       fail("workflow", `Cannot record review while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     }
-    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)) }];
+    const componentDecision = componentDecisionDigest(state);
+    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}) }];
     if (options.verdict === "reject") {
       state.rules = [...(state.rules || []), { text: options.answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
       // A rejected draft must be rebuilt and rechecked.
-      state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
-      delete state.decisions.delivered;
-      delete state.decisions.deliveryInputHashes;
-      delete state.decisions.deliveredSha256;
+      invalidateCheckedEvidence(state);
     }
   } else if (stage === "deliver") {
     const next = nextAction(root);

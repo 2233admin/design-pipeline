@@ -46,6 +46,12 @@ function tmp(t) {
   return dir;
 }
 
+// The components decision and manifest the web build stage requires (written from scratch).
+function prepareWebComponents(dir) {
+  decide(dir, { stage: "components", choice: "scratch", answer: "Write from scratch" });
+  fs.writeFileSync(path.join(dir, "component-manifest.json"), JSON.stringify({ fromScratch: true, entries: [] }));
+}
+
 // A fixture page staged as a project's index.html with the font beside it.
 function stage(t, name, doc, { web = false, html = null } = {}) {
   const dir = tmp(t);
@@ -54,7 +60,10 @@ function stage(t, name, doc, { web = false, html = null } = {}) {
   if (html) fs.writeFileSync(path.join(dir, "index.html"), html);
   else fs.copyFileSync(path.join(fixtures, `${name}.html`), path.join(dir, "index.html"));
   if (name === "clean") fs.copyFileSync(path.join(fixtures, "clean.css"), path.join(dir, "clean.css"));
-  if (web) initState(dir, { deliverable: "web", tier: "quick" });
+  if (web) {
+    initState(dir, { deliverable: "web", tier: "quick" });
+    prepareWebComponents(dir);
+  }
   fs.writeFileSync(path.join(dir, "interaction.json"), `${JSON.stringify(doc, null, 2)}\n`);
   return dir;
 }
@@ -84,6 +93,7 @@ function webProject(t) {
   decide(dir, { stage: "reference", answer: "none" });
   fs.writeFileSync(path.join(dir, "concepts.md"), "# Concepts\n");
   decide(dir, { stage: "concept", choice: "1" });
+  prepareWebComponents(dir);
   fs.writeFileSync(path.join(dir, "index.html"), '<!doctype html><link rel="stylesheet" href="site.css"><p>Page</p>');
   fs.writeFileSync(path.join(dir, "site.css"), "html { background: #fff; }\n");
   return dir;

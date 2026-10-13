@@ -26,9 +26,11 @@ function normalizePlatform(value) {
 }
 
 function validateRouteEntry(entry) {
-  if (entry.kind !== "component") return;
+  // Shape-check routing wherever it appears. Source, method and template records may carry routing
+  // but never enter component ranking; malformed metadata on them must still fail, not be skipped.
   const route = entry.routing;
-  if (!isObject(route)) return;
+  if (route === undefined) return;
+  if (!isObject(route)) routeFail(`${entry.id}.routing must be an object`);
   strings(route.capabilities, `${entry.id}.routing.capabilities`);
   strings(route.platforms, `${entry.id}.routing.platforms`);
   if (!ROUTE_MODES.has(route.mode)) routeFail(`${entry.id}.routing.mode is invalid`);
@@ -53,10 +55,15 @@ function validateRouteEntry(entry) {
   }
 }
 
-function routeEntries(catalog) {
+function routeEntries(catalog, platform) {
   validateCatalog(catalog);
+  // Validate every entry's routing metadata first, as v1 did, so malformed metadata on a record
+  // that is filtered out below still fails instead of being silently accepted.
   catalog.entries.forEach(validateRouteEntry);
-  return catalog.entries.filter((entry) => entry.kind === "component" && isObject(entry.routing));
+  return catalog.entries.filter((entry) => entry.kind === "component"
+    && (entry.recordType === undefined || entry.recordType === "component")
+    && (platform !== "web" || entry.webRanking !== false)
+    && isObject(entry.routing));
 }
 
 function evidenceScore(status) {
@@ -81,11 +88,12 @@ function candidateScore(entry, capability) {
 
 function implementationStatus(entry) {
   const route = entry.routing;
+  if (entry.license?.state === "unverified" || entry.license?.state === "commercial") return "review";
   if (route.mode === "reference-adaptation" || route.requiresLicense || route.evidenceStatus === "unverified") return "review";
   return "ready";
 }
 
-function recommendedComponentDetails(route, capability) {
+function recommendedComponentDetails(route, capability, referenceOnly) {
   const names = route.recommendations?.[capability];
   if (!Array.isArray(names) || !names.length || !Array.isArray(route.componentInventory)) return [];
   const inventory = new Map(route.componentInventory.filter((item) => isObject(item) && typeof item.name === "string").map((item) => [item.name, item]));
@@ -94,9 +102,9 @@ function recommendedComponentDetails(route, capability) {
     ...(item.displayName ? { displayName: item.displayName } : {}),
     ...(item.category ? { category: item.category } : {}),
     ...(item.docUrl ? { docUrl: item.docUrl } : {}),
-    ...(item.installCommand ? { install: item.installCommand } : {}),
-    ...(item.dependencies?.length ? { dependencies: item.dependencies } : {}),
-    ...(item.registryDependencies?.length ? { registryDependencies: item.registryDependencies } : {}),
+    ...(!referenceOnly && item.installCommand ? { install: item.installCommand } : {}),
+    ...(!referenceOnly && item.dependencies?.length ? { dependencies: item.dependencies } : {}),
+    ...(!referenceOnly && item.registryDependencies?.length ? { registryDependencies: item.registryDependencies } : {}),
     ...(item.complexity ? { complexity: item.complexity } : {}),
     ...(item.hasReducedMotion !== undefined ? { hasReducedMotion: item.hasReducedMotion } : {}),
   }));
@@ -104,22 +112,26 @@ function recommendedComponentDetails(route, capability) {
 
 function summarizeEntry(entry, capability) {
   const route = entry.routing;
-  const componentDetails = recommendedComponentDetails(route, capability);
+  const referenceOnly = entry.license?.state === "unverified" || entry.license?.state === "commercial";
+  const componentDetails = recommendedComponentDetails(route, capability, referenceOnly);
   return sortValue({
     id: entry.id,
     name: entry.name,
     source: entry.provenance.source,
     sourceUrl: entry.provenance.url,
-    ...(entry.provenance.sourceCode ? { sourceCode: entry.provenance.sourceCode } : {}),
+    ...(!referenceOnly && entry.provenance.sourceCode ? { sourceCode: entry.provenance.sourceCode } : {}),
     license: entry.provenance.license,
-    mode: route.mode,
+    ...(entry.sourceId ? { sourceId: entry.sourceId } : {}),
+    ...(entry.availability ? { availability: entry.availability } : {}),
+    ...(entry.license ? { licenseEvidence: entry.license } : {}),
+    mode: referenceOnly ? "reference-adaptation" : route.mode,
     status: implementationStatus(entry),
     matchedCapability: capability,
     capabilities: route.capabilities,
     platforms: route.platforms,
-    ...(route.package ? { package: route.package } : {}),
-    ...(route.install ? { install: route.install } : {}),
-    ...(route.dependencies ? { dependencies: route.dependencies } : {}),
+    ...(!referenceOnly && route.package ? { package: route.package } : {}),
+    ...(!referenceOnly && route.install ? { install: route.install } : {}),
+    ...(!referenceOnly && route.dependencies ? { dependencies: route.dependencies } : {}),
     ...(route.componentCount ? { componentCount: route.componentCount } : {}),
     ...(route.recommendations?.[capability]?.length ? { recommendedComponents: route.recommendations[capability] } : {}),
     ...(componentDetails.length ? { recommendedComponentDetails: componentDetails } : {}),
@@ -138,7 +150,7 @@ function routeComponents(options = {}) {
   const capabilities = Array.isArray(options.capabilities) && options.capabilities.length
     ? strings(options.capabilities, "capabilities")
     : decomposeCapabilities(options.brief, { allowPartialWords: false });
-  const entries = routeEntries(options.catalog);
+  const entries = routeEntries(options.catalog, platform);
   const routes = [];
   const unavailable = [];
 
@@ -178,7 +190,7 @@ function routeComponents(options = {}) {
     capabilities,
     routes,
     ...(unavailable.length ? { unavailable } : {}),
-    ...(status === "review" ? { next: "Verify license/source authority or select a project-owned fallback before copying code." } : {}),
+    ...(status === "review" ? { next: "Study and reimplement commercial/unverified references without copying code; verify other source authority or select a project-owned fallback." } : {}),
   });
 }
 

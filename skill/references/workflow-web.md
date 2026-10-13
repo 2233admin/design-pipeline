@@ -3,9 +3,10 @@
 Motion-first websites and pages. `designer-pipeline next` names the current stage; read only that
 section. Stage order:
 
-- `quick` brief/freeform: build, probe; `quick` replicate: reference, build, probe.
-- `standard` and `full`: intake, reference, concepts, build, probe, review, deliver.
-  Replicate keeps the reference direction and omits replacement concepts.
+- `quick` brief/freeform: components, build, probe; `quick` replicate: reference, components, build, probe.
+- `standard` and `full` brief/freeform: intake, reference, concepts, components, build, probe, review, deliver.
+  Replicate keeps the reference direction and omits replacement concepts: intake, reference,
+  components, build, probe, review, deliver.
 
 For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
 to select and read the complete built-in method. On an existing site, audit brand, routes, content,
@@ -68,15 +69,124 @@ When a Taste method is selected, record its exact entry, brief/dial read and ada
 these cards. For an explicitly requested web concept-image set, produce separate readable
 horizontal images per section; do not confuse those images with implemented or tested UI.
 
+## components
+
+Immediately before build in every web tier and mode, ask where the components should come from:
+
+1. The project's existing components (ask for their paths).
+2. A GitHub component library the user names.
+3. Search this skill's component source index, `references/component-source-catalog.json`.
+4. Write from scratch.
+
+Recommend the project's own components first, then search the index. Preserve the user's exact
+nonempty reply in `decisions.components`; earlier intake does not replace this decision. Supply
+`--choice` as a comma-separated set of `project`, `github`, `index` or `scratch`. Missing or unknown
+choices are rejected; duplicates are removed and `decisions.componentSources` is stored in canonical
+`project,github,index,scratch` order. `scratch` is exclusive. Selecting `github` requires an HTTPS
+GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
+Legacy answer-only web decisions ask again; do not infer the source set from prose. Recording a
+different answer or set later, or the first explicit decision on a legacy state that already has a
+checked page, drops the interaction pass and delivery; earlier review verdicts stay recorded but no
+longer complete review. `next` then returns to probe, not build, so update `index.html` and
+`component-manifest.json` for the new decision yourself before rechecking.
+Set `SKILL_ROOT` to the installed skill's absolute path and `PROJECT_ROOT` to the project's absolute
+path, then record the reply using the returned command, equivalent to:
+
+```sh
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" decide \
+  --root "$PROJECT_ROOT" --project-root "$PROJECT_ROOT" \
+  --stage components --choice project,index --answer "<the user's reply>"
+```
+
 ## build
 
 At `standard` and `full`, unless replicating, first extend the chosen card in `concepts.md` with
 `## Treatment` and write a brief per section (`web-direction.md`); the briefs land in `design.md`,
-`motion.md`, `component-state-matrix.json` and `interaction.json`. Then build `index.html` from the
-chosen concept, or from the reference and its invariants in replicate mode. Motion follows
+`motion.md`, `component-state-matrix.json` and `interaction.json`. Follow the component decision and
+write the manifest below before building `index.html` from the chosen concept, or from the
+reference and its invariants in replicate mode. Motion follows
 `web-motion.md` (spring-damper parameters, stepped motion as a style); design tokens and components
 come from `pipeline-reference.md`. At the `full` tier, open an OpenSpec change under
 `openspec/changes/<id>/` first and build inside it.
+
+Honor `decisions.components` and its explicit `decisions.componentSources` set: reuse the specified
+project paths, inspect the named GitHub library, search the index, or author the components from
+scratch as selected. When searching the index:
+
+```sh
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \
+  --root "$PROJECT_ROOT" --query "<page brief>" --platform web
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system search \
+  --root "$SKILL_ROOT" --snapshot "$SKILL_ROOT/references/component-source-catalog.json" \
+  --query "<page brief>" --platform web
+```
+
+The route and search with `--platform web` use the component-source index; search without a
+platform or explicit snapshot retains Astryx. Load only returned entries and needed source guides/implementations, not every
+catalog. Keep catalog artifacts inside the selected root.
+
+Before writing `index.html`, write project-local `component-manifest.json`. Its `entries` array
+records every component source used. The existing catalog core's `validateComponentManifest`
+checks this evidence; the web workflow stays at build if it is invalid.
+
+```json
+{
+  "entries": [
+    {
+      "name": "Project navigation",
+      "sourceId": "src/components/Navigation.tsx",
+      "availability": "project-owned",
+      "license": { "state": "project-owned" },
+      "usedIn": [{
+        "file": "index.html",
+        "marker": "Navigation",
+        "how": "Adapt the project's Navigation component"
+      }]
+    }
+  ]
+}
+```
+
+The example requires the source file to exist and `Navigation` to appear in `index.html`.
+For each entry:
+
+- `name` is nonempty. `sourceId` resolves to an indexed source in
+  `references/component-source-catalog.json`, or names an existing project-owned file inside the
+  project. Alternatively, `url` names a GitHub repository URL present in the recorded components
+  decision, or a contained project-owned file path/file URL. Arbitrary URLs and invented IDs do
+  not resolve. Containment follows real paths, so a symlink cannot point outside the project.
+- `availability` is `bundled-implementation`, `reference-link`, `metadata-only` or `project-owned`.
+  `license.state` is `verified`, `unverified`, `commercial`, `project-owned` or `platform`.
+  An indexed source's license state matches the index, including when identified by its named
+  GitHub repository URL. Project files use project-owned availability and license state.
+- Each entry's source category must be in the recorded `componentSources`, judged by how it cites
+  its source: `project` for a contained project file or the indexed `project-components` record,
+  `github` for a decision-named GitHub URL, and `index` for every other indexed `sourceId`,
+  `platform` records such as `native-dom` included. To use a named GitHub library under a
+  `github`-only set, cite it by `url`, not by its indexed `sourceId`. Scratch keeps its own rules below.
+- Every `usedIn` has an existing contained `file`, a nonempty `marker` that literally appears in
+  that file, and a nonempty `how`. Choose a real import path, class name, custom element name or
+  component identifier as the marker, not a fabricated usage description.
+- `how` describes use. Unverified/commercial sources allow only study/reimplementation, never
+  copying or importing; availability does not grant permission. For example:
+  `Study and reimplement the Navigation interaction independently`.
+- For verified imports/copies, `how` explicitly records attribution/license-notice handling,
+  for example `Import Navigation; retain upstream copyright/license notices in LICENSES.md`.
+  This documents handling; validation does not independently audit legal compliance or verify
+  a non-indexed repository's declared license.
+
+For the exclusive `scratch` set, write `{"fromScratch":true,"entries":[]}` or include only
+project-owned entries satisfying the same per-entry rules. `fromScratch: true` is required;
+the answer language (including `从零写`) does not determine scratch status. For every nonscratch
+set, `fromScratch: true` is forbidden and `entries` must be nonempty. These rules use the explicit
+source set, not inferred library names or phrases in the answer.
+
+Build finishes only when `index.html` and a valid manifest both exist. Invalid evidence returns
+the build instructions with the validator message and an existing finding whose `code` is
+`CONTRACT_INVALID`, `severity` is `error`, `message` is that validator message, and `fix` gives
+remediation. Repair the reported manifest/source-set, source identity, license declaration or
+file/marker provenance before running `next` again. This is Component Conformance stage-completion
+evidence, not a new gate or receipt schema, and does not grant Visual Acceptance.
 
 Apply the selected Taste source through the approved design and existing component/runtime owners.
 Keep complete requested artifacts, real content and loading/empty/error/focus states. Bind

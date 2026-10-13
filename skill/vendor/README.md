@@ -21,6 +21,11 @@ does not install dependencies, grant execution authority or certify visual quali
 | `12-principles-of-animation/` | [Animation principles checklist](../references/ui-craft-sources.md#12-principles-of-animation) | `manifest.json`, scoped snapshot hash |
 | `shadcn/` | [shadcn/ui component workflow](../references/ui-craft-sources.md#shadcn) | `manifest.json`, scoped snapshot hash |
 | `playwright-cli/` | [Exploratory browser driving](../references/ui-craft-sources.md#playwright-cli) | `manifest.json`, scoped snapshot hash |
+| `taste-skill/` | [Visual direction and interface recipes](../references/taste-skill.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
+| `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `product-film-skill/` | [Product film methods](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `gepa/` | [Optimization method](../references/gepa.md) | `manifest.json`, scoped snapshot hashes and upstream Git tree |
 
 Keep each bundle's relative layout, license and original bytes together. Update snapshots using
 the existing importers and integrity checks. Adapt a selected technique into project-owned code

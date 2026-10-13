@@ -12,6 +12,7 @@
       "packages": {},
       "mode": "project-owned",
       "status": "ready",
+      "sourceId": "project-components",
       "source": "project-owned"
     },
     {
@@ -23,6 +24,7 @@
       "packages": { "vue": ["@vuetify/v0"], "nuxt": ["@vuetify/v0"] },
       "mode": "project-pinned-adapter",
       "status": "review",
+      "sourceId": "vuetifyjs/0",
       "source": "https://github.com/vuetifyjs/0"
     },
     {
@@ -34,6 +36,7 @@
       "packages": { "react": ["react-aria", "react-aria-components"] },
       "mode": "project-pinned-adapter",
       "status": "ready",
+      "sourceId": "adobe/react-spectrum",
       "source": "https://github.com/adobe/react-spectrum"
     },
     {
@@ -45,6 +48,7 @@
       "packages": { "react": ["@ark-ui/react"], "vue": ["@ark-ui/vue"], "svelte": ["@ark-ui/svelte"], "solid": ["@ark-ui/solid"] },
       "mode": "project-pinned-adapter",
       "status": "ready",
+      "sourceId": "chakra-ui/ark",
       "source": "https://github.com/chakra-ui/ark"
     }
   ]
