@@ -54,14 +54,15 @@ commit `f60fbecc413c4569f8e8fcf4b059f78ccc60bf19`, tree
 Codex's review of `c77d0b2` raised no new finding on that fix, and two P2 findings on the audit
 engine. `audit.control-gap` measured layout boxes while `audit.target-size` measured hit areas
 widened by an absolute `::before` or `::after`, so two overlapping widened targets passed both
-checks; and gap checks treated boxes that share neither axis as infinitely apart. Control spacing
-now measures hit areas, and gaps are edge to edge along the diagonal (commit `eb4d7ce`). The final
-tested implementation is commit `eb4d7ce0b5e2d1934bbe52247f9e040555e3612f`, tree
-`86a150c88c8cfdbff826d0bffef261939500c082`; later commits change only these records.
+checks; and gap checks treated controls or stacked items that share neither axis as infinitely
+apart. Control spacing now measures hit areas, and gaps are edge to edge along the diagonal (commit
+`eb4d7ce`; `c901a79` extends the regression to a declared stack). The final tested implementation
+is commit `c901a796d6df8ba3431a1a5464240e8b594cf9dc`, tree
+`4207c64495e015827a78bcbae039014341a788cf`; later commits change only these records.
 
 | Check | Result |
 | --- | --- |
-| Regression: two 16px icons widened to 32px targets 8px apart by layout, and two 24px buttons offset 2px on each axis | With the previous engine, no `audit.control-gap` finding. With the fix: `#icon-a` "overlapping it by 8px" and `#corner-a` "2.83px from it"; `audit.target-size` stays clean. The violating, clean and undeclared fixtures keep their results. |
+| Regression: two 16px icons widened to 32px targets 8px apart by layout, two 24px buttons offset 2px on each axis, and two tiles of a declared grid stack offset 2px on each axis | With the previous engine, no `audit.control-gap` or `audit.layout-gap` finding. With the fix: control gaps `#icon-a` "overlapping it by 8px" and `#corner-a` "2.83px from it", and the stack gap `#tile-a` "2.83px from it"; `audit.target-size` stays clean. The violating, clean and undeclared fixtures keep their results. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1405, 1401 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 73 passed, 0 failed. |
 
