@@ -12,6 +12,22 @@ below comes from a command run on the final tree unless the row says otherwise.
 | Smoke: remote dependency | `.design-pipeline/audit-smoke` is a quick web project (`index.html`, `styles.css`, an audit probe declaring numbers, stacks, an alignment group and content boxes). With a stylesheet linked from `http://127.0.0.1:9/vendor/inter.css`, `verify interaction` exits 2: all 17 checks settle at both viewports and one `external-request` finding names the URL with the fix to copy it into the project. Without the link it exits 0, the gate records lineage `files: [index.html, styles.css]` with empty `remote`, and `next` returns `web/quick: done`. |
 | Smoke: lineage and a measured failure | Changing `.hero p` to `#aaaaaa` after that pass makes `next` report the gate `stale` with `workflow-input-changed` on `styles.css` and reopen `probe`. `verify interaction` then exits 2 with `audit.text-contrast` `2.32:1 (#aaaaaa on #ffffff)` against `at least 4.5:1` at 1280x800 and 390x844. Restoring `#4a4a4a` passes again and `next` returns `done`. |
 
+## Frozen Merge Tree
+
+The rows above predate merging `origin/main` at `66e41c8` (#98, component index and web sources).
+After the merge, the tested implementation is commit `ce3a7330f011bdfa9faf462527a63f25cddbebf7`,
+tree `c0253f90306d7846b7465d3c0a7c83d9bfb869f0`, held unchanged during these runs.
+
+| Check | Result |
+| --- | --- |
+| `npm ci` | Installed the locked workspace (145 packages). |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1402, 1398 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+The merge keeps both web probe rules: a changed components decision drops the interaction pass,
+and a pass needs an audit probe and lineage. The audit and component fixtures now record the
+components decision before build, an audit probe and lineage.
+
 ## Not Verified
 
 - No production page has been audited yet. The defaults (12px text floor, 24px targets, 8px gaps

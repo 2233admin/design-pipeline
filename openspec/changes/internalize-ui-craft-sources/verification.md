@@ -13,6 +13,22 @@ below comes from a command run on the final tree unless the row says otherwise.
 | Routing smoke | `designer-pipeline next --deliverable web --tier quick` returns `stage: build` and `guide: references/workflow-web.md#build`. That section routes to `ui-craft-sources.md`, and `## review` runs its agent-side checks. |
 | Self-check smoke | `check-deps.cjs --json` no longer lists `emil-design-eng` in any companion group; the Visual taste fallback names `references/ui-craft-sources.md`. |
 
+## Frozen Merge Tree
+
+The rows above predate merging `origin/main` at `66e41c8` (#98), which made
+`references/component-source-catalog.json` the single source index and added a `components`
+stage before web `build`. After the merge, the tested implementation is commit
+`ce3a7330f011bdfa9faf462527a63f25cddbebf7`, tree `c0253f90306d7846b7465d3c0a7c83d9bfb869f0`.
+
+| Check | Result |
+| --- | --- |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp`, after `npm ci` | Repository tests: 1402, 1398 pass, 0 fail, 4 skipped (the same host skips). The package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+The six vendored sources are registered in that index: four new source records, while
+`emilkowalski/skills` and `shadcn-ui/ui` link their vendor manifests and keep their existing pins.
+Quick web `next` now asks the components question before `build`.
+
 ## Import Notes
 
 - On this Windows host, two imports failed while renaming the staged directory into
