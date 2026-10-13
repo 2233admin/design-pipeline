@@ -76,14 +76,19 @@ Immediately before build in every web tier and mode, ask where the components sh
 1. The project's existing components (ask for their paths).
 2. A GitHub component library the user names.
 3. Search this skill's component source index, `references/component-source-catalog.json`.
-4. Write from scratch.
+4. Let the agent find maintained open-source component libraries, packages and icon sets beyond the
+   index (`discover`).
+5. Write from scratch.
 
-Recommend the project's own components first, then search the index. Preserve the user's exact
-nonempty reply in `decisions.components`; earlier intake does not replace this decision. Supply
-`--choice` as a comma-separated set of `project`, `github`, `index` or `scratch`. Missing or unknown
-choices are rejected; duplicates are removed and `decisions.componentSources` is stored in canonical
-`project,github,index,scratch` order. `scratch` is exclusive. Selecting `github` requires an HTTPS
-GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
+Recommend the project's own components first, then the index, then letting the agent find more:
+`project,index,discover`. Preserve the user's exact nonempty reply in `decisions.components`;
+earlier intake does not replace this decision. Supply `--choice` as a comma-separated set of
+`project`, `github`, `index`, `discover` or `scratch`. Missing or unknown choices are rejected;
+duplicates are removed and `decisions.componentSources` is stored in canonical
+`project,github,index,discover,scratch` order. `scratch` is exclusive. Selecting `github` requires
+an HTTPS GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
+`discover` needs no URL: the agent finds the sources and records each one with its pinned license
+in the manifest (see [build](#build)).
 Legacy answer-only web decisions ask again; do not infer the source set from prose. Recording a
 different answer or set later, or the first explicit decision on a legacy state that already has a
 checked page, drops the interaction pass and delivery; earlier review verdicts stay recorded but no
@@ -95,7 +100,7 @@ path, then record the reply using the returned command, equivalent to:
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" decide \
   --root "$PROJECT_ROOT" --project-root "$PROJECT_ROOT" \
-  --stage components --choice project,index --answer "<the user's reply>"
+  --stage components --choice project,index,discover --answer "<the user's reply>"
 ```
 
 ## build
@@ -110,8 +115,8 @@ come from `pipeline-reference.md`. At the `full` tier, open an OpenSpec change u
 `openspec/changes/<id>/` first and build inside it.
 
 Honor `decisions.components` and its explicit `decisions.componentSources` set: reuse the specified
-project paths, inspect the named GitHub library, search the index, or author the components from
-scratch as selected. When searching the index:
+project paths, inspect the named GitHub library, search the index, find open-source sources, or
+author the components from scratch as selected. When searching, search the index first:
 
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \
@@ -125,9 +130,21 @@ The route and search with `--platform web` use the component-source index; searc
 platform or explicit snapshot retains Astryx. Load only returned entries and needed source guides/implementations, not every
 catalog. Keep catalog artifacts inside the selected root.
 
+When `discover` is selected and nothing indexed fits, look for maintained open-source component
+libraries, packages or icon sets yourself (a GitHub repository, npm package or the official project
+page), using the method in `tools/open-source-design.md`. Read the candidate's license at the exact
+commit, tag or package version you will use and record its manifest entry before using it. Prefer
+genuinely reusing a fitting source over hand-writing an equivalent. Without `discover`, stay within
+the selected sources.
+
+Choose fonts through `tools/fonts.md`; do not silently fall back to the system stack unless the
+treatment (in quick and replicate builds, the page's direction) deliberately calls for it. Bundle
+or self-host discovered code and fonts inside the project and keep their license notices: the page
+loads no CDN scripts or remote fonts at runtime (`web-motion.md#self-contained-pages`).
+
 Before writing `index.html`, write project-local `component-manifest.json`. Its `entries` array
-records every component source used. The existing catalog core's `validateComponentManifest`
-checks this evidence; the web workflow stays at build if it is invalid.
+records every component source used and every chosen font. The existing catalog core's
+`validateComponentManifest` checks this evidence; the web workflow stays at build if it is invalid.
 
 ```json
 {
@@ -147,23 +164,81 @@ checks this evidence; the web workflow stays at build if it is invalid.
 }
 ```
 
-The example requires the source file to exist and `Navigation` to appear in `index.html`.
+The example requires the source file to exist and `Navigation` to appear in `index.html`. A
+discovered library and a font look like this; the angle-bracket values are the ones you checked:
+
+```json
+{
+  "name": "<library>",
+  "kind": "library",
+  "url": "https://www.npmjs.com/package/<package>",
+  "revision": "<package version>",
+  "availability": "reference-link",
+  "license": {
+    "state": "verified",
+    "id": "MIT",
+    "evidence": ["https://github.com/<owner>/<repo>/blob/<tag>/LICENSE"]
+  },
+  "usedIn": [{
+    "file": "index.html",
+    "marker": "<import path or class>",
+    "how": "Install <package>@<package version> and bundle it; keep its MIT license notice in LICENSES.md"
+  }]
+}
+```
+
+```json
+{
+  "name": "<family>",
+  "kind": "font",
+  "url": "https://github.com/<foundry>/<family repository>",
+  "revision": "<release tag>",
+  "availability": "reference-link",
+  "license": {
+    "state": "verified",
+    "id": "OFL-1.1",
+    "evidence": ["https://github.com/<foundry>/<family repository>/blob/<release tag>/OFL.txt"]
+  },
+  "usedIn": [{
+    "file": "styles.css",
+    "marker": "<font-family name>",
+    "how": "Self-host the woff2 files with @font-face; keep OFL.txt and the copyright notice beside them"
+  }]
+}
+```
+
 For each entry:
 
-- `name` is nonempty. `sourceId` resolves to an indexed source in
-  `references/component-source-catalog.json`, or names an existing project-owned file inside the
-  project. Alternatively, `url` names a GitHub repository URL present in the recorded components
-  decision, or a contained project-owned file path/file URL. Arbitrary URLs and invented IDs do
-  not resolve. Containment follows real paths, so a symlink cannot point outside the project.
+- `name` is nonempty. `kind` is optional: `component` (the default), `library`, `icon` or `font`.
+- `sourceId` resolves to an indexed source in `references/component-source-catalog.json`, or names
+  an existing project-owned file inside the project. Alternatively, `url` names a GitHub repository
+  URL present in the recorded components decision, a discovered https source (below), or a
+  contained project-owned file path/file URL. Cite an indexed source by its `sourceId`: any of its
+  URLs (its GitHub repository, a deep link into it, or a page at or below a recorded homepage) is
+  rejected unless it is the decision-named repository URL, and a deep link inside a named
+  repository is rejected in favour of the repository URL. Other schemes, URLs with credentials and
+  invented IDs do not resolve. Containment follows real paths, so a symlink cannot point outside
+  the project.
 - `availability` is `bundled-implementation`, `reference-link`, `metadata-only` or `project-owned`.
   `license.state` is `verified`, `unverified`, `commercial`, `project-owned` or `platform`.
   An indexed source's license state matches the index, including when identified by its named
   GitHub repository URL. Project files use project-owned availability and license state.
-- Each entry's source category must be in the recorded `componentSources`, judged by how it cites
-  its source: `project` for a contained project file or the indexed `project-components` record,
-  `github` for a decision-named GitHub URL, and `index` for every other indexed `sourceId`,
-  `platform` records such as `native-dom` included. To use a named GitHub library under a
-  `github`-only set, cite it by `url`, not by its indexed `sourceId`. Scratch keeps its own rules below.
+- Any other https `url` (a GitHub repository, npm package page, or official project or foundry page
+  that is neither named in the decision nor indexed) is a discovered source. It needs a `revision`
+  (the commit SHA, tag or package version you checked), `license.id` (the SPDX expression at that
+  revision), `license.evidence` (a non-empty array of https URLs to the license text at that
+  revision) and `license.state` `verified`, `unverified` or `commercial`, never `project-owned` or
+  `platform`. Validation checks that these are recorded; it does not fetch or audit them.
+- A `kind: "font"` entry records a chosen family (`tools/fonts.md`). It needs the same provenance as
+  a discovered source unless it cites an indexed source or a project-owned font file, and its
+  `usedIn.marker` is the font-family name in the file that loads or uses it. A system stack needs
+  no entry.
+- Each component entry's source category must be in the recorded `componentSources`, judged by how
+  it cites its source: `project` for a contained project file or the indexed `project-components`
+  record, `github` for a decision-named GitHub URL, `discover` for a discovered https source, and
+  `index` for every other indexed `sourceId`, `platform` records such as `native-dom` included. To
+  use a named GitHub library under a `github`-only set, cite it by `url`, not by its indexed
+  `sourceId`. Fonts are not components and need no category. Scratch keeps its own rules below.
 - Every `usedIn` has an existing contained `file`, a nonempty `marker` that literally appears in
   that file, and a nonempty `how`. Choose a real import path, class name, custom element name or
   component identifier as the marker, not a fabricated usage description.
@@ -174,12 +249,18 @@ For each entry:
   for example `Import Navigation; retain upstream copyright/license notices in LICENSES.md`.
   This documents handling; validation does not independently audit legal compliance or verify
   a non-indexed repository's declared license.
+- Copying or importing a discovered source, or serving a font from outside the index and the
+  project, requires `license.state: verified` and a permissive `license.id`: `MIT`, `Apache-2.0`,
+  `BSD-2-Clause`, `BSD-3-Clause`, `ISC`, `0BSD`, `Zlib`, `Unlicense`, `CC0-1.0` or `OFL-1.1` (the
+  whole id, case-insensitive). A page that loads a font ships its files, so any use of such a font
+  other than study counts as copying and records notice handling. Anything else, including
+  compound expressions such as `MIT OR Apache-2.0`, allows only study/reimplementation.
 
 For the exclusive `scratch` set, write `{"fromScratch":true,"entries":[]}` or include only
-project-owned entries satisfying the same per-entry rules. `fromScratch: true` is required;
+project-owned or font entries satisfying the same per-entry rules. `fromScratch: true` is required;
 the answer language (including `从零写`) does not determine scratch status. For every nonscratch
-set, `fromScratch: true` is forbidden and `entries` must be nonempty. These rules use the explicit
-source set, not inferred library names or phrases in the answer.
+set, `fromScratch: true` is forbidden and `entries` must include at least one non-font entry. These
+rules use the explicit source set, not inferred library names or phrases in the answer.
 
 Build finishes only when `index.html` and a valid manifest both exist. Invalid evidence returns
 the build instructions with the validator message and an existing finding whose `code` is
