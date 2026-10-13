@@ -2449,3 +2449,46 @@ English and Chinese HTML product launch/showcase video requests MUST select the 
 - **WHEN** the returned film handoff argv is run from a working directory outside the project
 - **THEN** it MUST bind the plan in that project's film state, because the argv names the project as both `--root` and `--project-root`
 - **AND** nothing is written to the working directory
+
+### Requirement: code-carried capability
+New design, composition, motion or film capability SHALL be delivered as at least one of:
+a deterministic gate whose findings carry a concrete fix, a parameterized template, or a
+cross-model evaluation under the existing benchmark contract.
+
+#### Scenario: New capability is delivered
+- **WHEN** a new design, composition, motion, or film capability is added
+- **THEN** it SHALL include at least one of: a deterministic gate whose findings carry a concrete fix, a parameterized template, or a cross-model evaluation under the existing benchmark contract
+
+### Requirement: acceptance separation
+Gates, templates and evaluations SHALL NOT report creative or user acceptance. Those remain
+separate recorded states.
+
+#### Scenario: Capability evidence is reported
+- **WHEN** a gate, template, or evaluation reports its result
+- **THEN** it SHALL NOT report creative or user acceptance, which remain separate recorded states
+
+### Requirement: deliverable sub-workflows
+Film and edit work SHALL each follow a sub-workflow whose guide lists, per stage, only the
+commands that stage needs, and every `next` action for these deliverables SHALL name its guide
+section.
+
+#### Scenario: Film or edit action is returned
+- **WHEN** a `next` action is returned for film or edit work
+- **THEN** the applicable guide SHALL list only the commands needed per stage
+- **AND** the action SHALL name its guide section
+
+### Requirement: fresh gate results
+A recorded gate result SHALL count toward finishing a stage only when it is not older than the
+files it checked.
+
+#### Scenario: Gate result predates checked files
+- **WHEN** a recorded gate result is older than any file it checked
+- **THEN** it SHALL NOT count toward finishing the stage
+
+### Requirement: replicate mode
+In replicate mode a film SHALL NOT waive its reference study, and an edit SHALL study the
+reference edit before cutting.
+
+#### Scenario: Replicate film or edit work begins
+- **WHEN** work is in replicate mode
+- **THEN** a film SHALL NOT waive its reference study and an edit SHALL study the reference edit before cutting
