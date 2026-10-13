@@ -205,3 +205,11 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
   `designer-pipeline-cli` 109 pass + 1 platform skip; `returned-command-audit`,
   `returned-command-safety`, `returned-edit-commands` and `returned-shell-paths` 23/23. Strict
   validation passes and `npm run specs:check` reports 75 passed, 0 failed.
+- [x] 7.16 Clean cutover for in-flight projects: `web.cjs` no longer finishes intake for an intake
+  without playback history or the concepts stage for a pick without variant history, so an old
+  intake goes through the playback and an old pick through the variants page. The legacy
+  `workflow-next` test is gone, `workflow-action-commands` now expects a legacy web intake to stay at
+  intake (ui intake unchanged), and the exceptions are gone from the guide, change records and
+  CHANGELOG. With TEMP/TMP on D:, `workflow-next`, `web-concept-screening`, `workflow-components`
+  and `workflow-action-commands` together: 224 tests, 223 pass + 1 platform skip, 0 fail. Strict
+  validation passes and `npm run specs:check` reports 75 passed, 0 failed.

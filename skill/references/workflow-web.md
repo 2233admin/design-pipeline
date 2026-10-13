@@ -87,8 +87,7 @@ request rules out. Ask first only about something essential that you can neither
 reasonably decide.
 
 Web intake writes no `brief.md`: the brief is written later as the [description](#description).
-An intake recorded before playbacks existed (no `decisions.playbacks` history) still completes
-intake; a `quick` project started before quick intake existed records its stated line first.
+A `quick` project started before quick intake existed records its stated line first.
 
 ## reference
 
@@ -149,7 +148,7 @@ say why. Record:
 
 Letters are case-insensitive; numbers are refused. A pick is refused (`WORKFLOW_NOT_READY`) until
 `next` has reached the variants ask. `decisions.concept` holds the pick (`B` or `B,C`) and
-`decisions.variants` the history; a pick recorded before variant history existed still counts.
+`decisions.variants` the history.
 `quick` and replicate have no concepts stage and refuse concept records.
 
 The variants are throwaway prototypes. Fold the chosen variant, and anything combined from the

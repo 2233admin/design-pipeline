@@ -101,8 +101,9 @@ The change adds no gate, receipt schema or feedback system. It reuses:
 
 - **Users:** standard/full web projects ask more often but each ask is smaller, and nothing is built
   before the description is approved.
-- **In-flight standard/full web projects:** they keep their intake, concept and components records,
-  but must have the description approved and each section reviewed before probe.
+- **In-flight standard/full web projects:** they keep their components record; an intake recorded
+  by the old form goes through the playback and a concept picked before the variants page goes
+  through the variants, and the description must be approved and each section reviewed before probe.
 - **In-flight quick web projects:** they record a stated decision first.
 - **Projects finished before this change:** no exception; they follow the new flow like any other
   project.

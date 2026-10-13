@@ -119,11 +119,6 @@ Web intake SHALL finish only when decide records the playback the owner confirme
 - **THEN** `next` SHALL move past intake
 - **AND** it SHALL still ask the owner about the variants, the decision round, the description and each section.
 
-#### Scenario: An earlier intake still completes
-
-- **WHEN** a web state holds an intake recorded by the earlier question form
-- **THEN** `next` SHALL treat intake as finished.
-
 ### Requirement: Recorded answers carry content
 
 Under the minimum-content rule, a stated decision (the confirmed playback, or a skip line at any tier) SHALL hold at least six words, and every reason (a correction, a rejection, the notes of a combination or an anti-goal) at least three. A word is a run of letters or digits, an apostrophe inside it ("don't") keeps it one word, and two CJK characters count as one. A shorter answer SHALL be refused with `CONTRACT_INVALID` and leave the state unchanged.

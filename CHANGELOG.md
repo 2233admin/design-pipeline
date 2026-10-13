@@ -292,11 +292,12 @@ All notable changes to Design Pipeline are documented here.
     owner click or pick elements on the page is a planned follow-up. Projects that already carry
     runtime-review inputs can cite recorded runtime-review Feedback with `--evidence`; each file is
     checked with runtime-review's own validator against its `Record` definition.
-  - Migration: web projects finished before this change get no exception and follow the new flow.
-    In-flight web projects keep their intake, concept and components records (an intake or pick
-    recorded before this change still counts). Standard and full projects are asked to approve the
-    description and then to review each section; an existing `index.html` gains `data-section`
-    markers as the loop reaches each section. Quick projects first record the stated line.
+  - Migration: web projects finished before this change get no exception and follow the new flow,
+    and so do in-flight ones: an intake recorded by the old form goes through the playback and a
+    concept picked before the variants page goes through the variants. In-flight web projects keep
+    their components record. Standard and full projects are asked to approve the description and
+    then to review each section; an existing `index.html` gains `data-section` markers as the loop
+    reaches each section. Quick projects first record the stated line.
     `decide --stage components|description|section` is refused for film, edit and ui; no new state
     schema. The one new CLI flag is `--anti-goal`.
 - Product-promo films (Stage 0 `product-launch-video`) are evaluated only after their product

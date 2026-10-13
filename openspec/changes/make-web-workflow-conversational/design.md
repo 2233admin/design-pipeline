@@ -118,7 +118,8 @@ ui intake keep the four-question form and its brief-writing ownership rules unch
 
 The quick tier's `intake` is a `run` action: tell the owner in one line what was decided for them,
 then record it with `--choice skip`, adding each thing the request rules out as its own
-`--anti-goal`. This is the "skip path natural" form of point 4. Quick keeps its short path
+`--anti-goal`. This is point 4's skip path, taken for every quick piece without asking: the agent
+states its decisions in one line instead of interviewing the owner. Quick keeps its short path
 (owner-approved): it states its decisions (point 4) and asks only the component sources; it has no
 opening question, playback, variants, description approval or section reviews.
 
@@ -408,13 +409,15 @@ stale, so `next` returns to the description and then to each section before prob
 
 - **No new state schema.** The new records are optional `decisions` fields (`playbacks`, `variants`,
   `rounds`, `descriptions`, `sections`) and entries in `state.rules`; no `state.gates` entry,
-  receipt, schema identifier or feedback record format is added. A web intake recorded by the old
-  form, and a concept picked before variant history existed, still complete their stages.
+  receipt, schema identifier or feedback record format is added.
 - **Web projects finished before this change get no exception:** they follow the new flow like any
-  other project, so `next` returns the first stage the new flow still needs.
-- **In-flight standard/full web projects** keep their intake, concept and components records. They
-  are asked to approve the description, then to review each section; an existing `index.html` gains
-  `data-section` markers as the loop reaches each section. Nothing is waived silently.
+  other project, so `next` returns the first stage the new flow still needs. In-flight web projects
+  also follow the new flow: an intake recorded by the old form goes through the playback, and a
+  concept picked before the variants page goes through the variants.
+- **In-flight standard/full web projects** keep their components record. After the playback and
+  the variants they are asked to approve the description, then to review each section; an existing
+  `index.html` gains `data-section` markers as the loop reaches each section. Nothing is waived
+  silently.
 - **In-flight quick web projects** first record the stated-decision line.
 - **Web `decide --stage intake --answer` without `--verdict` or `--choice skip`** is refused with a
   fix naming the three forms.
