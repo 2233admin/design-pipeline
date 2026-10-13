@@ -1028,6 +1028,8 @@
     "references/prompt-motion/README.md",
     "references/prompt-motion/source-index.json",
     "references/prompt-motion/templates.json",
-    "tools/prompt-motion/library.cjs"
+    "tools/prompt-motion/library.cjs",
+    "tools/variant-switcher/variant-switcher.js",
+    "tools/variant-switcher/README.md"
   ]
 }

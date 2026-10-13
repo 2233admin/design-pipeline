@@ -2,60 +2,312 @@
 
 // Web sub-workflow: motion-first websites and pages.
 // Guide: references/workflow-web.md (one section per stage id).
+//
+// Standard and full work talks before it builds: an opening with a skip line and one open question,
+// a playback the owner confirms, three switchable first-screen variants, one round of concrete
+// decisions with recommended answers, and a one-page description the owner approves. Only then is
+// the page built, one section at a time, each reviewed by the owner, before the final review. Every
+// "no" the owner gives on the way becomes a project rule (state.rules, as for rejected drafts).
+// Quick work states what was decided for the owner instead of asking. Film, edit and ui keep the
+// shared stages.
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
-const { cliCommand, shellPath, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
+const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, reference } = require("./shared.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
-// Web intake and concepts: same stage ids, finished predicates and record strings as the shared
-// ones (film, edit and ui keep those), with prompts about a page instead of a picture.
+const decideCommand = (root, stage) => `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage ${stage}`;
+const history = (state, key) => (Array.isArray(state.decisions?.[key]) ? state.decisions[key] : []);
+const rejections = (records, matches = () => true) => records.filter(item => item.verdict === "reject" && matches(item)).length;
+
+// Every "no" the owner gives becomes a project rule, the same record a rejected draft makes.
+function addRule(state, text, from) {
+  state.rules = [...(state.rules || []), { text, from, scope: "project" }];
+}
+
+// A contained project file's bytes, or null when it is missing, outside the project or not a file.
+function projectFile(root, rel) {
+  try {
+    const file = resolveInside(root, rel, rel, { scope: "workflow", mustExist: true });
+    return fs.statSync(file).isFile() ? fs.readFileSync(file) : null;
+  } catch { return null; }
+}
+const fileSha = (root, rel) => {
+  const bytes = projectFile(root, rel);
+  return bytes ? "sha256:" + sha256(bytes) : null;
+};
+const fileText = (root, rel) => projectFile(root, rel)?.toString("utf8") ?? null;
+
+// A recorded playback, skip line or mix must say something: a bare go-ahead is the silent default
+// these records replace.
+const BARE_ANSWER = /^(?:default|defaults|skip|ok|okay|yes|y|sure|fine|go|go ahead|start|just start|your call|whatever|none|-|默认|好|好的|可以|行|开始|开始吧|直接开始|随便|你定)$/iu;
+function stated(answer, what) {
+  const text = typeof answer === "string" ? answer.trim() : "";
+  if (!text || BARE_ANSWER.test(text.replace(/[\s.!。！]+$/u, ""))) fail("workflow", `--answer must ${what}`);
+  return text;
+}
+
+// --- intake: a conversation that ends in a confirmed playback, or a stated skip ----------------------
+
+const SKIP_LINE = "If you'd rather skip the questions and have me start, say so.";
+const OPENING = {
+  page: "Is there a site you saw recently that felt exactly like this one should? What about it?",
+  replicate: "What about the page you want reproduced must stay exactly as it is, and what would you change?",
+};
+const CONVERSATION = "Facts are your job: before asking, take what you can from the conversation and the project's files (README, existing pages, DESIGN.md, brand assets; in an existing project run project inspect), and never ask the owner for something you can look up. Send the opening as its own message: the skip line, then this one open question. Then ask one open question per message, with no list of example answers unless they are stuck: anchor on real specifics (a site they saw, the moment a visitor arrives), ask what would make them wince and what they have seen elsewhere and loved or hated. When you can describe the page, play it back in about 200-300 words: who it is for, what a visitor should do, what it should feel like; mark what they said as theirs and what you guessed as your guess, and end by asking what is wrong or missing. Record each correction with the correction command (it becomes a project rule) and play back again until they confirm; then record the confirmed playback. If they say to just start, tell them in one line what you decided on their behalf and record that line with the skip command.";
+
+// Intake ends with a confirmed playback or a stated skip, and a later correction reopens it. An
+// intake recorded by the earlier question form has no playback history and still completes it.
+function intakeFinished(state) {
+  if (!state.decisions?.intake) return false;
+  const playbacks = history(state, "playbacks");
+  return !playbacks.length || playbacks.at(-1).verdict !== "reject";
+}
+
 const INTAKE = {
   id: "intake",
-  finished: (state) => Boolean(state.decisions?.intake),
+  finished: intakeFinished,
+  action: (state, root) => {
+    const latest = history(state, "playbacks").at(-1);
+    const corrected = latest?.verdict === "reject";
+    return {
+      type: "ask",
+      first: corrected ? `The owner corrected the playback ("${latest.reason}"); each correction is now a project rule. Play it back again with the corrections applied, then ask:` : SKIP_LINE,
+      question: corrected ? "What is wrong or missing in this?" : OPENING[state.mode === "replicate" ? "replicate" : "page"],
+      instruction: CONVERSATION,
+      record: `${decideCommand(root, "intake")} --verdict accept --answer "<the playback the owner confirmed>"`,
+      correction: `${decideCommand(root, "intake")} --verdict reject --answer "<what the owner said is wrong or missing>"`,
+      skip: `${decideCommand(root, "intake")} --choice skip --answer "<the line telling the owner what you decided on their behalf>"`,
+      why: "Intent and taste come from the owner's own words and facts from looking; a skip still states every decision made for them.",
+    };
+  },
+};
+
+// Quick work skips the questions, but no default stays silent.
+const QUICK_INTAKE = {
+  id: "intake",
+  finished: intakeFinished,
   action: (_state, root) => ({
-    type: "ask",
-    question: "Answer in one reply; \"default\" accepts every recommendation.",
-    questions: [
-      { id: "product", ask: "What is the product, and the one thing a visitor should do or understand?", recommended: "Take it from the conversation so far." },
-      { id: "audience", ask: "Who visits, from where, and on which devices?", recommended: "General audience arriving from search or a link, on phone and desktop." },
-      { id: "scope", ask: "Which pages or sections does the page need, and what should the visitor be able to do first?", recommended: "One landing page: a first screen that shows the product, proof, one call to action." },
-      { id: "assets", ask: "Which copy, screenshots, product UI, logos, fonts and brand rules can be used, and are they licensed for this use?", recommended: "Only material you own; missing pieces are generated." },
-    ],
-    record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage intake --answer "<the user's reply>"`,
-    why: "Only facts that change the result are asked; style comes from references and judgment.",
+    type: "run",
+    instruction: "Do not interview the owner: a quick piece is settled by the request, the conversation and the project's files. Tell the owner in one plain line what you decided on their behalf (what you will build, for whom, the look or reference you follow), then record that line. Ask first only about something essential that you can neither look up nor reasonably decide.",
+    command: `${decideCommand(root, "intake")} --choice skip --answer "<the line you told the owner>"`,
+    why: "Quick work stays short, and the owner hears every decision made for them instead of a silent default.",
   }),
 };
 
+function recordIntake(state, _root, options) {
+  const playbacks = history(state, "playbacks");
+  const at = new Date().toISOString();
+  if (options.choice !== undefined && options.choice !== null) {
+    if (options.choice !== "skip") fail("workflow", "web intake --choice accepts only skip: the owner asked you to start without questions");
+    if (options.verdict) fail("workflow", "web intake takes --choice skip or --verdict, not both");
+    state.decisions.intake = { answer: stated(options.answer, "state in one line what you decided on the owner's behalf; a bare go-ahead is a silent default"), skipped: true };
+    state.decisions.playbacks = [...playbacks, { verdict: "skip", at }];
+  } else if (options.verdict === "accept") {
+    state.decisions.intake = { answer: stated(options.answer, "be the playback the owner confirmed, not their reply to it"), playback: "confirmed" };
+    state.decisions.playbacks = [...playbacks, { verdict: "accept", at }];
+  } else if (options.verdict === "reject") {
+    const reason = stated(options.answer, "say what the owner corrected in the playback; it becomes a project rule");
+    state.decisions.playbacks = [...playbacks, { verdict: "reject", reason, at }];
+    addRule(state, reason, `playback ${rejections(state.decisions.playbacks)}`);
+  } else {
+    fail("workflow", "web intake records the confirmed playback (--verdict accept --answer \"<playback>\"), a correction (--verdict reject --answer \"<what is wrong>\") or a stated skip (--choice skip --answer \"<what you decided for the owner>\"). Fix: follow the intake action from next");
+  }
+}
+
+// --- concepts: three structurally different first screens on one switchable page -----------------
+
+const VARIANT_KEYS = ["A", "B", "C"];
+const VARIANTS_PAGE = "concepts.html";
+const SWITCHER = "data-variant-switcher";
+const SWITCHER_SCRIPT = path.resolve(__dirname, "../../tools/variant-switcher/variant-switcher.js").split(path.sep).join("/");
+const PRESCREEN = "Before asking the user, agent-pre-screen the three variants: render each first viewport at the same size and combine them into one contact sheet. Require genuinely different layout skeletons, focal elements, type positions and image roles, each declared in a one-line skeleton. Redo any variant with the same skeleton, a common template or hierarchy that collapses, rerender and compare without showing failed variants to the user. A pre-screen is not Visual Acceptance; the user selects the direction.";
+
+function variantFindings(root) {
+  const html = fileText(root, VARIANTS_PAGE) ?? "";
+  const missing = VARIANT_KEYS.filter(key => !new RegExp(`data-variant\\s*=\\s*["']${key}["']`, "i").test(html));
+  return [
+    ...(missing.length ? [{ code: "variants-incomplete", severity: "error", message: `${VARIANTS_PAGE} marks no first screen data-variant="${missing.join("\", \"")}".`, fix: `Put each of the three first screens in an element marked data-variant="A", "B" or "C" in ${VARIANTS_PAGE}.` }] : []),
+    ...(html.includes(SWITCHER) ? [] : [{ code: "variant-switcher-missing", severity: "error", message: `${VARIANTS_PAGE} has no variant switcher (${SWITCHER}).`, fix: `Inline ${SWITCHER_SCRIPT} in ${VARIANTS_PAGE}; it adds the switcher.` }]),
+  ];
+}
+
+// A pick closes the stage and a later rejection reopens it. A pick recorded before variant history
+// existed still counts.
+function conceptChosen(state) {
+  const variants = history(state, "variants");
+  if (!variants.length) return Boolean(state.decisions?.concept);
+  return variants.at(-1).verdict === "pick" && Boolean(state.decisions?.concept);
+}
+
 const CONCEPTS = {
   id: "concepts",
-  finished: (state) => Boolean(state.decisions?.concept),
-  action: (state, root) => (exists(root, "concepts.md")
-    ? { type: "ask", question: "Which concept should we make?", options: "the three cards in concepts.md", recommended: "Recommend the concept whose section arc best serves what the visitor should do first.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage concept --choice <1|2|3> [--answer "<changes>"]`, why: "Before asking the user, agent-pre-screen the three same-size first screens on one contact sheet. Require genuinely different layout skeletons, focal elements, type positions and image roles, each declared in a one-line skeleton. Redo any card with the same skeleton, a common template or hierarchy that collapses without showing it to the user. A pre-screen is not Visual Acceptance; the user selects the direction." }
-    : { type: "run", instruction: "Write concepts.md: three cards with genuinely different first-screen structures (layout skeleton, focal element, type position and image role, including no image), not just copy or colour. Each card starts with its central idea in one sentence and a one-line skeleton declaring those choices, then the section arc in one line per section (what it is for and its dominant element), what carries the eye down the page, look, tools (one line), and any missing license. Render all three first viewports at the same size and combine them into one contact sheet. Agent-pre-screen before asking the user; redo cards with the same skeleton, a common template or hierarchy that collapses, rerender and compare without showing failed cards to the user. A pre-screen is not Visual Acceptance. After the pick, extend the chosen card with `## Treatment` (references/web-direction.md).", why: "Structural divergence and agent screening before convergence; only the user picks a direction." }),
+  finished: conceptChosen,
+  action: (state, root) => {
+    if (!exists(root, "concepts.md") || !exists(root, VARIANTS_PAGE)) return { type: "run", instruction: `Write concepts.md: three cards, A, B and C, with genuinely different first-screen structures (layout skeleton, focal element, type position and image role, including no image), not just copy or colour. Each card starts with its central idea in one sentence and a one-line skeleton declaring those choices, then the section arc in one line per section (what it is for and its dominant element), what carries the eye down the page, look, tools (one line), and any missing license. Then build ${VARIANTS_PAGE}: one self-contained page with the three first screens as real markup, each in an element marked data-variant="A", "B" or "C" (with data-variant-name), one shown at a time by ?variant=A|B|C, and the floating switcher: inline ${SWITCHER_SCRIPT} (left and right arrows around a label, the ← → keys, visibly not part of the design). The variants are throwaway prototypes; the switcher never goes into index.html. ${PRESCREEN} After the pick, extend the chosen card with \`## Treatment\` (references/web-direction.md).`, why: "Structural divergence the owner can flip through before convergence; only the owner picks a direction." };
+    const findings = variantFindings(root);
+    if (findings.length) return { type: "run", instruction: `${findings.map(item => `${item.message} Fix: ${item.fix}`).join(" ")} Then run next again.`, findings, why: "The owner flips between real first screens on one page, so every variant and the switcher must be there." };
+    const latest = history(state, "variants").at(-1);
+    const rejected = latest?.verdict === "reject" && latest.sha256 === fileSha(root, VARIANTS_PAGE);
+    return {
+      type: "ask",
+      ...(rejected ? { first: `The owner rejected these variants ("${latest.reason}"); the reason is now a project rule. Redo what it rules out in ${VARIANTS_PAGE} and pre-screen again, then ask:` } : {}),
+      question: `Open ${VARIANTS_PAGE} and flip through A, B and C with the arrows or the ← → keys. Which first screen should I build, or what should I combine from them (for example B's header with C's layout)?`,
+      show: [VARIANTS_PAGE, "concepts.md"].map(rel => path.join(path.resolve(root), rel)),
+      recommended: "Recommend the variant whose structure best serves what the visitor should do first, and say why.",
+      record: `${decideCommand(root, "concept")} --choice <A|B|C, or several comma-separated to combine> [--answer "<what to take from each, in the owner's words>"]`,
+      correction: `${decideCommand(root, "concept")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
+      why: `${PRESCREEN} Each rejection becomes a project rule.`,
+    };
+  },
 };
+
+function recordConcept(state, root, options, next) {
+  if (!stages(state).some(stage => stage.id === "concepts")) fail("workflow", `${state.tier === "quick" ? "the quick tier" : "replicate mode, which keeps its reference,"} has no variants to pick or reject. Fix: follow next`);
+  if (options.verdict && !["accept", "reject"].includes(options.verdict)) fail("workflow", "--verdict must be reject, or omitted when --choice records the pick");
+  const variants = history(state, "variants");
+  const page = fileSha(root, VARIANTS_PAGE);
+  const at = new Date().toISOString();
+  // Variants are picked or rejected only once the owner has been shown them (or later, to reopen).
+  const action = next();
+  if (before(state, action.stage, "concepts") || action.stage === "concepts" && action.type !== "ask") fail("workflow", `Cannot record a variant ${options.verdict === "reject" ? "rejection" : "pick"} while ${action.stage === "concepts" ? `${VARIANTS_PAGE} is not ready` : `${action.stage} is unfinished`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+  if (options.verdict === "reject") {
+    if (!page) fail("workflow", `there is no ${VARIANTS_PAGE} to reject. Fix: follow next`, { code: "WORKFLOW_NOT_READY" });
+    const reason = stated(options.answer, "say what the owner rejected in the variants and why; it becomes a project rule");
+    state.decisions.variants = [...variants, { verdict: "reject", reason, sha256: page, at }];
+    addRule(state, reason, `variants ${rejections(state.decisions.variants)}`);
+    return;
+  }
+  const choices = String(options.choice ?? "").split(",").map(value => value.trim().toUpperCase()).filter(Boolean);
+  if (!choices.length || choices.some(value => !VARIANT_KEYS.includes(value)) || new Set(choices).size !== choices.length) fail("workflow", `--choice must be A, B or C, or several of them comma-separated to combine (the variant keys in ${VARIANTS_PAGE})`);
+  const notes = choices.length > 1
+    ? stated(options.answer, "say what to take from each combined variant, in the owner's words")
+    : typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
+  state.decisions.concept = choices.join(",");
+  if (notes) state.decisions.conceptNotes = notes;
+  else delete state.decisions.conceptNotes;
+  state.decisions.variants = [...variants, { verdict: "pick", choice: state.decisions.concept, ...(page ? { sha256: page } : {}), at }];
+}
+
+// --- components: one grilling round of concrete decisions, each with a recommended answer -----------
+
+const COMPONENT_OPTIONS = [
+  "project: the project's existing components (name the paths you found)",
+  "github: a GitHub component library the owner names",
+  "index: search this skill's component source index",
+  "discover: let the agent find maintained open-source component libraries and icon sets on GitHub beyond the index",
+  "scratch: write from scratch",
+];
 
 const COMPONENTS = {
   id: "components",
   finished: (state) => typeof state.decisions?.components === "string" && Boolean(state.decisions.components.trim())
     && Array.isArray(state.decisions.componentSources) && state.decisions.componentSources.length > 0,
-  action: (_state, root) => ({
-    type: "ask",
-    question: "Where should the components come from?",
-    options: [
-      "The project's existing components (specify paths)",
-      "A GitHub component library you name",
-      "Search this skill's component source index",
-      "Let the agent find maintained open-source component libraries and icon sets on GitHub beyond the index",
-      "Write from scratch",
-    ],
-    recommended: "The project's own components first, then search the index, then let the agent find more: project,index,discover.",
-    record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage components --choice <${COMPONENT_SOURCES.join("|")}, comma-separated> --answer "<the user's reply>"`,
-    why: "Record the user's component source choice immediately before building; scratch cannot be combined with another choice, github requires a https://github.com/<owner>/<repo> URL in --answer, and discover lets the agent find open-source GitHub repositories itself and record each with its pinned license. Discovery is not permission to copy.",
-  }),
+  action: (state, root) => {
+    const sectioned = state.tier !== "quick";
+    const questions = [
+      ...(sectioned ? [{ id: "sections", ask: "Which sections should the page have, in build order, starting with the first screen?", recommended: state.mode === "replicate" ? "The reference's sections, in its order." : "The chosen variant's section arc from concepts.md, first screen first." }] : []),
+      { id: "components", ask: "Where should the components come from?", options: COMPONENT_OPTIONS, recommended: "project,index,discover: the project's own components first, then the index, then let the agent find more." },
+    ];
+    return {
+      type: "ask",
+      question: sectioned ? "These decisions are ready now, each with my recommendation. Which would you change?" : "Where should the components come from?",
+      questions,
+      recommended: "The project's own components first, then search the index, then let the agent find more: project,index,discover.",
+      instruction: `Ask this as one numbered round: one ❓ Qn per question with its body and options, then ➡️ your recommended answer, and wait for the reply. Settle facts yourself first: find the project's existing components and their paths, and the assets and their licenses, and name what you found instead of asking for it. Add a question only for a concrete decision you can neither look up nor settle from the conversation, such as whether supplied material is licensed for this use; a question whose answer depends on another one still open waits for the next round.${sectioned ? " The sections the owner settles go into the description." : ""}`,
+      record: `${decideCommand(root, "components")} --choice <${COMPONENT_SOURCES.join("|")}, comma-separated> --answer "<the user's reply>"`,
+      why: `Record the user's component source choice before ${sectioned ? "the description and the build" : "building"}; scratch cannot be combined with another choice, github requires a https://github.com/<owner>/<repo> URL in --answer, and discover lets the agent find open-source GitHub repositories itself and record each with its pinned license. Discovery is not permission to copy.`,
+    };
+  },
 };
+
+// --- description: the one-page brief the owner approves before anything is built -------------------
+
+const SECTION_ID = /^[a-z0-9][a-z0-9-]*$/;
+// The project's brief file; a differently cased BRIEF.md the owner supplied is extended in place.
+function briefName(root) {
+  try {
+    const names = fs.readdirSync(root);
+    return names.includes("brief.md") ? "brief.md" : names.find(name => name.toLowerCase() === "brief.md") || "brief.md";
+  } catch { return "brief.md"; }
+}
+// What an approval was given under: the confirmed playback, the variant pick and the component
+// decision. Changing any of them, or the brief's bytes, asks for approval again.
+function descriptionUpstream(state) {
+  return "sha256:" + sha256(canonicalJson({ playback: state.decisions?.intake?.answer ?? null, concept: state.decisions?.concept ?? null, conceptNotes: state.decisions?.conceptNotes ?? null, components: componentDecisionDigest(state) }));
+}
+const approvalId = record => "sha256:" + sha256(canonicalJson({ brief: record.sha256, upstream: record.upstream, sections: record.sections }));
+// The approval the build follows, or null: the latest description verdict accepted the current
+// brief bytes under the current upstream decisions.
+function currentApproval(state, root) {
+  const latest = history(state, "descriptions").at(-1);
+  if (latest?.verdict !== "accept" || !Array.isArray(latest.sections) || !latest.sections.length) return null;
+  if (latest.sha256 !== fileSha(root, briefName(root)) || latest.upstream !== descriptionUpstream(state)) return null;
+  return { id: approvalId(latest), sections: latest.sections };
+}
+
+function descriptionContent(state) {
+  const direction = state.mode === "replicate" ? "what is reproduced, its invariants and what changes" : "the chosen first screen (the variant and anything combined from the others)";
+  return `one page in plain words that a builder could work from without asking again: what the page is and why; who it is for and the one thing a visitor should do; how it should feel, in the owner's words; goals, non-goals and anti-goals (what would make the owner wince, and the project rules); ${direction}; the sections in build order, first screen first, each with its id and one line on its job; where the components come from; constraints such as devices, assets and their licenses; and which choices are the owner's and which are your calls, marked as yours. Keep any brief the owner supplied and extend it rather than replacing their words.`;
+}
+
+const DESCRIPTION = {
+  id: "description",
+  finished: (state, root) => Boolean(currentApproval(state, root)),
+  action: (state, root) => {
+    const file = briefName(root);
+    const current = fileSha(root, file);
+    if (!current) return { type: "run", instruction: `Write ${file}: ${descriptionContent(state)} Then run next again.`, why: "Nothing is built until the owner approves a written description of it." };
+    const latest = history(state, "descriptions").at(-1);
+    const first = latest?.verdict === "reject" && latest.sha256 === current
+      ? `The owner rejected this description ("${latest.reason}"); it is now a project rule. Revise ${file}, then ask:`
+      : latest?.verdict === "accept"
+        ? `${file}, the confirmed playback, the chosen variant or the component decision changed after the owner approved the description. Bring ${file} up to date, then ask:`
+        : `Before asking, make sure ${file} is the one-page description, then ask:`;
+    return {
+      type: "ask",
+      first,
+      question: `Here is the one-page description of what I will build (${file}). Approve it, or tell me what is wrong?`,
+      show: [path.join(path.resolve(root), file)],
+      instruction: `${file} is ${descriptionContent(state)} Show it to the owner as it is; record each correction (it becomes a project rule), revise and ask again.`,
+      recommended: "Approve only when it says what you want; nothing is built before you do.",
+      record: `${decideCommand(root, "description")} --verdict accept --choice <the section ids in build order, first screen first, comma-separated> [--answer "<the owner's words>"]`,
+      correction: `${decideCommand(root, "description")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
+      why: "The hard gate before building: the approval binds this description, the confirmed playback, the chosen variant and the component decision, and fixes the sections the page is built in. Each correction becomes a project rule.",
+    };
+  },
+};
+
+function recordDescription(state, root, options, next) {
+  if (!sectioned(state)) fail("workflow", "the quick tier has no description to approve. Fix: follow next");
+  const file = briefName(root);
+  const current = fileSha(root, file);
+  const action = next();
+  const at = new Date().toISOString();
+  if (options.verdict === "accept") {
+    if (action.stage !== "description" || action.type !== "ask") fail("workflow", `Cannot record the description approval while ${action.stage === "description" ? `${file} is unwritten` : `next is at ${action.stage}`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    const sections = String(options.choice ?? "").split(",").map(value => value.trim()).filter(Boolean);
+    if (!sections.length) fail("workflow", "--choice is required: the section ids in build order, first screen first, comma-separated");
+    const invalid = sections.find(id => !SECTION_ID.test(id));
+    if (invalid) fail("workflow", `section id "${invalid}" must use lowercase letters, digits and hyphens`);
+    if (new Set(sections).size !== sections.length) fail("workflow", "--choice lists a section twice");
+    const text = fileText(root, file) ?? "";
+    const unnamed = sections.filter(id => !new RegExp(`(?:^|[^a-z0-9-])${id}(?:[^a-z0-9-]|$)`, "i").test(text));
+    if (unnamed.length) fail("workflow", `${file} does not name section ${unnamed.join(", ")}. Fix: list every section id in build order in the description and ask for approval again`);
+    const note = typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
+    state.decisions.descriptions = [...history(state, "descriptions"), { verdict: "accept", sha256: current, upstream: descriptionUpstream(state), sections, ...(note ? { note } : {}), at }];
+  } else if (options.verdict === "reject") {
+    if (before(state, action.stage, "description") || !current) fail("workflow", `Cannot reject the description before ${file} is written for approval. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    const reason = stated(options.answer, "say what is wrong with the description; it becomes a project rule");
+    state.decisions.descriptions = [...history(state, "descriptions"), { verdict: "reject", reason, sha256: current, at }];
+    addRule(state, reason, `description ${rejections(state.decisions.descriptions)}`);
+  } else {
+    fail("workflow", "--verdict must be accept or reject");
+  }
+}
 
 function buildStatus(state, root) {
   if (!COMPONENTS.finished(state)) return { finished: false };
@@ -64,6 +316,11 @@ function buildStatus(state, root) {
     validateComponentManifest(JSON.parse(fs.readFileSync(path.join(root, "component-manifest.json"), "utf8")), {
       root, decision: state.decisions.components, componentSources: state.decisions.componentSources,
     });
+    // The variant switcher is a prototype tool: it never ships in the built page.
+    if (fs.readFileSync(path.join(root, "index.html"), "utf8").includes(SWITCHER)) return { finished: false, findings: [{
+      code: "variant-switcher-shipped", severity: "error", message: `index.html contains the prototype variant switcher (${SWITCHER}).`,
+      fix: `Remove the switcher and its script from index.html; it belongs only in ${VARIANTS_PAGE}.`,
+    }] };
     return { finished: true };
   } catch (error) {
     if (error.code === "CONTRACT_INVALID" || error instanceof SyntaxError) {
@@ -77,8 +334,42 @@ function buildStatus(state, root) {
   }
 }
 
+// --- build: the first screen, then one section at a time, each reviewed by the owner -----------------
+
+// Standard and full pages are built in the sections of the approved description; quick builds whole.
+const sectioned = state => state.tier !== "quick";
+const sectionMarker = id => new RegExp(`data-section\\s*=\\s*["']${id}["']`, "i");
+
+// Where the section loop stands under the current approval: the first section, in build order, that
+// is unbuilt or not accepted, and the sections accepted before it. Verdicts given under an earlier
+// approval do not count.
+function sectionProgress(state, root) {
+  const approval = currentApproval(state, root);
+  if (!approval) return null;
+  const html = fileText(root, "index.html") ?? "";
+  const records = history(state, "sections").filter(item => item.description === approval.id);
+  const accepted = [];
+  for (const id of approval.sections) {
+    const latest = records.filter(item => item.section === id).at(-1);
+    const built = sectionMarker(id).test(html);
+    if (!built || latest?.verdict !== "accept") return { approval, accepted, current: id, built, latest };
+    accepted.push(id);
+  }
+  return { approval, accepted, current: null };
+}
+
+// What the owner looked at: index.html, its manifest and the local files the page names.
+function pageDigest(root) {
+  const html = fileText(root, "index.html");
+  if (html === null) return null;
+  const named = [...html.matchAll(/\b(?:src|href)\s*=\s*["']([^"'#?]+)/gi)].map(match => match[1].trim())
+    .filter(ref => ref && !/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(ref));
+  const files = [...new Set(["index.html", "component-manifest.json", ...named])].sort();
+  return "sha256:" + sha256(canonicalJson(Object.fromEntries(files.map(rel => [rel, fileSha(root, rel)]).filter(([, hash]) => hash))));
+}
+
 function buildFinished(state, root) {
-  return buildStatus(state, root).finished;
+  return buildStatus(state, root).finished && (!sectioned(state) || sectionProgress(state, root)?.current === null);
 }
 
 function componentInstruction(state, root) {
@@ -93,23 +384,115 @@ function componentInstruction(state, root) {
   return `Follow the recorded component decision exactly: ${JSON.stringify(state.decisions.components)}; componentSources: ${JSON.stringify(state.decisions.componentSources)}. Reuse the specified project paths, inspect the named GitHub library, search the index, find open-source sources, or write from scratch as requested; do not silently substitute another source. When searching, search the index first: the single discovery index is references/component-source-catalog.json; run \`${cliCommand()} design-system route --root ${shellPath(path.resolve(root))} --query "<page brief>" --platform web\`, then \`${cliCommand()} design-system search --root ${shellPath(skillRoot)} --snapshot ${shellPath(index)} --query "<page brief>" --platform web\`. Read only the returned source entries and their pointed guides/manifests/implementations.${discover} Choose fonts through tools/fonts.md rather than silently defaulting to the system stack, and record the chosen family under Typography in DESIGN.md, where the audit probe's thresholds.fonts reads the approved families; use the system stack only when ${direction} deliberately calls for it. Bundle or self-host discovered code and fonts inside the project with their license notices: no CDN scripts or remote fonts at runtime (references/web-motion.md#self-contained-pages). Before building index.html, write component-manifest.json with an entries array: each entry needs name, sourceId or url, availability (bundled-implementation|reference-link|metadata-only|project-owned), license: {state: verified|unverified|commercial|project-owned|platform}, and usedIn: [{file, marker, how}]. sourceId must resolve in the index or name an existing contained project-owned file; a GitHub repository url must appear in the components decision, and an indexed source is cited by sourceId, not by one of its URLs. Any other url must be a GitHub repository https://github.com/<owner>/<repo>: a discovered source, which needs discover in componentSources, availability bundled-implementation, reference-link or metadata-only, revision (commit SHA or tag, not HEAD, main or master) and license.evidence (https URLs, at least one on that repository whose blob, tree, raw, commit, releases/tag or archive ref is the revision, such as https://github.com/<owner>/<repo>/blob/<revision>/LICENSE), with license.state verified, unverified or commercial, plus license.id (SPDX expression) when known. Indexed license.state must match the index. Every usedIn.file must exist inside the project, and marker (import path/class/custom element/component identifier) must actually appear in it. For verified imports/copies, how records attribution/license-notice handling; a how that bundles, vendors, self-hosts or downloads the source counts as copying. Copy or import a discovered source only when its license.state is verified, its license.id is ${PERMISSIVE_LIST}, and license.file names the non-empty project file that holds its license text; otherwise only study and reimplement it. The scratch source set requires fromScratch: true and permits empty or project-owned-only entries; every other source set forbids fromScratch: true and requires non-empty entries. Components with unverified or commercial licenses may only be studied and reimplemented, never copied. Build is unfinished until both index.html and a valid component-manifest.json exist.`;
 }
 
+const BUILD_CRAFT = "motion follows references/web-motion.md, design tokens and components from references/pipeline-reference.md. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. File delivery and engineering checks do not grant visual acceptance.";
+
+// What the build step writes: the whole page at quick; otherwise the first screen first, then the
+// section the loop stands at. Quick and replicate have no concepts stage, so no chosen card to extend.
+function buildScope(state, progress) {
+  const replicate = state.mode === "replicate";
+  const openSpec = state.tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and " : "";
+  if (!sectioned(state)) return `${openSpec}build index.html from ${replicate ? "the reference and its invariants" : "the decisions you told the owner"}`;
+  const { accepted = [], current = null } = progress || {};
+  if (!current) return `repair index.html and component-manifest.json without changing what the owner accepted (sections ${accepted.join(", ")})`;
+  if (accepted.length) return `continue with section \`${current}\` in index.html, inside an element marked data-section="${current}" (accepted so far: ${accepted.join(", ")})`;
+  const treatment = replicate ? "" : "extend the chosen card in concepts.md (for a combination, the first card named, saying what it takes from the others) with `## Treatment` and write the section briefs (references/web-direction.md) before you ";
+  return `${openSpec}${treatment}build only the first screen, section \`${current}\`, into index.html from ${replicate ? "the reference and its invariants" : "the chosen variant and the approved description"}, inside an element marked data-section="${current}"; the other sections follow one at a time after the owner reviews it`;
+}
+
+function sectionReview(root, { approval, accepted, current, latest }) {
+  const unrevised = latest?.verdict === "reject" && latest.pageSha256 === pageDigest(root);
+  return {
+    type: "ask",
+    section: current,
+    ...(unrevised ? { first: `The owner asked for changes to section ${current} ("${latest.reason || "see the cited runtime-review Feedback"}"); each comment is now a project rule. Revise the section, then ask:` } : {}),
+    question: `The ${current} section is built (${accepted.length + 1} of ${approval.sections.length}). Look at it in the page and point at anything that is wrong. Accept it as it is, or tell me what to change?`,
+    show: [path.join(path.resolve(root), "index.html")],
+    instruction: `Open index.html at the ${current} section (data-section="${current}") in a real browser and let the owner look and interact. Ask them to point at each element they comment on by its text, label or place. If the project carries runtime-review inputs (references/runtime-review.md), build a runtime-review bundle for this section so they can pick its elements and export Feedback, record each with runtime-review record, and cite the recorded files with --evidence. Any change they ask for is a reject: record it, revise the section and ask again; accept only a section they are happy with as it is.`,
+    recommended: "Accept only when nothing in this section needs to change; earlier sections stay accepted unless a new rule changes them.",
+    record: `${decideCommand(root, "section")} --choice ${current} --verdict accept|reject [--answer "<the owner's comments>"] [--evidence <runtime-review/feedback/<hash>.json>]`,
+    why: "The page is built one section at a time, first screen first; the next section starts only after the owner reviews this one. Each comment becomes a project rule. A section verdict is not Visual Acceptance of the page; the final review is.",
+  };
+}
+
 const BUILD = {
   id: "build",
   finished: buildFinished,
   action: (state, root) => {
-    const { findings } = buildStatus(state, root);
+    const { finished, findings } = buildStatus(state, root);
+    const progress = sectioned(state) ? sectionProgress(state, root) : null;
+    if (finished && progress?.current) {
+      if (progress.built) return sectionReview(root, progress);
+      const { accepted, current } = progress;
+      return {
+        type: "run",
+        section: current,
+        instruction: `${accepted.length ? `Accepted so far: ${accepted.join(", ")}. Build the next section` : "Build section"}, \`${current}\`, from its brief into index.html inside an element marked data-section="${current}". Keep the accepted sections as the owner accepted them unless a project rule requires a change, and add every component it uses to component-manifest.json; ${BUILD_CRAFT}`,
+        why: "The page grows one reviewed section at a time, in the order of the approved description.",
+      };
+    }
+    // Keep source selection ahead of implementation and retain the user's exact answer.
     const action = {
       type: "run",
-      // Quick and replicate have no concepts stage, so there is no chosen card to extend.
-      // Keep source selection ahead of implementation and retain the user's exact answer.
-    instruction: `${componentInstruction(state, root)} ${state.tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and " : ""}${state.tier !== "quick" && state.mode !== "replicate" ? "extend the chosen card in concepts.md with `## Treatment` and write the section briefs (references/web-direction.md) before you " : ""}build index.html from ${state.mode === "replicate" ? "the reference and its invariants" : "the chosen concept"}; motion follows references/web-motion.md, design tokens and components from references/pipeline-reference.md. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. File delivery and engineering checks do not grant visual acceptance.`,
-    why: state.tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the motion and token conventions.",
-    ...(findings ? { findings } : {}),
+      ...(progress?.current ? { section: progress.current } : {}),
+      instruction: `${componentInstruction(state, root)} ${buildScope(state, progress)}; ${BUILD_CRAFT}`,
+      why: state.tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the motion and token conventions.",
+      ...(findings ? { findings } : {}),
     };
     if (findings) action.instruction = `${findings.map(finding => `${finding.message} Fix: ${finding.fix}`).join(" ")} ${action.instruction}`;
     return action;
   },
 };
+
+const RECORD_SCHEMA = "design-pipeline.runtime-review-record.v1";
+const FEEDBACK_SCHEMA = "design-pipeline.runtime-review-feedback.v1";
+const nonEmpty = value => typeof value === "string" && Boolean(value.trim());
+// Runtime-review Feedback the owner recorded for a section (runtime-review record output). Only the
+// record's shape is read here; `runtime-review check` remains the authority on its bundle lineage.
+function reviewFeedback(root, paths) {
+  return (Array.isArray(paths) ? paths : paths ? [paths] : []).map(rel => {
+    const bytes = projectFile(root, rel);
+    let record = null;
+    try { record = bytes ? JSON.parse(bytes.toString("utf8")) : null; } catch { record = null; }
+    const feedback = record?.feedback;
+    if (record?.schema !== RECORD_SCHEMA || record.lifecycle !== "recorded" || feedback?.schema !== FEEDBACK_SCHEMA || !nonEmpty(feedback.objectId)
+      || !["component-conformance", "visual-acceptance"].includes(feedback.category) || !nonEmpty(feedback.actual) || !nonEmpty(feedback.expected)) {
+      fail("workflow", `--evidence ${rel} is not a runtime-review Feedback record inside the project. Fix: export the Feedback from the runtime-review page, record it with runtime-review record and cite the recorded runtime-review/feedback/<hash>.json`);
+    }
+    return { path: String(rel).split(path.sep).join("/"), sha256: "sha256:" + sha256(bytes), objectId: feedback.objectId, category: feedback.category, actual: feedback.actual.trim(), expected: feedback.expected.trim() };
+  });
+}
+
+function recordSection(state, root, options, next) {
+  if (!sectioned(state)) fail("workflow", "the quick tier builds the page whole and has no section reviews. Fix: follow next");
+  if (!["accept", "reject"].includes(options.verdict)) fail("workflow", "--verdict must be accept or reject");
+  const id = typeof options.choice === "string" ? options.choice.trim() : "";
+  if (!SECTION_ID.test(id)) fail("workflow", "--choice is required: the id of the section the owner reviewed");
+  const approval = currentApproval(state, root);
+  if (!approval) fail("workflow", "no section can be reviewed until the owner approves the current description. Fix: follow next", { code: "WORKFLOW_NOT_READY" });
+  if (!approval.sections.includes(id)) fail("workflow", `section ${id} is not in the approved description (${approval.sections.join(", ")}). Fix: follow next`);
+  if (!sectionMarker(id).test(fileText(root, "index.html") ?? "")) fail("workflow", `section ${id} is not built: index.html has no data-section="${id}". Fix: follow next`, { code: "WORKFLOW_NOT_READY" });
+  const action = next();
+  // Sections are accepted in build order, each when next asks about it; a built section can be
+  // rejected again later, which reopens it.
+  if (options.verdict === "accept" && (action.stage !== "build" || action.type !== "ask" || action.section !== id)) {
+    fail("workflow", `Cannot accept section ${id} while next ${action.section ? `is at section ${action.section}` : `is at ${action.stage}`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+  }
+  if (options.verdict === "reject" && before(state, action.stage, "build")) fail("workflow", `Cannot record a section review while ${action.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+  const evidence = reviewFeedback(root, options.evidence);
+  const answer = nonEmpty(options.answer) ? options.answer.trim() : null;
+  if (options.verdict === "reject" && !answer && !evidence.length) fail("workflow", "a section rejection needs --answer with the owner's comments, or --evidence with their recorded runtime-review Feedback; each becomes a project rule");
+  const records = [...history(state, "sections"), {
+    section: id, verdict: options.verdict, reason: answer,
+    ...(evidence.length ? { evidence: evidence.map(({ path: rel, sha256: hash, objectId, category }) => ({ path: rel, sha256: hash, objectId, category })) } : {}),
+    description: approval.id, pageSha256: pageDigest(root), at: new Date().toISOString(),
+  }];
+  state.decisions.sections = records;
+  if (options.verdict === "reject") {
+    const from = `section ${id} ${rejections(records, item => item.section === id)}`;
+    if (answer) addRule(state, answer, from);
+    for (const item of evidence) addRule(state, `${item.objectId}: ${item.actual} Expected: ${item.expected}`, from);
+  }
+}
 
 // Whether interaction.json declares a page audit (`"kind": "audit"`); null when it is not readable
 // JSON, which the verify command reports with its own fix.
@@ -140,12 +523,25 @@ const DELIVER = {
   action: (_state, root) => ({ type: "run", command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
 };
 
+// Quick: a stated decision, components, build, probe. Standard and full: the conversation, the
+// variants (not in replicate, which keeps its reference), one round of concrete decisions, the
+// approved description, the section-by-section build, probe, final review and delivery.
 function stages(state) {
   if (state.mode === "replicate") return state.tier === "quick"
-    ? [REFERENCE, COMPONENTS, BUILD, PROBE]
-    : [INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE, REVIEW, DELIVER];
-  if (state.tier === "quick") return [COMPONENTS, BUILD, PROBE];
-  return [INTAKE, REFERENCE, CONCEPTS, COMPONENTS, BUILD, PROBE, REVIEW, DELIVER];
+    ? [QUICK_INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE]
+    : [INTAKE, REFERENCE, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
+  if (state.tier === "quick") return [QUICK_INTAKE, COMPONENTS, BUILD, PROBE];
+  return [INTAKE, REFERENCE, CONCEPTS, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
 }
 
-module.exports = { stages };
+// Whether next, standing at `current`, has not yet reached the stage `id` (done is past every stage).
+function before(state, current, id) {
+  const ids = stages(state).map(stage => stage.id);
+  return current !== "done" && ids.indexOf(current) < ids.indexOf(id);
+}
+
+// decide for the stages whose web records differ from the shared ones; each receives the action next
+// returned before the record.
+const decisions = { intake: recordIntake, concept: recordConcept, description: recordDescription, section: recordSection };
+
+module.exports = { decisions, stages };

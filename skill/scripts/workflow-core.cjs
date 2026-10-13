@@ -163,7 +163,8 @@ function nextAction(root) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
     const action = stage.action(state, root);
-    const directed = state.director && action.type === "ask" && ["concepts", "sample", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
+    // Visual asks go to the art director: the concept pick, a sample, a built web section, the review.
+    const directed = state.director && action.type === "ask" && ["concepts", "sample", "build", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
     return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
@@ -184,9 +185,14 @@ function decide(root, options = {}) {
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
   stateJobPlan(root, state); // A stale Stage 0 binding records nothing.
   const stage = options.stage;
-  assertEnum(stage, ["intake", "reference", "concept", "components", "sample", "review", "deliver"], "stage", "workflow");
+  assertEnum(stage, ["intake", "reference", "concept", "components", "description", "section", "sample", "review", "deliver"], "stage", "workflow");
   state.decisions = state.decisions || {};
-  if (stage === "intake") {
+  // Web records its conversation, variants, description and sections itself (workflows/web.cjs).
+  const webRecord = state.deliverable === "web" ? SUB_WORKFLOWS.web.decisions[stage] : null;
+  if (!webRecord && ["description", "section"].includes(stage)) fail("workflow", `--stage ${stage} applies only to web workflows; this project is a ${state.deliverable} workflow. Fix: follow next.`);
+  if (webRecord) {
+    webRecord(state, root, options, () => nextAction(root));
+  } else if (stage === "intake") {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
     const collisions = fs.readdirSync(root).filter(name => name.toLowerCase() === "brief.md");
     const file = path.join(root, collisions[0] || "brief.md");
