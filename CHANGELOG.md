@@ -6,6 +6,10 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- The installed dependency self-check now discovers standard Skills CLI user and project
+  `.agents/skills` installations by default, while preserving legacy Codex roots and exclusive
+  explicit root overrides (change `fix-standard-skills-install-discovery`).
+
 - The UI craft audit no longer passes generated text under other paint, a link standing alone
   after a `<br>` or block box, or a target widened by an over-constrained `::before` or `::after`
   (change `fix-audit-coderabbit-limits`). Generated text on its own fill is checked for paint over
