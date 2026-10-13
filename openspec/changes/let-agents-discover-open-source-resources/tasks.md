@@ -107,3 +107,32 @@ npm run specs:check                              Totals: 74 passed, 0 failed (74
 ```
 
 CI on `a0c90ec` (run 38372464415): `windows-path-regressions` passed; `qa-and-package` first failed one browser case in `component-eval.test.cjs` ("native technical progress recovers a dispatcher interruption without redoing a completed unit"), which passed locally on this branch and on `origin/main`, then passed on rerun with the whole job green.
+
+## Review fixes
+
+PR #100 review findings, fixed in `design-system-catalog-core.cjs`, the web build instruction and the docs.
+
+- [x] 14. Copy detection counts `bundle`/`bundled`/`bundling`, `vendor`/`vendored`/`vendoring`, `self-host`/`self-hosted`/`self-hosting`, `download`/`downloaded`/`downloading` (and 打包, 自托管, 下载) in `usedIn.how` as copying, for discovered and indexed sources alike.
+- [x] 15. Evidence pins the revision only as the raw, undecoded ref segment right after `blob`, `tree`, `raw`, `commit`, `releases/tag` or `archive` (also `archive/refs/tags`, minus `.zip`/`.tar.gz`) on the same repository; `HEAD`, `main` and `master` are rejected as revisions (case-insensitive). Other branch names are still not detected.
+- [x] 16. GitHub first segments `topics`, `orgs`, `sponsors`, `marketplace`, `settings`, `features`, `collections`, `explore`, `enterprise`, `login`, `apps`, `users` and `search` are not repository owners, for entry, evidence and decision URLs.
+- [x] 17. Discovered entries use availability `bundled-implementation`, `reference-link` or `metadata-only`.
+- [x] 18. A web build records its chosen font family under Typography in `DESIGN.md`, which the audit probe's `thresholds.fonts` reads (`tools/fonts.md`, the build instruction, `workflow-web.md`, `stages.md`).
+
+The six affected `discovery:` cases (five new, one extended) were run against the previous core (`git show HEAD:skill/scripts/design-system-catalog-core.cjs` swapped in, then restored) and against the fix:
+
+```text
+node --test tests/workflow-components.test.cjs
+Before (core at 810ac6c): tests 67; pass 61; fail 6; exit 1
+After:                    tests 67; pass 67; fail 0; exit 0
+```
+
+Before, five failed with `Missing expected exception` (the reviewer's repros were accepted: GPL or unverified source "bundled"/"vendor"/"self-host"/"downloaded" into the page, permissive bundling without notice handling, revision `LICENSE`/`blob`/`deadbeef` behind `main%2Fdeadbeef%2F`, `HEAD`/`main`/`master`, `https://github.com/topics/widgets`, discovered `availability: project-owned`). The extended evidence case failed on the old message; its new rejected shapes (revision only as a later segment, outside a ref position, or behind an encoded slash) are covered by the new cases too.
+
+```text
+node --test <14 related files: astryx-bundled-snapshot, cli-routing, component-fit-matrix, component-routing, component-source-{completeness,metadata,routing}, design-system-{catalog,decision,provider}, guided-multi-surface-cli, surface-design-artifacts, workflow-action-commands, workflow-next>
+tests 278; pass 277; fail 0; skipped 1 (the existing Windows case-alias collision check); exit 0
+npm run specs:check
+Totals: 74 passed, 0 failed (74 items)
+```
+
+The full `npm test` was not run for these fixes (low free space on C:).
