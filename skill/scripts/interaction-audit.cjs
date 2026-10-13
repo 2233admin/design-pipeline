@@ -467,18 +467,30 @@ function auditPage(options) {
     const result = { left, top, right: left + container.clientWidth * scaleX, bottom: top + container.clientHeight * scaleY };
     return Object.values(result).every(Number.isFinite) ? result : null;
   };
-  // An absolutely positioned pseudo-element of a positioned element, placed by its resolved insets
-  // against the element's padding box; null when its containing block is another element.
+  // An absolutely positioned pseudo-element of a positioned element: its insets and margins place its
+  // border box in the element's padding box, which for an inline element on one line is its border
+  // box less its borders. Null when the containing block is another element, the inline element
+  // wraps, a length does not resolve to px, or the size, margins and insets over-constrain each other,
+  // since CSS then ignores an inset and the box is not where the insets put it.
   const absolutePseudoBox = (el, style) => {
     if (!(el instanceof HTMLElement) || styleOf(el).position === "static" || style.position !== "absolute") return null;
-    const padding = clientBounds(el);
-    const insets = ["top", "right", "bottom", "left"].map((side) => style[side]);
-    if (!padding || !insets.every((value) => /^-?[\d.]+px$/.test(value))) return null;
+    const host = styleOf(el);
     const box = rectOf(el);
     const scaleX = el.offsetWidth ? box.width / el.offsetWidth : 1;
     const scaleY = el.offsetHeight ? box.height / el.offsetHeight : 1;
-    const [top, right, bottom, left] = insets.map(parseFloat);
-    return { left: padding.left + left * scaleX, top: padding.top + top * scaleY, right: padding.right - right * scaleX, bottom: padding.bottom - bottom * scaleY };
+    const inline = host.display === "inline";
+    if (inline && el.getClientRects().length !== 1) return null;
+    const padding = inline
+      ? { left: box.left + parseFloat(host.borderLeftWidth) * scaleX, top: box.top + parseFloat(host.borderTopWidth) * scaleY, right: box.right - parseFloat(host.borderRightWidth) * scaleX, bottom: box.bottom - parseFloat(host.borderBottomWidth) * scaleY }
+      : clientBounds(el);
+    if (!padding) return null;
+    const px = (key) => (/^-?[\d.]+px$/.test(style[key]) ? parseFloat(style[key]) : NaN);
+    const edges = (keys) => (style.boxSizing === "border-box" ? 0 : keys.reduce((sum, key) => sum + px(key), 0));
+    const [top, right, bottom, left, marginTop, marginRight, marginBottom, marginLeft] = ["top", "right", "bottom", "left", "marginTop", "marginRight", "marginBottom", "marginLeft"].map(px);
+    const spanX = left + marginLeft + px("width") + edges(["paddingLeft", "paddingRight", "borderLeftWidth", "borderRightWidth"]) + marginRight + right;
+    const spanY = top + marginTop + px("height") + edges(["paddingTop", "paddingBottom", "borderTopWidth", "borderBottomWidth"]) + marginBottom + bottom;
+    if (!(Math.abs(spanX - (padding.right - padding.left) / scaleX) <= 1 && Math.abs(spanY - (padding.bottom - padding.top) / scaleY) <= 1)) return null;
+    return { left: padding.left + (left + marginLeft) * scaleX, top: padding.top + (top + marginTop) * scaleY, right: padding.right - (right + marginRight) * scaleX, bottom: padding.bottom - (bottom + marginBottom) * scaleY };
   };
   const scaleFor = (el) => {
     const bounds = rectOf(el);
@@ -754,10 +766,18 @@ function auditPage(options) {
   };
   const textEffects = (style) => (style.textShadow === "none" ? parseFloat(style.webkitTextStrokeWidth) > 0 ? "the text has a stroke" : null : "the text has a shadow");
   // Generated text has no text node. It sits on its pseudo-element's own background when that
-  // paints, otherwise on what lies behind its box: the element's box in flow, or the inset box of an
-  // absolute pseudo-element of a positioned element. A transform, a relative or sticky offset, or the
-  // margins of an absolute pseudo-element move the text off that box, and any other placement
-  // cannot be located.
+  // paints, otherwise on what lies behind its box: the element's box in flow, or the border box of an
+  // absolute pseudo-element of a positioned element. A transform or a relative or sticky offset moves
+  // the text off that box, and any other placement cannot be located. Paint over a located box
+  // changes what the text sits on, whichever background it reads against.
+  const pseudoBox = (el, selector, style) => {
+    const insets = [style.top, style.right, style.bottom, style.left];
+    if (["transform", "translate", "rotate", "scale"].some((property) => style[property] !== "none")) return { reason: `${selector} is transformed` };
+    if (style.position === "sticky" && insets.some((value) => value !== "auto")) return { reason: `${selector} is sticky` };
+    if (style.position === "relative" && insets.some((value) => value !== "auto" && parseFloat(value) !== 0)) return { reason: `${selector} is relatively positioned` };
+    const box = style.position === "absolute" ? absolutePseudoBox(el, style) : style.position === "fixed" ? null : rectOf(el);
+    return box && box.right - box.left > 0 && box.bottom - box.top > 0 ? { box } : { reason: `the box of ${selector} cannot be located` };
+  };
   const measureGenerated = (el, pseudo, style) => {
     const selector = `${selectorOf(el)}${pseudo}`;
     const color = parseColor(style.webkitTextFillColor || style.color);
@@ -766,6 +786,7 @@ function auditPage(options) {
       || (style.filter !== "none" || style.backdropFilter !== "none" ? `${selector} applies a filter` : null)
       || (style.mixBlendMode === "normal" ? null : `${selector} blends with mix-blend-mode: ${style.mixBlendMode}`)
       || (style.backgroundClip === "text" || style.webkitBackgroundClip === "text" ? `${selector} paints its background through the text (background-clip: text)` : null);
+    const { box, reason: unplaced } = pseudoBox(el, selector, style);
     const image = style.backgroundImage !== "none";
     const insetShadow = /\binset\b/.test(style.boxShadow);
     if (image || insetShadow || paintsColor(style.backgroundColor)) {
@@ -774,18 +795,11 @@ function auditPage(options) {
         : insetShadow ? `${selector} has an inset shadow`
         : own ? own.a < 1 ? `${selector} has a translucent background (${style.backgroundColor})` : groupEffect(el)
         : `the background color of ${selector} (${style.backgroundColor}) could not be read`;
-      return measureContrast(el, selector, color, style, [], effects, reason ? { reason } : { color: own });
+      // Its own fill holds wherever the text sits, but paint over the text is ruled out only over a
+      // located box, so text it cannot place stays indeterminate as well.
+      return measureContrast(el, selector, color, style, box ? [box] : [], effects, reason || !box ? { reason: reason || unplaced } : { color: own, provider: el });
     }
-    const insets = [style.top, style.right, style.bottom, style.left];
-    let displaced = null;
-    if (["transform", "translate", "rotate", "scale"].some((property) => style[property] !== "none")) displaced = `${selector} is transformed`;
-    else if (style.position === "sticky" && insets.some((value) => value !== "auto")) displaced = `${selector} is sticky`;
-    else if (style.position === "relative" && insets.some((value) => value !== "auto" && parseFloat(value) !== 0)) displaced = `${selector} is relatively positioned`;
-    else if (style.position === "absolute" && [style.marginTop, style.marginRight, style.marginBottom, style.marginLeft].some((value) => !/^-?[\d.]+px$/.test(value) || parseFloat(value) !== 0)) displaced = `${selector} is moved by its margins`;
-    let box = null;
-    if (!displaced && style.position === "absolute") box = absolutePseudoBox(el, style);
-    else if (!displaced && style.position !== "fixed") box = rectOf(el);
-    if (!box || box.right - box.left <= 0 || box.bottom - box.top <= 0) return measureContrast(el, selector, color, style, [], effects, { reason: displaced || `the box of ${selector} cannot be located` });
+    if (!box) return measureContrast(el, selector, color, style, [], effects, { reason: unplaced });
     measureContrast(el, selector, color, style, [box], effects);
   };
   for (const el of elements) {
@@ -876,11 +890,12 @@ function auditPage(options) {
   if (overflowPx > tolerance.boundsPx) failed("audit.horizontal-overflow", root, { expected: `no page-level horizontal overflow (within ${tolerance.boundsPx}px)`, actual: `${round2(overflowPx)}px wider than the ${root.clientWidth}px viewport`, message: "the page scrolls sideways", fix: FIX.horizontalOverflow, ...(widest ? { related: widest.el } : {}) });
 
   // ---- targets and control spacing
-  // Sentence text is painted, visible text in the link's own inline formatting context, outside
-  // other controls; block-level, hidden and invisible descendants hold none of it. Text in a
-  // transparent color paints only through a stroke, a shadow, or a background clipped to text on
-  // its element or an ancestor that no background painted in between covers. Text hidden only from
-  // assistive technology is still painted on the line, so it counts.
+  // Sentence text is painted, visible text on the link's line run: in the link's own inline
+  // formatting context, outside other controls, with no line break or in-flow block box between it
+  // and the link. Hidden and invisible text holds none of it. Text in a transparent color paints only
+  // through a stroke, a shadow, or a background clipped to text on its element or an ancestor that
+  // no background painted in between covers. Text hidden only from assistive technology is still
+  // painted on the line, so it counts.
   const paintsText = (el) => {
     const style = styleOf(el);
     if (paintsColor(style.webkitTextFillColor || style.color)) return true;
@@ -892,20 +907,35 @@ function auditPage(options) {
     }
     return false;
   };
+  // A <br>, or a block box in flow, ends the line run before it.
+  const breaksLine = (node) => {
+    const style = styleOf(node);
+    if (style.display === "none") return false;
+    return node.localName === "br" || (!/^(inline|contents|ruby)/.test(style.display) && !["absolute", "fixed"].includes(style.position) && style.float === "none");
+  };
   const sentenceText = (el) => {
     let block = el.parentElement;
     while (block && /^(inline|contents)$/.test(styleOf(block).display)) block = block.parentElement;
     if (!block) return false;
     const walker = document.createTreeWalker(block, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
-      acceptNode: (node) => (node.nodeType === Node.TEXT_NODE ? NodeFilter.FILTER_ACCEPT : /^(inline|contents)$/.test(styleOf(node).display) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_REJECT),
+      acceptNode: (node) => (node.nodeType === Node.TEXT_NODE || breaksLine(node) ? NodeFilter.FILTER_ACCEPT : /^(inline|contents)$/.test(styleOf(node).display) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_REJECT),
     });
+    let found = false;
+    let boundary = null;
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (boundary?.contains(node)) continue;
+      if (node.nodeType !== Node.TEXT_NODE) {
+        if (el.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) break;
+        boundary = node;
+        found = false;
+        continue;
+      }
       if (!/[\p{L}\p{N}]/u.test(node.textContent) || !visible(node.parentElement) || !paintsText(node.parentElement)) continue;
       const owner = node.parentElement?.closest(CONTROL);
       if (owner && owner !== block && block.contains(owner)) continue;
-      return true;
+      found = true;
     }
-    return false;
+    return found;
   };
   // WCAG 2.2 2.5.8: a link inside a sentence is constrained by the line height of the text around it.
   const inlineTextLink = (el) => el.matches('a[href], [role="link"]') && styleOf(el).display === "inline" && sentenceText(el);

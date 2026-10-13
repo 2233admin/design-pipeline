@@ -332,31 +332,36 @@ test("aria-hidden text, clipped screen-reader text and content parked off screen
 test("spacing measures the hit areas target-size counts and diagonal neighbours of controls and stacks", { skip: tools.skip }, async (t) => {
   // 16px icons whose ::after widens the target to 32px sit 8px apart by layout, but their targets
   // overlap by 8px; two 24px buttons, and two tiles of a declared grid stack, offset 2px on each
-  // axis are 2.83px apart along the diagonal.
+  // axis are 2.83px apart along the diagonal. A 16px button whose 2px ::after over-constrains its
+  // -8px insets is not widened, since CSS drops an inset and pins it to a corner; an inline link
+  // whose ::after reaches 4px past each edge is widened past 24px.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
-<style>button{padding:0;border:0;background:#1d4ed8}.hit::after{content:"";position:absolute;top:-8px;right:-8px;bottom:-8px;left:-8px}#tiles{display:grid;grid-template-columns:24px 24px;grid-template-rows:24px 24px;gap:2px}#tiles span{background:#e4e4e7;font-size:16px;line-height:24px}</style>
+<style>button{padding:0;border:0;background:#1d4ed8}.hit::after{content:"";position:absolute;top:-8px;right:-8px;bottom:-8px;left:-8px}.pin::after{width:2px;height:2px}.near::after{content:"";position:absolute;top:-4px;right:-4px;bottom:-4px;left:-4px}#tiles{display:grid;grid-template-columns:24px 24px;grid-template-rows:24px 24px;gap:2px}#tiles span{background:#e4e4e7;font-size:16px;line-height:24px}</style>
 </head><body style="margin:0;padding:32px">
 <div style="position:relative;height:48px"><button id="icon-a" class="hit" aria-label="Back" style="position:absolute;left:8px;top:8px;width:16px;height:16px"></button><button id="icon-b" class="hit" aria-label="Next" style="position:absolute;left:32px;top:8px;width:16px;height:16px"></button></div>
 <div style="position:relative;height:64px"><button id="corner-a" aria-label="Up" style="position:absolute;left:0;top:0;width:24px;height:24px"></button><button id="corner-b" aria-label="Down" style="position:absolute;left:26px;top:26px;width:24px;height:24px"></button></div>
 <div id="tiles"><span id="tile-a" style="grid-area:1/1">A</span><span id="tile-b" style="grid-area:2/2">B</span></div>
+<div style="position:relative;height:40px"><button id="pinned" class="hit pin" aria-label="Close" style="position:absolute;left:0;top:8px;width:16px;height:16px"></button></div>
+<p><a id="inline-near" class="near" href="#more" style="position:relative">Go</a></p>
 </body></html>`;
   const probe = { id: "spacing", kind: "audit", thresholds: { fonts: ["sans-serif"] }, declare: { stacks: ["#tiles"] } };
   const result = await measure(t, "spacing", [probe], { html });
   const gaps = (code) => result.findings.filter((finding) => finding.code === code).map((finding) => [finding.selector, finding.actual]);
   assert.deepEqual(gaps("audit.control-gap"), [["#icon-a", "overlapping it by 8px"], ["#corner-a", "2.83px from it"]]);
   assert.deepEqual(gaps("audit.layout-gap"), [["#tile-a", "2.83px from it"]]);
-  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), [], "the widened icons meet the 24px floor");
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#pinned"], "the widened icons and inline link meet the 24px floor; the pinned button does not");
 });
 
 test("generated text is measured for contrast on its own background or the one behind its box", { skip: tools.skip }, async (t) => {
   // A pale required marker in flow, a badge whose text barely differs from its own fill, readable
   // generated text, generated text fixed to the viewport with no background of its own, generated
   // text moved off its box by a transform, translucent generated text, white generated text that a
-  // relative offset moves off its dark host onto the white page, and sticky generated text, which
-  // scrolling can move even at top: 0, and white generated text whose margins move it off its dark
-  // host. The badge's host has no text, which its painted ::after would leave indeterminate.
+  // relative offset moves off its dark host onto the white page, sticky generated text, which
+  // scrolling can move even at top: 0, white generated text that its margins move off its dark host,
+  // measured where they put it, a badge under a translucent veil, and a transformed badge. The badge
+  // hosts have no text, which their painted ::after would leave indeterminate.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
-<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}#shift{background:#18181b;color:#fff;padding:4px 8px;margin-bottom:96px}#shift::after{content:" moved";color:#fff;position:relative;top:64px}#stick::after{content:" pinned";color:#3f3f46;position:sticky;top:0}#slip{position:relative;width:120px;height:32px;margin-left:240px;background:#18181b}#slip::after{content:"Out";color:#fff;position:absolute;top:0;right:0;bottom:0;left:0;margin-left:-200px;margin-right:200px}</style>
+<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}#shift{background:#18181b;color:#fff;padding:4px 8px;margin-bottom:96px}#shift::after{content:" moved";color:#fff;position:relative;top:64px}#stick::after{content:" pinned";color:#3f3f46;position:sticky;top:0}#slip{position:relative;width:120px;height:32px;margin-left:240px;background:#18181b}#slip::after{content:"Out";color:#fff;position:absolute;top:0;right:0;bottom:0;left:0;margin-left:-200px;margin-right:200px}#mail{position:relative;height:24px}#mail::after{content:"9";position:absolute;top:0;left:0;padding:0 4px;background:#18181b;color:#fff}#tag{position:relative;height:24px;margin-top:24px}#tag::after{content:"Hot";position:absolute;top:0;left:0;padding:0 4px;background:#18181b;color:#fff;transform:translate(50%,-50%)}</style>
 </head><body style="margin:0;padding:32px">
 <p id="email">Email</p>
 <div id="inbox" style="height:24px"></div>
@@ -367,17 +372,21 @@ test("generated text is measured for contrast on its own background or the one b
 <p id="shift">Dark</p>
 <p id="stick">Stick</p>
 <div id="slip"></div>
+<div style="position:relative"><div id="mail"></div><div id="veil" style="position:absolute;top:0;left:0;width:48px;height:24px;background:rgba(255,255,255,.8)"></div></div>
+<div id="tag"></div>
 </body></html>`;
   const result = await measure(t, "generated", [{ id: "generated", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
     ["#email::after", "1.47:1 (#d4d4d8 on #ffffff)"],
     ["#inbox::after", "1.13:1 (#fde047 on #fef08a)"],
+    ["#slip::after", "1:1 (#ffffff on #ffffff)"],
     ["#draft::after", "not measurable: the box of #draft::after cannot be located"],
     ["#lift::after", "not measurable: #lift::after is transformed"],
     ["#soft::after", "not measurable: #soft::after is translucent (opacity 0.8)"],
     ["#shift::after", "not measurable: #shift::after is relatively positioned"],
     ["#stick::after", "not measurable: #stick::after is sticky"],
-    ["#slip::after", "not measurable: #slip::after is moved by its margins"],
+    ["#mail::after", "not measurable: #veil paints over or under the text"],
+    ["#tag::after", "not measurable: #tag::after is transformed"],
   ]);
 });
 
@@ -398,12 +407,12 @@ test("opacity above the text or its background leaves contrast indeterminate", {
 });
 
 test("an inline link is exempt from target size only beside text in its own inline formatting context", { skip: tools.skip }, async (t) => {
-  // A link after a paragraph, and links beside text that is not displayed, invisible, transparent,
-  // clipped away, drawn in a transparent color (with or without a transparent shadow), or
-  // transparent over a background that covers its ancestor's gradient clipped to text, stand alone.
-  // A link inside a sentence, even one whose words are hidden only from assistive technology,
-  // outlined by a stroke, drawn by a shadow, or painted by an ancestor's background clipped to text,
-  // is constrained by the line around it.
+  // A link after a paragraph, a link after a line break, and links beside text that is not
+  // displayed, invisible, transparent, clipped away, drawn in a transparent color (with or without a
+  // transparent shadow), or transparent over a background that covers its ancestor's gradient clipped
+  // to text, stand alone. A link inside a sentence, even one whose words are hidden only from
+  // assistive technology, outlined by a stroke, drawn by a shadow, painted by an ancestor's
+  // background clipped to text, or on the line after a break, is constrained by the line around it.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><body style="margin:0;padding:32px">
 <div><p>Read the release notes before you upgrade.</p><a id="after-paragraph" href="#next">Next</a></div>
 <div><span style="display:none">Hidden words</span><a id="beside-hidden" href="#more">More</a></div>
@@ -413,14 +422,16 @@ test("an inline link is exempt from target size only beside text in its own inli
 <div><span style="color:transparent">Clear words</span><a id="beside-clear" href="#e">Go</a></div>
 <div style="background:linear-gradient(#18181b,#3f3f46);-webkit-background-clip:text;background-clip:text;color:transparent"><div style="background:#fff"><span>Covered words</span><a id="beside-covered" href="#g">Go</a></div></div>
 <div><span style="color:transparent;text-shadow:0 0 transparent">Shadowless words</span><a id="beside-shadowless" href="#i">Go</a></div>
+<p>Read the notes<br><a id="after-break" href="#k">Go</a></p>
 <p>Read the <a id="in-sentence" href="#terms">terms</a> first.</p>
 <p><span aria-hidden="true">Read the</span> <a id="beside-decorative" href="#d">notes</a></p>
 <p style="background:linear-gradient(#18181b,#3f3f46);-webkit-background-clip:text;background-clip:text;color:transparent"><span>Read the</span> <a id="beside-gradient" href="#f">guide</a></p>
 <p><span style="color:transparent;-webkit-text-stroke:1px #18181b">Read the</span> <a id="beside-outlined" href="#h">notes</a></p>
 <p><span style="color:transparent;text-shadow:0 0 2px #18181b">Read the</span> <a id="beside-shadowed" href="#j">notes</a></p>
+<p>Read the notes<br>then the <a id="on-next-line" href="#l">guide</a></p>
 </body></html>`;
   const result = await measure(t, "sentence", [{ id: "sentence", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
-  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#after-paragraph", "#beside-hidden", "#beside-invisible", "#beside-transparent", "#beside-clipped", "#beside-clear", "#beside-covered", "#beside-shadowless"]);
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#after-paragraph", "#beside-hidden", "#beside-invisible", "#beside-transparent", "#beside-clipped", "#beside-clear", "#beside-covered", "#beside-shadowless", "#after-break"]);
 });
 
 test("verify interaction exits 2 on the violating page, 0 on the clean and undeclared pages and 1 on a selector the page rejects", { skip: tools.skip }, (t) => {
