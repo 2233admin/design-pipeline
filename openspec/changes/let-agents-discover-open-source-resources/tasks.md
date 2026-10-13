@@ -96,3 +96,14 @@ Run 1's status failure was caused by writing this record while QA ran; run 2 lef
 - Run 2: `runtime-review.test.cjs` and one `website-cloning-init.test.cjs` case with `EPERM ... rename`, and three more `website-cloning-init.test.cjs` initializer runs that exited 1 (legacy manifest authority, preflight foundations, JSONL handoff evaluation).
 
 These match the workstation's known Windows temp-rename flake. An earlier verification of this change reproduced it standalone on unchanged `origin/main` 66e41c8 in `palette-foundation.test.cjs` and `website-cloning-init.test.cjs`; `art-motion-voice`, `coderabbit-round-two` and `runtime-review` were not rerun on `origin/main` this time.
+
+### Rebase onto `origin/main` d9f2981 (PR #99 merged)
+
+The branch was rebased; the hashes above name the pre-rebase commits. The only conflict was additive in `CHANGELOG.md` (both entries kept). PR #99 makes the web `probe` stage require an audited interaction probe with recorded lineage, so the discovery lineage case now records its pass with the audited probe file and lineage that the existing lineage regressions use (commit `a0c90ec`).
+
+```text
+node --test tests/workflow-components.test.cjs   tests 62; pass 62; fail 0
+npm run specs:check                              Totals: 74 passed, 0 failed (74 items)
+```
+
+CI on `a0c90ec` (run 38372464415): `windows-path-regressions` passed; `qa-and-package` first failed one browser case in `component-eval.test.cjs` ("native technical progress recovers a dispatcher interruption without redoing a completed unit"), which passed locally on this branch and on `origin/main`, then passed on rerun with the whole job green.
