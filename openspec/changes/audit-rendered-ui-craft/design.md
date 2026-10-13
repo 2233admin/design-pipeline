@@ -45,7 +45,7 @@ distinguished by `"kind": "audit"`. Motion and journey probes keep their current
 | `audit.font-size` | Visible text and generated text are at least `minFontPx`; when `fontSizes` is declared, sizes are on that scale within 0.1 px | `minFontPx` 12 | `thresholds.minFontPx`, `thresholds.fontSizes` |
 | `audit.tabular-numbers` | Declared numbers and inferred numeric table cells render the digits 0-9 at equal advance width within 0.5 px | none | `declare.numbers` |
 | `audit.numeric-alignment` | Inferred numeric table cells align to the end edge | none | none |
-| `audit.text-contrast` | WCAG 2 ratio over a resolved solid background: 4.5:1, or 3:1 for text at least 24 px or bold and at least 18.67 px. Generated `::before`/`::after` text is measured over its own background when it paints one, otherwise over the background behind its box: the element's box in flow, or the inset box of an absolute pseudo-element of a positioned element. Text over gradients, images, translucency, filters, blend modes, shadows or overlapping paint, and generated text that cannot be placed, is `indeterminate`, with the fix "put the text on a measurable solid surface or scrim" | 4.5 / 3 | `thresholds.contrastNormal`, `thresholds.contrastLarge` |
+| `audit.text-contrast` | WCAG 2 ratio over a resolved solid background: 4.5:1, or 3:1 for text at least 24 px or bold and at least 18.67 px. Generated `::before`/`::after` text is measured over its own background when it paints one, otherwise over the background behind its box: the element's box in flow, or the inset box of an absolute pseudo-element of a positioned element. Text over gradients, images, translucent backgrounds, shadows or overlapping paint, text under opacity, a filter or a blend mode on its element or any ancestor, and generated text that cannot be placed, is `indeterminate`, with the fix "put the text on a measurable solid surface or scrim" | 4.5 / 3 | `thresholds.contrastNormal`, `thresholds.contrastLarge` |
 | `audit.root-background` | The root has an opaque background color | none | none |
 | `audit.horizontal-overflow` | The document is no wider than the viewport by more than 1 px | 1 px | none |
 | `audit.viewport-bounds` | Visible boxes and text stay inside the viewport horizontally; overlays also vertically; clip and scroll ancestors respected | 1 px | none |
@@ -131,8 +131,9 @@ audited pass records an empty `remote` list. Probe files without audit probes ke
 URL behavior for remote URLs and keep recording them without hashing them.
 
 A report destination the page loaded is refused before anything is written, since writing the
-report would replace the bytes the page was measured with before the gate binds them: `verify
-interaction` and native completion fail with `OUTPUT_COLLISION` (exit 1, no report, no gate).
+report would replace the bytes the page was measured with before the gate binds them. `verify
+interaction` exits 1 with `OUTPUT_COLLISION` and writes no report and no gate; native completion,
+which shares that observation, stops as `blocked` without writing its checks or failure state.
 
 `gateStatus` treats an `interaction` record as stale when its lineage is missing (records written
 before this change), when any recorded hash differs, when an `absent` file now exists, or when

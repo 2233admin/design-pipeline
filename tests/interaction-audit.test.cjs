@@ -368,7 +368,23 @@ test("generated text is measured for contrast on its own background or the one b
   ]);
 });
 
-test("an inline link is exempt from target size only beside text in its own line", { skip: tools.skip }, async (t) => {
+test("opacity above the text or its background leaves contrast indeterminate", { skip: tools.skip }, async (t) => {
+  // A badge on a half-transparent host, and text on an opaque card inside a half-transparent
+  // wrapper: both read 17:1 or more against their own backgrounds, but neither is rendered that way.
+  const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
+<style>#beta{position:relative;height:24px;opacity:.5}#beta::after{content:"Beta";background:#18181b;color:#fff;padding:0 4px}</style>
+</head><body style="margin:0;padding:32px">
+<div id="beta"></div>
+<div id="fade" style="opacity:.5"><p id="dim" style="background:#fff;color:#000">Dim</p></div>
+</body></html>`;
+  const result = await measure(t, "translucent", [{ id: "translucent", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
+    ["#beta::after", "not measurable: #beta is translucent (opacity 0.5)"],
+    ["#dim", "not measurable: #fade is translucent (opacity 0.5)"],
+  ]);
+});
+
+test("an inline link is exempt from target size only beside text in its own inline formatting context", { skip: tools.skip }, async (t) => {
   // A link after a paragraph, and one beside hidden text, stand alone; a link inside a sentence is
   // constrained by the line around it.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><body style="margin:0;padding:32px">

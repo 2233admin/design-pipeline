@@ -668,13 +668,24 @@ function auditPage(options) {
     const style = getComputedStyle(node, pseudo);
     return !["none", "normal"].includes(style.content) && style.display !== "none" && (style.backgroundImage !== "none" || paintsColor(style.backgroundColor));
   });
+  // Opacity, filters and blending on the text's element or any ancestor composite the text and the
+  // background under it with whatever lies behind both, so no ratio of the two holds.
+  const groupEffect = (el) => {
+    for (let node = el; node; node = node.parentElement) {
+      const style = styleOf(node);
+      if (style.display === "contents") continue;
+      if (parseFloat(style.opacity) < 1) return `${selectorOf(node)} is translucent (opacity ${style.opacity})`;
+      if (style.filter !== "none" || style.backdropFilter !== "none") return `${selectorOf(node)} applies a filter`;
+      if (style.mixBlendMode !== "normal") return `${selectorOf(node)} blends with mix-blend-mode: ${style.mixBlendMode}`;
+    }
+    return null;
+  };
   const resolveBackground = (el, rects) => {
+    const effect = groupEffect(el);
+    if (effect) return { reason: effect };
     for (let node = el; node; node = node.parentElement) {
       const style = styleOf(node);
       const boxless = style.display === "contents";
-      if (!boxless && parseFloat(style.opacity) < 1) return { reason: `${selectorOf(node)} is translucent (opacity ${style.opacity})` };
-      if (!boxless && (style.filter !== "none" || style.backdropFilter !== "none")) return { reason: `${selectorOf(node)} applies a filter` };
-      if (!boxless && style.mixBlendMode !== "normal") return { reason: `${selectorOf(node)} blends with mix-blend-mode: ${style.mixBlendMode}` };
       if (style.backgroundClip === "text" || style.webkitBackgroundClip === "text") return { reason: `${selectorOf(node)} paints its background through the text (background-clip: text)` };
       if (paintedPseudo(node)) return { reason: `${selectorOf(node)} paints a ::before or ::after layer` };
       if (boxless) continue;
@@ -760,7 +771,7 @@ function auditPage(options) {
       const reason = opacity < 1 ? `${selector} is translucent (opacity ${style.opacity})`
         : image ? `${selector} has a background image or gradient`
         : insetShadow ? `${selector} has an inset shadow`
-        : own ? own.a < 1 ? `${selector} has a translucent background (${style.backgroundColor})` : null
+        : own ? own.a < 1 ? `${selector} has a translucent background (${style.backgroundColor})` : groupEffect(el)
         : `the background color of ${selector} (${style.backgroundColor}) could not be read`;
       return measureContrast(el, selector, color, style, [], effects, reason ? { reason } : { color: own });
     }
