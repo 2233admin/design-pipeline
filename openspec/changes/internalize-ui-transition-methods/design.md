@@ -83,6 +83,15 @@ The archives contain `references/ui-transition-rules.md`; the original dirty wor
 The separate package smoke also produced TGZ/ZIP/checksums successfully. These are technical
 packaging/routing observations, not live animation correctness or Visual Acceptance.
 
+The published implementation is pinned at commit
+`3fe3a11cb2166b587cffa7759002a2507f8793f6`, Git tree
+`c8e2745275f5f3a566c4ae18877b343de92a1ca1`. Its
+[CI verification](https://github.com/2233admin/design-pipeline/actions/runs/38449780473)
+passed the complete QA/package job and Windows path regressions. The results above do not
+claim verification of subsequent revisions. Integration of main commit
+`b599190a3df30f8d4aa1eb829ed8b86f6e61927d` and this verification-record correction are later
+revisions; their final PR head must pass a fresh CI run before merge.
+
 Earlier source-worktree checks passed 77 pinned-source tests and 76 strict spec/change items.
 That dirty-worktree QA run reached 1442 passing tests and 4 skips but failed packaging on a missing
 concurrently registered `references/motion-recipes/hp-ghost-bar.md`; an explicit-file focused run
