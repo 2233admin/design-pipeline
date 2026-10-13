@@ -376,6 +376,29 @@ test("an audited page that loads a stylesheet from outside the project fails ext
   assert.equal(nextAction(dir).stage, "probe");
 });
 
+test("a journey that loads a file outside the project on click fails verify interaction and records no pass", { skip: tools.skip }, (t) => {
+  const outside = tmp(t);
+  fs.writeFileSync(path.join(outside, "brand.css"), "p { letter-spacing: 0; }\n");
+  const brand = require("node:url").pathToFileURL(path.join(outside, "brand.css")).href;
+  // The journey's own origin check accepts any file: request; only the run-wide project bound sees
+  // that the click loaded a file the gate could neither hash nor watch.
+  const html = `<!doctype html><html lang="en"><body><div id="wrapper"><button id="load" type="button">Load</button><p id="status">idle</p></div>
+<script>document.getElementById("load").addEventListener("click", () => { const link = document.createElement("link"); link.rel = "stylesheet"; link.href = ${JSON.stringify(brand)}; document.head.appendChild(link); document.getElementById("status").textContent = "loaded"; });</script></body></html>`;
+  const journey = { id: "load", target: "#wrapper", steps: [
+    { id: "initial", timeoutMs: 200, assertions: [{ selector: "#status", kind: "text", equals: "idle" }] },
+    { id: "click", input: { kind: "click", selector: "#load" }, timeoutMs: 1000, assertions: [{ selector: "#status", kind: "text", equals: "loaded" }] },
+  ] };
+  const dir = stage(t, "journey", probeDoc("journey-outside", journey), { web: true, html });
+  const result = verify(dir);
+  assert.equal(result.status, 2, result.text);
+  assert.deepEqual(result.output.probes.map((probe) => probe.status), ["passed"], "the journey's own assertions pass");
+  const gate = readState(dir).gates.interaction;
+  assert.equal(gate.status, "failed");
+  assert.equal(gate.lineage, undefined, "a failed run binds no lineage");
+  assert.deepEqual(gate.findings.map((finding) => [finding.code, finding.actual]), [["external-request", brand]]);
+  assert.match(gate.findings[0].fix, /^Copy every listed resource into the project/);
+});
+
 test("editing a loaded stylesheet or DESIGN.md makes the gate stale; a pass without lineage is stale", { skip: tools.skip }, (t) => {
   const dir = stage(t, "clean", probeDoc("audit-clean", PROBES.clean), { web: true });
   assert.equal(verify(dir).status, 0);
