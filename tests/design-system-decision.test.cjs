@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const { decomposeCapabilities, normalizeSnapshot, searchCapabilities, searchCatalog } = require("../skill/scripts/design-system-catalog-core.cjs");
@@ -48,10 +49,10 @@ function searchSelection(mode, value) {
   return {
     basis: "capability-search",
     authority: {
-      actor: mode === "substitute" || mode === "custom" ? "owner" : "agent",
+      actor: mode === "reference" ? "agent" : "owner",
       source: "request",
       choice: mode,
-      text: mode === "substitute" ? "Replace the existing system with the compatible catalog candidate." : mode === "custom" ? "Use a project-owned fallback after comparing the catalog candidates." : "Compare the catalog candidates for this project.",
+      text: mode === "adopt" ? "Adopt the compatible catalog candidate for this project's runtime." : mode === "substitute" ? "Replace the existing system with the compatible catalog candidate." : mode === "custom" ? "Use a project-owned fallback after comparing the catalog candidates." : "Compare the catalog candidates for this project.",
     },
     rationale: "The compared candidates establish the intended use and project fit.",
     compatibility: "Keep the current React, react-dom and StyleX versions and the existing product constraints.",
@@ -347,12 +348,32 @@ test("reference research authority does not silently authorize fallback or subst
   assert.equal(decideDesignSystem(substitute).status, "blocked");
 });
 
-test("ordinary adoption retains agent selection while enforcing runtime and intake", () => {
-  const request = governed({ mode: "adopt", catalog: catalog(), project: { runtime: { react: "19.1.0", reactDom: "19.1.0", stylex: "0.15.4" } }, adapterIntake: { status: "admitted" } });
-  const result = decideDesignSystem(request);
-  assert.equal(result.status, "ready");
-  assert.equal(result.selection.authority.actor, "agent");
-  assert.equal(validateDesignSystemDecision(result, { request }), result);
+test("new adoption requires actual owner authority even with compatible runtime and admitted intake", () => {
+  for (const authority of [
+    { actor: "agent", source: "request", text: "Adopt the candidate chosen during capability research." },
+    { actor: "agent", source: "reply", text: "I selected this candidate after capability research." },
+    { actor: "owner", source: "project", text: "The project declaration names this candidate." },
+  ]) {
+    const request = governed({ mode: "adopt", catalog: catalog(), project: { runtime: { react: "19.1.0", reactDom: "19.1.0", stylex: "0.15.4" } }, adapterIntake: { status: "admitted" } });
+    request.selection.authority = { ...authority, choice: "adopt" };
+    const result = decideDesignSystem(request);
+    assert.equal(result.status, "blocked");
+    assert.equal(result.selected, null);
+    assert.equal(result.selection, null);
+    assert.ok(result.rationale.some((item) => /actual owner.*request or reply/.test(item)));
+    assert.equal(validateDesignSystemDecision(result, { request }), result);
+  }
+});
+
+test("supplied owner request or reply authorizes adoption without another approval", () => {
+  for (const source of ["request", "reply"]) {
+    const request = governed({ mode: "adopt", catalog: catalog(), project: { runtime: { react: "19.1.0", reactDom: "19.1.0", stylex: "0.15.4" } }, adapterIntake: { status: "admitted" } });
+    request.selection.authority.source = source;
+    const result = decideDesignSystem(request);
+    assert.equal(result.status, "ready");
+    assert.deepEqual(result.selection.authority, request.selection.authority);
+    assert.equal(validateDesignSystemDecision(result, { request }), result);
+  }
 });
 
 test("unknown supplied candidate identities are clarified rather than translated", () => {
@@ -519,6 +540,65 @@ test("publication binding shape never treats malformed hashes or paths as author
     mutate(invalid);
     assert.throws(() => validateDesignSystemDecision(invalid), /relative path|sha256-prefixed|hash the request/);
   }
+});
+
+test("bundled catalog bindings identify the fixed installed source with a byte hash", () => {
+  const request = scratch();
+  for (const bundledCatalog of [
+    {},
+    { source: "../astryx-design-system-snapshot.json", sha256: `sha256:${"a".repeat(64)}` },
+    { source: "references/astryx-design-system-snapshot.json", sha256: "a".repeat(64) },
+    { source: "references/astryx-design-system-snapshot.json", sha256: `sha256:${"a".repeat(64)}`, path: "/untrusted/bundle.json" },
+  ]) {
+    const published = { ...decideDesignSystem(request), request, sourceBindings: { requestPath: "request.json", inputHashes: { "request.json": `sha256:${"a".repeat(64)}` }, bundledCatalog } };
+    assert.throws(() => validateDesignSystemDecision(published), /bundledCatalog|bundled catalog|sha256-prefixed/);
+  }
+});
+
+test("shared validation reopens changed or missing installed bundle sources without trusting embedded catalog replay", t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-system-bundle-validation-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true, maxRetries: 3 }));
+  fs.mkdirSync(path.join(root, "scripts"));
+  fs.mkdirSync(path.join(root, "references"));
+  for (const file of ["design-system-decision-core.cjs", "design-system-catalog-core.cjs", "contract-utils.cjs", "interoperability-core.cjs"]) {
+    fs.copyFileSync(path.resolve(__dirname, "../skill/scripts", file), path.join(root, "scripts", file));
+  }
+  const core = require(path.join(root, "scripts", "design-system-decision-core.cjs"));
+  const file = path.join(root, "references", "astryx-design-system-snapshot.json");
+  const snapshot = {
+    schema: "design-pipeline.design-system-snapshot.v1", version: "1", namespace: "bundle-fixture",
+    provenance: { source: "https://example.test/bundle", license: "MIT" },
+    components: [{ id: "AppShell", name: "App shell", status: "stable", keywords: ["app shell"] }],
+  };
+  const bytes = JSON.stringify(snapshot) + "\n";
+  fs.writeFileSync(file, bytes);
+  const publish = value => {
+    const request = scratch({ catalog: normalizeSnapshot(value) });
+    return {
+      ...core.decideDesignSystem(request), request,
+      sourceBindings: { requestPath: "request.json", inputHashes: { "request.json": `sha256:${"a".repeat(64)}` }, bundledCatalog: { source: "references/astryx-design-system-snapshot.json", sha256: "sha256:" + sha256(fs.readFileSync(file)) } },
+    };
+  };
+  const published = publish(snapshot);
+  assert.equal(core.validateDesignSystemDecision(published), published);
+  fs.writeFileSync(file, bytes + "\n");
+  assert.throws(() => core.validateDesignSystemDecision(published), /bundled catalog.*changed|bundled catalog.*stale/);
+  fs.writeFileSync(file, bytes);
+  assert.equal(core.validateDesignSystemDecision(published), published);
+  const changed = structuredClone(snapshot);
+  changed.components[0].name = "Changed application shell";
+  fs.writeFileSync(file, JSON.stringify(changed) + "\n");
+  const rebound = structuredClone(published);
+  rebound.sourceBindings.bundledCatalog.sha256 = "sha256:" + sha256(fs.readFileSync(file));
+  assert.throws(() => core.validateDesignSystemDecision(rebound), /catalog.*current installed source/);
+  const regenerated = publish(changed);
+  assert.equal(core.validateDesignSystemDecision(regenerated), regenerated);
+  fs.rmSync(file);
+  assert.throws(() => core.validateDesignSystemDecision(regenerated), /bundled catalog.*unavailable|bundled catalog.*missing/);
+  const explicit = { ...regenerated, sourceBindings: { requestPath: "request.json", inputHashes: { "request.json": `sha256:${"a".repeat(64)}` } } };
+  assert.equal(core.validateDesignSystemDecision(explicit), explicit);
+  fs.writeFileSync(file, JSON.stringify(changed) + "\n");
+  assert.equal(core.validateDesignSystemDecision(regenerated), regenerated);
 });
 
 test("preservation matches the governing project system rather than an alternate declaration", () => {

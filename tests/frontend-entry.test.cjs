@@ -9,10 +9,12 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
+const { execute } = require("../skill/scripts/cli-core.cjs");
 const { decide, initState, nextAction, nextVisualTask, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { ARTIFACT_KEYS, validateReceipt } = require("../skill/scripts/evidence-core.cjs");
 const { normalizeSnapshot } = require("../skill/scripts/design-system-catalog-core.cjs");
 const flow = require("./helpers/web-flow.cjs");
+const frontend = require("../skill/scripts/workflows/frontend.cjs");
 const { advanceChange, createInitialState, writeNewChange } = require("../skill/scripts/pipeline-state-core.cjs");
 const { createArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
 const { runTo } = require("../skill/scripts/control-runtime-core.cjs");
@@ -204,12 +206,12 @@ for (const deliverable of ["web", "ui"]) {
     assert.equal(intake.questions, undefined);
     flow.statedSkip(root, QUERY);
     assert.equal(nextAction(root).stage, "design-system");
-    const decision = flow.consumeScratchDecision(root, { authorityText: QUERY, authoritySource: "request", catalog: { schema: "design-pipeline.design-system-catalog.v1", version: "1", namespace: "owner-scratch", entries: [] } });
+    const decision = flow.consumeScratchDecision(root, { authorityText: QUERY, authoritySource: "request" });
     assert.equal(decision.status, "ready");
     assert.equal(decision.selection.basis, "owner-scratch");
     assert.deepEqual(decision.selection.authority, { actor: "owner", source: "request", text: QUERY, choice: "custom" });
     assert.equal(decision.capabilityInventory, null);
-    assert.deepEqual(decision.request.catalog.entries, [], "an explicit scratch choice needs neither candidates nor catalog exhaustion");
+    assert.deepEqual(decision.selection.compared, [], "explicit scratch needs no candidate comparison or catalog exhaustion");
     assert.equal(fs.existsSync(path.join(root, "capability-inventory.json")), false);
     assert.equal(readState(root).decisions.frontendPurpose.source, "request");
     assert.equal(readState(root).decisions.frontendObservation.visualAcceptance, "not-evaluated");
@@ -635,3 +637,336 @@ test("direct native frontend phase records cannot bypass missing entry and decis
   assert.deepEqual(fs.readFileSync(stateFile), stateBefore);
   assert.deepEqual(fs.readFileSync(eventsFile), eventsBefore);
 });
+
+for (const change of ["edit", "remove", "add", "add-data", "add-content"]) {
+  test(`an unauthorized observed-source ${change} reopens observation and invalidates downstream choices`, t => {
+    const root = project(t, EXISTING, { purpose: "optimize-existing", query: "Improve the existing bakery frontend." });
+    observe(root);
+    readyIntake(root);
+    flow.consumeScratchDecision(root);
+    flow.writeVariants(root);
+    flow.pickVariant(root);
+    assert.equal(nextAction(root).stage, "components");
+    if (change === "edit") write(root, "src/brand.css", ":root { --brand-color: purple; }\n");
+    if (change === "remove") fs.unlinkSync(path.join(root, "src/App.jsx"));
+    if (change === "add") write(root, "src/new-route.js", "export const route = '/new';\n");
+    if (change === "add-data") json(root, "src/new-content.json", { title: "Unobserved product data" });
+    if (change === "add-content") write(root, "new-content.md", "# Unobserved product content\n");
+    const resumed = nextAction(root);
+    assert.equal(resumed.stage, "observe");
+    assert.equal(readState(root).decisions.concept, undefined);
+    assert.notEqual(readState(root).decisions.designSystem.invalidated, undefined);
+    assert.throws(() => decide(root, { stage: "components", choice: "scratch", answer: "Proceed using stale observations." }), { code: "WORKFLOW_NOT_READY" });
+  });
+}
+
+test("an empty observed project becoming nonempty before authorized work requires another observation", t => {
+  const root = project(t, {}, { tier: "quick", purpose: "new", query: QUERY });
+  observe(root);
+  assert.equal(nextAction(root).stage, "intake");
+  write(root, "index.html", "<main>An unexpected existing product</main>");
+  assert.equal(nextAction(root).stage, "observe");
+  assert.throws(() => flow.statedSkip(root, QUERY), { code: "WORKFLOW_NOT_READY" });
+});
+
+test("bounded observation detects new sources beyond its read-file budget without claiming complete coverage", t => {
+  const files = { "src/App.jsx": EXISTING["src/App.jsx"] };
+  for (let index = 0; index < 512; index++) files[`src/data-${String(index).padStart(3, "0")}.js`] = `export const value = ${index};\n`;
+  const root = project(t, files, { scope: "src", purpose: "optimize-existing" });
+  const observed = nextAction(root).observation;
+  assert.equal(observed.discovery.truncated, true);
+  observe(root);
+  write(root, "src/z-new.js", "export const extra = true;\n");
+  assert.equal(nextAction(root).stage, "observe");
+});
+
+for (const query of [
+  "Use this as inspiration; do not clone it.",
+  "参考这个页面来优化，不要复刻，保留我们自己的产品内容。",
+  "Improve our frontend.",
+]) {
+  test(`link role is not guessed from negated or incomplete purpose: ${query}`, t => {
+    const url = "https://reference.example.test/page";
+    const root = project(t, EXISTING, { url, query });
+    const action = observe(root, capture(root, url));
+    assert.notEqual(readState(root).decisions.frontendPurpose?.choice, "faithful-reproduction");
+    assert.notEqual(readState(root).mode, "replicate");
+    if (query === "Improve our frontend.") assert.equal(action.stage, "purpose");
+    else assert.ok(["purpose", "intake"].includes(action.stage));
+  });
+}
+
+test("an actual owner purpose correction leaves reproduction sequencing and survives renewed observation", t => {
+  const url = "https://reference.example.test/page";
+  const root = project(t, EXISTING, { url, query: "Consider this supplied link for our existing frontend." });
+  const evidence = capture(root, url);
+  observe(root, evidence);
+  decide(root, { stage: "purpose", choice: "faithful-reproduction", answer: "Reproduce this link faithfully." });
+  assert.equal(readState(root).mode, "replicate");
+  decide(root, { stage: "purpose", choice: "reference-for-existing", answer: "Correction: use it only as a reference for our existing bakery, preserving product content." });
+  assert.equal(readState(root).mode, "brief");
+  assert.equal(readState(root).decisions.frontendPurpose.choice, "reference-for-existing");
+  observe(root, evidence);
+  assert.equal(readState(root).decisions.frontendPurpose.choice, "reference-for-existing");
+  assert.equal(readState(root).mode, "brief");
+  readyIntake(root);
+  flow.consumeScratchDecision(root);
+  assert.equal(nextAction(root).stage, "concepts");
+});
+
+test("scoped authorized UI outputs do not waive immutable source inputs or unrelated new sources", t => {
+  const root = project(t, EXISTING, { deliverable: "ui", tier: "quick", purpose: "optimize-existing", query: "Improve bakery layout." });
+  observe(root);
+  flow.statedSkip(root);
+  flow.consumeScratchDecision(root);
+  assert.equal(nextAction(root).stage, "work");
+  write(root, "src/App.jsx", "export function App() { return <main>Authorized implementation</main>; }\n");
+  assert.equal(nextAction(root).stage, "work");
+  write(root, "unrelated.js", "export const outsideAuthorizedOutputs = true;\n");
+  assert.equal(nextAction(root).stage, "observe");
+});
+
+test("the full default public decision consumes without re-observation, search or a scratch interview", t => {
+  const root = project(t, {}, { deliverable: "ui", tier: "quick", query: QUERY, purpose: "new" });
+  observe(root);
+  flow.statedSkip(root, QUERY);
+  assert.equal(nextAction(root).stage, "design-system");
+  const observation = readState(root).decisions.frontendObservation;
+  const decision = flow.publishFrontendDecision(root, { authoritySource: "request", authorityText: QUERY });
+  for (const rel of ["design-system-catalog.json", "design-system-decision.json"]) {
+    assert.ok(fs.statSync(path.join(root, rel)).size > 262144, `${rel} must exercise the actual default evidence above the preview limit`);
+  }
+  assert.equal(decision.status, "ready");
+  assert.equal(decision.capabilityInventory, null);
+  assert.equal(fs.existsSync(path.join(root, "capability-inventory.json")), false);
+  assert.equal(nextAction(root).stage, "design-system", "actual default producer outputs must not be mistaken for new product sources");
+  decide(root, { stage: "design-system", artifact: "design-system-decision.json" });
+  const work = nextAction(root);
+  assert.equal(work.stage, "work");
+  assert.equal(work.type, "run");
+  assert.equal(work.question, undefined);
+  assert.equal(work.questions, undefined);
+  assert.deepEqual(readState(root).decisions.frontendObservation, observation);
+});
+
+test("consuming a decision drops an expired unused dispatch slot rather than hiding product content", t => {
+  const root = project(t, {}, { deliverable: "ui", tier: "quick", query: QUERY, purpose: "new" });
+  observe(root);
+  flow.statedSkip(root, QUERY);
+  assert.equal(nextAction(root).stage, "design-system");
+  json(root, "capability-inventory.json", { productCopy: "Real new bakery content, not a capability inventory." });
+  flow.publishFrontendDecision(root, { authoritySource: "request", authorityText: QUERY });
+  const consumed = decide(root, { stage: "design-system", artifact: "design-system-decision.json" });
+  assert.equal(consumed.next.stage, "observe");
+  assert.throws(() => decide(root, { stage: "deliver", answer: "The expired slot cannot hide this source." }), { code: "WORKFLOW_NOT_READY" });
+  observe(root);
+  assert.ok(readState(root).decisions.frontendObservation.observedSourcePaths.includes("capability-inventory.json"));
+});
+
+test("same-state receipt invalidation clears cached dispatched roles before source freshness is reused", t => {
+  const root = project(t, {}, { query: QUERY });
+  observe(root);
+  readyIntake(root);
+  flow.consumeScratchDecision(root);
+  assert.equal(nextAction(root).stage, "concepts");
+  write(root, "concepts.html", "<!doctype html><main>Now actual product content at a formerly dispatched path.</main>");
+  const state = readState(root);
+  assert.equal(frontend.observationFinished(state, root), true, "the current dispatched path is not an upstream product");
+  const request = JSON.parse(fs.readFileSync(path.join(root, "design-system-request.json"), "utf8"));
+  request.selection.rationale += " Changed the upstream choice.";
+  json(root, "design-system-request.json", request);
+  assert.equal(frontend.synchronizeFrontend(state, root), true);
+  assert.equal(frontend.observationFinished(state, root), false, "the same cached state must not retain expired dispatch roles");
+  assert.equal(nextAction(root).stage, "observe");
+});
+
+test("an entry correction observes former dispatched content instead of inheriting its role", t => {
+  const root = project(t, {}, { query: QUERY });
+  observe(root);
+  readyIntake(root);
+  flow.consumeScratchDecision(root);
+  assert.equal(nextAction(root).stage, "concepts");
+  write(root, "concepts.html", "<!doctype html><main>Bakery product content to preserve.</main>");
+  const result = execute(["next", "--root", root, "--query", "Improve this existing bakery frontend, preserving its content.", "--purpose", "optimize-existing", "--json"]);
+  assert.equal(result.exitCode, 0, JSON.stringify(result.output));
+  assert.equal(result.output.stage, "observe");
+  observe(root);
+  assert.ok(readState(root).decisions.frontendObservation.observedSourcePaths.includes("concepts.html"));
+});
+
+// Produce every receipt through the public CLI. Only the input requests and the real installed
+// catalog are authored here; no decision, embedded catalog or ready flag is manufactured.
+function publishNamedFrontendDecision(root) {
+  const call = args => {
+    const result = execute([...args, "--root", root, "--project-root", root, "--json"]);
+    assert.equal(result.exitCode, 0, JSON.stringify(result.output));
+    return result.output;
+  };
+  const names = {
+    stack: "framework-evidence.json",
+    catalog: "component-research.json",
+    request: "owner-system-choice.json",
+    artifact: "accepted-component-evidence.json",
+  };
+  json(root, ".design-pipeline/stack-input.json", {
+    schema: "design-pipeline.frontend-stack-request.v1", framework: "react",
+    brief: "Build the owner's project-owned frontend from scratch.",
+    requested: { styling: "none", uiLibrary: "none" },
+  });
+  call(["design-system", "resolve-stack", "--artifact", ".design-pipeline/stack-input.json", "--write", "--output", names.stack]);
+  const snapshot = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/astryx-design-system-snapshot.json"), "utf8"));
+  json(root, names.catalog, normalizeSnapshot(snapshot));
+  json(root, names.request, {
+    schema: "design-pipeline.design-system-decision-request.v1", version: "1", mode: "custom", project: {},
+    frontendStackDecisionPath: names.stack,
+    selection: {
+      basis: "owner-scratch",
+      authority: { actor: "owner", source: "request", text: QUERY, choice: "custom" },
+      rationale: "The supplied owner request explicitly selects a project-owned system from scratch.",
+      compared: [],
+    },
+  });
+  const result = call(["design-system", "decide", "--artifact", names.request, "--catalog", names.catalog, "--write", "--output", names.artifact]);
+  return { names, decision: result.decision };
+}
+
+for (const changed of ["artifact", "request", "stack", "catalog"]) {
+  test(`validated large arbitrarily named evidence consumes and keeps its ${changed} bound to the owning receipt`, t => {
+    const root = project(t, {}, { deliverable: "ui", tier: "quick", query: QUERY, purpose: "new" });
+    observe(root);
+    flow.statedSkip(root, QUERY);
+    assert.equal(nextAction(root).stage, "design-system");
+    const { names, decision } = publishNamedFrontendDecision(root);
+    assert.equal(decision.status, "ready");
+    assert.ok(fs.statSync(path.join(root, names.artifact)).size > 262144);
+    assert.ok(fs.statSync(path.join(root, names.catalog)).size > 262144);
+    decide(root, { stage: "design-system", artifact: names.artifact });
+    assert.equal(nextAction(root).stage, "work");
+    assert.equal(readState(root).decisions.designSystem.path, names.artifact);
+    fs.appendFileSync(path.join(root, names[changed]), "\n ");
+    assert.equal(nextAction(root).stage, "design-system", "admitted process inputs must stale their owning decision, not disappear from its lineage");
+    assert.throws(() => decide(root, { stage: "deliver", answer: "Do not use stale metadata." }), { code: "DESIGN_SYSTEM_DECISION_REQUIRED" });
+  });
+}
+
+test("large JSON product content is not exempted alongside admitted large process evidence", t => {
+  const root = project(t, {}, { deliverable: "ui", tier: "quick", query: QUERY, purpose: "new" });
+  observe(root);
+  flow.statedSkip(root, QUERY);
+  const { names } = publishNamedFrontendDecision(root);
+  decide(root, { stage: "design-system", artifact: names.artifact });
+  assert.equal(nextAction(root).stage, "work");
+  json(root, "product-content.json", { productDescription: "Bakery preorder information. ".repeat(12000) });
+  assert.ok(fs.statSync(path.join(root, "product-content.json")).size > 262144);
+  assert.equal(nextAction(root).stage, "observe", "large JSON is still product source unless its exact process role was admitted");
+});
+
+for (const claimedRole of ["design-pipeline.design-system-decision.v1", "design-pipeline.frontend-stack-request.v1", "design-pipeline.artifact.v1"]) {
+  test(`new product data cannot evade observation by claiming ${claimedRole}`, t => {
+    const root = project(t, EXISTING, { deliverable: "ui", tier: "quick", purpose: "optimize-existing", query: "Improve bakery layout while preserving product data." });
+    observe(root);
+    flow.statedSkip(root);
+    flow.consumeScratchDecision(root);
+    assert.equal(nextAction(root).stage, "work");
+    json(root, "src/menu-data.json", { schema: claimedRole, products: [{ name: "Unobserved sourdough", price: 8 }] });
+    assert.equal(nextAction(root).stage, "observe", "a schema label is neither a dispatched output nor a validated process role");
+    assert.throws(() => decide(root, { stage: "deliver", answer: "The product data has not been observed." }), { code: "WORKFLOW_NOT_READY" });
+  });
+}
+
+for (const phase of ["before-work", "work"]) for (const change of ["becomes-readable", "unread-bytes", "unread-version"]) {
+  test(`a previously unread app ${change} at the same path reopens observation ${phase}`, t => {
+    const largeApp = `// ${"x".repeat(262144)}\n`;
+    const root = project(t, { ...EXISTING, "src/App.jsx": largeApp }, { deliverable: "ui", tier: "quick", purpose: "optimize-existing", query: "Improve bakery layout." });
+    const app = path.join(root, "src/App.jsx");
+    const baselineTime = new Date("2026-10-14T08:00:00.000Z");
+    fs.utimesSync(app, baselineTime, baselineTime);
+    const report = nextAction(root).observation;
+    assert.ok(report.sourcePaths.includes("src/App.jsx"));
+    assert.equal(report.files.some(file => file.path === "src/App.jsx"), false);
+    assert.ok(report.unknowns.some(item => item.code === "FILE_SIZE_LIMIT" && item.path === "src/App.jsx"));
+    observe(root);
+    if (phase === "work") {
+      flow.statedSkip(root);
+      flow.consumeScratchDecision(root);
+      assert.equal(nextAction(root).stage, "work");
+    } else assert.equal(nextAction(root).stage, "intake");
+    if (change === "becomes-readable") write(root, "src/App.jsx", EXISTING["src/App.jsx"]);
+    if (change === "unread-bytes") {
+      const replacement = `// ${"y".repeat(262144)}\n`;
+      assert.equal(Buffer.byteLength(replacement), Buffer.byteLength(largeApp));
+      assert.notEqual(replacement, largeApp);
+      write(root, "src/App.jsx", replacement);
+    }
+    const changedTime = new Date("2026-10-14T08:00:02.000Z");
+    fs.utimesSync(app, changedTime, changedTime);
+    assert.equal(nextAction(root).stage, "observe", "discovery alone must not authorize editing code that was never readable");
+    assert.throws(() => decide(root, { stage: "deliver", answer: "Unread source has changed." }), { code: "WORKFLOW_NOT_READY" });
+  });
+}
+
+test("an admitted link DOM remains reference evidence rather than an existing project", t => {
+  const url = "https://reference.example.test/new-project";
+  const root = project(t, {}, { deliverable: "ui", tier: "quick", url, query: "Use this link as inspiration for a new bakery frontend from scratch." });
+  observe(root, capture(root, url));
+  assert.equal(nextAction(root).stage, "intake");
+  assert.equal(readState(root).decisions.frontendPurpose.choice, "new", "captured DOM does not create product-owned frontend content");
+  flow.statedSkip(root, QUERY);
+  flow.consumeScratchDecision(root);
+  assert.equal(nextAction(root).stage, "work");
+  assert.equal(readState(root).decisions.frontendObservation.observedSourceHashes["capture/dom.html"], undefined);
+});
+
+test("reference DOM cannot stand in for retained project-owned runtime authority", t => {
+  const url = "https://reference.example.test/not-our-system";
+  const root = project(t, {}, { deliverable: "ui", tier: "quick", url, purpose: "new", query: "Use the supplied page only as a visual reference for a new bakery frontend." });
+  observe(root, capture(root, url));
+  flow.statedSkip(root, QUERY);
+  assert.equal(nextAction(root).stage, "design-system");
+  const catalog = normalizeSnapshot({
+    schema: "design-pipeline.design-system-snapshot.v1", version: "1", namespace: "reference-dom",
+    provenance: { source: "https://example.test/reference", license: "MIT" },
+    components: [{ id: "Dialog", name: "Dialog", description: "Dialog reference only." }],
+  });
+  const id = "reference-dom:component:Dialog";
+  flow.publishFrontendDecision(root, {
+    mode: "reference", catalog, candidateId: id, searchQuery: "dialog",
+    project: { designSystem: { id: "not-a-project-system", source: "capture/dom.html" } },
+    selection: {
+      basis: "capability-search",
+      authority: { actor: "agent", source: "request", choice: "reference", text: "Use the supplied page only as a visual reference for a new bakery frontend." },
+      rationale: "Compare the dialog without authorizing runtime adoption.",
+      compatibility: "Reference research does not add a component dependency.",
+      compared: [{ id, reason: "Compare the dialog structure without adopting it." }],
+    },
+  });
+  decide(root, { stage: "design-system", artifact: "design-system-decision.json" });
+  const blocked = nextAction(root);
+  assert.equal(blocked.stage, "work");
+  assert.equal(blocked.type, "blocked", "a reference capture is not proof of a retained project system");
+  assert.equal(blocked.blocker.kind, "frontend-design-system");
+  assert.match(blocked.blocker.reason, /Reference-only research cannot authorize runtime adoption/);
+});
+
+for (const priorOutput of ["src/App.jsx", "index.html", "unrelated.js"]) {
+  test(`a new consumed decision does not authorize an undispatched edit of ${priorOutput}`, t => {
+    const root = project(t, EXISTING, { query: "Improve the existing bakery layout while preserving pickup and brand green.", purpose: "optimize-existing" });
+    observe(root);
+    readyIntake(root);
+    flow.consumeScratchDecision(root);
+    flow.writeVariants(root);
+    flow.pickVariant(root);
+    decide(root, { stage: "components", choice: "scratch", answer: "Use project-owned components for the requested improvement." });
+    flow.approveDescription(root);
+    assert.equal(nextAction(root).stage, "build");
+    const revisedReply = "Build the bakery frontend from scratch with a project-owned custom system; use a revised compact layout.";
+    flow.publishFrontendDecision(root, { authorityText: revisedReply });
+    decide(root, { stage: "design-system", artifact: "design-system-decision.json", answer: revisedReply });
+    assert.equal(nextAction(root).stage, "concepts", "the revised receipt requires new downstream choices");
+    write(root, priorOutput, priorOutput === "index.html"
+      ? "<!doctype html><main>New unobserved implementation</main>\n"
+      : "export function App() { return <main>New unobserved implementation</main>; }\n");
+    assert.equal(nextAction(root).stage, "observe", "entry-only historical permission must not survive a current decision/revision change");
+    assert.throws(() => decide(root, { stage: "deliver", answer: "Do not inherit old build authorization." }), { code: "WORKFLOW_NOT_READY" });
+  });
+}

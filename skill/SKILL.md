@@ -51,6 +51,11 @@ Do not require style vocabulary or repeat settled facts. Record the summary and 
 with the returned `decide --stage observe`; that is technical/source evidence, not design approval.
 If link purpose is unresolved, record the owner's actual clarification at `purpose`. UI uses
 frontend questions, never film duration or footage questions.
+Before authorized work, recheck observed-source hashes and bounded membership, including empty
+scopes gaining sources. Existing workflow/native task dispatch binds literal output scopes;
+legitimate scoped outputs complete through current verification receipts, not an endless
+re-observation loop. Input/reference/decision evidence remains immutable authority.
+
 
 Optimization keeps function, content and explicit brand constraints while permitting visual/layout
 improvements; material overall-style changes use the existing owner choices. A link used as reference
@@ -60,6 +65,10 @@ consume the validated, source-bound v1 decision at `design-system`. Explicit own
 catalog search only: record the real owner statement without a second interview, retain stack and
 receipt requirements, and validate the decision. Fallback/substitution instead needs actual
 capability inventory, comparisons, compatibility, rationale and recorded owner authority.
+New adoption also needs actual owner authority; agent research is not that choice. Public
+decomposition output must remain directly consumable, and implicit bundled-catalog changes must
+invalidate old decisions just like explicit catalog changes.
+
 See [frontend entry](references/workflow-web.md#observe) and
 [selection contract](references/pipeline-reference.md#design-system-knowledge-and-adoption).
 

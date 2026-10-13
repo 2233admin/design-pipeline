@@ -24,6 +24,18 @@ Web and UI SHALL retain supplied request/project/link context and return a bound
 - **THEN** entry SHALL remain unfinished with the named missing evidence
 - **AND** an asserted observed flag SHALL NOT complete it.
 
+#### Scenario: Observed source changes before authorization
+- **WHEN** an observed source is changed or removed, a source is added inside bounded coverage, or an empty inspected project becomes nonempty before work is authorized
+- **THEN** observation SHALL reopen and dependent decisions and evidence SHALL be invalidated
+- **AND** a read-budget limit SHALL not hide source-membership changes inside discovered coverage.
+
+#### Scenario: Authorized implementation outputs
+- **WHEN** existing workflow or native task dispatch authorizes literal source-output scopes against current frontend evidence
+- **THEN** intended in-scope edits and new outputs SHALL remain completable using existing verification and receipt contracts
+- **AND** immutable input/reference/decision changes SHALL still fail closed
+- **AND** later output changes SHALL stale their checked evidence rather than endlessly reopen historical observation.
+
+
 ### Requirement: Frontend purpose preserves its authority
 
 Frontend SHALL distinguish optimize-existing, reference-for-existing and faithful-reproduction in plain language. Optimization SHALL preserve function/content/explicit brand constraints while allowing visual/layout improvement. Material overall-style changes SHALL use existing owner choices; reproduction SHALL retain its fidelity authority.
@@ -39,6 +51,12 @@ Frontend SHALL distinguish optimize-existing, reference-for-existing and faithfu
 - **WHEN** faithful reproduction is requested
 - **THEN** the reproduction reference and existing invariants SHALL remain authoritative.
 
+#### Scenario: Actual correction away from reproduction
+- **WHEN** the owner corrects a previously inferred or clarified faithful purpose to reference-for-existing
+- **THEN** routing and implementation instructions SHALL cease using reproduction authority
+- **AND** refreshed observation SHALL retain the actual corrected choice instead of re-inferring fidelity from old mode.
+
+
 #### Scenario: Nonfrontend workflow
 - **WHEN** the deliverable is film or edit
 - **THEN** its current intake, sequencing and capabilities SHALL remain unchanged
@@ -46,7 +64,7 @@ Frontend SHALL distinguish optimize-existing, reference-for-existing and faithfu
 
 ### Requirement: Design-system evidence is consumed downstream
 
-Frontend directions/spec/tasks and implementation SHALL consume a schema-valid ready design-system-decision.v1 and revalidate its current sources. The same binding SHALL join existing snapshots, policy and receipt inputs. Reference-only decisions SHALL not authorize runtime adoption.
+Frontend directions/spec/tasks and implementation SHALL consume a schema-valid ready design-system-decision.v1 and revalidate its current sources, including an implicitly selected installed catalog. The same binding SHALL join existing snapshots, policy and receipt inputs. Reference-only decisions SHALL not authorize runtime adoption; new adoption/substitution SHALL retain actual owner choice.
 
 #### Scenario: Missing or fabricated decision
 - **WHEN** a frontend attempts concepts/spec/work/implementation without a valid bound decision
@@ -62,6 +80,22 @@ Frontend directions/spec/tasks and implementation SHALL consume a schema-valid r
 - **WHEN** reference mode supplies design research
 - **THEN** directions MAY use that evidence
 - **AND** implementation SHALL require retained project authority or an actual runtime choice rather than adopting the reference candidate.
+
+#### Scenario: Public inventory producer and consumer
+- **WHEN** public decomposition publishes direct and capability match IDs, including a bounded result
+- **THEN** public decision publication SHALL consume that actual inventory unchanged and replay it against its current catalog
+- **AND** limiting results SHALL not suppress relevant capability hits behind unrelated catalog entries or prove catalog exhaustion.
+
+#### Scenario: Implicit bundled catalog changes
+- **WHEN** a decision published without an explicit catalog uses the installed bundle and that source changes, disappears or is replaced
+- **THEN** resumed consumers SHALL reject the old decision even if its embedded request remains unchanged
+- **AND** regenerating from current sources MAY restore progression.
+
+#### Scenario: Agent research is not owner adoption
+- **WHEN** agent capability research selects a new runtime adoption without actual owner request/reply authority
+- **THEN** adoption SHALL remain blocked
+- **AND** valid agent reference exploration and retained project authority SHALL not require a duplicate owner interview.
+
 
 ### Requirement: Custom selection distinguishes scratch from fallback
 

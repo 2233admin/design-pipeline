@@ -1,7 +1,9 @@
 "use strict";
 
+const fs = require("node:fs");
+const path = require("node:path");
 const { assertEnum, assertKeys, assertObject, assertString, assertStringArray, canonicalJson, fail, isObject, nonEmpty, sha256 } = require("./contract-utils.cjs");
-const { CAPABILITY_TERMS, CATALOG_SCHEMA, decomposeCapabilities, searchCapabilities, searchCatalog, validateCatalog } = require("./design-system-catalog-core.cjs");
+const { CAPABILITY_TERMS, CATALOG_SCHEMA, decomposeCapabilities, normalizeSnapshot, searchCapabilities, searchCatalog, validateCatalog } = require("./design-system-catalog-core.cjs");
 const { validateTokens } = require("./interoperability-core.cjs");
 
 const DECISION_SCHEMA = "design-pipeline.design-system-decision.v1";
@@ -11,6 +13,18 @@ const STATUSES = ["stable", "canary", "beta", "experimental", "deprecated", "unk
 const TYPES = new Set(["color", "dimension", "fontFamily", "fontWeight", "duration", "cubicBezier", "number", "strokeStyle", "border", "transition", "shadow", "gradient", "typography"]);
 const SELECTION_BASES = ["owner-scratch", "preserve-existing", "capability-search"];
 const DECISION_FIELDS = ["schema", "status", "mode", "projectAuthority", "selected", "rejected", "rationale", "evidence", "frontendStackDecision", "capabilityInventory", "selection"];
+const BUNDLED_CATALOG_SOURCE = "references/astryx-design-system-snapshot.json";
+
+function readBundledDesignSystemCatalog() {
+  const file = path.resolve(__dirname, "..", BUNDLED_CATALOG_SOURCE);
+  let bytes;
+  try { bytes = fs.readFileSync(file); }
+  catch (error) { fail("design system decision", `bundled catalog source is unavailable: ${error.message}`, { code: "DESIGN_SYSTEM_DECISION_STALE" }); }
+  let snapshot;
+  try { snapshot = JSON.parse(bytes.toString("utf8")); }
+  catch (error) { fail("design system decision", `bundled catalog source is invalid: ${error.message}`, { code: "DESIGN_SYSTEM_DECISION_STALE" }); }
+  return { catalog: normalizeSnapshot(snapshot), sourceBinding: { source: BUNDLED_CATALOG_SOURCE, sha256: "sha256:" + sha256(bytes) } };
+}
 
 function semanticName(name) {
   return name.replace(/^--/, "").replace(/[^A-Za-z0-9_-]+/g, ".").replace(/[-_]+/g, ".").replace(/^\.+|\.+$/g, "");
@@ -327,8 +341,8 @@ function decideDesignSystem(request) {
       rationale.push("Owner-scratch selection applies only to custom mode.");
       return result("blocked");
     }
-    if ((selection.basis === "owner-scratch" || ["custom", "substitute"].includes(request.mode)) && (authority.actor !== "owner" || !["request", "reply"].includes(authority.source))) {
-      rationale.push("Scratch, custom fallback and substitution require the actual owner's structured request or reply; research is not adoption authority.");
+    if ((selection.basis === "owner-scratch" || ["adopt", "custom", "substitute"].includes(request.mode)) && (authority.actor !== "owner" || !["request", "reply"].includes(authority.source))) {
+      rationale.push("Scratch, adoption, custom fallback and substitution require the actual owner's structured request or reply; research is not adoption authority.");
       return result("blocked");
     }
   }
@@ -417,7 +431,7 @@ function validateDesignSystemDecision(value, options = {}) {
   } else if (value.status === "ready") fail("design system decision", "ready decision requires structured selection evidence");
   if (value.request !== undefined) assertObject(value.request, "decision.request", "design system decision");
   if (value.sourceBindings !== undefined) {
-    assertKeys(value.sourceBindings, ["requestPath", "inputHashes"], ["requestPath", "inputHashes"], "sourceBindings", "design system decision");
+    assertKeys(value.sourceBindings, ["requestPath", "inputHashes"], ["requestPath", "inputHashes", "bundledCatalog"], "sourceBindings", "design system decision");
     validateBindingPath(value.sourceBindings.requestPath, "sourceBindings.requestPath");
     assertObject(value.sourceBindings.inputHashes, "sourceBindings.inputHashes", "design system decision");
     if (!Object.hasOwn(value.sourceBindings.inputHashes, value.sourceBindings.requestPath)) fail("design system decision", "sourceBindings must hash the request path");
@@ -425,13 +439,24 @@ function validateDesignSystemDecision(value, options = {}) {
       validateBindingPath(file, "sourceBindings input path");
       if (!/^sha256:[a-f0-9]{64}$/.test(hash || "")) fail("design system decision", `sourceBindings hash for ${file} must be sha256-prefixed`);
     }
+    if (value.sourceBindings.bundledCatalog !== undefined) {
+      const binding = value.sourceBindings.bundledCatalog;
+      assertKeys(binding, ["source", "sha256"], ["source", "sha256"], "sourceBindings.bundledCatalog", "design system decision");
+      if (binding.source !== BUNDLED_CATALOG_SOURCE) fail("design system decision", "sourceBindings.bundledCatalog must identify the fixed installed bundled catalog source");
+      if (!/^sha256:[a-f0-9]{64}$/.test(binding.sha256 || "")) fail("design system decision", "sourceBindings.bundledCatalog.sha256 must be sha256-prefixed");
+    }
   }
   const request = options.request || value.request;
   if (!request) fail("design system decision", "decision replay requires its resolved request");
+  if (value.sourceBindings?.bundledCatalog !== undefined) {
+    const current = readBundledDesignSystemCatalog();
+    if (value.sourceBindings.bundledCatalog.sha256 !== current.sourceBinding.sha256) fail("design system decision", "bundled catalog source changed; rerun design-system decide", { code: "DESIGN_SYSTEM_DECISION_STALE" });
+    if (canonicalJson(request.catalog) !== canonicalJson(current.catalog)) fail("design system decision", "resolved catalog does not match the current installed source; rerun design-system decide", { code: "DESIGN_SYSTEM_DECISION_STALE" });
+  }
   const expected = decideDesignSystem(request);
   const actual = Object.fromEntries(DECISION_FIELDS.map((key) => [key, value[key]]));
   if (canonicalJson(actual) !== canonicalJson(expected)) fail("design system decision", "decision does not match replay of the current request");
   return value;
 }
 
-module.exports = { CATALOG_SCHEMA, DECISION_SCHEMA, MODES, PROJECTION_SCHEMA, decideDesignSystem, projectDesignSystemTokens, validateCatalog, validateDesignSystemDecision };
+module.exports = { CATALOG_SCHEMA, DECISION_SCHEMA, MODES, PROJECTION_SCHEMA, decideDesignSystem, projectDesignSystemTokens, readBundledDesignSystemCatalog, validateCatalog, validateDesignSystemDecision };
