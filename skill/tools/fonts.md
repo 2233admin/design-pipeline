@@ -29,44 +29,13 @@ For example, [Google Sans Flex](https://github.com/googlefonts/googlesans-flex) 
 the publisher's [MiSans agreement](https://hyperos.mi.com/font/download) has its own conditions.
 Do not apply one family's modification/embedding permission to another. Record the release or
 commit, source URL, actual filename/family, license and chosen weight/axes in existing project
-asset/design notes; a web build records them in its component manifest
-([below](#record-the-family-in-a-web-build)). This source list was checked on 2026-10-07; verify
-the selected release on use.
+asset/design notes. A web build records its chosen family in those design notes too. This source
+list was checked on 2026-10-07; verify the selected release on use.
 
 Acquire only the needed files into the consuming project's asset directory, with their notices.
 Use an existing local font when its identity and intended-use rights are known. Do not install
 an entire catalogue into the OS or inflate the skill package just to make a font selectable.
 No font binaries from FontLab are bundled by this guide.
-
-## Record the family in a web build
-
-The web workflow routes font choice here ([workflow-web.md#build](../references/workflow-web.md#build)).
-Before the page uses a chosen family, record it as a `kind: "font"` entry in the project's
-`component-manifest.json`:
-
-- `url`: the family's official repository, release page or foundry page, not a preview asset or
-  a mirror.
-- `revision`: the release, tag or commit whose files you downloaded.
-- `license.id` and `license.evidence`: the family's SPDX license (for example `OFL-1.1`) and https
-  URLs to its license text at that release.
-- `license.state`: `verified` only after reading that license; otherwise `unverified` or
-  `commercial`.
-- `usedIn.marker`: the font-family name in the CSS or HTML file that loads or uses it.
-
-A family from the skill's component index cites its `sourceId`, and a font file the project already
-owns and licenses (such as brand typography) cites its project path with project-owned
-availability and license state; neither needs the extra provenance. A font entry needs no component
-source choice and is allowed in a scratch build, but it does not count as a reused component.
-
-Self-host the files inside the project with local `@font-face` and keep their license and copyright
-notices beside them; pages load no remote fonts at runtime
-([self-contained pages](../references/web-motion.md#self-contained-pages)). Serving the files copies
-them, so the entry needs `license.state: verified` and a permissive license id (MIT, Apache-2.0,
-BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Zlib, Unlicense, CC0-1.0 or OFL-1.1), and its `how` records
-the notice handling, for example `Self-host the woff2 files with @font-face; keep OFL.txt and the
-copyright notice beside them`. A family under another license or a publisher agreement may only be
-studied in this workflow, not served. Use the system stack only when the treatment (or, without
-one, the page's direction) deliberately calls for it; it needs no entry.
 
 ## Select by the work, not by a compulsory style
 

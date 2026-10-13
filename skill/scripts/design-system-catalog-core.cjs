@@ -137,9 +137,8 @@ function sourceRepositories(record) {
 
 // Web components decision sources in canonical stored order; scratch is exclusive.
 const COMPONENT_SOURCES = Object.freeze(["project", "github", "index", "discover", "scratch"]);
-const MANIFEST_ENTRY_KINDS = Object.freeze(["component", "library", "icon", "font"]);
 // A discovered source may be copied or imported only when verified under one of these SPDX ids.
-const PERMISSIVE_LICENSES = Object.freeze(["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD", "Zlib", "Unlicense", "CC0-1.0", "OFL-1.1"]);
+const PERMISSIVE_LICENSES = Object.freeze(["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD", "Zlib", "Unlicense", "CC0-1.0"]);
 const PERMISSIVE_LIST = PERMISSIVE_LICENSES.slice(0, -1).join(", ") + " or " + PERMISSIVE_LICENSES.at(-1);
 
 function httpsUrl(value) {
@@ -150,35 +149,28 @@ function httpsUrl(value) {
   } catch { return null; }
 }
 
-// owner/repo of any github.com URL, deep links included.
-function githubRepositoryOf(url) {
-  if (!["github.com", "www.github.com"].includes(url.hostname.toLowerCase())) return null;
+// owner/repo of an https github.com URL without credentials, deep links included.
+function githubRepositoryIn(value) {
+  const url = httpsUrl(value);
+  if (!url || url.hostname.toLowerCase() !== "github.com" || url.port) return null;
   const match = url.pathname.match(/^\/([a-z0-9_.-]+)\/([a-z0-9_.-]+)(?:\/|$)/i);
   return match ? (match[1] + "/" + match[2].replace(/\.git$/i, "")).toLowerCase() : null;
 }
 
-// What an https URL identifies when compared with the index: a GitHub repository, or a host and path.
-function urlIdentity(value) {
-  const url = httpsUrl(value);
-  if (!url) return null;
-  const repository = githubRepositoryOf(url);
-  if (repository) return { host: "github.com", path: repository };
-  const host = url.hostname.toLowerCase().replace(/^www\./, "");
-  return host === "github.com" ? null : { host, path: url.pathname.toLowerCase().replace(/\/+$/, "") };
+// Indexed sourceIds whose recorded URLs or aliases point into this GitHub repository.
+function indexedSourcesIn(records, repository) {
+  return [...new Set(records
+    .filter(record => [record.provenance?.url, record.provenance?.repository, ...(record.aliases || [])].map(githubRepositoryIn).includes(repository))
+    .map(record => record.sourceId))].sort();
 }
 
-// Indexed sourceIds whose recorded URL or alias covers this URL: the same GitHub repository, or the
-// same host at or below a recorded path (a root URL covers its whole host).
-function indexedSourcesAt(records, value) {
-  const target = urlIdentity(value);
-  if (!target) return [];
-  const covers = recorded => recorded.host === target.host && (recorded.host === "github.com"
-    ? recorded.path === target.path
-    : recorded.path === "" || target.path === recorded.path || target.path.startsWith(recorded.path + "/"));
-  return [...new Set(records
-    .filter(record => [record.provenance?.url, record.provenance?.repository, ...(record.aliases || [])]
-      .map(urlIdentity).some(recorded => recorded && covers(recorded)))
-    .map(record => record.sourceId))].sort();
+// Whether an evidence URL lies in the repository and names the revision as whole path segments,
+// as in https://github.com/<owner>/<repo>/blob/<revision>/LICENSE.
+function evidenceAtRevision(value, repository, revision) {
+  if (githubRepositoryIn(value) !== repository) return false;
+  let rest;
+  try { rest = decodeURIComponent(new URL(value).pathname).split("/").slice(3).join("/"); } catch { return false; }
+  return ("/" + rest + "/").includes("/" + revision + "/");
 }
 
 function validateComponentManifest(manifest, { root, decision, componentSources } = {}) {
@@ -197,8 +189,6 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
   } else {
     if (fromScratch) manifestInvalid("fromScratch: true contradicts the recorded reuse or discovery componentSources");
     if (manifest.entries.length === 0) manifestInvalid("reuse or discovery componentSources require non-empty entries");
-    // Fonts are not components, so a font alone cannot evidence a reuse or discovery decision.
-    if (manifest.entries.every(entry => isObject(entry) && entry.kind === "font")) manifestInvalid("reuse or discovery componentSources require at least one non-font entry");
   }
   const nonempty = value => typeof value === "string" && Boolean(value.trim());
   const namedRepositories = (decision.match(/https:\/\/github\.com\/[a-z0-9_.-]+\/[a-z0-9_.-]+\/?/gi) || []).map(githubRepository);
@@ -207,8 +197,6 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
     if (!isObject(entry) || !nonempty(entry.name) || !AVAILABILITIES.has(entry.availability) || !LICENSE_STATES.has(entry.license?.state)) {
       manifestInvalid(label + " requires name, availability and license.state");
     }
-    if (entry.kind !== undefined && !MANIFEST_ENTRY_KINDS.includes(entry.kind)) manifestInvalid(label + ".kind must be component, library, icon or font");
-    const font = entry.kind === "font";
     if (!nonempty(entry.sourceId) && !nonempty(entry.url)) manifestInvalid(label + " requires sourceId or url");
     let record;
     let projectOwned = false;
@@ -222,20 +210,19 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
         projectOwned = true;
       }
     } else {
-      const url = httpsUrl(entry.url);
-      const repository = url && githubRepositoryOf(url);
+      const repository = githubRepositoryIn(entry.url);
       if (repository && namedRepositories.includes(repository)) {
         if (githubRepository(entry.url) !== repository) manifestInvalid(label + ".url links inside the named GitHub repository " + repository + "; cite the repository URL https://github.com/" + repository);
         namedUrl = true;
         record = records.find(candidate => candidate.recordType === "source" && sourceRepositories(candidate).includes(repository));
         if (["project-owned", "platform"].includes(entry.license.state)) manifestInvalid(label + " GitHub source cannot claim project-owned/platform licensing");
-      } else if (url) {
+      } else if (repository && indexedSourcesIn(records, repository).length) {
         // An indexed source keeps its recorded identity and license state, whichever of its URLs is cited.
-        const indexed = indexedSourcesAt(records, entry.url);
-        if (indexed.length) manifestInvalid(label + ".url matches the indexed source " + indexed.join(", ") + ": cite it by sourceId, or by url only as a GitHub repository named in the components decision");
+        manifestInvalid(label + ".url matches the indexed source " + indexedSourcesIn(records, repository).join(", ") + ": cite it by sourceId, or by url only as a GitHub repository named in the components decision");
+      } else if (repository && githubRepository(entry.url) === repository) {
         discovered = true;
-      } else if (/^[a-z][a-z0-9+.-]*:/i.test(entry.url) && !/^file:/i.test(entry.url) && !path.isAbsolute(entry.url)) {
-        manifestInvalid(label + ".url must be an https source without credentials, or a project file");
+      } else if (repository || /^[a-z][a-z0-9+.-]*:/i.test(entry.url) && !/^file:/i.test(entry.url) && !path.isAbsolute(entry.url)) {
+        manifestInvalid(label + ".url must be a GitHub repository URL https://github.com/<owner>/<repo> or a project file");
       } else {
         manifestFile(root, entry.url, label + ".url");
         projectOwned = true;
@@ -244,13 +231,12 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
     if (record?.availability === "project-owned" && record.license?.state === "project-owned") projectOwned = true;
     if (record && entry.license.state !== record.license?.state) manifestInvalid(label + ".license.state must match the indexed source");
     if (projectOwned && (entry.license.state !== "project-owned" || entry.availability !== "project-owned")) manifestInvalid(label + " project files require project-owned availability and license.state");
-    // Fonts are not components: they skip the fromScratch contradiction and the source category.
-    if (fromScratch && !projectOwned && !font) manifestInvalid(label + " external source contradicts fromScratch");
-    // Each component entry must come from a category the owner selected, judged by how it cites its
-    // source: a decision-named GitHub url needs github; a contained file or the indexed
-    // project-components record needs project; any other https url is discovered and needs discover;
-    // every other indexed sourceId, platform records included, needs index.
-    if (!componentSources.includes("scratch") && !font) {
+    if (fromScratch && !projectOwned) manifestInvalid(label + " external source contradicts fromScratch");
+    // Each entry must come from a category the owner selected, judged by how it cites its source:
+    // a decision-named GitHub url needs github; a contained file or the indexed project-components
+    // record needs project; any other GitHub repository url is discovered and needs discover; every
+    // other indexed sourceId, platform records included, needs index.
+    if (!componentSources.includes("scratch")) {
       const category = namedUrl ? "github" : projectOwned ? "project" : discovered ? "discover" : "index";
       if (!componentSources.includes(category)) {
         manifestInvalid(label + " source category " + category + " is not in the recorded componentSources " + componentSources.join(",")
@@ -258,18 +244,29 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
           + (category === "discover" ? "; its url is not a GitHub repository named in the components decision, an indexed source or a project file" : ""));
       }
     }
-    // A discovered source, and a font from outside the index and the project, pins what was checked.
-    const pinned = discovered || (font && !record && !projectOwned);
-    if (pinned) {
-      if (!["verified", "unverified", "commercial"].includes(entry.license.state)) manifestInvalid(label + " discovered sources and fonts use license.state verified, unverified or commercial, not project-owned or platform");
-      if (!nonempty(entry.revision)) manifestInvalid(label + ".revision must pin the commit SHA, tag, package version or font release whose license was checked");
-      if (!nonempty(entry.license.id)) manifestInvalid(label + ".license.id must give the SPDX license expression at that revision");
+    // A discovered source pins the revision whose license was checked and links that license on GitHub.
+    let permissive = false;
+    if (discovered) {
+      const repository = githubRepository(entry.url);
+      if (!["verified", "unverified", "commercial"].includes(entry.license.state)) manifestInvalid(label + " discovered sources use license.state verified, unverified or commercial, not project-owned or platform");
+      if (!nonempty(entry.revision)) manifestInvalid(label + ".revision must pin the commit SHA or tag whose license was checked");
+      if (entry.license.id !== undefined && !nonempty(entry.license.id)) manifestInvalid(label + ".license.id, when given, must be the SPDX license expression at that revision");
       if (!Array.isArray(entry.license.evidence) || !entry.license.evidence.length || !entry.license.evidence.every(httpsUrl)) {
         manifestInvalid(label + ".license.evidence must be a non-empty array of https URLs to the license text at that revision");
       }
+      const revision = entry.revision.trim();
+      if (!entry.license.evidence.some(value => evidenceAtRevision(value, repository, revision))) {
+        manifestInvalid(label + ".license.evidence must include a URL on https://github.com/" + repository + " that contains the revision " + revision
+          + ", for example https://github.com/" + repository + "/blob/" + revision + "/LICENSE");
+      }
+      // The project keeps its own copy of the license text; its content is not inspected.
+      if (entry.license.file !== undefined) {
+        const licenseFile = manifestFile(root, entry.license.file, label + ".license.file");
+        if (!fs.readFileSync(licenseFile, "utf8").trim()) manifestInvalid(label + ".license.file must not be empty");
+      }
+      permissive = entry.license.state === "verified" && nonempty(entry.license.id)
+        && PERMISSIVE_LICENSES.some(id => id.toLowerCase() === entry.license.id.trim().toLowerCase());
     }
-    const permissive = entry.license.state === "verified" && nonempty(entry.license.id)
-      && PERMISSIVE_LICENSES.some(id => id.toLowerCase() === entry.license.id.trim().toLowerCase());
     if (!Array.isArray(entry.usedIn) || !entry.usedIn.length) manifestInvalid(label + ".usedIn must be nonempty");
     for (const [useIndex, use] of entry.usedIn.entries()) {
       const useLabel = label + ".usedIn[" + useIndex + "]";
@@ -279,18 +276,19 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
       const copied = /\b(?:copy|copied|copying|paste|pasted|vendored)\b|复制|拷贝|粘贴/i.test(use.how);
       const imported = /\b(?:import|imported|importing|require|install|installed)\b|导入|引入|安装/i.test(use.how);
       const studied = /\b(?:study|studied|reimplement|reimplemented|reimplementation)\b|研究|学习|重写|重新实现/i.test(use.how);
-      // A page that loads a font serves its files, so any use of a pinned font other than study copies it.
-      const servedFont = pinned && font && !studied;
-      if (pinned && !permissive) {
-        if (servedFont) manifestInvalid(useLabel + " a font the page loads ships its files with the project, so it requires license.state verified and a permissive license.id (" + PERMISSIVE_LIST + "); otherwise only study/reimplementation");
-        if (copied || imported) manifestInvalid(useLabel + " copying or importing a discovered source requires license.state verified and a permissive license.id (" + PERMISSIVE_LIST + "); otherwise only study/reimplementation");
-        if (!studied) manifestInvalid(useLabel + " a discovered source without license.state verified and a permissive license.id allows only study/reimplementation");
+      if (discovered && (copied || imported)) {
+        if (!permissive) manifestInvalid(useLabel + " copying or importing a discovered source requires license.state verified and a permissive license.id (" + PERMISSIVE_LIST + "); otherwise only study/reimplementation");
+        if (entry.license.file === undefined) manifestInvalid(useLabel + " copying or importing a discovered source requires license.file naming the project file that holds its license text");
+      }
+      // Without a verified permissive license kept in the project, a discovered source is study-only.
+      if (discovered && !(permissive && entry.license.file !== undefined) && !studied) {
+        manifestInvalid(useLabel + " a discovered source without license.state verified, a permissive license.id and license.file allows only study/reimplementation");
       }
       if (["unverified", "commercial"].includes(entry.license.state)) {
         if (copied || imported) manifestInvalid(useLabel + " unverified/commercial sources cannot be copied or imported");
         if (!studied) manifestInvalid(useLabel + " unverified/commercial sources allow only study/reimplementation");
       }
-      if (entry.license.state === "verified" && (copied || imported || servedFont)
+      if (entry.license.state === "verified" && (copied || imported)
         && !/\b(?:attribution|copyright|licen[cs]e[ -]notices?|notices?)\b|署名|版权|许可声明/i.test(use.how)) {
         manifestInvalid(useLabel + ".how must document attribution/license-notice handling for verified imports/copies");
       }
@@ -563,7 +561,7 @@ module.exports = {
   COLLECTIONS,
   COMPONENT_SOURCES,
   KINDS,
-  PERMISSIVE_LICENSES,
+  PERMISSIVE_LIST,
   SNAPSHOT_SCHEMA,
   TERM_TO_CAPABILITY,
   VERSION,

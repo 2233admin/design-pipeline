@@ -104,20 +104,20 @@ All notable changes to Design Pipeline are documented here.
   user approval; no gate, receipt field or CLI flag is added, and their output is never Component
   Conformance or Visual Acceptance.
 - Web components decisions accept `discover`, so the agent can find maintained open-source
-  component libraries, packages and icon sets beyond the index itself (change
+  component libraries and icon sets on GitHub beyond the index itself (change
   `let-agents-discover-open-source-resources`). The ask offers it and recommends
   `project,index,discover`; the stored order is `project,github,index,discover,scratch` and
-  `scratch` stays exclusive. A manifest entry citing by url an https source that is neither a
-  decision-named GitHub repository nor indexed is a discovered source: it needs `discover`, a pinned
-  `revision`, an SPDX `license.id` and https `license.evidence`, and may be copied or imported only
-  when verified under MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Zlib, Unlicense,
-  CC0-1.0 or OFL-1.1; anything else is study/reimplementation only. URLs of indexed sources are
-  still cited by their `sourceId`. Entries take an optional `kind` (`component`, `library`, `icon`,
-  `font`): a font records the same provenance unless it is indexed or project-owned, uses its
-  font-family name as the marker, needs no source category and is allowed under scratch, but cannot
-  alone satisfy a reuse or discovery decision; serving a font's files counts as copying. Web build
-  instructions search the index first, route font choice through `tools/fonts.md` and keep
-  discovered code and fonts bundled or self-hosted with their notices.
+  `scratch` stays exclusive. A manifest entry citing `https://github.com/<owner>/<repo>` that is
+  neither named in the decision nor indexed is a discovered source: it needs `discover`, a pinned
+  `revision` (commit SHA or tag) and https `license.evidence` including a URL on that repository
+  that contains the revision. It may be copied or imported only when verified under an SPDX
+  `license.id` of MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Zlib, Unlicense or CC0-1.0
+  with a contained, non-empty `license.file` holding the license text; anything else is
+  study/reimplementation only. The validator checks this auditable shape offline and does not
+  authenticate the upstream. Other URLs do not resolve, and URLs of indexed sources are still
+  cited by their `sourceId`. Web build instructions search the index first, route font choice
+  through `tools/fonts.md` without a silent system-stack fallback, and keep discovered code and
+  fonts bundled or self-hosted with their notices.
 - A single component-source discovery index extends the existing v1 catalog with canonical source
   identities, availability, package pointers and auditable license evidence. External registries
   reference the index without moving their execution contracts; the MengTo projection now follows
