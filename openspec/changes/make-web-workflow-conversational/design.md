@@ -80,9 +80,9 @@ description and section asks use `first` the same way, and `line` joins `first` 
 
 | Form | Effect |
 | --- | --- |
-| `--verdict accept --answer "<confirmed playback>" [--anti-goal "<text>"]…` | Writes `decisions.intake = {answer, playback: "confirmed"}`. |
+| `--verdict accept --answer "<confirmed playback>" [--anti-goal "<anti-goal>" ...]` | Writes `decisions.intake = {answer, playback: "confirmed"}`. |
 | `--verdict reject --answer "<correction>"` | Appends a rule `playback N` and reopens intake. |
-| `--choice skip --answer "<one line of decisions>" [--anti-goal "<text>"]…` | Writes `decisions.intake = {answer, skipped: true}`. |
+| `--choice skip --answer "<one line of decisions>" [--anti-goal "<anti-goal>" ...]` | Writes `decisions.intake = {answer, skipped: true}`. |
 
 Every form appends to the history in `decisions.playbacks`.
 
@@ -91,7 +91,9 @@ Every form appends to the history in `decisions.playbacks`.
 playback or skip, the quick skip included. Each anti-goal becomes a rule `anti-goal N` unless a
 rule with the same text already exists. With a correction it is refused ("a correction is already a
 project rule"), and at any other stage or on a film, edit or ui project it is refused before any
-state change.
+state change. The `record` and `skip` commands that `next` returns, and the quick skip command,
+end in the optional repeatable `[--anti-goal "<anti-goal>" ...]`, so an agent that runs a returned
+command as given cannot drop the owner's anti-goals; the `correction` command does not carry it.
 
 **Minimum-content rule.** Point 4 requires stated decisions, never silent defaults, and a rule
 (point 9) is only useful if it says what is wrong. A list of go-ahead words cannot hold either, so
@@ -393,7 +395,7 @@ stale, so `next` returns to the description and then to each section before prob
 
 | File | Change |
 | --- | --- |
-| `skill/scripts/workflows/web.cjs` | Stages, actions and the web decide records (`decisions` export), now including the components record moved from `workflow-core.cjs`; the minimum-content rule; the shipped-switcher check; `finishedEarlier`. |
+| `skill/scripts/workflows/web.cjs` | Stages, actions and the web decide records (`decisions` export), now including the components record moved from `workflow-core.cjs`; the minimum-content rule; the shipped-switcher check. |
 | `skill/scripts/workflow-core.cjs` | `decide` stage enum, delegation to the web records (components included) and the `--anti-goal` placement check; art-director routing for section asks. |
 | `skill/scripts/workflows/shared.cjs` | Web review `why`; `invalidateCheckedEvidence`, moved here from `workflow-core.cjs` and exported for core and web. |
 | `skill/scripts/cli-core.cjs` | `decide` help; `--evidence` passthrough; one new repeatable flag, `--anti-goal`, registered in `REPEATABLE_OPTIONS` and passed to decide as `antiGoals`. |
@@ -408,16 +410,8 @@ stale, so `next` returns to the description and then to each section before prob
   `rounds`, `descriptions`, `sections`) and entries in `state.rules`; no `state.gates` entry,
   receipt, schema identifier or feedback record format is added. A web intake recorded by the old
   form, and a concept picked before variant history existed, still complete their stages.
-- **Web projects finished before this change are left alone** (`finishedEarlier` in `web.cjs`). At
-  standard and full that is a project with no `decisions.descriptions` history whose delivery is
-  still bound to the interaction gate hashes (`deliveryRecorded`) and whose interaction gate still
-  passes for the page. At quick, whose earlier stages were `components, build, probe` with no
-  delivery, it is a project with no `decisions.intake` whose interaction gate passes for
-  `interaction.json` and `index.html`. For such a project intake, the quick intake, the
-  description and the build count as finished, so `next` returns `done`. Probe, review and
-  delivery keep their own checks: a changed page (a stale probe), a review rejection or a new
-  component decision (both drop the delivery) ends the exception, and the in-flight migration
-  below applies.
+- **Web projects finished before this change get no exception:** they follow the new flow like any
+  other project, so `next` returns the first stage the new flow still needs.
 - **In-flight standard/full web projects** keep their intake, concept and components records. They
   are asked to approve the description, then to review each section; an existing `index.html` gains
   `data-section` markers as the loop reaches each section. Nothing is waived silently.

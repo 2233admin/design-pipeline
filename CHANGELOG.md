@@ -251,9 +251,10 @@ All notable changes to Design Pipeline are documented here.
     --answer "<playback>"`, `--verdict reject --answer "<correction>"` or `--choice skip --answer
     "<the line telling the owner what was decided for them>"`; quick records that stated line. The
     new repeatable `--anti-goal "<text>"` adds each anti-goal to the confirmed playback or the skip
-    as a project rule; it is refused with a correction and outside web intake. A bare `--answer` is
-    refused, and web intake no longer writes `brief.md`. An ask's `first` is always a step to do
-    before asking.
+    as a project rule; the `record` and `skip` commands `next` returns (the quick one included) end
+    in `[--anti-goal "<anti-goal>" ...]`, so a command run as returned keeps them. It is refused with
+    a correction and outside web intake. A bare `--answer` is refused, and web intake no longer
+    writes `brief.md`. An ask's `first` is always a step to do before asking.
   - Records must say something: a decision stated for the owner (a skip line, the confirmed
     playback) needs at least six words, and every "no" (a correction, a rejection, a combine note,
     an anti-goal) at least three; two CJK characters count as one word. "OK, start." or "默认" is
@@ -291,14 +292,13 @@ All notable changes to Design Pipeline are documented here.
     owner click or pick elements on the page is a planned follow-up. Projects that already carry
     runtime-review inputs can cite recorded runtime-review Feedback with `--evidence`; each file is
     checked with runtime-review's own validator against its `Record` definition.
-  - Migration: projects finished under the earlier flow stay done until a changed page, a review
-    rejection or a new component decision reopens them. In-flight web projects keep their intake,
-    concept and components records (an intake or pick recorded before this change still counts).
-    Standard and full projects are asked to approve the description and then to review each
-    section; an existing `index.html` gains `data-section` markers as the loop reaches each
-    section. Quick projects first record the stated line. `decide --stage
-    components|description|section` is refused for film, edit and ui; no new state schema. The
-    one new CLI flag is `--anti-goal`.
+  - Migration: web projects finished before this change get no exception and follow the new flow.
+    In-flight web projects keep their intake, concept and components records (an intake or pick
+    recorded before this change still counts). Standard and full projects are asked to approve the
+    description and then to review each section; an existing `index.html` gains `data-section`
+    markers as the loop reaches each section. Quick projects first record the stated line.
+    `decide --stage components|description|section` is refused for film, edit and ui; no new state
+    schema. The one new CLI flag is `--anti-goal`.
 - Product-promo films (Stage 0 `product-launch-video`) are evaluated only after their product
   source is admitted (change `require-product-source-admission`): until then `film check`,
   `verify film-storyboard` and `verify film-render` return only the admission findings, and

@@ -154,6 +154,15 @@ Each `--anti-goal "<text>"` given with a web intake's confirmed playback or skip
 - **THEN** `state.rules` SHALL gain one rule, `anti-goal N`, for the other text
 - **AND** `--anti-goal` with a correction, at the concept stage or on a film project SHALL fail with `CONTRACT_INVALID` and record nothing.
 
+### Requirement: Returned intake commands carry the anti-goal flag
+
+The intake `record` and `skip` commands and the quick intake `command` that `next` returns SHALL end in the optional repeatable `[--anti-goal "<anti-goal>" ...]`, so running a returned command keeps every anti-goal. The `correction` command SHALL NOT carry it.
+
+#### Scenario: A returned intake command keeps every anti-goal
+
+- **WHEN** the agent fills the `record` or `skip` command of the standard intake ask, or the quick intake `command`, with its answer and two anti-goals and runs it with the CLI
+- **THEN** `state.rules` SHALL hold both anti-goals, `anti-goal 1` and `anti-goal 2`, and intake SHALL be finished.
+
 ### Requirement: Quick web work states its decisions
 
 The quick web workflow SHALL start with a `run` action telling the agent to tell the owner in one line what it decided for them and to record that line with `decide --stage intake --choice skip`; the components ask SHALL wait for that record. Quick keeps its short path (owner-approved): it states its decisions (point 4) and asks only the component sources; it has no opening question, playback, variants, description approval or section reviews.
@@ -353,33 +362,3 @@ Every "no" the owner gives in the web conversation SHALL append `{text, from, sc
 - **WHEN** the owner corrects a playback, confirms it with an anti-goal, rejects the variants, turns down a recommendation in the decision round, and rejects the description and a section
 - **THEN** `state.rules` SHALL hold one entry per "no" with `from` `playback 1`, `anti-goal 1`, `variants 1`, `decisions 1`, `description 1` and `section <id> 1`
 - **AND** the next action SHALL list their texts in `rules`.
-
-### Requirement: Web projects finished before this change stay finished
-
-A web project that finished under the earlier flow SHALL stay finished: at standard and full, one with no description history whose delivery is still bound to the checked page; at quick, one with no intake record whose interaction gate passed. Its intake, description and build SHALL count as finished until a changed page, a review rejection or a new component decision ends the exception; then the in-flight migration applies.
-
-#### Scenario: A delivered standard project stays done
-
-- **WHEN** `next` runs for a standard web project delivered under the earlier flow, with no description history and a delivery bound to the checked page
-- **THEN** it SHALL return `done`.
-
-#### Scenario: A quick project with a passed probe stays done
-
-- **WHEN** `next` runs for a quick web project with no intake record whose interaction gate passed for `interaction.json` and `index.html`
-- **THEN** it SHALL return `done`.
-
-#### Scenario: A review rejection or a new component decision ends the exception
-
-- **WHEN** the final review of such a standard project is rejected, or a different component decision is recorded
-- **THEN** its delivery SHALL be dropped
-- **AND** `next` SHALL ask for the description and then each section before probe.
-
-#### Scenario: A changed standard page ends the exception
-
-- **WHEN** the page of such a standard project changes after its delivery, so its interaction pass no longer matches
-- **THEN** `next` SHALL ask for the description, and restoring the delivered bytes SHALL return `done` again.
-
-#### Scenario: A changed quick page ends the exception
-
-- **WHEN** the page of such a quick project changes after its probe passed
-- **THEN** `next` SHALL return the intake action that asks for the stated line.

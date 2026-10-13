@@ -78,11 +78,11 @@ The owner approved, in plain language, a conversational flow modelled on obra/su
   checkpoint; film/edit keep two decisions) and `Web build follows an explicit component source
   decision` (at standard/full, asked in the concrete-decision rounds before the description).
 - `web-workflow`: MODIFIED intake, concepts, stage-order, treatment and build requirements, plus
-  ADDED requirements for the playback, the minimum-content rule, anti-goals, the quick stated
-  decision, the variants page, the switcher that never ships, the decision rounds with their
-  plain-language options and corrections, the description gate and its `## Sections` list, rules
-  kept out of the description, the section loop, runtime-review Feedback citation and its
-  validation, rule recording, and projects finished before this change.
+  ADDED requirements for the playback, the minimum-content rule, anti-goals and the returned intake
+  commands that carry them, the quick stated decision, the variants page, the switcher that never
+  ships, the decision rounds with their plain-language options and corrections, the description
+  gate and its `## Sections` list, rules kept out of the description, the section loop,
+  runtime-review Feedback citation and its validation, and rule recording.
 
 ## Reuse
 
@@ -104,8 +104,8 @@ The change adds no gate, receipt schema or feedback system. It reuses:
 - **In-flight standard/full web projects:** they keep their intake, concept and components records,
   but must have the description approved and each section reviewed before probe.
 - **In-flight quick web projects:** they record a stated decision first.
-- **Projects finished before this change:** left alone. A changed page, a review rejection or a new
-  component decision ends that, and the in-flight migration applies.
+- **Projects finished before this change:** no exception; they follow the new flow like any other
+  project.
 - **Unchanged:** film, edit and ui behaviour.
 - **Planned follow-up (point 8, step 2):** point 8 ships in two steps (owner decision). This change:
   section comments are text that names elements, and Feedback is cited when a project already has

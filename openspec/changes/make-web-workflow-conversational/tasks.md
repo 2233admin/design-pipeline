@@ -22,7 +22,7 @@
   `description`/`section` outside web and routes section asks to an art director. Variant picks and
   rejections are refused until the owner has been shown the variants page.
 - [x] 2.3 Web final review states final acceptance; `cli-core.cjs` help names the new stages and
-  passes repeatable `--evidence` to decide (no new flag; 7.6 later adds the repeatable `--anti-goal`).
+  passes repeatable `--evidence` to decide (no new flag; 7.5 later adds the repeatable `--anti-goal`).
 - [x] 2.4 `skill/tools/variant-switcher/` switcher and guide; build stays unfinished while
   `index.html` ships the switcher.
 
@@ -36,9 +36,9 @@
 
 ## 4. Tests
 
-- [x] 4.1 The flow and switcher tests live in existing suites (7.12), each run alone with TEMP/TMP
-  on D: at 39cc1da: `workflow-next` 111/111 (intake, description, sections, lineage, rules, earlier
-  and finished projects), `web-concept-screening` 16/16 (concepts, the switcher in real Chrome,
+- [x] 4.1 The flow and switcher tests live in existing suites (7.11), each run alone with TEMP/TMP
+  on D: at 39cc1da: `workflow-next` 111/111 (intake, description, sections, lineage, rules and
+  earlier records), `web-concept-screening` 16/16 (concepts, the switcher in real Chrome,
   every shipped form), `workflow-components` 67/67, `workflow-action-commands` 30 pass + 1 platform
   skip, `interaction-audit` 15/15, `reference-analysis-entry` 6/6, `runtime-review` 21/21,
   `designer-pipeline-cli` 12/12.
@@ -172,27 +172,35 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
   and an approval can be recorded again to correct it.
 - [x] 7.4 The description no longer copies the project rules, so a rule recorded mid-build needs no
   brief edit and does not reset accepted sections.
-- [x] 7.5 Web projects finished under the earlier flow are left alone until a changed page, a review
-  rejection or a new component decision ends that.
-- [x] 7.6 Decision-round corrections and the anti-goals of a confirmed playback or a skip (the new
+- [x] 7.5 Decision-round corrections and the anti-goals of a confirmed playback or a skip (the new
   repeatable `--anti-goal`) become project rules.
-- [x] 7.7 A minimum-content rule replaces the go-ahead word list: six words for a stated decision and
+- [x] 7.6 A minimum-content rule replaces the go-ahead word list: six words for a stated decision and
   three for every "no".
-- [x] 7.8 Section and variant markers inside HTML comments no longer count.
-- [x] 7.9 Prompt texts: the opening asks one question with no `first`, `first` is always a step for
+- [x] 7.7 Section and variant markers inside HTML comments no longer count.
+- [x] 7.8 Prompt texts: the opening asks one question with no `first`, `first` is always a step for
   the agent, build steps are whole sentences, and no prompt claims element picking (point 8, step 1).
-- [x] 7.10 The component sources are offered as plain-language options, and the ids stay in the
+- [x] 7.9 The component sources are offered as plain-language options, and the ids stay in the
   record command.
-- [x] 7.11 Section verdicts check cited Feedback with runtime-review's exported `validateShape`,
+- [x] 7.10 Section verdicts check cited Feedback with runtime-review's exported `validateShape`,
   tested against a real recorded fixture.
-- [x] 7.12 The flow and switcher tests are folded into existing suites, and no new test file remains.
-- [x] 7.13 proposal.md, design.md and both spec deltas describe the fixed behaviour, the point-8
+- [x] 7.11 The flow and switcher tests are folded into existing suites, and no new test file remains.
+- [x] 7.12 proposal.md, design.md and both spec deltas describe the fixed behaviour, the point-8
   follow-up and the archive order; strict validation passes and `npm run specs:check` reports 75
   passed, 0 failed.
-- [x] 7.14 The review repros were replayed on fresh scratch projects outside the repository. The
+- [x] 7.13 The review repros were replayed on fresh scratch projects outside the repository. The
   reviewer's switcher scripts show only the chosen variant (`?variant=B` with full-height grid
   screens: centre B, rendered B). Through the CLI, every shipped-switcher form keeps build open,
-  projects done under main's CLI stay done (state unchanged) and a review rejection migrates them,
   `pickup,hero,site,story` and a reordered list are refused, "OK, start.", "do it" and "no" are
   refused, a commented `data-section` stays unbuilt, and a hand-written partial Feedback record is
   refused while the real one is cited.
+- [x] 7.14 Clean cutover: the "finished under the earlier flow" exception is gone from `web.cjs`
+  with its test and its mentions in the guides, change records and CHANGELOG; such projects follow
+  the new flow like any other.
+- [x] 7.15 The intake `record` and `skip` commands and the quick intake `command` end in the optional
+  repeatable `[--anti-goal "<anti-goal>" ...]` (the `correction` command does not). A
+  `workflow-next` test fills each returned command with its answer and two anti-goals, runs it with
+  the real CLI (split into arguments, no shell) and finds both in `state.rules`. Each run alone with
+  TEMP/TMP on D:: `workflow-next` 111/111; `workflow-action-commands`, `workflow-components` and
+  `designer-pipeline-cli` 109 pass + 1 platform skip; `returned-command-audit`,
+  `returned-command-safety`, `returned-edit-commands` and `returned-shell-paths` 23/23. Strict
+  validation passes and `npm run specs:check` reports 75 passed, 0 failed.

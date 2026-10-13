@@ -29,14 +29,6 @@ CJK characters count as one word. Shorter records are refused with `CONTRACT_INV
 nothing: "OK, start.", "just start" or "默认" is not a skip line, and "no", "Too dark" or "首屏太暗了"
 is not a reason; "The hero is too dark" is.
 
-A project finished under the earlier flow stays done. At `standard` and `full` that is a project
-with a recorded delivery, a still-passing interaction check and no description history; at `quick`,
-one whose interaction check passes and that has no intake decision. Its intake, description and
-build count as finished, so `next` returns `done`. Probe, review and deliver keep their own
-checks: a changed page, a review rejection or a new component decision ends the exception, and the
-project then takes the new stages like a project in progress (the stated line at `quick`; the
-description, then each section, at `standard` and `full`).
-
 For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
 to select and read the complete built-in method. On an existing site, audit brand, routes, content,
 states and stack before changing its design. Preserve supplied references in replicate mode;
@@ -72,14 +64,15 @@ Record each reply with the command the ask returns:
 
 | Owner's reply | Record | Effect |
 | --- | --- | --- |
-| Confirms the playback | `record`: `decide --stage intake --verdict accept --answer "<the playback the owner confirmed>"` | `decisions.intake` holds the playback, marked `playback: "confirmed"`; intake is done |
+| Confirms the playback | `record`: `decide --stage intake --verdict accept --answer "<the playback the owner confirmed>" [--anti-goal "<anti-goal>" ...]` | `decisions.intake` holds the playback, marked `playback: "confirmed"`; intake is done |
 | Corrects it | `correction`: `decide --stage intake --verdict reject --answer "<what the owner said is wrong or missing>"` | The correction becomes a project rule (`playback N`) and intake stays open |
-| Asks you to just start | `skip`: `decide --stage intake --choice skip --answer "<the line telling the owner what you decided on their behalf>"` | Tell the owner that line first; `decisions.intake` holds it, marked `skipped: true` |
+| Asks you to just start | `skip`: `decide --stage intake --choice skip --answer "<the line telling the owner what you decided on their behalf>" [--anti-goal "<anti-goal>" ...]` | Tell the owner that line first; `decisions.intake` holds it, marked `skipped: true` |
 
-Add each anti-goal the owner named to the `record` or `skip` command as its own
-`--anti-goal "<text>"` (repeatable). Each becomes a project rule (`anti-goal N`); a text already
-among the rules is not added again. `--anti-goal` is refused with a correction (the correction is
-already a rule) and on any stage other than web intake.
+Replace the optional `[--anti-goal "<anti-goal>" ...]` in the `record` or `skip` command with one
+`--anti-goal "<text>"` for each anti-goal the owner named, or drop it when there are none. Each
+becomes a project rule (`anti-goal N`); a text already among the rules is not added again.
+`--anti-goal` is refused with a correction (the correction is already a rule) and on any stage
+other than web intake.
 
 Each record is appended to `decisions.playbacks`, and a later correction reopens intake. Records
 follow the minimum-content rule above; a web `--answer` without `--verdict` or `--choice skip` is
@@ -88,9 +81,10 @@ refused.
 At `quick`, `next` returns a run instead: do not interview the owner. A quick piece is settled by
 the request, the conversation and the project's files. Tell the owner in one plain line what you
 decided on their behalf (what you will build, for whom, the look or reference you follow), then
-record that line with `decide --stage intake --choice skip --answer "<the line you told the owner>"`,
-adding each thing the request rules out as its own `--anti-goal "<text>"`. Ask first only about
-something essential that you can neither look up nor reasonably decide.
+record that line with the returned `decide --stage intake --choice skip --answer "<the line you told
+the owner>" [--anti-goal "<anti-goal>" ...]`, with one `--anti-goal "<text>"` for each thing the
+request rules out. Ask first only about something essential that you can neither look up nor
+reasonably decide.
 
 Web intake writes no `brief.md`: the brief is written later as the [description](#description).
 An intake recorded before playbacks existed (no `decisions.playbacks` history) still completes
