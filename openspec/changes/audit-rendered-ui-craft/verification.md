@@ -1,8 +1,9 @@
 # Verification
 
-Recorded on 2026-10-13 on branch `feat/internalize-ui-craft-sources` (Windows host). Sections follow
-the order the checks ran, and each names the tree it ran on; the final implementation is the one in
-Fifth Review Fix.
+Recorded on 2026-10-13 on a Windows host: through the Third Review Fix on branch
+`feat/internalize-ui-craft-sources`, and after #99 merged, from the Fourth Review Fix on, on branch
+`fix/ui-audit-review-round3` (#101). Sections follow the order the checks ran, and each names the
+tree it ran on; the final implementation is the one in Merge With #100.
 
 On the round-two tree, before the merge with `main`:
 
@@ -137,15 +138,14 @@ Codex's review of #101 at `a38f417` raised three P2 findings:
   transform, since the background moves with the text.
 - Lineage was read after the report was written, so a request that reaches the report only once it
   exists could be bound as something the page loaded. Codex's trailing-dot example does not hold
-  here: Node on this Windows host opens none of `interaction.json.`, `interaction.json `,
-  `evidence./…` or `evidence /…` as the existing report. It opens a case variant, which
+  here: Node on this Windows host does not open `interaction.json` or `evidence` with a trailing
+  period or a trailing space as the existing report. It opens a case variant, which
   `path.win32.relative` already treats as the same path. A directory link does reproduce the
   problem, and `b3e297a` reads lineage before the report is written: the request stays `absent`
   and reopens the gate, and the next run refuses it with `OUTPUT_COLLISION`.
 
-The final tested implementation is commit `b3e297a923999285b0090b1ff051d719ddbdb480`, tree
-`519347a65e52fb5323d627d1add0a7b4e5dd4567`. Full QA ran on that tree before it was committed; later
-commits change only these records.
+That implementation was tested as commit `b3e297a923999285b0090b1ff051d719ddbdb480`, tree
+`519347a65e52fb5323d627d1add0a7b4e5dd4567`; full QA ran on that tree before it was committed.
 
 | Check | Result |
 | --- | --- |
@@ -155,6 +155,20 @@ commits change only these records.
 | Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1410, 1406 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 73 passed, 0 failed. |
+
+## Merge With #100
+
+`main` gained #100 (agent resource discovery) after that run. #100 changed no file this change
+touches except `CHANGELOG.md` and one help line in `cli-core.cjs`, and both merged without
+conflicts. The final tested implementation is the merge, commit
+`eb8ff216dcb62c756a3914bbcf0ffb9a1e14f0ab`, tree `a69186028cbee2c05c509863278beb0c9b0621e5`; later
+commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| `node --test tests/workflow-components.test.cjs tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs` | 98 pass, 0 fail, including #100's discovery and lineage cases on audited pages. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1429, 1425 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 74 passed, 0 failed. |
 
 ## Not Verified
 

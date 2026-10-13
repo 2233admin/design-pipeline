@@ -1,6 +1,7 @@
 # Verification
 
-Recorded on 2026-10-13 on branch `feat/internalize-ui-craft-sources` (Windows host). Sections follow
+Recorded on 2026-10-13 on a Windows host: on branch `feat/internalize-ui-craft-sources`, and for the
+final tested tree after #99 merged, on branch `fix/ui-audit-review-round3` (#101). Sections follow
 the order the checks ran, and each names the tree it ran on.
 
 On the round-one tree, before the merge with `main`:
@@ -31,11 +32,11 @@ The six vendored sources are registered in that index: four new source records, 
 `emilkowalski/skills` and `shadcn-ui/ui` link their vendor manifests and keep their existing pins.
 Quick web `next` now asks the components question before `build`.
 
-After the review fixes to the interaction gate and the audit (change `audit-rendered-ui-craft`),
-the final tested implementation is commit `b3e297a923999285b0090b1ff051d719ddbdb480`, tree
-`519347a65e52fb5323d627d1add0a7b4e5dd4567`: `npm test` with the same temp root gave 1410 tests,
-1406 pass, 0 fail, 4 skipped, and `npm run specs:check` 73 passed. Later commits change only
-verification records.
+After the review fixes to the interaction gate and the audit (change `audit-rendered-ui-craft`) and
+a merge with `main` that brought in #100, the final tested implementation is commit
+`eb8ff216dcb62c756a3914bbcf0ffb9a1e14f0ab`, tree `a69186028cbee2c05c509863278beb0c9b0621e5`: `npm test`
+with the same temp root gave 1429 tests, 1425 pass, 0 fail, 4 skipped, and `npm run specs:check`
+74 passed. Later commits change only verification records.
 
 ## Import Notes
 
