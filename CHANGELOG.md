@@ -83,6 +83,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Project-owned UI transition rules (change `internalize-ui-transition-methods`): offline
+  state-change selection and observable manual review cases for identity, geometry, coordinated
+  entrance/exit, latest-state interruption, numeric meaning, focus, reduced motion and cleanup.
+  Web build/review and animation entry points route to the guide. Public transitions.dev methods
+  are pinned as source evidence only; no snippets, library, paid entitlement or new runtime gate.
 - Tracking HUD film template (change `add-ff-tracking-template`): the complete pinned MIT
   mrsarac/ff-tracking project is vendored under `skill/vendor/ff-tracking/` as locked reference
   through the existing film source importer and checks, and ported to a HyperFrames template in

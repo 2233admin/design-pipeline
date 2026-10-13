@@ -28,6 +28,10 @@ execute upstream content from these four skills. `emil-design-eng`, a different 
 repository, is bundled separately as an inert pinned snapshot; see
 [ui-craft-sources.md](ui-craft-sources.md#emil-design-eng).
 
+For ordinary UI state changes, read [UI transition rules](ui-transition-rules.md) after the
+opportunity screen and during rendered review. It adds state-change selection and observable
+cases, not new tokens, automated gates or upstream implementation recipes.
+
 ## 1. Opportunity screen before implementation
 
 Run this screen for every non-trivial animation before selecting a runtime or writing implementation
