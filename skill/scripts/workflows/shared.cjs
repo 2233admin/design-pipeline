@@ -111,6 +111,14 @@ function deliveryRecorded(state, root) {
   } catch { return false; }
 }
 
+// Drop checked-output gates and the delivery bound to them, so the next pass is rechecked.
+function invalidateCheckedEvidence(state) {
+  state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
+  delete state.decisions.delivered;
+  delete state.decisions.deliveryInputHashes;
+  delete state.decisions.deliveredSha256;
+}
+
 const INTAKE = {
   id: "intake",
   finished: (state) => Boolean(state.decisions?.intake),
@@ -195,4 +203,4 @@ const REVIEW = {
   },
 };
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reference, reviewInputHashes };

@@ -740,5 +740,5 @@ function renderHtml(review) {
     '<section class="panel"><h2>对象反馈</h2><small>本页仅内存编辑；不会写 target、运行 CLI、自动 record 或发布。</small><label for="category">反馈类别</label><select id="category"><option value="component-conformance">Component Conformance</option><option value="visual-acceptance">Visual Acceptance</option></select><label for="actual">Actual · 实际观察</label><textarea id="actual"></textarea><label for="expected">Expected · 预期行为</label><textarea id="expected"></textarea><label for="acceptance">Acceptance · 可执行验收要求（每行一条）</label><textarea id="acceptance"></textarea><button id="copy" type="button">复制开发 prompt</button><button id="export" type="button" disabled>导出 Feedback JSON</button><p id="message" role="status" aria-live="polite"></p><label for="prompt">完整开发 prompt（可手动复制）</label><textarea id="prompt" readonly></textarea></section></aside></main>\n<script>' + script + '</script></body></html>\n';
 }
 
-module.exports = { buildRuntimeReview, inspectRuntimeReview, recordRuntimeReviewFeedback };
+module.exports = { buildRuntimeReview, inspectRuntimeReview, recordRuntimeReviewFeedback, validateShape };
 
