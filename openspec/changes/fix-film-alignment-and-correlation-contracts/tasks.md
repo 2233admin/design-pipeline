@@ -11,4 +11,4 @@
 - [x] 2.1 Integrate the changelog and keep the replacement requirements in this active followup delta; leave consolidated and archived specifications unchanged until the archive workflow.
 - [x] 2.2 Run `node --test tests/film-continuity.test.cjs tests/ff-tracking-hud.test.cjs` with FFmpeg available; confirm the inversion fixture exercises negative correlation and the default dark-cut regression still passes.
 - [x] 2.3 Build a fresh tracking HUD scaffold and run `node probe.cjs --gpu hardware` in its project directory (matching render GPU/DPR); inspect enforced camera errors separately from reported artistic shifts and repeated-render determinism.
-- [ ] 2.4 Run `npm exec -- openspec validate fix-film-alignment-and-correlation-contracts --strict`, `npm run specs:check` and `npm test` after both isolated review fixes land; record only performed evidence.
+- [x] 2.4 Run `npm exec -- openspec validate fix-film-alignment-and-correlation-contracts --strict`, `npm run specs:check` and `npm test` after both isolated review fixes land; record only performed evidence in `verification.md`.
