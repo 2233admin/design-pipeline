@@ -7,6 +7,7 @@ skill/vendor/good-css/upstream/harness/public/fonts/GeistMono-OFL.txt -whitespac
 skill/vendor/taste-skill/upstream/** -text
 skill/vendor/cinetic/upstream/** -text
 skill/vendor/product-film-skill/upstream/** -text
+skill/vendor/ff-tracking/upstream/** -text
 skill/vendor/emil-design-eng/upstream/** -text
 skill/vendor/make-interfaces-feel-better/upstream/** -text
 skill/vendor/fixing-accessibility/upstream/** -text

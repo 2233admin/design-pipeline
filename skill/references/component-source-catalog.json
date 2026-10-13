@@ -5982,6 +5982,48 @@
       "licenseScope": "Exact pinned LICENSE contains the Apache License 2.0; no NOTICE file exists at the reviewed revision; retain the license and copyright notices. Scope: LICENSE, README.md and skills/playwright-cli/** snapshot of the skill text; the pipeline never installs the CLI."
     },
     {
+      "id": "source/mrsarac/ff-tracking",
+      "sourceId": "mrsarac/ff-tracking",
+      "recordType": "source",
+      "name": "ff-tracking",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/mrsarac/ff-tracking"
+      ],
+      "localPaths": {
+        "guide": "references/film-tracking-hud-template.md",
+        "manifest": "vendor/ff-tracking/manifest.json",
+        "implementation": "vendor/ff-tracking/upstream"
+      },
+      "provenance": {
+        "source": "ff-tracking",
+        "license": "MIT",
+        "url": "https://github.com/mrsarac/ff-tracking",
+        "revision": "cc7f4e192eccefb55ae7f18f5a370955122b651b",
+        "gitTree": "0f550821569078a4c91e11b65a1eb575f3bd7453",
+        "contentHash": "5e1ebba1adcfbf83ebf3c5cc32af4abbec618eaf1a1c3acfe8ce11a4e9b27fe6",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/mrsarac/ff-tracking/blob/cc7f4e192eccefb55ae7f18f5a370955122b651b/LICENSE"
+        ]
+      },
+      "webRanking": false,
+      "adoptionBoundary": {
+        "mode": "built-in-reference-adaptation",
+        "installsUpstreamDependencies": false,
+        "activatesUpstreamPlugin": false,
+        "runsUpstreamPipeline": false,
+        "changesProjectRuntime": false,
+        "externalMedia": "The README demo video is a release asset outside this reviewed Git tree and is not mirrored. Rendered out/ and target/ build output is never part of the snapshot.",
+        "platform": "Upstream tools/render.sh targets macOS/Metal and tools/render.ps1 native Windows/Vulkan; both need Rust, LLVM/libclang, a shared FFmpeg 9.0 development build and Python numpy/scipy, which the skill never installs. Native Windows render and WSL are unverified by this import."
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition, Copyright (c) 2026 Mustafa Saraç. Scope: complete tracked Rust/fframes tracking HUD film template. Bundled JetBrains Mono fonts keep SIL OFL 1.1 (licenses/JetBrainsMono-OFL.txt) and the MT19937 algorithm keeps its BSD notice (licenses/MT19937.txt)."
+    },
+    {
       "id": "source/mui/base-ui",
       "sourceId": "mui/base-ui",
       "recordType": "source",

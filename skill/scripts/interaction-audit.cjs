@@ -467,6 +467,19 @@ function auditPage(options) {
     const result = { left, top, right: left + container.clientWidth * scaleX, bottom: top + container.clientHeight * scaleY };
     return Object.values(result).every(Number.isFinite) ? result : null;
   };
+  // An absolutely positioned pseudo-element of a positioned element, placed by its resolved insets
+  // against the element's padding box; null when its containing block is another element.
+  const absolutePseudoBox = (el, style) => {
+    if (!(el instanceof HTMLElement) || styleOf(el).position === "static" || style.position !== "absolute") return null;
+    const padding = clientBounds(el);
+    const insets = ["top", "right", "bottom", "left"].map((side) => style[side]);
+    if (!padding || !insets.every((value) => /^-?[\d.]+px$/.test(value))) return null;
+    const box = rectOf(el);
+    const scaleX = el.offsetWidth ? box.width / el.offsetWidth : 1;
+    const scaleY = el.offsetHeight ? box.height / el.offsetHeight : 1;
+    const [top, right, bottom, left] = insets.map(parseFloat);
+    return { left: padding.left + left * scaleX, top: padding.top + top * scaleY, right: padding.right - right * scaleX, bottom: padding.bottom - bottom * scaleY };
+  };
   const scaleFor = (el) => {
     const bounds = rectOf(el);
     const style = styleOf(el);
@@ -655,13 +668,24 @@ function auditPage(options) {
     const style = getComputedStyle(node, pseudo);
     return !["none", "normal"].includes(style.content) && style.display !== "none" && (style.backgroundImage !== "none" || paintsColor(style.backgroundColor));
   });
+  // Opacity, filters and blending on the text's element or any ancestor composite the text and the
+  // background under it with whatever lies behind both, so no ratio of the two holds.
+  const groupEffect = (el) => {
+    for (let node = el; node; node = node.parentElement) {
+      const style = styleOf(node);
+      if (style.display === "contents") continue;
+      if (parseFloat(style.opacity) < 1) return `${selectorOf(node)} is translucent (opacity ${style.opacity})`;
+      if (style.filter !== "none" || style.backdropFilter !== "none") return `${selectorOf(node)} applies a filter`;
+      if (style.mixBlendMode !== "normal") return `${selectorOf(node)} blends with mix-blend-mode: ${style.mixBlendMode}`;
+    }
+    return null;
+  };
   const resolveBackground = (el, rects) => {
+    const effect = groupEffect(el);
+    if (effect) return { reason: effect };
     for (let node = el; node; node = node.parentElement) {
       const style = styleOf(node);
       const boxless = style.display === "contents";
-      if (!boxless && parseFloat(style.opacity) < 1) return { reason: `${selectorOf(node)} is translucent (opacity ${style.opacity})` };
-      if (!boxless && (style.filter !== "none" || style.backdropFilter !== "none")) return { reason: `${selectorOf(node)} applies a filter` };
-      if (!boxless && style.mixBlendMode !== "normal") return { reason: `${selectorOf(node)} blends with mix-blend-mode: ${style.mixBlendMode}` };
       if (style.backgroundClip === "text" || style.webkitBackgroundClip === "text") return { reason: `${selectorOf(node)} paints its background through the text (background-clip: text)` };
       if (paintedPseudo(node)) return { reason: `${selectorOf(node)} paints a ::before or ::after layer` };
       if (boxless) continue;
@@ -712,7 +736,7 @@ function auditPage(options) {
     const size = parseFloat(style.fontSize);
     return size >= 24 || (parseFloat(style.fontWeight) >= 700 && size >= 56 / 3) ? thresholds.contrastLarge : thresholds.contrastNormal;
   };
-  const measureContrast = (el, selector, color, style, rects, effects) => {
+  const measureContrast = (el, selector, color, style, rects, effects, resolved = null) => {
     contrast.checked += 1;
     const need = required(style);
     const expected = `at least ${need}:1`;
@@ -720,15 +744,50 @@ function auditPage(options) {
     if (effects) return unsure(effects);
     if (!color) return unsure(`its text color could not be read`);
     if (color.a === 0) return unsure("its text color is transparent");
-    const background = resolveBackground(el, rects);
+    const background = resolved || resolveBackground(el, rects);
     if (!background.color) return unsure(background.reason);
-    const covering = overlappingPaint(el, rects, background.provider);
+    const covering = rects.length ? overlappingPaint(el, rects, background.provider) : null;
     if (covering) return unsure(covering);
     const shown = color.a < 1 ? { r: color.r * color.a + background.color.r * (1 - color.a), g: color.g * color.a + background.color.g * (1 - color.a), b: color.b * color.a + background.color.b * (1 - color.a), a: 1 } : color;
     const ratio = contrastRatio(shown, background.color);
     if (ratio < need) failed("audit.text-contrast", el, { selector, expected, actual: `${Math.floor(ratio * 100) / 100}:1 (${hex(shown)} on ${hex(background.color)})`, message: `text contrast is ${Math.floor(ratio * 100) / 100}:1, below ${need}:1`, fix: FIX.contrast });
   };
   const textEffects = (style) => (style.textShadow === "none" ? parseFloat(style.webkitTextStrokeWidth) > 0 ? "the text has a stroke" : null : "the text has a shadow");
+  // Generated text has no text node. It sits on its pseudo-element's own background when that
+  // paints, otherwise on what lies behind its box: the element's box in flow, or the inset box of an
+  // absolute pseudo-element of a positioned element. A transform, a relative or sticky offset, or the
+  // margins of an absolute pseudo-element move the text off that box, and any other placement
+  // cannot be located.
+  const measureGenerated = (el, pseudo, style) => {
+    const selector = `${selectorOf(el)}${pseudo}`;
+    const color = parseColor(style.webkitTextFillColor || style.color);
+    const effects = textEffects(style)
+      || (parseFloat(style.opacity) < 1 ? `${selector} is translucent (opacity ${style.opacity})` : null)
+      || (style.filter !== "none" || style.backdropFilter !== "none" ? `${selector} applies a filter` : null)
+      || (style.mixBlendMode === "normal" ? null : `${selector} blends with mix-blend-mode: ${style.mixBlendMode}`)
+      || (style.backgroundClip === "text" || style.webkitBackgroundClip === "text" ? `${selector} paints its background through the text (background-clip: text)` : null);
+    const image = style.backgroundImage !== "none";
+    const insetShadow = /\binset\b/.test(style.boxShadow);
+    if (image || insetShadow || paintsColor(style.backgroundColor)) {
+      const own = parseColor(style.backgroundColor);
+      const reason = image ? `${selector} has a background image or gradient`
+        : insetShadow ? `${selector} has an inset shadow`
+        : own ? own.a < 1 ? `${selector} has a translucent background (${style.backgroundColor})` : groupEffect(el)
+        : `the background color of ${selector} (${style.backgroundColor}) could not be read`;
+      return measureContrast(el, selector, color, style, [], effects, reason ? { reason } : { color: own });
+    }
+    const insets = [style.top, style.right, style.bottom, style.left];
+    let displaced = null;
+    if (["transform", "translate", "rotate", "scale"].some((property) => style[property] !== "none")) displaced = `${selector} is transformed`;
+    else if (style.position === "sticky" && insets.some((value) => value !== "auto")) displaced = `${selector} is sticky`;
+    else if (style.position === "relative" && insets.some((value) => value !== "auto" && parseFloat(value) !== 0)) displaced = `${selector} is relatively positioned`;
+    else if (style.position === "absolute" && [style.marginTop, style.marginRight, style.marginBottom, style.marginLeft].some((value) => !/^-?[\d.]+px$/.test(value) || parseFloat(value) !== 0)) displaced = `${selector} is moved by its margins`;
+    let box = null;
+    if (!displaced && style.position === "absolute") box = absolutePseudoBox(el, style);
+    else if (!displaced && style.position !== "fixed") box = rectOf(el);
+    if (!box || box.right - box.left <= 0 || box.bottom - box.top <= 0) return measureContrast(el, selector, color, style, [], effects, { reason: displaced || `the box of ${selector} cannot be located` });
+    measureContrast(el, selector, color, style, [box], effects);
+  };
   for (const el of elements) {
     if (decorative(el) || el.closest(':disabled, [aria-disabled="true"]')) continue;
     const style = styleOf(el);
@@ -746,6 +805,7 @@ function auditPage(options) {
       if (color) color.a *= parseFloat(placeholder.opacity);
       measureContrast(el, `${selectorOf(el)}::placeholder`, color, placeholder, [rectOf(el)], textEffects(placeholder));
     }
+    for (const { pseudo, style: generated } of generatedText(el)) measureGenerated(el, pseudo, generated);
   }
 
   const rootBackground = checks["audit.root-background"];
@@ -816,13 +876,31 @@ function auditPage(options) {
   if (overflowPx > tolerance.boundsPx) failed("audit.horizontal-overflow", root, { expected: `no page-level horizontal overflow (within ${tolerance.boundsPx}px)`, actual: `${round2(overflowPx)}px wider than the ${root.clientWidth}px viewport`, message: "the page scrolls sideways", fix: FIX.horizontalOverflow, ...(widest ? { related: widest.el } : {}) });
 
   // ---- targets and control spacing
+  // Sentence text is painted, visible text in the link's own inline formatting context, outside
+  // other controls; block-level, hidden and invisible descendants hold none of it. Text in a
+  // transparent color paints only through a stroke, a shadow, or a background clipped to text on
+  // its element or an ancestor that no background painted in between covers. Text hidden only from
+  // assistive technology is still painted on the line, so it counts.
+  const paintsText = (el) => {
+    const style = styleOf(el);
+    if (paintsColor(style.webkitTextFillColor || style.color)) return true;
+    if (style.textShadow !== "none" && (style.textShadow.match(/[a-z-]+\([^)]*\)/gi) ?? [style.textShadow]).some((color) => paintsColor(color))) return true;
+    if (parseFloat(style.webkitTextStrokeWidth) > 0 && paintsColor(style.webkitTextStrokeColor)) return true;
+    for (let node = el; node; node = node.parentElement) {
+      const own = styleOf(node);
+      if (own.backgroundImage !== "none" || paintsColor(own.backgroundColor)) return own.backgroundClip === "text" || own.webkitBackgroundClip === "text";
+    }
+    return false;
+  };
   const sentenceText = (el) => {
     let block = el.parentElement;
     while (block && /^(inline|contents)$/.test(styleOf(block).display)) block = block.parentElement;
     if (!block) return false;
-    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+      acceptNode: (node) => (node.nodeType === Node.TEXT_NODE ? NodeFilter.FILTER_ACCEPT : /^(inline|contents)$/.test(styleOf(node).display) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_REJECT),
+    });
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      if (!/[\p{L}\p{N}]/u.test(node.textContent)) continue;
+      if (!/[\p{L}\p{N}]/u.test(node.textContent) || !visible(node.parentElement) || !paintsText(node.parentElement)) continue;
       const owner = node.parentElement?.closest(CONTROL);
       if (owner && owner !== block && block.contains(owner)) continue;
       return true;
@@ -837,21 +915,15 @@ function auditPage(options) {
   const hitArea = (el) => {
     const box = rectOf(el);
     const area = { left: box.left, top: box.top, right: box.right, bottom: box.bottom };
-    if (el instanceof HTMLElement && styleOf(el).position !== "static") {
-      const padding = clientBounds(el);
-      const scaleX = el.offsetWidth ? box.width / el.offsetWidth : 1;
-      const scaleY = el.offsetHeight ? box.height / el.offsetHeight : 1;
-      for (const pseudo of ["::before", "::after"]) {
-        const style = getComputedStyle(el, pseudo);
-        if (!padding || ["none", "normal"].includes(style.content) || style.display === "none" || style.position !== "absolute" || style.pointerEvents === "none") continue;
-        const insets = ["top", "right", "bottom", "left"].map((side) => style[side]);
-        if (!insets.every((value) => /^-?[\d.]+px$/.test(value))) continue;
-        const [top, right, bottom, left] = insets.map(parseFloat);
-        area.left = Math.min(area.left, padding.left + left * scaleX);
-        area.top = Math.min(area.top, padding.top + top * scaleY);
-        area.right = Math.max(area.right, padding.right - right * scaleX);
-        area.bottom = Math.max(area.bottom, padding.bottom - bottom * scaleY);
-      }
+    for (const pseudo of ["::before", "::after"]) {
+      const style = getComputedStyle(el, pseudo);
+      if (["none", "normal"].includes(style.content) || style.display === "none" || style.pointerEvents === "none") continue;
+      const extent = absolutePseudoBox(el, style);
+      if (!extent) continue;
+      area.left = Math.min(area.left, extent.left);
+      area.top = Math.min(area.top, extent.top);
+      area.right = Math.max(area.right, extent.right);
+      area.bottom = Math.max(area.bottom, extent.bottom);
     }
     return { ...area, width: area.right - area.left, height: area.bottom - area.top };
   };

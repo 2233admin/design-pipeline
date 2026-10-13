@@ -1,0 +1,12 @@
+[package]
+name = "score"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+publish = false
+license = "MIT"
+description = "The ff-tracking Slab score, written in Rust"
+
+[dependencies]
+slabkit = { git = "https://github.com/nooga/slabkit-rs", rev = "a181e9bdbee154a9fd8de0097f0a684bf3474e13" }
+serde_json = { version = "1", features = ["float_roundtrip"] }

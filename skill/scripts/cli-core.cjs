@@ -415,7 +415,7 @@ function publicHelp() {
     `  composition scaffold --output <new-dir> [--template ${scaffoldTemplates.join("|")}]`,
     "  composition compare --source <png> --image <png> --output <new-dir>",
     "  art-motion render --spec <file> --output <new-dir> [--stills 0,1.5] [--chrome <exe>] [--puppeteer-module <file>] [--ffmpeg <exe>] [--ffprobe <exe>]   (PNG stills or video plus render-report.json; diagnostics only)",
-    "  film scaffold --output <dir> [--template default|motion-study] [--replace]",
+    "  film scaffold --output <dir> [--template default|motion-study|tracking-hud] [--replace]",
     "  film methods --project-root <dir> --input <plan.json> [--write] [--replace]",
     "  film templates [--query <terms> | --template <id>] [--all]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
@@ -904,7 +904,26 @@ function preflightInteraction(root, options = {}) {
       fail("interaction capture", `output would overwrite ${path.basename(file)}. Fix: use a separate report destination`, { code: "OUTPUT_COLLISION" });
     }
   }
-  return { doc, probeFile, pageUrl, localPage, targetFile, resultFile, protectedFiles, project };
+  // Every report the caller writes after observing, this result included: the page must have loaded none.
+  if (options.reportFiles !== undefined && !Array.isArray(options.reportFiles)) fail("interaction capture", "reportFiles must be an array");
+  const reportFiles = [...new Set([resultFile, ...(options.reportFiles || []).map(file => contained(root, file, "interaction report", false))])];
+  return { doc, probeFile, pageUrl, localPage, targetFile, resultFile, protectedFiles, reportFiles, project };
+}
+
+// Writing a report over a file the page loaded would replace the bytes it was measured with before
+// the gate or native completion binds them.
+function loadedReport(requests, report) {
+  const output = fs.existsSync(report) ? fs.statSync(report, { bigint: true }) : null;
+  return (Array.isArray(requests) ? requests : []).some(raw => {
+    let file;
+    try {
+      const url = new URL(raw);
+      if (url.protocol !== "file:") return false;
+      file = fileURLToPath(url);
+    } catch { return false; }
+    const input = fs.existsSync(file) ? fs.statSync(file, { bigint: true }) : null;
+    return path.relative(file, report) === "" || Boolean(input && output && input.dev === output.dev && input.ino === output.ino);
+  });
 }
 
 function observeInteraction(root, options = {}) {
@@ -923,6 +942,10 @@ function observeInteraction(root, options = {}) {
   }
   if (context.targetFile && !(actualLocalPage && sameFilePath(actualLocalPage, context.targetFile))) {
     fail("interaction capture", "captured page differs from the declared local output target", { code: "INTERACTION_TARGET_MISMATCH" });
+  }
+  const loaded = context.reportFiles.find(report => loadedReport(capture.requests, report));
+  if (loaded) {
+    fail("interaction capture", `output would overwrite ${path.relative(root, loaded).split(path.sep).join("/")}, which the page loaded. Fix: keep reports out of what the page loads, or use a separate report destination`, { code: "OUTPUT_COLLISION" });
   }
   const result = evaluateProbeFile(context.doc, capture, { project: context.project });
   return { ...context, result, kernel };
@@ -1045,9 +1068,12 @@ function verifyCommand(parsed, root, action) {
       protectedFiles: [...new Set([path.join(path.dirname(probeFile), workflow.STATE), path.join(project, workflow.STATE)])],
       chrome: option(parsed, "--chrome"), puppeteer: option(parsed, "--puppeteer-module"),
     });
+    // Lineage is read before the report is written: a request that resolves only once the report
+    // exists, through any alias the filesystem accepts, stays absent and reopens the gate.
+    const lineage = interactionLineage(project, kernel.value.capture.requests);
     fs.mkdirSync(outDir, { recursive: true });
     fs.writeFileSync(resultFile, `${JSON.stringify(result, null, 2)}\n`);
-    workflow.recordGate(project, "interaction", result.status, [probeFile, ...(localPage ? [localPage] : [])], result, interactionLineage(project, kernel.value.capture.requests));
+    workflow.recordGate(project, "interaction", result.status, [probeFile, ...(localPage ? [localPage] : [])], result, lineage);
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   fail("cli", `unknown verify action ${String(action)}`, { code: "UNKNOWN_COMMAND" });

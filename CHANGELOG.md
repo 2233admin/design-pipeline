@@ -6,6 +6,16 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- `film check` and `verify film-render` clamp beat samples to the last frame, so the 95% sample
+  of a short final procedural beat no longer crashes the check on a missing evidence frame
+  (change `add-ff-tracking-template`).
+- The render gate no longer misses planned hard cuts between dark shots under grain or a moving
+  camera. ffmpeg's scene score measures absolute level change, so such a cut stayed under 0.3,
+  and busy neighbouring steps hid it from the one-step pixel detector. A planned boundary now also
+  counts when, within one frame of it, a frame shares less than half its structure with the frame
+  before (r² < 0.5) and the step before that is at least four times calmer. Dissolves and whips
+  into a cut still report `planned-cuts-missing`. The result reports these cuts as
+  `cuts.structureCutsSec` (change `add-ff-tracking-template`).
 - Component manifests now resolve real sources and project-contained usage files, require markers
   present in those files and license-notice handling for verified adoption, and reject copying
   unverified or commercial references. Components decisions require an explicit canonical,
@@ -67,6 +77,15 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Tracking HUD film template (change `add-ff-tracking-template`): the complete pinned MIT
+  mrsarac/ff-tracking project is vendored under `skill/vendor/ff-tracking/` as locked reference
+  through the existing film source importer and checks, and ported to a HyperFrames template in
+  `skill/tools/ff-tracking-hud/`: one `film.config.js` drives a tracks module (the upstream `hud`
+  crate, matching its fixtures for all 180 frames), a Canvas 2D terminal drawn glyph by glyph, a
+  WebGL2 port of the lens shader, CPU-projected tracker labels and ffmpeg-synthesized sound.
+  `film scaffold --template tracking-hud` writes the project; `probe.cjs` checks seek determinism
+  and label-to-glyph alignment. `references/film-tracking-hud-template.md` and the film build
+  table route to it. No new gate, receipt, flag or dependency.
 - Measured UI craft audit (change `audit-rendered-ui-craft`): `interaction.json`
   (`design-pipeline.interaction-probe.v1`) accepts `"kind": "audit"` probes, and
   `verify interaction` measures the rendered page at each declared viewport for 17 `audit.*`
@@ -84,8 +103,9 @@ All notable changes to Design Pipeline are documented here.
   The logic is adapted from lintapple (MIT) without its files or axe-core. The web `probe` stage
   now requires a passing audit probe at every tier, and the `interaction` gate binds the hashes of
   the local files the page loaded plus `DESIGN.md` and `MOTION.md`; a record without that lineage
-  is stale, so in-flight web projects re-verify. **Pages that passed `probe` before may now fail
-  it**, with findings naming the measured value, threshold and fix.
+  is stale, so in-flight web projects re-verify, and a report destination the page loaded is
+  refused with `OUTPUT_COLLISION` before anything is written. **Pages that passed `probe` before
+  may now fail it**, with findings naming the measured value, threshold and fix.
   `references/ui-craft-sources.md` becomes
   the project-owned rule index: each audit code with its sources, a `UC-` review checklist for
   motion, focus, semantics, forms, copy and states, and the resolved conflicts. Audit and

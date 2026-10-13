@@ -384,6 +384,41 @@ test("public native failures retain measured fixes and bound repeated attempts t
   assert.equal(JSON.parse(fs.readFileSync(stateFile)).extensions.visualTasks.failures.outline.attempts, 1, "missing tools do not add observed attempts");
 });
 
+test("native completion refuses a page that loaded another binding's check before writing any check", t => {
+  const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  let chrome, puppeteerModule;
+  try {
+    chrome = resolveChrome(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
+    puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
+  }
+  catch (error) { if (error.code === "TOOL_MISSING") { t.skip(error.message); return; } throw error; }
+  const fixture = visualFixture(); t.after(() => fs.rmSync(fixture.dir, { recursive: true, force: true }));
+  // A second page with its own probe and check; only the first page loads that check's bytes.
+  const plan = JSON.parse(fs.readFileSync(path.join(fixture.dir, fixture.plan))), task = plan.phases[0];
+  const probe = JSON.parse(fs.readFileSync(path.join(fixture.dir, "outline-probe.json"), "utf8"));
+  touch(fixture.dir, "second-probe.json", canonicalJson({ ...probe, id: "second", url: "second.html" }));
+  task.inputs.push("second-probe.json"); task.outputs.push("second.html"); task.visual.scope.push("second.html");
+  task.visual.checks.push("second-check.json");
+  task.visual.verification.push({ kind: "interaction", probe: "second-probe.json", target: "second.html", check: "second-check.json" });
+  touch(fixture.dir, fixture.plan, canonicalJson(plan));
+  touch(fixture.dir, "second-check.json", '{"status":"earlier attempt"}');
+  gitFixture(fixture.dir, "add", "."); gitFixture(fixture.dir, "commit", "-qm", "two verified pages");
+  const invoke = (...args) => {
+    const result = spawnSync(process.execPath, [cli, ...args, "--root", fixture.dir, "--change-root", ".", "--json"], { encoding: "utf8", windowsHide: true });
+    assert.ok(result.stdout, result.stderr || result.error?.message);
+    return { exit: result.status, value: JSON.parse(result.stdout) };
+  };
+  assert.equal(invoke("next", "--plan", fixture.plan).exit, 0);
+  touch(fixture.dir, "outline.html", `${visualHtml}<link rel="stylesheet" href="second-check.json">`);
+  touch(fixture.dir, "second.html", visualHtml);
+  const before = fs.readFileSync(path.join(fixture.dir, "second-check.json"));
+  const result = invoke("decide", "--choice", "outline", "--verdict", "complete", "--chrome", chrome, "--puppeteer-module", puppeteerModule);
+  assert.equal(result.value.status, "blocked", JSON.stringify(result.value));
+  assert.match(result.value.failure, /second-check\.json, which the page loaded/);
+  assert.deepEqual(fs.readFileSync(path.join(fixture.dir, "second-check.json")), before, "the loaded check keeps the bytes the page was measured with");
+  assert.equal(fs.existsSync(path.join(fixture.dir, "outline-check.json")), false, "no check is written");
+});
+
 test("incomplete capture preserves old observed attempts until the changed output is measured", t => {
   const fixture = visualFixture(); t.after(() => fs.rmSync(fixture.dir, { recursive: true, force: true }));
   nextVisualTask(fixture.dir, { plan: fixture.plan });

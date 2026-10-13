@@ -598,6 +598,26 @@ components, claims and user choices priority, using the pipeline's existing rend
 tools. Upstream Bun/uv/Remotion scripts remain readable source; native Windows and WSL pipeline
 execution is unverified and the package does not install their dependencies.
 
+## mrsarac/ff-tracking
+
+The complete byte-preserved source snapshot under `skill/vendor/ff-tracking/upstream/` is from
+https://github.com/mrsarac/ff-tracking at reviewed commit
+`cc7f4e192eccefb55ae7f18f5a370955122b651b` (reviewed 2026-10-13).
+All 46 tracked files are retained: the Rust/fframes `hud`, `flat`, `lens` and `score` crates,
+the SkSL lens shader, render/score/sound tools, design notes, README images, the committed
+`score/score.wav` and JetBrains Mono fonts. No tracked files from this reviewed tree are excluded.
+
+MIT, Copyright (c) 2026 Mustafa Saraç. The complete original license is
+`skill/vendor/ff-tracking/upstream/LICENSE`. JetBrains Mono, Copyright 2020 The JetBrains Mono
+Project Authors, keeps the SIL Open Font License 1.1 in `licenses/JetBrainsMono-OFL.txt`; the
+MT19937 algorithm, Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura, keeps its
+BSD notice in `licenses/MT19937.txt`. The upstream README states that `score.py`,
+`ff_tracking.slab/` and `score.wav` are offered under the repository's MIT license and that
+GPL-3.0 slabkit, which is not bundled, is needed only to re-render the score. The visual style is
+credited upstream to Michael Nowak; none of his footage is included. fframes, Skia, FFmpeg,
+LLVM and the Rust and Python dependencies are not bundled or installed; the README demo video is
+a release asset and is not mirrored. The template's native Windows render and WSL are unverified.
+
 ## emilkowalski/skills (emil-design-eng)
 
 The byte-preserved scoped snapshot under `skill/vendor/emil-design-eng/upstream/` is from
