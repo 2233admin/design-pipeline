@@ -109,9 +109,10 @@ const MAX_CONTRAST = 21;
 const PASSING = ["passed", "not-applicable"];
 // The verifier's external-request finding, bounded by the project rather than the page origin: a
 // CDN, a dev server and a file outside the project all escape the gate's hashes. It lists as many
-// URLs as the verifier's other external-request findings.
+// URLs as the verifier's other external-request findings. interaction-core.cjs applies the same
+// bound and fix to a local page's whole run.
 const MAX_LISTED_URLS = 20;
-const EXTERNAL_FIX = "Copy every listed resource into the project, next to the page, and reference it with a relative URL: an audited page may load only files the gate can hash, so fonts, styles and scripts are self-hosted.";
+const EXTERNAL_FIX = "Copy every listed resource into the project, next to the page, and reference it with a relative URL: a verified local page may load only files the gate can hash, so fonts, styles and scripts are self-hosted.";
 
 // What to declare so a `not-declared` check measures the page: the coverage carries it as a hint.
 const NOT_DECLARED_HINT = Object.freeze({
@@ -1076,4 +1077,4 @@ function summarizeAudit(probeId, viewportResults, project) {
   return { status, coverage, findings, contractErrors };
 }
 
-module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, validateAuditProbe, auditOptions, auditViewports, auditPage, summarizeAudit };
+module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, EXTERNAL_FIX, validateAuditProbe, auditOptions, auditViewports, auditPage, bindable, summarizeAudit };

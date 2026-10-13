@@ -6,7 +6,7 @@
 // filesystem, no browser, no clock -- so every threshold below is testable without Chrome.
 
 const { assertEnum, assertKeys, assertObject, assertString, fail, isObject } = require("./contract-utils.cjs");
-const { AUDIT_CODES, OPTIONAL_CODES, auditViewports, summarizeAudit, validateAuditProbe } = require("./interaction-audit.cjs");
+const { AUDIT_CODES, EXTERNAL_FIX, OPTIONAL_CODES, auditViewports, bindable, summarizeAudit, validateAuditProbe } = require("./interaction-audit.cjs");
 
 const SCHEMA = "design-pipeline.interaction-probe.v1";
 const RESULT_SCHEMA = "design-pipeline.interaction-result.v1";
@@ -566,7 +566,19 @@ function evaluateAudit(probe, shot, project) {
   return { id: probe.id, kind: "audit", status: summary.status, coverage: summary.coverage, findings: summary.findings };
 }
 
-// `options.project` is the project root an audited page may load files from.
+// A local page's run may load files only from inside the project, whichever probe asked: a file
+// outside it shares the page's `file:` origin, so the per-probe origin check lets it through, and
+// the gate could neither hash it nor notice it change. The run log also holds requests made after
+// a probe stopped recording. Audit rows already list the ones their own loads made.
+function outsideProjectFiles(capture, project, findings) {
+  if (!project || capture.pageOrigin !== "file:") return [];
+  const listed = new Set(findings.flatMap((finding) => (finding.code === "external-request" && Array.isArray(finding.urls) ? finding.urls : [])));
+  const logs = [capture.requests, ...capture.probes.map((shot) => shot?.requests)];
+  const requested = new Set(logs.flatMap((log) => (Array.isArray(log) ? log : [])).filter((url) => typeof url === "string"));
+  return [...requested].filter((url) => /^file:/i.test(url) && !listed.has(url) && !bindable(url, project));
+}
+
+// `options.project` is the project root a local page may load files from.
 function evaluateProbeFile(doc, capture, options = {}) {
   const normalized = validateProbeFile(doc);
   assertObject(capture, "capture", SCOPE);
@@ -603,13 +615,19 @@ function evaluateProbeFile(doc, capture, options = {}) {
       findings: result.findings,
     };
   });
+  const findings = probes.flatMap((probe) => probe.findings.map((finding) => ({ probeId: probe.id, ...finding })));
+  const outside = outsideProjectFiles(capture, options.project, findings);
+  if (outside.length) {
+    const urls = outside.slice(0, MAX_LISTED_URLS);
+    findings.push({ code: "external-request", severity: "error", message: `${outside.length} request${outside.length === 1 ? "" : "s"} loaded a file outside the project`, expected: "only files inside the project", actual: urls.join(", "), fix: EXTERNAL_FIX, urls });
+  }
   return {
     schema: RESULT_SCHEMA,
     id: normalized.id,
     url: normalized.url,
-    status: probes.some((probe) => probe.status === "failed") ? "failed" : "passed",
+    status: outside.length || probes.some((probe) => probe.status === "failed") ? "failed" : "passed",
     probes,
-    findings: probes.flatMap((probe) => probe.findings.map((finding) => ({ probeId: probe.id, ...finding }))),
+    findings,
   };
 }
 

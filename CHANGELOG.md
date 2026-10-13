@@ -76,7 +76,8 @@ All notable changes to Design Pipeline are documented here.
   page must be the local `index.html` and may load only assets inside the project: a CDN or
   dev-server asset, or a file outside the project, fails the existing `external-request` finding,
   so **CDN fonts, styles and scripts must be self-hosted**. Motion and journey probes already
-  failed requests outside the page origin; the audit applies the rule to every web page.
+  failed requests outside the page origin; the audit applies the rule to every web page, and a
+  local page's run that loads a file outside the project fails whichever probe loaded it.
   Thresholds and selectors are probe inputs copied from `DESIGN.md` with documented defaults, and
   font families are required. Unresolvable contrast fails the audit, undeclared optional checks are
   reported as `not-declared` rather than passed, and no probe field can skip or waive a result.
