@@ -2797,18 +2797,3 @@ test("unbound legacy review and delivery decisions remain readable but require f
     assert.equal(readState(dir).decisions.drafts.length, 2, "legacy history is preserved");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
-
-test("a web project recorded by the earlier question form is past intake and concepts", t => {
-  const root = webProject(t);
-  const brief = "# Brief\n\nA product page\n";
-  touch(root, "brief.md", brief);
-  const state = readState(root);
-  state.decisions = { intake: { answer: "A product page", briefSha256: `sha256:${sha256(brief)}` }, reference: "none", concept: "1" };
-  touch(root, ".design-pipeline/state.json", `${JSON.stringify(state, null, 2)}\n`);
-  assert.equal(nextAction(root).stage, "components");
-  prepareWebComponents(root);
-  const ask = nextAction(root);
-  assert.equal(ask.stage, "description");
-  assert.equal(ask.type, "ask");
-  assert.deepEqual(ask.completed, ["intake", "reference", "concepts", "components"]);
-});

@@ -66,12 +66,10 @@ const OPENING = {
 };
 const CONVERSATION = "Facts are your job: before asking, take what you can from the conversation and the project's files (README, existing pages, DESIGN.md, brand assets; in an existing project run project inspect), and never ask the owner for something you can look up. Send the opening question as its own message, as it is: the skip line, then one open question. Then ask one open question per message, with no list of example answers unless they are stuck: anchor on real specifics (a site they saw, the moment a visitor arrives), ask what would make them wince and what they have seen elsewhere and loved or hated. When you can describe the page, play it back in about 200-300 words: who it is for, what a visitor should do, what it should feel like; mark what they said as theirs and what you guessed as your guess, and end by asking what is wrong or missing. Record each correction with the correction command (it becomes a project rule) and play back again until they confirm; then record the confirmed playback, adding each anti-goal they named (what the page must never be or do) to the record command as its own --anti-goal \"<text>\", which becomes a project rule too. If they say to just start, tell them in one line what you decided on their behalf and record that line with the skip command, with any anti-goal they named added the same way.";
 
-// Intake ends with a confirmed playback or a stated skip, and a later correction reopens it. An
-// intake recorded by the earlier question form has no playback history and still completes it.
+// Intake ends with a confirmed playback or a stated skip, and a later correction reopens it.
 function intakeFinished(state) {
-  if (!state.decisions?.intake) return false;
-  const playbacks = history(state, "playbacks");
-  return !playbacks.length || playbacks.at(-1).verdict !== "reject";
+  const latest = history(state, "playbacks").at(-1);
+  return Boolean(state.decisions?.intake) && Boolean(latest) && latest.verdict !== "reject";
 }
 
 const INTAKE = {
@@ -153,12 +151,9 @@ function variantFindings(root) {
   ];
 }
 
-// A pick closes the stage and a later rejection reopens it. A pick recorded before variant history
-// existed still counts.
+// A pick closes the stage and a later rejection reopens it.
 function conceptChosen(state) {
-  const variants = history(state, "variants");
-  if (!variants.length) return Boolean(state.decisions?.concept);
-  return variants.at(-1).verdict === "pick" && Boolean(state.decisions?.concept);
+  return history(state, "variants").at(-1)?.verdict === "pick" && Boolean(state.decisions?.concept);
 }
 
 const CONCEPTS = {

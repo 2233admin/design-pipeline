@@ -295,7 +295,7 @@ test("web intake playback, correction and stated skip never create, read or chan
   }
 });
 
-test("intake legacy decisions complete the stage but never authorize a user brief overwrite", () => {
+test("a legacy intake record completes ui intake but sends web through the playback, and never authorizes a user brief overwrite", () => {
   for (const deliverable of ["ui", "web"]) {
     const dir = tmp();
     const state = initState(dir, { deliverable, tier: "standard" });
@@ -303,7 +303,8 @@ test("intake legacy decisions complete the stage but never authorize a user brie
     touch(dir, ".design-pipeline/state.json", canonicalJson(state));
     touch(dir, "brief.md", "# Brief\n\ndefault\n");
     const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
-    assert.notEqual(nextAction(dir).stage, "intake", `${deliverable}: a legacy intake record completes intake`);
+    if (deliverable === "web") assert.equal(nextAction(dir).stage, "intake", "web: a legacy intake record still goes through the playback");
+    else assert.notEqual(nextAction(dir).stage, "intake", "ui: a legacy intake record completes intake");
     // The shared intake refuses the collision; web refuses a bare reply before looking at any brief.
     assert.throws(() => decide(dir, { stage: "intake", answer: "replacement" }), deliverable === "web" ? /--verdict accept/ : { code: "OUTPUT_COLLISION" });
     assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ndefault\n");
