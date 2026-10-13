@@ -2,7 +2,7 @@
 
 Recorded on 2026-10-13 on branch `feat/internalize-ui-craft-sources` (Windows host). Sections follow
 the order the checks ran, and each names the tree it ran on; the final implementation is the one in
-Fourth Review Fix.
+Fifth Review Fix.
 
 On the round-two tree, before the merge with `main`:
 
@@ -115,9 +115,8 @@ Codex's review of #101 at `06e78ec` raised two P2 findings:
   on `7b53b12` with `page.css -> evidence/interaction.json`: `verify interaction` exits 2 with
   `external-request` on `page.css`, and the gate records `failed` with no lineage.
 
-The final tested implementation is commit `50958502aed31213698e039d44789d394e7e8dbb`, tree
-`42b44b21002d4a135c94f0fd80af8be2f0f03946`. Full QA ran on that tree before it was committed; later
-commits change only these records.
+That implementation was tested as commit `50958502aed31213698e039d44789d394e7e8dbb`, tree
+`42b44b21002d4a135c94f0fd80af8be2f0f03946`; full QA ran on that tree before it was committed.
 
 | Check | Result |
 | --- | --- |
@@ -125,6 +124,36 @@ commits change only these records.
 | `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs` | 48 pass, 0 fail. |
 | Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1409, 1405 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Fifth Review Fix
+
+Codex's review of #101 at `a38f417` raised three P2 findings:
+
+- Generated text without its own background was measured at its untransformed box when a
+  `transform` moved it elsewhere, and generated text below opacity 1 had that opacity folded into
+  its text alpha, so either could pass. Both are now `indeterminate` (`b3e297a`), like other text
+  under those effects. Generated text with its own opaque background keeps its measurement under a
+  transform, since the background moves with the text.
+- Lineage was read after the report was written, so a request that reaches the report only once it
+  exists could be bound as something the page loaded. Codex's trailing-dot example does not hold
+  here: Node on this Windows host opens none of `interaction.json.`, `interaction.json `,
+  `evidence./…` or `evidence /…` as the existing report. It opens a case variant, which
+  `path.win32.relative` already treats as the same path. A directory link does reproduce the
+  problem, and `b3e297a` reads lineage before the report is written: the request stays `absent`
+  and reopens the gate, and the next run refuses it with `OUTPUT_COLLISION`.
+
+The final tested implementation is commit `b3e297a923999285b0090b1ff051d719ddbdb480`, tree
+`519347a65e52fb5323d627d1add0a7b4e5dd4567`. Full QA ran on that tree before it was committed; later
+commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression: generated text moved by `transform: translateY(-200%)`, and generated text at `opacity: .8`, both without their own background | With the engine of `5095850`, no finding. With the fix: `#lift::after` "is transformed" and `#soft::after` "is translucent (opacity 0.8)", both `indeterminate`. |
+| Regression: a clean page that requests `ev/interaction.json`, where `ev` links to the empty report directory | With the code of `5095850`, `verify interaction` exited 0 and the lineage's `absent` list was empty, because the request was read after the report existed. With the fix it exits 0 with `ev/interaction.json` in `absent`, `next` reopens `probe`, and a rerun exits 1 with `OUTPUT_COLLISION`. |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs` | 49 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1410, 1406 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 73 passed, 0 failed. |
 
 ## Not Verified
