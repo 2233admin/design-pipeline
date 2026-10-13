@@ -2,7 +2,7 @@
 
 Recorded on 2026-10-13 on branch `feat/internalize-ui-craft-sources` (Windows host). Sections follow
 the order the checks ran, and each names the tree it ran on; the final implementation is the one in
-Third Review Fix.
+Fourth Review Fix.
 
 On the round-two tree, before the merge with `main`:
 
@@ -85,9 +85,9 @@ Codex's review of `a1c6498` raised three P2 findings, all confirmed and fixed in
 Checking the generated-text fix showed that the background resolver stopped at the first opaque
 background, so opacity, a filter or a blend mode above it, including on the host of a badge with
 its own background, still produced a definite ratio. `7b53b12` makes such text `indeterminate`, as
-the contrast rule states. The final tested implementation is commit
-`7b53b127274ca5714bc89acb667b66ec859faeaf`, tree `b30e3d4d3a782843bc7c04a0ca068b5ecd950a86`. Full QA
-ran on that tree before it was committed; later commits change only these records.
+the contrast rule states. That implementation was tested as commit
+`7b53b127274ca5714bc89acb667b66ec859faeaf`, tree `b30e3d4d3a782843bc7c04a0ca068b5ecd950a86`; full QA
+ran on that tree before it was committed.
 
 | Check | Result |
 | --- | --- |
@@ -97,6 +97,33 @@ ran on that tree before it was committed; later commits change only these record
 | Regression: a clean page that also loads `evidence/interaction.json`, the default report destination | With the code of `a1c6498`, `verify interaction` exited 0, overwrote the file and recorded a passed gate. With the fix it exits 1 with `OUTPUT_COLLISION` naming `evidence/interaction.json`, leaves the file's bytes unchanged and records no gate. |
 | `node --test tests/interaction-audit.test.cjs`, then `tests/interaction-cli.test.cjs` with `tests/ui-craft-sources.test.cjs` | 19 and 29 pass, 0 fail, including the violating, clean and undeclared fixtures and the shared preflight and observation that native completion uses. |
 | Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes; `audit.text-contrast` checks 16 elements at 1280x800. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1409, 1405 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Fourth Review Fix
+
+PR #99 merged at `a1c6498`, so the Third Review Fix and this one reach `main` through #101.
+Codex's review of #101 at `06e78ec` raised two P2 findings:
+
+- The inline-link exemption still accepted text hidden by `visibility`, `opacity` or clipping, so a
+  standalone link beside it skipped `audit.target-size` and `audit.control-gap`. `5095850` counts
+  only visible text. Text hidden only from assistive technology is still painted on the line, so it
+  keeps the exemption.
+- A link the page requests that dangles at capture, and resolves to the report once it is written,
+  was said to let a pass bind the report. Not adopted: every probe on a local page judges its
+  `file:` requests against the project bound, which cannot contain an unresolved symlink. Reproduced
+  on `7b53b12` with `page.css -> evidence/interaction.json`: `verify interaction` exits 2 with
+  `external-request` on `page.css`, and the gate records `failed` with no lineage.
+
+The final tested implementation is commit `50958502aed31213698e039d44789d394e7e8dbb`, tree
+`42b44b21002d4a135c94f0fd80af8be2f0f03946`. Full QA ran on that tree before it was committed; later
+commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression: 16px links beside text that is not displayed, invisible, transparent or clipped away, a link inside a sentence, and one beside words hidden only from assistive technology | With the engine of `7b53b12`, `audit.target-size` flagged only `#after-paragraph` and `#beside-hidden`. With the fix it also flags `#beside-invisible`, `#beside-transparent` and `#beside-clipped`; both sentence links stay exempt. |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs` | 48 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1409, 1405 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 73 passed, 0 failed. |
 
