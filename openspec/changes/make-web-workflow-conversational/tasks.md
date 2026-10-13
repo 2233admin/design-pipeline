@@ -154,7 +154,8 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
 - [x] 5.3 Pushed `feat/conversational-web-flow` and opened PR #102. CI run 38391510746 on a258b56:
   `qa-and-package` and `windows-path-regressions` both succeeded, with no rerun. Review fixes
   4fe5369, 2079568, 39cc1da, 8b33d52 and de9b593: CI run 38404533542 on de9b593, both jobs
-  succeeded on attempt 1.
+  succeeded on attempt 1. Cutover and `--anti-goal` placeholder (7.14, 7.15) ac9ef50 and eb02366:
+  CI run 38408102382 on eb02366, both jobs succeeded on attempt 1.
 
 ## 6. Planned follow-up
 
