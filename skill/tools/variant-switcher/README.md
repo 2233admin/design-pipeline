@@ -21,9 +21,17 @@ floating bar.
 The bar sits in a shadow root, high-contrast and outlined, so it reads as a tool rather than part of
 the design, and page styles cannot restyle it.
 
+Hidden variants are forced out of the layout: the script adds
+`<style data-variant-switcher-style>[data-variant][hidden] { display: none !important; }</style>`
+to the page head once, so the page's own `display` rules (a `section { display: grid }`, an id
+rule or an inline `style="display:grid"`) cannot show a hidden variant.
+
 ## Not shipped
 
 The switcher and the losing variants are prototypes. Fold the chosen variant (and anything the
 owner combined from the others) into the real page, rewritten properly; never copy the switcher into
-`index.html`. The web `build` stage stays unfinished while `index.html` contains
-`data-variant-switcher`.
+`index.html` in any form. The web `build` stage stays unfinished, with the finding
+`variant-switcher-shipped`, while `index.html` (HTML comments aside) carries `data-variant` or
+`data-variant-name` panels, switcher markup such as `data-variant-switcher`, the script inline, a
+`<script src>` that names it (local or remote), or a local script file that contains it under
+another name.

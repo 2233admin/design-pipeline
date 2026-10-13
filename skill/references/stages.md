@@ -389,8 +389,8 @@ state unchanged. This does not replace DesignBrief confirmation in the guided fi
 The `next`/`decide` web workflow differs: its intake is a conversation that ends in a confirmed
 playback or a stated skip and writes no `brief.md`. At `standard` and `full`, `brief.md` is written
 after the component decision as the one-page description the owner approves before anything is
-built, and that approval fixes the sections the page is built in
-([workflow-web.md#description](workflow-web.md#description)). Its contents are listed there.
+built, and that approval fixes the sections the page is built in, as listed under its `## Sections`
+heading ([workflow-web.md#description](workflow-web.md#description)). Its contents are listed there.
 
 Create or update `brief.md` with:
 
@@ -805,13 +805,15 @@ against actual outputs and checks; tasks.md existence does not verify decomposit
 Implement directly from `design.md` and `tasks.md`.
 
 For a web deliverable, follow [workflow-web.md#components](workflow-web.md#components): at `quick`
-immediately before build; at `standard` and `full` in one round of decisions (the page's sections
-in build order and the component source) before the description the owner approves, so a changed
-component decision makes that approval stale and returns to it. The source options are the
-project's components (name the paths you found instead of asking for them), a named GitHub
-library, an index search, agent discovery of maintained open-source libraries and icon sets on
-GitHub, or scratch implementation; recommend project components first, then the index, then
-discovery.
+immediately before build; at `standard` and `full` in the numbered decision round (the page's
+sections in build order and the component source; a dependent question waits for a further round)
+before the description the owner approves, so a changed component decision makes that approval
+stale and returns to it. Each "no" given in a round is recorded with
+`decide --stage components --verdict reject --answer "<…>"` and becomes a project rule. The
+source options are the project's components (name the paths you found instead of asking for
+them), a named GitHub library, an index search, agent discovery of maintained open-source
+libraries and icon sets on GitHub, or scratch implementation; recommend project components first,
+then the index, then discovery.
 Record the exact nonempty answer with explicit `--choice project,index,discover` (or the selected
 comma-separated set of `project,github,index,discover,scratch`). Missing/unknown choices fail;
 deduplicate and store canonical order in `decisions.componentSources`. `scratch` is exclusive;

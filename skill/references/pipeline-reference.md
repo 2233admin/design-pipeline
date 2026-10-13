@@ -100,9 +100,9 @@ Use the public CLI for the complete lifecycle:
   requires compatible React/React DOM/StyleX constraints and admitted adapter intake.
 
 For web components, first record the exact user decision: at `quick` immediately before build, at
-`standard` and `full` in the one round of decisions that precedes the description the owner
-approves (a changed decision makes that approval stale). Use explicit
-`--choice project,index,discover` (or the selected comma-separated set of
+`standard` and `full` in the numbered decision round (with further rounds for dependent questions)
+that precedes the description the owner approves (a changed decision makes that approval stale).
+Use explicit `--choice project,index,discover` (or the selected comma-separated set of
 `project,github,index,discover,scratch`). Missing/unknown choices fail; deduplicate and store
 canonical order in `decisions.componentSources`. `scratch` is exclusive; `github` requires an HTTPS
 GitHub owner/repo URL in the unchanged answer; `discover` lets the agent find maintained open-source

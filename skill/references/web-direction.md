@@ -25,13 +25,16 @@ rule; only the owner's reply selects the direction.
 
 The treatment is a `## Treatment` section under the chosen card of `concepts.md`; when the owner
 combined variants, it goes under the first card named and says what it takes from the others. Write
-it after the pick and before the first section is built. It is the one place the page's intent is
-stated; sections, tokens and motion refer back to it.
+it in the first build step, after the owner approves the description and before the first section
+is built. It is the one place the page's intent is stated; sections, tokens and motion refer back
+to it. Its section arc lists exactly the section ids of the approved description's `## Sections`
+list, in that order. If the arc you would write differs, raise it with the owner as a description
+correction before anything is built; do not build a different arc.
 
 | Field | Content |
 | --- | --- |
 | Premise | One sentence about the page and the single thing it makes a visitor do or understand. |
-| Section arc | One row per section: section id, its job, its dominant element (the product or concept object it shows), ground, density (`sparse`, `medium`, `dense`), escalation role (`opens`, `builds`, `lands`, `rests`). |
+| Section arc | One row per section of the approved description, in its order: section id, its job, its dominant element (the product or concept object it shows), ground, density (`sparse`, `medium`, `dense`), escalation role (`opens`, `builds`, `lands`, `rests`). |
 | Style-bible seed | A ground per section, ink, accent and any extra colour; type voices (display, text, data); spacing unit, radius, stroke; when `reference.md` exists, one **must-not-copy** line taken from it. |
 | Motion language | One row per driver (scroll progress, in-view, pointer, click, load): the response it produces, the primitive (for example `response.spring-settle`, or stepped), and the reduced-motion substitute. |
 | Escalation and negative space | Where the page builds, the section that lands and holds still, and the section that is deliberately empty and why. |
