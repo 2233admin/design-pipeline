@@ -426,7 +426,7 @@ test("a motion or journey probe on a local page that loads a file outside the pr
   assert.deepEqual(loaded.probes.map((probe) => probe.status), ["failed"]);
   assert.deepEqual(loaded.findings.map((finding) => [finding.probeId, finding.code, finding.severity, finding.actual, finding.urls]), [["menu", "external-request", "error", outside, [outside]]]);
   assert.match(loaded.findings[0].message, /^1 request went outside the project$/);
-  assert.equal(loaded.findings[0].fix, HINTS["external-request"]);
+  assert.match(loaded.findings[0].fix, /^Copy every listed resource into the project/);
   assert.equal(run([page, inside]).status, "passed", "files inside the project, present or not, pass");
 });
 

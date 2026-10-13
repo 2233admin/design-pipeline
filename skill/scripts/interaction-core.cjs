@@ -334,11 +334,12 @@ function externalUrls(requests, pageOrigin, insideProject = null) {
   return external;
 }
 
-// One external-request finding for a probe's own requests. `actual` repeats the URLs because the
-// gate record keeps a finding's string fields only.
+// One external-request finding for a probe's own requests. On a local page bounded by its project
+// the remedy is to copy the file in, since an outside file already shares the page's origin.
+// `actual` repeats the URLs because the gate record keeps a finding's string fields only.
 function externalFinding(external, pageOrigin, bounded) {
   const urls = external.slice(0, MAX_LISTED_URLS);
-  return { code: "external-request", severity: "error", message: `${external.length} request${external.length === 1 ? "" : "s"} went outside ${bounded ? "the project" : `the page origin ${pageOrigin}`}`, fix: HINTS["external-request"], actual: urls.join(", "), urls };
+  return { code: "external-request", severity: "error", message: `${external.length} request${external.length === 1 ? "" : "s"} went outside ${bounded ? "the project" : `the page origin ${pageOrigin}`}`, fix: bounded ? EXTERNAL_FIX : HINTS["external-request"], actual: urls.join(", "), urls };
 }
 
 // Pure: one normalized probe (optionally carrying `pageOrigin` from the capture and `insideProject`,

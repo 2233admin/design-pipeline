@@ -402,6 +402,7 @@ test("a journey that loads a file outside the project on click fails verify inte
   assert.equal(gate.lineage, undefined, "a failed run binds no lineage");
   assert.deepEqual(gate.findings.map((finding) => [finding.code, finding.probeId, finding.actual]), [["external-request", "load", brand]]);
   assert.match(gate.findings[0].message, /went outside the project/);
+  assert.match(gate.findings[0].fix, /^Copy every listed resource into the project/);
 });
 
 test("editing a loaded stylesheet or DESIGN.md makes the gate stale; a pass without lineage is stale", { skip: tools.skip }, (t) => {
