@@ -18,8 +18,8 @@
 
 ## 3. Verification
 
-- [ ] 3.1 Run `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs
+- [x] 3.1 Run `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs
   tests/ui-craft-sources.test.cjs tests/workflow-components.test.cjs`.
-- [ ] 3.2 Run the `verify interaction` smoke on `.design-pipeline/audit-smoke`.
-- [ ] 3.3 Run `npm test` and `npm run specs:check` on the frozen tree and record them in
+- [x] 3.2 Run the `verify interaction` smoke on `.design-pipeline/audit-smoke`.
+- [x] 3.3 Run `npm test` and `npm run specs:check` on the frozen tree and record them in
   `verification.md`.
