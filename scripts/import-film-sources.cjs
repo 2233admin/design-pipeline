@@ -6,8 +6,11 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalTree, copyTrackedFiles, fail, frontmatter, inspectCheckout } = require("./git-tree-snapshot.cjs");
 
+// `kind: "skill"` bundles carry a SKILL.md entry with frontmatter; `kind: "template"` bundles are
+// renderable projects whose entry is their README.
 const REVIEWED = {
   cinetic: {
+    kind: "skill",
     repository: "https://github.com/Leonxlnx/cinetic",
     revision: "bee5d7807205d5543472c38312507f9bf366cbbf",
     gitTree: "6bf9bcdfbc1af302f3d9233f7438bc0d38d4dfc1",
@@ -19,6 +22,7 @@ const REVIEWED = {
     platform: "Upstream bash pipeline targets macOS/Linux; native Windows and WSL are unverified. Packaged Python/Node scripts are source, not a promise of installed dependencies or pipeline compatibility.",
   },
   "product-film-skill": {
+    kind: "skill",
     repository: "https://github.com/Rieranthony/product-film-skill",
     revision: "fe11efc429d5903e37274d0b294e1b95745b2881",
     gitTree: "ca1b16a4091528f90059b1ed2c0bb1afb8b5769f",
@@ -28,6 +32,23 @@ const REVIEWED = {
     entry: "plugins/product-film/skills/product-film/SKILL.md", skillName: "product-film",
     externalMedia: "Project fonts, music, Remotion and on-demand Python dependencies are not in this reviewed Git tree; none are mirrored.",
     platform: "Upstream entrypoints require Bun, Remotion and uv-managed Python packages; native Windows and WSL execution is unverified. The render script's npx subprocess also needs a Windows command-launch adaptation.",
+  },
+  "ff-tracking": {
+    kind: "template",
+    repository: "https://github.com/mrsarac/ff-tracking",
+    revision: "cc7f4e192eccefb55ae7f18f5a370955122b651b",
+    gitTree: "0f550821569078a4c91e11b65a1eb575f3bd7453",
+    treeSha256: "5e1ebba1adcfbf83ebf3c5cc32af4abbec618eaf1a1c3acfe8ce11a4e9b27fe6",
+    fileCount: 46, byteCount: 6959604,
+    copyright: "Copyright (c) 2026 Mustafa Saraç",
+    entry: "README.md", templateName: "tracking-hud",
+    // Separately licensed parts of the tree, kept beside the repository's MIT license.
+    notices: [
+      { path: "upstream/licenses/JetBrainsMono-OFL.txt", license: "OFL-1.1", copyright: "Copyright 2020 The JetBrains Mono Project Authors" },
+      { path: "upstream/licenses/MT19937.txt", license: "BSD-3-Clause", copyright: "Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura" },
+    ],
+    externalMedia: "The README demo video is a release asset outside this reviewed Git tree and is not mirrored. Rendered out/ and target/ build output is never part of the snapshot.",
+    platform: "Upstream tools/render.sh targets macOS/Metal and tools/render.ps1 native Windows/Vulkan; both need Rust, LLVM/libclang, a shared FFmpeg 9.0 development build and Python numpy/scipy, which the skill never installs. Native Windows render and WSL are unverified by this import.",
   },
 };
 
@@ -41,7 +62,7 @@ function parseArgs(argv) {
     if (!value || value.startsWith("--")) fail(`${token} requires a value`);
     options[token.slice(2)] = value;
   }
-  if (!Object.hasOwn(REVIEWED, options.name || "")) fail("--name must be cinetic or product-film-skill");
+  if (!Object.hasOwn(REVIEWED, options.name || "")) fail(`--name must be one of ${Object.keys(REVIEWED).join(", ")}`);
   if (!options.source) fail("--source is required");
   const date = options["reviewed-at"];
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "") || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) fail("--reviewed-at requires a valid YYYY-MM-DD");
@@ -55,6 +76,9 @@ function importSnapshot(name, source, reviewedAt) {
   if (checkout.gitTree !== reviewed.gitTree) fail(`source Git tree does not match reviewed ${name} tree`);
   const license = checkout.blobs.get("LICENSE")?.toString("utf8") || "";
   if (!license.startsWith("MIT License") || !license.includes(reviewed.copyright)) fail(`source LICENSE does not match reviewed ${name} MIT attribution`);
+  for (const notice of reviewed.notices || []) {
+    if (!(checkout.blobs.get(notice.path.slice("upstream/".length))?.toString("utf8") || "").includes(notice.copyright)) fail(`source ${notice.path} does not match reviewed ${name} notice`);
+  }
   const files = checkout.indexEntries.map(entry => entry.path);
   const byteCount = checkout.indexEntries.reduce((sum, entry) => sum + entry.size, 0);
   if (files.length !== reviewed.fileCount || byteCount !== reviewed.byteCount) fail(`source inventory does not match reviewed ${name} files and bytes`);
@@ -72,18 +96,26 @@ function importSnapshot(name, source, reviewedAt) {
     copyTrackedFiles(upstream, checkout.indexEntries, checkout.blobs);
     const treeSha256 = canonicalTree(upstream, files);
     if (treeSha256 !== reviewed.treeSha256) fail(`source content does not match reviewed ${name} tree hash`);
-    const metadata = frontmatter(path.join(upstream, reviewed.entry));
-    if (metadata.name !== reviewed.skillName || !metadata.description.trim()) fail(`frontmatter does not match reviewed ${name} entry`);
+    let entries;
+    if (reviewed.kind === "skill") {
+      const metadata = frontmatter(path.join(upstream, reviewed.entry));
+      if (metadata.name !== reviewed.skillName || !metadata.description.trim()) fail(`frontmatter does not match reviewed ${name} entry`);
+      entries = { skills: [{ name: metadata.name, path: `upstream/${reviewed.entry}`, description: metadata.description }] };
+    } else if (reviewed.kind === "template") {
+      const heading = fs.readFileSync(path.join(upstream, reviewed.entry), "utf8").match(/^\*\*(.+)\*\*\s*$/m);
+      if (!heading) fail(`reviewed ${name} entry lacks its summary line`);
+      entries = { templates: [{ name: reviewed.templateName, path: `upstream/${reviewed.entry}`, description: heading[1].trim() }] };
+    } else fail(`unknown reviewed kind for ${name}`);
     manifest = {
       schema: `design-pipeline.${name}-source.v1`,
       source: { repository: reviewed.repository, revision: checkout.revision, gitTree: checkout.gitTree, committedAt: checkout.committedAt, license: "MIT", reviewedAt, scope: ["**"] },
-      licenses: [{ path: "upstream/LICENSE", license: "MIT", copyright: reviewed.copyright }],
+      licenses: [{ path: "upstream/LICENSE", license: "MIT", copyright: reviewed.copyright }, ...(reviewed.notices || [])],
       snapshot: {
         root: "upstream", fileCount: files.length, byteCount, treeSha256,
         executableFiles: checkout.indexEntries.filter(entry => entry.mode === "100755").map(entry => entry.path).sort(),
         objects: checkout.indexEntries.map(({ path: file, mode, oid, size }) => ({ path: file, mode, oid, size, sha256: crypto.createHash("sha256").update(checkout.blobs.get(file)).digest("hex") })),
       },
-      skills: [{ name: metadata.name, path: `upstream/${reviewed.entry}`, description: metadata.description }],
+      ...entries,
       excluded: [],
       boundary: { mode: "built-in-reference-adaptation", installsUpstreamDependencies: false, activatesUpstreamPlugin: false, runsUpstreamPipeline: false, changesProjectRuntime: false, externalMedia: reviewed.externalMedia, platform: reviewed.platform },
     };
@@ -102,7 +134,7 @@ function importSnapshot(name, source, reviewedAt) {
 if (require.main === module) {
   try {
     const options = parseArgs(process.argv.slice(2));
-    if (options.help) process.stdout.write("Usage: node scripts/import-film-sources.cjs --name cinetic|product-film-skill --source <clean-reviewed-checkout> --reviewed-at YYYY-MM-DD\n");
+    if (options.help) process.stdout.write(`Usage: node scripts/import-film-sources.cjs --name ${Object.keys(REVIEWED).join("|")} --source <clean-reviewed-checkout> --reviewed-at YYYY-MM-DD\n`);
     else {
       const manifest = importSnapshot(options.name, options.source, options.reviewedAt);
       process.stdout.write(`${JSON.stringify({ status: "imported", name: options.name, revision: manifest.source.revision, files: manifest.snapshot.fileCount, treeSha256: manifest.snapshot.treeSha256 })}\n`);

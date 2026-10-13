@@ -415,7 +415,7 @@ function publicHelp() {
     `  composition scaffold --output <new-dir> [--template ${scaffoldTemplates.join("|")}]`,
     "  composition compare --source <png> --image <png> --output <new-dir>",
     "  art-motion render --spec <file> --output <new-dir> [--stills 0,1.5] [--chrome <exe>] [--puppeteer-module <file>] [--ffmpeg <exe>] [--ffprobe <exe>]   (PNG stills or video plus render-report.json; diagnostics only)",
-    "  film scaffold --output <dir> [--template default|motion-study] [--replace]",
+    "  film scaffold --output <dir> [--template default|motion-study|tracking-hud] [--replace]",
     "  film methods --project-root <dir> --input <plan.json> [--write] [--replace]",
     "  film templates [--query <terms> | --template <id>] [--all]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",

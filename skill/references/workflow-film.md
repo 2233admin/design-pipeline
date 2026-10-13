@@ -202,6 +202,7 @@ Pick the lowest-rung tool that reaches each beat:
 | 3D product shot | `film blender --project-root . --template product-turntable` | `film-blender.md` |
 | Enamel, solid bevels, angle-dependent materials | WebGL/Three.js + GLSL or Blender | `film-materials.md` |
 | Music as code | `film score --project-root . --bpm <n> --template <name>` | `film-score.md` |
+| Virtual camera filming an agent's terminal while a tracker locks onto typed glyphs | `film scaffold --template tracking-hud --output <new-dir>`, edit `film.config.js`, `node build.cjs` | `film-tracking-hud-template.md` |
 | Loudness and fades | `audio master --input <audio> --output <wav>` | `audio-gate.md` |
 
 Product promo: build from the admitted captures cited in `beats[].source`. Place the recorded

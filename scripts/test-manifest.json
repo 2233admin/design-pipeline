@@ -67,6 +67,7 @@
     "animation-craft.test.cjs",
     "film-timeline-eval.test.cjs",
     "film-project.test.cjs",
+    "ff-tracking-hud.test.cjs",
     "product-source-admission.test.cjs",
     "composition-gate.test.cjs",
     "film-layout.test.cjs",

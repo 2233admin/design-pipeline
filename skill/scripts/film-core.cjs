@@ -594,17 +594,75 @@ function instantReplacement(motion, atSec) {
   return null;
 }
 
+// Structure change between consecutive frames at the native frame rate, read only near the given
+// times: 1 minus the Pearson correlation of 160x90 grey frames. Correlation ignores brightness and
+// contrast, which keep a cut between two dark shots under the absolute scene-score threshold.
+function structureSteps(video, tools, times, fps) {
+  const radius = (3.5 / fps).toFixed(4);
+  const near = times.map((at) => `lt(abs(t-${at}),${radius})`).join("+");
+  const { stdout, stderr } = run(tools.ffmpeg, ["-hide_banner", "-nostats", "-i", video, "-an", "-vf", `select='${near}',scale=${MOTION_W}:${MOTION_H},format=gray,showinfo`, "-fps_mode", "passthrough", "-f", "rawvideo", "-"], { binary: true });
+  const stamps = [...String(stderr).matchAll(/pts_time:([-0-9.]+)/g)].map((match) => Number(match[1]));
+  const size = MOTION_W * MOTION_H;
+  const frames = Math.min(stamps.length, Math.floor(stdout.length / size));
+  const steps = [];
+  for (let i = 1; i < frames; i += 1) {
+    if (stamps[i] - stamps[i - 1] > 1.5 / fps) continue;
+    steps.push({ atSec: Number(stamps[i].toFixed(3)), change: decorrelation(stdout.subarray((i - 1) * size, i * size), stdout.subarray(i * size, (i + 1) * size)) });
+  }
+  return steps;
+}
+
+// null for a flat frame: without structure there is nothing to correlate.
+function decorrelation(a, b) {
+  let sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+  for (let p = 0; p < a.length; p += 1) {
+    sa += a[p]; sb += b[p]; saa += a[p] * a[p]; sbb += b[p] * b[p]; sab += a[p] * b[p];
+  }
+  const n = a.length;
+  const va = saa / n - (sa / n) ** 2;
+  const vb = sbb / n - (sb / n) ** 2;
+  if (va < 1 || vb < 1) return null;
+  return 1 - (sab / n - (sa / n) * (sb / n)) / Math.sqrt(va * vb);
+}
+
+// A hard cut between two dark shots stays under the scene threshold however complete it is, and
+// grain or a hand-held camera keeps every 10 fps step busy, so the one-step pixel detector sees no
+// isolated spike either. Within one frame of a planned boundary, a frame that shares less than half
+// its structure with the one before (r^2 < 0.5) right after a step REPLACEMENT_RATIO times calmer
+// is a cut. Only the step before must be calm: an exposure kick or flash on the cut frame, or
+// action that starts with the new shot, keeps the steps after it busy.
+// Calibration: a cut between two dark, panning, grainy textures changed 0.99 after 0.07 (scene
+// score 0.129, pixel step 0.68 against a 0.19 median). A whip into a match cut ramps up over
+// several frames and a dissolve never jumps, so neither has a calm step right before the change.
+const STRUCTURE_CUT_MIN = 1 - Math.SQRT1_2;
+function structureCut(steps, atSec, fps) {
+  for (const [k, step] of steps.entries()) {
+    if (Math.abs(step.atSec - atSec) > 1 / fps + 0.001 || step.change === null) continue;
+    const before = steps[k - 1];
+    if (!before || before.change === null || step.atSec - before.atSec > 1.5 / fps) continue;
+    if (step.change >= STRUCTURE_CUT_MIN && step.change >= REPLACEMENT_RATIO * before.change) {
+      return { atSec: step.atSec, change: Number(step.change.toFixed(4)), before: Number(before.change.toFixed(4)) };
+    }
+  }
+  return null;
+}
+
 function nearest(list, value) {
   let best = Infinity;
   for (const item of list) best = Math.min(best, Math.abs(item - value));
   return best;
 }
 
-function contactSheet(video, beats, outDir, tools, extraSamples = {}) {
+// Sample times are clamped to the start of the last frame: a seek past it (the 0.95 sample of a
+// short final procedural beat) makes ffmpeg exit 0 without writing a frame.
+function contactSheet(video, beats, outDir, tools, extraSamples = {}, media = null) {
   fs.mkdirSync(outDir, { recursive: true });
+  const duration = media ? (media.videoDurationSec ?? media.durationSec) : 0;
+  const lastFrameSec = duration > 0 && media.fps > 0 ? Math.floor((duration - 1 / media.fps) * 1000) / 1000 : Number.POSITIVE_INFINITY;
+  const sampleAt = (sec) => Number(Math.max(0, Math.min(sec, lastFrameSec)).toFixed(3));
   const frames = [];
   for (const [index, beat] of beats.entries()) {
-    const atSec = Number(((beat.startSec + beat.endSec) / 2).toFixed(3));
+    const atSec = sampleAt((beat.startSec + beat.endSec) / 2);
     const file = path.join(outDir, `beat-${String(index + 1).padStart(3, "0")}.png`);
     run(tools.ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-ss", String(atSec), "-i", video, "-frames:v", "1", "-vf", "scale=480:-2", file]);
     frames.push({ beatId: beat.id, atSec, file: path.basename(file) });
@@ -613,7 +671,7 @@ function contactSheet(video, beats, outDir, tools, extraSamples = {}) {
   const extras = [];
   for (const [index, beat] of beats.entries()) {
     for (const [n, fraction] of (extraSamples[beat.id] || []).entries()) {
-      const atSec = Number((beat.startSec + (beat.endSec - beat.startSec) * fraction).toFixed(3));
+      const atSec = sampleAt(beat.startSec + (beat.endSec - beat.startSec) * fraction);
       const file = path.join(outDir, `beat-${String(index + 1).padStart(3, "0")}-s${n}.png`);
       run(tools.ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-ss", String(atSec), "-i", video, "-frames:v", "1", "-vf", "scale=480:-2", file]);
       extras.push({ beatId: beat.id, atSec, file: path.basename(file) });
@@ -654,15 +712,19 @@ function evaluateFilmRender(board, video, options = {}) {
   const cuts = detectCuts(video, tools, options.sceneThreshold ?? 0.3);
   const motion = motionProfile(video, tools);
   const planned = storyboard.metrics.plannedCutsSec;
-  // A planned cut is present when the scene detector sees it, or when one step replaces a block of
-  // the frame (the detector carry-cut uses). Dark, desaturated cuts score low on scene change:
-  // a golden case's cut from a wide strip to a greyed close-up changed 34% of the frame in one
-  // step against 0.2% before it, yet scored 0.155 (threshold 0.3).
+  // A planned cut is present when the scene detector sees it, when one step replaces a block of
+  // the frame (the detector carry-cut uses), or when its frame breaks the picture's structure
+  // (structureCut). Dark, desaturated cuts score low on scene change: a golden case's cut from a
+  // wide strip to a greyed close-up changed 34% of the frame in one step against 0.2% before it,
+  // yet scored 0.155 (threshold 0.3).
   const pixelCuts = planned.filter((at) => nearest(cuts, at) > cutTolerance && instantReplacement(motion, at));
-  const missed = planned.filter((at) => nearest(cuts, at) > cutTolerance && !pixelCuts.includes(at));
+  const unseen = planned.filter((at) => nearest(cuts, at) > cutTolerance && !pixelCuts.includes(at));
+  const steps = unseen.length ? structureSteps(video, tools, unseen, media.fps) : [];
+  const structureCuts = unseen.filter((at) => structureCut(steps, at, media.fps));
+  const missed = unseen.filter((at) => !structureCuts.includes(at));
   const unplanned = cuts.filter((at) => nearest(board.beats.map((beat) => beat.startSec), at) > cutTolerance);
   if (planned.length && missed.length / planned.length > 0.5) add("planned-cuts-missing", `${missed.length}/${planned.length} planned cuts not found in render`);
-  const allCuts = [...cuts, ...pixelCuts].sort((a, b) => a - b);
+  const allCuts = [...cuts, ...pixelCuts, ...structureCuts].sort((a, b) => a - b);
 
   let audio = { present: media.hasAudio, onsets: 0, cutsOnOnset: null };
   if (board.sound.mode === "scored" && !media.hasAudio) add("audio-missing", "storyboard is scored but render has no audio stream; audiovisual acceptance is incomplete");
@@ -703,7 +765,7 @@ function evaluateFilmRender(board, video, options = {}) {
   }
   craftChecks(board, motion, add);
 
-  const sheet = options.outDir ? contactSheet(video, board.beats, options.outDir, tools, options.extraSamples || {}) : null;
+  const sheet = options.outDir ? contactSheet(video, board.beats, options.outDir, tools, options.extraSamples || {}, media) : null;
   return {
     schema: RENDER_SCHEMA,
     id: board.id,
@@ -712,15 +774,15 @@ function evaluateFilmRender(board, video, options = {}) {
     ...(storyboard.admission ? { admission: storyboard.admission } : {}),
     findings,
     media: { durationSec: media.durationSec, durationDeltaSec: durationDelta, fps: Number(media.fps.toFixed(3)) },
-    cuts: { detectedSec: cuts, pixelCutsSec: pixelCuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
+    cuts: { detectedSec: cuts, pixelCutsSec: pixelCuts, structureCutsSec: structureCuts, plannedSec: planned, missedSec: missed, unplannedSec: unplanned },
     audio,
     motion: beatMotion,
     stillness,
     carryBreaks,
     contactSheet: sheet,
     creativeAcceptance: "not-assessed",
-    limits: "Objective signals only: scene-change cuts, energy-flux onsets, per-beat pixel motion and midpoint frames. Creative review of comprehension, continuity, rhythm and identity remains a separate qa.md record.",
+    limits: "Objective signals only: scene-change and frame-structure cuts, energy-flux onsets, per-beat pixel motion and midpoint frames. Creative review of comprehension, continuity, rhythm and identity remains a separate qa.md record.",
   };
 }
 
-module.exports = { PRODUCT_PROMO_FORM, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run };
+module.exports = { PRODUCT_PROMO_FORM, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run, structureCut, structureSteps };

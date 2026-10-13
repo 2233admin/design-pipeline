@@ -1,0 +1,10 @@
+reference/
+target/
+out/
+*.mp4
+frames/
+strip.png
+check.png
+__pycache__/
+.DS_Store
+.venv/
