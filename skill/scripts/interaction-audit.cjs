@@ -832,7 +832,8 @@ function auditPage(options) {
   // WCAG 2.2 2.5.8: a link inside a sentence is constrained by the line height of the text around it.
   const inlineTextLink = (el) => el.matches('a[href], [role="link"]') && styleOf(el).display === "inline" && sentenceText(el);
   const controls = elements.filter((el) => el.matches(CONTROL) && !inlineTextLink(el));
-  // An absolutely positioned pseudo-element of a positioned control is part of its hit area.
+  // An absolutely positioned pseudo-element of a positioned control is part of its hit area: the box
+  // target-size measures and the one control spacing keeps apart.
   const hitArea = (el) => {
     const box = rectOf(el);
     const area = { left: box.left, top: box.top, right: box.right, bottom: box.bottom };
@@ -852,7 +853,7 @@ function auditPage(options) {
         area.bottom = Math.max(area.bottom, padding.bottom - bottom * scaleY);
       }
     }
-    return { width: area.right - area.left, height: area.bottom - area.top };
+    return { ...area, width: area.right - area.left, height: area.bottom - area.top };
   };
   const targetSize = checks["audit.target-size"];
   for (const el of controls) {
@@ -861,15 +862,16 @@ function auditPage(options) {
     const minimum = thresholds.minTargetPx;
     if (width + EPSILON < minimum || height + EPSILON < minimum) failed("audit.target-size", el, { expected: `at least ${minimum} x ${minimum}px`, actual: `${round2(width)} x ${round2(height)}px`, message: `the control's target is ${round2(width)} x ${round2(height)}px, smaller than ${minimum}px`, fix: FIX.target });
   }
-  // One spacing primitive for control groups and declared stacks (lintapple checkGap).
-  const checkGap = (code, list, minimum, fix, noun) => {
+  // One spacing primitive for control groups and declared stacks (lintapple checkGap). Distances are
+  // edge to edge, along the diagonal when two boxes share neither axis, so near corners still count.
+  const checkGap = (code, list, minimum, fix, noun, boxOf = rectOf) => {
     for (let i = 0; i < list.length; i += 1) {
       for (let j = i + 1; j < list.length; j += 1) {
-        const a = rectOf(list[i]);
-        const b = rectOf(list[j]);
+        const a = boxOf(list[i]);
+        const b = boxOf(list[j]);
         const xOverlap = Math.min(a.right, b.right) - Math.max(a.left, b.left);
         const yOverlap = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-        const distance = yOverlap > 0 ? Math.max(a.left - b.right, b.left - a.right) : xOverlap > 0 ? Math.max(a.top - b.bottom, b.top - a.bottom) : Infinity;
+        const distance = yOverlap > 0 ? Math.max(a.left - b.right, b.left - a.right) : xOverlap > 0 ? Math.max(a.top - b.bottom, b.top - a.bottom) : Math.hypot(xOverlap, yOverlap);
         if (distance + EPSILON < minimum) failed(code, list[i], { expected: `at least ${minimum}px from ${selectorOf(list[j])}`, actual: distance < 0 ? `overlapping it by ${round2(-distance)}px` : `${round2(distance)}px from it`, message: `two ${noun} are ${distance < 0 ? "overlapping" : `${round2(distance)}px apart`}, closer than ${minimum}px`, fix, related: list[j] });
       }
     }
@@ -883,7 +885,7 @@ function auditPage(options) {
   for (const group of groups.values()) {
     if (group.length < 2) continue;
     controlGap.checked += group.length;
-    checkGap("audit.control-gap", group, thresholds.minControlGapPx, FIX.controlGap, "controls");
+    checkGap("audit.control-gap", group, thresholds.minControlGapPx, FIX.controlGap, "controls", hitArea);
   }
 
   const controlInset = checks["audit.control-inset"];

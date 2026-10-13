@@ -51,10 +51,10 @@ distinguished by `"kind": "audit"`. Motion and journey probes keep their current
 | `audit.viewport-bounds` | Visible boxes and text stay inside the viewport horizontally; overlays also vertically; clip and scroll ancestors respected | 1 px | none |
 | `audit.content-clipping` | Text is not cut by an `overflow: hidden` or `clip` ancestor without an inner scroller | 1 px | none |
 | `audit.content-overflow` | Text stays inside each declared content box unless it scrolls | 1 px | `declare.contentBoxes` |
-| `audit.target-size` | Controls are at least `minTargetPx` in each dimension; inline text links are exempt | 24 px | `thresholds.minTargetPx` |
-| `audit.control-gap` | Adjacent controls in one group are separated by at least `minControlGapPx` and do not overlap | 8 px | `thresholds.minControlGapPx` |
+| `audit.target-size` | Each control's hit area (its box widened by an absolutely positioned `::before` or `::after`) is at least `minTargetPx` in each dimension; inline text links are exempt | 24 px | `thresholds.minTargetPx` |
+| `audit.control-gap` | The hit areas of controls in one group are separated by at least `minControlGapPx` edge to edge, diagonally when they share neither axis, and do not overlap | 8 px | `thresholds.minControlGapPx` |
 | `audit.control-inset` | Controls inside declared containers keep `minControlInsetPx` from each padding edge | 8 px | `declare.controlContainers` |
-| `audit.layout-gap` | Visible children of declared stacks are separated by at least `minLayoutGapPx` | 8 px | `declare.stacks` |
+| `audit.layout-gap` | Visible children of declared stacks are separated by at least `minLayoutGapPx` edge to edge, diagonally when they share neither axis | 8 px | `declare.stacks` |
 | `audit.layout-alignment` | Items of a declared group share the start, center or end edge within 1 px | 1 px | `declare.alignGroups` |
 | `audit.nested-radius` | Inner radius equals `max(0, outer radius - inset)` within 1 px for even insets | 1 px | `declare.radiusPairs` |
 
