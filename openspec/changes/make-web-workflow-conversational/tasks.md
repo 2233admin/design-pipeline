@@ -47,7 +47,11 @@
 
 ## 5. Verification
 
-- [ ] 5.1 `npm test` with TEMP/TMP on D:.
+- [x] 5.1 `npm test` with TEMP/TMP on D: (local Windows): repository tests 1447, pass 1439, fail 4,
+  skipped 4; browser self-tests 12/12. All four failures are the known Windows `EPERM ... rename`
+  flake in the palette-foundation and website-cloning temp directories, unrelated to this change.
+  "QA leaves repository status byte-identical" also failed because the branch was committed while
+  QA ran. CI is the authority.
 - [x] 5.2 Real CLI smoke in scratch projects on D: (outside the repository), walking the standard
   flow to `done` with a real `verify interaction` in Chrome, plus the quick and standard skip paths.
   Transcript (commands as run with `--root <project> --project-root <project> --json`; long lines
@@ -146,4 +150,5 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
   exit 0 status=recorded next=reference/run
 ```
 
-- [ ] 5.3 Push the branch, open the PR and watch CI.
+- [x] 5.3 Pushed `feat/conversational-web-flow` and opened PR #102. CI run 38391510746 on a258b56:
+  `qa-and-package` and `windows-path-regressions` both succeeded, with no rerun.
