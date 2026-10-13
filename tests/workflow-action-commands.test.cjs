@@ -327,8 +327,10 @@ for (const deliverable of ["film", "edit", "web", "ui"]) {
     const elsewhere = tmp();
     initState(dir, { deliverable, tier: "standard" });
     const action = nextAction(dir);
+    // Placeholders are filled and the optional anti-goal list left out, as an agent with none would.
     const run = (template, answer) => {
-      const child = spawnSync(template.replace(/"<[^"]*>"/, `"${answer}"`) + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+      const command = template.replace(' [--anti-goal "<anti-goal>" ...]', "").replace(/"<[^"]*>"/, `"${answer}"`);
+      const child = spawnSync(command + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
       assert.equal(child.status, 0, child.stdout + child.stderr);
       assert.equal(JSON.parse(child.stdout).status, "recorded");
     };

@@ -12,7 +12,6 @@ const { createArtifactMetadata } = require("../skill/scripts/artifact-core.cjs")
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { analyzeVideo } = require("../skill/scripts/reference-video-core.cjs");
 const { stages: webStages } = require("../skill/scripts/workflows/web.cjs");
-const { componentDecisionDigest } = require("../skill/scripts/workflows/shared.cjs");
 const { validateShape } = require("../skill/scripts/runtime-review-core.cjs");
 const { PLAYBACK, SECTIONS, STATED, acceptSections, approveDescription, confirmPlayback, pickVariant, statedSkip, toBuild, toComponents, variantsPage, writeDescription, writeVariants } = require("./helpers/web-flow.cjs");
 
@@ -2138,6 +2137,33 @@ test("anti-goals named with the confirmed playback or a skip become project rule
   assert.deepEqual(readState(quick).rules, [{ text: "No carousel anywhere on the page", from: "anti-goal 1", scope: "project" }]);
 });
 
+// The intake commands next returns carry the repeatable --anti-goal, so an agent that runs a command
+// as returned keeps every anti-goal. The command is split into arguments (no shell), its placeholders
+// filled, and run with the real CLI.
+test("the intake commands next returns record two anti-goals through the real CLI", t => {
+  const PLACEHOLDER = '[--anti-goal "<anti-goal>" ...]';
+  const goals = ["Never look like a delivery app", "No countdown timers or pop-ups"];
+  const run = (root, template, answer) => {
+    assert.ok(template.endsWith(` ${PLACEHOLDER}`), template);
+    const command = template.replace(PLACEHOLDER, goals.map(goal => `--anti-goal "${goal}"`).join(" ")).replace(/"<[^>]*>"/, `"${answer}"`);
+    const [node, ...args] = command.match(/"[^"]*"|\S+/g).map(token => token.replace(/^"(.*)"$/, "$1"));
+    assert.equal(node, "node", command);
+    assert.ok(!args.some(arg => /[<>[\]]/.test(arg)), `no placeholder is left: ${command}`);
+    const child = spawnSync(process.execPath, [...args, "--json"], { cwd: os.tmpdir(), encoding: "utf8", windowsHide: true });
+    assert.equal(child.status, 0, child.stdout + child.stderr);
+    assert.deepEqual(readState(root).rules, goals.map((text, index) => ({ text, from: `anti-goal ${index + 1}`, scope: "project" })), command);
+    assert.notEqual(nextAction(root).stage, "intake", "intake is finished");
+  };
+  const standard = webProject(t);
+  const ask = nextAction(standard);
+  assert.ok(!ask.correction.includes("--anti-goal"), "a correction takes no anti-goal");
+  run(standard, ask.record, PLAYBACK);
+  const skipped = webProject(t);
+  run(skipped, nextAction(skipped).skip, STATED);
+  const quick = webProject(t, { tier: "quick" });
+  run(quick, nextAction(quick).command, STATED);
+});
+
 test("the playback must be confirmed before concepts; each correction becomes a rule and reopens intake", t => {
   const root = webProject(t);
   const opening = nextAction(root);
@@ -2785,55 +2811,4 @@ test("a web project recorded by the earlier question form is past intake and con
   assert.equal(ask.stage, "description");
   assert.equal(ask.type, "ask");
   assert.deepEqual(ask.completed, ["intake", "reference", "concepts", "components"]);
-});
-
-// Projects the earlier web flow took to done, in the records it wrote: at standard the earlier intake
-// form with its brief, a numbered concept, the components decision, an interaction pass, a review
-// bound to that pass and the components decision, and a delivery bound to the same hashes; at quick
-// (components, build, probe) no intake at all.
-test("web projects finished under the earlier flow stay done until a changed page or a review rejection migrates them", t => {
-  const finished = (tier, decisions) => {
-    const root = webProject(t, { tier });
-    const state = readState(root);
-    state.decisions = decisions;
-    touch(root, ".design-pipeline/state.json", `${JSON.stringify(state, null, 2)}\n`);
-    touch(root, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
-    touch(root, "index.html", "<!doctype html>\n<html lang=\"en\"><body><main>A delivered page with no section markers</main></body></html>\n");
-    passProbe(root);
-    return root;
-  };
-  const brief = "# Brief\n\nA product page\n";
-  const root = finished("standard", { intake: { answer: "A product page", briefSha256: `sha256:${sha256(brief)}` }, reference: "none", concept: "1", components: "Write from scratch", componentSources: ["scratch"] });
-  touch(root, "brief.md", brief);
-  const state = readState(root);
-  const inputHashes = state.gates.interaction.inputHashes;
-  state.decisions.drafts = [{ verdict: "accept", reason: null, at: new Date().toISOString(), inputHashes, componentDecision: componentDecisionDigest(state) }];
-  state.decisions.delivered = "index.html";
-  state.decisions.deliveryInputHashes = inputHashes;
-  touch(root, ".design-pipeline/state.json", `${JSON.stringify(state, null, 2)}\n`);
-  const stateFile = path.join(root, ".design-pipeline/state.json"), before = fs.readFileSync(stateFile);
-  const done = nextAction(root);
-  assert.equal(done.type, "done");
-  assert.deepEqual(done.completed, webStages(state).map(stage => stage.id), "every stage counts as finished");
-  assert.deepEqual(fs.readFileSync(stateFile), before, "next leaves the finished project as it is");
-  const page = path.join(root, "index.html"), delivered = fs.readFileSync(page);
-  fs.appendFileSync(page, "<p>A later edit</p>\n");
-  assert.equal(nextAction(root).stage, "description", "a changed page ends the exception");
-  fs.writeFileSync(page, delivered);
-  assert.equal(nextAction(root).type, "done", "the delivered bytes are done again");
-  const migrated = decide(root, { stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" }).next;
-  assert.equal(migrated.stage, "description", "a review rejection ends the exception, and the description comes first");
-  assert.equal(migrated.type, "ask");
-  assert.deepEqual(migrated.completed, ["intake", "reference", "concepts", "components"]);
-
-  const quick = finished("quick", { components: "Write from scratch", componentSources: ["scratch"] });
-  const quickFile = path.join(quick, ".design-pipeline/state.json"), quickBefore = fs.readFileSync(quickFile);
-  const quickDone = nextAction(quick);
-  assert.equal(quickDone.type, "done");
-  assert.deepEqual(quickDone.completed, ["intake", "components", "build", "probe"]);
-  assert.deepEqual(fs.readFileSync(quickFile), quickBefore, "next leaves the finished quick project as it is");
-  fs.appendFileSync(path.join(quick, "index.html"), "<p>A later edit</p>\n");
-  const reopened = nextAction(quick);
-  assert.equal(reopened.stage, "intake", "a changed quick page asks for the stated line first");
-  assert.equal(reopened.type, "run");
 });

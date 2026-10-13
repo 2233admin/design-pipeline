@@ -15,11 +15,14 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
-const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, gatePassed, invalidateCheckedEvidence, reference } = require("./shared.cjs");
+const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, reference } = require("./shared.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
 const decideCommand = (root, stage) => `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage ${stage}`;
+// Repeatable and optional: the intake commands that take anti-goals carry the flag, so running the
+// returned command cannot drop them.
+const ANTI_GOALS = ' [--anti-goal "<anti-goal>" ...]';
 const history = (state, key) => (Array.isArray(state.decisions?.[key]) ? state.decisions[key] : []);
 const rejections = (records, matches = () => true) => records.filter(item => item.verdict === "reject" && matches(item)).length;
 
@@ -83,9 +86,9 @@ const INTAKE = {
       ...(corrected ? { first: `The owner corrected the playback ("${latest.reason}"); each correction is now a project rule. Play it back again with the corrections applied, then ask:` } : {}),
       question: corrected ? "What is wrong or missing in this?" : `${SKIP_LINE} ${OPENING[state.mode === "replicate" ? "replicate" : "page"]}`,
       instruction: CONVERSATION,
-      record: `${decideCommand(root, "intake")} --verdict accept --answer "<the playback the owner confirmed>"`,
+      record: `${decideCommand(root, "intake")} --verdict accept --answer "<the playback the owner confirmed>"${ANTI_GOALS}`,
       correction: `${decideCommand(root, "intake")} --verdict reject --answer "<what the owner said is wrong or missing>"`,
-      skip: `${decideCommand(root, "intake")} --choice skip --answer "<the line telling the owner what you decided on their behalf>"`,
+      skip: `${decideCommand(root, "intake")} --choice skip --answer "<the line telling the owner what you decided on their behalf>"${ANTI_GOALS}`,
       why: "Intent and taste come from the owner's own words and facts from looking; a skip still states every decision made for them.",
     };
   },
@@ -98,7 +101,7 @@ const QUICK_INTAKE = {
   action: (_state, root) => ({
     type: "run",
     instruction: "Do not interview the owner: a quick piece is settled by the request, the conversation and the project's files. Tell the owner in one plain line what you decided on their behalf (what you will build, for whom, the look or reference you follow), then record that line; add each thing the request rules out as its own --anti-goal \"<text>\", which becomes a project rule. Ask first only about something essential that you can neither look up nor reasonably decide.",
-    command: `${decideCommand(root, "intake")} --choice skip --answer "<the line you told the owner>"`,
+    command: `${decideCommand(root, "intake")} --choice skip --answer "<the line you told the owner>"${ANTI_GOALS}`,
     why: "Quick work stays short, and the owner hears every decision made for them instead of a silent default.",
   }),
 };
@@ -604,29 +607,15 @@ const DELIVER = {
   action: (_state, root) => ({ type: "run", command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
 };
 
-// A project that reached done under the earlier web flow is left alone while its checked page is
-// unchanged. At standard and full it has a delivery bound to that page and no description history
-// (this flow cannot deliver without an approved description); quick had no delivery stage, so there
-// it is a passed probe with no stated decision recorded. A changed page, a review rejection or a new
-// component decision ends the exception, and the migration (description, then each section) applies.
-function finishedEarlier(state, root) {
-  const probed = () => gatePassed(state, root, PROBE.gate.name, PROBE.gate.inputs());
-  if (sectioned(state)) return !history(state, "descriptions").length && deliveryRecorded(state, root) && probed();
-  return !state.decisions?.intake && probed();
-}
-// The stages this flow added or reshaped count as finished on such a project.
-const earlier = stage => ({ ...stage, finished: (state, root) => stage.finished(state, root) || finishedEarlier(state, root) });
-const [WEB_INTAKE, WEB_QUICK_INTAKE, WEB_DESCRIPTION, WEB_BUILD] = [INTAKE, QUICK_INTAKE, DESCRIPTION, BUILD].map(earlier);
-
 // Quick: a stated decision, components, build, probe. Standard and full: the conversation, the
 // variants (not in replicate, which keeps its reference), the decision round, the approved
 // description, the section-by-section build, probe, final review and delivery.
 function stages(state) {
   if (state.mode === "replicate") return state.tier === "quick"
-    ? [WEB_QUICK_INTAKE, REFERENCE, COMPONENTS, WEB_BUILD, PROBE]
-    : [WEB_INTAKE, REFERENCE, COMPONENTS, WEB_DESCRIPTION, WEB_BUILD, PROBE, REVIEW, DELIVER];
-  if (state.tier === "quick") return [WEB_QUICK_INTAKE, COMPONENTS, WEB_BUILD, PROBE];
-  return [WEB_INTAKE, REFERENCE, CONCEPTS, COMPONENTS, WEB_DESCRIPTION, WEB_BUILD, PROBE, REVIEW, DELIVER];
+    ? [QUICK_INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE]
+    : [INTAKE, REFERENCE, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
+  if (state.tier === "quick") return [QUICK_INTAKE, COMPONENTS, BUILD, PROBE];
+  return [INTAKE, REFERENCE, CONCEPTS, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
 }
 
 // Whether next, standing at `current`, has not yet reached the stage `id` (done is past every stage).
