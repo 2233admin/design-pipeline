@@ -47,6 +47,143 @@ function runCheck(skillRoots, options = {}) {
   return JSON.parse(result.stdout);
 }
 
+test("installed self-check discovers standard defaults and keeps explicit roots exclusive", async (t) => {
+  const workspace = makeRoot();
+  const home = path.join(workspace, "home");
+  const project = path.join(workspace, "project");
+  const codexHome = path.join(workspace, "custom-codex");
+  const fixtureRoot = path.join(workspace, "fixture-skills");
+  const badRoot = path.join(workspace, "missing-skills");
+  const legacyRoot = path.join(home, ".codex", "skills");
+  const globalRoot = path.join(home, ".agents", "skills");
+  const projectRoot = path.join(project, ".agents", "skills");
+  const isolatedEnv = { HOME: home, USERPROFILE: home, CODEX_HOME: "" };
+  const missingResource = "design-pipeline/scripts/designer-pipeline.cjs";
+
+  function assertComplete(result) {
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const report = JSON.parse(result.stdout);
+    const core = report.groups.find((item) => item.name === "Core pipeline");
+    const companions = report.groups.find((item) => item.name === "Matt Pocock development");
+    assert.equal(report.result, "OK");
+    assert.equal(core.status, "OK");
+    assert.deepEqual(core.missing, []);
+    assert.deepEqual(core.missingResources, []);
+    assert.ok(core.installedResources.includes(missingResource));
+    assert.ok(companions.installed.includes("tdd"));
+    assert.equal(companions.missing.includes("tdd"), false);
+    return report;
+  }
+
+  function assertExplicitFailure(result) {
+    assert.equal(result.status, 1, result.stderr || result.stdout);
+    const report = JSON.parse(result.stdout);
+    const core = report.groups.find((item) => item.name === "Core pipeline");
+    const companions = report.groups.find((item) => item.name === "Matt Pocock development");
+    assert.deepEqual(report.skillRoots, [badRoot]);
+    assert.equal(report.result, "FAIL");
+    assert.equal(core.status, "FAIL");
+    assert.ok(core.missing.includes("design-pipeline"));
+    assert.ok(core.missingResources.includes(missingResource));
+    assert.equal(companions.installed.includes("tdd"), false);
+  }
+
+  try {
+    fs.mkdirSync(home, { recursive: true });
+    fs.mkdirSync(project, { recursive: true });
+    installPipeline(fixtureRoot);
+    installSkill(fixtureRoot, "tdd", "# TDD\nInstalled companion fixture.\n");
+
+    for (const scenario of [
+      { name: "global .agents", root: globalRoot },
+      { name: "project .agents", root: projectRoot },
+      { name: "legacy .codex", root: legacyRoot },
+      { name: "relative CODEX_HOME", root: path.join(codexHome, "skills"), codexHome: path.relative(project, codexHome) },
+    ]) {
+      await t.test(scenario.name, () => {
+        fs.mkdirSync(path.dirname(scenario.root), { recursive: true });
+        fs.renameSync(fixtureRoot, scenario.root);
+        const options = {
+          cwd: project,
+          script: path.join(scenario.root, "design-pipeline", "scripts", "check-deps.cjs"),
+          env: { ...isolatedEnv, CODEX_HOME: scenario.codexHome || "" },
+        };
+        try {
+          const report = assertComplete(runCheckRaw([], options));
+          assert.deepEqual(report.skillRoots, [
+            scenario.codexHome ? path.join(codexHome, "skills") : legacyRoot,
+            globalRoot,
+            projectRoot,
+          ]);
+          assert.equal(report.skillRoot, report.skillRoots[0]);
+          assert.equal(report.projectRoot, project);
+
+          for (const variable of ["DESIGN_PIPELINE_SKILL_ROOTS", "CODEX_SKILLS_DIR"]) {
+            assertExplicitFailure(runCheckRaw([], {
+              ...options,
+              env: { ...options.env, [variable]: badRoot },
+            }));
+          }
+
+          const explicit = assertComplete(runCheckRaw([], {
+            ...options,
+            env: {
+              ...options.env,
+              DESIGN_PIPELINE_SKILL_ROOTS: scenario.root,
+              CODEX_SKILLS_DIR: badRoot,
+            },
+          }));
+          assert.deepEqual(explicit.skillRoots, [scenario.root]);
+          assertExplicitFailure(runCheckRaw([], {
+            ...options,
+            env: {
+              ...options.env,
+              DESIGN_PIPELINE_SKILL_ROOTS: badRoot,
+              CODEX_SKILLS_DIR: scenario.root,
+            },
+          }));
+
+          const resourcePath = path.join(scenario.root, missingResource);
+          const heldResource = path.join(workspace, "held-designer-pipeline.cjs");
+          fs.renameSync(resourcePath, heldResource);
+          try {
+            const result = runCheckRaw([], options);
+            assert.equal(result.status, 1, result.stderr || result.stdout);
+            const incomplete = JSON.parse(result.stdout);
+            const core = incomplete.groups.find((item) => item.name === "Core pipeline");
+            assert.equal(incomplete.result, "FAIL");
+            assert.equal(core.status, "FAIL");
+            assert.deepEqual(core.installed, ["design-pipeline"]);
+            assert.deepEqual(core.missingResources, [missingResource]);
+          } finally {
+            fs.renameSync(heldResource, resourcePath);
+          }
+        } finally {
+          fs.renameSync(scenario.root, fixtureRoot);
+        }
+      });
+    }
+
+    await t.test("resolved default roots are de-duplicated in first-seen order", () => {
+      fs.renameSync(fixtureRoot, globalRoot);
+      try {
+        const report = assertComplete(runCheckRaw([], {
+          cwd: home,
+          script: path.join(globalRoot, "design-pipeline", "scripts", "check-deps.cjs"),
+          env: { ...isolatedEnv, CODEX_HOME: `${home}${path.sep}.agents${path.sep}..${path.sep}.agents` },
+        }));
+        assert.deepEqual(report.skillRoots, [globalRoot]);
+        assert.equal(report.skillRoot, globalRoot);
+        assert.equal(report.projectRoot, home);
+      } finally {
+        fs.renameSync(globalRoot, fixtureRoot);
+      }
+    });
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("recognizes official Matt install names without local aliases", () => {
   const root = makeRoot();
   try {
@@ -287,6 +424,18 @@ test("searches multiple explicit skill roots", () => {
     assert.deepEqual(report.skillRoots, [pipelineRoot, companionRoot]);
     assert.equal(profile.status, "OK");
     assert.equal(path.dirname(path.dirname(profile.skillPath)), companionRoot);
+    const secondarySetting = runCheck([], {
+      env: {
+        DESIGN_PIPELINE_SKILL_ROOTS: "",
+        CODEX_SKILLS_DIR: [pipelineRoot, companionRoot].join(path.delimiter),
+      },
+    });
+    assert.deepEqual(secondarySetting.skillRoots, [pipelineRoot, companionRoot]);
+    assert.equal(secondarySetting.result, "OK");
+    assert.equal(secondarySetting.groups.find((item) => item.name === "Core pipeline").status, "OK");
+    const secondaryProfile = secondarySetting.capabilityProfiles.find((item) => item.skill === "animejs");
+    assert.equal(secondaryProfile.status, "OK");
+    assert.equal(path.dirname(path.dirname(secondaryProfile.skillPath)), companionRoot);
   } finally {
     fs.rmSync(pipelineRoot, { recursive: true, force: true });
     fs.rmSync(companionRoot, { recursive: true, force: true });
