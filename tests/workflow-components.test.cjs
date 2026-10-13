@@ -447,12 +447,15 @@ test("round3 regression: returned search command excludes film-only records for 
   assert.match(command, /--platform web/);
 });
 
+// A page whose probe stage passed: an audited probe file and an interaction pass with its lineage.
+const AUDIT_PROBE_FILE = JSON.stringify({ schema: "design-pipeline.interaction-probe.v1", id: "page", url: "index.html", probes: [{ id: "page-audit", kind: "audit", thresholds: { fonts: ["Inter"] } }] });
+const LINEAGE = { files: ["index.html"], tokens: [], absent: [], remote: [] };
 function checkedPage(root, choice = "project", answer = "Use project components") {
   decide(root, { stage: "components", choice, answer });
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><h1>Page</h1>");
   manifest(root, [entry()]);
-  fs.writeFileSync(path.join(root, "interaction.json"), "{}");
-  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"]);
+  fs.writeFileSync(path.join(root, "interaction.json"), AUDIT_PROBE_FILE);
+  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
 }
 const deliveryFields = state => ({ delivered: state.decisions.delivered, deliveryInputHashes: state.decisions.deliveryInputHashes, deliveredSha256: state.decisions.deliveredSha256 });
 
@@ -475,7 +478,7 @@ test("lineage regression: changed components decision requires a fresh review an
   const recordedDrafts = structuredClone(readState(root).decisions.drafts);
   decide(root, { stage: "components", choice: "project", answer: "Search the index" });
   assert.equal(nextAction(root).stage, "probe");
-  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"]);
+  recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
   assert.equal(nextAction(root).stage, "review", "the earlier accept no longer covers the new decision");
   const state = readState(root);
   assert.deepEqual(deliveryFields(state), { delivered: undefined, deliveryInputHashes: undefined, deliveredSha256: undefined });

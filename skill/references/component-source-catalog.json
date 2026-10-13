@@ -4888,9 +4888,13 @@
       "availability": "reference-link",
       "aliases": [
         "https://github.com/emilkowalski/skills",
-        "https://github.com/emilkowalski/skills/tree/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7"
+        "https://github.com/emilkowalski/skills/tree/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+        "https://github.com/emilkowalski/skills/tree/2d228630ba1446365f614a108cb8252f1feda202"
       ],
-      "localPaths": {},
+      "localPaths": {
+        "guide": "references/ui-craft-sources.md",
+        "manifest": "vendor/emil-design-eng/manifest.json"
+      },
       "provenance": {
         "source": "Animation opportunity and review reference",
         "license": "MIT",
@@ -4903,10 +4907,11 @@
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/emilkowalski/skills/blob/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7/LICENSE"
+          "https://github.com/emilkowalski/skills/blob/d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7/LICENSE",
+          "https://github.com/emilkowalski/skills/blob/2d228630ba1446365f614a108cb8252f1feda202/LICENSE"
         ]
       },
-      "licenseScope": "Explicit MIT grant retrieved at requested revision d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+      "licenseScope": "Explicit MIT grant retrieved at requested revision d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings. The bundled emil-design-eng snapshot (LICENSE and skills/emil-design-eng/** at 2d228630ba1446365f614a108cb8252f1feda202, vendor/emil-design-eng/manifest.json) carries the same pinned MIT grant; the rest of the repository stays reference-only."
     },
     {
       "id": "source/facebook/astryx",
@@ -5128,6 +5133,37 @@
         ]
       },
       "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA a9c907ccf4c06ed640c167fda09212133a92e130 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+    },
+    {
+      "id": "source/ibelick/ui-skills",
+      "sourceId": "ibelick/ui-skills",
+      "recordType": "source",
+      "name": "fixing-accessibility",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/ibelick/ui-skills"
+      ],
+      "localPaths": {
+        "guide": "references/ui-craft-sources.md",
+        "manifest": "vendor/fixing-accessibility/manifest.json",
+        "implementation": "vendor/fixing-accessibility/upstream"
+      },
+      "provenance": {
+        "source": "fixing-accessibility",
+        "license": "MIT",
+        "url": "https://github.com/ibelick/ui-skills",
+        "revision": "f2264c30213a8a55bd0a6a7668d0438e4564e090",
+        "contentHash": "bc4375b2fce2417ccf354e00b08cc7365e7bd11cd3ce6b5d501ff82a7d15fcd4",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/ibelick/ui-skills/blob/f2264c30213a8a55bd0a6a7668d0438e4564e090/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: LICENSE and skills/fixing-accessibility/** snapshot; the repository's other skills are not bundled."
     },
     {
       "id": "source/iart-ai/ad-video-skills",
@@ -5589,6 +5625,37 @@
       "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Included motion-graphics pack."
     },
     {
+      "id": "source/jakubkrehel/make-interfaces-feel-better",
+      "sourceId": "jakubkrehel/make-interfaces-feel-better",
+      "recordType": "source",
+      "name": "make-interfaces-feel-better",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/jakubkrehel/make-interfaces-feel-better"
+      ],
+      "localPaths": {
+        "guide": "references/ui-craft-sources.md",
+        "manifest": "vendor/make-interfaces-feel-better/manifest.json",
+        "implementation": "vendor/make-interfaces-feel-better/upstream"
+      },
+      "provenance": {
+        "source": "make-interfaces-feel-better",
+        "license": "MIT",
+        "url": "https://github.com/jakubkrehel/make-interfaces-feel-better",
+        "revision": "35545ea1512ad59fa463e6b1f95ca9c052981fe6",
+        "contentHash": "d60a83f0eccb7d6e5b6a1e4eab47e1e1ee9d0a985f4737c8d34decc88db16961",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/jakubkrehel/make-interfaces-feel-better/blob/35545ea1512ad59fa463e6b1f95ca9c052981fe6/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: LICENSE, README.md and skills/make-interfaces-feel-better/** snapshot."
+    },
+    {
       "id": "source/jakubkrehel/skills",
       "sourceId": "jakubkrehel/skills",
       "recordType": "source",
@@ -5884,6 +5951,37 @@
       "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Complete tracked snapshot; nested third-party THREE-LICENSE.txt requires separate attribution. The pinned nested THREE-LICENSE.txt independently grants MIT for bundled three.js material, Copyright © 2010-2025 three.js authors; preserve that notice as well as the repository notice."
     },
     {
+      "id": "source/microsoft/playwright-cli",
+      "sourceId": "microsoft/playwright-cli",
+      "recordType": "source",
+      "name": "playwright-cli",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/microsoft/playwright-cli"
+      ],
+      "localPaths": {
+        "guide": "references/ui-craft-sources.md",
+        "manifest": "vendor/playwright-cli/manifest.json",
+        "implementation": "vendor/playwright-cli/upstream"
+      },
+      "provenance": {
+        "source": "playwright-cli",
+        "license": "Apache-2.0",
+        "url": "https://github.com/microsoft/playwright-cli",
+        "revision": "b85c7a736bb473bf55b584e54a09ffa698d6d871",
+        "contentHash": "5edf4c1784bf591cbfc13b06775c07667f6132c2efbfbc504840c5c03362972e",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://github.com/microsoft/playwright-cli/blob/b85c7a736bb473bf55b584e54a09ffa698d6d871/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains the Apache License 2.0; no NOTICE file exists at the reviewed revision; retain the license and copyright notices. Scope: LICENSE, README.md and skills/playwright-cli/** snapshot of the skill text; the pipeline never installs the CLI."
+    },
+    {
       "id": "source/mui/base-ui",
       "sourceId": "mui/base-ui",
       "recordType": "source",
@@ -6113,6 +6211,37 @@
       "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA a18858fb7b014098cba85703e66609be66a26ef5 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
     },
     {
+      "id": "source/raphaelsalaja/skill",
+      "sourceId": "raphaelsalaja/skill",
+      "recordType": "source",
+      "name": "12-principles-of-animation",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/raphaelsalaja/skill"
+      ],
+      "localPaths": {
+        "guide": "references/ui-craft-sources.md",
+        "manifest": "vendor/12-principles-of-animation/manifest.json",
+        "implementation": "vendor/12-principles-of-animation/upstream"
+      },
+      "provenance": {
+        "source": "12-principles-of-animation",
+        "license": "MIT",
+        "url": "https://github.com/raphaelsalaja/skill",
+        "revision": "dc9eef22f13635df77d9b9e67c82aa85d52a97b7",
+        "contentHash": "c836d17cb89f4c7d0cdd88829968db5484d9fd8f8e1762b4dc3fc29b067859e7",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/raphaelsalaja/skill/blob/dc9eef22f13635df77d9b9e67c82aa85d52a97b7/skills/12-principles-of-animation/SKILL.md"
+        ]
+      },
+      "licenseScope": "MIT is declared only in the pinned SKILL.md frontmatter (license: MIT); the repository has no LICENSE file and publishes no copyright line at the reviewed revision. Scope: README.md and skills/12-principles-of-animation/** snapshot."
+    },
+    {
       "id": "source/swamimalode07/rare-ui",
       "sourceId": "swamimalode07/rare-ui",
       "recordType": "source",
@@ -6279,7 +6408,10 @@
         "https://ui.shadcn.com/",
         "https://ui.shadcn.com"
       ],
-      "localPaths": {},
+      "localPaths": {
+        "guide": "references/ui-craft-sources.md",
+        "manifest": "vendor/shadcn/manifest.json"
+      },
       "provenance": {
         "source": "shadcn",
         "license": "MIT",
@@ -6295,10 +6427,11 @@
           "https://api.github.com/repos/shadcn-ui/ui/git/blobs/fad4d887a681dd49233e5ed01ee2c7a1513089a0",
           "https://ui.shadcn.com/",
           "https://github.com/shadcn-ui/ui",
-          "https://github.com/shadcn-ui/ui/blob/a85299a9edd2a961e32f01ced86963a852652bd2/LICENSE.md"
+          "https://github.com/shadcn-ui/ui/blob/a85299a9edd2a961e32f01ced86963a852652bd2/LICENSE.md",
+          "https://github.com/shadcn-ui/ui/blob/993eb2c3151997ce08a49635c10fd8c8ef3713c7/LICENSE.md"
         ]
       },
-      "licenseScope": "MIT license text verified at existing registry revision a85299a9edd2a961e32f01ced86963a852652bd2; retain copyright and license notices. Paid products, linked source and unrelated hosted-site assets are not licensed by this root grant."
+      "licenseScope": "MIT license text verified at existing registry revision a85299a9edd2a961e32f01ced86963a852652bd2; retain copyright and license notices. Paid products, linked source and unrelated hosted-site assets are not licensed by this root grant. The bundled shadcn skill snapshot (LICENSE.md and skills/shadcn/** at 993eb2c3151997ce08a49635c10fd8c8ef3713c7, vendor/shadcn/manifest.json) is guidance text under the same MIT grant; no component source is bundled."
     },
     {
       "id": "source/shadcnblocks",

@@ -1,0 +1,62 @@
+{
+  "schema": "design-pipeline.ui-craft-source.v1",
+  "name": "12-principles-of-animation",
+  "source": {
+    "repository": "https://github.com/raphaelsalaja/skill",
+    "revision": "dc9eef22f13635df77d9b9e67c82aa85d52a97b7",
+    "gitTree": "e062cfd5c88ba6e7d43aa4c10dfd0644c09ba595",
+    "committedAt": "2026-03-17T15:27:21Z",
+    "license": "MIT",
+    "reviewedAt": "2026-10-13",
+    "scope": [
+      "skills/12-principles-of-animation/**",
+      "README.md"
+    ],
+    "contentHashScope": "selected skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
+  },
+  "licenses": [
+    {
+      "path": "upstream/skills/12-principles-of-animation/SKILL.md",
+      "license": "MIT",
+      "evidence": "license: MIT",
+      "note": "Declared only in the skill frontmatter; the upstream repository has no LICENSE file at the reviewed revision and publishes no copyright line."
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 2,
+    "byteCount": 5106,
+    "treeSha256": "c836d17cb89f4c7d0cdd88829968db5484d9fd8f8e1762b4dc3fc29b067859e7",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "ffb8fce670a21b616986fb479319b9a5d06f2bca",
+        "size": 61,
+        "sha256": "acfec95653dd97811ac93ff4cd55e86ca23b1832b69248eab2521bad38e4c214"
+      },
+      {
+        "path": "skills/12-principles-of-animation/SKILL.md",
+        "mode": "100644",
+        "oid": "1b5e5a4c2ef6eb684ae079bfb8b705672d8ef4ec",
+        "size": 5045,
+        "sha256": "2027056a645c5ffdf17047d0e74b78a60c414d91da45d983ffd452548ee1e1ac"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "12-principles-of-animation",
+      "path": "upstream/skills/12-principles-of-animation/SKILL.md",
+      "description": "Audit animation code against Disney's 12 principles adapted for web. Use when reviewing motion, implementing animations, or checking animation quality. Outputs file:line findings."
+    }
+  ],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "executesUpstreamCommands": false,
+    "fetchesRemotePrompts": false,
+    "changesProjectRuntime": false
+  }
+}

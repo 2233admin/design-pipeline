@@ -15,6 +15,12 @@ does not install dependencies, grant execution authority or certify visual quali
 | `deepclonewebsite/` | [Website analysis methods](../references/deepclonewebsite.md) | `manifest.json` |
 | `design-md/` | [Design-system examples](../references/design-md.md) | `manifest.json` |
 | `shadcnio-react-components/` | [Component reference catalog](../references/shadcnio-react-components.md) | `manifest.json` |
+| `emil-design-eng/` | [Interaction polish](../references/ui-craft-sources.md#emil-design-eng) | `manifest.json`, scoped snapshot hash |
+| `make-interfaces-feel-better/` | [Interface details](../references/ui-craft-sources.md#make-interfaces-feel-better) | `manifest.json`, scoped snapshot hash |
+| `fixing-accessibility/` | [Accessibility fixes](../references/ui-craft-sources.md#fixing-accessibility) | `manifest.json`, scoped snapshot hash |
+| `12-principles-of-animation/` | [Animation principles checklist](../references/ui-craft-sources.md#12-principles-of-animation) | `manifest.json`, scoped snapshot hash |
+| `shadcn/` | [shadcn/ui component workflow](../references/ui-craft-sources.md#shadcn) | `manifest.json`, scoped snapshot hash |
+| `playwright-cli/` | [Exploratory browser driving](../references/ui-craft-sources.md#playwright-cli) | `manifest.json`, scoped snapshot hash |
 | `taste-skill/` | [Visual direction and interface recipes](../references/taste-skill.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
 | `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |

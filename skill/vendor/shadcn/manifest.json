@@ -1,0 +1,201 @@
+{
+  "schema": "design-pipeline.ui-craft-source.v1",
+  "name": "shadcn",
+  "source": {
+    "repository": "https://github.com/shadcn-ui/ui",
+    "revision": "993eb2c3151997ce08a49635c10fd8c8ef3713c7",
+    "gitTree": "73f30996a5cbbc3a75ada6818781d1f121636082",
+    "committedAt": "2026-10-12T13:05:21+04:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-13",
+    "scope": [
+      "skills/shadcn/**",
+      "LICENSE.md"
+    ],
+    "contentHashScope": "selected skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE.md",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2023 shadcn"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 22,
+    "byteCount": 149817,
+    "treeSha256": "fb90fd9ad20aba550f87fbc2e1aa0e5d0bd7f12035a14ac99f280506365e3fce",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": "LICENSE.md",
+        "mode": "100644",
+        "oid": "fad4d887a681dd49233e5ed01ee2c7a1513089a0",
+        "size": 1063,
+        "sha256": "1564074e13439397221ffd522e2e504d56561994a23d371aa5e3ad43e4f5423f"
+      },
+      {
+        "path": "skills/shadcn/agents/openai.yml",
+        "mode": "100644",
+        "oid": "ab636da86b5ee5b8721b0575af67faa88e4bf838",
+        "size": 238,
+        "sha256": "35db91b1eef58b2abe01da9b88577de5a44e233b740cd93d692ddeeadd2afe4d"
+      },
+      {
+        "path": "skills/shadcn/assets/shadcn-small.png",
+        "mode": "100644",
+        "oid": "547154b97f2298335159c23eec1dac0d147a1246",
+        "size": 1049,
+        "sha256": "0ecc62d682727f68fc4937eed19960c706714fa084d44f63028d611ae02bf3d7"
+      },
+      {
+        "path": "skills/shadcn/assets/shadcn.png",
+        "mode": "100644",
+        "oid": "b7b6814acc25073e5f48099b1fd3f70c47bfb1c3",
+        "size": 3852,
+        "sha256": "7d60ad6fec4d89a0d44ba5a3c9283d2fea0047af5467f9227040e20d927d39b7"
+      },
+      {
+        "path": "skills/shadcn/assets/showcase/color-pair.tsx",
+        "mode": "100644",
+        "oid": "f80177d1e50bf8df22b79914c331e61280d459a4",
+        "size": 3448,
+        "sha256": "6028f0b677912216822fdaf76ae6b8863c429916ed4a9626b73f4de4506f8ee4"
+      },
+      {
+        "path": "skills/shadcn/assets/showcase/preview-states.css",
+        "mode": "100644",
+        "oid": "d90febdbf9fe096ca3f9ef3395c2dbf28f2971f6",
+        "size": 425,
+        "sha256": "8d9e3cec24dd01b11c5ba12196d0376a131797d9ad247ea624e66eb8bbf61b0e"
+      },
+      {
+        "path": "skills/shadcn/assets/showcase/state-matrix.tsx",
+        "mode": "100644",
+        "oid": "69afba4f7e4f14a979793695a82c86a794ed3a6d",
+        "size": 1682,
+        "sha256": "07794119fe05ff735358b3f8ca30a8297617ab64dfb3901dce4d89fe5f443458"
+      },
+      {
+        "path": "skills/shadcn/cli.md",
+        "mode": "100644",
+        "oid": "8a1d1958710902e2d38a3dd03d00aa09ab165dfe",
+        "size": 17304,
+        "sha256": "a381e35bf36fe7bb851952c13707e01e82434fd7a4a4e53f6df26c6370838904"
+      },
+      {
+        "path": "skills/shadcn/customization.md",
+        "mode": "100644",
+        "oid": "d43506d40520e8271da0b8ac9f994e190dbb9998",
+        "size": 6279,
+        "sha256": "a19e81c78843df255e85755e52659268d793845add845b34ad8091f62bff3af9"
+      },
+      {
+        "path": "skills/shadcn/design-system-page.md",
+        "mode": "100644",
+        "oid": "cfa2f4186fe36c295a5878354f1ca2dd2cf66bf7",
+        "size": 15790,
+        "sha256": "c541d661af159548744be3e27f79e7da710ab83f9afd448a4346f7ff1531d328"
+      },
+      {
+        "path": "skills/shadcn/design-system.md",
+        "mode": "100644",
+        "oid": "018f87bd78fad10ff309f9bc9bd88e0b10172b60",
+        "size": 21621,
+        "sha256": "9ed11e93e7e80e34c8795d5ba82e5420ca905e8e9949fef79cbe9239184fd06b"
+      },
+      {
+        "path": "skills/shadcn/evals/evals.json",
+        "mode": "100644",
+        "oid": "f70c8c109bab36619dfcbe73ddc4983ce0028b7f",
+        "size": 10626,
+        "sha256": "e82c747326a5c21e37a1c962274d36b1bfebb3e6602ee368b98e2dba5db18369"
+      },
+      {
+        "path": "skills/shadcn/mcp.md",
+        "mode": "100644",
+        "oid": "6539ddaa2d0bc9e9d1fdf07658e1b0955136b721",
+        "size": 3510,
+        "sha256": "8d696b4e45b7d0e337367248513bd9acebe8f3bcfd7b748c775e5a337c8f38c8"
+      },
+      {
+        "path": "skills/shadcn/registry.md",
+        "mode": "100644",
+        "oid": "5369468bbe43126379161a403a53717ee86e2d9b",
+        "size": 8817,
+        "sha256": "4f239be36bd2b58e17047db1ca80ab7da00e15a8b73242e5e4d50d113c4caa05"
+      },
+      {
+        "path": "skills/shadcn/rules/base-vs-radix.md",
+        "mode": "100644",
+        "oid": "c1ed7d111a0195cab801d2b3d38dee3aee0b8e10",
+        "size": 6954,
+        "sha256": "2b2deb47d004285220c1fc6b38bb2edc2d0ccbcdafd031b0b189d5d8ed0d1ba8"
+      },
+      {
+        "path": "skills/shadcn/rules/chat.md",
+        "mode": "100644",
+        "oid": "9e1a6bf8de28de688c730ff95016a03347b49014",
+        "size": 8018,
+        "sha256": "de29c12524a27578a59ecf8c95ea939278c1a3572a3706bfc99f6f92cb770b7b"
+      },
+      {
+        "path": "skills/shadcn/rules/composition.md",
+        "mode": "100644",
+        "oid": "a8aa4274c1aaabf673fe7bdb69d90983ad56059d",
+        "size": 4892,
+        "sha256": "f282df828d83a91132a846ddb62eea149a7c7c94822e9ca88cfddf85af01aa41"
+      },
+      {
+        "path": "skills/shadcn/rules/forms.md",
+        "mode": "100644",
+        "oid": "f451e2f7bc17d9c5738691931964744a568ea5d6",
+        "size": 4857,
+        "sha256": "29593e14381e34626f8e0e9c15c59f3394b92a0623af6a6ec94585400123853c"
+      },
+      {
+        "path": "skills/shadcn/rules/icons.md",
+        "mode": "100644",
+        "oid": "bba8102f01ef9fd9bd7ce2adc73e562869d5d09e",
+        "size": 1958,
+        "sha256": "d4a58266648872d9ee07d0c2368843a1cb88b8253b7f528dd7bda9d68b6c2535"
+      },
+      {
+        "path": "skills/shadcn/rules/styling.md",
+        "mode": "100644",
+        "oid": "4e6e063e1c7bc386e49f55da800546571b9e070b",
+        "size": 4675,
+        "sha256": "f88fbd72dff862805b786dc7d7e4c74c83030fc278c5b97c993e4e665001798c"
+      },
+      {
+        "path": "skills/shadcn/scripts/showcase-coverage.mjs",
+        "mode": "100644",
+        "oid": "d8a4eab93cb2da6dbe24290483cf570c7d04bf6e",
+        "size": 1453,
+        "sha256": "fb593e0806414d23b51354a46881f0b2873afc226bda0926a22f83cbd60af2fa"
+      },
+      {
+        "path": "skills/shadcn/SKILL.md",
+        "mode": "100644",
+        "oid": "c1e7388d2d9b9e90af44af9a5f135dae1b3a870a",
+        "size": 21306,
+        "sha256": "0185f715bc985deca4223be426f898aa17f7d1a297a9857dfa79055e473bc34d"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "shadcn",
+      "path": "upstream/skills/shadcn/SKILL.md",
+      "description": "Manages shadcn components and projects — adding, searching, fixing, debugging, styling, and composing UI, including chat interfaces. Provides project context, component docs, and usage examples. Applies when working with shadcn/ui, component registries, presets, --preset codes, or any project with a components.json file. Also triggers for \"shadcn init\", \"create an app with --preset\", \"switch to --preset\", and for building a design system or applying a DESIGN.md or brand spec to shadcn/ui."
+    }
+  ],
+  "boundary": {
+    "mode": "built-in-reference-adaptation",
+    "installsUpstreamDependencies": false,
+    "executesUpstreamCommands": false,
+    "fetchesRemotePrompts": false,
+    "changesProjectRuntime": false
+  }
+}

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit fixture: clean</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="clean.css">
+</head>
+<body>
+<header class="site">
+  <nav class="nav" aria-label="Main">
+    <a href="#plans">Plans</a>
+    <a href="#usage">Usage</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+<main class="stack">
+  <section class="hero">
+    <h1>Measure the page you ship <span class="ornament" aria-hidden="true">*</span></h1>
+    <p>Every check runs in the real browser. Read the <a href="#usage">usage table</a> before you start.</p>
+    <div class="toolbar">
+      <button type="button">Start trial</button>
+      <button type="button" class="secondary">Compare plans</button>
+    </div>
+  </section>
+  <section class="cards" id="plans">
+    <article class="card">
+      <h2>Starter</h2>
+      <p class="price">$1,280.40</p>
+      <p>For one team with a single product.</p>
+      <p class="sr-only">Starter costs one thousand two hundred eighty dollars a year.</p>
+    </article>
+    <article class="card">
+      <h2>Studio</h2>
+      <p class="price">$3,975.10</p>
+      <p>For agencies that ship many sites.</p>
+    </article>
+  </section>
+  <section class="media">
+    <div class="media-inner">
+      <p>Nested surfaces keep concentric corners.</p>
+    </div>
+  </section>
+  <table id="usage">
+    <thead><tr><th scope="col">Month</th><th scope="col" class="num">Visits</th></tr></thead>
+    <tbody>
+      <tr><td>July</td><td class="num">12,480</td></tr>
+      <tr><td>August</td><td class="num">9,315</td></tr>
+    </tbody>
+  </table>
+  <form class="contact" id="contact">
+    <label for="email">Email</label>
+    <div class="field">
+      <input id="email" type="email" placeholder="you@example.com">
+      <button type="submit">Send</button>
+    </div>
+  </form>
+</main>
+<div class="offscreen" role="status">Plans updated</div>
+</body>
+</html>

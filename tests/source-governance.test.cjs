@@ -16,24 +16,35 @@ const sourceRefs = {
     revision: "4e5d0925e1a0d34894734611b225205aa10e5a2f",
     contentHash: "396572fd3133134972196037484def6b553fa28a2b69a7aba2f3aceeaf1cf711",
     license: "unverified",
+    reviewedAt: "2026-08-26T00:00:00.000Z",
   },
   "skill/references/ai-interaction-patterns.md": {
     sourceId: "awesome-ux-ai-interaction",
     revision: "4e5d0925e1a0d34894734611b225205aa10e5a2f",
     contentHash: "a9733a2e6b2f1dd11fa00216ebd2e5e66cced4c98d9dcb980c6ceb778bb93808",
     license: "unverified",
+    reviewedAt: "2026-08-26T00:00:00.000Z",
   },
   "skill/references/animation-opportunity-and-review.md": {
     sourceId: "emilkowalski-animation-review",
     revision: "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
     contentHash: "fff4cfc7619acb1467b0e3fafac6a4075fead4f7e90711a772af2c0280090139",
     license: "MIT",
+    reviewedAt: "2026-08-26T00:00:00.000Z",
     sourceFiles: [
       "skills/improve-animations/SKILL.md",
       "skills/find-animation-opportunities/SKILL.md",
       "skills/animation-vocabulary/SKILL.md",
       "skills/review-animations/SKILL.md",
     ],
+  },
+  "skill/references/react-doctor.md": {
+    sourceId: "millionco-react-doctor",
+    revision: "e5824abe9a8ccaff326fdaecc11b21ce35ea7750",
+    contentHash: "8bfd7427d966a3831b1e1e84c44b6237279b5e0530a286e84351c1941129e49b",
+    license: "LicenseRef-Million-Modified-MIT",
+    reviewedAt: "2026-10-13T00:00:00.000Z",
+    sourceFiles: ["skills/react-doctor/SKILL.md", "skills/react-doctor/references/explain.md"],
   },
 };
 const motionProfileSourceFiles = [
@@ -101,7 +112,7 @@ test("reference files carry one fixed source evidence shape", () => {
     assert.equal(metadata.kind, "github");
     assert.equal(metadata.reviewedRevision, expected.revision);
     assert.equal(metadata.reviewedContentHash, expected.contentHash);
-    assert.equal(metadata.reviewedAt, "2026-08-26T00:00:00.000Z");
+    assert.equal(metadata.reviewedAt, expected.reviewedAt);
     assert.equal(metadata.license, expected.license);
     assert.match(metadata.contentHashScope, /sourceFiles|single-source/i);
     if (expected.sourceFiles) {
@@ -110,6 +121,18 @@ test("reference files carry one fixed source evidence shape", () => {
     assert.match(metadata.useBoundary, /reference-only/i);
     assert.match(read(relativePath), /do not (?:install|execute|copy|import)/i);
   }
+});
+
+test("React Doctor stays a pinned reference-only record outside the package", () => {
+  const metadata = frontmatter("skill/references/react-doctor.md");
+  assert.equal(metadata.url, `https://github.com/millionco/react-doctor/tree/${metadata.reviewedRevision}`);
+  assert.equal(metadata.freshnessDays, "365");
+  assert.match(metadata.useBoundary, /^reference-only;/);
+  assert.notEqual(metadata.license, "MIT");
+  assert.equal(fs.existsSync(path.join(repoRoot, "skill", "vendor", "react-doctor")), false);
+  const resources = JSON.parse(read("skill/references/package-resources.json"));
+  assert.equal(resources.required.some((file) => /react-doctor\//.test(file)), false);
+  assert.doesNotMatch(read("skill/references/react-doctor.md"), /react\.doctor\/prompts/);
 });
 
 test("tracked companion sources expose the same baseline metadata", () => {

@@ -1,0 +1,75 @@
+# Verification
+
+Recorded on 2026-10-13 on branch `feat/internalize-ui-craft-sources` (Windows host). Sections follow
+the order the checks ran, and each names the tree it ran on; the final implementation is the one in
+Second Review Fix.
+
+On the round-two tree, before the merge with `main`:
+
+| Check | Result |
+| --- | --- |
+| `npm test` with `TEMP` and `TMP` set to a fresh `D:\dp-qa-tmp` | Repository tests: 1289, 1285 pass, 0 fail, 4 skipped. The skips are host-dependent and predate this change: three GEPA cases need `GEPA_PYTHON`, and one intake case needs a case-sensitive filesystem. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm test` with the default user temp directory | Two runs failed only on `EPERM` from atomic directory renames under `%LOCALAPPDATA%\Temp`: 4 failures in a run before the last engine change, 6 on the final tree, in different DesignMD, palette-foundation, website-cloning and CodeRabbit-scaffold tests each time. Each failing stack ended in such a rename, outside the audit and interaction code. Rerunning those five files alone under the same temp root gave 97 of 98 passing, the failure again a rename `EPERM`. |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-evaluate.test.cjs` | 39 pass, 0 fail. Covers the 17-code contract, probe validation, summaries (failed, indeterminate, `not-declared`, one deduplicated `external-request` finding), every code firing on the violating fixture at 1280x800 and 390x844, the clean and undeclared fixtures, CLI exit codes 2/0/1, an outside-project stylesheet, lineage staleness and the web `probe` stage requirement. |
+| `npm run specs:check` | 72 passed, 0 failed, including this change. |
+| Smoke: remote dependency | `.design-pipeline/audit-smoke` is a quick web project (`index.html`, `styles.css`, an audit probe declaring numbers, stacks, an alignment group and content boxes). With a stylesheet linked from `http://127.0.0.1:9/vendor/inter.css`, `verify interaction` exits 2: all 17 checks settle at both viewports and one `external-request` finding names the URL with the fix to copy it into the project. Without the link it exits 0, the gate records lineage `files: [index.html, styles.css]` with empty `remote`, and `next` returns `web/quick: done`. |
+| Smoke: lineage and a measured failure | Changing `.hero p` to `#aaaaaa` after that pass makes `next` report the gate `stale` with `workflow-input-changed` on `styles.css` and reopen `probe`. `verify interaction` then exits 2 with `audit.text-contrast` `2.32:1 (#aaaaaa on #ffffff)` against `at least 4.5:1` at 1280x800 and 390x844. Restoring `#4a4a4a` passes again and `next` returns `done`. |
+
+## Frozen Merge Tree
+
+The rows above predate merging `origin/main` at `66e41c8` (#98, component index and web sources).
+After the merge, the tested implementation is commit `ce3a7330f011bdfa9faf462527a63f25cddbebf7`,
+tree `c0253f90306d7846b7465d3c0a7c83d9bfb869f0`, held unchanged during these runs.
+
+| Check | Result |
+| --- | --- |
+| `npm ci` | Installed the locked workspace (145 packages). |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1402, 1398 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+The merge keeps both web probe rules: a changed components decision drops the interaction pass,
+and a pass needs an audit probe and lineage. The audit and component fixtures now record the
+components decision before build, an audit probe and lineage.
+
+## Review Fix
+
+Codex review on PR #99 found that a motion or journey probe on a local page could load a `file:`
+outside the project: it shares the page's `file:` origin, so the per-probe origin check passed it
+and the gate's lineage left it out. Motion and journey probes now carry the project bound, so such a
+file fails the probe that requested it with `external-request` and the fix to copy it into the
+project (commits `75b8894` and `f60fbec`, which replace the first, run-level check of `343826f`). An
+audit probe also judges its whole request log, including loads while the viewport is restored, and
+the capture snapshots its run log before the browser closes. That implementation was tested as
+commit `f60fbecc413c4569f8e8fcf4b059f78ccc60bf19`, tree
+`125e4efcc997213a742a4643e383625f258e5f5b`.
+
+| Check | Result |
+| --- | --- |
+| Regression: a journey whose click appends a stylesheet from outside the project | With `interaction-core.cjs` from before the review (`cc97a72`), `verify interaction` exited 0 and recorded a passed gate. On the final tree it exits 2: the journey probe `load` fails with one `external-request` finding naming the file and the copy-into-the-project fix, and the gate records `failed` with no lineage. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1404, 1400 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Second Review Fix
+
+Codex's review of `c77d0b2` raised no new finding on that fix, and two P2 findings on the audit
+engine. `audit.control-gap` measured layout boxes while `audit.target-size` measured hit areas
+widened by an absolute `::before` or `::after`, so two overlapping widened targets passed both
+checks; and gap checks treated controls or stacked items that share neither axis as infinitely
+apart. Control spacing now measures hit areas, and gaps are edge to edge along the diagonal (commit
+`eb4d7ce`; `c901a79` extends the regression to a declared stack). The final tested implementation
+is commit `c901a796d6df8ba3431a1a5464240e8b594cf9dc`, tree
+`4207c64495e015827a78bcbae039014341a788cf`; later commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression: two 16px icons widened to 32px targets 8px apart by layout, two 24px buttons offset 2px on each axis, and two tiles of a declared grid stack offset 2px on each axis | With the previous engine, no `audit.control-gap` or `audit.layout-gap` finding. With the fix: control gaps `#icon-a` "overlapping it by 8px" and `#corner-a` "2.83px from it", and the stack gap `#tile-a` "2.83px from it"; `audit.target-size` stays clean. The violating, clean and undeclared fixtures keep their results. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1405, 1401 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 73 passed, 0 failed. |
+
+## Not Verified
+
+- No production page has been audited yet. The defaults (12px text floor, 24px targets, 8px gaps
+  and insets, WCAG 2 contrast) are proven on fixtures, not tuned against real product pages.
+- The `UC-` review checklist is applied by the agent at `review`; no command measures it.
+- The audit is Component Conformance evidence. It makes no Visual Acceptance claim; that remains
+  the owner's review.

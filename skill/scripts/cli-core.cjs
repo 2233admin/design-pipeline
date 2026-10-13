@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { fileURLToPath } = require("node:url");
 const { spawnSync } = require("node:child_process");
-const { cliCommand, shellPath } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, TOKEN_SOURCES } = require("./workflows/shared.cjs");
 const {
   advanceChange,
   clearStaleLock,
@@ -409,7 +409,7 @@ function publicHelp() {
     "    verify film-storyboard --storyboard <storyboard.json>",
     "    verify film-timeline --storyboard <storyboard.json> --timeline <timeline.json>",
     "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
-    "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>]",
+    "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>] [--project-root <dir>]   (motion, journey and audit probes; records the project's interaction gate)",
     "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     `  composition scaffold --output <new-dir> [--template ${scaffoldTemplates.join("|")}]`,
@@ -882,6 +882,11 @@ function preflightInteraction(root, options = {}) {
   if (fs.existsSync(resultFile) && !fs.statSync(resultFile).isFile()) fail("interaction capture", "output must be a file");
   const pageUrl = require("./interaction-capture-core.cjs").resolvePageUrl(probeFile, doc.url);
   const localPage = pageUrl.startsWith("file:") ? contained(root, fileURLToPath(pageUrl), "interaction page") : null;
+  // An audit binds what the page loaded, so it measures only a local page inside the project.
+  const project = options.project || root;
+  if (doc.probes.some(probe => probe.kind === "audit") && !(localPage && pathInside(project, localPage))) {
+    fail("interaction capture", `an audit probe measures a local page inside the project, and url ${JSON.stringify(doc.url)} is not a file inside ${project}. Fix: set "url" to the project's local index.html (for example "index.html") and keep the page's assets inside the project`, { code: "AUDIT_PAGE_NOT_LOCAL" });
+  }
   let targetFile = null;
   if (options.target !== undefined && options.target !== null) {
     if (!localPage) fail("interaction capture", "native verification requires the declared local output target", { code: "INTERACTION_TARGET_MISMATCH" });
@@ -898,7 +903,7 @@ function preflightInteraction(root, options = {}) {
       fail("interaction capture", `output would overwrite ${path.basename(file)}. Fix: use a separate report destination`, { code: "OUTPUT_COLLISION" });
     }
   }
-  return { doc, probeFile, pageUrl, localPage, targetFile, resultFile, protectedFiles };
+  return { doc, probeFile, pageUrl, localPage, targetFile, resultFile, protectedFiles, project };
 }
 
 function observeInteraction(root, options = {}) {
@@ -918,8 +923,28 @@ function observeInteraction(root, options = {}) {
   if (context.targetFile && !(actualLocalPage && sameFilePath(actualLocalPage, context.targetFile))) {
     fail("interaction capture", "captured page differs from the declared local output target", { code: "INTERACTION_TARGET_MISMATCH" });
   }
-  const result = evaluateProbeFile(context.doc, capture);
+  const result = evaluateProbeFile(context.doc, capture, { project: context.project });
   return { ...context, result, kernel };
+}
+
+// What the verified page depended on, read from the kernel's request log: the local files it
+// loaded inside the project (the gate hashes them), local files it asked for that did not exist
+// (their arrival reopens the gate), the project's design-token sources, and the remote URLs, which
+// are recorded but never fetched or hashed. A file outside the project never reaches a pass: the
+// probe whose log holds it fails with external-request, so it is not bound here.
+function interactionLineage(project, requests) {
+  const files = new Set(), absent = new Set(), remote = new Set();
+  for (const raw of Array.isArray(requests) ? requests : []) {
+    let url;
+    try { url = new URL(raw); } catch { continue; }
+    if (url.protocol !== "file:") { remote.add(url.href); continue; }
+    let file;
+    try { file = resolveInside(project, fileURLToPath(url), "loaded page file", { scope: "cli" }); } catch { continue; }
+    const rel = path.relative(project, file).split(path.sep).join("/");
+    if (rel) (fs.existsSync(file) && fs.statSync(file).isFile() ? files : absent).add(rel);
+  }
+  const tokens = TOKEN_SOURCES.filter(name => fs.existsSync(path.join(project, name)) && fs.statSync(path.join(project, name)).isFile());
+  return { files: [...files].sort(), tokens, absent: [...absent].sort(), remote: [...remote].sort() };
 }
 
 function filmCapture(parsed, root, composition, url) {
@@ -1010,15 +1035,18 @@ function verifyCommand(parsed, root, action) {
     // probe or an --output outside --root is a contract error the caller can fix without Chrome ever
     // being involved.
     const probeFile = artifact(parsed, root, "--probe");
+    // The workflow project whose gate this records: --project-root, else the probe file's directory.
+    const project = option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : path.dirname(probeFile);
+    if (!pathInside(project, probeFile)) fail("cli", "--probe must be inside --project-root. Fix: keep interaction.json in the project it verifies, or pass that project as --project-root", { code: "PATH_ESCAPE" });
     const outDir = contained(root, option(parsed, "--output", path.join(path.dirname(probeFile), "evidence")), "--output", false);
-    const { result, resultFile, localPage } = observeInteraction(root, {
-      probe: probeFile, resultFile: path.join(outDir, "interaction.json"),
-      protectedFiles: [path.join(path.dirname(probeFile), workflow.STATE)],
+    const { result, resultFile, localPage, kernel } = observeInteraction(root, {
+      probe: probeFile, resultFile: path.join(outDir, "interaction.json"), project,
+      protectedFiles: [...new Set([path.join(path.dirname(probeFile), workflow.STATE), path.join(project, workflow.STATE)])],
       chrome: option(parsed, "--chrome"), puppeteer: option(parsed, "--puppeteer-module"),
     });
     fs.mkdirSync(outDir, { recursive: true });
     fs.writeFileSync(resultFile, `${JSON.stringify(result, null, 2)}\n`);
-    workflow.recordGate(path.dirname(probeFile), "interaction", result.status, [probeFile, ...(localPage ? [localPage] : [])], result);
+    workflow.recordGate(project, "interaction", result.status, [probeFile, ...(localPage ? [localPage] : [])], result, interactionLineage(project, kernel.value.capture.requests));
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   fail("cli", `unknown verify action ${String(action)}`, { code: "UNKNOWN_COMMAND" });

@@ -32,6 +32,12 @@ test.after(() => { for (const dir of tmp.dirs) fs.rmSync(dir, { recursive: true,
 
 const touch = (dir, rel, body = "x") => { fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true }); fs.writeFileSync(path.join(dir, rel), body); };
 const writePlan = (dir, query) => touch(dir, "job-plan.json", canonicalJson(buildJobPlan(routeJob({ query }))));
+// Web probe files: a legacy one without the page audit, then one the probe stage accepts. A
+// recorded interaction pass binds the rendered-dependency lineage the real verifier records.
+const motionProbe = { id: "tap", target: "#cta", input: { kind: "click", at: [10, 10] }, expect: {} };
+const motionProbeFile = JSON.stringify({ schema: "design-pipeline.interaction-probe.v1", id: "page", url: "index.html", probes: [motionProbe] });
+const auditProbeFile = JSON.stringify({ schema: "design-pipeline.interaction-probe.v1", id: "page", url: "index.html", probes: [motionProbe, { id: "page-audit", kind: "audit", thresholds: { fonts: ["Inter"] } }] });
+const LINEAGE = { files: ["index.html"], tokens: [], absent: [], remote: [] };
 
 // Every string field an action offers as a command must be the runnable invocation; prose never
 // sits there. `then` and `first` are prose that may quote a command.
@@ -70,7 +76,12 @@ function walk(deliverable, tier, mode) {
       touch(dir, deliverable === "web" ? "index.html" : "out.mp4", "draft");
       if (deliverable === "web") touch(dir, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
     },
-    probe: () => (fs.existsSync(path.join(dir, "interaction.json")) ? recordGate(dir, "interaction", "passed", ["interaction.json", "index.html"]) : touch(dir, "interaction.json", "{}")),
+    probe: () => {
+      const file = path.join(dir, "interaction.json");
+      if (!fs.existsSync(file)) return touch(dir, "interaction.json", motionProbeFile);
+      if (fs.readFileSync(file, "utf8") === motionProbeFile) return touch(dir, "interaction.json", auditProbeFile);
+      return recordGate(dir, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
+    },
     check: () => (deliverable === "edit" ? recordGate(dir, "edit", "passed", ["edit.json", "edit/analysis.json", "renders/edit.mp4"]) : recordGate(dir, "film", "passed", ["storyboard.json", "out.mp4"])),
     review: () => decide(dir, { stage: "review", verdict: "accept" }),
     deliver: () => { if (deliverable !== "web") touch(dir, "final.mp4"); decide(dir, { stage: "deliver", answer: deliverable === "web" ? "https://example.test" : "final.mp4" }); },
@@ -147,7 +158,11 @@ test("edit and web stages return the command or the instruction, never prose as 
   touch(dir, "interaction.json", "{}");
   const webState = { deliverable: "web", tier: "full", mode: "brief", decisions: {}, gates: {}, rules: [] };
   for (const stage of web.stages(webState)) check(stage.action(webState, dir), `web+files ${stage.id}`, seen);
+  touch(dir, "interaction.json", auditProbeFile);
+  for (const stage of web.stages(webState)) check(stage.action(webState, dir), `web+audit ${stage.id}`, seen);
   assert.ok(seen.some((action) => action.type === "run" && action.command === undefined && /sources\//.test(action.instruction)));
+  assert.ok(seen.some((action) => action.type === "run" && action.command === undefined && /^Add an audit probe/.test(action.instruction)), "a probe file without an audit gets an instruction, not the verify command");
+  assert.ok(seen.some((action) => / verify interaction /.test(action.command ?? "")), "an audited probe file gets the verify command");
 });
 
 test("the command a product promo's source stage returns runs as given and reports the promo's next steps", () => {
@@ -274,7 +289,7 @@ test("project root binds all emitted workflow command and record routes includin
         } else {
           const workflow = { film, edit, web }[deliverable];
           for (const withFiles of [false, true]) {
-            if (withFiles) for (const name of ["concepts.md", "storyboard.json", "interaction.json", "sources/a.mp4", "out.mp4"]) touch(dir, name, "{}");
+            if (withFiles) for (const name of ["concepts.md", "storyboard.json", "interaction.json", "sources/a.mp4", "out.mp4"]) touch(dir, name, name === "interaction.json" ? auditProbeFile : "{}");
             for (const stage of workflow.stages(state)) assertBound(stage.action(state, dir));
           }
         }

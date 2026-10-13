@@ -9,6 +9,8 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const fs = require("node:fs");
 const path = require("node:path");
+const os = require("node:os");
+const { pathToFileURL } = require("node:url");
 const { HINTS, RESULT_SCHEMA, evaluateProbeFile, evaluateSamples, validateProbeFile, journeyResultFailure } = require("../skill/scripts/interaction-core.cjs");
 
 const FIXTURE = path.join(__dirname, "fixtures/interaction-samples.json");
@@ -401,6 +403,31 @@ test("journey origin completeness cannot hide off-origin requests while motion s
   const old = fixture(); delete old.capture.pageOrigin;
   old.capture.probes[0].requests.push("https://off-origin.invalid/script.js");
   assert.equal(evaluateProbeFile(old.document, old.capture).status, "passed", "legacy motion's missing-origin behavior is unchanged");
+});
+
+test("a motion or journey probe on a local page that loads a file outside the project fails with external-request", (t) => {
+  const tmp = (prefix) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+    return dir;
+  };
+  const project = tmp("interaction-project-");
+  const page = pathToFileURL(path.join(project, "index.html")).href;
+  const inside = pathToFileURL(path.join(project, "app.js")).href;
+  const outside = pathToFileURL(path.join(tmp("interaction-outside-"), "brand.js")).href;
+  const run = (requests) => {
+    const capture = menuCapture();
+    capture.probes[0].requests = requests;
+    return evaluateProbeFile(menuDocument(), capture, { project });
+  };
+  // The journey's own recording carries the project bound, so the outside file fails that probe.
+  const loaded = run([page, inside, outside]);
+  assert.equal(loaded.status, "failed");
+  assert.deepEqual(loaded.probes.map((probe) => probe.status), ["failed"]);
+  assert.deepEqual(loaded.findings.map((finding) => [finding.probeId, finding.code, finding.severity, finding.actual, finding.urls]), [["menu", "external-request", "error", outside, [outside]]]);
+  assert.match(loaded.findings[0].message, /^1 request went outside the project$/);
+  assert.match(loaded.findings[0].fix, /^Copy every listed resource into the project/);
+  assert.equal(run([page, inside]).status, "passed", "files inside the project, present or not, pass");
 });
 
 // A hover or tilt returns to rest, so its net travel is about zero. Overshoot is then the swing past

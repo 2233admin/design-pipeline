@@ -10,6 +10,7 @@ const path = require("node:path");
 const { fileURLToPath, pathToFileURL } = require("node:url");
 const { fail } = require("./contract-utils.cjs");
 const { resolveChrome, resolvePuppeteer } = require("./film-capture-core.cjs");
+const { auditOptions, auditPage } = require("./interaction-audit.cjs");
 
 const SCOPE = "interaction capture";
 const CAPTURE_SCHEMA = "design-pipeline.interaction-capture.v1";
@@ -205,7 +206,40 @@ async function recordJourney(page, probe, recordedRequests, mark, assertLocalTar
   return { id: probe.id, steps, requests: recordedRequests.slice(mark) };
 }
 
-async function recordProbe(page, probe, url, recordedRequests, timeoutMs) {
+// Runs in the page before an audit: the measurement waits for the page's fonts and for two
+// frames, so layout, font swaps and first-frame style changes have landed.
+async function settleForAudit() {
+  await document.fonts.ready;
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+// One fresh navigation per declared viewport at device scale 1, then the in-page audit. Each
+// viewport keeps the requests of its own load, and the probe's whole log also holds what the page
+// requested while the document viewport was restored for the probes that follow; the audit fails
+// any the gate cannot hash with the verifier's external-request finding.
+async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assertLocalTarget, restore) {
+  const mark = recordedRequests.length;
+  const options = auditOptions(probe);
+  const viewports = [];
+  try {
+    for (const viewport of probe.viewports) {
+      const viewportMark = recordedRequests.length;
+      await page.setViewport({ width: viewport.width, height: viewport.height, deviceScaleFactor: 1 });
+      await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
+      assertLocalTarget();
+      await page.evaluate(settleForAudit);
+      assertLocalTarget();
+      const result = await page.evaluate(auditPage, options);
+      assertLocalTarget();
+      viewports.push({ viewport: { width: viewport.width, height: viewport.height }, result, requests: recordedRequests.slice(viewportMark) });
+    }
+  } finally {
+    await page.setViewport(restore);
+  }
+  return { id: probe.id, kind: "audit", viewports, requests: recordedRequests.slice(mark) };
+}
+
+async function recordProbe(page, probe, url, recordedRequests, timeoutMs, viewport) {
   const mark = recordedRequests.length;
   const pageErrors = [];
   const onError = (error) => pageErrors.push(error.message);
@@ -218,6 +252,7 @@ async function recordProbe(page, probe, url, recordedRequests, timeoutMs) {
   };
   page.on("pageerror", onError);
   try {
+    if (probe.kind === "audit") return await recordAudit(page, probe, url, recordedRequests, timeoutMs, assertLocalTarget, viewport);
     // A reload per probe is the reset: fresh DOM, fresh listeners, and its own load requests.
     await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
     assertLocalTarget();
@@ -285,7 +320,8 @@ async function captureInteraction(probeFile, options = {}) {
   });
   try {
     const page = await browser.newPage();
-    await page.setViewport({ width: doc.viewport.width, height: doc.viewport.height });
+    const viewport = { width: doc.viewport.width, height: doc.viewport.height, deviceScaleFactor: 1 };
+    await page.setViewport(viewport);
     await page.bringToFront();
     const requests = [];
     // Listening before the first navigation is what makes the load requests observable at all.
@@ -293,8 +329,12 @@ async function captureInteraction(probeFile, options = {}) {
     // remote runtime resource the gate downstream exists to catch.
     page.on("request", (request) => { if (isNetworkUrl(request.url())) requests.push(request.url()); });
     const probes = [];
-    for (const probe of doc.probes) probes.push(await recordProbe(page, probe, url, requests, options.timeoutMs || 30000));
-    return { schema: CAPTURE_SCHEMA, url: url.startsWith("file:") ? page.url() : url, pageOrigin, probes };
+    for (const probe of doc.probes) probes.push(await recordProbe(page, probe, url, requests, options.timeoutMs || 30000, viewport));
+    // Every request of the run, in order: the gate binds the local files the page loaded. A probe's
+    // log runs from its start to its return, and the next probe starts before another request event
+    // can arrive (no await in between), so the probe logs cover this one. The snapshot keeps out
+    // requests made while the browser closes, which no probe saw.
+    return { schema: CAPTURE_SCHEMA, url: url.startsWith("file:") ? page.url() : url, pageOrigin, probes, requests: requests.slice() };
   } finally {
     await browser.close();
   }

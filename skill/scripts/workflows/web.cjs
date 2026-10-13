@@ -104,12 +104,27 @@ const BUILD = {
   },
 };
 
+// Whether interaction.json declares a page audit (`"kind": "audit"`); null when it is not readable
+// JSON, which the verify command reports with its own fix.
+function declaresAudit(root) {
+  try {
+    const doc = JSON.parse(fs.readFileSync(path.join(root, "interaction.json"), "utf8"));
+    return Array.isArray(doc?.probes) && doc.probes.some((probe) => probe?.kind === "audit");
+  } catch {
+    return null;
+  }
+}
+
+// Probe finishes only with a passed gate over a probe file that audits the page, at every tier.
 const PROBE = {
   id: "probe",
+  finished: (_state, root) => declaresAudit(root) === true,
   gate: { name: "interaction", inputs: () => ["interaction.json", "index.html"] },
-  action: (state, root) => (exists(root, "interaction.json")
-    ? { type: "run", command: `${cliCommand()} verify interaction --root ${shellPath(path.resolve(root))} --probe interaction.json`, why: "Apply each finding's fix, then run next again." }
-    : { type: "run", instruction: "Write interaction.json: one probe per key interaction (schema in references/workflow-web.md)", why: "Every key interaction is verified against the real page, not eyeballed." }),
+  action: (_state, root) => {
+    if (!exists(root, "interaction.json")) return { type: "run", instruction: "Write interaction.json: one probe per key interaction plus one audit probe (\"kind\": \"audit\") that measures the local index.html at a desktop and a mobile viewport, with thresholds copied from DESIGN.md, the font families required (schema in references/workflow-web.md#probe)", why: "Every key interaction and the page's measurable craft are verified against the real page, not eyeballed." };
+    if (declaresAudit(root) === false) return { type: "run", instruction: "Add an audit probe to interaction.json: one probes entry with \"kind\": \"audit\", a desktop and a mobile viewport, thresholds copied from DESIGN.md with the required font families, and the selectors to declare (references/workflow-web.md#probe); then run next again", why: "The probe stage passes only with a page audit at every tier; without one the verify command cannot finish this stage." };
+    return { type: "run", command: `${cliCommand()} verify interaction --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --probe interaction.json`, why: "Apply each finding's fix, then run next again." };
+  },
 };
 
 const DELIVER = {

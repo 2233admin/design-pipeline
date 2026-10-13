@@ -5,7 +5,8 @@
 // real browser) says what it did. `evaluateSamples` joins the two and is deliberately pure -- no
 // filesystem, no browser, no clock -- so every threshold below is testable without Chrome.
 
-const { assertEnum, assertKeys, assertObject, assertString, fail } = require("./contract-utils.cjs");
+const { assertEnum, assertKeys, assertObject, assertString, fail, isObject } = require("./contract-utils.cjs");
+const { AUDIT_CODES, EXTERNAL_FIX, OPTIONAL_CODES, auditViewports, bindable, summarizeAudit, validateAuditProbe } = require("./interaction-audit.cjs");
 
 const SCHEMA = "design-pipeline.interaction-probe.v1";
 const RESULT_SCHEMA = "design-pipeline.interaction-result.v1";
@@ -41,6 +42,10 @@ const ASSERTION_KINDS = ["visible", "text", "attribute", "focused"];
 const MAX_JOURNEY_ROWS = 16;
 const DEFAULT_STEP_MS = 1000;
 const MAX_JOURNEY_MS = 15000;
+// An audit check passes when it measured and passed or had nothing in scope. An optional check
+// left `not-declared` neither passes nor fails; a required check is never `not-declared`.
+const AUDIT_PASSING = ["passed", "not-applicable"];
+const auditCheckSettled = (check) => AUDIT_PASSING.includes(check?.status) || (check?.status === "not-declared" && OPTIONAL_CODES.includes(check.code));
 
 // One concrete repair per finding, in the shape film-hints.cjs uses: the agent reading a gate
 // result should know what to change without opening the reference first.
@@ -204,6 +209,14 @@ function validateProbeFile(doc) {
   const ids = new Set();
   const probes = doc.probes.map((probe, index) => {
     const label = `probes[${index}]`;
+    // An audit probe names its kind; motion and journey probes keep their key-shaped contracts.
+    if (isObject(probe) && Object.hasOwn(probe, "kind")) {
+      const errors = validateAuditProbe(probe, { label });
+      if (errors.length) fail(SCOPE, errors.join("; "));
+      if (ids.has(probe.id)) fail(SCOPE, `${label} duplicates probe id ${probe.id}`);
+      ids.add(probe.id);
+      return { ...probe, viewports: auditViewports(probe, viewport) };
+    }
     const journey = Object.hasOwn(probe, "steps");
     const keys = journey ? ["id", "target", "steps"] : ["id", "target", "input", "expect"];
     assertKeys(probe, keys, keys, label, SCOPE);
@@ -296,8 +309,10 @@ function hasSpeedPeak(steps) {
 
 // `data:`, `blob:` and `about:` are not network fetches from another origin, so they never count as
 // external. Everything else is compared by origin, favicons included: a favicon pulled from another
-// origin is exactly the remote runtime dependency this gate exists to catch.
-function externalUrls(requests, pageOrigin) {
+// origin is exactly the remote runtime dependency this gate exists to catch. On a local page whose
+// project is known, `insideProject` also makes a `file:` outside the project external: it shares the
+// page's origin, but the gate can neither hash it nor see it change.
+function externalUrls(requests, pageOrigin, insideProject = null) {
   if (!pageOrigin || !Array.isArray(requests)) return [];
   const seen = new Set();
   const external = [];
@@ -311,7 +326,7 @@ function externalUrls(requests, pageOrigin) {
     } catch {
       origin = null;
     }
-    const outside = pageOrigin === "file:" ? !/^file:/i.test(url) : origin !== pageOrigin;
+    const outside = pageOrigin === "file:" ? !/^file:/i.test(url) || (insideProject !== null && !insideProject(url)) : origin !== pageOrigin;
     if (!outside || seen.has(url)) continue;
     seen.add(url);
     external.push(url);
@@ -319,9 +334,18 @@ function externalUrls(requests, pageOrigin) {
   return external;
 }
 
-// Pure: one normalized probe (optionally carrying `pageOrigin` from the capture), the frames the
-// recorder produced, and the request URLs the page made. No I/O, so the gate's arithmetic can be
-// unit-tested with synthetic recordings.
+// One external-request finding for a probe's own requests. On a local page bounded by its project
+// the remedy is to copy the file in, since an outside file already shares the page's origin.
+// `actual` repeats the URLs because the gate record keeps a finding's string fields only.
+function externalFinding(external, pageOrigin, bounded) {
+  const urls = external.slice(0, MAX_LISTED_URLS);
+  return { code: "external-request", severity: "error", message: `${external.length} request${external.length === 1 ? "" : "s"} went outside ${bounded ? "the project" : `the page origin ${pageOrigin}`}`, fix: bounded ? EXTERNAL_FIX : HINTS["external-request"], actual: urls.join(", "), urls };
+}
+
+// Pure: one normalized probe (optionally carrying `pageOrigin` from the capture and `insideProject`,
+// the project bound for its `file:` requests), the frames the recorder produced, and the request
+// URLs the page made. No I/O of its own, so the gate's arithmetic can be unit-tested with synthetic
+// recordings.
 function evaluateSamples(probe, samples, requests = []) {
   assertObject(probe, "probe", SCOPE);
   const expectation = probe.expect ?? {};
@@ -445,10 +469,8 @@ function evaluateSamples(probe, samples, requests = []) {
   if (opacityDeltaMax > OPACITY_EPS && !boxChanged && !transformChanged) {
     add("opacity-only", "error", `only opacity responded (by ${opacityDeltaMax.toFixed(3)}); the box stayed within ${MOVE_EPS_PX} px and the computed transform never changed`);
   }
-  const external = externalUrls(requests, probe.pageOrigin);
-  if (external.length) {
-    add("external-request", "error", `${external.length} request${external.length === 1 ? "" : "s"} went outside the page origin ${probe.pageOrigin}`, { urls: external.slice(0, MAX_LISTED_URLS) });
-  }
+  const external = externalUrls(requests, probe.pageOrigin, probe.insideProject ?? null);
+  if (external.length) findings.push(externalFinding(external, probe.pageOrigin, Boolean(probe.insideProject)));
 
   return {
     id: probe.id,
@@ -474,7 +496,7 @@ function compareObservation(assertion, observation, label) {
   return observation.actual === assertion.equals;
 }
 
-function evaluateJourney(probe, shot, pageOrigin) {
+function evaluateJourney(probe, shot, pageOrigin, insideProject = null) {
   assertKeys(shot, ["id", "steps", "requests"], ["id", "steps", "requests"], `capture ${probe.id}`, SCOPE);
   if (shot.id !== probe.id || !Array.isArray(shot.steps) || shot.steps.length !== probe.steps.length) fail(SCOPE, `capture ${probe.id} has incomplete journey steps`);
   if (!Array.isArray(shot.requests) || shot.requests.some(url => typeof url !== "string")) fail(SCOPE, `capture ${probe.id}.requests must be recorded URL strings`);
@@ -496,8 +518,8 @@ function evaluateJourney(probe, shot, pageOrigin) {
     return { id: step.id, status: findings.length ? "failed" : "passed", elapsedMs: recorded.elapsedMs, assertions, findings };
   });
   const findings = steps.flatMap(step => step.findings.map(finding => ({ stepId: step.id, ...finding })));
-  const external = externalUrls(shot.requests, pageOrigin);
-  if (external.length) findings.push({ code: "external-request", severity: "error", message: `${external.length} requests went outside the page origin ${pageOrigin}`, fix: HINTS["external-request"], urls: external.slice(0, MAX_LISTED_URLS) });
+  const external = externalUrls(shot.requests, pageOrigin, insideProject);
+  if (external.length) findings.push(externalFinding(external, pageOrigin, Boolean(insideProject)));
   return { id: probe.id, status: findings.length ? "failed" : "passed", steps, findings };
 }
 
@@ -522,7 +544,39 @@ function journeyResultFailure(probe, row) {
   } catch (error) { return error.message; }
 }
 
-function evaluateProbeFile(doc, capture) {
+// Native completion re-reads the audit row against the normalized declaration: every declared
+// viewport, every check, each one passed, not applicable or (optional only) not declared. The
+// row's own status is never trusted alone.
+function auditResultFailure(probe, row) {
+  const label = `Interaction audit ${probe.id}`;
+  if (!isObject(row) || row.id !== probe.id || row.kind !== "audit" || row.status !== "passed" || !Array.isArray(row.findings) || row.findings.some(finding => finding?.severity === "error") || !Array.isArray(row.coverage) || row.coverage.length !== probe.viewports.length) return `${label} is failed or incomplete.`;
+  for (const [index, viewport] of probe.viewports.entries()) {
+    const entry = row.coverage[index];
+    const checks = Array.isArray(entry?.checks) ? entry.checks : [];
+    if (entry?.viewport?.width !== viewport.width || entry?.viewport?.height !== viewport.height || checks.map(check => check?.code).join() !== AUDIT_CODES.join()
+      || checks.some(check => !auditCheckSettled(check) || !Number.isInteger(check.checked) || check.checked < 0 || (check.status === "passed" && check.checked === 0) || (check.status === "not-declared" && check.checked !== 0))) {
+      return `${label} at ${viewport.width}x${viewport.height} does not cover every audit check with a passing status.`;
+    }
+  }
+  return null;
+}
+
+// One audit row per probe: the page measured at every declared viewport, summarized into a
+// status per check per viewport. A selector the page itself rejects is a probe-contract error.
+function evaluateAudit(probe, shot, project) {
+  assertKeys(shot, ["id", "kind", "viewports", "requests"], ["id", "kind", "viewports", "requests"], `capture ${probe.id}`, SCOPE);
+  if (shot.kind !== "audit" || !Array.isArray(shot.viewports) || shot.viewports.length !== probe.viewports.length) fail(SCOPE, `capture ${probe.id} has incomplete audit viewports`);
+  probe.viewports.forEach((viewport, index) => {
+    const recorded = shot.viewports[index]?.viewport;
+    if (recorded?.width !== viewport.width || recorded?.height !== viewport.height) fail(SCOPE, `capture ${probe.id} audit viewport ${index} is missing or reordered`);
+  });
+  const summary = summarizeAudit(probe.id, shot.viewports, project, shot.requests);
+  if (summary.contractErrors.length) fail(SCOPE, `probe ${probe.id}: ${summary.contractErrors.join("; ")}. Fix: correct the selector in the audit probe, then rerun`, { code: "AUDIT_SELECTOR_INVALID" });
+  return { id: probe.id, kind: "audit", status: summary.status, coverage: summary.coverage, findings: summary.findings };
+}
+
+// `options.project` is the project root a local page may load files from.
+function evaluateProbeFile(doc, capture, options = {}) {
   const normalized = validateProbeFile(doc);
   assertObject(capture, "capture", SCOPE);
   if (!Array.isArray(capture.probes)) fail(SCOPE, "capture.probes must be an array");
@@ -543,11 +597,13 @@ function evaluateProbeFile(doc, capture) {
   for (const entry of capture.probes) {
     if (entry !== null && typeof entry === "object" && typeof entry.id === "string") recorded.set(entry.id, entry);
   }
+  const insideProject = options.project && capture.pageOrigin === "file:" ? (url) => bindable(url, options.project) : null;
   const probes = normalized.probes.map((probe) => {
     const shot = recorded.get(probe.id);
     if (!shot) fail(SCOPE, `capture is missing probe ${probe.id}`);
-    if (probe.steps) return evaluateJourney(probe, shot, capture.pageOrigin);
-    const result = evaluateSamples({ ...probe, pageOrigin: capture.pageOrigin }, shot.samples, shot.requests ?? []);
+    if (probe.steps) return evaluateJourney(probe, shot, capture.pageOrigin, insideProject);
+    if (probe.kind === "audit") return evaluateAudit(probe, shot, options.project);
+    const result = evaluateSamples({ ...probe, pageOrigin: capture.pageOrigin, insideProject }, shot.samples, shot.requests ?? []);
     const samples = shot.samples;
     return {
       id: result.id,
@@ -567,4 +623,4 @@ function evaluateProbeFile(doc, capture) {
   };
 }
 
-module.exports = { SCHEMA, RESULT_SCHEMA, HINTS, validateProbeFile, evaluateSamples, evaluateProbeFile, journeyResultFailure };
+module.exports = { SCHEMA, RESULT_SCHEMA, HINTS, validateProbeFile, evaluateSamples, evaluateProbeFile, journeyResultFailure, auditResultFailure };

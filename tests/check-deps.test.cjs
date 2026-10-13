@@ -80,6 +80,22 @@ test("reports INFO when the optional Anime.js skill is absent", () => {
   }
 });
 
+test("a clean packaged pipeline never reports bundled emil-design-eng as a missing companion", () => {
+  const root = makeRoot();
+  try {
+    installPipeline(root);
+    const report = runCheck([root]);
+    const core = report.groups.find((item) => item.name === "Core pipeline");
+
+    assert.equal(core.status, "OK");
+    for (const group of report.groups) {
+      assert.equal((group.missing || []).includes("emil-design-eng"), false, group.name);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("fails when an installed core pipeline resource is missing", () => {
   const root = makeRoot();
   try {
