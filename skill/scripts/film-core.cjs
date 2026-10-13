@@ -640,7 +640,7 @@ function structureCut(steps, atSec, fps) {
     if (Math.abs(step.atSec - atSec) > 1 / fps + 0.001 || step.change === null) continue;
     const before = steps[k - 1];
     if (!before || before.change === null || step.atSec - before.atSec > 1.5 / fps) continue;
-    if (step.change >= STRUCTURE_CUT_MIN && step.change >= REPLACEMENT_RATIO * before.change) {
+    if (step.change > STRUCTURE_CUT_MIN && step.change < 1 + Math.SQRT1_2 && step.change >= REPLACEMENT_RATIO * before.change) {
       return { atSec: step.atSec, change: Number(step.change.toFixed(4)), before: Number(before.change.toFixed(4)) };
     }
   }
