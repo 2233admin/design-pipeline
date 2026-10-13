@@ -124,7 +124,7 @@ test("returned component decision and index commands work from outside the proje
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-components-"));
   t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
   const answer = "Project components first, then search the index";
-  const record = nextAction(root).record.replace("<project|github|index|scratch, comma-separated>", "project,index").replace('"<the user\'s reply>"', JSON.stringify(answer));
+  const record = nextAction(root).record.replace("<project|github|index|discover|scratch, comma-separated>", "project,index").replace('"<the user\'s reply>"', JSON.stringify(answer));
   const decided = spawnSync(record, { cwd: outside, shell: true, encoding: "utf8", windowsHide: true });
   assert.equal(decided.status, 0, decided.stdout + decided.stderr);
   assert.equal(readState(root).decisions.components, answer);
@@ -366,8 +366,8 @@ test("round3 regression: legacy answer-only decisions ask components again", t =
   const action = nextAction(root);
   assert.equal(action.stage, "components");
   assert.equal(action.type, "ask");
-  assert.equal(action.options.length, 4);
-  assert.match(action.record, /--choice <project\|github\|index\|scratch, comma-separated>/);
+  assert.equal(action.options.length, 5);
+  assert.match(action.record, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
   assert.match(JSON.stringify(action), /https:\/\/github\.com\/<owner>\/<repo>/);
 });
 
