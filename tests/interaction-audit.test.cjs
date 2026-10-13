@@ -329,19 +329,22 @@ test("aria-hidden text, clipped screen-reader text and content parked off screen
   assert.deepEqual(selectors("audit.viewport-bounds"), ["#nudged"]);
 });
 
-test("control spacing measures the hit areas target-size counts and diagonal neighbours", { skip: tools.skip }, async (t) => {
+test("spacing measures the hit areas target-size counts and diagonal neighbours of controls and stacks", { skip: tools.skip }, async (t) => {
   // 16px icons whose ::after widens the target to 32px sit 8px apart by layout, but their targets
-  // overlap by 8px; two 24px buttons offset 2px on each axis are 2.83px apart along the diagonal.
+  // overlap by 8px; two 24px buttons, and two tiles of a declared grid stack, offset 2px on each
+  // axis are 2.83px apart along the diagonal.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
-<style>button{padding:0;border:0;background:#1d4ed8}.hit::after{content:"";position:absolute;top:-8px;right:-8px;bottom:-8px;left:-8px}</style>
+<style>button{padding:0;border:0;background:#1d4ed8}.hit::after{content:"";position:absolute;top:-8px;right:-8px;bottom:-8px;left:-8px}#tiles{display:grid;grid-template-columns:24px 24px;grid-template-rows:24px 24px;gap:2px}#tiles span{background:#e4e4e7;font-size:16px;line-height:24px}</style>
 </head><body style="margin:0;padding:32px">
 <div style="position:relative;height:48px"><button id="icon-a" class="hit" aria-label="Back" style="position:absolute;left:8px;top:8px;width:16px;height:16px"></button><button id="icon-b" class="hit" aria-label="Next" style="position:absolute;left:32px;top:8px;width:16px;height:16px"></button></div>
 <div style="position:relative;height:64px"><button id="corner-a" aria-label="Up" style="position:absolute;left:0;top:0;width:24px;height:24px"></button><button id="corner-b" aria-label="Down" style="position:absolute;left:26px;top:26px;width:24px;height:24px"></button></div>
+<div id="tiles"><span id="tile-a" style="grid-area:1/1">A</span><span id="tile-b" style="grid-area:2/2">B</span></div>
 </body></html>`;
-  const probe = { id: "spacing", kind: "audit", thresholds: { fonts: ["sans-serif"] } };
+  const probe = { id: "spacing", kind: "audit", thresholds: { fonts: ["sans-serif"] }, declare: { stacks: ["#tiles"] } };
   const result = await measure(t, "spacing", [probe], { html });
-  const gaps = result.findings.filter((finding) => finding.code === "audit.control-gap").map((finding) => [finding.selector, finding.actual]);
-  assert.deepEqual(gaps, [["#icon-a", "overlapping it by 8px"], ["#corner-a", "2.83px from it"]]);
+  const gaps = (code) => result.findings.filter((finding) => finding.code === code).map((finding) => [finding.selector, finding.actual]);
+  assert.deepEqual(gaps("audit.control-gap"), [["#icon-a", "overlapping it by 8px"], ["#corner-a", "2.83px from it"]]);
+  assert.deepEqual(gaps("audit.layout-gap"), [["#tile-a", "2.83px from it"]]);
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), [], "the widened icons meet the 24px floor");
 });
 
