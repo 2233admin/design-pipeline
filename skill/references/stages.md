@@ -814,7 +814,8 @@ search explicitly uses `references/component-source-catalog.json`; search it fir
 returned sources only on demand. With `discover`, a GitHub repository found beyond the index records
 its `https://github.com/<owner>/<repo>` url, pinned `revision`, https `license.evidence` including
 one on that repository at the revision and, when known, its SPDX `license.id`. A chosen font follows
-[tools/fonts.md](../tools/fonts.md); discovered code and fonts are bundled or self-hosted with their
+[tools/fonts.md](../tools/fonts.md) and is recorded under Typography in `DESIGN.md`, which the audit
+probe's `thresholds.fonts` reads; discovered code and fonts are bundled or self-hosted with their
 notices. Unverified/commercial sources may only be studied and reimplemented, never copied or
 imported; copying or importing a discovered source also requires a verified permissive license and
 a contained, non-empty `license.file` holding its license text. Verified imports/copies document

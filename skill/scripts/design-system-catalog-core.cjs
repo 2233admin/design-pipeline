@@ -120,13 +120,16 @@ function manifestFile(root, value, label) {
   return realFile;
 }
 
+// First path segments on github.com that are GitHub pages, not repository owners.
+const GITHUB_NON_OWNERS = new Set(["topics", "orgs", "sponsors", "marketplace", "settings", "features", "collections", "explore", "enterprise", "login", "apps", "users", "search"]);
+
 function githubRepository(value) {
   if (typeof value !== "string") return null;
   try {
     const url = new URL(value);
     if (url.protocol !== "https:" || url.hostname.toLowerCase() !== "github.com" || url.port || url.username || url.password || url.search || url.hash) return null;
     const match = url.pathname.match(/^\/([a-z0-9_.-]+)\/([a-z0-9_.-]+)\/?$/i);
-    if (!match) return null;
+    if (!match || GITHUB_NON_OWNERS.has(match[1].toLowerCase())) return null;
     return (match[1] + "/" + match[2].replace(/\.git$/i, "")).toLowerCase();
   } catch { return null; }
 }
@@ -154,7 +157,7 @@ function githubRepositoryIn(value) {
   const url = httpsUrl(value);
   if (!url || url.hostname.toLowerCase() !== "github.com" || url.port) return null;
   const match = url.pathname.match(/^\/([a-z0-9_.-]+)\/([a-z0-9_.-]+)(?:\/|$)/i);
-  return match ? (match[1] + "/" + match[2].replace(/\.git$/i, "")).toLowerCase() : null;
+  return match && !GITHUB_NON_OWNERS.has(match[1].toLowerCase()) ? (match[1] + "/" + match[2].replace(/\.git$/i, "")).toLowerCase() : null;
 }
 
 // Indexed sourceIds whose recorded URLs or aliases point into this GitHub repository.
@@ -164,13 +167,22 @@ function indexedSourcesIn(records, repository) {
     .map(record => record.sourceId))].sort();
 }
 
-// Whether an evidence URL lies in the repository and names the revision as whole path segments,
-// as in https://github.com/<owner>/<repo>/blob/<revision>/LICENSE.
-function evidenceAtRevision(value, repository, revision) {
-  if (githubRepositoryIn(value) !== repository) return false;
-  let rest;
-  try { rest = decodeURIComponent(new URL(value).pathname).split("/").slice(3).join("/"); } catch { return false; }
-  return ("/" + rest + "/").includes("/" + revision + "/");
+// Moving refs that never pin the checked license.
+const MOVING_REVISIONS = new Set(["head", "main", "master"]);
+
+// The git ref an evidence URL on the repository points at: the raw (undecoded) path segment right
+// after blob, tree, raw, commit, releases/tag or archive, as in
+// https://github.com/<owner>/<repo>/blob/<revision>/LICENSE. An encoded slash stays inside one segment.
+function evidenceRef(value, repository) {
+  if (githubRepositoryIn(value) !== repository) return null;
+  const segments = new URL(value).pathname.split("/").slice(3);
+  if (["blob", "tree", "raw", "commit"].includes(segments[0])) return segments[1] || null;
+  if (segments[0] === "releases" && segments[1] === "tag") return segments[2] || null;
+  if (segments[0] === "archive") {
+    const ref = segments[1] === "refs" && segments[2] === "tags" ? segments[3] : segments[1];
+    return ref?.replace(/\.(?:zip|tar\.gz)$/, "") || null;
+  }
+  return null;
 }
 
 function validateComponentManifest(manifest, { root, decision, componentSources } = {}) {
@@ -248,15 +260,17 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
     let permissive = false;
     if (discovered) {
       const repository = githubRepository(entry.url);
+      if (!["bundled-implementation", "reference-link", "metadata-only"].includes(entry.availability)) manifestInvalid(label + " discovered sources use availability bundled-implementation, reference-link or metadata-only");
       if (!["verified", "unverified", "commercial"].includes(entry.license.state)) manifestInvalid(label + " discovered sources use license.state verified, unverified or commercial, not project-owned or platform");
       if (!nonempty(entry.revision)) manifestInvalid(label + ".revision must pin the commit SHA or tag whose license was checked");
+      const revision = entry.revision.trim();
+      if (MOVING_REVISIONS.has(revision.toLowerCase())) manifestInvalid(label + ".revision must pin a commit SHA or tag, not the moving ref " + revision);
       if (entry.license.id !== undefined && !nonempty(entry.license.id)) manifestInvalid(label + ".license.id, when given, must be the SPDX license expression at that revision");
       if (!Array.isArray(entry.license.evidence) || !entry.license.evidence.length || !entry.license.evidence.every(httpsUrl)) {
         manifestInvalid(label + ".license.evidence must be a non-empty array of https URLs to the license text at that revision");
       }
-      const revision = entry.revision.trim();
-      if (!entry.license.evidence.some(value => evidenceAtRevision(value, repository, revision))) {
-        manifestInvalid(label + ".license.evidence must include a URL on https://github.com/" + repository + " that contains the revision " + revision
+      if (!entry.license.evidence.some(value => evidenceRef(value, repository) === revision)) {
+        manifestInvalid(label + ".license.evidence must include a URL on https://github.com/" + repository + " whose blob, tree, raw, commit, releases/tag or archive ref is the revision " + revision
           + ", for example https://github.com/" + repository + "/blob/" + revision + "/LICENSE");
       }
       // The project keeps its own copy of the license text; its content is not inspected.
@@ -273,7 +287,7 @@ function validateComponentManifest(manifest, { root, decision, componentSources 
       if (!isObject(use) || !nonempty(use.how) || !nonempty(use.marker)) manifestInvalid(useLabel + " requires how and marker");
       const file = manifestFile(root, use.file, useLabel + ".file");
       if (!fs.readFileSync(file, "utf8").includes(use.marker)) manifestInvalid(useLabel + ".marker must actually appear in its file");
-      const copied = /\b(?:copy|copied|copying|paste|pasted|vendored)\b|复制|拷贝|粘贴/i.test(use.how);
+      const copied = /\b(?:copy|copied|copying|paste|pasted|vendor|vendored|vendoring|bundle|bundled|bundling|self-host|self-hosted|self-hosting|download|downloaded|downloading)\b|复制|拷贝|粘贴|打包|自托管|下载/i.test(use.how);
       const imported = /\b(?:import|imported|importing|require|install|installed)\b|导入|引入|安装/i.test(use.how);
       const studied = /\b(?:study|studied|reimplement|reimplemented|reimplementation)\b|研究|学习|重写|重新实现/i.test(use.how);
       if (discovered && (copied || imported)) {

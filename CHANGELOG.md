@@ -108,16 +108,21 @@ All notable changes to Design Pipeline are documented here.
   `let-agents-discover-open-source-resources`). The ask offers it and recommends
   `project,index,discover`; the stored order is `project,github,index,discover,scratch` and
   `scratch` stays exclusive. A manifest entry citing `https://github.com/<owner>/<repo>` that is
-  neither named in the decision nor indexed is a discovered source: it needs `discover`, a pinned
-  `revision` (commit SHA or tag) and https `license.evidence` including a URL on that repository
-  that contains the revision. It may be copied or imported only when verified under an SPDX
+  neither named in the decision nor indexed is a discovered source (GitHub pages such as
+  `topics/<name>` or `orgs/<name>` are not repositories): it needs `discover`, availability
+  `bundled-implementation`, `reference-link` or `metadata-only`, a pinned `revision` (commit SHA
+  or tag, not `HEAD`, `main` or `master`) and https `license.evidence` including a URL on that
+  repository whose `blob`, `tree`, `raw`, `commit`, `releases/tag` or `archive` ref is the
+  revision. It may be copied or imported only when verified under an SPDX
   `license.id` of MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Zlib, Unlicense or CC0-1.0
   with a contained, non-empty `license.file` holding the license text; anything else is
-  study/reimplementation only. The validator checks this auditable shape offline and does not
+  study/reimplementation only. A `usedIn.how` that bundles, vendors, self-hosts or downloads any
+  source counts as copying. The validator checks this auditable shape offline and does not
   authenticate the upstream. Other URLs do not resolve, and URLs of indexed sources are still
   cited by their `sourceId`. Web build instructions search the index first, route font choice
-  through `tools/fonts.md` without a silent system-stack fallback, and keep discovered code and
-  fonts bundled or self-hosted with their notices.
+  through `tools/fonts.md` without a silent system-stack fallback, record the chosen family under
+  Typography in `DESIGN.md` (which the audit probe's `thresholds.fonts` reads), and keep
+  discovered code and fonts bundled or self-hosted with their notices.
 - A single component-source discovery index extends the existing v1 catalog with canonical source
   identities, availability, package pointers and auditable license evidence. External registries
   reference the index without moving their execution contracts; the MengTo projection now follows

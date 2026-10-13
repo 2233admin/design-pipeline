@@ -137,9 +137,11 @@ before using it. Prefer genuinely reusing a fitting source over hand-writing an 
 `discover`, stay within the selected sources.
 
 Choose fonts through `tools/fonts.md`; do not silently fall back to the system stack unless the
-treatment (in quick and replicate builds, the page's direction) deliberately calls for it. Bundle
-or self-host discovered code and fonts inside the project and keep their license notices: the page
-loads no CDN scripts or remote fonts at runtime (`web-motion.md#self-contained-pages`).
+treatment (in quick and replicate builds, the page's direction) deliberately calls for it. Record
+the chosen family under Typography in `DESIGN.md`, where the audit probe's `thresholds.fonts`
+reads the approved families ([probe](#probe)). Bundle or self-host discovered code and fonts
+inside the project and keep their license notices: the page loads no CDN scripts or remote fonts
+at runtime (`web-motion.md#self-contained-pages`).
 
 Before writing `index.html`, write project-local `component-manifest.json`. Its `entries` array
 records every component source used. The existing catalog core's
@@ -203,10 +205,14 @@ For each entry:
   An indexed source's license state matches the index, including when identified by its named
   GitHub repository URL. Project files use project-owned availability and license state.
 - Any other `https://github.com/<owner>/<repo>` URL (neither named in the decision nor indexed) is a
-  discovered source. It needs a `revision` (the commit SHA or tag you checked), `license.evidence`
-  (a non-empty array of https URLs, at least one on the same repository and containing the revision
-  as a path segment, such as `https://github.com/<owner>/<repo>/blob/<revision>/LICENSE`) and
-  `license.state` `verified`, `unverified` or `commercial`, never `project-owned` or `platform`.
+  discovered source; GitHub pages such as `topics`, `orgs`, `sponsors` or `marketplace` are not
+  repositories. It needs availability `bundled-implementation`, `reference-link` or
+  `metadata-only`, a `revision` (the commit SHA or tag you checked, never `HEAD`, `main` or
+  `master`), `license.evidence` (a non-empty array of https URLs, at least one on the same
+  repository whose `blob`, `tree`, `raw`, `commit`, `releases/tag` or `archive` ref is exactly the
+  revision, such as `https://github.com/<owner>/<repo>/blob/<revision>/LICENSE`; the URL path is
+  compared undecoded) and `license.state` `verified`, `unverified` or `commercial`, never
+  `project-owned` or `platform`.
   Record `license.id`, the SPDX expression at that revision, whenever you know it; copying or
   importing requires it (below). Validation checks this auditable shape offline; it does not fetch
   the evidence or authenticate the upstream repository, revision or license.
@@ -220,7 +226,8 @@ For each entry:
   that file, and a nonempty `how`. Choose a real import path, class name, custom element name or
   component identifier as the marker, not a fabricated usage description.
 - `how` describes use. Unverified/commercial sources allow only study/reimplementation, never
-  copying or importing; availability does not grant permission. For example:
+  copying or importing; availability does not grant permission. A `how` that bundles, vendors,
+  self-hosts or downloads the source counts as copying. For example:
   `Study and reimplement the Navigation interaction independently`.
 - For verified imports/copies, `how` explicitly records attribution/license-notice handling,
   for example `Import Navigation; retain upstream copyright/license notices in LICENSES.md`.

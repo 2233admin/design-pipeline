@@ -665,7 +665,9 @@ test("discovery: build instruction searches the index first, routes discovery to
   assert.match(instruction, new RegExp(PERMISSIVE.slice(0, -1).join(", ").replace(/[.-]/g, "\\$&") + ",? or CC0-1\\.0"));
   assert.doesNotMatch(instruction, /OFL|npm|official project page|\bkind\b|font-family/);
   assert.match(instruction, /tools\/fonts\.md/);
-  assert.match(instruction, /rather than silently defaulting to the system stack; use the system stack only when the page's direction deliberately calls for it/);
+  assert.match(instruction, /rather than silently defaulting to the system stack, and record the chosen family under Typography in DESIGN\.md, where the audit probe's thresholds\.fonts reads the approved families; use the system stack only when the page's direction deliberately calls for it/);
+  assert.match(instruction, /not HEAD, main or master/);
+  assert.match(instruction, /bundles, vendors, self-hosts or downloads the source counts as copying/);
   assert.match(instruction, /self-host/);
   assert.match(instruction, /references\/web-motion\.md#self-contained-pages/);
   assert.match(instruction, /permits empty or project-owned-only entries; every other source set forbids fromScratch: true and requires non-empty entries/);
@@ -743,13 +745,19 @@ test("discovery: a discovered url must be a GitHub repository URL", t => {
 test("discovery: license evidence must include the repository's license at the pinned revision", t => {
   const root = discoveryFixture(t);
   const answer = "Find maintained open-source icons";
-  const rule = /entries\[0\]\.license\.evidence must include a URL on https:\/\/github\.com\/phosphor-icons\/core that contains the revision v2\.1\.1/;
+  const rule = /entries\[0\]\.license\.evidence must include a URL on https:\/\/github\.com\/phosphor-icons\/core whose blob, tree, raw, commit, releases\/tag or archive ref is the revision v2\.1\.1/;
   for (const evidence of [
     ["https://github.com/phosphor-icons/core/blob/main/LICENSE"],
     ["https://github.com/phosphor-icons/core/blob/v2.1.10/LICENSE"],
     ["https://github.com/someone/core-fork/blob/v2.1.1/LICENSE"],
     ["https://phosphoricons.com/v2.1.1/LICENSE"],
     ["https://raw.githubusercontent.com/phosphor-icons/core/v2.1.1/LICENSE"],
+    // The revision must be the ref right after blob/tree/raw/commit/releases/tag/archive, compared undecoded.
+    ["https://github.com/phosphor-icons/core/blob/main/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/blob/main%2Fv2.1.1%2F/LICENSE"],
+    ["https://github.com/phosphor-icons/core/blob/main/tree/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/releases/v2.1.1"],
   ]) {
     const value = icons();
     value.license.evidence = evidence;
@@ -762,10 +770,91 @@ test("discovery: license evidence must include the repository's license at the p
     ["https://phosphoricons.com/license", "https://github.com/Phosphor-Icons/Core/blob/v2.1.1/LICENSE"],
     ["https://github.com/phosphor-icons/core/tree/v2.1.1"],
     ["https://github.com/phosphor-icons/core/releases/tag/v2.1.1"],
+    ["https://github.com/phosphor-icons/core/raw/v2.1.1/LICENSE"],
+    ["https://github.com/phosphor-icons/core/commit/v2.1.1"],
+    ["https://github.com/phosphor-icons/core/archive/v2.1.1.zip"],
+    ["https://github.com/phosphor-icons/core/archive/refs/tags/v2.1.1.tar.gz"],
   ]) {
     const value = icons();
     value.license.evidence = evidence;
     checkDiscovery(root, "discover", answer, { entries: [value] });
+  }
+});
+
+test("discovery: a path segment of the evidence URL other than its ref does not pin the revision", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source icons";
+  for (const [revision, evidence] of [
+    ["LICENSE", "https://github.com/phosphor-icons/core/blob/main/LICENSE"],
+    ["blob", "https://github.com/phosphor-icons/core/blob/main/LICENSE"],
+    ["deadbeef", "https://github.com/phosphor-icons/core/blob/main%2Fdeadbeef%2F/LICENSE"],
+  ]) {
+    const value = icons();
+    value.revision = revision;
+    value.license.evidence = [evidence];
+    checkDiscovery(root, "discover", answer, { entries: [value] }, new RegExp(`entries\\[0\\]\\.license\\.evidence must include a URL on https://github\\.com/phosphor-icons/core whose blob, tree, raw, commit, releases/tag or archive ref is the revision ${revision}`));
+  }
+});
+
+test("discovery: a moving ref such as HEAD, main or master does not pin the revision", t => {
+  const root = discoveryFixture(t);
+  for (const revision of ["HEAD", "main", "master", "Main"]) {
+    const value = icons();
+    value.revision = revision;
+    value.license.evidence = [`https://github.com/phosphor-icons/core/blob/${revision}/LICENSE`];
+    checkDiscovery(root, "discover", "Find maintained open-source icons", { entries: [value] },
+      new RegExp(`entries\\[0\\]\\.revision must pin a commit SHA or tag, not the moving ref ${revision}`));
+  }
+});
+
+test("discovery: GitHub pages that are not repositories are not discovered sources", t => {
+  const root = discoveryFixture(t);
+  for (const owner of ["topics", "orgs", "sponsors", "marketplace", "settings", "features", "collections", "explore", "enterprise", "login", "apps", "users", "search", "Topics"]) {
+    const url = `https://github.com/${owner}/widgets`;
+    const value = { ...studiedIcons(), url, revision: "v1.0.0", license: { state: "unverified", evidence: [`${url}/blob/v1.0.0/LICENSE`] } };
+    checkDiscovery(root, "discover", "Find maintained open-source widgets", { entries: [value] },
+      /entries\[0\]\.url must be a GitHub repository URL https:\/\/github\.com\/<owner>\/<repo> or a project file/);
+  }
+});
+
+test("discovery: a discovered source uses bundled-implementation, reference-link or metadata-only availability", t => {
+  const root = discoveryFixture(t);
+  for (const availability of ["bundled-implementation", "reference-link", "metadata-only"]) {
+    checkDiscovery(root, "discover", "Find a maintained open-source carousel", { entries: [{ ...carousel(), availability }] });
+  }
+  checkDiscovery(root, "discover", "Find a maintained open-source carousel", { entries: [{ ...carousel(), availability: "project-owned" }] },
+    /entries\[0\] discovered sources use availability bundled-implementation, reference-link or metadata-only/);
+});
+
+test("discovery: bundling, vendoring, self-hosting or downloading a source counts as copying", t => {
+  const root = discoveryFixture(t);
+  const answer = "Find maintained open-source options";
+  for (const how of [
+    "Studied the API, then bundled dist into vendor/widgets.js",
+    "Studied and vendor it as vendor/widgets.js",
+    "Bundled into vendor/widgets.js",
+    "Study the drag physics, then self-host the build",
+    "Studied it and self-hosted the dist files",
+    "Downloaded the release and studied it",
+    "VENDORING the core after studying it",
+    "研究后打包进项目",
+  ]) {
+    const gpl = carousel();
+    gpl.license.id = "GPL-3.0-only";
+    gpl.usedIn[0].how = how;
+    checkDiscovery(root, "discover", answer, { entries: [gpl] }, /copying or importing a discovered source requires license\.state verified and a permissive license\.id/);
+    const unverified = carousel();
+    unverified.license.state = "unverified";
+    unverified.usedIn[0].how = how;
+    checkDiscovery(root, "discover", answer, { entries: [unverified] }, /copying or importing a discovered source requires license\.state verified and a permissive license\.id/);
+    const permissive = carousel();
+    permissive.usedIn[0].how = how;
+    checkDiscovery(root, "discover", answer, { entries: [permissive] }, /entries\[0\]\.usedIn\[0\]\.how must document attribution\/license-notice handling/);
+    permissive.usedIn[0].how = how + "; keep its MIT license notice in licenses/embla-carousel.txt";
+    checkDiscovery(root, "discover", answer, { entries: [permissive] });
+    const indexed = { ...realEntry(), sourceId: "tommyjepsen/awesome-ux-skills", license: { state: "unverified" } };
+    indexed.usedIn[0].how = how;
+    checkDiscovery(root, "index", "Search the index", { entries: [indexed] }, /entries\[0\]\.usedIn\[0\] unverified\/commercial sources cannot be copied or imported/);
   }
 });
 

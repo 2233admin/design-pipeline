@@ -89,7 +89,8 @@ Web build SHALL require index.html and a valid component-manifest.json. Sources 
 
 - **WHEN** a verified source is imported or copied
 - **THEN** usedIn.how SHALL record attribution or license-notice handling
-- **AND** unverified or commercial sources SHALL NOT be copied or adopted without entitlement.
+- **AND** unverified or commercial sources SHALL NOT be copied or adopted without entitlement
+- **AND** a usedIn.how that bundles, vendors, self-hosts or downloads a source SHALL count as copying it.
 
 ## ADDED Requirements
 
@@ -107,17 +108,17 @@ An entry citing by url `https://github.com/<owner>/<repo>` that is neither decis
 
 #### Scenario: A discovered url is not a GitHub repository URL
 
-- **WHEN** an entry cites by url an npm package page, an official project page, another host, a non-https URL, a URL with credentials, a GitHub owner page or a deep link inside a GitHub repository that is neither decision-named nor indexed
+- **WHEN** an entry cites by url an npm package page, an official project page, another host, a non-https URL, a URL with credentials, a GitHub owner page, a GitHub page that is not a repository (such as `https://github.com/topics/<name>`, `orgs`, `sponsors` or `marketplace`) or a deep link inside a GitHub repository that is neither decision-named nor indexed
 - **THEN** build SHALL remain unfinished with a validator message that the url must be a GitHub repository URL `https://github.com/<owner>/<repo>` or a project file.
 
 #### Scenario: Discovered provenance is incomplete
 
-- **WHEN** a discovered entry lacks revision or a non-empty array of https license.evidence URLs, gives an empty license.id, or claims license.state project-owned or platform
+- **WHEN** a discovered entry lacks revision or a non-empty array of https license.evidence URLs, pins the moving ref HEAD, main or master, gives an empty license.id, claims license.state project-owned or platform, or claims availability project-owned
 - **THEN** build SHALL remain unfinished with a validator message naming the entry and the missing or invalid field.
 
 #### Scenario: License evidence does not cover the pinned revision
 
-- **WHEN** no license.evidence URL of a discovered entry lies on its GitHub repository with the revision as a whole path segment, for example evidence only on a default branch, another repository, another host, or a different revision that merely starts with the same characters
+- **WHEN** no license.evidence URL of a discovered entry lies on its GitHub repository with the revision as the ref segment right after `blob`, `tree`, `raw`, `commit`, `releases/tag` or `archive`, for example evidence only on a default branch, another repository, another host, a different revision that merely starts with the same characters, a revision that appears only as another path segment (such as `LICENSE` or `blob`), or a revision hidden inside an encoded slash of one segment
 - **THEN** build SHALL remain unfinished with a validator message naming the repository and the revision.
 
 #### Scenario: A discovered source is copied without a permissive license kept in the project
