@@ -348,6 +348,38 @@ test("spacing measures the hit areas target-size counts and diagonal neighbours 
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), [], "the widened icons meet the 24px floor");
 });
 
+test("generated text is measured for contrast on its own background or the one behind its box", { skip: tools.skip }, async (t) => {
+  // A pale required marker in flow, a badge whose text barely differs from its own fill, readable
+  // generated text, and generated text fixed to the viewport with no background of its own. The
+  // badge's host has no text, which its painted ::after would leave indeterminate.
+  const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
+<style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}</style>
+</head><body style="margin:0;padding:32px">
+<p id="email">Email</p>
+<div id="inbox" style="height:24px"></div>
+<p id="note">Read this first</p>
+<p id="draft">Draft</p>
+</body></html>`;
+  const result = await measure(t, "generated", [{ id: "generated", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
+    ["#email::after", "1.47:1 (#d4d4d8 on #ffffff)"],
+    ["#inbox::after", "1.13:1 (#fde047 on #fef08a)"],
+    ["#draft::after", "not measurable: the box of #draft::after cannot be located"],
+  ]);
+});
+
+test("an inline link is exempt from target size only beside text in its own line", { skip: tools.skip }, async (t) => {
+  // A link after a paragraph, and one beside hidden text, stand alone; a link inside a sentence is
+  // constrained by the line around it.
+  const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><body style="margin:0;padding:32px">
+<div><p>Read the release notes before you upgrade.</p><a id="after-paragraph" href="#next">Next</a></div>
+<div><span style="display:none">Hidden words</span><a id="beside-hidden" href="#more">More</a></div>
+<p>Read the <a id="in-sentence" href="#terms">terms</a> first.</p>
+</body></html>`;
+  const result = await measure(t, "sentence", [{ id: "sentence", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
+  assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.target-size").map((finding) => finding.selector), ["#after-paragraph", "#beside-hidden"]);
+});
+
 test("verify interaction exits 2 on the violating page, 0 on the clean and undeclared pages and 1 on a selector the page rejects", { skip: tools.skip }, (t) => {
   const lineages = {
     clean: { files: ["clean.css", "fonts/Inter-var.woff", "index.html"], tokens: [], absent: [], remote: [] },
@@ -422,6 +454,22 @@ test("a journey that loads a file outside the project on click fails verify inte
   assert.deepEqual(gate.findings.map((finding) => [finding.code, finding.probeId, finding.actual]), [["external-request", "load", brand]]);
   assert.match(gate.findings[0].message, /went outside the project/);
   assert.match(gate.findings[0].fix, /^Copy every listed resource into the project/);
+});
+
+test("verify interaction refuses a report destination the page loaded and leaves it unchanged", { skip: tools.skip }, (t) => {
+  const loaded = '<link rel="stylesheet" href="evidence/interaction.json">';
+  const html = fs.readFileSync(path.join(fixtures, "clean.html"), "utf8").replace('<link rel="stylesheet" href="clean.css">', `<link rel="stylesheet" href="clean.css">\n${loaded}`);
+  assert.ok(html.includes(loaded));
+  const dir = stage(t, "clean", probeDoc("audit-report-loaded", PROBES.clean), { web: true, html });
+  const report = path.join(dir, "evidence/interaction.json");
+  fs.mkdirSync(path.dirname(report));
+  fs.writeFileSync(report, "{}\n");
+  const result = verify(dir);
+  assert.equal(result.status, 1, result.text);
+  assert.equal(result.output.error.code, "OUTPUT_COLLISION");
+  assert.match(result.output.error.message, /evidence\/interaction\.json, which the page loaded/);
+  assert.equal(fs.readFileSync(report, "utf8"), "{}\n", "the loaded bytes stay as they were measured");
+  assert.equal(readState(dir).gates?.interaction, undefined, "no gate is recorded");
 });
 
 test("editing a loaded stylesheet or DESIGN.md makes the gate stale; a pass without lineage is stale", { skip: tools.skip }, (t) => {

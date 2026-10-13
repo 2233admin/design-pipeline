@@ -906,6 +906,22 @@ function preflightInteraction(root, options = {}) {
   return { doc, probeFile, pageUrl, localPage, targetFile, resultFile, protectedFiles, project };
 }
 
+// Writing the report over a file the page loaded would replace the bytes it was measured with
+// before the gate or native completion binds them.
+function loadedResultFile(requests, resultFile) {
+  const output = fs.existsSync(resultFile) ? fs.statSync(resultFile, { bigint: true }) : null;
+  return (Array.isArray(requests) ? requests : []).some(raw => {
+    let file;
+    try {
+      const url = new URL(raw);
+      if (url.protocol !== "file:") return false;
+      file = fileURLToPath(url);
+    } catch { return false; }
+    const input = fs.existsSync(file) ? fs.statSync(file, { bigint: true }) : null;
+    return path.relative(file, resultFile) === "" || Boolean(input && output && input.dev === output.dev && input.ino === output.ino);
+  });
+}
+
 function observeInteraction(root, options = {}) {
   const context = preflightInteraction(root, options);
   const args = ["--probe", context.probeFile];
@@ -922,6 +938,9 @@ function observeInteraction(root, options = {}) {
   }
   if (context.targetFile && !(actualLocalPage && sameFilePath(actualLocalPage, context.targetFile))) {
     fail("interaction capture", "captured page differs from the declared local output target", { code: "INTERACTION_TARGET_MISMATCH" });
+  }
+  if (loadedResultFile(capture.requests, context.resultFile)) {
+    fail("interaction capture", `output would overwrite ${path.relative(root, context.resultFile).split(path.sep).join("/")}, which the page loaded. Fix: use a separate report destination`, { code: "OUTPUT_COLLISION" });
   }
   const result = evaluateProbeFile(context.doc, capture, { project: context.project });
   return { ...context, result, kernel };
