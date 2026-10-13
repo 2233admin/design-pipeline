@@ -360,10 +360,13 @@ test("generated text is measured for contrast on its own background or the one b
   // text moved off its box by a transform, translucent generated text, white generated text that a
   // relative offset moves off its dark host onto the white page, sticky generated text, which
   // scrolling can move even at top: 0, white generated text that its margins move off its dark host,
-  // measured where they put it, a badge under a translucent veil, and a transformed badge. The badge
-  // hosts have no text, which their painted ::after would leave indeterminate.
+  // measured where they put it, a badge under a translucent veil, a transformed badge, a badge under
+  // a positioned child of its host or under its host's other pseudo-element and, measured as usual,
+  // badges over an in-flow child or over a ::before layer. The badge hosts have no text, which their
+  // painted pseudo-elements would leave indeterminate.
   const html = `<!doctype html><html lang="en" style="background:#fff;color:#18181b;font:16px/1.5 sans-serif"><head>
 <style>#email::after{content:" *";color:#d4d4d8}#inbox{position:relative}#inbox::after{content:"New";position:absolute;top:-8px;left:56px;padding:0 4px;background:#fef08a;color:#fde047}#note::before{content:"Note: ";color:#3f3f46}#draft::after{content:"Saved";position:fixed;bottom:0;left:0;color:#3f3f46}#lift{position:relative;height:24px}#lift::after{content:"Up";position:absolute;top:0;right:0;bottom:0;left:0;color:#3f3f46;transform:translateY(-200%)}#soft::after{content:" soft";color:#3f3f46;opacity:.8}#shift{background:#18181b;color:#fff;padding:4px 8px;margin-bottom:96px}#shift::after{content:" moved";color:#fff;position:relative;top:64px}#stick::after{content:" pinned";color:#3f3f46;position:sticky;top:0}#slip{position:relative;width:120px;height:32px;margin-left:240px;background:#18181b}#slip::after{content:"Out";color:#fff;position:absolute;top:0;right:0;bottom:0;left:0;margin-left:-200px;margin-right:200px}#mail{position:relative;height:24px}#mail::after{content:"9";position:absolute;top:0;left:0;padding:0 4px;background:#18181b;color:#fff}#tag{position:relative;height:24px;margin-top:24px}#tag::after{content:"Hot";position:absolute;top:0;left:0;padding:0 4px;background:#18181b;color:#fff;transform:translate(50%,-50%)}</style>
+<style>#bell,#ring,#chip,#pill{position:relative;height:24px}#bell::before,#chip::before,#ring::after,#pill::after{position:absolute;top:0;left:0;padding:0 4px;background:#18181b;color:#fff}#bell::before{content:"5"}#ring::after{content:"7"}#chip::before{content:"8"}#chip::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:rgba(255,255,255,.8)}#pill::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:#e4e4e7}#pill::after{content:"9"}</style>
 </head><body style="margin:0;padding:32px">
 <p id="email">Email</p>
 <div id="inbox" style="height:24px"></div>
@@ -376,6 +379,10 @@ test("generated text is measured for contrast on its own background or the one b
 <div id="slip"></div>
 <div style="position:relative"><div id="mail"></div><div id="veil" style="position:absolute;top:0;left:0;width:48px;height:24px;background:rgba(255,255,255,.8)"></div></div>
 <div id="tag"></div>
+<div id="bell"><span id="bell-veil" style="position:absolute;top:0;left:0;width:48px;height:24px;background:rgba(255,255,255,.8)"></span></div>
+<div id="ring"><span style="display:inline-block;width:48px;height:24px;background:#e4e4e7"></span></div>
+<div id="chip"></div>
+<div id="pill"></div>
 </body></html>`;
   const result = await measure(t, "generated", [{ id: "generated", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
   assert.deepEqual(result.findings.filter((finding) => finding.code === "audit.text-contrast").map((finding) => [finding.selector, finding.actual]), [
@@ -389,6 +396,8 @@ test("generated text is measured for contrast on its own background or the one b
     ["#stick::after", "not measurable: #stick::after is sticky"],
     ["#mail::after", "not measurable: #veil paints over or under the text"],
     ["#tag::after", "not measurable: #tag::after is transformed"],
+    ["#bell::before", "not measurable: #bell-veil paints over or under the text"],
+    ["#chip::before", "not measurable: #chip::after paints over or under the text"],
   ]);
 });
 

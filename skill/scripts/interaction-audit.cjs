@@ -725,14 +725,17 @@ function auditPage(options) {
     return style.backgroundImage !== "none" || paintsColor(style.backgroundColor);
   });
   // Another painted box over or under the text changes what the text sits on. A box outside the
-  // background's subtree is ignored only when hit testing shows it beneath that background.
-  const overlappingPaint = (el, rects, provider) => {
+  // background's subtree is ignored only when hit testing shows it beneath that background. Generated
+  // text placed on its own fill sits in its element's stacking order, so the element's painted
+  // descendants count as well, and hit testing, where the pseudo-element answers as its element,
+  // decides which side of the text they paint.
+  const overlappingPaint = (el, rects, provider, generated = false) => {
     for (const other of painters) {
-      if (other === el || other.contains(el) || el.contains(other)) continue;
+      if (other === el || other.contains(el) || (!generated && el.contains(other))) continue;
       const box = rectOf(other);
       const hit = rects.find((rect) => intersects(rect, box));
       if (!hit) continue;
-      if (!provider.contains(other)) {
+      if (generated || !provider.contains(other)) {
         const x = (Math.max(hit.left, box.left) + Math.min(hit.right, box.right)) / 2;
         const y = (Math.max(hit.top, box.top) + Math.min(hit.bottom, box.bottom)) / 2;
         const stack = document.elementsFromPoint(x, y);
@@ -758,13 +761,25 @@ function auditPage(options) {
     if (color.a === 0) return unsure("its text color is transparent");
     const background = resolved || resolveBackground(el, rects);
     if (!background.color) return unsure(background.reason);
-    const covering = rects.length ? overlappingPaint(el, rects, background.provider) : null;
+    const covering = rects.length ? overlappingPaint(el, rects, background.provider, background.generated) : null;
     if (covering) return unsure(covering);
     const shown = color.a < 1 ? { r: color.r * color.a + background.color.r * (1 - color.a), g: color.g * color.a + background.color.g * (1 - color.a), b: color.b * color.a + background.color.b * (1 - color.a), a: 1 } : color;
     const ratio = contrastRatio(shown, background.color);
     if (ratio < need) failed("audit.text-contrast", el, { selector, expected, actual: `${Math.floor(ratio * 100) / 100}:1 (${hex(shown)} on ${hex(background.color)})`, message: `text contrast is ${Math.floor(ratio * 100) / 100}:1, below ${need}:1`, fix: FIX.contrast });
   };
   const textEffects = (style) => (style.textShadow === "none" ? parseFloat(style.webkitTextStrokeWidth) > 0 ? "the text has a stroke" : null : "the text has a shadow");
+  // The element's other pseudo-element shares its stacking context. Out of flow, it paints over this
+  // one from a higher layer, or from the same layer later in tree order (::after over ::before).
+  const layerOf = (style) => (style.position === "static" ? -0.5 : style.zIndex === "auto" ? 0 : parseFloat(style.zIndex) || 0);
+  const pseudoOver = (el, pseudo, style, box) => {
+    const otherPseudo = pseudo === "::before" ? "::after" : "::before";
+    const other = getComputedStyle(el, otherPseudo);
+    if (["none", "normal"].includes(other.content) || other.display === "none" || !["absolute", "fixed"].includes(other.position)) return null;
+    if (other.backgroundImage === "none" && !paintsColor(other.backgroundColor)) return null;
+    if (layerOf(other) < layerOf(style) || (layerOf(other) === layerOf(style) && otherPseudo === "::before")) return null;
+    const area = other.position === "absolute" ? absolutePseudoBox(el, other) : null;
+    return area && !intersects(box, area) ? null : `${selectorOf(el)}${otherPseudo} paints over or under the text`;
+  };
   // Generated text has no text node. It sits on its pseudo-element's own background when that
   // paints, otherwise on what lies behind its box: the element's box in flow, or the border box of an
   // absolute pseudo-element of a positioned element. A transform or a relative or sticky offset moves
@@ -796,8 +811,10 @@ function auditPage(options) {
         : own ? own.a < 1 ? `${selector} has a translucent background (${style.backgroundColor})` : groupEffect(el)
         : `the background color of ${selector} (${style.backgroundColor}) could not be read`;
       // Its own fill holds wherever the text sits, but paint over the text is ruled out only over a
-      // located box, so text it cannot place stays indeterminate as well.
-      return measureContrast(el, selector, color, style, box ? [box] : [], effects, reason || !box ? { reason: reason || unplaced } : { color: own, provider: el });
+      // located box, so text it cannot place stays indeterminate as well. The element's descendants
+      // are weighed only over the box of an absolute pseudo-element; in flow its box is the element's.
+      const over = reason || !box ? null : pseudoOver(el, pseudo, style, box);
+      return measureContrast(el, selector, color, style, box ? [box] : [], effects, reason || !box || over ? { reason: reason || over || unplaced } : { color: own, provider: el, generated: style.position === "absolute" });
     }
     if (!box) return measureContrast(el, selector, color, style, [], effects, { reason: unplaced });
     measureContrast(el, selector, color, style, [box], effects);

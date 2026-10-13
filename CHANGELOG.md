@@ -6,6 +6,12 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
+- The UI craft audit no longer passes generated text under other paint, a link standing alone
+  after a `<br>` or block box, or a target widened by an over-constrained `::before` or `::after`
+  (change `fix-audit-coderabbit-limits`). Generated text on its own fill is checked for paint over
+  it, including its host's descendants and other pseudo-element, and is `indeterminate` when it
+  cannot be placed. An inline link's hit-area pseudo-element is measured against the link's own
+  padding box, and generated text that its margins move is measured where it sits.
 - `film check` and `verify film-render` clamp beat samples to the last frame, so the 95% sample
   of a short final procedural beat no longer crashes the check on a missing evidence frame
   (change `add-ff-tracking-template`).
