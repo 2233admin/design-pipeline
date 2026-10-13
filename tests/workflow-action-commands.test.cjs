@@ -16,6 +16,7 @@ const { buildJobPlan, routeJob } = require("../skill/scripts/job-route-core.cjs"
 const film = require("../skill/scripts/workflows/film.cjs");
 const edit = require("../skill/scripts/workflows/edit.cjs");
 const web = require("../skill/scripts/workflows/web.cjs");
+const { PLAYBACK, SECTIONS, STATED, confirmPlayback, pickVariant, statedSkip, writeDescription, writeVariants } = require("./helpers/web-flow.cjs");
 
 const cliFile = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs").split(path.sep).join("/");
 // The runnable invocation, spelled independently of shared.cjs: quoted only when the path needs it.
@@ -40,10 +41,12 @@ const auditProbeFile = JSON.stringify({ schema: "design-pipeline.interaction-pro
 const LINEAGE = { files: ["index.html"], tokens: [], absent: [], remote: [] };
 
 // Every string field an action offers as a command must be the runnable invocation; prose never
-// sits there. `then` and `first` are prose that may quote a command.
+// sits there. `then` and `first` are prose that may quote a command. Web asks offer a `correction`
+// template beside `record`, and the web intake also a `skip` template.
+const TEMPLATES = ["command", "record", "correction", "skip"];
 function check(action, where, seen) {
   assert.ok(["run", "ask", "blocked", "done"].includes(action.type), where);
-  for (const field of ["command", "record"]) {
+  for (const field of TEMPLATES) {
     if (action[field] === undefined) continue;
     assert.equal(typeof action[field], "string", `${where}: ${field}`);
     assert.ok(runnable(action[field]), `${where}: ${field} must start with the runnable node invocation, got: ${action[field].slice(0, 120)}`);
@@ -62,19 +65,29 @@ function check(action, where, seen) {
 function walk(deliverable, tier, mode) {
   const dir = tmp();
   initState(dir, { deliverable, tier, ...(mode ? { mode } : {}) });
+  const exists = rel => fs.existsSync(path.join(dir, rel));
   const fix = {
-    intake: () => decide(dir, { stage: "intake", answer: "default" }),
+    // Web: the quick stated skip, or the playback the owner confirmed; the others answer the questions.
+    intake: action => (deliverable !== "web" ? decide(dir, { stage: "intake", answer: "default" }) : action.type === "run" ? statedSkip(dir) : confirmPlayback(dir)),
     reference: () => (mode === "replicate" ? touch(dir, "reference.md", "Observed enamel at three angles.") : decide(dir, { stage: "reference", answer: "none" })),
-    concepts: () => (fs.existsSync(path.join(dir, "concepts.md")) ? decide(dir, { stage: "concept", choice: "1" }) : touch(dir, "concepts.md")),
+    concepts: () => {
+      if (deliverable === "web") return exists("concepts.html") ? pickVariant(dir) : writeVariants(dir);
+      return exists("concepts.md") ? decide(dir, { stage: "concept", choice: "1" }) : touch(dir, "concepts.md");
+    },
     style: () => decide(dir, { stage: "concept", choice: "pv" }),
     components: () => decide(dir, { stage: "components", choice: "scratch", answer: "Write from scratch" }),
-    analyze: () => (fs.existsSync(path.join(dir, "sources")) ? touch(dir, "edit/analysis.json", "{}") : fs.mkdirSync(path.join(dir, "sources"))),
+    description: () => (exists("brief.md") ? decide(dir, { stage: "description", verdict: "accept", choice: SECTIONS.join(",") }) : writeDescription(dir)),
+    analyze: () => (exists("sources") ? touch(dir, "edit/analysis.json", "{}") : fs.mkdirSync(path.join(dir, "sources"))),
     cut: () => touch(dir, "edit.json", "{}"),
     render: () => touch(dir, "renders/edit.mp4", "draft"),
-    plan: () => (fs.existsSync(path.join(dir, "storyboard.json")) ? recordGate(dir, "storyboard", "passed", ["storyboard.json"]) : touch(dir, "storyboard.json", "{}")),
-    build: () => {
-      touch(dir, deliverable === "web" ? "index.html" : "out.mp4", "draft");
-      if (deliverable === "web") touch(dir, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
+    plan: () => (exists("storyboard.json") ? recordGate(dir, "storyboard", "passed", ["storyboard.json"]) : touch(dir, "storyboard.json", "{}")),
+    build: action => {
+      if (deliverable !== "web") return touch(dir, "out.mp4", "draft");
+      // Standard and full web build one approved section at a time; each built section is reviewed.
+      if (action.type === "ask") return decide(dir, { stage: "section", choice: action.section, verdict: "accept" });
+      if (!exists("index.html")) touch(dir, "index.html", "draft");
+      if (action.section && !fs.readFileSync(path.join(dir, "index.html"), "utf8").includes(`data-section="${action.section}"`)) fs.appendFileSync(path.join(dir, "index.html"), `\n<section data-section="${action.section}"></section>\n`);
+      touch(dir, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
     },
     probe: () => {
       const file = path.join(dir, "interaction.json");
@@ -93,17 +106,33 @@ function walk(deliverable, tier, mode) {
     check(action, `${deliverable}/${tier}${mode ? `/${mode}` : ""} step ${step} ${action.stage}`, seen);
     if (action.type === "done") return seen;
     assert.ok(fix[action.stage], `no fixture for ${action.stage}`);
-    fix[action.stage]();
+    fix[action.stage](action);
   }
   throw new Error(`${deliverable}/${tier} did not finish`);
 }
 
 test("every command and record template on the film, edit, web and ui walks is the runnable node invocation", () => {
   const all = [];
-  for (const [deliverable, tiers] of [["film", ["quick", "standard", "full"]], ["edit", ["quick", "standard"]], ["web", ["quick", "standard", "full"]], ["ui", ["quick", "standard", "full"]]]) {
+  for (const [deliverable, tiers] of [["film", ["quick", "standard", "full"]], ["edit", ["quick", "standard"]], ["ui", ["quick", "standard", "full"]]]) {
     for (const tier of tiers) all.push(...walk(deliverable, tier));
   }
-  all.push(...walk("web", "standard", "replicate"), ...walk("ui", "full", "replicate"));
+  const webQuick = walk("web", "quick");
+  const webWalks = [webQuick, walk("web", "standard"), walk("web", "full"), walk("web", "standard", "replicate")];
+  all.push(...webWalks.flat(), ...walk("ui", "full", "replicate"));
+  // Quick web starts with the stated decision it runs; standard and full start with the conversation,
+  // whose ask offers the confirmed playback, a correction and a stated skip as runnable templates.
+  assert.equal(webQuick[0].stage, "intake");
+  assert.equal(webQuick[0].type, "run");
+  assert.match(webQuick[0].command, /--stage intake --choice skip --answer /);
+  for (const walked of webWalks.slice(1)) {
+    const intake = walked[0];
+    assert.equal(intake.stage, "intake");
+    assert.equal(intake.type, "ask");
+    for (const field of ["record", "correction", "skip"]) assert.ok(runnable(intake[field]), `web intake ${field}`);
+    assert.ok(walked.some(action => action.stage === "description" && action.type === "ask" && action.record.includes("--choice")), "the description ask records the section ids");
+    assert.ok(walked.some(action => action.stage === "build" && action.type === "ask" && action.section === SECTIONS[0] && action.record.includes("--stage section")), "each built section is asked about");
+  }
+  assert.ok(webWalks[1].some(action => action.stage === "concepts" && action.type === "ask" && runnable(action.correction)), "the variants ask offers a correction");
   assert.ok(all.length > 60, "the walks cover many actions");
   const commands = all.filter((action) => action.command !== undefined);
   assert.ok(commands.some((action) => action.command.includes(" film check ")), "the film check command is returned");
@@ -181,7 +210,9 @@ test("the command a product promo's source stage returns runs as given and repor
   assert.equal(nextAction(dir).stage, "source", "the scaffold alone does not admit a product");
 });
 
-for (const deliverable of ["film", "edit", "web", "ui"]) {
+// The shared intake writes brief.md from the user's reply and owns it only by its bytes. Web intake
+// records a conversation instead and never touches a brief (tested below).
+for (const deliverable of ["film", "edit", "ui"]) {
   for (const name of ["BRIEF.md", "brief.md"]) {
     test("intake collision " + deliverable + "/" + name + " neither skips intake nor changes user bytes or state", () => {
       const dir = tmp();
@@ -218,22 +249,71 @@ for (const deliverable of ["film", "edit", "web", "ui"]) {
   });
 }
 
+// Web intake records the playback the owner confirmed, a correction or a stated skip; brief.md is the
+// description approved later, so no intake record creates, reads or changes one. A brief.md directory
+// would throw on any read; a bare reply is not a web intake record.
+test("web intake playback, correction and stated skip never create, read or change a brief, and a bare answer is refused", () => {
+  for (const existing of [null, "BRIEF.md", "brief.md", "brief.md directory"]) {
+    const dir = tmp();
+    initState(dir, { deliverable: "web", tier: "standard" });
+    const bytes = Buffer.from("User assignment\r\nKeep punctuation and bytes.\r\n");
+    const name = existing?.split(" ")[0];
+    if (existing === "brief.md directory") fs.mkdirSync(path.join(dir, name));
+    else if (existing) touch(dir, name, bytes);
+    const stat = () => (name ? fs.statSync(path.join(dir, name), { bigint: true }) : null);
+    const original = stat(), entries = fs.readdirSync(dir).sort();
+    const briefUntouched = when => {
+      assert.deepEqual(fs.readdirSync(dir).sort(), entries, `${existing}: ${when} adds or removes no entry`);
+      if (!name) return;
+      const now = stat();
+      if (existing.endsWith("directory")) assert.ok(now.isDirectory(), `${existing}: ${when}`);
+      else assert.deepEqual(fs.readFileSync(path.join(dir, name)), bytes, `${existing}: ${when} keeps the user's bytes`);
+      assert.equal(now.ino, original.ino, `${existing}: ${when} keeps the same entry`);
+      assert.equal(now.mtimeNs, original.mtimeNs, `${existing}: ${when} never writes it`);
+    };
+    const stateFile = path.join(dir, ".design-pipeline/state.json");
+    const before = fs.readFileSync(stateFile);
+    assert.throws(() => decide(dir, { stage: "intake", answer: "A page for small bakeries that take preorders" }), error => {
+      assert.match(error.message, /--verdict accept/);
+      assert.match(error.message, /--choice skip/);
+      return true;
+    });
+    assert.deepEqual(fs.readFileSync(stateFile), before, `${existing}: a bare answer changes no state`);
+    briefUntouched("a bare answer");
+    confirmPlayback(dir);
+    assert.deepEqual(readState(dir).decisions.intake, { answer: PLAYBACK, playback: "confirmed" });
+    assert.notEqual(nextAction(dir).stage, "intake");
+    briefUntouched("a confirmed playback");
+    decide(dir, { stage: "intake", verdict: "reject", answer: "Regulars reserve on the way to work, not at night" });
+    assert.equal(nextAction(dir).stage, "intake", "a correction reopens intake");
+    assert.ok(readState(dir).rules.some(rule => rule.from === "playback 1"));
+    briefUntouched("a correction");
+    statedSkip(dir);
+    assert.deepEqual(readState(dir).decisions.intake, { answer: STATED, skipped: true });
+    assert.notEqual(nextAction(dir).stage, "intake");
+    briefUntouched("a stated skip");
+  }
+});
+
 test("intake legacy decisions complete the stage but never authorize a user brief overwrite", () => {
-  const dir = tmp();
-  const state = initState(dir, { deliverable: "web", tier: "standard" });
-  state.decisions.intake = "default";
-  touch(dir, ".design-pipeline/state.json", canonicalJson(state));
-  touch(dir, "brief.md", "# Brief\n\ndefault\n");
-  const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
-  assert.notEqual(nextAction(dir).stage, "intake");
-  assert.throws(() => decide(dir, { stage: "intake", answer: "replacement" }), { code: "OUTPUT_COLLISION" });
-  assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ndefault\n");
-  assert.deepEqual(fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), before);
+  for (const deliverable of ["ui", "web"]) {
+    const dir = tmp();
+    const state = initState(dir, { deliverable, tier: "standard" });
+    state.decisions.intake = "default";
+    touch(dir, ".design-pipeline/state.json", canonicalJson(state));
+    touch(dir, "brief.md", "# Brief\n\ndefault\n");
+    const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
+    assert.notEqual(nextAction(dir).stage, "intake", `${deliverable}: a legacy intake record completes intake`);
+    // The shared intake refuses the collision; web refuses a bare reply before looking at any brief.
+    assert.throws(() => decide(dir, { stage: "intake", answer: "replacement" }), deliverable === "web" ? /--verdict accept/ : { code: "OUTPUT_COLLISION" });
+    assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ndefault\n");
+    assert.deepEqual(fs.readFileSync(path.join(dir, ".design-pipeline/state.json")), before);
+  }
 });
 
 test("intake refuses colliding directories without writing state", () => {
   const dir = tmp();
-  initState(dir, { deliverable: "web", tier: "standard" });
+  initState(dir, { deliverable: "ui", tier: "standard" });
   fs.mkdirSync(path.join(dir, "BRIEF.md"));
   const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
   assert.throws(() => decide(dir, { stage: "intake", answer: "replacement" }), { code: "OUTPUT_COLLISION" });
@@ -246,12 +326,26 @@ for (const deliverable of ["film", "edit", "web", "ui"]) {
     fs.mkdirSync(dir);
     const elsewhere = tmp();
     initState(dir, { deliverable, tier: "standard" });
-    const record = nextAction(dir).record.replace("<the user's reply>", "copied answer");
-    const child = spawnSync(record + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
-    assert.equal(child.status, 0, child.stdout + child.stderr);
-    assert.equal(JSON.parse(child.stdout).status, "recorded");
-    assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ncopied answer\n");
-    assert.ok(readState(dir).decisions.intake);
+    const action = nextAction(dir);
+    const run = (template, answer) => {
+      const child = spawnSync(template.replace(/"<[^"]*>"/, `"${answer}"`) + " --json", { cwd: elsewhere, shell: true, encoding: "utf8", windowsHide: true });
+      assert.equal(child.status, 0, child.stdout + child.stderr);
+      assert.equal(JSON.parse(child.stdout).status, "recorded");
+    };
+    if (deliverable === "web") {
+      // The playback, the correction and the stated skip each run as returned; none writes a brief.
+      run(action.record, "copied playback");
+      assert.deepEqual(readState(dir).decisions.intake, { answer: "copied playback", playback: "confirmed" });
+      run(action.correction, "copied correction");
+      assert.equal(nextAction(dir).stage, "intake");
+      run(action.skip, "copied stated line");
+      assert.deepEqual(readState(dir).decisions.intake, { answer: "copied stated line", skipped: true });
+      assert.ok(!fs.readdirSync(dir).some(name => name.toLowerCase() === "brief.md"), "web intake writes no brief");
+    } else {
+      run(action.record, "copied answer");
+      assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ncopied answer\n");
+      assert.ok(readState(dir).decisions.intake);
+    }
     assert.deepEqual(fs.readdirSync(elsewhere), [], "nothing is created in the shell cwd");
   });
 }
@@ -261,7 +355,7 @@ test("project root binds all emitted workflow command and record routes includin
   fs.mkdirSync(dir);
   const expected = '"' + dir.split(path.sep).join("/") + '"';
   const assertBound = action => {
-    for (const field of ["command", "record"]) {
+    for (const field of TEMPLATES) {
       if (!action[field]) continue;
       assert.ok(action[field].includes("--root " + expected), action[field]);
       if (action[field].includes("--project-root")) assert.ok(action[field].includes("--project-root " + expected), action[field]);
@@ -339,7 +433,7 @@ test("project root reference resample handoff executes from unrelated cwd", {
   fs.mkdirSync(dir);
   const elsewhere = tmp();
   initState(dir, { deliverable: "web", tier: "standard", mode: "replicate" });
-  decide(dir, { stage: "intake", answer: "default" });
+  confirmPlayback(dir);
   const created = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "testsrc2=size=32x24:rate=10:duration=1", "-c:v", "ffv1", path.join(dir, "input.mkv")], { encoding: "utf8", windowsHide: true });
   assert.equal(created.status, 0, created.stderr);
   const sampled = require("../skill/scripts/reference-video-core.cjs").analyzeVideo(dir, { path: "input.mkv", output: "analysis" });
@@ -424,7 +518,7 @@ test("saved gate next legacy film blocks executes from unrelated cwd", () => {
 
 test("intake symlink collision cannot claim ownership from matching brief bytes", t => {
   const dir = tmp();
-  initState(dir, { deliverable: "web", tier: "standard" });
+  initState(dir, { deliverable: "ui", tier: "standard" });
   decide(dir, { stage: "intake", answer: "owned answer" });
   const file = path.join(dir, "brief.md"), target = path.join(dir, "intake-copy.md");
   fs.renameSync(file, target);
@@ -438,7 +532,7 @@ test("intake symlink collision cannot claim ownership from matching brief bytes"
 
 test("intake duplicate case collisions refuse even with an owned brief", t => {
   const dir = tmp();
-  initState(dir, { deliverable: "web", tier: "standard" });
+  initState(dir, { deliverable: "ui", tier: "standard" });
   decide(dir, { stage: "intake", answer: "owned answer" });
   try { fs.writeFileSync(path.join(dir, "BRIEF.md"), "user assignment", { flag: "wx" }); }
   catch (error) { if (error.code === "EEXIST") return t.skip("Host filesystem aliases case variants"); throw error; }
@@ -451,7 +545,7 @@ test("intake duplicate case collisions refuse even with an owned brief", t => {
 
 test("intake hardlink collision preserves external bytes and state through the CLI", t => {
   const dir = tmp(), external = path.join(tmp(), "user-brief.md");
-  initState(dir, { deliverable: "web", tier: "standard" });
+  initState(dir, { deliverable: "ui", tier: "standard" });
   const record = answer => spawnSync(process.execPath, [cliFile, "decide", "--root", dir, "--project-root", dir, "--stage", "intake", "--answer", answer, "--json"], { encoding: "utf8", windowsHide: true });
   const initial = record("owned answer");
   assert.equal(initial.status, 0, initial.stdout + initial.stderr);
@@ -477,7 +571,7 @@ test("intake hardlink collision preserves external bytes and state through the C
 
 test("intake owned rewrite replaces the brief entry through the CLI", () => {
   const dir = tmp();
-  initState(dir, { deliverable: "web", tier: "standard" });
+  initState(dir, { deliverable: "ui", tier: "standard" });
   const record = answer => spawnSync(process.execPath, [cliFile, "decide", "--root", dir, "--project-root", dir, "--stage", "intake", "--answer", answer, "--json"], { encoding: "utf8", windowsHide: true });
   const initial = record("owned answer");
   assert.equal(initial.status, 0, initial.stdout + initial.stderr);

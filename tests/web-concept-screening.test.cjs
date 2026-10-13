@@ -7,6 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { decide, initState } = require("../skill/scripts/workflow-core.cjs");
+const { confirmPlayback, variantsPage } = require("./helpers/web-flow.cjs");
 
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 
@@ -14,9 +15,12 @@ function conceptsAction(tier, ready) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "concept-screening-"));
   try {
     initState(root, { deliverable: "web", tier });
-    decide(root, { stage: "intake", answer: "default" });
+    confirmPlayback(root);
     decide(root, { stage: "reference", answer: "none" });
-    if (ready) fs.writeFileSync(path.join(root, "concepts.md"), "# Three concept cards\n");
+    if (ready) {
+      fs.writeFileSync(path.join(root, "concepts.md"), "# Three concept cards\n");
+      fs.writeFileSync(path.join(root, "concepts.html"), variantsPage());
+    }
     const child = spawnSync(process.execPath, [cli, "next", "--project-root", root, "--json"], { cwd: root, encoding: "utf8", windowsHide: true });
     assert.equal(child.status, 0, child.stdout + child.stderr);
     return JSON.parse(child.stdout);

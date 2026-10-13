@@ -8,6 +8,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { STATE, initState, nextAction, decide, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { validateComponentManifest } = require("../skill/scripts/design-system-catalog-core.cjs");
+const { acceptSections, approveDescription, toBuild, toComponents } = require("./helpers/web-flow.cjs");
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const tiers = ["quick", "standard", "full"];
 const modes = ["brief", "freeform", "replicate"];
@@ -16,10 +17,7 @@ function fixture(t, tier = "quick", mode = "brief") {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "web-components-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   initState(root, { deliverable: "web", tier, mode });
-  if (tier !== "quick") decide(root, { stage: "intake", answer: "A product page" });
-  if (mode === "replicate") fs.writeFileSync(path.join(root, "reference.md"), "# Observed reference\nStructure and timing");
-  else if (tier !== "quick") decide(root, { stage: "reference", answer: "none" });
-  if (tier !== "quick" && mode !== "replicate") decide(root, { stage: "concept", choice: "1" });
+  toComponents(root);
   return root;
 }
 function manifest(root, entries, fromScratch = false) {
@@ -28,14 +26,16 @@ function manifest(root, entries, fromScratch = false) {
 const entry = () => ({ name: "Project card", sourceId: "index.html", availability: "project-owned", license: { state: "project-owned" }, usedIn: [{ file: "index.html", marker: "Page", how: "Product feature card" }] });
 
 for (const tier of tiers) for (const mode of modes) {
-  test(`web ${tier}/${mode} asks components immediately before build and follows the recorded answer`, t => {
+  test(`web ${tier}/${mode} asks components before build and follows the recorded answer`, t => {
     const root = fixture(t, tier, mode);
     const ask = nextAction(root);
     assert.equal(ask.stage, "components");
     assert.equal(ask.type, "ask");
-    assert.match(ask.question, /components/i);
-    assert.match(JSON.stringify(ask.options), /project.*paths.*GitHub.*index.*scratch/i);
-    assert.match(ask.recommended, /project.*first.*index/i);
+    assert.deepEqual(ask.questions.map(question => question.id), tier === "quick" ? ["components"] : ["sections", "components"]);
+    const components = ask.questions.find(question => question.id === "components");
+    assert.match(components.ask, /components/i);
+    assert.match(JSON.stringify(components.options), /project.*paths.*GitHub.*index.*discover.*scratch/i);
+    assert.match(ask.recommended, /project.*first.*index.*find more/i);
     assert.match(ask.record, /--stage components.*--choice.*--answer/);
     assert.ok(!ask.record.includes("--project-root ."));
     const answer = 'Use src/components first, then search the index for "pricing"';
@@ -43,6 +43,8 @@ for (const tier of tiers) for (const mode of modes) {
     assert.equal(recorded.status, 0, recorded.stdout + recorded.stderr);
     assert.equal(readState(root).decisions.components, answer);
     assert.deepEqual(readState(root).decisions.componentSources, ["project", "index"]);
+    if (tier !== "quick") assert.equal(nextAction(root).stage, "description", "standard and full describe the page before building it");
+    toBuild(root);
     const build = nextAction(root);
     assert.equal(build.stage, "build");
     assert.equal(build.type, "run");
@@ -56,7 +58,7 @@ for (const tier of tiers) for (const mode of modes) {
     fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><h1>Page</h1>");
     assert.equal(nextAction(root).stage, "build", "HTML without a manifest is unfinished");
     manifest(root, [entry()]);
-    assert.equal(nextAction(root).stage, "probe");
+    assert.equal(acceptSections(root).stage, "probe");
     assert.deepEqual(readState(root).gates, {}, "completion does not introduce a gate");
   });
 }
@@ -297,7 +299,9 @@ test("actual CLI outside the project accepts scratch and only valid real manifes
     return JSON.parse(result.stdout);
   }
   try {
-    assert.equal(run(["next", "--deliverable", "web", "--tier", "quick", "--mode", "brief"]).stage, "components");
+    assert.equal(run(["next", "--deliverable", "web", "--tier", "quick", "--mode", "brief"]).stage, "intake");
+    run(["decide", "--stage", "intake", "--choice", "skip", "--answer", "I will build a one-screen navigation page from scratch."]);
+    assert.equal(run(["next"]).stage, "components");
     run(["decide", "--stage", "components", "--choice", "scratch", "--answer", "从零写"]);
     fs.writeFileSync(path.join(root, "index.html"), '<nav class="Navigation">Page</nav>');
     manifest(root, []);
@@ -366,7 +370,7 @@ test("round3 regression: legacy answer-only decisions ask components again", t =
   const action = nextAction(root);
   assert.equal(action.stage, "components");
   assert.equal(action.type, "ask");
-  assert.equal(action.options.length, 5);
+  assert.equal(action.questions.find(question => question.id === "components").options.length, 5);
   assert.match(action.record, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
   assert.match(JSON.stringify(action), /https:\/\/github\.com\/<owner>\/<repo>/);
 });
@@ -452,8 +456,10 @@ const AUDIT_PROBE_FILE = JSON.stringify({ schema: "design-pipeline.interaction-p
 const LINEAGE = { files: ["index.html"], tokens: [], absent: [], remote: [] };
 function checkedPage(root, choice = "project", answer = "Use project components") {
   decide(root, { stage: "components", choice, answer });
+  toBuild(root);
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><h1>Page</h1>");
   manifest(root, [entry()]);
+  assert.equal(acceptSections(root).stage, "probe");
   fs.writeFileSync(path.join(root, "interaction.json"), AUDIT_PROBE_FILE);
   recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
 }
@@ -477,7 +483,9 @@ test("lineage regression: changed components decision requires a fresh review an
   assert.equal(nextAction(root).type, "done");
   const recordedDrafts = structuredClone(readState(root).decisions.drafts);
   decide(root, { stage: "components", choice: "project", answer: "Search the index" });
-  assert.equal(nextAction(root).stage, "probe");
+  assert.equal(nextAction(root).stage, "description", "a different component decision makes the description approval stale");
+  approveDescription(root);
+  assert.equal(acceptSections(root).stage, "probe");
   recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
   assert.equal(nextAction(root).stage, "review", "the earlier accept no longer covers the new decision");
   const state = readState(root);
@@ -497,6 +505,8 @@ test("lineage regression: identical components re-record keeps checked evidence"
   const after = readState(root);
   assert.deepEqual(after.gates, before.gates);
   assert.deepEqual(after.decisions.drafts, before.decisions.drafts);
+  assert.deepEqual(after.decisions.descriptions, before.decisions.descriptions, "the description approval stays");
+  assert.deepEqual(after.decisions.sections, before.decisions.sections);
   assert.deepEqual(deliveryFields(after), deliveryFields(before));
   assert.deepEqual(after.decisions.componentSources, ["project", "index"]);
   assert.equal(nextAction(root).type, "done");
@@ -560,6 +570,7 @@ function discoveryFixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "web-discovery-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   initState(root, { deliverable: "web", tier: "quick", mode: "brief" });
+  toComponents(root);
   fs.writeFileSync(path.join(root, "index.html"), DISCOVERY_PAGE);
   fs.mkdirSync(path.join(root, "licenses"));
   fs.writeFileSync(path.join(root, "licenses/phosphor-core.txt"), "MIT License\n\nCopyright (c) Phosphor Icons\n");
@@ -634,8 +645,9 @@ test("discovery: components ask offers discover and recommends project, index, t
   t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
   const ask = nextAction(root);
   assert.equal(ask.stage, "components");
-  assert.equal(ask.options.length, 5);
-  assert.match(ask.options[3], /find.*open-source.*librar.*icon.*GitHub/i);
+  const options = ask.questions.find(question => question.id === "components").options;
+  assert.equal(options.length, 5);
+  assert.match(options[3], /find.*open-source.*librar.*icon.*GitHub/i);
   assert.match(ask.recommended, /project.*first.*index.*find more/i);
   assert.match(ask.recommended, /project,index,discover/);
   assert.match(ask.record, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
@@ -679,11 +691,9 @@ test("discovery: build instruction searches the index first, routes discovery to
   const standard = fs.mkdtempSync(path.join(os.tmpdir(), "web-discovery-standard-"));
   t.after(() => fs.rmSync(standard, { recursive: true, force: true }));
   initState(standard, { deliverable: "web", tier: "standard", mode: "brief" });
-  decide(standard, { stage: "intake", answer: "A product page" });
-  decide(standard, { stage: "reference", answer: "none" });
-  fs.writeFileSync(path.join(standard, "concepts.md"), "# Concepts");
-  decide(standard, { stage: "concept", choice: "1" });
+  toComponents(standard);
   decide(standard, { stage: "components", choice: "project,index,discover", answer: "Project components, the index, then find more" });
+  toBuild(standard);
   const treatment = nextAction(standard);
   assert.equal(treatment.stage, "build");
   assert.match(treatment.instruction, /use the system stack only when the treatment deliberately calls for it/);
