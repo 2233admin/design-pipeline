@@ -8,6 +8,7 @@ const { spawnSync } = require("node:child_process");
 const { validateReferenceEvidence, checkReferenceEvidence } = require("../skill/scripts/reference-evidence-core.cjs");
 const { initState, nextAction } = require("../skill/scripts/workflow-core.cjs");
 const fixtures = require("./helpers/reference-fixtures.cjs");
+const { statedSkip } = require("./helpers/web-flow.cjs");
 const { sha256 } = require("../skill/scripts/contract-utils.cjs");
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 function root(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reference-analysis-entry-")); t.after(() => { assert.equal(path.dirname(path.resolve(dir)), path.resolve(os.tmpdir())); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
@@ -90,6 +91,7 @@ test("public video preparation and pending-source resolution preserve real dimen
   assert.equal(checked.stages.video.status, "pending");
   assert.equal(checked.stages.video.coverage.fullSource, false);
   initState(dir, { deliverable: "web", tier: "quick", mode: "replicate" });
+  statedSkip(dir);
   fs.writeFileSync(path.join(dir, "reference.md"), "Only one interval was observed.");
   const pendingAction = nextAction(dir);
   assert.equal(pendingAction.stage, "reference");
@@ -162,6 +164,7 @@ test("all production reference callers reject coarse legacy readiness and reques
   };
   save(); fs.writeFileSync(path.join(dir, "reference.md"), "Only a logo observation exists; production inventory is not yet authored.");
   initState(dir, { deliverable: "web", tier: "quick", mode: "replicate" });
+  statedSkip(dir);
   assert.equal(video.checkVideoAnalysis(dir, ref.videoAnalysis, ref.source).status, "ready", "historical inspection remains available");
   const stage = shared.reference("Inspect the original video");
   assert.equal(stage.finished({ mode: "replicate" }, dir), false, "referenceObserved must opt into production readiness");

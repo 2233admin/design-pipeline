@@ -15,6 +15,7 @@ const { SCHEMA, auditResultFailure, evaluateProbeFile, validateProbeFile } = req
 const { captureInteraction } = require("../skill/scripts/interaction-capture-core.cjs");
 const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
 const { decide, initState, nextAction, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
+const { acceptSections, toBuild, toComponents } = require("./helpers/web-flow.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
@@ -46,8 +47,10 @@ function tmp(t) {
   return dir;
 }
 
-// The components decision and manifest the web build stage requires (written from scratch).
+// Everything before the components decision, then the decision and manifest the web build stage
+// requires (written from scratch).
 function prepareWebComponents(dir) {
+  toComponents(dir);
   decide(dir, { stage: "components", choice: "scratch", answer: "Write from scratch" });
   fs.writeFileSync(path.join(dir, "component-manifest.json"), JSON.stringify({ fromScratch: true, entries: [] }));
 }
@@ -85,17 +88,16 @@ function run(args) {
 const verify = (dir) => run(["verify", "interaction", "--root", dir, "--project-root", dir, "--probe", "interaction.json", "--chrome", tools.chrome, "--puppeteer-module", tools.puppeteerModule]);
 const statuses = (row, viewport) => Object.fromEntries(row.coverage.find((entry) => `${entry.viewport.width}x${entry.viewport.height}` === viewport).checks.map((check) => [check.code, check.status]));
 
-// A standard web project up to its probe stage, with a page that loads one stylesheet.
+// A standard web project up to its probe stage, with a page that loads one stylesheet and whose
+// approved section the owner accepted.
 function webProject(t) {
   const dir = tmp(t);
   initState(dir, { deliverable: "web", tier: "standard" });
-  decide(dir, { stage: "intake", answer: "default" });
-  decide(dir, { stage: "reference", answer: "none" });
-  fs.writeFileSync(path.join(dir, "concepts.md"), "# Concepts\n");
-  decide(dir, { stage: "concept", choice: "1" });
   prepareWebComponents(dir);
+  toBuild(dir);
   fs.writeFileSync(path.join(dir, "index.html"), '<!doctype html><link rel="stylesheet" href="site.css"><p>Page</p>');
   fs.writeFileSync(path.join(dir, "site.css"), "html { background: #fff; }\n");
+  assert.equal(acceptSections(dir).stage, "probe");
   return dir;
 }
 

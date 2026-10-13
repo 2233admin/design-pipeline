@@ -386,6 +386,12 @@ case-insensitive `brief.md` collision with a file intake did not write, preserve
 renaming it, then retry the returned intake record command. Refusal leaves the existing brief and
 state unchanged. This does not replace DesignBrief confirmation in the guided first-wave flow above.
 
+The `next`/`decide` web workflow differs: its intake is a conversation that ends in a confirmed
+playback or a stated skip and writes no `brief.md`. At `standard` and `full`, `brief.md` is written
+after the component decision as the one-page description the owner approves before anything is
+built, and that approval fixes the sections the page is built in, as listed under its `## Sections`
+heading ([workflow-web.md#description](workflow-web.md#description)). Its contents are listed there.
+
 Create or update `brief.md` with:
 
 - Goal: what UI outcome the user wants.
@@ -798,15 +804,22 @@ against actual outputs and checks; tasks.md existence does not verify decomposit
 
 Implement directly from `design.md` and `tasks.md`.
 
-For a web deliverable, follow [workflow-web.md#components](workflow-web.md#components) immediately
-before build in every tier and mode. Ask for project component paths, a named GitHub library,
-an index search, agent discovery of maintained open-source libraries and icon sets on GitHub, or
-scratch implementation; recommend project components first, then the index, then discovery.
+For a web deliverable, follow [workflow-web.md#components](workflow-web.md#components): at `quick`
+immediately before build; at `standard` and `full` in the numbered decision round (the page's
+sections in build order and the component source; a dependent question waits for a further round)
+before the description the owner approves, so a changed component decision makes that approval
+stale and returns to it. Each "no" given in a round is recorded with
+`decide --stage components --verdict reject --answer "<…>"` and becomes a project rule. The
+source options are the project's components (name the paths you found instead of asking for
+them), a named GitHub library, an index search, agent discovery of maintained open-source
+libraries and icon sets on GitHub, or scratch implementation; recommend project components first,
+then the index, then discovery.
 Record the exact nonempty answer with explicit `--choice project,index,discover` (or the selected
 comma-separated set of `project,github,index,discover,scratch`). Missing/unknown choices fail;
 deduplicate and store canonical order in `decisions.componentSources`. `scratch` is exclusive;
 `github` requires an HTTPS GitHub owner/repo URL in the unchanged answer. Legacy answer-only web
-decisions ask again. Before `index.html`, write the
+decisions ask again. At `standard` and `full` the page is then built section by section, each
+reviewed by the owner ([workflow-web.md#build](workflow-web.md#build)). Before `index.html`, write the
 `component-manifest.json` described in [workflow-web.md#build](workflow-web.md#build), including
 resolved source identity, indexed license-state agreement, and existing contained files with real
 `usedIn.marker` evidence and `how` provenance. Index route and search use `--platform web`, and

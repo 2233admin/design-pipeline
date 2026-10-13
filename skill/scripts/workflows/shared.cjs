@@ -111,6 +111,14 @@ function deliveryRecorded(state, root) {
   } catch { return false; }
 }
 
+// Drop checked-output gates and the delivery bound to them, so the next pass is rechecked.
+function invalidateCheckedEvidence(state) {
+  state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
+  delete state.decisions.delivered;
+  delete state.decisions.deliveryInputHashes;
+  delete state.decisions.deliveredSha256;
+}
+
 const INTAKE = {
   id: "intake",
   finished: (state) => Boolean(state.decisions?.intake),
@@ -190,8 +198,9 @@ const REVIEW = {
         return fs.statSync(file).isFile() ? [file] : [];
       } catch { return []; }
     });
-    return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The second human decision${(state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : ""}.` };
+    const rejected = (state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : "";
+    return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: web ? `Final acceptance of the whole checked page, after each section was reviewed${rejected}.` : `The second human decision${rejected}.` };
   },
 };
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, reference, reviewInputHashes };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reference, reviewInputHashes };

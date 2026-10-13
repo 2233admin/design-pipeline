@@ -1,0 +1,52 @@
+{
+  "contextAtRecord": {
+    "bundleSha256": "70f666e3d7450557977c2d750e8cfbc73268b96be0097a1ccceb1edd362765c9",
+    "checkedAt": "2026-10-13T12:38:24.347Z",
+    "componentConformance": {
+      "reason": "仅既有 receipt 记载结果；review 未重新验收当前实现",
+      "scope": "captured-lineage",
+      "status": "passed"
+    },
+    "findings": [],
+    "freshness": "matched",
+    "identity": {
+      "designIdentitySha256": "f8db7e7fe1231a24b2a3efb9dde4330dfa500751331703aeff47202bd72bebb5",
+      "observationSha256": "c1a11643d9165c860905fd09daee3ccae02f4f294e55142274e494a5dd79b375",
+      "policyDigest": "0e969126e14645d2b941992ff07e15c9a12ff64957e7adcf203b35d39b59850c",
+      "snapshotDigest": "sha256:eb8a397066c92f8606a3e71aedaed1efd03493f2d63f6d86dfc2c1e98033e06b",
+      "sourceSetSha256": "c78da878afade9366c3b347f33a1d1c56238d57a58365b441702f654251d9263",
+      "targetIdentityDigest": "1a16e65b63da3daa914d30f498b870c841f6e4d040eda52b35626a0dcd299160"
+    },
+    "observed": {
+      "designIdentitySha256": "f8db7e7fe1231a24b2a3efb9dde4330dfa500751331703aeff47202bd72bebb5",
+      "observationSha256": "c1a11643d9165c860905fd09daee3ccae02f4f294e55142274e494a5dd79b375",
+      "sourceSetSha256": "c78da878afade9366c3b347f33a1d1c56238d57a58365b441702f654251d9263"
+    },
+    "visualAcceptance": {
+      "reason": "仅既有 receipt 记载结果；review 未重新验收当前实现",
+      "scope": "captured-lineage",
+      "status": "passed"
+    }
+  },
+  "feedback": {
+    "acceptance": [
+      "The full label is visible at 640px",
+      "Keyboard focus stays visible"
+    ],
+    "actual": "The call-to-action label is cut off at a 640px viewport.",
+    "bundleSha256": "70f666e3d7450557977c2d750e8cfbc73268b96be0097a1ccceb1edd362765c9",
+    "category": "visual-acceptance",
+    "designIdentitySha256": "f8db7e7fe1231a24b2a3efb9dde4330dfa500751331703aeff47202bd72bebb5",
+    "expected": "The whole label reads at a 640px viewport.",
+    "objectId": "cta",
+    "observationSha256": "c1a11643d9165c860905fd09daee3ccae02f4f294e55142274e494a5dd79b375",
+    "policyDigest": "0e969126e14645d2b941992ff07e15c9a12ff64957e7adcf203b35d39b59850c",
+    "schema": "design-pipeline.runtime-review-feedback.v1",
+    "snapshotDigest": "sha256:eb8a397066c92f8606a3e71aedaed1efd03493f2d63f6d86dfc2c1e98033e06b",
+    "sourceSetSha256": "c78da878afade9366c3b347f33a1d1c56238d57a58365b441702f654251d9263",
+    "targetIdentityDigest": "1a16e65b63da3daa914d30f498b870c841f6e4d040eda52b35626a0dcd299160"
+  },
+  "lifecycle": "recorded",
+  "recordedAt": "2026-10-13T12:38:24.347Z",
+  "schema": "design-pipeline.runtime-review-record.v1"
+}
