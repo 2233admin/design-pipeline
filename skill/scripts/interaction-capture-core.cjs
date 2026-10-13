@@ -330,9 +330,10 @@ async function captureInteraction(probeFile, options = {}) {
     page.on("request", (request) => { if (isNetworkUrl(request.url())) requests.push(request.url()); });
     const probes = [];
     for (const probe of doc.probes) probes.push(await recordProbe(page, probe, url, requests, options.timeoutMs || 30000, viewport));
-    // Every request of the run, in order: the gate binds the local files the page loaded. Each probe
-    // sliced its own log from this one with no gap between probes, so every entry was judged by a
-    // probe. The snapshot keeps requests made while the browser closes out, since no probe saw them.
+    // Every request of the run, in order: the gate binds the local files the page loaded. A probe's
+    // log runs from its start to its return, and the next probe starts before another request event
+    // can arrive (no await in between), so the probe logs cover this one. The snapshot keeps out
+    // requests made while the browser closes, which no probe saw.
     return { schema: CAPTURE_SCHEMA, url: url.startsWith("file:") ? page.url() : url, pageOrigin, probes, requests: requests.slice() };
   } finally {
     await browser.close();
