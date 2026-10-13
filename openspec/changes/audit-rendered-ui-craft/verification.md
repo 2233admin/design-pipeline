@@ -3,7 +3,7 @@
 Recorded on 2026-10-13 on a Windows host: through the Third Review Fix on branch
 `feat/internalize-ui-craft-sources`, and after #99 merged, from the Fourth Review Fix on, on branch
 `fix/ui-audit-review-round3` (#101). Sections follow the order the checks ran, and each names the
-tree it ran on; the final implementation is the one in Merge With #100.
+tree it ran on; the final implementation is the one in Sixth Review Fix.
 
 On the round-two tree, before the merge with `main`:
 
@@ -160,14 +160,39 @@ That implementation was tested as commit `b3e297a923999285b0090b1ff051d719ddbdb4
 
 `main` gained #100 (agent resource discovery) after that run. #100 changed no file this change
 touches except `CHANGELOG.md` and one help line in `cli-core.cjs`, and both merged without
-conflicts. The final tested implementation is the merge, commit
-`eb8ff216dcb62c756a3914bbcf0ffb9a1e14f0ab`, tree `a69186028cbee2c05c509863278beb0c9b0621e5`; later
-commits change only these records.
+conflicts. That merge was tested as commit `eb8ff216dcb62c756a3914bbcf0ffb9a1e14f0ab`, tree
+`a69186028cbee2c05c509863278beb0c9b0621e5`.
 
 | Check | Result |
 | --- | --- |
 | `node --test tests/workflow-components.test.cjs tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs` | 98 pass, 0 fail, including #100's discovery and lineage cases on audited pages. |
 | `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1429, 1425 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
+| `npm run specs:check` | 74 passed, 0 failed. |
+
+## Sixth Review Fix
+
+Codex's review of #101 at `5471f6e` raised two P2 findings, fixed in `c5ad554`:
+
+- Each observation checked only its own check file, so with two verification bindings a page could
+  load the other binding's existing check, both observations passed, and completion then overwrote
+  that check. Observation now checks the page against every report the caller writes afterwards:
+  native completion passes all of its checks and its metadata, and stops as `blocked` with
+  `OUTPUT_COLLISION` before writing any check.
+- Generated text without its own background that relative positioning offsets was measured at its
+  unshifted box. Such text is now `indeterminate`, and so is sticky generated text with any inset,
+  which scrolling can move even at `top: 0`.
+
+The final tested implementation is commit `c5ad5549fd1e6b995468b01836a5eb616cc5dff7`, tree
+`c0e728309efab20b0ae3c65db3eb8854c474a862`. Full QA ran on that tree before it was committed; later
+commits change only these records.
+
+| Check | Result |
+| --- | --- |
+| Regression: a native task with two pages, where the first page loads the second binding's existing check | With the code of `b3e297a`, completion returned `recorded` and rewrote that check. With the fix it returns `blocked` naming `second-check.json`, which keeps its bytes, and no check is written. |
+| Regression: white generated text moved off its dark host by `position: relative; top: 64px`, and generated text with `position: sticky; top: 0` | The offset text had no finding with the engine of `b3e297a`, and the sticky text had none with the first version of this fix, which counted only non-zero offsets. With the fix both are `indeterminate` ("is relatively positioned", "is sticky"). |
+| `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs tests/ui-craft-sources.test.cjs tests/workflow-components.test.cjs`, then the native regression in `tests/workflow-next.test.cjs` | 116 and 1 pass, 0 fail. |
+| Smoke: `.design-pipeline/audit-smoke` | `verify interaction` still passes. |
+| `npm test` with `TEMP` and `TMP` set to `D:\dp-qa-tmp` | Repository tests: 1430, 1426 pass, 0 fail, 4 skipped (the same host skips), 135 files. The hermetic package build, the installed-package CLI smoke (12/12) and the browser-tool self-tests also pass. |
 | `npm run specs:check` | 74 passed, 0 failed. |
 
 ## Not Verified
