@@ -11,6 +11,6 @@
 - [x] 2.1 Run the existing generated-text regression against the fixed tree and record a failing-before/passing-after real-browser smoke without changing the original working tree.
 - [x] 2.2 Run `node --test tests/interaction-audit.test.cjs tests/interaction-cli.test.cjs` to retain absolute pseudo, ordinary-text and CLI gate behavior.
 - [x] 2.3 Run a real-browser smoke with covered and uncovered in-flow markers: covered text is indeterminate with an error finding; the unobscured control remains measurable.
-- [ ] 2.4 Integrate the changelog and active delta without editing consolidated or archived specifications; run `npm test` and `npm run specs:check` on the final fixed tree, and record actual revision-bound evidence.
+- [x] 2.4 Integrate the changelog and active delta without editing consolidated or archived specifications; run `npm test` and `npm run specs:check` on the final fixed tree, and record actual revision-bound evidence in `../fix-film-alignment-and-correlation-contracts/verification.md`.
 
 Implementation checkboxes record edits only. Verification checkboxes record performed work; unchecked items remain pending. Neither grants visual or user acceptance.
