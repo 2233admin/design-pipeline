@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { storedPath, upstreamFiles } = require("./upstream-path.cjs");
 const { upstreamRoot } = require("./vendor-cache.cjs");
+const { gitTreeId } = require("./mengto-skills-core.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/iart-motion-skills/manifest.json");
 const schema = "design-pipeline.iart-motion-skills-source.v1";
@@ -136,6 +137,13 @@ function verifyIartSnapshot(manifestFile = defaultManifest) {
     if (!object) continue;
     if (content.length !== object.size) issues.push(`Git blob size mismatch: ${relative}`);
     if (gitObjectId("blob", content) !== object.oid) issues.push(`Git blob mismatch: ${relative}`);
+  }
+  // Each pack's objects must rebuild the Git tree recorded for its revision. This ties the snapshot to
+  // upstream: text=auto once rewrote line endings inside nine GIFs and the recorded blob ids followed.
+  for (const pack of loaded.manifest.packs) {
+    const prefix = `${pack.id}/`;
+    const objects = loaded.manifest.snapshot.objects.filter((object) => object.path.startsWith(prefix)).map((object) => ({ ...object, path: object.path.slice(prefix.length) }));
+    if (gitTreeId(objects) !== pack.gitTree) issues.push(`pack ${pack.id} objects do not match its Git tree ${pack.gitTree}`);
   }
   const executableFiles = new Set(loaded.manifest.snapshot.executableFiles);
   const recordedExecutables = loaded.manifest.snapshot.objects.filter((object) => object.mode === "100755").map((object) => object.path).sort();
