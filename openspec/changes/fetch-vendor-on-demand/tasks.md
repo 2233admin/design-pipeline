@@ -18,4 +18,5 @@
 
 ## 3. Verification
 
-- [ ] 3.1 `npm test` and `npm run specs:check` locally; CI green on the PR.
+- [x] 3.1 `npm test` locally passes except the environment-only ffmpeg filter test; `npm run
+  specs:check` passes; CI green on the PR.
