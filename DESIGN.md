@@ -104,7 +104,7 @@ itself is host-rendered and does not prescribe an aesthetic to those deliverable
 - Adopted the repository's existing host-rendered CLI, semantic Markdown and static motion posture.
 - Adopted project-specific identity and attributed visual evidence; the foundation requirement is
   recorded in [enforce-design-foundation](openspec/changes/archive/2026-08-23-enforce-design-foundation/proposal.md).
-- Recorded this clarification in [organize-repository-docs](openspec/changes/organize-repository-docs/proposal.md).
+- Recorded this clarification in [organize-repository-docs](openspec/changes/archive/2026-10-15-organize-repository-docs/proposal.md).
 
 ### Rejected
 

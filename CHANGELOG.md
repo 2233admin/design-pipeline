@@ -6,6 +6,7 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- OpenSpec bookkeeping caught up: 17 finished changes are archived into `openspec/specs/` in dependency order, including the umbrella `redesign-user-workflow`, whose remaining roadmap items moved to issues #128-#133 (and `add-web-treatment-and-section-briefs` leftovers to #134-#135). Three deltas the archive refused were corrected: `ground-films-in-references-and-sound` marked new requirements as MODIFIED, and `make-web-workflow-conversational` renamed existing scenarios. New specs `web-workflow`, `matt-skills-guidance` and `reference-led-film` have written purposes, and five over-long requirements were shortened for strict validation.
 - The owner is asked where something is new (change `owner-attention-asks`, phase 1 of
   `design-owner-attention`). Web component sources, the description and section reviews default to
   the agent and come back from `next` as `selfCheck` runs, recorded `--by agent`; the owner keeps

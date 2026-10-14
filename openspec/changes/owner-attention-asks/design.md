@@ -37,9 +37,12 @@ checked against the code, and the independent review re-checked them.
   recorded `--by owner`, so a quick project cannot change its delegation.
 - **Creative intent** is a locked owner checkpoint in the map, but nothing records it. The
   statement prints "not yet recorded (planned in phase 2)".
-- **Unarchived deltas.** The requirements for web conversation and decision roles live only in the
-  unarchived deltas of `make-web-workflow-conversational` and `adopt-ai-fluency-decision-roles`.
-  Their archive chain waits on `redesign-user-workflow`.
+- **Unarchived deltas (when this change was written).** The requirements for web conversation and
+  decision roles lived only in the unarchived deltas of `make-web-workflow-conversational` and
+  `adopt-ai-fluency-decision-roles`. Since #136 the web conversation requirements, with the edits
+  of Decision 11, are archived in `openspec/specs/web-workflow/spec.md` and
+  `openspec/specs/design-pipeline/spec.md`; decision roles are still the unarchived delta of
+  `adopt-ai-fluency-decision-roles`.
 - **The baseline:** the default two-section brief-mode page asks the owner seven times: playback,
   variants, components, description, two sections and the final review.
 
@@ -224,8 +227,12 @@ shape.
 
 ### 11. In-flight deltas are corrected in place
 
-The superseded requirements are not in `openspec/specs/`, so MODIFIED cannot target them. A second
-ADDED requirement would contradict them at archive.
+When this change was written, the superseded requirements were not in `openspec/specs/`, so MODIFIED
+could not target them, and a second ADDED requirement would have contradicted them at archive.
+The edits below were made in place and are done. Since #136, `make-web-workflow-conversational` is
+archived (`openspec/changes/archive/2026-10-15-make-web-workflow-conversational/`), so its edited
+requirements are the baseline in `openspec/specs/`; a later change modifies them there with
+MODIFIED, not in that archived delta.
 
 - `make-web-workflow-conversational` gets these edits in place:
   - the skip scenario of "Web intake ends in a confirmed playback or a stated skip";

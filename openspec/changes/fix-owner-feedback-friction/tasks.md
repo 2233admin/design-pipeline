@@ -26,4 +26,4 @@
 
 ## 4. Verification
 
-- [ ] 4.1 Affected suites pass locally; CI green on the PR.
+- [x] 4.1 Affected suites pass locally; CI green on the PR (#114, merged).

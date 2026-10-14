@@ -5,7 +5,7 @@
 // from raw.githubusercontent.com, checks it against the manifest's Git blob id and size, and moves
 // the complete tree into a per-user cache. Pattern: Playwright browsers and the HyperFrames headless
 // shell (download once into a user cache, overridable by an environment variable). Node built-ins
-// and global fetch only. See openspec/changes/fetch-vendor-on-demand.
+// and global fetch only. See openspec/changes/archive/2026-10-15-fetch-vendor-on-demand.
 
 const crypto = require("node:crypto");
 const fs = require("node:fs");

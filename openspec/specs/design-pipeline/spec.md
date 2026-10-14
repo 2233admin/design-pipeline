@@ -384,12 +384,22 @@ The pipeline SHALL report install discovery separately from version-sensitive ca
 
 ### Requirement: Explicit multi-root skill discovery
 
-The pipeline SHALL support explicit skill discovery across more than one filesystem root without inferring host-specific plugin-cache layouts.
+The pipeline SHALL support explicit platform-delimited skill roots without inferring host-specific plugin-cache layouts. A nonempty `DESIGN_PIPELINE_SKILL_ROOTS` SHALL take precedence over `CODEX_SKILLS_DIR`; either nonempty setting SHALL replace all default roots rather than append them.
 
 #### Scenario: Companion skills use separate roots
 
 - **WHEN** `DESIGN_PIPELINE_SKILL_ROOTS` or `CODEX_SKILLS_DIR` contains multiple platform-delimited roots
 - **THEN** self-check SHALL search each root for companion skills and bundled resources.
+
+#### Scenario: Explicit roots exclude available defaults
+
+- **WHEN** the selected explicit root list lacks the required pipeline while a complete installation exists in a default location
+- **THEN** self-check SHALL search only the explicit roots, report missing core skills and resources, return `FAIL`, and exit 1.
+
+#### Scenario: The higher-precedence setting wins
+
+- **WHEN** both explicit root settings are nonempty
+- **THEN** self-check SHALL use only `DESIGN_PIPELINE_SKILL_ROOTS`, regardless of whether `CODEX_SKILLS_DIR` contains a complete installation.
 
 ### Requirement: Headless agent handoff
 
@@ -546,12 +556,18 @@ The initializer SHALL validate input atomically, isolate targets, resume identic
 
 ### Requirement: Data-driven companion compatibility
 
-The pipeline SHALL keep companion install groups and capability profiles in a machine-readable registry and SHALL evaluate both single-skill and multi-skill suites.
+The pipeline SHALL keep companion install groups and capability profiles in a machine-readable registry and SHALL evaluate both single-skill and multi-skill suites. The optional Matt development group SHALL use official upstream installation names.
 
 #### Scenario: A suite is only partially installed
 
 - **WHEN** at least one skill in a capability suite is installed but another required skill or marker is missing
 - **THEN** self-check SHALL report `WARN`, identify the missing skill or marker, and preserve the documented fallback.
+
+#### Scenario: Official Matt skills are installed without local forks
+
+- **WHEN** codebase-design, grill-with-docs, implement, tdd and code-review are present and matt-tdd and matt-code-review are absent
+- **THEN** the existing self-check SHALL report the optional Matt group as installed
+- **AND** it SHALL not require locally renamed aliases or treat presence as source verification
 
 ### Requirement: Synchronous local feedback
 
@@ -2047,13 +2063,15 @@ silent adaptation.
 
 ### Requirement: MengTo skills are completely internalized
 
-The pipeline SHALL ship a complete, pinned, MIT-attributed `MengTo/skills` source tree and a
-machine-readable catalog as core offline package resources.
+The pipeline SHALL use a complete, pinned, MIT-attributed `MengTo/skills` source tree and a
+machine-readable catalog. The package SHALL carry the catalog manifest; the tree SHALL be downloaded
+on demand and verified (see `Large upstream bundles are downloaded on demand and verified`) and
+then used offline.
 
 #### Scenario: A design technique is needed offline
 
-- **WHEN** the user has only the packaged design pipeline and requests a matching visual, motion,
-  reference, WebGL, or game workflow
+- **WHEN** the user has the packaged design pipeline with the MengTo bundle fetched, and requests a
+  matching visual, motion, reference, WebGL, or game workflow
 - **THEN** local search SHALL return candidates from all bundled skills with exact source paths
 - **AND** the selected source SHALL be adapted through project DESIGN, MOTION, dependency, and QA
   contracts rather than copied as project authority.
@@ -2099,14 +2117,15 @@ example catalog. Directory ingest SHALL remain a separate live snapshot.
 
 ### Requirement: iart motion skills are internalized with activation boundaries
 
-The pipeline SHALL ship pinned, MIT-attributed iart-ai motion-skill packs that include a LICENSE,
-plus the index repository, as core offline package resources. Packs without a LICENSE SHALL be
-recorded as excluded, not copied.
+The pipeline SHALL use pinned, MIT-attributed iart-ai motion-skill packs that include a LICENSE,
+plus the index repository. The package SHALL carry the manifest; the packs SHALL be downloaded on
+demand and verified, then used offline. Packs without a LICENSE SHALL be recorded as excluded, not
+copied.
 
 #### Scenario: A web-motion technique is needed offline
 
-- **WHEN** the user has only the packaged design pipeline and requests a matching web, WebGL, or
-  kinetic-typography workflow
+- **WHEN** the user has the packaged design pipeline with the iart bundle fetched, and requests a
+  matching web, WebGL, or kinetic-typography workflow
 - **THEN** local search SHALL return candidates from bundled automatic skills with exact source paths
 - **AND** the selected source SHALL be adapted through project DESIGN, MOTION, dependency, and QA
   contracts rather than copied as project authority.
@@ -4193,6 +4212,33 @@ check SHALL report passed, failed, not-declared, not-applicable or indeterminate
 - **THEN** validation SHALL reject it before any browser starts
 - **AND** existing motion and journey probes SHALL keep their current behavior.
 
+#### Scenario: Paint over generated text on its own fill is unresolved
+
+- **WHEN** generated `::before` or `::after` text on its own fill lies under another element, a
+  positioned child of its host, or its host's other pseudo-element painted above it
+- **THEN** contrast SHALL report `indeterminate` instead of a ratio against that fill
+- **AND** generated text on its own fill that is transformed, offset by relative or sticky
+  positioning, or otherwise cannot be placed SHALL report `indeterminate` as well.
+
+#### Scenario: Generated text is measured where its margins place it
+
+- **WHEN** the margins of an absolute pseudo-element move its generated text off its host
+- **THEN** contrast SHALL be measured against the background behind the moved box.
+
+#### Scenario: An over-constrained pseudo-element does not widen a target
+
+- **WHEN** a control's absolute `::before` or `::after` has a size, margins and insets that
+  over-constrain each other
+- **THEN** target size SHALL measure the control without that pseudo-element
+- **AND** a pseudo-element whose insets and margins resolve SHALL widen the target to its border box,
+  on an inline control on one line as on a block.
+
+#### Scenario: A link across a line break is not inside a sentence
+
+- **WHEN** an inline link is separated from the surrounding text by a `<br>` or an in-flow block box
+- **THEN** that text SHALL NOT exempt the link from target size and control spacing
+- **AND** a link inside a sentence that merely wraps SHALL stay exempt.
+
 ### Requirement: Web probe stage requires a page audit
 
 The web workflow's `probe` stage SHALL require at least one passing audit probe at every tier. When
@@ -4363,3 +4409,463 @@ The render gate SHALL count a planned hard or match cut that the scene threshold
 
 - **WHEN** the change at a planned boundary builds up over several frames, as in a 0.3 s dissolve or a camera that accelerates into a match cut
 - **THEN** the cut SHALL stay missed and `planned-cuts-missing` SHALL apply as before.
+
+### Requirement: single next step
+The pipeline SHALL provide a `next` command that reads project state and returns exactly one action: run a command, ask the user one decision with a recommended answer or, in a web intake conversation, one open question, or report done with evidence. Completed steps SHALL NOT be repeated.
+
+#### Scenario: Work has a next action
+- **WHEN** project state contains unfinished work
+- **THEN** `next` SHALL return exactly one action to run a command or to ask the user one decision with a recommended answer or one open question
+- **AND** it SHALL NOT repeat completed steps
+
+#### Scenario: A web conversation asks an open question
+- **WHEN** `next` opens the intake of a standard or full web project
+- **THEN** the ask SHALL carry one open question with no recommended answer, option list or numbered question list
+
+#### Scenario: Work is done
+- **WHEN** project state shows all steps complete
+- **THEN** `next` SHALL report done with evidence
+
+### Requirement: project state
+The pipeline SHALL record deliverable, tier, mode, stage and human decisions in
+`.design-pipeline/state.json`, and SHALL treat a recorded artifact that no longer exists as stale.
+
+#### Scenario: Project state is recorded
+- **WHEN** project state is updated
+- **THEN** `.design-pipeline/state.json` SHALL record deliverable, tier, mode, stage, and human decisions
+
+#### Scenario: Recorded artifact no longer exists
+- **WHEN** a recorded artifact no longer exists
+- **THEN** the pipeline SHALL treat it as stale
+
+### Requirement: ceremony tiers
+Work SHALL run at a quick, standard or full tier. OpenSpec artifacts SHALL be required only at the
+full tier and for changes to this repository.
+
+#### Scenario: OpenSpec requirement is determined
+- **WHEN** work runs below the full tier and is not a change to this repository
+- **THEN** OpenSpec artifacts SHALL NOT be required
+- **AND** they SHALL be required at full tier and for repository changes
+
+### Requirement: two human decisions
+Standard film and edit work SHALL ask the user to pick a concept and to accept or reject a draft that has passed all error gates. Standard and full web work SHALL ask the owner to confirm the playback, pick the variant and accept the final page; the decision rounds, the description approval and each section review SHALL be agent self-checks unless the owner keeps them. Every rejection, decision-round correction and anti-goal SHALL be recorded as a rule.
+
+#### Scenario: Standard work reaches decision points
+- **WHEN** standard film or edit work reaches concept choice and draft review
+- **THEN** the pipeline SHALL ask the user to pick a concept and to accept or reject a draft that passed all error gates
+- **AND** it SHALL record a rejection with its reason
+
+#### Scenario: Standard web work reaches its checkpoints
+- **WHEN** standard or full web work runs from intake to delivery
+- **THEN** it SHALL ask the owner to confirm a playback, pick or combine first-screen variants (except in replicate mode) and accept or reject the checked page, while the concrete decisions, the description and each section are settled by agent self-checks unless the owner kept them
+- **AND** every rejection or correction at these checkpoints SHALL be recorded as a rule, and each anti-goal stated with the playback or a skip as a project rule
+
+### Requirement: small front door
+The entry skill SHALL stay under 5 KB and route to deliverable workflows and references loaded on
+demand; every existing command SHALL remain available.
+
+#### Scenario: Entry skill is delivered
+- **WHEN** the entry skill is delivered
+- **THEN** it SHALL stay under 5 KB, route to deliverable workflows and on-demand references, and keep every existing command available
+
+### Requirement: Component source discovery has one index
+
+The existing component-source catalog SHALL register canonical source identities and typed source, component, method and template records. External stack, provider and companion entries SHALL reference sourceId without moving execution contracts. Existing record IDs, namespace and v1 lineage SHALL remain intact.
+
+#### Scenario: A source appears in multiple registries
+
+- **WHEN** vendor manifests, stack registries, component providers, companions, design-system profiles or snapshots refer to one normalized source URL
+- **THEN** a single source record SHALL own its canonical sourceId and aliases
+- **AND** component-level records SHALL refer to that source without registering it twice.
+
+#### Scenario: Packaged and reference-only sources are discovered
+
+- **WHEN** the index is checked against all vendor manifests, non-excluded iart packs, external registries, Astryx, Prompt Motion and HyperFrames
+- **THEN** every source SHALL have an index record with explicit availability, license state and evidence
+- **AND** local pointers SHALL resolve to existing files inside the skill package
+- **AND** film and GEPA SHALL remain discoverable without entering web component ranking.
+
+#### Scenario: Component routing metadata is malformed
+
+- **WHEN** any catalog record carries invalid or non-object routing metadata, including a component that web ranking or record type filters out of the candidates and a source, method or template record
+- **THEN** route SHALL fail validation before selecting candidates, as the v1 contract did for every entry
+- **AND** well-formed routing on method and template records SHALL remain valid and excluded from component ranking.
+
+### Requirement: Source licensing remains explicit and auditable
+
+Source records SHALL separate license state from license identifier and evidence. States SHALL be verified, unverified, commercial, project-owned or platform. Revision and Git tree provenance SHALL remain distinct from content-hash scope. An uncertain or commercial license SHALL NOT authorize copying code.
+
+#### Scenario: Repository license evidence is unavailable
+
+- **WHEN** license inspection cannot establish a source's permission or the source is commercial
+- **THEN** the index SHALL retain the honest unverified or commercial state and evidence
+- **AND** workflow instructions SHALL permit study and clean reimplementation only, not copying.
+
+#### Scenario: A reference has executable metadata but no copy authority
+
+- **WHEN** an unverified or commercial source is selected or returned as an alternative
+- **THEN** its route SHALL remain reference-adaptation and review
+- **AND** it SHALL NOT expose package, install, dependency or source-code adoption fields, including nested component installation metadata.
+
+### Requirement: MengTo projection follows the pinned source inventory
+
+The maintained MengTo catalog SHALL match the current vendor manifest's revision and method inventory. Frontend validation SHALL compare projection equivalence with the manifest rather than a fixed historic count.
+
+#### Scenario: Projection is stale despite a valid old count
+
+- **WHEN** projection source, revision, license, method names, count or categories differ from the pinned vendor manifest
+- **THEN** validation SHALL reject the stale projection
+- **AND** a complete matching current projection SHALL pass regardless of the old 127-entry count.
+
+### Requirement: Web build follows an explicit component source decision
+
+Every web tier and mode SHALL settle components before build: at quick right before it, at standard and full before the description. Decide SHALL require explicit comma-separated choices from project, github, index, discover and scratch, keep the answer and store canonical, deduplicated sources; scratch SHALL be exclusive and github SHALL need an HTTPS GitHub owner/repo URL. The step SHALL offer the sources in plain words and recommend the project's components, then the index, then discovery.
+
+#### Scenario: Next reaches a build boundary
+
+- **WHEN** earlier prerequisites are complete and no components decision is recorded
+- **THEN** next SHALL return the components step before the description and the build
+- **AND** at standard and full the step SHALL open a round of numbered questions, the sections in build order and the component sources, each with a recommended answer
+- **AND** at quick it SHALL ask only the component sources, immediately before build
+- **AND** its decide command SHALL bind the absolute project path and work outside that directory.
+
+#### Scenario: Decide validates and records explicit sources
+
+- **WHEN** decide uses `--stage components --choice index,project,index --answer "<the owner's reply>"`
+- **THEN** decisions.componentSources SHALL be `["project","index"]` and decisions.components SHALL preserve the answer unchanged
+- **AND** canonical ordering SHALL be project, github, index, discover, scratch, restricted to selected choices.
+- **AND** missing or unknown choices, scratch combined with another choice (discover included), or github without an HTTPS GitHub owner/repo URL in the answer SHALL be rejected
+- **AND** a components decision on a film, edit or ui workflow SHALL be rejected before any state or evidence changes.
+
+#### Scenario: The owner lets the agent discover sources
+
+- **WHEN** next asks components
+- **THEN** the ask SHALL offer letting the agent find maintained open-source component libraries and icon sets on GitHub beyond the index, as the plain-words option "Let me find open-source libraries" with the id `discover` in its record command, and SHALL recommend the project's components, then the index, then discovery
+- **AND** decide with `--choice discover,index,project` SHALL store `["project","index","discover"]` without requiring a URL in the answer.
+
+#### Scenario: Legacy answer-only decision reaches build
+
+- **WHEN** a web state has a components answer but no explicit componentSources set
+- **THEN** next SHALL ask components again rather than infer sources from the answer.
+
+#### Scenario: Build follows a recorded reply
+
+- **WHEN** decide records the owner's components reply with a valid explicit `--choice` set
+- **THEN** the build instruction SHALL follow that reply and explicitly name references/component-source-catalog.json
+- **AND** index discovery SHALL use design-system route and design-system search with the page brief and platform web
+- **AND** the instruction SHALL require component-manifest.json before index.html
+- **AND** it SHALL search the index first, route font choice through tools/fonts.md without silently defaulting to the system stack, and keep discovered code and fonts bundled or self-hosted inside the project with their notices, with no CDN scripts or remote fonts at runtime.
+
+#### Scenario: Build guidance with discover selected
+
+- **WHEN** the recorded componentSources include discover
+- **THEN** the build instruction SHALL tell the agent, when nothing indexed fits, to find maintained open-source component libraries or icon sets on GitHub, check each license at a pinned revision, record the manifest entry before use and prefer genuine reuse over hand-writing
+- **AND** without discover the instruction SHALL NOT offer discovery beyond the selected sources.
+
+#### Scenario: Changed decision invalidates checked evidence
+
+- **WHEN** a different components answer or source set is recorded after interaction, review or delivery evidence exists, or a first explicit decision is recorded on a legacy state that already holds such evidence
+- **THEN** the interaction pass and delivery SHALL be invalidated
+- **AND** at quick next SHALL return to the probe boundary, while at standard and full the description approval SHALL no longer be current, so next SHALL ask for it and for each section review again before probe
+- **AND** recorded review verdicts SHALL stay unchanged but SHALL NOT complete review for the new decision
+- **AND** re-recording an identical decision SHALL leave the evidence intact
+- **AND** adding or removing discover SHALL count as a different source set.
+
+### Requirement: Component provenance is an existing build completion condition
+
+Web build SHALL require index.html and a valid component-manifest.json. Sources SHALL resolve to indexed records, decision-named or discovered GitHub repositories, or project files in a recorded componentSources category. Usage SHALL identify contained files and real markers; indexed license states SHALL match. Scratch SHALL require fromScratch true and only project-owned entries. Nonscratch SHALL forbid fromScratch true and require entries. This SHALL NOT add a gate.
+
+#### Scenario: HTML exists without valid provenance
+
+- **WHEN** index.html exists but the manifest is absent, malformed or lacks required entry fields
+- **THEN** build SHALL remain unfinished
+- **AND** its instruction SHALL include the validator message and its existing finding SHALL use code `CONTRACT_INVALID`, severity `error`, that validator message as message, and remediation as fix.
+
+#### Scenario: Scratch implementation is explicitly chosen
+
+- **WHEN** decide records `--stage components --choice scratch --answer "从零写"` and index.html plus a manifest with `fromScratch: true` and an empty entries array exist
+- **THEN** the component provenance completion condition SHALL be satisfied
+- **AND** technical completion SHALL NOT grant Component Conformance or Visual Acceptance
+- **AND** scratch manifests MAY instead contain only project-owned entries satisfying the existing per-entry rules; missing fromScratch true or external-source entries, discovered ones included, SHALL keep build unfinished.
+
+#### Scenario: Reuse or discovery is chosen without manifest entries
+
+- **WHEN** the explicit componentSources set selects project, github, index or discover and the manifest has no entries or has `fromScratch: true`
+- **THEN** build SHALL remain unfinished regardless of the answer's wording.
+
+#### Scenario: Fabricated provenance or usage is supplied
+
+- **WHEN** a source cannot resolve, an indexed license state differs, a usage file is missing or outside the project, or its marker does not appear in that file
+- **THEN** build SHALL remain unfinished.
+
+#### Scenario: An entry substitutes an unselected source category
+
+- **WHEN** a nonscratch entry is a contained project file or the project-owned indexed record without project selected, a decision-named GitHub URL without github, a discovered GitHub repository URL without discover, or any other indexed sourceId, platform records included, without index
+- **THEN** build SHALL remain unfinished and the validator message SHALL name the entry, its category and the recorded componentSources set
+- **AND** a named GitHub library under a github-only set SHALL be cited by url, not by its indexed sourceId
+- **AND** scratch manifests SHALL keep their existing rules.
+
+#### Scenario: License handling is recorded for real adoption
+
+- **WHEN** a verified source is imported or copied
+- **THEN** usedIn.how SHALL record attribution or license-notice handling
+- **AND** unverified or commercial sources SHALL NOT be copied or adopted without entitlement
+- **AND** a usedIn.how that bundles, vendors, self-hosts or downloads a source SHALL count as copying it.
+
+### Requirement: Usable animation sources retain their actual license terms
+
+The existing index SHALL expose verified Motion and anime.js libraries for web animation discovery with npm or ESM adoption. GSAP SHALL retain the GSAP Standard No Charge License and its restrictions, not MIT. Unverified and commercial sources SHALL retain dated study/reimplementation-only decisions.
+
+#### Scenario: Web animation discovery is requested
+
+- **WHEN** route or search uses platform web for spring animation, scroll reveal or timeline
+- **THEN** usable animation libraries SHALL be discoverable
+- **AND** film, GEPA, Prompt Motion and HyperFrames method or template records SHALL NOT enter web component results.
+
+### Requirement: Saved gate remediation commands bind the selected project
+
+Returned saved-gate findings.fix and next text SHALL project legacy bare commands through the existing absolute CLI command conventions without modifying saved state.
+
+#### Scenario: A legacy gate next command is returned
+
+- **WHEN** saved next text contains a bare designer-pipeline film blocks command
+- **THEN** the returned command SHALL bind both absolute roots and run from an unrelated directory without argument or root rejection
+- **AND** saved gate text SHALL remain unchanged.
+
+### Requirement: Discovered GitHub sources carry pinned license provenance
+
+An entry citing by url `https://github.com/<owner>/<repo>` that is neither decision-named nor indexed SHALL be a discovered source needing a revision and https license.evidence on that repository at the revision. Copying or importing it SHALL require license.state verified, a permissive license.id and a contained, non-empty license.file; otherwise it SHALL be study or reimplementation only. The validator SHALL check this shape offline and SHALL NOT authenticate the upstream.
+
+#### Scenario: A discovered source records pinned provenance
+
+- **WHEN** discover is selected and an entry cites a GitHub repository URL that is neither decision-named nor indexed, with a revision (commit SHA or tag), an SPDX license.id and https license.evidence including `https://github.com/<owner>/<repo>/blob/<revision>/LICENSE`
+- **THEN** the entry SHALL satisfy its source rules and build SHALL complete once every other rule holds
+- **AND** unverified or commercial discovered sources SHALL be accepted only for study or reimplementation
+- **AND** a study-only discovered entry MAY omit license.id
+- **AND** the validator SHALL NOT fetch the evidence or check that the repository, revision or license exists upstream.
+
+#### Scenario: A discovered url is not a GitHub repository URL
+
+- **WHEN** an entry cites by url an npm package page, an official project page, another host, a non-https URL, a URL with credentials, a GitHub owner page, a GitHub page that is not a repository (such as `https://github.com/topics/<name>`, `orgs`, `sponsors` or `marketplace`) or a deep link inside a GitHub repository that is neither decision-named nor indexed
+- **THEN** build SHALL remain unfinished with a validator message that the url must be a GitHub repository URL `https://github.com/<owner>/<repo>` or a project file.
+
+#### Scenario: Discovered provenance is incomplete
+
+- **WHEN** a discovered entry lacks revision or a non-empty array of https license.evidence URLs, pins the moving ref HEAD, main or master, gives an empty license.id, claims license.state project-owned or platform, or claims availability project-owned
+- **THEN** build SHALL remain unfinished with a validator message naming the entry and the missing or invalid field.
+
+#### Scenario: License evidence does not cover the pinned revision
+
+- **WHEN** no license.evidence URL of a discovered entry lies on its GitHub repository with the revision as the ref segment right after `blob`, `tree`, `raw`, `commit`, `releases/tag` or `archive`, for example evidence only on a default branch, another repository, another host, a different revision that merely starts with the same characters, a revision that appears only as another path segment (such as `LICENSE` or `blob`), or a revision hidden inside an encoded slash of one segment
+- **THEN** build SHALL remain unfinished with a validator message naming the repository and the revision.
+
+#### Scenario: A discovered source is copied without a permissive license kept in the project
+
+- **WHEN** usage copies or imports a discovered source whose license.state is not verified, whose license.id is not one of MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Zlib, Unlicense or CC0-1.0 (matched case-insensitively), or that has no license.file
+- **THEN** build SHALL remain unfinished
+- **AND** such a source SHALL permit only study or reimplementation, and compound expressions such as `MIT OR Apache-2.0` SHALL NOT count as permissive
+- **AND** verified permissive copies and imports SHALL still record attribution or license-notice handling
+- **AND** a discovered entry with availability `bundled-implementation` SHALL count as copied whatever its usedIn.how says.
+
+#### Scenario: The license file is missing, empty or outside the project
+
+- **WHEN** a discovered entry's license.file does not name a project file, does not exist, is a directory, resolves outside the project, or holds only whitespace
+- **THEN** build SHALL remain unfinished with a validator message naming the entry's license.file
+- **AND** the validator SHALL NOT read the file to recognise license text.
+
+#### Scenario: A complete copied discovered entry
+
+- **WHEN** a discovered entry with verified MIT license, revision, repository license evidence at that revision and a non-empty contained license.file is copied with notice handling recorded in usedIn.how
+- **THEN** build SHALL complete once every other rule holds.
+
+#### Scenario: A URL matches an indexed source
+
+- **WHEN** an entry cites by url an indexed source's GitHub repository or a deep link into it, and the decision does not name that repository
+- **THEN** the entry SHALL NOT be a discovered source and build SHALL remain unfinished with a message to cite the indexed sourceId
+- **AND** a decision-named repository URL SHALL keep the github rule and indexed license-state agreement
+- **AND** a deep link inside a decision-named repository SHALL be rejected in favour of that repository's URL.
+
+### Requirement: Design skills are manifest-bound producers, not gate authorities
+
+The future Design Skill layer SHALL pair each single-purpose `SKILL.md` with a machine-readable
+manifest whose effects are mechanically enforced. Skills SHALL produce typed, target-bound handoff
+artifacts and SHALL NOT declare deterministic gates passed. Prototype work SHALL remain isolated
+until a human selection receipt authorizes a separate promotion operation.
+
+#### Scenario: A prototype skill completes before selection
+
+- **WHEN** `design.prototype` produces a valid prototype set and browser evidence but no human
+  selection receipt exists
+- **THEN** the skill run MAY be complete while the promotion gate remains blocked
+- **AND** the runner SHALL reject target writes until a separate authorized promotion operation.
+
+### Requirement: Standard default skill discovery
+
+Without nonempty explicit root settings, self-check SHALL search the legacy Codex skills root, user `~/.agents/skills`, then `<cwd>/.agents/skills`. `CODEX_HOME` SHALL determine the legacy root when set; otherwise it SHALL be `~/.codex/skills`. Default roots SHALL be resolved and de-duplicated in first-seen order. Checks SHALL NOT install or repair skills.
+
+#### Scenario: Standard user installation
+
+- **WHEN** an installed `check-deps.cjs --json` runs without explicit root settings and a complete pipeline and companion are installed under `~/.agents/skills`
+- **THEN** core status and overall result SHALL be `OK`, missing resources SHALL be empty, the companion SHALL be discovered and the process SHALL exit 0.
+
+#### Scenario: Standard project installation
+
+- **WHEN** an installed checker runs from a project with a complete pipeline and companion under `<cwd>/.agents/skills` and no explicit root settings
+- **THEN** core status and overall result SHALL be `OK`, missing resources SHALL be empty, the companion SHALL be discovered and the process SHALL exit 0.
+
+#### Scenario: Legacy and customized Codex homes remain supported
+
+- **WHEN** explicit roots are unset
+- **THEN** the first default root SHALL be `<CODEX_HOME>/skills` when configured, or `~/.codex/skills` otherwise
+- **AND** complete installations and companions there SHALL remain discoverable without changing the later standard defaults.
+
+#### Scenario: Default roots overlap
+
+- **WHEN** the resolved legacy, user or project default roots coincide
+- **THEN** each resolved directory SHALL appear once in first-seen order.
+
+#### Scenario: A default installation is incomplete
+
+- **WHEN** a required resource is absent from all default roots
+- **THEN** self-check SHALL identify the missing resource, report core and overall `FAIL`, and exit 1 without attempting repair.
+
+### Requirement: UI transitions have local state-change selection guidance
+
+The packaged skill SHALL provide project-authored UI transition guidance reachable from its animation entry and web build/review guidance. It SHALL map state changes to optional effects or no motion, preserve project token and UC-rule precedence, and require no upstream fetch or runtime installation.
+
+#### Scenario: An author chooses a transition
+
+- **WHEN** UI content, layout, overlay, navigation, list order or a numeric value changes
+- **THEN** local guidance SHALL distinguish the changed state, stable identity and appropriate optional transition
+- **AND** a clear static change or high-frequency keyboard action SHALL support an explicit no-motion decision.
+
+#### Scenario: Showcase values conflict with the project
+
+- **WHEN** upstream timing, easing, blur or stagger differs from project motion primitives or UC-01 through UC-07
+- **THEN** existing project and pipeline precedence SHALL govern
+- **AND** the author SHALL NOT install the gallery's token scale as a competing default.
+
+### Requirement: UI transition review checks consumer-visible correctness
+
+UI transition guidance SHALL contain individually referenceable rules and manual review cases with observable pass/fail outcomes for identity, geometry, entrance/exit, retargeting, semantics, reduced motion and cleanup/performance. Results SHALL use existing review evidence without adding an automated gate or granting Visual Acceptance.
+
+#### Scenario: A label is not a comparable numeric value
+
+- **WHEN** nonnumeric status text changes, or a value changes currency, unit or comparison basis
+- **THEN** guidance SHALL reject an effect that implies an unsupported increase or decrease
+- **AND** neutral replacement or no motion SHALL remain available.
+
+#### Scenario: Rapid reversal exposes stale state
+
+- **WHEN** an overlay opens, closes and reopens before its prior exit completes
+- **THEN** review SHALL expect the latest state to win without queued playback or stale cleanup removing it
+- **AND** focus, keyboard operation and reduced-motion behavior SHALL remain correct.
+
+#### Scenario: Reorder breaks identity
+
+- **WHEN** list items reorder or a detail view claims continuity with a selected item
+- **THEN** review SHALL reject continuity between different logical items or controls
+- **AND** unavailable or ambiguous geometry SHALL permit a neutral or static fallback.
+
+### Requirement: Transition method provenance remains reference-only
+
+The guide SHALL record the exact public upstream commit, consulted paths, written-source observations, project-authored extensions and license split. It SHALL ship no copied upstream source or snippets, preserve reference-only catalog treatment, and SHALL NOT imply live playback verification, whole-library MIT licensing or paid entitlement.
+
+#### Scenario: Public source methods are internalized
+
+- **WHEN** upstream surface/action selection or coordination methods inform the local rules
+- **THEN** guidance SHALL identify source evidence separately from original project requirements
+- **AND** no copied bundle, recipe collection or paid-content access SHALL be required to use it offline.
+
+### Requirement: non-commercial reference provenance
+Each non-commercially licensed reference skill that the pipeline studies SHALL have a source record
+that pins the canonical repository, revision, content hash and license, marks `codeCopied: false`,
+and limits use to ideas. Repository QA SHALL fail when a record is older than its freshness window.
+
+#### Scenario: Non-commercial reference skill is studied
+- **WHEN** the pipeline studies a skill with a non-commercial license
+- **THEN** its source record SHALL pin the canonical repository, revision, content hash, and license
+- **AND** it SHALL mark `codeCopied: false` and limit use to ideas
+
+#### Scenario: Source record is stale
+- **WHEN** a source record is older than its freshness window
+- **THEN** repository QA SHALL fail
+
+### Requirement: Repository documents have one appropriate home
+
+The repository SHALL keep public entry points and project foundations at the root, reusable
+documentation under `docs/`, change artifacts under `openspec/changes/`, and generated local
+evidence under ignored `.design-pipeline/`. Superseded documents SHALL be archived without
+overwriting current or unrelated work. The existing QA runner SHALL reject unexpected root
+Markdown documents.
+
+#### Scenario: Historical root documents are organized
+- **WHEN** legacy README copies, a historical report and a glossary are relocated
+- **THEN** their bytes remain intact, active documentation links resolve, and root QA passes.
+
+#### Scenario: A scratch document appears at the root
+- **WHEN** QA finds a root Markdown file outside the documented public and foundation set
+- **THEN** it reports that file as a repository hygiene failure.
+
+### Requirement: Project visual foundations follow Google DESIGN.md
+
+Root `DESIGN.md` and synthesis guidance SHALL use Google's official visual-system format and
+section order. Local provenance extensions SHALL be distinguished from the upstream format;
+intentionally absent token groups SHALL carry reasons rather than invented visual values.
+
+#### Scenario: The repository delegates rendering to its host
+- **WHEN** the repository's CLI and Markdown foundation is validated
+- **THEN** its host-owned tokens are explicitly omitted, its prose describes visual presentation,
+  and both the official format lint and existing foundation check pass.
+
+### Requirement: Local development installations are not published
+
+The repository SHALL ignore root local-tool dotpaths and BMAD installation/output folders by
+default, while explicitly preserving shared Git configuration and GitHub automation. Removing
+tracked local tooling SHALL preserve local file contents. QA SHALL reject tracked ignored files.
+
+#### Scenario: Local tools are removed from the Git index
+- **WHEN** BMAD, local agent skills, tool settings and the skill-manager lockfile are excluded
+- **THEN** their local contents remain intact and normal Git staging does not reintroduce them.
+
+#### Scenario: A fresh checkout has no local agent installation
+- **WHEN** the public project instructions and packaged skill are used without `.agents`,
+  `.claude` or BMAD folders
+- **THEN** the shared instructions and repository QA work without those local installations.
+
+#### Scenario: An ignored file is force-added
+- **WHEN** an ignored local tool file appears in the Git index
+- **THEN** the existing QA runner reports it as a publication hygiene failure.
+
+### Requirement: Large upstream bundles are downloaded on demand and verified
+
+The release package SHALL omit the MengTo and iart upstream files and keep their manifests. `sources fetch` SHALL download a bundle at its pinned revision, verify every file against the manifest's blob id and size, and install it into the user cache only when all files verify. A missing bundle SHALL be reported with the fetch command and SHALL NOT block `doctor` or install.
+
+#### Scenario: A bundle is fetched
+
+- **WHEN** `sources fetch --bundle mengto-skills` runs with network access
+- **THEN** the cache SHALL hold the verified bundle at the manifest revision and search SHALL use it
+
+#### Scenario: A downloaded file differs
+
+- **WHEN** a downloaded file's blob id or size differs from the manifest
+- **THEN** the fetch SHALL fail and leave no installed or partial bundle
+
+#### Scenario: Search runs before a fetch
+
+- **WHEN** MengTo or iart search runs and the bundle is in neither the repository nor the cache
+- **THEN** it SHALL fail with `TOOL_MISSING` naming `sources fetch --bundle <bundle>`
+
+### Requirement: Bundled upstream snapshots match their recorded upstream trees
+
+Bundled upstream files SHALL be stored without line-ending conversion. iart verification SHALL rebuild each pack's Git tree from the manifest objects and block when it differs from the tree recorded for that pack's revision.
+
+#### Scenario: A snapshot was regenerated from altered bytes
+
+- **WHEN** an iart file and its manifest entry agree with each other but not with the pack's recorded Git tree
+- **THEN** verification SHALL block and name the pack
+
+#### Scenario: A new upstream file is committed
+
+- **WHEN** a file under `skill/vendor/**/upstream/` is added
+- **THEN** Git SHALL store its bytes unchanged

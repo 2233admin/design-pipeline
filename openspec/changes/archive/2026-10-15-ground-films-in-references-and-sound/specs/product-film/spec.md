@@ -1,6 +1,6 @@
 # Product-film direction
 
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Reference and sound precede film construction
 For promotional animation, the agent MUST inspect relevant moving references and available user

@@ -652,3 +652,69 @@ Admission and every film gate SHALL report technical conformance only, with crea
 
 - **WHEN** a historical fictional-product film has a high frozen rubric score
 - **THEN** the score stays a diagnostic and does not count as admission or acceptance
+
+### Requirement: Ordinary language activates film direction
+When a user asks for a product promotional film or animation, the pipeline MUST apply the
+product-film direction contract without asking the user to supply motion-design vocabulary.
+An HTML delivery format MUST preserve film intent.
+
+#### Scenario: Canvas promotion
+- GIVEN "给我们的画布做一个宣传动画"
+- WHEN Stage 0 and frontend routes resolve
+- THEN the deliverable is product-launch-video and the HTML video route is available
+- AND the skill requires product-film-direction.md before storyboard or template selection.
+
+### Requirement: Moving evidence establishes creative acceptance
+The agent MUST plan product actions and shot-to-shot handoffs, preview a representative moving
+passage before extending it, and review uninterrupted playback. It MUST record creative findings
+separately from technical checks. Runtime tests or attractive screenshots alone are insufficient.
+
+#### Scenario: Technically valid but repetitive scene entrances
+- GIVEN a film where successive sections repeatedly enter, hold, and fade without product action
+- WHEN technical checks pass
+- THEN creative review still requires revision or records the unresolved limitation.
+
+### Requirement: Reference and sound precede film construction
+For promotional animation, the agent MUST inspect relevant moving references and available user
+material before committing to visual grammar, storyboard or runtime. When the user supplies no
+reference, the agent MUST seek suitable finished films without requiring professional terminology.
+The reference record MUST distinguish observed time ranges from inferred or unavailable details.
+
+#### Scenario: User supplies moving references or material
+- **WHEN** promotional animation begins and the user has supplied relevant moving references or material
+- **THEN** the agent MUST inspect them before committing to visual grammar, storyboard, or runtime
+- **AND** the reference record MUST distinguish observed time ranges from inferred or unavailable details
+
+#### Scenario: User supplies no reference
+- **WHEN** promotional animation begins without a user-supplied reference
+- **THEN** the agent MUST seek suitable finished films without requiring professional terminology
+
+### Requirement: Promotional films include a sound direction
+The agent MUST plan music, sound effects and intentional silence with the storyboard. Audible
+delivery is the default unless the user or delivery context explicitly calls for silence. Missing
+audio access or tooling MUST remain an unresolved production dependency rather than being silently
+converted into a silent final deliverable.
+
+#### Scenario: Promotional storyboard is planned
+- **WHEN** the agent plans a promotional film storyboard
+- **THEN** it MUST plan music, sound effects, and intentional silence with the storyboard
+- **AND** audible delivery MUST be the default unless the user or delivery context explicitly calls for silence
+
+#### Scenario: Audio access or tooling is missing
+- **WHEN** audio access or tooling is unavailable
+- **THEN** the agent MUST retain it as an unresolved production dependency and MUST NOT silently convert the final deliverable to silence
+
+### Requirement: Reference-led audiovisual proof
+A representative moving proof MUST use the selected material and sound direction. Creative review
+MUST compare that proof against the recorded reference traits. Agent review, technical tests and
+user acceptance MUST remain distinct states. User rejection reopens creative direction.
+
+#### Scenario: Representative proof is reviewed
+- **WHEN** a representative moving proof is prepared
+- **THEN** it MUST use the selected material and sound direction
+- **AND** creative review MUST compare it against the recorded reference traits
+- **AND** agent review, technical tests, and user acceptance MUST remain distinct states
+
+#### Scenario: User rejects proof
+- **WHEN** the user rejects the proof
+- **THEN** creative direction MUST reopen

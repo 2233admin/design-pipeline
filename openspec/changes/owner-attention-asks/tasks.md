@@ -42,10 +42,12 @@
 
 ## 7. Integration
 
-- [ ] 7.1 `npm test` and `npm run specs:check` pass locally (the known ffmpeg-only environment failure excepted); verify both exit codes.
+- [x] 7.0 RENAME `two human decisions` to `Owner decision points per deliverable` (moved here from `make-web-workflow-conversational` task 1.4 when that change was archived); verified with `npm exec -- openspec validate owner-attention-asks --strict`.
+
+- [x] 7.1 `npm test` and `npm run specs:check` pass locally (the known ffmpeg-only environment failure excepted); verify both exit codes.
 - [x] 7.2 Mark design-owner-attention task 2.1 done, and move the deferred items (decide later, rule history edits, later delegation changes, cross-project ledger) into its phase 4 text; verify with `npm exec -- openspec validate design-owner-attention --strict`.
 
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.
-- Archive after the in-flight chain (`make-web-workflow-conversational`, `adopt-ai-fluency-decision-roles`) archives.
+- Archive after `adopt-ai-fluency-decision-roles` archives (`make-web-workflow-conversational` was archived in #136).

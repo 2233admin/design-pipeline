@@ -242,7 +242,7 @@ test("the existing audit reports current, drifted, and missing evidence determin
 });
 
 // Reference skills studied for ideas only (non-commercial licenses); see
-// openspec/changes/pin-film-reference-provenance.
+// openspec/changes/archive/2026-10-15-pin-film-reference-provenance.
 const referenceSkills = {
   "skill/references/reference-skill-motion-web.md": {
     sourceId: "motion-web-reference-skill",

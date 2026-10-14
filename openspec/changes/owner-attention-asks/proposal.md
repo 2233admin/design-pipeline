@@ -45,9 +45,10 @@ owner already settled, so owners approve recommendations they never judged.
     keeps.
   - Anti-goals and rules recorded before this change stay project rules.
 - **In-flight deltas are corrected in place.** `make-web-workflow-conversational` and
-  `adopt-ai-fluency-decision-roles` are not archived, and some of their requirements now describe
-  superseded behaviour. They are edited in place, and the two unimplemented creative-intent
-  requirements are removed.
+  `adopt-ai-fluency-decision-roles` were not archived, and some of their requirements described
+  superseded behaviour. They were edited in place, and the two unimplemented creative-intent
+  requirements were removed. (`make-web-workflow-conversational` has since been archived in #136,
+  so those edits are now in `openspec/specs/`.)
 
 ## Capabilities
 

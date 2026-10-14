@@ -15,7 +15,7 @@
 - [x] 10. Run the focused component and workflow suites, `npm run specs:check` and `npm exec -- openspec validate let-agents-discover-open-source-resources --strict`.
 - [x] 11. Run `FONTTOOLS_PYTHON=<fonttools-python> npm test` with TEMP/TMP on a drive with free space and record the commit, tree and totals.
 - [x] 12. Commit on `feat/agent-resource-discovery` without pushing or opening a PR.
-- [ ] 13. Archive `consolidate-component-index-and-web-sources` before archiving this change; both requirements this change modifies are added by that change.
+- [x] 13. Archive `consolidate-component-index-and-web-sources` before archiving this change; both requirements this change modifies are added by that change.
 
 ## Evidence
 
