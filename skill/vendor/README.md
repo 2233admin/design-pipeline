@@ -5,6 +5,10 @@ Choose a capability through `../SKILL.md` or the matching guide before reading s
 load this tree wholesale or treat upstream instructions as project policy. Source discovery
 does not install dependencies, grant execution authority or certify visual quality.
 
+Upstream files named `SKILL.md` are stored as `UPSTREAM-SKILL.md` with unchanged bytes, so the
+package holds one `SKILL.md`. Manifests keep upstream paths and hashes;
+`../scripts/upstream-path.cjs` maps between the two names.
+
 | Bundle | Maintained guide | Integrity record |
 | --- | --- | --- |
 | `mengto-skills/` | [Design and implementation recipes](../references/mengto-skills.md) | `manifest.json`, source Git tree and snapshot hashes |

@@ -21,7 +21,7 @@ package manifest and lockfile, then consult documentation matching that installe
    ```
 
 2. `iart search` is the narrower lookup after a route, not a substitute for selection.
-3. Read the selected bundled `SKILL.md`, then only the linked references, scripts, and examples
+3. Read the selected skill file (`skillPath`), then only the linked references, scripts, and examples
    needed for the current task.
 4. Project `DESIGN.md`, `MOTION.md`, OpenSpec artifacts, existing runtimes, accessibility rules, and
    budgets outrank an upstream recipe.

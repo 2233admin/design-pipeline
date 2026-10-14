@@ -9,6 +9,8 @@ const { spawnSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const test = require("node:test");
 const { canonicalTree } = require("../scripts/git-tree-snapshot.cjs");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
+const { storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
 const { gitTreeId } = require("../skill/scripts/mengto-skills-core.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -39,7 +41,7 @@ test("good-css preserves the complete reviewed Git blobs, tree and licenses", ()
   assert.equal(manifest.source.gitTree, "a14bae52fb7bd2374faefaf6c62f575aeff8dad5");
   assert.equal(manifest.source.license, "MIT");
   assert.deepEqual(manifest.source.scope, ["**"]);
-  const files = filesIn(sourceRoot);
+  const files = upstreamFilesIn(sourceRoot);
   assert.equal(files.length, 133);
   assert.equal(manifest.snapshot.fileCount, files.length);
   assert.deepEqual(manifest.snapshot.objects.map((object) => object.path).sort(), files);
@@ -47,7 +49,7 @@ test("good-css preserves the complete reviewed Git blobs, tree and licenses", ()
   let bytes = 0;
   for (const object of manifest.snapshot.objects) {
     assert.equal(object.mode, "100644", object.path);
-    const content = fs.readFileSync(path.join(sourceRoot, object.path));
+    const content = fs.readFileSync(path.join(sourceRoot, storedPath(object.path)));
     bytes += content.length;
     assert.equal(object.size, content.length, object.path);
     assert.equal(object.oid, crypto.createHash("sha1").update(`blob ${content.length}\0`).update(content).digest("hex"), object.path);
@@ -65,7 +67,7 @@ test("good-css preserves the complete reviewed Git blobs, tree and licenses", ()
   const resources = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/package-resources.json"), "utf8"));
   assert.ok(resources.required.includes("vendor/good-css/manifest.json"));
   const prefix = "vendor/good-css/upstream/";
-  assert.deepEqual(resources.required.filter((file) => file.startsWith(prefix)).map((file) => file.slice(prefix.length)).sort(), files);
+  assert.deepEqual(resources.required.filter((file) => file.startsWith(prefix)).map((file) => file.slice(prefix.length)).sort(), files.map(storedPath).sort());
   assert.equal(manifest.boundary.installsUpstreamDependencies, false);
   assert.equal(manifest.boundary.executesDeployment, false);
 });
@@ -115,6 +117,8 @@ test("good-css import rejects dirty, unreviewed and incomplete sources without r
   try {
     const scripts = path.join(root, "scripts");
     fs.mkdirSync(scripts);
+    fs.mkdirSync(path.join(root, "skill/scripts"), { recursive: true });
+    fs.copyFileSync(path.join(repoRoot, "skill/scripts/upstream-path.cjs"), path.join(root, "skill/scripts/upstream-path.cjs"));
     for (const file of ["import-good-css.cjs", "git-tree-snapshot.cjs"]) fs.copyFileSync(path.join(repoRoot, "scripts", file), path.join(scripts, file));
     const destination = path.join(root, "skill/vendor/good-css");
     fs.mkdirSync(destination, { recursive: true });
@@ -183,16 +187,16 @@ test("good-css study builds every local specimen and preserves output on rejecti
     const navigation = fs.readFileSync(path.join(output, "specimens/cross-document-view-transitions.html"), "utf8");
     assert.match(navigation, /href="(?:cross-document-view-transitions\.html)?\?page=b"/);
     assert.match(navigation, /URLSearchParams\(location\.search\)/);
-    const before = canonicalTree(output, filesIn(output));
+    const before = storedTree(output);
     assert.throws(() => builder.buildStudy({ output }), /exist/i);
-    assert.equal(canonicalTree(output, filesIn(output)), before);
+    assert.equal(storedTree(output), before);
     const aliasSource = path.join(root, "alias-source");
     fs.cpSync(sourceRoot, aliasSource, { recursive: true });
     const nestedOutput = path.join(aliasSource, "study");
-    const sourceBefore = canonicalTree(aliasSource, filesIn(aliasSource));
+    const sourceBefore = storedTree(aliasSource);
     assert.throws(() => builder.buildStudy({ output: nestedOutput, sourceRoot: fs.realpathSync.native(aliasSource) }), /outside the preserved source/);
     assert.equal(fs.existsSync(nestedOutput), false);
-    assert.equal(canonicalTree(aliasSource, filesIn(aliasSource)), sourceBefore);
+    assert.equal(storedTree(aliasSource), sourceBefore);
     const missing = path.join(root, "missing-source-output");
     assert.throws(() => builder.buildStudy({ output: missing, sourceRoot: path.join(root, "absent") }));
     assert.equal(fs.existsSync(missing), false);

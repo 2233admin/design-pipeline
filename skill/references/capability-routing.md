@@ -110,7 +110,7 @@ verify version-matched official documentation first.
 
 ## GSAP implementation without companion installs
 
-The local [GSAP web playbook](../vendor/iart-motion-skills/upstream/web-animation-skills/skills/gsap-web/SKILL.md)
+The local [GSAP web playbook](../vendor/iart-motion-skills/upstream/web-animation-skills/skills/gsap-web/UPSTREAM-SKILL.md)
 already covers timelines, SVG and ScrollTrigger. For scroll integration open only its
 [scroll and cleanup reference](../vendor/iart-motion-skills/upstream/web-animation-skills/skills/gsap-web/references/scrolltrigger-lenis.md).
 Use these through the existing selected source route; no extra catalog pass or global `gsap-*`

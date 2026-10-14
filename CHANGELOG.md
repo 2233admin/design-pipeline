@@ -6,6 +6,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- The package holds one `SKILL.md` (change `store-upstream-skill-files`, #118). The 258 bundled
+  upstream `SKILL.md` files are stored as `UPSTREAM-SKILL.md` with unchanged bytes; manifests keep
+  upstream paths and hashes, and `skill/scripts/upstream-path.cjs` maps between the names for
+  verification, catalog results (`skillPath`), `film methods`, imports and tests. Packaging and
+  QA reject any other `SKILL.md`. Agents reading a bundled upstream skill open `UPSTREAM-SKILL.md`.
 - Decisions record who made them (change `adopt-ai-fluency-decision-roles`, phase 1, #108). Each
   workflow keeps a delegation map; `decide` requires `--by owner|agent` and refuses agent records
   where the owner decides; final acceptance is locked to the owner and no longer routed to an art

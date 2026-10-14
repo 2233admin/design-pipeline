@@ -3,6 +3,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath, upstreamFiles } = require("./upstream-path.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/iart-motion-skills/manifest.json");
 const schema = "design-pipeline.iart-motion-skills-source.v1";
@@ -100,23 +101,26 @@ function verifyIartSnapshot(manifestFile = defaultManifest) {
   if (!fs.existsSync(sourceRoot) || fs.lstatSync(sourceRoot).isSymbolicLink() || !fs.statSync(sourceRoot).isDirectory()) {
     return { schema: "design-pipeline.iart-motion-skills-verification.v1", status: "blocked", issues: ["snapshot root is missing"] };
   }
-  const files = collectFiles(sourceRoot);
+  // Walked files are stored names; the manifest and every hash use upstream names.
+  const walked = upstreamFiles(collectFiles(sourceRoot));
+  const files = walked.files;
   const normalizedFiles = files.map((relative) => relative.split(path.sep).join("/")).sort();
   const objectByPath = new Map(loaded.manifest.snapshot.objects.map((object) => [object.path, object]));
-  const byteCount = normalizedFiles.reduce((sum, relative) => sum + fs.statSync(path.join(sourceRoot, ...relative.split("/"))).size, 0);
+  const read = (relative) => path.join(sourceRoot, ...storedPath(relative).split("/"));
+  const byteCount = normalizedFiles.reduce((sum, relative) => sum + fs.statSync(read(relative)).size, 0);
   const entries = normalizedFiles.map((relative) => {
-    const content = fs.readFileSync(path.join(sourceRoot, ...relative.split("/")));
+    const content = fs.readFileSync(read(relative));
     const hash = crypto.createHash("sha256").update(content).digest("hex");
     return `${relative}\0${hash}\n`;
   });
   const treeSha256 = crypto.createHash("sha256").update(entries.join(""), "utf8").digest("hex");
-  const issues = [];
+  const issues = [...walked.issues];
   if (files.length !== loaded.manifest.snapshot.fileCount) issues.push(`file count ${files.length} != ${loaded.manifest.snapshot.fileCount}`);
   if (byteCount !== loaded.manifest.snapshot.byteCount) issues.push(`byte count ${byteCount} != ${loaded.manifest.snapshot.byteCount}`);
   if (treeSha256 !== loaded.manifest.snapshot.treeSha256) issues.push(`tree hash ${treeSha256} != ${loaded.manifest.snapshot.treeSha256}`);
   if (JSON.stringify(normalizedFiles) !== JSON.stringify([...objectByPath.keys()].sort())) issues.push("Git object inventory does not match bundled files");
   for (const relative of normalizedFiles) {
-    const content = fs.readFileSync(path.join(sourceRoot, ...relative.split("/")));
+    const content = fs.readFileSync(read(relative));
     const object = objectByPath.get(relative);
     if (!object) continue;
     if (content.length !== object.size) issues.push(`Git blob size mismatch: ${relative}`);
@@ -129,7 +133,7 @@ function verifyIartSnapshot(manifestFile = defaultManifest) {
   const declaredSkills = loaded.manifest.skills.map((skill) => skill.path.replace(/^upstream\//, "")).sort();
   if (JSON.stringify(discoveredSkills) !== JSON.stringify(declaredSkills)) issues.push("skill catalog does not match bundled SKILL.md files");
   for (const skill of loaded.manifest.skills) {
-    if (!fs.existsSync(path.join(loaded.root, skill.path))) issues.push(`missing skill: ${skill.id}`);
+    if (!fs.existsSync(path.join(loaded.root, storedPath(skill.path)))) issues.push(`missing skill: ${skill.id}`);
   }
   if (normalizedFiles.some((relative) => relative.startsWith("generative-illustration-skills/"))) {
     issues.push("excluded generative-illustration-skills was copied");
@@ -242,7 +246,7 @@ function searchIartSkills({ query, family = null, pack = null, limit = 5, manife
     .slice(0, parsedLimit)
     .map(({ skill }) => ({
       ...skill,
-      skillPath: path.join(loaded.root, skill.path),
+      skillPath: path.join(loaded.root, storedPath(skill.path)),
     }));
   return {
     schema: "design-pipeline.iart-motion-skills-search.v1",
@@ -253,7 +257,7 @@ function searchIartSkills({ query, family = null, pack = null, limit = 5, manife
     revision: loaded.manifest.index.revision,
     totalSkills: loaded.manifest.skills.length,
     results,
-    instruction: "Read the narrowest matching bundled SKILL.md; project DESIGN/MOTION, HyperFrames for HTML video, and repository rules remain authoritative.",
+    instruction: "Read the narrowest matching skill file (skillPath); project DESIGN/MOTION, HyperFrames for HTML video, and repository rules remain authoritative.",
   };
 }
 

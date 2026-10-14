@@ -3,6 +3,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath, upstreamFiles } = require("./upstream-path.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/design-md/manifest.json");
 const schema = "design-pipeline.design-md-source.v1";
@@ -115,24 +116,27 @@ function verifyDesignMdSource(manifestFile = defaultManifest) {
   if (!fs.existsSync(sourceRoot) || fs.lstatSync(sourceRoot).isSymbolicLink() || !fs.statSync(sourceRoot).isDirectory()) {
     return { schema: "design-pipeline.design-md-source-verification.v1", status: "blocked", issues: ["snapshot root is missing"] };
   }
-  const files = collectFiles(sourceRoot);
+  // Walked files are stored names; the manifest and every hash use upstream names.
+  const walked = upstreamFiles(collectFiles(sourceRoot));
+  const files = walked.files;
   const normalizedFiles = files.map((relative) => relative.split(path.sep).join("/")).sort();
   const objectByPath = new Map(loaded.manifest.snapshot.objects.map((object) => [object.path, object]));
-  const byteCount = normalizedFiles.reduce((sum, relative) => sum + fs.statSync(path.join(sourceRoot, ...relative.split("/"))).size, 0);
+  const read = (relative) => path.join(sourceRoot, ...storedPath(relative).split("/"));
+  const byteCount = normalizedFiles.reduce((sum, relative) => sum + fs.statSync(read(relative)).size, 0);
   const entries = normalizedFiles.map((relative) => {
-    const content = fs.readFileSync(path.join(sourceRoot, ...relative.split("/")));
+    const content = fs.readFileSync(read(relative));
     const hash = crypto.createHash("sha256").update(content).digest("hex");
     return `${relative}\0${hash}\n`;
   });
   const treeSha256 = crypto.createHash("sha256").update(entries.join(""), "utf8").digest("hex");
-  const issues = [];
+  const issues = [...walked.issues];
   if (files.length !== loaded.manifest.snapshot.fileCount) issues.push(`file count ${files.length} != ${loaded.manifest.snapshot.fileCount}`);
   if (byteCount !== loaded.manifest.snapshot.byteCount) issues.push(`byte count ${byteCount} != ${loaded.manifest.snapshot.byteCount}`);
   if (treeSha256 !== loaded.manifest.snapshot.treeSha256) issues.push(`tree hash ${treeSha256} != ${loaded.manifest.snapshot.treeSha256}`);
   if (gitTreeId(loaded.manifest.snapshot.objects) !== loaded.manifest.source.gitTree) issues.push("Git object inventory does not match source.gitTree");
   if (JSON.stringify(normalizedFiles) !== JSON.stringify([...objectByPath.keys()].sort())) issues.push("Git object inventory does not match bundled files");
   for (const relative of normalizedFiles) {
-    const content = fs.readFileSync(path.join(sourceRoot, ...relative.split("/")));
+    const content = fs.readFileSync(read(relative));
     const object = objectByPath.get(relative);
     if (!object) continue;
     if (content.length !== object.size) issues.push(`Git blob size mismatch: ${relative}`);

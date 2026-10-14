@@ -84,8 +84,8 @@ test("same-length tampering of consumed source bytes fails in an isolated packag
   const f = fixture();
   try {
     const isolated = path.join(f.root, "isolated");
-    const sourceFiles = ["LICENSE", "skills/cinetic/SKILL.md", "skills/cinetic/assets/library/techniques.json", "skills/cinetic/assets/hyperframes-starter/motion.js"];
-    const files = ["skill/tools/film-methods/prepare.cjs", "skill/scripts/contract-utils.cjs", "skill/scripts/film-core.cjs", "skill/scripts/film-hints.cjs", "skill/scripts/workflows/shared.cjs", "skill/references/film-choreography/registry.json", "skill/vendor/cinetic/manifest.json", ...sourceFiles.map((file) => `skill/vendor/cinetic/upstream/${file}`)];
+    const sourceFiles = ["LICENSE", "skills/cinetic/UPSTREAM-SKILL.md", "skills/cinetic/assets/library/techniques.json", "skills/cinetic/assets/hyperframes-starter/motion.js"];
+    const files = ["skill/tools/film-methods/prepare.cjs", "skill/scripts/contract-utils.cjs", "skill/scripts/upstream-path.cjs", "skill/scripts/film-core.cjs", "skill/scripts/film-hints.cjs", "skill/scripts/workflows/shared.cjs", "skill/references/film-choreography/registry.json", "skill/vendor/cinetic/manifest.json", ...sourceFiles.map((file) => `skill/vendor/cinetic/upstream/${file}`)];
     for (const file of files) {
       fs.mkdirSync(path.dirname(path.join(isolated, file)), { recursive: true });
       fs.copyFileSync(path.join(repo, file), path.join(isolated, file));
