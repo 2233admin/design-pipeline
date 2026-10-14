@@ -107,7 +107,7 @@ Every `ask` from `next`, including the first ask before any state exists, and ev
 
 ### Requirement: A "no" binds to what it was about
 
-Every rule from an owner "no" SHALL store `scope: "object"` and the object it binds to. A section "no" SHALL bind to that section, a sample "no" to the sample, and every other "no" to the result under review. A rule SHALL be returned until a later record accepts its object. `--scope project` on the call that records the "no" SHALL make it a project rule. Anti-goals and older rules SHALL stay project rules.
+By default every rule from an owner "no" SHALL store `scope: "object"` and the object it binds to. A section "no" SHALL bind to that section, a sample "no" to the sample, and every other "no" to the result under review. A rule SHALL be returned until a later record accepts its object. `--scope project` on the call that records the "no" SHALL make it a project rule. Anti-goals and older rules SHALL stay project rules.
 
 #### Scenario: A section rule retires when the section is accepted
 
@@ -127,7 +127,7 @@ Every rule from an owner "no" SHALL store `scope: "object"` and the object it bi
 
 #### Scenario: A bad scope is refused
 
-- **WHEN** decide runs with `--scope everywhere`, or with `--scope` on a record that holds no "no"
+- **WHEN** decide runs with `--scope everywhere`, or with `--scope` on a record that holds no "no", such as a confirmed playback with only anti-goals
 - **THEN** it SHALL exit 1 and record nothing
 
 #### Scenario: An anti-goal matching an earlier "no" still becomes a project rule

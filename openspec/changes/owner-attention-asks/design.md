@@ -79,8 +79,12 @@ The self-check is:
 
 - `check` is the self-check wording for each checkpoint, not the owner question.
 - `command` is the record command (`--by agent`).
-- `correction` is kept and re-stamped `--by owner`, so an owner's "no" on delegated work has a
-  command.
+- `correction` carries `--by owner`, so an owner's "no" on delegated work has a command.
+  - Components and description keep their own correction, re-stamped explicitly after
+    `withRoles`, which skips commands that already carry `--by`.
+  - The section ask has a single `record` with `--verdict accept|reject`, so its self-check builds
+    `command` with `--verdict accept --by agent` and `correction` with `--verdict reject --answer
+    "<owner's words>" [--evidence ...] --by owner`.
 
 Intake, concept, sample and review keep their asks even when delegated. The record paths for
 concept and sample need an ask. Intake records the owner's own words, so a correction after a skip
@@ -155,7 +159,9 @@ section.
 - **`--scope`:**
   - `--scope project` (the existing string option) makes the rules a call creates project rules.
   - `object` is the default.
-  - Other values fail, and so does `--scope` on a call that creates no rule.
+  - Other values fail, and so does `--scope` on a call that records no "no". A confirmed
+    playback that carries only anti-goals records no "no"; its anti-goals are project rules
+    anyway.
 - **Anti-goals and older rules:** anti-goals are project rules. Their duplicate check compares only
   project rules, so an earlier correction with the same text cannot swallow one. Rules without
   `object` (every rule recorded before this change) read as project rules.
@@ -241,6 +247,10 @@ ADDED requirement would contradict them at archive.
   - Code cannot judge that.
   - The umbrella walkthrough (design-owner-attention 3.1) counts missed key questions and rework
     beside the ask count. Fewer asks with more rework is a regression.
+- **[The agent-accept guard compares bytes]**
+  - Any change, even whitespace, lets the agent accept a section the owner rejected.
+  - Judging whether the change answers the "no" is beyond code. The owner's final acceptance of
+    the whole page is the backstop, and the statement shows every agent accept.
 - **[A general section "no" retires with its section]**
   - The final review lists every object rule and asks once.
   - Anti-goals are project rules.
