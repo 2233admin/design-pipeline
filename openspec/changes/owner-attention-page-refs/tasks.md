@@ -38,6 +38,8 @@
 - [x] 7.3 Codex: a section review routed to the art director offers the numbered page to the director; verify in `workflow-next`.
 - [x] 7.4 CodeRabbit: a blank `--ref` is refused, not dropped; verify in the `--ref` refusal test.
 - [x] 7.5 Codex: a requested local file that does not exist during the capture is bound as absent (`null`), so it appearing later makes the capture stale; verify in the browser lineage test.
+- [x] 7.6 Codex: the kernel hashes each loaded file when the browser requests it and again after the screenshot, and the CLI checks the disk still has those bytes, so a file rewritten during the capture fails it (`PAGE_MOVED`) instead of binding new bytes to an old screenshot; verify that a stable page captures and a re-run is current.
+- [x] 7.7 Codex: the settle walk scrolls instantly whatever `scroll-behavior` the page sets, and waits until each position is reached; verify with `scroll-behavior: smooth` on the browser test page that appends content at the bottom.
 
 ## Workflow follow-up
 

@@ -194,7 +194,8 @@ test("a capture binds the files the page loaded, so a changed CSS asset or scree
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "page-refs-"));
   const pixel = (color) => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><rect width="4" height="4" fill="${color}"/></svg>`);
   fs.writeFileSync(path.join(dir, "bg.svg"), pixel("#c33"));
-  fs.writeFileSync(path.join(dir, "style.css"), "section { min-height: 1500px; background: url(bg.svg); }\nh1 { background: url(later.svg); }\n");
+  // Smooth scrolling on the page: the walk must still reach the bottom, where content is appended.
+  fs.writeFileSync(path.join(dir, "style.css"), "html { scroll-behavior: smooth; }\nsection { min-height: 1500px; background: url(bg.svg); }\nh1 { background: url(later.svg); }\n");
   fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><head><link rel="stylesheet" href="style.css"></head><body>
 <section data-section="hero"><h1>Fresh bread</h1></section>
 <div id="more"></div>

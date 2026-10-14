@@ -7,8 +7,8 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { pathToFileURL } = require("node:url");
-const { fail } = require("./contract-utils.cjs");
+const { fileURLToPath, pathToFileURL } = require("node:url");
+const { fail, sha256 } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
 
@@ -20,6 +20,25 @@ const TEXT_LIMIT = 80;
 const NAVIGATION_TIMEOUT_MS = 30000;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// The bytes of a file the page loaded: a hash, null while it does not exist, undefined for a
+// directory or anything else that is not a file.
+function fileHash(file) {
+  let stat;
+  try { stat = fs.statSync(file); } catch { return null; }
+  return stat.isFile() ? "sha256:" + sha256(fs.readFileSync(file)) : undefined;
+}
+
+// Scrolls instantly, whatever scroll-behavior the page sets, and waits until the position is reached
+// (or the page cannot scroll that far), so a smooth-scrolling page is not left halfway.
+async function scrollToY(page, top) {
+  await page.evaluate((y) => window.scrollTo({ top: y, left: 0, behavior: "instant" }), top);
+  for (let waited = 0; waited < 1000; waited += 40) {
+    const reached = await page.evaluate((y) => Math.abs(window.scrollY - Math.min(y, Math.max(0, document.documentElement.scrollHeight - window.innerHeight))) < 2, top);
+    if (reached) break;
+    await sleep(40);
+  }
+}
 
 // puppeteer-core discovery stays in film-capture-core; only the wording is re-scoped, because a built
 // page has no HyperFrames composition. The code stays TOOL_MISSING so a missing tool can be told
@@ -166,9 +185,13 @@ function drawBadges(refs) {
 // loads or reveals on scroll lengthens the walk (bounded, for pages that grow without end).
 async function settle(page) {
   const stepPx = VIEWPORT.height;
+  // Smooth scrolling would leave each step mid-animation; the capture's own walk is always instant.
+  await page.evaluate(() => {
+    for (const element of [document.documentElement, document.body]) element?.style.setProperty("scroll-behavior", "auto", "important");
+  });
   const positions = [];
   for (let y = 0, guard = 0; guard < 200; guard += 1) {
-    await page.evaluate((top) => window.scrollTo(0, top), y);
+    await scrollToY(page, y);
     await sleep(120);
     positions.push(y);
     const height = await page.evaluate(() => document.documentElement.scrollHeight);
@@ -176,7 +199,7 @@ async function settle(page) {
     y += stepPx;
   }
   for (const y of [...positions.slice(0, -1).reverse(), 0]) {
-    await page.evaluate((top) => window.scrollTo(0, top), y);
+    await scrollToY(page, y);
     await sleep(120);
   }
   await page.evaluate(() => document.fonts.ready.then(() => true));
@@ -202,20 +225,30 @@ async function captureRefs(projectRoot, options = {}) {
     await page.setViewport({ ...VIEWPORT, deviceScaleFactor: 1 });
     // Every local file the page loads, CSS-imported fonts and images included: the capture binds them,
     // so a changed asset makes it stale even when index.html is unchanged.
-    const loaded = new Set();
-    page.on("request", (request) => { if (request.url().startsWith("file:")) loaded.add(request.url()); });
+    // Each file is hashed when the browser requests it and again after the screenshot, so the bytes
+    // bound are the bytes rendered: a file rewritten during the capture fails it instead.
+    const loaded = new Map();
+    page.on("request", (request) => {
+      const url = request.url();
+      if (!url.startsWith("file:") || loaded.has(url)) return;
+      let file;
+      try { file = fileURLToPath(url); } catch { return; }
+      loaded.set(url, { file, hash: fileHash(file) });
+    });
     await page.goto(pathToFileURL(file).href, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT_MS });
     await settle(page);
     const refs = await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT);
     await page.evaluate(drawBadges, refs);
     const png = Buffer.from(await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true }));
     const identity = await browserIdentity(browser, executablePath);
+    const moved = [...loaded.values()].find((item) => fileHash(item.file) !== item.hash);
+    if (moved) fail(SCOPE, `${path.basename(moved.file)}, which the page loaded, changed during the capture. Fix: stop editing the page and its files, then run \`evidence refs\` again`);
     const after = digest(projectRoot);
     if (before !== after) fail(SCOPE, "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again");
     return {
       doc: { schema: REFS_SCHEMA, page: after, viewport: { ...VIEWPORT }, browser: identity, capturedAt: new Date().toISOString(), refs },
       png,
-      loaded: [...loaded],
+      loaded: Object.fromEntries([...loaded].filter(([, item]) => item.hash !== undefined).map(([url, item]) => [url, item.hash])),
     };
   } finally {
     await browser.close();

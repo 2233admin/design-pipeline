@@ -881,17 +881,20 @@ function evidenceRefsCommand(parsed, root) {
   if (pageDigest(projectRoot) !== digest || doc.page !== digest) {
     fail("page refs", "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again", { code: "PAGE_MOVED" });
   }
-  // The capture binds every local file the browser loaded inside the project, and its own screenshot.
+  // The capture binds every local file the browser loaded inside the project, with the bytes the
+  // kernel hashed around the screenshot (null for a requested file that does not exist yet, so its
+  // appearing later makes the capture stale, as the probe binds an absent request), and its own
+  // screenshot. A file that no longer has those bytes moved after the capture.
   const lineage = {};
-  for (const url of Array.isArray(kernel.value.loaded) ? kernel.value.loaded : []) {
+  const loaded = kernel.value.loaded && typeof kernel.value.loaded === "object" && !Array.isArray(kernel.value.loaded) ? kernel.value.loaded : {};
+  for (const [url, hash] of Object.entries(loaded)) {
     let file;
     try { file = fileURLToPath(url); } catch { continue; }
     if (!pathInside(projectRoot, file)) continue;
-    // A requested file that does not exist yet is bound as absent (null), so creating it later makes
-    // the capture stale, as the probe binds an absent request.
-    if (!fs.existsSync(file)) { lineage[rel(file)] = null; continue; }
-    if (!fs.statSync(file).isFile()) continue;
-    lineage[rel(file)] = "sha256:" + sha256(fs.readFileSync(file));
+    const now = fs.existsSync(file) ? (fs.statSync(file).isFile() ? "sha256:" + sha256(fs.readFileSync(file)) : undefined) : null;
+    if (now === undefined) continue;
+    if (now !== hash) fail("page refs", `${rel(file)} changed during the capture. Fix: stop editing the page and its files, then run \`evidence refs\` again`, { code: "PAGE_MOVED" });
+    lineage[rel(file)] = hash;
   }
   const pngBytes = Buffer.from(kernel.value.png, "base64");
   const record = { ...doc, lineage, png: "sha256:" + sha256(pngBytes) };
