@@ -82,18 +82,18 @@ the bytes hash; `playback`, `direction` and `components` are hashes.
 
 ### 3. A re-approval of a changed description names its tier
 
-`recordDescription` reads `--change bytes|commitment` and `--affects <ids>|all`.
+`recordDescription` reads `--tier bytes|commitment` and `--affects <ids>|all`.
 
-- **First approval.** No earlier accept with `inputs` exists. `--change` and `--affects` are
+- **First approval.** No earlier accept with `inputs` exists. `--tier` and `--affects` are
   refused.
-- **Identical approval.** The inputs equal the last accept's. `--change` and `--affects` are
+- **Identical approval.** The inputs equal the last accept's. `--tier` and `--affects` are
   refused.
 - **Changed approval.** The inputs differ:
-  - `--change` is required.
+  - `--tier` is required.
   - `bytes` is refused while the diff is structural, and the message names what changed.
   - `commitment` requires `--affects`. Every id must be in the new list, or the value is `all`.
   - `--affects` without `commitment` is refused.
-- The record stores `change` and `affects`. The epoch of each named section, or of every section
+- The record stores `tier` and `affects`. The epoch of each named section, or of every section
   for `all`, is computed from the description history; nothing else is stored.
 - **Alternatives:**
   - The pipeline classifies everything and the agent declares nothing. Rejected: prose changes
@@ -108,13 +108,13 @@ one case:
 
 - the stage is `description`;
 - the verdict is `accept`;
-- `--change bytes` is given;
+- `--tier bytes` is given;
 - the previous accept exists.
 
 `recordDescription` still refuses `bytes` on a structural diff, so the exception cannot carry a
 commitment.
 
-- The role entry keeps `change: "bytes"`.
+- The role entry keeps `tier: "bytes"`.
 - The statement prints the entry under the agent's decisions as "carried forward a byte-only
   change to the owner's description".
 - **Alternative:** ask the owner again for every byte change. Rejected: the umbrella design (C)
@@ -125,9 +125,9 @@ commitment.
 When the last accept is stale, the description step's `first` lists the changed inputs from
 `diffInputs` and the tier they allow:
 
-- "only wording changed: record with `--change bytes`"; or
+- "only wording changed: record with `--tier bytes`"; or
 - "section proof's line changed, so this is a commitment for proof: record with
-  `--change commitment --affects proof` (add any other sections the change touches)".
+  `--tier commitment --affects proof` (add any other sections the change touches)".
 
 ### 6. Scope boundaries kept
 
@@ -153,11 +153,11 @@ When the last accept is stale, the description step's `first` lists the changed 
 
 ## Migration
 
-- **Approval records:** gain `inputs`, `change` and `affects`, and lose `upstream`.
+- **Approval records:** gain `inputs`, `tier` and `affects`, and lose `upstream`.
 - **Section verdicts:** gain `key`.
 - **Older records:**
   - An accept without `inputs` never matches, so the description is re-approved once. It counts as
-    a first approval, so no `--change` is needed.
+    a first approval, so no `--tier` is needed.
   - Verdicts without `key` never count, so each section is reviewed once more.
 - **Rollback:** reverting the code restores the old binding. Records written meanwhile carry
   fields the old code ignores, but their `upstream` is missing, so the description is re-approved

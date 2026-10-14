@@ -17,7 +17,7 @@ tiers): re-review in proportion to what changed.
 - **The description approval keeps binding the brief's bytes.** Any change still makes it stale,
   so the description is re-checked (an agent self-check by default). Evidence still binds bytes.
 - **A re-approval after a change names its tier.** When an earlier approval exists and something
-  changed, `decide --stage description --verdict accept` takes the new `--change bytes|commitment`.
+  changed, `decide --stage description --verdict accept` takes the new `--tier bytes|commitment`.
   - `bytes`: wording or formatting only; no section is reviewed again.
   - `commitment`: what the page commits to changed. `--affects <section ids>|all` names the
     sections to review again.
@@ -49,12 +49,12 @@ None.
 
 - **Code:**
   - `skill/scripts/workflows/web.cjs`: the approval inputs, section keys, `sectionProgress`, the
-    `--change` and `--affects` checks, the stale `first` text, and `briefSections` keeping the
+    `--tier` and `--affects` checks, the stale `first` text, and `briefSections` keeping the
     job line.
   - `skill/scripts/workflow-core.cjs`: passing the options, and the `bytes` carry-forward on a
     kept description.
   - `skill/scripts/workflows/roles.cjs`: the statement line.
-  - `skill/scripts/cli-core.cjs`: the `--change` and `--affects` flags and their help.
+  - `skill/scripts/cli-core.cjs`: the `--tier` and `--affects` flags and their help.
 - **Reused, not added:**
   - the description and section records in `decisions`;
   - the delegation map;
