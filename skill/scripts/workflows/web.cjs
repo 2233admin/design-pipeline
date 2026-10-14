@@ -632,25 +632,33 @@ function refsCapture(root) {
   } catch { return null; }
 }
 
-// What an owner-facing review says about the numbered page: show it when it was taken from the
-// current page, otherwise take it first. Refs are optional, so a failed capture falls back to text.
-function refsStep(root) {
-  const doc = refsCapture(root);
-  const png = path.join(path.resolve(root), "evidence", "refs.png");
-  if (doc && doc.page === pageDigest(root) && fs.existsSync(png)) {
-    return { first: "Show the owner evidence/refs.png, the page at desktop width with a number on each element, and ask them to name each element they comment on by its reference (such as hero-2, or 3 outside the sections) or in words.", show: [png] };
+// A capture is current when the page digest, every local file the browser loaded (CSS-imported fonts
+// and images included) and the numbered screenshot itself still have the hashes it recorded.
+function refsCurrent(root, doc = refsCapture(root)) {
+  if (!doc || doc.page !== pageDigest(root) || !doc.lineage || typeof doc.lineage !== "object" || !Object.keys(doc.lineage).length) return false;
+  if (typeof doc.png !== "string" || fileSha(root, "evidence/refs.png") !== doc.png) return false;
+  return Object.entries(doc.lineage).every(([rel, hash]) => fileSha(root, rel) === hash);
+}
+
+// What a review that faces a person says about the numbered page: show it when it is current,
+// otherwise take it first. Refs are optional, so a failed capture falls back to text.
+function refsStep(root, who = "the owner") {
+  if (refsCurrent(root)) {
+    return { first: `Show ${who} evidence/refs.png, the page at desktop width with a number on each element, and ask them to name each element they comment on by its reference (such as hero-2, or 3 outside the sections) or in words.`, show: [path.join(path.resolve(root), "evidence", "refs.png")] };
   }
-  return { first: `Run ${refsCommand(root)} and then next again, to show the owner the page with a number on each element; if the capture fails, ask them to name each element by its text, label or place.`, show: [] };
+  return { first: `Run ${refsCommand(root)} and then next again, to show ${who} the page with a number on each element; if the capture fails, ask them to name each element by its text, label or place.`, show: [] };
 }
 
 // The references a "no" cites, each checked against the capture of the current page and, at a
 // section, against that section. Returns [{ref, tag, selector, text}] for the rule.
 function citedRefs(root, refs, section = null) {
-  const list = [...new Set([].concat(refs ?? []).map(value => String(value).trim()).filter(Boolean))];
+  const given = [].concat(refs ?? []).map(value => String(value ?? "").trim());
+  if (given.some(value => !value)) fail("workflow", "--ref is empty. Fix: give the reference the owner cited, such as hero-2, or drop the flag");
+  const list = [...new Set(given)];
   if (!list.length) return [];
   const doc = refsCapture(root);
   if (!doc) fail("workflow", `--ref needs ${REFS_FILE} from a numbered capture of the page. Fix: run ${refsCommand(root)}, show the owner evidence/refs.png and record the references they cite`, { code: "WORKFLOW_NOT_READY" });
-  if (doc.page !== pageDigest(root)) fail("workflow", `${REFS_FILE} was taken from an earlier version of the page, so its numbers may point at other elements now. Fix: run ${refsCommand(root)} again and show the owner the new numbers`, { code: "WORKFLOW_NOT_READY" });
+  if (!refsCurrent(root, doc)) fail("workflow", `${REFS_FILE} was taken from an earlier version of the page or its files, so its numbers may point at other elements now. Fix: run ${refsCommand(root)} again and show the owner the new numbers`, { code: "WORKFLOW_NOT_READY" });
   return list.map(ref => {
     const hit = doc.refs.find(item => item.ref === ref);
     if (!hit) fail("workflow", `--ref ${ref} is not on the numbered page (${REFS_FILE}). Fix: use a reference shown on evidence/refs.png`);
@@ -819,4 +827,4 @@ function before(state, current, id) {
 // returned before the record.
 const decisions = { intake: recordIntake, concept: recordConcept, components: recordComponents, description: recordDescription, section: recordSection };
 
-module.exports = { briefSections, citedRefs, decisions, pageDigest, refsStep, stages };
+module.exports = { briefSections, citedRefs, decisions, pageDigest, refsCurrent, refsStep, stages };

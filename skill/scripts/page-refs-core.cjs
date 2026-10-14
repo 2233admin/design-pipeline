@@ -162,17 +162,20 @@ function drawBadges(refs) {
 }
 
 // Scroll to the bottom in viewport steps and back so scroll-reveal content settles, then wait for
-// fonts and transitions. The height is re-read each step: lazy content can lengthen the page.
+// fonts and transitions. Each step scrolls and waits before it re-reads the height, so content that
+// loads or reveals on scroll lengthens the walk (bounded, for pages that grow without end).
 async function settle(page) {
   const stepPx = VIEWPORT.height;
   const positions = [];
   for (let y = 0, guard = 0; guard < 200; guard += 1) {
+    await page.evaluate((top) => window.scrollTo(0, top), y);
+    await sleep(120);
     positions.push(y);
     const height = await page.evaluate(() => document.documentElement.scrollHeight);
     if (y + stepPx >= height) break;
     y += stepPx;
   }
-  for (const y of [...positions, ...positions.slice(0, -1).reverse(), 0]) {
+  for (const y of [...positions.slice(0, -1).reverse(), 0]) {
     await page.evaluate((top) => window.scrollTo(0, top), y);
     await sleep(120);
   }
@@ -197,6 +200,10 @@ async function captureRefs(projectRoot, options = {}) {
   try {
     const page = await browser.newPage();
     await page.setViewport({ ...VIEWPORT, deviceScaleFactor: 1 });
+    // Every local file the page loads, CSS-imported fonts and images included: the capture binds them,
+    // so a changed asset makes it stale even when index.html is unchanged.
+    const loaded = new Set();
+    page.on("request", (request) => { if (request.url().startsWith("file:")) loaded.add(request.url()); });
     await page.goto(pathToFileURL(file).href, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT_MS });
     await settle(page);
     const refs = await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT);
@@ -208,6 +215,7 @@ async function captureRefs(projectRoot, options = {}) {
     return {
       doc: { schema: REFS_SCHEMA, page: after, viewport: { ...VIEWPORT }, browser: identity, capturedAt: new Date().toISOString(), refs },
       png,
+      loaded: [...loaded],
     };
   } finally {
     await browser.close();

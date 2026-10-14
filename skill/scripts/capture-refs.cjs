@@ -28,12 +28,12 @@ function parseArgs(argv) {
 (async () => {
   try {
     const options = parseArgs(process.argv.slice(2));
-    const { doc, png } = await captureRefs(options["--project-root"], {
+    const { doc, png, loaded } = await captureRefs(options["--project-root"], {
       digest: pageDigest,
       chrome: options["--chrome"],
       puppeteerModule: options["--puppeteer-module"],
     });
-    process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "captured", capture: doc, png: png.toString("base64") }))}\n`);
+    process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "captured", capture: doc, png: png.toString("base64"), loaded }))}\n`);
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
     process.exitCode = 1;

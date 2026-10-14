@@ -16,7 +16,7 @@ A section verdict MAY cite runtime-review Feedback records with `--evidence`; `r
 
 ### Requirement: The built page gets numbered element references
 
-`evidence refs` SHALL load the built `index.html` in the probe's browser at 1440×900, scroll through it, and number its visible meaningful elements in DOM order: `<section>-<n>` inside each `data-section`, and `<n>` outside every section. It SHALL write `evidence/refs.json` with the page digest and a full-page `evidence/refs.png` with a badge per reference, and SHALL NOT write `index.html`.
+`evidence refs` SHALL load the built `index.html` in the probe's browser at 1440×900, scroll through it, and number its visible meaningful elements in DOM order: `<section>-<n>` inside each `data-section`, and `<n>` outside every section. It SHALL write `evidence/refs.json`, binding the page digest, every local file the browser loaded and the screenshot's hash, and a full-page `evidence/refs.png` with a badge per reference, and SHALL NOT write `index.html`.
 
 #### Scenario: Elements are numbered per section
 
@@ -38,6 +38,11 @@ A section verdict MAY cite runtime-review Feedback records with `--evidence`; `r
 
 - **WHEN** `evidence refs` runs again while `refs.json` already holds the current page digest
 - **THEN** it SHALL report the capture as current and rewrite neither file, so a reference the owner has seen keeps its meaning.
+
+#### Scenario: A changed asset or screenshot makes the capture stale
+
+- **WHEN** a CSS-loaded image changes, or `refs.png` is replaced, after a capture
+- **THEN** the capture SHALL no longer be current: reviews SHALL ask for a new one, `--ref` SHALL be refused, and `evidence refs` SHALL capture again.
 
 #### Scenario: No browser
 

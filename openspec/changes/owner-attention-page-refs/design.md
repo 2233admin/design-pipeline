@@ -66,7 +66,11 @@ See proposal.md for why. Current code (checked):
     refs: [{ref, section, selector, tag, text, box}]}`, where `section` is null outside sections.
   - `page` is `pageDigest(root)`, exported from `web.cjs`. A refs capture and a section verdict therefore name
     the same version, and refs work before any probe.
-- **Current capture.** When `refs.json.page` already equals the current digest, the command returns
+- **Lineage.** `refs.json` also records `lineage` (the hash of every local file the browser loaded inside the
+  project, CSS-imported fonts and images included, as the probe binds its request log) and `png` (the
+  screenshot's hash). `pageDigest` alone misses CSS-loaded assets.
+- **Current capture.** A capture is current while the page digest, every lineage hash and the screenshot hash
+  match (`refsCurrent` in `web.cjs`, used by reviews, `--ref` and the CLI). A current capture returns
   `{status: "current"}` and writes nothing. A reference the owner has seen never changes meaning.
 - **Moving page.** The digest is computed before and after the capture. If it moved, the command exits 1 and
   writes nothing.
@@ -79,7 +83,8 @@ See proposal.md for why. Current code (checked):
 ### 2. What gets a reference
 
 - **Settle first.**
-  - Load at 1440×900, then scroll to the bottom in viewport steps and back, so scroll-reveal content settles.
+  - Load at 1440×900, then scroll to the bottom in viewport steps (scrolling, waiting, then re-reading the height,
+    so content that loads on scroll lengthens the walk) and back, so scroll-reveal content settles.
   - Wait for fonts.
   - Measure, then screenshot with `fullPage` and `captureBeyondViewport`, so `100vh` sections are not
     re-laid out between measuring and drawing.

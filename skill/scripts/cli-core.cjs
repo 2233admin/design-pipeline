@@ -858,7 +858,7 @@ function benchmarkFeedback(root, result) {
 // a capture of the current page as it is, and writes the png before the json so a refs.json on disk is
 // always backed by its picture.
 function evidenceRefsCommand(parsed, root) {
-  const { pageDigest } = require("./workflows/web.cjs");
+  const { pageDigest, refsCurrent } = require("./workflows/web.cjs");
   const { REFS_SCHEMA } = require("./page-refs-core.cjs");
   const projectRoot = contained(root, option(parsed, "--project-root", root), "--project-root");
   const jsonFile = contained(projectRoot, "evidence/refs.json", "evidence/refs.json", false);
@@ -868,7 +868,7 @@ function evidenceRefsCommand(parsed, root) {
   if (!digest) fail("cli", "index.html not found in --project-root. Fix: build the page before numbering it", { code: "PAGE_MISSING" });
   let existing = null;
   try { existing = JSON.parse(fs.readFileSync(jsonFile, "utf8")); } catch { existing = null; }
-  if (existing?.schema === REFS_SCHEMA && existing.page === digest && Array.isArray(existing.refs) && fs.existsSync(pngFile)) {
+  if (existing?.schema === REFS_SCHEMA && Array.isArray(existing.refs) && refsCurrent(projectRoot, existing)) {
     return { result: { status: "current", refs: existing.refs.length, json: rel(jsonFile), png: rel(pngFile) }, exitCode: 0 };
   }
   const args = ["--project-root", projectRoot];
@@ -881,15 +881,25 @@ function evidenceRefsCommand(parsed, root) {
   if (pageDigest(projectRoot) !== digest || doc.page !== digest) {
     fail("page refs", "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again", { code: "PAGE_MOVED" });
   }
+  // The capture binds every local file the browser loaded inside the project, and its own screenshot.
+  const lineage = {};
+  for (const url of Array.isArray(kernel.value.loaded) ? kernel.value.loaded : []) {
+    let file;
+    try { file = fileURLToPath(url); } catch { continue; }
+    if (!pathInside(projectRoot, file) || !fs.existsSync(file) || !fs.statSync(file).isFile()) continue;
+    lineage[rel(file)] = "sha256:" + sha256(fs.readFileSync(file));
+  }
+  const pngBytes = Buffer.from(kernel.value.png, "base64");
+  const record = { ...doc, lineage, png: "sha256:" + sha256(pngBytes) };
   fs.mkdirSync(path.dirname(jsonFile), { recursive: true });
   const write = (file, data) => {
     const temp = `${file}.${process.pid}.tmp`;
     fs.writeFileSync(temp, data);
     fs.renameSync(temp, file);
   };
-  write(pngFile, Buffer.from(kernel.value.png, "base64"));
-  write(jsonFile, `${JSON.stringify(doc, null, 2)}\n`);
-  return { result: { status: "captured", refs: doc.refs.length, json: rel(jsonFile), png: rel(pngFile) }, exitCode: 0 };
+  write(pngFile, pngBytes);
+  write(jsonFile, `${JSON.stringify(record, null, 2)}\n`);
+  return { result: { status: "captured", refs: record.refs.length, json: rel(jsonFile), png: rel(pngFile) }, exitCode: 0 };
 }
 
 function evidenceCommand(parsed, root, action) {

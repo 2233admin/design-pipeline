@@ -3528,11 +3528,42 @@ const REFS = [
   { ref: "first-screen-2", section: "first-screen", tag: "a", selector: "[data-section=\"first-screen\"] > a:nth-of-type(1)", text: "Reserve" },
   { ref: "proof-1", section: "proof", tag: "p", selector: "[data-section=\"proof\"] > p:nth-of-type(1)", text: "Best loaf in town" },
 ];
-// A numbered capture of the current page, as `evidence refs` writes it (the browser test covers the capture).
-function fakeRefs(root, refs = REFS) {
+// A numbered capture of the current page, as `evidence refs` writes it (the browser test covers the
+// capture): the page digest, every file the browser loaded, and the screenshot's own hash.
+const fileHash = (root, rel) => "sha256:" + sha256(fs.readFileSync(path.join(root, rel)));
+function fakeRefs(root, refs = REFS, loaded = ["index.html"]) {
   touch(root, "evidence/refs.png", "png");
-  touch(root, "evidence/refs.json", JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: { width: 1440, height: 900 }, refs }));
+  touch(root, "evidence/refs.json", JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: { width: 1440, height: 900 }, refs, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, "evidence/refs.png") }));
 }
+
+test("a numbered capture goes stale when a file the page loaded or its screenshot changes", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  touch(root, "fonts/display.woff2", "font bytes");
+  fakeRefs(root, REFS, ["index.html", "fonts/display.woff2"]);
+  assert.ok(nextAction(root).show.some(file => file.endsWith("refs.png")), "current");
+  touch(root, "fonts/display.woff2", "another font");
+  assert.match(nextAction(root).first, /evidence refs --root /, "a CSS-loaded font changed, though index.html did not");
+  refuses(root, { stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small", ref: ["first-screen-2"] }, "WORKFLOW_NOT_READY");
+  fakeRefs(root, REFS, ["index.html", "fonts/display.woff2"]);
+  touch(root, "evidence/refs.png", "a screenshot from another capture");
+  assert.match(nextAction(root).first, /evidence refs --root /, "a replaced screenshot is not shown");
+});
+
+test("a section review routed to the art director offers the numbered page to the director", t => {
+  const root = tmp();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  initState(root, { deliverable: "web", tier: "standard", director: "art-model" });
+  toComponents(root, { keep: ["section"] });
+  prepareWebComponents(root);
+  toBuild(root, ["first-screen"]);
+  buildPage(root, ["first-screen"]);
+  const ask = nextAction(root);
+  assert.equal(ask.section, "first-screen");
+  assert.ok(ask.director, "routed to the art director");
+  assert.match(ask.first, /to show the art director the page/);
+  assert.doesNotMatch(ask.first, /the owner/);
+});
 
 test("a kept section review offers the numbered page, and --ref ties the owner's no to its elements", t => {
   const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
@@ -3563,6 +3594,7 @@ test("--ref is refused unless it names an element of the current numbered page, 
   assert.match(refuses(root, { ...no, ref: ["first-screen-2"] }, "WORKFLOW_NOT_READY").message, /evidence refs/, "no capture");
   fakeRefs(root);
   assert.match(refuses(root, { ...no, ref: ["first-screen-9"] }, "CONTRACT_INVALID").message, /not on the numbered page/);
+  for (const blank of ["", "   "]) assert.match(refuses(root, { ...no, ref: ["first-screen-2", blank] }, "CONTRACT_INVALID").message, /--ref is empty/);
   assert.match(refuses(root, { ...no, ref: ["1"] }, "CONTRACT_INVALID").message, /outside the sections/);
   assert.match(refuses(root, { ...no, ref: ["proof-1"] }, "CONTRACT_INVALID").message, /in section proof/);
   assert.match(refuses(root, { ...no, answer: undefined, ref: ["first-screen-2"] }, "CONTRACT_INVALID").message, /goes with --answer/);

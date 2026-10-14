@@ -31,6 +31,13 @@
 
 - [x] 6.1 `npm test` and `npm run specs:check` pass locally (the ff-tracking-hud ffmpeg sound test fails only in this sandbox); verify both outputs.
 
+## 7. Review follow-up (PR #138)
+
+- [x] 7.1 Codex: the capture binds every local file the browser loaded and its own screenshot (`lineage`, `png`), and is current only while all match; verify with a browser test that a changed CSS-loaded image and a replaced screenshot each need a new capture, and with `workflow-next` that reviews and `--ref` treat them as stale.
+- [x] 7.2 Codex: the settle walk scrolls and waits before re-reading the height; verify with a browser test page that appends content on scroll.
+- [x] 7.3 Codex: a section review routed to the art director offers the numbered page to the director; verify in `workflow-next`.
+- [x] 7.4 CodeRabbit: a blank `--ref` is refused, not dropped; verify in the `--ref` refusal test.
+
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.

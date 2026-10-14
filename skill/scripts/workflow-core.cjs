@@ -171,7 +171,7 @@ function nextAction(root) {
     // A web review that still faces the owner offers the numbered page (owner-attention-page-refs);
     // a delegated self-check is a run by now, so it launches no browser for no one.
     if (state.deliverable === "web" && action.type === "ask" && (stage.id === "review" || stage.id === "build" && action.section)) {
-      const refs = SUB_WORKFLOWS.web.refsStep(root);
+      const refs = SUB_WORKFLOWS.web.refsStep(root, action.director || state.director && stage.id === "build" ? "the art director" : "the owner");
       action.first = [action.first, refs.first].filter(Boolean).join(" ");
       action.show = [...(action.show || []), ...refs.show];
     }

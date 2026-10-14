@@ -749,11 +749,14 @@ the owner accepted it comes back to this review, and `first` says they accepted 
   `data-section`, `<n>` outside every section (a page without sections is numbered `1, 2, 3`).
   Wrappers, hidden elements and content inside a numbered element (an image inside a link) get no
   number; a link inside a paragraph gets its own.
-- It writes `evidence/refs.json` (each reference with its selector, tag, text and box, and the page
-  digest it was taken from) and `evidence/refs.png`, the full page with a badge on each element.
+- It writes `evidence/refs.json` (each reference with its selector, tag, text and box; the page
+  digest; the hash of every local file the browser loaded, CSS-imported fonts and images included;
+  and the screenshot's own hash) and `evidence/refs.png`, the full page with a badge on each element.
   The badges exist only in the browser: `index.html` is never changed.
-- A capture of the current page is never overwritten (`status: "current"`), so a number the owner
-  has seen keeps its meaning. After the page changes, run it again and show the new numbers.
+- A capture is current while all of those hashes still match; a current capture is never
+  overwritten (`status: "current"`), so a number the owner has seen keeps its meaning. After the
+  page or any file it loads changes, run it again and show the new numbers. A section review routed
+  to an art director offers the numbered page to the director.
 - `--ref` is checked against this file: the reference must be on the current capture and, at a
   section review, in that section. The rule keeps the reference with its tag and text, so a later
   renumbering does not change what the comment meant.

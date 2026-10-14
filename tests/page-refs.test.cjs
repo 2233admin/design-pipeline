@@ -187,3 +187,39 @@ test("decide takes --ref as a repeatable option and lists it in the help", () =>
   assert.doesNotMatch(result.output?.error?.code || "", /DUPLICATE_OPTION|UNKNOWN_OPTION/);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+// Codex review on #138: the capture binds what the browser loaded, CSS-imported assets included, and
+// its own screenshot; a lazily lengthened page is walked to its new end.
+test("a capture binds the files the page loaded, so a changed CSS asset or screenshot needs a new one", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "page-refs-"));
+  const pixel = (color) => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><rect width="4" height="4" fill="${color}"/></svg>`);
+  fs.writeFileSync(path.join(dir, "bg.svg"), pixel("#c33"));
+  fs.writeFileSync(path.join(dir, "style.css"), "section { min-height: 1500px; background: url(bg.svg); }\n");
+  fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><head><link rel="stylesheet" href="style.css"></head><body>
+<section data-section="hero"><h1>Fresh bread</h1></section>
+<div id="more"></div>
+<script>
+  // Content appended only once the reader scrolls near the end: the walk must reach it.
+  let added = 0;
+  addEventListener("scroll", () => {
+    if (added < 3 && innerHeight + scrollY >= document.documentElement.scrollHeight - 50) {
+      added += 1;
+      const p = document.createElement("p");
+      p.style.marginTop = "1200px";
+      p.textContent = "Loaded " + added;
+      document.getElementById("more").appendChild(p);
+    }
+  });
+</script></body></html>`);
+  const first = refs(dir);
+  assert.equal(first.status, 0, first.stderr || first.stdout);
+  const doc = readRefs(dir);
+  assert.deepEqual(Object.keys(doc.lineage).sort(), ["bg.svg", "index.html", "style.css"], "the CSS-loaded image is bound");
+  assert.match(doc.png, /^sha256:/);
+  assert.ok(doc.refs.some((item) => item.text === "Loaded 3"), `the walk reaches lazily added content: ${doc.refs.map((item) => item.text).join(" | ")}`);
+  assert.equal(refs(dir).output.status, "current");
+  fs.writeFileSync(path.join(dir, "bg.svg"), pixel("#33c"));
+  assert.equal(refs(dir).output.status, "captured", "a changed background image makes the capture stale");
+  fs.writeFileSync(path.join(dir, "evidence", "refs.png"), "replaced");
+  assert.equal(refs(dir).output.status, "captured", "a replaced screenshot is not taken as current");
+});
