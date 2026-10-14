@@ -5,7 +5,7 @@ connected in a workspace that can be organized with natural-language plans. Exis
 establish the result before graphics explain relationships. The film is a concept edit, not a screen
 recording or a new generation job.
 
-Primary reference observations are in `../ground-films-in-references-and-sound/reference.md`:
+Primary reference observations are in `../2026-10-15-ground-films-in-references-and-sound/reference.md`:
 cool gray material, spatially moving footage, changes of shot scale, fine annotations and inserts.
 Transfer those traits to city/night/moon imagery already used by SeedController. Avoid importing
 the reference's biological/laboratory subject matter or treating continuity as the whole aesthetic.

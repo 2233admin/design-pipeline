@@ -38,4 +38,4 @@ recorded as not applicable rather than fabricated.
 
 Artifact v2 freshness/snapshot binding and visual acceptance remain in
 `../design-component-first-artifact-v2/`. Design Skill manifest/effect enforcement remains in
-`../add-design-skill-layer/`.
+`../2026-10-15-add-design-skill-layer/`.

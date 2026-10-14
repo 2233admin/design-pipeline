@@ -50,4 +50,4 @@
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.
-- Archive after the in-flight chain (`make-web-workflow-conversational`, `adopt-ai-fluency-decision-roles`) archives.
+- Archive after `adopt-ai-fluency-decision-roles` archives (`make-web-workflow-conversational` was archived in #136).

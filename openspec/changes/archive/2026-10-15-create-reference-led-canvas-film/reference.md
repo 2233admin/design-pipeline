@@ -2,7 +2,7 @@
 
 Style reference: https://www.liblib.tv/detail/8eee3e10b8c3442882ac631511100ce2 . Prior browser
 inspection covered the player plus read-only workflow/storyboard. Reuse the timestamped findings in
-`../ground-films-in-references-and-sound/reference.md`; no additional unrelated reference is needed.
+`../2026-10-15-ground-films-in-references-and-sound/reference.md`; no additional unrelated reference is needed.
 
 Local source: `seedcontrol/static/login/videos`, declared as product login showcase assets in
 `seedcontrol/frontend/src/lib/public-assets.ts`. FFmpeg inspected metadata and frames at 0.5/2.5/4.5s:

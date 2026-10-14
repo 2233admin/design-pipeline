@@ -26,5 +26,5 @@ CICADA regression result is claimed.
 
 - `../design-component-first-artifact-v2/` owns target/snapshot/freshness binding and visual-gate
   separation.
-- `../add-design-skill-layer/` owns manifests, effect enforcement, handoff artifacts, and prototype
+- `../2026-10-15-add-design-skill-layer/` owns manifests, effect enforcement, handoff artifacts, and prototype
   promotion.
