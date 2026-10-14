@@ -6,6 +6,13 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- MengTo and iart upstream skills are downloaded on demand (change `fetch-vendor-on-demand`, #119).
+  The package drops from about 253 MB to about 51 MB extracted. `designer-pipeline sources fetch
+  --bundle mengto-skills|iart-motion-skills | --all` downloads each file at its pinned revision from
+  `raw.githubusercontent.com`, checks its Git blob id and size against the manifest and installs the
+  tree into the user cache (`DESIGN_PIPELINE_CACHE` overrides it). Until then search and route fail
+  with `TOOL_MISSING` naming the command, and `doctor` lists the bundle under `downloads` without
+  blocking. The repository keeps both trees in place.
 - The package holds one `SKILL.md` (change `store-upstream-skill-files`, #118). The 258 bundled
   upstream `SKILL.md` files are stored as `UPSTREAM-SKILL.md` with unchanged bytes; manifests keep
   upstream paths and hashes, and `skill/scripts/upstream-path.cjs` maps between the names for

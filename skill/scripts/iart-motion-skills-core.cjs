@@ -4,6 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { storedPath, upstreamFiles } = require("./upstream-path.cjs");
+const { upstreamRoot } = require("./vendor-cache.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/iart-motion-skills/manifest.json");
 const schema = "design-pipeline.iart-motion-skills-source.v1";
@@ -95,9 +96,19 @@ function loadIartCatalog(manifestFile = defaultManifest) {
   return { manifest, manifestFile: path.resolve(manifestFile), root: path.dirname(path.resolve(manifestFile)) };
 }
 
+// A catalog path ("upstream/.../SKILL.md") -> the stored file under the resolved upstream root.
+function skillFile(upstream, manifest, catalogPath) {
+  return path.join(upstream, ...storedPath(path.posix.relative(manifest.snapshot.root, catalogPath)).split("/"));
+}
+
 function verifyIartSnapshot(manifestFile = defaultManifest) {
   const loaded = loadIartCatalog(manifestFile);
-  const sourceRoot = path.join(loaded.root, loaded.manifest.snapshot.root);
+  // The repository keeps the tree beside the manifest; a package downloads it into the user cache.
+  const where = upstreamRoot(loaded.manifestFile, loaded.manifest);
+  const sourceRoot = where.root;
+  if (where.source === "cache" && !fs.existsSync(sourceRoot)) {
+    return { schema: "design-pipeline.iart-motion-skills-verification.v1", status: "missing", fetch: where.fetch, issues: [`not downloaded yet; run ${where.fetch}`] };
+  }
   if (!fs.existsSync(sourceRoot) || fs.lstatSync(sourceRoot).isSymbolicLink() || !fs.statSync(sourceRoot).isDirectory()) {
     return { schema: "design-pipeline.iart-motion-skills-verification.v1", status: "blocked", issues: ["snapshot root is missing"] };
   }
@@ -133,7 +144,7 @@ function verifyIartSnapshot(manifestFile = defaultManifest) {
   const declaredSkills = loaded.manifest.skills.map((skill) => skill.path.replace(/^upstream\//, "")).sort();
   if (JSON.stringify(discoveredSkills) !== JSON.stringify(declaredSkills)) issues.push("skill catalog does not match bundled SKILL.md files");
   for (const skill of loaded.manifest.skills) {
-    if (!fs.existsSync(path.join(loaded.root, storedPath(skill.path)))) issues.push(`missing skill: ${skill.id}`);
+    if (!fs.existsSync(skillFile(sourceRoot, loaded.manifest, skill.path))) issues.push(`missing skill: ${skill.id}`);
   }
   if (normalizedFiles.some((relative) => relative.startsWith("generative-illustration-skills/"))) {
     issues.push("excluded generative-illustration-skills was copied");
@@ -223,6 +234,7 @@ function searchIartSkills({ query, family = null, pack = null, limit = 5, manife
   const parsedLimit = Number(limitText);
   const loaded = loadIartCatalog(manifestFile);
   const verification = verifyIartSnapshot(manifestFile);
+  if (verification.status === "missing") throw Object.assign(new Error(`iart motion skills are not downloaded yet. Fix: run ${verification.fetch}`), { code: "TOOL_MISSING", details: { fetch: verification.fetch } });
   if (verification.status !== "ready") invalid(`snapshot verification failed: ${verification.issues.join("; ")}`);
   if (family !== null && !Object.hasOwn(loaded.manifest.families, family)) invalid(`unknown family: ${family}`);
   if (pack !== null && !loaded.manifest.packs.some((entry) => entry.id === pack)) invalid(`unknown pack: ${pack}`);
@@ -246,7 +258,7 @@ function searchIartSkills({ query, family = null, pack = null, limit = 5, manife
     .slice(0, parsedLimit)
     .map(({ skill }) => ({
       ...skill,
-      skillPath: path.join(loaded.root, storedPath(skill.path)),
+      skillPath: skillFile(upstreamRoot(loaded.manifestFile, loaded.manifest).root, loaded.manifest, skill.path),
     }));
   return {
     schema: "design-pipeline.iart-motion-skills-search.v1",

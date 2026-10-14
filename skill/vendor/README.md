@@ -12,8 +12,8 @@ links: an upstream link to `SKILL.md` means the `UPSTREAM-SKILL.md` in the same 
 
 | Bundle | Maintained guide | Integrity record |
 | --- | --- | --- |
-| `mengto-skills/` | [Design and implementation recipes](../references/mengto-skills.md) | `manifest.json`, source Git tree and snapshot hashes |
-| `iart-motion-skills/` | [Motion playbooks](../references/iart-motion-skills.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `mengto-skills/` | [Design and implementation recipes](../references/mengto-skills.md) (downloaded on demand) | `manifest.json`, source Git tree and snapshot hashes |
+| `iart-motion-skills/` | [Motion playbooks](../references/iart-motion-skills.md) (downloaded on demand) | `manifest.json`, source Git tree and snapshot hashes |
 | `interface-discipline/` | [Interface review](../references/interface-discipline.md) | `manifest.json`, snapshot hash |
 | `prism-system/` | [Design-system methods](../references/prism-system.md) | `manifest.json` |
 | `holosticker/` | [Holographic materials and geometry](../references/holosticker.md) | `manifest.json` |

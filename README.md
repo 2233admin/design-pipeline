@@ -115,8 +115,9 @@ CSS 写作和审查内置 [Good CSS](skill/references/good-css.md)：完整保�
 
 如果不想克隆仓库，直接下载最新正式版 `v0.10.0` Release 的资产（预发布版资产在发布后见 Releases 页面）。需要 Node.js 22 或更新版本。
 Release 包的归档根目录是 `design-pipeline/`，包含 `SKILL.md`、`references/`、`scripts/`、
-生成的 `PACKAGE.json` 和安装器；其中包含的参考快照与其他资源解压后约占 **175 MB**。
-压缩包的实际下载大小以 GitHub Release 页面为准。
+生成的 `PACKAGE.json` 和安装器；解压后约 **50 MB**。MengTo 与 iart 两个大型上游技能库（约 200 MB）
+不随包发布，首次需要时运行 `designer-pipeline sources fetch --all` 按锁定版本下载并逐文件校验，
+`doctor` 会列出尚未下载的库。压缩包的实际下载大小以 GitHub Release 页面为准。
 
 可用资产：
 

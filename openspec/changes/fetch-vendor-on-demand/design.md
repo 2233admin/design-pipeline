@@ -39,13 +39,21 @@ Mature patterns checked:
 - **Explicit fetch:** search and route do not download on their own; they fail with `TOOL_MISSING`
   and the command. Network side effects stay visible and approvable.
 - **Packaging:** `package.cjs` leaves out `skill/vendor/{mengto-skills,iart-motion-skills}/upstream`
-  and their entries in `package-resources.json` `required` move to an `optional` list that
-  `doctor` and `check-deps` report without blocking.
+  and their two LICENSE entries leave `package-resources.json` `required`. `doctor` reports a
+  missing bundle under `downloads` without blocking; search and route fail with `TOOL_MISSING`.
+- **Command:** `sources fetch --bundle <name>|--all` runs in a kernel process (the CLI is
+  synchronous) and verifies each bundle after download.
 
-## Open questions for the owner
+## Owner decisions (2026-10-14)
 
-1. Scope: only MengTo and iart (recommended, 253 → about 50 MB), or every bundle (about 27 MB, but
-   Taste, good-css and UI-craft guides then need a fetch before their links work)?
-2. Should `designer-pipeline doctor` offer to fetch, or only print the command?
-3. Should the release also publish a separate "full" archive with every bundle for offline
-   installs?
+1. Scope: only MengTo and iart (package 253 MB → about 51 MB extracted).
+2. Not answered; default taken: `doctor` lists the bundles and their fetch command, it does not
+   download.
+3. Not answered; default taken: no separate full archive. An offline machine receives a copy of the
+   cache directory or sets `DESIGN_PIPELINE_CACHE`.
+
+## Found while implementing
+
+Fetching iart at its recorded pack revisions exposed nine GIFs whose bundled bytes had been
+rewritten by `text=auto`; that is fixed separately (`restore-upstream-snapshot-bytes`, #126), which
+this change depends on.

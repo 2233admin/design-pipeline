@@ -138,6 +138,7 @@
     "prompt-motion-index.test.cjs",
     "prompt-motion-library.test.cjs",
     "upstream-path.test.cjs",
-    "browser-locate.test.cjs"
+    "browser-locate.test.cjs",
+    "vendor-cache.test.cjs"
   ]
 }

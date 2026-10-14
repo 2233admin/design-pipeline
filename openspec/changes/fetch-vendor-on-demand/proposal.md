@@ -9,7 +9,7 @@ on demand.
 ## What Changes
 
 - The release package carries the MengTo and iart manifests, not their upstream files.
-- `designer-pipeline sources fetch <bundle>|--all` downloads a bundle's files at the pinned
+- `designer-pipeline sources fetch --bundle <bundle>|--all` downloads a bundle's files at the pinned
   revision, verifies each against the manifest's Git blob id and size, and stores it in a user
   cache under the same layout (`UPSTREAM-SKILL.md` included). A partial or failed download leaves
   nothing in place.
