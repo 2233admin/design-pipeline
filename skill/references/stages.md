@@ -412,6 +412,12 @@ Create or update `brief.md` with:
 
 Keep this short. It is an execution contract, not a product essay.
 
+The new DesignBrief asks one `intake-creative-intent` question after success criteria, covering
+expression, audience connection and distinctiveness together. Its status remains `clarifying` until
+all core fields are resolved and each intent fact has `source: user` or `known`, or is explicitly
+skipped. An Agent-only suggestion stays unresolved and cannot confirm the brief; previously
+confirmed v1 briefs may omit `creativeIntent`.
+
 ### Form sanity backstop
 
 Before choosing a visual direction, declare the deliverable form from the user's or controller's
@@ -547,6 +553,10 @@ navigation in `design.md`. Those belong in `3d.md` for 3D families.
 
 When requirements-driven synthesis is active, also write the project `DESIGN.md` according to
 `references/design-synthesis.md`. Link it from change `design.md`; do not duplicate the entire file.
+
+In `DESIGN.md`'s `Product Context`, name `Expression` (`表达`), `Connection` (`连接` or `受众关系`),
+and `Distinctiveness` (`独特性`). English labels are case-insensitive; a missing label returns
+`synthesis-required` and identifies the missing label.
 
 Use concrete values when implementation will need them. Avoid vague style words without implementation consequences.
 

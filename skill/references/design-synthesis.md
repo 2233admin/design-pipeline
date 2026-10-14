@@ -193,6 +193,10 @@ Colors, Typography, Layout, Components and Do's and Don'ts even for host-rendere
 explain inheritance there when tokens are omitted. `Source Decisions` identifies adopted and
 rejected source properties and links the active change id or artifact path.
 
+In `Product Context`, state the project’s creative intent under `Expression`, `Connection`, and
+`Distinctiveness`. The foundation check accepts case-insensitive English labels or `表达`, `连接` or
+`受众关系`, and `独特性`. A missing label returns `synthesis-required` and names the missing label.
+
 Keep Components about visual elements and their states. Put workflow stages, receipts, installation
 details and verification reports in their own guides or change artifacts. The local foundation
 check covers project provenance and structure; it is not a substitute for Google's format lint:

@@ -40,16 +40,16 @@
 
 ## 3. Phase 2: creative intent (Decision 4)
 
-- [ ] 3.1 `guided-design-intake-core.cjs`: `creativeIntent` fact group in `BRIEF_KEYS`,
+- [x] 3.1 `guided-design-intake-core.cjs`: `creativeIntent` fact group in `BRIEF_KEYS`,
   `intake-creative-intent` question, agent facts unresolved, per-fact skip; brief schema reference
   updated.
-- [ ] 3.2 Web playback instruction carries the three intent lines; anti-goals reported as
+- [x] 3.2 Web playback instruction carries the three intent lines; anti-goals reported as
   distinctiveness.
-- [ ] 3.3 `design-synthesis-core.cjs`: `Product Context` label check (EN and ZH labels) returning
+- [x] 3.3 `design-synthesis-core.cjs`: `Product Context` label check (EN and ZH labels) returning
   `synthesis-required`; root `DESIGN.md` updated to pass.
-- [ ] 3.4 Tests: `guided-design-intake`, `guided-multi-surface-cli`, `design-synthesis`,
+- [x] 3.4 Tests: `guided-design-intake`, `guided-multi-surface-cli`, `design-synthesis`,
   `workflow-next` (playback lines).
-- [ ] 3.5 Docs: `stages.md` Stage 1 and Stage 3, DESIGN.md guidance reference, CHANGELOG.
+- [x] 3.5 Docs: `stages.md` Stage 1 and Stage 3, DESIGN.md guidance reference, CHANGELOG.
 
 ## 4. Phase 3: discernment (Decision 5 reasons, Decision 7)
 

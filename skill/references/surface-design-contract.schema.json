@@ -208,6 +208,15 @@
         "referenceIds": { "$ref": "#/$defs/listFact" },
         "references": { "$ref": "#/$defs/listFact" },
         "successCriteria": { "$ref": "#/$defs/listFact" },
+        "creativeIntent": {
+          "type": "object",
+          "properties": {
+            "expression": { "$ref": "#/$defs/textFact" },
+            "connection": { "$ref": "#/$defs/textFact" },
+            "distinctiveness": { "$ref": "#/$defs/textFact" }
+          },
+          "additionalProperties": false
+        },
         "assumptions": { "$ref": "#/$defs/listFact" },
         "uncertainties": {
           "type": "array",

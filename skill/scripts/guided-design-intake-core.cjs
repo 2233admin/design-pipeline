@@ -31,6 +31,8 @@ const FACT_FIELDS = [
   "successCriteria",
   "assumptions",
 ];
+const CREATIVE_INTENT_FIELDS = ["expression", "connection", "distinctiveness"];
+const CREATIVE_INTENT_PATHS = CREATIVE_INTENT_FIELDS.map((field) => `creativeIntent.${field}`);
 const CORE_FIELDS = ["audience", "primaryActions", "surface", "successCriteria"];
 const LIST_FIELDS = new Set([
   "primaryActions",
@@ -41,7 +43,7 @@ const LIST_FIELDS = new Set([
   "successCriteria",
   "assumptions",
 ]);
-const SCALAR_FIELDS = new Set(["audience", "userProblem", "usageContext", "contentAndDataDensity"]);
+const SCALAR_FIELDS = new Set(["audience", "userProblem", "usageContext", "contentAndDataDensity", ...CREATIVE_INTENT_FIELDS]);
 const BRIEF_KEYS = [
   "schema",
   "briefId",
@@ -59,6 +61,7 @@ const BRIEF_KEYS = [
   "references",
   "referenceIds",
   "successCriteria",
+  "creativeIntent",
   "assumptions",
   "uncertainties",
   "surface",
@@ -111,6 +114,17 @@ const QUESTION_DEFINITIONS = Object.freeze({
       { value: "findability", label: "Users find the right information quickly" },
       { value: "error-reduction", label: "Fewer errors or support requests" },
       { value: "other", label: "Another measurable outcome" },
+    ]),
+  }),
+  creativeIntent: Object.freeze({
+    id: "intake-creative-intent",
+    field: "creativeIntent",
+    prompt: "What should this feel like, who is it for in spirit, and what must it not look like?",
+    why: "Creative intent belongs to the owner; do not infer it from evidence.",
+    fields: Object.freeze([
+      Object.freeze({ field: "creativeIntent.expression", prompt: "What should this work express, or what point of view should it carry?" }),
+      Object.freeze({ field: "creativeIntent.connection", prompt: "What relationship should it build with its audience?" }),
+      Object.freeze({ field: "creativeIntent.distinctiveness", prompt: "What must it not look or feel like? Include its anti-goals." }),
     ]),
   }),
 });
@@ -267,6 +281,7 @@ function createDesignBrief(input) {
     "platform",
     "framework",
     "profileVersion",
+    "creativeIntent",
     ...FACT_FIELDS,
   ], "DesignBrief input", scope);
   assertString(input.projectId, "projectId", scope);
@@ -280,6 +295,7 @@ function createDesignBrief(input) {
     surfaceId: input.surfaceId,
     uncertainties: [],
     status: "inferred",
+    creativeIntent: {},
   };
   if (input.input !== undefined) brief.input = input.input;
   if (input.evidence !== undefined) brief.evidence = evidencePolicy(input.evidence, scope);
@@ -297,6 +313,14 @@ function createDesignBrief(input) {
   if (suppliedSurface !== undefined) {
     brief.surface = normalizeFact("surface", suppliedSurface, brief.projectId, brief.surfaceId, scope);
   }
+  if (input.creativeIntent !== undefined) {
+    assertObject(input.creativeIntent, "creativeIntent", scope);
+    assertKeys(input.creativeIntent, [], CREATIVE_INTENT_FIELDS, "creativeIntent", scope);
+    for (const field of CREATIVE_INTENT_FIELDS) {
+      if (input.creativeIntent[field] === undefined) continue;
+      brief.creativeIntent[field] = normalizeFact(field, input.creativeIntent[field], brief.projectId, brief.surfaceId, scope);
+    }
+  }
 
   for (const field of FACT_FIELDS) {
     if (input[field] === undefined) continue;
@@ -311,11 +335,22 @@ function createDesignBrief(input) {
       brief.uncertainties.push(uncertainty(field, "Agent suggestion requires user confirmation", "agent_suggested"));
     }
   }
+  for (const field of CREATIVE_INTENT_FIELDS) {
+    const path = `creativeIntent.${field}`;
+    const fact = brief.creativeIntent[field];
+    if (fact === undefined) {
+      brief.uncertainties.push(uncertainty(path, "Not supplied; ask before relying on this fact"));
+    } else if (fact.source === "agent") {
+      brief.uncertainties.push(uncertainty(path, "Agent suggestion requires user confirmation", "agent_suggested"));
+    }
+  }
   return validateDesignBrief(brief);
 }
 
 function isResolved(brief, field) {
-  const fact = brief[field];
+  const fact = field.startsWith("creativeIntent.")
+    ? brief.creativeIntent?.[field.slice("creativeIntent.".length)]
+    : brief[field];
   return Boolean(fact && fact.source !== "agent");
 }
 
@@ -343,6 +378,27 @@ function nextIntakeQuestion(brief, evidence) {
       evidencePolicy: clone(policy),
     };
   }
+  // Confirmed v1 briefs without this field predate the intent question; do not reopen them.
+  if (normalized.creativeIntent !== undefined || normalized.status !== "user_confirmed") {
+    const definition = QUESTION_DEFINITIONS.creativeIntent;
+    const unresolved = CREATIVE_INTENT_FIELDS.some((field) => {
+      const path = `creativeIntent.${field}`;
+      return !isResolved(normalized, path) && !wasSkipped(normalized, path);
+    });
+    if (unresolved) {
+      return {
+        id: definition.id,
+        field: definition.field,
+        prompt: definition.prompt,
+        why: definition.why,
+        options: [],
+        fields: clone(definition.fields),
+        status: "required",
+        skip: { allowed: true, label: "Skip for now" },
+        evidencePolicy: clone(policy),
+      };
+    }
+  }
   return null;
 }
 
@@ -352,32 +408,62 @@ function applyIntakeAnswer(brief, answer) {
   assertObject(answer, "answer", scope);
   assertKeys(answer, ["field"], ["field", "value", "source", "skip", "reason"], "intake answer", scope);
   assertString(answer.field, "field", scope);
-  const field = answer.field === "primaryTask" ? "primaryActions" : answer.field;
-  if (!CORE_FIELDS.includes(field) && !FACT_FIELDS.includes(field)) fail(scope, `unsupported intake field ${answer.field}`);
+  const [group, subfield, ...extra] = answer.field.split(".");
+  const isCreativeIntent = group === "creativeIntent";
+  if (isCreativeIntent && (extra.length || !CREATIVE_INTENT_FIELDS.includes(subfield))) {
+    fail(scope, `unsupported intake field ${answer.field}`);
+  }
+  const field = isCreativeIntent ? subfield : answer.field === "primaryTask" ? "primaryActions" : answer.field;
+  if (!isCreativeIntent && !CORE_FIELDS.includes(field) && !FACT_FIELDS.includes(field)) fail(scope, `unsupported intake field ${answer.field}`);
+  const uncertaintyField = isCreativeIntent ? answer.field : field;
   const source = answer.source === undefined ? "user" : answer.source;
   assertEnum(source, SOURCES, "source", scope);
   const skipping = answer.skip === true || answer.value === undefined || answer.value === null || answer.value === "skip";
   const result = clone(normalized);
-  if (skipping) {
-    delete result[field];
-    result.uncertainties = removeUncertainties(result.uncertainties, field);
-    result.uncertainties.push(uncertainty(field, answer.reason || "User skipped this question", "skipped"));
-  } else {
-    const value = LIST_FIELDS.has(field) && !Array.isArray(answer.value) ? [answer.value] : answer.value;
-    result[field] = normalizeFact(field, value, result.projectId, result.surfaceId, scope);
-    result[field].source = source;
-    result.uncertainties = removeUncertainties(result.uncertainties, field);
-    if (source === "agent") {
-      result.uncertainties.push(uncertainty(field, "Agent suggestion requires user confirmation", "agent_suggested"));
+  if (isCreativeIntent && result.creativeIntent === undefined) {
+    result.creativeIntent = {};
+    for (const intentField of CREATIVE_INTENT_FIELDS) {
+      const path = `creativeIntent.${intentField}`;
+      if (!result.uncertainties.some((record) => record.field === path)) {
+        result.uncertainties.push(uncertainty(path, "Not supplied; ask before relying on this fact"));
+      }
     }
   }
-  result.status = CORE_FIELDS.every((coreField) => isResolved(result, coreField)) ? "proposed" : "clarifying";
+  if (skipping) {
+    if (isCreativeIntent) delete result.creativeIntent[field];
+    else delete result[field];
+    result.uncertainties = removeUncertainties(result.uncertainties, uncertaintyField);
+    result.uncertainties.push(uncertainty(uncertaintyField, answer.reason || "User skipped this question", "skipped"));
+  } else {
+    const value = LIST_FIELDS.has(field) && !Array.isArray(answer.value) ? [answer.value] : answer.value;
+    const fact = normalizeFact(field, value, result.projectId, result.surfaceId, scope);
+    fact.source = source;
+    if (isCreativeIntent) result.creativeIntent[field] = fact;
+    else result[field] = fact;
+    result.uncertainties = removeUncertainties(result.uncertainties, uncertaintyField);
+    if (source === "agent") {
+      result.uncertainties.push(uncertainty(uncertaintyField, "Agent suggestion requires user confirmation", "agent_suggested"));
+    }
+  }
+  const coreComplete = CORE_FIELDS.every((coreField) => isResolved(result, coreField));
+  const creativeIntentComplete = CREATIVE_INTENT_FIELDS.every((field) => {
+    const path = `creativeIntent.${field}`;
+    return isResolved(result, path) || wasSkipped(result, path);
+  });
+  result.status = coreComplete && creativeIntentComplete ? "proposed" : "clarifying";
   return validateDesignBrief(result);
 }
 
 function confirmDesignBrief(brief) {
   const normalized = validateDesignBrief(brief);
   const missing = CORE_FIELDS.filter((field) => !isResolved(normalized, field));
+  // Keep confirmed v1 briefs valid while requiring current briefs to resolve or skip all three facts.
+  if (normalized.creativeIntent !== undefined || normalized.status !== "user_confirmed") {
+    for (const field of CREATIVE_INTENT_FIELDS) {
+      const path = `creativeIntent.${field}`;
+      if (!isResolved(normalized, path) && !wasSkipped(normalized, path)) missing.push(path);
+    }
+  }
   if (missing.length) {
     fail("design-brief-confirmation", `cannot confirm without ${missing.join(", ")}`);
   }
@@ -394,7 +480,7 @@ function validateUncertainties(records, scope) {
     assertObject(record, "uncertainty", scope);
     assertKeys(record, ["field", "reason", "status"], ["field", "reason", "status"], "uncertainty", scope);
     assertString(record.field, "uncertainty field", scope);
-    if (![...FACT_FIELDS, "surface"].includes(record.field)) fail(scope, `uncertainty field ${record.field} is unsupported`);
+    if (![...FACT_FIELDS, "surface", ...CREATIVE_INTENT_PATHS].includes(record.field)) fail(scope, `uncertainty field ${record.field} is unsupported`);
     assertString(record.reason, "uncertainty reason", scope);
     assertEnum(record.status, ["unresolved", "skipped", "agent_suggested"], "uncertainty status", scope);
     if (seen.has(record.field)) fail(scope, `duplicate uncertainty for ${record.field}`);
@@ -420,6 +506,30 @@ function validateUncertaintyConsistency(brief, scope) {
       continue;
     }
     if (record) fail(scope, `resolved fact ${field} cannot retain an uncertainty`);
+  }
+  if (brief.creativeIntent === undefined) {
+    if (CREATIVE_INTENT_PATHS.some((field) => records.has(field))) {
+      fail(scope, "creative intent uncertainties require the creativeIntent group");
+    }
+    return;
+  }
+  for (const field of CREATIVE_INTENT_FIELDS) {
+    const path = `creativeIntent.${field}`;
+    const fact = brief.creativeIntent[field];
+    const record = records.get(path);
+    if (fact === undefined) {
+      if (!record || !["unresolved", "skipped"].includes(record.status)) {
+        fail(scope, `missing uncertainty for unresolved field ${path}`);
+      }
+      continue;
+    }
+    if (fact.source === "agent") {
+      if (!record || record.status !== "agent_suggested") {
+        fail(scope, `Agent fact ${path} must have an agent_suggested uncertainty`);
+      }
+      continue;
+    }
+    if (record) fail(scope, `resolved fact ${path} cannot retain an uncertainty`);
   }
 }
 
@@ -448,6 +558,18 @@ function validateDesignBrief(brief) {
     assertKeys(fact, ["value", "source"], ["value", "source"], "surface fact", scope);
     assertEnum(fact.source, SOURCES, "surface source", scope);
     normalizeSurfaceValue(fact.value, brief.projectId, brief.surfaceId, scope);
+  }
+  if (brief.creativeIntent !== undefined) {
+    assertObject(brief.creativeIntent, "creativeIntent", scope);
+    assertKeys(brief.creativeIntent, [], CREATIVE_INTENT_FIELDS, "creativeIntent", scope);
+    for (const field of CREATIVE_INTENT_FIELDS) {
+      const fact = brief.creativeIntent[field];
+      if (fact === undefined) continue;
+      assertObject(fact, `creativeIntent.${field} fact`, scope);
+      assertKeys(fact, ["value", "source"], ["value", "source"], `creativeIntent.${field} fact`, scope);
+      assertEnum(fact.source, SOURCES, `creativeIntent.${field} source`, scope);
+      validateFactValue(field, fact.value, scope);
+    }
   }
   validateUncertaintyConsistency(brief, scope);
   return clone(brief);

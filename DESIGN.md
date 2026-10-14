@@ -96,6 +96,13 @@ to design interfaces, graphics, images, motion and films. Individual tools can s
 workflow; complete deliverables use the documented design and verification contracts. The package
 itself is host-rendered and does not prescribe an aesthetic to those deliverables.
 
+- Expression: Make design decisions visible and explainable instead of treating AI output as an
+  unquestioned default.
+- Connection: Help design owners and agents collaborate around real products, requirements, and
+  reusable guidance.
+- Distinctiveness: Never impose a generic aesthetic or mistake a passing technical gate for the
+  owner's creative acceptance.
+
 ## Source Decisions
 
 ### Adopted

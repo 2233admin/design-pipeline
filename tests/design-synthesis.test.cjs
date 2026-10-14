@@ -78,6 +78,9 @@ description: An operations design system for urgent support work
 ## Product Context
 
 The audience is support leads resolving urgent escalations under time pressure.
+Expression: Clear, evidence-forward decisions express the pipeline's craft.
+Connection: Owners and agents coordinate through visible decisions and artifacts.
+Distinctiveness: The tool must not confuse technical readiness with creative acceptance.
 Active synthesis change: ${changeId}.
 
 ## Overview
@@ -175,6 +178,43 @@ test("accepts a complete project design foundation", () => {
   assert.equal(report.status, "ready");
   assert.equal(report.name, "Escalation Atlas");
   assert.match(report.sha256, /^[a-f0-9]{64}$/);
+});
+
+test("requires all creative-intent labels inside Product Context", () => {
+  const labels = [
+    ["Expression", "Expression: Clear, evidence-forward decisions express the pipeline's craft.\n"],
+    ["Connection", "Connection: Owners and agents coordinate through visible decisions and artifacts.\n"],
+    ["Distinctiveness", "Distinctiveness: The tool must not confuse technical readiness with creative acceptance.\n"],
+  ];
+  for (const [label, line] of labels) {
+    const projectRoot = makeRoot(false);
+    let design = validDesign("foundation-check").replace(line, "");
+    if (label === "Distinctiveness") {
+      design = design.replace("## Overview\n\n", "## Overview\n\nDistinctiveness: This unrelated section does not satisfy Product Context.\n\n");
+    }
+    fs.writeFileSync(path.join(projectRoot, "DESIGN.md"), design);
+
+    const result = runFoundation(projectRoot);
+
+    assert.equal(result.status, 2, result.stderr || result.stdout);
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.status, "synthesis-required");
+    assert.match(report.error, new RegExp(label, "i"));
+  }
+});
+
+test("accepts case-insensitive English and Chinese creative-intent labels", () => {
+  const projectRoot = makeRoot(false);
+  const design = validDesign("foundation-check")
+    .replace("Expression:", "eXpReSsIoN:")
+    .replace("Connection:", "受众关系：")
+    .replace("Distinctiveness:", "独特性：");
+  fs.writeFileSync(path.join(projectRoot, "DESIGN.md"), design);
+
+  const result = runFoundation(projectRoot);
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(JSON.parse(result.stdout).status, "ready");
 });
 
 test("rejects an incomplete project design foundation", () => {
