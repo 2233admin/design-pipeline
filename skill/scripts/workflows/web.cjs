@@ -15,7 +15,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
-const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, reason, reference, statement } = require("./shared.cjs");
+const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, meaningful, reason, reference, statement } = require("./shared.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -139,9 +139,18 @@ function variantFindings(root) {
   ];
 }
 
-// A pick closes the stage and a later rejection reopens it.
+// A pick closes the stage; a director recommendation does not, and a later rejection reopens it.
+function conceptRecommendation(state, page) {
+  const roles = Array.isArray(state.decisions?.roles) ? state.decisions.roles : [];
+  const ownerPick = roles.findLastIndex(entry => entry.stage === "concept" && entry.by === "owner" && entry.choice !== undefined);
+  const recommendation = roles.findLastIndex(entry => entry.stage === "concept" && entry.by === "agent" && entry.verdict === "recommend");
+  if (recommendation < ownerPick) return null;
+  return history(state, "drafts").findLast(entry => entry.stage === "concept" && entry.verdict === "recommend" && entry.by === "agent" && entry.sha256 === page) || null;
+}
+
 function conceptChosen(state) {
-  return history(state, "variants").at(-1)?.verdict === "pick" && Boolean(state.decisions?.concept);
+  const latest = history(state, "variants").at(-1);
+  return latest?.verdict === "pick" && Boolean(state.decisions?.concept) && (!state.director || latest.by === "owner");
 }
 
 const CONCEPTS = {
@@ -152,15 +161,34 @@ const CONCEPTS = {
     const findings = variantFindings(root);
     if (findings.length) return { type: "run", instruction: `${findings.map(item => `${item.message} Fix: ${item.fix}`).join(" ")} Then run next again.`, findings, why: "The owner flips between real first screens on one page, so every variant and the switcher must be there." };
     const latest = history(state, "variants").at(-1);
-    const rejected = latest?.verdict === "reject" && latest.sha256 === fileSha(root, VARIANTS_PAGE);
+    const page = fileSha(root, VARIANTS_PAGE);
+    const rejected = latest?.verdict === "reject" && latest.sha256 === page;
+    const recommendation = conceptRecommendation(state, page);
+    const ownerCommand = decideCommand(root, "concept").replace(" --stage concept", " --by owner --stage concept");
+    const directorStep = Boolean(state.director && !recommendation);
+    const question = recommendation
+      ? `The director recommends ${recommendation.choice}. Open ${VARIANTS_PAGE} and flip through A, B and C with the arrows or the ← → keys. Which first screen should I build, or what should I combine from them?`
+      : directorStep
+        ? `Review ${VARIANTS_PAGE} and recommend a first screen to build, or a combination of them.`
+        : `Open ${VARIANTS_PAGE} and flip through A, B and C with the arrows or the ← → keys. Which first screen should I build, or what should I combine from them (for example B's header with C's layout)?`;
+    const pick = `<A|B|C, or several comma-separated to combine>`;
+    const record = recommendation
+      ? `${ownerCommand} --verdict pick --choice ${pick} --answer "<reason of at least 3 words>"`
+      : directorStep
+        ? `${decideCommand(root, "concept")} --verdict recommend --choice ${pick} [--answer "<why>"]`
+        : `${decideCommand(root, "concept")} --verdict pick --choice ${pick}${state.delegation?.concept?.to === "agent" ? ' [--answer "<what to take from each, if combining>"]' : ' --answer "<reason of at least 3 words>"'}`;
     return {
       type: "ask",
       ...(rejected ? { first: `The owner rejected these variants ("${latest.reason}"); the reason is now a project rule. Redo what it rules out in ${VARIANTS_PAGE} and pre-screen again, then ask:` } : {}),
-      question: `Open ${VARIANTS_PAGE} and flip through A, B and C with the arrows or the ← → keys. Which first screen should I build, or what should I combine from them (for example B's header with C's layout)?`,
+      question,
       show: [VARIANTS_PAGE, "concepts.md"].map(rel => path.join(path.resolve(root), rel)),
-      recommended: "Recommend the variant whose structure best serves what the visitor should do first, and say why.",
-      record: `${decideCommand(root, "concept")} --choice <A|B|C, or several comma-separated to combine> [--answer "<what to take from each, in the owner's words>"]`,
-      correction: `${decideCommand(root, "concept")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
+      recommended: recommendation
+        ? `The art director recommends ${recommendation.choice}; the owner makes the pick and gives at least three words for why.`
+        : directorStep
+          ? "Recommend the variant whose structure best serves what the visitor should do first, and say why."
+          : "Pick the first screen whose structure best serves what the visitor should do first; the owner's reason is at least three words.",
+      record,
+      correction: `${ownerCommand} --verdict reject --answer "<what is wrong, in the owner's words>"`,
       why: `${PRESCREEN} Each rejection becomes a project rule.`,
     };
   },
@@ -168,13 +196,13 @@ const CONCEPTS = {
 
 function recordConcept(state, root, options, next) {
   if (!stages(state).some(stage => stage.id === "concepts")) fail("workflow", `${state.tier === "quick" ? "the quick tier" : "replicate mode, which keeps its reference,"} has no variants to pick or reject. Fix: follow next`);
-  if (options.verdict && !["accept", "reject"].includes(options.verdict)) fail("workflow", "--verdict must be reject, or omitted when --choice records the pick");
+  if (options.verdict && !["accept", "reject", "pick", "recommend"].includes(options.verdict)) fail("workflow", "--verdict must be reject, pick or recommend");
   const variants = history(state, "variants");
   const page = fileSha(root, VARIANTS_PAGE);
   const at = new Date().toISOString();
   // Variants are picked or rejected only once the owner has been shown them (or later, to reopen).
   const action = next();
-  if (before(state, action.stage, "concepts") || action.stage === "concepts" && action.type !== "ask") fail("workflow", `Cannot record a variant ${options.verdict === "reject" ? "rejection" : "pick"} while ${action.stage === "concepts" ? `${VARIANTS_PAGE} is not ready` : `${action.stage} is unfinished`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+  if (before(state, action.stage, "concepts") || action.stage === "concepts" && action.type !== "ask") fail("workflow", `Cannot record a variant ${options.verdict === "reject" ? "rejection" : options.verdict === "recommend" ? "director recommendation" : "pick"} while ${action.stage === "concepts" ? `${VARIANTS_PAGE} is not ready` : `${action.stage} is unfinished`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
   if (options.verdict === "reject") {
     if (!page) fail("workflow", `there is no ${VARIANTS_PAGE} to reject. Fix: follow next`, { code: "WORKFLOW_NOT_READY" });
     const text = reason(options.answer, "say in one sentence what the owner rejected in the variants and why; it becomes a project rule");
@@ -184,13 +212,32 @@ function recordConcept(state, root, options, next) {
   }
   const choices = String(options.choice ?? "").split(",").map(value => value.trim().toUpperCase()).filter(Boolean);
   if (!choices.length || choices.some(value => !VARIANT_KEYS.includes(value)) || new Set(choices).size !== choices.length) fail("workflow", `--choice must be A, B or C, or several of them comma-separated to combine (the variant keys in ${VARIANTS_PAGE})`);
+  if (options.verdict === "recommend") {
+    if (!state.director || options.by !== "agent") fail("workflow", "a director recommendation requires --director and --by agent; the owner makes the pick");
+    if (action.stage !== "concepts" || action.type !== "ask") fail("workflow", "a director recommendation must precede the owner's pick");
+    if (!page) fail("workflow", `there is no ${VARIANTS_PAGE} to recommend. Fix: follow next`, { code: "WORKFLOW_NOT_READY" });
+    const answer = typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
+    state.decisions.drafts = [...history(state, "drafts"), { stage: "concept", verdict: "recommend", choice: choices.join(","), ...(answer ? { reason: answer } : {}), agent: state.director, sha256: page, at }];
+    return;
+  }
+  if (state.director && options.by === "agent") fail("workflow", "an art director records a recommendation with --verdict recommend; the owner makes the pick");
   const notes = choices.length > 1
-    ? reason(options.answer, "say what to take from each combined variant, in the owner's words")
-    : typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
+    ? meaningful(options.answer, 3, "say what to take from each combined variant, in the owner's words")
+    : options.by === "owner"
+      ? meaningful(options.answer, 3, "say why the owner picked this first screen")
+      : typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
   state.decisions.concept = choices.join(",");
   if (notes) state.decisions.conceptNotes = notes;
   else delete state.decisions.conceptNotes;
-  state.decisions.variants = [...variants, { verdict: "pick", choice: state.decisions.concept, ...(page ? { sha256: page } : {}), at }];
+  const recommendation = options.by === "owner" ? conceptRecommendation(state, page) : null;
+  state.decisions.variants = [...variants, {
+    verdict: "pick",
+    choice: state.decisions.concept,
+    ...(options.by === "owner" ? { reason: notes } : {}),
+    ...(recommendation ? { recommended: { by: "agent", agent: recommendation.agent, choice: recommendation.choice } } : {}),
+    ...(page ? { sha256: page } : {}),
+    at,
+  }];
 }
 
 // --- components: rounds of concrete decisions, each with a recommended answer ----------------------

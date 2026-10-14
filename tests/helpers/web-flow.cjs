@@ -34,8 +34,8 @@ function writeVariants(root) {
   write(root, "concepts.html", variantsPage());
 }
 
-function pickVariant(root, choice = "A", answer) {
-  return decide(root, { by: "owner", stage: "concept", choice, ...(answer ? { answer } : {}) });
+function pickVariant(root, choice = "A", answer = "The selected structure fits the project") {
+  return decide(root, { by: "owner", stage: "concept", choice, answer });
 }
 
 function writeReference(root) {

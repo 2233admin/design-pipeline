@@ -184,29 +184,66 @@ function componentDecisionDigest(state) {
     : null;
 }
 
+const reviewDrafts = state => (state.decisions?.drafts || []).filter(draft => !draft.stage || draft.stage === "review");
+function reviewRecommendation(state) {
+  const drafts = reviewDrafts(state);
+  const recommendation = drafts.findLast(draft => draft.verdict === "recommend" && draft.by === "agent");
+  if (!recommendation) return null;
+  const roles = state.decisions?.roles || [];
+  const recommendationRole = roles.findLastIndex(entry => entry.stage === "review" && entry.by === "agent" && entry.verdict === "recommend");
+  const ownerReview = roles.findLastIndex(entry => entry.stage === "review" && entry.by === "owner");
+  if (recommendationRole <= ownerReview) return null;
+  if (!recommendation.inputHashes
+      || canonicalJson(recommendation.inputHashes) !== canonicalJson(reviewInputHashes(state))
+      || (recommendation.componentDecision ?? null) !== componentDecisionDigest(state)) return null;
+  return recommendation;
+}
 const REVIEW = {
   id: "review",
   finished: (state) => {
-    const draft = state.decisions?.drafts?.at(-1);
+    const draft = reviewDrafts(state).at(-1);
     return draft?.verdict === "accept" && Boolean(draft.inputHashes)
       && canonicalJson(draft.inputHashes) === canonicalJson(reviewInputHashes(state))
       && (draft.componentDecision ?? null) === componentDecisionDigest(state);
   },
   action: (state, root) => {
-    if (state.deliverable === "ui") {
-      const rejected = (state.decisions?.drafts || []).length ? `; ${state.decisions.drafts.length} earlier result(s) were rejected and their reasons are project rules` : "";
-      return { type: "ask", question: `Look at the delivered interface (${state.decisions.delivered}) in a real browser. Accept it as it is, or reject it with one sentence on what is wrong?`, recommended: "Accept only when it looks and feels the way you want; passing checks show it works, not that it looks right.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The owner's final acceptance: visual quality is not something a passing check can accept on the owner's behalf${rejected}.` };
-    }
     const web = state.deliverable === "web";
-    const outputs = Object.keys(reviewInputHashes(state) || {}).filter(file => (web ? /\.html?$/i : /\.mp4$/i).test(file));
+    const hashes = reviewInputHashes(state);
+    const outputs = Object.keys(hashes || {}).filter(file => (web ? /\.html?$/i : /\.mp4$/i).test(file));
     const show = [...outputs, "evidence/contact-sheet.png", ...(web ? ["evidence/interaction.json"] : [])].flatMap(rel => {
       try {
         const file = resolveInside(root, rel, "review file", { scope: "workflow", mustExist: true });
         return fs.statSync(file).isFile() ? [file] : [];
       } catch { return []; }
     });
-    const rejected = (state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : "";
-    return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: web ? `Final acceptance of the whole checked page${state.tier === "quick" ? "" : ", after each section was reviewed"}; a passed probe shows the page works, never that it looks right${rejected}.` : `The owner's final acceptance; a passed check shows the draft works, never that it looks right${rejected}.` };
+    const records = reviewDrafts(state);
+    const rejected = records.filter(draft => draft.verdict === "reject").length;
+    const rejectionContext = rejected ? `; ${rejected} earlier draft(s) were rejected and their reasons are project rules` : "";
+    const recommendation = reviewRecommendation(state);
+    const recommendationText = recommendation
+      ? ` The director recommended ${recommendation.choice}${recommendation.reason ? `: "${recommendation.reason}"` : ""} (agent: ${recommendation.agent}).`
+      : "";
+    const question = web
+      ? `Inspect the checked page and its key interactions.${recommendationText} Accept it, or reject it with one sentence on what is wrong?`
+      : `Accept this checked draft, or reject it with one sentence on what is wrong?${recommendationText}`;
+    const directorNote = state.director && !recommendation
+      ? `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --by agent --stage review --verdict recommend --choice <accept|reject> [--answer "<director note>"]`
+      : undefined;
+    const record = `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject --answer "<acceptance reason of at least 3 words; or rejection reason of at least 2 words>"`;
+    const why = web
+      ? `Final acceptance of the whole checked page${state.tier === "quick" ? "" : ", after each section was reviewed"}; a passed probe shows the page works, never that it looks right${rejectionContext}.`
+      : `The owner's final acceptance; a passing check shows the draft works, never that it looks right${rejectionContext}.`;
+    return {
+      type: "ask",
+      question: state.deliverable === "ui"
+        ? `Look at the delivered interface (${state.decisions.delivered}) in a real browser.${recommendationText} Accept it as it is, or reject it with one sentence on what is wrong?`
+        : question,
+      show,
+      recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.",
+      record,
+      ...(directorNote ? { directorNote } : {}),
+      why,
+    };
   },
 };
 
@@ -223,4 +260,4 @@ function meaningful(answer, minimum, what, flag = "--answer", { cjkWeight = 0.5,
 const statement = (answer, what) => meaningful(answer, 6, what);
 const reason = (answer, what, flag) => meaningful(answer, 2, what, flag, { cjkWeight: 1, unit: "each CJK character counts as one" });
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, meaningful, reason, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reference, reviewInputHashes, reviewRecommendation, statement };

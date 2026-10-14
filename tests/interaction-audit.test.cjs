@@ -615,14 +615,14 @@ test("rendered-dependency lineage reopens review and delivery and binds files th
   assert.deepEqual(gate.lineage.remote, ["https://cdn.example/font.woff2"], "remote URLs are recorded, not hashed");
   assert.equal(Object.keys(gate.inputHashes).some((key) => key.startsWith("http")), false);
   assert.equal(nextAction(dir).stage, "review");
-  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "The checked page matches the intended behavior" });
   decide(dir, { by: "owner", stage: "deliver", answer: "https://example.test" });
   assert.equal(nextAction(dir).type, "done");
   fs.writeFileSync(path.join(dir, "site.css"), "html { background: #000; }\n");
   assert.equal(nextAction(dir).stage, "probe", "a changed stylesheet reopens probe");
   pass();
   assert.equal(nextAction(dir).stage, "review", "the re-verified page needs a new review");
-  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "The checked page still matches the intended behavior" });
   assert.equal(nextAction(dir).stage, "deliver", "and a new delivery");
   decide(dir, { by: "owner", stage: "deliver", answer: "https://example.test" });
   assert.equal(nextAction(dir).type, "done");

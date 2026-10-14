@@ -146,22 +146,29 @@ readable hierarchy. Redo any same-skeleton, common-template or collapsed-hierarc
 and compare again without showing failed variants to the owner (`web-direction.md`). This
 pre-screen is not Visual Acceptance and adds no gate or schema; only the owner picks a direction.
 
-Then ask the owner to open `concepts.html`, flip through A, B and C with the arrows or the ← → keys,
-and say which first screen to build or what to combine from them (for example B's header with C's
-layout). Recommend the variant whose structure best serves what the visitor should do first, and
-say why. Record:
+Use `next` to see who owns the concept checkpoint. When it stays with the owner, show `concepts.html`
+and let them flip through A, B and C with the arrows or ← →; the owner's pick always includes
+`--answer` with at least three words explaining why. If the owner delegated the checkpoint to an
+agent without a director, follow `next`'s `--by agent` command; the agent needs no reason. With a
+director, `next` first routes the concept step to the director and returns a recommendation command.
+Record that recommendation without closing the stage:
 
-- a pick: `decide --stage concept --choice B`;
-- a mix: `decide --stage concept --choice B,C --answer "<what to take from each, in the owner's words>"`.
-  Combining requires the answer, kept as `decisions.conceptNotes`;
-- a rejection: `decide --stage concept --verdict reject --answer "<what is wrong, in the owner's words>"`.
-  It becomes a project rule (`variants N`) and reopens the stage. While `concepts.html` is
-  unchanged, `next` tells you to redo what the rule rules out and pre-screen again before asking.
+- director recommendation: `decide --by agent --stage concept --verdict recommend --choice A
+  [--answer "<why>"]`;
+- owner pick: `decide --by owner --stage concept --verdict pick --choice B --answer "<at least
+  three words explaining why>"`.
+
+For a mix, list the variants in `--choice` and explain what to take from each in the owner's
+three-word-or-longer reason. The owner's variant history keeps `recommended: {by: "agent", agent,
+choice}` when the director recommended one. The recommendation itself is an agent `drafts[]` record;
+`decisions.concept` and the owner variant record hold the owner's pick. A rejection remains
+`decide --stage concept --verdict reject --answer "<what is wrong, in the owner's words>"`; it
+becomes a project rule and reopens the stage. While `concepts.html` is unchanged, `next` tells you
+to redo what the rule rules out and pre-screen again before asking.
 
 Letters are case-insensitive; numbers are refused. A pick is refused (`WORKFLOW_NOT_READY`) until
-`next` has reached the variants ask. `decisions.concept` holds the pick (`B` or `B,C`) and
-`decisions.variants` the history.
-`quick` and replicate have no concepts stage and refuse concept records.
+`next` has reached the variants ask. `quick` and replicate have no concepts stage and refuse concept
+records.
 
 The variants are throwaway prototypes. Fold the chosen variant, and anything combined from the
 others, into the real page, rewritten properly; the switcher never ships in `index.html` in any
@@ -626,8 +633,8 @@ afterwards reopens this stage, and with it review and delivery.
 ## review
 
 Final acceptance of the whole checked page, after each section was reviewed in the build (at
-`quick`, right after the probe). The section verdicts do not replace it. It is locked to the owner:
-record it only with `--by owner`, and never route it to an art director.
+`quick`, right after the probe). The section verdicts do not replace it. It is locked to the owner;
+never route the acceptance itself to an art director.
 
 Before showing the page, walk the `UC-` items of `ui-craft-sources.md#review-checklist` that apply
 to what changed (motion feel and timing, focus, semantics, forms, copy, states). Record each result
@@ -644,10 +651,15 @@ observations alongside UC findings without duplicating them. These cases are not
 Show the page, its motion at full speed and a one-paragraph gate summary. When the build used a
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and
 reports them under Visual Acceptance in `qa.md`; the agent never records acceptance and gate
-findings stay Conformance. The user accepts, or rejects with one sentence
-(`decide --stage review --verdict accept|reject`). A rejection becomes a project rule and returns
-to build: the page the owner rejected is repaired before it is probed and shown again, so an
-unchanged page never comes back for review.
+findings stay Conformance. If `next` returns a `directorNote`, the director may record a separate
+review note as `--by agent --stage review --verdict recommend --choice accept|reject
+[--answer "<note>"]`; this recommendation does not accept or reject the page. The owner then records
+the decision with `--by owner`. An acceptance requires `--answer` of at least three words, and when
+there is a current director recommendation the owner's review entry preserves it as `recommended`.
+A rejection needs one sentence on what is wrong, with at least two words (each CJK character counts
+as one) (`decide --stage review --verdict reject`); it becomes a project rule and returns to build.
+Repair the rejected page before it is probed and shown again, so an unchanged page never comes back
+for review.
 
 ## deliver
 

@@ -61,6 +61,15 @@ name a repository. This is triggered by the work's needs, not a required search 
   Final acceptance is always the owner's, at every tier. Start a deliverable with
   `next ... --assisted-by <your tool and model>`; reaching done renders
   `.design-pipeline/diligence.md`, the record of who decided what (`designer-pipeline diligence`).
+
+- A web first-screen pick and every final acceptance need an owner `--answer` of at least three
+  words. A director's recommendation is separate from the owner's choice: `next` returns the
+  recommendation command, then the owner records a choice whose history keeps `recommended`.
+- The `done` action may offer one optional collaboration-retrospective question. If the owner
+  answers, record an explicit task-scoped experience with `adaptation record` first. Propose a
+  `task-shadow` candidate only when the answer yields one bounded rule and a genuinely related
+  evaluation-manifest hash, primary metric, direction and construction fixture are available;
+  otherwise stop after recording. Missing answers and evaluation evidence never block `done`.
 - Preserve source, snapshot, policy digest, receipt and downstream evidence lineage. Changed or
   failed evidence stays open or invalidates dependent evidence under the existing workflow.
 - Record asset licenses; non-commercial material does not ship in commercial work.

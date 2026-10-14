@@ -31,7 +31,7 @@ const MODES = ["brief", "replicate", "freeform"];
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, meaningful, reason, reference, reviewInputHashes, reviewRecommendation } = require("./workflows/shared.cjs");
 const roles = require("./workflows/roles.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
@@ -167,15 +167,28 @@ function nextAction(root) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
     const action = withRoles(stage.action(state, root), state);
-    // Visual picks go to the art director: the concept pick, a sample, a built web section. Final
-    // acceptance never does; it stays with the owner.
-    const directed = state.director && action.type === "ask" && ["concepts", "sample", "build"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
+    // Art-director routing covers web concept recommendations, sample verdicts and web sections;
+    // final acceptance stays with the owner.
+    const directorRecommendation = stage.id === "concepts" && (state.deliverable !== "web" || /--verdict recommend/.test(action.record || ""));
+    const directed = state.director && action.type === "ask" && ["concepts", "sample", "build"].includes(stage.id) && (stage.id !== "concepts" || directorRecommendation) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     if (stage.id === "intake" && action.type === "ask") action.delegation = delegationHint(state);
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
     return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
   }
-  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, diligence: roles.statementStatus(root, state, deliveryCurrent(state, root)), line: `${state.deliverable}/${state.tier}: done` };
+  return {
+    type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done,
+    ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root),
+    evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] },
+    diligence: roles.statementStatus(root, state, deliveryCurrent(state, root)),
+    retrospective: {
+      question: "What one decision or handoff should I change next time?",
+      instruction: "Optional. If answered, record only the owner's explicit task-scoped lesson with adaptation record. Propose a task-shadow candidate only when the lesson yields one bounded rule and you have a genuinely related evaluation manifest hash, primary metric, direction and construction fixture; otherwise stop after record. Never invent or borrow unrelated evaluation evidence, and do not block done.",
+      guide: "references/adaptation.md#lifecycle",
+      record: `${cliCommand()} adaptation record --root ${shellPath(path.resolve(root))} --experience .design-pipeline/retrospective-experience.json --scope task --recorder workflow-retrospective`,
+    },
+    line: `${state.deliverable}/${state.tier}: done`,
+  };
 }
 
 // A delivery recorded for a deliverable with a deliver stage must still match what was reviewed; ui
@@ -219,7 +232,8 @@ function decide(root, options = {}) {
   roles.ensureDelegation(state, stagesFor(state).map(item => item.id));
   const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
-  const role = roles.recordRole(state, stage, options.by);
+  const directorReviewNote = stage === "review" && options.verdict === "recommend" && options.by === "agent" && state.director;
+  const role = directorReviewNote ? { by: "agent", agent: state.director } : roles.recordRole(state, stage, options.by);
   // Only the owner changes who decides what; an agent cannot hand itself checkpoints.
   if ((delegate.length || keep.length) && role.by !== "owner") fail("workflow", "--delegate and --keep record the owner's choice, so they go only on an intake recorded with --by owner. Fix: ask the owner, then record their reply with --by owner");
   if (delegate.length || keep.length) roles.applyDelegation(state, delegate, keep);
@@ -273,19 +287,54 @@ function decide(root, options = {}) {
     state.decisions.samples = [...(state.decisions.samples || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), ...binding }];
     if (options.verdict === "reject") state.rules = [...(state.rules || []), { text: options.answer, from: `sample ${state.decisions.samples.length}`, scope: "project" }];
   } else if (stage === "review") {
-    assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
-    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong; it becomes a project rule");
+    assertEnum(options.verdict, ["accept", "reject", "recommend"], "verdict", "workflow");
+    const rejectionAnswer = options.verdict === "reject"
+      ? reason(options.answer, "say in one sentence what is wrong; it becomes a project rule")
+      : null;
     const next = nextAction(root);
-    const rejectCurrent = options.verdict === "reject" && ["deliver", "done"].includes(next.stage) && REVIEW.finished(state);
-    if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
-      fail("workflow", `Cannot record review while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
-    }
-    const componentDecision = componentDecisionDigest(state);
-    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}) }];
-    if (options.verdict === "reject") {
-      state.rules = [...(state.rules || []), { text: options.answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
-      // A rejected draft must be rebuilt and rechecked.
-      invalidateCheckedEvidence(state);
+    if (options.verdict === "recommend") {
+      if (!directorReviewNote) fail("workflow", "a review recommendation requires --director and --by agent");
+      assertEnum(options.choice, ["accept", "reject"], "choice", "workflow");
+      if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" || next.type !== "ask") {
+        fail("workflow", `Cannot recommend a review draft while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+      }
+      const answer = typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
+      const componentDecision = componentDecisionDigest(state);
+      const inputHashes = reviewInputHashes(state);
+      state.decisions.drafts = [...(state.decisions.drafts || []), {
+        stage: "review",
+        verdict: "recommend",
+        choice: options.choice,
+        ...(answer ? { reason: answer } : {}),
+        agent: state.director,
+        at: new Date().toISOString(),
+        inputHashes: structuredClone(inputHashes),
+        ...(componentDecision ? { componentDecision } : {}),
+      }];
+    } else {
+      const rejectCurrent = options.verdict === "reject" && ["deliver", "done"].includes(next.stage) && REVIEW.finished(state);
+      if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
+        fail("workflow", `Cannot record review while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+      }
+      const answer = options.verdict === "accept"
+        ? meaningful(options.answer, 3, "give the owner's reason for accepting")
+        : rejectionAnswer;
+      const componentDecision = componentDecisionDigest(state);
+      const recommendation = reviewRecommendation(state);
+      state.decisions.drafts = [...(state.decisions.drafts || []), {
+        stage: "review",
+        verdict: options.verdict,
+        reason: answer,
+        ...(recommendation ? { recommended: { by: "agent", agent: recommendation.agent, choice: recommendation.choice } } : {}),
+        at: new Date().toISOString(),
+        inputHashes: structuredClone(reviewInputHashes(state)),
+        ...(componentDecision ? { componentDecision } : {}),
+      }];
+      if (options.verdict === "reject") {
+        state.rules = [...(state.rules || []), { text: answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
+        // A rejected draft must be rebuilt and rechecked.
+        invalidateCheckedEvidence(state);
+      }
     }
   } else if (stage === "deliver") {
     const next = nextAction(root);

@@ -159,6 +159,10 @@ function decideCli(root, ...args) {
   return result.json.next;
 }
 
+function acceptReview(root) {
+  return decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "The delivered result meets the brief" });
+}
+
 function refusesCli(root, args, code) {
   const before = snapshot(root);
   const result = runCli("decide", "--root", root, "--project-root", root, ...(args.includes("--by") ? [] : ["--by", "owner"]), ...args);
@@ -1251,7 +1255,7 @@ test("standard film walks intake, reference, concepts, plan, build, check, revie
   assert.equal(again.stage, "check", "a rejection reopens the check for the rebuilt draft");
   assert.deepEqual(again.rules, ["The logo lands too early."]);
   recordGate(dir, "film", "passed");
-  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+  acceptReview(dir);
   assert.equal(stage(), "deliver");
   touch(dir, "final.mp4");
   decide(dir, { by: "owner", stage: "deliver", answer: "final.mp4" });
@@ -1296,7 +1300,7 @@ test("quick film asks for frame review and the owner's verdict before done", () 
     assert.deepEqual(nextAction(dir).rules, ["Labels cross the terminal at 23 s."]);
     recordGate(dir, "film", "passed");
     assert.equal(nextAction(dir).stage, "review");
-    decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+    acceptReview(dir);
     const done = nextAction(dir);
     assert.equal(done.type, "done");
     assert.deepEqual(done.evidence.drafts.map((draft) => draft.verdict), ["reject", "accept"]);
@@ -1310,7 +1314,7 @@ test("quick film asks for frame review and the owner's verdict before done", () 
       const review = nextAction(other);
       assert.equal(review.stage, "review", `${deliverable} quick ends at the owner's review`);
       assert.equal(review.type, "ask");
-      decide(other, { by: "owner", stage: "review", verdict: "accept" });
+      acceptReview(other);
       assert.equal(nextAction(other).type, "done");
     }
     finally { fs.rmSync(other, { recursive: true, force: true }); }
@@ -1362,13 +1366,27 @@ test("ui uses OpenSpec only at the full tier", () => {
   assert.match(nextAction(full).instruction, /OpenSpec change/);
 });
 
-test("art director mode routes the concept and review asks to the director", () => {
+test("art director mode routes web concept recommendations but not final review", t => {
   const dir = tmp();
-  initState(dir, { deliverable: "film", tier: "standard", director: "claude-opus-5-5" });
-  decide(dir, { by: "owner", stage: "intake", answer: "default" });
-  decide(dir, { by: "owner", stage: "reference", answer: "none" });
-  touch(dir, "concepts.md");
-  assert.match(nextAction(dir).director, /claude-opus-5-5/);
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  initState(dir, { deliverable: "web", tier: "standard", director: "claude-opus-5-5" });
+  confirmPlayback(dir);
+  decide(dir, { by: "agent", stage: "reference", answer: "none" });
+  writeVariants(dir);
+  const concept = nextAction(dir);
+  assert.equal(concept.stage, "concepts");
+  assert.match(concept.director, /claude-opus-5-5/);
+  assert.match(concept.record, /--verdict recommend/);
+
+  const review = checkedWorkflowFixture("film", "quick");
+  t.after(() => fs.rmSync(review, { recursive: true, force: true }));
+  const state = readState(review);
+  state.director = "claude-opus-5-5";
+  touch(review, ".design-pipeline/state.json", JSON.stringify(state, null, 2));
+  const reviewAction = nextAction(review);
+  assert.equal(reviewAction.stage, "review");
+  assert.equal(reviewAction.director, undefined, "the owner retains final acceptance");
+  assert.match(reviewAction.directorNote, /--by agent --stage review --verdict recommend/);
 });
 
 test("state is validated and not silently replaced", () => {
@@ -2757,7 +2775,7 @@ test("latest owner verdict and changed checked bytes require a fresh review", ()
     const dir = checkedWorkflowFixture(deliverable);
     try {
       assert.equal(nextAction(dir).stage, "review");
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      acceptReview(dir);
       assert.equal(nextAction(dir).stage, "deliver");
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "deliver", "rechecking identical bytes preserves the accepted snapshot");
@@ -2768,7 +2786,7 @@ test("latest owner verdict and changed checked bytes require a fresh review", ()
       } else assert.equal(nextAction(dir).stage, "check");
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a historical accept cannot override the latest rejection");
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      acceptReview(dir);
       rewriteSameTime(dir, file, redraft(deliverable, "new draft after acceptance"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "engineering conformance does not accept a new draft");
@@ -2781,7 +2799,7 @@ test("film and edit delivery requires an existing contained file and quick may r
   for (const deliverable of ["film", "edit"]) {
     const dir = checkedWorkflowFixture(deliverable);
     try {
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      acceptReview(dir);
       touch(dir, "delivered/directory/file.txt");
       for (const answer of [undefined, "missing.mp4", "../outside.mp4", "delivered/directory"]) {
         const stateFile = path.join(dir, ".design-pipeline/state.json"), before = fs.readFileSync(stateFile, "utf8");
@@ -2795,19 +2813,19 @@ test("film and edit delivery requires an existing contained file and quick may r
     try {
       const output = deliverable === "film" ? "out.mp4" : "renders/edit.mp4";
       assert.throws(() => decide(quick, { by: "owner", stage: "deliver", answer: output }), /review/, "quick work records delivery only after the owner's verdict");
-      decide(quick, { by: "owner", stage: "review", verdict: "accept" });
+      acceptReview(quick);
       assert.equal(decide(quick, { by: "owner", stage: "deliver", answer: output }).next.type, "done");
     } finally { fs.rmSync(quick, { recursive: true, force: true }); }
   }
   const web = checkedWorkflowFixture("web", "quick"), ui = tmp();
   try {
-    decide(web, { by: "owner", stage: "review", verdict: "accept" });
+    acceptReview(web);
     assert.equal(decide(web, { by: "owner", stage: "deliver", answer: "https://example.test/page" }).next.type, "done");
     initState(ui, { deliverable: "ui", tier: "quick" });
     const declared = decide(ui, { by: "agent", stage: "deliver", answer: "evidence.png" }).next;
     assert.equal(declared.stage, "review", "ui work ends with the owner's acceptance of the delivered result");
     assert.equal(declared.type, "ask");
-    assert.equal(decide(ui, { by: "owner", stage: "review", verdict: "accept" }).next.type, "done");
+    assert.equal(acceptReview(ui).next.type, "done");
   } finally {
     fs.rmSync(web, { recursive: true, force: true });
     fs.rmSync(ui, { recursive: true, force: true });
@@ -2818,7 +2836,7 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
   for (const [deliverable, file, gate] of [["film", "out.mp4", "film"], ["edit", "renders/edit.mp4", "edit"], ["web", "index.html", "interaction"]]) {
     const dir = checkedWorkflowFixture(deliverable);
     try {
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      acceptReview(dir);
       const delivery = deliverable === "web" ? "https://example.test/page" : "final.mp4";
       if (deliverable !== "web") touch(dir, delivery, "delivered version");
       decide(dir, { by: "owner", stage: "deliver", answer: delivery });
@@ -2832,7 +2850,7 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
       rewriteSameTime(dir, file, redraft(deliverable, "changed after delivery"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review");
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      acceptReview(dir);
       assert.equal(nextAction(dir).stage, "deliver", "a new acceptance does not restore the old delivery snapshot");
       decide(dir, { by: "owner", stage: "deliver", answer: delivery });
       assert.equal(nextAction(dir).type, "done");
@@ -2840,7 +2858,7 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
       if (deliverable === "web") rewriteSameTime(dir, file, redraft(deliverable, "repaired after the rejection"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a rejection after done revokes dependent acceptance and delivery");
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      acceptReview(dir);
       assert.equal(nextAction(dir).stage, "deliver");
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
@@ -2854,7 +2872,7 @@ test("unbound legacy review and delivery decisions remain readable but require f
     state.decisions.delivered = "https://example.test/page";
     touch(dir, ".design-pipeline/state.json", JSON.stringify(state));
     assert.equal(nextAction(dir).stage, "review");
-    decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+    acceptReview(dir);
     assert.equal(nextAction(dir).stage, "deliver");
     assert.equal(readState(dir).decisions.drafts.length, 2, "legacy history is preserved");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
@@ -2911,12 +2929,20 @@ test("records carry who decided, agent records name the agent, and returned comm
   confirmPlayback(root);
   decide(root, { by: "agent", stage: "reference", answer: "none" });
   writeVariants(root);
-  decide(root, { by: "agent", stage: "concept", choice: "B" });
+  const directorAction = nextAction(root);
+  assert.match(directorAction.record, /--by agent --stage concept --verdict recommend/);
+  decide(root, { by: "agent", stage: "concept", verdict: "recommend", choice: "B" });
+  const ownerAction = nextAction(root);
+  assert.equal(ownerAction.director, undefined);
+  assert.match(ownerAction.record, /--by owner --stage concept/);
+  decide(root, { by: "owner", stage: "concept", verdict: "pick", choice: "B", answer: "The selected structure fits the product" });
+
   const state = readState(root);
-  assert.equal(state.decisions.variants.at(-1).by, "agent");
-  assert.equal(state.decisions.variants.at(-1).agent, "art-model", "a directed pick names the art director");
+  assert.equal(state.decisions.drafts.at(-1).agent, "art-model");
+  assert.equal(state.decisions.variants.at(-1).by, "owner");
+  assert.deepEqual(state.decisions.variants.at(-1).recommended, { by: "agent", agent: "art-model", choice: "B" });
   const roles = state.decisions.roles.map(entry => [entry.stage, entry.by, entry.agent ?? null]);
-  assert.deepEqual(roles, [["intake", "owner", null], ["reference", "agent", "Claude Code (test)"], ["concept", "agent", "art-model"]]);
+  assert.deepEqual(roles, [["intake", "owner", null], ["reference", "agent", "Claude Code (test)"], ["concept", "agent", "art-model"], ["concept", "owner", null]]);
 });
 
 test("ui and quick work end with the owner's acceptance, and done renders the diligence statement", t => {
@@ -2981,8 +3007,8 @@ test("returned commands take their role from the delegation map, and only the ow
   const concepts = nextAction(root);
   assert.equal(concepts.stage, "concepts");
   assert.match(concepts.director, /art-model/);
-  assert.match(concepts.record, / --by agent --stage concept /, "a pick delegated to the art director is recorded as the agent's");
-  assert.match(concepts.correction, / --by agent --stage concept /);
+  assert.match(concepts.record, / --by agent --stage concept --verdict recommend /, "the director records a recommendation");
+  assert.match(concepts.correction, / --by owner --stage concept /, "the owner records a correction to the variants");
   const quick = webProject(t, { tier: "quick" });
   assert.match(refuses(quick, { stage: "intake", choice: "skip", answer: STATED, by: "agent", delegate: ["components"] }, "CONTRACT_INVALID").message, /go only on an intake recorded with --by owner/);
   assert.equal(readState(quick).delegation.components.to, "owner");
@@ -3009,4 +3035,53 @@ test("a refused decide on a project without a delegation map leaves its state un
   assert.equal(readState(root).delegation, undefined, "the map is filled only when a decision is recorded");
   confirmPlayback(root);
   assert.equal(readState(root).delegation.review.locked, true);
+});
+test("director review recommendations stay separate from owner acceptance and done offers optional reflection", t => {
+  const root = checkedWorkflowFixture("web", "quick");
+  t.after(() => fs.rmSync(root, { recursive: true, force: true, maxRetries: 3 }));
+  const state = readState(root);
+  state.director = "art-model";
+  touch(root, ".design-pipeline/state.json", JSON.stringify(state, null, 2));
+
+  const action = nextAction(root);
+  assert.equal(action.stage, "review");
+  assert.equal(action.director, undefined, "final review is not handed to the director");
+  assert.match(action.directorNote, /--by agent --stage review --verdict recommend/);
+  assert.match(refuses(root, { by: "agent", stage: "review", verdict: "accept", answer: "Looks good" }, "CONTRACT_INVALID").message, /stays with the owner/);
+
+  decide(root, { by: "agent", stage: "review", verdict: "recommend", choice: "reject", answer: "The motion still feels uneven" });
+  const recommendation = readState(root).decisions.drafts.at(-1);
+  assert.equal(recommendation.stage, "review");
+  assert.equal(recommendation.verdict, "recommend");
+  assert.equal(recommendation.by, "agent");
+  assert.equal(recommendation.agent, "art-model");
+  assert.equal(recommendation.choice, "reject");
+  assert.equal(recommendation.reason, "The motion still feels uneven");
+  assert.ok(recommendation.inputHashes, "the note binds the checked draft");
+  const afterRecommendation = nextAction(root);
+  assert.equal(afterRecommendation.stage, "review", "a recommendation does not close the owner checkpoint");
+  assert.equal(afterRecommendation.director, undefined);
+  assert.match(afterRecommendation.question, /director recommended reject/i);
+
+  const beforeShortReason = snapshot(root);
+  assert.throws(() => decide(root, { by: "owner", stage: "review", verdict: "accept" }), /at least 3 words/);
+  assert.deepEqual(snapshot(root), beforeShortReason, "a missing reason changes no state");
+  assert.throws(() => decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "Looks good" }), /at least 3 words/);
+  assert.deepEqual(snapshot(root), beforeShortReason, "a short reason changes no state");
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "The transitions feel clear" });
+
+  const recorded = readState(root).decisions.drafts;
+  assert.deepEqual(recorded.at(-1).recommended, { by: "agent", agent: "art-model", choice: "reject" });
+  assert.equal(recorded.at(-1).reason, "The transitions feel clear");
+  const statement = diligence(root).text;
+  assert.match(statement, /owner chose accept; director recommended reject/);
+  const stateFile = path.join(root, ".design-pipeline/state.json");
+  const beforeNext = fs.readFileSync(stateFile);
+  const done = nextAction(root);
+  assert.equal(done.type, "done", "reflection is optional and does not block completion");
+  assert.match(done.retrospective.question, /one decision or handoff/);
+  assert.match(done.retrospective.instruction, /adaptation record/);
+  assert.match(done.retrospective.guide, /references\/adaptation\.md/);
+  assert.deepEqual(fs.readFileSync(stateFile), beforeNext, "unanswered reflection does not mutate workflow state");
+  assert.equal(fs.existsSync(path.join(root, ".design-pipeline/adaptation/state.json")), false);
 });

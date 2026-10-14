@@ -53,12 +53,12 @@
 
 ## 4. Phase 3: discernment (Decision 5 reasons, Decision 7)
 
-- [ ] 4.1 Owner variant pick and final acceptance require a three-word reason; `recommended` stored
+- [x] 4.1 Owner variant pick and final acceptance require a three-word reason; `recommended` stored
   beside owner records when a director recommended.
-- [ ] 4.2 Optional retrospective question on the done action; answers go through
-  `adaptation record` only.
-- [ ] 4.3 Tests: `workflow-next`, `web-concept-screening`, adaptation suite for the shadow candidate.
-- [ ] 4.4 Docs and CHANGELOG.
+- [x] 4.2 Optional retrospective question on the done action; answers go through
+  `adaptation record` first and cannot block completion.
+- [x] 4.3 Tests: `workflow-next`, `web-concept-screening`, adaptation suite for the shadow candidate.
+- [x] 4.4 Docs and CHANGELOG.
 
 ## 5. Verification
 

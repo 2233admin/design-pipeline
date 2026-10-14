@@ -15,7 +15,7 @@ const http = require("node:http");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { decide, initState, nextAction, readState } = require("../skill/scripts/workflow-core.cjs");
+const { decide, diligence, initState, nextAction, readState } = require("../skill/scripts/workflow-core.cjs");
 const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
 const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 const flow = require("./helpers/web-flow.cjs");
@@ -80,10 +80,10 @@ for (const tier of ["standard", "full"]) {
 
 // --- the variants page and the owner's pick ----------------------------------------------------------
 
-function project(t, { tier = "standard", mode = "brief" } = {}) {
+function project(t, { tier = "standard", mode = "brief", director } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "web-concepts-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true, maxRetries: 3 }));
-  initState(root, { deliverable: "web", tier, mode });
+  initState(root, { deliverable: "web", tier, mode, ...(director ? { director } : {}) });
   return root;
 }
 
@@ -145,12 +145,12 @@ test("the variants page needs three marked first screens and the switcher before
   assert.equal(ask.type, "ask");
   assert.equal(ask.first, undefined);
   assert.deepEqual(ask.show, ["concepts.html", "concepts.md"].map(rel => path.join(path.resolve(root), rel)), "the owner is shown the variants page and the cards");
-  assert.match(ask.record, /--stage concept --choice /);
+  assert.match(ask.record, /--stage concept --verdict pick --choice /);
   assert.match(ask.correction, /--stage concept --verdict reject --answer /);
 
   for (const choice of ["2", "D", "A,A"]) refuses(root, { by: "owner", stage: "concept", choice }, "CONTRACT_INVALID");
   refuses(root, { by: "owner", stage: "concept", choice: "B,C" }, "CONTRACT_INVALID");
-  decide(root, { by: "owner", stage: "concept", choice: "b" });
+  decide(root, { by: "owner", stage: "concept", choice: "b", answer: "The chosen hierarchy matches the page" });
   assert.equal(readState(root).decisions.concept, "B");
   assert.equal(nextAction(root).stage, "components");
   decide(root, { by: "owner", stage: "concept", choice: "B,C", answer: "B's header with C's proof grid" });
@@ -456,4 +456,53 @@ test("only the chosen variant renders even when the page's own CSS sets display 
     await assertShows(tab, "C", `${pathname} after ArrowRight`);
     assert.deepEqual(await rendered(tab), { boxed: ["C"], centre: "C" }, `${pathname} after ArrowRight`);
   }
+});
+test("an owner first-screen pick needs a three-word reason", t => {
+  const root = project(t);
+  flow.confirmPlayback(root);
+  decide(root, { by: "owner", stage: "reference", answer: "none" });
+  flow.writeVariants(root);
+
+  const before = snapshot(root);
+  assert.throws(
+    () => decide(root, { by: "owner", stage: "concept", choice: "A" }),
+    /at least 3 words/,
+  );
+  assert.deepEqual(snapshot(root), before, "a refused pick leaves the project unchanged");
+
+  decide(root, { by: "owner", stage: "concept", choice: "A", answer: "This composition makes the action obvious" });
+  assert.equal(readState(root).decisions.concept, "A");
+  assert.equal(readState(root).decisions.variants.at(-1).reason, "This composition makes the action obvious");
+});
+test("a director's variant recommendation is followed by an owner pick that records it", t => {
+  const root = project(t, { director: "art-model" });
+  flow.confirmPlayback(root);
+  decide(root, { by: "agent", stage: "reference", answer: "none" });
+  flow.writeVariants(root);
+
+  const directorAction = nextAction(root);
+  assert.equal(directorAction.stage, "concepts");
+  assert.match(directorAction.record, /--verdict recommend --choice/);
+  assert.match(directorAction.record, /--by agent --stage concept/);
+  decide(root, { by: "agent", stage: "concept", verdict: "recommend", choice: "A" });
+
+  const ownerAction = nextAction(root);
+  assert.equal(ownerAction.stage, "concepts");
+  assert.equal(ownerAction.director, undefined);
+  assert.match(ownerAction.question, /director recommends A/i);
+  assert.match(ownerAction.record, /--by owner --stage concept/);
+  assert.match(ownerAction.record, /--answer .*at least 3 words/);
+  refuses(root, { by: "owner", stage: "concept", verdict: "pick", choice: "B", answer: "Looks good" }, "CONTRACT_INVALID");
+
+  decide(root, { by: "owner", stage: "concept", verdict: "pick", choice: "B", answer: "The clearer hierarchy serves new visitors" });
+  const state = readState(root);
+  assert.equal(state.decisions.concept, "B");
+  assert.deepEqual(state.decisions.drafts[0], {
+    stage: "concept", verdict: "recommend", choice: "A", sha256: state.decisions.variants[0].sha256,
+    at: state.decisions.drafts[0].at, by: "agent", agent: "art-model",
+  });
+  assert.deepEqual(state.decisions.variants.at(-1).recommended, { by: "agent", agent: "art-model", choice: "A" });
+  assert.equal(state.decisions.variants.at(-1).by, "owner");
+  assert.match(diligence(root).text, /owner chose B; director recommended A/);
+  assert.equal(nextAction(root).stage, "components");
 });
