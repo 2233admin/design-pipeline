@@ -364,8 +364,12 @@ function briefSections(text) {
   const sections = [];
   for (const line of lines.slice(start + 1)) {
     if (/^#{1,2}(?:\s|$)/.test(line)) break;
+    if (!/^(?:[-*+]|\d+[.)])(?:\s|$)/.test(line)) continue;
     const item = /^(?:[-*+]|\d+[.)])\s+`?([^\s`:,;.]+)`?(.*)$/.exec(line);
+    // A top-level item with no id is kept as its raw text, so the approval names it instead of
+    // silently dropping a section from the build order.
     if (item) sections.push({ id: item[1], job: item[2].replace(/^[\s:,;.\-–—]+/, "").replace(/\s+/g, " ").trim() });
+    else sections.push({ id: line.trim(), job: "" });
   }
   return sections;
 }
@@ -387,7 +391,9 @@ const DESCRIPTION = {
     const accepted = acceptsWithInputs(state).at(-1), now = approvalInputs(state, root);
     const stale = accepted && !sameInputs(accepted.inputs, now) ? diffInputs(accepted.inputs, now) : null;
     const listed = stale ? briefSections(fileText(root, file) ?? "")?.map(item => item.id) : null;
-    const choice = listed?.length ? listed.join(",") : "<section-ids-in-order,comma-separated>";
+    // Only a valid list fills --choice: valid ids are shell-safe, and anything else stays a placeholder.
+    const valid = listed?.length && listed.every(id => SECTION_ID.test(id) && !RESERVED_IDS.has(id)) ? listed : null;
+    const choice = valid ? valid.join(",") : "<section-ids-in-order,comma-separated>";
     // A re-approval's commands carry the tier it needs, so the returned command runs as given.
     const tier = !stale ? "" : stale.structural
       ? ` --revision commitment --affects <the section ids the change touches${stale.jobs.length ? `, at least ${stale.jobs.join(",")}` : ""}; or all; or none>`
@@ -417,7 +423,7 @@ const DESCRIPTION = {
       instruction: `${file} is ${descriptionContent(state)} Show it to the owner as it is; record each correction (it becomes a rule), revise and ask again.`,
       recommended: "Approve only when it says what you want; nothing is built before you do.",
       selfCheck: `The command's --choice is the ids of the ## Sections list in ${file}, in its order. Check ${file} yourself against the confirmed playback (or the stated skip), the chosen variant and the component decision: it is ${descriptionContent(state)} When it matches, record the approval with the command.`,
-      record: `${decideCommand(root, "description")} --verdict accept --choice ${listed?.length ? choice : `<the ids of the ## Sections list in ${file}, in its order, comma-separated>`}${tier} [--answer "<the owner's words>"]`,
+      record: `${decideCommand(root, "description")} --verdict accept --choice ${valid ? choice : `<the ids of the ## Sections list in ${file}, in its order, comma-separated>`}${tier} [--answer "<the owner's words>"]`,
       accept: `${decideCommand(root, "description")} --verdict accept --choice ${choice}${tier}`,
       correction: `${decideCommand(root, "description")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
       why: "The stage that blocks building (not a state.gates gate): the approval binds this description, the confirmed playback, the chosen variant and the component decision, and fixes the sections the page is built in. Each correction becomes a rule.",

@@ -3467,6 +3467,19 @@ test("after a no on a changed description, the returned approval still carries t
   assert.equal(nextAction(root).stage, "probe");
 });
 
+test("a malformed section item is named, not dropped, and never reaches a returned command", t => {
+  const root = tiered(t, []);
+  const { briefSections } = require("../skill/scripts/workflows/web.cjs");
+  assert.deepEqual(briefSections("## Sections\n\n- hero: job\n- : proof\n").map(item => item.id), ["hero", "- : proof"]);
+  touch(root, "brief.md", "# Brief\n\nReworded.\n\n## Sections\n\n- hero: today's bakes and the reserve button\n- : what regulars say\n");
+  assert.match(refuses(root, { by: "agent", stage: "description", verdict: "accept", choice: "hero", revision: "commitment", affects: "none" }, "CONTRACT_INVALID").message, /- : what regulars say/);
+  touch(root, "brief.md", "# Brief\n\nReworded.\n\n## Sections\n\n- hero$(touch${IFS}pwned): job\n- proof: what regulars say\n");
+  const step = nextAction(root);
+  assert.equal(step.stage, "description");
+  assert.doesNotMatch(step.command, /\$\(/, "an id that is not valid never reaches the shell");
+  assert.match(step.command, /--choice <section-ids-in-order,comma-separated>/);
+});
+
 test("all and none are reserved from section ids, since --affects reads them", t => {
   const root = tiered(t, []);
   for (const id of ["all", "none"]) {

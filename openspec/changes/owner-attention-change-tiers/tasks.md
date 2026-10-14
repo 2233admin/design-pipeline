@@ -43,6 +43,8 @@
 - [x] 8.4 Codex P1 (second pass): the returned tier is measured against the last accept with inputs, as `revisionOf` measures it, so a reject, revise, approve flow returns a runnable command; verify with a `workflow-next` test that runs it.
 - [x] 8.5 Codex P2: `all` and `none` are refused as section ids, since `--affects` reads them; verify with a `workflow-next` refusal test.
 - [x] 8.6 Codex P2 (third pass): after a reject and a revision, the description step's text still names what changed since the last accept and the tier it allows; verify in the reject, revise, approve test.
+- [x] 8.7 CodeRabbit (security): a returned command fills `--choice` only from a list whose ids are all valid (lowercase letters, digits and hyphens, so shell-safe), otherwise it keeps the placeholder; verify that an id carrying `$(...)` never reaches the returned command.
+- [x] 8.8 CodeRabbit: a top-level `## Sections` item with no id is kept as its raw text, so the approval names it and refuses instead of dropping the section; verify with `- : proof`.
 
 ## Workflow follow-up
 
