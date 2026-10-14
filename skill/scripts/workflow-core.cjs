@@ -263,7 +263,11 @@ function decide(root, options = {}) {
   roles.ensureDelegation(state, stagesFor(state).map(item => item.id));
   const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
-  const role = roles.recordRole(state, stage, options.by);
+  // --revision and --affects belong to a re-approval of the description (change tiers).
+  if ((options.revision !== undefined && options.revision !== null || options.affects !== undefined && options.affects !== null) && (stage !== "description" || options.verdict !== "accept")) fail("workflow", "--revision and --affects go only with a re-approval (--verdict accept) of the web description. Fix: drop them");
+  const carryForward = stage === "description" && options.verdict === "accept" && options.revision === "bytes";
+  const role = roles.recordRole(state, stage, options.by, { carryForward });
+  if (role.carriedForward) options = { ...options, carriedForward: true };
   // A trade-off ask is the owner's answer to a question the agent put to them during a self-check.
   if (options.tradeoff !== undefined && options.tradeoff !== null) {
     if (role.by !== "owner") fail("workflow", "--tradeoff records the owner's answer to a trade-off you asked them about, so it goes only with --by owner. Fix: ask the owner, then record their answer with --by owner --tradeoff \"<what you asked>\"");

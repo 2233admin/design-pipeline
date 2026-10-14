@@ -177,7 +177,7 @@ Research from official documentation (summarised; sources at the end):
 1. **Ask shape and budget (A), language (H), feedback scope (D).** This is mostly flow and text,
    and gives the largest drop in asks.
 2. **Change tiers (C).**
-3. **Page review lite (B) and confirmation provenance (G).**
+3. **Page review lite (B) and confirmation provenance (G).** Also takes the page tier of C, which needs B's per-element comparison.
 4. **Absence (F) and delegation over time (E).** Also takes what phase 1 deferred: "decide later"
    on an ask, narrowing, superseding or retiring a rule by hand (phase 1 keeps rule history as
    `givenScope` and `promotedAt` only), changing delegation after intake, and routing lasting

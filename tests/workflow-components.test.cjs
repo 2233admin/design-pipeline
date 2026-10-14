@@ -505,7 +505,7 @@ test("lineage regression: changed components decision requires a fresh review an
   const recordedDrafts = structuredClone(readState(root).decisions.drafts);
   decide(root, { by: "owner", stage: "components", choice: "project", answer: "Search the index" });
   assert.equal(nextAction(root).stage, "description", "a different component decision makes the description approval stale");
-  approveDescription(root);
+  approveDescription(root, undefined, { revision: "commitment", affects: "none" });
   assert.equal(acceptSections(root).stage, "probe");
   recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
   assert.equal(nextAction(root).stage, "review", "the earlier accept no longer covers the new decision");

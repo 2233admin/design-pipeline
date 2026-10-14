@@ -68,9 +68,10 @@ function writeDescription(root, sections = SECTIONS) {
   write(root, "brief.md", `# Brief\n\nA one-page description of the page.\n\n## Sections\n\n${sections.map(id => `- ${id}: what this section is for`).join("\n")}\n`);
 }
 
-function approveDescription(root, sections = SECTIONS) {
+// `revision` (with `affects`) is the change tier a re-approval of a changed description takes.
+function approveDescription(root, sections = SECTIONS, revision = {}) {
   writeDescription(root, sections);
-  return decide(root, { by: "owner", stage: "description", verdict: "accept", choice: sections.join(",") });
+  return decide(root, { by: "owner", stage: "description", verdict: "accept", choice: sections.join(","), ...revision });
 }
 
 // After the components decision: approve the description at standard and full (quick has none).

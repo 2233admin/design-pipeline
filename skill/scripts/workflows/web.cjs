@@ -264,6 +264,10 @@ function recordComponents(state, _root, options, next) {
 // --- description: the one-page brief the owner approves before anything is built -------------------
 
 const SECTION_ID = /^[a-z0-9][a-z0-9-]*$/;
+// --affects reads these as every section and no section, so no section may carry them as its id.
+const RESERVED_IDS = new Set(["all", "none"]);
+// Ids that may appear in a returned command: valid ones only, so brief text never reaches a shell.
+const commandIds = ids => ids.filter(id => SECTION_ID.test(id) && !RESERVED_IDS.has(id));
 // The project's brief file; a differently cased BRIEF.md the owner supplied is extended in place.
 function briefName(root) {
   try {
@@ -271,39 +275,110 @@ function briefName(root) {
     return names.includes("brief.md") ? "brief.md" : names.find(name => name.toLowerCase() === "brief.md") || "brief.md";
   } catch { return "brief.md"; }
 }
-// What an approval was given under: the confirmed playback, the variant pick and the component
-// decision. Changing any of them, or the brief's bytes, asks for approval again.
-function descriptionUpstream(state) {
-  return "sha256:" + sha256(canonicalJson({ playback: state.decisions?.intake?.answer ?? null, concept: state.decisions?.concept ?? null, conceptNotes: state.decisions?.conceptNotes ?? null, components: componentDecisionDigest(state) }));
+// Change tiers (OpenSpec change owner-attention-change-tiers). An approval stores the inputs it was
+// given; a section verdict binds that section's key, so a change reopens only what it touches.
+const digest = value => "sha256:" + sha256(canonicalJson(value));
+const sameInputs = (a, b) => canonicalJson(a ?? null) === canonicalJson(b ?? null);
+
+// What an approval is given under: the brief's bytes, its section lines, the confirmed playback, the
+// direction (variant pick and combine notes) and the component decision.
+function approvalInputs(state, root) {
+  const file = briefName(root);
+  return {
+    brief: fileSha(root, file),
+    sections: briefSections(fileText(root, file) ?? "") ?? [],
+    playback: digest(state.decisions?.intake?.answer ?? null),
+    direction: digest({ concept: state.decisions?.concept ?? null, conceptNotes: state.decisions?.conceptNotes ?? null }),
+    components: componentDecisionDigest(state) ?? null,
+  };
 }
-const approvalId = record => "sha256:" + sha256(canonicalJson({ brief: record.sha256, upstream: record.upstream, sections: record.sections }));
-// The approval the build follows, or null: the latest description verdict accepted the current
-// brief bytes under the current upstream decisions.
+const approvalId = record => digest(record.inputs);
+const acceptsWithInputs = state => history(state, "descriptions").filter(item => item.verdict === "accept" && item.inputs);
+
+// The approval the build follows, or null: the latest description verdict accepted the current inputs.
 function currentApproval(state, root) {
   const latest = history(state, "descriptions").at(-1);
-  if (latest?.verdict !== "accept" || !Array.isArray(latest.sections) || !latest.sections.length) return null;
-  if (latest.sha256 !== fileSha(root, briefName(root)) || latest.upstream !== descriptionUpstream(state)) return null;
-  return { id: approvalId(latest), sections: latest.sections };
+  if (latest?.verdict !== "accept" || !latest.inputs || !Array.isArray(latest.sections) || !latest.sections.length) return null;
+  if (!sameInputs(latest.inputs, approvalInputs(state, root))) return null;
+  return { id: approvalId(latest), sections: latest.sections, inputs: latest.inputs };
 }
 
-// The section ids brief.md lists under its `## Sections` heading, in order: one top-level list item
-// per section, starting with its id (backticks allowed). Null when the brief has no such heading.
+// What changed between two approvals' inputs. Structural changes are the ones the pipeline can see
+// reach a section or the owner's intent; the brief's wording alone is not one.
+function diffInputs(before, after) {
+  const ids = list => list.map(item => item.id);
+  const was = new Map(before.sections.map(item => [item.id, item.job]));
+  const diff = {
+    brief: before.brief !== after.brief,
+    added: ids(after.sections).filter(id => !was.has(id)),
+    removed: ids(before.sections).filter(id => !after.sections.some(item => item.id === id)),
+    reordered: false,
+    jobs: after.sections.filter(item => was.has(item.id) && was.get(item.id) !== item.job).map(item => item.id),
+    playback: before.playback !== after.playback,
+    direction: before.direction !== after.direction,
+    components: before.components !== after.components,
+  };
+  const kept = ids(after.sections).filter(id => was.has(id));
+  diff.reordered = kept.join(",") !== ids(before.sections).filter(id => kept.includes(id)).join(",");
+  diff.structural = Boolean(diff.added.length || diff.removed.length || diff.reordered || diff.jobs.length || diff.playback || diff.direction || diff.components);
+  return diff;
+}
+
+// The changes in words, for the stale description step and for refusals.
+function describeDiff(diff) {
+  return [
+    diff.jobs.length ? `the line of section ${diff.jobs.join(", ")}` : null,
+    diff.added.length ? `section ${diff.added.join(", ")} added` : null,
+    diff.removed.length ? `section ${diff.removed.join(", ")} removed` : null,
+    diff.reordered ? "the section order" : null,
+    diff.playback ? "the confirmed playback" : null,
+    diff.direction ? "the variant pick or its combine notes" : null,
+    diff.components ? "the component decision" : null,
+    diff.brief && !diff.structural ? "only the wording of the brief" : null,
+  ].filter(Boolean).join("; ");
+}
+
+// How often a section was reopened: named by a commitment re-approval (or all), or added back after an
+// approval that did not list it. Part of its key, so verdicts given before a reopening stop counting.
+function sectionEpoch(state, id) {
+  let epoch = 0, previous = null;
+  for (const record of acceptsWithInputs(state)) {
+    if (record.revision === "commitment" && (record.affects === "all" || (Array.isArray(record.affects) && record.affects.includes(id)))) epoch += 1;
+    if (previous && record.sections.includes(id) && !previous.sections.includes(id)) epoch += 1;
+    previous = record;
+  }
+  return epoch;
+}
+
+// A section's key under an approval: its own line, the direction, the components and its epoch.
+function sectionKey(state, approval, id) {
+  const job = approval.inputs.sections.find(item => item.id === id)?.job ?? "";
+  return digest({ id, job, direction: approval.inputs.direction, components: approval.inputs.components, epoch: sectionEpoch(state, id) });
+}
+
+// The sections brief.md lists under its `## Sections` heading, in order: one top-level list item per
+// section, starting with its id (backticks allowed); the rest of the item line, after a separator, is
+// the section's job. Null when the brief has no such heading.
 function briefSections(text) {
   const lines = text.split(/\r?\n/);
   const start = lines.findIndex(line => /^##\s+sections\b/i.test(line));
   if (start < 0) return null;
-  const ids = [];
+  const sections = [];
   for (const line of lines.slice(start + 1)) {
     if (/^#{1,2}(?:\s|$)/.test(line)) break;
-    const item = /^(?:[-*+]|\d+[.)])\s+`?([^\s`:,;.]+)/.exec(line);
-    if (item) ids.push(item[1]);
+    if (!/^(?:[-*+]|\d+[.)])(?:\s|$)/.test(line)) continue;
+    const item = /^(?:[-*+]|\d+[.)])\s+`?([^\s`:,;.]+)`?(.*)$/.exec(line);
+    // A top-level item with no id is kept as its raw text, so the approval names it instead of
+    // silently dropping a section from the build order.
+    if (item) sections.push({ id: item[1], job: item[2].replace(/^[\s:,;.\-–—]+/, "").replace(/\s+/g, " ").trim() });
+    else sections.push({ id: line.trim(), job: "" });
   }
-  return ids;
+  return sections;
 }
 
 function descriptionContent(state) {
   const direction = state.mode === "replicate" ? "what is reproduced, its invariants and what changes" : "the chosen first screen (the variant and anything combined from the others)";
-  return `one page in plain words that a builder could work from without asking again: what the page is and why; who it is for and the one thing a visitor should do; how it should feel, in the owner's words; goals, non-goals and anti-goals (what would make the owner wince); ${direction}; a \`## Sections\` list of the sections in build order, first screen first, one top-level list item per section that starts with its id (lowercase letters, digits and hyphens) and gives one line on its job, such as \`- hero: today's bakes and the reserve button\`; where the components come from; constraints such as devices, assets and their licenses; and which choices are the owner's and which are your calls, marked as yours. Do not copy the rules into it: they stay in state.rules and come back with every action, so a rule recorded later needs no edit here. Keep any brief the owner supplied and extend it rather than replacing their words.`;
+  return `one page in plain words that a builder could work from without asking again: what the page is and why; who it is for and the one thing a visitor should do; how it should feel, in the owner's words; goals, non-goals and anti-goals (what would make the owner wince); ${direction}; a \`## Sections\` list of the sections in build order, first screen first, one top-level list item per section that starts with its id (lowercase letters, digits and hyphens; not all or none) and gives one line on its job, such as \`- hero: today's bakes and the reserve button\`; where the components come from; constraints such as devices, assets and their licenses; and which choices are the owner's and which are your calls, marked as yours. Do not copy the rules into it: they stay in state.rules and come back with every action, so a rule recorded later needs no edit here. Keep any brief the owner supplied and extend it rather than replacing their words.`;
 }
 
 const DESCRIPTION = {
@@ -314,10 +389,33 @@ const DESCRIPTION = {
     const current = fileSha(root, file);
     if (!current) return { type: "run", instruction: `Write ${file}: ${descriptionContent(state)} Then run next again.`, why: "Nothing is built until the owner approves a written description of it." };
     const latest = history(state, "descriptions").at(-1);
+    // The tier is measured against the last accept, as decide measures it, even after a later "no".
+    const accepted = acceptsWithInputs(state).at(-1), now = approvalInputs(state, root);
+    const stale = accepted && !sameInputs(accepted.inputs, now) ? diffInputs(accepted.inputs, now) : null;
+    const listed = stale ? briefSections(fileText(root, file) ?? "")?.map(item => item.id) : null;
+    // Only a valid list fills --choice: valid ids are shell-safe, and anything else stays a placeholder.
+    const valid = listed?.length && commandIds(listed).length === listed.length ? listed : null;
+    const choice = valid ? valid.join(",") : "<section-ids-in-order,comma-separated>";
+    // A re-approval's commands carry the tier it needs, so the returned command runs as given.
+    const tier = !stale ? "" : stale.structural
+      ? ` --revision commitment --affects <the section ids the change touches${commandIds(stale.jobs).length ? `, at least ${commandIds(stale.jobs).join(",")}` : ""}; or all; or none>`
+      : " --revision bytes";
+    // A byte-only change to a description the owner kept is carried forward by the agent, not asked again.
+    if (stale && !stale.structural && latest?.verdict === "accept" && state.delegation?.description?.to === "owner") {
+      return {
+        type: "run",
+        carryForward: true,
+        instruction: `Since the owner approved ${file}, only its wording changed: no section line, playback, direction or component decision did. Re-read the change. When it is wording only (a typo, formatting, a clearer sentence), carry the owner's approval forward with the command; no section is reviewed again. When it changes what the page promises or aims at, it is a commitment: show ${file} to the owner and record their answer with --by owner --revision commitment --affects <ids|all|none>.`,
+        command: `${decideCommand(root, "description").replace(/ --stage /, " --by agent --stage ")} --verdict accept --choice ${choice}${tier}`,
+        why: "A byte-only change keeps the owner's decision; the approval still binds the new bytes, and the statement lists the carry-forward.",
+      };
+    }
     const first = latest?.verdict === "reject" && latest.sha256 === current
       ? `The owner rejected this description ("${latest.reason}"); it is now a rule. Revise ${file}, then ask:`
+      : stale
+        ? staleText(state, root, accepted, file)
       : latest?.verdict === "accept"
-        ? `${file}, the confirmed playback, the chosen variant or the component decision changed after the owner approved the description. Bring ${file} up to date, then ask:`
+        ? staleText(state, root, latest, file)
         : `Before asking, make sure ${file} is the one-page description, then ask:`;
     return {
       type: "ask",
@@ -327,13 +425,47 @@ const DESCRIPTION = {
       instruction: `${file} is ${descriptionContent(state)} Show it to the owner as it is; record each correction (it becomes a rule), revise and ask again.`,
       recommended: "Approve only when it says what you want; nothing is built before you do.",
       selfCheck: `The command's --choice is the ids of the ## Sections list in ${file}, in its order. Check ${file} yourself against the confirmed playback (or the stated skip), the chosen variant and the component decision: it is ${descriptionContent(state)} When it matches, record the approval with the command.`,
-      record: `${decideCommand(root, "description")} --verdict accept --choice <the ids of the ## Sections list in ${file}, in its order, comma-separated> [--answer "<the owner's words>"]`,
-      accept: `${decideCommand(root, "description")} --verdict accept --choice <section-ids-in-order,comma-separated>`,
+      record: `${decideCommand(root, "description")} --verdict accept --choice ${valid ? choice : `<the ids of the ## Sections list in ${file}, in its order, comma-separated>`}${tier} [--answer "<the owner's words>"]`,
+      accept: `${decideCommand(root, "description")} --verdict accept --choice ${choice}${tier}`,
       correction: `${decideCommand(root, "description")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
       why: "The stage that blocks building (not a state.gates gate): the approval binds this description, the confirmed playback, the chosen variant and the component decision, and fixes the sections the page is built in. Each correction becomes a rule.",
     };
   },
 };
+
+// Why an accepted description is stale, and the --revision its re-approval takes.
+function staleText(state, root, latest, file) {
+  if (!latest.inputs) return `The description was approved before change tiers were recorded, so this approval counts as a first one (no --revision). Bring ${file} up to date, then ask:`;
+  const diff = diffInputs(latest.inputs, approvalInputs(state, root));
+  const tier = !diff.structural
+    ? "Only the brief's wording changed: re-record the approval with --revision bytes, and no section is reviewed again."
+    : `This is a commitment change: re-record the approval with --revision commitment --affects <the section ids it touches, all or none>${commandIds(diff.jobs).length ? ` (at least ${commandIds(diff.jobs).join(",")}, whose line changed)` : ""}; sections whose line, direction or component decision changed are reviewed again either way.`;
+  return `Since the approval, ${describeDiff(diff)} changed. ${tier} Bring ${file} up to date, then ask:`;
+}
+
+// The --revision and --affects of a re-approval, checked against what changed since the last accept.
+function revisionOf(state, inputs, options, listed) {
+  const previous = acceptsWithInputs(state).at(-1);
+  const revision = options.revision ?? null, affects = options.affects ?? null;
+  if (!previous || sameInputs(previous.inputs, inputs)) {
+    if (revision !== null || affects !== null) fail("workflow", `--revision and --affects go with a re-approval of a changed description; this approval is ${previous ? "identical to the last" : "the first"}. Fix: drop them`);
+    return {};
+  }
+  const diff = diffInputs(previous.inputs, inputs);
+  if (!["bytes", "commitment"].includes(revision)) fail("workflow", `the description changed since its approval (${describeDiff(diff)}). Fix: add --revision bytes when only the wording changed, or --revision commitment --affects <ids|all|none>`);
+  if (revision === "bytes") {
+    if (diff.structural) fail("workflow", `--revision bytes is for wording only, and ${describeDiff(diff)} changed. Fix: use --revision commitment --affects <ids|all|none>`);
+    if (affects !== null) fail("workflow", "--affects goes with --revision commitment. Fix: drop --affects");
+    return { revision };
+  }
+  if (affects === null) fail("workflow", "--revision commitment needs --affects: the section ids it touches, comma-separated, or all, or none");
+  const value = String(affects).trim();
+  if (value === "all" || value === "none") return { revision, affects: value };
+  const ids = value.split(",").map(id => id.trim()).filter(Boolean);
+  const unknown = ids.filter(id => !listed.includes(id));
+  if (!ids.length || unknown.length) fail("workflow", `--affects ${unknown.length ? `names ${unknown.join(", ")}, which the ## Sections list does not` : "is empty"}. Fix: name sections of the list, or all, or none`);
+  return { revision, affects: [...new Set(ids)] };
+}
 
 function recordDescription(state, root, options, next) {
   if (!sectioned(state)) fail("workflow", "the quick tier has no description to approve. Fix: follow next");
@@ -347,16 +479,20 @@ function recordDescription(state, root, options, next) {
     if (before(state, action.stage, "description") || !current) fail("workflow", `Cannot record the description approval while ${before(state, action.stage, "description") ? `${action.stage} is unfinished` : `${file} is unwritten`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     const latest = history(state, "descriptions").at(-1);
     if (options.by === "agent" && latest?.verdict === "reject" && latest.sha256 === current) fail("workflow", `the owner rejected this description and ${file} is unchanged since. Fix: revise it for their correction, then record the approval`, { code: "WORKFLOW_NOT_READY" });
+    // An agent carries a kept description forward only from the owner's accept, never past their "no".
+    if (options.carriedForward && latest?.verdict !== "accept") fail("workflow", `the owner rejected the description they kept, so its approval is theirs again. Fix: show them the revised ${file} and record their answer with --by owner`);
     const sections = String(options.choice ?? "").split(",").map(value => value.trim()).filter(Boolean);
     if (!sections.length) fail("workflow", `--choice is required: the ids of the ## Sections list in ${file}, in its order, comma-separated`);
-    const listed = briefSections(fileText(root, file) ?? "");
+    const listed = briefSections(fileText(root, file) ?? "")?.map(item => item.id);
     if (!listed?.length) fail("workflow", `${file} has no ## Sections list. Fix: add a ## Sections heading with one top-level list item per section, in build order, each starting with its id; show the owner the description again and ask for approval`);
-    const invalid = listed.find(id => !SECTION_ID.test(id));
-    if (invalid) fail("workflow", `${file} lists "${invalid}" under ## Sections; each item must start with its section id (lowercase letters, digits and hyphens). Fix: correct the list, show the owner the description again and ask for approval`);
+    const invalid = listed.find(id => !SECTION_ID.test(id) || RESERVED_IDS.has(id));
+    if (invalid) fail("workflow", `${file} lists "${invalid}" under ## Sections; each item must start with its section id (lowercase letters, digits and hyphens; not all or none, which --affects reserves). Fix: correct the list, show the owner the description again and ask for approval`);
     if (new Set(listed).size !== listed.length) fail("workflow", `${file} lists a section twice under ## Sections. Fix: list each section once, in build order`);
     if (listed.join(",") !== sections.join(",")) fail("workflow", `--choice ${sections.join(",")} does not match the ## Sections list in ${file} (${listed.join(", ")}). Fix: --choice lists exactly those ids, in that order`);
     const note = typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
-    state.decisions.descriptions = [...history(state, "descriptions"), { verdict: "accept", sha256: current, upstream: descriptionUpstream(state), sections, ...(note ? { note } : {}), at }];
+    const inputs = approvalInputs(state, root);
+    const tier = revisionOf(state, inputs, options, listed);
+    state.decisions.descriptions = [...history(state, "descriptions"), { verdict: "accept", sha256: current, inputs, sections, ...tier, ...(note ? { note } : {}), at }];
   } else if (options.verdict === "reject") {
     if (before(state, action.stage, "description") || !current) fail("workflow", `Cannot reject the description before ${file} is written for approval. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     const text = reason(options.answer, "say in one sentence what is wrong with the description; it becomes a rule");
@@ -412,18 +548,18 @@ const sectionMarker = id => new RegExp(`data-section\\s*=\\s*["']${id}["']`, "i"
 const builtSections = root => markup(fileText(root, "index.html") ?? "");
 
 // Where the section loop stands under the current approval: the first section, in build order, that
-// is unbuilt or not accepted, and the sections accepted before it. Verdicts given under an earlier
-// approval do not count.
+// is unbuilt or not accepted, and the sections accepted before it. A section counts as accepted when
+// its latest verdict, under whatever key, is an accept under its current key.
 function sectionProgress(state, root) {
   const approval = currentApproval(state, root);
   if (!approval) return null;
   const html = builtSections(root);
-  const records = history(state, "sections").filter(item => item.description === approval.id);
+  const records = history(state, "sections");
   const accepted = [];
   for (const id of approval.sections) {
     const latest = records.filter(item => item.section === id).at(-1);
     const built = sectionMarker(id).test(html);
-    if (!built || latest?.verdict !== "accept") return { approval, accepted, current: id, built, latest };
+    if (!built || latest?.verdict !== "accept" || latest.key !== sectionKey(state, approval, id)) return { approval, accepted, current: id, built, latest };
     accepted.push(id);
   }
   return { approval, accepted, current: null };
@@ -578,7 +714,7 @@ function recordSection(state, root, options, next) {
   const records = [...history(state, "sections"), {
     section: id, verdict: options.verdict, reason: answer,
     ...(evidence.length ? { evidence: evidence.map(({ path: rel, sha256: hash, objectId, category }) => ({ path: rel, sha256: hash, objectId, category })) } : {}),
-    description: approval.id, pageSha256: pageDigest(root), at: new Date().toISOString(),
+    description: approval.id, key: sectionKey(state, approval, id), pageSha256: pageDigest(root), at: new Date().toISOString(),
   }];
   state.decisions.sections = records;
   if (options.verdict === "reject") {
@@ -639,4 +775,4 @@ function before(state, current, id) {
 // returned before the record.
 const decisions = { intake: recordIntake, concept: recordConcept, components: recordComponents, description: recordDescription, section: recordSection };
 
-module.exports = { decisions, stages };
+module.exports = { briefSections, decisions, stages };

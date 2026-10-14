@@ -306,8 +306,9 @@ so a rule recorded later needs no edit here.
 
 The `## Sections` heading is followed by one top-level list item per section (`- `, `* `, `+ `,
 `1. ` or `1) ` at the start of the line), each starting with its id (backticks allowed) and giving
-one line on its job. The list ends at the next `#` or `##` heading. Ids are lowercase letters,
-digits and hyphens, each listed once. A section named only in prose does not count. For example:
+one line on its job: the rest of the item line after a `:`, `-` or `—`, with whitespace collapsed
+(continuation lines are not part of it). The list ends at the next `#` or `##` heading. Ids are lowercase letters,
+digits and hyphens, each listed once; `all` and `none` are reserved for `--affects`. A section named only in prose does not count. For example:
 
 ```md
 ## Sections
@@ -333,13 +334,33 @@ Record:
   It becomes a rule (`description N`); while `brief.md` is unchanged, `next` asks you to
   revise it before asking again.
 
-The approval binds the `brief.md` bytes, the confirmed playback, the chosen variant and its notes,
-and the component decision, and fixes the sections the page is built in. A changed `brief.md` (a
-typo fix included), a new playback, a re-picked variant or a different component decision makes it
-stale: `next` returns here, asks you to bring `brief.md` up to date and asks for approval again.
-Recording the identical approval again keeps the section verdicts; a different approval (only
-possible after `brief.md` changed) makes every section ask for review again. History in
-`decisions.descriptions`.
+The approval stores its `inputs`: the `brief.md` bytes, each section's line, the confirmed
+playback, the direction (the chosen variant and its notes) and the component decision. It fixes the
+sections the page is built in. Any change to them makes it stale: `next` returns here, and its
+`first` names what changed and which `--revision` fits, and the returned commands already carry
+it (`--affects` stays a placeholder for you to fill). Re-record the approval with the tier of the
+change:
+
+- **Wording only** (the brief's prose, not a section line): `--revision bytes`. No section is
+  reviewed again.
+- **A commitment** (a goal, a section added, removed, reordered or reworded, a new playback, a
+  re-picked variant, a different component decision): `--revision commitment --affects <ids>`,
+  `all` or `none`. Name the sections the change touches.
+  - Sections whose own line changed, and every section when the direction or the component
+    decision changed, are reviewed again either way.
+  - A section added back after a removal is reviewed again.
+  - A reorder keeps the verdicts and the build follows the new order.
+  - `--revision bytes` is refused (`CONTRACT_INVALID`, naming the change) whenever one of these
+    changed.
+
+A first approval, and the identical approval recorded again, take neither flag and keep the
+section verdicts. When the owner kept the description, a `--revision bytes` re-approval is yours to
+record with `--by agent`, as long as their latest record on it is an accept: `next` returns it as a
+`run` with `carryForward: true` and the command, not as an owner ask. If the reworded prose changes
+what the page promises, show the owner instead and record a commitment. The diligence statement
+lists it as a carried-forward change. Anything else on a kept description, including an approval
+after their "no", is theirs. An approval made before change tiers counts as a first one, and its
+sections are reviewed once more. History is in `decisions.descriptions`.
 
 ## build
 
@@ -386,8 +407,10 @@ A section can be accepted only while `next` asks about it or returns its self-ch
 (`WORKFLOW_NOT_READY` otherwise, including while the build run shows findings); any
 built section of the approved description can be rejected again later, which reopens it. A page
 that drops a section's marker returns to building that section; a `data-section` marker inside an
-HTML comment does not count. Verdicts bind the current description approval: recording the
-identical approval again keeps them, and a different approval makes every section ask again. Rules
+HTML comment does not count. A verdict binds its section's key: the section's line, the direction,
+the component decision and how often a re-approval reopened it. A section counts as accepted while
+its latest verdict is an accept under its current key, so a wording change keeps every verdict, and
+an owner's "no" holds even if the line is changed back (see [description](#description)). Rules
 apply going forward and never silently reopen accepted sections. With `--director`, the section
 asks go to the art director, which records with `--by agent` and is named on the record; final
 acceptance never goes to the director. History in `decisions.sections`.
