@@ -2905,6 +2905,7 @@ test("ui and quick work end with the owner's acceptance, and done renders the di
   initState(ui, { deliverable: "ui", tier: "quick", assistedBy: "Claude Code (test)" });
   const work = nextAction(ui);
   assert.match(work.command, / --by agent --stage deliver /);
+  refuses(ui, { stage: "deliver", by: "agent" }, "INPUT_MISSING");
   const review = decide(ui, { by: "agent", stage: "deliver", answer: "index.html checked in a browser" }).next;
   assert.equal(review.stage, "review");
   assert.match(review.why, /passing check/);
@@ -2977,4 +2978,15 @@ test("a quick page the owner rejects goes back to build until it is repaired", t
   assert.match(repair.instruction, /The price is lost below the fold/);
   rewriteSameTime(dir, "index.html", "<!doctype html><title>Repaired</title>");
   assert.equal(nextAction(dir).stage, "probe", "the repaired page is probed again");
+});
+
+test("a refused decide on a project without a delegation map leaves its state untouched", t => {
+  const root = webProject(t);
+  const state = readState(root);
+  delete state.delegation;
+  touch(root, ".design-pipeline/state.json", JSON.stringify(state, null, 2));
+  refuses(root, { stage: "intake", verdict: "accept", answer: PLAYBACK, by: undefined }, "CONTRACT_INVALID");
+  assert.equal(readState(root).delegation, undefined, "the map is filled only when a decision is recorded");
+  confirmPlayback(root);
+  assert.equal(readState(root).delegation.review.locked, true);
 });

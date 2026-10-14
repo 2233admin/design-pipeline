@@ -215,7 +215,8 @@ function decide(root, options = {}) {
   const stage = options.stage;
   assertEnum(stage, ["intake", "reference", "concept", "components", "description", "section", "sample", "review", "deliver"], "stage", "workflow");
   state.decisions = state.decisions || {};
-  if (roles.ensureDelegation(state, stagesFor(state).map(item => item.id))) writeState(root, state);
+  // Filled in memory; the map is saved with the decision, so a refused call changes nothing.
+  roles.ensureDelegation(state, stagesFor(state).map(item => item.id));
   const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
   const role = roles.recordRole(state, stage, options.by);
@@ -290,6 +291,8 @@ function decide(root, options = {}) {
     const next = nextAction(root);
     const allowed = state.deliverable === "ui" ? ["work", "review", "done"] : ["deliver", "done"];
     if (!allowed.includes(next.stage)) fail("workflow", `Cannot record delivery while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    // The owner reviews what ui delivery names, so it must name something.
+    if (state.deliverable === "ui" && !(typeof options.answer === "string" && options.answer.trim())) fail("workflow", "ui delivery needs --answer naming the delivered interface and its evidence; the owner reviews what it names", { code: "INPUT_MISSING" });
     if (["film", "edit"].includes(state.deliverable)) {
       const file = resolveInside(root, options.answer, "delivery file (--answer)", { scope: "workflow", mustExist: true });
       if (!fs.statSync(file).isFile()) fail("workflow", "delivery output must be a file, not a directory");
