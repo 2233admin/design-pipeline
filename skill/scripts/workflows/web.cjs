@@ -637,6 +637,9 @@ function refsCapture(root) {
 function refsCurrent(root, doc = refsCapture(root)) {
   if (!doc || doc.page !== pageDigest(root) || !doc.lineage || typeof doc.lineage !== "object" || !Object.keys(doc.lineage).length) return false;
   if (typeof doc.png !== "string" || fileSha(root, "evidence/refs.png") !== doc.png) return false;
+  // The reference list is bound too, so a hand-edited mapping is not trusted as the screenshot's
+  // (an integrity check against accidental edits; refs.json is the agent's own evidence, not proof).
+  if (doc.refsDigest !== digest(doc.refs)) return false;
   return Object.entries(doc.lineage).every(([rel, hash]) => fileSha(root, rel) === hash);
 }
 

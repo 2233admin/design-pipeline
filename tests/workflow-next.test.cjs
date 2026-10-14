@@ -3533,7 +3533,7 @@ const REFS = [
 const fileHash = (root, rel) => "sha256:" + sha256(fs.readFileSync(path.join(root, rel)));
 function fakeRefs(root, refs = REFS, loaded = ["index.html"]) {
   touch(root, "evidence/refs.png", "png");
-  touch(root, "evidence/refs.json", JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: { width: 1440, height: 900 }, refs, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, "evidence/refs.png") }));
+  touch(root, "evidence/refs.json", JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: { width: 1440, height: 900 }, refs, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, "evidence/refs.png"), refsDigest: "sha256:" + sha256(canonicalJson(refs)) }));
 }
 
 test("a numbered capture goes stale when a file the page loaded or its screenshot changes", t => {
@@ -3548,6 +3548,12 @@ test("a numbered capture goes stale when a file the page loaded or its screensho
   fakeRefs(root, REFS, ["index.html", "fonts/display.woff2"]);
   touch(root, "evidence/refs.png", "a screenshot from another capture");
   assert.match(nextAction(root).first, /evidence refs --root /, "a replaced screenshot is not shown");
+  fakeRefs(root, REFS, ["index.html", "fonts/display.woff2"]);
+  const doc = JSON.parse(fs.readFileSync(path.join(root, "evidence/refs.json"), "utf8"));
+  doc.refs[2] = { ...doc.refs[2], text: "Edited by hand" };
+  touch(root, "evidence/refs.json", JSON.stringify(doc));
+  assert.match(nextAction(root).first, /evidence refs --root /, "an edited reference list is not taken as the screenshot's");
+  refuses(root, { stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small", ref: ["first-screen-2"] }, "WORKFLOW_NOT_READY");
 });
 
 test("a section review routed to the art director offers the numbered page to the director", t => {

@@ -897,7 +897,7 @@ function evidenceRefsCommand(parsed, root) {
     lineage[rel(file)] = hash;
   }
   const pngBytes = Buffer.from(kernel.value.png, "base64");
-  const record = { ...doc, lineage, png: "sha256:" + sha256(pngBytes) };
+  const record = { ...doc, lineage, png: "sha256:" + sha256(pngBytes), refsDigest: "sha256:" + sha256(canonicalJson(doc.refs)) };
   fs.mkdirSync(path.dirname(jsonFile), { recursive: true });
   const write = (file, data) => {
     const temp = `${file}.${process.pid}.tmp`;
