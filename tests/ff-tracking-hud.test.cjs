@@ -253,6 +253,12 @@ test("film scaffold writes the tracking HUD project from its config and the vend
   }
 });
 
+// Loaded from the skill itself (no scaffolded lib/browser-locate.cjs), the probe still reaches the
+// shared resolver: a wrong --chrome is the resolver's TOOL_MISSING, not a missing module.
+test("the probe loaded from the skill uses the shared browser resolver", async () => {
+  await assert.rejects(probe.selfTest(tool, { ...probe.parseArgs([]), chrome: path.join(tool, "no-such-browser") }), error => error.code === "TOOL_MISSING" && /--chrome .*no-such-browser does not exist/.test(error.message));
+});
+
 test("the self-test refuses unknown options before touching a browser", () => {
   assert.deepEqual(probe.parseArgs(["--gpu", "software", "--dpr", "2", "--frames", "4,9"]), { gpu: "software", dpr: 2, frames: [4, 9], chrome: null, out: "evidence/self-test.json" });
   assert.throws(() => probe.parseArgs(["--gpu", "metal"]), /--gpu must be auto, hardware or software/);

@@ -66,8 +66,10 @@ function environment(dir, options) {
   } catch {
     throw Object.assign(new Error("puppeteer-core not found. Fix: run `npm install` in this project (hyperframes installs it)"), { exitCode: 1 });
   }
-  // The scaffold copies the skill's shared resolver here (skill/scripts/browser-locate.cjs).
-  const { resolveBrowser } = require("./lib/browser-locate.cjs");
+  // A scaffolded film carries the skill's shared resolver as lib/browser-locate.cjs; the probe
+  // loaded from the skill itself (skill/tools/ff-tracking-hud) uses the canonical one.
+  const local = path.join(__dirname, "lib/browser-locate.cjs");
+  const { resolveBrowser } = require(fs.existsSync(local) ? local : path.join(__dirname, "../../scripts/browser-locate.cjs"));
   let chrome;
   try { chrome = resolveBrowser(options.chrome || undefined); }
   catch (error) { throw Object.assign(error, { exitCode: 1 }); }
