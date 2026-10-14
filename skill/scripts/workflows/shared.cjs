@@ -212,7 +212,9 @@ const REVIEW = {
       const latest = state.decisions?.drafts?.at(-1);
       return {
         type: "ask",
-        ...(latest?.verdict === "accept" ? { first: `The owner accepted an earlier version of the page at ${latest.at}; show them the current page and ask again:` } : {}),
+        ...(latest?.verdict === "accept" ? { first: canonicalJson(latest.inputHashes ?? null) === canonicalJson(reviewInputHashes(state) ?? null)
+          ? `The component decision changed since the owner accepted this page at ${latest.at}; show them the page with the new decision and ask again:`
+          : `The owner accepted an earlier version of the page at ${latest.at}; show them the current page and ask again:` } : {}),
         question: "Inspect the checked page and its key interactions. Accept it, or tell me what is wrong?",
         show,
         recommended: "Inspect the checked page and its key interactions before accepting.",

@@ -509,6 +509,7 @@ test("lineage regression: changed components decision requires a fresh review an
   assert.equal(acceptSections(root).stage, "probe");
   recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
   assert.equal(nextAction(root).stage, "review", "the earlier accept no longer covers the new decision");
+  assert.match(nextAction(root).first, /The component decision changed since the owner accepted this page at /, "the page is unchanged, so it is not called an earlier version");
   const state = readState(root);
   assert.deepEqual(deliveryFields(state), { delivered: undefined, deliveryInputHashes: undefined, deliveredSha256: undefined });
   assert.deepEqual(state.decisions.drafts, recordedDrafts, "recorded review verdicts and their bindings are never rewritten");

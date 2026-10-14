@@ -219,9 +219,13 @@ async function awaitResources(page, timeoutMs = 10000) {
     })));
     await Promise.race([settled, new Promise((done) => setTimeout(done, ms))]);
     await Promise.all([...document.images].filter((img) => img.complete && img.naturalWidth > 0).map((img) => img.decode().catch(() => {})));
-    return [...document.images].filter((img) => !img.complete).length;
+    // A video with a source shows its first frame once it has current data (readyState 2).
+    const videos = [...document.querySelectorAll("video")].filter((video) => video.currentSrc || video.src || video.querySelector("source"));
+    const unready = () => videos.filter((video) => video.readyState < 2 && !video.error);
+    for (let waited = 0; unready().length && waited < ms; waited += 100) await new Promise((done) => setTimeout(done, 100));
+    return [...document.images].filter((img) => !img.complete).length + unready().length;
   }, timeoutMs);
-  if (pending) fail(SCOPE, `${pending} image(s) were still loading ${timeoutMs / 1000} s after the page was scrolled through. Fix: make the page's images load locally and promptly, then run \`evidence refs\` again`);
+  if (pending) fail(SCOPE, `${pending} image(s) or video(s) were still loading ${timeoutMs / 1000} s after the page was scrolled through. Fix: make the page's media load locally and promptly, then run \`evidence refs\` again`);
 }
 
 // Browser work for one capture. The caller supplies `digest` (the page digest function) so the page

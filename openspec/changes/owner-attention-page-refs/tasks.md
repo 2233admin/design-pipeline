@@ -42,6 +42,8 @@
 - [x] 7.7 Codex: the settle walk scrolls instantly whatever `scroll-behavior` the page sets, and waits until each position is reached; verify with `scroll-behavior: smooth` on the browser test page that appends content at the bottom.
 - [x] 7.8 Codex: `refs.json` binds its reference list (`refsDigest`), so an edited mapping is not trusted as the screenshot's; verify in `workflow-next` that an edited list asks for a new capture and refuses `--ref`.
 - [x] 7.9 CodeRabbit: after the walk the capture waits (bounded, 10 s) for network idle and for every image to load and decode, and fails if an image is still loading; verify with a lazy image at the bottom of the browser test page, numbered at its loaded size.
+- [x] 7.10 Codex: the resource wait also covers videos (current data, bounded); verify the browser tests still pass.
+- [x] 7.11 Codex: when only the component decision changed after the owner's accept, the review says so instead of "an earlier version"; verify in `workflow-components`.
 
 ## Workflow follow-up
 
