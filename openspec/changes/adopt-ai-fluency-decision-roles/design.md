@@ -335,10 +335,11 @@ Each phase is its own PR against this change. `tasks.md` groups the tasks the sa
 - **Archive order.** This change ADDS requirements only. It touches code from
   `make-web-workflow-conversational` and should archive after that chain.
 
-## Open questions
+## Settled owner decisions
 
-- Should `--by` stay required with no default? The current answer is yes, and it affects every
-  in-flight project's next `decide`.
+- Final acceptance is required at every tier, including web quick and ui.
+- `--by` is required with no default, so every in-flight project's next `decide` must name it. No
+  compatibility default is added.
 
 ## Follow-up
 
