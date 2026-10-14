@@ -200,7 +200,8 @@ test("quick Chinese page eval checks browser behavior and the public workflow", 
       "required-validation": required.every(Boolean), "email-validation": invalidEmail, "keyboard-save": success === "资料已保存。",
       "reload-persistence": saved.name === "林晓雨" && saved.email === "xiaoyu@example.com" && saved.notifications === false,
       "responsive": size[0] === size[1] && size[1] === 320, "no-animation": animationCount === 0,
-      "user-acceptance-separate": next.visualAcceptance === "not-evaluated" && Object.keys(next.evidence.gates).length === 0,
+      // Acceptance is the owner's own review record, never a gate result.
+      "user-acceptance-separate": state.decisions.drafts.at(-1)?.verdict === "accept" && state.decisions.drafts.at(-1)?.by === "owner" && Object.keys(next.evidence.gates).length === 0,
     } });
   } finally { await browser.close(); }
 });
