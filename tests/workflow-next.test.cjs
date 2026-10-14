@@ -1244,6 +1244,8 @@ test("standard film walks intake, reference, concepts, plan, build, check, revie
   assert.ok(review.show.includes(path.join(dir, "out.mp4")));
   assert.equal(review.show.includes(path.join(dir, "evidence/contact-sheet.png")), false, "a missing contact sheet is not available to review");
   assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "reject" }), /one sentence/);
+  for (const answer of ["no", "ok", "暗"]) assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "reject", answer }), /at least 2 words/, answer);
+  assert.equal(readState(dir).decisions.drafts, undefined, "a refused rejection records nothing");
   decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The logo lands too early." });
   const again = nextAction(dir);
   assert.equal(again.stage, "check", "a rejection reopens the check for the rebuilt draft");
@@ -1974,7 +1976,7 @@ test("a passed interaction gate goes stale when index.html changes", () => {
   assert.equal(nextAction(dir).stage, "probe", "a rebuilt page must be probed again");
 });
 
-test("a rejected web draft reopens probe", () => {
+test("a rejected web draft returns to build until the page changes, then probe", () => {
   const dir = tmp();
   initState(dir, { deliverable: "web", tier: "standard" });
   toComponents(dir);
@@ -1987,7 +1989,11 @@ test("a rejected web draft reopens probe", () => {
   const review = nextAction(dir);
   assert.equal(review.stage, "review");
   decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The hero tilt snaps instead of easing." });
-  assert.equal(nextAction(dir).stage, "probe", "a rejection reopens probe");
+  const repair = nextAction(dir);
+  assert.equal(repair.stage, "build", "the unchanged page is repaired before it is shown again");
+  assert.match(repair.instruction, /The hero tilt snaps instead of easing/);
+  rewriteSameTime(dir, "index.html", redraft("web", "repaired tilt"));
+  assert.equal(nextAction(dir).stage, "probe", "the repaired page is probed again");
 });
 
 test("web concepts asks for a switchable variants page and a treatment before the choice", () => {
@@ -2134,8 +2140,9 @@ test("a web skip records only a stated decision through the CLI, and web intake 
 });
 
 // A go-ahead is not a decision: a stated decision (the skip line, the confirmed playback) needs six
-// words and every "no" three, where two CJK characters count as one word.
-test("stated decisions need six words and every no three, through the CLI", t => {
+// words, two CJK characters counting as one. A "no" is the owner's own feedback: two words, each CJK
+// character counting as one, so short Chinese feedback is a complete reason and a bare "no" is not.
+test("stated decisions need six words and every no two, through the CLI", t => {
   const root = webProject(t), quick = webProject(t, { tier: "quick" });
   const intake = (...args) => ["--stage", "intake", ...args];
   for (const answer of ["OK, start.", "proceed", "do it", "just start", "yes, build it as shown", "默认", "直接开始吧", "我要做一个面包店的预订"]) {
@@ -2143,10 +2150,10 @@ test("stated decisions need six words and every no three, through the CLI", t =>
       assert.match(refusesCli(project, [...args, "--answer", answer], "CONTRACT_INVALID").message, /at least 6 words/, `${args.join(" ")} --answer ${answer}`);
     }
   }
-  const tooShort = ["no", "Too dark", "首屏太暗了"];
-  for (const answer of tooShort) assert.match(refusesCli(root, intake("--verdict", "reject", "--answer", answer), "CONTRACT_INVALID").message, /at least 3 words/, answer);
-  for (const answer of ["No stock photos", "The hero is too dark", "首屏太暗了吧"]) decideCli(root, ...intake("--verdict", "reject", "--answer", answer));
-  assert.deepEqual(readState(root).rules.map(rule => rule.text), ["No stock photos", "The hero is too dark", "首屏太暗了吧"]);
+  const tooShort = ["no", "ok", "暗"];
+  for (const answer of tooShort) assert.match(refusesCli(root, intake("--verdict", "reject", "--answer", answer), "CONTRACT_INVALID").message, /at least 2 words; each CJK character counts as one/, answer);
+  for (const answer of ["Too dark", "首屏太暗了", "太挤"]) decideCli(root, ...intake("--verdict", "reject", "--answer", answer));
+  assert.deepEqual(readState(root).rules.map(rule => rule.text), ["Too dark", "首屏太暗了", "太挤"], "short owner feedback is a complete reason");
   assert.equal(decideCli(root, ...intake("--choice", "skip", "--answer", STATED)).stage, "reference");
   decideCli(root, ...intake("--choice", "skip", "--answer", "我要做一个面包店的预订页"));
   assert.equal(readState(root).decisions.intake.answer, "我要做一个面包店的预订页", "twelve CJK characters are six words");
@@ -2155,9 +2162,9 @@ test("stated decisions need six words and every no three, through the CLI", t =>
   const built = approved(t, ["first-screen"]);
   buildPage(built, ["first-screen"]);
   const section = answer => ["--stage", "section", "--choice", "first-screen", "--verdict", "reject", "--answer", answer];
-  for (const answer of tooShort) assert.match(refusesCli(built, section(answer), "CONTRACT_INVALID").message, /at least 3 words/, answer);
-  decideCli(built, ...section("The hero is too dark"));
-  assert.deepEqual(readState(built).rules, [{ text: "The hero is too dark", from: "section first-screen 1", scope: "project" }]);
+  for (const answer of tooShort) assert.match(refusesCli(built, section(answer), "CONTRACT_INVALID").message, /at least 2 words/, answer);
+  decideCli(built, ...section("首屏太暗了"));
+  assert.deepEqual(readState(built).rules, [{ text: "首屏太暗了", from: "section first-screen 1", scope: "project" }]);
 });
 
 test("anti-goals named with the confirmed playback or a skip become project rules through the CLI", t => {
@@ -2165,7 +2172,7 @@ test("anti-goals named with the confirmed playback or a skip become project rule
   const goals = (...texts) => texts.flatMap(text => ["--anti-goal", text]);
   const root = webProject(t);
   const accept = ["--stage", "intake", "--verdict", "accept", "--answer", PLAYBACK];
-  assert.match(refusesCli(root, [...accept, ...goals("No ads")], "CONTRACT_INVALID").message, /at least 3 words/, "an anti-goal is a no");
+  assert.match(refusesCli(root, [...accept, ...goals("Ads")], "CONTRACT_INVALID").message, /at least 2 words/, "an anti-goal is a no");
   assert.match(refusesCli(root, ["--stage", "intake", "--verdict", "reject", "--answer", "It is for florists, not bakeries", ...goals("Never look like a delivery app")], "CONTRACT_INVALID").message, /--anti-goal/, "a correction is already a rule");
   decideCli(root, ...accept, ...goals("Never look like a delivery app"));
   assert.deepEqual(readState(root).rules, [{ text: "Never look like a delivery app", from: "anti-goal 1", scope: "project" }]);
@@ -2597,9 +2604,14 @@ test("the probe binds the checked page, and the final review still turns a rejec
   assert.ok(stale.verification.findings.some(item => item.code === "workflow-input-changed" && item.path === "index.html"), JSON.stringify(stale.verification.findings));
   passProbe(root);
   assert.equal(nextAction(root).stage, "review");
+  for (const answer of ["no", "ok"]) assert.match(refusesCli(root, ["--stage", "review", "--verdict", "reject", "--answer", answer], "CONTRACT_INVALID").message, /at least 2 words/, answer);
+  assert.deepEqual(readState(root).rules, [], "a bare no at the final review records no rule");
+  assert.equal(nextAction(root).stage, "review", "and leaves the checked page under review");
   decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
   assert.deepEqual(readState(root).rules, [{ text: "The reserve button gets lost below the fold", from: "draft 1", scope: "project" }]);
   assert.equal(readState(root).gates.interaction, undefined);
+  assert.equal(nextAction(root).stage, "build", "the rejected page is repaired first");
+  fs.appendFileSync(path.join(root, "index.html"), "<!-- reserve button moved up -->\n");
   assert.equal(nextAction(root).stage, "probe");
 });
 
@@ -2750,7 +2762,10 @@ test("latest owner verdict and changed checked bytes require a fresh review", ()
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "deliver", "rechecking identical bytes preserves the accepted snapshot");
       decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The final action reads too early." });
-      assert.equal(nextAction(dir).stage, deliverable === "web" ? "probe" : "check");
+      if (deliverable === "web") {
+        assert.equal(nextAction(dir).stage, "build", "a rejected page is repaired before it is checked again");
+        rewriteSameTime(dir, file, redraft(deliverable, "repaired final action"));
+      } else assert.equal(nextAction(dir).stage, "check");
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a historical accept cannot override the latest rejection");
       decide(dir, { by: "owner", stage: "review", verdict: "accept" });
@@ -2822,6 +2837,7 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
       decide(dir, { by: "owner", stage: "deliver", answer: delivery });
       assert.equal(nextAction(dir).type, "done");
       decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The accepted draft still needs a repair." });
+      if (deliverable === "web") rewriteSameTime(dir, file, redraft(deliverable, "repaired after the rejection"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a rejection after done revokes dependent acceptance and delivery");
       decide(dir, { by: "owner", stage: "review", verdict: "accept" });
@@ -2926,7 +2942,7 @@ test("ui and quick work end with the owner's acceptance, and done renders the di
   assert.match(statement, /## Decided by the owner\n- Final acceptance: reject — "The header feels cramped on phones"\n- Final acceptance: accept — "That header looks right now"/);
   assert.match(statement, /## Decided by the agent under delegation\n- Delivery — "index\.html checked in a browser" \(agent: Claude Code \(test\); delegated by default\)/);
   assert.match(statement, /Final acceptance recorded by the owner at .*: "That header looks right now"/);
-  assert.match(statement, /1 rule\(s\)/);
+  assert.match(statement, /## The owner's "no", in their words\n- "The header feels cramped on phones" \(draft 1\)/, "the owner's own words, not a count");
   assert.match(statement, /Suggested trailer: Assisted-by: Claude Code \(test\)/);
   assert.match(statement, /## Delegation\n- Delivery: agent\n- Final acceptance: owner \(locked\)/);
   // A later decision makes the statement stale until done renders it again.

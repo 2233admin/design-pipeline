@@ -83,7 +83,7 @@ creative-work course as the model for these gaps, with these decisions:
   - owner decisions with their reasons;
   - delegated agent decisions;
   - unknown-author records;
-  - the number of project rules;
+  - the owner's "no" in their own words (the project rules);
   - technical gates, kept separate from owner acceptance;
   - an `Assisted-by: <tool>` line.
 - The statement binds the state hash and the delivery bindings already recorded (`deliveredSha256`

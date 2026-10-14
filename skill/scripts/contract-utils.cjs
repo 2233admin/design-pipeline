@@ -167,11 +167,12 @@ function rejectExecutable(value, label, scope) {
   if (rules.some((rule) => rule.test(text))) fail(scope, `${label} contains executable or remote content`);
 }
 
-// Words in a recorded answer: runs of letters or digits, with two CJK characters counting as one.
+// Words in a recorded answer: runs of letters or digits, plus CJK characters at `cjkWeight` each
+// (by default two CJK characters count as one word).
 const CJK_CHARACTERS = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
-function wordCount(text) {
+function wordCount(text, { cjkWeight = 0.5 } = {}) {
   const value = String(text ?? "");
-  return (value.replace(CJK_CHARACTERS, " ").match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu) || []).length + (value.match(CJK_CHARACTERS) || []).length / 2;
+  return (value.replace(CJK_CHARACTERS, " ").match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu) || []).length + (value.match(CJK_CHARACTERS) || []).length * cjkWeight;
 }
 
 module.exports = { wordCount,

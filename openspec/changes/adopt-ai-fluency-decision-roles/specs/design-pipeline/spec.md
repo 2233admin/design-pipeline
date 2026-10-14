@@ -139,7 +139,7 @@ An owner's variant pick and an owner's final acceptance SHALL include an answer 
 
 ### Requirement: Delivery writes a diligence statement
 
-Delivery SHALL render `.design-pipeline/diligence.md` from the workflow state alone, listing owner decisions with reasons, delegated agent decisions, facts the owner did not state, records without an author, the rule count, technical checks apart from owner acceptance, and an `Assisted-by:` line. It SHALL bind the state hash and the delivery bindings already recorded, and SHALL be stale when any of them changes.
+Delivery SHALL render `.design-pipeline/diligence.md` from the workflow state alone, listing owner decisions with reasons, delegated agent decisions, facts the owner did not state, records without an author, the owner's rules in their words, technical checks apart from owner acceptance, and an `Assisted-by:` line. It SHALL bind the state hash and the delivery bindings already recorded, and SHALL be stale when any of them changes.
 
 #### Scenario: Standard web work is delivered to a remote URL
 
