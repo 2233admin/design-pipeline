@@ -15,8 +15,8 @@ and `shared.cjs`):
 - **Section verdicts** store `description: approval.id`. `sectionProgress` counts a verdict only
   when that id equals the current approval's, so any change to the brief bytes, the playback, the
   direction or the components reopens every section.
-- **`briefSections`** returns ids only. Each section's one-line job is parsed by the regex and
-  then discarded.
+- **`briefSections`** returns ids only. The regex captures the id and ignores the rest of the
+  line, so the one-line job is never read.
 - **The stale `first` text** cannot say which input changed, because only the combined
   `upstream` hash is stored.
 - **What does not bind the brief:** the probe gate (`index.html`, `interaction.json` and the
@@ -47,16 +47,27 @@ and `shared.cjs`):
 
 The key is `sha256(canonicalJson({id, job, direction, components, epoch}))`.
 
-- **job:** the section's line in `## Sections` after its id, with whitespace collapsed.
-- **direction:** `{concept, conceptNotes}`.
+- **job:** the rest of the section's item line after its id, with a leading `:`, `-`, `–`, `—`
+  or whitespace stripped and whitespace collapsed. An id-only line has an empty job.
+  Continuation lines are not part of it.
+- **direction:** `{concept, conceptNotes}`. In replicate mode the concept is null, so this is
+  constant.
 - **components:** `componentDecisionDigest`.
-- **epoch:** the number of commitment re-approvals that named this section (or `all`).
+- **epoch:** among the description accepts that carry `inputs`, the number of:
+  - commitment re-approvals that named this section, or `all`;
+  - accepts in which the section is present but was absent from the accept before.
+  So a removed and re-added section is reviewed again.
 
-`recordSection` stores `key` beside `description`, and `sectionProgress` counts a verdict when
-its `key` equals the section's current key.
+`recordSection` stores `key` beside `description`. `sectionProgress` takes the latest verdict for
+each section, whatever its key, and counts it only if it is an accept with the section's current
+key. A key match never reaches past a later reject: a section rejected under one key and returned
+to an older key stays rejected.
 
-- **The playback is not in the key.** The confirmed card is often reworded. A reword that changes
-  what a section must do is declared by the agent as a commitment naming that section.
+- **The playback is not in the key.** A playback change is structural (Decision 2), so it needs a
+  commitment, and the agent names the sections it touches.
+- **Position is not in the key.** A reorder keeps every verdict; the build follows the new order.
+  A removed section's verdicts are simply not asked for. An added section has no verdict, so it is
+  reviewed when built.
 - **Alternatives:**
   - Keep binding the approval id. Rejected: that is the cascade this change removes.
   - Bind each verdict to the page bytes of its section. Rejected: that is the page tier (phase 3),
@@ -75,14 +86,17 @@ the bytes hash; `playback`, `direction` and `components` are hashes.
   - `sections` (ids added, removed or reordered);
   - `jobs` (the ids whose line changed);
   - `playback`, `direction` and `components`.
-- **Structural** means any of sections, jobs, direction or components changed. Brief bytes and the
-  playback alone are not structural.
+- **Structural** means any of sections, jobs, playback, direction or components changed. A
+  change to the brief bytes alone is not structural. The playback is the confirmed creative intent,
+  which stays with the owner, so its changes are never carried as wording only.
 - **Alternative:** recompute the old values from history. Rejected: the bytes of an earlier brief
   are gone.
 
 ### 3. A re-approval of a changed description names its tier
 
-`recordDescription` reads `--revision bytes|commitment` and `--affects <ids>|all`.
+`recordDescription` reads `--revision bytes|commitment` and `--affects`. The value of
+`--affects` is comma-separated section ids, `all` or `none`, given once.
+`--revision` and `--affects` on any other stage are refused.
 
 - **First approval.** No earlier accept with `inputs` exists. `--revision` and `--affects` are
   refused.
@@ -91,7 +105,10 @@ the bytes hash; `playback`, `direction` and `components` are hashes.
 - **Changed approval.** The inputs differ:
   - `--revision` is required.
   - `bytes` is refused while the diff is structural, and the message names what changed.
-  - `commitment` requires `--affects`. Every id must be in the new list, or the value is `all`.
+  - `commitment` requires `--affects`. Every id must be in the new list, or the value is `all`
+    or `none`.
+  - `none` fits a change that reopens nothing beyond the sections whose key changed by itself: a
+    reorder, a removal, an added section, or a playback reword that touches no section.
   - `--affects` without `commitment` is refused.
 - The record stores `revision` and `affects`. The epoch of each named section, or of every section
   for `all`, is computed from the description history; nothing else is stored.
@@ -109,18 +126,23 @@ one case:
 - the stage is `description`;
 - the verdict is `accept`;
 - `--revision bytes` is given;
-- the previous accept exists.
+- the latest description entry is an accept, with no owner reject after it.
 
 `recordDescription` still refuses `bytes` on a structural diff, so the exception cannot carry a
-commitment.
+commitment or a playback change. A rejected kept description goes back to the owner, revised.
 
-- The role entry keeps `revision: "bytes"`.
-- The statement prints the entry under the agent's decisions as "carried forward a byte-only
-  change to the owner's description".
+- **Code:** `recordRole` takes an `allowAgent` option for this one case, and returns
+  `{by: "agent", agent: assistedBy}`. `stampRecord` keeps `revision` on the role entry.
+- **Statement:** the entry gets its own line under the agent's decisions, reading "carried forward
+  a byte-only change to the owner's description". It does not use the "delegated by the owner"
+  suffix, since the owner kept the checkpoint.
 - **Alternative:** ask the owner again for every byte change. Rejected: the umbrella design (C)
   says a bytes change has no owner re-review.
 
 ### 5. The stale `first` text names what changed
+
+A legacy accept without `inputs` cannot be diffed. Its `first` says that the earlier approval
+predates change tiers and that this approval counts as a first one.
 
 When the last accept is stale, the description step's `first` lists the changed inputs from
 `diffInputs` and the tier they allow:

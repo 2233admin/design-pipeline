@@ -20,7 +20,7 @@ At standard and full, `next` SHALL NOT return a build action until `brief.md` is
 
 ### Requirement: The description lists its sections
 
-`brief.md` SHALL carry a `## Sections` heading followed by one top-level list item per section, in build order, each starting with its id (lowercase letters, digits and hyphens) and giving one line on its job, and the approval's `--choice` SHALL equal that list exactly, in its order. Once `next` has reached the description, the approval MAY be recorded again: the identical approval SHALL keep the section verdicts, and a changed one SHALL ask again only the sections its change tier reopens.
+`brief.md` SHALL carry a `## Sections` heading followed by one top-level list item per section, in build order, each starting with its id (lowercase letters, digits and hyphens), with the rest of the item line as the section's job, and the approval's `--choice` SHALL equal that list exactly, in its order. Once `next` has reached the description, the approval MAY be recorded again: the identical approval SHALL keep the section verdicts, and a changed one SHALL ask again only the sections its change tier reopens.
 
 #### Scenario: The description names its sections
 
@@ -78,7 +78,7 @@ At standard and full the build SHALL follow the approved section order: the firs
 
 ### Requirement: A changed description is re-approved with its change tier
 
-When an earlier approval exists and the brief, the playback, the direction or the component decision changed, the description approval SHALL carry `--revision bytes` (wording or formatting only) or `--revision commitment` with `--affects <section ids>` or `all`. A first or identical approval SHALL take no `--revision`. A bytes claim SHALL be refused while a section line, the section list, the direction or the component decision changed.
+When an earlier approval exists and its inputs changed, the description approval SHALL carry `--revision bytes` (the brief's wording only) or `--revision commitment` with `--affects` naming section ids, `all` or `none`. A first or identical approval SHALL take no `--revision`. A bytes claim SHALL be refused while a section line, the section list, the playback, the direction or the component decision changed.
 
 #### Scenario: A typo keeps every section
 
@@ -92,17 +92,17 @@ When an earlier approval exists and the brief, the playback, the direction or th
 
 #### Scenario: A structural change refuses a bytes claim
 
-- **WHEN** the job line of section proof changed, or a different variant was picked, and the approval is recorded with `--revision bytes`
+- **WHEN** the job line of section proof changed, the playback was reworded, or a different variant was picked, and the approval is recorded with `--revision bytes`
 - **THEN** decide SHALL exit 1 naming the change, and record nothing
 
 #### Scenario: A missing or misplaced tier is refused
 
-- **WHEN** a changed description is approved without `--revision`, or a first approval carries `--revision`, or `--affects` names a section not in the list, or `--affects` comes without `--revision commitment`
+- **WHEN** a changed description is approved without `--revision`, or a first approval carries `--revision`, or `--affects` names a section not in the list, or `--affects` comes without `--revision commitment`, or either flag is given on another stage
 - **THEN** decide SHALL exit 1 and record nothing
 
 ### Requirement: A byte-only change does not go back to the owner
 
-When the owner kept the description, the agent MAY record a `--revision bytes` re-approval with `--by agent`, and only when the pipeline finds no structural change. The record SHALL keep its tier and the diligence statement SHALL list it under the agent's decisions. A commitment re-approval of a kept description SHALL stay the owner's.
+When the owner kept the description, the agent MAY record a `--revision bytes` re-approval with `--by agent` only when the pipeline finds no structural change and the latest description record is an accept. The record SHALL keep its tier and the diligence statement SHALL list it as a carried-forward agent decision. A commitment re-approval, or one after an owner reject, SHALL stay the owner's.
 
 #### Scenario: The agent carries a typo forward
 
@@ -114,3 +114,28 @@ When the owner kept the description, the agent MAY record a `--revision bytes` r
 
 - **WHEN** the owner kept the description and the agent records `--revision commitment --by agent`
 - **THEN** decide SHALL exit 1 and record nothing
+
+#### Scenario: A rejected kept description is not carried forward
+
+- **WHEN** the owner kept the description, rejected it, and the agent reworded the prose
+- **THEN** `decide --stage description --verdict accept --revision bytes --by agent` SHALL exit 1 and record nothing
+
+### Requirement: A section follows its latest verdict
+
+A section SHALL count as accepted only when its latest verdict, whatever key it was given under, is an accept under the section's current key. A section removed from the list and added again SHALL be reviewed again.
+
+#### Scenario: A reverted line does not undo the owner's no
+
+- **WHEN** section hero was accepted, its line changed, the owner rejected hero, and the line was changed back
+- **THEN** hero SHALL stay rejected until it is accepted again
+
+#### Scenario: A re-added section is reviewed again
+
+- **WHEN** section proof was accepted, removed from the list, and added back with the same line
+- **THEN** proof SHALL be reviewed again before the build moves past it
+
+#### Scenario: A reorder keeps the verdicts
+
+- **WHEN** two accepted sections swap places and the approval is recorded with `--revision commitment --affects none`
+- **THEN** both SHALL stay accepted and the build SHALL follow the new order
+

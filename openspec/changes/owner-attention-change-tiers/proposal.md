@@ -18,17 +18,19 @@ tiers): re-review in proportion to what changed.
   so the description is re-checked (an agent self-check by default). Evidence still binds bytes.
 - **A re-approval after a change names its tier.** When an earlier approval exists and something
   changed, `decide --stage description --verdict accept` takes the new `--revision bytes|commitment`.
-  - `bytes`: wording or formatting only; no section is reviewed again.
-  - `commitment`: what the page commits to changed. `--affects <section ids>|all` names the
-    sections to review again.
+  - `bytes`: the brief's wording or formatting only; no section is reviewed again.
+  - `commitment`: what the page commits to changed. `--affects <section ids>|all|none` names
+    the sections to review again beyond those whose key changed by itself.
   - The pipeline checks the claim against what it can see, and refuses a `bytes` claim when it
     found a structural change:
     - a section whose job line changed, a section added, or a section removed;
+    - a reworded playback (the owner's creative intent);
     - a different variant pick, combine notes or component decision.
   - Sections whose key changed are reviewed again whatever the claim says.
 - **A kept description is not re-asked for a typo.** When the owner kept the description, the
-  agent may record a `bytes` re-approval itself if the pipeline finds no structural change. The
-  diligence statement lists such records as agent decisions with their tier.
+  agent may record a `bytes` re-approval itself if the pipeline finds no structural change and the
+  owner has not rejected the description since. The diligence statement lists such records as
+  carried-forward agent decisions.
 - **The stale description says what changed.** Each approval stores the inputs it was given
   (brief bytes, the section lines, playback, direction, components), so `next` names the changed
   inputs and the tier the pipeline found.
@@ -53,7 +55,8 @@ None.
     job line.
   - `skill/scripts/workflow-core.cjs`: passing the options, and the `bytes` carry-forward on a
     kept description.
-  - `skill/scripts/workflows/roles.cjs`: the statement line.
+  - `skill/scripts/workflows/roles.cjs`: `recordRole`'s single exception for the carry-forward,
+    `stampRecord` keeping `revision`, and the statement line.
   - `skill/scripts/cli-core.cjs`: the `--revision` and `--affects` flags and their help.
 - **Reused, not added:**
   - the description and section records in `decisions`;
