@@ -77,11 +77,23 @@ Research from official documentation (summarised; sources at the end):
 - **Accept the current version:** a single action that records the page digest. A newer version
   marks the acceptance stale, with a visible "you approved an earlier version" notice. A
   comment on an older version is shown as outdated.
-- **Lite means:** no UI IR, tokens or design-code map are required. It produces `runtime-review`
-  Feedback-shaped records, so the existing citation path (`--evidence`) and the full runtime-review
-  route keep working.
+- **Lite means:** no UI IR, tokens or design-code map are required of the owner's project. It
+  still writes ordinary v1 `runtime-review` Records, so `--evidence` accepts them: the v1 Feedback
+  requires the bundle, design identity, source set, observation, target, snapshot and policy
+  digests, and the Record requires `contextAtRecord`. Phase 3 extends the existing bundle capture
+  (no parallel schema, no optional digests) so a lite capture fills every one: the design identity
+  from the brief, the confirmed card and the chosen variant when there is no UI IR or tokens; the
+  source set from the page and the files it loads; the observation from the overlay capture. A
+  citation is accepted only when its Record validates.
 - **Partial change:** a comment on one element is a change request, not a rejection of the
-  section. Accepted parts stay accepted.
+  section. Accepted parts stay accepted only while the pipeline can show nothing else changed:
+  - the changed set comes from the pipeline comparing the two rendered versions at the reviewed
+    viewports (pixel regions and computed styles per element), never from the agent's account of
+    its edit;
+  - every changed element is shown before/after, including ones nobody commented on (shared CSS
+    that also moves the header puts the header in the review);
+  - when the comparison cannot be made or cannot attribute a change to elements, the whole page
+    returns to review and earlier acceptance is stale.
 
 ## C. Change tiers
 
@@ -89,7 +101,7 @@ Research from official documentation (summarised; sources at the end):
 |---|---|---|---|
 | Bytes | typo or formatting in `brief.md` | none | re-run if bound |
 | Commitment | a goal, a section added or removed, a direction change | the affected decision only | re-run |
-| Page | the rendered page changed | the changed elements, shown as before/after | re-run |
+| Page | the rendered page changed | every element the comparison finds changed, before/after; the whole page when it cannot attribute the change (B) | re-run |
 
 - The agent proposes a tier. The pipeline checks it against what changed (for example, the section
   list and confirmed card fields for a commitment; the page digest for a page change), and

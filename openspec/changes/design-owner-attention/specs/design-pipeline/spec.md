@@ -2,11 +2,11 @@
 
 ### Requirement: Owner asks carry a new trade-off and its consequence
 
-An ask the pipeline returns for the owner SHALL name what it decides that no earlier owner decision settled, the recommendation and its cost, and how the owner can see the difference. An ask that cannot name a new trade-off SHALL NOT be sent; the agent SHALL settle it within its delegation or as a self-check against earlier owner decisions.
+An ask the pipeline returns for the owner SHALL name what it decides that no earlier owner decision settled, the recommendation and its cost, and how the owner can see the difference. An ask that cannot name a new trade-off SHALL NOT be sent, unless the owner's delegation explicitly asks for that review; otherwise the agent SHALL settle it within its delegation or as a self-check against earlier owner decisions.
 
 #### Scenario: A section repeats the confirmed direction
 
-- **WHEN** a built section follows the confirmed playback card and the chosen direction without a new trade-off
+- **WHEN** a built section follows the confirmed playback card and the chosen direction without a new trade-off, and the owner's delegation does not ask to review each section
 - **THEN** the pipeline SHALL record it as an agent self-check and SHALL NOT ask the owner
 
 #### Scenario: A section changes behaviour
