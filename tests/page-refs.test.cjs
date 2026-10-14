@@ -231,3 +231,22 @@ test("a capture binds the files the page loaded, so a changed CSS asset or scree
   fs.writeFileSync(path.join(dir, "later.svg"), pixel("#3c3"));
   assert.equal(refs(dir).output.status, "captured", "an absent asset that appears makes the capture stale");
 });
+
+// CodeRabbit review on #138: the resource wait has one deadline, and its expiry fails the capture.
+test("media that never finishes loading fails the capture at the deadline", { skip }, async () => {
+  const { awaitResources } = require("../skill/scripts/page-refs-core.cjs");
+  const puppeteer = require(puppeteerPath());
+  const browser = await puppeteer.launch({ executablePath: resolveBrowser(), headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    // The image request is held forever, as a stalled server would.
+    page.on("request", (request) => { if (!request.url().endsWith("/never.png")) request.continue(); });
+    await page.setContent('<img src="http://refs.test/never.png" alt="Never">', { waitUntil: "domcontentloaded" });
+    const started = Date.now();
+    await assert.rejects(awaitResources(page, 1500), /still loading 1\.5 s after it was scrolled through/);
+    assert.ok(Date.now() - started < 5000, "the deadline bounds the whole wait");
+  } finally {
+    await browser.close();
+  }
+});

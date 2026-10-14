@@ -206,26 +206,31 @@ async function settle(page) {
   await sleep(600);
 }
 
-// After the walk, wait (bounded) for what scrolling started: network idle as far as it comes, then
-// every image loaded and decoded. An image still loading after the bound fails the capture rather
-// than numbering an incomplete page.
+// After the walk, wait for what scrolling started: network idle as far as it comes, then every image
+// loaded and decoded and every sourced video showing a frame. One deadline bounds all of it; when it
+// expires the capture fails rather than numbering an incomplete page.
 async function awaitResources(page, timeoutMs = 10000) {
+  const deadline = Date.now() + timeoutMs;
   await page.waitForNetworkIdle({ idleTime: 300, timeout: timeoutMs }).catch(() => {});
+  const remaining = Math.max(1, deadline - Date.now());
   const pending = await page.evaluate(async (ms) => {
-    const loading = [...document.images].filter((img) => !img.complete);
-    const settled = Promise.all(loading.map((img) => new Promise((done) => {
-      img.addEventListener("load", done, { once: true });
-      img.addEventListener("error", done, { once: true });
-    })));
-    await Promise.race([settled, new Promise((done) => setTimeout(done, ms))]);
-    await Promise.all([...document.images].filter((img) => img.complete && img.naturalWidth > 0).map((img) => img.decode().catch(() => {})));
-    // A video with a source shows its first frame once it has current data (readyState 2).
+    const sleep = (wait) => new Promise((done) => setTimeout(done, wait));
+    const images = [...document.images];
     const videos = [...document.querySelectorAll("video")].filter((video) => video.currentSrc || video.src || video.querySelector("source"));
-    const unready = () => videos.filter((video) => video.readyState < 2 && !video.error);
-    for (let waited = 0; unready().length && waited < ms; waited += 100) await new Promise((done) => setTimeout(done, 100));
-    return [...document.images].filter((img) => !img.complete).length + unready().length;
-  }, timeoutMs);
-  if (pending) fail(SCOPE, `${pending} image(s) or video(s) were still loading ${timeoutMs / 1000} s after the page was scrolled through. Fix: make the page's media load locally and promptly, then run \`evidence refs\` again`);
+    const unready = () => images.filter((img) => !img.complete).length + videos.filter((video) => video.readyState < 2 && !video.error).length;
+    const work = (async () => {
+      await Promise.all(images.filter((img) => !img.complete).map((img) => new Promise((done) => {
+        img.addEventListener("load", done, { once: true });
+        img.addEventListener("error", done, { once: true });
+      })));
+      await Promise.all(images.filter((img) => img.naturalWidth > 0).map((img) => img.decode().catch(() => {})));
+      while (unready()) await sleep(100);
+      return 0;
+    })();
+    const expired = sleep(ms).then(() => Math.max(1, unready()));
+    return Promise.race([work, expired]);
+  }, remaining);
+  if (pending) fail(SCOPE, `the page's images or videos (${pending} pending) were still loading ${timeoutMs / 1000} s after it was scrolled through. Fix: make the page's media load locally and promptly, then run \`evidence refs\` again`);
 }
 
 // Browser work for one capture. The caller supplies `digest` (the page digest function) so the page
