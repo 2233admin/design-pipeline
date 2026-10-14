@@ -168,15 +168,26 @@ Research from official documentation (summarised; sources at the end):
 3. **Page review lite (B) and confirmation provenance (G).**
 4. **Absence (F) and delegation over time (E).**
 
-## Open questions for the owner
+## Owner decisions
 
-1. Is "two meetings by default" right for standard work, or should section reviews stay
-   available as an opt-in ("review each section with me")?
-2. Should the component-source ask disappear unless there is a dependency or license consequence?
-3. At final acceptance, should the agent ask once whether to keep the round's "no"s as project
-   rules, or keep them scoped silently unless the owner says so?
-4. Should page review lite ship as a local page the pipeline opens, or reuse the variant-switcher
-   style overlay on `index.html` in development only?
+The owner delegated the four open questions with one direction: keep each option available, and
+open it when the situation calls for it rather than always or never.
+
+1. **Section reviews:** two meetings stay the default. A section review opens in two cases only:
+   the owner asks for it ("review each section with me", recorded as delegation and changeable
+   per E), or the section carries a new trade-off (A). Otherwise a section is an agent self-check.
+2. **Component sources:** no source-category ask. The owner is asked only when the choice has a
+   consequence: a new dependency, a license obligation, or a notable cost (bundle size, a paid
+   service). Otherwise the agent decides within its delegation and records the source.
+3. **Rules from a round's "no"s:** scoped silently by default. At final acceptance the agent asks
+   once, listing the candidates, only when a "no" looks general: it was given about more than one
+   object, or the owner phrased it as a principle without saying "from now on". Nothing becomes a
+   rule without the owner's answer.
+4. **Page review lite:** an overlay on the real page, injected only when the pipeline serves the
+   page for review, never written into `index.html`. This follows Vercel's comment toolbar, which
+   appears on preview deployments and not in production, and keeps the reviewed page's digest equal
+   to the shipped bytes. The existing variant switcher stays inlined in the variants page (it never
+   ships), and the overlay layers on top of it there.
 
 ## Sources
 

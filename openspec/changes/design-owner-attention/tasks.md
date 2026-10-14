@@ -3,9 +3,10 @@
 - [x] 1.1 Write proposal.md, design.md and the principle-level spec delta.
 - [x] 1.2 `npm exec -- openspec validate design-owner-attention --strict` is valid and
   `npm run specs:check` passes (29 passed, 0 failed).
-- [ ] 1.3 Owner answers the open questions in design.md; record the answers here before any
-  implementing change starts.
-- [ ] 1.4 Re-scope #109 and #110 to point at this change.
+- [x] 1.3 Owner answers the open questions in design.md; record the answers here before any
+  implementing change starts. The owner delegated them: open each option when the situation calls
+  for it. Recorded under "Owner decisions" in design.md.
+- [x] 1.4 Re-scope #109 and #110 to point at this change.
 
 ## 2. Implementing changes (one OpenSpec change and PR each, in phase order)
 

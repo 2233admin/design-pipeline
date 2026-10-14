@@ -14,6 +14,11 @@ An ask the pipeline returns for the owner SHALL name what it decides that no ear
 - **WHEN** a section introduces a behaviour or cost the card and direction do not settle
 - **THEN** the owner ask SHALL state that trade-off, the recommendation and its cost, and show the difference
 
+#### Scenario: The owner asks to review each section
+
+- **WHEN** the owner's delegation asks to review each section
+- **THEN** the pipeline SHALL show each built section to the owner until the owner changes that delegation
+
 ### Requirement: Owner attention principles govern new owner-facing output
 
 New owner-facing output SHALL be placed where the owner already looks (the ask, the page under review, the PR) and SHALL NOT be a new document the owner must read to proceed. Internal records MAY stay complete for agents and audit.
