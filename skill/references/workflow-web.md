@@ -123,7 +123,7 @@ Record each reply with the command the ask returns:
 
 Replace the optional `[--anti-goal "<anti-goal>" ...]` in the `record` or `skip` command with one
 `--anti-goal "<text>"` for each anti-goal the owner named, or drop it when there are none. Each
-becomes a project rule (`anti-goal N`); a text already among the rules is not added again.
+becomes a project rule (`anti-goal N`); a text that is already a project rule is not added again.
 `--anti-goal` is refused with a correction (the correction is already a rule) and on any stage
 other than web intake.
 
