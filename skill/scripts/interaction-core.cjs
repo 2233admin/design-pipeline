@@ -617,6 +617,9 @@ function evaluateProbeFile(doc, capture, options = {}) {
     schema: RESULT_SCHEMA,
     id: normalized.id,
     url: normalized.url,
+    // The browser that rendered the capture, so a run on a system browser is told apart from one
+    // on the pinned HyperFrames download. Informational: it never changes the verdict.
+    ...(capture.browser ? { browser: capture.browser } : {}),
     status: probes.some((probe) => probe.status === "failed") ? "failed" : "passed",
     probes,
     findings: probes.flatMap((probe) => probe.findings.map((finding) => ({ probeId: probe.id, ...finding }))),

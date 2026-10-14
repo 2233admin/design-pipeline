@@ -183,7 +183,7 @@ test("user stop targets the owned child and restart does not silently redispatch
 function browserTools(t) {
   const capture = require("../skill/scripts/film-capture-core.cjs");
   try {
-    const chromePath = capture.resolveChrome();
+    const chromePath = require("../skill/scripts/browser-locate.cjs").resolveBrowser();
     capture.resolvePuppeteer(path.resolve(__dirname, ".."), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
     return { chromePath, puppeteerModule: process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [path.resolve(__dirname, "..")] }) };
   } catch (error) { if (error.code === "TOOL_MISSING") { t.skip(error.message); return null; } throw error; }
@@ -262,7 +262,7 @@ test("tool dispatch consumes product visual tasks rather than the shared seven m
 });
 
 test("tool reference without a task decomposition cannot silently start whole geometry", async t => {
-  const chrome = t.mock.method(require("../skill/scripts/film-capture-core.cjs"), "resolveChrome", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
+  const chrome = t.mock.method(require("../skill/scripts/browser-locate.cjs"), "resolveBrowser", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
   const { bench } = visualFixture(t, true), run = bench.createRun({ model: "test/actual", treatment: "tool" });
   await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
   assert.equal(run.status, "failed");
@@ -272,7 +272,7 @@ test("tool reference without a task decomposition cannot silently start whole ge
 });
 
 test("tool method binding preserves a conflicting existing run input", async t => {
-  const chrome = t.mock.method(require("../skill/scripts/film-capture-core.cjs"), "resolveChrome", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
+  const chrome = t.mock.method(require("../skill/scripts/browser-locate.cjs"), "resolveBrowser", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
   const { bench } = visualFixture(t), run = bench.createRun({ model: "test/actual", treatment: "tool" });
   const file = path.join(bench.runtimeRoot, run.id, "references/3d-spec.md");
   fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, "Existing different method input");
@@ -368,7 +368,7 @@ test("native technical progress recovers a dispatcher interruption without redoi
 });
 
 test("report-only product visual plans remain readable but cannot enter review", async t => {
-  const chrome = t.mock.method(require("../skill/scripts/film-capture-core.cjs"), "resolveChrome", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
+  const chrome = t.mock.method(require("../skill/scripts/browser-locate.cjs"), "resolveBrowser", () => { throw Object.assign(new Error("fixture Chrome unavailable"), { code: "TOOL_MISSING" }); });
   const { bench } = visualFixture(t, false, "report-only"), run = bench.createRun({ model: "test/actual", treatment: "tool" });
   await bench.start(run.id); await until(() => ["failed", "awaiting-review"].includes(run.status), run);
   assert.equal(run.status, "failed");

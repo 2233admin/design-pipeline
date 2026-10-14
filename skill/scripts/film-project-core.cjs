@@ -132,6 +132,7 @@ function trackingHud(id) {
   const hud = require(path.join(HUD_TOOL, "build.cjs"));
   const files = Object.fromEntries(HUD_TOOL_FILES.map((name) => [name, fs.readFileSync(path.join(HUD_TOOL, name))]));
   for (const [name, source] of Object.entries(HUD_VENDOR_FILES)) files[name] = fs.readFileSync(path.join(HUD_VENDOR, source));
+  files["lib/browser-locate.cjs"] = fs.readFileSync(path.join(__dirname, "browser-locate.cjs"));
   if (id) files["film.config.js"] = Buffer.from(files["film.config.js"].toString("utf8").replace('id: "tracking-hud",', `id: ${JSON.stringify(id)},`));
   const T = hud.load(HUD_TOOL);
   const board = hud.storyboard(T);

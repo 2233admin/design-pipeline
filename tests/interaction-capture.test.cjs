@@ -8,7 +8,8 @@ const os = require("node:os");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { captureInteraction } = require("../skill/scripts/interaction-capture-core.cjs");
-const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 
 // The canonical recording the evaluator consumes: the browser capture is asserted against its
 // shape so the two layers cannot drift apart on keys, types or units.
@@ -20,7 +21,7 @@ const PUPPETEER_MODULE = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE;
 // here is a bug in the capture layer and must fail the run: in this repository the skip path is
 // the one CI takes, so a broad catch would hide a broken module forever.
 function missingTool() {
-  for (const probe of [() => resolvePuppeteer(process.cwd(), PUPPETEER_MODULE), () => resolveChrome()]) {
+  for (const probe of [() => resolvePuppeteer(process.cwd(), PUPPETEER_MODULE), () => resolveBrowser()]) {
     try {
       probe();
     } catch (error) {

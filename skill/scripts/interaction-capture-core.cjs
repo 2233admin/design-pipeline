@@ -9,7 +9,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { fileURLToPath, pathToFileURL } = require("node:url");
 const { fail } = require("./contract-utils.cjs");
-const { resolveChrome, resolvePuppeteer } = require("./film-capture-core.cjs");
+const { resolvePuppeteer } = require("./film-capture-core.cjs");
+const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
 const { auditOptions, auditPage } = require("./interaction-audit.cjs");
 
 const SCOPE = "interaction capture";
@@ -22,24 +23,16 @@ const NON_NETWORK = /^(data|blob|about):/i;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
 
-// Discovery stays in film-capture-core; only the wording is re-scoped, because a page under an
-// interaction probe has no HyperFrames composition to run `npm i hyperframes` in. The code stays
-// TOOL_MISSING so callers (and the browser test) can tell a missing tool from a broken capture.
+// puppeteer-core discovery stays in film-capture-core; only the wording is re-scoped, because a
+// page under an interaction probe has no HyperFrames composition to run `npm i hyperframes` in.
+// The code stays TOOL_MISSING so callers (and the browser test) can tell a missing tool from a
+// broken capture. The browser comes from browser-locate.cjs, whose message already fits.
 function interactionPuppeteer(dir, explicit) {
   try {
     return resolvePuppeteer(dir, explicit);
   } catch (error) {
     if (error.code !== "TOOL_MISSING") throw error;
     fail(SCOPE, "puppeteer-core not found. Fix: run `npm i puppeteer-core` in the project that holds the page, or pass --puppeteer-module <path to puppeteer-core>", { code: "TOOL_MISSING" });
-  }
-}
-
-function interactionChrome(explicit) {
-  try {
-    return resolveChrome(explicit);
-  } catch (error) {
-    if (error.code !== "TOOL_MISSING") throw error;
-    fail(SCOPE, "headless Chrome not found. Fix: run `npx hyperframes browser ensure` to download one, set PUPPETEER_EXECUTABLE_PATH, or pass --chrome <path to chrome executable>", { code: "TOOL_MISSING" });
   }
 }
 
@@ -313,8 +306,9 @@ async function captureInteraction(probeFile, options = {}) {
   const puppeteer = interactionPuppeteer(path.dirname(file), options.puppeteerModule);
   // Throttling would stretch animation frames to hundreds of milliseconds and make every settle
   // window a lie, so the flags that background a headless renderer are all off.
+  const executablePath = resolveBrowser(options.chrome);
   const browser = await puppeteer.launch({
-    executablePath: interactionChrome(options.chrome),
+    executablePath,
     headless: true,
     args: ["--allow-file-access-from-files", "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--disable-backgrounding-occluded-windows"],
   });
@@ -334,7 +328,7 @@ async function captureInteraction(probeFile, options = {}) {
     // log runs from its start to its return, and the next probe starts before another request event
     // can arrive (no await in between), so the probe logs cover this one. The snapshot keeps out
     // requests made while the browser closes, which no probe saw.
-    return { schema: CAPTURE_SCHEMA, url: url.startsWith("file:") ? page.url() : url, pageOrigin, probes, requests: requests.slice() };
+    return { schema: CAPTURE_SCHEMA, browser: await browserIdentity(browser, executablePath), url: url.startsWith("file:") ? page.url() : url, pageOrigin, probes, requests: requests.slice() };
   } finally {
     await browser.close();
   }

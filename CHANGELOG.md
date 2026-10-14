@@ -14,6 +14,13 @@ All notable changes to Design Pipeline are documented here.
   Direction selections and template selection receipts record who selected, and plan approvals
   record `by`. Existing projects must pass `--by` on their next `decide`; no compatibility default
   is added.
+- Browser-backed commands find an installed browser (change `find-system-browsers`, #116). One
+  resolver (`skill/scripts/browser-locate.cjs`, replacing `resolveChrome`) takes `--chrome`, then
+  `PUPPETEER_EXECUTABLE_PATH`, then the HyperFrames headless shell, then an installed Chrome, Edge
+  or Chromium; a wrong explicit path fails instead of falling back. Art Motion
+  `render-report.json` and interaction results record the browser and version. The tracking HUD
+  probe uses the same resolver (scaffolded as `lib/browser-locate.cjs`) and no longer reads
+  `HYPERFRAMES_BROWSER_PATH`. Art Motion browser tests skip without a browser like the others.
 
 ### Fixed
 
