@@ -26,8 +26,9 @@ builds a browser bundle there. Only Strudel's built-in synth and noise sounds ar
 sample libraries are loaded, so no third-party sample licenses enter the score. The rendered
 audio is your work, not a copy of Strudel.
 
-Rendering runs in headless Chrome from the HyperFrames install, on a localhost page (AudioWorklet
-effects need a secure context) with seeded randomness. Two renders of the same pattern differ by
+Rendering runs in a headless browser (the HyperFrames headless shell, else an installed Chrome,
+Edge or Chromium) on a localhost page (AudioWorklet effects need a secure context) with seeded
+randomness. Two renders of the same pattern differ by
 at most one least-significant bit in a few samples.
 
 Scores come out at their natural level; master them with `audio master`. The gates check timing,

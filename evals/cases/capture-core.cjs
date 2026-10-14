@@ -9,7 +9,7 @@ const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { resolveChrome } = require("../../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../../skill/scripts/browser-locate.cjs");
 
 const TYPES = { ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".html": "text/html", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon", ".json": "application/json", ".woff2": "font/woff2", ".woff": "font/woff" };
 
@@ -27,7 +27,7 @@ function serveStatic(rootDir, port = 0) {
 
 async function launch() {
   const puppeteer = require(require.resolve("puppeteer-core", { paths: [__dirname] }));
-  return puppeteer.launch({ executablePath: resolveChrome(), headless: true });
+  return puppeteer.launch({ executablePath: resolveBrowser(), headless: true });
 }
 
 async function advance(client, ms) {

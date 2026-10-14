@@ -2,15 +2,15 @@
 
 // Capture a HyperFrames composition's GSAP timeline as design-pipeline.film-timeline.v1 by
 // loading the page in headless Chrome and running references/film-choreography/timeline-probe.js.
-// Reuses the browser stack a HyperFrames project already installs (puppeteer-core and the
-// chrome-headless-shell cache); it adds no dependency to this package.
+// Reuses the browser stack a HyperFrames project already installs (puppeteer-core) and the
+// browser browser-locate.cjs finds; it adds no dependency to this package.
 
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { spawnSync } = require("node:child_process");
 const { fail } = require("./contract-utils.cjs");
+const { resolveBrowser } = require("./browser-locate.cjs");
 
 const SCOPE = "film capture";
 const PROBE = path.join(__dirname, "../references/film-choreography/timeline-probe.js");
@@ -31,27 +31,6 @@ function resolvePuppeteer(compositionDir, explicit) {
     }
   }
   fail(SCOPE, "puppeteer-core not found. Fix: run `npm i hyperframes` in the composition project (it installs puppeteer-core), or pass --puppeteer-module <path to puppeteer-core>", { code: "TOOL_MISSING" });
-}
-
-function newestChrome() {
-  const root = path.join(os.homedir(), ".cache", "hyperframes", "chrome", "chrome-headless-shell");
-  if (!fs.existsSync(root)) return null;
-  const exe = process.platform === "win32" ? "chrome-headless-shell.exe" : "chrome-headless-shell";
-  const builds = fs.readdirSync(root).sort().reverse();
-  for (const build of builds) {
-    const dir = path.join(root, build);
-    for (const sub of fs.readdirSync(dir)) {
-      const candidate = path.join(dir, sub, exe);
-      if (fs.existsSync(candidate)) return candidate;
-    }
-  }
-  return null;
-}
-
-function resolveChrome(explicit) {
-  const chrome = explicit || process.env.PUPPETEER_EXECUTABLE_PATH || newestChrome();
-  if (!chrome || !fs.existsSync(chrome)) fail(SCOPE, "headless Chrome not found. Fix: run `npx hyperframes browser ensure` (or any `npx hyperframes check`) to download it, or pass --chrome <path to chrome executable>", { code: "TOOL_MISSING" });
-  return chrome;
 }
 
 // Runs npx without a shell: npm's npx-cli.js through the current node when present (Windows
@@ -106,7 +85,7 @@ async function withComposition(compositionFile, options, run) {
   if (!options.url && (!file || !fs.existsSync(file))) fail(SCOPE, `composition not found: ${file}. Fix: pass --composition <path to the HyperFrames index.html> or --url <preview url>`);
   const compositionId = options.compositionId || "main";
   const puppeteer = resolvePuppeteer(file ? path.dirname(file) : process.cwd(), options.puppeteerModule);
-  const browser = await puppeteer.launch({ executablePath: resolveChrome(options.chrome), headless: true, args: ["--allow-file-access-from-files", "--autoplay-policy=no-user-gesture-required"] });
+  const browser = await puppeteer.launch({ executablePath: resolveBrowser(options.chrome), headless: true, args: ["--allow-file-access-from-files", "--autoplay-policy=no-user-gesture-required"] });
   try {
     const page = await browser.newPage();
     const errors = [];
@@ -156,4 +135,4 @@ function canvasSize(html) {
   return { width: read("width", 1920), height: read("height", 1080) };
 }
 
-module.exports = { GSAP_VERSION, HYPERFRAMES_VERSION, canvasSize, captureLayout, captureTimeline, hyperframesCli, hyperframesPreview, resolveChrome, resolvePuppeteer, runNpx };
+module.exports = { GSAP_VERSION, HYPERFRAMES_VERSION, canvasSize, captureLayout, captureTimeline, hyperframesCli, hyperframesPreview, resolvePuppeteer, runNpx };

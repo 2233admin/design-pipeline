@@ -339,10 +339,11 @@ for (const route of ["decompose", "complete", "review"]) {
 }
 
 test("public native failures retain measured fixes and bound repeated attempts to input/output bytes", t => {
-  const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
   let chrome, puppeteerModule;
   try {
-    chrome = resolveChrome(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
+    chrome = resolveBrowser(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
     puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
   }
   catch (error) { if (error.code === "TOOL_MISSING") { t.skip(error.message); return; } throw error; }
@@ -385,10 +386,11 @@ test("public native failures retain measured fixes and bound repeated attempts t
 });
 
 test("native completion refuses a page that loaded another binding's check before writing any check", t => {
-  const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
   let chrome, puppeteerModule;
   try {
-    chrome = resolveChrome(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
+    chrome = resolveBrowser(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
     puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
   }
   catch (error) { if (error.code === "TOOL_MISSING") { t.skip(error.message); return; } throw error; }
@@ -444,10 +446,11 @@ test("incomplete capture preserves old observed attempts until the changed outpu
 });
 
 test("public native menu selection fails with typed repair evidence and completes only after real journey repair", t => {
-  const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
   let chrome, puppeteerModule;
   try {
-    chrome = resolveChrome(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
+    chrome = resolveBrowser(); resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
     puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [process.cwd()] });
   }
   catch (error) { if (error.code === "TOOL_MISSING") { t.skip(error.message); return; } throw error; }
@@ -1561,11 +1564,12 @@ test("public next projects actionable missing, unbound, legacy and external cach
 });
 
 test("real browser verification binds the page it opened rather than another workflow page", t => {
-  const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
   let chrome, puppeteerModule;
   try {
     resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
-    chrome = resolveChrome();
+    chrome = resolveBrowser();
     puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE || require.resolve("puppeteer-core", { paths: [process.cwd()] });
   } catch (error) {
     if (error.code !== "TOOL_MISSING") throw error;

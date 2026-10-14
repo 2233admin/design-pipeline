@@ -119,6 +119,7 @@
     "scripts/film-timeline-core.cjs",
     "scripts/film-eval-core.cjs",
     "scripts/film-hints.cjs",
+    "scripts/browser-locate.cjs",
     "scripts/film-capture-core.cjs",
     "scripts/capture-film-timeline.cjs",
     "scripts/film-project-core.cjs",

@@ -4,7 +4,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { resolveChrome, resolvePuppeteer } = require('../skill/scripts/film-capture-core.cjs');
+const { resolvePuppeteer } = require('../skill/scripts/film-capture-core.cjs');
+const { resolveBrowser } = require('../skill/scripts/browser-locate.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const TOOL = path.join(ROOT, 'skill/tools/art-motion');
@@ -16,12 +17,18 @@ const FONT_DIR = path.join(TOOL, 'fonts');
 const PROOF_FAMILIES = ['PuHui-Medium', 'PuHui-Bold', 'PuHui-Heavy', 'PuHui-Black', 'LXGWWenKai-500'];
 const CATALOG = JSON.parse(fs.readFileSync(path.join(FONT_DIR, 'catalog.json'), 'utf8')).faces;
 
-test('Art Motion static runtime isolates instances and replays the complete Canvas catalog', { timeout: 240_000 }, async t => {
+// Like every other browser test: no browser (TOOL_MISSING) skips, anything else fails.
+function browserTools() {
+  try { return { puppeteer: resolvePuppeteer(ROOT), chrome: resolveBrowser() }; }
+  catch (error) { if (error.code !== 'TOOL_MISSING') throw error; return { skip: `browser is unavailable: ${error.message}` }; }
+}
+const BROWSER = browserTools();
+
+test('Art Motion static runtime isolates instances and replays the complete Canvas catalog', { skip: BROWSER.skip, timeout: 240_000 }, async t => {
   const staticBundle = fs.readFileSync(RUNTIME, 'utf8');
   assert.doesNotMatch(staticBundle, /\beval\s*\(|new Function\s*\(|XMLHttpRequest/);
   fs.mkdirSync(PROOF, { recursive: true });
-  const puppeteer = resolvePuppeteer(ROOT);
-  const browser = await puppeteer.launch({ executablePath: resolveChrome(), headless: true });
+  const browser = await BROWSER.puppeteer.launch({ executablePath: BROWSER.chrome, headless: true });
   t.after(() => browser.close());
   const page = await browser.newPage();
   await page.setViewport({ width: 900, height: 700 });
