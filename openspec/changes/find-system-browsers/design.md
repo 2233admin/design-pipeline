@@ -26,7 +26,10 @@ Mature resolvers checked:
   browser auto-updates. Chrome precedes Edge because it is what the tools were built against.
 - **Locations:** the Puppeteer and Playwright tables above, plus PATH names on Linux
   (`google-chrome-stable`, `google-chrome`, `microsoft-edge-stable`, `microsoft-edge`, `chromium`,
-  `chromium-browser`) and `/Applications/Chromium.app/...` on macOS. PATH is scanned in-process.
+  `chromium-browser`), `/Applications/Chromium.app/...` on macOS and Chromium's installer location
+  (`Chromium\Application\chrome.exe` under the Windows prefixes). PATH is scanned in-process. A
+  discovered location must be an executable regular file, else discovery moves on; an explicit
+  path that is absent fails with `TOOL_MISSING`, and any other filesystem error is raised as is.
   WSL lookups are not done.
 - **No new dependency:** a static table of well-known paths is smaller than adding
   chrome-launcher and chromium-edge-launcher to a package that has no runtime dependencies.

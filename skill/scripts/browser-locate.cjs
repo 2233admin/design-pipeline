@@ -29,6 +29,8 @@ const SYSTEM = {
     path: ["microsoft-edge-stable", "microsoft-edge"],
   },
   chromium: {
+    // Chromium's Windows installer: per user under LOCALAPPDATA, per machine under Program Files.
+    win32: "Chromium\\Application\\chrome.exe",
     darwin: ["/Applications/Chromium.app/Contents/MacOS/Chromium"],
     path: ["chromium", "chromium-browser"],
   },
@@ -38,8 +40,29 @@ function missing(message) {
   throw Object.assign(new Error(`${SCOPE}: ${message}`), { code: "TOOL_MISSING" });
 }
 
-function isFile(file) {
-  try { return fs.statSync(file).isFile(); } catch { return false; }
+// A discovered location is used only when it is a regular file this process may execute; anything
+// else (absent, unreadable, a directory, no execute bit) moves discovery on to the next candidate.
+function usable(file) {
+  try {
+    if (!fs.statSync(file).isFile()) return false;
+    fs.accessSync(file, fs.constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// An explicit path never falls back: absent is TOOL_MISSING, any other filesystem error (EACCES,
+// ELOOP) is raised as it is so the message names the real problem.
+function explicitBrowser(file, label, fix) {
+  let stat;
+  try { stat = fs.statSync(file); }
+  catch (error) {
+    if (error.code === "ENOENT" || error.code === "ENOTDIR") missing(`${label} ${file} does not exist. Fix: ${fix}`);
+    throw error;
+  }
+  if (!stat.isFile()) missing(`${label} ${file} is not a file. Fix: ${fix}`);
+  return file;
 }
 
 function hyperframesShell(home = os.homedir(), platform = process.platform) {
@@ -51,7 +74,7 @@ function hyperframesShell(home = os.homedir(), platform = process.platform) {
     if (!fs.statSync(dir).isDirectory()) continue;
     for (const sub of fs.readdirSync(dir)) {
       const candidate = path.join(dir, sub, exe);
-      if (isFile(candidate)) return candidate;
+      if (usable(candidate)) return candidate;
     }
   }
   return null;
@@ -73,12 +96,10 @@ function systemCandidates(name, { platform = process.platform, env = process.env
 // Returns { executable, source } or fails TOOL_MISSING listing what was checked.
 function locateBrowser(explicit, { env = process.env, platform = process.platform, home = os.homedir() } = {}) {
   if (explicit) {
-    if (!isFile(explicit)) missing(`--chrome ${explicit} does not exist. Fix: pass the path of an installed Chrome, Edge or Chromium executable`);
-    return { executable: explicit, source: "flag" };
+    return { executable: explicitBrowser(explicit, "--chrome", "pass the path of an installed Chrome, Edge or Chromium executable"), source: "flag" };
   }
   if (env.PUPPETEER_EXECUTABLE_PATH) {
-    if (!isFile(env.PUPPETEER_EXECUTABLE_PATH)) missing(`PUPPETEER_EXECUTABLE_PATH ${env.PUPPETEER_EXECUTABLE_PATH} does not exist. Fix: point it at an installed browser executable, or unset it`);
-    return { executable: env.PUPPETEER_EXECUTABLE_PATH, source: "env" };
+    return { executable: explicitBrowser(env.PUPPETEER_EXECUTABLE_PATH, "PUPPETEER_EXECUTABLE_PATH", "point it at an installed browser executable, or unset it"), source: "env" };
   }
   const shell = hyperframesShell(home, platform);
   if (shell) return { executable: shell, source: "hyperframes" };
@@ -86,7 +107,7 @@ function locateBrowser(explicit, { env = process.env, platform = process.platfor
   for (const name of Object.keys(SYSTEM)) {
     for (const candidate of systemCandidates(name, { platform, env })) {
       checked.push(candidate);
-      if (isFile(candidate)) return { executable: candidate, source: name };
+      if (usable(candidate)) return { executable: candidate, source: name };
     }
   }
   return missing(`no Chromium browser found (checked the HyperFrames download and ${checked.length ? checked.join(", ") : "no system locations"}). Fix: install Chrome or Edge, run \`npx hyperframes browser ensure\`, or pass --chrome <path to a browser executable>`);

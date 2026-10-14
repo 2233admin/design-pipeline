@@ -13,9 +13,10 @@ function temporary(t) {
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   return dir;
 }
-function touch(file) {
+function touch(file, mode = 0o755) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, "");
+  fs.writeFileSync(file, "", { mode });
+  fs.chmodSync(file, mode);
   return file;
 }
 // The tests below pass a non-Windows platform, so the download has no .exe suffix.
@@ -59,13 +60,31 @@ test("system locations follow Puppeteer's Chrome and Playwright's Edge tables, C
     "C:\\Users\\a\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe",
   ]);
   assert.ok(systemCandidates("edge", { platform: "win32", env: {} }).includes("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"), "fallback prefixes cover a missing environment");
-  assert.deepEqual(systemCandidates("chromium", { platform: "win32", env }), []);
+  assert.deepEqual(systemCandidates("chromium", { platform: "win32", env }), [
+    "C:\\Program Files\\Chromium\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Chromium\\Application\\chrome.exe",
+    "C:\\Users\\a\\AppData\\Local\\Chromium\\Application\\chrome.exe",
+  ], "Chromium's per-user Windows install is found");
   assert.deepEqual(systemCandidates("edge", { platform: "darwin", env: { PATH: "/usr/bin" } }), ["/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"]);
   assert.deepEqual(systemCandidates("edge", { platform: "linux", env: { PATH: ["/a", "/b"].join(path.delimiter) } }), [
     "/opt/microsoft/msedge/msedge",
     path.join("/a", "microsoft-edge-stable"), path.join("/a", "microsoft-edge"),
     path.join("/b", "microsoft-edge-stable"), path.join("/b", "microsoft-edge"),
   ]);
+});
+
+test("discovery skips a candidate it cannot execute", { skip: process.platform === "win32" && "Windows has no execute bit" }, (t) => {
+  const dir = temporary(t), home = path.join(dir, "home");
+  const runnable = shell(home, "120.0.0");
+  fs.chmodSync(shell(home, "131.0.0"), 0o644);
+  assert.deepEqual(locateBrowser(undefined, { ...BARE, home }), { executable: runnable, source: "hyperframes" }, "the newer, non-executable download is passed over");
+});
+
+test("an explicit path that cannot be read raises the real error, not \"does not exist\"", { skip: process.platform === "win32" && "symlinks need privileges on Windows" }, (t) => {
+  const dir = temporary(t), loop = path.join(dir, "loop");
+  fs.symlinkSync(loop, loop);
+  assert.throws(() => locateBrowser(loop, BARE), (error) => error.code === "ELOOP");
+  assert.throws(() => locateBrowser(dir, BARE), (error) => error.code === "TOOL_MISSING" && /is not a file/.test(error.message));
 });
 
 test("no browser fails TOOL_MISSING naming the checks and the fixes", (t) => {
