@@ -264,8 +264,11 @@ owner-only; a rejection needs the owner's one-sentence feedback with at least tw
 character counts as one).
 
 The `done` action offers one optional question about a decision or handoff. If the owner answers,
-first record only the explicit task-scoped experience with `adaptation record`. Propose a
-task-shadow candidate only when the answer supports one bounded rule and a genuinely related
+record only the explicit task-scoped experience with `adaptation record`.
+First write the retrospective answer to `.design-pipeline/retrospective-experience.json` using the
+`design-pipeline.adaptation-experience.v1` schema, then run the `retrospective.record` command
+returned by the `done` action.
+Propose a task-shadow candidate only when the answer supports one bounded rule and a genuinely related
 evaluation manifest hash, primary metric, metric direction and construction fixture are available.
 Otherwise stop after recording: do not fabricate evaluation evidence or block `done`.
 

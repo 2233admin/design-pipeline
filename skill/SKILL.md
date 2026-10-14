@@ -66,8 +66,11 @@ name a repository. This is triggered by the work's needs, not a required search 
   words. A director's recommendation is separate from the owner's choice: `next` returns the
   recommendation command, then the owner records a choice whose history keeps `recommended`.
 - The `done` action may offer one optional collaboration-retrospective question. If the owner
-  answers, record an explicit task-scoped experience with `adaptation record` first. Propose a
-  `task-shadow` candidate only when the answer yields one bounded rule and a genuinely related
+  answers, record an explicit task-scoped experience with `adaptation record`.
+  First write the retrospective answer to `.design-pipeline/retrospective-experience.json`
+  using the `design-pipeline.adaptation-experience.v1` schema, then run the
+  `retrospective.record` command returned by the `done` action.
+  Propose a `task-shadow` candidate only when the answer yields one bounded rule and a genuinely related
   evaluation-manifest hash, primary metric, direction and construction fixture are available;
   otherwise stop after recording. Missing answers and evaluation evidence never block `done`.
 - Preserve source, snapshot, policy digest, receipt and downstream evidence lineage. Changed or
