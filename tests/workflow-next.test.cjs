@@ -175,17 +175,18 @@ function buildPage(root, ids, extra = "") {
 }
 
 // A project at build whose approved description lists `sections`, with components from scratch.
-function approved(t, sections = ["first-screen", "proof"], options = {}) {
+// `keep` keeps review checkpoints with the owner, for tests about the owner's asks.
+function approved(t, sections = ["first-screen", "proof"], { keep = [], ...options } = {}) {
   const root = webProject(t, options);
-  toComponents(root);
+  toComponents(root, { keep });
   prepareWebComponents(root);
   toBuild(root, sections);
   return root;
 }
 
 // A project whose sections are all built and accepted, standing at probe.
-function atProbe(t, sections = ["first-screen"]) {
-  const root = approved(t, sections);
+function atProbe(t, sections = ["first-screen"], options = {}) {
+  const root = approved(t, sections, options);
   buildPage(root, sections);
   assert.equal(acceptSections(root).stage, "probe");
   return root;
@@ -2262,7 +2263,7 @@ test("the playback must be confirmed before concepts; each correction becomes a 
 test("a no in the decision round is a project rule and leaves the components decision open", t => {
   const root = webProject(t);
   const no = "Do not reuse the old carousel component";
-  confirmPlayback(root);
+  confirmPlayback(root, PLAYBACK, ["components"]);
   decide(root, { by: "owner", stage: "reference", answer: "none" });
   writeVariants(root);
   assert.equal(nextAction(root).stage, "concepts");
@@ -2289,7 +2290,7 @@ test("a no in the decision round is a project rule and leaves the components dec
 
 test("nothing is built until the owner approves the description, through the CLI", t => {
   const root = webProject(t);
-  toComponents(root);
+  toComponents(root, { keep: ["description", "section"] });
   prepareWebComponents(root);
   buildPage(root, ["first-screen"]);
   const unwritten = nextCli(root);
@@ -2334,7 +2335,7 @@ test("nothing is built until the owner approves the description, through the CLI
 
 test("the description approval names the brief's ## Sections list exactly, and only a changed approval asks the sections again", t => {
   const root = webProject(t);
-  toComponents(root);
+  toComponents(root, { keep: ["description", "section"] });
   prepareWebComponents(root);
   const jobs = { pickup: "how pickup works", hero: "today's bakes and the reserve button", story: "the shop's story" };
   const brief = order => `# Brief\n\nA one-page site for a bakery that takes preorders.\n\n## Sections\n\n${order.map(id => `- ${id}: ${jobs[id]}`).join("\n")}\n\n## Constraints\n\n- phones: most visitors reserve on their phones\n`;
@@ -2369,7 +2370,7 @@ test("the description approval names the brief's ## Sections list exactly, and o
 
 test("an owner's BRIEF.md is the description the approval binds", t => {
   const root = webProject(t);
-  toComponents(root);
+  toComponents(root, { keep: ["description", "section"] });
   prepareWebComponents(root);
   touch(root, "BRIEF.md", "# Brief\n\nThe owner's own brief.\n\n## Sections\n\n- first-screen: today's bakes and the reserve button\n");
   const ask = nextAction(root);
@@ -2400,7 +2401,7 @@ test("quick builds the whole page with no description and no section reviews", t
 });
 
 test("sections are built and accepted one at a time in the approved order, each rejection a rule", t => {
-  const root = approved(t, ["first-screen", "proof"]);
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
   assert.equal(nextAction(root).section, "first-screen");
   buildPage(root, ["first-screen"]);
   const first = nextAction(root);
@@ -2448,7 +2449,7 @@ test("sections are built and accepted one at a time in the approved order, each 
 
 // A rule recorded mid-build needs no edit to brief.md, so the approved description stays current.
 test("a section rejection after an accepted section asks that section again and leaves the description current", t => {
-  const root = approved(t, ["hero", "proof"]);
+  const root = approved(t, ["hero", "proof"], { keep: ["section"] });
   buildPage(root, ["hero"]);
   decide(root, { by: "owner", stage: "section", choice: "hero", verdict: "accept" });
   buildPage(root, ["hero", "proof"]);
@@ -2466,7 +2467,7 @@ test("a section rejection after an accepted section asks that section again and 
 
 // Mechanism check (spec: section comments name elements in text).
 test("the section review asks the owner to name elements in text and never offers to click or pick them", t => {
-  const root = approved(t, ["first-screen"]);
+  const root = approved(t, ["first-screen"], { keep: ["section"] });
   buildPage(root, ["first-screen"]);
   const ask = nextAction(root);
   assert.equal(ask.type, "ask");
@@ -2499,7 +2500,7 @@ test("a section rejection can cite recorded runtime-review Feedback through the 
   const record = JSON.parse(bytes.toString("utf8"));
   const { $defs } = require("../skill/references/runtime-review.schema.json");
   validateShape(record, $defs.Record, "Record", $defs);
-  const root = approved(t, ["first-screen"]);
+  const root = approved(t, ["first-screen"], { keep: ["section"] });
   buildPage(root, ["first-screen"]);
   // runtime-review record names each file by the digest of its Feedback.
   const recordedPath = value => `runtime-review/feedback/${sha256(canonicalJson(value.feedback))}.json`;
@@ -2561,7 +2562,7 @@ test("a section rejection can cite recorded runtime-review Feedback through the 
 });
 
 test("a changed description goes back for approval, and earlier section verdicts stop counting", t => {
-  const root = atProbe(t, ["first-screen", "proof"]);
+  const root = atProbe(t, ["first-screen", "proof"], { keep: ["description", "section"] });
   const verdicts = readState(root).decisions.sections;
   fs.appendFileSync(path.join(root, "brief.md"), "\nPickup is on weekends only.\n");
   const stale = nextAction(root);
@@ -2985,7 +2986,7 @@ test("returned commands take their role from the delegation map, and only the ow
   assert.match(concepts.correction, / --by agent --stage concept /);
   const quick = webProject(t, { tier: "quick" });
   assert.match(refuses(quick, { stage: "intake", choice: "skip", answer: STATED, by: "agent", delegate: ["components"] }, "CONTRACT_INVALID").message, /go only on an intake recorded with --by owner/);
-  assert.equal(readState(quick).delegation.components.to, "owner");
+  assert.equal(readState(quick).delegation.components.to, "agent", "the refused record leaves the default the agent's");
 });
 
 test("a quick page the owner rejects goes back to build until it is repaired", t => {
@@ -3009,4 +3010,155 @@ test("a refused decide on a project without a delegation map leaves its state un
   assert.equal(readState(root).delegation, undefined, "the map is filled only when a decision is recorded");
   confirmPlayback(root);
   assert.equal(readState(root).delegation.review.locked, true);
+});
+
+// --- owner attention, phase 1 (owner-attention-asks) -------------------------------------------------
+
+// Drives a web project from intake to done the way an agent following next would, with the owner's
+// replies where next asks and the agent's own records where it self-checks; returns the owner asks.
+function walkToDone(root, sections = ["first-screen", "proof"]) {
+  const asks = [];
+  for (let step = 0; step < 60; step++) {
+    const action = nextAction(root);
+    if (action.type === "done") return asks;
+    if (action.type === "ask") asks.push(action.stage);
+    if (action.stage === "intake") {
+      if (action.type === "ask") confirmPlayback(root);
+      else statedSkip(root);
+    } else if (action.stage === "reference") decide(root, { by: "agent", stage: "reference", answer: "none" });
+    else if (action.stage === "concepts") {
+      if (action.type === "ask") pickVariant(root);
+      else writeVariants(root);
+    } else if (action.stage === "components") {
+      assert.equal(action.selfCheck, true, "component sources are the agent's self-check");
+      decide(root, { by: "agent", stage: "components", choice: "scratch", answer: "Write from scratch: the project has no components yet" });
+      touch(root, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
+    } else if (action.stage === "description") {
+      if (action.selfCheck) decide(root, { by: "agent", stage: "description", verdict: "accept", choice: sections.join(",") });
+      else writeDescription(root, sections);
+    } else if (action.stage === "build") {
+      if (action.selfCheck) decide(root, { by: "agent", stage: "section", choice: action.section, verdict: "accept" });
+      else if (readState(root).tier === "quick") buildPage(root, []);
+      else buildPage(root, sections.slice(0, sections.indexOf(action.section) + 1));
+    } else if (action.stage === "probe") passProbe(root);
+    else if (action.stage === "review") decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "That is the page I wanted" });
+    else if (action.stage === "deliver") decide(root, { by: "agent", stage: "deliver", answer: "https://example.test/bakery" });
+    else assert.fail(`unexpected step ${action.stage} ${action.type}`);
+  }
+  assert.fail("the walk did not reach done");
+}
+
+test("a new web map gives component sources, the description and section reviews to the agent, and stored entries stay", t => {
+  const map = readState(webProject(t)).delegation;
+  for (const checkpoint of ["components", "description", "section"]) assert.deepEqual([map[checkpoint].to, map[checkpoint].set], ["agent", "default"], checkpoint);
+  for (const checkpoint of ["intake", "concept", "review"]) assert.equal(map[checkpoint].to, "owner", checkpoint);
+  assert.equal(readState(webProject(t, { tier: "quick" })).delegation.components.to, "agent");
+  const film = tmp();
+  t.after(() => fs.rmSync(film, { recursive: true, force: true }));
+  initState(film, { deliverable: "film", tier: "standard" });
+  assert.equal(readState(film).delegation.components, undefined, "only web has these checkpoints");
+  // A project recorded before the new defaults keeps the entries it stored.
+  const root = webProject(t);
+  const state = readState(root);
+  state.delegation.section = { to: "owner", set: "default" };
+  touch(root, ".design-pipeline/state.json", JSON.stringify(state, null, 2));
+  confirmPlayback(root);
+  assert.equal(readState(root).delegation.section.to, "owner");
+});
+
+test("a two-section standard page asks the owner three times, and quick work only for acceptance", t => {
+  assert.deepEqual(walkToDone(webProject(t)), ["intake", "concepts", "review"]);
+  assert.deepEqual(walkToDone(webProject(t, { tier: "quick" })), ["review"]);
+});
+
+test("a delegated section is a self-check with an agent accept and an owner correction", t => {
+  const root = approved(t, ["first-screen"]);
+  buildPage(root, ["first-screen"]);
+  const check = nextAction(root);
+  assert.equal(check.type, "run");
+  assert.equal(check.selfCheck, true);
+  assert.equal(check.checkpoint, "section");
+  assert.equal(check.section, "first-screen");
+  assert.match(check.command, / --by agent --stage section --choice first-screen --verdict accept$/);
+  assert.doesNotMatch(check.command, /accept\|reject|\[/, "the command records the acceptance as it is");
+  assert.match(check.correction, / --by owner --stage section --choice first-screen --verdict reject --answer /);
+  assert.equal(check.question, undefined, "nothing is addressed to the owner");
+  assert.match(check.check, /yourself/);
+  assert.match(check.instruction, /trade-off/);
+  assert.match(check.instruction, /--tradeoff/);
+  assert.equal(typeof check.language, "string");
+  assert.match(check.line, /build \(\d+\/\d+\) - Open index\.html/);
+  decide(root, { by: "agent", stage: "section", choice: "first-screen", verdict: "accept" });
+  assert.equal(nextAction(root).stage, "probe");
+  assert.deepEqual(readState(root).decisions.sections.map(item => [item.section, item.verdict, item.by]), [["first-screen", "accept", "agent"]]);
+});
+
+test("a kept section is asked, an art director keeps the routed ask, and a delegated pick keeps its ask", t => {
+  const kept = approved(t, ["first-screen"], { keep: ["section"] });
+  buildPage(kept, ["first-screen"]);
+  const ask = nextAction(kept);
+  assert.equal(ask.type, "ask");
+  assert.equal(ask.section, "first-screen");
+  assert.equal(typeof ask.language, "string");
+  assert.equal(ask.selfCheck, undefined, "the self-check text never reaches an owner ask");
+  const directed = tmp();
+  t.after(() => fs.rmSync(directed, { recursive: true, force: true }));
+  initState(directed, { deliverable: "web", tier: "standard", director: "art-model" });
+  toComponents(directed);
+  prepareWebComponents(directed);
+  toBuild(directed, ["first-screen"]);
+  buildPage(directed, ["first-screen"]);
+  const routed = nextAction(directed);
+  assert.equal(routed.type, "ask");
+  assert.match(routed.director, /art-model/);
+  const picked = webProject(t);
+  decide(picked, { by: "owner", stage: "intake", verdict: "accept", answer: PLAYBACK, delegate: ["concept"] });
+  decide(picked, { by: "agent", stage: "reference", answer: "none" });
+  writeVariants(picked);
+  const concepts = nextAction(picked);
+  assert.equal(concepts.type, "ask", "a delegated concept pick keeps its ask");
+  assert.match(concepts.record, / --by agent --stage concept /);
+  decide(picked, { by: "agent", stage: "concept", choice: "B" });
+  assert.equal(nextAction(picked).stage, "components");
+});
+
+test("a section with build findings is not a self-check and cannot be accepted", t => {
+  const root = approved(t, ["first-screen"]);
+  buildPage(root, ["first-screen"], '<div data-variant="A"></div>\n');
+  const run = nextAction(root);
+  assert.equal(run.type, "run");
+  assert.equal(run.section, "first-screen");
+  assert.equal(run.selfCheck, undefined);
+  refuses(root, { by: "agent", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
+});
+
+test("an agent never records a no, and cannot accept what the owner rejected until it changes", t => {
+  const root = approved(t, ["first-screen"]);
+  buildPage(root, ["first-screen"]);
+  assert.match(refuses(root, { by: "agent", stage: "section", choice: "first-screen", verdict: "reject", answer: "The headline wraps on phones" }, "CONTRACT_INVALID").message, /cannot record a "no"/);
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The headline wraps on phones" });
+  const again = nextAction(root);
+  assert.equal(again.selfCheck, true);
+  assert.match(again.instruction, /The headline wraps on phones/);
+  assert.match(refuses(root, { by: "agent", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY").message, /unchanged/);
+  buildPage(root, ["first-screen"], "<!-- headline fits on phones -->\n");
+  decide(root, { by: "agent", stage: "section", choice: "first-screen", verdict: "accept" });
+  assert.equal(nextAction(root).stage, "probe");
+
+  const described = webProject(t);
+  toComponents(described);
+  prepareWebComponents(described);
+  writeDescription(described, ["first-screen"]);
+  assert.equal(nextAction(described).selfCheck, true);
+  refuses(described, { by: "agent", stage: "description", verdict: "reject", answer: "Too long for one page" }, "CONTRACT_INVALID");
+  decide(described, { by: "owner", stage: "description", verdict: "reject", answer: "Say who the regulars are" });
+  refuses(described, { by: "agent", stage: "description", verdict: "accept", choice: "first-screen" }, "WORKFLOW_NOT_READY");
+  fs.appendFileSync(path.join(described, "brief.md"), "\nFor regulars who reserve on their phones.\n");
+  decide(described, { by: "agent", stage: "description", verdict: "accept", choice: "first-screen" });
+  assert.equal(nextAction(described).stage, "build");
+});
+
+test("the intake offers section reviews only where there are sections", t => {
+  assert.match(nextAction(webProject(t)).delegation.instruction, /--keep section/);
+  assert.doesNotMatch(nextAction(webProject(t, { deliverable: "film" })).delegation?.instruction ?? "", /--keep section/);
 });

@@ -232,7 +232,7 @@ test("the prototype switcher never ships: build stays unfinished while index.htm
   shipped(root, "standard page with the inlined switcher");
   refuses(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
   buildPage(root, ["first-screen"]);
-  assert.equal(nextAction(root).type, "ask");
+  assert.equal(nextAction(root).selfCheck, true, "a clean page moves on to the section's review (the agent's self-check by default)");
   assert.equal(flow.acceptSections(root).stage, "probe");
   buildPage(root, ["first-screen"], INLINE_SWITCHER);
   shipped(root, "an accepted page that gains the switcher reopens build");
@@ -277,7 +277,7 @@ test("build refuses the switcher in any form it can ship in, and a comment namin
   buildPage(standard, ["first-screen"], "<!-- data-variant-switcher stays in concepts.html -->\n");
   const review = nextAction(standard);
   assert.equal(review.stage, "build");
-  assert.equal(review.type, "ask", "a clean page moves on to section review");
+  assert.equal(review.selfCheck, true, "a clean page moves on to section review");
   assert.equal(review.section, "first-screen");
 });
 

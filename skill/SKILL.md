@@ -58,7 +58,10 @@ name a repository. This is triggered by the work's needs, not a required search 
   review points and record accept/reject only from their reply.
 - Every `decide` names its recorder: `--by owner` only for the owner's own words in this
   conversation, `--by agent` only where the delegation `next` shows hands you that checkpoint.
-  Final acceptance is always the owner's, at every tier. Start a deliverable with
+  A `selfCheck` run is yours to check and record; ask the owner during it only about a trade-off
+  they have not settled, and record their answer with `--by owner --tradeoff`. Never record a
+  "no" yourself. Speak to the owner in the action's `language`. Final acceptance is always the
+  owner's, at every tier. Start a deliverable with
   `next ... --assisted-by <your tool and model>`; reaching done renders
   `.design-pipeline/diligence.md`, the record of who decided what (`designer-pipeline diligence`).
 - Preserve source, snapshot, policy digest, receipt and downstream evidence lineage. Changed or

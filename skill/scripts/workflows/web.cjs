@@ -223,7 +223,9 @@ const COMPONENTS = {
       questions,
       recommended: RECOMMENDED_SOURCES,
       instruction: `Ask this as one numbered round: one ❓ Qn per question with its body and options, each option by its label, then ➡️ your recommended answer, and wait for the reply. Settle facts yourself first: find the project's existing components and their paths, and the assets and their licenses, and name what you found instead of asking for it. Add a question only for a concrete decision you can neither look up nor settle from the conversation, such as whether supplied material is licensed for this use. A question whose answer depends on one still open waits for a further numbered round, asked the same way. Record each "no" the owner gives in a round (a recommendation turned down, something ruled out) with the correction command; it becomes a project rule. After the last round, record the components decision once, with the choice ids of the options the owner picked.${sectioned ? " The sections the owner settles go into the description." : ""}`,
+      selfCheck: `Settle the component sources yourself: find the project's existing components and their paths, and the assets and their licenses; take the project's components first, then this skill's component index, then let discovery find maintained open-source libraries (discovery is not permission to copy).${sectioned ? " Settle the sections, in build order, from the chosen variant's section arc (the reference's sections in replicate mode); they go into the description." : ""} Record the decision with the command, the choice ids and one line on what you chose and why.`,
       record: `${decideCommand(root, "components")} --choice <${COMPONENT_SOURCES.join("|")}, comma-separated> --answer "<the user's reply>"`,
+      accept: `${decideCommand(root, "components")} --choice <${COMPONENT_SOURCES.join("|")}, comma-separated> --answer "<what you chose and why, in one line>"`,
       correction: `${decideCommand(root, "components")} --verdict reject --answer "<what the owner turned down or ruled out, in their words>"`,
       why: `Record the owner's component source choice before ${sectioned ? "the description and the build" : "building"}; scratch cannot be combined with another choice, github requires a https://github.com/<owner>/<repo> URL in --answer, and discover lets the agent find maintained open-source component libraries and icon sets on GitHub beyond the index itself and record each with its pinned license. Discovery is not permission to copy.`,
     };
@@ -325,7 +327,9 @@ const DESCRIPTION = {
       show: [path.join(path.resolve(root), file)],
       instruction: `${file} is ${descriptionContent(state)} Show it to the owner as it is; record each correction (it becomes a project rule), revise and ask again.`,
       recommended: "Approve only when it says what you want; nothing is built before you do.",
+      selfCheck: `The command's --choice is the ids of the ## Sections list in ${file}, in its order. Check ${file} yourself against the confirmed playback (or the stated skip), the chosen variant and the component decision: it is ${descriptionContent(state)} When it matches, record the approval with the command.`,
       record: `${decideCommand(root, "description")} --verdict accept --choice <the ids of the ## Sections list in ${file}, in its order, comma-separated> [--answer "<the owner's words>"]`,
+      accept: `${decideCommand(root, "description")} --verdict accept --choice <section-ids-in-order,comma-separated>`,
       correction: `${decideCommand(root, "description")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
       why: "The stage that blocks building (not a state.gates gate): the approval binds this description, the confirmed playback, the chosen variant and the component decision, and fixes the sections the page is built in. Each correction becomes a project rule.",
     };
@@ -342,6 +346,8 @@ function recordDescription(state, root, options, next) {
     // An approval is recorded once next has asked for it, and may be recorded again later to correct
     // it; section verdicts bind the approval, so only a changed one asks the sections again.
     if (before(state, action.stage, "description") || !current) fail("workflow", `Cannot record the description approval while ${before(state, action.stage, "description") ? `${action.stage} is unfinished` : `${file} is unwritten`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    const latest = history(state, "descriptions").at(-1);
+    if (options.by === "agent" && latest?.verdict === "reject" && latest.sha256 === current) fail("workflow", `the owner rejected this description and ${file} is unchanged since. Fix: revise it for their correction, then record the approval`, { code: "WORKFLOW_NOT_READY" });
     const sections = String(options.choice ?? "").split(",").map(value => value.trim()).filter(Boolean);
     if (!sections.length) fail("workflow", `--choice is required: the ids of the ## Sections list in ${file}, in its order, comma-separated`);
     const listed = briefSections(fileText(root, file) ?? "");
@@ -486,6 +492,9 @@ function sectionReview(root, { approval, accepted, current, latest }) {
     instruction: `Open index.html at the ${current} section (data-section="${current}") in a real browser and let the owner look and interact. Comments are text: ask them to name each element they comment on by its text, label or place, and do not offer to let them click or pick elements on the page. If the project already carries runtime-review inputs (references/runtime-review.md), Feedback the owner leaves on its runtime-review page can be recorded with runtime-review record and cited with --evidence. Any change they ask for is a reject: record it, revise the section and ask again; accept only a section they are happy with as it is.`,
     recommended: "Accept only when nothing in this section needs to change; earlier sections stay accepted unless a new rule changes them.",
     record: `${decideCommand(root, "section")} --choice ${current} --verdict accept|reject [--answer "<the owner's comments>"] [--evidence <runtime-review/feedback/<hash>.json>]`,
+    accept: `${decideCommand(root, "section")} --choice ${current} --verdict accept`,
+    correction: `${decideCommand(root, "section")} --choice ${current} --verdict reject --answer "<what the owner wants changed, in their words>" [--evidence <runtime-review/feedback/<hash>.json>]`,
+    selfCheck: `Open index.html at the ${current} section (data-section="${current}") in a real browser and check it yourself against the confirmed playback (or the stated skip), the chosen direction, its section brief and the rules; fix what does not match, then record the acceptance with the command.`,
     why: "The page is built one section at a time, first screen first; the next section starts only after the owner reviews this one. Each comment becomes a project rule. A section verdict is not Visual Acceptance of the page; the final review is.",
   };
 }
@@ -552,10 +561,17 @@ function recordSection(state, root, options, next) {
   const action = next();
   // Sections are accepted in build order, each when next asks about it; a built section can be
   // rejected again later, which reopens it.
-  if (options.verdict === "accept" && (action.stage !== "build" || action.type !== "ask" || action.section !== id)) {
+  // The step for this section is the owner's ask or, when the agent reviews sections, its self-check;
+  // the build run also names the section while it shows findings, so section alone is not enough.
+  if (options.verdict === "accept" && (action.stage !== "build" || !(action.type === "ask" || action.selfCheck) || action.section !== id)) {
     fail("workflow", `Cannot accept section ${id} while next ${action.section ? `is at section ${action.section}` : `is at ${action.stage}`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
   }
   if (options.verdict === "reject" && before(state, action.stage, "build")) fail("workflow", `Cannot record a section review while ${action.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+  // The agent cannot undo the owner's "no" by accepting the page they rejected unchanged.
+  const latestHere = history(state, "sections").filter(item => item.section === id).at(-1);
+  if (options.verdict === "accept" && options.by === "agent" && latestHere?.verdict === "reject" && latestHere.pageSha256 === pageDigest(root)) {
+    fail("workflow", `the owner rejected section ${id} and index.html is unchanged since. Fix: revise the section for their comments, then record the acceptance`, { code: "WORKFLOW_NOT_READY" });
+  }
   const evidence = reviewFeedback(root, options.evidence);
   const answer = nonEmpty(options.answer) ? options.answer.trim() : null;
   if (options.verdict === "reject" && !answer && !evidence.length) fail("workflow", "a section rejection needs --answer with the owner's comments, or --evidence with their recorded runtime-review Feedback; each becomes a project rule");

@@ -23,18 +23,26 @@ const LABELS = { intake: "Intake", "creative-intent": "Creative intent", referen
 const HISTORIES = ["playbacks", "variants", "rounds", "descriptions", "sections", "samples", "drafts"];
 const STATEMENT = path.join(".design-pipeline", "diligence.md");
 
+// Web review checkpoints the agent self-checks by default (OpenSpec change owner-attention-asks): the
+// owner meets the playback, the direction and the result, and keeps any of these with --keep.
+const SELF_CHECKED = new Set(["components", "description", "section"]);
+
 function defaultEntry(state, checkpoint) {
   const agent = ["reference", "deliver"].includes(checkpoint)
     || (checkpoint === "intake" && state.deliverable === "web" && state.tier === "quick")
+    || (SELF_CHECKED.has(checkpoint) && state.deliverable === "web")
     || (DIRECTED.has(checkpoint) && Boolean(state.director));
   return { to: agent && !LOCKED.has(checkpoint) ? "agent" : "owner", ...(LOCKED.has(checkpoint) ? { locked: true } : {}), set: "default" };
 }
+
+// The checkpoint a stage finishes: a sectioned web build is reviewed section by section.
+const checkpointOf = (state, stageId) => stageId === "build" && state.deliverable === "web" && state.tier !== "quick" ? "section" : CHECKPOINT_OF_STAGE[stageId];
 
 // The checkpoints a project's stages reach, each with its default entry.
 function defaultDelegation(state, stageIds) {
   const map = {};
   for (const id of stageIds) {
-    const checkpoint = id === "build" && state.deliverable === "web" && state.tier !== "quick" ? "section" : CHECKPOINT_OF_STAGE[id];
+    const checkpoint = checkpointOf(state, id);
     if (checkpoint && !map[checkpoint]) map[checkpoint] = defaultEntry(state, checkpoint);
   }
   if (map.intake && state.tier !== "quick") map["creative-intent"] = defaultEntry(state, "creative-intent");
@@ -185,4 +193,4 @@ function statementStatus(root, state, deliveryCurrent) {
   return { path: STATEMENT.split(path.sep).join("/"), current };
 }
 
-module.exports = { LOCKED, ROLES, STATEMENT, applyDelegation, defaultDelegation, ensureDelegation, historySizes, recordRole, renderStatement, stampRecord, stateHash, statementStatus, writeStatement };
+module.exports = { DIRECTED, LOCKED, ROLES, SELF_CHECKED, STATEMENT, applyDelegation, checkpointOf, defaultDelegation, ensureDelegation, historySizes, recordRole, renderStatement, stampRecord, stateHash, statementStatus, writeStatement };

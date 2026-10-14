@@ -10,12 +10,24 @@ section. Stage order:
   intake, reference, components, description, build, probe, review, deliver.
 
 At `standard` and `full` the agent talks before it builds: a conversation that ends in a playback
-the owner confirms, three switchable first-screen variants (not in replicate), a numbered round of
-concrete decisions with recommended answers (further rounds when an answer depends on another),
-and a one-page description the owner approves. Only then is the page built, one section at a
-time, each reviewed by the owner, before the final review. `quick` states what was decided for
-the owner instead of asking, and still ends with the owner's final review: a passed probe shows
-the page works, never that it looks right.
+the owner confirms, three switchable first-screen variants (not in replicate), the concrete
+decisions (component sources and the sections), and a one-page description. Only then is the page
+built, one section at a time, each reviewed, before the owner's final review. `quick` states what
+was decided for the owner instead of asking, and still ends with the owner's final review: a
+passed probe shows the page works, never that it looks right.
+
+By default the owner meets the work three times: the playback, the variant pick and the final
+review. Component sources, the description and each section review are the agent's
+**self-checks**: `next` returns them as a run with `selfCheck: true`, a `check` to make against
+what the owner already settled, a `command` that records the result `--by agent`, and a
+`correction` (`--by owner`) for a "no" from the owner. Ask the owner during a self-check only
+about a trade-off they have not settled: something that changes cost, content or behaviour, and
+for component sources only a new dependency, a license obligation or a notable cost. Ask it in one
+message: what is new, your recommendation and its cost, and how they can see the difference.
+Record their answer with `--by owner --tradeoff "<what you asked>"`: the command with `--by owner`
+in place of `--by agent` when they take your recommendation, the correction when they say no. The
+owner can keep any self-check as their own ask with `--keep` on the playback record; the playback
+offers "review each section with me" as `--keep section`.
 
 Each project keeps a delegation map in `state.delegation`: per checkpoint (`decide --stage`
 names plus `creative-intent`), whether the owner or the agent decides it. The intake ask carries
@@ -23,7 +35,9 @@ it as `delegation`; tell the owner in the playback what you will decide, and rec
 on the intake record with repeatable `--delegate <checkpoint>` and `--keep <checkpoint>`. Every
 `decide` names its recorder with `--by owner|agent`; returned commands already carry it.
 `--by agent` is refused where the owner decides, and always for final acceptance and creative
-intent.
+intent. An agent never records a "no": `--by agent --verdict reject` is refused except for an art
+director's pick under `--director`. An agent cannot accept a section or description the owner
+rejected until it changes (`WORKFLOW_NOT_READY`).
 
 Every "no" the owner gives on the way becomes a project rule in `state.rules`, the same record a
 rejected draft makes, and so does each anti-goal of the confirmed playback or stated skip. The
@@ -175,6 +189,11 @@ horizontal images per section; do not confuse those images with implemented or t
 
 ## components
 
+By default this is your self-check: settle the questions below yourself, from the project's files
+and the chosen variant, and record the decision with the returned `command` (`--by agent`). Ask the
+owner only for a new dependency, a license obligation or a notable cost (see the overview). When
+the owner kept it (`--keep components`), it is the owner's ask described below.
+
 A numbered round of concrete decisions, each with your recommended answer. At `standard` and
 `full` it follows the variants (the reference in replicate mode) and comes before the
 [description](#description); at `quick` it comes immediately before build. The ask's `questions`
@@ -271,8 +290,11 @@ digits and hyphens, each listed once. A section named only in prose does not cou
 - visit: opening hours, map and the reserve button again
 ```
 
-Show it and ask: "Here is the one-page description of what I will build (brief.md). Approve it, or
-tell me what is wrong?" Record:
+By default the approval is your self-check: check `brief.md` against the confirmed playback (or
+the stated skip), the chosen variant and the component decision, then record the returned
+`command` (`--by agent`). When the owner kept it (`--keep description`), show it and ask: "Here is
+the one-page description of what I will build (brief.md). Approve it, or tell me what is wrong?"
+Record:
 
 - an approval: `decide --stage description --verdict accept --choice hero,menu,visit`
   (optionally `--answer "<the owner's words>"`). `--choice` must equal the `## Sections` list
@@ -312,7 +334,11 @@ screen first, and the owner reviews each section before the next one starts:
    description (in replicate mode, from the reference and its invariants), inside an element
    marked `data-section="<id>"`, with the component manifest below.
 2. **Review it.** Once the page and its manifest are valid and the section's marker is in
-   `index.html`, `next` asks about that section (the action carries `section: <id>`): "The <id>
+   `index.html`, the section is reviewed (the action carries `section: <id>`). By default this is
+   your self-check: open the section in a real browser, check it against the confirmed playback,
+   the chosen direction, its section brief and the rules, fix what does not match, then record
+   `decide --stage section --choice <id> --verdict accept --by agent`. When the owner kept section
+   reviews (`--keep section`), `next` asks them instead: "The <id>
    section is built (k of n). Look at it in the page: accept it as it is, or tell me what to
    change, naming each element by its text, label or where it sits?". Open `index.html` at the
    section in a real browser and let the owner look and interact. Comments are text: ask them to
@@ -329,7 +355,8 @@ screen first, and the owner reviews each section before the next one starts:
    accepted them unless a project rule requires a change, and add every component it uses to
    `component-manifest.json`. Then review it as in step 2.
 
-A section can be accepted only while `next` asks about it (`WORKFLOW_NOT_READY` otherwise); any
+A section can be accepted only while `next` asks about it or returns its self-check
+(`WORKFLOW_NOT_READY` otherwise, including while the build run shows findings); any
 built section of the approved description can be rejected again later, which reopens it. A page
 that drops a section's marker returns to building that section; a `data-section` marker inside an
 HTML comment does not count. Verdicts bind the current description approval: recording the

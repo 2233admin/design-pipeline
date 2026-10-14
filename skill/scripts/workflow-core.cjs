@@ -157,7 +157,7 @@ function actionLine(action) {
 function nextAction(root) {
   const state = readState(root);
   if (!state) {
-    return { type: "ask", stage: "start", question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
+    return { type: "ask", stage: "start", language: LANGUAGE, question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
   }
   stateJobPlan(root, state);
   const stages = stagesFor(state);
@@ -166,7 +166,7 @@ function nextAction(root) {
   for (const stage of stages) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
-    const action = withRoles(stage.action(state, root), state);
+    const action = ownerFacing(withRoles(stage.action(state, root), state), state, stage.id);
     // Visual picks go to the art director: the concept pick, a sample, a built web section. Final
     // acceptance never does; it stays with the owner.
     const directed = state.director && action.type === "ask" && ["concepts", "sample", "build"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
@@ -197,6 +197,42 @@ function withRoles(action, state) {
   return out;
 }
 
+const LANGUAGE = "Speak to the owner in the project's language: the brief's, else the one the owner writes in. Translate the wording here; keep commands, ids and file names unchanged.";
+const TRADEOFF = "Ask the owner only when this carries a trade-off they have not settled: something that changes cost, content or behaviour";
+const SOURCE_TRADEOFF = "; for component sources, only a new dependency, a license obligation or a notable cost";
+const ASK_SHAPE = ". Then ask in one message: what is new, your recommendation and its cost, and how they can see the difference. Record their answer with --by owner and --tradeoff \"<what you asked>\": the command with --by owner in place of --by agent when they take your recommendation, the correction when they say no. Their \"no\" becomes a rule; never record one yourself.";
+
+// Who the step faces (OpenSpec change owner-attention-asks). A web review checkpoint the delegation map
+// gives to the agent, and not to an art director, becomes a self-check run: the agent checks the work
+// against what the owner already settled and records it, asking the owner only about a new trade-off.
+// Every other ask stays an ask; each ask and self-check carries the language line.
+function ownerFacing(action, state, stageId) {
+  const { selfCheck: check, accept, ...rest } = action;
+  if (rest.type !== "ask") return rest;
+  const checkpoint = roles.checkpointOf(state, stageId);
+  const entry = state.delegation?.[checkpoint];
+  const delegated = state.deliverable === "web" && roles.SELF_CHECKED.has(checkpoint) && entry?.to === "agent"
+    && !(state.director && roles.DIRECTED.has(checkpoint));
+  if (!delegated) return { ...rest, language: LANGUAGE };
+  if (!check) throw new Error(`${stageId} has no self-check text for its delegated ${checkpoint} checkpoint`);
+  const { question: _question, record, correction, skip: _skip, first, instruction: _ask, ...kept } = rest;
+  const command = withRoles({ type: "run", command: accept || record }, state).command;
+  // withRoles stamped the correction for the agent; a "no" is always the owner's words.
+  const owner = correction ? correction.replace(/ --by agent /, " --by owner ") : undefined;
+  const before = first ? `${first.replace(/^Before asking, /, "").replace(/,? then ask:$/, ".")} ` : "";
+  return {
+    ...kept,
+    type: "run",
+    selfCheck: true,
+    checkpoint,
+    check,
+    instruction: `${before}${check} ${TRADEOFF}${checkpoint === "components" ? SOURCE_TRADEOFF : ""}${ASK_SHAPE}`,
+    command,
+    ...(owner ? { correction: owner } : {}),
+    language: LANGUAGE,
+  };
+}
+
 // What the intake playback tells the owner: which checkpoints the agent decides and which are theirs.
 function delegationHint(state) {
   const entries = Object.entries(state.delegation || {});
@@ -204,7 +240,7 @@ function delegationHint(state) {
     agent: entries.filter(([, entry]) => entry.to === "agent").map(([checkpoint]) => checkpoint),
     owner: entries.filter(([, entry]) => entry.to === "owner").map(([checkpoint]) => checkpoint),
     locked: entries.filter(([, entry]) => entry.locked).map(([checkpoint]) => checkpoint),
-    instruction: "In the playback, tell the owner in one line what you will decide and what stays theirs. Record their changes on the intake record with --delegate <checkpoint> (hand it to you) or --keep <checkpoint> (keep it theirs), each repeatable. Final acceptance and creative intent always stay with the owner.",
+    instruction: `In the playback, tell the owner in one line what you will decide and what stays theirs.${state.delegation?.section ? " Offer once that they can review each section with you (--keep section)." : ""} Record their changes on the intake record with --delegate <checkpoint> (hand it to you) or --keep <checkpoint> (keep it theirs), each repeatable. Final acceptance and creative intent always stay with the owner.`,
   };
 }
 
@@ -220,6 +256,10 @@ function decide(root, options = {}) {
   const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
   const role = roles.recordRole(state, stage, options.by);
+  // A "no" is the owner's words; only an art director's pick may reject on the agent's side.
+  if (role.by === "agent" && options.verdict === "reject" && !(state.director && roles.DIRECTED.has(stage))) {
+    fail("workflow", "an agent cannot record a \"no\": it is the owner's words and becomes a rule. Fix: when your check finds a fault, fix the work and record the decision; record a \"no\" only with the owner's words and --by owner");
+  }
   // Only the owner changes who decides what; an agent cannot hand itself checkpoints.
   if ((delegate.length || keep.length) && role.by !== "owner") fail("workflow", "--delegate and --keep record the owner's choice, so they go only on an intake recorded with --by owner. Fix: ask the owner, then record their reply with --by owner");
   if (delegate.length || keep.length) roles.applyDelegation(state, delegate, keep);

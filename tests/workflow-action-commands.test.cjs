@@ -84,7 +84,7 @@ function walk(deliverable, tier, mode) {
     build: action => {
       if (deliverable !== "web") return touch(dir, "out.mp4", "draft");
       // Standard and full web build one approved section at a time; each built section is reviewed.
-      if (action.type === "ask") return decide(dir, { by: "owner", stage: "section", choice: action.section, verdict: "accept" });
+      if (action.type === "ask" || action.selfCheck) return decide(dir, { by: action.selfCheck ? "agent" : "owner", stage: "section", choice: action.section, verdict: "accept" });
       if (!exists("index.html")) touch(dir, "index.html", "draft");
       if (action.section && !fs.readFileSync(path.join(dir, "index.html"), "utf8").includes(`data-section="${action.section}"`)) fs.appendFileSync(path.join(dir, "index.html"), `\n<section data-section="${action.section}"></section>\n`);
       touch(dir, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
@@ -129,8 +129,10 @@ test("every command and record template on the film, edit, web and ui walks is t
     assert.equal(intake.stage, "intake");
     assert.equal(intake.type, "ask");
     for (const field of ["record", "correction", "skip"]) assert.ok(runnable(intake[field]), `web intake ${field}`);
-    assert.ok(walked.some(action => action.stage === "description" && action.type === "ask" && action.record.includes("--choice")), "the description ask records the section ids");
-    assert.ok(walked.some(action => action.stage === "build" && action.type === "ask" && action.section === SECTIONS[0] && action.record.includes("--stage section")), "each built section is asked about");
+    // By default the description and each built section are the agent's self-checks, whose runnable
+    // command records them and whose correction records the owner's "no".
+    assert.ok(walked.some(action => action.stage === "description" && action.selfCheck && action.command.includes("--choice") && runnable(action.correction)), "the description self-check records the section ids");
+    assert.ok(walked.some(action => action.stage === "build" && action.selfCheck && action.section === SECTIONS[0] && action.command.includes("--stage section")), "each built section is checked");
   }
   assert.ok(webWalks[1].some(action => action.stage === "concepts" && action.type === "ask" && runnable(action.correction)), "the variants ask offers a correction");
   assert.ok(all.length > 60, "the walks cover many actions");
@@ -139,7 +141,7 @@ test("every command and record template on the film, edit, web and ui walks is t
   assert.ok(commands.some((action) => action.command.includes(" film-edit analyze ")), "the edit analyze command is returned");
   assert.ok(commands.some((action) => action.command.includes(" verify interaction ")), "the web probe command is returned");
   assert.ok(commands.some((action) => action.command.includes(" decide ") && action.command.includes("--stage deliver")), "the delivery command is returned");
-  assert.ok(all.filter((action) => action.type === "ask" && action.record).length >= 8, "ask actions keep a runnable record template");
+  assert.ok(all.filter((action) => action.type === "ask" && action.record).length >= 6, "ask actions keep a runnable record template");
   // Pure instructions (no command) exist, and carry only the prose field.
   const pure = all.filter((action) => action.type === "run" && action.command === undefined);
   assert.ok(pure.length >= 6);

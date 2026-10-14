@@ -246,7 +246,9 @@ probe at its actual `index.html` and rerun.
 `decide --stage deliver` refuses unfinished prerequisites. Film/edit delivery names an existing
 contained file, and standard delivery binds that file and the current check snapshot. A changed
 delivery returns to its delivery action; changed checked inputs return to checks and review first.
-Quick workflows may record delivery after their applicable stages finish. Every deliverable and
+Quick workflows may record delivery after their applicable stages finish. Web component sources,
+the description and section reviews default to the agent: `next` returns them as `selfCheck` runs
+unless the owner kept them with `--keep` at intake. Every deliverable and
 tier ends with the owner's final review (`decide --stage review --by owner`): UI records its work
 evidence with `decide --stage deliver --by agent`, then the owner accepts or rejects the delivered
 interface, and a rejection returns to the work stage. Reaching done renders
