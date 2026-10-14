@@ -71,8 +71,17 @@ function hyperframesShell(home = os.homedir(), platform = process.platform) {
   const exe = platform === "win32" ? "chrome-headless-shell.exe" : "chrome-headless-shell";
   for (const build of fs.readdirSync(root).sort().reverse()) {
     const dir = path.join(root, build);
-    if (!fs.statSync(dir).isDirectory()) continue;
-    for (const sub of fs.readdirSync(dir)) {
+    // A broken or half-removed build entry is skipped so discovery reaches the system browsers;
+    // any other filesystem error (EACCES, ELOOP) is raised as it is.
+    let subs;
+    try {
+      if (!fs.statSync(dir).isDirectory()) continue;
+      subs = fs.readdirSync(dir);
+    } catch (error) {
+      if (error.code === "ENOENT" || error.code === "ENOTDIR") continue;
+      throw error;
+    }
+    for (const sub of subs) {
       const candidate = path.join(dir, sub, exe);
       if (usable(candidate)) return candidate;
     }

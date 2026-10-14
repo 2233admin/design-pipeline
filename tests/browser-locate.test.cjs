@@ -80,6 +80,13 @@ test("discovery skips a candidate it cannot execute", { skip: process.platform =
   assert.deepEqual(locateBrowser(undefined, { ...BARE, home }), { executable: runnable, source: "hyperframes" }, "the newer, non-executable download is passed over");
 });
 
+test("a broken HyperFrames build entry is skipped, not fatal", { skip: process.platform === "win32" && "symlinks need privileges on Windows" }, (t) => {
+  const dir = temporary(t), home = path.join(dir, "home");
+  const runnable = shell(home, "120.0.0");
+  fs.symlinkSync(path.join(dir, "gone"), path.join(home, ".cache", "hyperframes", "chrome", "chrome-headless-shell", "131.0.0"));
+  assert.deepEqual(locateBrowser(undefined, { ...BARE, home }), { executable: runnable, source: "hyperframes" });
+});
+
 test("an explicit path that cannot be read raises the real error, not \"does not exist\"", { skip: process.platform === "win32" && "symlinks need privileges on Windows" }, (t) => {
   const dir = temporary(t), loop = path.join(dir, "loop");
   fs.symlinkSync(loop, loop);
