@@ -113,7 +113,9 @@ test("the tracking HUD scaffold carries the shared resolver byte for byte", (t) 
 
 // Launches every system browser actually installed here (Chrome and Edge on the Windows CI runner)
 // through puppeteer-core, the way the tools do. Root cannot use Chrome's sandbox, so only a root
-// run (a container) passes --no-sandbox.
+// run (a container) passes --no-sandbox. A system browser's first start can take well over
+// puppeteer's 30 s default while QA runs other browser suites in parallel (Edge on the Ubuntu
+// runner, #124), so each launch gets 120 s; a browser that never starts still fails.
 const INSTALLED = ["chrome", "edge", "chromium"].flatMap((name) => {
   const executable = systemCandidates(name).find((file) => { try { return fs.statSync(file).isFile(); } catch { return false; } });
   return executable ? [{ name, executable }] : [];
@@ -124,7 +126,8 @@ try { puppeteer = require(require.resolve("puppeteer-core", { paths: [path.resol
 test("each installed system browser launches headless through puppeteer-core", { skip: !puppeteer ? "puppeteer-core not installed" : !INSTALLED.length && "no system browser installed" }, async (t) => {
   const args = typeof process.getuid === "function" && process.getuid() === 0 ? ["--no-sandbox"] : [];
   for (const { name, executable } of INSTALLED) {
-    const browser = await puppeteer.launch({ executablePath: executable, headless: true, args });
+    t.diagnostic(`launching ${name} (${executable})`);
+    const browser = await puppeteer.launch({ executablePath: executable, headless: true, args, timeout: 120_000 });
     try {
       const page = await browser.newPage();
       await page.setContent("<p id=ok>ok</p>");
