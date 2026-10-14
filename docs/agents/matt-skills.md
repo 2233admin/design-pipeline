@@ -55,4 +55,4 @@ v1.3 把 `implement-spec`、`pr`、`retro` 纳入正式工程技能，统一 `GL
 
 工程回归通过后，继续检查真实浏览器行为或播放实际影片与声音。Component Conformance 和 Visual Acceptance 分别记录；回归测试或代码审查不替代用户验收。任务多也不代表都能并行，同一份状态、注册表或发布文件的修改应明确归属和集成顺序。
 
-最近 25 个本地用户会话的统计、比较矩阵和针对本次使用的建议见 [版本评估](../../openspec/changes/review-matt-skills-v1-3/review.md)。原始会话和逐文件 diff 仅保留在忽略目录。
+最近 25 个本地用户会话的统计、比较矩阵和针对本次使用的建议见 [版本评估](../../openspec/changes/archive/2026-10-15-review-matt-skills-v1-3/review.md)。原始会话和逐文件 diff 仅保留在忽略目录。

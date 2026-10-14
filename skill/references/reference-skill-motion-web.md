@@ -25,7 +25,7 @@ is a fork and is not the source of record.
 - The license is CC BY-NC 4.0 (non-commercial). This repository is MIT, so nothing from the
   upstream repository enters it: no code, prose, prompts, data or assets. Only ideas, restated in
   our own words and implemented independently, may be adopted.
-- Running the skill for comparison (see `openspec/changes/redesign-user-workflow/design.md`,
+- Running the skill for comparison (see `openspec/changes/archive/2026-10-15-redesign-user-workflow/design.md`,
   Q18-Q19) is research use. Its outputs stay in private benchmark directories and are never
   committed here.
 - Each adopted idea names this record in its OpenSpec change so the lineage stays auditable.

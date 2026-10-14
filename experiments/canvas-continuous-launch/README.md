@@ -22,4 +22,4 @@ in `../ascii-canvas-launch/vendor/README.md`.
 
 Uses HTML composition metadata and a deterministic timeline; HyperFrames CLI lint/check/render
 were not run. No video/audio export is included. Technical and creative review evidence lives in
-`openspec/changes/default-product-film-storytelling/qa.md` at the repository root.
+`openspec/changes/archive/2026-10-15-default-product-film-storytelling/qa.md` at the repository root.

@@ -106,11 +106,11 @@ Owns `skill/references/stages.md` (`pipeline-reference.md` on the original branc
   film intake and concepts unchanged; a `replicate` build has no treatment.
 - [x] Fix the automated review findings on PR #87 (`design.md` section 8).
 - [x] Rerun `node scripts/qa.cjs` on the review-fix commit and record it in `qa.md`.
-- [ ] Review and merge the pull request (owner).
+- [x] Review and merge the pull request (owner): PR #87, merged.
 
 ## Pending (not done by any task above)
 
-- [ ] Build a page with the treatment and judge it; a named reviewer records the result under Visual
+- [x] Moved to #134: build a page with the treatment and judge it; a named reviewer records the result under Visual
   Acceptance in `qa.md`.
-- [ ] Recalibrate W1 to W7 against the first real page.
-- [ ] Later changes of the approved spec: section kit, golden case, multi-viewport capture.
+- [x] Moved to #134: recalibrate W1 to W7 against the first real page.
+- [x] Moved to #135: later changes of the approved spec: section kit, golden case, multi-viewport capture.

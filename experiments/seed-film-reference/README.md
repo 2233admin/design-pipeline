@@ -21,6 +21,6 @@ The preview is a promotional concept using existing project footage, not a recor
 - The SEAM page informed treatment and editing. Its video and music were not copied into this film.
 - `compose-score.py` is the reproducible source of `assets/field-notes-score.wav`: an original 32-second, 96 BPM electronic instrumental. Regenerating it requires Python and NumPy; playback does not.
 - GSAP 3.13.0 is vendored with its existing provenance in `vendor/README.md`. One finite timeline drives Canvas 2D graphics, clip windows and soundtrack synchronization.
-- `DESIGN.md` and `MOTION.md` record the foundations. The edit, sources, sound decisions and QA are recorded under `openspec/changes/create-reference-led-canvas-film/`.
+- `DESIGN.md` and `MOTION.md` record the foundations. The edit, sources, sound decisions and QA are recorded under `openspec/changes/archive/2026-10-15-create-reference-led-canvas-film/`.
 
 The user reviewed this version, reported no major remaining problems, and requested a PR. Sound loading, timing, levels and controls were verified; the current tooling did not provide auditory input for a separate subjective listening review by the agent.

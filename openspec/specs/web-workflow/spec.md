@@ -1,12 +1,22 @@
-# Web workflow delta
+# web-workflow Specification
 
-## MODIFIED Requirements
+## Purpose
+The web workflow: how `next` and `decide` take a web page from the owner's first words to a delivered page, through the playback, variants, decisions, description and section-by-section build, with the creative layer (treatment, section briefs, review rules) kept apart from technical gates.
+
+## Requirements
 
 ### Requirement: Web intake asks about a page
 
-`next` for a standard or full web project SHALL open intake with one ask whose `question` is the skip line, "If you'd rather skip the questions and have me start, say so.", followed by one open, concrete question about the page: "What site have you seen recently that felt the way this page should, and what about it?", or in replicate mode "What must stay exactly as it is in the page you want reproduced?". The opening SHALL contain exactly one `?` and carry no `first`, question list, options or recommended answer, and its `instruction` SHALL carry the conversation rules. In every web ask, `first`, when present, SHALL be a step the agent takes before it asks. No web intake text SHALL ask for a duration or use the words film, promo, video, footage or beat.
+`next` for a standard or full web project SHALL open intake with one ask whose `question` is the skip line and one open, concrete question about the page (in replicate mode, about what must stay as it is). The opening SHALL contain exactly one `?`, carry no `first`, question list, options or recommended answer, and carry the conversation rules in its `instruction`. No web intake text SHALL ask for a duration or use the words film, promo, video, footage or beat.
 
-#### Scenario: A web intake opens with one open question
+#### Scenario: The opening uses its fixed wording
+
+- **WHEN** `next` opens a standard web intake
+- **THEN** the skip line SHALL read "If you'd rather skip these questions, say so: I'll tell you what I assumed, then show you options."
+- **AND** the question SHALL read "What site have you seen recently that felt the way this page should, and what about it?", or in replicate mode "What must stay exactly as it is in the page you want reproduced?"
+
+
+#### Scenario: A web intake has no film or duration wording
 
 - **WHEN** `next` runs for a standard web project with no intake recorded
 - **THEN** the action SHALL be an `ask` with no `first`, whose `question` is the skip line followed by one open question about the page
@@ -17,7 +27,7 @@
 #### Scenario: The intake instruction carries the conversation rules
 
 - **WHEN** `next` returns the standard web intake ask
-- **THEN** its `instruction` SHALL tell the agent to look up facts instead of asking for them, ask one open question per message, and play the page back in about 200-300 words that mark what the owner said apart from what the agent guessed
+- **THEN** its `instruction` SHALL tell the agent to look up facts instead of asking for them, ask one open question per message, and play the page back as a short card, one line each (three intent lines, the open uncertainties and the delegation line), that marks what the owner said apart from what the agent guessed
 - **AND** it SHALL tell the agent to send the opening question as its own message and to add each anti-goal to the record or skip command as its own `--anti-goal "<text>"`
 - **AND** the `question` SHALL contain exactly one `?`.
 
@@ -36,7 +46,7 @@
 
 The web `concepts` run action SHALL ask for `concepts.md` with three cards A, B and C whose first-screen structures differ, each with its central idea, a one-line skeleton and its section arc, and for `concepts.html` showing those first screens one at a time by `?variant=` with the packaged variant switcher. It SHALL say that the chosen card is extended with a `## Treatment`.
 
-#### Scenario: A web concepts step asks for the variants page and a treatment
+#### Scenario: A web concepts step asks for a treatment
 
 - **WHEN** `next` runs for a standard web project with a confirmed playback, a reference decision and no `concepts.html`
 - **THEN** the `run` action SHALL name the section arc, `concepts.html`, `?variant=`, the variant switcher and `## Treatment`
@@ -51,11 +61,25 @@ Web stage ids SHALL be: quick `intake, components, build, probe`; quick replicat
 - **WHEN** `next` runs at intake for film, edit and ui projects and at concepts for a film project (edit and ui have no concepts stage)
 - **THEN** each action's question, questions (including the `duration` question), recommended, record and reason text SHALL deep-equal the corresponding shared `INTAKE` or `CONCEPTS` action.
 
-#### Scenario: Web stage order per tier and mode
+#### Scenario: Web keeps its stage order
 
 - **WHEN** the web stages are listed for the quick, standard and full tiers, in brief, freeform and replicate modes
 - **THEN** the ids and their order SHALL equal the lists in this requirement
 - **AND** `workflow-web.md` SHALL have a `## <stage id>` heading for each.
+
+### Requirement: The treatment lives under the chosen concept card
+
+The web guide SHALL define the treatment as a `## Treatment` section under the chosen card of
+`concepts.md`, written before `index.html`, with the fields premise, section arc (job, dominant
+element, ground, density and escalation role per section), style-bible seed with a must-not-copy
+line from `reference.md` when it exists, motion language (driver, response, primitive,
+reduced-motion substitute), and escalation and negative space.
+
+#### Scenario: The guide defines the treatment
+
+- **WHEN** `references/web-direction.md` is read
+- **THEN** its `## Treatment` section SHALL list the five fields
+- **AND** the `concepts` and `build` sections of `workflow-web.md` SHALL point to it.
 
 ### Requirement: The treatment feeds existing foundations
 
@@ -76,21 +100,107 @@ The first web `build` action at the standard and full tiers outside replicate mo
 - **THEN** the `build` action SHALL tell the agent to extend the chosen card with `## Treatment` first and to build only the first screen
 - **AND** it SHALL say that the treatment's section arc lists exactly the sections of the approved description, in that order, and that a different arc goes back to the owner as a description correction.
 
-#### Scenario: The quick tier and replicate mode name no treatment
+#### Scenario: The quick tier and replicate mode are unchanged
 
 - **WHEN** `next` runs for a quick web project, or a standard web project in `replicate` mode, with no `index.html`
 - **THEN** the `build` action SHALL NOT mention a treatment.
 
+### Requirement: Section briefs use existing fields
+
+The web guide SHALL define a section brief whose keys map onto existing artifacts: dominant element
+and supporting layers onto `design.md` Component inventory rows; ground and density onto its Layout
+grid and Color tokens; states onto `component-state-matrix.json` entries; driver and response onto
+`motion.md` Interaction Inventory rows; proof of response onto an `interaction.json` probe; the first
+viewport's signature onto the direction-preview signature; the landing line onto the Layout grid.
+
+#### Scenario: A brief maps onto existing artifacts
+
+- **WHEN** the section-brief table of `references/web-direction.md` is read
+- **THEN** every brief key SHALL name one of those artifacts and an existing field of it.
+
+### Requirement: Section briefs need no new schema
+
+Section briefs SHALL use only fields that the mapped artifacts already define, including the seven
+state names `component-state-matrix.json` requires. The guide SHALL state that a section with no
+driver has no Interaction Inventory row and no probe, and that the page keeps at least one probe.
+
+#### Scenario: A brief needs no new schema
+
+- **WHEN** a section brief's probe is written with the documented mapping
+- **THEN** it SHALL validate against `design-pipeline.interaction-probe.v1` unchanged
+- **AND** the interaction probe, component-state-matrix and direction-preview schema identifiers SHALL equal those before this change.
+
+### Requirement: Review rules W1 to W7 are Visual Acceptance guidance
+
+The web references SHALL document W1 one dominant element per section and a first-viewport signal;
+W2 adjacent sections differ in density; W3 one section is deliberately empty; W4 each section
+changes ground or structure; W5 scroll pacing builds, then lands; W6 motion answers a named driver,
+with no opacity-only entrance; W7 type and colour stay inside the style seed. Each rule SHALL name
+the existing evidence a reviewer reads and SHALL be reported only under Visual Acceptance in `qa.md`.
+
+#### Scenario: Acceptance stays pending
+
+- **WHEN** this change's `qa.md` is written
+- **THEN** its Visual Acceptance section SHALL read pending with no reviewer recorded
+- **AND** Component Conformance results SHALL be listed separately.
+
+### Requirement: Review rules change no gate
+
+Where a rule overlaps an existing gate finding (`no-focal-point`, `flat-hierarchy`, `dead-band`,
+`clutter`, `weak-separation`, `palette-sprawl`, `type-scale-sprawl`, `opacity-only`,
+`dead-interaction`, `linear-response`, the `template-pattern-density` rubric item), that finding
+SHALL keep its meaning and severity as a Conformance finding. The rules SHALL NOT add a finding
+code, change a gate status, or record or imply a Visual Acceptance result.
+
+#### Scenario: Gate output is unchanged
+
+- **WHEN** the composition and interaction gates run on the same inputs before and after this change
+- **THEN** their finding codes, statuses and hints SHALL be equal
+- **AND** `component-first` `visualAcceptance` statuses SHALL be unchanged.
+
+### Requirement: The web review links the rules
+
+The `review` section of `workflow-web.md`, which the web review action links through its `guide`
+anchor, SHALL point the reviewer to W1 to W7 for builds that used a treatment; the review action
+itself SHALL stay the shared checked-page review. Agents SHALL NOT record Visual Acceptance.
+
+#### Scenario: The web review links to the rules
+
+- **WHEN** `next` runs for a standard web project whose `index.html` exists and whose `interaction` gate passed
+- **THEN** the action's `stage` SHALL be `review` and its `guide` SHALL be `references/workflow-web.md#review`
+- **AND** that section of `workflow-web.md` SHALL name `web-direction.md` and W1 to W7.
+
+### Requirement: The guidance is packaged and reachable
+
+The new reference `references/web-direction.md` SHALL be listed in the package `required` resources.
+`workflow-web.md` SHALL keep one `##` section per web stage id so that every `next` `guide` anchor
+resolves, and its `intake` and `concepts` sections SHALL describe the web prompts of this change. The
+skill front door SHALL name the new reference in one line.
+
+#### Scenario: Every web guide anchor resolves
+
+- **WHEN** the web stages for each tier are listed
+- **THEN** `workflow-web.md` SHALL have a `## <stage id>` heading for each.
+
+#### Scenario: The package carries the reference
+
+- **WHEN** the package is built
+- **THEN** it SHALL contain `references/web-direction.md`.
+
 ### Requirement: No new gate, receipt schema or analyzer
 
-The treatment, the section briefs and the review rules W1 to W7 SHALL NOT add a gate, a finding code, a receipt, an analysis schema, or a field on the interaction probe, component-state-matrix, direction-preview or motion contracts. This change's records SHALL live under `decisions` in `.design-pipeline/state.json` (`playbacks`, `variants`, `rounds`, `descriptions`, `sections`) and in `state.rules`. It SHALL NOT add a `state.gates` entry, a receipt, a schema identifier or a feedback record format; a section verdict cites runtime-review Feedback by path and hash, with the Feedback's object id and category. Its only new finding codes are `variants-incomplete`, `variant-switcher-missing` and `variant-switcher-shipped`.
+The web conversation, the treatment, the section briefs and review rules W1 to W7 SHALL NOT add a gate, a `state.gates` entry, a receipt, a schema identifier, a feedback record format, or a field on the interaction probe, component-state-matrix, direction-preview or motion contracts. Their records SHALL live under `decisions` in `.design-pipeline/state.json` and in `state.rules`. The only new finding codes SHALL be `variants-incomplete`, `variant-switcher-missing` and `variant-switcher-shipped`.
+
+#### Scenario: A section verdict cites Feedback by reference
+
+- **WHEN** a section rejection cites runtime-review Feedback
+- **THEN** the verdict SHALL record the Feedback's path, hash, object id and category under `decisions.sections`, and no new record format
+
 
 #### Scenario: Contracts are unchanged
 
 - **WHEN** the schema identifiers and finding-code sets of the interaction, composition, component-state-matrix and direction-preview contracts, and the workflow-state schema identifier, are compared with the previous release
 - **THEN** they SHALL be equal.
-
-## ADDED Requirements
 
 ### Requirement: Web intake ends in a confirmed playback or a stated skip
 

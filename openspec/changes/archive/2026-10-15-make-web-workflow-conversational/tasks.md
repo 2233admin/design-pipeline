@@ -6,10 +6,10 @@
 - [x] 1.2 `npm exec -- openspec validate make-web-workflow-conversational --strict` is valid and
   `npm run specs:check` passes (75 passed, 0 failed). The validator's INFO lines come from the
   archive order in 1.3.
-- [ ] 1.3 Archive after redesign-user-workflow, consolidate-component-index-and-web-sources,
+- [x] 1.3 Archive after redesign-user-workflow, consolidate-component-index-and-web-sources,
   let-agents-discover-open-source-resources and add-web-treatment-and-section-briefs (in that
   order); this delta MODIFIES requirements they add.
-- [ ] 1.4 After the archive chain lands, RENAME the `two human decisions` header to one that names
+- [x] 1.4 Moved to `owner-attention-asks` (RENAMED delta, to `Owner decision points per deliverable`) when this change was archived. Original: after the archive chain lands, RENAME the `two human decisions` header to one that names
   the web checkpoints.
 
 ## 2. Workflow behaviour
@@ -159,7 +159,7 @@ $ designer-pipeline decide --stage intake --choice skip --answer "I decided: a c
 
 ## 6. Planned follow-up
 
-- [ ] 6.1 Follow-up change (owner-approved, not in this PR): extend runtime-review with clickable
+- [x] 6.1 Superseded by `design-owner-attention` phase 3 (page review lite: an overlay injected when the pipeline serves the page). The original note: follow-up change (owner-approved, not in this PR): extend runtime-review with clickable
   element regions on a captured section screenshot; the click produces the Feedback that section
   verdicts cite with --evidence.
 

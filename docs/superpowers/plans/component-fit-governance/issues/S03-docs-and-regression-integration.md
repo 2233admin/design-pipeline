@@ -27,7 +27,7 @@ Make the component-fit workflow discoverable and package-complete, then prove th
 - `skill/references/package-resources.json`
 - `scripts/test-manifest.json`
 - `docs/cli-and-reference-providers.md`
-- `openspec/changes/add-design-skill-layer/design.md`
+- `openspec/changes/archive/2026-10-15-add-design-skill-layer/design.md`
 - `tests/component-fit-matrix.test.cjs`
 - `tests/design-skill-layer.test.cjs`
 

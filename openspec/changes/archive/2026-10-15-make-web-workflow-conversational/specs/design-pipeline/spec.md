@@ -19,7 +19,7 @@ The pipeline SHALL provide a `next` command that reads project state and returns
 ### Requirement: two human decisions
 Standard film and edit work SHALL ask the user to pick a concept and to accept or reject a draft that has passed all error gates. Standard and full web work SHALL instead ask the owner to confirm the playback, pick the variant and accept the final page; the decision rounds, the description approval and each section review SHALL be agent self-checks unless the owner keeps them. Every rejection SHALL be recorded with its reason as a rule; in web work, so SHALL each decision-round correction and each anti-goal (a project rule) stated with the confirmed playback or a skip.
 
-#### Scenario: Standard film work reaches decision points
+#### Scenario: Standard work reaches decision points
 - **WHEN** standard film or edit work reaches concept choice and draft review
 - **THEN** the pipeline SHALL ask the user to pick a concept and to accept or reject a draft that passed all error gates
 - **AND** it SHALL record a rejection with its reason
@@ -33,7 +33,7 @@ Standard film and edit work SHALL ask the user to pick a concept and to accept o
 
 Every web tier and mode SHALL settle components before build (the agent's self-check by default, the owner's ask when kept): at quick immediately before it, at standard and full in the decision rounds before the description. Decide SHALL require explicit comma-separated choices from project, github, index, discover and scratch, keep the answer and store canonical deduplicated componentSources. Scratch SHALL be exclusive; github SHALL need an HTTPS GitHub owner/repo URL in the answer. The step SHALL offer the sources in plain words, with the canonical ids in its record command, and SHALL recommend the project's components, then the index, then discovery.
 
-#### Scenario: Next reaches the component decision
+#### Scenario: Next reaches a build boundary
 
 - **WHEN** earlier prerequisites are complete and no components decision is recorded
 - **THEN** next SHALL return the components step before the description and the build

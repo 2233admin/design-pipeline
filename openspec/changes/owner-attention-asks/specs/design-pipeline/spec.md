@@ -148,3 +148,8 @@ When rules with object scope exist, active or retired, the final review ask SHAL
 
 - **WHEN** `--promote "section footer 9"` names no object rule, or the review is recorded `--by agent`
 - **THEN** decide SHALL exit 1 and record nothing
+
+## RENAMED Requirements
+
+- FROM: `### Requirement: two human decisions`
+- TO: `### Requirement: Owner decision points per deliverable`

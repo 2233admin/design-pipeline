@@ -55,6 +55,6 @@ node experiments/seed-film-reference/server.cjs
   本轮未修改 SeedController 生产应用，也未调用生成服务或部署站点。
 
 完整的分镜、素材来源、声音说明和验收记录见
-[create-reference-led-canvas-film](../openspec/changes/create-reference-led-canvas-film/QA.md)。
+[create-reference-led-canvas-film](../openspec/changes/archive/2026-10-15-create-reference-led-canvas-film/QA.md)。
 流程反馈对应 `dpf-82cc30599cdd3917`、`dpf-0cdf4eba4b3113f6`；动画校验修复对应
 `dpf-af9b2320b764f7ae`。这些 ID 引用本地脱敏观察记录，不代表已创建远程 Issue。
