@@ -5,7 +5,8 @@ const test = require("node:test");
 const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
-const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 const VisualCraft = require("../skill/tools/visual-craft/canvas.js");
 
 function fakeContext() {
@@ -146,7 +147,7 @@ test("the canonical Art Motion license keeps the MIT notice that canvas.js names
 });
 
 let browserTools;
-try { browserTools = { puppeteer: resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE), chrome: resolveChrome() }; }
+try { browserTools = { puppeteer: resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE), chrome: resolveBrowser() }; }
 catch (error) { if (error.code !== "TOOL_MISSING") throw error; browserTools = { skip: error.message }; }
 
 test("browser study redraws cold/reordered at two sizes and preserves real Canvas state", { skip: browserTools.skip }, async () => {

@@ -5,7 +5,11 @@
 resources. The index repository and every pack that includes a LICENSE are bundled. The
 `generative-illustration-skills` pack is excluded until a LICENSE appears in a reviewed revision.
 
-The overlay defines how the pipeline uses those files. Upstream bytes stay unmodified.
+The package carries the manifest; `designer-pipeline sources fetch --bundle iart-motion-skills`
+downloads the packs (68 MB) once at their pinned revisions into the user cache
+(`DESIGN_PIPELINE_CACHE` overrides the location), verifying every file. Until then `iart search` and
+`iart route` fail with that command and `doctor` lists it. Search results return the actual file
+paths. The overlay defines how the pipeline uses those files. Upstream bytes stay unmodified.
 Upstream examples can reference older runtime URLs (the bundled GSAP web-animation example uses
 3.13.0); treat those versions as snapshot context only. For implementation, use the target project's
 package manifest and lockfile, then consult documentation matching that installed version.
@@ -21,8 +25,9 @@ package manifest and lockfile, then consult documentation matching that installe
    ```
 
 2. `iart search` is the narrower lookup after a route, not a substitute for selection.
-3. Read the selected bundled `SKILL.md`, then only the linked references, scripts, and examples
-   needed for the current task.
+3. Read the selected skill file (`skillPath`), then only the linked references, scripts, and examples
+   needed for the current task. An upstream link to `SKILL.md` means the `UPSTREAM-SKILL.md` in
+   that folder.
 4. Project `DESIGN.md`, `MOTION.md`, OpenSpec artifacts, existing runtimes, accessibility rules, and
    budgets outrank an upstream recipe.
 5. For HTML video, reels, captions, overlays, or explainers, keep `references/hyperframes.md` as

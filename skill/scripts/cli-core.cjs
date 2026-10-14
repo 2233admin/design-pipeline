@@ -122,6 +122,7 @@ const {
   verifyComponentReceipt,
 } = require("./component-capability-core.cjs");
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
+const { BUNDLES: FETCHABLE_BUNDLES } = require("./vendor-cache.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
 const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
 const { buildJobPlan, routeJob } = require("./job-route-core.cjs");
@@ -151,7 +152,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--agent-browser", "--agent-browser-state", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan", "--bundle",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames", "--by", "--assisted-by",
@@ -259,6 +260,9 @@ function optionalArtifact(parsed, root, flag, builtInName) {
 function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = process.versions.node) {
   const manifestFile = path.join(skillRoot, "references", "package-resources.json");
   const missing = [];
+  // Bundles downloaded on demand (vendor-cache.cjs) that are not in the cache yet: optional, each
+  // with the command that fetches it. They never block the core package.
+  const downloads = [];
   let manifestError = null;
   let required = [];
   try {
@@ -290,7 +294,8 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
   let mengto = null;
   try {
     mengto = verifyMengToSnapshot(path.join(skillRoot, "vendor", "mengto-skills", "manifest.json"));
-    if (mengto.status !== "ready") missing.push("vendor/mengto-skills/upstream/**");
+    if (mengto.status === "missing") downloads.push({ bundle: "mengto-skills", fetch: mengto.fetch });
+    else if (mengto.status !== "ready") missing.push("vendor/mengto-skills/upstream/**");
   } catch (error) {
     mengto = { status: "blocked", issues: [error.message] };
     missing.push("vendor/mengto-skills/manifest.json");
@@ -330,7 +335,8 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
   let iart = null;
   try {
     iart = verifyIartSnapshot(path.join(skillRoot, "vendor", "iart-motion-skills", "manifest.json"));
-    if (iart.status !== "ready") missing.push("vendor/iart-motion-skills/upstream/**");
+    if (iart.status === "missing") downloads.push({ bundle: "iart-motion-skills", fetch: iart.fetch });
+    else if (iart.status !== "ready") missing.push("vendor/iart-motion-skills/upstream/**");
   } catch (error) {
     iart = { status: "blocked", issues: [error.message] };
     missing.push("vendor/iart-motion-skills/manifest.json");
@@ -352,6 +358,7 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     nodeSupported,
     packageRoot: skillRoot,
     missing,
+    downloads,
     ...(manifestError ? { manifestError } : {}),
     mengto,
     shadcnio,
@@ -443,6 +450,7 @@ function publicHelp() {
     "  holosticker inspect|verify",
     "  designmd sync|search|inspect|verify",
     "  iart search|route|verify",
+    "  sources fetch --bundle mengto-skills|iart-motion-skills | --all   (download a bundle at its pinned revision into the user cache; DESIGN_PIPELINE_CACHE overrides the location)",
     "  toolchain request --plan <job-plan.json> --artifact <stack-input.json> [--write --output <toolchain-request.json>]",
     "  toolchain resolve|probe|receipt-check",
     "  execution route|prepare|finalize",
@@ -1269,6 +1277,17 @@ function designMdCommand(parsed, root, action) {
     };
   }
   fail("cli", `unknown designmd action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+// MengTo and iart are downloaded on demand into the user cache (vendor-cache.cjs); the download is
+// async, so it runs in its own kernel.
+function sourcesFetchCommand(parsed) {
+  const bundle = option(parsed, "--bundle");
+  const all = option(parsed, "--all") === true;
+  if (Boolean(bundle) === all) fail("cli", `sources fetch needs exactly one of --bundle <${FETCHABLE_BUNDLES.join("|")}> or --all`, { code: "OPTION_REQUIRED" });
+  if (bundle && !FETCHABLE_BUNDLES.includes(bundle)) fail("cli", `--bundle must be one of ${FETCHABLE_BUNDLES.join(", ")}`, { code: "OPTION_VALUE_INVALID" });
+  const { value, exitCode } = runKernel("fetch-sources.cjs", all ? FETCHABLE_BUNDLES : [bundle], process.cwd(), { timeout: 30 * 60 * 1000 });
+  return { result: value, exitCode };
 }
 
 function iartCommand(parsed, action) {
@@ -2121,6 +2140,7 @@ const COMMANDS = {
   holosticker: { run: ({ parsed, action }) => holostickerCommand(parsed, action) },
   designmd: { run: ({ parsed, root, action }) => designMdCommand(parsed, root, action) },
   iart: { run: ({ parsed, action }) => iartCommand(parsed, action) },
+  sources: { actions: { fetch: { run: ({ parsed }) => sourcesFetchCommand(parsed) } } },
   toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
   execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },

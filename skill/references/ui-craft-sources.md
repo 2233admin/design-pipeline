@@ -14,10 +14,10 @@ Source keys used below. `LA` is a lintapple rule id, adapted in `scripts/interac
 
 | Key | Vendored path |
 | --- | --- |
-| `EM` | `vendor/emil-design-eng/upstream/skills/emil-design-eng/SKILL.md` |
+| `EM` | `vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md` |
 | `MI/` | `vendor/make-interfaces-feel-better/upstream/skills/make-interfaces-feel-better/*.md` |
-| `FA` | `vendor/fixing-accessibility/upstream/skills/fixing-accessibility/SKILL.md` |
-| `12P` | `vendor/12-principles-of-animation/upstream/skills/12-principles-of-animation/SKILL.md` |
+| `FA` | `vendor/fixing-accessibility/upstream/skills/fixing-accessibility/UPSTREAM-SKILL.md` |
+| `12P` | `vendor/12-principles-of-animation/upstream/skills/12-principles-of-animation/UPSTREAM-SKILL.md` |
 | `ID/` | `vendor/interface-discipline/upstream/skills/*/*.md` (domain skill, then file) |
 | `SC/` | `vendor/shadcn/upstream/skills/shadcn/rules/*.md` (only in a shadcn project) |
 
@@ -31,16 +31,16 @@ A token may raise a floor, never lower it below the WCAG values (24px targets, 4
 | Code | Measures on every audited viewport | Default | Override (`DESIGN.md` token → probe input) | Sources |
 | --- | --- | --- | --- | --- |
 | `audit.font-family` | First computed family of visible text (code excluded) is a declared family | none; `thresholds.fonts` is required | `typography` families → `thresholds.fonts` | LA `font-family`; `ID/better-typography/choosing-fonts.md`, `MI/typography.md` |
-| `audit.font-loading` | No `document.fonts` face reports `error` | none | none | LA `font-loading`; `ID/better-typography/SKILL.md` (load intended weights) |
+| `audit.font-loading` | No `document.fonts` face reports `error` | none | none | LA `font-loading`; `ID/better-typography/UPSTREAM-SKILL.md` (load intended weights) |
 | `audit.font-size` | Visible and generated text is at least `minFontPx`; with `fontSizes`, on that scale within 0.1px | 12px | `typography` scale → `thresholds.fontSizes`, `thresholds.minFontPx` | LA `font-size`; `ID/better-typography/spacing-and-sizing.md` |
 | `audit.tabular-numbers` | Digits 0-9 of declared numbers and inferred numeric cells render at equal advance within 0.5px | none | `declare.numbers` | LA `tabular-numbers`; `MI/typography.md`, `ID/better-typography/variable-fonts-and-opentype.md` |
 | `audit.numeric-alignment` | Inferred numeric table cells align to the end edge | none | none | LA `numeric-alignment`; `ID/better-layout/grouping-and-alignment.md` |
 | `audit.text-contrast` | WCAG 2 ratio of visible and generated text over a resolved solid background (generated text over its own background, or the one behind its box, placed by its insets and margins); gradient, image, translucent, shadowed or overlapped paint, generated text that is transformed, relatively offset, sticky or unplaceable, even on its own background, and opacity, a filter or blending on the text or any ancestor, are `indeterminate` | 4.5:1; 3:1 at ≥24px or bold ≥18.67px | `colors` roles are what is measured; stricter targets → `thresholds.contrastNormal`, `contrastLarge` | LA `text-contrast`; `FA`, `ID/better-colors/accessibility-contrast.md` |
 | `audit.root-background` | The root paints an opaque background color | none | `colors` background | LA `root-background` |
 | `audit.horizontal-overflow` | The document is no wider than the viewport | 1px | none | LA `horizontal-overflow`; `ID/better-accessibility/motion-and-zoom.md` (reflow) |
-| `audit.viewport-bounds` | Visible boxes and text stay inside the viewport horizontally, overlays also vertically | 1px | none | LA `viewport-bounds`; `ID/better-interface/SKILL.md`, `ID/better-layout/spacing-and-adaptivity.md` |
+| `audit.viewport-bounds` | Visible boxes and text stay inside the viewport horizontally, overlays also vertically | 1px | none | LA `viewport-bounds`; `ID/better-interface/UPSTREAM-SKILL.md`, `ID/better-layout/spacing-and-adaptivity.md` |
 | `audit.content-clipping` | Text is not cut by an `overflow: hidden` or `clip` ancestor without an inner scroller | 1px | none | LA `content-clipping`; `ID/better-typography/wrapping-and-punctuation.md` (truncation) |
-| `audit.content-overflow` | Text stays inside each declared content box unless it scrolls | 1px | `declare.contentBoxes` | LA `content-overflow`; `ID/better-interface/SKILL.md` |
+| `audit.content-overflow` | Text stays inside each declared content box unless it scrolls | 1px | `declare.contentBoxes` | LA `content-overflow`; `ID/better-interface/UPSTREAM-SKILL.md` |
 | `audit.target-size` | Each control's hit area (box plus an absolute `::before`/`::after` placed by its insets and margins; an over-constrained one widens nothing) is at least `minTargetPx` each way; a link inside a sentence (beside visible, painted text in its own inline formatting context with no `<br>` or in-flow block box between them; text in a transparent color counts only when a stroke, a shadow or a background clipped to text paints it) is exempt | 24px | `components` control sizes → `thresholds.minTargetPx` (≥24) | LA `control-size` (15px default rebased); `ID/better-accessibility/hit-areas.md`, `MI/surfaces.md`, `FA` |
 | `audit.control-gap` | Hit areas of controls in one group are at least `minControlGapPx` apart edge to edge, diagonals included, and never overlap | 8px | `spacing` → `thresholds.minControlGapPx` | LA `control-gap`; `ID/better-accessibility/hit-areas.md` (collision rule) |
 | `audit.control-inset` | Controls inside declared containers keep `minControlInsetPx` from each padding edge | 8px | `declare.controlContainers`; `spacing` → `thresholds.minControlInsetPx` | LA `control-inset`; `ID/better-layout/spacing-and-adaptivity.md` (inset from edges) |
@@ -85,24 +85,24 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 | UC-04 | Motion never blocks input: rapid toggles retarget instead of queueing, controls stay operable mid-animation, and controls at their default state do not animate on mount. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md` |
 | UC-05 | Trigger-anchored surfaces grow from their trigger and modals from center; scale entrances start at 0.9 or more, never 0; exits are softer, with a small offset. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md` |
 | UC-06 | Reduced motion reduces, not removes: no non-essential movement, parallax, autoplay, smooth scroll or auto-rotation; spinners and state changes stay; anything moving over 5s can be paused. | `FA`, `ID/better-accessibility/motion-and-zoom.md`, `MI/animations.md` |
-| UC-07 | Changed motion is replayed slowed to about 10% through every state, then under rapid repeat, keyboard, reduced motion, mobile width, slow device and interruption. | `MI/SKILL.md`, `ID/better-ui/SKILL.md`, [motion gate](animation-opportunity-and-review.md) |
+| UC-07 | Changed motion is replayed slowed to about 10% through every state, then under rapid repeat, keyboard, reduced motion, mobile width, slow device and interruption. | `MI/UPSTREAM-SKILL.md`, `ID/better-ui/UPSTREAM-SKILL.md`, [motion gate](animation-opportunity-and-review.md) |
 | UC-08 | Every control and pointer path works from the keyboard in visual order, with one consistent visible focus indicator that overflow and motion never hide; no positive `tabindex`. | `FA`, `ID/better-accessibility/focus-and-keyboard.md` |
 | UC-09 | Composite widgets (tabs, menus, toolbars, listboxes, comboboxes) are one Tab stop with their arrow-key model; an ARIA widget role is fully implemented or not used. | `ID/better-accessibility/semantics-and-aria.md`, `ID/better-accessibility/focus-and-keyboard.md` |
 | UC-10 | Dialogs take focus on open and return it to the opener; a modal traps focus over an inert page; Escape closes the newest layer first; toasts never take focus; a route change moves focus to the new view. | `FA`, `ID/better-accessibility/focus-and-keyboard.md`, `ID/better-accessibility/screen-readers.md` |
 | UC-11 | Native elements first (`button` acts, `a href` navigates); every control has a name containing its visible text; decorative icons are hidden; one `main`, unskipped headings and `lang` set. | `FA`, `ID/better-accessibility/semantics-and-aria.md`, `ID/better-accessibility/screen-readers.md` |
 | UC-12 | Fields keep a visible programmatic label (a placeholder is not one); hints show before the mistake; errors are text beside the linked field and submit focuses the first one; correct `autocomplete`, `type` and `inputmode`; paste allowed; mobile inputs ≥16px. | `FA`, `ID/better-accessibility/forms.md`, `SC/forms.md` |
 | UC-13 | Alt text states what an image adds or names a functional image's action; decorative images are silent. | `ID/better-accessibility/screen-readers.md` |
-| UC-14 | Buttons start with a verb that names the real action; no bare OK or Yes on consequential actions. | `ID/better-writing/SKILL.md` |
-| UC-15 | One term per object and action across the product. | `ID/better-writing/SKILL.md` |
-| UC-16 | Errors say how to fix the problem next to the field; decisions state the consequence first; destructive actions confirm, offer undo or look distinct, with initial focus on the safe choice. | `ID/better-writing/SKILL.md`, `ID/better-interface/SKILL.md`, `ID/better-accessibility/focus-and-keyboard.md` |
-| UC-17 | Copy keeps actor, scope, limits, uncertainty and unchanged state, never widens a claim, uses plain words and flexes tone with stakes ([plain-language.md](plain-language.md)). | `ID/better-writing/SKILL.md` |
-| UC-18 | Every component has the empty, loading, error, disabled and narrow states that apply; an empty state says what the place is and offers one next action. | `ID/better-writing/SKILL.md`, `ID/better-interface/SKILL.md`, `ID/interface-review/SKILL.md` |
+| UC-14 | Buttons start with a verb that names the real action; no bare OK or Yes on consequential actions. | `ID/better-writing/UPSTREAM-SKILL.md` |
+| UC-15 | One term per object and action across the product. | `ID/better-writing/UPSTREAM-SKILL.md` |
+| UC-16 | Errors say how to fix the problem next to the field; decisions state the consequence first; destructive actions confirm, offer undo or look distinct, with initial focus on the safe choice. | `ID/better-writing/UPSTREAM-SKILL.md`, `ID/better-interface/UPSTREAM-SKILL.md`, `ID/better-accessibility/focus-and-keyboard.md` |
+| UC-17 | Copy keeps actor, scope, limits, uncertainty and unchanged state, never widens a claim, uses plain words and flexes tone with stakes ([plain-language.md](plain-language.md)). | `ID/better-writing/UPSTREAM-SKILL.md` |
+| UC-18 | Every component has the empty, loading, error, disabled and narrow states that apply; an empty state says what the place is and offers one next action. | `ID/better-writing/UPSTREAM-SKILL.md`, `ID/better-interface/UPSTREAM-SKILL.md`, `ID/interface-review/UPSTREAM-SKILL.md` |
 | UC-19 | No hidden-only paths: a toast is never the only carrier of critical information or undo; toasts with an action or error stay until dismissed, timed ones last 5s or more and pause on hover or focus; collapsed content shows a cue. | `ID/better-layout/spacing-and-adaptivity.md`, `FA`, `ID/better-accessibility/screen-readers.md` |
 | UC-20 | Color never carries state or meaning alone, and load-bearing color follows each locale's convention. | `FA`, `ID/better-colors/color-usage.md`, `ID/better-accessibility/forms.md` |
 | UC-21 | Group with space first, background second, separators last; the key fact leads with room around it; each section has one dominant element. | `ID/better-layout/grouping-and-alignment.md` |
 | UC-22 | A border that only shows depth uses the project elevation token instead. | `MI/surfaces.md`, `ID/better-ui/surfaces.md` |
-| UC-23 | Type fits the surface and density; truncation is a product decision, never cover for an undersized component; CJK fallbacks are verified per platform ([cjk-typography.md](cjk-typography.md)). | `ID/better-typography/SKILL.md` |
-| UC-24 | A control added to one surface is added to sibling surfaces carrying its peers; the primary workflow is visible without explanation text. | `ID/interface-review/SKILL.md` |
+| UC-23 | Type fits the surface and density; truncation is a product decision, never cover for an undersized component; CJK fallbacks are verified per platform ([cjk-typography.md](cjk-typography.md)). | `ID/better-typography/UPSTREAM-SKILL.md` |
+| UC-24 | A control added to one surface is added to sibling surfaces carrying its peers; the primary workflow is visible without explanation text. | `ID/interface-review/UPSTREAM-SKILL.md` |
 
 ## Precedence
 
@@ -157,7 +157,7 @@ Resolved conflicts:
 - **shadcn:** run the shadcn CLI only when the project has `components.json`, or after the user
   approves a selected component route that installs from a shadcn registry, and always through
   the project's package runner. Never run the `!` context-injection line at the top of
-  `vendor/shadcn/upstream/skills/shadcn/SKILL.md` automatically; run `info` deliberately when the
+  `vendor/shadcn/upstream/skills/shadcn/UPSTREAM-SKILL.md` automatically; run `info` deliberately when the
   context is needed. Without that approval, never introduce shadcn into a project that does not
   use it; keep the existing component owner.
 - **playwright-cli:** an optional exploratory driver only when the project already uses it or the
@@ -179,38 +179,38 @@ and `upstream/` holds the byte-preserved files.
 ### emil-design-eng
 
 Emil Kowalski's design-engineering judgment on whether and how to animate, springs, press feedback,
-gestures and reduced motion: [`SKILL.md`](../vendor/emil-design-eng/upstream/skills/emil-design-eng/SKILL.md).
+gestures and reduced motion: [`SKILL.md`](../vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md).
 It is a different skill from the four Emil motion skills distilled in the motion gate.
 
 ### make-interfaces-feel-better
 
 Jakub Krehel's interface details (radii, alignment, shadows, numbers, wrapping, hit areas, icons,
-exits): [`SKILL.md`](../vendor/make-interfaces-feel-better/upstream/skills/make-interfaces-feel-better/SKILL.md),
+exits): [`SKILL.md`](../vendor/make-interfaces-feel-better/upstream/skills/make-interfaces-feel-better/UPSTREAM-SKILL.md),
 then one of `typography.md`, `surfaces.md`, `animations.md`, `icons.md` or `performance.md`.
 
 ### fixing-accessibility
 
 Julien Thibeaut's prioritized accessibility rules:
-[`SKILL.md`](../vendor/fixing-accessibility/upstream/skills/fixing-accessibility/SKILL.md). Report
+[`SKILL.md`](../vendor/fixing-accessibility/upstream/skills/fixing-accessibility/UPSTREAM-SKILL.md). Report
 through the interface-discipline accessibility domain, not its standalone report shape.
 
 ### 12-principles-of-animation
 
 Raphael Salaja's motion checklist, lowest precedence, used only on changed motion code:
-[`SKILL.md`](../vendor/12-principles-of-animation/upstream/skills/12-principles-of-animation/SKILL.md).
+[`SKILL.md`](../vendor/12-principles-of-animation/upstream/skills/12-principles-of-animation/UPSTREAM-SKILL.md).
 
 ### shadcn
 
 The official shadcn/ui skill: CLI workflow, styling, forms, composition, registries, customization
 and design-system pages, used only under the [execution boundary](#execution-boundary). Start at
-[`SKILL.md`](../vendor/shadcn/upstream/skills/shadcn/SKILL.md), then `rules/*.md` or the matching
+[`SKILL.md`](../vendor/shadcn/upstream/skills/shadcn/UPSTREAM-SKILL.md), then `rules/*.md` or the matching
 file. Its DESIGN.md flow never replaces the project's own foundation.
 
 ### playwright-cli
 
 Microsoft's agent-facing Playwright command line for exploratory driving, used only under the
 [execution boundary](#execution-boundary). Start at
-[`SKILL.md`](../vendor/playwright-cli/upstream/skills/playwright-cli/SKILL.md) and read one
+[`SKILL.md`](../vendor/playwright-cli/upstream/skills/playwright-cli/UPSTREAM-SKILL.md) and read one
 `references` file only for the task it names.
 
 ### react-doctor

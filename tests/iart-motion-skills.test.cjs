@@ -87,3 +87,30 @@ test("public CLI searches and verifies the installed bundled snapshot", () => {
     assert.equal(output.status, "ready");
   }
 });
+
+// A snapshot whose bytes and manifest agree with each other but not with upstream is still blocked:
+// every pack's objects must rebuild the Git tree recorded for its revision.
+test("a self-consistent snapshot that drifted from the upstream pack tree is blocked", (t) => {
+  const os = require("node:os");
+  const crypto = require("node:crypto");
+  const copy = fs.mkdtempSync(path.join(os.tmpdir(), "iart-drift-"));
+  t.after(() => fs.rmSync(copy, { recursive: true, force: true }));
+  const bundle = path.join(copy, "iart-motion-skills");
+  fs.cpSync(path.dirname(manifestFile), bundle, { recursive: true });
+  const copied = path.join(bundle, "manifest.json");
+  const manifest = JSON.parse(fs.readFileSync(copied, "utf8"));
+  const object = manifest.snapshot.objects.find((item) => item.path.endsWith("/LICENSE"));
+  const file = path.join(bundle, "upstream", ...object.path.split("/"));
+  const content = Buffer.concat([fs.readFileSync(file), Buffer.from("\n")]);
+  fs.writeFileSync(file, content);
+  object.size = content.length;
+  object.oid = crypto.createHash("sha1").update(`blob ${content.length}\0`).update(content).digest("hex");
+  manifest.snapshot.byteCount += 1;
+  fs.writeFileSync(copied, JSON.stringify(manifest));
+  const tree = verifyIartSnapshot(copied).issues.find((issue) => issue.startsWith("tree hash "));
+  manifest.snapshot.treeSha256 = tree.split(" ")[2];
+  fs.writeFileSync(copied, JSON.stringify(manifest));
+  const result = verifyIartSnapshot(copied);
+  assert.equal(result.status, "blocked");
+  assert.deepEqual(result.issues, [`pack ${object.path.split("/")[0]} objects do not match its Git tree ${manifest.packs.find((pack) => pack.id === object.path.split("/")[0]).gitTree}`]);
+});

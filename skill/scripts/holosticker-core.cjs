@@ -3,6 +3,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath, upstreamFiles } = require("./upstream-path.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/holosticker/manifest.json");
 const schema = "design-pipeline.holosticker-source.v1";
@@ -70,16 +71,18 @@ function verifyHolostickerSnapshot(manifestFile = defaultManifest) {
   if (!fs.existsSync(sourceRoot)) {
     return { schema: "design-pipeline.holosticker-verification.v1", status: "blocked", issues: ["snapshot root is missing"] };
   }
-  const files = collectFiles(sourceRoot).sort((left, right) => left.split(path.sep).join("/").localeCompare(right.split(path.sep).join("/"), "en"));
+  // Walked files are stored names; the manifest and every hash use upstream names.
+  const walked = upstreamFiles(collectFiles(sourceRoot));
+  const files = walked.files.sort((left, right) => left.split(path.sep).join("/").localeCompare(right.split(path.sep).join("/"), "en"));
   const fileSet = new Set(files.map((file) => file.split(path.sep).join("/")));
-  const bytes = files.reduce((sum, relative) => sum + fs.statSync(path.join(sourceRoot, relative)).size, 0);
+  const bytes = files.reduce((sum, relative) => sum + fs.statSync(path.join(sourceRoot, storedPath(relative))).size, 0);
   const records = files.map((relative) => {
     const portable = relative.split(path.sep).join("/");
-    const hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(sourceRoot, relative))).digest("hex");
+    const hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(sourceRoot, storedPath(relative)))).digest("hex");
     return `${portable}\0${hash}\n`;
   });
   const treeSha256 = crypto.createHash("sha256").update(records.join(""), "utf8").digest("hex");
-  const issues = [];
+  const issues = [...walked.issues];
   if (files.length !== loaded.manifest.snapshot.fileCount) issues.push(`file count ${files.length} != ${loaded.manifest.snapshot.fileCount}`);
   if (bytes !== loaded.manifest.snapshot.byteCount) issues.push(`byte count ${bytes} != ${loaded.manifest.snapshot.byteCount}`);
   if (treeSha256 !== loaded.manifest.snapshot.treeSha256) issues.push(`tree hash ${treeSha256} != ${loaded.manifest.snapshot.treeSha256}`);

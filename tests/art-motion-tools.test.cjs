@@ -7,7 +7,8 @@ const { spawnSync } = require("node:child_process");
 const { render, validateSpec, loadInputs } = require("../skill/tools/art-motion/render.cjs");
 const { fitCutGrid, analyzeReference } = require("../skill/tools/art-motion/reference.cjs");
 const { scaffoldVisualCraft } = require("../skill/tools/visual-craft/scaffold.cjs");
-const { resolvePuppeteer, resolveChrome } = require("../skill/scripts/film-capture-core.cjs");
+const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 const { run } = require("../skill/scripts/film-core.cjs");
 const { encodePng, decodePng } = require("../skill/scripts/png-core.cjs");
 const { sha256 } = require("../skill/scripts/contract-utils.cjs");
@@ -26,7 +27,7 @@ function browserTools() {
   try {
     resolvePuppeteer(repo, process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
     const puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [repo] });
-    return { chrome: resolveChrome(), puppeteerModule };
+    return { chrome: resolveBrowser(), puppeteerModule };
   } catch (error) {
     if (error.code !== "TOOL_MISSING") throw error;
     return { skip: `browser is unavailable: ${error.message}` };
@@ -75,14 +76,15 @@ test("owned engine, fonts, examples and license are complete and the runtime reb
   assert.deepEqual(Object.keys(require(runtime)), ["createArtMotionRuntime"]);
 });
 
-test("scaffold opens offline, renders material, resizes and seeks identically without host-global helpers", async t => {
+const BROWSER = browserTools();
+test("scaffold opens offline, renders material, resizes and seeks identically without host-global helpers", { skip: BROWSER.skip }, async t => {
   const root = temporary(t), scaffold = scaffoldVisualCraft(root, { template: "art-motion", output: "study" });
   assert.deepEqual([...scaffold.files].sort(), ["LICENSE.art-motion", "clip.example.json", "index.html", "runtime.js"]);
   assert.deepEqual(fs.readdirSync(scaffold.directory).sort(), ["LICENSE.art-motion", "clip.example.json", "index.html", "runtime.js"]);
   assert.deepEqual(fs.readFileSync(path.join(scaffold.directory, "LICENSE.art-motion")), fs.readFileSync(license));
   assert.deepEqual(fs.readFileSync(path.join(scaffold.directory, "runtime.js")), fs.readFileSync(runtime));
   assert.throws(() => scaffoldVisualCraft(root, { template: "art-motion", output: "study" }), /exists/);
-  const browser = await resolvePuppeteer(repo).launch({ executablePath: resolveChrome(), headless: true });
+  const browser = await resolvePuppeteer(repo).launch({ executablePath: BROWSER.chrome, headless: true });
   t.after(() => browser.close());
   const page = await browser.newPage(), errors = [];
   page.on("pageerror", error => errors.push(error.message));
@@ -101,7 +103,7 @@ test("scaffold opens offline, renders material, resizes and seeks identically wi
   assert.deepEqual(errors, []);
 });
 
-test("render validates inputs, preserves asset aliases and exports timed PNG, H264 and alpha frames", { skip: skipWithoutFfmpeg }, async t => {
+test("render validates inputs, preserves asset aliases and exports timed PNG, H264 and alpha frames", { skip: skipWithoutFfmpeg || BROWSER.skip }, async t => {
   const root = temporary(t), spec = { ...example, width: 480, height: 270, duration: 1, fps: 4, safe: { bottom: 25 } };
   fs.writeFileSync(path.join(root, "clip.json"), JSON.stringify(spec));
   assert.throws(() => validateSpec({ ...spec, duration: 0.3 }), /exact number of frames/);
@@ -169,7 +171,6 @@ test("art-motion render CLI rejects an invalid spec and unregistered options wit
   assert.deepEqual(fs.readdirSync(root), ["invalid.json"]);
 });
 
-const BROWSER = browserTools();
 test("art-motion render CLI renders a still through the kernel and reports the runtime digest", { skip: BROWSER.skip }, t => {
   const root = temporary(t);
   fs.writeFileSync(path.join(root, "tiny.json"), JSON.stringify({ width: 64, height: 64, duration: 1, fps: 1, scene: "12_bauhaus" }));
@@ -179,6 +180,8 @@ test("art-motion render CLI renders a still through the kernel and reports the r
   assert.equal(rendered.output.video, null); assert.equal(rendered.output.frames, 1); assert.equal(rendered.output.coldAndReorderedMatch, true);
   const report = JSON.parse(fs.readFileSync(path.join(root, "still/render-report.json")));
   assert.equal(report.runtimeSha256, sha256(fs.readFileSync(runtime)));
+  assert.equal(report.browser.executable, BROWSER.chrome, "the report names the browser that rendered it");
+  assert.match(report.browser.version, /\//);
   assert.equal(report.frames.length, 1); assert.equal(report.frames[0].atSec, 0);
   const png = decodePng(fs.readFileSync(path.join(root, "still", report.frames[0].path)));
   assert.equal(png.width, 64); assert.equal(png.height, 64);

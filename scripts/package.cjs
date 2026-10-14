@@ -11,6 +11,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { BUNDLES: FETCHABLE_BUNDLES } = require("../skill/scripts/vendor-cache.cjs");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 const { validateReleaseContract, formatReleaseContractResult } = require("./release-contract.cjs");
@@ -120,7 +121,12 @@ function collectArchiveEntries(sourceDateEpoch) {
 
   const entries = [];
 
+  // MengTo and iart upstream trees are downloaded on demand (skill/scripts/vendor-cache.cjs); the
+  // package carries their manifests only.
+  const onDemand = new Set(FETCHABLE_BUNDLES.map((bundle) => path.join("vendor", bundle, "upstream")));
+
   function visit(absolutePath, relativePath) {
+    if (onDemand.has(relativePath)) return;
     const stat = fs.lstatSync(absolutePath);
     const archiveName = `design-pipeline/${relativePath.split(path.sep).join("/")}`;
     if (stat.isSymbolicLink()) {
@@ -139,6 +145,11 @@ function collectArchiveEntries(sourceDateEpoch) {
     }
     if (!stat.isFile()) {
       fail(`unsupported release-archive entry: ${relativePath}`);
+    }
+    // claude.ai and the Skills API accept one SKILL.md per skill; bundled upstream skills are stored
+    // as UPSTREAM-SKILL.md (skill/scripts/upstream-path.cjs).
+    if (path.basename(relativePath) === "SKILL.md" && relativePath !== "SKILL.md") {
+      fail(`only the root SKILL.md may ship; store ${relativePath.split(path.sep).join("/")} as UPSTREAM-SKILL.md`);
     }
     entries.push({
       name: archiveName,

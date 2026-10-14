@@ -4,6 +4,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const { spawnSync } = require("node:child_process");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -107,7 +108,7 @@ function stages(category, name) {
 
 function canonicalTree(root, files) {
   const entries = files.map((relative) => {
-    const content = fs.readFileSync(path.join(root, relative));
+    const content = fs.readFileSync(path.join(root, storedPath(relative)));
     const hash = crypto.createHash("sha256").update(content).digest("hex");
     return `${relative.split(path.sep).join("/")}\0${hash}\n`;
   });
@@ -148,11 +149,15 @@ function readBlobs(source, entries) {
 }
 
 function copyTrackedFiles(target, entries, blobs) {
-  for (const entry of entries) {
+  // An upstream SKILL.md is stored as UPSTREAM-SKILL.md (skill/scripts/upstream-path.cjs); every
+  // entry is checked before the first write, so a reserved-name refusal writes nothing.
+  const planned = entries.map((entry) => {
     const relative = entry.path;
     if (path.isAbsolute(relative) || relative.split(/[\\/]/).includes("..")) fail(`unsafe tracked path: ${relative}`);
     if (!new Set(["100644", "100755"]).has(entry.mode)) fail(`unsupported tracked mode: ${entry.mode} ${relative}`);
-    const targetFile = path.join(target, relative);
+    return { relative, targetFile: path.join(target, storedPath(relative)) };
+  });
+  for (const { relative, targetFile } of planned) {
     fs.mkdirSync(path.dirname(targetFile), { recursive: true });
     fs.writeFileSync(targetFile, blobs.get(relative));
   }
@@ -184,7 +189,7 @@ function importSnapshot(source, reviewedAt) {
     const skillFiles = tracked.filter((relative) => /^agent-skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(relative));
     const skills = skillFiles.map((relative) => {
       const [, category, directory] = relative.match(/^agent-skills\/([^/]+)\/([^/]+)\/SKILL\.md$/);
-      const metadata = frontmatter(path.join(upstream, relative));
+      const metadata = frontmatter(path.join(upstream, storedPath(relative)));
       if (metadata.name !== directory) fail(`frontmatter name does not match directory: ${relative}`);
       return {
         id: `${category}/${metadata.name}`,
@@ -202,7 +207,7 @@ function importSnapshot(source, reviewedAt) {
         .sort()
         .map((category) => [category, skills.filter((skill) => skill.category === category).length]),
     );
-    const byteCount = tracked.reduce((sum, relative) => sum + fs.statSync(path.join(upstream, relative)).size, 0);
+    const byteCount = tracked.reduce((sum, relative) => sum + fs.statSync(path.join(upstream, storedPath(relative))).size, 0);
     manifest = {
       schema: "design-pipeline.mengto-skills-source.v1",
       source: { repository, revision, gitTree, committedAt, license: "MIT", reviewedAt, scope: ["**"] },

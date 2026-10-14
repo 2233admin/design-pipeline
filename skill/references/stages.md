@@ -251,7 +251,7 @@ tier ends with the owner's final review (`decide --stage review --by owner`): UI
 evidence with `decide --stage deliver --by agent`, then the owner accepts or rejects the delivered
 interface, and a rejection returns to the work stage. Reaching done renders
 `.design-pipeline/diligence.md` from the workflow state: owner decisions with their reasons,
-delegated agent decisions, records without an author, the rule count, technical checks apart from
+delegated agent decisions, records without an author, the owner's "no" in their own words, technical checks apart from
 owner acceptance, and a suggested `Assisted-by:` trailer. For actual surface
 verification and retained proof, follow [the QA recipe](qa-checklist.md#run-verification).
 

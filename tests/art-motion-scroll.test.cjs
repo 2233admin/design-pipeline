@@ -5,7 +5,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const { createLongScroll } = require("../skill/tools/art-motion/scroll.js");
-const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 
 function makeWorld({ direction = 1, viewport = { width: 240, height: 120 }, scale = 1 } = {}) {
   const start = { x: direction === 1 ? 0 : 200, y: 100 };
@@ -39,7 +40,7 @@ function makeWorld({ direction = 1, viewport = { width: 240, height: 120 }, scal
 }
 
 function browserTools() {
-  try { return { puppeteer: resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE), chrome: resolveChrome() }; }
+  try { return { puppeteer: resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE), chrome: resolveBrowser() }; }
   catch (error) {
     if (error.code !== "TOOL_MISSING") throw error;
     return { skip: `browser is unavailable: ${error.message}` };

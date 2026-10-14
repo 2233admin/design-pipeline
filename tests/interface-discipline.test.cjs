@@ -5,6 +5,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const { STORED_NAME, upstreamFiles } = require("../skill/scripts/upstream-path.cjs");
 
 const disciplineRoot = path.join(__dirname, "../skill/vendor/interface-discipline");
 const manifest = JSON.parse(fs.readFileSync(path.join(disciplineRoot, "manifest.json"), "utf8"));
@@ -40,12 +41,16 @@ test("bundles the complete pinned interface-discipline source snapshot", () => {
   ]);
 
   const sourceRoot = path.join(disciplineRoot, manifest.snapshot.root);
-  const entries = collectFiles(sourceRoot)
-    .sort()
-    .map((relative) => {
+  const stored = collectFiles(sourceRoot).map((relative) => relative.split(path.sep).join("/"));
+  const mapped = upstreamFiles(stored);
+  assert.deepEqual(mapped.stray, []);
+  const entries = mapped.files
+    .map((upstream, index) => ({ upstream, stored: stored[index] }))
+    .sort((a, b) => (a.upstream < b.upstream ? -1 : a.upstream > b.upstream ? 1 : 0))
+    .map(({ upstream, stored: relative }) => {
       const content = fs.readFileSync(path.join(sourceRoot, relative));
       const hash = crypto.createHash("sha256").update(content).digest("hex");
-      return `${relative.split(path.sep).join("/")}\0${hash}\n`;
+      return `${upstream}\0${hash}\n`;
     });
   const treeSha256 = crypto.createHash("sha256").update(entries.join(""), "utf8").digest("hex");
 
@@ -58,7 +63,7 @@ test("bundles the complete pinned interface-discipline source snapshot", () => {
   assert.deepEqual(resourcePaths, collectFiles(sourceRoot).map((entry) => entry.split(path.sep).join("/")).sort());
   assert.match(fs.readFileSync(path.join(sourceRoot, "LICENSE"), "utf8"), /Copyright \(c\) 2026 Jakub Krehel/);
   for (const skill of manifest.skills) {
-    assert.ok(fs.existsSync(path.join(sourceRoot, "skills", skill, "SKILL.md")), `missing ${skill}`);
+    assert.ok(fs.existsSync(path.join(sourceRoot, "skills", skill, STORED_NAME)), `missing ${skill}`);
   }
 });
 

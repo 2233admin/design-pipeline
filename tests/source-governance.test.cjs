@@ -278,3 +278,14 @@ test("non-commercial reference skills are pinned, ideas-only and fresh", () => {
     assert.ok(now <= due, `${relativePath} review expired on ${new Date(due).toISOString().slice(0, 10)}: re-review the upstream revision, hash and license, then update reviewedAt`);
   }
 });
+
+// text=auto once rewrote line endings inside upstream GIFs, PNGs and SVGs (iart, holosticker) and the
+// manifests were regenerated from the damaged bytes. Every upstream snapshot is stored unconverted.
+test("every vendored upstream file is stored without line-ending conversion", () => {
+  const bundles = fs.readdirSync(path.join(repoRoot, "skill", "vendor"), { withFileTypes: true }).filter((entry) => entry.isDirectory() && fs.existsSync(path.join(repoRoot, "skill", "vendor", entry.name, "upstream")));
+  assert.ok(bundles.length >= 13);
+  const probes = bundles.map((entry) => `skill/vendor/${entry.name}/upstream/probe.gif`);
+  const result = spawnSync("git", ["check-attr", "text", "--", ...probes], { cwd: repoRoot, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  for (const line of result.stdout.trim().split("\n")) assert.match(line, /: text: unset$/, line);
+});

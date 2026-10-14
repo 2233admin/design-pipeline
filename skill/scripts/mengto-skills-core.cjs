@@ -3,6 +3,8 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath, upstreamFiles } = require("./upstream-path.cjs");
+const { upstreamRoot } = require("./vendor-cache.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/mengto-skills/manifest.json");
 const schema = "design-pipeline.mengto-skills-source.v1";
@@ -139,9 +141,19 @@ function gitTreeId(objects) {
   return hashTree(root);
 }
 
+// A catalog path ("upstream/.../SKILL.md") -> the stored file under the resolved upstream root.
+function skillFile(upstream, manifest, catalogPath) {
+  return path.join(upstream, ...storedPath(path.posix.relative(manifest.snapshot.root, catalogPath)).split("/"));
+}
+
 function verifyMengToSnapshot(manifestFile = defaultManifest) {
   const loaded = loadMengToCatalog(manifestFile);
-  const sourceRoot = path.join(loaded.root, loaded.manifest.snapshot.root);
+  // The repository keeps the tree beside the manifest; a package downloads it into the user cache.
+  const where = upstreamRoot(loaded.manifestFile, loaded.manifest);
+  const sourceRoot = where.root;
+  if (where.source === "cache" && !fs.existsSync(sourceRoot)) {
+    return { schema: "design-pipeline.mengto-skills-verification.v1", status: "missing", fetch: where.fetch, issues: [`not downloaded yet; run ${where.fetch}`] };
+  }
   if (!fs.existsSync(sourceRoot)) {
     return { schema: "design-pipeline.mengto-skills-verification.v1", status: "blocked", issues: ["snapshot root is missing"] };
   }
@@ -149,24 +161,26 @@ function verifyMengToSnapshot(manifestFile = defaultManifest) {
   if (sourceStat.isSymbolicLink() || !sourceStat.isDirectory()) {
     return { schema: "design-pipeline.mengto-skills-verification.v1", status: "blocked", issues: ["snapshot root is not a real directory"] };
   }
-  const files = collectFiles(sourceRoot).sort();
+  // Walked files are stored names; the manifest and every hash use upstream names.
+  const walked = upstreamFiles(collectFiles(sourceRoot));
+  const files = walked.files.sort();
   const normalizedFiles = files.map((relative) => relative.split(path.sep).join("/"));
   const objectByPath = new Map(loaded.manifest.snapshot.objects.map((object) => [object.path, object]));
-  const byteCount = files.reduce((sum, relative) => sum + fs.statSync(path.join(sourceRoot, relative)).size, 0);
+  const byteCount = files.reduce((sum, relative) => sum + fs.statSync(path.join(sourceRoot, storedPath(relative))).size, 0);
   const entries = files.map((relative) => {
-    const content = fs.readFileSync(path.join(sourceRoot, relative));
+    const content = fs.readFileSync(path.join(sourceRoot, storedPath(relative)));
     const hash = crypto.createHash("sha256").update(content).digest("hex");
     return `${relative.split(path.sep).join("/")}\0${hash}\n`;
   });
   const treeSha256 = crypto.createHash("sha256").update(entries.join(""), "utf8").digest("hex");
-  const issues = [];
+  const issues = [...walked.issues];
   if (files.length !== loaded.manifest.snapshot.fileCount) issues.push(`file count ${files.length} != ${loaded.manifest.snapshot.fileCount}`);
   if (byteCount !== loaded.manifest.snapshot.byteCount) issues.push(`byte count ${byteCount} != ${loaded.manifest.snapshot.byteCount}`);
   if (treeSha256 !== loaded.manifest.snapshot.treeSha256) issues.push(`tree hash ${treeSha256} != ${loaded.manifest.snapshot.treeSha256}`);
   if (gitTreeId(loaded.manifest.snapshot.objects) !== loaded.manifest.source.gitTree) issues.push("Git object inventory does not match source.gitTree");
   if (JSON.stringify(normalizedFiles) !== JSON.stringify([...objectByPath.keys()].sort())) issues.push("Git object inventory does not match bundled files");
   for (const relative of normalizedFiles) {
-    const content = fs.readFileSync(path.join(sourceRoot, ...relative.split("/")));
+    const content = fs.readFileSync(path.join(sourceRoot, ...storedPath(relative).split("/")));
     const object = objectByPath.get(relative);
     if (!object) continue;
     if (content.length !== object.size) issues.push(`Git blob size mismatch: ${relative}`);
@@ -184,7 +198,7 @@ function verifyMengToSnapshot(manifestFile = defaultManifest) {
     .sort();
   if (JSON.stringify(discoveredSkills) !== JSON.stringify(declaredSkills)) issues.push("skill catalog does not match bundled SKILL.md files");
   for (const skill of loaded.manifest.skills) {
-    const file = path.join(loaded.root, skill.path);
+    const file = skillFile(sourceRoot, loaded.manifest, skill.path);
     if (!fs.existsSync(file)) issues.push(`missing skill: ${skill.id}`);
   }
   return {
@@ -212,6 +226,7 @@ function searchMengToSkills({ query, category = null, limit = 5, manifestFile = 
   const parsedLimit = Number(limitText);
   const loaded = loadMengToCatalog(manifestFile);
   const verification = verifyMengToSnapshot(manifestFile);
+  if (verification.status === "missing") throw Object.assign(new Error(`MengTo skills are not downloaded yet. Fix: run ${verification.fetch}`), { code: "TOOL_MISSING", details: { fetch: verification.fetch } });
   if (verification.status !== "ready") invalid(`snapshot verification failed: ${verification.issues.join("; ")}`);
   if (category !== null && !Object.hasOwn(loaded.manifest.categories, category)) invalid(`unknown category: ${category}`);
   const phrase = normalize(query);
@@ -236,7 +251,7 @@ function searchMengToSkills({ query, category = null, limit = 5, manifestFile = 
       const overlay = searchOverlays[skill.id];
       return {
         ...skill,
-        skillPath: path.join(loaded.root, skill.path),
+        skillPath: skillFile(upstreamRoot(loaded.manifestFile, loaded.manifest).root, loaded.manifest, skill.path),
         pipelineReferences: (overlay?.references || []).map((reference) => path.resolve(__dirname, "../references", reference)),
       };
     });
@@ -248,7 +263,7 @@ function searchMengToSkills({ query, category = null, limit = 5, manifestFile = 
     revision: loaded.manifest.source.revision,
     totalSkills: loaded.manifest.skills.length,
     results,
-    instruction: "Read the narrowest matching bundled SKILL.md and its linked files; project DESIGN/MOTION and repository rules remain authoritative.",
+    instruction: "Read the narrowest matching skill file (skillPath) and its linked files (an upstream link to SKILL.md means UPSTREAM-SKILL.md in that folder); project DESIGN/MOTION and repository rules remain authoritative.",
   };
 }
 

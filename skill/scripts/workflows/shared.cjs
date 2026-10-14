@@ -6,7 +6,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
+const { canonicalJson, fail, resolveInside, sha256, wordCount } = require("../contract-utils.cjs");
 
 // designer-pipeline is not on PATH, so every command a next action returns is the runnable
 // `node <absolute path of designer-pipeline.cjs> ...`, derived from this file's location. Forward
@@ -210,4 +210,17 @@ const REVIEW = {
   },
 };
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reference, reviewInputHashes };
+// A decision stated for the owner must carry content: a go-ahead such as "ok, start" is the silent
+// default these records replace, so it needs six words (two CJK characters count as one). A "no" is
+// the owner's own feedback and is taken as given: "首屏太暗了", "太挤" or "too dark" is a complete
+// reason, so it needs only two words with each CJK character counting as one, which still refuses a
+// bare "no" or "ok". When a short reason is ambiguous, ask about the real ambiguity, never for length.
+function meaningful(answer, minimum, what, flag = "--answer", { cjkWeight = 0.5, unit = "two CJK characters count as one" } = {}) {
+  const text = typeof answer === "string" ? answer.trim() : "";
+  if (wordCount(text, { cjkWeight }) < minimum) fail("workflow", `${flag} must ${what} (at least ${minimum} words; ${unit})`);
+  return text;
+}
+const statement = (answer, what) => meaningful(answer, 6, what);
+const reason = (answer, what, flag) => meaningful(answer, 2, what, flag, { cjkWeight: 1, unit: "each CJK character counts as one" });
+
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement };

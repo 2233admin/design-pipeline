@@ -20,11 +20,11 @@ adopting a storyboard or soundtrack.
 
 Read one selected full entry before applying it:
 
-- **Cinetic:** [complete SKILL.md](../vendor/cinetic/upstream/skills/cinetic/SKILL.md),
+- **Cinetic:** [complete SKILL.md](../vendor/cinetic/upstream/skills/cinetic/UPSTREAM-SKILL.md),
   [source inventory](../vendor/cinetic/manifest.json), [MIT license](../vendor/cinetic/upstream/LICENSE).
   [Leonxlnx/cinetic](https://github.com/Leonxlnx/cinetic/tree/bee5d7807205d5543472c38312507f9bf366cbbf)
   at `bee5d7807205d5543472c38312507f9bf366cbbf`; this is a different repository from Taste.
-- **Product Film:** [complete SKILL.md](../vendor/product-film-skill/upstream/plugins/product-film/skills/product-film/SKILL.md),
+- **Product Film:** [complete SKILL.md](../vendor/product-film-skill/upstream/plugins/product-film/skills/product-film/UPSTREAM-SKILL.md),
   [source inventory](../vendor/product-film-skill/manifest.json), [MIT license](../vendor/product-film-skill/upstream/LICENSE).
   [Rieranthony/product-film-skill](https://github.com/Rieranthony/product-film-skill/tree/fe11efc429d5903e37274d0b294e1b95745b2881)
   at `fe11efc429d5903e37274d0b294e1b95745b2881`.

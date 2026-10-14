@@ -9,6 +9,8 @@ const { spawnSync } = require("node:child_process");
 const test = require("node:test");
 const { canonicalTree, frontmatter } = require("../scripts/git-tree-snapshot.cjs");
 const { gitTreeId } = require("../skill/scripts/mengto-skills-core.cjs");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
+const { restoreUpstreamNames, storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const vendorRoot = path.join(repoRoot, "skill/vendor/taste-skill");
@@ -31,14 +33,6 @@ const reviewedSkills = [
 ];
 const read = (file) => fs.readFileSync(path.join(sourceRoot, file), "utf8");
 
-function filesIn(root, relative = "") {
-  return fs.readdirSync(path.join(root, relative), { withFileTypes: true }).flatMap((entry) => {
-    const file = relative ? `${relative}/${entry.name}` : entry.name;
-    assert.equal(fs.lstatSync(path.join(root, file)).isSymbolicLink(), false, file);
-    return entry.isDirectory() ? filesIn(root, file) : [file];
-  }).sort();
-}
-
 function run(command, args, cwd, env = {}) {
   const result = spawnSync(command, args, {
     cwd, encoding: "utf8", windowsHide: true,
@@ -57,7 +51,7 @@ test("taste-skill preserves the complete reviewed Git blobs, tree and license", 
   assert.equal(manifest.source.license, "MIT");
   assert.deepEqual(manifest.source.scope, ["**"]);
   assert.equal(manifest.snapshot.root, "upstream");
-  const files = filesIn(sourceRoot);
+  const files = upstreamFilesIn(sourceRoot);
   assert.equal(files.length, 62);
   assert.equal(manifest.snapshot.fileCount, files.length);
   assert.deepEqual(manifest.snapshot.objects.map((object) => object.path).sort(), files);
@@ -65,7 +59,7 @@ test("taste-skill preserves the complete reviewed Git blobs, tree and license", 
   let bytes = 0;
   for (const object of manifest.snapshot.objects) {
     assert.equal(object.mode, "100644", object.path);
-    const content = fs.readFileSync(path.join(sourceRoot, object.path));
+    const content = fs.readFileSync(path.join(sourceRoot, storedPath(object.path)));
     bytes += content.length;
     assert.equal(object.size, content.length, object.path);
     assert.equal(object.oid, crypto.createHash("sha1").update(`blob ${content.length}\0`).update(content).digest("hex"), object.path);
@@ -84,7 +78,7 @@ test("taste-skill preserves the complete reviewed Git blobs, tree and license", 
   assert.ok(resources.required.includes("references/taste-skill.md"));
   assert.ok(resources.required.includes("vendor/taste-skill/manifest.json"));
   const prefix = "vendor/taste-skill/upstream/";
-  assert.deepEqual(resources.required.filter((file) => file.startsWith(prefix)).map((file) => file.slice(prefix.length)).sort(), files);
+  assert.deepEqual(resources.required.filter((file) => file.startsWith(prefix)).map((file) => file.slice(prefix.length)).sort(), files.map(storedPath).sort());
   assert.equal(manifest.boundary.mode, "built-in-reference-adaptation");
   for (const boundary of ["installsUpstreamDependencies", "executesDeployment", "executesUpstreamScripts", "changesProjectRuntime"]) {
     assert.equal(manifest.boundary[boundary], false, boundary);
@@ -94,10 +88,10 @@ test("taste-skill preserves the complete reviewed Git blobs, tree and license", 
 test("all thirteen taste-skill frontmatters and supporting Stitch and research files remain local", () => {
   assert.deepEqual(manifest.skills.map(({ directory, name }) => [directory, name]).sort(), [...reviewedSkills].sort());
   assert.equal(new Set(manifest.skills.map((skill) => skill.name)).size, 13);
-  assert.deepEqual(filesIn(path.join(sourceRoot, "skills")).filter((file) => file.endsWith("/SKILL.md")), reviewedSkills.map(([directory]) => `${directory}/SKILL.md`).sort());
+  assert.deepEqual(upstreamFilesIn(path.join(sourceRoot, "skills")).filter((file) => file.endsWith("/SKILL.md")), reviewedSkills.map(([directory]) => `${directory}/SKILL.md`).sort());
   for (const skill of manifest.skills) {
     assert.equal(skill.path, `upstream/skills/${skill.directory}/SKILL.md`);
-    const metadata = frontmatter(path.join(vendorRoot, skill.path));
+    const metadata = frontmatter(path.join(vendorRoot, storedPath(skill.path)));
     assert.equal(metadata.name, skill.name);
     assert.equal(metadata.description, skill.description);
     assert.ok(metadata.description.trim(), skill.name);
@@ -129,14 +123,17 @@ test("taste-skill import rejects unreviewed, dirty, incomplete and invalid-date 
   try {
     const scripts = path.join(root, "scripts");
     fs.mkdirSync(scripts);
+    fs.mkdirSync(path.join(root, "skill/scripts"), { recursive: true });
+    fs.copyFileSync(path.join(repoRoot, "skill/scripts/upstream-path.cjs"), path.join(root, "skill/scripts/upstream-path.cjs"));
     for (const file of ["import-taste-skill.cjs", "git-tree-snapshot.cjs"]) fs.copyFileSync(path.join(repoRoot, "scripts", file), path.join(scripts, file));
     const destination = path.join(root, "skill/vendor/taste-skill");
     fs.mkdirSync(path.join(destination, "upstream"), { recursive: true });
     fs.writeFileSync(path.join(destination, "manifest.json"), "previous snapshot\n");
     fs.writeFileSync(path.join(destination, "upstream/preserved.txt"), "previous bytes\n");
-    const before = canonicalTree(destination, filesIn(destination));
+    const before = storedTree(destination);
     const source = path.join(root, "source");
     fs.cpSync(sourceRoot, source, { recursive: true });
+    restoreUpstreamNames(source);
     const git = (args) => { const result = run("git", args, source); assert.equal(result.status, 0, result.stderr); };
     git(["init", "--quiet"]);
     git(["config", "core.autocrlf", "false"]);
@@ -148,7 +145,7 @@ test("taste-skill import rejects unreviewed, dirty, incomplete and invalid-date 
       const result = run(process.execPath, [path.join(scripts, "import-taste-skill.cjs"), "--source", source, "--reviewed-at", "2026-10-08", ...extra], root);
       assert.equal(result.status, 1, result.stdout);
       assert.match(result.stderr, pattern);
-      assert.equal(canonicalTree(destination, filesIn(destination)), before);
+      assert.equal(storedTree(destination), before);
       assert.deepEqual(fs.readdirSync(path.dirname(destination)), ["taste-skill"]);
     };
     rejects(/source revision must be the reviewed/);
@@ -181,7 +178,7 @@ test("taste-skill guide reaches all thirteen local sources and states adaptation
   for (const [directory, name] of reviewedSkills) {
     const index = headings.findIndex((heading) => heading[1] === name);
     const section = guide.slice(headings[index].index, headings[index + 1]?.index || guide.length);
-    const sourceLink = `../vendor/taste-skill/upstream/skills/${directory}/SKILL.md`;
+    const sourceLink = `../vendor/taste-skill/upstream/skills/${directory}/UPSTREAM-SKILL.md`;
     assert.ok(localLinks.includes(sourceLink), directory);
     assert.ok(section.includes(sourceLink), name);
     assert.match(section, /\*\*Trigger:\*\*/);
@@ -224,20 +221,20 @@ test("a relocated full pipeline needs no ambient Taste skills and fails its core
     assert.equal(profile.checkedSkillPaths["design-pipeline"], path.join(installed, "SKILL.md"));
     assert.deepEqual(profile.missingMarkers, []);
     for (const [directory, name] of reviewedSkills) {
-      const entry = path.join(installed, "vendor/taste-skill/upstream/skills", directory, "SKILL.md");
+      const entry = path.join(installed, "vendor/taste-skill/upstream/skills", directory, "UPSTREAM-SKILL.md");
       assert.equal(frontmatter(entry).name, name);
-      assert.equal(fs.readFileSync(entry).equals(fs.readFileSync(path.join(sourceRoot, "skills", directory, "SKILL.md"))), true, name);
+      assert.equal(fs.readFileSync(entry).equals(fs.readFileSync(path.join(sourceRoot, "skills", directory, "UPSTREAM-SKILL.md"))), true, name);
     }
     const requested = report.groups.flatMap((group) => group.missing);
     for (const [, name] of reviewedSkills) assert.equal(requested.includes(name), false, name);
-    fs.rmSync(path.join(installed, "vendor/taste-skill/upstream/skills/taste-skill-v1/SKILL.md"));
+    fs.rmSync(path.join(installed, "vendor/taste-skill/upstream/skills/taste-skill-v1/UPSTREAM-SKILL.md"));
     const broken = check();
     assert.equal(broken.status, 1, broken.stderr || broken.stdout);
     const brokenReport = JSON.parse(broken.stdout);
     assert.equal(brokenReport.result, "FAIL");
     const core = brokenReport.groups.find((group) => group.name === "Core pipeline");
     assert.equal(core.status, "FAIL");
-    assert.ok(core.missingResources.includes("design-pipeline/vendor/taste-skill/upstream/skills/taste-skill-v1/SKILL.md"));
+    assert.ok(core.missingResources.includes("design-pipeline/vendor/taste-skill/upstream/skills/taste-skill-v1/UPSTREAM-SKILL.md"));
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
@@ -253,6 +250,9 @@ test("the existing source-check test fails for changed, missing or added Taste b
       "tests/taste-skill.test.cjs",
       "scripts/git-tree-snapshot.cjs",
       "skill/scripts/mengto-skills-core.cjs",
+      "skill/scripts/upstream-path.cjs",
+      "skill/scripts/vendor-cache.cjs",
+      "tests/helpers/upstream-names.cjs",
       "skill/references/package-resources.json",
     ]) copyFile(relative);
     fs.cpSync(vendorRoot, path.join(root, "skill/vendor/taste-skill"), { recursive: true });
@@ -275,7 +275,7 @@ test("the existing source-check test fails for changed, missing or added Taste b
     fs.writeFileSync(changed, corrupted);
     rejects(/README\.md/);
     fs.writeFileSync(changed, original);
-    const missing = path.join(copiedSource, "skills/taste-skill/SKILL.md");
+    const missing = path.join(copiedSource, "skills/taste-skill/UPSTREAM-SKILL.md");
     const missingBytes = fs.readFileSync(missing);
     fs.rmSync(missing);
     rejects(/61 !== 62/);

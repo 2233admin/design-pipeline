@@ -4,6 +4,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath, upstreamFiles } = require("../skill/scripts/upstream-path.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const manifests = [
@@ -88,14 +89,17 @@ function refreshManifest(relativeManifest) {
   const manifestFile = path.join(repoRoot, relativeManifest);
   const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
   const sourceRoot = path.join(path.dirname(manifestFile), manifest.snapshot.root);
-  const files = collectFiles(sourceRoot).sort((left, right) =>
+  // Walked files are stored names; manifests record upstream names (skill/scripts/upstream-path.cjs).
+  const walked = upstreamFiles(collectFiles(sourceRoot));
+  if (walked.stray.length) fail(walked.issues.join("; "));
+  const files = walked.files.sort((left, right) =>
     manifest.schema === "design-pipeline.holosticker-source.v1"
       ? left.localeCompare(right, "en")
       : left < right ? -1 : left > right ? 1 : 0,
   );
   const previousObjects = new Map((manifest.snapshot.objects || []).map((object) => [object.path, object]));
   const records = files.map((relative) => {
-    const content = fs.readFileSync(path.join(sourceRoot, ...relative.split("/")));
+    const content = fs.readFileSync(path.join(sourceRoot, ...storedPath(relative).split("/")));
     return {
       path: relative,
       mode: previousObjects.get(relative)?.mode || "100644",

@@ -16,7 +16,8 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { decide, initState, nextAction, readState } = require("../skill/scripts/workflow-core.cjs");
-const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 const flow = require("./helpers/web-flow.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -291,7 +292,7 @@ function browserTools() {
   try {
     resolvePuppeteer(repoRoot, process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
     const puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE) : require.resolve("puppeteer-core", { paths: [repoRoot] });
-    return { chrome: resolveChrome(), puppeteerModule, skip: false };
+    return { chrome: resolveBrowser(), puppeteerModule, skip: false };
   } catch (error) {
     if (error.code !== "TOOL_MISSING") throw error;
     return { skip: `no browser for the variant switcher (${error.message})` };

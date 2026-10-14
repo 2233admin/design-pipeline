@@ -9,7 +9,8 @@
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
-const { resolveChrome, resolvePuppeteer } = require("./film-capture-core.cjs");
+const { resolvePuppeteer } = require("./film-capture-core.cjs");
+const { resolveBrowser } = require("./browser-locate.cjs");
 const { fail, jsonResult } = require("./contract-utils.cjs");
 
 function parseArgs(argv) {
@@ -36,7 +37,7 @@ function parseArgs(argv) {
     const output = path.resolve(options["--output"]);
     downloads = fs.mkdtempSync(path.join(path.dirname(output), ".score-"));
     const puppeteer = resolvePuppeteer(options["--project"], options["--puppeteer-module"]);
-    browser = await puppeteer.launch({ executablePath: resolveChrome(options["--chrome"]), headless: true, args: ["--autoplay-policy=no-user-gesture-required"] });
+    browser = await puppeteer.launch({ executablePath: resolveBrowser(options["--chrome"]), headless: true, args: ["--autoplay-policy=no-user-gesture-required"] });
     const page = await browser.newPage();
     const problems = [];
     page.on("pageerror", (error) => problems.push(error.message));

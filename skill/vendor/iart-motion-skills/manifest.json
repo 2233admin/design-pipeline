@@ -197,8 +197,8 @@
   "snapshot": {
     "root": "upstream",
     "fileCount": 342,
-    "byteCount": 69269313,
-    "treeSha256": "d68c805b2a6fb7d4366826d7eb290f336358dea710d1a0205433af8c73d6dd05",
+    "byteCount": 69877098,
+    "treeSha256": "10a095a314e7244d6fabb0cb450a9b7facd5be495d3a2b93ffc0c0febe0ca69e",
     "executableFiles": [
       "ad-video-skills/scripts/contact-sheet.sh",
       "ad-video-skills/scripts/probe-mp4.sh",
@@ -298,8 +298,8 @@
       {
         "path": "ad-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "6aa88bde84706996401df050330e9431cf57c7ef",
-        "size": 5449234
+        "oid": "791585d56dd0e9714b7451fe03b9777b5d3ef636",
+        "size": 5592105
       },
       {
         "path": "ad-video-skills/showcase.html",
@@ -424,8 +424,8 @@
       {
         "path": "data-animation-skills/showcase.gif",
         "mode": "100644",
-        "oid": "19c89fad6f98ed172fda6e2c59e5e983775b1bad",
-        "size": 6738860
+        "oid": "d17f13eb3ae5d18f19deb3028ff0120c6a90cf82",
+        "size": 6786224
       },
       {
         "path": "data-animation-skills/showcase.html",
@@ -550,8 +550,8 @@
       {
         "path": "ecommerce-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "d7359d8f4c5c1ca131d1e3adb339716652d7dc71",
-        "size": 3996715
+        "oid": "779529096caea4a51d93f38d20871213e30c83eb",
+        "size": 4007764
       },
       {
         "path": "ecommerce-video-skills/showcase.html",
@@ -856,8 +856,8 @@
       {
         "path": "freelance-motion-skills/showcase.gif",
         "mode": "100644",
-        "oid": "3d1644dee2274be7b5aed41ba005a94b23969687",
-        "size": 3562659
+        "oid": "763a7dc6610debe1d8098fe9b60b91c1f8e44a03",
+        "size": 3641970
       },
       {
         "path": "freelance-motion-skills/showcase.html",
@@ -1150,8 +1150,8 @@
       {
         "path": "manim-skills/showcase.gif",
         "mode": "100644",
-        "oid": "960564d724cae47307b01f18a28fcddd9b49ded7",
-        "size": 2557614
+        "oid": "f2e91de1b3b584432a56a2e89817dd2b465f149e",
+        "size": 2645747
       },
       {
         "path": "manim-skills/showcase.html",
@@ -1240,8 +1240,8 @@
       {
         "path": "map-animation-skills/showcase.gif",
         "mode": "100644",
-        "oid": "096ef5dc96be6cb1bdb8c30a54ca89bfb67277cc",
-        "size": 5267133
+        "oid": "5020ee5dbb2c50824141b602d0a5da3b78394408",
+        "size": 5342974
       },
       {
         "path": "map-animation-skills/showcase.html",
@@ -1660,8 +1660,8 @@
       {
         "path": "text-message-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "a8d304708940bc0fd3b3016538993cf4f055987d",
-        "size": 3573657
+        "oid": "928cf2c69c795db8bbd52d56c304a1acb3a365e0",
+        "size": 3588954
       },
       {
         "path": "text-message-video-skills/showcase.html",
@@ -1744,8 +1744,8 @@
       {
         "path": "tiktok-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "e1dcb4c03e30ec30063c4c2e4672415036246435",
-        "size": 3702143
+        "oid": "534d3106bde0a29c3938571e0c75e0701608dff6",
+        "size": 3794665
       },
       {
         "path": "tiktok-video-skills/showcase.html",
@@ -2254,8 +2254,8 @@
       {
         "path": "youtube-video-skills/showcase.gif",
         "mode": "100644",
-        "oid": "ff11135b5a60a2d86dd53327c87cd7afdef73835",
-        "size": 2910897
+        "oid": "ecd8c0774e7e98a5ae1d61154062875cb1772c79",
+        "size": 2966294
       },
       {
         "path": "youtube-video-skills/showcase.html",

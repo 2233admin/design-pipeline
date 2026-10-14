@@ -8,13 +8,13 @@ const path = require("node:path");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 const { createComponentFirstFixture } = require("../tests/fixtures/component-first-fixture.cjs");
-const { resolveChrome } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const localEnv = path.join(repoRoot, ".env.local");
 if (fs.existsSync(localEnv)) process.loadEnvFile(localEnv);
 let hostChrome;
-try { hostChrome = resolveChrome(); }
+try { hostChrome = resolveBrowser(); }
 catch (error) { if (error.code !== "TOOL_MISSING") throw error; }
 let failed = false;
 function report(ok, label) { console.log(`${ok ? "OK" : "FAIL"} ${label}`); if (!ok) failed = true; return ok; }
@@ -77,6 +77,8 @@ fs.mkdirSync(isolatedTmp, { recursive: true });
 const hermeticEnv = {
   ...process.env,
   ...(hostChrome ? { PUPPETEER_EXECUTABLE_PATH: hostChrome } : {}),
+  // On-demand vendor bundles (skill/scripts/vendor-cache.cjs) land here, inside tempRoot.
+  DESIGN_PIPELINE_CACHE: path.join(tempRoot, "cache"),
   TMPDIR: isolatedTmp,
   TEMP: isolatedTmp,
   TMP: isolatedTmp,
@@ -184,6 +186,8 @@ try {
   const archiveNames = new Set(tarEntries(path.join(outputA, "design-pipeline-skill.tgz")).map((entry) => entry.name));
   for (const resource of resources.required) report(archiveNames.has(`design-pipeline/${resource.replaceAll("\\", "/")}`), `archive contains ${resource}`);
   for (const resource of resources.generated) report(archiveNames.has(`design-pipeline/${resource.replaceAll("\\", "/")}`), `archive contains generated ${resource}`);
+  const skillFiles = [...archiveNames].filter((name) => name.split("/").at(-1) === "SKILL.md");
+  report(JSON.stringify(skillFiles) === JSON.stringify(["design-pipeline/SKILL.md"]), `archive holds exactly one SKILL.md${skillFiles.length > 1 ? `: also ${skillFiles.filter((name) => name !== "design-pipeline/SKILL.md").slice(0, 5).join(", ")}` : ""}`);
 
   const hashesBeforeFailure = Object.fromEntries(artifacts.map((name) => [name, hash(path.join(outputA, name))]));
   const invalidPack = run(process.execPath, [packageScript, "--output-root", outputA], { echo: false, env: { ...packageEnv, SOURCE_DATE_EPOCH: "invalid" } });
@@ -226,6 +230,19 @@ try {
     fs.rmSync(path.dirname(passingComponentFirst.projectRoot), { recursive: true, force: true });
   }
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "adaptation", "check", "--root", tempRoot, "--state", "adaptation-smoke/state.json", "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed layered adaptation contract smoke");
+  // MengTo and iart are downloaded on demand. Before a fetch the installed search names the fetch
+  // command; the cache is then seeded from the repository copy, which is what a verified fetch
+  // installs (the download itself is covered by tests/vendor-cache.test.cjs).
+  const unfetched = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "search", "--root", repoRoot, "--query", "gsap", "--json"], { echo: false, env: hermeticEnv });
+  let unfetchedPayload = null; try { unfetchedPayload = JSON.parse(unfetched.stdout); } catch {}
+  report(unfetched.status === 1 && unfetchedPayload?.error?.code === "TOOL_MISSING" && /sources fetch --bundle mengto-skills/.test(unfetchedPayload.error.message), "installed MengTo search names the fetch command before a download");
+  const installedDoctor = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "doctor", "--json"], { echo: false, env: hermeticEnv });
+  let installedDoctorPayload = null; try { installedDoctorPayload = JSON.parse(installedDoctor.stdout); } catch {}
+  report(installedDoctor.status === 0 && JSON.stringify(installedDoctorPayload?.downloads?.map((item) => item.bundle)) === JSON.stringify(["mengto-skills", "iart-motion-skills"]), "installed doctor lists the bundles to download without blocking");
+  for (const bundle of ["mengto-skills", "iart-motion-skills"]) {
+    const bundleManifest = readJson(path.join(repoRoot, "skill/vendor", bundle, "manifest.json"));
+    fs.cpSync(path.join(repoRoot, "skill/vendor", bundle, "upstream"), path.join(hermeticEnv.DESIGN_PIPELINE_CACHE, "vendor", bundle, bundleManifest.snapshot.treeSha256, "upstream"), { recursive: true });
+  }
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed MengTo snapshot verification");
   report(run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "designmd", "verify", "--root", repoRoot, "--json"], { echo: false, env: hermeticEnv }).status === 0, "installed DesignMD source verification");
   const installedDesignMdSearch = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "designmd", "search", "--root", repoRoot, "--query", "keyboard-first", "--limit", "1", "--json"], { echo: false, env: hermeticEnv });

@@ -127,11 +127,21 @@ does not install or repair anything.
 - Art Motion's browser study and Canvas runtime also run without npm dependencies. Use
   `--template art-motion` for its editable material study and clip example; load its
   [tool guide](../tools/art-motion/README.md) only when needed.
-- Headless Art Motion rendering (`designer-pipeline art-motion render`) uses the existing
-  project-local `puppeteer-core` and Chrome resolver. An existing HyperFrames project provides
-  both. Otherwise install `puppeteer-core` in the consuming project and pass
-  `--chrome <existing-browser-path>`; `--puppeteer-module` can select an existing module
-  explicitly. No global npm install is needed.
+- MengTo and iart upstream skills (about 200 MB) are not in the package. Run
+  `designer-pipeline sources fetch --all` (or `--bundle mengto-skills|iart-motion-skills`) once
+  with network access to `raw.githubusercontent.com`; every file is checked against the pinned
+  manifest before the tree is installed in the user cache (`~/.cache/design-pipeline`,
+  `~/Library/Caches/design-pipeline`, `%LOCALAPPDATA%\design-pipeline\Cache`, or
+  `DESIGN_PIPELINE_CACHE`). `doctor` lists bundles still to fetch; an offline machine can receive a
+  copy of that cache directory.
+- Browser-backed commands (film and composition capture, score render, interaction probes, Art
+  Motion render) use the project-local `puppeteer-core` and one shared browser resolver. It takes
+  `--chrome <path>`, then `PUPPETEER_EXECUTABLE_PATH`, then the HyperFrames headless shell
+  (`npx hyperframes browser ensure`, pinned and preferred for comparable renders), then an
+  installed Chrome, Edge or Chromium. A wrong explicit path fails instead of falling back. Art
+  Motion's `render-report.json` and interaction results record the browser and its version. An
+  existing HyperFrames project provides `puppeteer-core`; otherwise install it in the consuming
+  project or pass `--puppeteer-module`. No global npm install is needed.
 - Font subsetting alone needs FontTools: invoke its script with scoped
   `uv run --with fonttools python`. For repository tests, run
   `uv run --with fonttools --python 3.14 node scripts/qa.cjs`, then `npm run test:browser`.
