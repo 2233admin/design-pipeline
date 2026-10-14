@@ -31,6 +31,57 @@ function evaluated(root, candidate, options = {}) {
   return adaptation.evaluate(root, { candidate: candidate.id, evaluator: options.evaluator || "independent-evaluator", replay: options.replay || result(candidate.hash, "replay"), heldOut: options.heldOut || result(candidate.hash, "held-out") }).receipt;
 }
 
+test("a retrospective with related evaluation evidence enters the task-shadow lifecycle", t => {
+  const root = fixture(t);
+  const experienceFile = write(root, "retrospective.json", experience({
+    signal: "explicit",
+    evidence: ["Please ask one question at a time instead of presenting a batch."],
+  }));
+  const recorded = adaptation.record(root, { experience: experienceFile, scope: "task", recorder: "workflow-retrospective" }).experience;
+  const manifest = write(root, "evaluation-manifest.json", {
+    schema: "design-pipeline.adaptation-evaluation-manifest.v1",
+    rule: { dimension: "question-sequencing", value: "one-at-a-time" },
+    primaryMetric: "owner-question-corrections",
+    metricDirection: "minimize",
+    constructionFixtureIds: ["intake-one-question-at-a-time"],
+  });
+  const evaluationManifestHash = require("node:crypto").createHash("sha256").update(fs.readFileSync(path.join(root, manifest))).digest("hex");
+  const rules = write(root, "rules.json", [{
+    op: "add",
+    id: "question-sequencing",
+    rule: { dimension: "question-sequencing", value: "one-at-a-time" },
+  }]);
+
+  const result = adaptation.propose(root, {
+    experience: recorded.hash,
+    scope: "task",
+    proposer: "workflow-retrospective",
+    targetVersion: "task-session",
+    evaluationManifestHash,
+    primaryMetric: "owner-question-corrections",
+    metricDirection: "minimize",
+    constructionFixtureIds: ["intake-one-question-at-a-time"],
+    rules,
+  });
+  assert.equal(result.candidate.scope, "task");
+  const state = JSON.parse(fs.readFileSync(path.join(root, ".design-pipeline/adaptation/state.json"), "utf8"));
+  assert.equal(state.candidates[result.candidate.id].status, "task-shadow");
+  assert.equal(state.candidates[result.candidate.id].evaluationManifestHash, evaluationManifestHash);
+  assert.deepEqual(state.candidates[result.candidate.id].constructionFixtureIds, ["intake-one-question-at-a-time"]);
+});
+
+test("a free-text retrospective without evaluation inputs is recorded without proposing", t => {
+  const root = fixture(t);
+  const answer = write(root, "retrospective.json", experience({
+    signal: "explicit",
+    evidence: ["The final handoff made the next step easy to find."],
+  }));
+  const recorded = adaptation.record(root, { experience: answer, scope: "task", recorder: "workflow-retrospective" });
+  const state = JSON.parse(fs.readFileSync(path.join(root, ".design-pipeline/adaptation/state.json"), "utf8"));
+  assert.equal(state.experiences[recorded.experience.hash].explicit, true);
+  assert.deepEqual(state.candidates, {}, "missing manifest, metric, direction and fixture means stop after record");
+});
+
 test("lifecycle exports and durable candidates accept exactly one bounded operation", (t) => {
   assert.equal(adaptation.STATE_SCHEMA, "design-pipeline.adaptation-state.v1");
   const contract = JSON.parse(fs.readFileSync(path.join(__dirname, "../skill/references/adaptation-contract.schema.json"), "utf8"));

@@ -79,9 +79,14 @@ function recordRole(state, checkpoint, by) {
 // Stamps the role on what this decide call appended: the last entry of each history that grew, the
 // intake object it wrote, and one entry in state.decisions.roles that the statement reads.
 function stampRecord(state, before, checkpoint, role, options) {
+  let recommended;
   for (const key of HISTORIES) {
     const list = state.decisions[key];
-    if (Array.isArray(list) && list.length > (before[key] ?? 0)) Object.assign(list.at(-1), role);
+    if (Array.isArray(list) && list.length > (before[key] ?? 0)) {
+      const record = list.at(-1);
+      Object.assign(record, role);
+      if (record.recommended) recommended = structuredClone(record.recommended);
+    }
   }
   if (checkpoint === "intake" && state.decisions.intake && typeof state.decisions.intake === "object") Object.assign(state.decisions.intake, role);
   const answer = typeof options.answer === "string" && options.answer.trim() ? options.answer.trim().slice(0, 400) : null;
@@ -89,6 +94,7 @@ function stampRecord(state, before, checkpoint, role, options) {
     stage: checkpoint, ...role,
     ...(options.verdict ? { verdict: options.verdict } : {}),
     ...(options.choice !== undefined && options.choice !== null ? { choice: String(options.choice) } : {}),
+    ...(recommended ? { recommended } : {}),
     ...(answer ? { answer } : {}),
     at: new Date().toISOString(),
   }];
@@ -104,8 +110,18 @@ const stateHash = state => {
 };
 
 function describe(entry) {
+  const answer = entry.answer ? ` — "${entry.answer}"` : "";
+  if (entry.stage === "concept" && entry.by === "owner" && entry.recommended) {
+    return `Direction: owner chose ${entry.choice}; director recommended ${entry.recommended.choice}${answer}`;
+  }
+  if (entry.stage === "review" && entry.by === "owner" && entry.recommended) {
+    return `Final acceptance: owner chose ${entry.verdict}; director recommended ${entry.recommended.choice}${answer}`;
+  }
+  if (entry.stage === "review" && entry.by === "agent" && entry.verdict === "recommend") {
+    return `Final acceptance: director recommended ${entry.choice}${answer}`;
+  }
   const what = [entry.verdict, entry.choice && entry.choice !== "skip" ? entry.choice : null, entry.choice === "skip" ? "skipped the questions" : null].filter(Boolean).join(" ");
-  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer}"` : ""}`;
+  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${answer}`;
 }
 
 // Decisions stored as a single value rather than a history: each counts as unauthored when no role

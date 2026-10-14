@@ -238,10 +238,15 @@ review the checked draft frame by frame: `ffmpeg -i out.mp4 -vf fps=1 evidence/s
 open every frame at full size and look for text overlap, clipping, empty transitional frames,
 edge crowding, too-small text and wrong values. Fix, re-render and rerun `film check`; write the
 frame and creative review in `qa.md`. Then show the draft video, `evidence/contact-sheet.png` and
-a one-paragraph gate summary. The owner accepts, or rejects with one sentence
-(`decide --stage review --verdict accept|reject`). A rejection becomes a project rule that every
-later `next` returns and reopens the check. Every tier asks; quick reports `done` after an
-accepted draft, standard and full after the accepted draft's delivery render.
+a one-paragraph gate summary.
+
+Final acceptance is the owner's decision, not the director's. If `next` returns a `directorNote`,
+the director may record a separate note as `--by agent --stage review --verdict recommend
+--choice accept|reject [--answer "<note>"]`; it does not complete review. The owner then records
+acceptance with `--by owner --stage review --verdict accept --answer "<reason of at least 3 words>"`,
+or rejects with one sentence on what is wrong. A rejection becomes a project rule that every later
+`next` returns and reopens the check. Every tier asks; quick reports `done` after an accepted draft,
+standard and full after the accepted draft's delivery render.
 
 ## deliver
 

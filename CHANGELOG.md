@@ -15,6 +15,11 @@ All notable changes to Design Pipeline are documented here.
   record `by`. Existing projects must pass `--by` on their next `decide`; no compatibility default
   is added.
 
+- 4D phase 3 (#110): owner first-screen picks and final acceptance require at least three words of
+  reason; director web-concept/review recommendations stay separate and are recorded beside the
+  owner's decision; `done` offers an optional retrospective that enters task-scope adaptation
+  first and only proposes a task-shadow candidate when relevant evaluation inputs are available.
+
 ### Fixed
 
 - The installed dependency self-check now discovers standard Skills CLI user and project

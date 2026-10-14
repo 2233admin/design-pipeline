@@ -58,9 +58,12 @@ finding's `fix` and rerun. A new render or a changed `edit.json` reopens this st
 
 ## review
 
-Show the draft, the contact sheet and a one-paragraph gate summary. The user accepts, or rejects
-with one sentence (`decide --stage review --verdict accept|reject`). A rejection becomes a
-project rule.
+Show the draft, the contact sheet and a one-paragraph gate summary. Final acceptance stays with
+the owner; a director may record a separate note if `next` returns `directorNote`:
+`--by agent --stage review --verdict recommend --choice accept|reject [--answer "<note>"]`.
+That note does not close review. The owner accepts with `--by owner --stage review --verdict
+accept --answer "<reason of at least 3 words>"`, or rejects with one sentence on what is wrong.
+A rejection becomes a project rule.
 
 ## deliver
 

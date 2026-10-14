@@ -252,8 +252,20 @@ evidence with `decide --stage deliver --by agent`, then the owner accepts or rej
 interface, and a rejection returns to the work stage. Reaching done renders
 `.design-pipeline/diligence.md` from the workflow state: owner decisions with their reasons,
 delegated agent decisions, records without an author, the rule count, technical checks apart from
-owner acceptance, and a suggested `Assisted-by:` trailer. For actual surface
-verification and retained proof, follow [the QA recipe](qa-checklist.md#run-verification).
+owner acceptance, and a suggested `Assisted-by:` trailer. For actual surface verification and
+retained proof, follow [the QA recipe](qa-checklist.md#run-verification).
+
+Owner first-screen picks and final acceptances require `--answer` with at least three words; do not
+invent an owner's reason. With `--director`, a web concept or review checkpoint first gives the
+agent a recommendation step, but that record does not finish the owner's decision. `next` then asks
+the owner, whose record keeps the recommendation beside their choice. Final acceptance remains
+owner-only; a rejection keeps its existing feedback rule.
+
+The `done` action offers one optional question about a decision or handoff. If the owner answers,
+first record only the explicit task-scoped experience with `adaptation record`. Propose a
+task-shadow candidate only when the answer supports one bounded rule and a genuinely related
+evaluation manifest hash, primary metric, metric direction and construction fixture are available.
+Otherwise stop after recording: do not fabricate evaluation evidence or block `done`.
 
 A pending verification action also returns `verification`: `gate`, current `status`, the last
 `recordedStatus`, and `findings` with affected `path` and recovery `fix` when applicable. A recorded
