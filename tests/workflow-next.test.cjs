@@ -1241,6 +1241,8 @@ test("standard film walks intake, reference, concepts, plan, build, check, revie
   assert.ok(review.show.includes(path.join(dir, "out.mp4")));
   assert.equal(review.show.includes(path.join(dir, "evidence/contact-sheet.png")), false, "a missing contact sheet is not available to review");
   assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "reject" }), /one sentence/);
+  for (const answer of ["no", "ok", "暗"]) assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "reject", answer }), /at least 2 words/, answer);
+  assert.equal(readState(dir).decisions.drafts, undefined, "a refused rejection records nothing");
   decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The logo lands too early." });
   const again = nextAction(dir);
   assert.equal(again.stage, "check", "a rejection reopens the check for the rebuilt draft");
@@ -2598,6 +2600,9 @@ test("the probe binds the checked page, and the final review still turns a rejec
   assert.ok(stale.verification.findings.some(item => item.code === "workflow-input-changed" && item.path === "index.html"), JSON.stringify(stale.verification.findings));
   passProbe(root);
   assert.equal(nextAction(root).stage, "review");
+  for (const answer of ["no", "ok"]) assert.match(refusesCli(root, ["--stage", "review", "--verdict", "reject", "--answer", answer], "CONTRACT_INVALID").message, /at least 2 words/, answer);
+  assert.deepEqual(readState(root).rules, [], "a bare no at the final review records no rule");
+  assert.equal(nextAction(root).stage, "review", "and leaves the checked page under review");
   decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
   assert.deepEqual(readState(root).rules, [{ text: "The reserve button gets lost below the fold", from: "draft 1", scope: "project" }]);
   assert.equal(readState(root).gates.interaction, undefined);

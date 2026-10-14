@@ -9,7 +9,9 @@
 ## 2. Behaviour
 
 - [x] 2.1 `contract-utils.cjs`: `wordCount` takes a `cjkWeight` option (default two CJK characters
-  per word); `workflows/web.cjs` `reason()` needs two words with each CJK character as one.
+  per word); `reason()` needs two words with each CJK character as one. It lives in
+  `workflows/shared.cjs` so the shared final-review and film-sample rejections use it too
+  (Codex review on #114).
 - [x] 2.2 `workflows/web.cjs`: `rejectedUnchanged` keeps build open after a final-review rejection
   at every tier.
 - [x] 2.3 `workflows/roles.cjs`: the statement lists each rule's text and origin.

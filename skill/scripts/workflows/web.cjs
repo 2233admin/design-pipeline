@@ -13,9 +13,9 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { canonicalJson, fail, resolveInside, sha256, wordCount } = require("../contract-utils.cjs");
+const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
-const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, reference } = require("./shared.cjs");
+const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, reason, reference, statement } = require("./shared.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -44,18 +44,6 @@ const fileSha = (root, rel) => {
 };
 const fileText = (root, rel) => projectFile(root, rel)?.toString("utf8") ?? null;
 
-// A decision stated for the owner must carry content: a go-ahead such as "ok, start" is the silent
-// default these records replace, so it needs six words (two CJK characters count as one). A "no" is
-// the owner's own feedback and is taken as given: "首屏太暗了", "太挤" or "too dark" is a complete
-// reason, so it needs only two words with each CJK character counting as one, which still refuses a
-// bare "no" or "ok". When a short reason is ambiguous, ask about the real ambiguity, never for length.
-function meaningful(answer, minimum, what, flag = "--answer", { cjkWeight = 0.5, unit = "two CJK characters count as one" } = {}) {
-  const text = typeof answer === "string" ? answer.trim() : "";
-  if (wordCount(text, { cjkWeight }) < minimum) fail("workflow", `${flag} must ${what} (at least ${minimum} words; ${unit})`);
-  return text;
-}
-const statement = (answer, what) => meaningful(answer, 6, what);
-const reason = (answer, what, flag) => meaningful(answer, 2, what, flag, { cjkWeight: 1, unit: "each CJK character counts as one" });
 
 // --- intake: a conversation that ends in a confirmed playback, or a stated skip ----------------------
 
