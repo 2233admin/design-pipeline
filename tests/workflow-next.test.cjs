@@ -2130,8 +2130,9 @@ test("a web skip records only a stated decision through the CLI, and web intake 
 });
 
 // A go-ahead is not a decision: a stated decision (the skip line, the confirmed playback) needs six
-// words and every "no" three, where two CJK characters count as one word.
-test("stated decisions need six words and every no three, through the CLI", t => {
+// words, two CJK characters counting as one. A "no" is the owner's own feedback: two words, each CJK
+// character counting as one, so short Chinese feedback is a complete reason and a bare "no" is not.
+test("stated decisions need six words and every no two, through the CLI", t => {
   const root = webProject(t), quick = webProject(t, { tier: "quick" });
   const intake = (...args) => ["--stage", "intake", ...args];
   for (const answer of ["OK, start.", "proceed", "do it", "just start", "yes, build it as shown", "默认", "直接开始吧", "我要做一个面包店的预订"]) {
@@ -2139,10 +2140,10 @@ test("stated decisions need six words and every no three, through the CLI", t =>
       assert.match(refusesCli(project, [...args, "--answer", answer], "CONTRACT_INVALID").message, /at least 6 words/, `${args.join(" ")} --answer ${answer}`);
     }
   }
-  const tooShort = ["no", "Too dark", "首屏太暗了"];
-  for (const answer of tooShort) assert.match(refusesCli(root, intake("--verdict", "reject", "--answer", answer), "CONTRACT_INVALID").message, /at least 3 words/, answer);
-  for (const answer of ["No stock photos", "The hero is too dark", "首屏太暗了吧"]) decideCli(root, ...intake("--verdict", "reject", "--answer", answer));
-  assert.deepEqual(readState(root).rules.map(rule => rule.text), ["No stock photos", "The hero is too dark", "首屏太暗了吧"]);
+  const tooShort = ["no", "ok", "暗"];
+  for (const answer of tooShort) assert.match(refusesCli(root, intake("--verdict", "reject", "--answer", answer), "CONTRACT_INVALID").message, /at least 2 words; each CJK character counts as one/, answer);
+  for (const answer of ["Too dark", "首屏太暗了", "太挤"]) decideCli(root, ...intake("--verdict", "reject", "--answer", answer));
+  assert.deepEqual(readState(root).rules.map(rule => rule.text), ["Too dark", "首屏太暗了", "太挤"], "short owner feedback is a complete reason");
   assert.equal(decideCli(root, ...intake("--choice", "skip", "--answer", STATED)).stage, "reference");
   decideCli(root, ...intake("--choice", "skip", "--answer", "我要做一个面包店的预订页"));
   assert.equal(readState(root).decisions.intake.answer, "我要做一个面包店的预订页", "twelve CJK characters are six words");
@@ -2151,9 +2152,9 @@ test("stated decisions need six words and every no three, through the CLI", t =>
   const built = approved(t, ["first-screen"]);
   buildPage(built, ["first-screen"]);
   const section = answer => ["--stage", "section", "--choice", "first-screen", "--verdict", "reject", "--answer", answer];
-  for (const answer of tooShort) assert.match(refusesCli(built, section(answer), "CONTRACT_INVALID").message, /at least 3 words/, answer);
-  decideCli(built, ...section("The hero is too dark"));
-  assert.deepEqual(readState(built).rules, [{ text: "The hero is too dark", from: "section first-screen 1", scope: "project" }]);
+  for (const answer of tooShort) assert.match(refusesCli(built, section(answer), "CONTRACT_INVALID").message, /at least 2 words/, answer);
+  decideCli(built, ...section("首屏太暗了"));
+  assert.deepEqual(readState(built).rules, [{ text: "首屏太暗了", from: "section first-screen 1", scope: "project" }]);
 });
 
 test("anti-goals named with the confirmed playback or a skip become project rules through the CLI", t => {
@@ -2161,7 +2162,7 @@ test("anti-goals named with the confirmed playback or a skip become project rule
   const goals = (...texts) => texts.flatMap(text => ["--anti-goal", text]);
   const root = webProject(t);
   const accept = ["--stage", "intake", "--verdict", "accept", "--answer", PLAYBACK];
-  assert.match(refusesCli(root, [...accept, ...goals("No ads")], "CONTRACT_INVALID").message, /at least 3 words/, "an anti-goal is a no");
+  assert.match(refusesCli(root, [...accept, ...goals("Ads")], "CONTRACT_INVALID").message, /at least 2 words/, "an anti-goal is a no");
   assert.match(refusesCli(root, ["--stage", "intake", "--verdict", "reject", "--answer", "It is for florists, not bakeries", ...goals("Never look like a delivery app")], "CONTRACT_INVALID").message, /--anti-goal/, "a correction is already a rule");
   decideCli(root, ...accept, ...goals("Never look like a delivery app"));
   assert.deepEqual(readState(root).rules, [{ text: "Never look like a delivery app", from: "anti-goal 1", scope: "project" }]);

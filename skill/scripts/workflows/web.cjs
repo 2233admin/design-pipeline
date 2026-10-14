@@ -44,16 +44,18 @@ const fileSha = (root, rel) => {
 };
 const fileText = (root, rel) => projectFile(root, rel)?.toString("utf8") ?? null;
 
-// A recorded decision or "no" must carry content: a go-ahead such as "ok, start" is the silent default
-// these records replace. Words are runs of letters or digits, and two CJK characters count as one. A
-// decision stated for the owner names what was decided in a sentence; a reason says what is wrong.
-function meaningful(answer, minimum, what, flag = "--answer") {
+// A decision stated for the owner must carry content: a go-ahead such as "ok, start" is the silent
+// default these records replace, so it needs six words (two CJK characters count as one). A "no" is
+// the owner's own feedback and is taken as given: "首屏太暗了", "太挤" or "too dark" is a complete
+// reason, so it needs only two words with each CJK character counting as one, which still refuses a
+// bare "no" or "ok". When a short reason is ambiguous, ask about the real ambiguity, never for length.
+function meaningful(answer, minimum, what, flag = "--answer", { cjkWeight = 0.5, unit = "two CJK characters count as one" } = {}) {
   const text = typeof answer === "string" ? answer.trim() : "";
-  if (wordCount(text) < minimum) fail("workflow", `${flag} must ${what} (at least ${minimum} words; two CJK characters count as one)`);
+  if (wordCount(text, { cjkWeight }) < minimum) fail("workflow", `${flag} must ${what} (at least ${minimum} words; ${unit})`);
   return text;
 }
 const statement = (answer, what) => meaningful(answer, 6, what);
-const reason = (answer, what, flag) => meaningful(answer, 3, what, flag);
+const reason = (answer, what, flag) => meaningful(answer, 2, what, flag, { cjkWeight: 1, unit: "each CJK character counts as one" });
 
 // --- intake: a conversation that ends in a confirmed playback, or a stated skip ----------------------
 
