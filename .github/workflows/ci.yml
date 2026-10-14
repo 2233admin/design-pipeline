@@ -80,7 +80,19 @@ jobs:
         run: npm run specs:check
 
       - name: Hermetic QA
-        run: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$RUNNER_TEMP/qa.log"
+
+      - name: Annotate QA failures
+        # Puts each failed QA line and failing test (with the start of its error) on the PR as an
+        # annotation, so a failure is readable without downloading the job log.
+        if: failure()
+        shell: bash
+        run: |
+          grep -E '^FAIL ' "$RUNNER_TEMP/qa.log" | head -20 | while IFS= read -r line; do echo "::error title=QA::$line"; done
+          awk '/^[[:space:]]*not ok /{if(n>0) print block; block=$0; n=25; next} n>0{block=block "%0A" $0; n--; if(n==0){print block}} END{if(n>0) print block}' "$RUNNER_TEMP/qa.log" | head -10 | while IFS= read -r block; do echo "::error title=Failing test::$block"; done
 
       - name: Package
         run: npm run package:skill -- --output-root dist
