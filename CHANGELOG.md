@@ -4,6 +4,17 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Decisions record who made them (change `adopt-ai-fluency-decision-roles`, phase 1, #108). Each
+  workflow keeps a delegation map; `decide` requires `--by owner|agent` and refuses agent records
+  where the owner decides; final acceptance is locked to the owner and no longer routed to an art
+  director; web quick, edit quick and every ui tier now end with the owner's final review;
+  reaching done renders `.design-pipeline/diligence.md` (also `designer-pipeline diligence`).
+  Direction selections and template selection receipts record who selected, and plan approvals
+  record `by`. Existing projects must pass `--by` on their next `decide`; no compatibility default
+  is added.
+
 ### Fixed
 
 - The installed dependency self-check now discovers standard Skills CLI user and project

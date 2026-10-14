@@ -3,8 +3,8 @@
 Motion-first websites and pages. `designer-pipeline next` names the current stage; read only that
 section. Stage order:
 
-- `quick` brief/freeform: intake, components, build, probe; `quick` replicate: intake, reference,
-  components, build, probe.
+- `quick` brief/freeform: intake, components, build, probe, review; `quick` replicate: intake,
+  reference, components, build, probe, review.
 - `standard` and `full` brief/freeform: intake, reference, concepts, components, description, build,
   probe, review, deliver. Replicate keeps the reference direction and omits replacement concepts:
   intake, reference, components, description, build, probe, review, deliver.
@@ -14,7 +14,16 @@ the owner confirms, three switchable first-screen variants (not in replicate), a
 concrete decisions with recommended answers (further rounds when an answer depends on another),
 and a one-page description the owner approves. Only then is the page built, one section at a
 time, each reviewed by the owner, before the final review. `quick` states what was decided for
-the owner instead of asking.
+the owner instead of asking, and still ends with the owner's final review: a passed probe shows
+the page works, never that it looks right.
+
+Each project keeps a delegation map in `state.delegation`: per checkpoint (`decide --stage`
+names plus `creative-intent`), whether the owner or the agent decides it. The intake ask carries
+it as `delegation`; tell the owner in the playback what you will decide, and record their changes
+on the intake record with repeatable `--delegate <checkpoint>` and `--keep <checkpoint>`. Every
+`decide` names its recorder with `--by owner|agent`; returned commands already carry it.
+`--by agent` is refused where the owner decides, and always for final acceptance and creative
+intent.
 
 Every "no" the owner gives on the way becomes a project rule in `state.rules`, the same record a
 rejected draft makes, and so does each anti-goal of the confirmed playback or stated skip. The
@@ -323,7 +332,8 @@ that drops a section's marker returns to building that section; a `data-section`
 HTML comment does not count. Verdicts bind the current description approval: recording the
 identical approval again keeps them, and a different approval makes every section ask again. Rules
 apply going forward and never silently reopen accepted sections. With `--director`, the section
-asks go to the art director. History in `decisions.sections`.
+asks go to the art director, which records with `--by agent` and is named on the record; final
+acceptance never goes to the director. History in `decisions.sections`.
 
 When the project already carries runtime-review inputs ([runtime-review.md](runtime-review.md)),
 Feedback the owner leaves on its runtime-review page can be recorded with `runtime-review record`
@@ -612,8 +622,9 @@ afterwards reopens this stage, and with it review and delivery.
 
 ## review
 
-Final acceptance of the whole checked page, after each section was reviewed in the build. The
-section verdicts do not replace it.
+Final acceptance of the whole checked page, after each section was reviewed in the build (at
+`quick`, right after the probe). The section verdicts do not replace it. It is locked to the owner:
+record it only with `--by owner`, and never route it to an art director.
 
 Before showing the page, walk the `UC-` items of `ui-craft-sources.md#review-checklist` that apply
 to what changed (motion feel and timing, focus, semantics, forms, copy, states). Record each result

@@ -42,8 +42,9 @@ creative-work course as the model for these gaps, with these decisions:
 - Two checkpoints are locked to the owner: final acceptance and creative intent. Neither can be
   delegated.
 - Every deliverable at every tier ends with the owner's acceptance (owner decision): aesthetic
-  quality cannot be accepted the way working code is. Web quick gains a review after its probe and
-  ui gains one before delivery, following film/edit quick, which already end at the owner's review.
+  quality cannot be accepted the way working code is. Web and edit quick gain a review after their
+  check and ui gains one after its work, following film quick, which already ends at the owner's
+  review.
 
 **Decision roles: each record says who decided.**
 
