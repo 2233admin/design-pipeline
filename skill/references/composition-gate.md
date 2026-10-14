@@ -14,9 +14,10 @@ designer-pipeline composition capture --composition index.html --output qa/comp 
 designer-pipeline verify composition --image qa/comp/screenshot.png --elements qa/comp/elements.json --profile ui|poster|frame
 ```
 
-`composition capture` loads a local HTML file or http(s) URL in headless Chrome (the HyperFrames
-browser stack) and writes `screenshot.png` plus `elements.json` (visible text with box, size,
-weight and effective colors). `--seek` positions registered GSAP timelines first. Without
+`composition capture` loads a local HTML file or http(s) URL in a headless browser (the
+HyperFrames headless shell, else an installed Chrome, Edge or Chromium; see installation.md) and
+writes `screenshot.png` plus `elements.json` (visible text with box, size, weight and effective
+colors). `--seek` positions registered GSAP timelines first. Without
 `--elements` the gate runs on pixels alone.
 
 Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1, 3:1 large),

@@ -17,7 +17,8 @@ const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 const { checkFilmLayout } = require("../skill/scripts/composition-core.cjs");
 const { checkFilmProject, layoutTimes, scaffoldFilm } = require("../skill/scripts/film-project-core.cjs");
-const { captureLayout, resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { captureLayout, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 
 const cli = path.join(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const refs = path.join(__dirname, "../skill/references/film-choreography");
@@ -140,7 +141,7 @@ function browserTools() {
   try {
     const puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE || require.resolve("puppeteer-core");
     resolvePuppeteer(process.cwd(), puppeteerModule);
-    return { puppeteerModule, chrome: resolveChrome(), gsap: require.resolve("gsap/dist/gsap.min.js") };
+    return { puppeteerModule, chrome: resolveBrowser(), gsap: require.resolve("gsap/dist/gsap.min.js") };
   } catch (error) {
     if (!["TOOL_MISSING", "MODULE_NOT_FOUND"].includes(error.code)) throw error;
     return { skip: `browser or GSAP unavailable: ${error.message}` };

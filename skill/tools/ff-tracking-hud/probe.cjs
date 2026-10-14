@@ -7,7 +7,8 @@
 //   node probe.cjs [--gpu auto|hardware|software] [--dpr 1|2] [--frames 4,9,13] [--chrome <exe>]
 //
 // It serves this directory over local HTTP, opens index.html in the HyperFrames headless Chrome
-// with HyperFrames' GPU flags, and writes evidence/self-test.json:
+// (else an installed Chrome, Edge or Chromium; see lib/browser-locate.cjs) with HyperFrames' GPU
+// flags, and writes evidence/self-test.json:
 // - determinism: SHA-256 of the page screenshot (what HyperFrames captures) and of the lens
 //   pixels for every sampled frame after forward, backward and shuffled seeks of the paused
 //   timeline, and again in a second browser process; any difference fails;
@@ -26,7 +27,6 @@
 // Passing is technical conformance of this composition, never creative or visual acceptance.
 
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const http = require("node:http");
 const crypto = require("node:crypto");
@@ -59,19 +59,6 @@ function parseArgs(argv) {
   return options;
 }
 
-function newestChrome() {
-  const root = path.join(os.homedir(), ".cache", "hyperframes", "chrome", "chrome-headless-shell");
-  if (!fs.existsSync(root)) return null;
-  const exe = process.platform === "win32" ? "chrome-headless-shell.exe" : "chrome-headless-shell";
-  for (const build of fs.readdirSync(root).sort().reverse()) {
-    for (const sub of fs.readdirSync(path.join(root, build))) {
-      const candidate = path.join(root, build, sub, exe);
-      if (fs.existsSync(candidate)) return candidate;
-    }
-  }
-  return null;
-}
-
 function environment(dir, options) {
   let puppeteer;
   try {
@@ -79,8 +66,13 @@ function environment(dir, options) {
   } catch {
     throw Object.assign(new Error("puppeteer-core not found. Fix: run `npm install` in this project (hyperframes installs it)"), { exitCode: 1 });
   }
-  const chrome = options.chrome || process.env.HYPERFRAMES_BROWSER_PATH || process.env.PUPPETEER_EXECUTABLE_PATH || newestChrome();
-  if (!chrome || !fs.existsSync(chrome)) throw Object.assign(new Error("HyperFrames headless Chrome not found. Fix: run `npx --no-install hyperframes browser ensure`, or pass --chrome <exe>"), { exitCode: 1 });
+  // A scaffolded film carries the skill's shared resolver as lib/browser-locate.cjs; the probe
+  // loaded from the skill itself (skill/tools/ff-tracking-hud) uses the canonical one.
+  const local = path.join(__dirname, "lib/browser-locate.cjs");
+  const { resolveBrowser } = require(fs.existsSync(local) ? local : path.join(__dirname, "../../scripts/browser-locate.cjs"));
+  let chrome;
+  try { chrome = resolveBrowser(options.chrome || undefined); }
+  catch (error) { throw Object.assign(error, { exitCode: 1 }); }
   return { puppeteer, chrome };
 }
 

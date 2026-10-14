@@ -10,6 +10,8 @@ const test = require("node:test");
 const { canonicalTree, frontmatter } = require("../scripts/git-tree-snapshot.cjs");
 const { gitTreeId } = require("../skill/scripts/mengto-skills-core.cjs");
 const { REVIEWED } = require("../scripts/import-film-sources.cjs");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
+const { restoreUpstreamNames, storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const vendorRoot = path.join(repoRoot, "skill/vendor");
@@ -43,13 +45,13 @@ function verifySnapshot(name, root) {
   assert.equal(manifest.source.license, "MIT");
   assert.deepEqual(manifest.source.scope, ["**"]);
   assert.deepEqual(manifest.excluded, []);
-  const files = filesIn(upstream);
+  const files = upstreamFilesIn(upstream);
   assert.equal(files.length, reviewed.fileCount);
   assert.deepEqual(manifest.snapshot.objects.map(object => object.path).sort(), files);
   let bytes = 0;
   for (const object of manifest.snapshot.objects) {
     assert.ok(["100644", "100755"].includes(object.mode), object.path);
-    const content = fs.readFileSync(path.join(upstream, object.path));
+    const content = fs.readFileSync(path.join(upstream, storedPath(object.path)));
     bytes += content.length;
     assert.equal(content.length, object.size, object.path);
     assert.equal(crypto.createHash("sha1").update(`blob ${content.length}\0`).update(content).digest("hex"), object.oid, object.path);
@@ -66,7 +68,7 @@ function verifySnapshot(name, root) {
   assert.ok(fs.readFileSync(path.join(upstream, "LICENSE"), "utf8").includes(reviewed.copyright));
   for (const notice of reviewed.notices || []) assert.ok(fs.readFileSync(path.join(root, notice.path), "utf8").includes(notice.copyright), notice.path);
   if (reviewed.kind === "skill") {
-    assert.equal(frontmatter(path.join(upstream, reviewed.entry)).name, reviewed.skillName);
+    assert.equal(frontmatter(path.join(upstream, storedPath(reviewed.entry))).name, reviewed.skillName);
     assert.equal(manifest.skills[0].path, `upstream/${reviewed.entry}`);
     assert.equal(manifest.templates, undefined);
   } else {
@@ -87,7 +89,7 @@ for (const name of Object.keys(REVIEWED)) {
     const resources = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/package-resources.json"), "utf8"));
     const prefix = `vendor/${name}/upstream/`;
     assert.ok(resources.required.includes(`vendor/${name}/manifest.json`));
-    assert.deepEqual(resources.required.filter(file => file.startsWith(prefix)).map(file => file.slice(prefix.length)).sort(), manifest.snapshot.objects.map(object => object.path).sort());
+    assert.deepEqual(resources.required.filter(file => file.startsWith(prefix)).map(file => file.slice(prefix.length)).sort(), manifest.snapshot.objects.map(object => storedPath(object.path)).sort());
   });
 
   test(`${name} import reproduces reviewed blobs offline and rejects unsafe refresh without replacing them`, () => {
@@ -96,8 +98,11 @@ for (const name of Object.keys(REVIEWED)) {
       const scripts = path.join(root, "scripts");
       fs.mkdirSync(scripts);
       for (const file of ["import-film-sources.cjs", "git-tree-snapshot.cjs"]) fs.copyFileSync(path.join(repoRoot, "scripts", file), path.join(scripts, file));
+      fs.mkdirSync(path.join(root, "skill/scripts"), { recursive: true });
+      fs.copyFileSync(path.join(repoRoot, "skill/scripts/upstream-path.cjs"), path.join(root, "skill/scripts/upstream-path.cjs"));
       const source = path.join(root, "source");
       fs.cpSync(path.join(vendorRoot, name, "upstream"), source, { recursive: true });
+      restoreUpstreamNames(source);
       const git = (args, options = {}) => {
         const result = run("git", args, source, options);
         assert.equal(result.status, 0, result.stderr);
@@ -120,12 +125,12 @@ for (const name of Object.keys(REVIEWED)) {
       assert.equal(imported.status, 0, imported.stderr || imported.stdout);
       const destination = path.join(root, "skill/vendor", name);
       verifySnapshot(name, destination);
-      const before = canonicalTree(destination, filesIn(destination));
+      const before = storedTree(destination);
       const rejects = (pattern, extra = []) => {
         const result = invoke(extra);
         assert.equal(result.status, 1, result.stdout);
         assert.match(result.stderr, pattern);
-        assert.equal(canonicalTree(destination, filesIn(destination)), before);
+        assert.equal(storedTree(destination), before);
         assert.deepEqual(fs.readdirSync(path.dirname(destination)), [name]);
       };
       fs.appendFileSync(path.join(source, "README.md"), "modified bytes\n");
@@ -157,7 +162,7 @@ for (const name of Object.keys(REVIEWED)) {
       const object = manifest.snapshot.objects.find(item => item.path === "README.md");
       object.oid = crypto.createHash("sha1").update(`blob ${corrupted.length}\0`).update(corrupted).digest("hex");
       object.sha256 = crypto.createHash("sha256").update(corrupted).digest("hex");
-      manifest.snapshot.treeSha256 = canonicalTree(path.join(root, "upstream"), filesIn(path.join(root, "upstream")));
+      manifest.snapshot.treeSha256 = storedTree(path.join(root, "upstream"));
       fs.writeFileSync(manifestPath, JSON.stringify(manifest));
       assert.throws(() => verifySnapshot(name, root), /Expected values to be strictly equal/);
       fs.copyFileSync(path.join(vendorRoot, name, "manifest.json"), manifestPath);
@@ -182,7 +187,7 @@ test("isolated release archive carries every film source blob without ambient so
     for (const name of Object.keys(REVIEWED)) {
       const installed = path.join(root, "design-pipeline/vendor", name);
       const manifest = verifySnapshot(name, installed);
-      for (const object of manifest.snapshot.objects) assert.deepEqual(fs.readFileSync(path.join(installed, "upstream", object.path)), fs.readFileSync(path.join(vendorRoot, name, "upstream", object.path)), object.path);
+      for (const object of manifest.snapshot.objects) assert.deepEqual(fs.readFileSync(path.join(installed, "upstream", storedPath(object.path))), fs.readFileSync(path.join(vendorRoot, name, "upstream", storedPath(object.path))), object.path);
     }
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });

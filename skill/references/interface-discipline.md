@@ -14,13 +14,13 @@ notice, and integrity test.
 
 | Concern | Bundled source | Pipeline responsibility |
 | --- | --- | --- |
-| Review orchestration | `upstream/skills/better-interface/SKILL.md` | Select `full` or `quick` review scope, then keep the final scope and result in `qa.md`. |
+| Review orchestration | `upstream/skills/better-interface/UPSTREAM-SKILL.md` | Select `full` or `quick` review scope, then keep the final scope and result in `qa.md`. |
 | Accessibility | `upstream/skills/better-accessibility/` | Semantic structure, keyboard/focus behavior, forms, hit areas, zoom, screen-reader behavior, and reduced motion. |
 | Layout | `upstream/skills/better-layout/` | Grouping, alignment, spacing, responsive composition, and density. |
 | Typography | `upstream/skills/better-typography/` | Font choice, scale, spacing, wrapping, punctuation, OpenType, and accessible reading. |
 | Color | `upstream/skills/better-colors/` | Palette roles, contrast, conversion, gamut, and color-token usage. |
 | UI polish | `upstream/skills/better-ui/` | Surfaces, iconography, animation, and UI-performance constraints. |
-| Product writing | `upstream/skills/better-writing/SKILL.md` | Actionable, concise, consistent UI copy. |
+| Product writing | `upstream/skills/better-writing/UPSTREAM-SKILL.md` | Actionable, concise, consistent UI copy. |
 | Change-scoped review | `upstream/skills/interface-review/` | Diff scope, consumer expansion, removed-signal inspection, and `Introduced` / `Regression` / `Pre-existing` finding status. |
 
 The bundled source is authoritative for the detailed rules. This document wires it into the
@@ -29,12 +29,12 @@ pipeline; it does not paraphrase or weaken individual checks.
 ## Operating Protocol
 
 1. For product UI, flows, design-system work, reviews, or user-visible UI changes, start with
-   `upstream/skills/better-interface/SKILL.md`.
+   `upstream/skills/better-interface/UPSTREAM-SKILL.md`.
 2. Use its `full` mode by default: assess all six quality domains. Use `quick` only for a
    genuinely narrow repair, inspect the dominant issue deeply, and fast-scan the other domains.
    Widen back to `full` when the change affects a flow, shared component, token, layout pattern,
    interaction model, or multiple domains.
-3. Read the selected domain `SKILL.md` and only the referenced detail files relevant to the
+3. Read the selected domain `UPSTREAM-SKILL.md` and only the referenced detail files relevant to the
    change. Keep existing project design-system and framework conventions unless the design change
    explicitly replaces them.
    When styles are involved, also follow `good-css.md` and its matched original practice entries
@@ -44,7 +44,7 @@ pipeline; it does not paraphrase or weaken individual checks.
    Keep its contextual taste preferences inside project authority; review the actual UI through
    these six domains. Taste's style or image checklist does not replace accessibility, diff scope,
    behavior checks, Component Conformance or the owner's Visual Acceptance.
-4. For a diff, review `upstream/skills/interface-review/SKILL.md` before judging results. Resolve
+4. For a diff, review `upstream/skills/interface-review/UPSTREAM-SKILL.md` before judging results. Resolve
    the affected UI and its consumers, inspect removed lines where applicable, and classify every
    finding as `Introduced`, `Regression`, or `Pre-existing`. Do not make a pre-existing problem
    look caused by the current change.

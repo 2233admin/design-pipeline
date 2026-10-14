@@ -8,13 +8,13 @@ const path = require("node:path");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 const { createComponentFirstFixture } = require("../tests/fixtures/component-first-fixture.cjs");
-const { resolveChrome } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const localEnv = path.join(repoRoot, ".env.local");
 if (fs.existsSync(localEnv)) process.loadEnvFile(localEnv);
 let hostChrome;
-try { hostChrome = resolveChrome(); }
+try { hostChrome = resolveBrowser(); }
 catch (error) { if (error.code !== "TOOL_MISSING") throw error; }
 let failed = false;
 function report(ok, label) { console.log(`${ok ? "OK" : "FAIL"} ${label}`); if (!ok) failed = true; return ok; }
@@ -184,6 +184,8 @@ try {
   const archiveNames = new Set(tarEntries(path.join(outputA, "design-pipeline-skill.tgz")).map((entry) => entry.name));
   for (const resource of resources.required) report(archiveNames.has(`design-pipeline/${resource.replaceAll("\\", "/")}`), `archive contains ${resource}`);
   for (const resource of resources.generated) report(archiveNames.has(`design-pipeline/${resource.replaceAll("\\", "/")}`), `archive contains generated ${resource}`);
+  const skillFiles = [...archiveNames].filter((name) => name.split("/").at(-1) === "SKILL.md");
+  report(JSON.stringify(skillFiles) === JSON.stringify(["design-pipeline/SKILL.md"]), `archive holds exactly one SKILL.md${skillFiles.length > 1 ? `: also ${skillFiles.filter((name) => name !== "design-pipeline/SKILL.md").slice(0, 5).join(", ")}` : ""}`);
 
   const hashesBeforeFailure = Object.fromEntries(artifacts.map((name) => [name, hash(path.join(outputA, name))]));
   const invalidPack = run(process.execPath, [packageScript, "--output-root", outputA], { echo: false, env: { ...packageEnv, SOURCE_DATE_EPOCH: "invalid" } });

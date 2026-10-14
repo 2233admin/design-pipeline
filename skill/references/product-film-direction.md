@@ -188,7 +188,7 @@ fixed rules: a brief may call for several focal points, a static camera, equal l
 cropping, or another deliberate composition. The user's direction and shot evidence decide. Do not
 add storyboard fields or make source-specific grid sizes, parallax ratios, camera counts, or aspect
 ratios mandatory. For the full optional method, read the bundled
-[`shot-composition` playbook](../vendor/iart-motion-skills/upstream/motion-design-skills/skills/shot-composition/SKILL.md),
+[`shot-composition` playbook](../vendor/iart-motion-skills/upstream/motion-design-skills/skills/shot-composition/UPSTREAM-SKILL.md),
 from [iart-ai/motion-design-skills at `3c129f769d90a1328c209c386492333c9ac62312`](https://github.com/iart-ai/motion-design-skills/blob/3c129f769d90a1328c209c386492333c9ac62312/skills/shot-composition/SKILL.md).
 
 Completion: every beat has an action and handoff; major claims have a visible demonstration;

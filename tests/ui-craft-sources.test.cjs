@@ -9,6 +9,8 @@ const { spawnSync } = require("node:child_process");
 const test = require("node:test");
 const { canonicalTree } = require("../scripts/git-tree-snapshot.cjs");
 const { REVIEWED, skillMetadata } = require("../scripts/import-ui-craft-sources.cjs");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
+const { restoreUpstreamNames, storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const skillRoot = path.join(repoRoot, "skill");
@@ -38,14 +40,6 @@ const EXPECTED_FILES = {
   ])],
 };
 
-function filesIn(root, relative = "") {
-  return fs.readdirSync(path.join(root, relative), { withFileTypes: true }).flatMap(entry => {
-    const file = relative ? `${relative}/${entry.name}` : entry.name;
-    assert.equal(fs.lstatSync(path.join(root, file)).isSymbolicLink(), false, file);
-    return entry.isDirectory() ? filesIn(root, file) : [file];
-  }).sort();
-}
-
 function run(command, args, cwd, env = {}) {
   const result = spawnSync(command, args, { cwd, encoding: "utf8", windowsHide: true, env: { ...process.env, ...env }, maxBuffer: 64 * 1024 * 1024 });
   assert.equal(result.error, undefined, result.error?.message);
@@ -73,13 +67,13 @@ function verifySnapshot(name, root) {
   assert.deepEqual(manifest.source.scope, [`skills/${reviewed.skill}/**`, ...reviewed.rootFiles]);
   assert.match(manifest.source.contentHashScope, /^selected skill and root metadata: .*gitTree is the upstream repository root, not this scoped snapshot$/);
 
-  const files = filesIn(upstream);
+  const files = upstreamFilesIn(upstream);
   assert.deepEqual(files, expected);
   assert.deepEqual(manifest.snapshot.objects.map(object => object.path).sort(), expected);
   assert.equal(manifest.snapshot.root, "upstream");
   let bytes = 0;
   for (const object of manifest.snapshot.objects) {
-    const content = fs.readFileSync(path.join(upstream, object.path));
+    const content = fs.readFileSync(path.join(upstream, storedPath(object.path)));
     bytes += content.length;
     assert.equal(object.mode, "100644", object.path);
     assert.equal(object.size, content.length, object.path);
@@ -94,7 +88,7 @@ function verifySnapshot(name, root) {
   assert.equal(canonicalTree(upstream, files), reviewed.treeSha256);
   assert.deepEqual(manifest.snapshot.executableFiles, []);
 
-  const entryText = fs.readFileSync(path.join(upstream, entry), "utf8");
+  const entryText = fs.readFileSync(path.join(upstream, storedPath(entry)), "utf8");
   const metadata = skillMetadata(entryText);
   assert.equal(metadata.name, reviewed.skill);
   assert.ok(metadata.description.length > 20, name);
@@ -140,7 +134,7 @@ for (const name of Object.keys(REVIEWED)) {
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     fs.cpSync(path.join(vendorRoot, name), root, { recursive: true });
     verifySnapshot(name, root);
-    const entry = path.join(root, "upstream/skills", REVIEWED[name].skill, "SKILL.md");
+    const entry = path.join(root, "upstream/skills", REVIEWED[name].skill, "UPSTREAM-SKILL.md");
     const original = fs.readFileSync(entry);
     fs.writeFileSync(entry, Buffer.concat([original, Buffer.from("\nunreviewed\n")]));
     assert.throws(() => verifySnapshot(name, root), assert.AssertionError);
@@ -153,7 +147,7 @@ for (const name of Object.keys(REVIEWED)) {
     const object = rehashed.snapshot.objects.find(item => item.path === `skills/${REVIEWED[name].skill}/SKILL.md`);
     rehashed.snapshot.byteCount += changed.length - object.size;
     Object.assign(object, { size: changed.length, oid: gitBlobId(changed), sha256: sha256(changed) });
-    rehashed.snapshot.treeSha256 = canonicalTree(path.join(root, "upstream"), filesIn(path.join(root, "upstream")));
+    rehashed.snapshot.treeSha256 = storedTree(path.join(root, "upstream"));
     fs.writeFileSync(manifestFile, `${JSON.stringify(rehashed, null, 2)}\n`);
     assert.throws(() => verifySnapshot(name, root), assert.AssertionError);
     fs.writeFileSync(manifestFile, pristine);
@@ -177,7 +171,7 @@ test("package resources list exactly every vendored UI craft file, its manifest 
   for (const name of Object.keys(REVIEWED)) {
     const listed = resources.required.filter(file => file.startsWith(`vendor/${name}/`));
     assert.equal(new Set(listed).size, listed.length, name);
-    const expected = [`vendor/${name}/manifest.json`, ...EXPECTED_FILES[name].map(file => `vendor/${name}/upstream/${file}`)].sort();
+    const expected = [`vendor/${name}/manifest.json`, ...EXPECTED_FILES[name].map(file => `vendor/${name}/upstream/${storedPath(file)}`)].sort();
     assert.deepEqual([...listed].sort(), expected);
   }
 });
@@ -186,14 +180,17 @@ function rejectionFixture(t, name) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), `design-pipeline-ui-craft-import-${name}-`));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, "scripts"));
+  fs.mkdirSync(path.join(root, "skill/scripts"), { recursive: true });
+  fs.copyFileSync(path.join(repoRoot, "skill/scripts/upstream-path.cjs"), path.join(root, "skill/scripts/upstream-path.cjs"));
   for (const file of ["import-ui-craft-sources.cjs", "git-tree-snapshot.cjs"]) fs.copyFileSync(path.join(repoRoot, "scripts", file), path.join(root, "scripts", file));
   const destination = path.join(root, "skill/vendor", name);
   fs.mkdirSync(destination, { recursive: true });
   fs.writeFileSync(path.join(destination, "manifest.json"), "previous snapshot\n");
   fs.writeFileSync(path.join(destination, "preserved.txt"), "previous bytes\n");
-  const before = canonicalTree(destination, filesIn(destination));
+  const before = storedTree(destination);
   const source = path.join(root, "source");
   fs.cpSync(path.join(vendorRoot, name, "upstream"), source, { recursive: true });
+  restoreUpstreamNames(source);
   // An out-of-scope sibling proves the include filter keeps it out of the inventory.
   fs.mkdirSync(path.join(source, "apps"));
   fs.writeFileSync(path.join(source, "apps/out-of-scope.txt"), "outside the reviewed scope\n");
@@ -211,7 +208,7 @@ function rejectionFixture(t, name) {
     assert.equal(result.stdout, "");
     assert.match(result.stderr, /^FAIL /);
     assert.match(result.stderr, pattern);
-    assert.equal(canonicalTree(destination, filesIn(destination)), before);
+    assert.equal(storedTree(destination), before);
     assert.deepEqual(fs.readdirSync(path.dirname(destination)), [name]);
   };
   return { source, commit, rejects };
@@ -296,7 +293,7 @@ test("release archive carries every UI craft source blob and no React Doctor bun
     const manifest = verifySnapshot(name, installed);
     assert.deepEqual(fs.readFileSync(path.join(installed, "manifest.json")), fs.readFileSync(path.join(vendorRoot, name, "manifest.json")));
     for (const object of manifest.snapshot.objects) {
-      assert.deepEqual(fs.readFileSync(path.join(installed, "upstream", object.path)), fs.readFileSync(path.join(vendorRoot, name, "upstream", object.path)), object.path);
+      assert.deepEqual(fs.readFileSync(path.join(installed, "upstream", storedPath(object.path))), fs.readFileSync(path.join(vendorRoot, name, "upstream", storedPath(object.path))), object.path);
     }
   }
 });

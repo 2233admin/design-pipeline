@@ -6,6 +6,16 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- The package holds one `SKILL.md` (change `store-upstream-skill-files`, #118). The 258 bundled
+  upstream `SKILL.md` files are stored as `UPSTREAM-SKILL.md` with unchanged bytes; manifests keep
+  upstream paths and hashes, and `skill/scripts/upstream-path.cjs` maps between the names for
+  verification, catalog results (`skillPath`), `film methods`, imports and tests. Packaging and
+  QA reject any other `SKILL.md`. Agents reading a bundled upstream skill open `UPSTREAM-SKILL.md`.
+- Owner feedback is taken as given (change `fix-owner-feedback-friction`): a "no" needs two words
+  with each CJK character counting as one, so 首屏太暗了 or "too dark" is a complete reason; a page
+  the owner rejects returns to build at every tier until it changes; the diligence statement quotes
+  the owner's rules instead of counting them.
+
 - Decisions record who made them (change `adopt-ai-fluency-decision-roles`, phase 1, #108). Each
   workflow keeps a delegation map; `decide` requires `--by owner|agent` and refuses agent records
   where the owner decides; final acceptance is locked to the owner and no longer routed to an art
@@ -14,6 +24,13 @@ All notable changes to Design Pipeline are documented here.
   Direction selections and template selection receipts record who selected, and plan approvals
   record `by`. Existing projects must pass `--by` on their next `decide`; no compatibility default
   is added.
+- Browser-backed commands find an installed browser (change `find-system-browsers`, #116). One
+  resolver (`skill/scripts/browser-locate.cjs`, replacing `resolveChrome`) takes `--chrome`, then
+  `PUPPETEER_EXECUTABLE_PATH`, then the HyperFrames headless shell, then an installed Chrome, Edge
+  or Chromium; a wrong explicit path fails instead of falling back. Art Motion
+  `render-report.json` and interaction results record the browser and version. The tracking HUD
+  probe uses the same resolver (scaffolded as `lib/browser-locate.cjs`) and no longer reads
+  `HYPERFRAMES_BROWSER_PATH`. Art Motion browser tests skip without a browser like the others.
 
 ### Fixed
 

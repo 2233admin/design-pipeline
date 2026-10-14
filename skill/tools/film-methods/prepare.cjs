@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { assertEnum, assertKeys, assertString, assertStringArray, fail, readJson, resolveInside, sha256 } = require("../../scripts/contract-utils.cjs");
 const { checkStoryboard } = require("../../scripts/film-core.cjs");
+const { storedPath } = require("../../scripts/upstream-path.cjs");
 
 const scope = "film methods";
 const vendor = path.resolve(__dirname, "../../vendor");
@@ -18,13 +19,14 @@ const MODES = ["import-as-is", "frame-twin", "redraw"];
 function sourceRecord(method) {
   const source = SOURCES[method];
   const manifest = readJson(path.join(vendor, source.bundle, "manifest.json"), scope);
-  return { method, ...manifest.source, entry: `vendor/${source.bundle}/upstream/${source.entry}`, entrySha256: sha256(sourceBytes(source.bundle, source.entry)), snapshotSha256: manifest.snapshot.treeSha256 };
+  return { method, ...manifest.source, entry: `vendor/${source.bundle}/upstream/${storedPath(source.entry)}`, entrySha256: sha256(sourceBytes(source.bundle, source.entry)), snapshotSha256: manifest.snapshot.treeSha256 };
 }
 
 function sourceBytes(bundle, file) {
   const manifest = readJson(path.join(vendor, bundle, "manifest.json"), scope);
   const expected = manifest.snapshot.objects.find((item) => item.path === file);
-  const bytes = fs.readFileSync(path.join(vendor, bundle, "upstream", file));
+  // `file` is the manifest's upstream path; an upstream SKILL.md is stored as UPSTREAM-SKILL.md.
+  const bytes = fs.readFileSync(path.join(vendor, bundle, "upstream", storedPath(file)));
   if (!expected || sha256(bytes) !== expected.sha256) fail(scope, `source snapshot mismatch: ${bundle}/${file}`, { code: "SOURCE_CHANGED" });
   return bytes;
 }

@@ -140,6 +140,11 @@ function collectArchiveEntries(sourceDateEpoch) {
     if (!stat.isFile()) {
       fail(`unsupported release-archive entry: ${relativePath}`);
     }
+    // claude.ai and the Skills API accept one SKILL.md per skill; bundled upstream skills are stored
+    // as UPSTREAM-SKILL.md (skill/scripts/upstream-path.cjs).
+    if (path.basename(relativePath) === "SKILL.md" && relativePath !== "SKILL.md") {
+      fail(`only the root SKILL.md may ship; store ${relativePath.split(path.sep).join("/")} as UPSTREAM-SKILL.md`);
+    }
     entries.push({
       name: archiveName,
       data: fs.readFileSync(absolutePath),

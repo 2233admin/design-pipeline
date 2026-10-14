@@ -8,7 +8,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
-const { resolveChrome, resolvePuppeteer } = require("./film-capture-core.cjs");
+const { resolvePuppeteer } = require("./film-capture-core.cjs");
+const { resolveBrowser } = require("./browser-locate.cjs");
 const { fail, jsonResult } = require("./contract-utils.cjs");
 
 function parseArgs(argv) {
@@ -80,7 +81,7 @@ function extract() {
     const url = file ? pathToFileURL(file).href : options["--url"];
     if (!file && !/^https?:\/\//.test(url)) fail("composition capture", "--url must be http(s)");
     const puppeteer = resolvePuppeteer(file ? path.dirname(file) : process.cwd(), options["--puppeteer-module"]);
-    browser = await puppeteer.launch({ executablePath: resolveChrome(options["--chrome"]), headless: true, args: ["--allow-file-access-from-files"] });
+    browser = await puppeteer.launch({ executablePath: resolveBrowser(options["--chrome"]), headless: true, args: ["--allow-file-access-from-files"] });
     const page = await browser.newPage();
     await page.setViewport({ width, height });
     await page.evaluateOnNewDocument(() => { window.__timelines = window.__timelines || {}; });

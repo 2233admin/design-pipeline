@@ -19,7 +19,7 @@ changes do not inherit that license merely because the experiences are related.
 ## Route
 
 1. Run `designer-pipeline mengto search --query "scroll-controlled Three.js world" --json`.
-2. Read the returned `web-design/build-threejs-scroll-worlds/SKILL.md` and only the ledgers or QA
+2. Read the returned `web-design/build-threejs-scroll-worlds/UPSTREAM-SKILL.md` and only the ledgers or QA
    references needed for the task.
 3. Use this case study for the current Kage source boundary and its later responsive lessons.
 4. Record Kage as attributed inspiration unless the user explicitly assigns it another reference

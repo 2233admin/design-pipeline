@@ -227,7 +227,7 @@ test("film scaffold writes the tracking HUD project from its config and the vend
   try {
     const project = path.join(dir, "hud");
     const result = scaffoldFilm(project, { template: "tracking-hud", id: "agent-hud" });
-    for (const name of ["film.config.js", "build.cjs", "sfx.cjs", "probe.cjs", "lib/tracks.js", "lib/flat.js", "lib/lens.js", "lib/overlay.js", "index.html", "storyboard.json", "tracks.json", "FILM.md", "qa.md", "package.json"]) assert.ok(fs.existsSync(path.join(project, name)), name);
+    for (const name of ["film.config.js", "build.cjs", "sfx.cjs", "probe.cjs", "lib/tracks.js", "lib/flat.js", "lib/lens.js", "lib/overlay.js", "lib/browser-locate.cjs", "index.html", "storyboard.json", "tracks.json", "FILM.md", "qa.md", "package.json"]) assert.ok(fs.existsSync(path.join(project, name)), name);
     assert.equal(sha(path.join(project, "assets/fonts/JetBrainsMono-Bold.ttf")), sha(path.join(vendor, "media/JetBrainsMono-Bold.ttf")));
     assert.equal(sha(path.join(project, "assets/fonts/JetBrainsMono-OFL.txt")), sha(path.join(vendor, "licenses/JetBrainsMono-OFL.txt")));
     assert.equal(sha(path.join(project, "LICENSE.ff-tracking")), sha(path.join(vendor, "LICENSE")));
@@ -251,6 +251,12 @@ test("film scaffold writes the tracking HUD project from its config and the vend
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// Loaded from the skill itself (no scaffolded lib/browser-locate.cjs), the probe still reaches the
+// shared resolver: a wrong --chrome is the resolver's TOOL_MISSING, not a missing module.
+test("the probe loaded from the skill uses the shared browser resolver", async () => {
+  await assert.rejects(probe.selfTest(tool, { ...probe.parseArgs([]), chrome: path.join(tool, "no-such-browser") }), error => error.code === "TOOL_MISSING" && /--chrome .*no-such-browser does not exist/.test(error.message));
 });
 
 test("the self-test refuses unknown options before touching a browser", () => {

@@ -216,7 +216,7 @@ workflow:
 designer-pipeline mengto search --query "<capability or brief>" --json
 ```
 
-Read the narrowest returned `SKILL.md` and only the linked supporting files needed for the task.
+Read the narrowest returned skill file (`skillPath`) and only the linked supporting files needed for the task.
 Apply its workflow, numeric guidance, pitfalls, and verification gates through the target project's
 `DESIGN.md`, `MOTION.md`, OpenSpec artifacts, existing stack, accessibility rules, and budgets.
 Never treat a bundled demo, runtime asset, dependency choice, account workflow, or publishing recipe
@@ -234,7 +234,7 @@ designer-pipeline iart search --query "<narrow playbook>" --json
 ```
 
 Read `references/iart-motion-skills.md`. Record the selected playbook, alternatives, and runtime,
-then load only that `SKILL.md`. Keep project `MOTION.md` authoritative. HTML video, reels,
+then load only that skill file. Keep project `MOTION.md` authoritative. HTML video, reels,
 captions, overlays, and explainers use HyperFrames unless the brief names Remotion, Manim, or
 After Effects. A route result is a selection, not install or execution authority.
 

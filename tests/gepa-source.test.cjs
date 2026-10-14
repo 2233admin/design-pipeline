@@ -8,6 +8,8 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
 const { canonicalTree } = require("../scripts/git-tree-snapshot.cjs");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
+const { restoreUpstreamNames, storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const vendorRoot = path.join(repoRoot, "skill/vendor/gepa");
@@ -21,14 +23,6 @@ const reviewedFiles = [
   `${skillPrefix}scripts/preflight.py`, "LICENSE", "README.md", "pyproject.toml",
 ].sort();
 const read = file => fs.readFileSync(path.join(repoRoot, file), "utf8");
-
-function filesIn(root, relative = "") {
-  return fs.readdirSync(path.join(root, relative), { withFileTypes: true }).flatMap(entry => {
-    const file = relative ? `${relative}/${entry.name}` : entry.name;
-    assert.equal(fs.lstatSync(path.join(root, file)).isSymbolicLink(), false, file);
-    return entry.isDirectory() ? filesIn(root, file) : [file];
-  }).sort();
-}
 
 function run(command, args, cwd, env = {}) {
   const result = spawnSync(command, args, { cwd, encoding: "utf8", windowsHide: true, env: { ...process.env, ...env }, maxBuffer: 8 * 1024 * 1024 });
@@ -44,14 +38,14 @@ test("GEPA preserves all seven official skill files and selected root metadata a
   assert.deepEqual(manifest.source.scope, [`${skillPrefix}**`, "LICENSE", "README.md", "pyproject.toml"]);
   assert.match(manifest.source.contentHashScope, /selected.*upstream repository root.*not this scoped snapshot/);
   assert.equal(manifest.source.license, "MIT");
-  assert.deepEqual(filesIn(sourceRoot), reviewedFiles);
+  assert.deepEqual(upstreamFilesIn(sourceRoot), reviewedFiles);
   assert.equal(manifest.snapshot.fileCount, 10);
   assert.equal(manifest.snapshot.root, "upstream");
   assert.equal(manifest.snapshot.byteCount, 107619);
   assert.deepEqual(manifest.snapshot.objects.map(object => object.path).sort(), reviewedFiles);
   let bytes = 0;
   for (const object of manifest.snapshot.objects) {
-    const content = fs.readFileSync(path.join(sourceRoot, object.path));
+    const content = fs.readFileSync(path.join(sourceRoot, storedPath(object.path)));
     bytes += content.length;
     assert.equal(object.mode, "100644", object.path);
     assert.equal(object.size, content.length, object.path);
@@ -71,14 +65,17 @@ test("GEPA import rejects unreviewed, dirty, incomplete and invalid-date input w
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-gepa-import-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, "scripts"));
+  fs.mkdirSync(path.join(root, "skill/scripts"), { recursive: true });
+  fs.copyFileSync(path.join(repoRoot, "skill/scripts/upstream-path.cjs"), path.join(root, "skill/scripts/upstream-path.cjs"));
   for (const file of ["import-gepa.cjs", "git-tree-snapshot.cjs"]) fs.copyFileSync(path.join(repoRoot, "scripts", file), path.join(root, "scripts", file));
   const destination = path.join(root, "skill/vendor/gepa");
   fs.mkdirSync(destination, { recursive: true });
   fs.writeFileSync(path.join(destination, "manifest.json"), "previous snapshot\n");
   fs.writeFileSync(path.join(destination, "preserved.txt"), "previous bytes\n");
-  const before = canonicalTree(destination, filesIn(destination));
+  const before = storedTree(destination);
   const source = path.join(root, "source");
   fs.cpSync(sourceRoot, source, { recursive: true });
+  restoreUpstreamNames(source);
   const git = args => { const result = run("git", args, source); assert.equal(result.status, 0, result.stderr); };
   git(["init", "--quiet"]);
   git(["config", "core.autocrlf", "false"]);
@@ -89,7 +86,7 @@ test("GEPA import rejects unreviewed, dirty, incomplete and invalid-date input w
     const result = run(process.execPath, [path.join(root, "scripts/import-gepa.cjs"), "--source", source, "--reviewed-at", date], root);
     assert.equal(result.status, 1, result.stdout);
     assert.match(result.stderr, pattern);
-    assert.equal(canonicalTree(destination, filesIn(destination)), before);
+    assert.equal(storedTree(destination), before);
     assert.deepEqual(fs.readdirSync(path.dirname(destination)), ["gepa"]);
   };
   rejects(/source revision must be the reviewed/);
@@ -109,14 +106,14 @@ test("GEPA guide and supporting entry reach the packaged source and every declar
   const prefix = "vendor/gepa/upstream/";
   assert.ok(resources.required.includes("references/gepa.md"));
   assert.ok(resources.required.includes("vendor/gepa/manifest.json"));
-  assert.deepEqual(resources.required.filter(file => file.startsWith(prefix)).map(file => file.slice(prefix.length)).sort(), reviewedFiles);
+  assert.deepEqual(resources.required.filter(file => file.startsWith(prefix)).map(file => file.slice(prefix.length)).sort(), reviewedFiles.map(storedPath).sort());
   const guidePath = path.join(repoRoot, "skill/references/gepa.md");
   const guide = fs.readFileSync(guidePath, "utf8");
   assert.ok(read("skill/SKILL.md").includes("`references/gepa.md`"));
   assert.match(read("skill/tools/README.md"), /gepa\.md/);
   assert.match(read("skill/references/capability-routing.md"), /gepa\.md/);
   const links = [...guide.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map(match => match[1]).filter(target => !/^[a-z][a-z\d+.-]*:/i.test(target) && !target.startsWith("#"));
-  assert.ok(links.includes(`../vendor/gepa/upstream/${skillPrefix}SKILL.md`));
+  assert.ok(links.includes(`../vendor/gepa/upstream/${skillPrefix}UPSTREAM-SKILL.md`));
   assert.ok(links.includes("../vendor/gepa/upstream/LICENSE"));
   for (const target of links) {
     const file = path.resolve(path.dirname(guidePath), decodeURIComponent(target.split("#")[0]));
@@ -145,7 +142,7 @@ test("relocated core resource checking rejects a missing official GEPA source fi
   const check = () => run(process.execPath, [path.join(installed, "scripts/check-deps.cjs"), "--json"], root, env);
   const complete = check();
   assert.equal(complete.status, 0, complete.stderr || complete.stdout);
-  const missing = `vendor/gepa/upstream/${skillPrefix}SKILL.md`;
+  const missing = `vendor/gepa/upstream/${skillPrefix}UPSTREAM-SKILL.md`;
   fs.rmSync(path.join(installed, missing));
   const broken = check();
   assert.equal(broken.status, 1, broken.stdout);
