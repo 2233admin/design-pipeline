@@ -206,6 +206,24 @@ async function settle(page) {
   await sleep(600);
 }
 
+// After the walk, wait (bounded) for what scrolling started: network idle as far as it comes, then
+// every image loaded and decoded. An image still loading after the bound fails the capture rather
+// than numbering an incomplete page.
+async function awaitResources(page, timeoutMs = 10000) {
+  await page.waitForNetworkIdle({ idleTime: 300, timeout: timeoutMs }).catch(() => {});
+  const pending = await page.evaluate(async (ms) => {
+    const loading = [...document.images].filter((img) => !img.complete);
+    const settled = Promise.all(loading.map((img) => new Promise((done) => {
+      img.addEventListener("load", done, { once: true });
+      img.addEventListener("error", done, { once: true });
+    })));
+    await Promise.race([settled, new Promise((done) => setTimeout(done, ms))]);
+    await Promise.all([...document.images].filter((img) => img.complete && img.naturalWidth > 0).map((img) => img.decode().catch(() => {})));
+    return [...document.images].filter((img) => !img.complete).length;
+  }, timeoutMs);
+  if (pending) fail(SCOPE, `${pending} image(s) were still loading ${timeoutMs / 1000} s after the page was scrolled through. Fix: make the page's images load locally and promptly, then run \`evidence refs\` again`);
+}
+
 // Browser work for one capture. The caller supplies `digest` (the page digest function) so the page
 // version is read before and after, and a page that moved under the capture writes nothing.
 async function captureRefs(projectRoot, options = {}) {
@@ -237,6 +255,7 @@ async function captureRefs(projectRoot, options = {}) {
     });
     await page.goto(pathToFileURL(file).href, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT_MS });
     await settle(page);
+    await awaitResources(page);
     const refs = await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT);
     await page.evaluate(drawBadges, refs);
     const png = Buffer.from(await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true }));
@@ -255,4 +274,4 @@ async function captureRefs(projectRoot, options = {}) {
   }
 }
 
-module.exports = { REFS_SCHEMA, SECTION_ID, VIEWPORT, captureRefs, drawBadges, measureRefs, refsPuppeteer, settle };
+module.exports = { REFS_SCHEMA, SECTION_ID, VIEWPORT, awaitResources, captureRefs, drawBadges, measureRefs, refsPuppeteer, settle };

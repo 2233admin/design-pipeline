@@ -41,6 +41,7 @@
 - [x] 7.6 Codex: the kernel hashes each loaded file when the browser requests it and again after the screenshot, and the CLI checks the disk still has those bytes, so a file rewritten during the capture fails it (`PAGE_MOVED`) instead of binding new bytes to an old screenshot; verify that a stable page captures and a re-run is current.
 - [x] 7.7 Codex: the settle walk scrolls instantly whatever `scroll-behavior` the page sets, and waits until each position is reached; verify with `scroll-behavior: smooth` on the browser test page that appends content at the bottom.
 - [x] 7.8 Codex: `refs.json` binds its reference list (`refsDigest`), so an edited mapping is not trusted as the screenshot's; verify in `workflow-next` that an edited list asks for a new capture and refuses `--ref`.
+- [x] 7.9 CodeRabbit: after the walk the capture waits (bounded, 10 s) for network idle and for every image to load and decode, and fails if an image is still loading; verify with a lazy image at the bottom of the browser test page, numbered at its loaded size.
 
 ## Workflow follow-up
 

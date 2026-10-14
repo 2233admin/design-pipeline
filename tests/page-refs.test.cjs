@@ -194,11 +194,13 @@ test("a capture binds the files the page loaded, so a changed CSS asset or scree
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "page-refs-"));
   const pixel = (color) => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><rect width="4" height="4" fill="${color}"/></svg>`);
   fs.writeFileSync(path.join(dir, "bg.svg"), pixel("#c33"));
+  fs.writeFileSync(path.join(dir, "late.svg"), Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="300" height="200" fill="#999"/></svg>'));
   // Smooth scrolling on the page: the walk must still reach the bottom, where content is appended.
   fs.writeFileSync(path.join(dir, "style.css"), "html { scroll-behavior: smooth; }\nsection { min-height: 1500px; background: url(bg.svg); }\nh1 { background: url(later.svg); }\n");
   fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><head><link rel="stylesheet" href="style.css"></head><body>
 <section data-section="hero"><h1>Fresh bread</h1></section>
 <div id="more"></div>
+<img loading="lazy" src="late.svg" alt="Late picture" style="margin-top: 2400px; display: block">
 <script>
   // Content appended only once the reader scrolls near the end: the walk must reach it.
   let added = 0;
@@ -215,7 +217,8 @@ test("a capture binds the files the page loaded, so a changed CSS asset or scree
   const first = refs(dir);
   assert.equal(first.status, 0, first.stderr || first.stdout);
   const doc = readRefs(dir);
-  assert.deepEqual(Object.keys(doc.lineage).sort(), ["bg.svg", "index.html", "later.svg", "style.css"], "the CSS-loaded image is bound");
+  assert.deepEqual(Object.keys(doc.lineage).sort(), ["bg.svg", "index.html", "late.svg", "later.svg", "style.css"], "the CSS-loaded image is bound");
+  assert.ok(doc.refs.some((item) => item.tag === "img" && item.text === "Late picture" && item.box.height === 200), "a lazy image started by the scroll is loaded before numbering");
   assert.equal(doc.lineage["later.svg"], null, "a requested file that does not exist yet is bound as absent");
   assert.match(doc.png, /^sha256:/);
   assert.ok(doc.refs.some((item) => item.text === "Loaded 3"), `the walk reaches lazily added content: ${doc.refs.map((item) => item.text).join(" | ")}`);
