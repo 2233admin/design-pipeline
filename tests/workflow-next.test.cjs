@@ -1590,7 +1590,7 @@ test("real browser verification binds the page it opened rather than another wor
     };
     verify();
     assert.ok(readState(dir).gates.interaction.inputHashes["index.html"]);
-    assert.equal(nextAction(dir).type, "done");
+    assert.equal(nextAction(dir).stage, "review", "a passed probe leaves the owner's final review");
     probe.url = "other.html";
     verify();
     const checked = readState(dir).gates.interaction.inputHashes;

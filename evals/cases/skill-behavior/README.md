@@ -11,7 +11,7 @@ and `page/` directories. These frozen answers stay outside `skill/` and the rele
 | Case | Observable deterministic coverage |
 | --- | --- |
 | `supporting-css-focus-motion` | Original CSS reproduces missing focus and unwanted reduced-motion transition; frozen replacement preserves computed palette/layout, keyboard focus, reduced motion and forced-colors outline. `css-artifact-footprint` checks only the emitted files. |
-| `quick-chinese-profile-page` | Frozen HTML runs native required/email validation, keyboard toggle/save, persistence, 320px reflow and no animation; public `next`/`decide` produces `ui/quick/freeform`, `done` and `visualAcceptance: not-evaluated`. |
+| `quick-chinese-profile-page` | Frozen HTML runs native required/email validation, keyboard toggle/save, persistence, 320px reflow and no animation; public `next`/`decide` produces `ui/quick/freeform`, the owner's final review after the agent records delivery, then `done` with a current diligence statement. |
 | `blocked-reference-source` | Public reference check returns exit 2 / `source-pending`; resolution without the requested image fails and preserves pending input bytes. |
 
 Each case checks its `expectedState`, all `requiredSignals`, and actual nonempty
