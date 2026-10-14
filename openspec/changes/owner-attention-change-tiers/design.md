@@ -29,7 +29,7 @@ and `shared.cjs`):
 ## Goals / Non-Goals
 
 **Goals:**
-- A typo in the brief or the playback reopens no section.
+- A typo in the brief reopens no section; a playback reword is a commitment that can name none.
 - A change reopens exactly the sections it touches, as the pipeline can see or as the agent
   declares.
 - Evidence keeps binding bytes: the description approval still binds the brief's exact bytes.

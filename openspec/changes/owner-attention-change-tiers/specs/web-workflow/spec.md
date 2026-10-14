@@ -65,7 +65,7 @@ At standard and full the build SHALL follow the approved section order: the firs
 #### Scenario: Re-approval asks the sections again
 
 - **WHEN** the description is approved again after a change
-- **THEN** a section verdict SHALL NOT count when that section's key changed (its job line, the variant pick, the combine notes or the component decision) or the re-approval's commitment tier named it
+- **THEN** a section verdict SHALL NOT count when that section's key changed (its job line, the variant pick, the combine notes or the component decision), the section was added back after a removal, or the re-approval's commitment tier named it
 - **AND** every other section verdict SHALL still count.
 
 #### Scenario: A marker inside a comment is not a built section

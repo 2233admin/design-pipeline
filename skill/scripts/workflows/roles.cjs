@@ -76,11 +76,14 @@ function applyDelegation(state, delegate = [], keep = []) {
 }
 
 // Who recorded this decision, checked against the delegation map; returns the role fields to store.
-function recordRole(state, checkpoint, by) {
+// `carryForward` is the one exception to an owner checkpoint (OpenSpec change
+// owner-attention-change-tiers): a byte-only re-approval of a description the owner kept.
+function recordRole(state, checkpoint, by, { carryForward = false } = {}) {
   if (!ROLES.includes(by)) fail("workflow", "--by is required: owner when these are the owner's words in this conversation, agent when you decided under delegation. Fix: add --by owner or --by agent");
   if (by === "owner") return { by };
   const entry = state.delegation?.[checkpoint];
   if (entry?.locked) fail("workflow", `${LABELS[checkpoint] || checkpoint} stays with the owner; only --by owner can record it`);
+  if (carryForward && entry?.to === "owner") return { by, agent: state.assistedBy || "unspecified", carriedForward: true };
   if (entry?.to !== "agent") fail("workflow", `${LABELS[checkpoint] || checkpoint} is the owner's to decide. Fix: ask the owner and record with --by owner, or record the owner's delegation on the intake with --delegate ${checkpoint}`);
   return { by, agent: DIRECTED.has(checkpoint) && state.director ? state.director : state.assistedBy || "unspecified" };
 }
@@ -100,6 +103,7 @@ function stampRecord(state, before, checkpoint, role, options) {
     ...(options.choice !== undefined && options.choice !== null ? { choice: String(options.choice) } : {}),
     ...(answer ? { answer } : {}),
     ...(options.tradeoff ? { tradeoff: options.tradeoff } : {}),
+    ...(options.revision ? { revision: options.revision } : {}),
     at: new Date().toISOString(),
   }];
 }
@@ -120,7 +124,7 @@ const stateHash = state => {
 
 function describe(entry) {
   const what = [entry.verdict, entry.choice && entry.choice !== "skip" ? entry.choice : null, entry.choice === "skip" ? "skipped the questions" : null].filter(Boolean).join(" ");
-  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer.replace(/\s*\r?\n\s*/g, " / ")}"` : ""}${entry.tradeoff ? ` (asked about: "${entry.tradeoff}")` : ""}`;
+  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.revision ? ` (${entry.revision} revision)` : ""}${entry.answer ? ` — "${entry.answer.replace(/\s*\r?\n\s*/g, " / ")}"` : ""}${entry.tradeoff ? ` (asked about: "${entry.tradeoff}")` : ""}`;
 }
 
 // Decisions stored as a single value rather than a history: each counts as unauthored when no role
@@ -159,7 +163,7 @@ function renderStatement(state, { delivered = null, deliveryCurrent = false, gat
     list(owner.map(describe), "none recorded"),
     "",
     "## Decided by the agent under delegation",
-    list(agent.map(entry => `${describe(entry)} (agent: ${entry.agent}; ${state.delegation?.[entry.stage]?.set === "owner" ? "delegated by the owner" : "delegated by default"})`), "none"),
+    list(agent.map(entry => `${describe(entry)} (agent: ${entry.agent}; ${entry.carriedForward ? "carried forward a byte-only change to the owner's description" : state.delegation?.[entry.stage]?.set === "owner" ? "delegated by the owner" : "delegated by default"})`), "none"),
     "",
     "## Not stated by the owner",
     list(notStated, "nothing"),

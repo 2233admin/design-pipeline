@@ -2338,7 +2338,7 @@ test("nothing is built until the owner approves the description, through the CLI
   assert.equal(approval.sha256, `sha256:${sha256(fs.readFileSync(path.join(root, "brief.md")))}`);
 });
 
-test("the description approval names the brief's ## Sections list exactly, and only a changed approval asks the sections again", t => {
+test("the description approval names the brief's ## Sections list exactly, and a reorder keeps the accepted sections", t => {
   const root = webProject(t);
   toComponents(root, { keep: ["description", "section"] });
   prepareWebComponents(root);
@@ -2361,16 +2361,16 @@ test("the description approval names the brief's ## Sections list exactly, and o
   assert.equal(kept.section, "hero", "the identical approval recorded again keeps the accepted sections");
 
   touch(root, "brief.md", brief(["hero", "pickup", "story"]));
-  assert.equal(nextAction(root).stage, "description", "a reordered list is a changed description");
-  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "hero,pickup,story" });
+  const reordered = nextAction(root);
+  assert.equal(reordered.stage, "description", "a reordered list is a changed description");
+  assert.match(reordered.first, /the section order/);
+  refuses(root, { by: "owner", stage: "description", verdict: "accept", choice: "hero,pickup,story", revision: "bytes" }, "CONTRACT_INVALID");
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "hero,pickup,story", revision: "commitment", affects: "none" });
   buildPage(root, ["hero", "pickup"]);
-  for (const id of ["hero", "pickup"]) {
-    const ask = nextAction(root);
-    assert.equal(ask.type, "ask", id);
-    assert.equal(ask.section, id, `${id} is asked again under the new approval`);
-    decide(root, { by: "owner", stage: "section", choice: id, verdict: "accept" });
-  }
-  assert.equal(nextAction(root).section, "story");
+  const ask = nextAction(root);
+  assert.equal(ask.section, "hero", "the build follows the new order");
+  decide(root, { by: "owner", stage: "section", choice: "hero", verdict: "accept" });
+  assert.equal(nextAction(root).section, "story", "pickup keeps the verdict it was given before the reorder");
 });
 
 test("an owner's BRIEF.md is the description the approval binds", t => {
@@ -2567,7 +2567,7 @@ test("a section rejection can cite recorded runtime-review Feedback through the 
   assert.deepEqual(readState(root).decisions.sections.at(-1).evidence.map(item => item.path), [cited, second]);
 });
 
-test("a changed description goes back for approval, and earlier section verdicts stop counting", t => {
+test("a reworded description goes back for approval, and a bytes re-approval keeps every section", t => {
   const root = atProbe(t, ["first-screen", "proof"], { keep: ["description", "section"] });
   const verdicts = readState(root).decisions.sections;
   fs.appendFileSync(path.join(root, "brief.md"), "\nPickup is on weekends only.\n");
@@ -2575,15 +2575,13 @@ test("a changed description goes back for approval, and earlier section verdicts
   assert.equal(stale.stage, "description");
   assert.equal(stale.type, "ask");
   assert.equal(typeof stale.first, "string");
+  assert.match(stale.first, /only the wording of the brief/);
+  assert.match(stale.first, /--revision bytes/);
   refuses(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
-  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen,proof" });
-  const again = nextAction(root);
-  assert.equal(again.stage, "build");
-  assert.equal(again.type, "ask");
-  assert.equal(again.section, "first-screen", "sections accepted under the old approval are asked again");
-  assert.ok(!again.completed.includes("build"));
+  refuses(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen,proof" }, "CONTRACT_INVALID");
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen,proof", revision: "bytes" });
+  assert.equal(nextAction(root).stage, "probe", "a wording change reopens no section");
   assert.deepEqual(readState(root).decisions.sections, verdicts, "earlier verdicts are kept, not rewritten");
-  assert.equal(acceptSections(root).stage, "probe");
 });
 
 // A different component decision does the same (tests/workflow-components.test.cjs).
@@ -2593,11 +2591,15 @@ test("a re-picked variant or a new playback makes the description approval stale
   assert.equal(nextAction(root).stage, "review");
   pickVariant(root, "C");
   assert.equal(nextAction(root).stage, "description", "a re-picked variant");
-  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen" });
-  assert.equal(nextAction(root).section, "first-screen", "the section is asked again under the new approval");
+  refuses(root, { by: "agent", stage: "description", verdict: "accept", choice: "first-screen", revision: "bytes" }, "CONTRACT_INVALID");
+  decide(root, { by: "agent", stage: "description", verdict: "accept", choice: "first-screen", revision: "commitment", affects: "none" });
+  assert.equal(nextAction(root).section, "first-screen", "a new direction reopens the section by its key");
   assert.equal(acceptSections(root).stage, "review", "the checked page is unchanged, so its probe pass still counts");
-  confirmPlayback(root, `${PLAYBACK} Pickup is on weekends only.`);
+  confirmPlayback(root, `${PLAYBACK}\nStill open: pickup on weekends only.`);
   assert.equal(nextAction(root).stage, "description", "a new playback");
+  refuses(root, { by: "agent", stage: "description", verdict: "accept", choice: "first-screen", revision: "bytes" }, "CONTRACT_INVALID");
+  decide(root, { by: "agent", stage: "description", verdict: "accept", choice: "first-screen", revision: "commitment", affects: "none" });
+  assert.equal(nextAction(root).stage, "review", "a playback change that touches no section reopens none");
 });
 
 test("the probe binds the checked page, and the final review still turns a rejection into a rule", t => {
@@ -3323,4 +3325,133 @@ test("the diligence statement names each rule's scope", t => {
   const text = diligence(root).text;
   assert.match(text, /"Drop the gradient" \(section hero 1; for section hero\)/);
   assert.match(text, /"Name the opening hours" \(description 1; for the result under review\)/);
+});
+
+// --- change tiers (owner-attention-change-tiers) ----------------------------------------------------
+
+const briefWith = (root, lines, prose = "A one-page description of the page.") => touch(root, "brief.md", `# Brief\n\n${prose}\n\n## Sections\n\n${lines.map(([id, job]) => `- ${id}: ${job}`).join("\n")}\n`);
+const LINES = [["hero", "today's bakes and the reserve button"], ["proof", "what regulars say"]];
+// A standard project at probe whose two sections were accepted under a description with LINES.
+function tiered(t, keep = ["description", "section"]) {
+  const root = webProject(t);
+  toComponents(root, { keep });
+  prepareWebComponents(root);
+  briefWith(root, LINES);
+  decide(root, { by: keep.includes("description") ? "owner" : "agent", stage: "description", verdict: "accept", choice: "hero,proof" });
+  buildPage(root, ["hero", "proof"]);
+  assert.equal(acceptSections(root).stage, "probe");
+  return root;
+}
+const reapprove = (root, extra = {}, by = "owner") => decide(root, { by, stage: "description", verdict: "accept", choice: "hero,proof", ...extra });
+
+test("an approval stores its inputs, and each section line keeps its job whatever the separator", t => {
+  const root = tiered(t);
+  const record = readState(root).decisions.descriptions.at(-1);
+  assert.equal(record.upstream, undefined);
+  assert.deepEqual(Object.keys(record.inputs).sort(), ["brief", "components", "direction", "playback", "sections"]);
+  assert.deepEqual(record.inputs.sections, [{ id: "hero", job: "today's bakes and the reserve button" }, { id: "proof", job: "what regulars say" }]);
+  const { briefSections } = require("../skill/scripts/workflows/web.cjs");
+  for (const line of ["- hero: today's  bakes and the reserve button", "- hero - today's bakes and the reserve button", "- `hero` — today's bakes and the reserve button", "1. hero today's bakes and the reserve button"]) {
+    assert.deepEqual(briefSections(`## Sections\n\n${line}\n  continuation is not part of it\n`), [{ id: "hero", job: "today's bakes and the reserve button" }], line);
+  }
+  assert.deepEqual(briefSections("## Sections\n\n- hero\n"), [{ id: "hero", job: "" }], "an id-only line has an empty job");
+});
+
+test("a changed section line reopens only that section, and a commitment reopens only what it names", t => {
+  const root = tiered(t);
+  briefWith(root, [LINES[0], ["proof", "what regulars say, with their photos"]]);
+  const stale = nextAction(root);
+  assert.match(stale.first, /the line of section proof/);
+  assert.match(stale.first, /--revision commitment --affects .*at least proof/);
+  reapprove(root, { revision: "commitment", affects: "proof" });
+  assert.equal(nextAction(root).section, "proof", "hero keeps its verdict; proof is reviewed again");
+  decide(root, { by: "owner", stage: "section", choice: "proof", verdict: "accept" });
+  assert.equal(nextAction(root).stage, "probe");
+  briefWith(root, [LINES[0], ["proof", "what regulars say, with their photos"]], "A one-page site for regulars who reserve on their phones.");
+  reapprove(root, { revision: "commitment", affects: "hero" });
+  assert.equal(nextAction(root).section, "hero", "the named section is reopened");
+  decide(root, { by: "owner", stage: "section", choice: "hero", verdict: "accept" });
+  assert.equal(nextAction(root).stage, "probe", "proof stays accepted");
+  briefWith(root, [LINES[0], ["proof", "what regulars say, with their photos"]], "A one-page site for regulars.");
+  reapprove(root, { revision: "commitment", affects: "all" });
+  assert.equal(nextAction(root).section, "hero", "all reopens every section");
+});
+
+test("a reverted line does not undo the owner's no, and a re-added section is reviewed again", t => {
+  const root = tiered(t);
+  briefWith(root, [LINES[0], ["proof", "what regulars say, with their photos"]]);
+  reapprove(root, { revision: "commitment", affects: "none" });
+  decide(root, { by: "owner", stage: "section", choice: "proof", verdict: "reject", answer: "The photos look like stock" });
+  briefWith(root, LINES);
+  reapprove(root, { revision: "commitment", affects: "none" });
+  assert.equal(nextAction(root).section, "proof", "the latest verdict is the owner's no, whatever key it was given under");
+
+  const readded = tiered(t);
+  briefWith(readded, [LINES[0]]);
+  decide(readded, { by: "owner", stage: "description", verdict: "accept", choice: "hero", revision: "commitment", affects: "none" });
+  assert.equal(nextAction(readded).stage, "probe", "a removed section is not asked for");
+  briefWith(readded, LINES);
+  reapprove(readded, { revision: "commitment", affects: "none" });
+  assert.equal(nextAction(readded).section, "proof", "a section added back is reviewed again");
+});
+
+test("a re-approval mid-build keeps the accepted sections before the current one", t => {
+  const root = webProject(t);
+  toComponents(root, { keep: ["description", "section"] });
+  prepareWebComponents(root);
+  briefWith(root, LINES);
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "hero,proof" });
+  buildPage(root, ["hero"]);
+  decide(root, { by: "owner", stage: "section", choice: "hero", verdict: "accept" });
+  briefWith(root, LINES, "A one-page description of the bakery page.");
+  reapprove(root, { revision: "bytes" });
+  const next = nextAction(root);
+  assert.equal(next.section, "proof", "hero stays accepted and the build moves on");
+  assert.equal(next.type, "run");
+});
+
+test("the revision flags are refused where they mean nothing or do not fit what changed", t => {
+  const fresh = webProject(t);
+  toComponents(fresh, { keep: ["description"] });
+  prepareWebComponents(fresh);
+  briefWith(fresh, LINES);
+  refuses(fresh, { stage: "description", verdict: "accept", choice: "hero,proof", revision: "bytes" }, "CONTRACT_INVALID");
+  const root = tiered(t);
+  refuses(root, { stage: "description", verdict: "accept", choice: "hero,proof", revision: "bytes" }, "CONTRACT_INVALID");
+  briefWith(root, LINES, "Reworded.");
+  for (const extra of [{}, { revision: "everything" }, { revision: "bytes", affects: "hero" }, { revision: "commitment" }, { revision: "commitment", affects: "footer" }, { affects: "hero" }]) {
+    refuses(root, { stage: "description", verdict: "accept", choice: "hero,proof", ...extra }, "CONTRACT_INVALID");
+  }
+  refuses(root, { stage: "section", choice: "hero", verdict: "accept", revision: "bytes" }, "CONTRACT_INVALID");
+  assert.match(refuses(root, { stage: "review", verdict: "accept", affects: "all" }, "CONTRACT_INVALID").message, /only with a re-approval of the web description/);
+});
+
+test("the agent carries a byte-only change to a kept description forward, and nothing else", t => {
+  const root = tiered(t);
+  briefWith(root, LINES, "A one-page description of the bakery page.");
+  refuses(root, { by: "agent", stage: "description", verdict: "accept", choice: "hero,proof" }, "CONTRACT_INVALID");
+  refuses(root, { by: "agent", stage: "description", verdict: "accept", choice: "hero,proof", revision: "commitment", affects: "none" }, "CONTRACT_INVALID");
+  reapprove(root, { revision: "bytes" }, "agent");
+  const entry = readState(root).decisions.roles.at(-1);
+  assert.deepEqual([entry.stage, entry.by, entry.revision, entry.carriedForward], ["description", "agent", "bytes", true]);
+  assert.match(diligence(root).text, /Description: accept hero,proof \(bytes revision\) \(agent: unspecified; carried forward a byte-only change to the owner's description\)/);
+  // After the owner's no, the kept description is theirs again.
+  decide(root, { by: "owner", stage: "description", verdict: "reject", answer: "Say who the regulars are" });
+  briefWith(root, LINES, "A one-page description for the bakery's regulars.");
+  refuses(root, { by: "agent", stage: "description", verdict: "accept", choice: "hero,proof", revision: "bytes" }, "CONTRACT_INVALID");
+  reapprove(root, { revision: "bytes" });
+  assert.equal(nextAction(root).stage, "probe");
+});
+
+test("a description approved before change tiers is approved again once, and its sections reviewed once", t => {
+  const root = tiered(t);
+  const state = readState(root);
+  for (const record of state.decisions.descriptions) { record.upstream = "sha256:legacy"; delete record.inputs; }
+  for (const record of state.decisions.sections) delete record.key;
+  touch(root, ".design-pipeline/state.json", JSON.stringify(state, null, 2));
+  const stale = nextAction(root);
+  assert.equal(stale.stage, "description");
+  assert.match(stale.first, /before change tiers were recorded, so this approval counts as a first one/);
+  reapprove(root);
+  assert.equal(nextAction(root).section, "hero", "verdicts without a key are reviewed once more");
 });
