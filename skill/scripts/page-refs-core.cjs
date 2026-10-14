@@ -162,7 +162,10 @@ function drawBadges(refs) {
   // artboard) does not transform the badges a second time. A transformed or zoomed root has no such
   // outside, so the capture is refused there rather than drawing badges over the wrong elements.
   const root = getComputedStyle(document.documentElement);
-  if ((root.transform && root.transform !== "none") || (root.zoom && !["1", "normal"].includes(root.zoom))) return "root-transformed";
+  // `scale` and `rotate` are separate properties that `transform` does not report (a `translate`
+  // only shifts the layer, which its origin offset already absorbs).
+  const moved = (value) => value && value !== "none";
+  if (moved(root.transform) || moved(root.scale) || moved(root.rotate) || (root.zoom && !["1", "normal"].includes(root.zoom))) return "root-transformed";
   const host = document.createElement("div");
   host.setAttribute("data-page-refs-layer", "");
   host.style.cssText = "position:absolute;left:0;top:0;width:0;height:0;margin:0;padding:0;border:0;overflow:visible;pointer-events:none;z-index:2147483647";

@@ -307,6 +307,10 @@ test("badges land on their elements when the body is scaled", { skip }, async ()
     assert.ok(Math.abs(badge.x - element.x) <= 1 && Math.abs(badge.y - element.y) <= 1, `badge ${JSON.stringify(badge)} sits on its element ${JSON.stringify(element)}`);
     await page.setContent('<style>html{transform:scale(.5)}</style><section data-section="hero"><p>Fresh bread</p></section>', { waitUntil: "load" });
     assert.equal(await page.evaluate(drawBadges, await page.evaluate(measureRefs, SECTION_ID.source, 80)), "root-transformed", "a transformed root is refused, not drawn over");
+    for (const longhand of ["scale: .5", "rotate: 3deg"]) {
+      await page.setContent(`<style>html{${longhand}}</style><section data-section="hero"><p>Fresh bread</p></section>`, { waitUntil: "load" });
+      assert.equal(await page.evaluate(drawBadges, await page.evaluate(measureRefs, SECTION_ID.source, 80)), "root-transformed", `html { ${longhand} } is refused`);
+    }
   } finally {
     await browser.close();
   }
