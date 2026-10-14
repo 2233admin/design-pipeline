@@ -108,12 +108,21 @@ function describe(entry) {
   return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer}"` : ""}`;
 }
 
+// Decisions stored as a single value rather than a history: each counts as unauthored when no role
+// entry records its checkpoint, which is how every project recorded before decision roles looks.
+const SCALARS = { intake: "intake", reference: "reference", concept: "concept", components: "components", delivered: "deliver" };
+function unauthoredScalars(state, roles) {
+  const recorded = new Set(roles.map(entry => entry.stage));
+  return Object.entries(SCALARS).filter(([key, checkpoint]) => state.decisions?.[key] !== undefined && state.decisions[key] !== null && !recorded.has(checkpoint)).length;
+}
+
 function renderStatement(state, { delivered = null, deliveryCurrent = false, gates = {} } = {}) {
   const roles = Array.isArray(state.decisions?.roles) ? state.decisions.roles : [];
   const assisted = state.assistedBy || "unspecified";
   const owner = roles.filter(entry => entry.by === "owner");
   const agent = roles.filter(entry => entry.by === "agent");
-  const unknown = HISTORIES.reduce((count, key) => count + (Array.isArray(state.decisions?.[key]) ? state.decisions[key].filter(item => !item.by).length : 0), 0);
+  const unknown = HISTORIES.reduce((count, key) => count + (Array.isArray(state.decisions?.[key]) ? state.decisions[key].filter(item => !item.by).length : 0), 0)
+    + unauthoredScalars(state, roles);
   const accepted = owner.filter(entry => entry.stage === "review" && entry.verdict === "accept").at(-1);
   const delivery = !delivered ? "not delivered yet"
     : state.decisions?.deliveredSha256 ? `${delivered} (${state.decisions.deliveredSha256})`

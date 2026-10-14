@@ -166,7 +166,7 @@ function nextAction(root) {
   for (const stage of stages) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
-    const action = withRoles(stage.action(state, root));
+    const action = withRoles(stage.action(state, root), state);
     // Visual picks go to the art director: the concept pick, a sample, a built web section. Final
     // acceptance never does; it stays with the owner.
     const directed = state.director && action.type === "ask" && ["concepts", "sample", "build"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
@@ -182,13 +182,17 @@ function nextAction(root) {
 // records its delivery evidence in its work stage, and its review binds that evidence.
 const deliveryCurrent = (state, root) => state.deliverable === "ui" ? Boolean(state.decisions?.delivered) : deliveryRecorded(state, root);
 
-// Returned decide commands carry the role their recorder claims: an ask records the owner's words, a
-// run records what the agent decided under delegation.
-function withRoles(action) {
-  const role = action.type === "ask" ? "owner" : "agent";
+// Returned decide commands carry the role the delegation map gives their checkpoint: agent where the
+// agent (or the art director) decides, owner otherwise. Only a command whose checkpoint has no entry
+// falls back to the action type: an ask records the owner's words, a run the agent's decision.
+function withRoles(action, state) {
   const out = { ...action };
   for (const key of ["record", "correction", "skip", "command", "then"]) {
-    if (typeof out[key] === "string" && / decide --root /.test(out[key]) && !/--by /.test(out[key])) out[key] = out[key].replace(/ --stage /, ` --by ${role} --stage `);
+    if (typeof out[key] !== "string" || !/ decide --root /.test(out[key]) || /--by /.test(out[key])) continue;
+    const checkpoint = /--stage (\S+)/.exec(out[key])?.[1];
+    const entry = state.delegation?.[checkpoint];
+    const role = entry ? (entry.to === "agent" ? "agent" : "owner") : action.type === "ask" ? "owner" : "agent";
+    out[key] = out[key].replace(/ --stage /, ` --by ${role} --stage `);
   }
   return out;
 }
@@ -215,6 +219,8 @@ function decide(root, options = {}) {
   const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
   const role = roles.recordRole(state, stage, options.by);
+  // Only the owner changes who decides what; an agent cannot hand itself checkpoints.
+  if ((delegate.length || keep.length) && role.by !== "owner") fail("workflow", "--delegate and --keep record the owner's choice, so they go only on an intake recorded with --by owner. Fix: ask the owner, then record their reply with --by owner");
   if (delegate.length || keep.length) roles.applyDelegation(state, delegate, keep);
   const before = roles.historySizes(state);
   // Web records its conversation, variants, decision round, description and sections itself (workflows/web.cjs).

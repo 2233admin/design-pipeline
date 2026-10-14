@@ -444,7 +444,15 @@ function pageDigest(root) {
   return "sha256:" + sha256(canonicalJson(Object.fromEntries(files.map(rel => [rel, fileSha(root, rel)]).filter(([, hash]) => hash))));
 }
 
+// A quick page the owner rejected at the final review needs repair before it is checked again: build
+// stays open while index.html is the page that review judged.
+function rejectedUnchanged(state, root) {
+  const latest = history(state, "drafts").at(-1);
+  return latest?.verdict === "reject" && Boolean(latest.inputHashes?.["index.html"]) && latest.inputHashes["index.html"] === fileSha(root, "index.html");
+}
+
 function buildFinished(state, root) {
+  if (!sectioned(state) && rejectedUnchanged(state, root)) return false;
   return buildStatus(state, root).finished && (!sectioned(state) || sectionProgress(state, root)?.current === null);
 }
 
@@ -499,6 +507,10 @@ const BUILD = {
     const { finished, findings } = buildStatus(state, root);
     const progress = sectioned(state) ? sectionProgress(state, root) : null;
     if (finished && progress?.current && progress.built) return sectionReview(root, progress);
+    if (!sectioned(state) && rejectedUnchanged(state, root)) {
+      const latest = history(state, "drafts").at(-1);
+      return { type: "run", instruction: `The owner rejected this page at the final review ("${latest.reason}"); the reason is now a project rule. Repair index.html for it, then run next again: the repaired page is probed and shown to the owner again. ${BUILD_CRAFT}`, why: "A rejected page is repaired before it is checked and shown again." };
+    }
     // Once a section is accepted and the page and manifest are valid, the step builds the next
     // section; the first screen, even on an existing page, gets the full instruction with the
     // recorded component decision first, keeping source selection ahead of implementation.

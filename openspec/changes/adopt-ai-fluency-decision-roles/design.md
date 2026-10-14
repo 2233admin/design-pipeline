@@ -256,7 +256,13 @@ Further rules:
 - Every `decide` call also appends one entry to `state.decisions.roles`
   (`{stage, by, agent?, verdict?, choice?, answer?, at}`), the uniform record the statement reads;
   the role is stamped on the history entry the call appended as well.
-- Returned `decide` commands carry `--by` before `--stage`: `owner` on an ask, `agent` on a run.
+- Returned `decide` commands carry `--by` before `--stage`, taken from the checkpoint's delegation
+  entry (agent where the agent or the art director decides, owner otherwise).
+- `--delegate` and `--keep` apply only on an intake recorded with `--by owner`.
+- A quick web page the owner rejects returns to build until `index.html` changes, so an unchanged
+  page is never probed and shown again.
+- The unauthored count includes single-value decisions (intake, reference, concept, components,
+  delivery) that no role entry records.
 - A new read-only `diligence` command (in the COMMANDS table) prints it, or renders it on demand
   with `--write`, so an owner can see it before delivery.
 

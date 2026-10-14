@@ -2938,13 +2938,43 @@ test("the diligence statement separates technical checks from owner acceptance a
   t.after(() => fs.rmSync(film, { recursive: true, force: true }));
   const state = readState(film);
   state.decisions.drafts = [{ verdict: "reject", reason: "An old verdict without an author.", at: "2026-01-01T00:00:00.000Z", inputHashes: {} }];
+  state.decisions.reference = "none"; // a single-value decision recorded before decision roles
   touch(film, ".design-pipeline/state.json", JSON.stringify(state));
   const { text } = diligence(film, { write: true });
   assert.match(text, /## Technical checks \(not creative acceptance\)\n- storyboard: passed\n- film: passed/);
-  assert.match(text, /- 1 decision record\(s\) predate decision roles/);
+  assert.match(text, /- 2 decision record\(s\) predate decision roles/, "history entries and single-value decisions without an author both count");
   assert.match(text, /No owner acceptance recorded yet/);
   assert.ok(fs.existsSync(path.join(film, ".design-pipeline/diligence.md")));
   const cli = runCli("diligence", "--root", film, "--project-root", film);
   assert.equal(cli.status, 0, cli.text);
   assert.match(cli.json.text, /^# AI diligence statement/);
+});
+
+test("returned commands take their role from the delegation map, and only the owner changes it", t => {
+  const root = tmp();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  initState(root, { deliverable: "web", tier: "standard", director: "art-model" });
+  confirmPlayback(root);
+  decide(root, { by: "agent", stage: "reference", answer: "none" });
+  writeVariants(root);
+  const concepts = nextAction(root);
+  assert.equal(concepts.stage, "concepts");
+  assert.match(concepts.director, /art-model/);
+  assert.match(concepts.record, / --by agent --stage concept /, "a pick delegated to the art director is recorded as the agent's");
+  assert.match(concepts.correction, / --by agent --stage concept /);
+  const quick = webProject(t, { tier: "quick" });
+  assert.match(refuses(quick, { stage: "intake", choice: "skip", answer: STATED, by: "agent", delegate: ["components"] }, "CONTRACT_INVALID").message, /go only on an intake recorded with --by owner/);
+  assert.equal(readState(quick).delegation.components.to, "owner");
+});
+
+test("a quick page the owner rejects goes back to build until it is repaired", t => {
+  const dir = checkedWorkflowFixture("web", "quick");
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  assert.equal(nextAction(dir).stage, "review");
+  decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The price is lost below the fold" });
+  const repair = nextAction(dir);
+  assert.equal(repair.stage, "build", "the unchanged page is repaired before it is probed again");
+  assert.match(repair.instruction, /The price is lost below the fold/);
+  rewriteSameTime(dir, "index.html", "<!doctype html><title>Repaired</title>");
+  assert.equal(nextAction(dir).stage, "probe", "the repaired page is probed again");
 });
