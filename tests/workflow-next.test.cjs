@@ -2567,21 +2567,45 @@ test("a section rejection can cite recorded runtime-review Feedback through the 
   assert.deepEqual(readState(root).decisions.sections.at(-1).evidence.map(item => item.path), [cited, second]);
 });
 
+// Runs a command next returned, as an agent would, and returns its parsed JSON result.
+function runReturned(command) {
+  const child = spawnSync(`${command} --json`, { shell: true, encoding: "utf8", windowsHide: true });
+  assert.equal(child.status, 0, child.stdout + child.stderr);
+  return JSON.parse(child.stdout);
+}
+
 test("a reworded description goes back for approval, and a bytes re-approval keeps every section", t => {
-  const root = atProbe(t, ["first-screen", "proof"], { keep: ["description", "section"] });
+  const root = atProbe(t, ["first-screen", "proof"]);
   const verdicts = readState(root).decisions.sections;
   fs.appendFileSync(path.join(root, "brief.md"), "\nPickup is on weekends only.\n");
   const stale = nextAction(root);
   assert.equal(stale.stage, "description");
-  assert.equal(stale.type, "ask");
-  assert.equal(typeof stale.first, "string");
-  assert.match(stale.first, /only the wording of the brief/);
-  assert.match(stale.first, /--revision bytes/);
-  refuses(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
-  refuses(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen,proof" }, "CONTRACT_INVALID");
-  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen,proof", revision: "bytes" });
+  assert.equal(stale.type, "run", "a delegated description is the agent's self-check");
+  assert.match(stale.instruction, /only the wording of the brief/);
+  assert.match(stale.command, /--by agent .*--choice first-screen,proof --revision bytes$/, "the returned command carries the tier");
+  refuses(root, { by: "agent", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "agent", stage: "description", verdict: "accept", choice: "first-screen,proof" }, "CONTRACT_INVALID");
+  runReturned(stale.command);
   assert.equal(nextAction(root).stage, "probe", "a wording change reopens no section");
   assert.deepEqual(readState(root).decisions.sections, verdicts, "earlier verdicts are kept, not rewritten");
+});
+
+test("a byte-only change to a kept description comes back as the agent's carry-forward, not an owner ask", t => {
+  const root = atProbe(t, ["first-screen", "proof"], { keep: ["description", "section"] });
+  fs.appendFileSync(path.join(root, "brief.md"), "\nPickup is on weekends only.\n");
+  const carry = nextAction(root);
+  assert.equal(carry.stage, "description");
+  assert.equal(carry.type, "run");
+  assert.equal(carry.carryForward, true);
+  assert.match(carry.command, /--by agent .*--choice first-screen,proof --revision bytes$/);
+  runReturned(carry.command);
+  assert.equal(nextAction(root).stage, "probe", "the carried-forward approval reopens no section");
+  assert.equal(readState(root).decisions.descriptions.at(-1).revision, "bytes");
+  // A commitment on the kept description stays the owner's ask, and its commands carry the tier.
+  fs.writeFileSync(path.join(root, "brief.md"), fs.readFileSync(path.join(root, "brief.md"), "utf8").replace(/^- proof\b.*$/m, "- proof: three customer quotes"));
+  const ask = nextAction(root);
+  assert.equal(ask.type, "ask", "a changed section line goes back to the owner");
+  assert.match(ask.record, /--by owner .*--choice first-screen,proof --revision commitment --affects <[^>]*at least proof/);
 });
 
 // A different component decision does the same (tests/workflow-components.test.cjs).
@@ -3423,7 +3447,10 @@ test("the revision flags are refused where they mean nothing or do not fit what 
     refuses(root, { stage: "description", verdict: "accept", choice: "hero,proof", ...extra }, "CONTRACT_INVALID");
   }
   refuses(root, { stage: "section", choice: "hero", verdict: "accept", revision: "bytes" }, "CONTRACT_INVALID");
-  assert.match(refuses(root, { stage: "review", verdict: "accept", affects: "all" }, "CONTRACT_INVALID").message, /only with a re-approval of the web description/);
+  assert.match(refuses(root, { stage: "review", verdict: "accept", affects: "all" }, "CONTRACT_INVALID").message, /only with a re-approval \(--verdict accept\) of the web description/);
+  const before = readState(root).decisions.descriptions.length;
+  refuses(root, { stage: "description", verdict: "reject", answer: "The proof line is wrong", revision: "commitment", affects: "all" }, "CONTRACT_INVALID");
+  assert.equal(readState(root).decisions.descriptions.length, before, "a rejection never carries a tier, and nothing is recorded");
 });
 
 test("the agent carries a byte-only change to a kept description forward, and nothing else", t => {

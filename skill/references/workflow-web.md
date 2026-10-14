@@ -337,8 +337,9 @@ Record:
 The approval stores its `inputs`: the `brief.md` bytes, each section's line, the confirmed
 playback, the direction (the chosen variant and its notes) and the component decision. It fixes the
 sections the page is built in. Any change to them makes it stale: `next` returns here, and its
-`first` names what changed and which `--revision` fits. Re-record the approval with the tier of
-the change:
+`first` names what changed and which `--revision` fits, and the returned commands already carry
+it (`--affects` stays a placeholder for you to fill). Re-record the approval with the tier of the
+change:
 
 - **Wording only** (the brief's prose, not a section line): `--revision bytes`. No section is
   reviewed again.
@@ -354,7 +355,9 @@ the change:
 
 A first approval, and the identical approval recorded again, take neither flag and keep the
 section verdicts. When the owner kept the description, a `--revision bytes` re-approval is yours to
-record with `--by agent`, as long as their latest record on it is an accept. The diligence statement
+record with `--by agent`, as long as their latest record on it is an accept: `next` returns it as a
+`run` with `carryForward: true` and the command, not as an owner ask. If the reworded prose changes
+what the page promises, show the owner instead and record a commitment. The diligence statement
 lists it as a carried-forward change. Anything else on a kept description, including an approval
 after their "no", is theirs. An approval made before change tiers counts as a first one, and its
 sections are reviewed once more. History is in `decisions.descriptions`.

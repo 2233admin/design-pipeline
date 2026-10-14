@@ -264,7 +264,7 @@ function decide(root, options = {}) {
   const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
   // --revision and --affects belong to a re-approval of the description (change tiers).
-  if ((options.revision !== undefined && options.revision !== null || options.affects !== undefined && options.affects !== null) && stage !== "description") fail("workflow", "--revision and --affects go only with a re-approval of the web description. Fix: drop them");
+  if ((options.revision !== undefined && options.revision !== null || options.affects !== undefined && options.affects !== null) && (stage !== "description" || options.verdict !== "accept")) fail("workflow", "--revision and --affects go only with a re-approval (--verdict accept) of the web description. Fix: drop them");
   const carryForward = stage === "description" && options.verdict === "accept" && options.revision === "bytes";
   const role = roles.recordRole(state, stage, options.by, { carryForward });
   if (role.carriedForward) options = { ...options, carriedForward: true };

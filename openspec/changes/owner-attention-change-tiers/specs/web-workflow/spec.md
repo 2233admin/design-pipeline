@@ -97,7 +97,7 @@ When an earlier approval exists and its inputs changed, the description approval
 
 #### Scenario: A missing or misplaced tier is refused
 
-- **WHEN** a changed description is approved without `--revision`, or a first approval carries `--revision`, or `--affects` names a section not in the list, or `--affects` comes without `--revision commitment`, or either flag is given on another stage
+- **WHEN** a changed description is approved without `--revision`, or a first approval carries `--revision`, or `--affects` names a section not in the list, or `--affects` comes without `--revision commitment`, or either flag is given on another stage or with a rejection
 - **THEN** decide SHALL exit 1 and record nothing
 
 ### Requirement: A byte-only change does not go back to the owner
@@ -109,6 +109,16 @@ When the owner kept the description, the agent MAY record a `--revision bytes` r
 - **WHEN** the owner kept the description and only the prose of `brief.md` changed
 - **THEN** `decide --stage description --verdict accept --revision bytes --by agent` SHALL be accepted
 - **AND** the statement SHALL show it as an agent decision with its tier
+
+#### Scenario: next returns the carry-forward, not an owner ask
+
+- **WHEN** the owner kept the description, their latest record on it is an accept, and only the prose of `brief.md` changed
+- **THEN** `next` SHALL return a run action marked `carryForward` whose command carries `--by agent` and `--revision bytes`, and running that command as given SHALL record the approval
+
+#### Scenario: Returned re-approval commands carry the tier
+
+- **WHEN** `next` returns the description step for a stale approval that stored its inputs
+- **THEN** its record and command SHALL carry `--revision bytes`, or `--revision commitment` with an `--affects` placeholder naming the sections whose line changed
 
 #### Scenario: A commitment on a kept description stays with the owner
 

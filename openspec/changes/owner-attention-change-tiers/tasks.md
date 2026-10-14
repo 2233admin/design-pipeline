@@ -35,6 +35,12 @@
 - [x] 7.1 `npm test` and `npm run specs:check` pass locally, except the ff-tracking-hud ffmpeg sound test, which fails in this sandbox and passes in CI; verify both outputs.
 - [x] 7.2 Mark design-owner-attention task 2.2 done and note the page tier's move to phase 3 there; verify with `npm exec -- openspec validate design-owner-attention --strict`.
 
+## 8. Review follow-up
+
+- [x] 8.1 Codex P1: the description step's `record` and `accept` carry the tier of a stale approval, so the command `next` returns runs as given; verify with a `workflow-next` test that runs the returned command in a shell.
+- [x] 8.2 Codex P2: a byte-only change to a kept description, whose latest record is an accept, comes back from `next` as the agent's carry-forward run; verify that the run's command records the approval and that a changed section line on the kept description stays an owner ask.
+- [x] 8.3 CodeRabbit: `--revision` and `--affects` are refused on a description rejection, with nothing recorded; verify in the misplaced-tier refusal test.
+
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.

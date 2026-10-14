@@ -381,6 +381,23 @@ const DESCRIPTION = {
     const current = fileSha(root, file);
     if (!current) return { type: "run", instruction: `Write ${file}: ${descriptionContent(state)} Then run next again.`, why: "Nothing is built until the owner approves a written description of it." };
     const latest = history(state, "descriptions").at(-1);
+    const stale = latest?.verdict === "accept" && latest.inputs ? diffInputs(latest.inputs, approvalInputs(state, root)) : null;
+    const listed = stale ? briefSections(fileText(root, file) ?? "")?.map(item => item.id) : null;
+    const choice = listed?.length ? listed.join(",") : "<section-ids-in-order,comma-separated>";
+    // A re-approval's commands carry the tier it needs, so the returned command runs as given.
+    const tier = !stale ? "" : stale.structural
+      ? ` --revision commitment --affects <the section ids the change touches${stale.jobs.length ? `, at least ${stale.jobs.join(",")}` : ""}; or all; or none>`
+      : " --revision bytes";
+    // A byte-only change to a description the owner kept is carried forward by the agent, not asked again.
+    if (stale && !stale.structural && state.delegation?.description?.to === "owner") {
+      return {
+        type: "run",
+        carryForward: true,
+        instruction: `Since the owner approved ${file}, only its wording changed: no section line, playback, direction or component decision did. Re-read the change. When it is wording only (a typo, formatting, a clearer sentence), carry the owner's approval forward with the command; no section is reviewed again. When it changes what the page promises or aims at, it is a commitment: show ${file} to the owner and record their answer with --by owner --revision commitment --affects <ids|all|none>.`,
+        command: `${decideCommand(root, "description").replace(/ --stage /, " --by agent --stage ")} --verdict accept --choice ${choice}${tier}`,
+        why: "A byte-only change keeps the owner's decision; the approval still binds the new bytes, and the statement lists the carry-forward.",
+      };
+    }
     const first = latest?.verdict === "reject" && latest.sha256 === current
       ? `The owner rejected this description ("${latest.reason}"); it is now a rule. Revise ${file}, then ask:`
       : latest?.verdict === "accept"
@@ -394,8 +411,8 @@ const DESCRIPTION = {
       instruction: `${file} is ${descriptionContent(state)} Show it to the owner as it is; record each correction (it becomes a rule), revise and ask again.`,
       recommended: "Approve only when it says what you want; nothing is built before you do.",
       selfCheck: `The command's --choice is the ids of the ## Sections list in ${file}, in its order. Check ${file} yourself against the confirmed playback (or the stated skip), the chosen variant and the component decision: it is ${descriptionContent(state)} When it matches, record the approval with the command.`,
-      record: `${decideCommand(root, "description")} --verdict accept --choice <the ids of the ## Sections list in ${file}, in its order, comma-separated> [--answer "<the owner's words>"]`,
-      accept: `${decideCommand(root, "description")} --verdict accept --choice <section-ids-in-order,comma-separated>`,
+      record: `${decideCommand(root, "description")} --verdict accept --choice ${listed?.length ? choice : `<the ids of the ## Sections list in ${file}, in its order, comma-separated>`}${tier} [--answer "<the owner's words>"]`,
+      accept: `${decideCommand(root, "description")} --verdict accept --choice ${choice}${tier}`,
       correction: `${decideCommand(root, "description")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
       why: "The stage that blocks building (not a state.gates gate): the approval binds this description, the confirmed playback, the chosen variant and the component decision, and fixes the sections the page is built in. Each correction becomes a rule.",
     };
