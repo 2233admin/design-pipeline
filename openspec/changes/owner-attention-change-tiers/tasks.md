@@ -32,7 +32,7 @@
 
 ## 7. Integration
 
-- [ ] 7.1 `npm test` and `npm run specs:check` pass locally, except the ff-tracking-hud ffmpeg sound test, which fails in this sandbox and passes in CI; verify both outputs.
+- [x] 7.1 `npm test` and `npm run specs:check` pass locally, except the ff-tracking-hud ffmpeg sound test, which fails in this sandbox and passes in CI; verify both outputs.
 - [x] 7.2 Mark design-owner-attention task 2.2 done and note the page tier's move to phase 3 there; verify with `npm exec -- openspec validate design-owner-attention --strict`.
 
 ## Workflow follow-up
