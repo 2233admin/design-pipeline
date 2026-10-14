@@ -125,7 +125,7 @@ See proposal.md for why. Current code (checked):
   - at a section, `ref.section` equals `--choice`.
 - Repeated references are deduplicated.
 - The refs attach to the rule made from `--answer`. Rules from cited `--evidence` are unchanged.
-- **Rule shape.** The rule's `object` gains `refs: [{ref, selector, text}]`.
+- **Rule shape.** The rule's `object` gains `refs: [{ref, tag, selector, text}]`.
   - `retired`, `candidates`, `widen` and `isProject` read only `object.stage` and `object.choice`, so the extra
     field does not change them.
 - **Display.**

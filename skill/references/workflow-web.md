@@ -388,14 +388,17 @@ screen first, and the owner reviews each section before the next one starts:
    `decide --stage section --choice <id> --verdict accept --by agent`. When the owner kept section
    reviews (`--keep section`), `next` asks them instead: "The <id>
    section is built (k of n). Look at it in the page: accept it as it is, or tell me what to
-   change, naming each element by its text, label or where it sits?". Open `index.html` at the
-   section in a real browser and let the owner look and interact. Comments are text: ask them to
-   name each element they comment on by its text, label or place. Do not offer to let them click
-   or pick elements on the page; that is a planned follow-up, not part of this flow. Record
-   `decide --stage section --choice <id> --verdict accept` only when nothing in the section needs to
-   change. Any change they ask for is a rejection:
-   `decide --stage section --choice <id> --verdict reject --answer "<the owner's comments>"`. Each
-   comment becomes a rule (`section <id> N`). Revise the section before asking again: while
+   change, naming each element by its number on the numbered page or by its text, label or where it
+   sits?". Its `first` step offers the [numbered page](#element-references): run `evidence refs`
+   when there is no capture of the current page, then show `evidence/refs.png`. Open `index.html`
+   at the section in a real browser and let the owner look and interact. Comments are text: ask
+   them to name each element they comment on by its reference (`hero-2`) or by its text, label or
+   place. Do not offer to let them click or pick elements on the page; that is a planned follow-up,
+   not part of this flow. Record `decide --stage section --choice <id> --verdict accept` only when
+   nothing in the section needs to change. Any change they ask for is a rejection:
+   `decide --stage section --choice <id> --verdict reject --answer "<the owner's comments>" --ref hero-2`,
+   with one `--ref` per element they cite. Each comment becomes a rule (`section <id> N`), and a
+   cited element travels with it to every later action's `rules`. Revise the section before asking again: while
    the page (`index.html`, its manifest and the local files it names) is unchanged since the
    rejection, `next` tells you to revise first.
 3. **Next section.** `next` returns a run with `section: <id>` for the next approved section: build
@@ -723,10 +726,40 @@ observations alongside UC findings without duplicating them. These cases are not
 Show the page, its motion at full speed and a one-paragraph gate summary. When the build used a
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and
 reports them under Visual Acceptance in `qa.md`; the agent never records acceptance and gate
-findings stay Conformance. The user accepts, or rejects with one sentence
-(`decide --stage review --verdict accept|reject`). A rejection becomes a rule and returns
-to build: the page the owner rejected is repaired before it is probed and shown again, so an
-unchanged page never comes back for review.
+findings stay Conformance. Offer the [numbered page](#element-references) as at a section review.
+
+The owner accepts, or rejects with one sentence. Either way, record their own words from the
+conversation: `decide --stage review --verdict accept|reject --answer "<the owner's words>"`. An
+acceptance needs at least two words (each CJK character counts as one, so "可以" is enough and "ok"
+is not), and the returned command holds a placeholder for them, never a ready-made acceptance. The
+diligence statement shows their words and the page version they accepted. Add `--ref` for each
+element a rejection cites; at the final review a reference outside the sections (`3`) counts too.
+
+A rejection becomes a rule and returns to build: the page the owner rejected is repaired before it
+is probed and shown again, so an unchanged page never comes back for review. A page changed after
+the owner accepted it comes back to this review, and `first` says they accepted an earlier version.
+
+## Element references
+
+`evidence refs --root <project> --project-root <project>` numbers the built page for the owner:
+
+- It loads `index.html` at desktop width (1440×900) in the browser the probe uses, scrolls through
+  it so scroll-revealed content settles, and numbers the visible headings, text blocks, list items,
+  links, buttons, form controls and media in document order: `<section>-<n>` inside each
+  `data-section`, `<n>` outside every section (a page without sections is numbered `1, 2, 3`).
+  Wrappers, hidden elements and content inside a numbered element (an image inside a link) get no
+  number; a link inside a paragraph gets its own.
+- It writes `evidence/refs.json` (each reference with its selector, tag, text and box, and the page
+  digest it was taken from) and `evidence/refs.png`, the full page with a badge on each element.
+  The badges exist only in the browser: `index.html` is never changed.
+- A capture of the current page is never overwritten (`status: "current"`), so a number the owner
+  has seen keeps its meaning. After the page changes, run it again and show the new numbers.
+- `--ref` is checked against this file: the reference must be on the current capture and, at a
+  section review, in that section. The rule keeps the reference with its tag and text, so a later
+  renumbering does not change what the comment meant.
+- It needs a browser and `puppeteer-core`, like the probe. When neither is available, ask the owner
+  to name elements in words; only `--ref` needs a capture. Mobile captures and clicking elements on
+  the page are planned follow-ups.
 
 ## deliver
 

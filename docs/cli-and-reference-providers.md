@@ -91,6 +91,12 @@ Inclusion is neither an execution result nor creative acceptance. See the
 process with a bounded environment and timeout, and validates its receipt. The adapter owns browser
 or tool automation; the kernel owns the receipt schema, hashes, path containment, and status.
 
+`evidence refs --root <project> --project-root <project>` numbers a built web page for review: it
+loads `index.html` in the browser the interaction probe uses and writes `evidence/refs.json` and
+`evidence/refs.png` (see `skill/references/workflow-web.md#element-references`). `decide --ref
+<reference>` (repeatable, with `--answer`) cites those references on a web section or final-review
+rejection.
+
 Design-tool hosts use the same rule: Figma, Penpot, Onlook, or another host produces a
 `design-pipeline.design-tool-receipt.v1`; the pipeline validates the receipt and remains usable with
 local DESIGN/MOTION/tokens/UI IR when a host is absent.
