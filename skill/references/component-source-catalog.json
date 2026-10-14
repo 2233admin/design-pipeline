@@ -5706,7 +5706,7 @@
         "url": "https://github.com/jal-co/holosticker",
         "revision": "34688eb3fd2986c6721ff270a00ca9267f8a195c",
         "gitTree": "11a1e9e0622d5a14a28a139c7dbcf17501eb1e0f",
-        "contentHash": "24731fd5a771719deada5412acafe8e7df0526e8970a579d7427e20e4bf7b95e",
+        "contentHash": "6c9d99ab2b7b77cc7b4d036c5c8727ec44a29dcdd1b498e5cb974129b5eaccb3",
         "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
       },
       "license": {
