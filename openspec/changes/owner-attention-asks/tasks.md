@@ -43,7 +43,7 @@
 ## 7. Integration
 
 - [ ] 7.1 `npm test` and `npm run specs:check` pass locally (the known ffmpeg-only environment failure excepted); verify both exit codes.
-- [ ] 7.2 Mark design-owner-attention task 2.1 done, and move the deferred items (decide later, rule history edits, later delegation changes, cross-project ledger) into its phase 4 text; verify with `npm exec -- openspec validate design-owner-attention --strict`.
+- [x] 7.2 Mark design-owner-attention task 2.1 done, and move the deferred items (decide later, rule history edits, later delegation changes, cross-project ledger) into its phase 4 text; verify with `npm exec -- openspec validate design-owner-attention --strict`.
 
 ## Workflow follow-up
 
