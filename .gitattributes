@@ -25,3 +25,5 @@ skill/vendor/taste-skill/upstream/skills/imagegen-frontend-mobile/SKILL.md -whit
 skill/vendor/taste-skill/upstream/skills/minimalist-skill/SKILL.md -whitespace
 skill/vendor/taste-skill/upstream/skills/soft-skill/SKILL.md -whitespace
 skill/vendor/taste-skill/upstream/skills/taste-skill-v1/SKILL.md -whitespace
+# Upstream snapshots keep their exact bytes: text=auto once rewrote line endings inside iart GIFs.
+skill/vendor/**/upstream/** -text

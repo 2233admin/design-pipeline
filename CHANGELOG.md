@@ -6,6 +6,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- Bundled upstream snapshots match upstream again (change `restore-upstream-snapshot-bytes`).
+  `text=auto` had rewritten line endings inside nine iart `showcase.gif` files and four holosticker
+  files (`logo-raw.png`, three SVGs); they are restored from the recorded revisions, every
+  `skill/vendor/**/upstream/**` file is stored unconverted, and iart verification now rebuilds each
+  pack's Git tree.
 - The package holds one `SKILL.md` (change `store-upstream-skill-files`, #118). The 258 bundled
   upstream `SKILL.md` files are stored as `UPSTREAM-SKILL.md` with unchanged bytes; manifests keep
   upstream paths and hashes, and `skill/scripts/upstream-path.cjs` maps between the names for
