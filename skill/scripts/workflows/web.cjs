@@ -404,6 +404,8 @@ const DESCRIPTION = {
     }
     const first = latest?.verdict === "reject" && latest.sha256 === current
       ? `The owner rejected this description ("${latest.reason}"); it is now a rule. Revise ${file}, then ask:`
+      : stale
+        ? staleText(state, root, accepted, file)
       : latest?.verdict === "accept"
         ? staleText(state, root, latest, file)
         : `Before asking, make sure ${file} is the one-page description, then ask:`;

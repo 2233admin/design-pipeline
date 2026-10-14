@@ -42,6 +42,7 @@
 - [x] 8.3 CodeRabbit: `--revision` and `--affects` are refused on a description rejection, with nothing recorded; verify in the misplaced-tier refusal test.
 - [x] 8.4 Codex P1 (second pass): the returned tier is measured against the last accept with inputs, as `revisionOf` measures it, so a reject, revise, approve flow returns a runnable command; verify with a `workflow-next` test that runs it.
 - [x] 8.5 Codex P2: `all` and `none` are refused as section ids, since `--affects` reads them; verify with a `workflow-next` refusal test.
+- [x] 8.6 Codex P2 (third pass): after a reject and a revision, the description step's text still names what changed since the last accept and the tier it allows; verify in the reject, revise, approve test.
 
 ## Workflow follow-up
 

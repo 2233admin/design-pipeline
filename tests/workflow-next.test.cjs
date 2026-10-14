@@ -3462,6 +3462,7 @@ test("after a no on a changed description, the returned approval still carries t
   assert.equal(step.stage, "description");
   assert.match(step.command, /--by agent .*--choice hero,proof --revision bytes$/, "measured against the last accept, as decide measures it");
   assert.equal(step.carryForward, undefined, "after a no the step is a self-check, not a carry-forward");
+  assert.match(step.instruction, /only the wording of the brief.*--revision bytes/, "it still names what changed since the last accept and the tier");
   runReturned(step.command);
   assert.equal(nextAction(root).stage, "probe");
 });
