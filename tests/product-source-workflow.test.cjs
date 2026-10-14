@@ -517,7 +517,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(next.first, undefined);
   assert.match(next.director, /claude-opus-5-5/, "art director mode applies to the sample");
   assert.deepEqual(next.show, ["sample.mp4", ...source.captures.map(capture => capture.path)].map(rel => path.join(dir, rel)));
-  assert.throws(() => decide(dir, { by: "owner", stage: "sample", verdict: "reject" }), /needs --answer/);
+  assert.throws(() => decide(dir, { by: "owner", stage: "sample", verdict: "reject" }), /--answer must say in one sentence what is wrong with the sample/);
   const rejection = "The chart is cropped off at the right edge.";
   const rejected = decide(dir, { by: "owner", stage: "sample", verdict: "reject", answer: rejection });
   assert.equal(rejected.next.stage, "sample");

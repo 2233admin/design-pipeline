@@ -32,11 +32,14 @@ rule's `from` is `playback N`, `anti-goal N`, `variants N`, `decisions N`, `desc
 are never removed; the owner's later decisions refine them.
 
 A recorded decision or "no" must say something. A decision you state for the owner (a skip line,
-the confirmed playback) needs at least six words; every "no" (a playback, variants, decision-round,
-description or section correction, a combine note, each `--anti-goal`) needs at least three. Two
-CJK characters count as one word. Shorter records are refused with `CONTRACT_INVALID` and change
-nothing: "OK, start.", "just start" or "默认" is not a skip line, and "no", "Too dark" or "首屏太暗了"
-is not a reason; "The hero is too dark" is.
+the confirmed playback) needs at least six words, two CJK characters counting as one: "OK, start.",
+"just start" or "默认" is not a skip line. Every "no" (a playback, variants, decision-round,
+description or section correction, a combine note, each `--anti-goal`) is the owner's own feedback
+and is taken as given: it needs at least two words, each CJK character counting as one, so
+"首屏太暗了", "太挤" or "Too dark" is a complete reason and a bare "no" or "ok" is not. Never ask the
+owner to lengthen feedback; when a short reason is ambiguous, ask about the real ambiguity
+("brighter background, or more text contrast?"). Shorter records are refused with
+`CONTRACT_INVALID` and change nothing.
 
 For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
 to select and read the complete built-in method. On an existing site, audit brand, routes, content,
@@ -642,8 +645,9 @@ Show the page, its motion at full speed and a one-paragraph gate summary. When t
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and
 reports them under Visual Acceptance in `qa.md`; the agent never records acceptance and gate
 findings stay Conformance. The user accepts, or rejects with one sentence
-(`decide --stage review --verdict accept|reject`). A rejection reopens `probe` for the rebuilt page
-and becomes a project rule.
+(`decide --stage review --verdict accept|reject`). A rejection becomes a project rule and returns
+to build: the page the owner rejected is repaired before it is probed and shown again, so an
+unchanged page never comes back for review.
 
 ## deliver
 

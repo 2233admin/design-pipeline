@@ -5,12 +5,13 @@ const test = require("node:test");
 const path = require("node:path");
 const patterns = require("../skill/references/film-choreography/patterns.js");
 const { checkTimeline } = require("../skill/scripts/film-timeline-core.cjs");
-const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 
 function browserTools() {
   try {
     const puppeteer = resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
-    const chrome = resolveChrome();
+    const chrome = resolveBrowser();
     let gsapPath;
     try { gsapPath = require.resolve("gsap/dist/gsap.min.js"); }
     catch (error) {

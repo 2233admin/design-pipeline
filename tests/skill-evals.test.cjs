@@ -40,7 +40,7 @@ function writeJson(root, file, value) {
 
 let browserTools;
 try {
-  browserTools = { chromium: require("playwright").chromium, chrome: require("../skill/scripts/film-capture-core.cjs").resolveChrome() };
+  browserTools = { chromium: require("playwright").chromium, chrome: require("../skill/scripts/browser-locate.cjs").resolveBrowser() };
 } catch (error) {
   if (error.code !== "TOOL_MISSING" && error.code !== "MODULE_NOT_FOUND") throw error;
   browserTools = { skip: error.message };

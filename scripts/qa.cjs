@@ -8,13 +8,13 @@ const path = require("node:path");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 const { createComponentFirstFixture } = require("../tests/fixtures/component-first-fixture.cjs");
-const { resolveChrome } = require("../skill/scripts/film-capture-core.cjs");
+const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const localEnv = path.join(repoRoot, ".env.local");
 if (fs.existsSync(localEnv)) process.loadEnvFile(localEnv);
 let hostChrome;
-try { hostChrome = resolveChrome(); }
+try { hostChrome = resolveBrowser(); }
 catch (error) { if (error.code !== "TOOL_MISSING") throw error; }
 let failed = false;
 function report(ok, label) { console.log(`${ok ? "OK" : "FAIL"} ${label}`); if (!ok) failed = true; return ok; }

@@ -4,7 +4,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
 const { once } = require("node:events");
-const { resolveChrome, resolvePuppeteer } = require("../../scripts/film-capture-core.cjs");
+const { resolvePuppeteer } = require("../../scripts/film-capture-core.cjs");
+const { browserIdentity, resolveBrowser } = require("../../scripts/browser-locate.cjs");
 const { run, probe } = require("../../scripts/film-core.cjs");
 const { assertKeys, resolveInside, readJson, sha256 } = require("../../scripts/contract-utils.cjs");
 
@@ -116,7 +117,8 @@ async function render(root, options) {
   if (!times) { run(tools.ffmpeg, ["-version"]); run(tools.ffprobe, ["-version"]); }
   const runtime = fs.readFileSync(RUNTIME);
   const puppeteer = resolvePuppeteer(root, options.puppeteerModule);
-  const browser = await puppeteer.launch({ executablePath: resolveChrome(options.chrome), headless: true });
+  const executablePath = resolveBrowser(options.chrome);
+  const browser = await puppeteer.launch({ executablePath, headless: true });
   let encoder, encoded, encoderError = "", closed = false;
   try {
     const page = await browser.newPage(), errors = [], warnings = [];
@@ -197,7 +199,7 @@ async function render(root, options) {
       if (Math.abs(media.durationSec - spec.duration) > 1 / spec.fps + 0.001 || Math.abs(media.fps - spec.fps) > 0.001) throw new Error("encoded timing does not match requested frames/fps");
       video = spec.alpha ? "render.mov" : "render.mp4"; fs.renameSync(temporary, path.join(directory, video));
     }
-    const report = { specSha256: sha256(specBytes), inputs: inputs.files, runtimeSha256: sha256(runtime), width: spec.width, height: spec.height, fps: spec.fps, durationSec: spec.duration, video, frames: records, coldAndReorderedMatch: deterministic, warnings: [...new Set(warnings)], limits: ["Canvas timing includes PNG readback; it is not real-time playback performance.", "Authored style scenes retain source composition; contain/cover is not responsive reflow.", "Rendered output and technical diagnostics do not grant creative acceptance."] };
+    const report = { browser: await browserIdentity(browser, executablePath), specSha256: sha256(specBytes), inputs: inputs.files, runtimeSha256: sha256(runtime), width: spec.width, height: spec.height, fps: spec.fps, durationSec: spec.duration, video, frames: records, coldAndReorderedMatch: deterministic, warnings: [...new Set(warnings)], limits: ["Canvas timing includes PNG readback; it is not real-time playback performance.", "Authored style scenes retain source composition; contain/cover is not responsive reflow.", "Rendered output and technical diagnostics do not grant creative acceptance."] };
     fs.writeFileSync(path.join(directory, "render-report.json"), `${JSON.stringify(report, null, 2)}\n`, { flag: "wx" });
     return { directory, video, frames: count, coldAndReorderedMatch: deterministic, report: path.join(directory, "render-report.json") };
   } finally {

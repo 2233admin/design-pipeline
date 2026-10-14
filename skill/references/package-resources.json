@@ -120,6 +120,7 @@
     "scripts/film-eval-core.cjs",
     "scripts/film-hints.cjs",
     "scripts/upstream-path.cjs",
+    "scripts/browser-locate.cjs",
     "scripts/film-capture-core.cjs",
     "scripts/capture-film-timeline.cjs",
     "scripts/film-project-core.cjs",

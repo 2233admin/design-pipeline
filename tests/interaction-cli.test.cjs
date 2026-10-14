@@ -205,11 +205,12 @@ test("shared observation preserves missing-tool and browser-timeout failures wit
 
 test("shared observation obtains real browser verdicts while its caller owns report and state writes", t => {
   const { observeInteraction } = require("../skill/scripts/cli-core.cjs");
-  const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
   let chrome, puppeteer;
   try {
     resolvePuppeteer(repoRoot, process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
-    chrome = resolveChrome();
+    chrome = resolveBrowser();
     puppeteer = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE || require.resolve("puppeteer-core", { paths: [repoRoot] });
   } catch (error) {
     if (error.code !== "TOOL_MISSING") throw error;
@@ -230,6 +231,8 @@ test("shared observation obtains real browser verdicts while its caller owns rep
       assert.equal(observed.result.status, responds ? "failed" : "passed");
       assert.equal(Object.hasOwn(observed.result, "checks"), false, "the actual interaction report is not reshaped into claimed checks");
       assert.equal(observed.result.probes.length, 1);
+      assert.equal(observed.result.browser.executable, chrome, "the result names the browser that rendered it");
+      assert.match(observed.result.browser.version, /\//);
       if (responds) assert.ok(observed.result.findings.some(finding => finding.code === "dead-interaction"));
       assert.equal(fs.existsSync(observed.resultFile), false);
       assert.equal(fs.existsSync(path.join(dir, ".design-pipeline")), false);
@@ -239,11 +242,12 @@ test("shared observation obtains real browser verdicts while its caller owns rep
 });
 
 test("public interaction CLI records real menu states and fails animated but unapplied selection", t => {
-  const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
   let chrome, puppeteer;
   try {
     resolvePuppeteer(repoRoot, process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
-    chrome = resolveChrome(); puppeteer = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE || require.resolve("puppeteer-core", { paths: [repoRoot] });
+    chrome = resolveBrowser(); puppeteer = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE || require.resolve("puppeteer-core", { paths: [repoRoot] });
   } catch (error) { if (error.code !== "TOOL_MISSING") throw error; t.skip(error.message); return; }
   const dir = tmp();
   try {
