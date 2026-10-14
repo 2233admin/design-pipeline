@@ -38,8 +38,9 @@ creative-work course as the model for these gaps, with these decisions:
   `--keep <checkpoint>` on the intake record.
 - Quick tier's stated decision records intake as delegated.
 - `next --director <model>` delegates the concept pick and section reviews to that model by default.
-- Two checkpoints are locked to the owner: final acceptance and creative intent. Neither can be
-  delegated.
+- Two checkpoints are locked to the owner: final-review acceptance (web, film and edit at standard and
+  full) and creative intent. Neither can be delegated. Web quick and ui have no final review; the
+  statement says so, and whether they should gain one is left as an open question.
 
 **Decision roles: each record says who decided.**
 
@@ -47,7 +48,9 @@ creative-work course as the model for these gaps, with these decisions:
 - `--by agent` is refused unless the checkpoint is delegated, and it is always refused on a locked
   checkpoint.
 - Agent records also name the agent: the director model or the `--assisted-by` tool.
-- The direction-preview `decision` and the template `approval` gain the same `by` field.
+- The direction-preview `decision`, the selection receipt (`selectedBy`) and the template `approval`
+  gain the same field. An agent direction selection carries its own delegation evidence, because
+  `direction check` sees only the change root.
 - A record written before this change reads as `unknown`, never as the owner.
 
 **Description: creative intent, following the course's Creative Value Lens.**
@@ -79,7 +82,8 @@ creative-work course as the model for these gaps, with these decisions:
   - the number of project rules;
   - technical gates, kept separate from owner acceptance;
   - an `Assisted-by: <tool>` line.
-- The statement is bound to `deliveredSha256` and goes stale when state changes.
+- The statement binds the state hash and the delivery bindings already recorded (`deliveredSha256`
+  for files, `deliveryInputHashes` for reviewed inputs) and goes stale when any of them changes.
 - `next` accepts `--assisted-by "<tool>"` once at init.
 
 ## Capabilities
@@ -104,7 +108,7 @@ The change adds no gate, receipt schema, policy digest or feedback system. It re
 - the web minimum-content rule (`statement`/`reason`) for reasons;
 - web anti-goals as distinctiveness;
 - the `Source Decisions` label check pattern in `check-design-foundation`;
-- delivery's `deliveredSha256` binding for the statement;
+- delivery's existing `deliveredSha256` and `deliveryInputHashes` bindings for the statement;
 - shadow-mode `adaptation record` for the retrospective.
 
 ## Impact

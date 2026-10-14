@@ -17,12 +17,15 @@
   `by`/`agent` on every history entry.
 - [ ] 2.4 `--director` stops routing the `review` ask; a director note is an agent `drafts[]` entry
   with `verdict: "recommend"`.
-- [ ] 2.5 `direction-preview-core.cjs`: `decision.by`/`agent`, selection check fails on missing `by`
-  or undelegated agent; `direction-preview.md` replaces "bounded autonomous selection" wording.
-- [ ] 2.6 `surface-design-artifacts-core.cjs`: `approval.by`; no `user-selected-template` default for
-  agent selections.
-- [ ] 2.7 `next --assisted-by`; statement renderer; delivery writes `diligence.md` bound to
-  `deliveredSha256` and the state hash; stale detection; read-only `diligence [--write]` command.
+- [ ] 2.5 `direction-preview-core.cjs`: `decision.by`/`agent`/`delegation` (`workflow-state` with
+  `stateSha256`, or `owner-instruction` with a quote); selection fails on missing `by`, missing
+  agent delegation, or a verified state that keeps `concept` with the owner; `direction check`
+  accepts `--project-root`; `direction-preview.md` replaces "bounded autonomous selection".
+- [ ] 2.6 `surface-design-artifacts-core.cjs`: `selectedBy` on the selection receipt and in
+  `RECEIPT_KEYS`; no `user-selected-template` default when `selectedBy` is `agent`; `approval.by`.
+- [ ] 2.7 `next --assisted-by`; statement renderer; delivery writes `diligence.md` bound to the
+  state hash, `deliveryInputHashes` and, for files, `deliveredSha256`; stale detection reuses the
+  `shared.cjs` delivery-current check; read-only `diligence [--write]` command.
 - [ ] 2.8 `cli-core.cjs`: register `--by`, `--delegate`, `--keep`, `--assisted-by` in
   `KNOWN_OPTIONS`; COMMANDS entry and help for `diligence`.
 - [ ] 2.9 Tests in existing suites: `workflow-next` (delegation, `--by` refusals, locked review,

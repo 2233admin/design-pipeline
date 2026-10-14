@@ -27,7 +27,7 @@ The workflow state SHALL record, for every checkpoint of the deliverable and tie
 
 ### Requirement: Final acceptance and creative intent stay with the owner
 
-The final acceptance of a deliverable and the confirmation of its creative intent SHALL be locked to the owner. They SHALL NOT be delegated, recorded with `--by agent`, or routed to an art director. An owner MAY decline to state creative intent; that SHALL be reported as not stated by the owner and SHALL NOT be filled in by the agent.
+The final-review acceptance of web, film and edit work at standard and full, and the confirmation of creative intent, SHALL be locked to the owner. They SHALL NOT be delegated, recorded with `--by agent`, or routed to an art director. An owner MAY decline to state creative intent; that SHALL be reported as not stated by the owner and SHALL NOT be filled in by the agent.
 
 #### Scenario: Delegating final acceptance is refused
 
@@ -47,11 +47,11 @@ The final acceptance of a deliverable and the confirmation of its creative inten
 
 ### Requirement: Decisions record who decided
 
-Every record that `decide` writes, every direction-preview `decision` and every template `approval` SHALL carry `by: owner|agent`. Agent records SHALL name the agent: the director model, else the recorded `--assisted-by` tool, else `unspecified`. `decide` SHALL require `--by` with no default. `--by agent` SHALL be refused on a checkpoint not delegated to the agent. A record without `by` SHALL be reported as `unknown`, never as the owner.
+Every record `decide` writes, every direction-preview `decision`, every selection receipt (as `selectedBy`) and every template `approval` SHALL carry `by: owner|agent`. Agent records SHALL name the agent: the director model, else the recorded `--assisted-by` tool, else `unspecified`. `decide` SHALL require `--by` with no default. `--by agent` SHALL be refused on a checkpoint not delegated to the agent. A record without `by` SHALL be reported as `unknown`, never as the owner.
 
 #### Scenario: The owner picks a variant
 
-- **WHEN** `decide --stage concepts --verdict pick --choice B --by owner --answer "<reason>"` runs
+- **WHEN** `decide --stage concept --verdict pick --choice B --by owner --answer "<reason>"` runs
 - **THEN** the stored variant entry SHALL contain `by: "owner"`
 
 #### Scenario: A director accepts a delegated section
@@ -66,8 +66,23 @@ Every record that `decide` writes, every direction-preview `decision` and every 
 
 #### Scenario: Autonomous direction selection without delegation
 
-- **WHEN** `direction-preview.json` records a selection with `by: "agent"` while the `concepts` checkpoint is the owner's
+- **WHEN** `direction-preview.json` records a selection with `by: "agent"` and no `delegation`
 - **THEN** `direction check --stage selection` SHALL fail
+
+#### Scenario: A workflow state contradicts the agent selection
+
+- **WHEN** an agent selection cites `delegation.source: "workflow-state"` and `--project-root` resolves a state whose `concept` checkpoint is the owner's
+- **THEN** `direction check --stage selection` SHALL fail
+
+#### Scenario: A standalone run cites the owner's instruction
+
+- **WHEN** no workflow state exists and the agent selection cites `delegation.source: "owner-instruction"` with a quote of at least six words
+- **THEN** the selection check SHALL pass and report the delegation as owner-instructed
+
+#### Scenario: An agent selects a template
+
+- **WHEN** `template select` creates a receipt with `selectedBy: "agent"` and no `selectionReason`
+- **THEN** it SHALL fail instead of defaulting the reason to `user-selected-template`
 
 #### Scenario: A record predates decision roles
 
@@ -118,22 +133,28 @@ An owner's variant pick and an owner's final acceptance SHALL include an answer 
 
 ### Requirement: Delivery writes a diligence statement
 
-Delivery SHALL render `.design-pipeline/diligence.md` from the workflow state alone. It SHALL list owner decisions with their reasons, delegated agent decisions, facts not stated by the owner, records without an author, the number of project rules, technical checks separately from owner acceptance, and an `Assisted-by:` line. It SHALL bind the delivered hash and the state hash, and SHALL be stale when either changes.
+Delivery SHALL render `.design-pipeline/diligence.md` from the workflow state alone, listing owner decisions with reasons, delegated agent decisions, facts the owner did not state, records without an author, the rule count, technical checks apart from owner acceptance, and an `Assisted-by:` line. It SHALL bind the state hash and the delivery bindings already recorded, and SHALL be stale when any of them changes.
 
-#### Scenario: Standard web work is delivered
+#### Scenario: Standard web work is delivered to a remote URL
+
+- **WHEN** delivery records a remote destination and its `deliveryInputHashes`
+- **THEN** `diligence.md` SHALL exist with the state hash and the reviewed-input bindings in its header
+- **AND** it SHALL state that the remote page itself is not hashed
+- **AND** `next` SHALL return its path with the done action
+
+#### Scenario: Film work is delivered as a file
 
 - **WHEN** delivery records `deliveredSha256`
-- **THEN** `diligence.md` SHALL exist with the delivered hash and the state hash in its header
-- **AND** `next` SHALL return its path with the done action
+- **THEN** the statement header SHALL include it beside the state hash
 
 #### Scenario: The state changes after delivery
 
 - **WHEN** a later `decide` changes the state
 - **THEN** the statement SHALL be reported as stale until the next delivery renders it again
 
-#### Scenario: Quick work has no final acceptance
+#### Scenario: Work without a final review is delivered
 
-- **WHEN** quick web work is delivered
+- **WHEN** quick web work or ui work at any tier is delivered
 - **THEN** the statement SHALL say that no owner acceptance was recorded
 
 #### Scenario: The statement is read before delivery

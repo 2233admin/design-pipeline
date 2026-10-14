@@ -99,6 +99,9 @@ three-way split.
 ### 2. Delegation map
 
 `state.delegation` maps a checkpoint id to `{ to: "owner" | "agent", locked?: true, set: "default" | "owner" }`.
+Checkpoint ids are the public `decide --stage` names (`intake`, `reference`, `concept`,
+`components`, `description`, `section`, `sample`, `review`, `deliver`), plus `creative-intent`. The
+internal workflow stage ids, such as `concepts` or `build`, are never accepted by `--delegate`.
 
 - `initState` writes the defaults for the deliverable.
 - The intake record applies `--delegate <checkpoint>` (to agent) and `--keep <checkpoint>` (to
@@ -112,20 +115,23 @@ Defaults:
 | web standard/full | `intake` (playback) | owner | no |
 | | `creative-intent` | owner | yes |
 | | `reference` | agent | no |
-| | `concepts` (variant pick) | owner; agent with `--director` | no |
+| | `concept` (variant pick) | owner; agent with `--director` | no |
 | | `components` | owner | no |
 | | `description` | owner | no |
 | | `section` | owner; agent with `--director` | no |
 | | `review` (final acceptance) | owner | yes |
+| | `deliver` | agent | no |
 | web quick | `intake` (stated decision) | agent | no |
 | | `components` | owner | no |
+| | `deliver` | agent | no |
 | film/edit standard/full | `intake` | owner | no |
 | | `creative-intent` | owner | yes |
-| | `concepts` | owner; agent with `--director` | no |
+| | `concept` | owner; agent with `--director` | no |
 | | `sample` | owner; agent with `--director` | no |
 | | `review` | owner | yes |
-| ui/code | `intake` | owner | no |
-| | `work` | agent | no |
+| | `deliver` | agent | no |
+| ui (all tiers) | `intake` | owner (not asked at quick) | no |
+| | `deliver` | agent | no |
 
 Further rules:
 
@@ -133,8 +139,11 @@ Further rules:
   agent with `set: "owner"`, because the owner chose to skip.
 - `creative-intent` stays owner and locked. If the owner skipped, it is reported as "not stated by
   the owner", never filled in by the agent.
-- Quick tier has no `review` stage, so the statement says that no owner acceptance was recorded.
-  That wording is honest, not a failure.
+- The final-acceptance lock applies to the `review` checkpoint, which exists only in web, film and
+  edit at standard and full. Web quick and every ui tier have no `review` stage: their `deliver` is
+  recorded by the agent, and the statement says plainly that no owner acceptance was recorded. That
+  is honest reporting, not a failure. This change adds no owner gate to ui; whether ui should gain
+  one is an open owner decision (see Open questions).
 - The web standard/full playback instruction gains one line naming what the agent will decide, for
   example: "I'll pick the reference; you pick the first screen, the components, the description,
   each section and the final page." The owner corrects that line like any other part of the
@@ -152,11 +161,22 @@ Further rules:
   `agent: <director>`. The final review ask is no longer routed to the director (Decision 5).
 - `by` (and `agent` when needed) is added to every history entry `decide` writes: intake, playbacks,
   variants, components rounds, descriptions, sections, samples, drafts and delivery.
-- The direction-preview `decision` gains `by` and `agent`. `direction check --stage selection` fails
-  when `by` is missing or when `agent` selects without delegation. The prose "bounded autonomous
-  selection" now means a delegated `concepts` checkpoint.
-- The template `approval` gains `by`. `createSelectionReceipt` no longer defaults its reason to
-  `user-selected-template` when `by` is `agent`.
+- The direction-preview `decision` gains `by`, `agent` and, for agent selections, `delegation`.
+  `direction check` receives only the change root, so the artifact carries its own evidence:
+  - `delegation: {source: "workflow-state", stateSha256}` when the change runs under a `next`
+    workflow. With `--project-root`, the check reads `.design-pipeline/state.json`, verifies the
+    hash and that `concept` is delegated to the agent; without it, it reports the claim as
+    unverified in its output but does not fail.
+  - `delegation: {source: "owner-instruction", quote}` for standalone runs. `quote` is the owner's
+    instruction, at least six words under the existing minimum-content rule.
+  - `selection` fails when `by` is missing, when an agent selection has no `delegation`, or when a
+    verified workflow state shows `concept` belongs to the owner.
+  - The prose "bounded autonomous selection" now means one of these two delegations.
+- The selection receipt (`createSelectionReceipt`) gains `selectedBy: owner|agent` from its input,
+  and `assertSelectionReceipt` requires it. The `user-selected-template` default reason is used only
+  when `selectedBy` is `owner`; an agent selection needs an explicit `selectionReason`.
+- The later template `approval` gains its own `by`. It is a separate decision and does not inherit
+  `selectedBy`.
 
 ### 4. Creative intent
 
@@ -205,9 +225,16 @@ Further rules:
 `.design-pipeline/diligence.md` is a projection of `state.json`. It is rendered by a new
 `workflow-core` function from state alone, and the agent never writes it.
 
-- Delivery renders it after `deliveredSha256` is set, and `next`'s `done` action returns its path.
-- Its header records `deliveredSha256` and the SHA-256 of the state it was rendered from. A later
-  `decide` makes it stale, and `next` re-renders it at the next delivery.
+- Delivery renders it after the delivery is recorded, and `next`'s `done` action returns its path.
+- It binds to what delivery already records, adding no new hash source:
+  - `delivered`: the destination string, for every deliverable;
+  - `deliveredSha256`: present only for file deliveries (film, edit);
+  - `deliveryInputHashes`: the review inputs bound at delivery (web, film, edit; ui has none);
+  - the SHA-256 of the canonical state it was rendered from.
+- A remote web URL has no local bytes, so the statement binds the reviewed inputs, not the remote
+  page. It says so in its header ("Remote destination; bound to reviewed inputs").
+- It is stale when the state hash or any recorded delivery binding no longer matches, reusing
+  `shared.cjs`'s delivery-current check. `next` re-renders it at the next delivery.
 - A new read-only `diligence` command (in the COMMANDS table) prints it, or renders it on demand
   with `--write`, so an owner can see it before delivery.
 
@@ -263,7 +290,7 @@ Suggested trailer: Assisted-by: Claude Code (claude-opus-5-5)
 | `skill/scripts/guided-design-intake-core.cjs` | `creativeIntent` fact group and question |
 | `skill/scripts/design-synthesis-core.cjs` | `Product Context` label check |
 | `skill/scripts/direction-preview-core.cjs` | `decision.by` validation |
-| `skill/scripts/surface-design-artifacts-core.cjs` | `approval.by`, reason default |
+| `skill/scripts/surface-design-artifacts-core.cjs` | `selectedBy` on the selection receipt, reason default, `approval.by` |
 | `skill/scripts/cli-core.cjs` | `--by`, `--delegate`, `--keep`, `--assisted-by`, `diligence` command, help |
 | `skill/references/schemas/*` (brief, direction preview) | added fields |
 | `skill/SKILL.md`, `references/stages.md`, `workflow-web.md`, `direction-preview.md` | guidance |
@@ -298,6 +325,13 @@ Each phase is its own PR against this change. `tasks.md` groups the tasks the sa
   asked, unless the owner corrects it.
 - **Archive order.** This change ADDS requirements only. It touches code from
   `make-web-workflow-conversational` and should archive after that chain.
+
+## Open questions
+
+- Should ui work (and web quick) gain a locked owner acceptance before `deliver`? It would make
+  final acceptance universal, at the cost of one more ask on the lightest tiers.
+- Should `--by` stay required with no default? The current answer is yes, and it affects every
+  in-flight project's next `decide`.
 
 ## Follow-up
 
