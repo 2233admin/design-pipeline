@@ -308,7 +308,7 @@ The `## Sections` heading is followed by one top-level list item per section (`-
 `1. ` or `1) ` at the start of the line), each starting with its id (backticks allowed) and giving
 one line on its job: the rest of the item line after a `:`, `-` or `—`, with whitespace collapsed
 (continuation lines are not part of it). The list ends at the next `#` or `##` heading. Ids are lowercase letters,
-digits and hyphens, each listed once. A section named only in prose does not count. For example:
+digits and hyphens, each listed once; `all` and `none` are reserved for `--affects`. A section named only in prose does not count. For example:
 
 ```md
 ## Sections

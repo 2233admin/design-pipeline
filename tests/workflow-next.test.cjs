@@ -3453,6 +3453,27 @@ test("the revision flags are refused where they mean nothing or do not fit what 
   assert.equal(readState(root).decisions.descriptions.length, before, "a rejection never carries a tier, and nothing is recorded");
 });
 
+test("after a no on a changed description, the returned approval still carries the tier and runs as given", t => {
+  const root = tiered(t, []);
+  briefWith(root, LINES, "Pickup is on weekends.");
+  decide(root, { by: "owner", stage: "description", verdict: "reject", answer: "Say which weekend days" });
+  briefWith(root, LINES, "Pickup is on Saturdays and Sundays.");
+  const step = nextAction(root);
+  assert.equal(step.stage, "description");
+  assert.match(step.command, /--by agent .*--choice hero,proof --revision bytes$/, "measured against the last accept, as decide measures it");
+  assert.equal(step.carryForward, undefined, "after a no the step is a self-check, not a carry-forward");
+  runReturned(step.command);
+  assert.equal(nextAction(root).stage, "probe");
+});
+
+test("all and none are reserved from section ids, since --affects reads them", t => {
+  const root = tiered(t, []);
+  for (const id of ["all", "none"]) {
+    briefWith(root, [[id, "a section with a reserved id"], ...LINES]);
+    assert.match(refuses(root, { by: "agent", stage: "description", verdict: "accept", choice: `${id},hero,proof`, revision: "commitment", affects: "none" }, "CONTRACT_INVALID").message, /not all or none/, id);
+  }
+});
+
 test("the agent carries a byte-only change to a kept description forward, and nothing else", t => {
   const root = tiered(t);
   briefWith(root, LINES, "A one-page description of the bakery page.");

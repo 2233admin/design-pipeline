@@ -20,11 +20,11 @@ At standard and full, `next` SHALL NOT return a build action until `brief.md` is
 
 ### Requirement: The description lists its sections
 
-`brief.md` SHALL carry a `## Sections` heading followed by one top-level list item per section, in build order, each starting with its id (lowercase letters, digits and hyphens), with the rest of the item line as the section's job, and the approval's `--choice` SHALL equal that list exactly, in its order. Once `next` has reached the description, the approval MAY be recorded again: the identical approval SHALL keep the section verdicts, and a changed one SHALL ask again only the sections its change tier reopens.
+`brief.md` SHALL carry a `## Sections` heading followed by one top-level list item per section, in build order, each starting with its id (lowercase letters, digits and hyphens, never `all` or `none`), with the rest of the item line as the section's job, and the approval's `--choice` SHALL equal that list exactly, in its order. Once `next` has reached the description, the approval MAY be recorded again: the identical approval SHALL keep the section verdicts, and a changed one SHALL ask again only the sections its change tier reopens.
 
 #### Scenario: The description names its sections
 
-- **WHEN** `brief.md` has no `## Sections` list, lists an item that does not start with a valid id or lists an id twice, or the approval's `--choice` differs from the list in its ids or their order
+- **WHEN** `brief.md` has no `## Sections` list, lists an item that does not start with a valid id, uses `all` or `none` as an id, or lists an id twice, or the approval's `--choice` differs from the list in its ids or their order
 - **THEN** decide SHALL fail with `CONTRACT_INVALID`, naming the list where there is one, and record nothing
 - **AND** a word that appears only in the prose of `brief.md` SHALL NOT count as a section id.
 
@@ -117,8 +117,8 @@ When the owner kept the description, the agent MAY record a `--revision bytes` r
 
 #### Scenario: Returned re-approval commands carry the tier
 
-- **WHEN** `next` returns the description step for a stale approval that stored its inputs
-- **THEN** its record and command SHALL carry `--revision bytes`, or `--revision commitment` with an `--affects` placeholder naming the sections whose line changed
+- **WHEN** `next` returns the description step for a stale approval that stored its inputs, including after a later rejection
+- **THEN** its record and command SHALL carry `--revision bytes`, or `--revision commitment` with an `--affects` placeholder naming the sections whose line changed, measured against the last accept as decide measures it
 
 #### Scenario: A commitment on a kept description stays with the owner
 

@@ -264,6 +264,8 @@ function recordComponents(state, _root, options, next) {
 // --- description: the one-page brief the owner approves before anything is built -------------------
 
 const SECTION_ID = /^[a-z0-9][a-z0-9-]*$/;
+// --affects reads these as every section and no section, so no section may carry them as its id.
+const RESERVED_IDS = new Set(["all", "none"]);
 // The project's brief file; a differently cased BRIEF.md the owner supplied is extended in place.
 function briefName(root) {
   try {
@@ -370,7 +372,7 @@ function briefSections(text) {
 
 function descriptionContent(state) {
   const direction = state.mode === "replicate" ? "what is reproduced, its invariants and what changes" : "the chosen first screen (the variant and anything combined from the others)";
-  return `one page in plain words that a builder could work from without asking again: what the page is and why; who it is for and the one thing a visitor should do; how it should feel, in the owner's words; goals, non-goals and anti-goals (what would make the owner wince); ${direction}; a \`## Sections\` list of the sections in build order, first screen first, one top-level list item per section that starts with its id (lowercase letters, digits and hyphens) and gives one line on its job, such as \`- hero: today's bakes and the reserve button\`; where the components come from; constraints such as devices, assets and their licenses; and which choices are the owner's and which are your calls, marked as yours. Do not copy the rules into it: they stay in state.rules and come back with every action, so a rule recorded later needs no edit here. Keep any brief the owner supplied and extend it rather than replacing their words.`;
+  return `one page in plain words that a builder could work from without asking again: what the page is and why; who it is for and the one thing a visitor should do; how it should feel, in the owner's words; goals, non-goals and anti-goals (what would make the owner wince); ${direction}; a \`## Sections\` list of the sections in build order, first screen first, one top-level list item per section that starts with its id (lowercase letters, digits and hyphens; not all or none) and gives one line on its job, such as \`- hero: today's bakes and the reserve button\`; where the components come from; constraints such as devices, assets and their licenses; and which choices are the owner's and which are your calls, marked as yours. Do not copy the rules into it: they stay in state.rules and come back with every action, so a rule recorded later needs no edit here. Keep any brief the owner supplied and extend it rather than replacing their words.`;
 }
 
 const DESCRIPTION = {
@@ -381,7 +383,9 @@ const DESCRIPTION = {
     const current = fileSha(root, file);
     if (!current) return { type: "run", instruction: `Write ${file}: ${descriptionContent(state)} Then run next again.`, why: "Nothing is built until the owner approves a written description of it." };
     const latest = history(state, "descriptions").at(-1);
-    const stale = latest?.verdict === "accept" && latest.inputs ? diffInputs(latest.inputs, approvalInputs(state, root)) : null;
+    // The tier is measured against the last accept, as decide measures it, even after a later "no".
+    const accepted = acceptsWithInputs(state).at(-1), now = approvalInputs(state, root);
+    const stale = accepted && !sameInputs(accepted.inputs, now) ? diffInputs(accepted.inputs, now) : null;
     const listed = stale ? briefSections(fileText(root, file) ?? "")?.map(item => item.id) : null;
     const choice = listed?.length ? listed.join(",") : "<section-ids-in-order,comma-separated>";
     // A re-approval's commands carry the tier it needs, so the returned command runs as given.
@@ -389,7 +393,7 @@ const DESCRIPTION = {
       ? ` --revision commitment --affects <the section ids the change touches${stale.jobs.length ? `, at least ${stale.jobs.join(",")}` : ""}; or all; or none>`
       : " --revision bytes";
     // A byte-only change to a description the owner kept is carried forward by the agent, not asked again.
-    if (stale && !stale.structural && state.delegation?.description?.to === "owner") {
+    if (stale && !stale.structural && latest?.verdict === "accept" && state.delegation?.description?.to === "owner") {
       return {
         type: "run",
         carryForward: true,
@@ -471,8 +475,8 @@ function recordDescription(state, root, options, next) {
     if (!sections.length) fail("workflow", `--choice is required: the ids of the ## Sections list in ${file}, in its order, comma-separated`);
     const listed = briefSections(fileText(root, file) ?? "")?.map(item => item.id);
     if (!listed?.length) fail("workflow", `${file} has no ## Sections list. Fix: add a ## Sections heading with one top-level list item per section, in build order, each starting with its id; show the owner the description again and ask for approval`);
-    const invalid = listed.find(id => !SECTION_ID.test(id));
-    if (invalid) fail("workflow", `${file} lists "${invalid}" under ## Sections; each item must start with its section id (lowercase letters, digits and hyphens). Fix: correct the list, show the owner the description again and ask for approval`);
+    const invalid = listed.find(id => !SECTION_ID.test(id) || RESERVED_IDS.has(id));
+    if (invalid) fail("workflow", `${file} lists "${invalid}" under ## Sections; each item must start with its section id (lowercase letters, digits and hyphens; not all or none, which --affects reserves). Fix: correct the list, show the owner the description again and ask for approval`);
     if (new Set(listed).size !== listed.length) fail("workflow", `${file} lists a section twice under ## Sections. Fix: list each section once, in build order`);
     if (listed.join(",") !== sections.join(",")) fail("workflow", `--choice ${sections.join(",")} does not match the ## Sections list in ${file} (${listed.join(", ")}). Fix: --choice lists exactly those ids, in that order`);
     const note = typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;

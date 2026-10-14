@@ -40,6 +40,8 @@
 - [x] 8.1 Codex P1: the description step's `record` and `accept` carry the tier of a stale approval, so the command `next` returns runs as given; verify with a `workflow-next` test that runs the returned command in a shell.
 - [x] 8.2 Codex P2: a byte-only change to a kept description, whose latest record is an accept, comes back from `next` as the agent's carry-forward run; verify that the run's command records the approval and that a changed section line on the kept description stays an owner ask.
 - [x] 8.3 CodeRabbit: `--revision` and `--affects` are refused on a description rejection, with nothing recorded; verify in the misplaced-tier refusal test.
+- [x] 8.4 Codex P1 (second pass): the returned tier is measured against the last accept with inputs, as `revisionOf` measures it, so a reject, revise, approve flow returns a runnable command; verify with a `workflow-next` test that runs it.
+- [x] 8.5 Codex P2: `all` and `none` are refused as section ids, since `--affects` reads them; verify with a `workflow-next` refusal test.
 
 ## Workflow follow-up
 
