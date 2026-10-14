@@ -2,8 +2,8 @@
 
 ## Why
 
-A two-section standard web page asks the owner about nine times: the playback, variants, component
-sources, the description, each section, and the final review. Most of those asks repeat what the
+A two-section standard web page asks the owner seven times: the playback, variants, component
+sources, the description, each of the two sections, and the final review. Most of those asks repeat what the
 owner already settled, so owners approve recommendations they never judged.
 
 `design-owner-attention` (#115) set the direction and the owner's decisions. This is its phase 1
@@ -12,34 +12,37 @@ owner already settled, so owners approve recommendations they never judged.
 
 ## What Changes
 
-- **Delegated checkpoints become self-checks.** When the delegation map hands a checkpoint to the
-  agent, `next` returns a `run` self-check instead of an owner-style `ask`. Today delegation changes
+- **Delegated web reviews become self-checks.** When the delegation map hands the web components,
+  description or section checkpoint to the agent, `next` returns a `run` self-check instead of an
+  owner-style `ask`. Intake, concept, sample and final review keep their asks. Today delegation changes
   only the `--by` in the returned command, so the owner is still asked.
 - **New web defaults.** Component sources (every tier), the description and section reviews
-  (standard and full) default to the agent. The owner keeps any of them with the existing
-  `--keep` on the intake record, for example "review each section with me" as `--keep section`.
+  (standard and full) default to the agent. At standard and full the owner keeps any of them
+  with the existing `--keep` on the intake record, for example "review each section with me" as `--keep section`.
   Variants, the playback and final acceptance stay with the owner. The two-section sample drops to
   three owner asks.
 - **Asks on delegated work name their trade-off.** A self-check tells the agent to ask the owner
   only when the work carries a trade-off the owner has not settled. For component sources, that
   means a new dependency, a license obligation or a notable cost. The owner's reply is recorded with
   `--by owner` and the new `--tradeoff "<what was asked>"`, which the diligence statement shows.
-- **An agent cannot record a "no".** A self-check records `accept` once the work matches. A reject
-  stays the owner's words, so `--by agent --verdict reject` is refused outside art-director routing.
+- **An agent cannot record or undo a "no".** A self-check records the decision once the work
+  matches. `--by agent --verdict reject` is refused outside art-director routing, and an agent
+  cannot accept a section or description the owner rejected until its bytes change.
 - **The playback is a short card,** not a 200-300 word text: three intent lines (expression,
   connection, distinctiveness), the open uncertainties and the delegation line. The owner
   confirming it records creative intent. This replaces the planned fifth intake question and
   removes the "planned in phase 2" line from the statement.
 - **Owner-facing language.** Every ask and self-check carries a `language` line: speak to the owner
   in the brief's language, else the language they write in.
-- **A "no" is scoped to its object.**
-  - A rule binds by default to the object it was given about (the playback, the variants, the
-    component round, the description, a section, the sample or the page). It is returned until
-    that object is next accepted.
+- **A "no" is scoped to what it was about.**
+  - A section "no" binds to that section and a sample "no" to the sample. Every other "no"
+    (playback, variants, component round, description, draft) binds to the result under review,
+    because it shapes the whole build. A rule is returned until its object is next accepted.
   - `--scope project` on the recording call makes it a project rule when the owner says "from now
     on".
-  - The final review lists the object rules. The agent asks once whether to keep the general-looking
-    ones, and records `--promote "<from>"` for each one the owner keeps.
+  - The final review lists the object rules, including retired ones. The agent asks once whether
+    to keep the general-looking ones, and records `--promote "<from>"` for each one the owner
+    keeps.
   - Anti-goals and rules recorded before this change stay project rules.
 - **In-flight deltas are corrected in place.** `make-web-workflow-conversational` and
   `adopt-ai-fluency-decision-roles` are not archived, and some of their requirements now describe
