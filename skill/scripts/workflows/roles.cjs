@@ -88,6 +88,9 @@ function recordRole(state, checkpoint, by, { carryForward = false } = {}) {
   return { by, agent: DIRECTED.has(checkpoint) && state.director ? state.director : state.assistedBy || "unspecified" };
 }
 
+// The page version a web review judged: the probe lineage its draft bound, shortened for reading.
+const reviewedVersion = draft => draft?.inputHashes ? sha256(canonicalJson(draft.inputHashes)).slice(0, 12) : null;
+
 // Stamps the role on what this decide call appended: the last entry of each history that grew, the
 // intake object it wrote, and one entry in state.decisions.roles that the statement reads.
 function stampRecord(state, before, checkpoint, role, options) {
@@ -104,6 +107,7 @@ function stampRecord(state, before, checkpoint, role, options) {
     ...(answer ? { answer } : {}),
     ...(options.tradeoff ? { tradeoff: options.tradeoff } : {}),
     ...(options.revision ? { revision: options.revision } : {}),
+    ...(checkpoint === "review" && state.deliverable === "web" ? { version: reviewedVersion(state.decisions.drafts?.at(-1)) } : {}),
     at: new Date().toISOString(),
   }];
 }
@@ -142,7 +146,9 @@ function renderStatement(state, { delivered = null, deliveryCurrent = false, gat
   const agent = roles.filter(entry => entry.by === "agent");
   const unknown = HISTORIES.reduce((count, key) => count + (Array.isArray(state.decisions?.[key]) ? state.decisions[key].filter(item => !item.by).length : 0), 0)
     + unauthoredScalars(state, roles);
-  const accepted = owner.filter(entry => entry.stage === "review" && entry.verdict === "accept").at(-1);
+  // The owner's latest word on the result: a later "no" means the earlier acceptance no longer stands.
+  const reviewed = owner.filter(entry => entry.stage === "review").at(-1);
+  const accepted = reviewed?.verdict === "accept" ? reviewed : null;
   const delivery = !delivered ? "not delivered yet"
     : state.decisions?.deliveredSha256 ? `${delivered} (${state.decisions.deliveredSha256})`
     : /^[a-z][a-z0-9+.-]*:\/\//i.test(String(delivered)) ? `${delivered} (remote destination; bound to the reviewed inputs, not the page itself)`
@@ -181,7 +187,7 @@ function renderStatement(state, { delivered = null, deliveryCurrent = false, gat
     list(checks, "none recorded"),
     "",
     "## Owner acceptance",
-    `- ${accepted ? `Final acceptance recorded by the owner at ${accepted.at}${accepted.answer ? `: "${accepted.answer}"` : ""}` : "No owner acceptance recorded yet"}`,
+    `- ${accepted ? `Final acceptance recorded by the owner at ${accepted.at}${accepted.version ? ` on page version ${accepted.version}` : ""}${accepted.answer ? `: "${accepted.answer}"` : ""}` : reviewed ? `No owner acceptance stands: their latest review (${reviewed.at}) was a rejection` : "No owner acceptance recorded yet"}`,
     "",
     `Suggested trailer: Assisted-by: ${assisted}`,
     "",

@@ -203,7 +203,7 @@ test("a bound film's checks also bind its job plan, so a pass recorded before th
   assert.equal(nextAction(bound).stage, "build");
   touch(bound, "out.mp4", "draft");
   passFilm(bound);
-  decide(bound, { by: "owner", stage: "review", verdict: "accept" });
+  decide(bound, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
   const done = nextAction(bound);
   assert.equal(done.type, "done");
   assert.equal(Object.hasOwn(done, "admission"), false, "only product promos report admission");
@@ -560,7 +560,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   next = nextAction(dir);
   assert.equal(next.stage, "review");
   assert.equal(next.director, undefined, "final acceptance stays with the owner; it is never routed to the art director");
-  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
   assert.equal(nextAction(dir).stage, "deliver");
   touch(dir, "final.mp4", "final");
   decide(dir, { by: "owner", stage: "deliver", answer: "final.mp4" });

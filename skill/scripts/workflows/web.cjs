@@ -616,17 +616,60 @@ function buildScope(state, progress) {
   return `${openSpec}${treatment}Build only the first screen, section \`${current}\`, from ${replicate ? "the reference and its invariants" : "the chosen variant and the approved description"} ${place}; the other sections follow one at a time after the owner reviews it.`;
 }
 
+// --- element references (OpenSpec change owner-attention-page-refs) ----------------------------------
+// `evidence refs` numbers the built page's elements on a screenshot; the owner answers by reference
+// (hero-2), and decide checks each cited reference against the capture of the current page.
+
+const REFS_FILE = "evidence/refs.json";
+const refsCommand = root => `${cliCommand()} evidence refs --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`;
+
+function refsCapture(root) {
+  const text = fileText(root, REFS_FILE);
+  if (!text) return null;
+  try {
+    const doc = JSON.parse(text);
+    return doc?.schema === "design-pipeline.page-refs.v1" && Array.isArray(doc.refs) ? doc : null;
+  } catch { return null; }
+}
+
+// What an owner-facing review says about the numbered page: show it when it was taken from the
+// current page, otherwise take it first. Refs are optional, so a failed capture falls back to text.
+function refsStep(root) {
+  const doc = refsCapture(root);
+  const png = path.join(path.resolve(root), "evidence", "refs.png");
+  if (doc && doc.page === pageDigest(root) && fs.existsSync(png)) {
+    return { first: "Show the owner evidence/refs.png, the page at desktop width with a number on each element, and ask them to name each element they comment on by its reference (such as hero-2, or 3 outside the sections) or in words.", show: [png] };
+  }
+  return { first: `Run ${refsCommand(root)} and then next again, to show the owner the page with a number on each element; if the capture fails, ask them to name each element by its text, label or place.`, show: [] };
+}
+
+// The references a "no" cites, each checked against the capture of the current page and, at a
+// section, against that section. Returns [{ref, tag, selector, text}] for the rule.
+function citedRefs(root, refs, section = null) {
+  const list = [...new Set([].concat(refs ?? []).map(value => String(value).trim()).filter(Boolean))];
+  if (!list.length) return [];
+  const doc = refsCapture(root);
+  if (!doc) fail("workflow", `--ref needs ${REFS_FILE} from a numbered capture of the page. Fix: run ${refsCommand(root)}, show the owner evidence/refs.png and record the references they cite`, { code: "WORKFLOW_NOT_READY" });
+  if (doc.page !== pageDigest(root)) fail("workflow", `${REFS_FILE} was taken from an earlier version of the page, so its numbers may point at other elements now. Fix: run ${refsCommand(root)} again and show the owner the new numbers`, { code: "WORKFLOW_NOT_READY" });
+  return list.map(ref => {
+    const hit = doc.refs.find(item => item.ref === ref);
+    if (!hit) fail("workflow", `--ref ${ref} is not on the numbered page (${REFS_FILE}). Fix: use a reference shown on evidence/refs.png`);
+    if (section && hit.section !== section) fail("workflow", `--ref ${ref} is ${hit.section ? `in section ${hit.section}` : "outside the sections"}, not in section ${section}. Fix: cite it at the review of its own section or at the final review`);
+    return { ref, tag: String(hit.tag ?? ""), selector: String(hit.selector ?? ""), text: String(hit.text ?? "") };
+  });
+}
+
 function sectionReview(root, { approval, accepted, current, latest }) {
   const unrevised = latest?.verdict === "reject" && latest.pageSha256 === pageDigest(root);
   return {
     type: "ask",
     section: current,
     ...(unrevised ? { first: `The owner asked for changes to section ${current} ("${latest.reason || "see the cited runtime-review Feedback"}"); each comment is now a rule. Revise the section, then ask:` } : {}),
-    question: `The ${current} section is built (${accepted.length + 1} of ${approval.sections.length}). Look at it in the page: accept it as it is, or tell me what to change, naming each element by its text, label or where it sits?`,
+    question: `The ${current} section is built (${accepted.length + 1} of ${approval.sections.length}). Look at it in the page: accept it as it is, or tell me what to change, naming each element by its number on the numbered page or by its text, label or where it sits?`,
     show: [path.join(path.resolve(root), "index.html")],
-    instruction: `Open index.html at the ${current} section (data-section="${current}") in a real browser and let the owner look and interact. Comments are text: ask them to name each element they comment on by its text, label or place, and do not offer to let them click or pick elements on the page. If the project already carries runtime-review inputs (references/runtime-review.md), Feedback the owner leaves on its runtime-review page can be recorded with runtime-review record and cited with --evidence. Any change they ask for is a reject: record it, revise the section and ask again; accept only a section they are happy with as it is.`,
+    instruction: `Open index.html at the ${current} section (data-section="${current}") in a real browser and let the owner look and interact. Comments are text: ask them to name each element they comment on by its reference on evidence/refs.png (such as ${current}-2) or by its text, label or place, and do not offer to let them click or pick elements on the page. Record each reference they cite with --ref <reference> beside --answer. If the project already carries runtime-review inputs (references/runtime-review.md), Feedback the owner leaves on its runtime-review page can be recorded with runtime-review record and cited with --evidence. Any change they ask for is a reject: record it, revise the section and ask again; accept only a section they are happy with as it is.`,
     recommended: "Accept only when nothing in this section needs to change; earlier sections stay accepted unless a new rule changes them.",
-    record: `${decideCommand(root, "section")} --choice ${current} --verdict accept|reject [--answer "<the owner's comments>"] [--evidence <runtime-review/feedback/<hash>.json>]`,
+    record: `${decideCommand(root, "section")} --choice ${current} --verdict accept|reject [--answer "<the owner's comments>"] [--ref <reference>] [--evidence <runtime-review/feedback/<hash>.json>]`,
     accept: `${decideCommand(root, "section")} --choice ${current} --verdict accept`,
     correction: `${decideCommand(root, "section")} --choice ${current} --verdict reject --answer "<what the owner wants changed, in their words>" [--evidence <runtime-review/feedback/<hash>.json>]`,
     selfCheck: `Open index.html at the ${current} section (data-section="${current}") in a real browser and check it yourself against the confirmed playback (or the stated skip), the chosen direction, its section brief and the rules; fix what does not match, then record the acceptance with the command.`,
@@ -708,6 +751,7 @@ function recordSection(state, root, options, next) {
     fail("workflow", `the owner rejected section ${id} and index.html is unchanged since. Fix: revise the section for their comments, then record the acceptance`, { code: "WORKFLOW_NOT_READY" });
   }
   const evidence = reviewFeedback(root, options.evidence);
+  const cited = options.verdict === "reject" ? citedRefs(root, options.ref, id) : [];
   const answer = nonEmpty(options.answer) ? options.answer.trim() : null;
   if (options.verdict === "reject" && !answer && !evidence.length) fail("workflow", "a section rejection needs --answer with the owner's comments, or --evidence with their recorded runtime-review Feedback; each becomes a rule");
   if (options.verdict === "reject" && answer) reason(answer, "say in one sentence what the owner wants changed in the section; it becomes a rule");
@@ -720,7 +764,7 @@ function recordSection(state, root, options, next) {
   if (options.verdict === "reject") {
     const from = `section ${id} ${rejections(records, item => item.section === id)}`;
     const section = { stage: "section", choice: id };
-    if (answer) addRule(state, answer, from, section);
+    if (answer) addRule(state, answer, from, cited.length ? { ...section, refs: cited } : section);
     for (const item of evidence) addRule(state, `${item.objectId}: ${item.actual} Expected: ${item.expected}`, from, section);
   }
 }
@@ -775,4 +819,4 @@ function before(state, current, id) {
 // returned before the record.
 const decisions = { intake: recordIntake, concept: recordConcept, components: recordComponents, description: recordDescription, section: recordSection };
 
-module.exports = { briefSections, decisions, pageDigest, stages };
+module.exports = { briefSections, citedRefs, decisions, pageDigest, refsStep, stages };

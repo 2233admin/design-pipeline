@@ -144,7 +144,7 @@ const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sh
 
 const referencesRoot = path.resolve(__dirname, "../references");
 const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study"]);
-const REPEATABLE_OPTIONS = new Set(["--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--validation"]);
+const REPEATABLE_OPTIONS = new Set(["--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
@@ -408,6 +408,7 @@ function publicHelp() {
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url> [--playwright-module <path>] [--agent-browser <path> [--agent-browser-state <file>]] [--chrome <exe>]",
+    "  evidence refs --project-root <dir> [--chrome <exe>] [--puppeteer-module <path>]   (numbers the built index.html's visible elements at 1440x900: writes evidence/refs.json and a badged evidence/refs.png; a capture of the current page is kept, never rewritten; index.html is not changed)",
     "  verify motion|components|audio|composition|interaction|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
     "    verify components --matrix <file> [--evidence-root <dir>] [--require-files]",
     "    verify motion --receipt <file> [--require-lifecycle]",
@@ -427,8 +428,9 @@ function publicHelp() {
     "  film templates [--query <terms> | --template <id>] [--all]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model> --assisted-by <tool-and-model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
-    "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|concept|components|description|section|sample|review|deliver --by owner|agent [--delegate <checkpoint> ...] [--keep <checkpoint> ...] [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>] [--tradeoff <text>] [--scope object|project] [--promote <from> ...] [--revision bytes|commitment] [--affects <ids>|all|none]",
+    "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|concept|components|description|section|sample|review|deliver --by owner|agent [--delegate <checkpoint> ...] [--keep <checkpoint> ...] [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>] [--tradeoff <text>] [--scope object|project] [--promote <from> ...] [--revision bytes|commitment] [--affects <ids>|all|none] [--ref <reference> ...]",
     "    components requires --choice <project|github|index|discover|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer; discover lets the agent find open-source GitHub repositories and record each with a pinned revision and license evidence; on web, --verdict reject --answer records a decision-round correction as a rule bound to the result under review",
+    "    --ref <reference> (repeatable, with --answer) cites a numbered element from evidence/refs.json (such as hero-2) on a web section or final-review rejection; it is refused unless the reference is in the current capture",
     "    web: intake records the confirmed playback (--verdict accept), a correction (--verdict reject) or a stated skip (--choice skip), each playback or skip with repeatable --anti-goal <text> rules; concept takes --choice A|B|C, several comma-separated to combine with --answer, or --verdict reject; description takes --verdict accept --choice <the ids of brief.md's ## Sections list, in order> or --verdict reject, and a re-approval of a changed description adds --revision bytes (wording only) or --revision commitment --affects <ids|all|none>; section takes --choice <section id> --verdict accept|reject with --answer and/or repeatable --evidence <runtime-review feedback record>; every web reject becomes a rule bound to its section or to the result under review (--scope project keeps it for the project; --promote <from> on the owner's final review keeps a bound rule); components, description and section are the agent's self-checks by default, and an owner's answer to a trade-off asked during one is recorded --by owner with --tradeoff <what was asked>",
     "    --by owner records the owner's own words; --by agent records what the agent decided where the delegation map hands it the checkpoint (final acceptance and creative intent stay with the owner); --delegate/--keep go on the intake record",
     "  diligence --root <absolute-project-root> --project-root <absolute-project-root> [--write]   (the AI diligence statement rendered from the workflow state; --write saves .design-pipeline/diligence.md)",
@@ -852,6 +854,44 @@ function benchmarkFeedback(root, result) {
   });
 }
 
+// Numbered element references for the built page. The kernel measures and screenshots; this side keeps
+// a capture of the current page as it is, and writes the png before the json so a refs.json on disk is
+// always backed by its picture.
+function evidenceRefsCommand(parsed, root) {
+  const { pageDigest } = require("./workflows/web.cjs");
+  const { REFS_SCHEMA } = require("./page-refs-core.cjs");
+  const projectRoot = contained(root, option(parsed, "--project-root", root), "--project-root");
+  const jsonFile = contained(projectRoot, "evidence/refs.json", "evidence/refs.json", false);
+  const pngFile = contained(projectRoot, "evidence/refs.png", "evidence/refs.png", false);
+  const rel = (file) => path.relative(projectRoot, file).split(path.sep).join("/");
+  const digest = pageDigest(projectRoot);
+  if (!digest) fail("cli", "index.html not found in --project-root. Fix: build the page before numbering it", { code: "PAGE_MISSING" });
+  let existing = null;
+  try { existing = JSON.parse(fs.readFileSync(jsonFile, "utf8")); } catch { existing = null; }
+  if (existing?.schema === REFS_SCHEMA && existing.page === digest && Array.isArray(existing.refs) && fs.existsSync(pngFile)) {
+    return { result: { status: "current", refs: existing.refs.length, json: rel(jsonFile), png: rel(pngFile) }, exitCode: 0 };
+  }
+  const args = ["--project-root", projectRoot];
+  for (const flag of ["--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
+  const kernel = runKernel("capture-refs.cjs", args, projectRoot, { timeout: 180000, maxBuffer: 256 * 1024 * 1024 });
+  const doc = kernel.value?.capture;
+  if (kernel.exitCode !== 0 || doc?.schema !== REFS_SCHEMA || typeof kernel.value.png !== "string") {
+    fail("page refs", "capture kernel returned no valid capture", { code: "KERNEL_FAILED" });
+  }
+  if (pageDigest(projectRoot) !== digest || doc.page !== digest) {
+    fail("page refs", "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again", { code: "PAGE_MOVED" });
+  }
+  fs.mkdirSync(path.dirname(jsonFile), { recursive: true });
+  const write = (file, data) => {
+    const temp = `${file}.${process.pid}.tmp`;
+    fs.writeFileSync(temp, data);
+    fs.renameSync(temp, file);
+  };
+  write(pngFile, Buffer.from(kernel.value.png, "base64"));
+  write(jsonFile, `${JSON.stringify(doc, null, 2)}\n`);
+  return { result: { status: "captured", refs: doc.refs.length, json: rel(jsonFile), png: rel(pngFile) }, exitCode: 0 };
+}
+
 function evidenceCommand(parsed, root, action) {
   if (action === "check") {
     const file = artifact(parsed, root, "--receipt");
@@ -880,6 +920,7 @@ function evidenceCommand(parsed, root, action) {
     const kernel = runKernel("capture-web-evidence.cjs", args, projectRoot, { timeout: Math.max(60000, (Number.isFinite(captureTimeout) ? captureTimeout : 0) + 30000) });
     return { result: { status: kernelStatusLabel(kernel.exitCode, "captured"), receipt: kernel.value.receipt }, exitCode: kernel.exitCode };
   }
+  if (action === "refs") return evidenceRefsCommand(parsed, root);
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
@@ -2353,7 +2394,7 @@ const COMMANDS = {
         return { result, exitCode: result.status === "blocked" ? 2 : 0 };
       }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
-      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), evidence: optionList(parsed, "--evidence"), antiGoals: optionList(parsed, "--anti-goal"), by: option(parsed, "--by"), delegate: optionList(parsed, "--delegate"), keep: optionList(parsed, "--keep"), tradeoff: option(parsed, "--tradeoff"), scope: option(parsed, "--scope"), promote: optionList(parsed, "--promote"), revision: option(parsed, "--revision"), affects: option(parsed, "--affects") }), exitCode: 0 };
+      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), evidence: optionList(parsed, "--evidence"), antiGoals: optionList(parsed, "--anti-goal"), by: option(parsed, "--by"), delegate: optionList(parsed, "--delegate"), keep: optionList(parsed, "--keep"), tradeoff: option(parsed, "--tradeoff"), scope: option(parsed, "--scope"), promote: optionList(parsed, "--promote"), revision: option(parsed, "--revision"), affects: option(parsed, "--affects"), ref: optionList(parsed, "--ref") }), exitCode: 0 };
     },
   },
   diligence: {

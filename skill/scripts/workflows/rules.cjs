@@ -35,6 +35,12 @@ function retired(rule, roles) {
     && (entry.verdict === undefined || entry.verdict === "accept"));
 }
 
+// The page elements a "no" was about (OpenSpec change owner-attention-page-refs): each reference
+// with its tag and text, so the meaning survives a later renumbering.
+const onRefs = rule => Array.isArray(rule.object?.refs) && rule.object.refs.length
+  ? `on ${rule.object.refs.map(item => `${item.ref} ${item.tag}${item.text ? ` "${item.text}"` : ""}`).join(", ")}`
+  : null;
+
 const label = rule => isProject(rule) ? null : rule.object.stage === "section" ? `section ${rule.object.choice}` : rule.object.stage === "sample" ? "sample" : null;
 
 // The rules an action returns: project rules and object rules still open, a section or sample rule
@@ -42,7 +48,7 @@ const label = rule => isProject(rule) ? null : rule.object.stage === "section" ?
 // they hold for everything built until the owner accepts it.
 function activeRules(state) {
   const roles = Array.isArray(state.decisions?.roles) ? state.decisions.roles : [];
-  return (state.rules || []).filter(rule => !retired(rule, roles)).map(rule => label(rule) ? `${label(rule)}: ${rule.text}` : rule.text);
+  return (state.rules || []).filter(rule => !retired(rule, roles)).map(rule => `${label(rule) ? `${label(rule)}: ` : ""}${rule.text}${onRefs(rule) ? ` (${onRefs(rule)})` : ""}`);
 }
 
 // Object rules the final review offers to keep for the rest of the project, active or retired.
@@ -85,7 +91,7 @@ function statementLine(rule, roles) {
   const scope = rule.givenScope === "object" ? "promoted to a project rule"
     : isProject(rule) ? "project rule"
     : `for ${label(rule) || "the result under review"}${retired(rule, roles) ? ", since accepted" : ""}`;
-  return `"${rule.text}" (${rule.from}; ${scope})`;
+  return `"${rule.text}" (${rule.from}; ${scope}${onRefs(rule) ? `; ${onRefs(rule)}` : ""})`;
 }
 
 module.exports = { RESULT, activeRules, addRule, candidates, checkPromote, checkScope, isProject, promote, retired, statementLine, widen };

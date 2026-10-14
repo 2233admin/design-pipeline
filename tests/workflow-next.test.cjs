@@ -1313,7 +1313,7 @@ test("quick film asks for frame review and the owner's verdict before done", () 
       const review = nextAction(other);
       assert.equal(review.stage, "review", `${deliverable} quick ends at the owner's review`);
       assert.equal(review.type, "ask");
-      decide(other, { by: "owner", stage: "review", verdict: "accept" });
+      decide(other, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
       assert.equal(nextAction(other).type, "done");
     }
     finally { fs.rmSync(other, { recursive: true, force: true }); }
@@ -2413,7 +2413,7 @@ test("sections are built and accepted one at a time in the approved order, each 
   assert.equal(first.stage, "build");
   assert.equal(first.type, "ask");
   assert.equal(first.section, "first-screen");
-  assert.equal(first.first, undefined);
+  assert.doesNotMatch(first.first, /asked for changes/, "a first review has no revise step, only the numbered capture");
   assert.match(first.record, /--stage section --choice first-screen --verdict accept\|reject/);
   refuses(root, { by: "owner", stage: "section", choice: "proof", verdict: "accept" }, "WORKFLOW_NOT_READY");
   buildPage(root, ["first-screen", "proof"]);
@@ -2443,7 +2443,7 @@ test("sections are built and accepted one at a time in the approved order, each 
   buildPage(root, ["first-screen", "proof"], "<!-- quotes with names and photos -->\n");
   const revised = nextAction(root);
   assert.equal(revised.section, "proof");
-  assert.equal(revised.first, undefined);
+  assert.ok(!(revised.first || "").includes("asked for changes"), "a revised section is asked about afresh");
 
   decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The headline wraps on phones" });
   assert.equal(nextAction(root).section, "first-screen", "a later rejection reopens an accepted section");
@@ -2697,7 +2697,7 @@ test("delivery and review cannot bypass unfinished prerequisites or write state"
       assert.throws(() => decide(dir, { by: "owner", stage: "deliver", answer: "final.mp4" }), /intake/);
       assert.equal(fs.readFileSync(stateFile, "utf8"), before);
       if (deliverable !== "ui") {
-        assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "accept" }), /intake|review/);
+        assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" }), /intake|review/);
         assert.equal(fs.readFileSync(stateFile, "utf8"), before);
       }
       if (deliverable === "web") confirmPlayback(dir);
@@ -2791,7 +2791,7 @@ test("latest owner verdict and changed checked bytes require a fresh review", ()
     const dir = checkedWorkflowFixture(deliverable);
     try {
       assert.equal(nextAction(dir).stage, "review");
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
       assert.equal(nextAction(dir).stage, "deliver");
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "deliver", "rechecking identical bytes preserves the accepted snapshot");
@@ -2802,7 +2802,7 @@ test("latest owner verdict and changed checked bytes require a fresh review", ()
       } else assert.equal(nextAction(dir).stage, "check");
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a historical accept cannot override the latest rejection");
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
       rewriteSameTime(dir, file, redraft(deliverable, "new draft after acceptance"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "engineering conformance does not accept a new draft");
@@ -2815,7 +2815,7 @@ test("film and edit delivery requires an existing contained file and quick may r
   for (const deliverable of ["film", "edit"]) {
     const dir = checkedWorkflowFixture(deliverable);
     try {
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
       touch(dir, "delivered/directory/file.txt");
       for (const answer of [undefined, "missing.mp4", "../outside.mp4", "delivered/directory"]) {
         const stateFile = path.join(dir, ".design-pipeline/state.json"), before = fs.readFileSync(stateFile, "utf8");
@@ -2829,13 +2829,13 @@ test("film and edit delivery requires an existing contained file and quick may r
     try {
       const output = deliverable === "film" ? "out.mp4" : "renders/edit.mp4";
       assert.throws(() => decide(quick, { by: "owner", stage: "deliver", answer: output }), /review/, "quick work records delivery only after the owner's verdict");
-      decide(quick, { by: "owner", stage: "review", verdict: "accept" });
+      decide(quick, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
       assert.equal(decide(quick, { by: "owner", stage: "deliver", answer: output }).next.type, "done");
     } finally { fs.rmSync(quick, { recursive: true, force: true }); }
   }
   const web = checkedWorkflowFixture("web", "quick"), ui = tmp();
   try {
-    decide(web, { by: "owner", stage: "review", verdict: "accept" });
+    decide(web, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
     assert.equal(decide(web, { by: "owner", stage: "deliver", answer: "https://example.test/page" }).next.type, "done");
     initState(ui, { deliverable: "ui", tier: "quick" });
     const declared = decide(ui, { by: "agent", stage: "deliver", answer: "evidence.png" }).next;
@@ -2852,7 +2852,7 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
   for (const [deliverable, file, gate] of [["film", "out.mp4", "film"], ["edit", "renders/edit.mp4", "edit"], ["web", "index.html", "interaction"]]) {
     const dir = checkedWorkflowFixture(deliverable);
     try {
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
       const delivery = deliverable === "web" ? "https://example.test/page" : "final.mp4";
       if (deliverable !== "web") touch(dir, delivery, "delivered version");
       decide(dir, { by: "owner", stage: "deliver", answer: delivery });
@@ -2866,7 +2866,7 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
       rewriteSameTime(dir, file, redraft(deliverable, "changed after delivery"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review");
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
       assert.equal(nextAction(dir).stage, "deliver", "a new acceptance does not restore the old delivery snapshot");
       decide(dir, { by: "owner", stage: "deliver", answer: delivery });
       assert.equal(nextAction(dir).type, "done");
@@ -2874,7 +2874,7 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
       if (deliverable === "web") rewriteSameTime(dir, file, redraft(deliverable, "repaired after the rejection"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a rejection after done revokes dependent acceptance and delivery");
-      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
       assert.equal(nextAction(dir).stage, "deliver");
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
@@ -2888,7 +2888,7 @@ test("unbound legacy review and delivery decisions remain readable but require f
     state.decisions.delivered = "https://example.test/page";
     touch(dir, ".design-pipeline/state.json", JSON.stringify(state));
     assert.equal(nextAction(dir).stage, "review");
-    decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+    decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
     assert.equal(nextAction(dir).stage, "deliver");
     assert.equal(readState(dir).decisions.drafts.length, 2, "legacy history is preserved");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
@@ -3517,4 +3517,94 @@ test("a description approved before change tiers is approved again once, and its
   assert.match(stale.first, /before change tiers were recorded, so this approval counts as a first one/);
   reapprove(root);
   assert.equal(nextAction(root).section, "hero", "verdicts without a key are reviewed once more");
+});
+
+// --- element references (owner-attention-page-refs) -------------------------------------------------
+
+const { pageDigest } = require("../skill/scripts/workflows/web.cjs");
+const REFS = [
+  { ref: "1", section: null, tag: "a", selector: "body > nav:nth-of-type(1) > a:nth-of-type(1)", text: "Home" },
+  { ref: "first-screen-1", section: "first-screen", tag: "h1", selector: "[data-section=\"first-screen\"] > h1:nth-of-type(1)", text: "Fresh bread" },
+  { ref: "first-screen-2", section: "first-screen", tag: "a", selector: "[data-section=\"first-screen\"] > a:nth-of-type(1)", text: "Reserve" },
+  { ref: "proof-1", section: "proof", tag: "p", selector: "[data-section=\"proof\"] > p:nth-of-type(1)", text: "Best loaf in town" },
+];
+// A numbered capture of the current page, as `evidence refs` writes it (the browser test covers the capture).
+function fakeRefs(root, refs = REFS) {
+  touch(root, "evidence/refs.png", "png");
+  touch(root, "evidence/refs.json", JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: { width: 1440, height: 900 }, refs }));
+}
+
+test("a kept section review offers the numbered page, and --ref ties the owner's no to its elements", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  const before = nextAction(root);
+  assert.match(before.first, /evidence refs --root /, "without a capture the ask takes one first");
+  assert.match(before.first, /if the capture fails, ask them to name each element by its text, label or place/);
+  assert.ok(!before.show.some(file => file.endsWith("refs.png")));
+  fakeRefs(root);
+  const ask = nextAction(root);
+  assert.match(ask.first, /evidence\/refs\.png/);
+  assert.ok(ask.show.some(file => file.endsWith(path.join("evidence", "refs.png"))), "a current capture is shown");
+  assert.match(ask.record, /\[--ref <reference>\]/);
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small", ref: ["first-screen-2", "first-screen-2"] });
+  assert.deepEqual(readState(root).rules.at(-1).object, { stage: "section", choice: "first-screen", refs: [{ ref: "first-screen-2", tag: "a", selector: REFS[2].selector, text: "Reserve" }] });
+  assert.ok(nextAction(root).rules.includes('section first-screen: The button is too small (on first-screen-2 a "Reserve")'), "the agent revising the page sees the element");
+  assert.match(diligence(root).text, /"The button is too small" \(section first-screen 1; for section first-screen; on first-screen-2 a "Reserve"\)/);
+  buildPage(root, ["first-screen"], "<!-- a larger reserve button -->\n");
+  assert.match(nextAction(root).first, /evidence refs --root /, "the edited page needs a new capture");
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
+  assert.ok(!(nextAction(root).rules || []).some(text => text.includes("first-screen-2")), "accepting the revised section retires the rule");
+});
+
+test("--ref is refused unless it names an element of the current numbered page, with the owner's words, on a rejection", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  const no = { stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small" };
+  assert.match(refuses(root, { ...no, ref: ["first-screen-2"] }, "WORKFLOW_NOT_READY").message, /evidence refs/, "no capture");
+  fakeRefs(root);
+  assert.match(refuses(root, { ...no, ref: ["first-screen-9"] }, "CONTRACT_INVALID").message, /not on the numbered page/);
+  assert.match(refuses(root, { ...no, ref: ["1"] }, "CONTRACT_INVALID").message, /outside the sections/);
+  assert.match(refuses(root, { ...no, ref: ["proof-1"] }, "CONTRACT_INVALID").message, /in section proof/);
+  assert.match(refuses(root, { ...no, answer: undefined, ref: ["first-screen-2"] }, "CONTRACT_INVALID").message, /goes with --answer/);
+  assert.match(refuses(root, { stage: "section", choice: "first-screen", verdict: "accept", ref: ["first-screen-2"] }, "CONTRACT_INVALID").message, /only with --verdict reject/);
+  assert.match(refuses(root, { stage: "description", verdict: "reject", answer: "Name the opening hours", ref: ["first-screen-2"] }, "CONTRACT_INVALID").message, /only with a web section review or the web final review/);
+  refusesCli(root, ["--stage", "section", "--choice", "first-screen", "--verdict", "accept", "--ref", "first-screen-2"], "CONTRACT_INVALID");
+  fs.appendFileSync(path.join(root, "index.html"), "<!-- edited after the capture -->\n");
+  assert.match(refuses(root, { ...no, ref: ["first-screen-2"] }, "WORKFLOW_NOT_READY").message, /earlier version of the page/);
+});
+
+test("a delegated section self-check takes no numbered capture", t => {
+  const root = approved(t, ["first-screen"]);
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  const step = nextAction(root);
+  assert.equal(step.type, "run");
+  assert.equal(step.selfCheck, true);
+  assert.doesNotMatch(`${step.first || ""} ${step.instruction}`, /evidence refs|refs\.png/);
+  assert.ok(!(step.show || []).some(file => file.endsWith("refs.png")));
+});
+
+test("the web final acceptance needs the owner's own words, names the version, and a later change asks again", t => {
+  const root = atProbe(t);
+  passProbe(root);
+  const review = nextAction(root);
+  assert.equal(review.stage, "review");
+  assert.equal((review.record.match(/"<[^"]*>"/g) || []).length, 1, "one quoted placeholder");
+  assert.match(review.record, /--by owner --stage review --verdict accept\|reject --answer "<the owner's words/);
+  assert.match(review.instruction, /only words the owner gave/);
+  assert.match(review.first, /evidence refs --root /);
+  for (const answer of [undefined, "ok", "<the owner's words: their acceptance, or what is wrong>"]) refuses(root, { stage: "review", verdict: "accept", answer }, "CONTRACT_INVALID");
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "可以" });
+  const version = readState(root).decisions.roles.at(-1).version;
+  assert.match(version, /^[0-9a-f]{12}$/);
+  assert.match(diligence(root).text, new RegExp(`Final acceptance recorded by the owner at \\S+ on page version ${version}: "可以"`));
+  fs.appendFileSync(path.join(root, "index.html"), "<!-- edited after acceptance -->\n");
+  passProbe(root);
+  const again = nextAction(root);
+  assert.equal(again.stage, "review");
+  assert.match(again.first, /The owner accepted an earlier version of the page at /);
+  fakeRefs(root);
+  decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The footer link is cramped", ref: ["1"] });
+  assert.deepEqual(readState(root).rules.at(-1).object.refs.map(item => item.ref), ["1"], "the final review takes references outside the sections");
+  assert.match(diligence(root).text, /No owner acceptance stands: their latest review \(\S+\) was a rejection/);
 });

@@ -596,7 +596,7 @@ test("the web probe stage refuses a probe file without an audit and keeps review
   assert.equal(action.command, undefined, "no verify command until the page audit exists");
   assert.match(action.instruction, /^Add an audit probe to interaction\.json/);
   assert.equal(action.guide, "references/workflow-web.md#probe");
-  assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "accept" }), /Cannot record review while probe is unfinished/);
+  assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" }), /Cannot record review while probe is unfinished/);
   assert.throws(() => decide(dir, { by: "owner", stage: "deliver", answer: "https://example.test" }), /Cannot record delivery while probe is unfinished/);
   legacy.probes.push({ id: "page-audit", kind: "audit", thresholds: { fonts: ["Inter"] } });
   fs.writeFileSync(path.join(dir, "interaction.json"), JSON.stringify(legacy));
@@ -615,14 +615,14 @@ test("rendered-dependency lineage reopens review and delivery and binds files th
   assert.deepEqual(gate.lineage.remote, ["https://cdn.example/font.woff2"], "remote URLs are recorded, not hashed");
   assert.equal(Object.keys(gate.inputHashes).some((key) => key.startsWith("http")), false);
   assert.equal(nextAction(dir).stage, "review");
-  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
   decide(dir, { by: "owner", stage: "deliver", answer: "https://example.test" });
   assert.equal(nextAction(dir).type, "done");
   fs.writeFileSync(path.join(dir, "site.css"), "html { background: #000; }\n");
   assert.equal(nextAction(dir).stage, "probe", "a changed stylesheet reopens probe");
   pass();
   assert.equal(nextAction(dir).stage, "review", "the re-verified page needs a new review");
-  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
   assert.equal(nextAction(dir).stage, "deliver", "and a new delivery");
   decide(dir, { by: "owner", stage: "deliver", answer: "https://example.test" });
   assert.equal(nextAction(dir).type, "done");

@@ -499,7 +499,7 @@ test("lineage regression: changed components decision invalidates a quick intera
 test("lineage regression: changed components decision requires a fresh review and delivery", t => {
   const root = fixture(t, "standard");
   checkedPage(root);
-  decide(root, { by: "owner", stage: "review", verdict: "accept" });
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
   decide(root, { by: "owner", stage: "deliver", answer: "https://example.test/page" });
   assert.equal(nextAction(root).type, "done");
   const recordedDrafts = structuredClone(readState(root).decisions.drafts);
@@ -512,14 +512,14 @@ test("lineage regression: changed components decision requires a fresh review an
   const state = readState(root);
   assert.deepEqual(deliveryFields(state), { delivered: undefined, deliveryInputHashes: undefined, deliveredSha256: undefined });
   assert.deepEqual(state.decisions.drafts, recordedDrafts, "recorded review verdicts and their bindings are never rewritten");
-  decide(root, { by: "owner", stage: "review", verdict: "accept" });
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
   assert.equal(nextAction(root).stage, "deliver", "a fresh accept under the new decision completes review");
 });
 
 test("lineage regression: identical components re-record keeps checked evidence", t => {
   const root = fixture(t, "standard");
   checkedPage(root, "project,index", "Use project components, then the index");
-  decide(root, { by: "owner", stage: "review", verdict: "accept" });
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
   decide(root, { by: "owner", stage: "deliver", answer: "https://example.test/page" });
   const before = readState(root);
   decide(root, { by: "owner", stage: "components", choice: "index,project,index", answer: "Use project components, then the index" });

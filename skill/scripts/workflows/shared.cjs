@@ -206,6 +206,21 @@ const REVIEW = {
       } catch { return []; }
     });
     const rejected = (state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are rules` : "";
+    // The web acceptance is the owner's words on the reviewed page (owner-attention-page-refs): the
+    // returned command holds a placeholder for them, never a ready-made acceptance.
+    if (web) {
+      const latest = state.decisions?.drafts?.at(-1);
+      return {
+        type: "ask",
+        ...(latest?.verdict === "accept" ? { first: `The owner accepted an earlier version of the page at ${latest.at}; show them the current page and ask again:` } : {}),
+        question: "Inspect the checked page and its key interactions. Accept it, or tell me what is wrong?",
+        show,
+        recommended: "Inspect the checked page and its key interactions before accepting.",
+        instruction: "Record only words the owner gave in the conversation: their acceptance in their own words, or what is wrong. For each element they cite in a rejection, add --ref <reference>.",
+        record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject --answer "<the owner's words: their acceptance, or what is wrong>"`,
+        why: `Final acceptance of the whole checked page${state.tier === "quick" ? "" : ", after each section was reviewed"}; a passed probe shows the page works, never that it looks right${rejected}.`,
+      };
+    }
     return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: web ? `Final acceptance of the whole checked page${state.tier === "quick" ? "" : ", after each section was reviewed"}; a passed probe shows the page works, never that it looks right${rejected}.` : `The owner's final acceptance; a passed check shows the draft works, never that it looks right${rejected}.` };
   },
 };
