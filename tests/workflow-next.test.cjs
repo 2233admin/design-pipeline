@@ -2933,7 +2933,7 @@ test("ui and quick work end with the owner's acceptance, and done renders the di
   assert.match(statement, /## Decided by the owner\n- Final acceptance: reject — "The header feels cramped on phones"\n- Final acceptance: accept — "That header looks right now"/);
   assert.match(statement, /## Decided by the agent under delegation\n- Delivery — "index\.html checked in a browser" \(agent: Claude Code \(test\); delegated by default\)/);
   assert.match(statement, /Final acceptance recorded by the owner at .*: "That header looks right now"/);
-  assert.match(statement, /1 rule\(s\)/);
+  assert.match(statement, /## The owner's "no", in their words\n- "The header feels cramped on phones" \(draft 1\)/, "the owner's own words, not a count");
   assert.match(statement, /Suggested trailer: Assisted-by: Claude Code \(test\)/);
   assert.match(statement, /## Delegation\n- Delivery: agent\n- Final acceptance: owner \(locked\)/);
   // A later decision makes the statement stale until done renders it again.

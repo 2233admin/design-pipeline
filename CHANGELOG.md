@@ -6,6 +6,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- Owner feedback is taken as given (change `fix-owner-feedback-friction`): a "no" needs two words
+  with each CJK character counting as one, so 首屏太暗了 or "too dark" is a complete reason; a page
+  the owner rejects returns to build at every tier until it changes; the diligence statement quotes
+  the owner's rules instead of counting them.
+
 - Decisions record who made them (change `adopt-ai-fluency-decision-roles`, phase 1, #108). Each
   workflow keeps a delegation map; `decide` requires `--by owner|agent` and refuses agent records
   where the owner decides; final acceptance is locked to the owner and no longer routed to an art
