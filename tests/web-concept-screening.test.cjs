@@ -170,7 +170,7 @@ test("a variants rejection becomes a rule and asks for a redo until concepts.htm
   assert.equal(redo.type, "ask");
   assert.ok(redo.first.includes("All three look like templates"), redo.first);
   assert.deepEqual(fs.readFileSync(path.join(root, "concepts.html")), page);
-  assert.deepEqual(readState(root).rules, [{ text: "All three look like templates", from: "variants 1", scope: "project" }]);
+  assert.deepEqual(readState(root).rules.map(({ text, from, scope, object }) => ({ text, from, scope, object })), [{ text: "All three look like templates", from: "variants 1", scope: "object", object: { stage: "review" } }]);
   fs.appendFileSync(path.join(root, "concepts.html"), "<!-- redone without the template look -->\n");
   const ask = nextAction(root);
   assert.equal(ask.type, "ask");

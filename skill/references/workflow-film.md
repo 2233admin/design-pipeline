@@ -187,7 +187,7 @@ redrawn UI. `next` first checks `sample.mp4` with an ffprobe video-stream durati
 findings with a recut fix (`sample-not-video`, `sample-duration`, `sample-duration-unknown`; `sample-probe-unavailable` when
 ffmpeg/ffprobe are missing) and `decide` refuses. Then it asks the owner to view `sample.mp4` beside its capture files; record the
 reply with `decide --stage sample --verdict accept|reject [--answer "<reason>"]`. A rejection
-needs `--answer` and becomes a project rule. Acceptance binds the sample bytes and the
+needs `--answer` and becomes a rule bound to the sample. Acceptance binds the sample bytes and the
 `productSource` record; replacing either asks again. The sample verdict settles the material
 direction only; it is not the film's Visual Acceptance.
 
@@ -239,9 +239,10 @@ open every frame at full size and look for text overlap, clipping, empty transit
 edge crowding, too-small text and wrong values. Fix, re-render and rerun `film check`; write the
 frame and creative review in `qa.md`. Then show the draft video, `evidence/contact-sheet.png` and
 a one-paragraph gate summary. The owner accepts, or rejects with one sentence
-(`decide --stage review --verdict accept|reject`). A rejection becomes a project rule that every
-later `next` returns and reopens the check. Every tier asks; quick reports `done` after an
-accepted draft, standard and full after the accepted draft's delivery render.
+(`decide --stage review --verdict accept|reject`). A rejection becomes a rule that every later
+`next` returns until the owner accepts a draft, and reopens the check. Every tier asks; quick
+reports `done` after an accepted draft, standard and full after the accepted draft's delivery
+render.
 
 ## deliver
 

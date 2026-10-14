@@ -60,7 +60,7 @@ finding's `fix` and rerun. A new render or a changed `edit.json` reopens this st
 
 Show the draft, the contact sheet and a one-paragraph gate summary. The user accepts, or rejects
 with one sentence (`decide --stage review --verdict accept|reject`). A rejection becomes a
-project rule.
+rule, returned until the owner accepts a draft.
 
 ## deliver
 

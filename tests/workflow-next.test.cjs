@@ -199,6 +199,8 @@ function passProbe(root) {
 }
 
 const rulesFrom = root => readState(root).rules.map(rule => rule.from);
+// A rule's words, origin and scope; `since` (its place among the role entries) is left out.
+const ruleShapes = root => readState(root).rules.map(({ text, from, scope, object }) => ({ text, from, scope, ...(object ? { object } : {}) }));
 
 function visualFixture(nativePhase = "implementation") {
   const dir = tmp();
@@ -2167,7 +2169,7 @@ test("stated decisions need six words and every no two, through the CLI", t => {
   const section = answer => ["--stage", "section", "--choice", "first-screen", "--verdict", "reject", "--answer", answer];
   for (const answer of tooShort) assert.match(refusesCli(built, section(answer), "CONTRACT_INVALID").message, /at least 2 words/, answer);
   decideCli(built, ...section("首屏太暗了"));
-  assert.deepEqual(readState(built).rules, [{ text: "首屏太暗了", from: "section first-screen 1", scope: "project" }]);
+  assert.deepEqual(ruleShapes(built), [{ text: "首屏太暗了", from: "section first-screen 1", scope: "object", object: { stage: "section", choice: "first-screen" } }]);
 });
 
 test("anti-goals named with the confirmed playback or a skip become project rules through the CLI", t => {
@@ -2240,9 +2242,9 @@ test("the playback must be confirmed before concepts; each correction becomes a 
   refuses(root, { by: "owner", stage: "concept", verdict: "reject", answer: "The variants are too busy" }, "WORKFLOW_NOT_READY");
   decide(root, { by: "owner", stage: "intake", verdict: "reject", answer: "Mention same-day pickup" });
   assert.equal(nextAction(root).stage, "intake");
-  assert.deepEqual(readState(root).rules, [
-    { text: "It is for florists, not bakeries", from: "playback 1", scope: "project" },
-    { text: "Mention same-day pickup", from: "playback 2", scope: "project" },
+  assert.deepEqual(ruleShapes(root), [
+    { text: "It is for florists, not bakeries", from: "playback 1", scope: "object", object: { stage: "review" } },
+    { text: "Mention same-day pickup", from: "playback 2", scope: "object", object: { stage: "review" } },
   ]);
 
   confirmPlayback(root);
@@ -2283,7 +2285,8 @@ test("a no in the decision round is a project rule and leaves the components dec
   assert.equal(decisions.components, undefined, "a correction records no components decision");
   assert.equal(decisions.componentSources, undefined);
   assert.deepEqual(decisions.rounds.map(({ verdict, reason }) => ({ verdict, reason })), [{ verdict: "reject", reason: no }]);
-  assert.deepEqual(rules, [{ text: no, from: "decisions 1", scope: "project" }]);
+  assert.deepEqual(ruleShapes(root), [{ text: no, from: "decisions 1", scope: "object", object: { stage: "review" } }]);
+  assert.ok(rules.length === 1);
   decide(root, { by: "owner", stage: "components", verdict: "reject", answer: "Keep the icons out of the header" });
   assert.deepEqual(rulesFrom(root), ["decisions 1", "decisions 2"]);
   prepareWebComponents(root);
@@ -2318,7 +2321,7 @@ test("nothing is built until the owner approves the description, through the CLI
   assert.equal(revise.stage, "description");
   assert.equal(revise.type, "ask");
   assert.ok(revise.first.includes("Say who the regulars are"), revise.first);
-  assert.deepEqual(readState(root).rules, [{ text: "Say who the regulars are", from: "description 1", scope: "project" }]);
+  assert.deepEqual(ruleShapes(root), [{ text: "Say who the regulars are", from: "description 1", scope: "object", object: { stage: "review" } }]);
   fs.appendFileSync(path.join(root, "brief.md"), "\nFor regulars who reserve tomorrow's bread on their phones.\n");
 
   fs.rmSync(path.join(root, "index.html"));
@@ -2436,7 +2439,7 @@ test("sections are built and accepted one at a time in the approved order, each 
   assert.equal(revise.type, "ask");
   assert.equal(revise.section, "proof");
   assert.ok(revise.first.includes("The quotes need names and photos"), revise.first);
-  assert.deepEqual(readState(root).rules, [{ text: "The quotes need names and photos", from: "section proof 1", scope: "project" }]);
+  assert.deepEqual(ruleShapes(root), [{ text: "The quotes need names and photos", from: "section proof 1", scope: "object", object: { stage: "section", choice: "proof" } }]);
   buildPage(root, ["first-screen", "proof"], "<!-- quotes with names and photos -->\n");
   const revised = nextAction(root);
   assert.equal(revised.section, "proof");
@@ -2461,7 +2464,7 @@ test("a section rejection after an accepted section asks that section again and 
   assert.equal(again.type, "ask");
   assert.equal(again.section, "proof");
   assert.ok(again.completed.includes("description"), "the new rule does not ask for the description again");
-  assert.deepEqual(again.rules, ["No stock photos anywhere on the page"]);
+  assert.deepEqual(again.rules, ["section proof: No stock photos anywhere on the page"], "a section rule is labelled with its section");
   buildPage(root, ["hero", "proof"], "<!-- proof without stock photos -->\n");
   assert.equal(acceptSections(root).stage, "probe");
   assert.deepEqual(readState(root).decisions.sections.map(item => `${item.section} ${item.verdict}`), ["hero accept", "proof reject", "proof accept"], "hero is not asked again");
@@ -2551,14 +2554,15 @@ test("a section rejection can cite recorded runtime-review Feedback through the 
   assert.equal(verdict.reason, null);
   assert.deepEqual(verdict.evidence, [{ path: cited, sha256: `sha256:${sha256(bytes)}`, objectId: "cta", category: "visual-acceptance" }]);
   const ctaRule = `cta: ${record.feedback.actual} Expected: ${record.feedback.expected}`;
-  assert.deepEqual(readState(root).rules, [{ text: ctaRule, from: "section first-screen 1", scope: "project" }]);
-  assert.deepEqual(next.rules, [ctaRule]);
+  assert.deepEqual(ruleShapes(root), [{ text: ctaRule, from: "section first-screen 1", scope: "object", object: { stage: "section", choice: "first-screen" } }]);
+  assert.deepEqual(next.rules, [`section first-screen: ${ctaRule}`]);
 
   decideCli(root, ...reject(cited, second), "--answer", "And the photo is too dark");
-  assert.deepEqual(readState(root).rules.slice(1), [
-    { text: "And the photo is too dark", from: "section first-screen 2", scope: "project" },
-    { text: ctaRule, from: "section first-screen 2", scope: "project" },
-    { text: `pickup-steps: ${pickup.feedback.actual} Expected: ${pickup.feedback.expected}`, from: "section first-screen 2", scope: "project" },
+  const section = { stage: "section", choice: "first-screen" };
+  assert.deepEqual(ruleShapes(root).slice(1), [
+    { text: "And the photo is too dark", from: "section first-screen 2", scope: "object", object: section },
+    { text: ctaRule, from: "section first-screen 2", scope: "object", object: section },
+    { text: `pickup-steps: ${pickup.feedback.actual} Expected: ${pickup.feedback.expected}`, from: "section first-screen 2", scope: "object", object: section },
   ]);
   assert.deepEqual(readState(root).decisions.sections.at(-1).evidence.map(item => item.path), [cited, second]);
 });
@@ -2611,14 +2615,14 @@ test("the probe binds the checked page, and the final review still turns a rejec
   assert.deepEqual(readState(root).rules, [], "a bare no at the final review records no rule");
   assert.equal(nextAction(root).stage, "review", "and leaves the checked page under review");
   decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
-  assert.deepEqual(readState(root).rules, [{ text: "The reserve button gets lost below the fold", from: "draft 1", scope: "project" }]);
+  assert.deepEqual(ruleShapes(root), [{ text: "The reserve button gets lost below the fold", from: "draft 1", scope: "object", object: { stage: "review" } }]);
   assert.equal(readState(root).gates.interaction, undefined);
   assert.equal(nextAction(root).stage, "build", "the rejected page is repaired first");
   fs.appendFileSync(path.join(root, "index.html"), "<!-- reserve button moved up -->\n");
   assert.equal(nextAction(root).stage, "probe");
 });
 
-test("every no along the way is a project rule, and next returns them all", t => {
+test("every no along the way is a rule, and next returns those still open", t => {
   const root = webProject(t);
   decide(root, { by: "owner", stage: "intake", verdict: "reject", answer: "It is for florists" });
   decide(root, { by: "owner", stage: "intake", verdict: "accept", answer: PLAYBACK, antiGoals: ["Never look like a delivery app"] });
@@ -2639,8 +2643,9 @@ test("every no along the way is a project rule, and next returns them all", t =>
   decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
   const next = nextAction(root);
   assert.deepEqual(rulesFrom(root), ["playback 1", "anti-goal 1", "variants 1", "decisions 1", "description 1", "section first-screen 1", "draft 1"]);
-  assert.ok(readState(root).rules.every(rule => rule.scope === "project"));
-  assert.deepEqual(next.rules, ["It is for florists", "Never look like a delivery app", "No stock photography", "Keep the old carousel out", "Name the opening hours", "The reserve button is too small", "The reserve button gets lost below the fold"]);
+  assert.deepEqual(readState(root).rules.map(rule => rule.scope), ["object", "project", "object", "object", "object", "object", "object"], "anti-goals are project rules; every other no binds to what it was about");
+  // The section rule retired when the revised section was accepted; the rest hold until the owner accepts the page.
+  assert.deepEqual(next.rules, ["It is for florists", "Never look like a delivery app", "No stock photography", "Keep the old carousel out", "Name the opening hours", "The reserve button gets lost below the fold"]);
 });
 
 test("components, description and section records are refused on film, edit and ui projects", t => {
@@ -2945,7 +2950,7 @@ test("ui and quick work end with the owner's acceptance, and done renders the di
   assert.match(statement, /## Decided by the owner\n- Final acceptance: reject — "The header feels cramped on phones"\n- Final acceptance: accept — "That header looks right now"/);
   assert.match(statement, /## Decided by the agent under delegation\n- Delivery — "index\.html checked in a browser" \(agent: Claude Code \(test\); delegated by default\)/);
   assert.match(statement, /Final acceptance recorded by the owner at .*: "That header looks right now"/);
-  assert.match(statement, /## The owner's "no", in their words\n- "The header feels cramped on phones" \(draft 1\)/, "the owner's own words, not a count");
+  assert.match(statement, /## The owner's "no", in their words\n- "The header feels cramped on phones" \(draft 1; for the result under review, since accepted\)/, "the owner's own words, not a count");
   assert.match(statement, /Suggested trailer: Assisted-by: Claude Code \(test\)/);
   assert.match(statement, /## Delegation\n- Delivery: agent\n- Final acceptance: owner \(locked\)/);
   // A later decision makes the statement stale until done renders it again.
@@ -3221,4 +3226,87 @@ test("confirming the playback card records creative intent as the owner's, and a
   const quick = webProject(t, { tier: "quick" });
   statedSkip(quick);
   assert.doesNotMatch(diligence(quick).text, /Creative intent/, "quick work has no creative-intent checkpoint");
+});
+
+test("a no binds to what it was about: a section rule retires with the section, an earlier no holds until the result is accepted", t => {
+  const root = webProject(t);
+  confirmPlayback(root);
+  decide(root, { by: "agent", stage: "reference", answer: "none" });
+  writeVariants(root);
+  pickVariant(root);
+  decide(root, { by: "owner", stage: "components", verdict: "reject", answer: "No GPL libraries in this site" });
+  prepareWebComponents(root);
+  approveDescription(root, ["hero"]);
+  buildPage(root, ["hero"]);
+  decide(root, { by: "owner", stage: "section", choice: "hero", verdict: "reject", answer: "Drop the gradient" });
+  assert.deepEqual(nextAction(root).rules, ["No GPL libraries in this site", "section hero: Drop the gradient"]);
+  buildPage(root, ["hero"], "<!-- flat background -->\n");
+  assert.equal(acceptSections(root).stage, "probe");
+  assert.deepEqual(nextAction(root).rules, ["No GPL libraries in this site"], "the accepted section's rule retires; the round's no holds through the build");
+  assert.equal(readState(root).rules.length, 2, "a retired rule stays recorded");
+  passProbe(root);
+  const review = nextAction(root);
+  assert.equal(review.stage, "review");
+  assert.deepEqual(review.ruleCandidates.map(({ from, object, active }) => [from, object, active]), [["decisions 1", "the result", true], ["section hero 1", "section hero", false]]);
+  assert.match(review.instruction, /ask the owner once whether to keep.*--promote "<from>"/);
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "That is the page I wanted" });
+  assert.equal(nextAction(root).rules, undefined, "after the owner accepts the page, its rules retire");
+});
+
+test("--scope project keeps a no for the rest of the project, and --scope is refused where it means nothing", t => {
+  const root = approved(t, ["hero"]);
+  buildPage(root, ["hero"]);
+  refuses(root, { stage: "section", choice: "hero", verdict: "reject", answer: "Drop the gradient", scope: "everywhere" }, "CONTRACT_INVALID");
+  refuses(root, { by: "agent", stage: "section", choice: "hero", verdict: "accept", scope: "project" }, "CONTRACT_INVALID");
+  decideCli(root, "--stage", "section", "--choice", "hero", "--verdict", "reject", "--answer", "No gradients anywhere, from now on", "--scope", "project");
+  assert.deepEqual(readState(root).rules.map(rule => rule.scope), ["project"]);
+  buildPage(root, ["hero"], "<!-- flat -->\n");
+  assert.equal(acceptSections(root).stage, "probe");
+  assert.deepEqual(nextAction(root).rules, ["No gradients anywhere, from now on"], "a project rule outlives the section");
+  const intake = webProject(t);
+  refuses(intake, { stage: "intake", verdict: "accept", answer: PLAYBACK, antiGoals: ["Never look like a delivery app"], scope: "project" }, "CONTRACT_INVALID");
+});
+
+test("an anti-goal matching an earlier correction still becomes a project rule", t => {
+  const root = webProject(t);
+  decide(root, { by: "owner", stage: "intake", verdict: "reject", answer: "No stock photos" });
+  decide(root, { by: "owner", stage: "intake", verdict: "accept", answer: PLAYBACK, antiGoals: ["No stock photos"] });
+  assert.deepEqual(ruleShapes(root).map(({ from, scope }) => [from, scope]), [["playback 1", "object"], ["anti-goal 1", "project"]]);
+  decide(root, { by: "owner", stage: "intake", verdict: "accept", answer: PLAYBACK, antiGoals: ["No stock photos"] });
+  assert.equal(readState(root).rules.length, 2, "an anti-goal already a project rule is not repeated");
+});
+
+test("the owner promotes rules at the final review: a retired rule returns, every rule of that origin goes, and only there", t => {
+  const root = atProbe(t, ["first-screen"], { keep: ["section"] });
+  // Reopen the accepted section with a no carrying text and cited Feedback, so two rules share one origin.
+  const bytes = fs.readFileSync(path.join(__dirname, "fixtures/runtime-review-record.json"));
+  const cited = `runtime-review/feedback/${sha256(canonicalJson(JSON.parse(bytes.toString("utf8")).feedback))}.json`;
+  touch(root, cited, bytes);
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The photo is too dark", evidence: [cited] });
+  buildPage(root, ["first-screen"], "<!-- brighter -->\n");
+  assert.equal(acceptSections(root).stage, "probe");
+  passProbe(root);
+  assert.equal(nextAction(root).stage, "review");
+  refuses(root, { stage: "review", verdict: "accept", answer: "That is the page I wanted", promote: ["section footer 9"] }, "CONTRACT_INVALID");
+  refuses(root, { stage: "section", choice: "first-screen", verdict: "reject", answer: "Still too dark", promote: ["section first-screen 1"] }, "CONTRACT_INVALID");
+  refuses(root, { by: "agent", stage: "review", verdict: "accept", answer: "That is the page I wanted", promote: ["section first-screen 1"] }, "CONTRACT_INVALID");
+  decideCli(root, "--stage", "review", "--verdict", "accept", "--answer", "That is the page I wanted", "--promote", "section first-screen 1");
+  const promoted = readState(root).rules;
+  assert.equal(promoted.length, 2);
+  for (const rule of promoted) assert.deepEqual([rule.scope, rule.givenScope, typeof rule.promotedAt], ["project", "object", "string"]);
+  const after = nextAction(root);
+  assert.equal(after.stage, "deliver");
+  assert.ok(after.rules.includes("The photo is too dark"), "a promoted rule is returned again");
+  const statement = diligence(root).text;
+  assert.match(statement, /"The photo is too dark" \(section first-screen 1; promoted to a project rule\)/);
+});
+
+test("the diligence statement names each rule's scope", t => {
+  const root = approved(t, ["hero"], { keep: ["section"] });
+  buildPage(root, ["hero"]);
+  decide(root, { by: "owner", stage: "section", choice: "hero", verdict: "reject", answer: "Drop the gradient" });
+  decide(root, { by: "owner", stage: "description", verdict: "reject", answer: "Name the opening hours" });
+  const text = diligence(root).text;
+  assert.match(text, /"Drop the gradient" \(section hero 1; for section hero\)/);
+  assert.match(text, /"Name the opening hours" \(description 1; for the result under review\)/);
 });

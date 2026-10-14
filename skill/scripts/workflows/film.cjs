@@ -208,7 +208,7 @@ const SAMPLE = {
     return {
       type: "ask",
       // The owner already rejected these exact bytes: recut before asking again.
-      ...(latest?.verdict === "reject" && latest.sha256 === current.sha256 ? { first: `The owner rejected this exact ${SAMPLE_FILE} ("${latest.reason}"). Recut it from the cited captures under the project rules, then ask the owner:` } : {}),
+      ...(latest?.verdict === "reject" && latest.sha256 === current.sha256 ? { first: `The owner rejected this exact ${SAMPLE_FILE} ("${latest.reason}"). Recut it from the cited captures under the rules, then ask the owner:` } : {}),
       question: "Does this sample, cut only from the real captures, show the product the way the film should? Accept it, or reject it with one sentence on what is wrong?",
       show,
       recommended: `Watch ${SAMPLE_FILE} at full speed beside its capture files; accept only if every frame is the product's own material.`,

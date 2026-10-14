@@ -44,11 +44,25 @@ intent. An agent never records a "no": `--by agent --verdict reject` is refused 
 director's pick under `--director`. An agent cannot accept a section or description the owner
 rejected until it changes (`WORKFLOW_NOT_READY`).
 
-Every "no" the owner gives on the way becomes a project rule in `state.rules`, the same record a
-rejected draft makes, and so does each anti-goal of the confirmed playback or stated skip. The
-rule's `from` is `playback N`, `anti-goal N`, `variants N`, `decisions N`, `description N`,
-`section <id> N` or `draft N`. `next` lists the rule texts in `rules` on every later action. Rules
-are never removed; the owner's later decisions refine them.
+Every "no" the owner gives on the way becomes a rule in `state.rules`, the same record a rejected
+draft makes. The rule's `from` is `playback N`, `anti-goal N`, `variants N`, `decisions N`,
+`description N`, `section <id> N` or `draft N`. A rule binds to what it was about:
+
+- a section "no" binds to that section and is returned, as `section <id>: <text>`, until the
+  section is next accepted;
+- every other "no" (playback, variants, a decision round, the description, a draft) binds to the
+  result under review, because it shapes the whole build, and is returned until the owner accepts
+  the page;
+- an anti-goal of the confirmed playback or stated skip is a project rule from the start, and is
+  not added again when a project rule already has its text.
+
+When the owner says "from now on", add `--scope project` to the record of their "no"; `--scope`
+on a record without a "no" is refused. `next` lists the open rules in `rules` on every later
+action; a retired rule stays in `state.rules`. The final review carries `ruleCandidates` (every
+rule bound to one object, open or retired): ask the owner once whether to keep, for the rest of the
+project, those given about more than one thing or phrased as a principle, and add
+`--promote "<from>"` (repeatable) to their review record for each one they keep. Promoting an
+origin promotes every rule recorded with it, and nothing changes scope without the owner's answer.
 
 A recorded decision or "no" must say something. A decision you state for the owner (a skip line,
 the confirmed playback) needs at least six words, two CJK characters counting as one: "OK, start.",
@@ -103,7 +117,7 @@ Record each reply with the command the ask returns:
 | Owner's reply | Record | Effect |
 | --- | --- | --- |
 | Confirms the playback | `record`: `decide --stage intake --verdict accept --answer "<the playback the owner confirmed>" [--anti-goal "<anti-goal>" ...]` | `decisions.intake` holds the playback, marked `playback: "confirmed"`; intake is done |
-| Corrects it | `correction`: `decide --stage intake --verdict reject --answer "<what the owner said is wrong or missing>"` | The correction becomes a project rule (`playback N`) and intake stays open |
+| Corrects it | `correction`: `decide --stage intake --verdict reject --answer "<what the owner said is wrong or missing>"` | The correction becomes a rule (`playback N`) and intake stays open |
 | Asks you to just start | `skip`: `decide --stage intake --choice skip --answer "<the line telling the owner what you decided on their behalf>" [--anti-goal "<anti-goal>" ...]` | Tell the owner that line first; `decisions.intake` holds it, marked `skipped: true` |
 
 Replace the optional `[--anti-goal "<anti-goal>" ...]` in the `record` or `skip` command with one
@@ -181,7 +195,7 @@ say why. Record:
 - a mix: `decide --stage concept --choice B,C --answer "<what to take from each, in the owner's words>"`.
   Combining requires the answer, kept as `decisions.conceptNotes`;
 - a rejection: `decide --stage concept --verdict reject --answer "<what is wrong, in the owner's words>"`.
-  It becomes a project rule (`variants N`) and reopens the stage. While `concepts.html` is
+  It becomes a rule (`variants N`) and reopens the stage. While `concepts.html` is
   unchanged, `next` tells you to redo what the rule rules out and pre-screen again before asking.
 
 Letters are case-insensitive; numbers are refused. A pick is refused (`WORKFLOW_NOT_READY`) until
@@ -235,7 +249,7 @@ same way.
 Record each "no" the owner gives in a round (a recommendation turned down, something ruled out)
 with the ask's `correction` command:
 `decide --stage components --verdict reject --answer "<what the owner turned down or ruled out, in their words>"`.
-It becomes a project rule (`decisions N`), is kept in `decisions.rounds` and does not record or
+It becomes a rule (`decisions N`), is kept in `decisions.rounds` and does not record or
 change the components decision. It is refused (`WORKFLOW_NOT_READY`) until `next` has reached the
 components stage. Record the components decision once, after the last round, with the choice ids.
 
@@ -286,7 +300,7 @@ without asking again:
 - constraints such as devices, assets and their licenses;
 - which choices are the owner's and which are your calls, marked as yours.
 
-Do not copy the project rules into it: they stay in `state.rules` and come back with every action,
+Do not copy the rules into it: they stay in `state.rules` and come back with every action,
 so a rule recorded later needs no edit here.
 
 The `## Sections` heading is followed by one top-level list item per section (`- `, `* `, `+ `,
@@ -315,7 +329,7 @@ Record:
   refused (`WORKFLOW_NOT_READY`) until `next` has reached the description and `brief.md` exists.
   After that it can be recorded again at any later stage to correct it.
 - a rejection: `decide --stage description --verdict reject --answer "<what is wrong, in the owner's words>"`.
-  It becomes a project rule (`description N`); while `brief.md` is unchanged, `next` asks you to
+  It becomes a rule (`description N`); while `brief.md` is unchanged, `next` asks you to
   revise it before asking again.
 
 The approval binds the `brief.md` bytes, the confirmed playback, the chosen variant and its notes,
@@ -359,12 +373,12 @@ screen first, and the owner reviews each section before the next one starts:
    `decide --stage section --choice <id> --verdict accept` only when nothing in the section needs to
    change. Any change they ask for is a rejection:
    `decide --stage section --choice <id> --verdict reject --answer "<the owner's comments>"`. Each
-   comment becomes a project rule (`section <id> N`). Revise the section before asking again: while
+   comment becomes a rule (`section <id> N`). Revise the section before asking again: while
    the page (`index.html`, its manifest and the local files it names) is unchanged since the
    rejection, `next` tells you to revise first.
 3. **Next section.** `next` returns a run with `section: <id>` for the next approved section: build
    it from its brief inside its own `data-section` element, keep the accepted sections as the owner
-   accepted them unless a project rule requires a change, and add every component it uses to
+   accepted them unless a rule requires a change, and add every component it uses to
    `component-manifest.json`. Then review it as in step 2.
 
 A section can be accepted only while `next` asks about it or returns its self-check
@@ -383,7 +397,7 @@ and cited on the rejection with `--evidence runtime-review/feedback/<hash>.json`
 or without `--answer`). Each cited file must be contained in the project and valid against the
 `Record` definition of `references/runtime-review.schema.json`, checked with runtime-review's own
 validator; otherwise the record is refused (`CONTRACT_INVALID`) with that validator's message.
-Each Feedback becomes a project rule `<objectId>: <actual> Expected: <expected>`. The workflow
+Each Feedback becomes a rule `<objectId>: <actual> Expected: <expected>`. The workflow
 checks only the record's shape; `runtime-review check` stays the authority on its bundle lineage.
 Ordinary web projects do not have those inputs: runtime-review needs a component-first artifact,
 UI IR, tokens, a design-code map and a captured observation, which this workflow does not produce.
@@ -686,7 +700,7 @@ Show the page, its motion at full speed and a one-paragraph gate summary. When t
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and
 reports them under Visual Acceptance in `qa.md`; the agent never records acceptance and gate
 findings stay Conformance. The user accepts, or rejects with one sentence
-(`decide --stage review --verdict accept|reject`). A rejection becomes a project rule and returns
+(`decide --stage review --verdict accept|reject`). A rejection becomes a rule and returns
 to build: the page the owner rejected is repaired before it is probed and shown again, so an
 unchanged page never comes back for review.
 

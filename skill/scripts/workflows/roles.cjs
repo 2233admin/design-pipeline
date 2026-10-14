@@ -11,6 +11,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, fail, sha256 } = require("../contract-utils.cjs");
+const { statementLine } = require("./rules.cjs");
 
 const ROLES = ["owner", "agent"];
 const LOCKED = new Set(["review", "creative-intent"]);
@@ -170,7 +171,7 @@ function renderStatement(state, { delivered = null, deliveryCurrent = false, gat
     list(delegation, "no checkpoints"),
     "",
     "## The owner's \"no\", in their words",
-    list((state.rules || []).map(rule => `"${rule.text}" (${rule.from})`), "none"),
+    list((state.rules || []).map(rule => statementLine(rule, roles)), "none"),
     "",
     "## Technical checks (not creative acceptance)",
     list(checks, "none recorded"),

@@ -17,6 +17,10 @@ All notable changes to Design Pipeline are documented here.
   which the diligence statement shows. Every ask and self-check carries a `language` line. The
   web playback is a short card (three intent lines, open uncertainties, the delegation line);
   the owner confirming it records creative intent, so the statement no longer says it is planned.
+  A "no" binds to what it was about: a section's until that section is accepted, any other until
+  the owner accepts the result. `--scope project` keeps it for the rest of the project, and the
+  final review offers the bound rules once as `ruleCandidates` for `--promote "<from>"`. Anti-goals
+  stay project rules, and the diligence statement names each rule's scope.
 - MengTo and iart upstream skills are downloaded on demand (change `fetch-vendor-on-demand`, #119).
   The package drops from about 253 MB to about 51 MB extracted. `designer-pipeline sources fetch
   --bundle mengto-skills|iart-motion-skills | --all` downloads each file at its pinned revision from

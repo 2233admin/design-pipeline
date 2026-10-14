@@ -19,7 +19,7 @@ resources stay relative to `<skill-root>` regardless of the working directory.
   one action at a time: do the returned `run`, ask the returned `ask` question and record the reply
   with its `record` command, or report the returned `done` evidence. An ask's `first`, when present,
   is a step to do before asking `question`; its `correction` command records the owner's "no" (it
-  becomes a project rule) and its `skip` command records a skip you stated. A `run` action's
+  becomes a rule) and its `skip` command records a skip you stated. A `run` action's
   `command` is only an executable command, already spelled `node <absolute path>/designer-pipeline.cjs ...`
   (the CLI is not on PATH); its `instruction` is the prose to follow, and a `run` with no `command`
   is an instruction alone. Obey prior user rejections in

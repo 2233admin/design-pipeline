@@ -157,6 +157,7 @@
     "scripts/workflows/edit.cjs",
     "scripts/workflows/web.cjs",
     "scripts/workflows/roles.cjs",
+    "scripts/workflows/rules.cjs",
     "references/workflow-film.md",
     "references/qa-checklist.md",
     "references/animation-thinking.md",

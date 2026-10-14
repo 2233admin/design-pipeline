@@ -33,6 +33,7 @@ const MODES = ["brief", "replicate", "freeform"];
 // guides.
 const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement } = require("./workflows/shared.cjs");
 const roles = require("./workflows/roles.cjs");
+const rules = require("./workflows/rules.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -171,9 +172,16 @@ function nextAction(root) {
     // acceptance never does; it stays with the owner.
     const directed = state.director && action.type === "ask" && ["concepts", "sample", "build"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     if (stage.id === "intake" && action.type === "ask") action.delegation = delegationHint(state);
-    const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
+    const active = rules.activeRules(state);
+    const ruleTexts = active.length ? { rules: active } : {};
+    // The final review offers once to keep, for the rest of the project, rules given about one object.
+    const offered = stage.id === "review" && action.type === "ask" ? rules.candidates(state) : [];
+    if (offered.length) {
+      action.ruleCandidates = offered;
+      action.instruction = `${action.instruction ? `${action.instruction} ` : ""}Before or with this review, ask the owner once whether to keep, for the rest of the project, any of the ruleCandidates given about more than one thing or phrased as a principle; add --promote "<from>" to their review record for each one they keep, and nothing for the rest.`;
+    }
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
-    return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
+    return { ...action, ...guide, ...directed, ...ruleTexts, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
   }
   return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, diligence: roles.statementStatus(root, state, deliveryCurrent(state, root)), line: `${state.deliverable}/${state.tier}: done` };
 }
@@ -261,6 +269,9 @@ function decide(root, options = {}) {
     if (role.by !== "owner") fail("workflow", "--tradeoff records the owner's answer to a trade-off you asked them about, so it goes only with --by owner. Fix: ask the owner, then record their answer with --by owner --tradeoff \"<what you asked>\"");
     options = { ...options, tradeoff: statement(options.tradeoff, "say what you asked the owner: what is new, your recommendation and its cost", "--tradeoff") };
   }
+  const scope = rules.checkScope(options.scope, options.verdict);
+  const promoted = rules.checkPromote(state, options.promote, stage, role.by);
+  const rulesBefore = (state.rules || []).length;
   // A "no" is the owner's words; only an art director's pick may reject on the agent's side.
   if (role.by === "agent" && options.verdict === "reject" && !(state.director && roles.DIRECTED.has(stage))) {
     fail("workflow", "an agent cannot record a \"no\": it is the owner's words and becomes a rule. Fix: when your check finds a fault, fix the work and record the decision; record a \"no\" only with the owner's words and --by owner");
@@ -305,7 +316,7 @@ function decide(root, options = {}) {
     if (options.answer) state.decisions.conceptNotes = options.answer;
   } else if (stage === "sample") {
     assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
-    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong with the sample; it becomes a project rule");
+    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong with the sample; it becomes a rule");
     const next = nextAction(root);
     if (next.stage !== "sample") fail("workflow", `Cannot record the sample verdict while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     // The verdict binds the sample bytes and the product record they were cut from.
@@ -316,10 +327,10 @@ function decide(root, options = {}) {
       fail("workflow", first ? `${first.message} Fix: ${first.fix}` : "the sample is not ready to be judged. Fix: follow next.", { code: first ? "SAMPLE_INVALID" : "WORKFLOW_NOT_READY" });
     }
     state.decisions.samples = [...(state.decisions.samples || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), ...binding }];
-    if (options.verdict === "reject") state.rules = [...(state.rules || []), { text: options.answer, from: `sample ${state.decisions.samples.length}`, scope: "project" }];
+    if (options.verdict === "reject") rules.addRule(state, options.answer, `sample ${state.decisions.samples.length}`, { stage: "sample" });
   } else if (stage === "review") {
     assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
-    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong; it becomes a project rule");
+    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong; it becomes a rule");
     const next = nextAction(root);
     const rejectCurrent = options.verdict === "reject" && ["deliver", "done"].includes(next.stage) && REVIEW.finished(state);
     if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
@@ -328,7 +339,7 @@ function decide(root, options = {}) {
     const componentDecision = componentDecisionDigest(state);
     state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}) }];
     if (options.verdict === "reject") {
-      state.rules = [...(state.rules || []), { text: options.answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
+      rules.addRule(state, options.answer, `draft ${state.decisions.drafts.length}`);
       // A rejected draft must be rebuilt and rechecked.
       invalidateCheckedEvidence(state);
     }
@@ -348,6 +359,12 @@ function decide(root, options = {}) {
   }
   // A skipped standard conversation hands intake to the agent: the owner chose not to be asked.
   if (stage === "intake" && state.decisions.intake?.skipped && state.delegation?.intake && state.tier !== "quick") state.delegation.intake = { ...state.delegation.intake, to: "agent", set: "owner" };
+  // "From now on" makes this call's "no" a project rule; --scope on a record that made none is refused.
+  if (scope === "project") {
+    if (!(state.rules || []).slice(rulesBefore).some(rule => !rules.isProject(rule))) fail("workflow", "--scope project goes with a record that holds the owner's \"no\", and this record made no rule. Fix: drop --scope");
+    rules.widen(state, rulesBefore);
+  }
+  rules.promote(state, promoted);
   roles.stampRecord(state, before, stage, role, options);
   // The playback card the owner confirms carries the creative intent, so confirming it records that
   // locked checkpoint as the owner's; a stated skip leaves it unstated.

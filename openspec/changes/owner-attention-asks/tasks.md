@@ -30,11 +30,11 @@
 
 ## 5. Rule scope and promotion (Decisions 6, 7, 10)
 
-- [ ] 5.1 Rule creation (`web.addRule`, the anti-goal path, and the sample and draft rejects) stores `scope`, `object` and `since`; validate `--scope project|object` and refuse it on calls that create no rule; anti-goal dedupe compares project rules only; verify a bad value and a misplaced `--scope` each exit 1 with no change, and that an anti-goal matching an earlier correction is added.
-- [ ] 5.2 `nextAction` returns active rules, with section and sample rules prefixed; verify that a section rule is returned before that section's acceptance and not after, and that a component-round rule holds until final acceptance.
-- [ ] 5.3 Review ask `ruleCandidates` (active and retired), and `--promote` (in `REPEATABLE_OPTIONS`) on the owner's review record; verify that a retired rule is promoted and returned again, that all rules sharing a `from` are promoted, and that an unknown `from` or `--by agent` is refused with no write.
-- [ ] 5.4 Reword "project rule" in the `web.cjs`, `workflow-core.cjs` and `shared.cjs` texts; the statement lists each rule's scope; update tests asserting `scope: "project"` and plain section rule texts; verify that `grep -rn "project rule" skill/scripts/workflows skill/scripts/workflow-core.cjs` finds only project-scope wording, and check the statement test lines.
-- [ ] 5.5 Docs and changelog: rules sections of `workflow-web.md`, `workflow-film.md` and `workflow-edit.md`, the diligence contents in `stages.md`, and the CHANGELOG entry; verify with the guide-sections test and a grep for `--promote` in `workflow-web.md`.
+- [x] 5.1 Rule creation (`web.addRule`, the anti-goal path, and the sample and draft rejects) stores `scope`, `object` and `since`; validate `--scope project|object` and refuse it on calls that create no rule; anti-goal dedupe compares project rules only; verify a bad value and a misplaced `--scope` each exit 1 with no change, and that an anti-goal matching an earlier correction is added.
+- [x] 5.2 `nextAction` returns active rules, with section and sample rules prefixed; verify that a section rule is returned before that section's acceptance and not after, and that a component-round rule holds until final acceptance.
+- [x] 5.3 Review ask `ruleCandidates` (active and retired), and `--promote` (in `REPEATABLE_OPTIONS`) on the owner's review record; verify that a retired rule is promoted and returned again, that all rules sharing a `from` are promoted, and that an unknown `from` or `--by agent` is refused with no write.
+- [x] 5.4 Reword "project rule" in the `web.cjs`, `workflow-core.cjs` and `shared.cjs` texts; the statement lists each rule's scope; update tests asserting `scope: "project"` and plain section rule texts; verify that `grep -rn "project rule" skill/scripts/workflows skill/scripts/workflow-core.cjs` finds only project-scope wording, and check the statement test lines.
+- [x] 5.5 Docs and changelog: rules sections of `workflow-web.md`, `workflow-film.md` and `workflow-edit.md`, the diligence contents in `stages.md`, and the CHANGELOG entry; verify with the guide-sections test and a grep for `--promote` in `workflow-web.md`.
 
 ## 6. In-flight deltas (Decision 11)
 
