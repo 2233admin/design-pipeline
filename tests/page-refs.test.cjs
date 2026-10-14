@@ -287,3 +287,27 @@ test("motion is frozen before references are measured", { skip }, async () => {
     await browser.close();
   }
 });
+
+// Codex review on #138: badges sit on their elements on a page that scales its body (an artboard).
+test("badges land on their elements when the body is scaled", { skip }, async () => {
+  const { drawBadges, measureRefs, SECTION_ID } = require("../skill/scripts/page-refs-core.cjs");
+  const puppeteer = require(puppeteerPath());
+  const browser = await puppeteer.launch({ executablePath: resolveBrowser(), headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1440, height: 900 });
+    await page.setContent('<style>body{margin:40px;transform:scale(.5) rotate(3deg);transform-origin:0 0}</style><section data-section="hero"><p style="margin-top:300px;margin-left:500px">Fresh bread</p></section>', { waitUntil: "load" });
+    const refs = await page.evaluate(measureRefs, SECTION_ID.source, 80);
+    assert.equal(await page.evaluate(drawBadges, refs), undefined);
+    const [element, badge] = await page.evaluate(() => {
+      const target = document.querySelector("p").getBoundingClientRect();
+      const mark = document.querySelector("[data-page-refs-layer]").shadowRoot.querySelector(".b").getBoundingClientRect();
+      return [{ x: target.x, y: target.y }, { x: mark.x, y: mark.y }];
+    });
+    assert.ok(Math.abs(badge.x - element.x) <= 1 && Math.abs(badge.y - element.y) <= 1, `badge ${JSON.stringify(badge)} sits on its element ${JSON.stringify(element)}`);
+    await page.setContent('<style>html{transform:scale(.5)}</style><section data-section="hero"><p>Fresh bread</p></section>', { waitUntil: "load" });
+    assert.equal(await page.evaluate(drawBadges, await page.evaluate(measureRefs, SECTION_ID.source, 80)), "root-transformed", "a transformed root is refused, not drawn over");
+  } finally {
+    await browser.close();
+  }
+});

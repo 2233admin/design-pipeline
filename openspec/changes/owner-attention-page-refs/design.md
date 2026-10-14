@@ -120,6 +120,8 @@ See proposal.md for why. Current code (checked):
 ### 3. Badges exist only in the browser
 
 - The kernel adds one absolutely positioned layer, in a shadow root, with a badge at each element's top-left.
+  The layer hangs off `<html>`, outside `<body>`, so a page that scales, rotates or zooms its body is not
+  transformed twice; a page that transforms `<html>` itself refuses the capture and the review asks in text.
   It takes the screenshot, and the page is never saved.
 - `index.html` stays the shipped bytes.
 - **Alternative:** the agent writes `data-ref` into `index.html`. Rejected: the shipped page would carry review

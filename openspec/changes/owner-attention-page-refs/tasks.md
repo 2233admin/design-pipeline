@@ -47,6 +47,7 @@
 - [x] 7.12 CodeRabbit: one deadline bounds network idle, image load and decode and video readiness, and its expiry fails the capture; verify with a browser test whose image request never completes.
 - [x] 7.13 Codex: the font wait is inside the same deadline as media, and its expiry fails the capture; verify with a browser test whose font request never completes.
 - [x] 7.14 Codex: CSS animations, transitions and Web Animations are paused from measurement through the screenshot (script-driven timers are not); verify with a browser test that an animated link stays where it was measured.
+- [x] 7.15 Codex: the badge layer hangs off `<html>`, outside a scaled, rotated or zoomed `<body>`, and a transformed or zoomed `<html>` refuses the capture; verify with a browser test that a badge sits on its element under a scaled and rotated body, and that a scaled root is refused.
 
 ## Workflow follow-up
 

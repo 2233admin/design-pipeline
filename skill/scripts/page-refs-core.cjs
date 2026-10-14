@@ -158,10 +158,15 @@ function measureRefs(sectionIdSource, textLimit) {
 // Runs in the page, after measuring: one absolutely positioned layer in a shadow root, a badge at the
 // top-left of each element in document coordinates. It is added last so no selector depends on it.
 function drawBadges(refs) {
+  // The layer hangs off <html>, outside <body>, so a page that scales, rotates or zooms its body (an
+  // artboard) does not transform the badges a second time. A transformed or zoomed root has no such
+  // outside, so the capture is refused there rather than drawing badges over the wrong elements.
+  const root = getComputedStyle(document.documentElement);
+  if ((root.transform && root.transform !== "none") || (root.zoom && !["1", "normal"].includes(root.zoom))) return "root-transformed";
   const host = document.createElement("div");
   host.setAttribute("data-page-refs-layer", "");
   host.style.cssText = "position:absolute;left:0;top:0;width:0;height:0;margin:0;padding:0;border:0;overflow:visible;pointer-events:none;z-index:2147483647";
-  document.body.appendChild(host);
+  document.documentElement.appendChild(host);
   // A positioned body, or margins on it, shift the layer's origin away from the document's.
   const origin = host.getBoundingClientRect();
   const offsetX = origin.x + window.scrollX;
@@ -281,7 +286,7 @@ async function captureRefs(projectRoot, options = {}) {
     await awaitResources(page);
     await freezeMotion(page);
     const refs = await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT);
-    await page.evaluate(drawBadges, refs);
+    if (await page.evaluate(drawBadges, refs) === "root-transformed") fail(SCOPE, "the page transforms or zooms its <html> element, so badges cannot be placed on its elements. Fix: ask the owner to name elements by their text, label or place");
     const png = Buffer.from(await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true }));
     const identity = await browserIdentity(browser, executablePath);
     const moved = [...loaded.values()].find((item) => fileHash(item.file) !== item.hash);
