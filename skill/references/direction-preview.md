@@ -76,8 +76,10 @@ that informed the decision.
    designer-pipeline direction check --stage preview --change-root <change-root> --json
    ```
 
-4. After the preview passes, obtain the user's selection or make the bounded autonomous selection
-   allowed by the run. Record `selectedDirectionId` and a product/visitor-fit rationale.
+4. After the preview passes, obtain the user's selection, or select as the agent only under a
+   delegation: the workflow's `concept` checkpoint handed to the agent, or the owner's instruction
+   quoted. Record `selectedDirectionId`, a product/visitor-fit rationale and `by`; an agent
+   selection also records `agent` and `delegation`.
 5. Run:
 
    ```bash
@@ -97,7 +99,9 @@ selection. Do not begin production implementation from an unverified preview.
 - `applicability.status` and `applicability.reason`;
 - `comparison.brief`, `comparison.index`, viewport, content-fixture hash, and shared state coverage;
 - two to four candidate records with axes and hash-bound screenshots;
-- `decision.status`, `selectedDirectionId`, and rationale.
+- `decision.status`, `selectedDirectionId`, rationale, and for a selection `by` (`owner|agent`);
+  an agent selection adds `agent` and `delegation` (`workflow-state` with `stateSha256`, verified
+  with `direction check --project-root`, or `owner-instruction` with a quote of at least six words).
 
 Paths are relative to the change root and remain contained after link resolution. Unknown fields,
 escaping paths, duplicate IDs, false diversity, missing stage markers, malformed or wrong-size PNGs,

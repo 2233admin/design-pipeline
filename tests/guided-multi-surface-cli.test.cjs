@@ -110,7 +110,7 @@ function makeDirectionPreview(root = null) {
         screenshot: { path: "signal.png", sha256: "e".repeat(64) },
       },
     ],
-    decision: { status: "selected", selectedDirectionId: "signal", rationale: "Signal is the selected product direction." },
+    decision: { status: "selected", selectedDirectionId: "signal", rationale: "Signal is the selected product direction.", by: "owner" },
   };
   if (!root) {
     return {
@@ -265,7 +265,7 @@ test("runs one web and mobile project through the complete guided vertical", () 
         platform: webSearch.output.matches[0].platform,
         framework: webSearch.output.matches[0].framework,
       },
-      selectionMode: "adopt",
+      selectionMode: "adopt", selectedBy: "owner",
       directionLockSnapshot: directionLock,
       directionPreview: preview,
       catalog: fixtureCatalog,
@@ -327,7 +327,7 @@ test("runs one web and mobile project through the complete guided vertical", () 
     assert.equal(reviewed.output.plan.status, "awaiting_review");
     assert.equal(reviewed.output.taskGate.allowed, false);
     put(root, "reviewed-plan.json", reviewed.output.plan);
-    put(root, "approval.json", { reviewer: "user", rationale: "approved for implementation", planContentHash: reviewed.output.plan.contentHash });
+    put(root, "approval.json", { reviewer: "user", by: "owner", rationale: "approved for implementation", planContentHash: reviewed.output.plan.contentHash });
     const approved = execute(["template", "approve", "--root", root, "--plan", "reviewed-plan.json", "--approval", "approval.json", "--json"]);
     assert.equal(approved.exitCode, 0);
     assert.equal(approved.output.plan.status, "approved");
@@ -381,7 +381,7 @@ test("keeps guided retrieval and lifecycle gates fail-closed", () => {
       referenceHash: "a".repeat(64),
       candidate: { id: candidate.templateId, version: candidate.templateVersion, platform: candidate.platform, framework: candidate.framework },
       catalog: fixtureCatalog,
-      selectionMode: "adopt",
+      selectionMode: "adopt", selectedBy: "owner",
       directionLockSnapshot: directionLock,
       directionPreview: preview,
       acceptanceCriteria: ["findability"],
@@ -392,7 +392,7 @@ test("keeps guided retrieval and lifecycle gates fail-closed", () => {
     assert.equal(unresolved.output.status, "blocked");
     assert.match(unresolved.output.reason, /DesignBrief is .*confirmation|required/i);
 
-    const referenceSelection = { ...baseSelection, selectionMode: "reference" };
+    const referenceSelection = { ...baseSelection, selectionMode: "reference", selectedBy: "owner" };
     delete referenceSelection.sourceAndLicenseEvidence;
     referenceSelection.brief = completeBrief();
     put(root, "reference-selection.json", referenceSelection);
@@ -493,7 +493,7 @@ test("keeps guided retrieval and lifecycle gates fail-closed", () => {
     assert.equal(revised.output.plan.status, "awaiting_review");
     assert.equal(revised.output.taskGate.allowed, false);
     put(root, "revised-plan.json", revised.output.plan);
-    put(root, "approval.json", { reviewer: "user", rationale: "approved after re-review", planContentHash: revised.output.plan.contentHash });
+    put(root, "approval.json", { reviewer: "user", by: "owner", rationale: "approved after re-review", planContentHash: revised.output.plan.contentHash });
     const reapproved = execute(["template", "approve", "--root", root, "--plan", "revised-plan.json", "--approval", "approval.json", "--json"]);
     assert.equal(reapproved.exitCode, 0);
     assert.equal(reapproved.output.taskGate.allowed, true);
@@ -552,7 +552,7 @@ test("blocks selection until the brief is confirmed and gates approved plans", (
     surface: { projectId: "p1", surfaceId: "web-admin", platform: "web", framework: "react", profileVersion: "1" },
     referenceHash: "a".repeat(64),
     candidate: { id: "project-data-table-web-react", version: "1.0.0", platform: "web", framework: "react" },
-    selectionMode: "reference", directionLockSnapshot: makeDirectionLock(),
+    selectionMode: "reference", selectedBy: "owner", directionLockSnapshot: makeDirectionLock(),
     hardGateResults: { license: "pass", provenance: "pass", accessibility: "pass" },
     acceptanceCriteria: ["keyboard navigation works"],
   });
@@ -562,7 +562,7 @@ test("blocks selection until the brief is confirmed and gates approved plans", (
     projectId: "p1", surfaceId: "web-admin",
     surface: { projectId: "p1", surfaceId: "web-admin", platform: "web", framework: "react", profileVersion: "1" },
     referenceHash: "a".repeat(64),
-    selectionMode: "reference", directionLockSnapshot: preview.directionLockSnapshot,
+    selectionMode: "reference", selectedBy: "owner", directionLockSnapshot: preview.directionLockSnapshot,
     directionPreview: preview,
     candidate: { id: "project-data-table-web-react", version: "1.0.0", platform: "web", framework: "react" },
     searchedCatalog: { entries: [{ templateId: "project-data-table-web-react", templateVersion: "1.0.0", platform: "web", framework: "react" }] },
@@ -617,7 +617,7 @@ test("blocks selection until the brief is confirmed and gates approved plans", (
   const reviewed = execute(["template", "review", "--root", root, "--plan", "plan.json", "--review", "review.json", "--json"]);
   assert.equal(reviewed.exitCode, 0);
   put(root, "reviewed.json", reviewed.output.plan);
-  put(root, "approval.json", { reviewer: "user", rationale: "approved", planContentHash: reviewed.output.plan.contentHash });
+  put(root, "approval.json", { reviewer: "user", by: "owner", rationale: "approved", planContentHash: reviewed.output.plan.contentHash });
   const approved = execute(["template", "approve", "--root", root, "--plan", "reviewed.json", "--approval", "approval.json", "--json"]);
   assert.equal(approved.exitCode, 0);
   assert.equal(approved.output.taskGate.allowed, true);

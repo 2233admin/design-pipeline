@@ -13,7 +13,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
+const { canonicalJson, fail, resolveInside, sha256, wordCount } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
 const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, reference } = require("./shared.cjs");
 
@@ -47,8 +47,6 @@ const fileText = (root, rel) => projectFile(root, rel)?.toString("utf8") ?? null
 // A recorded decision or "no" must carry content: a go-ahead such as "ok, start" is the silent default
 // these records replace. Words are runs of letters or digits, and two CJK characters count as one. A
 // decision stated for the owner names what was decided in a sentence; a reason says what is wrong.
-const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
-const wordCount = text => (text.replace(CJK, " ").match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu) || []).length + (text.match(CJK) || []).length / 2;
 function meaningful(answer, minimum, what, flag = "--answer") {
   const text = typeof answer === "string" ? answer.trim() : "";
   if (wordCount(text) < minimum) fail("workflow", `${flag} must ${what} (at least ${minimum} words; two CJK characters count as one)`);
@@ -446,7 +444,15 @@ function pageDigest(root) {
   return "sha256:" + sha256(canonicalJson(Object.fromEntries(files.map(rel => [rel, fileSha(root, rel)]).filter(([, hash]) => hash))));
 }
 
+// A quick page the owner rejected at the final review needs repair before it is checked again: build
+// stays open while index.html is the page that review judged.
+function rejectedUnchanged(state, root) {
+  const latest = history(state, "drafts").at(-1);
+  return latest?.verdict === "reject" && Boolean(latest.inputHashes?.["index.html"]) && latest.inputHashes["index.html"] === fileSha(root, "index.html");
+}
+
 function buildFinished(state, root) {
+  if (!sectioned(state) && rejectedUnchanged(state, root)) return false;
   return buildStatus(state, root).finished && (!sectioned(state) || sectionProgress(state, root)?.current === null);
 }
 
@@ -501,6 +507,10 @@ const BUILD = {
     const { finished, findings } = buildStatus(state, root);
     const progress = sectioned(state) ? sectionProgress(state, root) : null;
     if (finished && progress?.current && progress.built) return sectionReview(root, progress);
+    if (!sectioned(state) && rejectedUnchanged(state, root)) {
+      const latest = history(state, "drafts").at(-1);
+      return { type: "run", instruction: `The owner rejected this page at the final review ("${latest.reason}"); the reason is now a project rule. Repair index.html for it, then run next again: the repaired page is probed and shown to the owner again. ${BUILD_CRAFT}`, why: "A rejected page is repaired before it is checked and shown again." };
+    }
     // Once a section is accepted and the page and manifest are valid, the step builds the next
     // section; the first screen, even on an existing page, gets the full instruction with the
     // recorded component decision first, keeping source selection ahead of implementation.
@@ -602,14 +612,14 @@ const DELIVER = {
   action: (_state, root) => ({ type: "run", command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
 };
 
-// Quick: a stated decision, components, build, probe. Standard and full: the conversation, the
+// Quick: a stated decision, components, build, probe and the owner's final review. Standard and full: the conversation, the
 // variants (not in replicate, which keeps its reference), the decision round, the approved
 // description, the section-by-section build, probe, final review and delivery.
 function stages(state) {
   if (state.mode === "replicate") return state.tier === "quick"
-    ? [QUICK_INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE]
+    ? [QUICK_INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE, REVIEW]
     : [INTAKE, REFERENCE, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
-  if (state.tier === "quick") return [QUICK_INTAKE, COMPONENTS, BUILD, PROBE];
+  if (state.tier === "quick") return [QUICK_INTAKE, COMPONENTS, BUILD, PROBE, REVIEW];
   return [INTAKE, REFERENCE, CONCEPTS, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
 }
 

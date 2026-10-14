@@ -31,8 +31,8 @@ Every deliverable at every tier SHALL end with an owner final acceptance before 
 
 #### Scenario: Quick and ui work end with the owner's acceptance
 
-- **WHEN** quick web work passes its probe, or ui work at any tier finishes its work stage
-- **THEN** `next` SHALL ask the owner to accept or reject the rendered result before `deliver`
+- **WHEN** quick web or edit work passes its check, or ui work at any tier records its work evidence
+- **THEN** `next` SHALL ask the owner to accept or reject the result before the work is done
 - **AND** a rejection SHALL become a project rule and return to the build or work stage
 
 #### Scenario: Delegating final acceptance is refused

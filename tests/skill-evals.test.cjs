@@ -184,11 +184,14 @@ test("quick Chinese page eval checks browser behavior and the public workflow", 
     assert.deepEqual(errors, []);
     assert.deepEqual(externalRequests, []);
     writeJson(root, "evidence.json", { browser: browser.version(), required, invalidEmail, success, saved, size, animationCount, errors, externalRequests });
-    runCli(root, ["decide", "--project-root", ".", "--stage", "deliver", "--answer", "index.html; evidence.json: browser behavior checked; Visual Acceptance not-evaluated"]);
+    runCli(root, ["decide", "--project-root", ".", "--stage", "deliver", "--by", "agent", "--answer", "index.html; evidence.json: browser behavior checked; Visual Acceptance not-evaluated"]);
+    const review = runCli(root, ["next", "--project-root", "."]);
+    assert.equal(review.stage, "review", "browser checks are technical; the owner still accepts the page");
+    runCli(root, ["decide", "--project-root", ".", "--stage", "review", "--by", "owner", "--verdict", "accept", "--answer", "The profile page reads clearly in Chinese"]);
     const next = runCli(root, ["next", "--project-root", "."]);
     writeJson(root, "next.json", next);
     assert.equal(next.type, "done");
-    assert.equal(next.visualAcceptance, "not-evaluated");
+    assert.equal(next.diligence.current, true);
     assert.deepEqual(next.evidence.gates, {});
     const state = JSON.parse(fs.readFileSync(path.join(root, ".design-pipeline/state.json"), "utf8"));
     assert.deepEqual([state.deliverable, state.tier, state.mode], ["ui", "quick", "freeform"]);
@@ -197,7 +200,8 @@ test("quick Chinese page eval checks browser behavior and the public workflow", 
       "required-validation": required.every(Boolean), "email-validation": invalidEmail, "keyboard-save": success === "资料已保存。",
       "reload-persistence": saved.name === "林晓雨" && saved.email === "xiaoyu@example.com" && saved.notifications === false,
       "responsive": size[0] === size[1] && size[1] === 320, "no-animation": animationCount === 0,
-      "user-acceptance-separate": next.visualAcceptance === "not-evaluated" && Object.keys(next.evidence.gates).length === 0,
+      // Acceptance is the owner's own review record, never a gate result.
+      "user-acceptance-separate": state.decisions.drafts.at(-1)?.verdict === "accept" && state.decisions.drafts.at(-1)?.by === "owner" && Object.keys(next.evidence.gates).length === 0,
     } });
   } finally { await browser.close(); }
 });

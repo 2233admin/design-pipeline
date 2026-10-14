@@ -112,7 +112,7 @@ test("validates inert catalog and ranks a matching data-table candidate", () => 
     capabilities: ["search", "filter", "sort"],
     surfaceBinding: { platform: "web", framework: "react", profileVersion: "1" },
     accessibilityRequired: true,
-    selectionMode: "adopt",
+    selectionMode: "adopt", selectedBy: "owner",
   });
   const broadResult = searchRegionTemplates(validated, {
     regionKind: "data-table",
@@ -194,7 +194,7 @@ test("missing license or provenance cannot produce an adoptable result", () => {
     regionKind: "data-table",
     capabilities: ["search"],
     surfaceBinding: { platform: "web", framework: "react", profileVersion: "1" },
-    selectionMode: "adopt",
+    selectionMode: "adopt", selectedBy: "owner",
   });
   assert.equal(result.status, "no-suitable-candidate");
   assert.equal(result.matches.length, 0);
@@ -206,7 +206,7 @@ test("missing license or provenance cannot produce an adoptable result", () => {
     regionKind: "data-table",
     capabilities: ["search"],
     surfaceBinding: { platform: "web", framework: "react", profileVersion: "1" },
-    selectionMode: "adopt",
+    selectionMode: "adopt", selectedBy: "owner",
   });
   assert.equal(provenanceMissing.status, "no-suitable-candidate");
   assert.ok(provenanceMissing.rejected.some((item) => item.reasonCode === "provenance-unavailable"));

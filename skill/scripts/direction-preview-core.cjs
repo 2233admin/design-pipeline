@@ -11,6 +11,7 @@ const {
   readJson,
   resolveInside,
   sha256,
+  wordCount,
 } = require("./contract-utils.cjs");
 
 const SCHEMA = "design-pipeline.direction-preview.v1";
@@ -122,11 +123,36 @@ function assertDivergence(directions) {
   }
 }
 
+// Who selected: the owner, or the agent under a delegation the artifact itself evidences, because
+// direction check sees only the change root. A workflow-state delegation names the state the agent
+// read; an owner instruction quotes the owner. `--by` style claims are not proof of a human.
+function assertSelector(value) {
+  assertEnum(value.by, ["owner", "agent"], "decision.by", "direction preview");
+  if (value.by === "owner") {
+    if (value.delegation !== undefined) fail("direction preview", "an owner selection carries no delegation");
+    return;
+  }
+  assertString(value.agent, "decision.agent", "direction preview");
+  const delegation = value.delegation;
+  if (delegation === null || typeof delegation !== "object" || Array.isArray(delegation)) {
+    fail("direction preview", "an agent selection needs decision.delegation: the workflow state that delegated concept, or the owner's instruction quoted");
+  }
+  if (delegation.source === "workflow-state") {
+    assertKeys(delegation, ["source", "stateSha256"], ["source", "stateSha256"], "decision.delegation", "direction preview");
+    assertHash(String(delegation.stateSha256 ?? "").replace(/^sha256:/, ""), "decision.delegation.stateSha256");
+  } else if (delegation.source === "owner-instruction") {
+    assertKeys(delegation, ["source", "quote"], ["source", "quote"], "decision.delegation", "direction preview");
+    if (wordCount(delegation.quote) < 6) fail("direction preview", "decision.delegation.quote must quote the owner's instruction (at least 6 words; two CJK characters count as one)");
+  } else {
+    fail("direction preview", "decision.delegation.source must be workflow-state or owner-instruction");
+  }
+}
+
 function assertDecision(value, directionIds, applicability) {
   assertKeys(
     value,
     ["status", "selectedDirectionId", "rationale"],
-    ["status", "selectedDirectionId", "rationale"],
+    ["status", "selectedDirectionId", "rationale", "by", "agent", "delegation"],
     "decision",
     "direction preview",
   );
@@ -134,12 +160,13 @@ function assertDecision(value, directionIds, applicability) {
   assertNullableString(value.rationale, "decision.rationale");
   const statuses = applicability === "waived" ? ["waived"] : ["pending", "selected"];
   assertEnum(value.status, statuses, "decision.status", "direction preview");
-  if (value.status === "pending" && (value.selectedDirectionId !== null || value.rationale !== null)) {
-    fail("direction preview", "a pending decision cannot carry a selected direction or rationale");
+  if (value.status === "pending" && (value.selectedDirectionId !== null || value.rationale !== null || value.by !== undefined)) {
+    fail("direction preview", "a pending decision cannot carry a selected direction, rationale or selector");
   }
   if (value.status === "selected") {
     if (!directionIds.includes(value.selectedDirectionId)) fail("direction preview", "selectedDirectionId must name a candidate direction");
     assertString(value.rationale, "decision.rationale", "direction preview");
+    assertSelector(value);
   }
   if (value.status === "waived" && (value.selectedDirectionId !== null || value.rationale === null)) {
     fail("direction preview", "a waived decision records no selected direction and a non-empty rationale");
@@ -271,6 +298,11 @@ function checkDirectionPreview(changeRoot, options = {}) {
       }
     }
   }
+  const delegation = selectionDelegation(receipt.decision, options.projectRoot);
+  if (delegation.status === "contradicted") {
+    reasons.push("direction-selection-not-delegated");
+    blockers.push("the workflow state keeps the concept pick with the owner, so the agent cannot select a direction; ask the owner and record by: owner");
+  }
   if (stage === "selection" && receipt.decision.status !== "selected") {
     reasons.push("direction-selection-pending");
     blockers.push("direction selection is still pending; record a selected candidate and rationale after reviewing the preview");
@@ -287,8 +319,21 @@ function checkDirectionPreview(changeRoot, options = {}) {
     directionCount: receipt.directions.length,
     viewport: receipt.comparison.viewport,
     decision: receipt.decision,
+    ...(receipt.decision.status === "selected" ? { selector: { by: receipt.decision.by, delegation: delegation.status } } : {}),
     artifact: artifactPath,
   };
+}
+
+// For an agent selection: verified against the project's live delegation map when --project-root
+// names one, otherwise reported as the claim it is.
+function selectionDelegation(decision, projectRoot) {
+  if (decision.status !== "selected" || decision.by !== "agent") return { status: decision.by === "owner" ? "owner" : "none" };
+  if (decision.delegation.source === "owner-instruction") return { status: "owner-instructed" };
+  if (!projectRoot) return { status: "unverified" };
+  const file = path.join(path.resolve(projectRoot), ".design-pipeline", "state.json");
+  if (!fs.existsSync(file)) return { status: "unverified" };
+  const state = readJson(file, "workflow state");
+  return { status: state.delegation?.concept?.to === "agent" ? "verified" : "contradicted" };
 }
 
 module.exports = {

@@ -51,7 +51,7 @@ function tmp(t) {
 // requires (written from scratch).
 function prepareWebComponents(dir) {
   toComponents(dir);
-  decide(dir, { stage: "components", choice: "scratch", answer: "Write from scratch" });
+  decide(dir, { by: "owner", stage: "components", choice: "scratch", answer: "Write from scratch" });
   fs.writeFileSync(path.join(dir, "component-manifest.json"), JSON.stringify({ fromScratch: true, entries: [] }));
 }
 
@@ -466,7 +466,7 @@ test("verify interaction exits 2 on the violating page, 0 on the clean and undec
     } else {
       assert.deepEqual(gate.findings, []);
       assert.deepEqual(gate.lineage, lineages[name]);
-      assert.equal(nextAction(dir).type, "done");
+      assert.equal(nextAction(dir).stage, "review");
     }
   }
   const rejectedProbe = clone(PROBES.clean);
@@ -558,7 +558,7 @@ test("a request that resolves to the report only once it is written stays absent
 test("editing a loaded stylesheet or DESIGN.md makes the gate stale; a pass without lineage is stale", { skip: tools.skip }, (t) => {
   const dir = stage(t, "clean", probeDoc("audit-clean", PROBES.clean), { web: true });
   assert.equal(verify(dir).status, 0);
-  assert.equal(nextAction(dir).type, "done");
+  assert.equal(nextAction(dir).stage, "review");
   const css = path.join(dir, "clean.css");
   const original = fs.readFileSync(css, "utf8");
   fs.writeFileSync(css, original.replace("gap: 32px", "gap: 4px"));
@@ -566,14 +566,14 @@ test("editing a loaded stylesheet or DESIGN.md makes the gate stale; a pass with
   assert.equal(pending.stage, "probe");
   assert.ok(pending.verification.findings.some((finding) => finding.code === "workflow-input-changed" && finding.path === "clean.css"));
   fs.writeFileSync(css, original);
-  assert.equal(nextAction(dir).type, "done", "the verified bytes are current again");
+  assert.equal(nextAction(dir).stage, "review", "the verified bytes are current again");
   fs.writeFileSync(path.join(dir, "DESIGN.md"), "# Design\n\nType: Inter at 12, 14, 16, 20, 24 and 32 px.\n");
   pending = nextAction(dir);
   assert.equal(pending.stage, "probe");
   assert.ok(pending.verification.findings.some((finding) => finding.code === "workflow-input-unbound" && finding.path === "DESIGN.md"), "a token source that appeared reopens the gate");
   assert.equal(verify(dir).status, 0);
   assert.deepEqual(readState(dir).gates.interaction.lineage.tokens, ["DESIGN.md"]);
-  assert.equal(nextAction(dir).type, "done");
+  assert.equal(nextAction(dir).stage, "review");
   fs.appendFileSync(path.join(dir, "DESIGN.md"), "Targets: at least 44 px.\n");
   assert.ok(nextAction(dir).verification.findings.some((finding) => finding.code === "workflow-input-changed" && finding.path === "DESIGN.md"));
   const state = readState(dir);
@@ -595,8 +595,8 @@ test("the web probe stage refuses a probe file without an audit and keeps review
   assert.equal(action.command, undefined, "no verify command until the page audit exists");
   assert.match(action.instruction, /^Add an audit probe to interaction\.json/);
   assert.equal(action.guide, "references/workflow-web.md#probe");
-  assert.throws(() => decide(dir, { stage: "review", verdict: "accept" }), /Cannot record review while probe is unfinished/);
-  assert.throws(() => decide(dir, { stage: "deliver", answer: "https://example.test" }), /Cannot record delivery while probe is unfinished/);
+  assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "accept" }), /Cannot record review while probe is unfinished/);
+  assert.throws(() => decide(dir, { by: "owner", stage: "deliver", answer: "https://example.test" }), /Cannot record delivery while probe is unfinished/);
   legacy.probes.push({ id: "page-audit", kind: "audit", thresholds: { fonts: ["Inter"] } });
   fs.writeFileSync(path.join(dir, "interaction.json"), JSON.stringify(legacy));
   const verifyAction = nextAction(dir);
@@ -614,16 +614,16 @@ test("rendered-dependency lineage reopens review and delivery and binds files th
   assert.deepEqual(gate.lineage.remote, ["https://cdn.example/font.woff2"], "remote URLs are recorded, not hashed");
   assert.equal(Object.keys(gate.inputHashes).some((key) => key.startsWith("http")), false);
   assert.equal(nextAction(dir).stage, "review");
-  decide(dir, { stage: "review", verdict: "accept" });
-  decide(dir, { stage: "deliver", answer: "https://example.test" });
+  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "deliver", answer: "https://example.test" });
   assert.equal(nextAction(dir).type, "done");
   fs.writeFileSync(path.join(dir, "site.css"), "html { background: #000; }\n");
   assert.equal(nextAction(dir).stage, "probe", "a changed stylesheet reopens probe");
   pass();
   assert.equal(nextAction(dir).stage, "review", "the re-verified page needs a new review");
-  decide(dir, { stage: "review", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
   assert.equal(nextAction(dir).stage, "deliver", "and a new delivery");
-  decide(dir, { stage: "deliver", answer: "https://example.test" });
+  decide(dir, { by: "owner", stage: "deliver", answer: "https://example.test" });
   assert.equal(nextAction(dir).type, "done");
   fs.writeFileSync(path.join(dir, "hero.webp"), "image");
   const pending = nextAction(dir);

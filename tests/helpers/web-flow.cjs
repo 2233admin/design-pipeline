@@ -22,11 +22,11 @@ function variantsPage(keys = ["A", "B", "C"]) {
 }
 
 function confirmPlayback(root, answer = PLAYBACK) {
-  return decide(root, { stage: "intake", verdict: "accept", answer });
+  return decide(root, { by: "owner", stage: "intake", verdict: "accept", answer });
 }
 
 function statedSkip(root, answer = STATED) {
-  return decide(root, { stage: "intake", choice: "skip", answer });
+  return decide(root, { by: "owner", stage: "intake", choice: "skip", answer });
 }
 
 function writeVariants(root) {
@@ -35,7 +35,7 @@ function writeVariants(root) {
 }
 
 function pickVariant(root, choice = "A", answer) {
-  return decide(root, { stage: "concept", choice, ...(answer ? { answer } : {}) });
+  return decide(root, { by: "owner", stage: "concept", choice, ...(answer ? { answer } : {}) });
 }
 
 function writeReference(root) {
@@ -48,7 +48,7 @@ function toComponents(root) {
   if (tier === "quick") statedSkip(root);
   else confirmPlayback(root);
   if (mode === "replicate") writeReference(root);
-  else if (tier !== "quick") decide(root, { stage: "reference", answer: "none" });
+  else if (tier !== "quick") decide(root, { by: "owner", stage: "reference", answer: "none" });
   if (tier !== "quick" && mode !== "replicate") {
     writeVariants(root);
     pickVariant(root);
@@ -62,7 +62,7 @@ function writeDescription(root, sections = SECTIONS) {
 
 function approveDescription(root, sections = SECTIONS) {
   writeDescription(root, sections);
-  return decide(root, { stage: "description", verdict: "accept", choice: sections.join(",") });
+  return decide(root, { by: "owner", stage: "description", verdict: "accept", choice: sections.join(",") });
 }
 
 // After the components decision: approve the description at standard and full (quick has none).
@@ -76,7 +76,7 @@ function toBuild(root, sections = SECTIONS) {
 function acceptSections(root) {
   for (let action = nextAction(root); action.stage === "build" && action.section; action = nextAction(root)) {
     if (action.type === "ask") {
-      decide(root, { stage: "section", choice: action.section, verdict: "accept" });
+      decide(root, { by: "owner", stage: "section", choice: action.section, verdict: "accept" });
       continue;
     }
     const file = path.join(root, "index.html");

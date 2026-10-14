@@ -8,34 +8,34 @@
 
 ## 2. Phase 1: decision roles and diligence (Decisions 1, 2, 3, 6; director routing from 5)
 
-- [ ] 2.1 `workflow-core.cjs`: `state.delegation` defaults per deliverable and tier (design.md
+- [x] 2.1 `workflow-core.cjs`: `state.delegation` defaults per deliverable and tier (design.md
   table), `--director` defaults, locked checkpoints, filling a missing map on `next`.
-- [ ] 2.2 Intake records in `workflows/{web,film,edit}.cjs` apply repeatable `--delegate`/`--keep`;
+- [x] 2.2 Intake records in `workflows/{web,film,edit}.cjs` apply repeatable `--delegate`/`--keep`;
   stated skip and quick stated decision record `intake` as agent; the web playback instruction names
   what the agent decides.
-- [ ] 2.3 `decide` requires `--by owner|agent`; refuses agent on owner and locked checkpoints; writes
+- [x] 2.3 `decide` requires `--by owner|agent`; refuses agent on owner and locked checkpoints; writes
   `by`/`agent` on every history entry.
-- [ ] 2.4 Add a locked owner `review` stage to web quick (after `probe`, in `workflows/web.cjs`) and
-  to ui at every tier (between `work` and `deliver`, in `workflow-core.cjs` `codeStages`), reusing
-  the web final review and `reviewInputHashes`; ui delivery records `deliveryInputHashes`.
-- [ ] 2.4a `--director` stops routing the `review` ask; a director note is an agent `drafts[]` entry
+- [x] 2.4 Add a locked owner `review` stage to web quick (after `probe`, in `workflows/web.cjs`),
+  edit quick (after `check`), and to ui at every tier (after `work`, in `workflow-core.cjs`
+  `codeStages`), reusing the shared final review; `reviewInputHashes` binds ui's work evidence.
+- [x] 2.4a `--director` stops routing the `review` ask; a director note is an agent `drafts[]` entry
   with `verdict: "recommend"`.
-- [ ] 2.5 `direction-preview-core.cjs`: `decision.by`/`agent`/`delegation` (`workflow-state` with
+- [x] 2.5 `direction-preview-core.cjs`: `decision.by`/`agent`/`delegation` (`workflow-state` with
   `stateSha256`, or `owner-instruction` with a quote); selection fails on missing `by`, missing
   agent delegation, or a verified state that keeps `concept` with the owner; `direction check`
   accepts `--project-root`; `direction-preview.md` replaces "bounded autonomous selection".
-- [ ] 2.6 `surface-design-artifacts-core.cjs`: `selectedBy` on the selection receipt and in
+- [x] 2.6 `surface-design-artifacts-core.cjs`: `selectedBy` on the selection receipt and in
   `RECEIPT_KEYS`; no `user-selected-template` default when `selectedBy` is `agent`; `approval.by`.
-- [ ] 2.7 `next --assisted-by`; statement renderer; delivery writes `diligence.md` bound to the
+- [x] 2.7 `next --assisted-by`; statement renderer; delivery writes `diligence.md` bound to the
   state hash, `deliveryInputHashes` and, for files, `deliveredSha256`; stale detection reuses the
   `shared.cjs` delivery-current check; read-only `diligence [--write]` command.
-- [ ] 2.8 `cli-core.cjs`: register `--by`, `--delegate`, `--keep`, `--assisted-by` in
+- [x] 2.8 `cli-core.cjs`: register `--by`, `--delegate`, `--keep`, `--assisted-by` in
   `KNOWN_OPTIONS`; COMMANDS entry and help for `diligence`.
-- [ ] 2.9 Tests in existing suites: `workflow-next` (delegation, `--by` refusals, locked review,
+- [x] 2.9 Tests in existing suites: `workflow-next` (delegation, `--by` refusals, locked review,
   director routing, statement and staleness), `workflow-action-commands`, `direction-preview`,
   `surface-design-artifacts`, `designer-pipeline-cli`; shared `tests/helpers/web-flow.cjs` passes
   `--by owner`.
-- [ ] 2.10 Docs: `SKILL.md` (when to claim owner, pass `--assisted-by`), `stages.md`,
+- [x] 2.10 Docs: `SKILL.md` (when to claim owner, pass `--assisted-by`), `stages.md`,
   `workflow-web.md`, `pipeline-reference.md`, CLI help, CHANGELOG `[Unreleased]`.
 
 ## 3. Phase 2: creative intent (Decision 4)

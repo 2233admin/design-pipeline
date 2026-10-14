@@ -167,7 +167,14 @@ function rejectExecutable(value, label, scope) {
   if (rules.some((rule) => rule.test(text))) fail(scope, `${label} contains executable or remote content`);
 }
 
-module.exports = {
+// Words in a recorded answer: runs of letters or digits, with two CJK characters counting as one.
+const CJK_CHARACTERS = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
+function wordCount(text) {
+  const value = String(text ?? "");
+  return (value.replace(CJK_CHARACTERS, " ").match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu) || []).length + (value.match(CJK_CHARACTERS) || []).length / 2;
+}
+
+module.exports = { wordCount,
   assertEnum,
   assertKeys,
   assertObject,

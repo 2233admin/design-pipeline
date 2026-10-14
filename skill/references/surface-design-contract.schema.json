@@ -267,7 +267,7 @@
     },
     "selectionReceipt": {
       "type": "object",
-      "required": ["schema", "receiptId", "projectId", "surfaceId", "referenceHash", "region", "candidateTemplateVersion", "candidatePlatform", "candidateFramework", "componentCandidateVersions", "selectionMode", "selectionReason", "sourceAndLicenseEvidence", "directionLockSnapshot", "directionPreviewSnapshot", "technicalConstraints", "hardGateResults", "allowedChanges", "forbiddenChanges", "expectedDifferences", "acceptanceCriteria", "createdAt", "surfaceBindingSnapshot", "contentHash"],
+      "required": ["schema", "receiptId", "projectId", "surfaceId", "referenceHash", "region", "candidateTemplateVersion", "candidatePlatform", "candidateFramework", "componentCandidateVersions", "selectionMode", "selectedBy", "selectionReason", "sourceAndLicenseEvidence", "directionLockSnapshot", "directionPreviewSnapshot", "technicalConstraints", "hardGateResults", "allowedChanges", "forbiddenChanges", "expectedDifferences", "acceptanceCriteria", "createdAt", "surfaceBindingSnapshot", "contentHash"],
       "properties": {
         "schema": { "const": "design-pipeline.selection-receipt.v1" },
         "receiptId": { "$ref": "#/$defs/id" },
@@ -280,6 +280,7 @@
         "candidateFramework": { "$ref": "#/$defs/text" },
         "componentCandidateVersions": { "$ref": "#/$defs/stringList" },
         "selectionMode": { "enum": ["adopt", "reference"] },
+        "selectedBy": { "enum": ["owner", "agent"] },
         "selectionReason": { "$ref": "#/$defs/text" },
         "sourceAndLicenseEvidence": { "type": "array", "items": { "$ref": "#/$defs/evidenceEntry" }, "uniqueItems": true },
         "directionLockSnapshot": { "$ref": "#/$defs/record" },

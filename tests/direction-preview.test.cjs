@@ -92,6 +92,7 @@ test("checks preview evidence before accepting a selected direction", (t) => {
     status: "selected",
     selectedDirectionId: "quiet",
     rationale: "Best fit for repeated settings work and scanability.",
+    by: "owner",
   };
   fs.writeFileSync(path.join(root, "direction-preview.json"), `${JSON.stringify(receipt, null, 2)}\n`);
   assert.equal(checkDirectionPreview(root, { stage: "selection" }).status, "ready");
@@ -184,4 +185,33 @@ test("publishes the CJK and preview contracts as package resources", () => {
   assert.match(cjk, /1\.5.*1\.75/);
   assert.match(cjk, /full-width punctuation/i);
   assert.match(cjk, /WOFF2 subset/);
+});
+
+test("a selected direction names who selected it, and an agent selection carries its own delegation", (t) => {
+  const { root, receipt } = requiredFixture(t);
+  const select = (decision) => {
+    receipt.decision = { status: "selected", selectedDirectionId: "quiet", rationale: "Best fit for repeated settings work.", ...decision };
+    fs.writeFileSync(path.join(root, "direction-preview.json"), `${JSON.stringify(receipt, null, 2)}\n`);
+    return () => checkDirectionPreview(root, { stage: "selection" });
+  };
+  assert.throws(select({}), /decision\.by/, "a selection must say who selected");
+  assert.throws(select({ by: "agent", agent: "Claude Code" }), /needs decision\.delegation/);
+  assert.throws(select({ by: "agent", agent: "Claude Code", delegation: { source: "owner-instruction", quote: "just pick one" } }), /at least 6 words/);
+  assert.throws(select({ by: "owner", delegation: { source: "owner-instruction", quote: "pick whichever direction fits the product best" } }), /owner selection carries no delegation/);
+  const instructed = select({ by: "agent", agent: "Claude Code", delegation: { source: "owner-instruction", quote: "pick whichever direction fits the product best" } })();
+  assert.equal(instructed.status, "ready");
+  assert.deepEqual(instructed.selector, { by: "agent", delegation: "owner-instructed" });
+
+  const stateSha256 = "sha256:" + "a".repeat(64);
+  assert.deepEqual(select({ by: "agent", agent: "Claude Code", delegation: { source: "workflow-state", stateSha256 } })().selector, { by: "agent", delegation: "unverified" }, "without --project-root the claim is reported, not trusted");
+  const project = path.dirname(root);
+  const writeState = (to) => write(project, ".design-pipeline/state.json", JSON.stringify({ delegation: { concept: { to, set: "owner" } } }));
+  writeState("owner");
+  const contradicted = checkDirectionPreview(root, { stage: "selection", projectRoot: project });
+  assert.equal(contradicted.status, "blocked");
+  assert.ok(contradicted.reasons.includes("direction-selection-not-delegated"));
+  writeState("agent");
+  const verified = execute(["direction", "check", "--root", path.dirname(root), "--change-root", root, "--project-root", project, "--stage", "selection", "--json"]);
+  assert.equal(verified.exitCode, 0, JSON.stringify(verified.output));
+  assert.deepEqual(verified.output.selector, { by: "agent", delegation: "verified" });
 });

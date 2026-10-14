@@ -96,7 +96,10 @@ function gateStatus(state, root, gate, inputs = []) {
 
 const gatePassed = (...args) => gateStatus(...args).status === "passed";
 
+// What a final review binds: the checked outputs, or for ui (which has no checking gate of its own)
+// the delivery evidence its work stage recorded.
 function reviewInputHashes(state) {
+  if (state.deliverable === "ui") return state.decisions?.delivered ? { delivered: "sha256:" + sha256(String(state.decisions.delivered)) } : null;
   const gate = { film: "film", edit: "edit", web: "interaction" }[state.deliverable];
   return state.gates?.[gate]?.inputHashes || null;
 }
@@ -190,6 +193,10 @@ const REVIEW = {
       && (draft.componentDecision ?? null) === componentDecisionDigest(state);
   },
   action: (state, root) => {
+    if (state.deliverable === "ui") {
+      const rejected = (state.decisions?.drafts || []).length ? `; ${state.decisions.drafts.length} earlier result(s) were rejected and their reasons are project rules` : "";
+      return { type: "ask", question: `Look at the delivered interface (${state.decisions.delivered}) in a real browser. Accept it as it is, or reject it with one sentence on what is wrong?`, recommended: "Accept only when it looks and feels the way you want; passing checks show it works, not that it looks right.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The owner's final acceptance: visual quality is not something a passing check can accept on the owner's behalf${rejected}.` };
+    }
     const web = state.deliverable === "web";
     const outputs = Object.keys(reviewInputHashes(state) || {}).filter(file => (web ? /\.html?$/i : /\.mp4$/i).test(file));
     const show = [...outputs, "evidence/contact-sheet.png", ...(web ? ["evidence/interaction.json"] : [])].flatMap(rel => {
@@ -199,7 +206,7 @@ const REVIEW = {
       } catch { return []; }
     });
     const rejected = (state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : "";
-    return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: web ? `Final acceptance of the whole checked page, after each section was reviewed${rejected}.` : `The second human decision${rejected}.` };
+    return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: web ? `Final acceptance of the whole checked page${state.tier === "quick" ? "" : ", after each section was reviewed"}; a passed probe shows the page works, never that it looks right${rejected}.` : `The owner's final acceptance; a passed check shows the draft works, never that it looks right${rejected}.` };
   },
 };
 

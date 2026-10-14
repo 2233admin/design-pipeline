@@ -51,7 +51,7 @@ const DELIVER = {
 
 function stages(state) {
   const study = state.mode === "replicate" ? [REFERENCE] : [];
-  if (state.tier === "quick") return [ANALYZE, ...study, CUT, RENDER, CHECK];
+  if (state.tier === "quick") return [ANALYZE, ...study, CUT, RENDER, CHECK, REVIEW];
   return [INTAKE, ANALYZE, ...study, STYLE, CUT, RENDER, CHECK, REVIEW, DELIVER];
 }
 

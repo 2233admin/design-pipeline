@@ -246,8 +246,13 @@ probe at its actual `index.html` and rerun.
 `decide --stage deliver` refuses unfinished prerequisites. Film/edit delivery names an existing
 contained file, and standard delivery binds that file and the current check snapshot. A changed
 delivery returns to its delivery action; changed checked inputs return to checks and review first.
-Quick workflows may record delivery after their applicable stages finish. UI's existing work-stage
-declaration stays available and reports Visual Acceptance as unevaluated. For actual surface
+Quick workflows may record delivery after their applicable stages finish. Every deliverable and
+tier ends with the owner's final review (`decide --stage review --by owner`): UI records its work
+evidence with `decide --stage deliver --by agent`, then the owner accepts or rejects the delivered
+interface, and a rejection returns to the work stage. Reaching done renders
+`.design-pipeline/diligence.md` from the workflow state: owner decisions with their reasons,
+delegated agent decisions, records without an author, the rule count, technical checks apart from
+owner acceptance, and a suggested `Assisted-by:` trailer. For actual surface
 verification and retained proof, follow [the QA recipe](qa-checklist.md#run-verification).
 
 A pending verification action also returns `verification`: `gate`, current `status`, the last
@@ -431,8 +436,10 @@ and viewport, then capture and hash one screenshot per candidate.
 
 Run `designer-pipeline direction check --stage preview --change-root <change-root> --json` while
 the decision is pending. Only after it reports `ready` may the user or an autonomous run select a
-candidate. Record the selected ID and product/visitor-fit rationale, then run `direction check
---stage selection`. A narrow change, established surface, non-visual change, exact primary target,
+candidate. Record the selected ID, product/visitor-fit rationale and `by` (`owner`, or `agent`
+with `agent` and a `delegation`: `{source: "workflow-state", stateSha256}` or `{source:
+"owner-instruction", quote}`), then run `direction check --stage selection`, adding
+`--project-root` to verify a workflow-state delegation against the live delegation map. A narrow change, established surface, non-visual change, exact primary target,
 or user-specified single direction records an explicit supported waiver. Missing evidence is not a
 waiver.
 

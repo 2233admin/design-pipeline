@@ -131,6 +131,8 @@ Defaults:
 | | `sample` | owner; agent with `--director` | no |
 | | `review` | owner | yes |
 | | `deliver` | agent | no |
+| film/edit quick | `review` | owner | yes |
+| | `deliver` | agent | no |
 | ui (all tiers) | `intake` | owner (not asked at quick) | no |
 | | `review` (final acceptance, new) | owner | yes |
 | | `deliver` | agent | no |
@@ -141,18 +143,21 @@ Further rules:
   agent with `set: "owner"`, because the owner chose to skip.
 - `creative-intent` stays owner and locked. If the owner skipped, it is reported as "not stated by
   the owner", never filled in by the agent.
-- Every deliverable at every tier ends with a locked owner `review` before `deliver` (owner
-  decision). Visual quality is not functional correctness: a passing test, gate or probe can show
-  that a page works, never that it looks right, so no tier delivers on technical checks alone.
-  - Web, film and edit standard/full already have the `review` stage. Film and edit quick already
-    end at the owner's review. These are unchanged.
-  - **Web quick** gains `review` after `probe`.
-  - **ui, every tier**, gains `review` between `work` and `deliver`.
-  - The new reviews reuse the web final review as it stands: the owner sees the rendered result,
-    and accepts with a reason or rejects. A rejection becomes a project rule and returns to the
-    build (web) or `work` (ui) stage. Review inputs are bound with `reviewInputHashes`, so ui
-    delivery now also records `deliveryInputHashes`.
+- Every deliverable at every tier ends with a locked owner `review` (owner decision). Visual quality
+  is not functional correctness: a passing test, gate or probe can show that a page works, never
+  that it looks right, so no tier finishes on technical checks alone.
+  - Web, film and edit standard/full already have the `review` stage, and film quick already ends
+    at the owner's review. These are unchanged.
+  - **Web quick** and **edit quick** gain `review` after their check (`probe`, `check`).
+  - **ui, every tier**, gains `review` after `work`. The ui work stage records its delivery
+    evidence with `decide --stage deliver --by agent`, so the review comes after that record and
+    before done; `reviewInputHashes` binds that evidence for ui, and a rejection drops it and
+    returns to `work`.
+  - The new reviews reuse the shared final review: the owner sees the result and accepts or rejects
+    with one sentence. A rejection becomes a project rule and returns to the check or work stage.
   - Quick stays quick: the review is one ask, with no variants, description or section loop.
+- `deliver` is a checkpoint in every project, delegated to the agent by default, because every
+  deliverable may record where its result went, even a tier without a deliver stage.
 - The web standard/full playback instruction gains one line naming what the agent will decide, for
   example: "I'll pick the reference; you pick the first screen, the components, the description,
   each section and the final page." The owner corrects that line like any other part of the
@@ -173,8 +178,10 @@ Further rules:
 - The direction-preview `decision` gains `by`, `agent` and, for agent selections, `delegation`.
   `direction check` receives only the change root, so the artifact carries its own evidence:
   - `delegation: {source: "workflow-state", stateSha256}` when the change runs under a `next`
-    workflow. With `--project-root`, the check reads `.design-pipeline/state.json`, verifies the
-    hash and that `concept` is delegated to the agent; without it, it reports the claim as
+    workflow. `stateSha256` names the state the agent read; it is not re-checked, because any
+    later decision changes the state. With `--project-root`, the check reads
+    `.design-pipeline/state.json` and verifies that `concept` is delegated to the agent now;
+    without it, it reports the claim as
     unverified in its output but does not fail.
   - `delegation: {source: "owner-instruction", quote}` for standalone runs. `quote` is the owner's
     instruction, at least six words under the existing minimum-content rule.
@@ -234,16 +241,28 @@ Further rules:
 `.design-pipeline/diligence.md` is a projection of `state.json`. It is rendered by a new
 `workflow-core` function from state alone, and the agent never writes it.
 
-- Delivery renders it after the delivery is recorded, and `next`'s `done` action returns its path.
+- `decide` renders it whenever the workflow reaches done, and `next`'s `done` action returns its
+  path and whether it is current. Done is the end of every tier, including those without a
+  deliver stage.
 - It binds to what delivery already records, adding no new hash source:
   - `delivered`: the destination string, for every deliverable;
   - `deliveredSha256`: present only for file deliveries (film, edit);
-  - `deliveryInputHashes`: the review inputs bound at delivery (web, film, edit; ui has none);
+  - `deliveryInputHashes`: the review inputs bound at delivery (web, film, edit standard/full);
   - the SHA-256 of the canonical state it was rendered from.
 - A remote web URL has no local bytes, so the statement binds the reviewed inputs, not the remote
   page. It says so in its header ("Remote destination; bound to reviewed inputs").
 - It is stale when the state hash or any recorded delivery binding no longer matches, reusing
-  `shared.cjs`'s delivery-current check. `next` re-renders it at the next delivery.
+  `shared.cjs`'s delivery-current check. `decide` re-renders it the next time done is reached.
+- Every `decide` call also appends one entry to `state.decisions.roles`
+  (`{stage, by, agent?, verdict?, choice?, answer?, at}`), the uniform record the statement reads;
+  the role is stamped on the history entry the call appended as well.
+- Returned `decide` commands carry `--by` before `--stage`, taken from the checkpoint's delegation
+  entry (agent where the agent or the art director decides, owner otherwise).
+- `--delegate` and `--keep` apply only on an intake recorded with `--by owner`.
+- A quick web page the owner rejects returns to build until `index.html` changes, so an unchanged
+  page is never probed and shown again.
+- The unauthored count includes single-value decisions (intake, reference, concept, components,
+  delivery) that no role entry records.
 - A new read-only `diligence` command (in the COMMANDS table) prints it, or renders it on demand
   with `--write`, so an owner can see it before delivery.
 

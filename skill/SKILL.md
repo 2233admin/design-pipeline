@@ -56,6 +56,11 @@ name a repository. This is triggered by the work's needs, not a required search 
 - Gates report technical checks such as component conformance and fidelity evidence. They never
   grant creative or visual acceptance. Ask the owner about the actual output at the workflow's
   review points and record accept/reject only from their reply.
+- Every `decide` names its recorder: `--by owner` only for the owner's own words in this
+  conversation, `--by agent` only where the delegation `next` shows hands you that checkpoint.
+  Final acceptance is always the owner's, at every tier. Start a deliverable with
+  `next ... --assisted-by <your tool and model>`; reaching done renders
+  `.design-pipeline/diligence.md`, the record of who decided what (`designer-pipeline diligence`).
 - Preserve source, snapshot, policy digest, receipt and downstream evidence lineage. Changed or
   failed evidence stays open or invalidates dependent evidence under the existing workflow.
 - Record asset licenses; non-commercial material does not ship in commercial work.
