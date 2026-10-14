@@ -97,15 +97,16 @@ the page you want reproduced?"). Send it as its own message, as it is. Then:
 - Anchor on real specifics (a site they saw, the moment a visitor arrives). Ask what would make
   them wince (the anti-goals: what the page must never be or do) and what they have seen elsewhere
   and loved or hated.
-- When you can describe the page, play it back as a short card:
+- When you can describe the page, play it back as a short card, one line each:
   - three intent lines: what the page expresses, who it connects with and how, what makes it
     unlike other pages;
   - the uncertainties still open;
   - one line on what you will decide and what stays theirs (the delegation line).
 
   Mark what the owner said as theirs and what you guessed as your guess, and end by asking what is
-  wrong or missing. The card the owner confirms is the project's creative intent: recording it
-  with `--by owner` records creative intent as theirs. A stated skip leaves creative intent not
+  wrong or missing. The card the owner confirms, recorded with its line breaks, is the project's
+  creative intent: recording it with `--by owner` records creative intent as theirs (a
+  one-paragraph playback records none). A stated skip leaves creative intent not
   stated by the owner.
 
 An ask's `first`, when present, is a step for you before you ask its `question`. After a

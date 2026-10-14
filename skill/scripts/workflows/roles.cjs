@@ -104,9 +104,9 @@ function stampRecord(state, before, checkpoint, role, options) {
   }];
 }
 
-// The confirmed web playback card is the creative intent, recorded by the owner who confirmed it.
+// The confirmed web playback card is the creative intent, recorded whole by the owner who confirmed it.
 function recordCreativeIntent(state, card) {
-  state.decisions.roles = [...state.decisions.roles, { stage: "creative-intent", by: "owner", verdict: "accept", answer: String(card).trim().slice(0, 400), at: new Date().toISOString() }];
+  state.decisions.roles = [...state.decisions.roles, { stage: "creative-intent", by: "owner", verdict: "accept", answer: String(card).trim(), at: new Date().toISOString() }];
 }
 
 const historySizes = state => Object.fromEntries(HISTORIES.map(key => [key, Array.isArray(state.decisions?.[key]) ? state.decisions[key].length : 0]));
@@ -120,7 +120,7 @@ const stateHash = state => {
 
 function describe(entry) {
   const what = [entry.verdict, entry.choice && entry.choice !== "skip" ? entry.choice : null, entry.choice === "skip" ? "skipped the questions" : null].filter(Boolean).join(" ");
-  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer}"` : ""}${entry.tradeoff ? ` (asked about: "${entry.tradeoff}")` : ""}`;
+  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer.replace(/\s*\r?\n\s*/g, " / ")}"` : ""}${entry.tradeoff ? ` (asked about: "${entry.tradeoff}")` : ""}`;
 }
 
 // Decisions stored as a single value rather than a history: each counts as unauthored when no role

@@ -8,7 +8,14 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { decide, nextAction, readState } = require("../../skill/scripts/workflow-core.cjs");
 
-const PLAYBACK = "A landing page for small bakeries that take preorders. You said: visitors are regulars on their phones who want to reserve tomorrow's bread in under a minute, and it should feel warm and unhurried, never like a delivery app. My guess: one first screen with today's bakes and a reserve button, then how pickup works, then the shop's story.";
+// The playback card: three intent lines, the open uncertainty and the delegation line, one per line.
+const PLAYBACK = [
+  "Expresses: a landing page for small bakeries that take preorders, warm and unhurried (you said), never like a delivery app (you said).",
+  "Connects with: regulars on their phones who want to reserve tomorrow's bread in under a minute (you said).",
+  "Unlike others: today's bakes and a reserve button on the first screen, then how pickup works, then the shop's story (my guess).",
+  "Still open: whether pickup runs on weekends.",
+  "I decide the layout, components and each section's details; the variants and the final page stay yours.",
+].join("\n");
 const STATED = "I will build a one-screen pricing card for the existing site, in its current type and colours, from the project's own components.";
 const SECTIONS = ["first-screen"];
 const SWITCHER_SCRIPT = path.resolve(__dirname, "../../skill/tools/variant-switcher/variant-switcher.js");

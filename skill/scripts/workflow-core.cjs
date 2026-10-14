@@ -270,6 +270,8 @@ function decide(root, options = {}) {
     options = { ...options, tradeoff: statement(options.tradeoff, "say what you asked the owner: what is new, your recommendation and its cost", "--tradeoff") };
   }
   const scope = rules.checkScope(options.scope, options.verdict);
+  // Only these records can hold the owner's "no"; refuse a scope elsewhere before any file is written.
+  if (scope && (["reference", "deliver"].includes(stage) || (stage === "intake" && state.deliverable !== "web"))) fail("workflow", `--scope goes with a record that holds the owner's "no", and a ${stage} record holds none. Fix: drop --scope`);
   const promoted = rules.checkPromote(state, options.promote, stage, role.by);
   const rulesBefore = (state.rules || []).length;
   // A "no" is the owner's words; only an art director's pick may reject on the agent's side.
@@ -360,15 +362,15 @@ function decide(root, options = {}) {
   // A skipped standard conversation hands intake to the agent: the owner chose not to be asked.
   if (stage === "intake" && state.decisions.intake?.skipped && state.delegation?.intake && state.tier !== "quick") state.delegation.intake = { ...state.delegation.intake, to: "agent", set: "owner" };
   // "From now on" makes this call's "no" a project rule; --scope on a record that made none is refused.
-  if (scope === "project") {
-    if (!(state.rules || []).slice(rulesBefore).some(rule => !rules.isProject(rule))) fail("workflow", "--scope project goes with a record that holds the owner's \"no\", and this record made no rule. Fix: drop --scope");
-    rules.widen(state, rulesBefore);
-  }
+  if (scope && !(state.rules || []).slice(rulesBefore).some(rule => !rules.isProject(rule))) fail("workflow", `--scope ${scope} goes with a record that holds the owner's "no", and this record made no rule. Fix: drop --scope`);
+  if (scope === "project") rules.widen(state, rulesBefore);
   rules.promote(state, promoted);
   roles.stampRecord(state, before, stage, role, options);
   // The playback card the owner confirms carries the creative intent, so confirming it records that
   // locked checkpoint as the owner's; a stated skip leaves it unstated.
-  if (state.deliverable === "web" && stage === "intake" && options.verdict === "accept" && role.by === "owner" && state.delegation?.["creative-intent"]) roles.recordCreativeIntent(state, state.decisions.intake.answer);
+  // A card puts each intent line on its own line; a one-paragraph playback records no creative intent.
+  const card = String(state.decisions.intake?.answer ?? "").split(/\r?\n/).filter(line => line.trim()).length >= 3;
+  if (state.deliverable === "web" && stage === "intake" && options.verdict === "accept" && role.by === "owner" && state.delegation?.["creative-intent"] && card) roles.recordCreativeIntent(state, state.decisions.intake.answer);
   writeState(root, state);
   const next = nextAction(root);
   // Reaching done renders the diligence statement from the state just written.

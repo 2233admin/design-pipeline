@@ -161,7 +161,9 @@ section.
   - `object` is the default.
   - Other values fail, and so does `--scope` on a call that records no "no". A confirmed
     playback that carries only anti-goals records no "no"; its anti-goals are project rules
-    anyway.
+    anyway. Reference, delivery and film/edit/ui intake records refuse `--scope` before any file
+    is written; every other record checks, after recording, that it made a bound rule, whichever
+    scope was given (found in review).
 - **Anti-goals and older rules:** anti-goals are project rules. Their duplicate check compares only
   project rules, so an earlier correction with the same text cannot swallow one. Rules without
   `object` (every rule recorded before this change) read as project rules.
@@ -199,6 +201,9 @@ here; keep commands, ids and file names unchanged."
 - An owner-recorded confirmed playback in a project whose map has `creative-intent` appends a
   `creative-intent` owner role entry carrying the card text.
 - The statement lists creative intent as not stated only when no such entry exists.
+- A card puts each line on its own line. A confirmed playback with fewer than three non-empty
+  lines is a paragraph, not a card, and records no creative intent (found in review). The entry
+  keeps the whole card; the statement prints its lines joined by " / ".
 - **Alternative:** the fifth intake question and the `Product Context` label check from
   adopt-ai-fluency-decision-roles phase 2. Superseded by design-owner-attention H. This change
   removes those two unimplemented requirements.

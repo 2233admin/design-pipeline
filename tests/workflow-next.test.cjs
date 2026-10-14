@@ -2115,7 +2115,7 @@ test("the web intake instruction names the conversation rules", t => {
     assert.match(instruction, /look(?:ed)? up/i, `${label}: facts are looked up`);
     assert.match(instruction, /never ask/i, `${label}: facts are not asked`);
     assert.match(instruction, /one open question per message/i, `${label}: one open question per message`);
-    assert.match(instruction, /short card: three intent lines \(what the page expresses, who it connects with and how, what makes it unlike other pages\)/, `${label}: the playback is a card of three intent lines`);
+    assert.match(instruction, /short card, one line each: three intent lines \(what the page expresses, who it connects with and how, what makes it unlike other pages\)/, `${label}: the playback is a card of three intent lines`);
     assert.match(instruction, /uncertainties still open/, `${label}: the card names the open uncertainties`);
     assert.match(instruction, /what you will decide and what stays theirs/, `${label}: the card carries the delegation line`);
     assert.match(instruction, /\bsaid\b/i, `${label}: what the owner said`);
@@ -3215,9 +3215,9 @@ test("confirming the playback card records creative intent as the owner's, and a
   const root = webProject(t);
   confirmPlayback(root);
   const intent = readState(root).decisions.roles.find(entry => entry.stage === "creative-intent");
-  assert.deepEqual([intent.by, intent.verdict, intent.answer], ["owner", "accept", PLAYBACK.slice(0, 400)]);
+  assert.deepEqual([intent.by, intent.verdict, intent.answer], ["owner", "accept", PLAYBACK], "the whole card is kept");
   const confirmed = diligence(root).text;
-  assert.match(confirmed, /## Decided by the owner\n- Intake: accept — "[^"]+"\n- Creative intent: accept — "A landing page for small bakeries/);
+  assert.match(confirmed, /## Decided by the owner\n- Intake: accept — "[^"\n]+"\n- Creative intent: accept — "Expresses: a landing page for small bakeries[^"\n]+ \/ Connects with: /);
   assert.doesNotMatch(confirmed, /planned in phase 2|Creative intent: not stated/);
   const skipped = webProject(t);
   statedSkip(skipped);
@@ -3226,6 +3226,20 @@ test("confirming the playback card records creative intent as the owner's, and a
   const quick = webProject(t, { tier: "quick" });
   statedSkip(quick);
   assert.doesNotMatch(diligence(quick).text, /Creative intent/, "quick work has no creative-intent checkpoint");
+  // A one-paragraph playback is not a card, so it records no creative intent.
+  const paragraph = webProject(t);
+  confirmPlayback(paragraph, PLAYBACK.split("\n").join(" "));
+  assert.equal(readState(paragraph).decisions.roles.some(entry => entry.stage === "creative-intent"), false);
+  assert.match(diligence(paragraph).text, /Creative intent: not stated by the owner/);
+});
+
+test("--scope is refused on records that cannot hold a no, before any file is written", t => {
+  const root = webProject(t);
+  confirmPlayback(root);
+  refuses(root, { by: "agent", stage: "reference", answer: "none", verdict: "reject", scope: "object" }, "CONTRACT_INVALID");
+  const film = webProject(t, { deliverable: "film" });
+  refuses(film, { stage: "intake", answer: "default", verdict: "reject", scope: "project" }, "CONTRACT_INVALID");
+  assert.equal(fs.existsSync(path.join(film, "brief.md")), false);
 });
 
 test("a no binds to what it was about: a section rule retires with the section, an earlier no holds until the result is accepted", t => {
