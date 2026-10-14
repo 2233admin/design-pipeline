@@ -2113,7 +2113,9 @@ test("the web intake instruction names the conversation rules", t => {
     assert.match(instruction, /look(?:ed)? up/i, `${label}: facts are looked up`);
     assert.match(instruction, /never ask/i, `${label}: facts are not asked`);
     assert.match(instruction, /one open question per message/i, `${label}: one open question per message`);
-    assert.match(instruction, /200\s*[-–]\s*300 words/i, `${label}: a playback of about 200-300 words`);
+    assert.match(instruction, /short card: three intent lines \(what the page expresses, who it connects with and how, what makes it unlike other pages\)/, `${label}: the playback is a card of three intent lines`);
+    assert.match(instruction, /uncertainties still open/, `${label}: the card names the open uncertainties`);
+    assert.match(instruction, /what you will decide and what stays theirs/, `${label}: the card carries the delegation line`);
     assert.match(instruction, /\bsaid\b/i, `${label}: what the owner said`);
     assert.match(instruction, /\bguess/i, `${label}: apart from what the agent guessed`);
   }
@@ -2917,7 +2919,7 @@ test("records carry who decided, agent records name the agent, and returned comm
   assert.equal(state.decisions.variants.at(-1).by, "agent");
   assert.equal(state.decisions.variants.at(-1).agent, "art-model", "a directed pick names the art director");
   const roles = state.decisions.roles.map(entry => [entry.stage, entry.by, entry.agent ?? null]);
-  assert.deepEqual(roles, [["intake", "owner", null], ["reference", "agent", "Claude Code (test)"], ["concept", "agent", "art-model"]]);
+  assert.deepEqual(roles, [["intake", "owner", null], ["creative-intent", "owner", null], ["reference", "agent", "Claude Code (test)"], ["concept", "agent", "art-model"]]);
 });
 
 test("ui and quick work end with the owner's acceptance, and done renders the diligence statement", t => {
@@ -3202,4 +3204,21 @@ test("every ask and self-check carries the language line, the first ask before a
   const review = nextAction(film);
   assert.equal(review.type, "ask");
   assert.equal(typeof review.language, "string");
+});
+
+test("confirming the playback card records creative intent as the owner's, and a skip leaves it unstated", t => {
+  const root = webProject(t);
+  confirmPlayback(root);
+  const intent = readState(root).decisions.roles.find(entry => entry.stage === "creative-intent");
+  assert.deepEqual([intent.by, intent.verdict, intent.answer], ["owner", "accept", PLAYBACK.slice(0, 400)]);
+  const confirmed = diligence(root).text;
+  assert.match(confirmed, /## Decided by the owner\n- Intake: accept — "[^"]+"\n- Creative intent: accept — "A landing page for small bakeries/);
+  assert.doesNotMatch(confirmed, /planned in phase 2|Creative intent: not stated/);
+  const skipped = webProject(t);
+  statedSkip(skipped);
+  assert.equal(readState(skipped).decisions.roles.some(entry => entry.stage === "creative-intent"), false);
+  assert.match(diligence(skipped).text, /## Not stated by the owner\n- Intake: the owner skipped the questions; the agent stated its decisions instead\n- Creative intent: not stated by the owner/);
+  const quick = webProject(t, { tier: "quick" });
+  statedSkip(quick);
+  assert.doesNotMatch(diligence(quick).text, /Creative intent/, "quick work has no creative-intent checkpoint");
 });

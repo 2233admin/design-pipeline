@@ -349,6 +349,9 @@ function decide(root, options = {}) {
   // A skipped standard conversation hands intake to the agent: the owner chose not to be asked.
   if (stage === "intake" && state.decisions.intake?.skipped && state.delegation?.intake && state.tier !== "quick") state.delegation.intake = { ...state.delegation.intake, to: "agent", set: "owner" };
   roles.stampRecord(state, before, stage, role, options);
+  // The playback card the owner confirms carries the creative intent, so confirming it records that
+  // locked checkpoint as the owner's; a stated skip leaves it unstated.
+  if (state.deliverable === "web" && stage === "intake" && options.verdict === "accept" && role.by === "owner" && state.delegation?.["creative-intent"]) roles.recordCreativeIntent(state, state.decisions.intake.answer);
   writeState(root, state);
   const next = nextAction(root);
   // Reaching done renders the diligence statement from the state just written.

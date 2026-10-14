@@ -103,6 +103,11 @@ function stampRecord(state, before, checkpoint, role, options) {
   }];
 }
 
+// The confirmed web playback card is the creative intent, recorded by the owner who confirmed it.
+function recordCreativeIntent(state, card) {
+  state.decisions.roles = [...state.decisions.roles, { stage: "creative-intent", by: "owner", verdict: "accept", answer: String(card).trim().slice(0, 400), at: new Date().toISOString() }];
+}
+
 const historySizes = state => Object.fromEntries(HISTORIES.map(key => [key, Array.isArray(state.decisions?.[key]) ? state.decisions[key].length : 0]));
 
 // --- the diligence statement --------------------------------------------------------------------
@@ -139,7 +144,7 @@ function renderStatement(state, { delivered = null, deliveryCurrent = false, gat
     : String(delivered);
   const notStated = [];
   if (state.decisions?.intake?.skipped) notStated.push("Intake: the owner skipped the questions; the agent stated its decisions instead");
-  if (state.delegation?.["creative-intent"]) notStated.push("Creative intent: not yet recorded (planned in phase 2)");
+  if (state.delegation?.["creative-intent"] && !roles.some(entry => entry.stage === "creative-intent" && entry.by === "owner")) notStated.push("Creative intent: not stated by the owner");
   const list = (items, empty) => items.length ? items.map(item => `- ${item}`).join("\n") : `- ${empty}`;
   const delegation = Object.entries(state.delegation || {}).map(([checkpoint, entry]) => `${LABELS[checkpoint] || checkpoint}: ${entry.to}${entry.locked ? " (locked)" : ""}${entry.set === "owner" ? " (set by the owner)" : ""}`);
   const checks = Object.entries(gates).map(([gate, record]) => `${gate}: ${record?.status ?? "unknown"}`);
@@ -194,4 +199,4 @@ function statementStatus(root, state, deliveryCurrent) {
   return { path: STATEMENT.split(path.sep).join("/"), current };
 }
 
-module.exports = { DIRECTED, LOCKED, ROLES, SELF_CHECKED, STATEMENT, applyDelegation, checkpointOf, defaultDelegation, ensureDelegation, historySizes, recordRole, renderStatement, stampRecord, stateHash, statementStatus, writeStatement };
+module.exports = { DIRECTED, LOCKED, ROLES, SELF_CHECKED, STATEMENT, applyDelegation, checkpointOf, defaultDelegation, ensureDelegation, historySizes, recordCreativeIntent, recordRole, renderStatement, stampRecord, stateHash, statementStatus, writeStatement };

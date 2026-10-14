@@ -24,9 +24,9 @@
 
 ## 4. Playback card and creative intent (Decision 9)
 
-- [ ] 4.1 `web.cjs` `CONVERSATION`: the card replaces the 200-300 word playback; verify that the intake instruction names the three intent lines and the delegation line.
-- [ ] 4.2 An owner-confirmed playback appends a `creative-intent` role entry, and the statement drops "planned in phase 2"; verify that confirming lists creative intent under the owner and that a skip lists it as not stated.
-- [ ] 4.3 Docs and changelog: the `workflow-web.md` intake section matches the code's skip line and card instruction (fixing the skip-line drift found while mapping); verify by grepping the guide for the exact skip line.
+- [x] 4.1 `web.cjs` `CONVERSATION`: the card replaces the 200-300 word playback; verify that the intake instruction names the three intent lines and the delegation line.
+- [x] 4.2 An owner-confirmed playback appends a `creative-intent` role entry, and the statement drops "planned in phase 2"; verify that confirming lists creative intent under the owner and that a skip lists it as not stated.
+- [x] 4.3 Docs and changelog: the `workflow-web.md` intake section matches the code's skip line and card instruction (fixing the skip-line drift found while mapping); verify by grepping the guide for the exact skip line.
 
 ## 5. Rule scope and promotion (Decisions 6, 7, 10)
 

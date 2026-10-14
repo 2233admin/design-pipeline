@@ -74,8 +74,8 @@ project's files (README, existing pages, `DESIGN.md`, brand assets; in an existi
 `project inspect`), and never ask the owner for something you can look up.
 
 At `standard` and `full`, `next` returns an ask with no question list, options or recommended
-answer. Its `question` is the opening: the skip line ("If you'd rather skip the questions and have
-me start, say so.") followed by one open question ("What site have you seen recently that felt the
+answer. Its `question` is the opening: the skip line ("If you'd rather skip these questions, say
+so: I'll tell you what I assumed, then show you options.") followed by one open question ("What site have you seen recently that felt the
 way this page should, and what about it?"; in replicate mode, "What must stay exactly as it is in
 the page you want reproduced?"). Send it as its own message, as it is. Then:
 
@@ -83,9 +83,16 @@ the page you want reproduced?"). Send it as its own message, as it is. Then:
 - Anchor on real specifics (a site they saw, the moment a visitor arrives). Ask what would make
   them wince (the anti-goals: what the page must never be or do) and what they have seen elsewhere
   and loved or hated.
-- When you can describe the page, play it back in about 200-300 words: who it is for, what a
-  visitor should do, what it should feel like. Mark what the owner said as theirs and what you
-  guessed as your guess, and end by asking what is wrong or missing.
+- When you can describe the page, play it back as a short card:
+  - three intent lines: what the page expresses, who it connects with and how, what makes it
+    unlike other pages;
+  - the uncertainties still open;
+  - one line on what you will decide and what stays theirs (the delegation line).
+
+  Mark what the owner said as theirs and what you guessed as your guess, and end by asking what is
+  wrong or missing. The card the owner confirms is the project's creative intent: recording it
+  with `--by owner` records creative intent as theirs. A stated skip leaves creative intent not
+  stated by the owner.
 
 An ask's `first`, when present, is a step for you before you ask its `question`. After a
 correction, `first` says to play the page back again with the corrections applied, and `question`
