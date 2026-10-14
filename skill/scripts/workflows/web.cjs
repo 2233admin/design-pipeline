@@ -775,4 +775,4 @@ function before(state, current, id) {
 // returned before the record.
 const decisions = { intake: recordIntake, concept: recordConcept, components: recordComponents, description: recordDescription, section: recordSection };
 
-module.exports = { briefSections, decisions, stages };
+module.exports = { briefSections, decisions, pageDigest, stages };
