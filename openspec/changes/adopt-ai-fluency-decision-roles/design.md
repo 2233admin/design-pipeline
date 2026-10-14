@@ -365,3 +365,12 @@ Each phase is its own PR against this change. `tasks.md` groups the tasks the sa
 - Add an optional actor field to `design-pipeline.event.v2` and set it from
   `decideVisualTask`.
 - Translate statement labels once a project language setting exists.
+
+## Edited by owner-attention-asks
+
+This change is not archived, so `owner-attention-asks` (phase 1 of `design-owner-attention`) edited
+it in place: Decision 4's fifth intake question and `Product Context` label check, their two
+requirements ("The brief states creative intent", "Product Context names the creative intent") and
+tasks 3.x are removed. Creative intent is the web playback card the owner confirms, recorded as
+an owner `creative-intent` role entry. See `openspec/changes/owner-attention-asks/design.md`
+Decisions 9 and 11.

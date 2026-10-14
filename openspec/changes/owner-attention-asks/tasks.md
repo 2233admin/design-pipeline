@@ -38,7 +38,7 @@
 
 ## 6. In-flight deltas (Decision 11)
 
-- [ ] 6.1 Edit the named `make-web-workflow-conversational` requirements in place, remove the two creative-intent requirements and tasks 3.x from `adopt-ai-fluency-decision-roles`, and note the edit in each design; verify with `npm exec -- openspec validate --all --strict`.
+- [x] 6.1 Edit the named `make-web-workflow-conversational` requirements in place, remove the two creative-intent requirements and tasks 3.x from `adopt-ai-fluency-decision-roles`, and note the edit in each design; verify with `npm exec -- openspec validate --all --strict`.
 
 ## 7. Integration
 

@@ -17,7 +17,7 @@ The pipeline SHALL provide a `next` command that reads project state and returns
 - **THEN** `next` SHALL report done with evidence
 
 ### Requirement: two human decisions
-Standard film and edit work SHALL ask the user to pick a concept and to accept or reject a draft that has passed all error gates. Standard and full web work SHALL instead ask at each conversational checkpoint: the playback, the variant pick, the numbered rounds of concrete decisions, the description approval, each section review and the final acceptance. Every rejection SHALL be recorded with its reason as a project rule; in web work, so SHALL each decision-round correction and each anti-goal stated with the confirmed playback or a skip.
+Standard film and edit work SHALL ask the user to pick a concept and to accept or reject a draft that has passed all error gates. Standard and full web work SHALL instead ask the owner to confirm the playback, pick the variant and accept the final page; the decision rounds, the description approval and each section review SHALL be agent self-checks unless the owner keeps them. Every rejection SHALL be recorded with its reason as a rule; in web work, so SHALL each decision-round correction and each anti-goal (a project rule) stated with the confirmed playback or a skip.
 
 #### Scenario: Standard film work reaches decision points
 - **WHEN** standard film or edit work reaches concept choice and draft review
@@ -26,18 +26,18 @@ Standard film and edit work SHALL ask the user to pick a concept and to accept o
 
 #### Scenario: Standard web work reaches its checkpoints
 - **WHEN** standard or full web work runs from intake to delivery
-- **THEN** it SHALL ask the owner to confirm a playback, pick or combine first-screen variants (except in replicate mode), answer one or more numbered rounds of concrete decisions, approve the description, review each section and accept or reject the checked page
-- **AND** every rejection or correction at these checkpoints, and each anti-goal stated with the playback or a skip, SHALL be recorded as a project rule
+- **THEN** it SHALL ask the owner to confirm a playback, pick or combine first-screen variants (except in replicate mode) and accept or reject the checked page, while the concrete decisions, the description and each section are settled by agent self-checks unless the owner kept them
+- **AND** every rejection or correction at these checkpoints SHALL be recorded as a rule, and each anti-goal stated with the playback or a skip as a project rule
 
 ### Requirement: Web build follows an explicit component source decision
 
-Every web tier and mode SHALL ask components before build: at quick immediately before it, at standard and full in the decision rounds before the description. Decide SHALL require explicit comma-separated choices from project, github, index, discover and scratch, keep the answer and store canonical deduplicated componentSources. Scratch SHALL be exclusive; github SHALL need an HTTPS GitHub owner/repo URL in the answer. The ask SHALL offer the sources in plain words, with the canonical ids in its record command, and SHALL recommend the project's components, then the index, then discovery.
+Every web tier and mode SHALL settle components before build (the agent's self-check by default, the owner's ask when kept): at quick immediately before it, at standard and full in the decision rounds before the description. Decide SHALL require explicit comma-separated choices from project, github, index, discover and scratch, keep the answer and store canonical deduplicated componentSources. Scratch SHALL be exclusive; github SHALL need an HTTPS GitHub owner/repo URL in the answer. The step SHALL offer the sources in plain words, with the canonical ids in its record command, and SHALL recommend the project's components, then the index, then discovery.
 
 #### Scenario: Next reaches the component decision
 
 - **WHEN** earlier prerequisites are complete and no components decision is recorded
-- **THEN** next SHALL return the components ask before the description and the build
-- **AND** at standard and full the ask SHALL open a round of numbered questions, the sections in build order and the component sources, each with a recommended answer
+- **THEN** next SHALL return the components step before the description and the build
+- **AND** at standard and full the step SHALL open a round of numbered questions, the sections in build order and the component sources, each with a recommended answer
 - **AND** at quick it SHALL ask only the component sources, immediately before build
 - **AND** its decide command SHALL bind the absolute project path and work outside that directory.
 

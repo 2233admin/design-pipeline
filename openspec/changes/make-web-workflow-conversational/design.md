@@ -448,3 +448,11 @@ stale, so `next` returns to the description and then to each section before prob
   each section, but the final review is not asked again while the checked page bytes and the
   component decision are unchanged, because the review binds the interaction gate hashes and the
   component digest. A rule from such a correction reaches the final review only if the page changes.
+
+## Edited by owner-attention-asks
+
+This change is not archived, so `owner-attention-asks` (phase 1 of `design-owner-attention`) edited
+its deltas in place where they now describe superseded behaviour: the decision round, the
+description and section reviews are agent self-checks unless the owner keeps them, and a "no"
+binds to what it was about instead of always being a project rule. See
+`openspec/changes/owner-attention-asks/design.md` Decision 11 for the list of requirements edited.
