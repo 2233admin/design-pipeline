@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { decide, decideVisualTask: actualDecideVisualTask, initState, nextAction, nextVisualTask, readState, recordGate: recordWorkflowGate } = require("../skill/scripts/workflow-core.cjs");
+const { decide, decideVisualTask: actualDecideVisualTask, diligence, initState, nextAction, nextVisualTask, readState, recordGate: recordWorkflowGate } = require("../skill/scripts/workflow-core.cjs");
 const { advanceChange, createInitialState, inspectConsistency, writeNewChange } = require("../skill/scripts/pipeline-state-core.cjs");
 const { createArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
@@ -68,7 +68,7 @@ function rewriteSameTime(root, file, body) {
 const redraft = (deliverable, text) => deliverable === "web" ? SECTIONS.map(id => `<section data-section="${id}">${text}</section>`).join("\n") : text;
 
 function prepareWebComponents(root) {
-  decide(root, { stage: "components", choice: "scratch", answer: "Write from scratch" });
+  decide(root, { by: "owner", stage: "components", choice: "scratch", answer: "Write from scratch" });
   touch(root, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
 }
 
@@ -77,9 +77,9 @@ function checkedWorkflowFixture(deliverable, tier = "standard") {
   initState(root, { deliverable, tier });
   if (deliverable === "web") toComponents(root);
   else if (tier !== "quick") {
-    decide(root, { stage: "intake", answer: "default" });
-    if (deliverable !== "edit") decide(root, { stage: "reference", answer: "none" });
-    decide(root, { stage: "concept", choice: deliverable === "edit" ? "pv" : "1" });
+    decide(root, { by: "owner", stage: "intake", answer: "default" });
+    if (deliverable !== "edit") decide(root, { by: "owner", stage: "reference", answer: "none" });
+    decide(root, { by: "owner", stage: "concept", choice: deliverable === "edit" ? "pv" : "1" });
   }
   if (deliverable === "film") {
     touch(root, "storyboard.json", "{}");
@@ -106,11 +106,11 @@ function checkedWorkflowFixture(deliverable, tier = "standard") {
   return root;
 }
 
-// Quick film ends at the owner's review of the checked draft; the other quick workflows end once
-// their check passes. Either way the check stage is behind us.
+// Every tier ends at the owner's review of the checked work, so a project at review (or done) is
+// past its check stage.
 function afterCheck(dir) {
   const next = nextAction(dir);
-  return next.type === "done" || (readState(dir).deliverable === "film" && next.stage === "review") ? "checked" : next.stage;
+  return next.type === "done" || next.stage === "review" ? "checked" : next.stage;
 }
 
 // Conversational web projects, driven through next/decide and the real CLI. A project made by
@@ -136,7 +136,7 @@ function snapshot(root, dir = root, files = {}) {
 function refuses(root, options, code) {
   const before = snapshot(root);
   let error = null;
-  try { decide(root, options); } catch (thrown) { error = thrown; }
+  try { decide(root, { by: "owner", ...options }); } catch (thrown) { error = thrown; }
   assert.equal(error?.code, code, `${JSON.stringify(options)}: ${error ? error.message : "was recorded"}`);
   assert.deepEqual(snapshot(root), before, `refused ${JSON.stringify(options)} changed the project`);
   return error;
@@ -153,7 +153,7 @@ function runCli(...args) {
 const nextCli = root => runCli("next", "--root", root, "--project-root", root).json;
 
 function decideCli(root, ...args) {
-  const result = runCli("decide", "--root", root, "--project-root", root, ...args);
+  const result = runCli("decide", "--root", root, "--project-root", root, ...(args.includes("--by") ? [] : ["--by", "owner"]), ...args);
   assert.equal(result.status, 0, result.text);
   assert.equal(result.json.status, "recorded", result.text);
   return result.json.next;
@@ -161,7 +161,7 @@ function decideCli(root, ...args) {
 
 function refusesCli(root, args, code) {
   const before = snapshot(root);
-  const result = runCli("decide", "--root", root, "--project-root", root, ...args);
+  const result = runCli("decide", "--root", root, "--project-root", root, ...(args.includes("--by") ? [] : ["--by", "owner"]), ...args);
   assert.equal(result.status, 1, result.text);
   assert.equal(result.json.ok, false, result.text);
   assert.equal(result.json.error.code, code, result.text);
@@ -1218,13 +1218,13 @@ test("standard film walks intake, reference, concepts, plan, build, check, revie
   const stage = () => nextAction(dir).stage;
   assert.equal(stage(), "intake");
   assert.equal(nextAction(dir).questions.length, 4);
-  decide(dir, { stage: "intake", answer: "default" });
+  decide(dir, { by: "owner", stage: "intake", answer: "default" });
   assert.equal(stage(), "reference");
-  decide(dir, { stage: "reference", answer: "none" });
+  decide(dir, { by: "owner", stage: "reference", answer: "none" });
   assert.equal(nextAction(dir).type, "run", "concepts must be written before the user is asked");
   touch(dir, "concepts.md");
   assert.equal(nextAction(dir).type, "ask");
-  decide(dir, { stage: "concept", choice: 2 });
+  decide(dir, { by: "owner", stage: "concept", choice: 2 });
   assert.equal(stage(), "plan");
   touch(dir, "storyboard.json", "{}");
   recordGate(dir, "storyboard", "failed");
@@ -1240,16 +1240,16 @@ test("standard film walks intake, reference, concepts, plan, build, check, revie
   assert.equal(review.stage, "review");
   assert.ok(review.show.includes(path.join(dir, "out.mp4")));
   assert.equal(review.show.includes(path.join(dir, "evidence/contact-sheet.png")), false, "a missing contact sheet is not available to review");
-  assert.throws(() => decide(dir, { stage: "review", verdict: "reject" }), /one sentence/);
-  decide(dir, { stage: "review", verdict: "reject", answer: "The logo lands too early." });
+  assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "reject" }), /one sentence/);
+  decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The logo lands too early." });
   const again = nextAction(dir);
   assert.equal(again.stage, "check", "a rejection reopens the check for the rebuilt draft");
   assert.deepEqual(again.rules, ["The logo lands too early."]);
   recordGate(dir, "film", "passed");
-  decide(dir, { stage: "review", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
   assert.equal(stage(), "deliver");
   touch(dir, "final.mp4");
-  decide(dir, { stage: "deliver", answer: "final.mp4" });
+  decide(dir, { by: "owner", stage: "deliver", answer: "final.mp4" });
   const done = nextAction(dir);
   assert.equal(done.type, "done");
   assert.equal(done.evidence.drafts.length, 2);
@@ -1262,9 +1262,9 @@ test("quick film skips intake and concepts", () => {
   assert.equal(nextAction(dir).remaining, 4);
   const waived = tmp();
   initState(waived, { deliverable: "film", tier: "standard" });
-  decide(waived, { stage: "intake", answer: "default" });
-  decide(waived, { stage: "reference", answer: "none" });
-  decide(waived, { stage: "concept", choice: "1" });
+  decide(waived, { by: "owner", stage: "intake", answer: "default" });
+  decide(waived, { by: "owner", stage: "reference", answer: "none" });
+  decide(waived, { by: "owner", stage: "concept", choice: "1" });
   for (const project of [dir, waived]) {
     touch(project, "reference.md", "Unused scaffold reference note.");
     for (const board of [null, "{}"]) {
@@ -1286,12 +1286,12 @@ test("quick film asks for frame review and the owner's verdict before done", () 
     assert.match(review.first, /every frame at full size/);
     assert.match(review.first, /qa\.md/);
     assert.match(review.line, /^film\/quick: review \(4\/4\) - Review the checked draft frame by frame first: .*Then ask the owner: Accept this checked draft, or reject it/);
-    decide(dir, { stage: "review", verdict: "reject", answer: "Labels cross the terminal at 23 s." });
+    decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "Labels cross the terminal at 23 s." });
     assert.equal(nextAction(dir).stage, "check", "a rejection reopens the check");
     assert.deepEqual(nextAction(dir).rules, ["Labels cross the terminal at 23 s."]);
     recordGate(dir, "film", "passed");
     assert.equal(nextAction(dir).stage, "review");
-    decide(dir, { stage: "review", verdict: "accept" });
+    decide(dir, { by: "owner", stage: "review", verdict: "accept" });
     const done = nextAction(dir);
     assert.equal(done.type, "done");
     assert.deepEqual(done.evidence.drafts.map((draft) => draft.verdict), ["reject", "accept"]);
@@ -1301,7 +1301,13 @@ test("quick film asks for frame review and the owner's verdict before done", () 
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   for (const deliverable of ["edit", "web"]) {
     const other = checkedWorkflowFixture(deliverable, "quick");
-    try { assert.equal(nextAction(other).type, "done", `${deliverable} quick is unchanged`); }
+    try {
+      const review = nextAction(other);
+      assert.equal(review.stage, "review", `${deliverable} quick ends at the owner's review`);
+      assert.equal(review.type, "ask");
+      decide(other, { by: "owner", stage: "review", verdict: "accept" });
+      assert.equal(nextAction(other).type, "done");
+    }
     finally { fs.rmSync(other, { recursive: true, force: true }); }
   }
 });
@@ -1328,7 +1334,7 @@ test("replicate film requires material routing before build and returns the reco
 test("edit asks mad or pv as its first decision and routes to film-edit commands", () => {
   const dir = tmp();
   initState(dir, { deliverable: "edit", tier: "standard" });
-  decide(dir, { stage: "intake", answer: "default" });
+  decide(dir, { by: "owner", stage: "intake", answer: "default" });
   const noSources = nextAction(dir);
   assert.match(noSources.instruction, /sources\//);
   assert.equal(noSources.command, undefined, "putting footage in place has no command");
@@ -1337,7 +1343,7 @@ test("edit asks mad or pv as its first decision and routes to film-edit commands
   touch(dir, "edit/analysis.json", "{}");
   const style = nextAction(dir);
   assert.equal(style.stage, "style");
-  decide(dir, { stage: "concept", choice: "pv" });
+  decide(dir, { by: "owner", stage: "concept", choice: "pv" });
   assert.match(nextAction(dir).command, /film-edit auto .*--style pv/);
 });
 
@@ -1347,15 +1353,15 @@ test("ui uses OpenSpec only at the full tier", () => {
   assert.doesNotMatch(nextAction(quick).instruction, /OpenSpec change/);
   const full = tmp();
   initState(full, { deliverable: "ui", tier: "full" });
-  decide(full, { stage: "intake", answer: "default" });
+  decide(full, { by: "owner", stage: "intake", answer: "default" });
   assert.match(nextAction(full).instruction, /OpenSpec change/);
 });
 
 test("art director mode routes the concept and review asks to the director", () => {
   const dir = tmp();
   initState(dir, { deliverable: "film", tier: "standard", director: "claude-opus-5-5" });
-  decide(dir, { stage: "intake", answer: "default" });
-  decide(dir, { stage: "reference", answer: "none" });
+  decide(dir, { by: "owner", stage: "intake", answer: "default" });
+  decide(dir, { by: "owner", stage: "reference", answer: "none" });
   touch(dir, "concepts.md");
   assert.match(nextAction(dir).director, /claude-opus-5-5/);
 });
@@ -1383,7 +1389,7 @@ test("CLI next and decide drive the workflow and gates report back", () => {
     run("verify", "film-storyboard", "--storyboard", "storyboard.json");
     assert.equal(run("next").stage, "build", "verify film-storyboard recorded its pass in the state");
     const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"), "utf8");
-    const premature = invoke("decide", "--stage", "deliver", "--answer", "out.mp4");
+    const premature = invoke("decide", "--stage", "deliver", "--by", "agent", "--answer", "out.mp4");
     assert.equal(premature.status, 1, premature.stdout || premature.stderr);
     assert.match(premature.stdout + premature.stderr, /build/);
     assert.equal(fs.readFileSync(path.join(dir, ".design-pipeline/state.json"), "utf8"), before, "a rejected declaration does not write state");
@@ -1740,11 +1746,11 @@ test("unchanged bytes remain checked despite file-clock skew; changed bytes do n
 test("replicate mode requires the reference study", () => {
   const film = tmp();
   initState(film, { deliverable: "film", tier: "standard", mode: "replicate" });
-  decide(film, { stage: "intake", answer: "default" });
+  decide(film, { by: "owner", stage: "intake", answer: "default" });
   const ref = nextAction(film);
   assert.equal(ref.stage, "reference");
   assert.equal(ref.then, undefined, "no waiver is offered");
-  assert.throws(() => decide(film, { stage: "reference", answer: "none" }), /replicate mode cannot skip/);
+  assert.throws(() => decide(film, { by: "owner", stage: "reference", answer: "none" }), /replicate mode cannot skip/);
   touch(film, "reference.md");
   assert.equal(nextAction(film).stage, "concepts");
   const quick = tmp();
@@ -1801,7 +1807,7 @@ test("quick frontend replication observes the reference before existing output a
       assert.match(observed.instruction, /reconstruction-spec\.md/);
       assert.match(observed.instruction, /bounded graybox/);
       assert.match(observed.instruction, /document delivery.*not.*verified observation/);
-      assert.throws(() => decide(dir, { stage: "reference", answer: "none" }), /replicate mode cannot skip/);
+      assert.throws(() => decide(dir, { by: "owner", stage: "reference", answer: "none" }), /replicate mode cannot skip/);
       touch(dir, "reference.md", "Observed structure and motion; measurements remain to be checked.");
       recordGate(dir, "reference", "failed");
       assert.equal(nextAction(dir).stage, deliverable === "web" ? "components" : "work", "aggregate checks must not deadlock observation before graybox exists");
@@ -1820,7 +1826,7 @@ test("frontend replication uses the reference at every tier without replacement 
       try {
         initState(dir, { deliverable, tier, mode: "replicate" });
         if (deliverable === "web") (tier === "quick" ? statedSkip : confirmPlayback)(dir);
-        else if (tier !== "quick") decide(dir, { stage: "intake", answer: "default" });
+        else if (tier !== "quick") decide(dir, { by: "owner", stage: "intake", answer: "default" });
         assert.equal(nextAction(dir).stage, "reference");
         touch(dir, "reference.md");
         if (deliverable === "web") {
@@ -1881,7 +1887,7 @@ test("brief and freeform frontend work preserve their quick and concept workflow
       try {
         initState(dir, { deliverable: "web", tier, mode });
         confirmPlayback(dir);
-        decide(dir, { stage: "reference", answer: "none" });
+        decide(dir, { by: "owner", stage: "reference", answer: "none" });
         assert.equal(nextAction(dir).stage, "concepts");
         writeVariants(dir);
         assert.equal(nextAction(dir).type, "ask");
@@ -1896,10 +1902,10 @@ test("web quick walks intake, components, build then probe; standard adds refere
   assert.equal(nextAction(quick).stage, "intake");
   statedSkip(quick);
   assert.equal(nextAction(quick).stage, "components");
-  assert.equal(nextAction(quick).remaining, 3);
+  assert.equal(nextAction(quick).remaining, 4);
   prepareWebComponents(quick);
   assert.equal(nextAction(quick).stage, "build");
-  assert.equal(nextAction(quick).remaining, 2);
+  assert.equal(nextAction(quick).remaining, 3);
   touch(quick, "index.html");
   assert.equal(nextAction(quick).stage, "probe");
 
@@ -1909,7 +1915,7 @@ test("web quick walks intake, components, build then probe; standard adds refere
   assert.equal(stage(), "intake");
   confirmPlayback(dir);
   assert.equal(stage(), "reference");
-  decide(dir, { stage: "reference", answer: "none" });
+  decide(dir, { by: "owner", stage: "reference", answer: "none" });
   assert.equal(nextAction(dir).type, "run", "concepts must be written before the user is asked");
   writeVariants(dir);
   assert.equal(nextAction(dir).type, "ask");
@@ -1948,7 +1954,7 @@ test("probe asks to write interaction.json when missing, then routes to verify i
   recordGate(dir, "interaction", "failed");
   assert.equal(nextAction(dir).stage, "probe", "a failed interaction gate keeps probe open");
   recordGate(dir, "interaction", "passed");
-  assert.equal(nextAction(dir).type, "done");
+  assert.equal(nextAction(dir).stage, "review", "a passed probe shows the page works; the owner still accepts it");
 });
 
 test("a passed interaction gate goes stale when index.html changes", () => {
@@ -1959,7 +1965,7 @@ test("a passed interaction gate goes stale when index.html changes", () => {
   touch(dir, "index.html");
   touch(dir, "interaction.json", webProbeFile);
   recordGate(dir, "interaction", "passed");
-  assert.equal(nextAction(dir).type, "done");
+  assert.equal(nextAction(dir).stage, "review");
   rewriteSameTime(dir, "index.html", "a rebuilt page");
   assert.equal(nextAction(dir).stage, "probe", "a rebuilt page must be probed again");
 });
@@ -1976,7 +1982,7 @@ test("a rejected web draft reopens probe", () => {
   recordGate(dir, "interaction", "passed");
   const review = nextAction(dir);
   assert.equal(review.stage, "review");
-  decide(dir, { stage: "review", verdict: "reject", answer: "The hero tilt snaps instead of easing." });
+  decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The hero tilt snaps instead of easing." });
   assert.equal(nextAction(dir).stage, "probe", "a rejection reopens probe");
 });
 
@@ -1985,7 +1991,7 @@ test("web concepts asks for a switchable variants page and a treatment before th
   try {
     initState(dir, { deliverable: "web", tier: "standard" });
     confirmPlayback(dir);
-    decide(dir, { stage: "reference", answer: "none" });
+    decide(dir, { by: "owner", stage: "reference", answer: "none" });
     const write = nextAction(dir);
     assert.equal(write.stage, "concepts");
     assert.equal(write.type, "run");
@@ -2014,8 +2020,8 @@ test("web concepts asks for a switchable variants page and a treatment before th
 });
 
 test("web stage ids per tier and mode keep their order", () => {
-  assert.deepEqual(webStages({ tier: "quick" }).map((stage) => stage.id), ["intake", "components", "build", "probe"]);
-  assert.deepEqual(webStages({ tier: "quick", mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "components", "build", "probe"]);
+  assert.deepEqual(webStages({ tier: "quick" }).map((stage) => stage.id), ["intake", "components", "build", "probe", "review"]);
+  assert.deepEqual(webStages({ tier: "quick", mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "components", "build", "probe", "review"]);
   for (const tier of ["standard", "full"]) {
     assert.deepEqual(webStages({ tier }).map((stage) => stage.id), ["intake", "reference", "concepts", "components", "description", "build", "probe", "review", "deliver"], tier);
     assert.deepEqual(webStages({ tier, mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "components", "description", "build", "probe", "review", "deliver"], `${tier} replicate`);
@@ -2108,17 +2114,18 @@ test("a web skip records only a stated decision through the CLI, and web intake 
   for (const answer of [undefined, "default"]) refusesCli(root, skip(answer), "CONTRACT_INVALID");
   refusesCli(root, ["--stage", "intake", "--answer", "A landing page for a bakery that takes preorders"], "CONTRACT_INVALID");
   assert.equal(decideCli(root, ...skip(STATED)).stage, "reference");
-  assert.deepEqual(readState(root).decisions.intake, { answer: STATED, skipped: true });
+  assert.deepEqual(readState(root).decisions.intake, { answer: STATED, skipped: true, by: "owner" });
+  assert.equal(readState(root).delegation.intake.to, "agent", "a skipped conversation hands intake to the agent");
   assert.equal(fs.existsSync(path.join(root, "brief.md")), false);
 
   const quick = webProject(t, { tier: "quick" });
   const run = nextCli(quick);
   assert.equal(run.type, "run");
   assert.equal(run.stage, "intake");
-  assert.match(run.command, / decide .*--stage intake --choice skip --answer /);
+  assert.match(run.command, / decide .*--by agent --stage intake --choice skip --answer /, "quick intake is the agent's stated decision");
   refusesCli(quick, ["--stage", "intake", "--answer", STATED], "CONTRACT_INVALID");
-  assert.equal(decideCli(quick, ...skip(STATED)).stage, "components");
-  assert.deepEqual(readState(quick).decisions.intake, { answer: STATED, skipped: true });
+  assert.equal(decideCli(quick, "--by", "agent", ...skip(STATED)).stage, "components");
+  assert.deepEqual(readState(quick).decisions.intake, { answer: STATED, skipped: true, by: "agent", agent: "unspecified" });
   assert.equal(fs.existsSync(path.join(quick, "brief.md")), false);
 });
 
@@ -2202,7 +2209,7 @@ test("the intake commands next returns record two anti-goals through the real CL
 test("the playback must be confirmed before concepts; each correction becomes a rule and reopens intake", t => {
   const root = webProject(t);
   const opening = nextAction(root);
-  decide(root, { stage: "intake", verdict: "reject", answer: "It is for florists, not bakeries" });
+  decide(root, { by: "owner", stage: "intake", verdict: "reject", answer: "It is for florists, not bakeries" });
   const corrected = nextAction(root);
   assert.equal(corrected.stage, "intake");
   assert.equal(corrected.type, "ask");
@@ -2212,12 +2219,12 @@ test("the playback must be confirmed before concepts; each correction becomes a 
   assert.notEqual(corrected.question, opening.question);
   assert.equal(corrected.questions, undefined);
   // Later work on disk opens nothing while the playback is unconfirmed.
-  decide(root, { stage: "reference", answer: "none" });
+  decide(root, { by: "owner", stage: "reference", answer: "none" });
   writeVariants(root);
   assert.equal(nextAction(root).stage, "intake");
-  refuses(root, { stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
-  refuses(root, { stage: "concept", verdict: "reject", answer: "The variants are too busy" }, "WORKFLOW_NOT_READY");
-  decide(root, { stage: "intake", verdict: "reject", answer: "Mention same-day pickup" });
+  refuses(root, { by: "owner", stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "owner", stage: "concept", verdict: "reject", answer: "The variants are too busy" }, "WORKFLOW_NOT_READY");
+  decide(root, { by: "owner", stage: "intake", verdict: "reject", answer: "Mention same-day pickup" });
   assert.equal(nextAction(root).stage, "intake");
   assert.deepEqual(readState(root).rules, [
     { text: "It is for florists, not bakeries", from: "playback 1", scope: "project" },
@@ -2228,13 +2235,13 @@ test("the playback must be confirmed before concepts; each correction becomes a 
   const concepts = nextAction(root);
   assert.equal(concepts.stage, "concepts");
   assert.equal(concepts.type, "ask");
-  assert.deepEqual(readState(root).decisions.intake, { answer: PLAYBACK, playback: "confirmed" });
+  assert.deepEqual(readState(root).decisions.intake, { answer: PLAYBACK, playback: "confirmed", by: "owner" });
   assert.deepEqual(readState(root).decisions.playbacks.map(item => item.verdict), ["reject", "reject", "accept"]);
   assert.equal(fs.existsSync(path.join(root, "brief.md")), false);
 
   pickVariant(root, "A");
   assert.equal(nextAction(root).stage, "components");
-  decide(root, { stage: "intake", verdict: "reject", answer: "Pickup is on weekends only" });
+  decide(root, { by: "owner", stage: "intake", verdict: "reject", answer: "Pickup is on weekends only" });
   assert.equal(nextAction(root).stage, "intake", "a later correction reopens intake");
   assert.deepEqual(rulesFrom(root), ["playback 1", "playback 2", "playback 3"]);
   confirmPlayback(root);
@@ -2245,15 +2252,15 @@ test("a no in the decision round is a project rule and leaves the components dec
   const root = webProject(t);
   const no = "Do not reuse the old carousel component";
   confirmPlayback(root);
-  decide(root, { stage: "reference", answer: "none" });
+  decide(root, { by: "owner", stage: "reference", answer: "none" });
   writeVariants(root);
   assert.equal(nextAction(root).stage, "concepts");
-  refuses(root, { stage: "components", verdict: "reject", answer: no }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "owner", stage: "components", verdict: "reject", answer: no }, "WORKFLOW_NOT_READY");
   pickVariant(root);
   assert.equal(nextAction(root).stage, "components");
-  refuses(root, { stage: "components", verdict: "accept", answer: no }, "CONTRACT_INVALID");
-  refuses(root, { stage: "components", verdict: "reject", choice: "scratch", answer: no }, "CONTRACT_INVALID");
-  decide(root, { stage: "components", verdict: "reject", answer: no });
+  refuses(root, { by: "owner", stage: "components", verdict: "accept", answer: no }, "CONTRACT_INVALID");
+  refuses(root, { by: "owner", stage: "components", verdict: "reject", choice: "scratch", answer: no }, "CONTRACT_INVALID");
+  decide(root, { by: "owner", stage: "components", verdict: "reject", answer: no });
   const ask = nextAction(root);
   assert.equal(ask.stage, "components");
   assert.equal(ask.type, "ask");
@@ -2263,7 +2270,7 @@ test("a no in the decision round is a project rule and leaves the components dec
   assert.equal(decisions.componentSources, undefined);
   assert.deepEqual(decisions.rounds.map(({ verdict, reason }) => ({ verdict, reason })), [{ verdict: "reject", reason: no }]);
   assert.deepEqual(rules, [{ text: no, from: "decisions 1", scope: "project" }]);
-  decide(root, { stage: "components", verdict: "reject", answer: "Keep the icons out of the header" });
+  decide(root, { by: "owner", stage: "components", verdict: "reject", answer: "Keep the icons out of the header" });
   assert.deepEqual(rulesFrom(root), ["decisions 1", "decisions 2"]);
   prepareWebComponents(root);
   assert.equal(nextAction(root).stage, "description");
@@ -2321,30 +2328,30 @@ test("the description approval names the brief's ## Sections list exactly, and o
   const jobs = { pickup: "how pickup works", hero: "today's bakes and the reserve button", story: "the shop's story" };
   const brief = order => `# Brief\n\nA one-page site for a bakery that takes preorders.\n\n## Sections\n\n${order.map(id => `- ${id}: ${jobs[id]}`).join("\n")}\n\n## Constraints\n\n- phones: most visitors reserve on their phones\n`;
   touch(root, "brief.md", "# Brief\n\nA one-page site for a bakery that takes preorders. Sections in build order: pickup, hero, story.\n");
-  refuses(root, { stage: "description", verdict: "accept", choice: "pickup,hero,story" }, "CONTRACT_INVALID");
+  refuses(root, { by: "owner", stage: "description", verdict: "accept", choice: "pickup,hero,story" }, "CONTRACT_INVALID");
   touch(root, "brief.md", brief(["pickup", "hero", "story"]));
   for (const choice of ["pickup,hero,site,story", "hero,pickup,story"]) {
-    assert.match(refuses(root, { stage: "description", verdict: "accept", choice }, "CONTRACT_INVALID").message, /pickup, hero, story/, `${choice} is checked against the list`);
+    assert.match(refuses(root, { by: "owner", stage: "description", verdict: "accept", choice }, "CONTRACT_INVALID").message, /pickup, hero, story/, `${choice} is checked against the list`);
   }
-  decide(root, { stage: "description", verdict: "accept", choice: "pickup,hero,story" });
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "pickup,hero,story" });
   assert.deepEqual(readState(root).decisions.descriptions.at(-1).sections, ["pickup", "hero", "story"]);
   buildPage(root, ["pickup"]);
-  decide(root, { stage: "section", choice: "pickup", verdict: "accept" });
+  decide(root, { by: "owner", stage: "section", choice: "pickup", verdict: "accept" });
   assert.equal(nextAction(root).section, "hero");
-  decide(root, { stage: "description", verdict: "accept", choice: "pickup,hero,story" });
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "pickup,hero,story" });
   const kept = nextAction(root);
   assert.equal(kept.stage, "build");
   assert.equal(kept.section, "hero", "the identical approval recorded again keeps the accepted sections");
 
   touch(root, "brief.md", brief(["hero", "pickup", "story"]));
   assert.equal(nextAction(root).stage, "description", "a reordered list is a changed description");
-  decide(root, { stage: "description", verdict: "accept", choice: "hero,pickup,story" });
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "hero,pickup,story" });
   buildPage(root, ["hero", "pickup"]);
   for (const id of ["hero", "pickup"]) {
     const ask = nextAction(root);
     assert.equal(ask.type, "ask", id);
     assert.equal(ask.section, id, `${id} is asked again under the new approval`);
-    decide(root, { stage: "section", choice: id, verdict: "accept" });
+    decide(root, { by: "owner", stage: "section", choice: id, verdict: "accept" });
   }
   assert.equal(nextAction(root).section, "story");
 });
@@ -2358,7 +2365,7 @@ test("an owner's BRIEF.md is the description the approval binds", t => {
   assert.equal(ask.stage, "description");
   assert.equal(ask.type, "ask");
   assert.deepEqual(ask.show.map(file => path.relative(root, file)), ["BRIEF.md"]);
-  decide(root, { stage: "description", verdict: "accept", choice: "first-screen" });
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen" });
   assert.equal(nextAction(root).stage, "build");
   fs.appendFileSync(path.join(root, "BRIEF.md"), "\nAdded after the approval.\n");
   assert.equal(nextAction(root).stage, "description");
@@ -2374,11 +2381,11 @@ test("quick builds the whole page with no description and no section reviews", t
   assert.equal(run.section, undefined, "quick builds the whole page");
   assert.doesNotMatch(run.instruction, /treatment/i);
   writeDescription(root, ["first-screen"]);
-  refuses(root, { stage: "description", verdict: "accept", choice: "first-screen" }, "CONTRACT_INVALID");
+  refuses(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen" }, "CONTRACT_INVALID");
   buildPage(root, []);
   assert.equal(nextAction(root).stage, "probe");
   buildPage(root, ["first-screen"]);
-  refuses(root, { stage: "section", choice: "first-screen", verdict: "reject", answer: "Make the headline bigger" }, "CONTRACT_INVALID");
+  refuses(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "Make the headline bigger" }, "CONTRACT_INVALID");
 });
 
 test("sections are built and accepted one at a time in the approved order, each rejection a rule", t => {
@@ -2391,14 +2398,14 @@ test("sections are built and accepted one at a time in the approved order, each 
   assert.equal(first.section, "first-screen");
   assert.equal(first.first, undefined);
   assert.match(first.record, /--stage section --choice first-screen --verdict accept\|reject/);
-  refuses(root, { stage: "section", choice: "proof", verdict: "accept" }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "owner", stage: "section", choice: "proof", verdict: "accept" }, "WORKFLOW_NOT_READY");
   buildPage(root, ["first-screen", "proof"]);
   assert.equal(nextAction(root).section, "first-screen", "a later section waits for the first");
-  refuses(root, { stage: "section", choice: "proof", verdict: "accept" }, "WORKFLOW_NOT_READY");
-  refuses(root, { stage: "section", choice: "pricing", verdict: "reject", answer: "Add the prices here" }, "CONTRACT_INVALID");
+  refuses(root, { by: "owner", stage: "section", choice: "proof", verdict: "accept" }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "owner", stage: "section", choice: "pricing", verdict: "reject", answer: "Add the prices here" }, "CONTRACT_INVALID");
 
   buildPage(root, ["first-screen"]);
-  decide(root, { stage: "section", choice: "first-screen", verdict: "accept" });
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
   const second = nextAction(root);
   assert.equal(second.stage, "build");
   assert.equal(second.type, "run");
@@ -2408,9 +2415,9 @@ test("sections are built and accepted one at a time in the approved order, each 
   const proof = nextAction(root);
   assert.equal(proof.type, "ask");
   assert.equal(proof.section, "proof");
-  refuses(root, { stage: "section", choice: "proof", verdict: "reject" }, "CONTRACT_INVALID");
+  refuses(root, { by: "owner", stage: "section", choice: "proof", verdict: "reject" }, "CONTRACT_INVALID");
 
-  decide(root, { stage: "section", choice: "proof", verdict: "reject", answer: "The quotes need names and photos" });
+  decide(root, { by: "owner", stage: "section", choice: "proof", verdict: "reject", answer: "The quotes need names and photos" });
   const revise = nextAction(root);
   assert.equal(revise.type, "ask");
   assert.equal(revise.section, "proof");
@@ -2421,7 +2428,7 @@ test("sections are built and accepted one at a time in the approved order, each 
   assert.equal(revised.section, "proof");
   assert.equal(revised.first, undefined);
 
-  decide(root, { stage: "section", choice: "first-screen", verdict: "reject", answer: "The headline wraps on phones" });
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The headline wraps on phones" });
   assert.equal(nextAction(root).section, "first-screen", "a later rejection reopens an accepted section");
   assert.deepEqual(rulesFrom(root), ["section proof 1", "section first-screen 1"]);
   assert.equal(acceptSections(root).stage, "probe");
@@ -2432,9 +2439,9 @@ test("sections are built and accepted one at a time in the approved order, each 
 test("a section rejection after an accepted section asks that section again and leaves the description current", t => {
   const root = approved(t, ["hero", "proof"]);
   buildPage(root, ["hero"]);
-  decide(root, { stage: "section", choice: "hero", verdict: "accept" });
+  decide(root, { by: "owner", stage: "section", choice: "hero", verdict: "accept" });
   buildPage(root, ["hero", "proof"]);
-  decide(root, { stage: "section", choice: "proof", verdict: "reject", answer: "No stock photos anywhere on the page" });
+  decide(root, { by: "owner", stage: "section", choice: "proof", verdict: "reject", answer: "No stock photos anywhere on the page" });
   const again = nextAction(root);
   assert.equal(again.stage, "build");
   assert.equal(again.type, "ask");
@@ -2468,7 +2475,7 @@ test("a data-section marker inside an HTML comment is not a built section", t =>
   assert.equal(first.section, "first-screen");
   for (const options of verdicts("first-screen", "The headline wraps on phones")) refuses(root, options, "WORKFLOW_NOT_READY");
   buildPage(root, ["first-screen"], '<!-- data-section="proof" goes here -->\n');
-  decide(root, { stage: "section", choice: "first-screen", verdict: "accept" });
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
   const proof = nextAction(root);
   assert.equal(proof.type, "run", "the commented proof section is still to be built");
   assert.equal(proof.section, "proof");
@@ -2516,7 +2523,7 @@ test("a section rejection can cite recorded runtime-review Feedback through the 
     ["Record.feedback.expected", { ...record, feedback: { ...record.feedback, expected: " " } }],
   ]) {
     touch(root, "runtime-review/feedback/broken.json", JSON.stringify(broken));
-    const error = refuses(root, { stage: "section", choice: "first-screen", verdict: "reject", evidence: ["runtime-review/feedback/broken.json"] }, "CONTRACT_INVALID");
+    const error = refuses(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", evidence: ["runtime-review/feedback/broken.json"] }, "CONTRACT_INVALID");
     assert.ok(error.message.includes(field), `${field}: ${error.message}`);
   }
 
@@ -2550,8 +2557,8 @@ test("a changed description goes back for approval, and earlier section verdicts
   assert.equal(stale.stage, "description");
   assert.equal(stale.type, "ask");
   assert.equal(typeof stale.first, "string");
-  refuses(root, { stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
-  decide(root, { stage: "description", verdict: "accept", choice: "first-screen,proof" });
+  refuses(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen,proof" });
   const again = nextAction(root);
   assert.equal(again.stage, "build");
   assert.equal(again.type, "ask");
@@ -2568,7 +2575,7 @@ test("a re-picked variant or a new playback makes the description approval stale
   assert.equal(nextAction(root).stage, "review");
   pickVariant(root, "C");
   assert.equal(nextAction(root).stage, "description", "a re-picked variant");
-  decide(root, { stage: "description", verdict: "accept", choice: "first-screen" });
+  decide(root, { by: "owner", stage: "description", verdict: "accept", choice: "first-screen" });
   assert.equal(nextAction(root).section, "first-screen", "the section is asked again under the new approval");
   assert.equal(acceptSections(root).stage, "review", "the checked page is unchanged, so its probe pass still counts");
   confirmPlayback(root, `${PLAYBACK} Pickup is on weekends only.`);
@@ -2586,7 +2593,7 @@ test("the probe binds the checked page, and the final review still turns a rejec
   assert.ok(stale.verification.findings.some(item => item.code === "workflow-input-changed" && item.path === "index.html"), JSON.stringify(stale.verification.findings));
   passProbe(root);
   assert.equal(nextAction(root).stage, "review");
-  decide(root, { stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
+  decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
   assert.deepEqual(readState(root).rules, [{ text: "The reserve button gets lost below the fold", from: "draft 1", scope: "project" }]);
   assert.equal(readState(root).gates.interaction, undefined);
   assert.equal(nextAction(root).stage, "probe");
@@ -2594,23 +2601,23 @@ test("the probe binds the checked page, and the final review still turns a rejec
 
 test("every no along the way is a project rule, and next returns them all", t => {
   const root = webProject(t);
-  decide(root, { stage: "intake", verdict: "reject", answer: "It is for florists" });
-  decide(root, { stage: "intake", verdict: "accept", answer: PLAYBACK, antiGoals: ["Never look like a delivery app"] });
-  decide(root, { stage: "reference", answer: "none" });
+  decide(root, { by: "owner", stage: "intake", verdict: "reject", answer: "It is for florists" });
+  decide(root, { by: "owner", stage: "intake", verdict: "accept", answer: PLAYBACK, antiGoals: ["Never look like a delivery app"] });
+  decide(root, { by: "owner", stage: "reference", answer: "none" });
   writeVariants(root);
-  decide(root, { stage: "concept", verdict: "reject", answer: "No stock photography" });
+  decide(root, { by: "owner", stage: "concept", verdict: "reject", answer: "No stock photography" });
   pickVariant(root, "B");
-  decide(root, { stage: "components", verdict: "reject", answer: "Keep the old carousel out" });
+  decide(root, { by: "owner", stage: "components", verdict: "reject", answer: "Keep the old carousel out" });
   prepareWebComponents(root);
   writeDescription(root, ["first-screen"]);
-  decide(root, { stage: "description", verdict: "reject", answer: "Name the opening hours" });
+  decide(root, { by: "owner", stage: "description", verdict: "reject", answer: "Name the opening hours" });
   approveDescription(root, ["first-screen"]);
   buildPage(root, ["first-screen"]);
-  decide(root, { stage: "section", choice: "first-screen", verdict: "reject", answer: "The reserve button is too small" });
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The reserve button is too small" });
   buildPage(root, ["first-screen"], "<!-- a larger reserve button -->\n");
   assert.equal(acceptSections(root).stage, "probe");
   passProbe(root);
-  decide(root, { stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
+  decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
   const next = nextAction(root);
   assert.deepEqual(rulesFrom(root), ["playback 1", "anti-goal 1", "variants 1", "decisions 1", "description 1", "section first-screen 1", "draft 1"]);
   assert.ok(readState(root).rules.every(rule => rule.scope === "project"));
@@ -2637,17 +2644,17 @@ test("delivery and review cannot bypass unfinished prerequisites or write state"
     try {
       initState(dir, { deliverable, tier: "standard" });
       const stateFile = path.join(dir, ".design-pipeline/state.json"), before = fs.readFileSync(stateFile, "utf8");
-      assert.throws(() => decide(dir, { stage: "deliver", answer: "final.mp4" }), /intake/);
+      assert.throws(() => decide(dir, { by: "owner", stage: "deliver", answer: "final.mp4" }), /intake/);
       assert.equal(fs.readFileSync(stateFile, "utf8"), before);
       if (deliverable !== "ui") {
-        assert.throws(() => decide(dir, { stage: "review", verdict: "accept" }), /intake|review/);
+        assert.throws(() => decide(dir, { by: "owner", stage: "review", verdict: "accept" }), /intake|review/);
         assert.equal(fs.readFileSync(stateFile, "utf8"), before);
       }
       if (deliverable === "web") confirmPlayback(dir);
-      else decide(dir, { stage: "intake", answer: "default" });
+      else decide(dir, { by: "owner", stage: "intake", answer: "default" });
       if (["film", "web"].includes(deliverable)) {
         const afterIntake = fs.readFileSync(stateFile, "utf8");
-        assert.throws(() => decide(dir, { stage: "deliver", answer: "final.mp4" }), /reference/);
+        assert.throws(() => decide(dir, { by: "owner", stage: "deliver", answer: "final.mp4" }), /reference/);
         assert.equal(fs.readFileSync(stateFile, "utf8"), afterIntake);
       }
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
@@ -2656,7 +2663,7 @@ test("delivery and review cannot bypass unfinished prerequisites or write state"
   try {
     initState(ui, { deliverable: "ui", tier: "quick", mode: "replicate" });
     const before = fs.readFileSync(path.join(ui, ".design-pipeline/state.json"), "utf8");
-    assert.throws(() => decide(ui, { stage: "deliver", answer: "evidence.png" }), /reference/);
+    assert.throws(() => decide(ui, { by: "owner", stage: "deliver", answer: "evidence.png" }), /reference/);
     assert.equal(fs.readFileSync(path.join(ui, ".design-pipeline/state.json"), "utf8"), before);
   } finally { fs.rmSync(ui, { recursive: true, force: true }); }
 });
@@ -2734,15 +2741,15 @@ test("latest owner verdict and changed checked bytes require a fresh review", ()
     const dir = checkedWorkflowFixture(deliverable);
     try {
       assert.equal(nextAction(dir).stage, "review");
-      decide(dir, { stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
       assert.equal(nextAction(dir).stage, "deliver");
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "deliver", "rechecking identical bytes preserves the accepted snapshot");
-      decide(dir, { stage: "review", verdict: "reject", answer: "The final action reads too early." });
+      decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The final action reads too early." });
       assert.equal(nextAction(dir).stage, deliverable === "web" ? "probe" : "check");
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a historical accept cannot override the latest rejection");
-      decide(dir, { stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
       rewriteSameTime(dir, file, redraft(deliverable, "new draft after acceptance"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "engineering conformance does not accept a new draft");
@@ -2755,33 +2762,33 @@ test("film and edit delivery requires an existing contained file and quick may r
   for (const deliverable of ["film", "edit"]) {
     const dir = checkedWorkflowFixture(deliverable);
     try {
-      decide(dir, { stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
       touch(dir, "delivered/directory/file.txt");
       for (const answer of [undefined, "missing.mp4", "../outside.mp4", "delivered/directory"]) {
         const stateFile = path.join(dir, ".design-pipeline/state.json"), before = fs.readFileSync(stateFile, "utf8");
-        assert.throws(() => decide(dir, { stage: "deliver", answer }), /path|file|exist|inside|answer|directory/);
+        assert.throws(() => decide(dir, { by: "owner", stage: "deliver", answer }), /path|file|exist|inside|answer|directory/);
         assert.equal(fs.readFileSync(stateFile, "utf8"), before);
       }
       const output = deliverable === "film" ? "out.mp4" : "renders/edit.mp4";
-      assert.equal(decide(dir, { stage: "deliver", answer: output }).next.type, "done");
+      assert.equal(decide(dir, { by: "owner", stage: "deliver", answer: output }).next.type, "done");
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
     const quick = checkedWorkflowFixture(deliverable, "quick");
     try {
       const output = deliverable === "film" ? "out.mp4" : "renders/edit.mp4";
-      if (deliverable === "film") {
-        assert.throws(() => decide(quick, { stage: "deliver", answer: output }), /review/, "quick film records delivery only after the owner's verdict");
-        decide(quick, { stage: "review", verdict: "accept" });
-      }
-      assert.equal(decide(quick, { stage: "deliver", answer: output }).next.type, "done");
+      assert.throws(() => decide(quick, { by: "owner", stage: "deliver", answer: output }), /review/, "quick work records delivery only after the owner's verdict");
+      decide(quick, { by: "owner", stage: "review", verdict: "accept" });
+      assert.equal(decide(quick, { by: "owner", stage: "deliver", answer: output }).next.type, "done");
     } finally { fs.rmSync(quick, { recursive: true, force: true }); }
   }
   const web = checkedWorkflowFixture("web", "quick"), ui = tmp();
   try {
-    assert.equal(decide(web, { stage: "deliver", answer: "https://example.test/page" }).next.type, "done");
+    decide(web, { by: "owner", stage: "review", verdict: "accept" });
+    assert.equal(decide(web, { by: "owner", stage: "deliver", answer: "https://example.test/page" }).next.type, "done");
     initState(ui, { deliverable: "ui", tier: "quick" });
-    const declared = decide(ui, { stage: "deliver", answer: "evidence.png" }).next;
-    assert.equal(declared.type, "done");
-    assert.equal(declared.visualAcceptance, "not-evaluated");
+    const declared = decide(ui, { by: "agent", stage: "deliver", answer: "evidence.png" }).next;
+    assert.equal(declared.stage, "review", "ui work ends with the owner's acceptance of the delivered result");
+    assert.equal(declared.type, "ask");
+    assert.equal(decide(ui, { by: "owner", stage: "review", verdict: "accept" }).next.type, "done");
   } finally {
     fs.rmSync(web, { recursive: true, force: true });
     fs.rmSync(ui, { recursive: true, force: true });
@@ -2792,28 +2799,28 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
   for (const [deliverable, file, gate] of [["film", "out.mp4", "film"], ["edit", "renders/edit.mp4", "edit"], ["web", "index.html", "interaction"]]) {
     const dir = checkedWorkflowFixture(deliverable);
     try {
-      decide(dir, { stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
       const delivery = deliverable === "web" ? "https://example.test/page" : "final.mp4";
       if (deliverable !== "web") touch(dir, delivery, "delivered version");
-      decide(dir, { stage: "deliver", answer: delivery });
+      decide(dir, { by: "owner", stage: "deliver", answer: delivery });
       assert.equal(nextAction(dir).type, "done");
       if (deliverable !== "web") {
         rewriteSameTime(dir, delivery, "changed delivery file");
         assert.equal(nextAction(dir).stage, "deliver", "a changed final file requires delivery recording again");
-        decide(dir, { stage: "deliver", answer: delivery });
+        decide(dir, { by: "owner", stage: "deliver", answer: delivery });
         assert.equal(nextAction(dir).type, "done");
       }
       rewriteSameTime(dir, file, redraft(deliverable, "changed after delivery"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review");
-      decide(dir, { stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
       assert.equal(nextAction(dir).stage, "deliver", "a new acceptance does not restore the old delivery snapshot");
-      decide(dir, { stage: "deliver", answer: delivery });
+      decide(dir, { by: "owner", stage: "deliver", answer: delivery });
       assert.equal(nextAction(dir).type, "done");
-      decide(dir, { stage: "review", verdict: "reject", answer: "The accepted draft still needs a repair." });
+      decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The accepted draft still needs a repair." });
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a rejection after done revokes dependent acceptance and delivery");
-      decide(dir, { stage: "review", verdict: "accept" });
+      decide(dir, { by: "owner", stage: "review", verdict: "accept" });
       assert.equal(nextAction(dir).stage, "deliver");
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
@@ -2827,8 +2834,117 @@ test("unbound legacy review and delivery decisions remain readable but require f
     state.decisions.delivered = "https://example.test/page";
     touch(dir, ".design-pipeline/state.json", JSON.stringify(state));
     assert.equal(nextAction(dir).stage, "review");
-    decide(dir, { stage: "review", verdict: "accept" });
+    decide(dir, { by: "owner", stage: "review", verdict: "accept" });
     assert.equal(nextAction(dir).stage, "deliver");
     assert.equal(readState(dir).decisions.drafts.length, 2, "legacy history is preserved");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+// --- decision roles (adopt-ai-fluency-decision-roles, phase 1) -------------------------------------
+
+test("a new project records its delegation map with locked owner checkpoints and director defaults", t => {
+  const web = webProject(t);
+  const map = readState(web).delegation;
+  assert.deepEqual(Object.keys(map).sort(), ["components", "concept", "creative-intent", "deliver", "description", "intake", "reference", "review", "section"]);
+  assert.equal(map.review.to, "owner");
+  assert.equal(map.review.locked, true);
+  assert.equal(map["creative-intent"].locked, true);
+  assert.equal(map.reference.to, "agent");
+  assert.equal(map.concept.to, "owner");
+  const directed = tmp();
+  t.after(() => fs.rmSync(directed, { recursive: true, force: true }));
+  initState(directed, { deliverable: "web", tier: "standard", director: "art-model", assistedBy: "Claude Code (test)" });
+  const state = readState(directed);
+  assert.equal(state.delegation.concept.to, "agent", "--director delegates the concept pick");
+  assert.equal(state.delegation.section.to, "agent", "--director delegates section reviews");
+  assert.equal(state.delegation.review.to, "owner", "final acceptance never goes to the director");
+  assert.equal(state.assistedBy, "Claude Code (test)");
+  const quick = webProject(t, { tier: "quick" });
+  assert.equal(readState(quick).delegation.intake.to, "agent", "a quick piece states its intake decision");
+  assert.equal(readState(quick).delegation.section, undefined, "quick builds the page whole");
+});
+
+test("decide requires --by, refuses agent records the owner keeps, and never lets an agent accept", t => {
+  const root = webProject(t);
+  assert.match(refuses(root, { stage: "intake", verdict: "accept", answer: PLAYBACK, by: undefined }, "CONTRACT_INVALID").message, /--by is required/);
+  assert.match(refuses(root, { stage: "intake", verdict: "accept", answer: PLAYBACK, by: "someone" }, "CONTRACT_INVALID").message, /--by is required/);
+  assert.match(refuses(root, { stage: "intake", verdict: "accept", answer: PLAYBACK, by: "agent" }, "CONTRACT_INVALID").message, /owner's to decide.*--delegate intake/);
+  assert.match(refuses(root, { stage: "intake", verdict: "accept", answer: PLAYBACK, delegate: ["review"] }, "CONTRACT_INVALID").message, /stays with the owner/);
+  assert.match(refuses(root, { stage: "intake", verdict: "accept", answer: PLAYBACK, delegate: ["colours"] }, "CONTRACT_INVALID").message, /unknown checkpoint "colours".*components/);
+  assert.match(refuses(root, { stage: "reference", answer: "none", delegate: ["components"] }, "CONTRACT_INVALID").message, /go on the intake record/);
+  decide(root, { by: "owner", stage: "intake", verdict: "accept", answer: PLAYBACK, delegate: ["components"], keep: ["reference"] });
+  const map = readState(root).delegation;
+  assert.deepEqual([map.components.to, map.components.set], ["agent", "owner"]);
+  assert.deepEqual([map.reference.to, map.reference.set], ["owner", "owner"]);
+  const film = checkedWorkflowFixture("film", "quick");
+  t.after(() => fs.rmSync(film, { recursive: true, force: true }));
+  assert.match(refuses(film, { stage: "review", verdict: "accept", by: "agent" }, "CONTRACT_INVALID").message, /stays with the owner; only --by owner/);
+});
+
+test("records carry who decided, agent records name the agent, and returned commands carry the role", t => {
+  const root = tmp();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  initState(root, { deliverable: "web", tier: "standard", director: "art-model", assistedBy: "Claude Code (test)" });
+  const intake = nextAction(root);
+  assert.match(intake.record, / --by owner --stage intake /);
+  assert.ok(intake.delegation.agent.includes("concept") && intake.delegation.locked.includes("review"), "the playback learns what the agent decides");
+  confirmPlayback(root);
+  decide(root, { by: "agent", stage: "reference", answer: "none" });
+  writeVariants(root);
+  decide(root, { by: "agent", stage: "concept", choice: "B" });
+  const state = readState(root);
+  assert.equal(state.decisions.variants.at(-1).by, "agent");
+  assert.equal(state.decisions.variants.at(-1).agent, "art-model", "a directed pick names the art director");
+  const roles = state.decisions.roles.map(entry => [entry.stage, entry.by, entry.agent ?? null]);
+  assert.deepEqual(roles, [["intake", "owner", null], ["reference", "agent", "Claude Code (test)"], ["concept", "agent", "art-model"]]);
+});
+
+test("ui and quick work end with the owner's acceptance, and done renders the diligence statement", t => {
+  const ui = tmp();
+  t.after(() => fs.rmSync(ui, { recursive: true, force: true }));
+  initState(ui, { deliverable: "ui", tier: "quick", assistedBy: "Claude Code (test)" });
+  const work = nextAction(ui);
+  assert.match(work.command, / --by agent --stage deliver /);
+  const review = decide(ui, { by: "agent", stage: "deliver", answer: "index.html checked in a browser" }).next;
+  assert.equal(review.stage, "review");
+  assert.match(review.why, /passing check/);
+  assert.match(review.record, / --by owner --stage review /);
+  assert.equal(nextAction(ui).diligence, undefined);
+  decide(ui, { by: "owner", stage: "review", verdict: "reject", answer: "The header feels cramped on phones" });
+  assert.equal(nextAction(ui).stage, "work", "a rejection sends the work back");
+  decide(ui, { by: "agent", stage: "deliver", answer: "index.html with a roomier header" });
+  const done = decide(ui, { by: "owner", stage: "review", verdict: "accept", answer: "That header looks right now" }).next;
+  assert.equal(done.type, "done");
+  assert.deepEqual(done.diligence, { path: ".design-pipeline/diligence.md", current: true });
+  const statement = fs.readFileSync(path.join(ui, ".design-pipeline/diligence.md"), "utf8");
+  assert.match(statement, /^# AI diligence statement/);
+  assert.match(statement, /## Decided by the owner\n- Final acceptance: reject — "The header feels cramped on phones"\n- Final acceptance: accept — "That header looks right now"/);
+  assert.match(statement, /## Decided by the agent under delegation\n- Delivery — "index\.html checked in a browser" \(agent: Claude Code \(test\); delegated by default\)/);
+  assert.match(statement, /Final acceptance recorded by the owner at .*: "That header looks right now"/);
+  assert.match(statement, /1 rule\(s\)/);
+  assert.match(statement, /Suggested trailer: Assisted-by: Claude Code \(test\)/);
+  assert.match(statement, /## Delegation\n- Delivery: agent\n- Final acceptance: owner \(locked\)/);
+  // A later decision makes the statement stale until done renders it again.
+  decide(ui, { by: "agent", stage: "deliver", answer: "index.html after a copy fix" });
+  assert.equal(nextAction(ui).stage, "review");
+  const rendered = diligence(ui);
+  assert.equal(rendered.written, false);
+  assert.match(rendered.text, /Delivery — "index\.html after a copy fix"/);
+  assert.equal(fs.readFileSync(path.join(ui, ".design-pipeline/diligence.md"), "utf8"), statement, "diligence without write changes nothing");
+});
+
+test("the diligence statement separates technical checks from owner acceptance and counts unauthored records", t => {
+  const film = checkedWorkflowFixture("film", "quick");
+  t.after(() => fs.rmSync(film, { recursive: true, force: true }));
+  const state = readState(film);
+  state.decisions.drafts = [{ verdict: "reject", reason: "An old verdict without an author.", at: "2026-01-01T00:00:00.000Z", inputHashes: {} }];
+  touch(film, ".design-pipeline/state.json", JSON.stringify(state));
+  const { text } = diligence(film, { write: true });
+  assert.match(text, /## Technical checks \(not creative acceptance\)\n- storyboard: passed\n- film: passed/);
+  assert.match(text, /- 1 decision record\(s\) predate decision roles/);
+  assert.match(text, /No owner acceptance recorded yet/);
+  assert.ok(fs.existsSync(path.join(film, ".design-pipeline/diligence.md")));
+  const cli = runCli("diligence", "--root", film, "--project-root", film);
+  assert.equal(cli.status, 0, cli.text);
+  assert.match(cli.json.text, /^# AI diligence statement/);
 });

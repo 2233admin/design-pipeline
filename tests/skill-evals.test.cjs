@@ -184,7 +184,7 @@ test("quick Chinese page eval checks browser behavior and the public workflow", 
     assert.deepEqual(errors, []);
     assert.deepEqual(externalRequests, []);
     writeJson(root, "evidence.json", { browser: browser.version(), required, invalidEmail, success, saved, size, animationCount, errors, externalRequests });
-    runCli(root, ["decide", "--project-root", ".", "--stage", "deliver", "--answer", "index.html; evidence.json: browser behavior checked; Visual Acceptance not-evaluated"]);
+    runCli(root, ["decide", "--project-root", ".", "--stage", "deliver", "--by", "owner", "--answer", "index.html; evidence.json: browser behavior checked; Visual Acceptance not-evaluated"]);
     const next = runCli(root, ["next", "--project-root", "."]);
     writeJson(root, "next.json", next);
     assert.equal(next.type, "done");

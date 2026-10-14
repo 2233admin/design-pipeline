@@ -390,7 +390,7 @@ test("public CLI rejects a card-only product promo, blocks fiction and admits th
     assert.equal(blocked.output.type, "blocked");
     assert.equal(blocked.output.stage, "source");
     assert.equal(blocked.output.blocker.kind, "no-repository");
-    const premature = runCli(root, "decide", "--stage", "review", "--verdict", "accept");
+    const premature = runCli(root, "decide", "--stage", "review", "--by", "owner", "--verdict", "accept");
     assert.equal(premature.status, 1, "a blocked product promo cannot reach review");
 
     writeBoard(root, sourcedBoard(root));

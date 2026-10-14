@@ -31,7 +31,8 @@ const MODES = ["brief", "replicate", "freeform"];
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, gateStatus, invalidateCheckedEvidence, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const roles = require("./workflows/roles.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -48,7 +49,9 @@ function codeStages(state) {
       why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates.",
     }),
   };
-  return [...(tier === "quick" ? [] : [INTAKE]), ...(mode === "replicate" ? [REFERENCE] : []), work];
+  // Every tier ends with the owner's acceptance of the delivered work: visual quality is not
+  // something a passing check can accept on the owner's behalf.
+  return [...(tier === "quick" ? [] : [INTAKE]), ...(mode === "replicate" ? [REFERENCE] : []), work, REVIEW];
 }
 
 function stagesFor(state) {
@@ -138,7 +141,8 @@ function initState(root, options = {}) {
   let jobPlan = null;
   if (named) jobPlan = newJobPlan(root, options.jobPlan);
   else if (options.deliverable === "film" && fs.existsSync(path.join(root, JOB_PLAN))) jobPlan = newJobPlan(root, JOB_PLAN);
-  const state = { schema: SCHEMA, deliverable: options.deliverable, tier, mode, director: options.director || null, ...(jobPlan ? { jobPlan } : {}), decisions: {}, gates: {}, rules: [], createdAt: new Date().toISOString() };
+  const state = { schema: SCHEMA, deliverable: options.deliverable, tier, mode, director: options.director || null, assistedBy: options.assistedBy || null, ...(jobPlan ? { jobPlan } : {}), decisions: {}, gates: {}, rules: [], createdAt: new Date().toISOString() };
+  state.delegation = roles.defaultDelegation(state, stagesFor(state).map(stage => stage.id));
   writeState(root, state);
   return state;
 }
@@ -157,18 +161,47 @@ function nextAction(root) {
   }
   stateJobPlan(root, state);
   const stages = stagesFor(state);
+  roles.ensureDelegation(state, stages.map(stage => stage.id)); // In memory only: next never writes state.
   const done = [];
   for (const stage of stages) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
-    const action = stage.action(state, root);
-    // Visual asks go to the art director: the concept pick, a sample, a built web section, the review.
-    const directed = state.director && action.type === "ask" && ["concepts", "sample", "build", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
+    const action = withRoles(stage.action(state, root));
+    // Visual picks go to the art director: the concept pick, a sample, a built web section. Final
+    // acceptance never does; it stays with the owner.
+    const directed = state.director && action.type === "ask" && ["concepts", "sample", "build"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
+    if (stage.id === "intake" && action.type === "ask") action.delegation = delegationHint(state);
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
     return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
   }
-  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
+  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, diligence: roles.statementStatus(root, state, deliveryCurrent(state, root)), line: `${state.deliverable}/${state.tier}: done` };
+}
+
+// A delivery recorded for a deliverable with a deliver stage must still match what was reviewed; ui
+// records its delivery evidence in its work stage, and its review binds that evidence.
+const deliveryCurrent = (state, root) => state.deliverable === "ui" ? Boolean(state.decisions?.delivered) : deliveryRecorded(state, root);
+
+// Returned decide commands carry the role their recorder claims: an ask records the owner's words, a
+// run records what the agent decided under delegation.
+function withRoles(action) {
+  const role = action.type === "ask" ? "owner" : "agent";
+  const out = { ...action };
+  for (const key of ["record", "correction", "skip", "command", "then"]) {
+    if (typeof out[key] === "string" && / decide --root /.test(out[key]) && !/--by /.test(out[key])) out[key] = out[key].replace(/ --stage /, ` --by ${role} --stage `);
+  }
+  return out;
+}
+
+// What the intake playback tells the owner: which checkpoints the agent decides and which are theirs.
+function delegationHint(state) {
+  const entries = Object.entries(state.delegation || {});
+  return {
+    agent: entries.filter(([, entry]) => entry.to === "agent").map(([checkpoint]) => checkpoint),
+    owner: entries.filter(([, entry]) => entry.to === "owner").map(([checkpoint]) => checkpoint),
+    locked: entries.filter(([, entry]) => entry.locked).map(([checkpoint]) => checkpoint),
+    instruction: "In the playback, tell the owner in one line what you will decide and what stays theirs. Record their changes on the intake record with --delegate <checkpoint> (hand it to you) or --keep <checkpoint> (keep it theirs), each repeatable. Final acceptance and creative intent always stay with the owner.",
+  };
 }
 
 function decide(root, options = {}) {
@@ -178,6 +211,12 @@ function decide(root, options = {}) {
   const stage = options.stage;
   assertEnum(stage, ["intake", "reference", "concept", "components", "description", "section", "sample", "review", "deliver"], "stage", "workflow");
   state.decisions = state.decisions || {};
+  if (roles.ensureDelegation(state, stagesFor(state).map(item => item.id))) writeState(root, state);
+  const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
+  if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
+  const role = roles.recordRole(state, stage, options.by);
+  if (delegate.length || keep.length) roles.applyDelegation(state, delegate, keep);
+  const before = roles.historySizes(state);
   // Web records its conversation, variants, decision round, description and sections itself (workflows/web.cjs).
   const webRecord = state.deliverable === "web" ? SUB_WORKFLOWS.web.decisions[stage] : null;
   if (!webRecord && ["components", "description", "section"].includes(stage)) fail("workflow", `--stage ${stage} applies only to web workflows; this project is a ${state.deliverable} workflow. Fix: follow next.`);
@@ -243,7 +282,7 @@ function decide(root, options = {}) {
     }
   } else if (stage === "deliver") {
     const next = nextAction(root);
-    const allowed = state.deliverable === "ui" ? ["work", "done"] : ["deliver", "done"];
+    const allowed = state.deliverable === "ui" ? ["work", "review", "done"] : ["deliver", "done"];
     if (!allowed.includes(next.stage)) fail("workflow", `Cannot record delivery while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     if (["film", "edit"].includes(state.deliverable)) {
       const file = resolveInside(root, options.answer, "delivery file (--answer)", { scope: "workflow", mustExist: true });
@@ -253,8 +292,28 @@ function decide(root, options = {}) {
     state.decisions.delivered = options.answer || true;
     if (state.deliverable !== "ui") state.decisions.deliveryInputHashes = structuredClone(reviewInputHashes(state));
   }
+  // A skipped standard conversation hands intake to the agent: the owner chose not to be asked.
+  if (stage === "intake" && state.decisions.intake?.skipped && state.delegation?.intake && state.tier !== "quick") state.delegation.intake = { ...state.delegation.intake, to: "agent", set: "owner" };
+  roles.stampRecord(state, before, stage, role, options);
   writeState(root, state);
-  return { status: "recorded", stage, next: nextAction(root) };
+  const next = nextAction(root);
+  // Reaching done renders the diligence statement from the state just written.
+  if (next.type === "done") {
+    roles.writeStatement(root, readState(root), { delivered: state.decisions.delivered || null, deliveryCurrent: deliveryCurrent(state, root), gates: state.gates });
+    return { status: "recorded", stage, next: nextAction(root) };
+  }
+  return { status: "recorded", stage, next };
+}
+
+// The diligence statement on demand: rendered from the current state, written only with write.
+function diligence(root, options = {}) {
+  const state = readState(root);
+  if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
+  roles.ensureDelegation(state, stagesFor(state).map(stage => stage.id));
+  const context = { delivered: state.decisions?.delivered || null, deliveryCurrent: deliveryCurrent(state, root), gates: state.gates || {} };
+  const text = roles.renderStatement(state, context);
+  if (options.write) roles.writeStatement(root, state, context);
+  return { path: roles.STATEMENT.split(path.sep).join("/"), written: Boolean(options.write), text };
 }
 
 // Gates report back here so `next` knows a check passed without rerunning it.
@@ -696,4 +755,4 @@ function decideVisualTask(changeRoot, options = {}) {
   return { status: failure ? "blocked" : "recorded", taskId: current.id, ...(failure ? { failure } : {}), visualAcceptance: "not-evaluated", next: nextVisualTask(changeRoot) };
 }
 
-module.exports = { DELIVERABLES, SCHEMA, STATE, TIERS, bindStateJobPlan, decide, decideVisualTask, initState, nextAction, nextVisualTask, projectJobPlan, readState, recordGate };
+module.exports = { DELIVERABLES, SCHEMA, STATE, TIERS, bindStateJobPlan, decide, decideVisualTask, diligence, initState, nextAction, nextVisualTask, projectJobPlan, readState, recordGate };

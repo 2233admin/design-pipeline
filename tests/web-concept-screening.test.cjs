@@ -31,7 +31,7 @@ function conceptsAction(tier, ready) {
   try {
     initState(root, { deliverable: "web", tier });
     flow.confirmPlayback(root);
-    decide(root, { stage: "reference", answer: "none" });
+    decide(root, { by: "owner", stage: "reference", answer: "none" });
     if (ready) {
       fs.writeFileSync(path.join(root, "concepts.md"), "# Three concept cards\n");
       fs.writeFileSync(path.join(root, "concepts.html"), flow.variantsPage());
@@ -112,8 +112,8 @@ const rulesFrom = root => readState(root).rules.map(rule => rule.from);
 test("the variants page needs three marked first screens and the switcher before the owner picks", t => {
   const root = project(t);
   flow.confirmPlayback(root);
-  refuses(root, { stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
-  decide(root, { stage: "reference", answer: "none" });
+  refuses(root, { by: "owner", stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
+  decide(root, { by: "owner", stage: "reference", answer: "none" });
   const run = nextAction(root);
   assert.equal(run.stage, "concepts");
   assert.equal(run.type, "run");
@@ -122,7 +122,7 @@ test("the variants page needs three marked first screens and the switcher before
   assert.match(run.instruction, /concepts\.html/);
   write(root, "concepts.md", "# Concepts\n");
   assert.equal(nextAction(root).type, "run", "concepts.md alone is not the variants page");
-  refuses(root, { stage: "concept", verdict: "reject", answer: "They look the same" }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "owner", stage: "concept", verdict: "reject", answer: "They look the same" }, "WORKFLOW_NOT_READY");
 
   const codes = () => {
     const action = nextAction(root);
@@ -131,12 +131,12 @@ test("the variants page needs three marked first screens and the switcher before
   };
   write(root, "concepts.html", "<!doctype html><p>Three ideas</p>");
   assert.deepEqual(codes(), ["variants-incomplete", "variant-switcher-missing"]);
-  refuses(root, { stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "owner", stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
   write(root, "concepts.html", flow.variantsPage(["A", "B"]));
   assert.deepEqual(codes(), ["variants-incomplete"]);
   write(root, "concepts.html", flow.variantsPage().replace(/<script>[\s\S]*<\/script>/, ""));
   assert.deepEqual(codes(), ["variant-switcher-missing"]);
-  refuses(root, { stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "owner", stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
 
   flow.writeVariants(root);
   const ask = nextAction(root);
@@ -147,12 +147,12 @@ test("the variants page needs three marked first screens and the switcher before
   assert.match(ask.record, /--stage concept --choice /);
   assert.match(ask.correction, /--stage concept --verdict reject --answer /);
 
-  for (const choice of ["2", "D", "A,A"]) refuses(root, { stage: "concept", choice }, "CONTRACT_INVALID");
-  refuses(root, { stage: "concept", choice: "B,C" }, "CONTRACT_INVALID");
-  decide(root, { stage: "concept", choice: "b" });
+  for (const choice of ["2", "D", "A,A"]) refuses(root, { by: "owner", stage: "concept", choice }, "CONTRACT_INVALID");
+  refuses(root, { by: "owner", stage: "concept", choice: "B,C" }, "CONTRACT_INVALID");
+  decide(root, { by: "owner", stage: "concept", choice: "b" });
   assert.equal(readState(root).decisions.concept, "B");
   assert.equal(nextAction(root).stage, "components");
-  decide(root, { stage: "concept", choice: "B,C", answer: "B's header with C's proof grid" });
+  decide(root, { by: "owner", stage: "concept", choice: "B,C", answer: "B's header with C's proof grid" });
   const { concept, conceptNotes, variants } = readState(root).decisions;
   assert.equal(concept, "B,C");
   assert.equal(conceptNotes, "B's header with C's proof grid");
@@ -163,7 +163,7 @@ test("a variants rejection becomes a rule and asks for a redo until concepts.htm
   const root = project(t);
   flow.toComponents(root);
   const page = fs.readFileSync(path.join(root, "concepts.html"));
-  decide(root, { stage: "concept", verdict: "reject", answer: "All three look like templates" });
+  decide(root, { by: "owner", stage: "concept", verdict: "reject", answer: "All three look like templates" });
   const redo = nextAction(root);
   assert.equal(redo.stage, "concepts");
   assert.equal(redo.type, "ask");
@@ -174,7 +174,7 @@ test("a variants rejection becomes a rule and asks for a redo until concepts.htm
   const ask = nextAction(root);
   assert.equal(ask.type, "ask");
   assert.equal(ask.first, undefined);
-  decide(root, { stage: "concept", verdict: "reject", answer: "C is still a stock grid" });
+  decide(root, { by: "owner", stage: "concept", verdict: "reject", answer: "C is still a stock grid" });
   assert.deepEqual(rulesFrom(root), ["variants 1", "variants 2"]);
   flow.pickVariant(root, "C");
   assert.equal(nextAction(root).stage, "components");
@@ -186,8 +186,8 @@ test("quick and replicate projects have no variants to pick or reject", t => {
     const root = project(t, { tier, mode });
     flow.toComponents(root);
     flow.writeVariants(root);
-    refuses(root, { stage: "concept", choice: "A" }, "CONTRACT_INVALID");
-    refuses(root, { stage: "concept", verdict: "reject", answer: "None of these" }, "CONTRACT_INVALID");
+    refuses(root, { by: "owner", stage: "concept", choice: "A" }, "CONTRACT_INVALID");
+    refuses(root, { by: "owner", stage: "concept", verdict: "reject", answer: "None of these" }, "CONTRACT_INVALID");
     assert.equal(nextAction(root).stage, "components", `${tier}/${mode}`);
   }
 });
@@ -196,7 +196,7 @@ test("quick and replicate projects have no variants to pick or reject", t => {
 
 // Components written from scratch: the recorded decision and the manifest the build stage checks.
 function fromScratch(root, answer = "Write the components from scratch") {
-  decide(root, { stage: "components", choice: "scratch", answer });
+  decide(root, { by: "owner", stage: "components", choice: "scratch", answer });
   write(root, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
 }
 
@@ -229,7 +229,7 @@ test("the prototype switcher never ships: build stays unfinished while index.htm
   const root = approved(t, ["first-screen"]);
   buildPage(root, ["first-screen"], INLINE_SWITCHER);
   shipped(root, "standard page with the inlined switcher");
-  refuses(root, { stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
+  refuses(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
   buildPage(root, ["first-screen"]);
   assert.equal(nextAction(root).type, "ask");
   assert.equal(flow.acceptSections(root).stage, "probe");

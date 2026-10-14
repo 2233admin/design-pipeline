@@ -203,7 +203,7 @@ test("a bound film's checks also bind its job plan, so a pass recorded before th
   assert.equal(nextAction(bound).stage, "build");
   touch(bound, "out.mp4", "draft");
   passFilm(bound);
-  decide(bound, { stage: "review", verdict: "accept" });
+  decide(bound, { by: "owner", stage: "review", verdict: "accept" });
   const done = nextAction(bound);
   assert.equal(done.type, "done");
   assert.equal(Object.hasOwn(done, "admission"), false, "only product promos report admission");
@@ -334,7 +334,7 @@ test("a stale Stage 0 binding throws JOB_PLAN_STALE from next, decide and projec
     const before = fs.readFileSync(stateFile(dir));
     assert.throws(() => nextAction(dir), stale(reason), label);
     assert.throws(() => projectJobPlan(dir), stale(reason), label);
-    assert.throws(() => decide(dir, { stage: "intake", answer: "default" }), stale(reason), label);
+    assert.throws(() => decide(dir, { by: "owner", stage: "intake", answer: "default" }), stale(reason), label);
     assert.deepEqual(fs.readFileSync(stateFile(dir)), before, `${label}: nothing is written`);
     assert.equal(fs.existsSync(path.join(dir, "brief.md")), false, `${label}: nothing is written`);
   }
@@ -398,7 +398,7 @@ test("the source stage returns admission findings, blocks on a blocked record an
   assert.deepEqual(next.completed, []);
   assert.equal(next.line, `film/quick: source (1/5) - blocked (needs-credentials): ${blocker.reason} Needs: ${blocker.needs}`);
   for (const options of [{ stage: "review", verdict: "accept" }, { stage: "review", verdict: "reject", answer: "Not the product." }, { stage: "deliver", answer: "out.mp4" }, { stage: "sample", verdict: "accept" }]) {
-    assert.throws(() => decide(dir, options), error => error.code === "WORKFLOW_NOT_READY" && /while source is unfinished/.test(error.message), options.stage);
+    assert.throws(() => decide(dir, { by: "owner", ...options }), error => error.code === "WORKFLOW_NOT_READY" && /while source is unfinished/.test(error.message), options.stage);
   }
   assert.deepEqual(fs.readFileSync(stateFile(dir)), before);
   assert.equal(nextAction(dir).type, "blocked", "a blocked product never advances");
@@ -416,7 +416,7 @@ test("a standard product promo scaffolded at source still asks for its reference
   const dir = project(t);
   writePlan(dir, PRODUCT_QUERY);
   initState(dir, { deliverable: "film", tier: "standard" });
-  decide(dir, { stage: "intake", answer: "default" });
+  decide(dir, { by: "owner", stage: "intake", answer: "default" });
   assert.match(nextAction(dir).instruction, /^Run the command first, then: /);
   scaffoldFilm(dir);
   assert.ok(fs.existsSync(path.join(dir, "reference.md")), "the scaffold writes the reference template");
@@ -485,20 +485,20 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   const assets = next.questions.find(question => question.id === "assets");
   assert.match(assets.ask, /product's repository.*run/);
   assert.equal(assets.recommended, "The product's own repository, run at a pinned commit; its real UI is captured — nothing invented.");
-  decide(dir, { stage: "intake", answer: "default" });
+  decide(dir, { by: "owner", stage: "intake", answer: "default" });
   assert.equal(nextAction(dir).stage, "source");
   const source = admittedSource(dir);
   const board = writeStoryboard(dir, source);
   assert.equal(nextAction(dir).stage, "reference");
-  decide(dir, { stage: "reference", answer: "none" });
+  decide(dir, { by: "owner", stage: "reference", answer: "none" });
   touch(dir, "concepts.md");
   assert.match(nextAction(dir).director, /claude-opus-5-5/);
-  decide(dir, { stage: "concept", choice: "1" });
+  decide(dir, { by: "owner", stage: "concept", choice: "1" });
   next = nextAction(dir);
   assert.equal(next.stage, "plan");
   assert.match(next.instruction, /beats\[\]\.source/);
   assert.match(next.instruction, /only a pure brand card, a brand-hold with transformation none, may stay unsourced, within a quarter of the film/);
-  assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "WORKFLOW_NOT_READY");
+  assert.throws(() => decide(dir, { by: "owner", stage: "sample", verdict: "accept" }), error => error.code === "WORKFLOW_NOT_READY");
   passStoryboard(dir);
 
   next = nextAction(dir);
@@ -508,7 +508,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.match(next.instruction, /5–8 s sample from the real captures cited in beats\[\]\.source/);
   assert.match(next.instruction, /sample\.mp4 at the project root/);
   let before = fs.readFileSync(stateFile(dir));
-  assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "INPUT_MISSING");
+  assert.throws(() => decide(dir, { by: "owner", stage: "sample", verdict: "accept" }), error => error.code === "INPUT_MISSING");
   assert.deepEqual(fs.readFileSync(stateFile(dir)), before);
 
   fakeCut(dir, 6, "first cut");
@@ -517,9 +517,9 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(next.first, undefined);
   assert.match(next.director, /claude-opus-5-5/, "art director mode applies to the sample");
   assert.deepEqual(next.show, ["sample.mp4", ...source.captures.map(capture => capture.path)].map(rel => path.join(dir, rel)));
-  assert.throws(() => decide(dir, { stage: "sample", verdict: "reject" }), /needs --answer/);
+  assert.throws(() => decide(dir, { by: "owner", stage: "sample", verdict: "reject" }), /needs --answer/);
   const rejection = "The chart is cropped off at the right edge.";
-  const rejected = decide(dir, { stage: "sample", verdict: "reject", answer: rejection });
+  const rejected = decide(dir, { by: "owner", stage: "sample", verdict: "reject", answer: rejection });
   assert.equal(rejected.next.stage, "sample");
   assert.equal(rejected.next.type, "ask");
   assert.ok(rejected.next.first.includes(`rejected this exact sample.mp4 ("${rejection}")`), "the rejected cut is recut before asking again");
@@ -529,7 +529,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
 
   fakeCut(dir, 6, "second cut");
   assert.equal(nextAction(dir).first, undefined, "a new cut is asked about afresh");
-  decide(dir, { stage: "sample", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "sample", verdict: "accept" });
   const samples = readState(dir).decisions.samples;
   assert.deepEqual(samples.map(sample => sample.verdict), ["reject", "accept"]);
   assert.equal(samples[1].sha256, `sha256:${hex(dir, "sample.mp4")}`);
@@ -551,7 +551,7 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(next.stage, "sample");
   assert.equal(next.type, "ask");
   before = fs.readFileSync(stateFile(dir));
-  decide(dir, { stage: "sample", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "sample", verdict: "accept" });
   assert.notDeepEqual(fs.readFileSync(stateFile(dir)), before);
 
   touch(dir, "out.mp4", "draft");
@@ -559,11 +559,11 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   passFilm(dir);
   next = nextAction(dir);
   assert.equal(next.stage, "review");
-  assert.match(next.director, /claude-opus-5-5/);
-  decide(dir, { stage: "review", verdict: "accept" });
+  assert.equal(next.director, undefined, "final acceptance stays with the owner; it is never routed to the art director");
+  decide(dir, { by: "owner", stage: "review", verdict: "accept" });
   assert.equal(nextAction(dir).stage, "deliver");
   touch(dir, "final.mp4", "final");
-  decide(dir, { stage: "deliver", answer: "final.mp4" });
+  decide(dir, { by: "owner", stage: "deliver", answer: "final.mp4" });
   const done = nextAction(dir);
   assert.equal(done.type, "done");
   assert.deepEqual(done.completed, PRODUCT_STANDARD);
@@ -576,11 +576,11 @@ test("a sample whose video stream reports no duration is not measured by its con
   const dir = project(t);
   writePlan(dir, PRODUCT_QUERY);
   initState(dir, { deliverable: "film", tier: "standard" });
-  decide(dir, { stage: "intake", answer: "default" });
+  decide(dir, { by: "owner", stage: "intake", answer: "default" });
   writeStoryboard(dir, admittedSource(dir));
-  decide(dir, { stage: "reference", answer: "none" });
+  decide(dir, { by: "owner", stage: "reference", answer: "none" });
   touch(dir, "concepts.md");
-  decide(dir, { stage: "concept", choice: "1" });
+  decide(dir, { by: "owner", stage: "concept", choice: "1" });
   passStoryboard(dir);
 
   // The container reports 6 s, but that may be a longer audio track over a short cut.
@@ -592,7 +592,7 @@ test("a sample whose video stream reports no duration is not measured by its con
   assert.match(next.findings[0].message, /video stream of sample\.mp4 reports no duration/);
   assert.match(next.findings[0].fix, /Recut sample\.mp4 .* 5–8 s/);
   const before = fs.readFileSync(stateFile(dir));
-  assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
+  assert.throws(() => decide(dir, { by: "owner", stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
   assert.deepEqual(fs.readFileSync(stateFile(dir)), before, "no verdict is recorded");
 
   fakeCut(dir, 6, "stream duration");
@@ -603,11 +603,11 @@ test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { sk
   const dir = project(t);
   writePlan(dir, PRODUCT_QUERY);
   initState(dir, { deliverable: "film", tier: "standard" });
-  decide(dir, { stage: "intake", answer: "default" });
+  decide(dir, { by: "owner", stage: "intake", answer: "default" });
   writeStoryboard(dir, admittedSource(dir));
-  decide(dir, { stage: "reference", answer: "none" });
+  decide(dir, { by: "owner", stage: "reference", answer: "none" });
   touch(dir, "concepts.md");
-  decide(dir, { stage: "concept", choice: "1" });
+  decide(dir, { by: "owner", stage: "concept", choice: "1" });
   passStoryboard(dir);
   assert.equal(nextAction(dir).stage, "sample");
 
@@ -630,7 +630,7 @@ test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { sk
     assert.equal(next.command, undefined);
     assert.ok(next.instruction.startsWith(next.findings[0].fix));
     const before = fs.readFileSync(stateFile(dir));
-    assert.throws(() => decide(dir, { stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
+    assert.throws(() => decide(dir, { by: "owner", stage: "sample", verdict: "accept" }), error => error.code === "SAMPLE_INVALID");
     assert.deepEqual(fs.readFileSync(stateFile(dir)), before, "no verdict is recorded");
   }
 
@@ -640,7 +640,7 @@ test("the owner is shown sample.mp4 only when it decodes and runs 5–8 s", { sk
 
   cut(dir, 7.64);
   assert.equal(nextAction(dir).type, "ask");
-  decide(dir, { stage: "sample", verdict: "accept" });
+  decide(dir, { by: "owner", stage: "sample", verdict: "accept" });
   assert.equal(nextAction(dir).stage, "build");
 
   // A verdict recorded before this check on an off-length file no longer finishes the stage.

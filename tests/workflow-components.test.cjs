@@ -57,7 +57,7 @@ for (const tier of tiers) for (const mode of modes) {
     assert.match(ask.record, /--stage components.*--choice.*--answer/);
     assert.ok(!ask.record.includes("--project-root ."));
     const answer = 'Use src/components first, then search the index for "pricing"';
-    const recorded = spawnSync(process.execPath, [cli, "decide", "--root", root, "--project-root", root, "--stage", "components", "--choice", "project,index", "--answer", answer, "--json"], { cwd: os.tmpdir(), encoding: "utf8", windowsHide: true });
+    const recorded = spawnSync(process.execPath, [cli, "decide", "--root", root, "--project-root", root, "--stage", "components", "--by", "owner", "--choice", "project,index", "--answer", answer, "--json"], { cwd: os.tmpdir(), encoding: "utf8", windowsHide: true });
     assert.equal(recorded.status, 0, recorded.stdout + recorded.stderr);
     assert.equal(readState(root).decisions.components, answer);
     assert.deepEqual(readState(root).decisions.componentSources, ["project", "index"]);
@@ -83,7 +83,7 @@ for (const tier of tiers) for (const mode of modes) {
 
 test("web component manifest requires an HTML file, entries array and each required field", t => {
   const root = fixture(t);
-  decide(root, { stage: "components", choice: "project", answer: "Existing project components" });
+  decide(root, { by: "owner", stage: "components", choice: "project", answer: "Existing project components" });
   manifest(root, [entry()]);
   assert.equal(nextAction(root).stage, "build");
   fs.mkdirSync(path.join(root, "index.html"));
@@ -105,7 +105,7 @@ test("web component manifest requires an HTML file, entries array and each requi
   fromUrl.availability = "reference-link";
   fromUrl.license.state = "unverified";
   fromUrl.usedIn[0].how = "Study and reimplement navigation independently";
-  decide(root, { stage: "components", choice: "github", answer: "Use https://github.com/example/components" });
+  decide(root, { by: "owner", stage: "components", choice: "github", answer: "Use https://github.com/example/components" });
   manifest(root, [fromUrl]);
   assert.equal(nextAction(root).stage, "probe", "a URL can identify a user-named source");
 });
@@ -115,8 +115,8 @@ test("scratch build accepts an empty manifest but still needs the recorded decis
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html>");
   manifest(root, [], true);
   assert.equal(nextAction(root).stage, "components");
-  assert.throws(() => decide(root, { stage: "components", choice: "scratch", answer: " " }), /answer/);
-  decide(root, { stage: "components", choice: "scratch", answer: "Write from scratch" });
+  assert.throws(() => decide(root, { by: "owner", stage: "components", choice: "scratch", answer: " " }), /answer/);
+  decide(root, { by: "owner", stage: "components", choice: "scratch", answer: "Write from scratch" });
   assert.equal(nextAction(root).stage, "probe");
 });
 
@@ -130,10 +130,10 @@ test("non-scratch component decisions cannot finish build with an empty manifest
     ["github", "Use https://github.com/shadcn-ui/ui"],
     ["project", "Reuse project components, then write from scratch if needed"],
   ]) {
-    decide(root, { stage: "components", choice, answer });
+    decide(root, { by: "owner", stage: "components", choice, answer });
     assert.equal(nextAction(root).stage, "build", `empty manifest must not satisfy ${answer}`);
   }
-  decide(root, { stage: "components", choice: "scratch", answer: "Write from scratch" });
+  decide(root, { by: "owner", stage: "components", choice: "scratch", answer: "Write from scratch" });
   assert.equal(nextAction(root).stage, "build", "scratch decision alone does not replace the explicit flag");
   manifest(root, [], true);
   assert.equal(nextAction(root).stage, "probe");
@@ -194,7 +194,7 @@ const round2Cases = [
 for (const [name, choice, answer, body, expected] of round2Cases) {
   test('round2 regression: ' + name, t => {
     const root = fixture(t);
-    decide(root, { stage: "components", choice, answer });
+    decide(root, { by: "owner", stage: "components", choice, answer });
     fs.writeFileSync(path.join(root, "index.html"), '<!doctype html><nav class="Navigation">Page</nav>');
     fs.writeFileSync(path.join(root, "component-manifest.json"), JSON.stringify(body()));
     const value = body();
@@ -205,7 +205,7 @@ for (const [name, choice, answer, body, expected] of round2Cases) {
 }
 
 function checkManifest(root, decision, value, error, choice = "index") {
-  decide(root, { stage: "components", choice, answer: decision });
+  decide(root, { by: "owner", stage: "components", choice, answer: decision });
   fs.writeFileSync(path.join(root, "component-manifest.json"), JSON.stringify(value));
   if (error) assert.throws(() => validateComponentManifest(value, { root, decision, componentSources: choice.split(",") }), error);
   else assert.equal(validateComponentManifest(value, { root, decision, componentSources: choice.split(",") }), value);
@@ -318,15 +318,15 @@ test("actual CLI outside the project accepts scratch and only valid real manifes
   }
   try {
     assert.equal(run(["next", "--deliverable", "web", "--tier", "quick", "--mode", "brief"]).stage, "intake");
-    run(["decide", "--stage", "intake", "--choice", "skip", "--answer", "I will build a one-screen navigation page from scratch."]);
+    run(["decide", "--stage", "intake", "--by", "owner", "--choice", "skip", "--answer", "I will build a one-screen navigation page from scratch."]);
     assert.equal(run(["next"]).stage, "components");
-    run(["decide", "--stage", "components", "--choice", "scratch", "--answer", "从零写"]);
+    run(["decide", "--stage", "components", "--by", "owner", "--choice", "scratch", "--answer", "从零写"]);
     fs.writeFileSync(path.join(root, "index.html"), '<nav class="Navigation">Page</nav>');
     manifest(root, []);
     assert.equal(run(["next"]).stage, "build");
     manifest(root, [], true);
     assert.equal(run(["next"]).stage, "probe");
-    run(["decide", "--stage", "components", "--choice", "index", "--answer", "Search the index"]);
+    run(["decide", "--stage", "components", "--by", "owner", "--choice", "index", "--answer", "Search the index"]);
     const fake = { ...realEntry(), sourceId: "invented/library" };
     manifest(root, [fake]);
     assert.equal(run(["next"]).stage, "build");
@@ -336,10 +336,10 @@ test("actual CLI outside the project accepts scratch and only valid real manifes
     manifest(root, [realEntry()]);
     assert.equal(run(["next"]).stage, "probe");
     const owned = { ...entry(), sourceId: "index.html" };
-    run(["decide", "--stage", "components", "--choice", "project", "--answer", "Use project components"]);
+    run(["decide", "--stage", "components", "--by", "owner", "--choice", "project", "--answer", "Use project components"]);
     manifest(root, [owned]);
     assert.equal(run(["next"]).stage, "probe");
-    run(["decide", "--stage", "components", "--choice", "github", "--answer", "Use https://github.com/example/library"]);
+    run(["decide", "--stage", "components", "--by", "owner", "--choice", "github", "--answer", "Use https://github.com/example/library"]);
     const github = { ...realEntry(), url: "https://github.com/example/library" };
     delete github.sourceId;
     github.license.state = "unverified";
@@ -359,7 +359,7 @@ for (const [choice, answer, rule] of [
 ]) {
   test("round3 regression: CLI rejects component choice " + String(choice), t => {
     const root = fixture(t);
-    const args = [cli, "decide", "--root", root, "--project-root", root, "--stage", "components", "--answer", answer, "--json"];
+    const args = [cli, "decide", "--root", root, "--project-root", root, "--stage", "components", "--by", "owner", "--answer", answer, "--json"];
     if (choice !== undefined) args.push("--choice", choice);
     const result = spawnSync(process.execPath, args, { encoding: "utf8", windowsHide: true });
     assert.equal(result.status, 1, result.stdout + result.stderr);
@@ -371,7 +371,7 @@ for (const [choice, answer, rule] of [
 test("round3 regression: canonical deduplicated choices preserve the user's answer", t => {
   const root = fixture(t);
   const answer = '  Use https://github.com/example/library and project "Button"  ';
-  decide(root, { stage: "components", choice: "index,github,project,index,github", answer });
+  decide(root, { by: "owner", stage: "components", choice: "index,github,project,index,github", answer });
   assert.deepEqual(readState(root).decisions.componentSources, ["project", "github", "index"]);
   assert.equal(readState(root).decisions.components, answer);
   assert.equal(nextAction(root).stage, "build");
@@ -397,7 +397,7 @@ for (const answer of ["从零写，动效 motion 要克制", "Write the UI compo
   test("round3 regression: scratch answer is independent of source names: " + answer, t => {
     const root = fixture(t);
     fs.writeFileSync(path.join(root, "index.html"), "Page");
-    decide(root, { stage: "components", choice: "scratch", answer });
+    decide(root, { by: "owner", stage: "components", choice: "scratch", answer });
     manifest(root, [], true);
     assert.equal(nextAction(root).stage, "probe");
     assert.equal(readState(root).decisions.components, answer);
@@ -409,7 +409,7 @@ for (const choice of ["project", "github", "index"]) {
     const root = fixture(t);
     const answer = choice === "github" ? "Use https://github.com/example/library" : "Use the project's existing components in src/components/Button.tsx";
     fs.writeFileSync(path.join(root, "index.html"), "Page");
-    decide(root, { stage: "components", choice, answer });
+    decide(root, { by: "owner", stage: "components", choice, answer });
     const value = { fromScratch: true, entries: [] };
     manifest(root, value.entries, value.fromScratch);
     assert.throws(() => validateComponentManifest(value, { root, decision: answer, componentSources: [choice] }), { code: "CONTRACT_INVALID" });
@@ -421,7 +421,7 @@ test("round3 regression: scratch accepts the indexed project-owned source bounda
   const root = fixture(t);
   const answer = "Write from scratch";
   fs.writeFileSync(path.join(root, "index.html"), "Page");
-  decide(root, { stage: "components", choice: "scratch", answer });
+  decide(root, { by: "owner", stage: "components", choice: "scratch", answer });
   const value = { fromScratch: true, entries: [{ ...entry(), sourceId: "project-components" }] };
   manifest(root, value.entries, true);
   assert.equal(validateComponentManifest(value, { root, decision: answer, componentSources: ["scratch"] }), value);
@@ -433,7 +433,7 @@ test("round3 regression: scratch accepts the indexed project-owned source bounda
 test("round3 regression: fabricated source reports the validator reason and remediation", t => {
   const root = fixture(t);
   const answer = "Search the index";
-  decide(root, { stage: "components", choice: "index", answer });
+  decide(root, { by: "owner", stage: "components", choice: "index", answer });
   fs.writeFileSync(path.join(root, "index.html"), "Navigation Page");
   const value = { entries: [{ ...realEntry(), sourceId: "invented/library" }] };
   manifest(root, value.entries);
@@ -456,7 +456,7 @@ test("round3 regression: fabricated source reports the validator reason and reme
 
 test("round3 regression: returned search command excludes film-only records for film query", t => {
   const root = fixture(t);
-  decide(root, { stage: "components", choice: "index", answer: "Search the index for film" });
+  decide(root, { by: "owner", stage: "components", choice: "index", answer: "Search the index for film" });
   const instruction = nextAction(root).instruction;
   const command = instruction.match(/`(node [^`]+ design-system search [^`]+)`/)?.[1];
   assert.ok(command, instruction);
@@ -473,7 +473,7 @@ test("round3 regression: returned search command excludes film-only records for 
 const AUDIT_PROBE_FILE = JSON.stringify({ schema: "design-pipeline.interaction-probe.v1", id: "page", url: "index.html", probes: [{ id: "page-audit", kind: "audit", thresholds: { fonts: ["Inter"] } }] });
 const LINEAGE = { files: ["index.html"], tokens: [], absent: [], remote: [] };
 function checkedPage(root, choice = "project", answer = "Use project components") {
-  decide(root, { stage: "components", choice, answer });
+  decide(root, { by: "owner", stage: "components", choice, answer });
   toBuild(root);
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><h1>Page</h1>");
   manifest(root, [entry()]);
@@ -486,8 +486,8 @@ const deliveryFields = state => ({ delivered: state.decisions.delivered, deliver
 test("lineage regression: changed components decision invalidates a quick interaction pass", t => {
   const root = fixture(t);
   checkedPage(root);
-  assert.equal(nextAction(root).type, "done");
-  decide(root, { stage: "components", choice: "project", answer: "Use existing project components" });
+  assert.equal(nextAction(root).stage, "review", "a quick page ends with the owner's acceptance");
+  decide(root, { by: "owner", stage: "components", choice: "project", answer: "Use existing project components" });
   assert.equal(nextAction(root).stage, "probe");
   assert.equal(readState(root).gates.interaction, undefined);
   assert.deepEqual(readState(root).decisions.componentSources, ["project"]);
@@ -496,11 +496,11 @@ test("lineage regression: changed components decision invalidates a quick intera
 test("lineage regression: changed components decision requires a fresh review and delivery", t => {
   const root = fixture(t, "standard");
   checkedPage(root);
-  decide(root, { stage: "review", verdict: "accept" });
-  decide(root, { stage: "deliver", answer: "https://example.test/page" });
+  decide(root, { by: "owner", stage: "review", verdict: "accept" });
+  decide(root, { by: "owner", stage: "deliver", answer: "https://example.test/page" });
   assert.equal(nextAction(root).type, "done");
   const recordedDrafts = structuredClone(readState(root).decisions.drafts);
-  decide(root, { stage: "components", choice: "project", answer: "Search the index" });
+  decide(root, { by: "owner", stage: "components", choice: "project", answer: "Search the index" });
   assert.equal(nextAction(root).stage, "description", "a different component decision makes the description approval stale");
   approveDescription(root);
   assert.equal(acceptSections(root).stage, "probe");
@@ -509,17 +509,17 @@ test("lineage regression: changed components decision requires a fresh review an
   const state = readState(root);
   assert.deepEqual(deliveryFields(state), { delivered: undefined, deliveryInputHashes: undefined, deliveredSha256: undefined });
   assert.deepEqual(state.decisions.drafts, recordedDrafts, "recorded review verdicts and their bindings are never rewritten");
-  decide(root, { stage: "review", verdict: "accept" });
+  decide(root, { by: "owner", stage: "review", verdict: "accept" });
   assert.equal(nextAction(root).stage, "deliver", "a fresh accept under the new decision completes review");
 });
 
 test("lineage regression: identical components re-record keeps checked evidence", t => {
   const root = fixture(t, "standard");
   checkedPage(root, "project,index", "Use project components, then the index");
-  decide(root, { stage: "review", verdict: "accept" });
-  decide(root, { stage: "deliver", answer: "https://example.test/page" });
+  decide(root, { by: "owner", stage: "review", verdict: "accept" });
+  decide(root, { by: "owner", stage: "deliver", answer: "https://example.test/page" });
   const before = readState(root);
-  decide(root, { stage: "components", choice: "index,project,index", answer: "Use project components, then the index" });
+  decide(root, { by: "owner", stage: "components", choice: "index,project,index", answer: "Use project components, then the index" });
   const after = readState(root);
   assert.deepEqual(after.gates, before.gates);
   assert.deepEqual(after.decisions.drafts, before.decisions.drafts);
@@ -557,7 +557,7 @@ test("lineage regression: first explicit components decision invalidates a legac
   delete legacy.decisions.componentSources;
   fs.writeFileSync(file, JSON.stringify(legacy));
   assert.equal(readState(root).gates.interaction.status, "passed");
-  decide(root, { stage: "components", choice: "project", answer: "Use project components" });
+  decide(root, { by: "owner", stage: "components", choice: "project", answer: "Use project components" });
   assert.equal(readState(root).gates.interaction, undefined);
   assert.equal(nextAction(root).stage, "probe");
 });
@@ -573,7 +573,7 @@ test("components decisions are rejected outside web workflows and leave their st
     seeded.decisions = { ...(seeded.decisions || {}), delivered: true };
     fs.writeFileSync(file, JSON.stringify(seeded));
     const before = fs.readFileSync(file, "utf8");
-    assert.throws(() => decide(root, { stage: "components", choice: "index", answer: "Search the index" }), /--stage components applies only to web workflows/, deliverable);
+    assert.throws(() => decide(root, { by: "owner", stage: "components", choice: "index", answer: "Search the index" }), /--stage components applies only to web workflows/, deliverable);
     assert.equal(fs.readFileSync(file, "utf8"), before, `${deliverable} state must stay byte-identical`);
   }
 });
@@ -617,7 +617,7 @@ const studiedIcons = () => ({
 
 // Records the decision through the real decide, then checks that the validator and next agree.
 function checkDiscovery(root, choice, answer, value, error) {
-  decide(root, { stage: "components", choice, answer });
+  decide(root, { by: "owner", stage: "components", choice, answer });
   fs.writeFileSync(path.join(root, "component-manifest.json"), JSON.stringify(value));
   const options = { root, decision: answer, componentSources: readState(root).decisions.componentSources };
   if (error) assert.throws(() => validateComponentManifest(value, options), error);
@@ -627,33 +627,33 @@ function checkDiscovery(root, choice, answer, value, error) {
 
 test("discovery: decide records discover in canonical order and keeps scratch exclusive", t => {
   const root = discoveryFixture(t);
-  decide(root, { stage: "components", choice: "discover,index,project,discover", answer: "Our components, then the index, then find more" });
+  decide(root, { by: "owner", stage: "components", choice: "discover,index,project,discover", answer: "Our components, then the index, then find more" });
   assert.deepEqual(readState(root).decisions.componentSources, ["project", "index", "discover"]);
-  decide(root, { stage: "components", choice: "discover,index,github,project", answer: "Use https://github.com/example/library, then find more" });
+  decide(root, { by: "owner", stage: "components", choice: "discover,index,github,project", answer: "Use https://github.com/example/library, then find more" });
   assert.deepEqual(readState(root).decisions.componentSources, ["project", "github", "index", "discover"]);
-  decide(root, { stage: "components", choice: "discover", answer: "Find maintained open-source options" });
+  decide(root, { by: "owner", stage: "components", choice: "discover", answer: "Find maintained open-source options" });
   assert.deepEqual(readState(root).decisions.componentSources, ["discover"]);
   for (const choice of ["scratch,discover", "discover,scratch"]) {
-    assert.throws(() => decide(root, { stage: "components", choice, answer: "Write from scratch" }), /scratch cannot be combined/);
+    assert.throws(() => decide(root, { by: "owner", stage: "components", choice, answer: "Write from scratch" }), /scratch cannot be combined/);
   }
   assert.deepEqual(readState(root).decisions.componentSources, ["discover"], "a rejected choice records nothing");
-  const result = spawnSync(process.execPath, [cli, "decide", "--root", root, "--project-root", root, "--stage", "components", "--choice", "discover,library", "--answer", "Find more", "--json"], { encoding: "utf8", windowsHide: true });
+  const result = spawnSync(process.execPath, [cli, "decide", "--root", root, "--project-root", root, "--stage", "components", "--by", "owner", "--choice", "discover,library", "--answer", "Find more", "--json"], { encoding: "utf8", windowsHide: true });
   assert.equal(result.status, 1, result.stdout + result.stderr);
   assert.match(result.stdout + result.stderr, /project,github,index,discover,scratch/);
 });
 
 test("discovery: adding discover to a recorded decision invalidates checked evidence through the existing lineage", t => {
   const root = discoveryFixture(t);
-  decide(root, { stage: "components", choice: "project", answer: "Use project components" });
+  decide(root, { by: "owner", stage: "components", choice: "project", answer: "Use project components" });
   fs.writeFileSync(path.join(root, "component-manifest.json"), JSON.stringify({ entries: [ownedNavigation()] }));
   fs.writeFileSync(path.join(root, "interaction.json"), AUDIT_PROBE_FILE);
   recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
-  assert.equal(nextAction(root).type, "done");
-  decide(root, { stage: "components", choice: "project,discover", answer: "Use project components" });
+  assert.equal(nextAction(root).stage, "review");
+  decide(root, { by: "owner", stage: "components", choice: "project,discover", answer: "Use project components" });
   assert.equal(readState(root).gates.interaction, undefined);
   assert.equal(nextAction(root).stage, "probe");
   recordGate(root, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
-  decide(root, { stage: "components", choice: "discover,project", answer: "Use project components" });
+  decide(root, { by: "owner", stage: "components", choice: "discover,project", answer: "Use project components" });
   assert.equal(readState(root).gates.interaction.status, "passed", "re-recording the identical set keeps the pass");
 });
 
@@ -679,7 +679,7 @@ test("discovery: components ask offers discover and recommends project, index, t
 
 test("discovery: build instruction searches the index first, routes discovery to GitHub and fonts to their guide", t => {
   const root = discoveryFixture(t);
-  decide(root, { stage: "components", choice: "project,index,discover", answer: "Project components, the index, then find more" });
+  decide(root, { by: "owner", stage: "components", choice: "project,index,discover", answer: "Project components, the index, then find more" });
   const instruction = nextAction(root).instruction;
   assert.match(instruction, /search the index first/i);
   assert.match(instruction, /nothing indexed fits.*maintained open-source.*GitHub/s);
@@ -699,7 +699,7 @@ test("discovery: build instruction searches the index first, routes discovery to
   assert.match(instruction, /self-host/);
   assert.match(instruction, /references\/web-motion\.md#self-contained-pages/);
   assert.match(instruction, /permits empty or project-owned-only entries; every other source set forbids fromScratch: true and requires non-empty entries/);
-  decide(root, { stage: "components", choice: "project,index", answer: "Project components, then the index" });
+  decide(root, { by: "owner", stage: "components", choice: "project,index", answer: "Project components, then the index" });
   const withoutDiscover = nextAction(root).instruction;
   assert.doesNotMatch(withoutDiscover, /nothing indexed fits/);
   assert.match(withoutDiscover, /tools\/fonts\.md/);
@@ -708,7 +708,7 @@ test("discovery: build instruction searches the index first, routes discovery to
   t.after(() => fs.rmSync(standard, { recursive: true, force: true }));
   initState(standard, { deliverable: "web", tier: "standard", mode: "brief" });
   toComponents(standard);
-  decide(standard, { stage: "components", choice: "project,index,discover", answer: "Project components, the index, then find more" });
+  decide(standard, { by: "owner", stage: "components", choice: "project,index,discover", answer: "Project components, the index, then find more" });
   toBuild(standard);
   const treatment = nextAction(standard);
   assert.equal(treatment.stage, "build");

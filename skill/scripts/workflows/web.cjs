@@ -602,14 +602,14 @@ const DELIVER = {
   action: (_state, root) => ({ type: "run", command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
 };
 
-// Quick: a stated decision, components, build, probe. Standard and full: the conversation, the
+// Quick: a stated decision, components, build, probe and the owner's final review. Standard and full: the conversation, the
 // variants (not in replicate, which keeps its reference), the decision round, the approved
 // description, the section-by-section build, probe, final review and delivery.
 function stages(state) {
   if (state.mode === "replicate") return state.tier === "quick"
-    ? [QUICK_INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE]
+    ? [QUICK_INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE, REVIEW]
     : [INTAKE, REFERENCE, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
-  if (state.tier === "quick") return [QUICK_INTAKE, COMPONENTS, BUILD, PROBE];
+  if (state.tier === "quick") return [QUICK_INTAKE, COMPONENTS, BUILD, PROBE, REVIEW];
   return [INTAKE, REFERENCE, CONCEPTS, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
 }
 
