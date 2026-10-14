@@ -55,7 +55,7 @@ function directionPreview() {
       { id: "quiet", name: "Quiet", thesis: "Quiet thesis", signature: "Quiet signature", axes: { luminance: "light", typeFamily: "serif", color: "monochrome", layout: "editorial", density: "airy", era: "classic", material: "paper" }, screenshot: write("quiet.png", pngBytes({ width: 1440, height: 900 })) },
       { id: "signal", name: "Signal", thesis: "Signal thesis", signature: "Signal signature", axes: { luminance: "dark", typeFamily: "sans", color: "duotone", layout: "grid", density: "dense", era: "futurist", material: "glass" }, screenshot: write("signal.png", pngBytes({ width: 1440, height: 900 })) },
     ],
-    decision: { status: "selected", selectedDirectionId: "signal", rationale: "Signal is selected." },
+    decision: { status: "selected", selectedDirectionId: "signal", rationale: "Signal is selected.", by: "owner" },
   };
   const bytes = Buffer.from(JSON.stringify(artifact));
   const artifactFile = path.join(directPreviewRoot, "direction-preview.json");
@@ -79,7 +79,7 @@ function adoptInput(overrides = {}) {
     referenceHash: "a".repeat(64),
     candidate: { id: "project-data-table-web-react", version: "1.0.0", platform: "web", framework: "react" },
     catalog: regionCatalog,
-    selectionMode: "adopt",
+    selectionMode: "adopt", selectedBy: "owner",
     directionLockSnapshot: preview.directionLockSnapshot,
     directionPreview: preview,
     hardGateResults: { license: "pass", provenance: "pass", security: "pass", accessibility: "pass" },
@@ -121,7 +121,7 @@ test("creates an immutable, hash-bound SelectionReceipt and gates task creation"
   const plan = createAdaptationPlan(receipt, adaptationContext(receipt, { preservedStructure: ["filter row"] }));
   assert.equal(plan.status, "draft");
   assert.equal(canCreateTasks(plan).allowed, false);
-  const approved = approveAdaptationPlan(plan, { reviewer: "user", rationale: "approved" });
+  const approved = approveAdaptationPlan(plan, { reviewer: "user", by: "owner", rationale: "approved" });
   assert.equal(approved.status, "approved");
   assert.equal(canCreateTasks(approved).allowed, true);
 });
@@ -140,7 +140,7 @@ test("requires a complete direction-preview proof and rejects hash-only locks", 
 
 test("reference mode is allowed without adoption authorization", () => {
   const receipt = createSelectionReceipt(adoptInput({
-    selectionMode: "reference",
+    selectionMode: "reference", selectedBy: "owner",
     sourceAndLicenseEvidence: undefined,
     hardGateResults: { license: "blocked", provenance: "missing", accessibility: "fail" },
   }));
@@ -148,7 +148,7 @@ test("reference mode is allowed without adoption authorization", () => {
   assert.deepEqual(receipt.sourceAndLicenseEvidence, []);
   assert.doesNotThrow(() => validateSelectionReceipt(receipt));
   assert.throws(() => createSelectionReceipt(adoptInput({
-    selectionMode: "reference",
+    selectionMode: "reference", selectedBy: "owner",
     sourceAndLicenseEvidence: [
       { kind: "license", value: "project-owned", source: "catalog-entry" },
       { kind: "provenance", value: "project-fixture", source: "task-3-fixture" },
@@ -191,14 +191,14 @@ test("plans preserve precedence and revisions return to review", () => {
   assert.equal(revised.revision, 2);
   assert.notEqual(revised.contentHash, submitted.contentHash);
   assert.equal(canCreateTasks(revised).allowed, false);
-  const approved = approveAdaptationPlan(revised, { reviewer: "user", rationale: "approved after revision" });
+  const approved = approveAdaptationPlan(revised, { reviewer: "user", by: "owner", rationale: "approved after revision" });
   assert.equal(canCreateTasks(approved).allowed, true);
 });
 
 test("persisted adaptation plans retain receipt and component-fit evidence", () => {
   const receipt = createSelectionReceipt(adoptInput());
   const plan = createAdaptationPlan(receipt, adaptationContext(receipt));
-  const approved = approveAdaptationPlan(plan, { reviewer: "user", rationale: "approved" });
+  const approved = approveAdaptationPlan(plan, { reviewer: "user", by: "owner", rationale: "approved" });
   assert.ok(approved.selectionReceipt);
   assert.ok(approved.componentFitMatrix);
   const forgedReceipt = { ...approved, selectionReceipt: { ...approved.selectionReceipt, receiptId: "forged-receipt" } };
@@ -220,7 +220,7 @@ test("rejected plans cannot create tasks", () => {
 test("plan hash binds the receipt and approval records must be valid", () => {
   const receipt = createSelectionReceipt(adoptInput());
   const plan = createAdaptationPlan(receipt, adaptationContext(receipt));
-  const approved = approveAdaptationPlan(plan, { reviewer: "user", rationale: "approved" });
+  const approved = approveAdaptationPlan(plan, { reviewer: "user", by: "owner", rationale: "approved" });
   const tampered = { ...approved, receiptHash: "c".repeat(64) };
   assert.equal(canCreateTasks(tampered).allowed, false);
   const invalidApproval = { ...approved, approval: {} };
@@ -231,13 +231,13 @@ test("plan hash binds the receipt and approval records must be valid", () => {
 test("malformed persisted plans stay ineligible even with a recomputed hash", () => {
   const receipt = createSelectionReceipt(adoptInput());
   const plan = createAdaptationPlan(receipt, adaptationContext(receipt));
-  const approved = approveAdaptationPlan(plan, { reviewer: "user", rationale: "approved" });
+  const approved = approveAdaptationPlan(plan, { reviewer: "user", by: "owner", rationale: "approved" });
   const { contentHash: ignored, ...body } = approved;
   body.acceptanceChecks = [];
   const malformed = { ...body, contentHash: sha256(canonicalJson(body)) };
   assert.throws(() => validatePlanShape(malformed), /acceptanceChecks|non-empty|string array/i);
   assert.equal(canCreateTasks(malformed).allowed, false);
-  assert.throws(() => approveAdaptationPlan(malformed, { reviewer: "user", rationale: "should reject" }), /acceptanceChecks|non-empty|string array/i);
+  assert.throws(() => approveAdaptationPlan(malformed, { reviewer: "user", by: "owner", rationale: "should reject" }), /acceptanceChecks|non-empty|string array/i);
 });
 
 test("mandatory adaptation policy cannot be removed or replaced", () => {
@@ -269,7 +269,7 @@ test("explicitly missing security and terminal plans fail closed", () => {
   assert.throws(() => createSelectionReceipt(adoptInput({ hardGateResults: { license: "pass", provenance: "pass", accessibility: "pass" } })), /security/i);
   const receipt = createSelectionReceipt(adoptInput());
   const plan = createAdaptationPlan(receipt, adaptationContext(receipt));
-  const approved = approveAdaptationPlan(plan, { reviewer: "user", rationale: "approved" });
+  const approved = approveAdaptationPlan(plan, { reviewer: "user", by: "owner", rationale: "approved" });
   assert.throws(() => reviewAdaptationPlan(approved, { reviewer: "user", rationale: "reopen" }), /approved/i);
   const rejected = reviewAdaptationPlan(plan, { reviewer: "user", decision: "reject", rationale: "no" });
   assert.throws(() => reviewAdaptationPlan(rejected, { reviewer: "user", rationale: "reopen" }), /rejected/i);
@@ -286,7 +286,7 @@ test("rejects falsy selection modes, fabricated evidence, and context drift", ()
     ],
   })), /allowlisted|license|provenance/i);
   const receipt = createSelectionReceipt(adoptInput());
-  assert.throws(() => validateSelectionReceipt(receipt, { selectionMode: "reference" }), /selection mode|drift/i);
+  assert.throws(() => validateSelectionReceipt(receipt, { selectionMode: "reference", selectedBy: "owner" }), /selection mode|drift/i);
   assert.throws(() => validateSelectionReceipt(receipt, { selectionMode: null }), /selectionMode/i);
   assert.throws(() => validateSelectionReceipt(receipt, { candidateTemplateVersion: "" }), /candidateTemplateVersion|non-empty/i);
   assert.throws(() => validateSelectionReceipt(receipt, { candidate: { id: receipt.region, version: "" } }), /candidate.version|non-empty/i);
@@ -320,4 +320,17 @@ test("rejects component-fit matrices from a different Surface", () => {
     componentFitMatrix: mobileMatrix,
     componentFitBinding: { region: receipt.region, matrixHash: mobileMatrix.matrixHash },
   }), /platform\/framework|Surface/i);
+});
+
+test("a selection receipt records who selected, and an agent selection states its own reason", () => {
+  assert.throws(() => createSelectionReceipt(adoptInput({ selectedBy: undefined })), /selectedBy/);
+  assert.throws(() => createSelectionReceipt(adoptInput({ selectedBy: "agent" })), /agent selection needs an explicit selectionReason/);
+  const owner = createSelectionReceipt(adoptInput());
+  assert.equal(owner.selectedBy, "owner");
+  assert.equal(owner.selectionReason, "user-selected-template");
+  const agent = createSelectionReceipt(adoptInput({ selectedBy: "agent", selectionReason: "Closest structural match to the approved direction." }));
+  assert.equal(agent.selectedBy, "agent");
+  assert.equal(agent.selectionReason, "Closest structural match to the approved direction.");
+  const plan = createAdaptationPlan(owner, adaptationContext(owner));
+  assert.throws(() => approveAdaptationPlan(plan, { reviewer: "user", rationale: "approved" }), /approval\.by/);
 });

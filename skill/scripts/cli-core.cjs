@@ -664,6 +664,7 @@ function directionCommand(parsed, root) {
   const result = checkDirectionPreview(changeRoot, {
     artifact: option(parsed, "--artifact"),
     stage: option(parsed, "--stage", "preview"),
+    projectRoot: option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : undefined,
   });
   return { result, exitCode: result.status === "ready" ? 0 : 2 };
 }

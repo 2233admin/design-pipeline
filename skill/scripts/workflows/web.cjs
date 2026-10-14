@@ -13,7 +13,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
+const { canonicalJson, fail, resolveInside, sha256, wordCount } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
 const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, reference } = require("./shared.cjs");
 
@@ -47,8 +47,6 @@ const fileText = (root, rel) => projectFile(root, rel)?.toString("utf8") ?? null
 // A recorded decision or "no" must carry content: a go-ahead such as "ok, start" is the silent default
 // these records replace. Words are runs of letters or digits, and two CJK characters count as one. A
 // decision stated for the owner names what was decided in a sentence; a reason says what is wrong.
-const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
-const wordCount = text => (text.replace(CJK, " ").match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu) || []).length + (text.match(CJK) || []).length / 2;
 function meaningful(answer, minimum, what, flag = "--answer") {
   const text = typeof answer === "string" ? answer.trim() : "";
   if (wordCount(text) < minimum) fail("workflow", `${flag} must ${what} (at least ${minimum} words; two CJK characters count as one)`);

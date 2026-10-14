@@ -32,7 +32,7 @@ const PRECEDENCE = Object.freeze([
 ]);
 const RECEIPT_KEYS = [
   "schema", "receiptId", "projectId", "surfaceId", "referenceHash", "region", "candidateTemplateVersion",
-  "candidatePlatform", "candidateFramework", "componentCandidateVersions", "selectionMode", "selectionReason", "sourceAndLicenseEvidence",
+  "candidatePlatform", "candidateFramework", "componentCandidateVersions", "selectionMode", "selectedBy", "selectionReason", "sourceAndLicenseEvidence",
   "directionLockSnapshot", "directionPreviewSnapshot", "technicalConstraints", "hardGateResults", "allowedChanges", "forbiddenChanges",
   "expectedDifferences", "acceptanceCriteria", "createdAt", "catalogVersion", "surfaceBindingSnapshot", "contentHash",
 ];
@@ -214,6 +214,9 @@ function createSelectionReceipt(input) {
   const candidate = normalizeCandidate(input);
   const mode = input.selectionMode === undefined ? "reference" : input.selectionMode;
   assertEnum(mode, SELECTION_MODES, "selectionMode", scope);
+  // Who selected decides the default reason: only an owner's pick may be called a user selection.
+  assertEnum(input.selectedBy, ["owner", "agent"], "selectedBy", scope);
+  if (input.selectedBy === "agent" && !input.selectionReason) fail(scope, "an agent selection needs an explicit selectionReason; the default reason names a user selection");
   const surfaceSnapshot = normalizeSurfaceSnapshot(input.surface, input.projectId, input.surfaceId);
   const catalogEntry = validateCandidateForSurface(input, candidate, surfaceSnapshot);
   const directionLockSnapshot = validateDirectionLock(input.directionLockSnapshot);
@@ -239,6 +242,7 @@ function createSelectionReceipt(input) {
     candidateFramework: catalogEntry.framework,
     componentCandidateVersions: candidate.componentCandidateVersions,
     selectionMode: mode,
+    selectedBy: input.selectedBy,
     selectionReason: input.selectionReason || (mode === "adopt" ? "user-selected-template" : "reference-only-selection"),
     sourceAndLicenseEvidence: evidence,
     directionLockSnapshot: clone(directionLockSnapshot),
@@ -264,12 +268,13 @@ function createSelectionReceipt(input) {
 function validateReceiptShape(receipt) {
   const scope = "selection-receipt";
   assertObject(receipt, "receipt", scope);
-  assertKeys(receipt, ["schema", "receiptId", "projectId", "surfaceId", "referenceHash", "region", "candidateTemplateVersion", "candidatePlatform", "candidateFramework", "componentCandidateVersions", "selectionMode", "selectionReason", "sourceAndLicenseEvidence", "directionLockSnapshot", "directionPreviewSnapshot", "technicalConstraints", "hardGateResults", "allowedChanges", "forbiddenChanges", "expectedDifferences", "acceptanceCriteria", "createdAt", "surfaceBindingSnapshot", "contentHash"], RECEIPT_KEYS, "selection receipt", scope);
+  assertKeys(receipt, ["schema", "receiptId", "projectId", "surfaceId", "referenceHash", "region", "candidateTemplateVersion", "candidatePlatform", "candidateFramework", "componentCandidateVersions", "selectionMode", "selectedBy", "selectionReason", "sourceAndLicenseEvidence", "directionLockSnapshot", "directionPreviewSnapshot", "technicalConstraints", "hardGateResults", "allowedChanges", "forbiddenChanges", "expectedDifferences", "acceptanceCriteria", "createdAt", "surfaceBindingSnapshot", "contentHash"], RECEIPT_KEYS, "selection receipt", scope);
   if (receipt.schema !== SELECTION_SCHEMA) fail(scope, `schema must be ${SELECTION_SCHEMA}`);
   for (const key of ["receiptId", "projectId", "surfaceId", "region", "candidateTemplateVersion", "candidatePlatform", "candidateFramework", "selectionReason"]) assertString(receipt[key], key, scope);
   assertHash(receipt.referenceHash, "referenceHash", scope);
   assertStringArray(receipt.componentCandidateVersions, "componentCandidateVersions", scope, { unique: true });
   assertEnum(receipt.selectionMode, SELECTION_MODES, "selectionMode", scope);
+  assertEnum(receipt.selectedBy, ["owner", "agent"], "selectedBy", scope);
   if (!Array.isArray(receipt.sourceAndLicenseEvidence)) fail(scope, "sourceAndLicenseEvidence must be an array");
   if (receipt.sourceAndLicenseEvidence.length) validateEvidence(receipt.sourceAndLicenseEvidence, scope, [receipt.referenceHash]);
   const lock = validateDirectionLock(receipt.directionLockSnapshot);
@@ -543,6 +548,7 @@ function approveAdaptationPlan(plan, approval, options = {}) {
   const checked = validatePlanShape(plan);
   assertObject(approval, "approval", "adaptation-plan");
   assertString(approval.reviewer, "reviewer", "adaptation-plan");
+  assertEnum(approval.by, ["owner", "agent"], "approval.by", "adaptation-plan");
   assertString(approval.rationale, "rationale", "adaptation-plan");
   assertHash(approval.planContentHash, "planContentHash", "adaptation-plan");
   if (approval.planContentHash !== checked.contentHash) fail("adaptation-plan", "approval is stale for the persisted plan");
