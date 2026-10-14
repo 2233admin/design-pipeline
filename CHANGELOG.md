@@ -15,6 +15,12 @@ All notable changes to Design Pipeline are documented here.
   record `by`. Existing projects must pass `--by` on their next `decide`; no compatibility default
   is added.
 
+- Creative intent (change `adopt-ai-fluency-decision-roles`, phase 2, #109): DesignBrief intake
+  records the owner's expression, audience connection and distinctiveness independently, with
+  per-fact skips; standard/full web playback labels those lines and counts anti-goals under
+  distinctiveness. The `Product Context` gate requires the three labels in English or Chinese and
+  reports missing labels as `synthesis-required`.
+
 ### Fixed
 
 - The installed dependency self-check now discovers standard Skills CLI user and project

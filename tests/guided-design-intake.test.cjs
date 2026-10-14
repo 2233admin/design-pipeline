@@ -83,6 +83,11 @@ test("takes the confirmation path for a complete brief", () => {
     primaryActions: ["search-and-browse"],
     surface: { platform: "web", framework: "react" },
     successCriteria: ["task-completion"],
+    creativeIntent: {
+      expression: "Clear and confident",
+      connection: "Help teams feel supported",
+      distinctiveness: "Not a generic admin dashboard",
+    },
   });
   assert.equal(nextIntakeQuestion(brief, {}), null);
   const confirmed = confirmDesignBrief(brief);
@@ -126,6 +131,11 @@ test("accepts every emitted core option as an intake answer", () => {
       assert.equal(optionBrief[field].source, "user");
     }
     brief = applyIntakeAnswer(brief, { field, value: question.options[0].value, source: "user" });
+  }
+  let question = nextIntakeQuestion(brief, {});
+  assert.equal(question.id, "intake-creative-intent");
+  for (const field of ["creativeIntent.expression", "creativeIntent.connection", "creativeIntent.distinctiveness"]) {
+    brief = applyIntakeAnswer(brief, { field, value: `Owner's ${field}`, source: "user" });
   }
   assert.equal(nextIntakeQuestion(brief, {}), null);
 });
@@ -217,4 +227,117 @@ test("validates a supplied Surface through the shared surface profile contract",
     }),
     /game|reserved|platform/i,
   );
+});
+
+test("asks one creative-intent group after core facts and exposes each dotted field", () => {
+  const brief = createDesignBrief({
+    projectId: "p1",
+    surfaceId: "web-admin",
+    input: "Team knowledge base",
+    audience: "team-members",
+    primaryActions: ["search"],
+    surface: { platform: "web", framework: "react" },
+    successCriteria: ["users find information quickly"],
+  });
+
+  const question = nextIntakeQuestion(brief, {});
+
+  assert.equal(question.id, "intake-creative-intent");
+  assert.equal(question.field, "creativeIntent");
+  assert.equal(question.prompt, "What should this feel like, who is it for in spirit, and what must it not look like?");
+  assert.deepEqual(question.fields, [
+    { field: "creativeIntent.expression", prompt: "What should this work express, or what point of view should it carry?" },
+    { field: "creativeIntent.connection", prompt: "What relationship should it build with its audience?" },
+    { field: "creativeIntent.distinctiveness", prompt: "What must it not look or feel like? Include its anti-goals." },
+  ]);
+  assert.deepEqual(question.skip, { allowed: true, label: "Skip for now" });
+  const afterExpression = applyIntakeAnswer(brief, {
+    field: "creativeIntent.expression",
+    value: "A deliberate point of view",
+    source: "user",
+  });
+  const repeatedQuestion = nextIntakeQuestion(afterExpression);
+  assert.equal(afterExpression.status, "clarifying");
+  assert.equal(repeatedQuestion.id, question.id);
+  assert.deepEqual(repeatedQuestion.fields, question.fields);
+});
+
+test("keeps agent intent unresolved and accepts each owner's per-fact skip reason", () => {
+  const completeCore = () => createDesignBrief({
+    projectId: "p1",
+    surfaceId: "web-admin",
+    input: "Team knowledge base",
+    audience: "team-members",
+    primaryActions: ["search"],
+    surface: { platform: "web", framework: "react" },
+    successCriteria: ["users find information quickly"],
+  });
+  let suggested = completeCore();
+  for (const field of ["expression", "connection", "distinctiveness"]) {
+    suggested = applyIntakeAnswer(suggested, {
+      field: `creativeIntent.${field}`,
+      value: `A confident ${field} intent`,
+      source: field === "expression" ? "agent" : "user",
+    });
+  }
+  assert.equal(suggested.status, "clarifying");
+  assert.equal(nextIntakeQuestion(suggested).id, "intake-creative-intent");
+  assert.deepEqual(suggested.uncertainties.find(item => item.field === "creativeIntent.expression"), {
+    field: "creativeIntent.expression",
+    reason: "Agent suggestion requires user confirmation",
+    status: "agent_suggested",
+  });
+  assert.throws(() => confirmDesignBrief(suggested), /creativeIntent\.expression/);
+
+  suggested = applyIntakeAnswer(suggested, {
+    field: "creativeIntent.expression",
+    value: "Owner-confirmed expression",
+    source: "user",
+  });
+  assert.equal(suggested.status, "proposed");
+  assert.equal(nextIntakeQuestion(suggested), null);
+
+  for (const skippedField of ["expression", "connection", "distinctiveness"]) {
+    let brief = completeCore();
+    for (const field of ["expression", "connection", "distinctiveness"]) {
+      brief = field === skippedField
+        ? applyIntakeAnswer(brief, {
+          field: `creativeIntent.${field}`,
+          skip: true,
+          reason: `Owner skipped ${field} for now`,
+        })
+        : applyIntakeAnswer(brief, {
+          field: `creativeIntent.${field}`,
+          value: `Owner's ${field} intent`,
+          source: "user",
+        });
+    }
+    assert.equal(brief.creativeIntent[skippedField], undefined);
+    assert.deepEqual(brief.uncertainties.find(item => item.field === `creativeIntent.${skippedField}`), {
+      field: `creativeIntent.${skippedField}`,
+      reason: `Owner skipped ${skippedField} for now`,
+      status: "skipped",
+    });
+    assert.equal(nextIntakeQuestion(brief), null);
+    assert.equal(brief.status, "proposed");
+    assert.equal(confirmDesignBrief(brief).status, "user_confirmed");
+  }
+});
+
+test("preserves pre-existing confirmed v1 briefs without creative intent", () => {
+  const brief = createDesignBrief({
+    projectId: "p1",
+    surfaceId: "web-admin",
+    input: "Team knowledge base",
+    audience: "team-members",
+    primaryActions: ["search"],
+    surface: { platform: "web", framework: "react" },
+    successCriteria: ["users find information quickly"],
+  });
+  delete brief.creativeIntent;
+  brief.uncertainties = brief.uncertainties.filter(item => !item.field.startsWith("creativeIntent."));
+  brief.status = "user_confirmed";
+
+  assert.equal(nextIntakeQuestion(brief), null);
+  assert.equal(confirmDesignBrief(brief).status, "user_confirmed");
 });

@@ -36,6 +36,11 @@ function completeBrief() {
     primaryActions: { value: ["search knowledge"], source: "user" },
     surface: { value: { platform: "web", framework: "react", profileVersion: "1" }, source: "user" },
     successCriteria: { value: ["keyboard navigation works"], source: "user" },
+    creativeIntent: {
+      expression: { value: "Clear answers in plain language", source: "user" },
+      connection: { value: "Help teams feel supported", source: "user" },
+      distinctiveness: { value: "Not a generic admin dashboard", source: "user" },
+    },
   }));
 }
 
@@ -65,9 +70,35 @@ function runConfirmedIntake(root, surfaceId, surface) {
     current = execute(["intake", "answer", "--root", root, "--artifact", briefFile, "--answer", "answer.json", "--json"]);
     assert.equal(current.exitCode, 0);
     if (expectedField) assert.equal(current.output.question.field, expectedField);
+    else {
+      assert.equal(current.output.question.id, "intake-creative-intent");
+      assert.equal(current.output.question.field, "creativeIntent");
+      assert.deepEqual(current.output.question.fields, [
+        { field: "creativeIntent.expression", prompt: "What should this work express, or what point of view should it carry?" },
+        { field: "creativeIntent.connection", prompt: "What relationship should it build with its audience?" },
+        { field: "creativeIntent.distinctiveness", prompt: "What must it not look or feel like? Include its anti-goals." },
+      ]);
+    }
+    put(root, briefFile, current.output.brief);
+  }
+  for (const [index, answer] of [
+    { field: "creativeIntent.expression", value: "A clear point of view", source: "user" },
+    { field: "creativeIntent.connection", skip: true, reason: "The owner has not decided this relationship." },
+    { field: "creativeIntent.distinctiveness", value: "Not another generic dashboard", source: "user" },
+  ].entries()) {
+    put(root, "answer.json", answer);
+    current = execute(["intake", "answer", "--root", root, "--artifact", briefFile, "--answer", "answer.json", "--json"]);
+    assert.equal(current.exitCode, 0);
+    if (index < 2) assert.equal(current.output.question.id, "intake-creative-intent");
     else assert.equal(current.output.question, null);
     put(root, briefFile, current.output.brief);
   }
+  assert.equal(current.output.brief.creativeIntent.connection, undefined);
+  assert.deepEqual(current.output.brief.uncertainties.find(item => item.field === "creativeIntent.connection"), {
+    field: "creativeIntent.connection",
+    reason: "The owner has not decided this relationship.",
+    status: "skipped",
+  });
 
   current = execute(["intake", "confirm", "--root", root, "--artifact", briefFile, "--json"]);
   assert.equal(current.exitCode, 0);

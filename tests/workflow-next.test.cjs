@@ -2105,6 +2105,10 @@ test("the web intake instruction names the conversation rules", t => {
     assert.match(instruction, /200\s*[-–]\s*300 words/i, `${label}: a playback of about 200-300 words`);
     assert.match(instruction, /\bsaid\b/i, `${label}: what the owner said`);
     assert.match(instruction, /\bguess/i, `${label}: apart from what the agent guessed`);
+    assert.match(instruction, /Expression:[\s\S]*Connection:[\s\S]*Distinctiveness:/i, `${label}: the playback names all three creative-intent lines`);
+    assert.match(instruction, /three marked lines in the owner'?s words/i, `${label}: the intent is recorded in the owner's words`);
+    assert.match(instruction, /Distinctiveness:[\s\S]*anti-goals?/i, `${label}: anti-goals count as distinctiveness`);
+    assert.match(instruction, /state\.rules/, `${label}: anti-goals are read from the existing rules, not duplicated`);
   }
 });
 

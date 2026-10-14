@@ -32,6 +32,8 @@ try {
       console.log(JSON.stringify(result, null, 2));
     } else if (result.status === "ready") {
       console.log(`DESIGN.md foundation ready: ${result.designFile}`);
+    } else if (result.error) {
+      console.log(`DESIGN.md foundation requires synthesis: ${result.error}`);
     } else {
       console.log(`DESIGN.md foundation missing: ${result.designFile}`);
       console.log(`Next: ${result.nextCommand}`);

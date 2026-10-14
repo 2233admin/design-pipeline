@@ -340,6 +340,24 @@ function validateSourceDecisions(text) {
     fail("DESIGN.md Source Decisions must identify adopted and rejected source properties");
   }
 }
+function validateCreativeIntentLabels(text) {
+  const heading = text.match(/^##\s+product context\s*$/im);
+  const remaining = text.slice(heading.index + heading[0].length);
+  const nextHeading = remaining.match(/^##\s+/m);
+  const section = nextHeading ? remaining.slice(0, nextHeading.index) : remaining;
+  const labels = [
+    ["Expression", /\bexpression\b|表达/i],
+    ["Connection", /\bconnection\b|连接|受众关系/i],
+    ["Distinctiveness", /\bdistinctiveness\b|独特性/i],
+  ];
+  const missing = labels.filter(([, pattern]) => !pattern.test(section)).map(([label]) => label);
+  if (missing.length) {
+    const error = new Error(`DESIGN.md Product Context is missing creative-intent labels: ${missing.join(", ")}`);
+    error.code = "SYNTHESIS_REQUIRED";
+    error.missingLabels = missing;
+    throw error;
+  }
+}
 
 function validateActiveChange(text, activeChangeId) {
   if (!activeChangeId) return;
@@ -355,6 +373,7 @@ function validateDesignFoundationText(text, options = {}) {
   validateDesignSections(text);
   validateSourceDecisions(text);
   validateActiveChange(text, options.activeChangeId);
+  validateCreativeIntentLabels(text);
   return {
     name,
     sha256: sha256Text(text),
@@ -383,7 +402,20 @@ function checkDesignFoundation(options = {}) {
   if (!pathIsInside(projectRoot, realFile)) {
     fail("--design-file resolves outside --project-root");
   }
-  const validated = validateDesignFoundationText(fs.readFileSync(realFile, "utf8"));
+  let validated;
+  try {
+    validated = validateDesignFoundationText(fs.readFileSync(realFile, "utf8"));
+  } catch (error) {
+    if (error.code !== "SYNTHESIS_REQUIRED") throw error;
+    return {
+      schema: "design-pipeline.foundation-check.v1",
+      status: "synthesis-required",
+      projectRoot,
+      designFile: designFile.relative,
+      missingLabels: error.missingLabels,
+      error: error.message,
+    };
+  }
   return {
     schema: "design-pipeline.foundation-check.v1",
     status: "ready",
