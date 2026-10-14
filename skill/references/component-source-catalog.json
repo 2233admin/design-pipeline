@@ -5170,14 +5170,13 @@
       "sourceId": "iart-ai/ad-video-skills",
       "recordType": "source",
       "name": "iart ad-video-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/ad-video-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/ad-video-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart ad-video-skills",
@@ -5201,14 +5200,13 @@
       "sourceId": "iart-ai/data-animation-skills",
       "recordType": "source",
       "name": "iart data-animation-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/data-animation-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/data-animation-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart data-animation-skills",
@@ -5231,14 +5229,13 @@
       "sourceId": "iart-ai/ecommerce-video-skills",
       "recordType": "source",
       "name": "iart ecommerce-video-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/ecommerce-video-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/ecommerce-video-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart ecommerce-video-skills",
@@ -5262,14 +5259,13 @@
       "sourceId": "iart-ai/explainer-video-skills",
       "recordType": "source",
       "name": "iart explainer-video-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/explainer-video-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/explainer-video-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart explainer-video-skills",
@@ -5293,14 +5289,13 @@
       "sourceId": "iart-ai/freelance-motion-skills",
       "recordType": "source",
       "name": "iart freelance-motion-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/freelance-motion-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/freelance-motion-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart freelance-motion-skills",
@@ -5324,14 +5319,13 @@
       "sourceId": "iart-ai/kinetic-typography-skills",
       "recordType": "source",
       "name": "iart kinetic-typography-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/kinetic-typography-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/kinetic-typography-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart kinetic-typography-skills",
@@ -5354,14 +5348,13 @@
       "sourceId": "iart-ai/manim-skills",
       "recordType": "source",
       "name": "iart manim-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/manim-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/manim-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart manim-skills",
@@ -5385,14 +5378,13 @@
       "sourceId": "iart-ai/map-animation-skills",
       "recordType": "source",
       "name": "iart map-animation-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/map-animation-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/map-animation-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart map-animation-skills",
@@ -5416,14 +5408,13 @@
       "sourceId": "iart-ai/motion-design-skills",
       "recordType": "source",
       "name": "iart motion-design-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/motion-design-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/motion-design-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart motion-design-skills",
@@ -5446,14 +5437,13 @@
       "sourceId": "iart-ai/motion-skills",
       "recordType": "source",
       "name": "iart motion-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/motion-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/motion-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart motion-skills",
@@ -5476,14 +5466,13 @@
       "sourceId": "iart-ai/text-message-video-skills",
       "recordType": "source",
       "name": "iart text-message-video-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/text-message-video-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/text-message-video-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart text-message-video-skills",
@@ -5507,14 +5496,13 @@
       "sourceId": "iart-ai/tiktok-video-skills",
       "recordType": "source",
       "name": "iart tiktok-video-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/tiktok-video-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/tiktok-video-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart tiktok-video-skills",
@@ -5538,14 +5526,13 @@
       "sourceId": "iart-ai/web-animation-skills",
       "recordType": "source",
       "name": "iart web-animation-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/web-animation-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/web-animation-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart web-animation-skills",
@@ -5568,14 +5555,13 @@
       "sourceId": "iart-ai/webgl-animation-skills",
       "recordType": "source",
       "name": "iart webgl-animation-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/webgl-animation-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/webgl-animation-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart webgl-animation-skills",
@@ -5598,14 +5584,13 @@
       "sourceId": "iart-ai/youtube-video-skills",
       "recordType": "source",
       "name": "iart youtube-video-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/iart-ai/youtube-video-skills"
       ],
       "localPaths": {
         "guide": "references/iart-motion-skills.md",
-        "manifest": "vendor/iart-motion-skills/manifest.json",
-        "implementation": "vendor/iart-motion-skills/upstream/youtube-video-skills"
+        "manifest": "vendor/iart-motion-skills/manifest.json"
       },
       "provenance": {
         "source": "iart youtube-video-skills",
@@ -5920,7 +5905,7 @@
       "sourceId": "mengto/skills",
       "recordType": "source",
       "name": "mengto-skills",
-      "availability": "bundled-implementation",
+      "availability": "downloaded-implementation",
       "aliases": [
         "https://github.com/MengTo/skills",
         "https://github.com/mengto/skills"
@@ -5928,7 +5913,6 @@
       "localPaths": {
         "guide": "references/mengto-skills.md",
         "manifest": "vendor/mengto-skills/manifest.json",
-        "implementation": "vendor/mengto-skills/upstream",
         "catalog": "references/mengto-skills-catalog.json"
       },
       "provenance": {

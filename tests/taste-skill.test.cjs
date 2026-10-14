@@ -251,6 +251,7 @@ test("the existing source-check test fails for changed, missing or added Taste b
       "scripts/git-tree-snapshot.cjs",
       "skill/scripts/mengto-skills-core.cjs",
       "skill/scripts/upstream-path.cjs",
+      "skill/scripts/vendor-cache.cjs",
       "tests/helpers/upstream-names.cjs",
       "skill/references/package-resources.json",
     ]) copyFile(relative);

@@ -443,7 +443,9 @@ For each entry:
   repository is rejected in favour of the repository URL. Other URLs (npm pages, project
   homepages, other hosts), URLs with credentials and invented IDs do not resolve. Containment
   follows real paths, so a symlink cannot point outside the project.
-- `availability` is `bundled-implementation`, `reference-link`, `metadata-only` or `project-owned`.
+- `availability` is `bundled-implementation`, `downloaded-implementation` (index entries whose code
+  `designer-pipeline sources fetch` installs: MengTo and iart; their search commands return the
+  installed paths), `reference-link`, `metadata-only` or `project-owned`.
   `license.state` is `verified`, `unverified`, `commercial`, `project-owned` or `platform`.
   An indexed source's license state matches the index, including when identified by its named
   GitHub repository URL. Project files use project-owned availability and license state.

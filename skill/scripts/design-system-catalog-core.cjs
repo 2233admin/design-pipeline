@@ -21,7 +21,9 @@ const LOCAL_ID = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 const NAMESPACE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const SOURCE_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)?$/;
 const RECORD_TYPES = new Set(["source", "component", "method", "template"]);
-const AVAILABILITIES = new Set(["bundled-implementation", "reference-link", "metadata-only", "project-owned"]);
+// downloaded-implementation: the package carries the manifest and `sources fetch` installs the code
+// (MengTo, iart; skill/scripts/vendor-cache.cjs); search returns the installed paths.
+const AVAILABILITIES = new Set(["bundled-implementation", "downloaded-implementation", "reference-link", "metadata-only", "project-owned"]);
 const LICENSE_STATES = new Set(["verified", "unverified", "commercial", "project-owned", "platform"]);
 const LOCAL_PATH_MEMBERS = new Set(["guide", "manifest", "catalog", "implementation"]);
 

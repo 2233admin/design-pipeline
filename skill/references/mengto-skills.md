@@ -1,10 +1,13 @@
 # Built-in MengTo Skills Library
 
-`design-pipeline` ships the complete reviewed source tree from
-[`MengTo/skills`](https://github.com/MengTo/skills) as a pinned, MIT-attributed package resource.
-It is available offline and does not depend on a global skill install. The upstream files remain
-byte-preserved under `vendor/mengto-skills/upstream/`; this overlay defines how the pipeline
-uses them without rewriting upstream authorship or mixing local policy into future syncs.
+`design-pipeline` uses the complete reviewed source tree from
+[`MengTo/skills`](https://github.com/MengTo/skills), pinned and MIT-attributed. The package carries
+its manifest; `designer-pipeline sources fetch --bundle mengto-skills` downloads the 136 MB tree
+once at the pinned revision into the user cache (`DESIGN_PIPELINE_CACHE` overrides the location),
+verifying every file. Until then `mengto search` fails with that command and `doctor` lists it. In
+the repository the tree stays byte-preserved under `vendor/mengto-skills/upstream/`. Search results
+return the actual file paths; this overlay defines how the pipeline uses them without rewriting
+upstream authorship or mixing local policy into future syncs.
 
 The manifest at `vendor/mengto-skills/manifest.json` is the source of truth for revision,
 Git tree, license, file and byte counts, canonical tree hash, categories, all skill descriptions,

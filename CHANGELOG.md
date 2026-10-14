@@ -6,6 +6,13 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- MengTo and iart upstream skills are downloaded on demand (change `fetch-vendor-on-demand`, #119).
+  The package drops from about 253 MB to about 51 MB extracted. `designer-pipeline sources fetch
+  --bundle mengto-skills|iart-motion-skills | --all` downloads each file at its pinned revision from
+  `raw.githubusercontent.com`, checks its Git blob id and size against the manifest and installs the
+  tree into the user cache (`DESIGN_PIPELINE_CACHE` overrides it). Until then search and route fail
+  with `TOOL_MISSING` naming the command, and `doctor` lists the bundle under `downloads` without
+  blocking. The repository keeps both trees in place.
 - Bundled upstream snapshots match upstream again (change `restore-upstream-snapshot-bytes`).
   `text=auto` had rewritten line endings inside nine iart `showcase.gif` files and four holosticker
   files (`logo-raw.png`, three SVGs); they are restored from the recorded revisions, every

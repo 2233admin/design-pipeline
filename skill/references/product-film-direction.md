@@ -187,9 +187,9 @@ depth, but avoid giving multiple elements competing focal motion. These are opti
 fixed rules: a brief may call for several focal points, a static camera, equal layer movement,
 cropping, or another deliberate composition. The user's direction and shot evidence decide. Do not
 add storyboard fields or make source-specific grid sizes, parallax ratios, camera counts, or aspect
-ratios mandatory. For the full optional method, read the bundled
-[`shot-composition` playbook](../vendor/iart-motion-skills/upstream/motion-design-skills/skills/shot-composition/UPSTREAM-SKILL.md),
-from [iart-ai/motion-design-skills at `3c129f769d90a1328c209c386492333c9ac62312`](https://github.com/iart-ai/motion-design-skills/blob/3c129f769d90a1328c209c386492333c9ac62312/skills/shot-composition/SKILL.md).
+ratios mandatory. For the full optional method, read the iart `shot-composition` playbook
+(`designer-pipeline iart search --query "shot composition"` returns its path; fetch the iart bundle
+first if search asks for it), from [iart-ai/motion-design-skills at `3c129f769d90a1328c209c386492333c9ac62312`](https://github.com/iart-ai/motion-design-skills/blob/3c129f769d90a1328c209c386492333c9ac62312/skills/shot-composition/SKILL.md).
 
 Completion: every beat has an action and handoff; major claims have a visible demonstration;
 the sequence includes development and payoff; music/sound cues are planned alongside the picture.

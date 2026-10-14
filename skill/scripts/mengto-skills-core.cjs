@@ -4,6 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { storedPath, upstreamFiles } = require("./upstream-path.cjs");
+const { upstreamRoot } = require("./vendor-cache.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/mengto-skills/manifest.json");
 const schema = "design-pipeline.mengto-skills-source.v1";
@@ -140,9 +141,19 @@ function gitTreeId(objects) {
   return hashTree(root);
 }
 
+// A catalog path ("upstream/.../SKILL.md") -> the stored file under the resolved upstream root.
+function skillFile(upstream, manifest, catalogPath) {
+  return path.join(upstream, ...storedPath(path.posix.relative(manifest.snapshot.root, catalogPath)).split("/"));
+}
+
 function verifyMengToSnapshot(manifestFile = defaultManifest) {
   const loaded = loadMengToCatalog(manifestFile);
-  const sourceRoot = path.join(loaded.root, loaded.manifest.snapshot.root);
+  // The repository keeps the tree beside the manifest; a package downloads it into the user cache.
+  const where = upstreamRoot(loaded.manifestFile, loaded.manifest);
+  const sourceRoot = where.root;
+  if (where.source === "cache" && !fs.existsSync(sourceRoot)) {
+    return { schema: "design-pipeline.mengto-skills-verification.v1", status: "missing", fetch: where.fetch, issues: [`not downloaded yet; run ${where.fetch}`] };
+  }
   if (!fs.existsSync(sourceRoot)) {
     return { schema: "design-pipeline.mengto-skills-verification.v1", status: "blocked", issues: ["snapshot root is missing"] };
   }
@@ -187,7 +198,7 @@ function verifyMengToSnapshot(manifestFile = defaultManifest) {
     .sort();
   if (JSON.stringify(discoveredSkills) !== JSON.stringify(declaredSkills)) issues.push("skill catalog does not match bundled SKILL.md files");
   for (const skill of loaded.manifest.skills) {
-    const file = path.join(loaded.root, storedPath(skill.path));
+    const file = skillFile(sourceRoot, loaded.manifest, skill.path);
     if (!fs.existsSync(file)) issues.push(`missing skill: ${skill.id}`);
   }
   return {
@@ -215,6 +226,7 @@ function searchMengToSkills({ query, category = null, limit = 5, manifestFile = 
   const parsedLimit = Number(limitText);
   const loaded = loadMengToCatalog(manifestFile);
   const verification = verifyMengToSnapshot(manifestFile);
+  if (verification.status === "missing") throw Object.assign(new Error(`MengTo skills are not downloaded yet. Fix: run ${verification.fetch}`), { code: "TOOL_MISSING", details: { fetch: verification.fetch } });
   if (verification.status !== "ready") invalid(`snapshot verification failed: ${verification.issues.join("; ")}`);
   if (category !== null && !Object.hasOwn(loaded.manifest.categories, category)) invalid(`unknown category: ${category}`);
   const phrase = normalize(query);
@@ -239,7 +251,7 @@ function searchMengToSkills({ query, category = null, limit = 5, manifestFile = 
       const overlay = searchOverlays[skill.id];
       return {
         ...skill,
-        skillPath: path.join(loaded.root, storedPath(skill.path)),
+        skillPath: skillFile(upstreamRoot(loaded.manifestFile, loaded.manifest).root, loaded.manifest, skill.path),
         pipelineReferences: (overlay?.references || []).map((reference) => path.resolve(__dirname, "../references", reference)),
       };
     });
