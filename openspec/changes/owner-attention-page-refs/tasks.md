@@ -37,6 +37,7 @@
 - [x] 7.2 Codex: the settle walk scrolls and waits before re-reading the height; verify with a browser test page that appends content on scroll.
 - [x] 7.3 Codex: a section review routed to the art director offers the numbered page to the director; verify in `workflow-next`.
 - [x] 7.4 CodeRabbit: a blank `--ref` is refused, not dropped; verify in the `--ref` refusal test.
+- [x] 7.5 Codex: a requested local file that does not exist during the capture is bound as absent (`null`), so it appearing later makes the capture stale; verify in the browser lineage test.
 
 ## Workflow follow-up
 

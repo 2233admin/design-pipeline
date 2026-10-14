@@ -67,7 +67,8 @@ See proposal.md for why. Current code (checked):
   - `page` is `pageDigest(root)`, exported from `web.cjs`. A refs capture and a section verdict therefore name
     the same version, and refs work before any probe.
 - **Lineage.** `refs.json` also records `lineage` (the hash of every local file the browser loaded inside the
-  project, CSS-imported fonts and images included, as the probe binds its request log) and `png` (the
+  project, CSS-imported fonts and images included, as the probe binds its request log; a requested file that
+  does not exist yet is bound as absent, `null`) and `png` (the
   screenshot's hash). `pageDigest` alone misses CSS-loaded assets.
 - **Current capture.** A capture is current while the page digest, every lineage hash and the screenshot hash
   match (`refsCurrent` in `web.cjs`, used by reviews, `--ref` and the CLI). A current capture returns

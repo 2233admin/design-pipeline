@@ -886,7 +886,11 @@ function evidenceRefsCommand(parsed, root) {
   for (const url of Array.isArray(kernel.value.loaded) ? kernel.value.loaded : []) {
     let file;
     try { file = fileURLToPath(url); } catch { continue; }
-    if (!pathInside(projectRoot, file) || !fs.existsSync(file) || !fs.statSync(file).isFile()) continue;
+    if (!pathInside(projectRoot, file)) continue;
+    // A requested file that does not exist yet is bound as absent (null), so creating it later makes
+    // the capture stale, as the probe binds an absent request.
+    if (!fs.existsSync(file)) { lineage[rel(file)] = null; continue; }
+    if (!fs.statSync(file).isFile()) continue;
     lineage[rel(file)] = "sha256:" + sha256(fs.readFileSync(file));
   }
   const pngBytes = Buffer.from(kernel.value.png, "base64");
