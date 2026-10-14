@@ -110,11 +110,12 @@ verify version-matched official documentation first.
 
 ## GSAP implementation without companion installs
 
-The local [GSAP web playbook](../vendor/iart-motion-skills/upstream/web-animation-skills/skills/gsap-web/UPSTREAM-SKILL.md)
-already covers timelines, SVG and ScrollTrigger. For scroll integration open only its
-[scroll and cleanup reference](../vendor/iart-motion-skills/upstream/web-animation-skills/skills/gsap-web/references/scrolltrigger-lenis.md).
-Use these through the existing selected source route; no extra catalog pass or global `gsap-*`
-installation is required. Preserve the project lockfile rather than the snapshot's example CDN pin.
+The iart GSAP web playbook (`web-animation-skills/gsap-web`) already covers timelines, SVG and
+ScrollTrigger: `designer-pipeline iart search --query "scroll-triggered GSAP pin"` returns its
+`skillPath` (run `designer-pipeline sources fetch --bundle iart-motion-skills` first if search asks).
+For scroll integration open only `references/scrolltrigger-lenis.md` beside that file. Use these
+through the existing selected source route; no extra catalog pass or global `gsap-*` installation
+is required. Preserve the project lockfile rather than the snapshot's example CDN pin.
 
 - Build a timeline around the intended states and labels. For captured or scrubbed work, pause it
   and drive one playhead; GSAP timeline positions use seconds. Check the middle frame from a cold

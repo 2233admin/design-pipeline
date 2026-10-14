@@ -191,7 +191,7 @@ test("source records declare an external URL or ownership boundary and explicit 
   const states = new Set(["verified", "unverified", "commercial", "project-owned", "platform"]);
   for (const record of entries) {
     assert.ok(["source", "component", "method", "template"].includes(record.recordType), `${record.id} needs explicit recordType`);
-    assert.ok(["bundled-implementation", "reference-link", "metadata-only", "project-owned"].includes(record.availability), `${record.id} needs explicit availability`);
+    assert.ok(["bundled-implementation", "downloaded-implementation", "reference-link", "metadata-only", "project-owned"].includes(record.availability), `${record.id} needs explicit availability`);
     assert.ok(states.has(record.license?.state), `${record.id} needs an explicit license state`);
     assert.ok(Array.isArray(record.license.evidence) && record.license.evidence.length && record.license.evidence.every((evidence) => typeof evidence === "string" && evidence.trim()), `${record.id} needs nonempty license evidence`);
     if (["unverified", "commercial"].includes(record.license.state)) {

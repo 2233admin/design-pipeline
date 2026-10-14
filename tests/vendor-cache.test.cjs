@@ -99,3 +99,22 @@ test("a file that differs from the manifest, or a failed download, installs noth
   assert.deepEqual(fs.readdirSync(entry), []);
   await assert.rejects(fetchBundle("taste-skill", { manifestFile, env }), (error) => error.code === "UNKNOWN_BUNDLE");
 });
+
+test("packaged guide links and index paths reach the downloaded bundles only through search", () => {
+  const skill = path.join(repo, "skill");
+  const offenders = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const file = path.join(dir, entry.name);
+      if (entry.isDirectory()) { if (file !== path.join(skill, "vendor")) walk(file); continue; }
+      // Links an agent would open (Markdown link targets) and index or resource paths (JSON values).
+      const pattern = entry.name.endsWith(".md") ? /\]\([^)]*vendor\/(?:mengto-skills|iart-motion-skills)\/upstream/ : entry.name.endsWith(".json") ? /"[^"]*vendor\/(?:mengto-skills|iart-motion-skills)\/upstream[^"]*"/ : null;
+      if (pattern && pattern.test(fs.readFileSync(file, "utf8"))) offenders.push(path.relative(repo, file));
+    }
+  };
+  walk(skill);
+  assert.deepEqual(offenders, [], "these files point into a tree the package does not carry");
+  const catalog = JSON.parse(fs.readFileSync(path.join(skill, "references/component-source-catalog.json"), "utf8"));
+  const downloaded = JSON.stringify(catalog).match(/"downloaded-implementation"/g) || [];
+  assert.equal(downloaded.length, 16, "15 iart packs and MengTo are downloaded implementations");
+});

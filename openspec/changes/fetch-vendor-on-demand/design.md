@@ -41,6 +41,9 @@ Mature patterns checked:
 - **Packaging:** `package.cjs` leaves out `skill/vendor/{mengto-skills,iart-motion-skills}/upstream`
   and their two LICENSE entries leave `package-resources.json` `required`. `doctor` reports a
   missing bundle under `downloads` without blocking; search and route fail with `TOOL_MISSING`.
+- **Index and guides:** the 16 source-index entries (15 iart packs, MengTo) use availability
+  `downloaded-implementation` and drop their in-package `implementation` path; guides route to the
+  files through `iart`/`mengto` search, which returns installed paths (Codex review on #123).
 - **Command:** `sources fetch --bundle <name>|--all` runs in a kernel process (the CLI is
   synchronous) and verifies each bundle after download.
 
