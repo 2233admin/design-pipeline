@@ -645,8 +645,9 @@ Show the page, its motion at full speed and a one-paragraph gate summary. When t
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and
 reports them under Visual Acceptance in `qa.md`; the agent never records acceptance and gate
 findings stay Conformance. The user accepts, or rejects with one sentence
-(`decide --stage review --verdict accept|reject`). A rejection reopens `probe` for the rebuilt page
-and becomes a project rule.
+(`decide --stage review --verdict accept|reject`). A rejection becomes a project rule and returns
+to build: the page the owner rejected is repaired before it is probed and shown again, so an
+unchanged page never comes back for review.
 
 ## deliver
 

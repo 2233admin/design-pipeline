@@ -1970,7 +1970,7 @@ test("a passed interaction gate goes stale when index.html changes", () => {
   assert.equal(nextAction(dir).stage, "probe", "a rebuilt page must be probed again");
 });
 
-test("a rejected web draft reopens probe", () => {
+test("a rejected web draft returns to build until the page changes, then probe", () => {
   const dir = tmp();
   initState(dir, { deliverable: "web", tier: "standard" });
   toComponents(dir);
@@ -1983,7 +1983,11 @@ test("a rejected web draft reopens probe", () => {
   const review = nextAction(dir);
   assert.equal(review.stage, "review");
   decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The hero tilt snaps instead of easing." });
-  assert.equal(nextAction(dir).stage, "probe", "a rejection reopens probe");
+  const repair = nextAction(dir);
+  assert.equal(repair.stage, "build", "the unchanged page is repaired before it is shown again");
+  assert.match(repair.instruction, /The hero tilt snaps instead of easing/);
+  rewriteSameTime(dir, "index.html", redraft("web", "repaired tilt"));
+  assert.equal(nextAction(dir).stage, "probe", "the repaired page is probed again");
 });
 
 test("web concepts asks for a switchable variants page and a treatment before the choice", () => {
@@ -2597,6 +2601,8 @@ test("the probe binds the checked page, and the final review still turns a rejec
   decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The reserve button gets lost below the fold" });
   assert.deepEqual(readState(root).rules, [{ text: "The reserve button gets lost below the fold", from: "draft 1", scope: "project" }]);
   assert.equal(readState(root).gates.interaction, undefined);
+  assert.equal(nextAction(root).stage, "build", "the rejected page is repaired first");
+  fs.appendFileSync(path.join(root, "index.html"), "<!-- reserve button moved up -->\n");
   assert.equal(nextAction(root).stage, "probe");
 });
 
@@ -2747,7 +2753,10 @@ test("latest owner verdict and changed checked bytes require a fresh review", ()
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "deliver", "rechecking identical bytes preserves the accepted snapshot");
       decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The final action reads too early." });
-      assert.equal(nextAction(dir).stage, deliverable === "web" ? "probe" : "check");
+      if (deliverable === "web") {
+        assert.equal(nextAction(dir).stage, "build", "a rejected page is repaired before it is checked again");
+        rewriteSameTime(dir, file, redraft(deliverable, "repaired final action"));
+      } else assert.equal(nextAction(dir).stage, "check");
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a historical accept cannot override the latest rejection");
       decide(dir, { by: "owner", stage: "review", verdict: "accept" });
@@ -2819,6 +2828,7 @@ test("standard delivery binds its checked snapshot and film/edit delivery file",
       decide(dir, { by: "owner", stage: "deliver", answer: delivery });
       assert.equal(nextAction(dir).type, "done");
       decide(dir, { by: "owner", stage: "review", verdict: "reject", answer: "The accepted draft still needs a repair." });
+      if (deliverable === "web") rewriteSameTime(dir, file, redraft(deliverable, "repaired after the rejection"));
       recordGate(dir, gate, "passed");
       assert.equal(nextAction(dir).stage, "review", "a rejection after done revokes dependent acceptance and delivery");
       decide(dir, { by: "owner", stage: "review", verdict: "accept" });
