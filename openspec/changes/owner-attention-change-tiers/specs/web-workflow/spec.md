@@ -31,7 +31,7 @@ At standard and full, `next` SHALL NOT return a build action until `brief.md` is
 #### Scenario: An approval can be recorded again
 
 - **WHEN** the identical approval is recorded again after `next` has moved on to build
-- **THEN** decide SHALL accept it without `--tier`, and the section verdicts given under it SHALL still count.
+- **THEN** decide SHALL accept it without `--revision`, and the section verdicts given under it SHALL still count.
 
 ### Requirement: Project rules stay out of the description
 
@@ -78,39 +78,39 @@ At standard and full the build SHALL follow the approved section order: the firs
 
 ### Requirement: A changed description is re-approved with its change tier
 
-When an earlier approval exists and the brief, the playback, the direction or the component decision changed, the description approval SHALL carry `--tier bytes` (wording or formatting only) or `--tier commitment` with `--affects <section ids>` or `all`. A first or identical approval SHALL take no `--tier`. A bytes claim SHALL be refused while a section line, the section list, the direction or the component decision changed.
+When an earlier approval exists and the brief, the playback, the direction or the component decision changed, the description approval SHALL carry `--revision bytes` (wording or formatting only) or `--revision commitment` with `--affects <section ids>` or `all`. A first or identical approval SHALL take no `--revision`. A bytes claim SHALL be refused while a section line, the section list, the direction or the component decision changed.
 
 #### Scenario: A typo keeps every section
 
-- **WHEN** a sentence in the prose of `brief.md` is reworded after three sections were accepted, and the approval is recorded again with `--tier bytes`
+- **WHEN** a sentence in the prose of `brief.md` is reworded after three sections were accepted, and the approval is recorded again with `--revision bytes`
 - **THEN** all three section verdicts SHALL still count and `next` SHALL not ask any of them again
 
 #### Scenario: A commitment reopens only what it names
 
-- **WHEN** a goal in the prose changes and the approval is recorded again with `--tier commitment --affects hero`
+- **WHEN** a goal in the prose changes and the approval is recorded again with `--revision commitment --affects hero`
 - **THEN** the hero section SHALL be reviewed again and the other sections SHALL stay accepted
 
 #### Scenario: A structural change refuses a bytes claim
 
-- **WHEN** the job line of section proof changed, or a different variant was picked, and the approval is recorded with `--tier bytes`
+- **WHEN** the job line of section proof changed, or a different variant was picked, and the approval is recorded with `--revision bytes`
 - **THEN** decide SHALL exit 1 naming the change, and record nothing
 
 #### Scenario: A missing or misplaced tier is refused
 
-- **WHEN** a changed description is approved without `--tier`, or a first approval carries `--tier`, or `--affects` names a section not in the list, or `--affects` comes without `--tier commitment`
+- **WHEN** a changed description is approved without `--revision`, or a first approval carries `--revision`, or `--affects` names a section not in the list, or `--affects` comes without `--revision commitment`
 - **THEN** decide SHALL exit 1 and record nothing
 
 ### Requirement: A byte-only change does not go back to the owner
 
-When the owner kept the description, the agent MAY record a `--tier bytes` re-approval with `--by agent`, and only when the pipeline finds no structural change. The record SHALL keep its tier and the diligence statement SHALL list it under the agent's decisions. A commitment re-approval of a kept description SHALL stay the owner's.
+When the owner kept the description, the agent MAY record a `--revision bytes` re-approval with `--by agent`, and only when the pipeline finds no structural change. The record SHALL keep its tier and the diligence statement SHALL list it under the agent's decisions. A commitment re-approval of a kept description SHALL stay the owner's.
 
 #### Scenario: The agent carries a typo forward
 
 - **WHEN** the owner kept the description and only the prose of `brief.md` changed
-- **THEN** `decide --stage description --verdict accept --tier bytes --by agent` SHALL be accepted
+- **THEN** `decide --stage description --verdict accept --revision bytes --by agent` SHALL be accepted
 - **AND** the statement SHALL show it as an agent decision with its tier
 
 #### Scenario: A commitment on a kept description stays with the owner
 
-- **WHEN** the owner kept the description and the agent records `--tier commitment --by agent`
+- **WHEN** the owner kept the description and the agent records `--revision commitment --by agent`
 - **THEN** decide SHALL exit 1 and record nothing

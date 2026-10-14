@@ -13,22 +13,22 @@
 
 ## 3. Change tier on re-approval (Decision 3)
 
-- [ ] 3.1 `cli-core.cjs`: register `--tier` and `--affects`, pass them to `decide`, and add help lines; verify that the flags parse and an unlisted flag still fails with `UNKNOWN_OPTION`.
-- [ ] 3.2 `recordDescription` checks `--tier` and `--affects` against `diffInputs`; verify each refusal with no state change: a missing tier on a changed approval, a tier on a first or identical approval, `bytes` on a structural diff (the message names it), `--affects` with an unknown id or without `commitment`.
+- [ ] 3.1 `cli-core.cjs`: register `--revision` and `--affects`, pass them to `decide`, and add help lines; verify that the flags parse and an unlisted flag still fails with `UNKNOWN_OPTION`.
+- [ ] 3.2 `recordDescription` checks `--revision` and `--affects` against `diffInputs`; verify each refusal with no state change: a missing tier on a changed approval, a tier on a first or identical approval, `bytes` on a structural diff (the message names it), `--affects` with an unknown id or without `commitment`.
 - [ ] 3.3 `commitment --affects` reopens exactly the named sections (or all); verify with a test that reopens hero and keeps proof.
 
 ## 4. Kept description carry-forward (Decision 4)
 
-- [ ] 4.1 `decide` lets `--by agent` record a `bytes` re-approval of an owner-kept description, `recordRole` keeps refusing every other agent record there, and the role entry keeps `tier`; verify that a bytes carry-forward passes and that `commitment --by agent` is refused with no change.
+- [ ] 4.1 `decide` lets `--by agent` record a `bytes` re-approval of an owner-kept description, `recordRole` keeps refusing every other agent record there, and the role entry keeps `revision`; verify that a bytes carry-forward passes and that `commitment --by agent` is refused with no change.
 - [ ] 4.2 The statement lists a carry-forward as an agent decision with its tier; verify the statement line.
 
 ## 5. Stale description text (Decision 5)
 
-- [ ] 5.1 The description step's `first` names the changed inputs and the tier they allow; verify for a prose change (`--tier bytes`) and for a job-line change (`--tier commitment --affects <id>`).
+- [ ] 5.1 The description step's `first` names the changed inputs and the tier they allow; verify for a prose change (`--revision bytes`) and for a job-line change (`--revision commitment --affects <id>`).
 
 ## 6. Docs
 
-- [ ] 6.1 `workflow-web.md` description and build sections: inputs, keys, tiers, the carry-forward and the stale text, plus a CHANGELOG `[Unreleased]` entry; verify with the guide-sections test and by grepping the guide for `--tier bytes` and `--affects`.
+- [ ] 6.1 `workflow-web.md` description and build sections: inputs, keys, tiers, the carry-forward and the stale text, plus a CHANGELOG `[Unreleased]` entry; verify with the guide-sections test and by grepping the guide for `--revision bytes` and `--affects`.
 
 ## 7. Integration
 
