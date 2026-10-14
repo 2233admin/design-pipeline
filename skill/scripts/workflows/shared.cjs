@@ -194,7 +194,7 @@ const REVIEW = {
   },
   action: (state, root) => {
     if (state.deliverable === "ui") {
-      const rejected = (state.decisions?.drafts || []).length ? `; ${state.decisions.drafts.length} earlier result(s) were rejected and their reasons are project rules` : "";
+      const rejected = (state.decisions?.drafts || []).length ? `; ${state.decisions.drafts.length} earlier result(s) were rejected and their reasons are rules` : "";
       return { type: "ask", question: `Look at the delivered interface (${state.decisions.delivered}) in a real browser. Accept it as it is, or reject it with one sentence on what is wrong?`, recommended: "Accept only when it looks and feels the way you want; passing checks show it works, not that it looks right.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The owner's final acceptance: visual quality is not something a passing check can accept on the owner's behalf${rejected}.` };
     }
     const web = state.deliverable === "web";
@@ -205,7 +205,7 @@ const REVIEW = {
         return fs.statSync(file).isFile() ? [file] : [];
       } catch { return []; }
     });
-    const rejected = (state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are project rules` : "";
+    const rejected = (state.decisions?.drafts || []).length ? `; ${(state.decisions.drafts).length} earlier draft(s) were rejected and their reasons are rules` : "";
     return { type: "ask", question: web ? "Inspect the checked page and its key interactions. Accept it, or reject it with one sentence on what is wrong?" : "Accept this checked draft, or reject it with one sentence on what is wrong?", show, recommended: web ? "Inspect the checked page and its key interactions before accepting." : "Watch the checked draft at full speed with its audio before accepting.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: web ? `Final acceptance of the whole checked page${state.tier === "quick" ? "" : ", after each section was reviewed"}; a passed probe shows the page works, never that it looks right${rejected}.` : `The owner's final acceptance; a passed check shows the draft works, never that it looks right${rejected}.` };
   },
 };
@@ -220,7 +220,7 @@ function meaningful(answer, minimum, what, flag = "--answer", { cjkWeight = 0.5,
   if (wordCount(text, { cjkWeight }) < minimum) fail("workflow", `${flag} must ${what} (at least ${minimum} words; ${unit})`);
   return text;
 }
-const statement = (answer, what) => meaningful(answer, 6, what);
+const statement = (answer, what, flag) => meaningful(answer, 6, what, flag);
 const reason = (answer, what, flag) => meaningful(answer, 2, what, flag, { cjkWeight: 1, unit: "each CJK character counts as one" });
 
 module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement };

@@ -524,8 +524,8 @@ test("a standard product promo walks source and an owner-viewed sample to done w
   assert.equal(rejected.next.type, "ask");
   assert.ok(rejected.next.first.includes(`rejected this exact sample.mp4 ("${rejection}")`), "the rejected cut is recut before asking again");
   assert.match(rejected.next.line, /^film\/standard: sample \(6\/10\) - The owner rejected/);
-  assert.deepEqual(rejected.next.rules, [rejection]);
-  assert.deepEqual(readState(dir).rules, [{ text: rejection, from: "sample 1", scope: "project" }]);
+  assert.deepEqual(rejected.next.rules, [`sample: ${rejection}`], "a sample rule is labelled with the sample");
+  assert.deepEqual(readState(dir).rules.map(({ text, from, scope, object }) => ({ text, from, scope, object })), [{ text: rejection, from: "sample 1", scope: "object", object: { stage: "sample" } }]);
 
   fakeCut(dir, 6, "second cut");
   assert.equal(nextAction(dir).first, undefined, "a new cut is asked about afresh");

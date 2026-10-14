@@ -94,12 +94,12 @@ The treatment, the section briefs and the review rules W1 to W7 SHALL NOT add a 
 
 ### Requirement: Web intake ends in a confirmed playback or a stated skip
 
-Web intake SHALL finish only when decide records the playback the owner confirmed (`--verdict accept`) or a skip (`--choice skip`) whose answer states what the agent decided for the owner. A skip completes intake only; the variants, decision round, description and section checkpoints still ask. A correction (`--verdict reject`) SHALL become a project rule and reopen intake. Web intake SHALL NOT write `brief.md`.
+Web intake SHALL finish only when decide records the playback the owner confirmed (`--verdict accept`) or a skip (`--choice skip`) whose answer states what the agent decided for the owner. A skip completes intake only; the variant pick still asks, and the decision round, description and section checkpoints follow the delegation map. A correction (`--verdict reject`) SHALL become a rule and reopen intake. Web intake SHALL NOT write `brief.md`.
 
 #### Scenario: Corrections loop until the owner confirms
 
 - **WHEN** decide records a playback correction for a standard web project
-- **THEN** a project rule SHALL hold the correction and `next` SHALL stay at intake, with a `first` step to play the page back again and a question asking what is still wrong or missing
+- **THEN** a rule SHALL hold the correction and `next` SHALL stay at intake, with a `first` step to play the page back again and a question asking what is still wrong or missing
 - **AND** after `--verdict accept` with the confirmed playback, `next` SHALL move past intake.
 
 #### Scenario: The playback is confirmed before concepts
@@ -117,7 +117,7 @@ Web intake SHALL finish only when decide records the playback the owner confirme
 
 - **WHEN** a standard web project records a stated skip
 - **THEN** `next` SHALL move past intake
-- **AND** it SHALL still ask the owner about the variants, the decision round, the description and each section.
+- **AND** it SHALL still ask the owner about the variants, while the decision round, the description and each section follow the delegation map (agent self-checks by default).
 
 ### Requirement: Recorded answers carry content
 
@@ -141,7 +141,7 @@ Under the minimum-content rule, a stated decision (the confirmed playback, or a 
 
 ### Requirement: Anti-goals become project rules
 
-Each `--anti-goal "<text>"` given with a web intake's confirmed playback or skip, the quick skip included, SHALL become a project rule unless a rule with the same text exists. `--anti-goal` given with a correction, at another stage, or on a film, edit or ui project SHALL be refused with `CONTRACT_INVALID` before any state change.
+Each `--anti-goal "<text>"` given with a web intake's confirmed playback or skip, the quick skip included, SHALL become a project rule unless a project rule with the same text exists. `--anti-goal` given with a correction, at another stage, or on a film, edit or ui project SHALL be refused with `CONTRACT_INVALID` before any state change.
 
 #### Scenario: Anti-goals become rules once
 
@@ -218,11 +218,11 @@ The built `index.html` SHALL carry no part of the variant switcher: no `data-var
 
 ### Requirement: Web concrete decisions are asked in numbered rounds
 
-At standard and full the components ask SHALL open a round of numbered questions, the sections in build order and the component sources, each with a recommended answer, and SHALL tell the agent to look up facts instead of asking for them. The agent MAY ask further numbered rounds (each question with a recommended answer) for questions that depended on earlier answers, and SHALL record `components` once, after the last round; the settled answers go into the description.
+At standard and full the components step SHALL open a round of numbered questions, the sections in build order and the component sources, each with a recommended answer, and SHALL tell the agent to look up facts instead of asking for them. The agent MAY ask further numbered rounds (each question with a recommended answer) for questions that depended on earlier answers, and SHALL record `components` once, after the last round; the settled answers go into the description.
 
 #### Scenario: The round carries recommendations
 
-- **WHEN** `next` asks components for a standard web project
+- **WHEN** `next` returns the components step for a standard web project, as the agent's self-check by default or the owner's ask when kept
 - **THEN** its `questions` SHALL be `sections` and `components`, each with a recommended answer
 - **AND** for a quick project they SHALL be `components` alone.
 
@@ -234,29 +234,29 @@ At standard and full the components ask SHALL open a round of numbered questions
 
 ### Requirement: Component sources are offered in plain words
 
-The components ask SHALL offer the component sources as `{choice, label}` options in plain words, in the order project, github, index, discover, scratch, and its recommended answer SHALL name labels only; the ids SHALL stay in the `record` command.
+The components step SHALL offer the component sources as `{choice, label}` options in plain words, in the order project, github, index, discover, scratch, and its recommended answer SHALL name labels only; the ids SHALL stay in its record command.
 
 #### Scenario: The sources are offered in plain words
 
 - **WHEN** `next` asks components
 - **THEN** the options SHALL be `project` "Components this project already has", `github` "A GitHub library you name", `index` "This skill's component index", `discover` "Let me find open-source libraries" and `scratch` "Write from scratch"
 - **AND** the recommended answer SHALL be "Components this project already has first, then this skill's component index, then let me find open-source libraries."
-- **AND** the `record` command SHALL take the ids.
+- **AND** the record command (`record` on an owner ask, `command` on a self-check) SHALL take the ids.
 
 ### Requirement: A no in a decision round becomes a rule
 
-Each "no" the owner gives in a decision round SHALL be recorded with the components ask's `correction` command, `decide --stage components --verdict reject --answer "<…>"`. It SHALL append the correction to `decisions.rounds` and add a project rule, and SHALL NOT record or change the components decision.
+Each "no" the owner gives in a decision round SHALL be recorded with the components ask's `correction` command, `decide --stage components --verdict reject --answer "<…>"`. It SHALL append the correction to `decisions.rounds` and add a rule bound to the result under review, and SHALL NOT record or change the components decision.
 
 #### Scenario: A no in a round becomes a rule
 
 - **WHEN** decide records `--stage components --verdict reject --answer "No icon fonts, only inline SVG"`
-- **THEN** `decisions.rounds` SHALL hold the correction and `state.rules` SHALL gain the rule `decisions 1`
+- **THEN** `decisions.rounds` SHALL hold the correction and `state.rules` SHALL gain the rule `decisions 1`, bound to the result under review
 - **AND** the components decision SHALL stay as it was
 - **AND** a correction before `next` reaches components SHALL fail with `WORKFLOW_NOT_READY`, and `--verdict accept`, or a correction with `--choice`, SHALL fail with `CONTRACT_INVALID`.
 
 ### Requirement: Web build waits for an approved description
 
-At standard and full, `next` SHALL NOT return a build action until the owner approves `brief.md` as the one-page description with `decide --stage description --verdict accept --choice <section ids>`. The approval SHALL bind the brief's bytes, the confirmed playback, the variant pick and the component decision; changing any of them SHALL ask again. A rejection SHALL become a project rule.
+At standard and full, `next` SHALL NOT return a build action until `brief.md` is approved as the one-page description with `decide --stage description --verdict accept --choice <section ids>`, by the agent's self-check by default or by the owner when kept. The approval SHALL bind the brief's bytes, the confirmed playback, the variant pick and the component decision; changing any of them SHALL ask again. A rejection SHALL become a rule.
 
 #### Scenario: Build is blocked until approval
 
@@ -296,12 +296,12 @@ The description instruction SHALL tell the agent not to copy the project rules i
 
 ### Requirement: Web pages are built and reviewed one section at a time
 
-At standard and full the build SHALL follow the approved section order: the first section first, each marked `data-section` in `index.html`. A marker inside an HTML comment SHALL NOT count. `next` SHALL ask the owner to review each built section before the next is built, and build SHALL finish only when every approved section is accepted under the current approval. A section verdict SHALL NOT claim Visual Acceptance.
+At standard and full the build SHALL follow the approved section order: the first section first, each marked `data-section` in `index.html`. A marker inside an HTML comment SHALL NOT count. `next` SHALL return the review of each built section (the agent's self-check by default, the owner's ask when kept) before the next is built, and build SHALL finish only when every approved section is accepted under the current approval. A section verdict SHALL NOT claim Visual Acceptance.
 
 #### Scenario: Sections advance only after review
 
 - **WHEN** the first section is built and the manifest is valid
-- **THEN** `next` SHALL ask the owner to review that section, and SHALL return the build of the second section only after decide records `--stage section --choice <first> --verdict accept`.
+- **THEN** `next` SHALL return the review of that section, and SHALL return the build of the second section only after decide records `--stage section --choice <first> --verdict accept`.
 
 #### Scenario: Out-of-order acceptance is refused
 
@@ -311,7 +311,7 @@ At standard and full the build SHALL follow the approved section order: the firs
 #### Scenario: A rejected section is revised
 
 - **WHEN** the owner rejects a built section with comments
-- **THEN** each comment SHALL become a project rule and `next` SHALL ask about that section again, telling the agent to revise it while the page is unchanged.
+- **THEN** each comment SHALL become a rule bound to that section and `next` SHALL return that section's review again, telling the agent to revise it while the page is unchanged.
 
 #### Scenario: Re-approval asks the sections again
 
@@ -348,12 +348,12 @@ Decide SHALL accept only contained files that validate against the `Record` defi
 - **WHEN** `--evidence` names a missing file, a file outside the project, or JSON that does not validate as a runtime-review `Record`, such as a hand-written record with an empty `contextAtRecord`
 - **THEN** decide SHALL fail and record nothing.
 
-### Requirement: Every web rejection becomes a project rule
+### Requirement: Every web rejection becomes a rule
 
-Every "no" the owner gives in the web conversation SHALL append `{text, from, scope: "project"}` to `state.rules`, with `from` naming the checkpoint and its count: `playback N`, `anti-goal N`, `variants N`, `decisions N`, `description N`, `section <id> N` or `draft N`. An anti-goal whose text is already a rule SHALL NOT be added again. Every later action before `done` SHALL return the rule texts.
+Every "no" the owner gives in the web conversation SHALL append `{text, from, scope}` to `state.rules`, scoped as owner-attention-asks defines, with `from` naming the checkpoint and its count: `playback N`, `anti-goal N`, `variants N`, `decisions N`, `description N`, `section <id> N` or `draft N`. An anti-goal whose text is already a rule SHALL NOT be added again. Every later action before `done` SHALL return the open rule texts.
 
 #### Scenario: Rules accumulate across checkpoints
 
 - **WHEN** the owner corrects a playback, confirms it with an anti-goal, rejects the variants, turns down a recommendation in the decision round, and rejects the description and a section
 - **THEN** `state.rules` SHALL hold one entry per "no" with `from` `playback 1`, `anti-goal 1`, `variants 1`, `decisions 1`, `description 1` and `section <id> 1`
-- **AND** the next action SHALL list their texts in `rules`.
+- **AND** the next action SHALL list the open ones in `rules`.

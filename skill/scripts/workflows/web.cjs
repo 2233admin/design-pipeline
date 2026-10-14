@@ -26,10 +26,9 @@ const ANTI_GOALS = ' [--anti-goal "<anti-goal>" ...]';
 const history = (state, key) => (Array.isArray(state.decisions?.[key]) ? state.decisions[key] : []);
 const rejections = (records, matches = () => true) => records.filter(item => item.verdict === "reject" && matches(item)).length;
 
-// Every "no" the owner gives becomes a project rule, the same record a rejected draft makes.
-function addRule(state, text, from) {
-  state.rules = [...(state.rules || []), { text, from, scope: "project" }];
-}
+// Every "no" the owner gives becomes a rule (workflows/rules.cjs): bound to the result under review
+// unless it is about one section; anti-goals are project rules.
+const { addRule, isProject } = require("./rules.cjs");
 
 // A contained project file's bytes, or null when it is missing, outside the project or not a file.
 function projectFile(root, rel) {
@@ -52,7 +51,7 @@ const OPENING = {
   page: "What site have you seen recently that felt the way this page should, and what about it?",
   replicate: "What must stay exactly as it is in the page you want reproduced?",
 };
-const CONVERSATION = "Facts are your job: before asking, take what you can from the conversation and the project's files (README, existing pages, DESIGN.md, brand assets; in an existing project run project inspect), and never ask the owner for something you can look up. Send the opening question as its own message, as it is: the skip line, then one open question. Then ask one open question per message, with no list of example answers unless they are stuck: anchor on real specifics (a site they saw, the moment a visitor arrives), ask what would make them wince and what they have seen elsewhere and loved or hated. When you can describe the page, play it back in about 200-300 words: who it is for, what a visitor should do, what it should feel like; mark what they said as theirs and what you guessed as your guess, and end by asking what is wrong or missing. Record each correction with the correction command (it becomes a project rule) and play back again until they confirm; then record the confirmed playback, adding each anti-goal they named (what the page must never be or do) to the record command as its own --anti-goal \"<text>\", which becomes a project rule too. If they say to just start, tell them in one line what you decided on their behalf and record that line with the skip command, with any anti-goal they named added the same way.";
+const CONVERSATION = "Facts are your job: before asking, take what you can from the conversation and the project's files (README, existing pages, DESIGN.md, brand assets; in an existing project run project inspect), and never ask the owner for something you can look up. Send the opening question as its own message, as it is: the skip line, then one open question. Then ask one open question per message, with no list of example answers unless they are stuck: anchor on real specifics (a site they saw, the moment a visitor arrives), ask what would make them wince and what they have seen elsewhere and loved or hated. When you can describe the page, play it back as a short card, one line each: three intent lines (what the page expresses, who it connects with and how, what makes it unlike other pages), then the uncertainties still open, then one line on what you will decide and what stays theirs; mark what they said as theirs and what you guessed as your guess, and end by asking what is wrong or missing. The confirmed card, recorded with its line breaks, is the project's creative intent. Record each correction with the correction command (it becomes a rule) and play back again until they confirm; then record the confirmed playback, adding each anti-goal they named (what the page must never be or do) to the record command as its own --anti-goal \"<text>\", which becomes a project rule too. If they say to just start, tell them in one line what you decided on their behalf and record that line with the skip command, with any anti-goal they named added the same way.";
 
 // Intake ends with a confirmed playback or a stated skip, and a later correction reopens it.
 function intakeFinished(state) {
@@ -69,7 +68,7 @@ const INTAKE = {
     return {
       type: "ask",
       // `first` is always a step for the agent before it asks; the opening question carries the skip line.
-      ...(corrected ? { first: `The owner corrected the playback ("${latest.reason}"); each correction is now a project rule. Play it back again with the corrections applied, then ask:` } : {}),
+      ...(corrected ? { first: `The owner corrected the playback ("${latest.reason}"); each correction is now a rule. Play it back again with the corrections applied, then ask:` } : {}),
       question: corrected ? "What is wrong or missing in this?" : `${SKIP_LINE} ${OPENING[state.mode === "replicate" ? "replicate" : "page"]}`,
       instruction: CONVERSATION,
       record: `${decideCommand(root, "intake")} --verdict accept --answer "<the playback the owner confirmed>"${ANTI_GOALS}`,
@@ -105,8 +104,8 @@ function recordIntake(state, _root, options) {
     state.decisions.intake = { answer: statement(options.answer, "be the playback the owner confirmed, not their reply to it"), playback: "confirmed" };
     state.decisions.playbacks = [...playbacks, { verdict: "accept", at }];
   } else if (options.verdict === "reject") {
-    if (antiGoals.length) fail("workflow", "--anti-goal goes with the confirmed playback or a skip; a correction is already a project rule");
-    const text = reason(options.answer, "say in one sentence what the owner corrected in the playback; it becomes a project rule");
+    if (antiGoals.length) fail("workflow", "--anti-goal goes with the confirmed playback or a skip; a correction is already a rule");
+    const text = reason(options.answer, "say in one sentence what the owner corrected in the playback; it becomes a rule");
     state.decisions.playbacks = [...playbacks, { verdict: "reject", reason: text, at }];
     addRule(state, text, `playback ${rejections(state.decisions.playbacks)}`);
   } else {
@@ -114,8 +113,8 @@ function recordIntake(state, _root, options) {
   }
   // Each anti-goal is a "no" given in the conversation; one already among the rules is not repeated.
   for (const text of antiGoals) {
-    if ((state.rules || []).some(rule => rule.text === text)) continue;
-    addRule(state, text, `anti-goal ${(state.rules || []).filter(rule => /^anti-goal \d+$/.test(rule.from)).length + 1}`);
+    if ((state.rules || []).some(rule => rule.text === text && isProject(rule))) continue;
+    addRule(state, text, `anti-goal ${(state.rules || []).filter(rule => /^anti-goal \d+$/.test(rule.from)).length + 1}`, null);
   }
 }
 
@@ -155,13 +154,13 @@ const CONCEPTS = {
     const rejected = latest?.verdict === "reject" && latest.sha256 === fileSha(root, VARIANTS_PAGE);
     return {
       type: "ask",
-      ...(rejected ? { first: `The owner rejected these variants ("${latest.reason}"); the reason is now a project rule. Redo what it rules out in ${VARIANTS_PAGE} and pre-screen again, then ask:` } : {}),
+      ...(rejected ? { first: `The owner rejected these variants ("${latest.reason}"); the reason is now a rule. Redo what it rules out in ${VARIANTS_PAGE} and pre-screen again, then ask:` } : {}),
       question: `Open ${VARIANTS_PAGE} and flip through A, B and C with the arrows or the ← → keys. Which first screen should I build, or what should I combine from them (for example B's header with C's layout)?`,
       show: [VARIANTS_PAGE, "concepts.md"].map(rel => path.join(path.resolve(root), rel)),
       recommended: "Recommend the variant whose structure best serves what the visitor should do first, and say why.",
       record: `${decideCommand(root, "concept")} --choice <A|B|C, or several comma-separated to combine> [--answer "<what to take from each, in the owner's words>"]`,
       correction: `${decideCommand(root, "concept")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
-      why: `${PRESCREEN} Each rejection becomes a project rule.`,
+      why: `${PRESCREEN} Each rejection becomes a rule.`,
     };
   },
 };
@@ -177,7 +176,7 @@ function recordConcept(state, root, options, next) {
   if (before(state, action.stage, "concepts") || action.stage === "concepts" && action.type !== "ask") fail("workflow", `Cannot record a variant ${options.verdict === "reject" ? "rejection" : "pick"} while ${action.stage === "concepts" ? `${VARIANTS_PAGE} is not ready` : `${action.stage} is unfinished`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
   if (options.verdict === "reject") {
     if (!page) fail("workflow", `there is no ${VARIANTS_PAGE} to reject. Fix: follow next`, { code: "WORKFLOW_NOT_READY" });
-    const text = reason(options.answer, "say in one sentence what the owner rejected in the variants and why; it becomes a project rule");
+    const text = reason(options.answer, "say in one sentence what the owner rejected in the variants and why; it becomes a rule");
     state.decisions.variants = [...variants, { verdict: "reject", reason: text, sha256: page, at }];
     addRule(state, text, `variants ${rejections(state.decisions.variants)}`);
     return;
@@ -222,8 +221,10 @@ const COMPONENTS = {
       question: sectioned ? "These decisions are ready now, each with my recommendation. Which would you change?" : sources.ask,
       questions,
       recommended: RECOMMENDED_SOURCES,
-      instruction: `Ask this as one numbered round: one ❓ Qn per question with its body and options, each option by its label, then ➡️ your recommended answer, and wait for the reply. Settle facts yourself first: find the project's existing components and their paths, and the assets and their licenses, and name what you found instead of asking for it. Add a question only for a concrete decision you can neither look up nor settle from the conversation, such as whether supplied material is licensed for this use. A question whose answer depends on one still open waits for a further numbered round, asked the same way. Record each "no" the owner gives in a round (a recommendation turned down, something ruled out) with the correction command; it becomes a project rule. After the last round, record the components decision once, with the choice ids of the options the owner picked.${sectioned ? " The sections the owner settles go into the description." : ""}`,
+      instruction: `Ask this as one numbered round: one ❓ Qn per question with its body and options, each option by its label, then ➡️ your recommended answer, and wait for the reply. Settle facts yourself first: find the project's existing components and their paths, and the assets and their licenses, and name what you found instead of asking for it. Add a question only for a concrete decision you can neither look up nor settle from the conversation, such as whether supplied material is licensed for this use. A question whose answer depends on one still open waits for a further numbered round, asked the same way. Record each "no" the owner gives in a round (a recommendation turned down, something ruled out) with the correction command; it becomes a rule. After the last round, record the components decision once, with the choice ids of the options the owner picked.${sectioned ? " The sections the owner settles go into the description." : ""}`,
+      selfCheck: `Settle the component sources yourself: find the project's existing components and their paths, and the assets and their licenses; take the project's components first, then this skill's component index, then let discovery find maintained open-source libraries (discovery is not permission to copy).${sectioned ? " Settle the sections, in build order, from the chosen variant's section arc (the reference's sections in replicate mode); they go into the description." : ""} Record the decision with the command, the choice ids and one line on what you chose and why.`,
       record: `${decideCommand(root, "components")} --choice <${COMPONENT_SOURCES.join("|")}, comma-separated> --answer "<the user's reply>"`,
+      accept: `${decideCommand(root, "components")} --choice <${COMPONENT_SOURCES.join("|")}, comma-separated> --answer "<what you chose and why, in one line>"`,
       correction: `${decideCommand(root, "components")} --verdict reject --answer "<what the owner turned down or ruled out, in their words>"`,
       why: `Record the owner's component source choice before ${sectioned ? "the description and the build" : "building"}; scratch cannot be combined with another choice, github requires a https://github.com/<owner>/<repo> URL in --answer, and discover lets the agent find maintained open-source component libraries and icon sets on GitHub beyond the index itself and record each with its pinned license. Discovery is not permission to copy.`,
     };
@@ -231,13 +232,13 @@ const COMPONENTS = {
 };
 
 // The decision round's record: the component sources the owner chose, or a "no" given in a round,
-// which becomes a project rule and leaves the stage as it is.
+// which becomes a rule and leaves the stage as it is.
 function recordComponents(state, _root, options, next) {
   if (options.verdict !== undefined && options.verdict !== null) {
     if (options.verdict !== "reject" || options.choice) fail("workflow", "a decision-round correction takes --verdict reject and --answer only; the components decision takes --choice and --answer");
     const action = next();
     if (before(state, action.stage, "components")) fail("workflow", `Cannot record a decision-round correction while ${action.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
-    const text = reason(options.answer, "say in one sentence what the owner turned down or ruled out; it becomes a project rule");
+    const text = reason(options.answer, "say in one sentence what the owner turned down or ruled out; it becomes a rule");
     state.decisions.rounds = [...history(state, "rounds"), { verdict: "reject", reason: text, at: new Date().toISOString() }];
     addRule(state, text, `decisions ${rejections(state.decisions.rounds)}`);
     return;
@@ -302,7 +303,7 @@ function briefSections(text) {
 
 function descriptionContent(state) {
   const direction = state.mode === "replicate" ? "what is reproduced, its invariants and what changes" : "the chosen first screen (the variant and anything combined from the others)";
-  return `one page in plain words that a builder could work from without asking again: what the page is and why; who it is for and the one thing a visitor should do; how it should feel, in the owner's words; goals, non-goals and anti-goals (what would make the owner wince); ${direction}; a \`## Sections\` list of the sections in build order, first screen first, one top-level list item per section that starts with its id (lowercase letters, digits and hyphens) and gives one line on its job, such as \`- hero: today's bakes and the reserve button\`; where the components come from; constraints such as devices, assets and their licenses; and which choices are the owner's and which are your calls, marked as yours. Do not copy the project rules into it: they stay in state.rules and come back with every action, so a rule recorded later needs no edit here. Keep any brief the owner supplied and extend it rather than replacing their words.`;
+  return `one page in plain words that a builder could work from without asking again: what the page is and why; who it is for and the one thing a visitor should do; how it should feel, in the owner's words; goals, non-goals and anti-goals (what would make the owner wince); ${direction}; a \`## Sections\` list of the sections in build order, first screen first, one top-level list item per section that starts with its id (lowercase letters, digits and hyphens) and gives one line on its job, such as \`- hero: today's bakes and the reserve button\`; where the components come from; constraints such as devices, assets and their licenses; and which choices are the owner's and which are your calls, marked as yours. Do not copy the rules into it: they stay in state.rules and come back with every action, so a rule recorded later needs no edit here. Keep any brief the owner supplied and extend it rather than replacing their words.`;
 }
 
 const DESCRIPTION = {
@@ -314,7 +315,7 @@ const DESCRIPTION = {
     if (!current) return { type: "run", instruction: `Write ${file}: ${descriptionContent(state)} Then run next again.`, why: "Nothing is built until the owner approves a written description of it." };
     const latest = history(state, "descriptions").at(-1);
     const first = latest?.verdict === "reject" && latest.sha256 === current
-      ? `The owner rejected this description ("${latest.reason}"); it is now a project rule. Revise ${file}, then ask:`
+      ? `The owner rejected this description ("${latest.reason}"); it is now a rule. Revise ${file}, then ask:`
       : latest?.verdict === "accept"
         ? `${file}, the confirmed playback, the chosen variant or the component decision changed after the owner approved the description. Bring ${file} up to date, then ask:`
         : `Before asking, make sure ${file} is the one-page description, then ask:`;
@@ -323,11 +324,13 @@ const DESCRIPTION = {
       first,
       question: `Here is the one-page description of what I will build (${file}). Approve it, or tell me what is wrong?`,
       show: [path.join(path.resolve(root), file)],
-      instruction: `${file} is ${descriptionContent(state)} Show it to the owner as it is; record each correction (it becomes a project rule), revise and ask again.`,
+      instruction: `${file} is ${descriptionContent(state)} Show it to the owner as it is; record each correction (it becomes a rule), revise and ask again.`,
       recommended: "Approve only when it says what you want; nothing is built before you do.",
+      selfCheck: `The command's --choice is the ids of the ## Sections list in ${file}, in its order. Check ${file} yourself against the confirmed playback (or the stated skip), the chosen variant and the component decision: it is ${descriptionContent(state)} When it matches, record the approval with the command.`,
       record: `${decideCommand(root, "description")} --verdict accept --choice <the ids of the ## Sections list in ${file}, in its order, comma-separated> [--answer "<the owner's words>"]`,
+      accept: `${decideCommand(root, "description")} --verdict accept --choice <section-ids-in-order,comma-separated>`,
       correction: `${decideCommand(root, "description")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
-      why: "The stage that blocks building (not a state.gates gate): the approval binds this description, the confirmed playback, the chosen variant and the component decision, and fixes the sections the page is built in. Each correction becomes a project rule.",
+      why: "The stage that blocks building (not a state.gates gate): the approval binds this description, the confirmed playback, the chosen variant and the component decision, and fixes the sections the page is built in. Each correction becomes a rule.",
     };
   },
 };
@@ -342,6 +345,8 @@ function recordDescription(state, root, options, next) {
     // An approval is recorded once next has asked for it, and may be recorded again later to correct
     // it; section verdicts bind the approval, so only a changed one asks the sections again.
     if (before(state, action.stage, "description") || !current) fail("workflow", `Cannot record the description approval while ${before(state, action.stage, "description") ? `${action.stage} is unfinished` : `${file} is unwritten`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    const latest = history(state, "descriptions").at(-1);
+    if (options.by === "agent" && latest?.verdict === "reject" && latest.sha256 === current) fail("workflow", `the owner rejected this description and ${file} is unchanged since. Fix: revise it for their correction, then record the approval`, { code: "WORKFLOW_NOT_READY" });
     const sections = String(options.choice ?? "").split(",").map(value => value.trim()).filter(Boolean);
     if (!sections.length) fail("workflow", `--choice is required: the ids of the ## Sections list in ${file}, in its order, comma-separated`);
     const listed = briefSections(fileText(root, file) ?? "");
@@ -354,7 +359,7 @@ function recordDescription(state, root, options, next) {
     state.decisions.descriptions = [...history(state, "descriptions"), { verdict: "accept", sha256: current, upstream: descriptionUpstream(state), sections, ...(note ? { note } : {}), at }];
   } else if (options.verdict === "reject") {
     if (before(state, action.stage, "description") || !current) fail("workflow", `Cannot reject the description before ${file} is written for approval. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
-    const text = reason(options.answer, "say in one sentence what is wrong with the description; it becomes a project rule");
+    const text = reason(options.answer, "say in one sentence what is wrong with the description; it becomes a rule");
     state.decisions.descriptions = [...history(state, "descriptions"), { verdict: "reject", reason: text, sha256: current, at }];
     addRule(state, text, `description ${rejections(state.decisions.descriptions)}`);
   } else {
@@ -470,7 +475,7 @@ function buildScope(state, progress) {
   const { accepted = [], current = null } = progress || {};
   if (!current) return `Repair index.html and component-manifest.json without changing what the owner accepted (sections ${accepted.join(", ")}).`;
   const place = `into index.html inside an element marked data-section="${current}"`;
-  if (accepted.length) return `Build the next section, \`${current}\`, from its section brief ${place} (accepted so far: ${accepted.join(", ")}). Keep the accepted sections as the owner accepted them unless a project rule requires a change, and add every component it uses to component-manifest.json.`;
+  if (accepted.length) return `Build the next section, \`${current}\`, from its section brief ${place} (accepted so far: ${accepted.join(", ")}). Keep the accepted sections as the owner accepted them unless a rule requires a change, and add every component it uses to component-manifest.json.`;
   const treatment = replicate ? "" : "Extend the chosen card in concepts.md (for a combination, the first card named, saying what it takes from the others) with `## Treatment`; its section arc lists exactly the sections of the approved description's ## Sections list, in that order, and a different arc goes back to the owner as a description correction before anything is built. Write the section briefs (references/web-direction.md). ";
   return `${openSpec}${treatment}Build only the first screen, section \`${current}\`, from ${replicate ? "the reference and its invariants" : "the chosen variant and the approved description"} ${place}; the other sections follow one at a time after the owner reviews it.`;
 }
@@ -480,13 +485,16 @@ function sectionReview(root, { approval, accepted, current, latest }) {
   return {
     type: "ask",
     section: current,
-    ...(unrevised ? { first: `The owner asked for changes to section ${current} ("${latest.reason || "see the cited runtime-review Feedback"}"); each comment is now a project rule. Revise the section, then ask:` } : {}),
+    ...(unrevised ? { first: `The owner asked for changes to section ${current} ("${latest.reason || "see the cited runtime-review Feedback"}"); each comment is now a rule. Revise the section, then ask:` } : {}),
     question: `The ${current} section is built (${accepted.length + 1} of ${approval.sections.length}). Look at it in the page: accept it as it is, or tell me what to change, naming each element by its text, label or where it sits?`,
     show: [path.join(path.resolve(root), "index.html")],
     instruction: `Open index.html at the ${current} section (data-section="${current}") in a real browser and let the owner look and interact. Comments are text: ask them to name each element they comment on by its text, label or place, and do not offer to let them click or pick elements on the page. If the project already carries runtime-review inputs (references/runtime-review.md), Feedback the owner leaves on its runtime-review page can be recorded with runtime-review record and cited with --evidence. Any change they ask for is a reject: record it, revise the section and ask again; accept only a section they are happy with as it is.`,
     recommended: "Accept only when nothing in this section needs to change; earlier sections stay accepted unless a new rule changes them.",
     record: `${decideCommand(root, "section")} --choice ${current} --verdict accept|reject [--answer "<the owner's comments>"] [--evidence <runtime-review/feedback/<hash>.json>]`,
-    why: "The page is built one section at a time, first screen first; the next section starts only after the owner reviews this one. Each comment becomes a project rule. A section verdict is not Visual Acceptance of the page; the final review is.",
+    accept: `${decideCommand(root, "section")} --choice ${current} --verdict accept`,
+    correction: `${decideCommand(root, "section")} --choice ${current} --verdict reject --answer "<what the owner wants changed, in their words>" [--evidence <runtime-review/feedback/<hash>.json>]`,
+    selfCheck: `Open index.html at the ${current} section (data-section="${current}") in a real browser and check it yourself against the confirmed playback (or the stated skip), the chosen direction, its section brief and the rules; fix what does not match, then record the acceptance with the command.`,
+    why: "The page is built one section at a time, first screen first; the next section starts only after the owner reviews this one. Each comment becomes a rule. A section verdict is not Visual Acceptance of the page; the final review is.",
   };
 }
 
@@ -499,7 +507,7 @@ const BUILD = {
     if (finished && progress?.current && progress.built) return sectionReview(root, progress);
     if (rejectedUnchanged(state, root)) {
       const latest = history(state, "drafts").at(-1);
-      return { type: "run", instruction: `The owner rejected this page at the final review ("${latest.reason}"); the reason is now a project rule. Repair index.html for it, then run next again: the repaired page is probed and shown to the owner again. ${BUILD_CRAFT}`, why: "A rejected page is repaired before it is checked and shown again." };
+      return { type: "run", instruction: `The owner rejected this page at the final review ("${latest.reason}"); the reason is now a rule. Repair index.html for it, then run next again: the repaired page is probed and shown to the owner again. ${BUILD_CRAFT}`, why: "A rejected page is repaired before it is checked and shown again." };
     }
     // Once a section is accepted and the page and manifest are valid, the step builds the next
     // section; the first screen, even on an existing page, gets the full instruction with the
@@ -552,14 +560,21 @@ function recordSection(state, root, options, next) {
   const action = next();
   // Sections are accepted in build order, each when next asks about it; a built section can be
   // rejected again later, which reopens it.
-  if (options.verdict === "accept" && (action.stage !== "build" || action.type !== "ask" || action.section !== id)) {
+  // The step for this section is the owner's ask or, when the agent reviews sections, its self-check;
+  // the build run also names the section while it shows findings, so section alone is not enough.
+  if (options.verdict === "accept" && (action.stage !== "build" || !(action.type === "ask" || action.selfCheck) || action.section !== id)) {
     fail("workflow", `Cannot accept section ${id} while next ${action.section ? `is at section ${action.section}` : `is at ${action.stage}`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
   }
   if (options.verdict === "reject" && before(state, action.stage, "build")) fail("workflow", `Cannot record a section review while ${action.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+  // The agent cannot undo the owner's "no" by accepting the page they rejected unchanged.
+  const latestHere = history(state, "sections").filter(item => item.section === id).at(-1);
+  if (options.verdict === "accept" && options.by === "agent" && latestHere?.verdict === "reject" && latestHere.pageSha256 === pageDigest(root)) {
+    fail("workflow", `the owner rejected section ${id} and index.html is unchanged since. Fix: revise the section for their comments, then record the acceptance`, { code: "WORKFLOW_NOT_READY" });
+  }
   const evidence = reviewFeedback(root, options.evidence);
   const answer = nonEmpty(options.answer) ? options.answer.trim() : null;
-  if (options.verdict === "reject" && !answer && !evidence.length) fail("workflow", "a section rejection needs --answer with the owner's comments, or --evidence with their recorded runtime-review Feedback; each becomes a project rule");
-  if (options.verdict === "reject" && answer) reason(answer, "say in one sentence what the owner wants changed in the section; it becomes a project rule");
+  if (options.verdict === "reject" && !answer && !evidence.length) fail("workflow", "a section rejection needs --answer with the owner's comments, or --evidence with their recorded runtime-review Feedback; each becomes a rule");
+  if (options.verdict === "reject" && answer) reason(answer, "say in one sentence what the owner wants changed in the section; it becomes a rule");
   const records = [...history(state, "sections"), {
     section: id, verdict: options.verdict, reason: answer,
     ...(evidence.length ? { evidence: evidence.map(({ path: rel, sha256: hash, objectId, category }) => ({ path: rel, sha256: hash, objectId, category })) } : {}),
@@ -568,8 +583,9 @@ function recordSection(state, root, options, next) {
   state.decisions.sections = records;
   if (options.verdict === "reject") {
     const from = `section ${id} ${rejections(records, item => item.section === id)}`;
-    if (answer) addRule(state, answer, from);
-    for (const item of evidence) addRule(state, `${item.objectId}: ${item.actual} Expected: ${item.expected}`, from);
+    const section = { stage: "section", choice: id };
+    if (answer) addRule(state, answer, from, section);
+    for (const item of evidence) addRule(state, `${item.objectId}: ${item.actual} Expected: ${item.expected}`, from, section);
   }
 }
 

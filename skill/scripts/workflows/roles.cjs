@@ -11,6 +11,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, fail, sha256 } = require("../contract-utils.cjs");
+const { statementLine } = require("./rules.cjs");
 
 const ROLES = ["owner", "agent"];
 const LOCKED = new Set(["review", "creative-intent"]);
@@ -23,18 +24,26 @@ const LABELS = { intake: "Intake", "creative-intent": "Creative intent", referen
 const HISTORIES = ["playbacks", "variants", "rounds", "descriptions", "sections", "samples", "drafts"];
 const STATEMENT = path.join(".design-pipeline", "diligence.md");
 
+// Web review checkpoints the agent self-checks by default (OpenSpec change owner-attention-asks): the
+// owner meets the playback, the direction and the result, and keeps any of these with --keep.
+const SELF_CHECKED = new Set(["components", "description", "section"]);
+
 function defaultEntry(state, checkpoint) {
   const agent = ["reference", "deliver"].includes(checkpoint)
     || (checkpoint === "intake" && state.deliverable === "web" && state.tier === "quick")
+    || (SELF_CHECKED.has(checkpoint) && state.deliverable === "web")
     || (DIRECTED.has(checkpoint) && Boolean(state.director));
   return { to: agent && !LOCKED.has(checkpoint) ? "agent" : "owner", ...(LOCKED.has(checkpoint) ? { locked: true } : {}), set: "default" };
 }
+
+// The checkpoint a stage finishes: a sectioned web build is reviewed section by section.
+const checkpointOf = (state, stageId) => stageId === "build" && state.deliverable === "web" && state.tier !== "quick" ? "section" : CHECKPOINT_OF_STAGE[stageId];
 
 // The checkpoints a project's stages reach, each with its default entry.
 function defaultDelegation(state, stageIds) {
   const map = {};
   for (const id of stageIds) {
-    const checkpoint = id === "build" && state.deliverable === "web" && state.tier !== "quick" ? "section" : CHECKPOINT_OF_STAGE[id];
+    const checkpoint = checkpointOf(state, id);
     if (checkpoint && !map[checkpoint]) map[checkpoint] = defaultEntry(state, checkpoint);
   }
   if (map.intake && state.tier !== "quick") map["creative-intent"] = defaultEntry(state, "creative-intent");
@@ -90,8 +99,14 @@ function stampRecord(state, before, checkpoint, role, options) {
     ...(options.verdict ? { verdict: options.verdict } : {}),
     ...(options.choice !== undefined && options.choice !== null ? { choice: String(options.choice) } : {}),
     ...(answer ? { answer } : {}),
+    ...(options.tradeoff ? { tradeoff: options.tradeoff } : {}),
     at: new Date().toISOString(),
   }];
+}
+
+// The confirmed web playback card is the creative intent, recorded whole by the owner who confirmed it.
+function recordCreativeIntent(state, card) {
+  state.decisions.roles = [...state.decisions.roles, { stage: "creative-intent", by: "owner", verdict: "accept", answer: String(card).trim(), at: new Date().toISOString() }];
 }
 
 const historySizes = state => Object.fromEntries(HISTORIES.map(key => [key, Array.isArray(state.decisions?.[key]) ? state.decisions[key].length : 0]));
@@ -105,7 +120,7 @@ const stateHash = state => {
 
 function describe(entry) {
   const what = [entry.verdict, entry.choice && entry.choice !== "skip" ? entry.choice : null, entry.choice === "skip" ? "skipped the questions" : null].filter(Boolean).join(" ");
-  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer}"` : ""}`;
+  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer.replace(/\s*\r?\n\s*/g, " / ")}"` : ""}${entry.tradeoff ? ` (asked about: "${entry.tradeoff}")` : ""}`;
 }
 
 // Decisions stored as a single value rather than a history: each counts as unauthored when no role
@@ -130,7 +145,7 @@ function renderStatement(state, { delivered = null, deliveryCurrent = false, gat
     : String(delivered);
   const notStated = [];
   if (state.decisions?.intake?.skipped) notStated.push("Intake: the owner skipped the questions; the agent stated its decisions instead");
-  if (state.delegation?.["creative-intent"]) notStated.push("Creative intent: not yet recorded (planned in phase 2)");
+  if (state.delegation?.["creative-intent"] && !roles.some(entry => entry.stage === "creative-intent" && entry.by === "owner")) notStated.push("Creative intent: not stated by the owner");
   const list = (items, empty) => items.length ? items.map(item => `- ${item}`).join("\n") : `- ${empty}`;
   const delegation = Object.entries(state.delegation || {}).map(([checkpoint, entry]) => `${LABELS[checkpoint] || checkpoint}: ${entry.to}${entry.locked ? " (locked)" : ""}${entry.set === "owner" ? " (set by the owner)" : ""}`);
   const checks = Object.entries(gates).map(([gate, record]) => `${gate}: ${record?.status ?? "unknown"}`);
@@ -156,7 +171,7 @@ function renderStatement(state, { delivered = null, deliveryCurrent = false, gat
     list(delegation, "no checkpoints"),
     "",
     "## The owner's \"no\", in their words",
-    list((state.rules || []).map(rule => `"${rule.text}" (${rule.from})`), "none"),
+    list((state.rules || []).map(rule => statementLine(rule, roles)), "none"),
     "",
     "## Technical checks (not creative acceptance)",
     list(checks, "none recorded"),
@@ -185,4 +200,4 @@ function statementStatus(root, state, deliveryCurrent) {
   return { path: STATEMENT.split(path.sep).join("/"), current };
 }
 
-module.exports = { LOCKED, ROLES, STATEMENT, applyDelegation, defaultDelegation, ensureDelegation, historySizes, recordRole, renderStatement, stampRecord, stateHash, statementStatus, writeStatement };
+module.exports = { DIRECTED, LOCKED, ROLES, SELF_CHECKED, STATEMENT, applyDelegation, checkpointOf, defaultDelegation, ensureDelegation, historySizes, recordCreativeIntent, recordRole, renderStatement, stampRecord, stateHash, statementStatus, writeStatement };

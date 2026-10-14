@@ -8,7 +8,14 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { decide, nextAction, readState } = require("../../skill/scripts/workflow-core.cjs");
 
-const PLAYBACK = "A landing page for small bakeries that take preorders. You said: visitors are regulars on their phones who want to reserve tomorrow's bread in under a minute, and it should feel warm and unhurried, never like a delivery app. My guess: one first screen with today's bakes and a reserve button, then how pickup works, then the shop's story.";
+// The playback card: three intent lines, the open uncertainty and the delegation line, one per line.
+const PLAYBACK = [
+  "Expresses: a landing page for small bakeries that take preorders, warm and unhurried (you said), never like a delivery app (you said).",
+  "Connects with: regulars on their phones who want to reserve tomorrow's bread in under a minute (you said).",
+  "Unlike others: today's bakes and a reserve button on the first screen, then how pickup works, then the shop's story (my guess).",
+  "Still open: whether pickup runs on weekends.",
+  "I decide the layout, components and each section's details; the variants and the final page stay yours.",
+].join("\n");
 const STATED = "I will build a one-screen pricing card for the existing site, in its current type and colours, from the project's own components.";
 const SECTIONS = ["first-screen"];
 const SWITCHER_SCRIPT = path.resolve(__dirname, "../../skill/tools/variant-switcher/variant-switcher.js");
@@ -21,8 +28,9 @@ function variantsPage(keys = ["A", "B", "C"]) {
   return `<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><title>Variants</title></head><body>\n${screens}\n<script>\n${fs.readFileSync(SWITCHER_SCRIPT, "utf8")}\n</script>\n</body></html>\n`;
 }
 
-function confirmPlayback(root, answer = PLAYBACK) {
-  return decide(root, { by: "owner", stage: "intake", verdict: "accept", answer });
+// `keep` keeps checkpoints with the owner, as the owner's reply to the playback's delegation line.
+function confirmPlayback(root, answer = PLAYBACK, keep = []) {
+  return decide(root, { by: "owner", stage: "intake", verdict: "accept", answer, ...(keep.length ? { keep } : {}) });
 }
 
 function statedSkip(root, answer = STATED) {
@@ -43,10 +51,10 @@ function writeReference(root) {
 }
 
 // Everything before the components decision for the project's tier and mode.
-function toComponents(root) {
+function toComponents(root, { keep = [] } = {}) {
   const { tier, mode } = readState(root);
   if (tier === "quick") statedSkip(root);
-  else confirmPlayback(root);
+  else confirmPlayback(root, PLAYBACK, keep);
   if (mode === "replicate") writeReference(root);
   else if (tier !== "quick") decide(root, { by: "owner", stage: "reference", answer: "none" });
   if (tier !== "quick" && mode !== "replicate") {
@@ -70,13 +78,14 @@ function toBuild(root, sections = SECTIONS) {
   if (readState(root).tier !== "quick") approveDescription(root, sections);
 }
 
-// Accept each approved section in build order, as the owner reviewing the built page would. A section
+// Accept each approved section in build order, as the owner reviewing the built page would, or as the
+// agent's self-check records it when the section checkpoint is delegated (the default). A section
 // whose marker is missing from index.html gets one appended; anything else that keeps build unfinished
 // (no page, an invalid manifest) is left for the test to see.
 function acceptSections(root) {
   for (let action = nextAction(root); action.stage === "build" && action.section; action = nextAction(root)) {
-    if (action.type === "ask") {
-      decide(root, { by: "owner", stage: "section", choice: action.section, verdict: "accept" });
+    if (action.type === "ask" || action.selfCheck) {
+      decide(root, { by: action.selfCheck ? "agent" : "owner", stage: "section", choice: action.section, verdict: "accept" });
       continue;
     }
     const file = path.join(root, "index.html");

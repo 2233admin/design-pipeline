@@ -10,12 +10,29 @@ section. Stage order:
   intake, reference, components, description, build, probe, review, deliver.
 
 At `standard` and `full` the agent talks before it builds: a conversation that ends in a playback
-the owner confirms, three switchable first-screen variants (not in replicate), a numbered round of
-concrete decisions with recommended answers (further rounds when an answer depends on another),
-and a one-page description the owner approves. Only then is the page built, one section at a
-time, each reviewed by the owner, before the final review. `quick` states what was decided for
-the owner instead of asking, and still ends with the owner's final review: a passed probe shows
-the page works, never that it looks right.
+the owner confirms, three switchable first-screen variants (not in replicate), the concrete
+decisions (component sources and the sections), and a one-page description. Only then is the page
+built, one section at a time, each reviewed, before the owner's final review. `quick` states what
+was decided for the owner instead of asking, and still ends with the owner's final review: a
+passed probe shows the page works, never that it looks right.
+
+By default the owner meets the work three times: the playback, the variant pick and the final
+review. Component sources, the description and each section review are the agent's
+**self-checks**: `next` returns them as a run with `selfCheck: true`, a `check` to make against
+what the owner already settled, a `command` that records the result `--by agent`, and a
+`correction` (`--by owner`) for a "no" from the owner. Ask the owner during a self-check only
+about a trade-off they have not settled: something that changes cost, content or behaviour, and
+for component sources only a new dependency, a license obligation or a notable cost. Ask it in one
+message: what is new, your recommendation and its cost, and how they can see the difference.
+Record their answer with `--by owner --tradeoff "<what you asked>"`: the command with `--by owner`
+in place of `--by agent` when they take your recommendation, the correction when they say no. The
+owner can keep any self-check as their own ask with `--keep` on the playback record; the playback
+offers "review each section with me" as `--keep section`. The diligence statement shows each
+trade-off you asked beside the owner's answer.
+
+Every ask and self-check carries `language`: speak to the owner in the project's language (the
+brief's, else the one the owner writes in), translating the wording `next` returns while keeping
+commands, ids and file names unchanged.
 
 Each project keeps a delegation map in `state.delegation`: per checkpoint (`decide --stage`
 names plus `creative-intent`), whether the owner or the agent decides it. The intake ask carries
@@ -23,13 +40,29 @@ it as `delegation`; tell the owner in the playback what you will decide, and rec
 on the intake record with repeatable `--delegate <checkpoint>` and `--keep <checkpoint>`. Every
 `decide` names its recorder with `--by owner|agent`; returned commands already carry it.
 `--by agent` is refused where the owner decides, and always for final acceptance and creative
-intent.
+intent. An agent never records a "no": `--by agent --verdict reject` is refused except for an art
+director's pick under `--director`. An agent cannot accept a section or description the owner
+rejected until it changes (`WORKFLOW_NOT_READY`).
 
-Every "no" the owner gives on the way becomes a project rule in `state.rules`, the same record a
-rejected draft makes, and so does each anti-goal of the confirmed playback or stated skip. The
-rule's `from` is `playback N`, `anti-goal N`, `variants N`, `decisions N`, `description N`,
-`section <id> N` or `draft N`. `next` lists the rule texts in `rules` on every later action. Rules
-are never removed; the owner's later decisions refine them.
+Every "no" the owner gives on the way becomes a rule in `state.rules`, the same record a rejected
+draft makes. The rule's `from` is `playback N`, `anti-goal N`, `variants N`, `decisions N`,
+`description N`, `section <id> N` or `draft N`. A rule binds to what it was about:
+
+- a section "no" binds to that section and is returned, as `section <id>: <text>`, until the
+  section is next accepted;
+- every other "no" (playback, variants, a decision round, the description, a draft) binds to the
+  result under review, because it shapes the whole build, and is returned until the owner accepts
+  the page;
+- an anti-goal of the confirmed playback or stated skip is a project rule from the start, and is
+  not added again when a project rule already has its text.
+
+When the owner says "from now on", add `--scope project` to the record of their "no"; `--scope`
+on a record without a "no" is refused. `next` lists the open rules in `rules` on every later
+action; a retired rule stays in `state.rules`. The final review carries `ruleCandidates` (every
+rule bound to one object, open or retired): ask the owner once whether to keep, for the rest of the
+project, those given about more than one thing or phrased as a principle, and add
+`--promote "<from>"` (repeatable) to their review record for each one they keep. Promoting an
+origin promotes every rule recorded with it, and nothing changes scope without the owner's answer.
 
 A recorded decision or "no" must say something. A decision you state for the owner (a skip line,
 the confirmed playback) needs at least six words, two CJK characters counting as one: "OK, start.",
@@ -55,8 +88,8 @@ project's files (README, existing pages, `DESIGN.md`, brand assets; in an existi
 `project inspect`), and never ask the owner for something you can look up.
 
 At `standard` and `full`, `next` returns an ask with no question list, options or recommended
-answer. Its `question` is the opening: the skip line ("If you'd rather skip the questions and have
-me start, say so.") followed by one open question ("What site have you seen recently that felt the
+answer. Its `question` is the opening: the skip line ("If you'd rather skip these questions, say
+so: I'll tell you what I assumed, then show you options.") followed by one open question ("What site have you seen recently that felt the
 way this page should, and what about it?"; in replicate mode, "What must stay exactly as it is in
 the page you want reproduced?"). Send it as its own message, as it is. Then:
 
@@ -64,9 +97,17 @@ the page you want reproduced?"). Send it as its own message, as it is. Then:
 - Anchor on real specifics (a site they saw, the moment a visitor arrives). Ask what would make
   them wince (the anti-goals: what the page must never be or do) and what they have seen elsewhere
   and loved or hated.
-- When you can describe the page, play it back in about 200-300 words: who it is for, what a
-  visitor should do, what it should feel like. Mark what the owner said as theirs and what you
-  guessed as your guess, and end by asking what is wrong or missing.
+- When you can describe the page, play it back as a short card, one line each:
+  - three intent lines: what the page expresses, who it connects with and how, what makes it
+    unlike other pages;
+  - the uncertainties still open;
+  - one line on what you will decide and what stays theirs (the delegation line).
+
+  Mark what the owner said as theirs and what you guessed as your guess, and end by asking what is
+  wrong or missing. The card the owner confirms, recorded with its line breaks, is the project's
+  creative intent: recording it with `--by owner` records creative intent as theirs (a
+  one-paragraph playback records none). A stated skip leaves creative intent not
+  stated by the owner.
 
 An ask's `first`, when present, is a step for you before you ask its `question`. After a
 correction, `first` says to play the page back again with the corrections applied, and `question`
@@ -77,12 +118,12 @@ Record each reply with the command the ask returns:
 | Owner's reply | Record | Effect |
 | --- | --- | --- |
 | Confirms the playback | `record`: `decide --stage intake --verdict accept --answer "<the playback the owner confirmed>" [--anti-goal "<anti-goal>" ...]` | `decisions.intake` holds the playback, marked `playback: "confirmed"`; intake is done |
-| Corrects it | `correction`: `decide --stage intake --verdict reject --answer "<what the owner said is wrong or missing>"` | The correction becomes a project rule (`playback N`) and intake stays open |
+| Corrects it | `correction`: `decide --stage intake --verdict reject --answer "<what the owner said is wrong or missing>"` | The correction becomes a rule (`playback N`) and intake stays open |
 | Asks you to just start | `skip`: `decide --stage intake --choice skip --answer "<the line telling the owner what you decided on their behalf>" [--anti-goal "<anti-goal>" ...]` | Tell the owner that line first; `decisions.intake` holds it, marked `skipped: true` |
 
 Replace the optional `[--anti-goal "<anti-goal>" ...]` in the `record` or `skip` command with one
 `--anti-goal "<text>"` for each anti-goal the owner named, or drop it when there are none. Each
-becomes a project rule (`anti-goal N`); a text already among the rules is not added again.
+becomes a project rule (`anti-goal N`); a text that is already a project rule is not added again.
 `--anti-goal` is refused with a correction (the correction is already a rule) and on any stage
 other than web intake.
 
@@ -155,7 +196,7 @@ say why. Record:
 - a mix: `decide --stage concept --choice B,C --answer "<what to take from each, in the owner's words>"`.
   Combining requires the answer, kept as `decisions.conceptNotes`;
 - a rejection: `decide --stage concept --verdict reject --answer "<what is wrong, in the owner's words>"`.
-  It becomes a project rule (`variants N`) and reopens the stage. While `concepts.html` is
+  It becomes a rule (`variants N`) and reopens the stage. While `concepts.html` is
   unchanged, `next` tells you to redo what the rule rules out and pre-screen again before asking.
 
 Letters are case-insensitive; numbers are refused. A pick is refused (`WORKFLOW_NOT_READY`) until
@@ -174,6 +215,11 @@ these cards. For an explicitly requested web concept-image set, produce separate
 horizontal images per section; do not confuse those images with implemented or tested UI.
 
 ## components
+
+By default this is your self-check: settle the questions below yourself, from the project's files
+and the chosen variant, and record the decision with the returned `command` (`--by agent`). Ask the
+owner only for a new dependency, a license obligation or a notable cost (see the overview). When
+the owner kept it (`--keep components`), it is the owner's ask described below.
 
 A numbered round of concrete decisions, each with your recommended answer. At `standard` and
 `full` it follows the variants (the reference in replicate mode) and comes before the
@@ -204,7 +250,7 @@ same way.
 Record each "no" the owner gives in a round (a recommendation turned down, something ruled out)
 with the ask's `correction` command:
 `decide --stage components --verdict reject --answer "<what the owner turned down or ruled out, in their words>"`.
-It becomes a project rule (`decisions N`), is kept in `decisions.rounds` and does not record or
+It becomes a rule (`decisions N`), is kept in `decisions.rounds` and does not record or
 change the components decision. It is refused (`WORKFLOW_NOT_READY`) until `next` has reached the
 components stage. Record the components decision once, after the last round, with the choice ids.
 
@@ -255,7 +301,7 @@ without asking again:
 - constraints such as devices, assets and their licenses;
 - which choices are the owner's and which are your calls, marked as yours.
 
-Do not copy the project rules into it: they stay in `state.rules` and come back with every action,
+Do not copy the rules into it: they stay in `state.rules` and come back with every action,
 so a rule recorded later needs no edit here.
 
 The `## Sections` heading is followed by one top-level list item per section (`- `, `* `, `+ `,
@@ -271,8 +317,11 @@ digits and hyphens, each listed once. A section named only in prose does not cou
 - visit: opening hours, map and the reserve button again
 ```
 
-Show it and ask: "Here is the one-page description of what I will build (brief.md). Approve it, or
-tell me what is wrong?" Record:
+By default the approval is your self-check: check `brief.md` against the confirmed playback (or
+the stated skip), the chosen variant and the component decision, then record the returned
+`command` (`--by agent`). When the owner kept it (`--keep description`), show it and ask: "Here is
+the one-page description of what I will build (brief.md). Approve it, or tell me what is wrong?"
+Record:
 
 - an approval: `decide --stage description --verdict accept --choice hero,menu,visit`
   (optionally `--answer "<the owner's words>"`). `--choice` must equal the `## Sections` list
@@ -281,7 +330,7 @@ tell me what is wrong?" Record:
   refused (`WORKFLOW_NOT_READY`) until `next` has reached the description and `brief.md` exists.
   After that it can be recorded again at any later stage to correct it.
 - a rejection: `decide --stage description --verdict reject --answer "<what is wrong, in the owner's words>"`.
-  It becomes a project rule (`description N`); while `brief.md` is unchanged, `next` asks you to
+  It becomes a rule (`description N`); while `brief.md` is unchanged, `next` asks you to
   revise it before asking again.
 
 The approval binds the `brief.md` bytes, the confirmed playback, the chosen variant and its notes,
@@ -312,7 +361,11 @@ screen first, and the owner reviews each section before the next one starts:
    description (in replicate mode, from the reference and its invariants), inside an element
    marked `data-section="<id>"`, with the component manifest below.
 2. **Review it.** Once the page and its manifest are valid and the section's marker is in
-   `index.html`, `next` asks about that section (the action carries `section: <id>`): "The <id>
+   `index.html`, the section is reviewed (the action carries `section: <id>`). By default this is
+   your self-check: open the section in a real browser, check it against the confirmed playback,
+   the chosen direction, its section brief and the rules, fix what does not match, then record
+   `decide --stage section --choice <id> --verdict accept --by agent`. When the owner kept section
+   reviews (`--keep section`), `next` asks them instead: "The <id>
    section is built (k of n). Look at it in the page: accept it as it is, or tell me what to
    change, naming each element by its text, label or where it sits?". Open `index.html` at the
    section in a real browser and let the owner look and interact. Comments are text: ask them to
@@ -321,15 +374,16 @@ screen first, and the owner reviews each section before the next one starts:
    `decide --stage section --choice <id> --verdict accept` only when nothing in the section needs to
    change. Any change they ask for is a rejection:
    `decide --stage section --choice <id> --verdict reject --answer "<the owner's comments>"`. Each
-   comment becomes a project rule (`section <id> N`). Revise the section before asking again: while
+   comment becomes a rule (`section <id> N`). Revise the section before asking again: while
    the page (`index.html`, its manifest and the local files it names) is unchanged since the
    rejection, `next` tells you to revise first.
 3. **Next section.** `next` returns a run with `section: <id>` for the next approved section: build
    it from its brief inside its own `data-section` element, keep the accepted sections as the owner
-   accepted them unless a project rule requires a change, and add every component it uses to
+   accepted them unless a rule requires a change, and add every component it uses to
    `component-manifest.json`. Then review it as in step 2.
 
-A section can be accepted only while `next` asks about it (`WORKFLOW_NOT_READY` otherwise); any
+A section can be accepted only while `next` asks about it or returns its self-check
+(`WORKFLOW_NOT_READY` otherwise, including while the build run shows findings); any
 built section of the approved description can be rejected again later, which reopens it. A page
 that drops a section's marker returns to building that section; a `data-section` marker inside an
 HTML comment does not count. Verdicts bind the current description approval: recording the
@@ -344,7 +398,7 @@ and cited on the rejection with `--evidence runtime-review/feedback/<hash>.json`
 or without `--answer`). Each cited file must be contained in the project and valid against the
 `Record` definition of `references/runtime-review.schema.json`, checked with runtime-review's own
 validator; otherwise the record is refused (`CONTRACT_INVALID`) with that validator's message.
-Each Feedback becomes a project rule `<objectId>: <actual> Expected: <expected>`. The workflow
+Each Feedback becomes a rule `<objectId>: <actual> Expected: <expected>`. The workflow
 checks only the record's shape; `runtime-review check` stays the authority on its bundle lineage.
 Ordinary web projects do not have those inputs: runtime-review needs a component-first artifact,
 UI IR, tokens, a design-code map and a captured observation, which this workflow does not produce.
@@ -647,7 +701,7 @@ Show the page, its motion at full speed and a one-paragraph gate summary. When t
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and
 reports them under Visual Acceptance in `qa.md`; the agent never records acceptance and gate
 findings stay Conformance. The user accepts, or rejects with one sentence
-(`decide --stage review --verdict accept|reject`). A rejection becomes a project rule and returns
+(`decide --stage review --verdict accept|reject`). A rejection becomes a rule and returns
 to build: the page the owner rejected is repaired before it is probed and shown again, so an
 unchanged page never comes back for review.
 

@@ -6,6 +6,21 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- The owner is asked where something is new (change `owner-attention-asks`, phase 1 of
+  `design-owner-attention`). Web component sources, the description and section reviews default to
+  the agent and come back from `next` as `selfCheck` runs, recorded `--by agent`; the owner keeps
+  any of them with `--keep` at intake, and the playback offers `--keep section`. A two-section
+  standard page now asks the owner three times (playback, variants, final review) instead of seven.
+  An agent never records a "no" (`--by agent --verdict reject` is refused outside director picks)
+  and cannot accept a section or description the owner rejected until it changes. An owner's
+  answer to a trade-off asked during a self-check is recorded with `--tradeoff "<what was asked>"`,
+  which the diligence statement shows. Every ask and self-check carries a `language` line. The
+  web playback is a short card (three intent lines, open uncertainties, the delegation line);
+  the owner confirming it records creative intent, so the statement no longer says it is planned.
+  A "no" binds to what it was about: a section's until that section is accepted, any other until
+  the owner accepts the result. `--scope project` keeps it for the rest of the project, and the
+  final review offers the bound rules once as `ruleCandidates` for `--promote "<from>"`. Anti-goals
+  stay project rules, and the diligence statement names each rule's scope.
 - MengTo and iart upstream skills are downloaded on demand (change `fetch-vendor-on-demand`, #119).
   The package drops from about 253 MB to about 51 MB extracted. `designer-pipeline sources fetch
   --bundle mengto-skills|iart-motion-skills | --all` downloads each file at its pinned revision from

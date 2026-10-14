@@ -170,7 +170,7 @@ test("a variants rejection becomes a rule and asks for a redo until concepts.htm
   assert.equal(redo.type, "ask");
   assert.ok(redo.first.includes("All three look like templates"), redo.first);
   assert.deepEqual(fs.readFileSync(path.join(root, "concepts.html")), page);
-  assert.deepEqual(readState(root).rules, [{ text: "All three look like templates", from: "variants 1", scope: "project" }]);
+  assert.deepEqual(readState(root).rules.map(({ text, from, scope, object }) => ({ text, from, scope, object })), [{ text: "All three look like templates", from: "variants 1", scope: "object", object: { stage: "review" } }]);
   fs.appendFileSync(path.join(root, "concepts.html"), "<!-- redone without the template look -->\n");
   const ask = nextAction(root);
   assert.equal(ask.type, "ask");
@@ -232,7 +232,7 @@ test("the prototype switcher never ships: build stays unfinished while index.htm
   shipped(root, "standard page with the inlined switcher");
   refuses(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" }, "WORKFLOW_NOT_READY");
   buildPage(root, ["first-screen"]);
-  assert.equal(nextAction(root).type, "ask");
+  assert.equal(nextAction(root).selfCheck, true, "a clean page moves on to the section's review (the agent's self-check by default)");
   assert.equal(flow.acceptSections(root).stage, "probe");
   buildPage(root, ["first-screen"], INLINE_SWITCHER);
   shipped(root, "an accepted page that gains the switcher reopens build");
@@ -277,7 +277,7 @@ test("build refuses the switcher in any form it can ship in, and a comment namin
   buildPage(standard, ["first-screen"], "<!-- data-variant-switcher stays in concepts.html -->\n");
   const review = nextAction(standard);
   assert.equal(review.stage, "build");
-  assert.equal(review.type, "ask", "a clean page moves on to section review");
+  assert.equal(review.selfCheck, true, "a clean page moves on to section review");
   assert.equal(review.section, "first-screen");
 });
 

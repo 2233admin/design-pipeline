@@ -95,34 +95,6 @@ Every record `decide` writes, every direction-preview `decision`, every selectio
 - **WHEN** the statement reads a decision entry without `by`
 - **THEN** it SHALL list the entry under records without an author
 
-### Requirement: The brief states creative intent
-
-The design brief SHALL carry `creativeIntent` with three facts: `expression`, `connection` and `distinctiveness`. Guided intake SHALL ask for them after success criteria; each fact MAY be skipped with a reason. A fact whose only source is `agent` SHALL NOT resolve it. The standard and full web playback SHALL state the three facts in the owner's words, and each anti-goal SHALL count as distinctiveness.
-
-#### Scenario: The agent suggests the intent
-
-- **WHEN** an intake answer records `expression` with `source: "agent"`
-- **THEN** the fact SHALL stay unresolved and `intake confirm` SHALL refuse the brief
-
-#### Scenario: The owner skips one fact
-
-- **WHEN** the owner skips `distinctiveness` with a reason
-- **THEN** `intake confirm` SHALL accept the brief and keep the skip reason
-
-### Requirement: Product Context names the creative intent
-
-The DESIGN.md foundation check SHALL require the `Product Context` section to name expression, audience connection and distinctiveness. English labels and the Chinese labels 表达, 连接 or 受众关系, and 独特性 SHALL be accepted. A missing label SHALL return `synthesis-required` naming the label, not `invalid`.
-
-#### Scenario: Product Context lacks distinctiveness
-
-- **WHEN** `Product Context` names expression and connection only
-- **THEN** `check-design-foundation` SHALL return `synthesis-required` and name `Distinctiveness`
-
-#### Scenario: Chinese labels are used
-
-- **WHEN** `Product Context` contains 表达, 受众关系 and 独特性
-- **THEN** the creative-intent check SHALL pass
-
 ### Requirement: Owner picks carry a reason
 
 An owner's variant pick and an owner's final acceptance SHALL include an answer of at least three words, under the existing minimum-content rule. When an agent recommended a choice at that checkpoint, the owner's record SHALL keep the recommendation beside the owner's choice. Reasons SHALL be stored as plain text in the local workflow state.

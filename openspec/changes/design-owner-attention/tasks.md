@@ -10,7 +10,7 @@
 
 ## 2. Implementing changes (one OpenSpec change and PR each, in phase order)
 
-- [ ] 2.1 Phase 1: ask shape and budget, owner-facing language, feedback scope.
+- [x] 2.1 Phase 1: ask shape and budget, owner-facing language, feedback scope (`owner-attention-asks`).
 - [ ] 2.2 Phase 2: change tiers.
 - [ ] 2.3 Phase 3: page review lite and owner confirmation provenance.
 - [ ] 2.4 Phase 4: absence (states, inbox, away summary) and delegation over time.

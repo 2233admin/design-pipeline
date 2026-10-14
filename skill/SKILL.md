@@ -19,7 +19,7 @@ resources stay relative to `<skill-root>` regardless of the working directory.
   one action at a time: do the returned `run`, ask the returned `ask` question and record the reply
   with its `record` command, or report the returned `done` evidence. An ask's `first`, when present,
   is a step to do before asking `question`; its `correction` command records the owner's "no" (it
-  becomes a project rule) and its `skip` command records a skip you stated. A `run` action's
+  becomes a rule) and its `skip` command records a skip you stated. A `run` action's
   `command` is only an executable command, already spelled `node <absolute path>/designer-pipeline.cjs ...`
   (the CLI is not on PATH); its `instruction` is the prose to follow, and a `run` with no `command`
   is an instruction alone. Obey prior user rejections in
@@ -58,7 +58,10 @@ name a repository. This is triggered by the work's needs, not a required search 
   review points and record accept/reject only from their reply.
 - Every `decide` names its recorder: `--by owner` only for the owner's own words in this
   conversation, `--by agent` only where the delegation `next` shows hands you that checkpoint.
-  Final acceptance is always the owner's, at every tier. Start a deliverable with
+  A `selfCheck` run is yours to check and record; ask the owner during it only about a trade-off
+  they have not settled, and record their answer with `--by owner --tradeoff`. Never record a
+  "no" yourself. Speak to the owner in the action's `language`. Final acceptance is always the
+  owner's, at every tier. Start a deliverable with
   `next ... --assisted-by <your tool and model>`; reaching done renders
   `.design-pipeline/diligence.md`, the record of who decided what (`designer-pipeline diligence`).
 - Preserve source, snapshot, policy digest, receipt and downstream evidence lineage. Changed or

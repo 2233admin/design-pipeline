@@ -246,12 +246,15 @@ probe at its actual `index.html` and rerun.
 `decide --stage deliver` refuses unfinished prerequisites. Film/edit delivery names an existing
 contained file, and standard delivery binds that file and the current check snapshot. A changed
 delivery returns to its delivery action; changed checked inputs return to checks and review first.
-Quick workflows may record delivery after their applicable stages finish. Every deliverable and
+Quick workflows may record delivery after their applicable stages finish. Web component sources,
+the description and section reviews default to the agent: `next` returns them as `selfCheck` runs
+unless the owner kept them with `--keep` at intake. Every deliverable and
 tier ends with the owner's final review (`decide --stage review --by owner`): UI records its work
 evidence with `decide --stage deliver --by agent`, then the owner accepts or rejects the delivered
 interface, and a rejection returns to the work stage. Reaching done renders
 `.design-pipeline/diligence.md` from the workflow state: owner decisions with their reasons,
-delegated agent decisions, records without an author, the owner's "no" in their own words, technical checks apart from
+delegated agent decisions, records without an author, the owner's "no" in their own words with its origin and scope (bound to a section, the sample or the
+result under review, a project rule, or promoted at the final review), technical checks apart from
 owner acceptance, and a suggested `Assisted-by:` trailer. For actual surface
 verification and retained proof, follow [the QA recipe](qa-checklist.md#run-verification).
 
@@ -816,7 +819,7 @@ immediately before build; at `standard` and `full` in the numbered decision roun
 sections in build order and the component source; a dependent question waits for a further round)
 before the description the owner approves, so a changed component decision makes that approval
 stale and returns to it. Each "no" given in a round is recorded with
-`decide --stage components --verdict reject --answer "<…>"` and becomes a project rule. The
+`decide --stage components --verdict reject --answer "<…>"` and becomes a rule. The
 source options are the project's components (name the paths you found instead of asking for
 them), a named GitHub library, an index search, agent discovery of maintained open-source
 libraries and icon sets on GitHub, or scratch implementation; recommend project components first,

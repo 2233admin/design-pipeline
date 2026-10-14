@@ -26,8 +26,9 @@ function manifest(root, entries, fromScratch = false) {
 const entry = () => ({ name: "Project card", sourceId: "index.html", availability: "project-owned", license: { state: "project-owned" }, usedIn: [{ file: "index.html", marker: "Page", how: "Product feature card" }] });
 const CHOICES = ["project", "github", "index", "discover", "scratch"];
 
-// The components question offers each source by id with a plain label, and recommends the project's
-// own components, then the index, then discovery, by their labels; record keeps the ids.
+// The components step offers each source by id with a plain label, and recommends the project's
+// own components, then the index, then discovery, by their labels; the command keeps the ids. By
+// default the step is the agent's self-check (owner-attention-asks), whose command is `command`.
 function assertComponentsAsk(ask) {
   const components = ask.questions.find(question => question.id === "components");
   assert.deepEqual(components.options.map(option => option.choice), CHOICES);
@@ -40,7 +41,7 @@ function assertComponentsAsk(ask) {
     const at = ["project", "index", "discover"].map(id => recommended.toLowerCase().indexOf(label(id)));
     assert.ok(at[0] >= 0 && at[0] < at[1] && at[1] < at[2], `recommends project, index, then discover by label: ${recommended}`);
   }
-  assert.match(ask.record, /--stage components .*--choice .*--answer /);
+  assert.match(ask.command ?? ask.record, /--stage components .*--choice .*--answer /);
   assert.match(ask.correction, /--stage components --verdict reject/);
   return components;
 }
@@ -50,12 +51,14 @@ for (const tier of tiers) for (const mode of modes) {
     const root = fixture(t, tier, mode);
     const ask = nextAction(root);
     assert.equal(ask.stage, "components");
-    assert.equal(ask.type, "ask");
+    assert.equal(ask.type, "run");
+    assert.equal(ask.selfCheck, true, "component sources are the agent's self-check by default");
     assert.deepEqual(ask.questions.map(question => question.id), tier === "quick" ? ["components"] : ["sections", "components"]);
     const components = assertComponentsAsk(ask);
-    assert.ok(components.ask?.trim(), "the components question is asked");
-    assert.match(ask.record, /--stage components.*--choice.*--answer/);
-    assert.ok(!ask.record.includes("--project-root ."));
+    assert.ok(components.ask?.trim(), "the components question is settled");
+    assert.match(ask.command, / --by agent --stage components.*--choice.*--answer/);
+    assert.match(ask.instruction, /new dependency, a license obligation or a notable cost/);
+    assert.ok(!ask.command.includes("--project-root ."));
     const answer = 'Use src/components first, then search the index for "pricing"';
     const recorded = spawnSync(process.execPath, [cli, "decide", "--root", root, "--project-root", root, "--stage", "components", "--by", "owner", "--choice", "project,index", "--answer", answer, "--json"], { cwd: os.tmpdir(), encoding: "utf8", windowsHide: true });
     assert.equal(recorded.status, 0, recorded.stdout + recorded.stderr);
@@ -144,7 +147,7 @@ test("returned component decision and index commands work from outside the proje
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-components-"));
   t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
   const answer = "Project components first, then search the index";
-  const record = nextAction(root).record.replace("<project|github|index|discover|scratch, comma-separated>", "project,index").replace('"<the user\'s reply>"', JSON.stringify(answer));
+  const record = nextAction(root).command.replace("<project|github|index|discover|scratch, comma-separated>", "project,index").replace('"<what you chose and why, in one line>"', JSON.stringify(answer));
   const decided = spawnSync(record, { cwd: outside, shell: true, encoding: "utf8", windowsHide: true });
   assert.equal(decided.status, 0, decided.stdout + decided.stderr);
   assert.equal(readState(root).decisions.components, answer);
@@ -387,9 +390,9 @@ test("round3 regression: legacy answer-only decisions ask components again", t =
   manifest(root, [], true);
   const action = nextAction(root);
   assert.equal(action.stage, "components");
-  assert.equal(action.type, "ask");
+  assert.equal(action.selfCheck, true);
   assert.equal(action.questions.find(question => question.id === "components").options.length, 5);
-  assert.match(action.record, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
+  assert.match(action.command, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
   assert.match(JSON.stringify(action), /https:\/\/github\.com\/<owner>\/<repo>/);
 });
 
@@ -666,10 +669,10 @@ test("discovery: components ask offers discover and recommends project, index, t
   const options = assertComponentsAsk(ask).options;
   assert.equal(options.length, 5);
   assert.doesNotMatch(ask.recommended, /project,index,discover/, "the recommendation names labels, not ids");
-  assert.match(ask.record, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
+  assert.match(ask.command, /--choice <project\|github\|index\|discover\|scratch, comma-separated>/);
   assert.match(ask.why, /discover/);
   const answer = "Project components first, then the index, then find more";
-  const record = ask.record.replace("<project|github|index|discover|scratch, comma-separated>", "project,index,discover").replace('"<the user\'s reply>"', JSON.stringify(answer));
+  const record = ask.command.replace("<project|github|index|discover|scratch, comma-separated>", "project,index,discover").replace('"<what you chose and why, in one line>"', JSON.stringify(answer));
   const decided = spawnSync(record, { cwd: outside, shell: true, encoding: "utf8", windowsHide: true });
   assert.equal(decided.status, 0, decided.stdout + decided.stderr);
   assert.deepEqual(readState(root).decisions.componentSources, ["project", "index", "discover"]);

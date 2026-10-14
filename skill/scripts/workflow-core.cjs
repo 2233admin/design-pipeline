@@ -31,8 +31,9 @@ const MODES = ["brief", "replicate", "freeform"];
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement } = require("./workflows/shared.cjs");
 const roles = require("./workflows/roles.cjs");
+const rules = require("./workflows/rules.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -157,7 +158,7 @@ function actionLine(action) {
 function nextAction(root) {
   const state = readState(root);
   if (!state) {
-    return { type: "ask", stage: "start", question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
+    return { type: "ask", stage: "start", language: LANGUAGE, question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
   }
   stateJobPlan(root, state);
   const stages = stagesFor(state);
@@ -166,14 +167,21 @@ function nextAction(root) {
   for (const stage of stages) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
-    const action = withRoles(stage.action(state, root), state);
+    const action = ownerFacing(withRoles(stage.action(state, root), state), state, stage.id);
     // Visual picks go to the art director: the concept pick, a sample, a built web section. Final
     // acceptance never does; it stays with the owner.
     const directed = state.director && action.type === "ask" && ["concepts", "sample", "build"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     if (stage.id === "intake" && action.type === "ask") action.delegation = delegationHint(state);
-    const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
+    const active = rules.activeRules(state);
+    const ruleTexts = active.length ? { rules: active } : {};
+    // The final review offers once to keep, for the rest of the project, rules given about one object.
+    const offered = stage.id === "review" && action.type === "ask" ? rules.candidates(state) : [];
+    if (offered.length) {
+      action.ruleCandidates = offered;
+      action.instruction = `${action.instruction ? `${action.instruction} ` : ""}Before or with this review, ask the owner once whether to keep, for the rest of the project, any of the ruleCandidates given about more than one thing or phrased as a principle; add --promote "<from>" to their review record for each one they keep, and nothing for the rest.`;
+    }
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
-    return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
+    return { ...action, ...guide, ...directed, ...ruleTexts, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
   }
   return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, diligence: roles.statementStatus(root, state, deliveryCurrent(state, root)), line: `${state.deliverable}/${state.tier}: done` };
 }
@@ -197,6 +205,42 @@ function withRoles(action, state) {
   return out;
 }
 
+const LANGUAGE = "Speak to the owner in the project's language: the brief's, else the one the owner writes in. Translate the wording here; keep commands, ids and file names unchanged.";
+const TRADEOFF = "Ask the owner only when this carries a trade-off they have not settled: something that changes cost, content or behaviour";
+const SOURCE_TRADEOFF = "; for component sources, only a new dependency, a license obligation or a notable cost";
+const ASK_SHAPE = ". Then ask in one message: what is new, your recommendation and its cost, and how they can see the difference. Record their answer with --by owner and --tradeoff \"<what you asked>\": the command with --by owner in place of --by agent when they take your recommendation, the correction when they say no. Their \"no\" becomes a rule; never record one yourself.";
+
+// Who the step faces (OpenSpec change owner-attention-asks). A web review checkpoint the delegation map
+// gives to the agent, and not to an art director, becomes a self-check run: the agent checks the work
+// against what the owner already settled and records it, asking the owner only about a new trade-off.
+// Every other ask stays an ask; each ask and self-check carries the language line.
+function ownerFacing(action, state, stageId) {
+  const { selfCheck: check, accept, ...rest } = action;
+  if (rest.type !== "ask") return rest;
+  const checkpoint = roles.checkpointOf(state, stageId);
+  const entry = state.delegation?.[checkpoint];
+  const delegated = state.deliverable === "web" && roles.SELF_CHECKED.has(checkpoint) && entry?.to === "agent"
+    && !(state.director && roles.DIRECTED.has(checkpoint));
+  if (!delegated) return { ...rest, language: LANGUAGE };
+  if (!check) throw new Error(`${stageId} has no self-check text for its delegated ${checkpoint} checkpoint`);
+  const { question: _question, record, correction, skip: _skip, first, instruction: _ask, ...kept } = rest;
+  const command = withRoles({ type: "run", command: accept || record }, state).command;
+  // withRoles stamped the correction for the agent; a "no" is always the owner's words.
+  const owner = correction ? correction.replace(/ --by agent /, " --by owner ") : undefined;
+  const before = first ? `${first.replace(/^Before asking, /, "").replace(/,? then ask:$/, ".")} ` : "";
+  return {
+    ...kept,
+    type: "run",
+    selfCheck: true,
+    checkpoint,
+    check,
+    instruction: `${before}${check} ${TRADEOFF}${checkpoint === "components" ? SOURCE_TRADEOFF : ""}${ASK_SHAPE}`,
+    command,
+    ...(owner ? { correction: owner } : {}),
+    language: LANGUAGE,
+  };
+}
+
 // What the intake playback tells the owner: which checkpoints the agent decides and which are theirs.
 function delegationHint(state) {
   const entries = Object.entries(state.delegation || {});
@@ -204,7 +248,7 @@ function delegationHint(state) {
     agent: entries.filter(([, entry]) => entry.to === "agent").map(([checkpoint]) => checkpoint),
     owner: entries.filter(([, entry]) => entry.to === "owner").map(([checkpoint]) => checkpoint),
     locked: entries.filter(([, entry]) => entry.locked).map(([checkpoint]) => checkpoint),
-    instruction: "In the playback, tell the owner in one line what you will decide and what stays theirs. Record their changes on the intake record with --delegate <checkpoint> (hand it to you) or --keep <checkpoint> (keep it theirs), each repeatable. Final acceptance and creative intent always stay with the owner.",
+    instruction: `In the playback, tell the owner in one line what you will decide and what stays theirs.${state.delegation?.section ? " Offer once that they can review each section with you (--keep section)." : ""} Record their changes on the intake record with --delegate <checkpoint> (hand it to you) or --keep <checkpoint> (keep it theirs), each repeatable. Final acceptance and creative intent always stay with the owner.`,
   };
 }
 
@@ -220,6 +264,20 @@ function decide(root, options = {}) {
   const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
   const role = roles.recordRole(state, stage, options.by);
+  // A trade-off ask is the owner's answer to a question the agent put to them during a self-check.
+  if (options.tradeoff !== undefined && options.tradeoff !== null) {
+    if (role.by !== "owner") fail("workflow", "--tradeoff records the owner's answer to a trade-off you asked them about, so it goes only with --by owner. Fix: ask the owner, then record their answer with --by owner --tradeoff \"<what you asked>\"");
+    options = { ...options, tradeoff: statement(options.tradeoff, "say what you asked the owner: what is new, your recommendation and its cost", "--tradeoff") };
+  }
+  const scope = rules.checkScope(options.scope, options.verdict);
+  // Only these records can hold the owner's "no"; refuse a scope elsewhere before any file is written.
+  if (scope && (["reference", "deliver"].includes(stage) || (stage === "intake" && state.deliverable !== "web"))) fail("workflow", `--scope goes with a record that holds the owner's "no", and a ${stage} record holds none. Fix: drop --scope`);
+  const promoted = rules.checkPromote(state, options.promote, stage, role.by);
+  const rulesBefore = (state.rules || []).length;
+  // A "no" is the owner's words; only an art director's pick may reject on the agent's side.
+  if (role.by === "agent" && options.verdict === "reject" && !(state.director && roles.DIRECTED.has(stage))) {
+    fail("workflow", "an agent cannot record a \"no\": it is the owner's words and becomes a rule. Fix: when your check finds a fault, fix the work and record the decision; record a \"no\" only with the owner's words and --by owner");
+  }
   // Only the owner changes who decides what; an agent cannot hand itself checkpoints.
   if ((delegate.length || keep.length) && role.by !== "owner") fail("workflow", "--delegate and --keep record the owner's choice, so they go only on an intake recorded with --by owner. Fix: ask the owner, then record their reply with --by owner");
   if (delegate.length || keep.length) roles.applyDelegation(state, delegate, keep);
@@ -260,7 +318,7 @@ function decide(root, options = {}) {
     if (options.answer) state.decisions.conceptNotes = options.answer;
   } else if (stage === "sample") {
     assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
-    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong with the sample; it becomes a project rule");
+    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong with the sample; it becomes a rule");
     const next = nextAction(root);
     if (next.stage !== "sample") fail("workflow", `Cannot record the sample verdict while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     // The verdict binds the sample bytes and the product record they were cut from.
@@ -271,10 +329,10 @@ function decide(root, options = {}) {
       fail("workflow", first ? `${first.message} Fix: ${first.fix}` : "the sample is not ready to be judged. Fix: follow next.", { code: first ? "SAMPLE_INVALID" : "WORKFLOW_NOT_READY" });
     }
     state.decisions.samples = [...(state.decisions.samples || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), ...binding }];
-    if (options.verdict === "reject") state.rules = [...(state.rules || []), { text: options.answer, from: `sample ${state.decisions.samples.length}`, scope: "project" }];
+    if (options.verdict === "reject") rules.addRule(state, options.answer, `sample ${state.decisions.samples.length}`, { stage: "sample" });
   } else if (stage === "review") {
     assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
-    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong; it becomes a project rule");
+    if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong; it becomes a rule");
     const next = nextAction(root);
     const rejectCurrent = options.verdict === "reject" && ["deliver", "done"].includes(next.stage) && REVIEW.finished(state);
     if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
@@ -283,7 +341,7 @@ function decide(root, options = {}) {
     const componentDecision = componentDecisionDigest(state);
     state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}) }];
     if (options.verdict === "reject") {
-      state.rules = [...(state.rules || []), { text: options.answer, from: `draft ${state.decisions.drafts.length}`, scope: "project" }];
+      rules.addRule(state, options.answer, `draft ${state.decisions.drafts.length}`);
       // A rejected draft must be rebuilt and rechecked.
       invalidateCheckedEvidence(state);
     }
@@ -303,7 +361,16 @@ function decide(root, options = {}) {
   }
   // A skipped standard conversation hands intake to the agent: the owner chose not to be asked.
   if (stage === "intake" && state.decisions.intake?.skipped && state.delegation?.intake && state.tier !== "quick") state.delegation.intake = { ...state.delegation.intake, to: "agent", set: "owner" };
+  // "From now on" makes this call's "no" a project rule; --scope on a record that made none is refused.
+  if (scope && !(state.rules || []).slice(rulesBefore).some(rule => !rules.isProject(rule))) fail("workflow", `--scope ${scope} goes with a record that holds the owner's "no", and this record made no rule. Fix: drop --scope`);
+  if (scope === "project") rules.widen(state, rulesBefore);
+  rules.promote(state, promoted);
   roles.stampRecord(state, before, stage, role, options);
+  // The playback card the owner confirms carries the creative intent, so confirming it records that
+  // locked checkpoint as the owner's; a stated skip leaves it unstated.
+  // A card puts each intent line on its own line; a one-paragraph playback records no creative intent.
+  const card = String(state.decisions.intake?.answer ?? "").split(/\r?\n/).filter(line => line.trim()).length >= 3;
+  if (state.deliverable === "web" && stage === "intake" && options.verdict === "accept" && role.by === "owner" && state.delegation?.["creative-intent"] && card) roles.recordCreativeIntent(state, state.decisions.intake.answer);
   writeState(root, state);
   const next = nextAction(root);
   // Reaching done renders the diligence statement from the state just written.
