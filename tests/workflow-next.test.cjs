@@ -3162,3 +3162,44 @@ test("the intake offers section reviews only where there are sections", t => {
   assert.match(nextAction(webProject(t)).delegation.instruction, /--keep section/);
   assert.doesNotMatch(nextAction(webProject(t, { deliverable: "film" })).delegation?.instruction ?? "", /--keep section/);
 });
+
+test("an owner's answer to a trade-off ask keeps what was asked, and only the owner's record can", t => {
+  const root = webProject(t);
+  toComponents(root);
+  const check = nextAction(root);
+  assert.equal(check.selfCheck, true);
+  assert.match(check.instruction, /a new dependency, a license obligation or a notable cost/);
+  assert.match(check.instruction, /what is new, your recommendation and its cost, and how they can see the difference/);
+  const asked = "Adds a GPL chart library; I recommend the MIT one at 12 KB more";
+  refuses(root, { by: "agent", stage: "components", choice: "scratch", answer: "Write from scratch", tradeoff: asked }, "CONTRACT_INVALID");
+  refuses(root, { by: "owner", stage: "components", choice: "scratch", answer: "Write from scratch", tradeoff: "ok" }, "CONTRACT_INVALID");
+  // The owner says no to the recommendation: the correction, by the owner, with what was asked.
+  assert.match(check.correction, / --by owner --stage components --verdict reject --answer /);
+  const declined = decideCli(root, "--by", "owner", "--stage", "components", "--verdict", "reject", "--answer", "No GPL libraries in this site", "--tradeoff", asked);
+  assert.equal(declined.stage, "components");
+  const entry = readState(root).decisions.roles.at(-1);
+  assert.deepEqual([entry.stage, entry.by, entry.verdict, entry.tradeoff], ["components", "owner", "reject", asked]);
+  assert.ok(readState(root).rules.some(rule => rule.text === "No GPL libraries in this site"));
+  // The owner takes the recommendation: the command with --by owner, and what was asked.
+  decideCli(root, "--by", "owner", "--stage", "components", "--choice", "discover", "--answer", "Use the MIT chart library you found", "--tradeoff", asked);
+  assert.equal(readState(root).decisions.roles.at(-1).tradeoff, asked);
+  const { text } = diligence(root);
+  assert.match(text, /Component sources: discover — "Use the MIT chart library you found" \(asked about: "Adds a GPL chart library; I recommend the MIT one at 12 KB more"\)/);
+});
+
+test("every ask and self-check carries the language line, the first ask before any state included", t => {
+  const empty = tmp();
+  t.after(() => fs.rmSync(empty, { recursive: true, force: true }));
+  for (const action of [nextAction(empty), nextAction(webProject(t))]) {
+    assert.equal(action.type, "ask");
+    assert.match(action.language, /project's language: the brief's, else the one the owner writes in/);
+  }
+  const root = webProject(t);
+  toComponents(root);
+  assert.match(nextAction(root).language, /keep commands, ids and file names unchanged/);
+  const film = checkedWorkflowFixture("film", "quick");
+  t.after(() => fs.rmSync(film, { recursive: true, force: true }));
+  const review = nextAction(film);
+  assert.equal(review.type, "ask");
+  assert.equal(typeof review.language, "string");
+});

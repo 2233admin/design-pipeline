@@ -98,6 +98,7 @@ function stampRecord(state, before, checkpoint, role, options) {
     ...(options.verdict ? { verdict: options.verdict } : {}),
     ...(options.choice !== undefined && options.choice !== null ? { choice: String(options.choice) } : {}),
     ...(answer ? { answer } : {}),
+    ...(options.tradeoff ? { tradeoff: options.tradeoff } : {}),
     at: new Date().toISOString(),
   }];
 }
@@ -113,7 +114,7 @@ const stateHash = state => {
 
 function describe(entry) {
   const what = [entry.verdict, entry.choice && entry.choice !== "skip" ? entry.choice : null, entry.choice === "skip" ? "skipped the questions" : null].filter(Boolean).join(" ");
-  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer}"` : ""}`;
+  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.answer ? ` — "${entry.answer}"` : ""}${entry.tradeoff ? ` (asked about: "${entry.tradeoff}")` : ""}`;
 }
 
 // Decisions stored as a single value rather than a history: each counts as unauthored when no role

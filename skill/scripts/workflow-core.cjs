@@ -31,7 +31,7 @@ const MODES = ["brief", "replicate", "freeform"];
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement } = require("./workflows/shared.cjs");
 const roles = require("./workflows/roles.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
@@ -256,6 +256,11 @@ function decide(root, options = {}) {
   const delegate = [].concat(options.delegate ?? []), keep = [].concat(options.keep ?? []);
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
   const role = roles.recordRole(state, stage, options.by);
+  // A trade-off ask is the owner's answer to a question the agent put to them during a self-check.
+  if (options.tradeoff !== undefined && options.tradeoff !== null) {
+    if (role.by !== "owner") fail("workflow", "--tradeoff records the owner's answer to a trade-off you asked them about, so it goes only with --by owner. Fix: ask the owner, then record their answer with --by owner --tradeoff \"<what you asked>\"");
+    options = { ...options, tradeoff: statement(options.tradeoff, "say what you asked the owner: what is new, your recommendation and its cost", "--tradeoff") };
+  }
   // A "no" is the owner's words; only an art director's pick may reject on the agent's side.
   if (role.by === "agent" && options.verdict === "reject" && !(state.director && roles.DIRECTED.has(stage))) {
     fail("workflow", "an agent cannot record a \"no\": it is the owner's words and becomes a rule. Fix: when your check finds a fault, fix the work and record the decision; record a \"no\" only with the owner's words and --by owner");

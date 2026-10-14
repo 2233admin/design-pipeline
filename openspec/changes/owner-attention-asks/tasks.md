@@ -17,10 +17,10 @@
 
 ## 3. Trade-off asks and language (Decisions 4, 8)
 
-- [ ] 3.1 `cli-core.cjs`: register `--tradeoff` and pass it to `decide`, with help lines; verify that `decide --tradeoff` parses and an unlisted flag still fails with `UNKNOWN_OPTION`.
-- [ ] 3.2 Store `tradeoff` on owner role entries, refuse it with `--by agent`, and print it in the statement; verify with `workflow-next` tests for an accepted and a declined trade-off, the refusal, and the statement line.
-- [ ] 3.3 The self-check instruction names when to ask (component sources: new dependency, license obligation or notable cost) and the ask shape; every ask, including the no-state ask, and every self-check carries `language`; verify with `workflow-next` assertions.
-- [ ] 3.4 Docs and changelog: `workflow-web.md` trade-off asks and language, and the CHANGELOG entry extended; verify that the documented `--tradeoff` command runs against a test project in `designer-pipeline-cli`.
+- [x] 3.1 `cli-core.cjs`: register `--tradeoff` and pass it to `decide`, with help lines; verify that `decide --tradeoff` parses and an unlisted flag still fails with `UNKNOWN_OPTION`.
+- [x] 3.2 Store `tradeoff` on owner role entries, refuse it with `--by agent`, and print it in the statement; verify with `workflow-next` tests for an accepted and a declined trade-off, the refusal, and the statement line.
+- [x] 3.3 The self-check instruction names when to ask (component sources: new dependency, license obligation or notable cost) and the ask shape; every ask, including the no-state ask, and every self-check carries `language`; verify with `workflow-next` assertions.
+- [x] 3.4 Docs and changelog: `workflow-web.md` trade-off asks and language, and the CHANGELOG entry extended; verify that the documented `--tradeoff` records run through the real CLI (`decideCli` in the `workflow-next` trade-off test).
 
 ## 4. Playback card and creative intent (Decision 9)
 

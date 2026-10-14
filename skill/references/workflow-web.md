@@ -27,7 +27,12 @@ message: what is new, your recommendation and its cost, and how they can see the
 Record their answer with `--by owner --tradeoff "<what you asked>"`: the command with `--by owner`
 in place of `--by agent` when they take your recommendation, the correction when they say no. The
 owner can keep any self-check as their own ask with `--keep` on the playback record; the playback
-offers "review each section with me" as `--keep section`.
+offers "review each section with me" as `--keep section`. The diligence statement shows each
+trade-off you asked beside the owner's answer.
+
+Every ask and self-check carries `language`: speak to the owner in the project's language (the
+brief's, else the one the owner writes in), translating the wording `next` returns while keeping
+commands, ids and file names unchanged.
 
 Each project keeps a delegation map in `state.delegation`: per checkpoint (`decide --stage`
 names plus `creative-intent`), whether the owner or the agent decides it. The intake ask carries

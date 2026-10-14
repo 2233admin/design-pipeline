@@ -12,7 +12,9 @@ All notable changes to Design Pipeline are documented here.
   any of them with `--keep` at intake, and the playback offers `--keep section`. A two-section
   standard page now asks the owner three times (playback, variants, final review) instead of seven.
   An agent never records a "no" (`--by agent --verdict reject` is refused outside director picks)
-  and cannot accept a section or description the owner rejected until it changes.
+  and cannot accept a section or description the owner rejected until it changes. An owner's
+  answer to a trade-off asked during a self-check is recorded with `--tradeoff "<what was asked>"`,
+  which the diligence statement shows. Every ask and self-check carries a `language` line.
 - MengTo and iart upstream skills are downloaded on demand (change `fetch-vendor-on-demand`, #119).
   The package drops from about 253 MB to about 51 MB extracted. `designer-pipeline sources fetch
   --bundle mengto-skills|iart-motion-skills | --all` downloads each file at its pinned revision from

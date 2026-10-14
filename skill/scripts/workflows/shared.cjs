@@ -220,7 +220,7 @@ function meaningful(answer, minimum, what, flag = "--answer", { cjkWeight = 0.5,
   if (wordCount(text, { cjkWeight }) < minimum) fail("workflow", `${flag} must ${what} (at least ${minimum} words; ${unit})`);
   return text;
 }
-const statement = (answer, what) => meaningful(answer, 6, what);
+const statement = (answer, what, flag) => meaningful(answer, 6, what, flag);
 const reason = (answer, what, flag) => meaningful(answer, 2, what, flag, { cjkWeight: 1, unit: "each CJK character counts as one" });
 
 module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement };
