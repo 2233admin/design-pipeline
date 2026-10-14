@@ -37,10 +37,13 @@ creative-work course as the model for these gaps, with these decisions:
 - Defaults are shown in the intake playback and changed with `--delegate <checkpoint>` and
   `--keep <checkpoint>` on the intake record.
 - Quick tier's stated decision records intake as delegated.
-- `next --director <model>` delegates the concept pick and section reviews to that model by default.
-- Two checkpoints are locked to the owner: final-review acceptance (web, film and edit at standard and
-  full) and creative intent. Neither can be delegated. Web quick and ui have no final review; the
-  statement says so, and whether they should gain one is left as an open question.
+- `next --director <model>` delegates the concept pick, section reviews and film/edit sample
+  verdicts to that model by default.
+- Two checkpoints are locked to the owner: final acceptance and creative intent. Neither can be
+  delegated.
+- Every deliverable at every tier ends with the owner's acceptance (owner decision): aesthetic
+  quality cannot be accepted the way working code is. Web quick gains a review after its probe and
+  ui gains one before delivery, following film/edit quick, which already end at the owner's review.
 
 **Decision roles: each record says who decided.**
 
@@ -122,7 +125,8 @@ The change adds no gate, receipt schema, policy digest or feedback system. It re
   - A delegation line in the playback.
   - A reason on the variant pick and the final acceptance.
   - A statement at delivery.
-- **`--director` runs:** the director keeps reviewing concepts and sections, but final acceptance
+- **Quick web and ui work:** one added ask, the final acceptance.
+- **`--director` runs:** the director keeps reviewing concepts, sections and samples, but final acceptance
   asks the owner.
 - **In-flight projects:** earlier records show `unknown` in the statement. A project without
   creative intent in `Product Context` reports `synthesis-required` until it is added. No migration

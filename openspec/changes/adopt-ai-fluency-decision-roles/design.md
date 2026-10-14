@@ -123,6 +123,7 @@ Defaults:
 | | `deliver` | agent | no |
 | web quick | `intake` (stated decision) | agent | no |
 | | `components` | owner | no |
+| | `review` (final acceptance, new) | owner | yes |
 | | `deliver` | agent | no |
 | film/edit standard/full | `intake` | owner | no |
 | | `creative-intent` | owner | yes |
@@ -131,6 +132,7 @@ Defaults:
 | | `review` | owner | yes |
 | | `deliver` | agent | no |
 | ui (all tiers) | `intake` | owner (not asked at quick) | no |
+| | `review` (final acceptance, new) | owner | yes |
 | | `deliver` | agent | no |
 
 Further rules:
@@ -139,11 +141,18 @@ Further rules:
   agent with `set: "owner"`, because the owner chose to skip.
 - `creative-intent` stays owner and locked. If the owner skipped, it is reported as "not stated by
   the owner", never filled in by the agent.
-- The final-acceptance lock applies to the `review` checkpoint, which exists only in web, film and
-  edit at standard and full. Web quick and every ui tier have no `review` stage: their `deliver` is
-  recorded by the agent, and the statement says plainly that no owner acceptance was recorded. That
-  is honest reporting, not a failure. This change adds no owner gate to ui; whether ui should gain
-  one is an open owner decision (see Open questions).
+- Every deliverable at every tier ends with a locked owner `review` before `deliver` (owner
+  decision). Visual quality is not functional correctness: a passing test, gate or probe can show
+  that a page works, never that it looks right, so no tier delivers on technical checks alone.
+  - Web, film and edit standard/full already have the `review` stage. Film and edit quick already
+    end at the owner's review. These are unchanged.
+  - **Web quick** gains `review` after `probe`.
+  - **ui, every tier**, gains `review` between `work` and `deliver`.
+  - The new reviews reuse the web final review as it stands: the owner sees the rendered result,
+    and accepts with a reason or rejects. A rejection becomes a project rule and returns to the
+    build (web) or `work` (ui) stage. Review inputs are bound with `reviewInputHashes`, so ui
+    delivery now also records `deliveryInputHashes`.
+  - Quick stays quick: the review is one ask, with no variants, description or section loop.
 - The web standard/full playback instruction gains one line naming what the agent will decide, for
   example: "I'll pick the reference; you pick the first screen, the components, the description,
   each section and the final page." The owner corrects that line like any other part of the
@@ -328,8 +337,6 @@ Each phase is its own PR against this change. `tasks.md` groups the tasks the sa
 
 ## Open questions
 
-- Should ui work (and web quick) gain a locked owner acceptance before `deliver`? It would make
-  final acceptance universal, at the cost of one more ask on the lightest tiers.
 - Should `--by` stay required with no default? The current answer is yes, and it affects every
   in-flight project's next `decide`.
 

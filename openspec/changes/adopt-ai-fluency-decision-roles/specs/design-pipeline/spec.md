@@ -27,7 +27,13 @@ The workflow state SHALL record, for every checkpoint of the deliverable and tie
 
 ### Requirement: Final acceptance and creative intent stay with the owner
 
-The final-review acceptance of web, film and edit work at standard and full, and the confirmation of creative intent, SHALL be locked to the owner. They SHALL NOT be delegated, recorded with `--by agent`, or routed to an art director. An owner MAY decline to state creative intent; that SHALL be reported as not stated by the owner and SHALL NOT be filled in by the agent.
+Every deliverable at every tier SHALL end with an owner final acceptance before delivery, and it and the confirmation of creative intent SHALL be locked to the owner. They SHALL NOT be delegated, recorded with `--by agent`, or routed to an art director. An owner MAY decline to state creative intent; that SHALL be reported as not stated by the owner and SHALL NOT be filled in by the agent.
+
+#### Scenario: Quick and ui work end with the owner's acceptance
+
+- **WHEN** quick web work passes its probe, or ui work at any tier finishes its work stage
+- **THEN** `next` SHALL ask the owner to accept or reject the rendered result before `deliver`
+- **AND** a rejection SHALL become a project rule and return to the build or work stage
 
 #### Scenario: Delegating final acceptance is refused
 
@@ -151,11 +157,6 @@ Delivery SHALL render `.design-pipeline/diligence.md` from the workflow state al
 
 - **WHEN** a later `decide` changes the state
 - **THEN** the statement SHALL be reported as stale until the next delivery renders it again
-
-#### Scenario: Work without a final review is delivered
-
-- **WHEN** quick web work or ui work at any tier is delivered
-- **THEN** the statement SHALL say that no owner acceptance was recorded
 
 #### Scenario: The statement is read before delivery
 

@@ -15,7 +15,10 @@
   what the agent decides.
 - [ ] 2.3 `decide` requires `--by owner|agent`; refuses agent on owner and locked checkpoints; writes
   `by`/`agent` on every history entry.
-- [ ] 2.4 `--director` stops routing the `review` ask; a director note is an agent `drafts[]` entry
+- [ ] 2.4 Add a locked owner `review` stage to web quick (after `probe`, in `workflows/web.cjs`) and
+  to ui at every tier (between `work` and `deliver`, in `workflow-core.cjs` `codeStages`), reusing
+  the web final review and `reviewInputHashes`; ui delivery records `deliveryInputHashes`.
+- [ ] 2.4a `--director` stops routing the `review` ask; a director note is an agent `drafts[]` entry
   with `verdict: "recommend"`.
 - [ ] 2.5 `direction-preview-core.cjs`: `decision.by`/`agent`/`delegation` (`workflow-state` with
   `stateSha256`, or `owner-instruction` with a quote); selection fails on missing `by`, missing
@@ -62,7 +65,7 @@
 - [ ] 5.1 `npm test` passes, including "QA leaves repository status byte-identical".
 - [ ] 5.2 Real CLI smoke in a scratch project: a standard web flow to `done` with `--director`
   showing an agent section decision, an owner final acceptance and a rendered `diligence.md`; a
-  quick flow showing "no owner acceptance recorded".
+  quick web flow and a ui flow, each ending with the owner's acceptance before delivery.
 - [ ] 5.3 Dogfood on KATANAview: run one standard web change and attach its `diligence.md` to the
   PR.
 - [ ] 5.4 CI green on each phase PR.
