@@ -3478,6 +3478,7 @@ test("a malformed section item is named, not dropped, and never reaches a return
   assert.equal(step.stage, "description");
   assert.doesNotMatch(step.command, /\$\(/, "an id that is not valid never reaches the shell");
   assert.match(step.command, /--choice <section-ids-in-order,comma-separated>/);
+  for (const key of ["command", "instruction"]) assert.doesNotMatch(step[key], /--affects <[^>]*\$\(/, `${key}: an invalid id never enters the --affects hint`);
 });
 
 test("all and none are reserved from section ids, since --affects reads them", t => {

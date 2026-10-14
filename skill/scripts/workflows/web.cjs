@@ -266,6 +266,8 @@ function recordComponents(state, _root, options, next) {
 const SECTION_ID = /^[a-z0-9][a-z0-9-]*$/;
 // --affects reads these as every section and no section, so no section may carry them as its id.
 const RESERVED_IDS = new Set(["all", "none"]);
+// Ids that may appear in a returned command: valid ones only, so brief text never reaches a shell.
+const commandIds = ids => ids.filter(id => SECTION_ID.test(id) && !RESERVED_IDS.has(id));
 // The project's brief file; a differently cased BRIEF.md the owner supplied is extended in place.
 function briefName(root) {
   try {
@@ -392,11 +394,11 @@ const DESCRIPTION = {
     const stale = accepted && !sameInputs(accepted.inputs, now) ? diffInputs(accepted.inputs, now) : null;
     const listed = stale ? briefSections(fileText(root, file) ?? "")?.map(item => item.id) : null;
     // Only a valid list fills --choice: valid ids are shell-safe, and anything else stays a placeholder.
-    const valid = listed?.length && listed.every(id => SECTION_ID.test(id) && !RESERVED_IDS.has(id)) ? listed : null;
+    const valid = listed?.length && commandIds(listed).length === listed.length ? listed : null;
     const choice = valid ? valid.join(",") : "<section-ids-in-order,comma-separated>";
     // A re-approval's commands carry the tier it needs, so the returned command runs as given.
     const tier = !stale ? "" : stale.structural
-      ? ` --revision commitment --affects <the section ids the change touches${stale.jobs.length ? `, at least ${stale.jobs.join(",")}` : ""}; or all; or none>`
+      ? ` --revision commitment --affects <the section ids the change touches${commandIds(stale.jobs).length ? `, at least ${commandIds(stale.jobs).join(",")}` : ""}; or all; or none>`
       : " --revision bytes";
     // A byte-only change to a description the owner kept is carried forward by the agent, not asked again.
     if (stale && !stale.structural && latest?.verdict === "accept" && state.delegation?.description?.to === "owner") {
@@ -437,7 +439,7 @@ function staleText(state, root, latest, file) {
   const diff = diffInputs(latest.inputs, approvalInputs(state, root));
   const tier = !diff.structural
     ? "Only the brief's wording changed: re-record the approval with --revision bytes, and no section is reviewed again."
-    : `This is a commitment change: re-record the approval with --revision commitment --affects <the section ids it touches, all or none>${diff.jobs.length ? ` (at least ${diff.jobs.join(",")}, whose line changed)` : ""}; sections whose line, direction or component decision changed are reviewed again either way.`;
+    : `This is a commitment change: re-record the approval with --revision commitment --affects <the section ids it touches, all or none>${commandIds(diff.jobs).length ? ` (at least ${commandIds(diff.jobs).join(",")}, whose line changed)` : ""}; sections whose line, direction or component decision changed are reviewed again either way.`;
   return `Since the approval, ${describeDiff(diff)} changed. ${tier} Bring ${file} up to date, then ask:`;
 }
 
