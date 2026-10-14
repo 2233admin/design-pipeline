@@ -251,7 +251,7 @@ function searchMengToSkills({ query, category = null, limit = 5, manifestFile = 
     revision: loaded.manifest.source.revision,
     totalSkills: loaded.manifest.skills.length,
     results,
-    instruction: "Read the narrowest matching skill file (skillPath) and its linked files; project DESIGN/MOTION and repository rules remain authoritative.",
+    instruction: "Read the narrowest matching skill file (skillPath) and its linked files (an upstream link to SKILL.md means UPSTREAM-SKILL.md in that folder); project DESIGN/MOTION and repository rules remain authoritative.",
   };
 }
 

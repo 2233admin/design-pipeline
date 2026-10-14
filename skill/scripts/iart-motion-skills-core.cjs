@@ -257,7 +257,7 @@ function searchIartSkills({ query, family = null, pack = null, limit = 5, manife
     revision: loaded.manifest.index.revision,
     totalSkills: loaded.manifest.skills.length,
     results,
-    instruction: "Read the narrowest matching skill file (skillPath); project DESIGN/MOTION, HyperFrames for HTML video, and repository rules remain authoritative.",
+    instruction: "Read the narrowest matching skill file (skillPath; an upstream link to SKILL.md means UPSTREAM-SKILL.md in that folder); project DESIGN/MOTION, HyperFrames for HTML video, and repository rules remain authoritative.",
   };
 }
 

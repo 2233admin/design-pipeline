@@ -7,7 +7,8 @@ does not install dependencies, grant execution authority or certify visual quali
 
 Upstream files named `SKILL.md` are stored as `UPSTREAM-SKILL.md` with unchanged bytes, so the
 package holds one `SKILL.md`. Manifests keep upstream paths and hashes;
-`../scripts/upstream-path.cjs` maps between the two names.
+`../scripts/upstream-path.cjs` maps between the two names. Upstream text keeps its original
+links: an upstream link to `SKILL.md` means the `UPSTREAM-SKILL.md` in the same folder.
 
 | Bundle | Maintained guide | Integrity record |
 | --- | --- | --- |

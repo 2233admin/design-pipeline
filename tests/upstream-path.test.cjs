@@ -76,3 +76,15 @@ test("the skill directory holds exactly one SKILL.md", () => {
   walk(path.join(repo, "skill"));
   assert.deepEqual(found, ["skill/SKILL.md"]);
 });
+
+test("agents are told how an upstream link to SKILL.md resolves", () => {
+  const { searchMengToSkills } = require("../skill/scripts/mengto-skills-core.cjs");
+  const { searchIartSkills } = require("../skill/scripts/iart-motion-skills-core.cjs");
+  for (const result of [searchMengToSkills({ query: "gsap" }), searchIartSkills({ query: "logo" })]) {
+    assert.match(result.instruction, /link to SKILL\.md means UPSTREAM-SKILL\.md/);
+    assert.ok(result.results.every((item) => item.skillPath.endsWith("UPSTREAM-SKILL.md") && fs.existsSync(item.skillPath)), JSON.stringify(result.results.map((item) => item.skillPath)));
+  }
+  for (const guide of ["skill/vendor/README.md", "skill/references/mengto-skills.md", "skill/references/iart-motion-skills.md"]) {
+    assert.match(fs.readFileSync(path.join(repo, guide), "utf8").replace(/\s+/g, " "), /link to `?SKILL\.md`? means the `UPSTREAM-SKILL\.md` in (?:the same|that) folder/, guide);
+  }
+});

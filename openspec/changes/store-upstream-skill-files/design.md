@@ -25,6 +25,10 @@ searches (mengto, iart) return a path to an upstream `SKILL.md` for the agent to
   a re-import reproduces the same `treeSha256`.
 - **Catalog output:** mengto and iart results return the stored file path. The instruction text
   says "the returned skill file" rather than naming `SKILL.md`.
+- **Upstream links:** upstream text keeps its original links (bytes are preserved), so a link to
+  `SKILL.md` inside a bundle no longer resolves on disk. `vendor/README.md`, the MengTo and iart
+  guides and their search instructions state the rule: such a link means the `UPSTREAM-SKILL.md`
+  in the same folder.
 - **Package check:** QA counts entries named `SKILL.md` in the built archive and requires exactly
   `design-pipeline/SKILL.md`.
 
