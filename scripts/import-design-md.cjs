@@ -3,6 +3,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const {
   canonicalTree,
   copyTrackedFiles,
@@ -62,7 +63,7 @@ function importSnapshot(source, reviewedAt) {
       .filter((relative) => /^examples\/[^/]+\.md$/.test(relative))
       .map((relative) => {
         const slug = path.basename(relative, ".md");
-        const meta = yamlName(path.join(upstream, relative));
+        const meta = yamlName(path.join(upstream, storedPath(relative)));
         return {
           id: `design-md:example:${slug}`,
           slug,
@@ -76,7 +77,7 @@ function importSnapshot(source, reviewedAt) {
       .sort((left, right) => left.id.localeCompare(right.id));
     if (examples.length < 1) fail("source has no example DESIGN.md files");
 
-    const byteCount = tracked.reduce((sum, relative) => sum + fs.statSync(path.join(upstream, relative)).size, 0);
+    const byteCount = tracked.reduce((sum, relative) => sum + fs.statSync(path.join(upstream, storedPath(relative))).size, 0);
     manifest = {
       schema: "design-pipeline.design-md-source.v1",
       source: {

@@ -6,6 +6,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Changed
 
+- The package holds one `SKILL.md` (change `store-upstream-skill-files`, #118). The 258 bundled
+  upstream `SKILL.md` files are stored as `UPSTREAM-SKILL.md` with unchanged bytes; manifests keep
+  upstream paths and hashes, and `skill/scripts/upstream-path.cjs` maps between the names for
+  verification, catalog results (`skillPath`), `film methods`, imports and tests. Packaging and
+  QA reject any other `SKILL.md`. Agents reading a bundled upstream skill open `UPSTREAM-SKILL.md`.
 - Owner feedback is taken as given (change `fix-owner-feedback-friction`): a "no" needs two words
   with each CJK character counting as one, so 首屏太暗了 or "too dark" is a complete reason; a page
   the owner rejects returns to build at every tier until it changes; the diligence statement quotes

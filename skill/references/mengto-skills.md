@@ -30,8 +30,9 @@ execute bundled scripts.
    designer-pipeline mengto search --query "scroll-controlled Three.js world" --json
    ```
 
-2. Read the narrowest matching bundled `SKILL.md`, then only its linked references, scripts,
-   assets, and demo files needed for the current task.
+2. Read the narrowest matching skill file (`skillPath`), then only its linked references, scripts,
+   assets, and demo files needed for the current task. An upstream link to `SKILL.md` means the
+   `UPSTREAM-SKILL.md` in that folder.
 3. Treat project `AGENTS.md`, `DESIGN.md`, `MOTION.md`, OpenSpec artifacts, existing components,
    existing dependencies, accessibility rules, and measured budgets as higher authority than an
    upstream example or default.

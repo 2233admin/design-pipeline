@@ -3,6 +3,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath, upstreamFiles, upstreamPath } = require("./upstream-path.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/prism-system/manifest.json");
 const schema = "design-pipeline.prism-system-source.v1";
@@ -38,14 +39,15 @@ function gitObjectId(type, content) {
 
 function gitTreeId(root) {
   function hashDirectory(directory) {
+    // Git tree entries carry upstream names: a stored UPSTREAM-SKILL.md hashes as SKILL.md.
     const entries = fs.readdirSync(directory, { withFileTypes: true })
-      .map((entry) => ({ entry, name: entry.name }))
+      .map((entry) => ({ entry, name: entry.isDirectory() ? entry.name : upstreamPath(entry.name) }))
       .sort((left, right) => Buffer.compare(
         Buffer.from(`${left.name}${left.entry.isDirectory() ? "/" : ""}`),
         Buffer.from(`${right.name}${right.entry.isDirectory() ? "/" : ""}`),
       ));
     const content = Buffer.concat(entries.map(({ entry, name }) => {
-      const absolute = path.join(directory, name);
+      const absolute = path.join(directory, entry.name);
       const stat = fs.lstatSync(absolute);
       if (stat.isSymbolicLink()) invalid(`snapshot contains a symbolic link: ${absolute}`);
       const tree = entry.isDirectory();
@@ -60,7 +62,7 @@ function gitTreeId(root) {
 
 function snapshotSha256(root, files) {
   const records = files.map((relative) => {
-    const hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(root, relative))).digest("hex");
+    const hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(root, storedPath(relative)))).digest("hex");
     return `${relative.split(path.sep).join("/")}\0${hash}\n`;
   });
   return crypto.createHash("sha256").update(records.join(""), "utf8").digest("hex");
@@ -125,8 +127,11 @@ function verifyPrismSnapshot(manifestFile = defaultManifest) {
   catch (error) {
     return { schema: "design-pipeline.prism-system-verification.v1", status: "blocked", issues: [error.message] };
   }
-  const files = collectFiles(loaded.snapshotRoot).sort();
-  const bytes = files.reduce((sum, relative) => sum + fs.statSync(path.join(loaded.snapshotRoot, relative)).size, 0);
+  // Walked files are stored names; the manifest and every hash use upstream names.
+  const walked = upstreamFiles(collectFiles(loaded.snapshotRoot));
+  if (walked.stray.length) return { schema: "design-pipeline.prism-system-verification.v1", status: "blocked", issues: walked.issues };
+  const files = walked.files.sort();
+  const bytes = files.reduce((sum, relative) => sum + fs.statSync(path.join(loaded.snapshotRoot, storedPath(relative))).size, 0);
   const treeSha256 = snapshotSha256(loaded.snapshotRoot, files);
   const skillsTree = gitTreeId(path.join(loaded.snapshotRoot, "skills"));
   const licenseBlob = gitObjectId("blob", fs.readFileSync(path.join(loaded.snapshotRoot, "LICENSE")));
@@ -137,7 +142,7 @@ function verifyPrismSnapshot(manifestFile = defaultManifest) {
   if (skillsTree !== loaded.manifest.source.skillsTree) issues.push(`skills Git tree ${skillsTree} != ${loaded.manifest.source.skillsTree}`);
   if (licenseBlob !== loaded.manifest.source.licenseBlob) issues.push(`license Git blob ${licenseBlob} != ${loaded.manifest.source.licenseBlob}`);
   for (const skill of loaded.registry.skills) {
-    if (!fs.existsSync(path.join(loaded.snapshotRoot, "skills", skill.path))) issues.push(`missing skill source: ${skill.path}`);
+    if (!fs.existsSync(path.join(loaded.snapshotRoot, "skills", storedPath(skill.path)))) issues.push(`missing skill source: ${skill.path}`);
   }
   return {
     schema: "design-pipeline.prism-system-verification.v1",
@@ -185,7 +190,7 @@ function searchPrismSkills({ query, category = null, limit = 5, manifestFile = d
     .map(({ skill, metadata }) => ({
       ...skill,
       metadata,
-      skillPath: path.join(loaded.snapshotRoot, "skills", skill.path),
+      skillPath: path.join(loaded.snapshotRoot, "skills", storedPath(skill.path)),
     }));
   return {
     schema: "design-pipeline.prism-system-search.v1",

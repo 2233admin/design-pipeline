@@ -4,6 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 
 function fail(message) {
   throw new Error(message);
@@ -80,11 +81,15 @@ function readBlobs(source, entries) {
 }
 
 function copyTrackedFiles(target, entries, blobs) {
-  for (const entry of entries) {
+  // An upstream SKILL.md is stored as UPSTREAM-SKILL.md; storedPath refuses an upstream file that
+  // already uses that name. Every entry is checked before the first write, so a refusal writes nothing.
+  const planned = entries.map((entry) => {
     const relative = entry.path;
     if (path.isAbsolute(relative) || relative.split(/[\\/]/).includes("..")) fail(`unsafe tracked path: ${relative}`);
     if (!new Set(["100644", "100755"]).has(entry.mode)) fail(`unsupported tracked mode: ${entry.mode} ${relative}`);
-    const targetFile = path.join(target, relative);
+    return { relative, targetFile: path.join(target, storedPath(relative)) };
+  });
+  for (const { relative, targetFile } of planned) {
     fs.mkdirSync(path.dirname(targetFile), { recursive: true });
     fs.writeFileSync(targetFile, blobs.get(relative));
   }
@@ -93,7 +98,7 @@ function copyTrackedFiles(target, entries, blobs) {
 function canonicalTree(root, files) {
   const normalized = [...files].map((relative) => relative.split(/[\\/]/).join("/")).sort();
   const entries = normalized.map((relative) => {
-    const hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(root, ...relative.split("/")))).digest("hex");
+    const hash = crypto.createHash("sha256").update(fs.readFileSync(path.join(root, ...storedPath(relative).split("/")))).digest("hex");
     return `${relative}\0${hash}\n`;
   });
   return crypto.createHash("sha256").update(entries.join(""), "utf8").digest("hex");

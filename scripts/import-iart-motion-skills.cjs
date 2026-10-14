@@ -3,6 +3,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const {
   canonicalTree,
   copyTrackedFiles,
@@ -121,7 +122,7 @@ function importSnapshot(sourceRoot, reviewedAt) {
         .filter((relative) => /^skills\/[^/]+\/SKILL\.md$/.test(relative));
       for (const relative of skillFiles) {
         const name = relative.split("/")[1];
-        const metadata = frontmatter(path.join(packRoot, relative));
+        const metadata = frontmatter(path.join(packRoot, storedPath(relative)));
         if (metadata.name !== name) fail(`frontmatter name does not match directory: ${pack.id}/${relative}`);
         const activation = EXPLICIT_SKILLS.has(name) || pack.activationDefault === "explicit"
           ? "explicit"
@@ -157,7 +158,7 @@ function importSnapshot(sourceRoot, reviewedAt) {
     executableFiles.sort();
     skills.sort((left, right) => left.id.localeCompare(right.id));
     const files = objects.map((object) => object.path);
-    const byteCount = files.reduce((sum, relative) => sum + fs.statSync(path.join(upstream, relative)).size, 0);
+    const byteCount = files.reduce((sum, relative) => sum + fs.statSync(path.join(upstream, storedPath(relative))).size, 0);
 
     manifest = {
       schema: "design-pipeline.iart-motion-skills-source.v1",

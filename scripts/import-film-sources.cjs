@@ -4,6 +4,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const { canonicalTree, copyTrackedFiles, fail, frontmatter, inspectCheckout } = require("./git-tree-snapshot.cjs");
 
 // `kind: "skill"` bundles carry a SKILL.md entry with frontmatter; `kind: "template"` bundles are
@@ -98,11 +99,11 @@ function importSnapshot(name, source, reviewedAt) {
     if (treeSha256 !== reviewed.treeSha256) fail(`source content does not match reviewed ${name} tree hash`);
     let entries;
     if (reviewed.kind === "skill") {
-      const metadata = frontmatter(path.join(upstream, reviewed.entry));
+      const metadata = frontmatter(path.join(upstream, storedPath(reviewed.entry)));
       if (metadata.name !== reviewed.skillName || !metadata.description.trim()) fail(`frontmatter does not match reviewed ${name} entry`);
       entries = { skills: [{ name: metadata.name, path: `upstream/${reviewed.entry}`, description: metadata.description }] };
     } else if (reviewed.kind === "template") {
-      const heading = fs.readFileSync(path.join(upstream, reviewed.entry), "utf8").match(/^\*\*(.+)\*\*\s*$/m);
+      const heading = fs.readFileSync(path.join(upstream, storedPath(reviewed.entry)), "utf8").match(/^\*\*(.+)\*\*\s*$/m);
       if (!heading) fail(`reviewed ${name} entry lacks its summary line`);
       entries = { templates: [{ name: reviewed.templateName, path: `upstream/${reviewed.entry}`, description: heading[1].trim() }] };
     } else fail(`unknown reviewed kind for ${name}`);

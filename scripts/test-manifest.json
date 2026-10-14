@@ -137,6 +137,7 @@
     "film-methods-eval.test.cjs",
     "prompt-motion-index.test.cjs",
     "prompt-motion-library.test.cjs",
+    "upstream-path.test.cjs",
     "browser-locate.test.cjs"
   ]
 }

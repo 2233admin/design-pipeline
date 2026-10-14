@@ -41,7 +41,7 @@ browsers, accessibility requirements and existing v1 contracts remain authoritat
 1. Identify the affected component and its consumers, existing reset, token owners, font faces,
    scroll ownership and browser targets. An existing surface needs a bounded adaptation, not a
    wholesale reset or palette replacement.
-2. Read the upstream [agent entry](../vendor/good-css/upstream/skills/good-css/SKILL.md), then
+2. Read the upstream [agent entry](../vendor/good-css/upstream/skills/good-css/UPSTREAM-SKILL.md), then
    the applicable original category files below. Keep every condition of the selected entry,
    including conditions that are described only in prose.
 3. Use the coverage tables to select the exact entry and specimen. Preserve the technique in

@@ -5,7 +5,7 @@ instruction by running comparable cases. It runs separately from normal design p
 Start with one instruction and a declared editable scope, frozen cases, an evaluator, explicit
 inference configuration and an evaluation budget. Search produces a reviewable proposal.
 
-The complete official [gepa-optimize-anything skill](../vendor/gepa/upstream/.claude/skills/gepa-optimize-anything/SKILL.md)
+The complete official [gepa-optimize-anything skill](../vendor/gepa/upstream/.claude/skills/gepa-optimize-anything/UPSTREAM-SKILL.md)
 is bundled at reviewed revision `462e437a09be67d2acb59564cc0ea59132f5777c`, reviewed on
 2026-10-09. Its seven files, root README, package metadata and
 [MIT license](../vendor/gepa/upstream/LICENSE) preserve original bytes; Copyright © 2025

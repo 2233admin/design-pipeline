@@ -3,6 +3,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const { canonicalTree, copyTrackedFiles, fail, frontmatter, inspectCheckout } = require("./git-tree-snapshot.cjs");
 
 const destination = path.resolve(__dirname, "../skill/vendor/taste-skill");
@@ -70,7 +71,7 @@ function importSnapshot(source, reviewedAt) {
     if (treeSha256 !== reviewedTreeSha256) fail("source content does not match reviewed Taste-Skill tree hash");
     const skills = skillFiles.map(file => {
       const directory = file.split("/")[1];
-      const metadata = frontmatter(path.join(upstream, file));
+      const metadata = frontmatter(path.join(upstream, storedPath(file)));
       if (reviewedSkills.get(directory) !== metadata.name || !metadata.description.trim()) fail(`frontmatter does not match reviewed Taste-Skill entry: ${file}`);
       return { name: metadata.name, directory, path: `upstream/${file}`, description: metadata.description };
     });

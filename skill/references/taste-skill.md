@@ -2,7 +2,7 @@
 
 Use this guide for new website design, existing-site redesign, visual direction and critique,
 reference-to-frontend work, web/mobile concept images, brand boards and complete output. Select
-the method that matches the requested deliverable, then read its **complete local SKILL.md** below.
+the method that matches the requested deliverable, then read its **complete local `UPSTREAM-SKILL.md`** below.
 All thirteen entries are packaged with `design-pipeline`; no ambient Taste skill installation or
 network access is needed to read and apply them. This guide supplies selection and project
 adaptation, while the original files retain every instruction, example and pre-flight checklist.
@@ -96,7 +96,7 @@ marketing-page exclusions do not remove the suite's applicable style, redesign o
 
 **Trigger:** new or redesigned landing pages, portfolios, editorial and marketing surfaces where
 the brief needs a coherent, non-template direction. Read the complete
-[v2 experimental source](../vendor/taste-skill/upstream/skills/taste-skill/SKILL.md), including
+[v2 experimental source](../vendor/taste-skill/upstream/skills/taste-skill/UPSTREAM-SKILL.md), including
 brief inference, the three dials, official-system versus aesthetic distinction, states/assets,
 theme/color/shape consistency, motivated motion, redesign protocol, pre-flight and appendices.
 
@@ -110,7 +110,7 @@ block implementations. Do not claim those named patterns are bundled callable co
 ### design-taste-frontend-v1
 
 **Trigger:** an explicit request or documented project dependency on original v1 behavior.
-Read the complete [v1 source](../vendor/taste-skill/upstream/skills/taste-skill-v1/SKILL.md).
+Read the complete [v1 source](../vendor/taste-skill/upstream/skills/taste-skill-v1/UPSTREAM-SKILL.md).
 Its fixed `8/6/4` dials, stricter bans, React/Tailwind conventions, creative arsenal and
 perpetual-motion bento paradigm differ from v2.
 
@@ -123,7 +123,7 @@ motion on every card. Selecting v1 never silently replaces an approved direction
 ### gpt-taste
 
 **Trigger:** an explicitly suitable motion-rich, conversion-oriented marketing direction.
-Read the complete [GPT/Codex variant](../vendor/taste-skill/upstream/skills/gpt-tasteskill/SKILL.md):
+Read the complete [GPT/Codex variant](../vendor/taste-skill/upstream/skills/gpt-tasteskill/UPSTREAM-SKILL.md):
 variation planning, AIDA chapters, wide hero typography, gapless bento math, GSAP pin/stack/scrub,
 inline image typography, accordions, marquees and pre-flight plan.
 
@@ -136,7 +136,7 @@ global overflow clipping and compulsory GSAP do not override project motion/scro
 ### minimalist-ui
 
 **Trigger:** a selected restrained editorial/document-style interface. Read the complete
-[minimalist source](../vendor/taste-skill/upstream/skills/minimalist-skill/SKILL.md): warm monochrome,
+[minimalist source](../vendor/taste-skill/upstream/skills/minimalist-skill/UPSTREAM-SKILL.md): warm monochrome,
 type contrast, muted semantic accents, flat grids, modest corners, quiet controls and subtle motion.
 
 **Output and stage checks:** Stage 2/3 defines the selected type, neutral/semantic tokens, spacing
@@ -148,7 +148,7 @@ the selected direction, not instructions to combine. Plain or static surfaces re
 ### industrial-brutalist-ui
 
 **Trigger:** a chosen Swiss-industrial print or tactical telemetry direction. Read the complete
-[industrial source](../vendor/taste-skill/upstream/skills/brutalist-skill/SKILL.md): one archetype,
+[industrial source](../vendor/taste-skill/upstream/skills/brutalist-skill/UPSTREAM-SKILL.md): one archetype,
 macro/micro typography, one substrate palette, blueprint grids, sharp corners, semantic data
 elements, halftone/dithering, scanlines and noise.
 
@@ -161,7 +161,7 @@ turn decorative copyright/trademark marks into false legal claims or fabricated 
 ### high-end-visual-design
 
 **Trigger:** a selected soft/luxury agency direction needing depth, generous rhythm and tactile
-components. Read the complete [soft source](../vendor/taste-skill/upstream/skills/soft-skill/SKILL.md):
+components. Read the complete [soft source](../vendor/taste-skill/upstream/skills/soft-skill/UPSTREAM-SKILL.md):
 texture/layout archetypes, nested double-bezel surfaces, CTA trailing-icon enclosures, floating
 navigation, spring cues, mobile overrides, performance and pre-output checklist.
 
@@ -176,7 +176,7 @@ the chosen reference and component semantics rather than applying both everywher
 
 **Trigger:** a semantic design specification for Stitch screens or translation into reusable
 product design guidance. Read the complete
-[Stitch source](../vendor/taste-skill/upstream/skills/stitch-skill/SKILL.md) and its
+[Stitch source](../vendor/taste-skill/upstream/skills/stitch-skill/UPSTREAM-SKILL.md) and its
 [DESIGN.md example](../vendor/taste-skill/upstream/skills/stitch-skill/DESIGN.md).
 
 **Output and stage checks:** Stage 2/3 synthesizes product-specific atmosphere, named color roles,
@@ -192,7 +192,7 @@ Stitch's static screens and motion descriptions do not verify animation.
 ### redesign-existing-projects
 
 **Trigger:** improve an existing website/app without losing its working product. Read the
-complete [redesign source](../vendor/taste-skill/upstream/skills/redesign-skill/SKILL.md): scan,
+complete [redesign source](../vendor/taste-skill/upstream/skills/redesign-skill/UPSTREAM-SKILL.md): scan,
 diagnose, targeted fixes across typography, surfaces, layout, states, content, components,
 iconography, code and omitted user journeys, plus upgrade techniques and priority order.
 
@@ -207,7 +207,7 @@ measure glyph coverage, wrapping and downstream layout before adopting it.
 ### image-to-code
 
 **Trigger:** build or adapt a web surface from an authorized supplied or selected image.
-Read the complete [image-to-code source](../vendor/taste-skill/upstream/skills/image-to-code-skill/SKILL.md):
+Read the complete [image-to-code source](../vendor/taste-skill/upstream/skills/image-to-code-skill/UPSTREAM-SKILL.md):
 legible section/detail references, deep text/type/spacing/color/component extraction, coherent
 media frames, anti-drift implementation, first-view clarity and complete multi-section output.
 
@@ -224,7 +224,7 @@ An image can suggest hover or motion, but only real input/playback evidence prov
 ### imagegen-frontend-web
 
 **Trigger:** the requested deliverable is website concept images, not implemented frontend.
-Read the complete [web image source](../vendor/taste-skill/upstream/skills/imagegen-frontend-web/SKILL.md):
+Read the complete [web image source](../vendor/taste-skill/upstream/skills/imagegen-frontend-web/UPSTREAM-SKILL.md):
 one separate horizontal image per section, varied composition/background/CTA, a chosen hero
 scale, narrative spine, one second-read motif, conversion purpose and one coherent palette.
 
@@ -240,7 +240,7 @@ or rendered UI behavior is promised.
 ### imagegen-frontend-mobile
 
 **Trigger:** mobile app concept images, screen sets or onboarding/auth/commerce flows.
-Read the complete [mobile image source](../vendor/taste-skill/upstream/skills/imagegen-frontend-mobile/SKILL.md):
+Read the complete [mobile image source](../vendor/taste-skill/upstream/skills/imagegen-frontend-mobile/UPSTREAM-SKILL.md):
 iOS/Android/cross-platform choice, design bible, coherent screen progression, readable type,
 safe areas/navigation, image/texture/icon treatment and consistent phone framing.
 
@@ -255,7 +255,7 @@ touch targets or functioning navigation from pixels; implementation requires its
 ### brandkit
 
 **Trigger:** a brand-kit, logo-system concept or identity presentation board image.
-Read the complete [brandkit source](../vendor/taste-skill/upstream/skills/brandkit/SKILL.md): brand
+Read the complete [brandkit source](../vendor/taste-skill/upstream/skills/brandkit/UPSTREAM-SKILL.md): brand
 strategy/metaphor, reduced logo concepts, construction geometry, panel rhythm, visual modes,
 sparse text, coherent palette and identity applications.
 
@@ -270,7 +270,7 @@ result or automatically approved identity. Obtain/verify actual final assets sep
 ### full-output-enforcement
 
 **Trigger:** several requested files/components/sections or a risk of incomplete delivery.
-Read the complete [output source](../vendor/taste-skill/upstream/skills/output-skill/SKILL.md):
+Read the complete [output source](../vendor/taste-skill/upstream/skills/output-skill/UPSTREAM-SKILL.md):
 count scope, complete each deliverable, reject omitted-code placeholders and cross-check output.
 The complete supporting [research](../vendor/taste-skill/upstream/research/README.md) and
 [truncation research index](../vendor/taste-skill/upstream/research/laziness/README.md) remain local.
