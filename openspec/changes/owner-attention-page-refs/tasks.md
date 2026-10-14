@@ -45,6 +45,8 @@
 - [x] 7.10 Codex: the resource wait also covers videos (current data, bounded); verify the browser tests still pass.
 - [x] 7.11 Codex: when only the component decision changed after the owner's accept, the review says so instead of "an earlier version"; verify in `workflow-components`.
 - [x] 7.12 CodeRabbit: one deadline bounds network idle, image load and decode and video readiness, and its expiry fails the capture; verify with a browser test whose image request never completes.
+- [x] 7.13 Codex: the font wait is inside the same deadline as media, and its expiry fails the capture; verify with a browser test whose font request never completes.
+- [x] 7.14 Codex: CSS animations, transitions and Web Animations are paused from measurement through the screenshot (script-driven timers are not); verify with a browser test that an animated link stays where it was measured.
 
 ## Workflow follow-up
 

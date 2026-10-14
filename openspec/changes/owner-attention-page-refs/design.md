@@ -87,8 +87,10 @@ See proposal.md for why. Current code (checked):
 - **Settle first.**
   - Load at 1440×900, then scroll instantly (overriding `scroll-behavior`) to the bottom in viewport steps (scrolling, waiting, then re-reading the height,
     so content that loads on scroll lengthens the walk) and back, so scroll-reveal content settles.
-  - Wait for fonts, network idle and every image loaded and decoded (bounded at 10 s; an image still loading fails
-    the capture rather than numbering an incomplete page).
+  - Wait for fonts, network idle, every image loaded and decoded and every video showing a frame, under one
+    10 s deadline; anything still loading fails the capture rather than numbering an incomplete page.
+  - Pause CSS animations, transitions and Web Animations before measuring, so the badges sit where the
+    screenshot shows each element (motion driven by a script's own timers is not stopped).
   - Measure, then screenshot with `fullPage` and `captureBeyondViewport`, so `100vh` sections are not
     re-laid out between measuring and drawing.
 - **Candidates.**

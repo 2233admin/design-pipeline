@@ -202,7 +202,6 @@ async function settle(page) {
     await scrollToY(page, y);
     await sleep(120);
   }
-  await page.evaluate(() => document.fonts.ready.then(() => true));
   await sleep(600);
 }
 
@@ -217,8 +216,10 @@ async function awaitResources(page, timeoutMs = 10000) {
     const sleep = (wait) => new Promise((done) => setTimeout(done, wait));
     const images = [...document.images];
     const videos = [...document.querySelectorAll("video")].filter((video) => video.currentSrc || video.src || video.querySelector("source"));
-    const unready = () => images.filter((img) => !img.complete).length + videos.filter((video) => video.readyState < 2 && !video.error).length;
+    const unready = () => images.filter((img) => !img.complete).length + videos.filter((video) => video.readyState < 2 && !video.error).length
+      + (document.fonts.status === "loaded" ? 0 : 1);
     const work = (async () => {
+      await document.fonts.ready;
       await Promise.all(images.filter((img) => !img.complete).map((img) => new Promise((done) => {
         img.addEventListener("load", done, { once: true });
         img.addEventListener("error", done, { once: true });
@@ -230,7 +231,20 @@ async function awaitResources(page, timeoutMs = 10000) {
     const expired = sleep(ms).then(() => Math.max(1, unready()));
     return Promise.race([work, expired]);
   }, remaining);
-  if (pending) fail(SCOPE, `the page's images or videos (${pending} pending) were still loading ${timeoutMs / 1000} s after it was scrolled through. Fix: make the page's media load locally and promptly, then run \`evidence refs\` again`);
+  if (pending) fail(SCOPE, `the page's fonts, images or videos (${pending} pending) were still loading ${timeoutMs / 1000} s after it was scrolled through. Fix: make the page's media load locally and promptly, then run \`evidence refs\` again`);
+}
+
+// Pauses every CSS animation, transition and Web Animation, and stops new ones from moving, so the
+// boxes measured are where the badges are drawn and what the screenshot shows. Motion driven by a
+// script's own timers is outside the browser's animation list and is not stopped.
+async function freezeMotion(page) {
+  await page.evaluate(() => {
+    const style = document.createElement("style");
+    style.setAttribute("data-page-refs-freeze", "");
+    style.textContent = "*,*::before,*::after{animation-play-state:paused!important;transition:none!important}";
+    document.documentElement.appendChild(style);
+    for (const animation of document.getAnimations()) animation.pause();
+  });
 }
 
 // Browser work for one capture. The caller supplies `digest` (the page digest function) so the page
@@ -265,6 +279,7 @@ async function captureRefs(projectRoot, options = {}) {
     await page.goto(pathToFileURL(file).href, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT_MS });
     await settle(page);
     await awaitResources(page);
+    await freezeMotion(page);
     const refs = await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT);
     await page.evaluate(drawBadges, refs);
     const png = Buffer.from(await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true }));
@@ -283,4 +298,4 @@ async function captureRefs(projectRoot, options = {}) {
   }
 }
 
-module.exports = { REFS_SCHEMA, SECTION_ID, VIEWPORT, awaitResources, captureRefs, drawBadges, measureRefs, refsPuppeteer, settle };
+module.exports = { REFS_SCHEMA, SECTION_ID, VIEWPORT, awaitResources, captureRefs, freezeMotion, drawBadges, measureRefs, refsPuppeteer, settle };

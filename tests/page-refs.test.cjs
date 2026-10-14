@@ -250,3 +250,40 @@ test("media that never finishes loading fails the capture at the deadline", { sk
     await browser.close();
   }
 });
+
+// Codex review on #138: a font that never loads is inside the same deadline, and motion is frozen
+// from measurement through the screenshot.
+test("a font that never loads fails the capture at the deadline", { skip }, async () => {
+  const { awaitResources } = require("../skill/scripts/page-refs-core.cjs");
+  const puppeteer = require(puppeteerPath());
+  const browser = await puppeteer.launch({ executablePath: resolveBrowser(), headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on("request", (request) => { if (!request.url().endsWith("/never.woff2")) request.continue(); });
+    await page.setContent('<style>@font-face{font-family:Never;src:url(http://refs.test/never.woff2)}p{font-family:Never}</style><p>Text in a font that never arrives</p>', { waitUntil: "domcontentloaded" });
+    const started = Date.now();
+    await assert.rejects(awaitResources(page, 1500), /fonts, images or videos \(\d+ pending\) were still loading 1\.5 s/);
+    assert.ok(Date.now() - started < 5000, "the deadline bounds the font wait");
+  } finally {
+    await browser.close();
+  }
+});
+
+test("motion is frozen before references are measured", { skip }, async () => {
+  const { freezeMotion } = require("../skill/scripts/page-refs-core.cjs");
+  const puppeteer = require(puppeteerPath());
+  const browser = await puppeteer.launch({ executablePath: resolveBrowser(), headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.setContent('<style>@keyframes slide{to{transform:translateX(600px)}}#cta{display:inline-block;animation:slide 2s linear infinite}</style><a id="cta" href="#">Reserve</a>', { waitUntil: "load" });
+    await freezeMotion(page);
+    const first = await page.$eval("#cta", (element) => element.getBoundingClientRect().x);
+    await new Promise((done) => setTimeout(done, 400));
+    const later = await page.$eval("#cta", (element) => element.getBoundingClientRect().x);
+    assert.equal(later, first, "the animated link stays where it was measured");
+    assert.ok(await page.evaluate(() => document.getAnimations().every((animation) => animation.playState === "paused")));
+  } finally {
+    await browser.close();
+  }
+});
