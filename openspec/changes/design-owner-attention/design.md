@@ -194,6 +194,13 @@ Research from official documentation (summarised; sources at the end):
    on an ask, narrowing, superseding or retiring a rule by hand (phase 1 keeps rule history as
    `givenScope` and `promotedAt` only), changing delegation after intake, and routing lasting
    cross-project preferences to the adaptation ledger.
+   - **4a** (`owner-attention-away`): `decide --later [--until]` holds one owner ask, waking on time,
+     a change to what is asked, or the owner's next answer (Linear's snooze model); an owner ask
+     carries `away`, what the agent decided and checked since the owner's last recorded answer (the
+     Bitbucket "since your last review" baseline). The pipeline asks one thing at a time, so the
+     inbox is that one ask.
+   - Later steps: delegation over time (E), rule narrowing, superseding and retiring, and what a
+     rejection would affect.
 
 ## Owner decisions
 

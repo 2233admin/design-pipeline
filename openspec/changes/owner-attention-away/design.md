@@ -35,22 +35,29 @@
 
 ### 1. The owner ask's identity
 
-- An owner ask is a `next` result of type `ask` without `director`.
+- An owner ask is a stage's `ask` once `ownerFacing` has run, when no art director takes it: a delegated
+  checkpoint is a self-check `run` by then, and a directed concept, sample or section pick is not the
+  owner's. The `start` ask (no state yet) is not deferrable.
 - Its identity is `{stage, section}`: the `next` stage id, and for a web section review its section id,
   else null.
-- The same identity is what a deferral names and what wakes it when it changes.
+- Its `basis` is a hash of what the owner is asked: the stage action's own `question` and `first` (before
+  `next` adds the numbered page and the before/after pictures), plus the page digest for a web section or
+  final review. A redone variants page or a changed sample changes the wording or the page, and so the
+  basis.
 
 ### 2. `decide --later [--until <time>]`
 
 - **What it is.** The owner's answer "not now" to the current owner ask.
 - **What it takes.** It takes no `--stage`, `--choice`, `--verdict`, `--answer`, `--ref` or `--by`. It
   defers whatever `next` asks now, so it cannot name another ask.
-  - It refuses when `next` is not an owner ask: a run, a self-check, a director's pick, blocked or done.
-  - It refuses an `--until` that is not a valid time in the future.
+  - It refuses when `next` is not an owner ask: no state, a run, a self-check, a director's pick, blocked
+    or done.
+  - It refuses an `--until` that `Date.parse` cannot read or that is not in the future.
   - `--until` takes an ISO 8601 time (`2026-10-16T09:00:00+08:00`), like Linear's "until a time".
-- **What it records.** `state.pending = {ask: {stage, section}, question, until|null, basis, at}`.
-  - `basis` is what the ask is about: the page digest for a web section or final review; otherwise null.
-  - A second `--later` replaces it.
+  - The CLI refuses any other decide flag beside `--later` (as for `--page-review`).
+- **What it records.** `state.pending = {ask: {stage, section}, basis, until|null, roles, at}`, where
+  `roles` is the length of `decisions.roles` then.
+  - A second `--later` on the same ask replaces it.
   - Nothing goes into `decisions.roles`: a deferral is not a decision, and the statement stays a record
     of decisions.
 - **Alternative rejected:** a list of pending items. `next` asks one thing at a time; a list would hold
@@ -58,13 +65,15 @@
 
 ### 3. While it holds
 
-`nextAction` computes the stage action as now. If it is the owner ask that `state.pending` names, and the
-deferral still holds, it returns instead:
+`nextAction` computes the stage action as now and, right after `ownerFacing` (before the numbered page is
+captured or the before/after pictures added, so a deferred `next` launches no browser), checks the
+deferral. If the action is the owner ask that `state.pending` names, and the deferral still holds, it
+returns instead:
 
 - `type: "blocked"`, `blocker: {kind: "owner", reason: "the owner chose to answer this later[, until <time>]",
   needs: "the owner's answer"}`;
-- `deferred`: the ask as `next` would have returned it, so the agent can ask it word for word once the
-  deferral ends;
+- `deferred`: the ask's `question`, `record` and `correction`, so the agent knows what is waiting; once the
+  deferral ends `next` returns the full ask again;
 - an `instruction`:
   - do not ask again before the time unless the owner writes;
   - do not build on a guess about the answer;
@@ -73,28 +82,33 @@ deferral still holds, it returns instead:
 **It ends**, and `next` returns the ask again, when any of these happens:
 
 - the time has passed;
-- `basis` no longer matches, because the page the review is about changed (Linear: activity brings it back
-  early);
+- `basis` no longer matches: the page the review is about changed, or the ask now says something else
+  (Linear: activity brings it back early);
 - the current owner ask is a different one;
-- `decide` records any decision. The owner answered, so `state.pending` is cleared with that record.
+- the owner recorded anything since: a `decisions.roles` entry with `by: "owner"` after position `roles`.
+  The agent's own self-check records do not end it.
+
+Nothing is cleared on write: `next` only reads `state.pending`, and an ended deferral is ignored.
 
 An agent that hears the owner write simply asks: the deferral binds `next`, not the conversation.
 Answering early needs nothing more than the usual `decide`.
 
 ### 4. The catch-up on owner asks (`away`)
 
-- **Baseline.** The `at` of the latest `decisions.roles` entry with `by: "owner"`, the Bitbucket model:
-  - it moves only when the owner completes a decision;
+- **Baseline.** The latest `decisions.roles` entry with `by: "owner"`, the Bitbucket model: the last time
+  the owner's answer was recorded (a decision, a "no" to a self-check, a trade-off answer).
+  - it moves only when the owner's answer is recorded;
   - with no owner entry yet, there is no catch-up.
 - **What is listed since the baseline:**
-  - **`decided`:** each role entry with `by: "agent"`, in order, rendered as the statement renders it, for
-    example `Section review: accept hero (agent)`;
-  - **`checks`:** each gate whose `at` is later, as `<gate>: <status>`;
+  - **`decided`:** each role entry after the baseline's position with `by: "agent"`, in order, rendered
+    as the statement renders it, for example `Section review: accept hero`;
+  - **`checks`:** each gate whose `at` (epoch ms) is later than the baseline's `at` (`Date.parse`), as
+    `<gate>: <status>`;
   - **`needed`:** the current ask's question, the one decision now needed.
 - **When it is shown.** `away: {since, decided, checks, needed}` is added only to an owner ask, and only
   when `decided` or `checks` is non-empty.
-  - `first` begins: "Since the owner's last decision (<since>): the agent decided <n> (…); checks: …. Tell
-    the owner this in a line or two before asking."
+  - `first` begins: "Since the owner's last recorded answer (<since>): the agent decided … ; checks: ….
+    Tell the owner this in a line or two before asking."
   - Stale approvals already lead the ask's own `first` (the page tier's "accepted … the page changed
     since"), with their before and after pictures in `show`, so they are not repeated.
 - **Not shown** on a deferred (`blocked`) result. The agent is not talking to the owner then.
@@ -106,8 +120,8 @@ Answering early needs nothing more than the usual `decide`.
 - **[`--later` recorded by the agent without the owner saying so]** As with `--by`, the record is the
   agent's claim. It only delays an ask and never decides anything, so a wrong deferral costs time, not a
   decision.
-- **[A long `decided` list]** It is capped at the first 8 entries, plus "and N more"; the statement keeps
-  every entry.
+- **[`next` exits 2 on a deferral]** `blocked` already means "cannot go on without someone else" (film's
+  missing sources); the CLI help says so, and the result carries `deferred`.
 
 ## Migration
 

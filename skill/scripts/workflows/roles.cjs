@@ -212,4 +212,4 @@ function statementStatus(root, state, deliveryCurrent) {
   return { path: STATEMENT.split(path.sep).join("/"), current };
 }
 
-module.exports = { DIRECTED, LOCKED, ROLES, SELF_CHECKED, STATEMENT, applyDelegation, checkpointOf, defaultDelegation, ensureDelegation, historySizes, recordCreativeIntent, recordRole, renderStatement, stampRecord, stateHash, statementStatus, writeStatement };
+module.exports = { DIRECTED, LOCKED, ROLES, SELF_CHECKED, STATEMENT, applyDelegation, checkpointOf, defaultDelegation, describe, ensureDelegation, historySizes, recordCreativeIntent, recordRole, renderStatement, stampRecord, stateHash, statementStatus, writeStatement };

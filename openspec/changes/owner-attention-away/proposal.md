@@ -30,7 +30,7 @@ Mature tools converge on the same two answers:
     tells the agent not to ask again before the time and not to build on a guess.
   - It wakes, and `next` asks again, at the time, when the page or brief the ask is about changes, or
     when the ask is no longer the current one.
-  - Any decision the owner records ends it.
+  - Any answer the owner records ends it; the agent's own records do not.
 - **A catch-up on owner asks.** When anything was decided or checked since the owner's last recorded
   decision, an owner-facing ask carries `away`:
   - what the agent decided under its delegation;
@@ -58,11 +58,12 @@ None.
 
 ## Impact
 
-- `skill/scripts/workflow-core.cjs`: `deferAsk`, the deferred ask in `nextAction`, ending it in `decide`,
+- `skill/scripts/workflow-core.cjs`: `deferAsk`, the deferred ask in `nextAction` (read-only; nothing is cleared on write), decide answering a deferred ask,
   and `away` on owner asks.
 - `skill/scripts/cli-core.cjs`: `--later`, `--until`.
-- `skill/scripts/workflows/roles.cjs`: the catch-up lines reuse `describe`.
-- `skill/references/workflow-web.md` and `stages.md` (where `next` and `decide` are described), the CLI
-  reference, the CHANGELOG, and `design-owner-attention` (phase 4 split: 4a here).
+- `skill/scripts/workflows/roles.cjs`: exports `describe` for the catch-up lines.
+- New `skill/scripts/workflows/away.cjs` (the ask key, the deferral check and the catch-up).
+- `skill/references/workflow-web.md` (the owner-facing rules), CLI help and reference, the CHANGELOG,
+  and `design-owner-attention` (phase 4 split: 4a here).
 - Tests in `tests/workflow-next.test.cjs`.
 - No new gate, receipt schema or state file. The deferral is one `state.pending` field.

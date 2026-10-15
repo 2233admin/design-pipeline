@@ -12,8 +12,8 @@
 
 - [x] 2.1 Phase 1: ask shape and budget, owner-facing language, feedback scope (`owner-attention-asks`).
 - [x] 2.2 Phase 2: change tiers (`owner-attention-change-tiers`); the page tier moved to phase 3, which brings the per-element comparison it needs.
-- [ ] 2.3 Phase 3: page review lite and owner confirmation provenance; 3a (`owner-attention-page-refs`: numbered references, `--ref`, quoted web acceptance) is merged, 3b (`owner-attention-mobile-compare`: phone capture, before/after) is merged, 3c (`owner-attention-page-compare`: per-element comparison, page tier) is merged, 3d (`owner-attention-page-review`: review page overlay, `decide --page-review`) is in progress.
-- [ ] 2.4 Phase 4: absence (states, inbox, away summary) and delegation over time.
+- [x] 2.3 Phase 3: page review lite and owner confirmation provenance; 3a (`owner-attention-page-refs`: numbered references, `--ref`, quoted web acceptance), 3b (`owner-attention-mobile-compare`: phone capture, before/after), 3c (`owner-attention-page-compare`: per-element comparison, page tier) and 3d (`owner-attention-page-review`: review page overlay, `decide --page-review`) are merged and released in 0.12.0.
+- [ ] 2.4 Phase 4: absence (states, inbox, away summary) and delegation over time; 4a (`owner-attention-away`: decide later, the catch-up on owner asks) is in progress, then delegation over time (E) and rule narrowing, superseding and retiring.
 
 ## 3. Verification
 

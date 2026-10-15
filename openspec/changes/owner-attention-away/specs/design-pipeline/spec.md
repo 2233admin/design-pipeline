@@ -4,7 +4,7 @@
 
 ### Requirement: The owner can answer an ask later
 
-`decide --later [--until <time>]` SHALL record that the owner will answer the current owner ask later. While it holds, `next` SHALL return a `blocked` action of kind `owner` carrying the deferred ask, and SHALL ask it again once the time passes, the page it is about changes, the current ask changes, or any decision is recorded. It SHALL refuse when `next` is not an owner ask.
+`decide --later [--until <time>]` SHALL record that the owner will answer the current owner ask later. While it holds, `next` SHALL return a `blocked` action of kind `owner` carrying the deferred ask. It SHALL ask again once the time passes, what is asked or the page it is about changes, another ask is current, or the owner's answer is recorded. It SHALL refuse when `next` is not an owner ask.
 
 #### Scenario: Deferred until a time
 
@@ -23,19 +23,29 @@
 
 #### Scenario: Nothing to defer
 
-- **WHEN** `next` is a self-check run, an art director's pick, blocked or done, or `--until` is not a future time, or `--later` comes with `--stage`, `--verdict`, `--answer` or `--by`
+- **WHEN** `next` is a self-check run, an art director's pick, blocked or done
 - **THEN** `decide --later` SHALL exit 1 and record nothing.
+
+#### Scenario: Invalid deferral
+
+- **WHEN** `--until` is not a time in the future, or `--later` comes with `--stage`, `--verdict`, `--answer` or `--by`
+- **THEN** `decide --later` SHALL exit 1 and record nothing.
+
+#### Scenario: The agent's own records do not end it
+
+- **WHEN** the owner deferred an ask and a record by the agent is added after it
+- **THEN** `next` SHALL still return the deferral.
 
 ### Requirement: An owner ask catches the owner up
 
-When the agent decided anything or a check ran since the owner's last recorded decision, an owner ask SHALL carry `away`: what the agent decided, which checks ran, and the decision now needed. Its `first` SHALL tell the agent to say this briefly before asking. Without such activity, or before any owner decision, it SHALL carry none.
+When the agent decided anything or a check ran since the owner's last recorded answer, an owner ask SHALL carry `away`: what the agent decided, which checks ran, and the decision now needed. Its `first` SHALL tell the agent to say this briefly before asking. Without such activity, or before any owner decision, it SHALL carry none.
 
 #### Scenario: Self-checks while the owner was away
 
-- **WHEN** the owner confirmed the playback, the agent then self-checked the description and two sections, and next asks the owner about a kept section
-- **THEN** the ask SHALL carry `away` listing those three agent decisions and the question now asked.
+- **WHEN** the owner approved the description, the agent then self-checked two sections and the probe passed, and next asks the final review
+- **THEN** the ask SHALL carry `away` listing those two agent decisions, the probe, and the question now asked.
 
 #### Scenario: Nothing happened in between
 
-- **WHEN** the owner's last decision is the latest record and no check ran since
+- **WHEN** the owner's last answer is the latest record and no check ran since
 - **THEN** the ask SHALL carry no `away`.

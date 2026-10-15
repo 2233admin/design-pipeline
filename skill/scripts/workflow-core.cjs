@@ -34,6 +34,7 @@ const MODES = ["brief", "replicate", "freeform"];
 const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement } = require("./workflows/shared.cjs");
 const roles = require("./workflows/roles.cjs");
 const rules = require("./workflows/rules.cjs");
+const away = require("./workflows/away.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -155,7 +156,8 @@ function actionLine(action) {
   return action.instruction && action.command ? `${action.instruction} Command: ${action.command}` : action.instruction || action.command;
 }
 
-function nextAction(root) {
+// `deferral: false` returns the owner ask a deferral holds back (decide --later re-defers it).
+function nextAction(root, { deferral = true } = {}) {
   const state = readState(root);
   if (!state) {
     return { type: "ask", stage: "start", language: LANGUAGE, question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
@@ -168,6 +170,17 @@ function nextAction(root) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
     const action = ownerFacing(withRoles(stage.action(state, root), state), state, stage.id);
+    // The owner's ask, unless an art director takes it (owner-attention-away): its identity is read before
+    // the numbered page is captured, so a deferred next launches no browser.
+    const directedAsk = action.type === "ask" && (action.director || state.director && ["concepts", "sample", "build"].includes(stage.id));
+    const key = action.type === "ask" && !directedAsk
+      ? away.askKey(stage.id, action, state.deliverable === "web" && (stage.id === "review" || stage.id === "build" && action.section) ? SUB_WORKFLOWS.web.pageDigest(root) : null)
+      : null;
+    const position = { stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length };
+    if (key && deferral && away.holds(state, key)) {
+      const held = away.deferredAction(state, action);
+      return { ...held, ...position, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(held)}` };
+    }
     // A web review that still faces the owner offers the numbered page (owner-attention-page-refs);
     // a delegated self-check is a run by now, so it launches no browser for no one.
     if (state.deliverable === "web" && action.type === "ask" && (stage.id === "review" || stage.id === "build" && action.section)) {
@@ -190,8 +203,17 @@ function nextAction(root) {
       action.ruleCandidates = offered;
       action.instruction = `${action.instruction ? `${action.instruction} ` : ""}Before or with this review, ask the owner once whether to keep, for the rest of the project, any of the ruleCandidates given about more than one thing or phrased as a principle; add --promote "<from>" to their review record for each one they keep, and nothing for the rest.`;
     }
+    // An owner ask tells the owner first what happened since their last recorded answer.
+    const caughtUp = key ? away.catchUp(state, action.question) : null;
+    if (caughtUp) {
+      action.away = caughtUp;
+      action.first = [away.catchUpLine(caughtUp), action.first].filter(Boolean).join(" ");
+    }
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
-    return { ...action, ...guide, ...directed, ...ruleTexts, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
+    const result = { ...action, ...guide, ...directed, ...ruleTexts, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
+    // Not printed: what decide --later records as the ask it defers.
+    if (key) Object.defineProperty(result, "askKey", { value: key, enumerable: false });
+    return result;
   }
   return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, diligence: roles.statementStatus(root, state, deliveryCurrent(state, root)), line: `${state.deliverable}/${state.tier}: done` };
 }
@@ -262,6 +284,27 @@ function delegationHint(state) {
   };
 }
 
+// `decide --later [--until <time>]` (owner-attention-away): the owner will answer the current owner ask
+// later. Records state.pending only; `next` reads it and ignores it once it no longer holds.
+function deferAsk(root, { until } = {}) {
+  const state = readState(root);
+  if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
+  let time = null;
+  if (until !== undefined && until !== null) {
+    const parsed = Date.parse(String(until));
+    if (!Number.isFinite(parsed) || parsed <= Date.now()) fail("workflow", "--until must be a time in the future, such as 2026-10-16T09:00:00+08:00. Fix: give the time the owner named, or drop --until");
+    time = new Date(parsed).toISOString();
+  }
+  const ask = nextAction(root, { deferral: false });
+  if (!ask.askKey) fail("workflow", `--later defers a question the owner is asked, and next is ${ask.type === "ask" ? "an art director's pick" : `a ${ask.type}`} at ${ask.stage}. Fix: follow next`, { code: "WORKFLOW_NOT_READY" });
+  state.pending = { ask: { stage: ask.askKey.stage, section: ask.askKey.section }, basis: ask.askKey.basis, until: time, roles: (state.decisions?.roles || []).length, at: new Date().toISOString() };
+  writeState(root, state);
+  return { status: "deferred", stage: ask.stage, ...(ask.section ? { section: ask.section } : {}), until: time, next: nextAction(root) };
+}
+
+// Inside decide the owner may be answering a deferred ask: the ask is checked as next would ask it.
+const ANSWERING = { deferral: false };
+
 function decide(root, options = {}) {
   const state = readState(root);
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
@@ -309,7 +352,7 @@ function decide(root, options = {}) {
   // Anti-goals go with a web intake's confirmed playback or skip; elsewhere they would be dropped.
   if ([].concat(options.antiGoals ?? []).length && !(webRecord && stage === "intake")) fail("workflow", "--anti-goal applies only to a web intake playback or skip. Fix: follow next.");
   if (webRecord) {
-    webRecord(state, root, options, () => nextAction(root));
+    webRecord(state, root, options, () => nextAction(root, ANSWERING));
   } else if (stage === "intake") {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
     const collisions = fs.readdirSync(root).filter(name => name.toLowerCase() === "brief.md");
@@ -340,7 +383,7 @@ function decide(root, options = {}) {
   } else if (stage === "sample") {
     assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
     if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong with the sample; it becomes a rule");
-    const next = nextAction(root);
+    const next = nextAction(root, ANSWERING);
     if (next.stage !== "sample") fail("workflow", `Cannot record the sample verdict while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     // The verdict binds the sample bytes and the product record they were cut from.
     const binding = SUB_WORKFLOWS.film.sampleBinding(root);
@@ -359,7 +402,7 @@ function decide(root, options = {}) {
       reason(options.answer, "quote the owner's words of acceptance from the conversation; record only words they gave");
       if (/<[^<>]*>/.test(options.answer)) fail("workflow", "--answer still holds the placeholder. Fix: replace it with the owner's own words from the conversation");
     }
-    const next = nextAction(root);
+    const next = nextAction(root, ANSWERING);
     const rejectCurrent = options.verdict === "reject" && ["deliver", "done"].includes(next.stage) && REVIEW.finished(state);
     if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
       fail("workflow", `Cannot record review while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
@@ -375,7 +418,7 @@ function decide(root, options = {}) {
       invalidateCheckedEvidence(state);
     }
   } else if (stage === "deliver") {
-    const next = nextAction(root);
+    const next = nextAction(root, ANSWERING);
     const allowed = state.deliverable === "ui" ? ["work", "review", "done"] : ["deliver", "done"];
     if (!allowed.includes(next.stage)) fail("workflow", `Cannot record delivery while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     // The owner reviews what ui delivery names, so it must name something.
@@ -870,4 +913,4 @@ function decideVisualTask(changeRoot, options = {}) {
   return { status: failure ? "blocked" : "recorded", taskId: current.id, ...(failure ? { failure } : {}), visualAcceptance: "not-evaluated", next: nextVisualTask(changeRoot) };
 }
 
-module.exports = { DELIVERABLES, SCHEMA, STATE, TIERS, bindStateJobPlan, decide, decideVisualTask, diligence, initState, nextAction, nextVisualTask, projectJobPlan, readState, recordGate };
+module.exports = { DELIVERABLES, SCHEMA, STATE, TIERS, bindStateJobPlan, decide, decideVisualTask, deferAsk, diligence, initState, nextAction, nextVisualTask, projectJobPlan, readState, recordGate };

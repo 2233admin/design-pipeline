@@ -30,6 +30,21 @@ owner can keep any self-check as their own ask with `--keep` on the playback rec
 offers "review each section with me" as `--keep section`. The diligence statement shows each
 trade-off you asked beside the owner's answer.
 
+**When the owner says "not now".** Record it with `decide --root <project> --project-root <project>
+--later`, adding `--until <ISO time>` when they name one (`2026-10-16T09:00:00+08:00`); nothing else
+goes beside it. Until then `next` returns `blocked` (kind `owner`, exit 2) with the `deferred`
+question and its `record` command: do not ask again before the time unless the owner writes, and do
+not build on a guess about their answer. `next` asks again once the time passes, once what is asked
+or the page it is about changes, once another ask is current, or once any answer of the owner's is
+recorded; when the owner writes earlier, just ask and record the answer as usual. Your own records
+do not end it. This works the same for every deliverable.
+
+**Catching the owner up.** When you decided anything under your delegation or a check ran since the
+owner's last recorded answer, an owner ask carries `away` (`since`, `decided`, `checks`, `needed`)
+and its `first` starts with that: tell the owner in a line or two what happened while they were
+away, then ask the one question. Stale acceptances and their before/after pictures follow in the
+same `first`, as before.
+
 Every ask and self-check carries `language`: speak to the owner in the project's language (the
 brief's, else the one the owner writes in), translating the wording `next` returns while keeping
 commands, ids and file names unchanged.
