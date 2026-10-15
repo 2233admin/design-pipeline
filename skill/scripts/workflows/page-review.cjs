@@ -19,7 +19,7 @@ const KEYS = ["schema", "page", "captures", "ask", "verdict", "words", "comments
 // The ask a page review answers: the owner's section review or the final review. A delegated
 // self-check is a run, and a directed section faces the art director, so neither is offered.
 function currentAsk(root) {
-  const next = require("../workflow-core.cjs").nextAction(root);
+  const next = require("../workflow-core.cjs").nextAction(root, { deferral: false });
   if (next.deliverable !== "web" || next.type !== "ask" || next.director) return null;
   if (next.stage === "review") return { stage: "review", choice: null };
   if (next.stage === "build" && next.section) return { stage: "section", choice: next.section };

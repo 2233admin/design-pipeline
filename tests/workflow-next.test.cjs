@@ -3764,7 +3764,7 @@ test("the final review asked again after the owner's acceptance shows the accept
   fakeRefs(root);
   const again = nextAction(root);
   assert.equal(again.stage, "review");
-  assert.match(again.first, /^The owner accepted an earlier version of the page at /);
+  assert.match(again.first, /^Since the owner's last recorded answer .*Checks: interaction: passed. Tell the owner this in a line or two before asking. The owner accepted an earlier version of the page at /, "the catch-up comes first, then the stale acceptance");
   assert.match(again.first, /\(then\) beside evidence\/refs\.png \(now\).*the numbered page when the owner accepted it at \S+\. Let them compare/);
   assert.doesNotMatch(again.first, /look at the/);
   assert.ok(again.show.some(file => file.endsWith(`${accepted.desktop.png.slice(7)}.png`)));
@@ -4040,4 +4040,121 @@ test("a delegated section self-check has no review page", t => {
   fakeRefs(root);
   assert.doesNotMatch(`${nextAction(root).first || ""} ${nextAction(root).instruction}`, /review-page/);
   assert.throws(() => buildReviewPage(root), error => error.code === "WORKFLOW_NOT_READY" && /not asking the owner/.test(error.message));
+});
+
+// --- the owner's absence (owner-attention-away) ------------------------------------------------------
+
+const laterCli = (root, ...args) => runCli("decide", "--root", root, "--project-root", root, "--later", ...args);
+function refusesLater(root, args, code) {
+  const before = snapshot(root);
+  const result = laterCli(root, ...args);
+  assert.equal(result.status, 1, result.text);
+  assert.equal(result.json.error.code, code, result.text);
+  assert.deepEqual(snapshot(root), before, "a refused deferral changed the project");
+  return result.json.error;
+}
+const inAnHour = () => new Date(Date.now() + 3600000).toISOString();
+
+test("the final review answered later holds next until the owner answers", t => {
+  const root = atProbe(t);
+  passProbe(root);
+  assert.equal(nextAction(root).stage, "review");
+  const until = inAnHour();
+  const result = laterCli(root, "--until", until);
+  assert.equal(result.status, 0, result.text);
+  assert.equal(result.json.status, "deferred");
+  const held = nextCli(root);
+  assert.equal(held.type, "blocked");
+  assert.equal(held.blocker.kind, "owner");
+  assert.equal(held.stage, "review");
+  assert.equal(held.deferred.until, new Date(until).toISOString());
+  assert.match(held.deferred.record, /--stage review/);
+  assert.match(held.instruction, /do not build on a guess/);
+  assert.equal(runCli("next", "--root", root, "--project-root", root).status, 2, "a deferral is blocked, exit 2");
+  // The owner answers before the time: recorded as usual, and next moves on.
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right, ship it" });
+  assert.notEqual(nextAction(root).type, "blocked");
+});
+
+test("a deferral ends at its time, when the page changes, or once the owner answers anything", t => {
+  const root = atProbe(t);
+  passProbe(root);
+  decideLater(root);
+  assert.equal(nextAction(root).type, "blocked");
+  // Its time passes.
+  const state = readState(root);
+  state.pending.until = new Date(Date.now() - 1000).toISOString();
+  touch(root, ".design-pipeline/state.json", JSON.stringify(state, null, 2));
+  assert.equal(nextAction(root).type, "ask", "after its time the review is asked again");
+  // The page it is about changes.
+  decideLater(root);
+  fs.appendFileSync(path.join(root, "index.html"), "<!-- revised while the owner was away -->\n");
+  passProbe(root);
+  assert.equal(nextAction(root).type, "ask", "a changed page wakes it early");
+  // The agent's own record does not end it; an owner answer does.
+  decideLater(root);
+  const held = readState(root);
+  held.decisions.roles.push({ stage: "deliver", by: "agent", agent: "unspecified", at: new Date().toISOString() });
+  touch(root, ".design-pipeline/state.json", JSON.stringify(held, null, 2));
+  assert.equal(nextAction(root).type, "blocked", "an agent record does not end it");
+  held.decisions.roles.push({ stage: "section", by: "owner", verdict: "reject", answer: "The headline wraps", at: new Date().toISOString() });
+  touch(root, ".design-pipeline/state.json", JSON.stringify(held, null, 2));
+  assert.equal(nextAction(root).type, "ask", "an owner answer ends it");
+});
+function decideLater(root) {
+  const result = laterCli(root);
+  assert.equal(result.status, 0, result.text);
+}
+
+test("decide --later refuses when nothing is asked of the owner, or with an invalid time or flags", t => {
+  const root = approved(t, ["first-screen"]);
+  buildPage(root, ["first-screen"]);
+  assert.equal(nextAction(root).selfCheck, true);
+  assert.match(refusesLater(root, [], "WORKFLOW_NOT_READY").message, /defers a question the owner is asked/);
+  const review = atProbe(t);
+  passProbe(review);
+  for (const until of ["tomorrow", new Date(Date.now() - 60000).toISOString(), "2099-12-31", "2099-12-31T09:00:00"]) assert.match(refusesLater(review, ["--until", until], "CONTRACT_INVALID").message, /--until must be a time in the future/);
+  for (const flag of [["--stage", "review"], ["--verdict", "accept"], ["--answer", "later"], ["--by", "owner"], ["--change-root", review]]) assert.match(refusesLater(review, flag, "CONTRACT_INVALID").message, new RegExp(`${flag[0]} cannot go beside it`));
+});
+
+test("an owner ask catches the owner up on what the agent decided and checked since their last answer", t => {
+  const root = atProbe(t, ["first-screen", "proof"]);
+  passProbe(root);
+  const review = nextAction(root);
+  assert.equal(review.stage, "review");
+  assert.ok(review.away, "the review carries a catch-up");
+  assert.ok(review.away.decided.some(line => /^Section review: accept first-screen/.test(line)), review.away.decided.join(" | "));
+  assert.ok(review.away.decided.some(line => /^Section review: accept proof/.test(line)));
+  assert.equal(review.away.decided.length, 2, "only what the agent decided after the owner approved the description");
+  assert.deepEqual(review.away.checks, ["interaction: passed"]);
+  assert.equal(review.away.needed, review.question);
+  assert.match(review.first, /^Since the owner's last recorded answer \(/);
+  // Once the owner's answer is the latest record and no check ran since, there is nothing to catch up on.
+  decide(root, { by: "owner", stage: "review", verdict: "reject", answer: "The proof quotes need names" });
+  const state = readState(root);
+  assert.equal(nextAction(root).away, undefined, `no catch-up right after the owner's answer: ${JSON.stringify(state.decisions.roles.at(-1))}`);
+});
+
+test("there is no catch-up before the owner's first recorded answer", t => {
+  const root = webProject(t);
+  const intake = nextAction(root);
+  assert.equal(intake.type, "ask");
+  assert.equal(intake.away, undefined);
+});
+
+test("a deferred variants pick wakes when the variants page it shows changes, and --until needs --later", t => {
+  const root = webProject(t);
+  confirmPlayback(root);
+  decide(root, { by: "owner", stage: "reference", answer: "none" });
+  writeVariants(root);
+  assert.equal(nextAction(root).stage, "concepts");
+  assert.equal(laterCli(root).status, 0);
+  assert.equal(nextAction(root).type, "blocked");
+  fs.appendFileSync(path.join(root, "concepts.html"), "<!-- a redone variant -->\n");
+  assert.equal(nextAction(root).type, "ask", "the page the pick is about changed");
+  const before = snapshot(root);
+  const result = runCli("decide", "--root", root, "--project-root", root, "--by", "owner", "--stage", "concept", "--choice", "A", "--until", inAnHour());
+  assert.equal(result.status, 1, result.text);
+  assert.match(result.json.error.message, /--until .* goes only with --later/);
+  assert.deepEqual(snapshot(root), before);
 });

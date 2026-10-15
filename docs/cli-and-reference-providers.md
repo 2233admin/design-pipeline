@@ -101,6 +101,8 @@ with `--answer`) cites those references on a web section or final-review rejecti
 of the page with a click-to-comment overlay for the owner's current section or final review, and
 `decide --page-review <file>` records the block the owner submits there as their verdict
 (`workflow-web.md#element-references`).
+`decide --later [--until <time>]` records that the owner will answer the current owner ask later;
+`next` then returns `blocked` (kind `owner`) with the deferred question until it no longer holds.
 
 Design-tool hosts use the same rule: Figma, Penpot, Onlook, or another host produces a
 `design-pipeline.design-tool-receipt.v1`; the pipeline validates the receipt and remains usable with

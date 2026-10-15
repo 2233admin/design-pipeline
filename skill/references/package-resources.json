@@ -160,6 +160,7 @@
     "scripts/workflows/rules.cjs",
     "scripts/workflows/page-compare.cjs",
     "scripts/workflows/page-review.cjs",
+    "scripts/workflows/away.cjs",
     "tools/page-review/overlay.js",
     "references/workflow-film.md",
     "references/qa-checklist.md",

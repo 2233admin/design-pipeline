@@ -143,7 +143,7 @@ const {
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later"]);
 const REPEATABLE_OPTIONS = new Set(["--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -155,7 +155,7 @@ const KNOWN_OPTIONS = new Set([
   "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan", "--bundle",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
-  "--start", "--end", "--fps", "--max-frames", "--by", "--page-review", "--assisted-by", "--tradeoff", "--revision", "--affects",
+  "--start", "--end", "--fps", "--max-frames", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
@@ -431,6 +431,7 @@ function publicHelp() {
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model> --assisted-by <tool-and-model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
     "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|concept|components|description|section|sample|review|deliver --by owner|agent [--delegate <checkpoint> ...] [--keep <checkpoint> ...] [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>] [--tradeoff <text>] [--scope object|project] [--promote <from> ...] [--revision bytes|commitment] [--affects <ids>|all|none] [--ref <reference> ...]",
     "    components requires --choice <project|github|index|discover|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer; discover lets the agent find open-source GitHub repositories and record each with a pinned revision and license evidence; on web, --verdict reject --answer records a decision-round correction as a rule bound to the result under review",
+    "    --later [--until <ISO time with offset, e.g. 2026-10-16T09:00:00+08:00>] records that the owner will answer the current owner ask later (no other decide flag beside it): until then next returns blocked (kind owner, exit 2) with the deferred ask; it asks again after the time, when what is asked or the page it is about changes, when another ask is current, or once the owner's answer is recorded",
     "    --page-review <file> records the block the owner submitted on evidence/review.html as their verdict (stage, choice, verdict, words and references come from the block; only --evidence, --scope and --promote may go beside it); refused unless it was given on the current page and capture for the current ask; the block is kept under evidence/page-review/",
     "    --ref <reference> (repeatable, with --answer) cites a numbered element from evidence/refs.json (such as hero-2) or evidence/refs-mobile.json (m:hero-2) on a web section or final-review rejection; it is refused unless the reference is in the current capture",
     "    web: intake records the confirmed playback (--verdict accept), a correction (--verdict reject) or a stated skip (--choice skip), each playback or skip with repeatable --anti-goal <text> rules; concept takes --choice A|B|C, several comma-separated to combine with --answer, or --verdict reject; description takes --verdict accept --choice <the ids of brief.md's ## Sections list, in order> or --verdict reject, and a re-approval of a changed description adds --revision bytes (wording only) or --revision commitment --affects <ids|all|none>; section takes --choice <section id> --verdict accept|reject with --answer and/or repeatable --evidence <runtime-review feedback record>; every web reject becomes a rule bound to its section or to the result under review (--scope project keeps it for the project; --promote <from> on the owner's final review keeps a bound rule); components, description and section are the agent's self-checks by default, and an owner's answer to a trade-off asked during one is recorded --by owner with --tradeoff <what was asked>",
@@ -2459,11 +2460,20 @@ const COMMANDS = {
   },
   decide: {
     run: ({ parsed, root }) => {
+      // "Not now" defers the project's owner ask and never goes with a visual task's decision.
+      if (option(parsed, "--later") === true && option(parsed, "--change-root")) fail("workflow", "--later defers the current owner ask, so --change-root cannot go beside it. Fix: drop --change-root");
       if (option(parsed, "--change-root")) {
         const result = workflow.decideVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan"), choice: option(parsed, "--choice"), artifact: option(parsed, "--artifact"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), chrome: option(parsed, "--chrome"), puppeteerModule: option(parsed, "--puppeteer-module") });
         return { result, exitCode: result.status === "blocked" ? 2 : 0 };
       }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
+      // "Not now": defers the owner ask next would return; nothing else may go beside it.
+      if (option(parsed, "--later") === true) {
+        const conflicting = [...parsed.options.keys()].find(flag => !["--root", "--project-root", "--later", "--until", "--json"].includes(flag));
+        if (conflicting) fail("workflow", `--later defers the current owner ask as it is, so ${conflicting} cannot go beside it. Fix: drop ${conflicting}`);
+        return { result: workflow.deferAsk(project, { until: option(parsed, "--until") }), exitCode: 0 };
+      }
+      if (option(parsed, "--until") !== null) fail("workflow", "--until is the time a deferred ask waits for, so it goes only with --later. Fix: add --later, or drop --until");
       // A block from the review page decides the stage, verdict, words, references and author itself.
       if (option(parsed, "--page-review")) {
         // Only --promote, --scope and --evidence add to the block; anything else would be dropped or decided by it.

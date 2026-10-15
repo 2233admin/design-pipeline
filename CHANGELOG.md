@@ -4,6 +4,10 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- The owner can answer later, and is caught up when asked again (change `owner-attention-away`, phase 4a of `design-owner-attention`). `decide --later [--until <time>]` records that the owner will answer the current owner ask later: until the time, a change to what is asked or the page it is about, another current ask, or the owner's next recorded answer, `next` returns `blocked` (kind `owner`, exit 2) with the deferred question, so the agent neither asks again nor builds on a guess. An owner ask now carries `away` when the agent decided anything or a check ran since the owner's last recorded answer, and its `first` tells the agent to say so in a line or two before asking.
+
 ## [0.12.0] - 2026-10-15
 
 ### Changed
