@@ -706,18 +706,36 @@ function reviewedCaptures(root) {
 }
 
 // Copies each named screenshot to evidence/reviewed/<hex>.png (content-addressed, so a picture is stored
-// once and its name proves its bytes). A screenshot that no longer has the named bytes fails the call.
+// once and its name proves its bytes). All or nothing: every copy is staged from the bytes that were
+// hashed before any is published, and a failure removes what this call staged or published, so a
+// refused verdict leaves evidence/reviewed/ as it was.
 function storeReviewed(root, captures) {
-  for (const [viewport, hash] of Object.entries(captures || {})) {
-    const rel = reviewedFile(hash);
-    if (fileSha(root, rel) === hash) continue;
-    const source = profiles()[viewport].png;
-    if (fileSha(root, source) !== hash) fail("workflow", `${source} changed while the verdict was recorded. Fix: run next again`, { code: "WORKFLOW_NOT_READY" });
-    const target = resolveInside(root, rel, "reviewed screenshot", { scope: "workflow" });
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    const temp = `${target}.${process.pid}.tmp`;
-    fs.copyFileSync(resolveInside(root, source, "numbered screenshot", { scope: "workflow", mustExist: true }), temp);
-    fs.renameSync(temp, target);
+  const staged = [];
+  try {
+    for (const [viewport, hash] of Object.entries(captures || {})) {
+      const rel = reviewedFile(hash);
+      if (fileSha(root, rel) === hash) continue;
+      const source = profiles()[viewport].png;
+      const bytes = projectFile(root, source);
+      if (!bytes || "sha256:" + sha256(bytes) !== hash) fail("workflow", `${source} changed while the verdict was recorded. Fix: run next again`, { code: "WORKFLOW_NOT_READY" });
+      const target = resolveInside(root, rel, "reviewed screenshot", { scope: "workflow" });
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      const temp = `${target}.${process.pid}.tmp`;
+      staged.push({ temp, target });
+      fs.writeFileSync(temp, bytes);
+    }
+    const published = [];
+    try {
+      for (const item of staged) {
+        fs.renameSync(item.temp, item.target);
+        published.push(item.target);
+      }
+    } catch (error) {
+      for (const file of published) fs.rmSync(file, { force: true });
+      throw error;
+    }
+  } finally {
+    for (const item of staged) fs.rmSync(item.temp, { force: true });
   }
 }
 

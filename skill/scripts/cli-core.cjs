@@ -878,14 +878,7 @@ function evidenceRefsCommand(parsed, root) {
       const record = captureViewport(parsed, projectRoot, viewport, rel);
       const pngBytes = record.pngBytes;
       delete record.pngBytes;
-      fs.mkdirSync(path.dirname(jsonFile), { recursive: true });
-      const write = (file, data) => {
-        const temp = `${file}.${process.pid}.tmp`;
-        fs.writeFileSync(temp, data);
-        fs.renameSync(temp, file);
-      };
-      write(pngFile, pngBytes);
-      write(jsonFile, `${JSON.stringify(record, null, 2)}\n`);
+      publishCapture(pngFile, pngBytes, jsonFile, `${JSON.stringify(record, null, 2)}\n`);
       captures.push({ viewport, status: "captured", refs: record.refs.length, json: rel(jsonFile), png: rel(pngFile) });
     } catch (error) {
       failures.push({ viewport, error });
@@ -897,6 +890,31 @@ function evidenceRefsCommand(parsed, root) {
     fail("page refs", `the ${failures.map((item) => item.viewport).join(" and ")} capture failed${written}: ${first.error.message.replace(/^(?:(?:cli|page refs): )+/, "")}`, { code: first.error.code || "KERNEL_FAILED" });
   }
   return { result: { status: captures.every((item) => item.status === "current") ? "current" : "captured", captures }, exitCode: 0 };
+}
+
+// Publishes one viewport's png and json together: both are staged first, the png goes in before the
+// json (so a refs file on disk is always backed by its picture), and a failure puts the earlier png
+// back and removes the staged files, so a failed viewport leaves its files as they were.
+function publishCapture(pngFile, pngBytes, jsonFile, jsonText) {
+  fs.mkdirSync(path.dirname(jsonFile), { recursive: true });
+  const pngTemp = `${pngFile}.${process.pid}.tmp`;
+  const jsonTemp = `${jsonFile}.${process.pid}.tmp`;
+  const previous = fs.existsSync(pngFile) && fs.statSync(pngFile).isFile() ? fs.readFileSync(pngFile) : null;
+  try {
+    fs.writeFileSync(pngTemp, pngBytes);
+    fs.writeFileSync(jsonTemp, jsonText);
+    fs.renameSync(pngTemp, pngFile);
+    try {
+      fs.renameSync(jsonTemp, jsonFile);
+    } catch (error) {
+      if (previous) fs.writeFileSync(pngFile, previous);
+      else fs.rmSync(pngFile, { force: true });
+      throw error;
+    }
+  } finally {
+    fs.rmSync(pngTemp, { force: true });
+    fs.rmSync(jsonTemp, { force: true });
+  }
 }
 
 // One viewport's capture, checked: the page did not move, and every local file the browser loaded inside

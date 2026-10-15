@@ -304,6 +304,19 @@ test("a phone capture that fails keeps the desktop one", { skip }, async () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+// Codex review on #141: a viewport whose files cannot be published leaves them as they were.
+test("a viewport that cannot publish its files writes neither", { skip }, async () => {
+  const dir = project("plain.html");
+  fs.mkdirSync(path.join(dir, "evidence", "refs-mobile.json"), { recursive: true });
+  const result = refs(dir);
+  assert.equal(result.status, 1);
+  assert.match(result.output?.error?.message || result.stderr, /mobile capture failed \(desktop captured\)/);
+  assert.ok(fs.existsSync(path.join(dir, "evidence", "refs.png")));
+  assert.ok(!fs.existsSync(path.join(dir, "evidence", "refs-mobile.png")), "the png is taken back");
+  assert.deepEqual(fs.readdirSync(path.join(dir, "evidence")).filter((name) => name.endsWith(".tmp")), []);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 // CodeRabbit review on #138: the resource wait has one deadline, and its expiry fails the capture.
 test("media that never finishes loading fails the capture at the deadline", { skip }, async () => {
   const { awaitResources } = require("../skill/scripts/page-refs-core.cjs");

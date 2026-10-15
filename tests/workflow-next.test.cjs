@@ -3763,3 +3763,17 @@ test("the final review asked again after the owner's acceptance shows the accept
   assert.ok(again.show.some(file => file.endsWith(`${accepted.desktop.slice(7)}.png`)));
 });
 
+// Codex review on #141: the copies are all or nothing, so a verdict that fails while storing them
+// leaves evidence/reviewed/ and the state as they were.
+test("a verdict whose screenshot copy fails stores no copy and records nothing", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  // The phone copy's name is taken by a directory, so its publication fails after the desktop one.
+  const blocked = `evidence/reviewed/${fileHash(root, "evidence/refs-mobile.png").slice(7)}.png`;
+  touch(root, `${blocked}/keep.txt`, "in the way");
+  const before = snapshot(root);
+  assert.throws(() => decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small" }));
+  assert.deepEqual(snapshot(root), before, "no copy, no temp file and no state change");
+});
+

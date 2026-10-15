@@ -23,7 +23,12 @@
 
 ## 5. Integration
 
-- [ ] 5.1 `npm test` and `npm run specs:check` pass locally (the ff-tracking-hud ffmpeg sound test fails only in this sandbox); verify both outputs.
+- [x] 5.1 `npm test` and `npm run specs:check` pass locally (the ff-tracking-hud ffmpeg sound test fails only in this sandbox); verify both outputs.
+
+## 6. Review follow-up (PR #141)
+
+- [x] 6.1 Codex: storing the reviewed copies is all or nothing (staged from the hashed bytes, published together, removed on failure); verify in `workflow-next` that a copy whose name is taken by a directory fails the verdict with no file or state change.
+- [x] 6.2 Codex: a viewport's png and json are staged together and the png is put back when the json cannot be published; verify with a browser test whose phone json path is a directory.
 
 ## Workflow follow-up
 
