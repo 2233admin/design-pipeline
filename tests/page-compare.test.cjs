@@ -93,3 +93,14 @@ test("a moved section whose elements changed place inside it is changed", () => 
   assert.equal(result.sectionChanged, true, "padding above the heading grew by 30px");
   assert.deepEqual(summary(result), [["changed", "proof-1", "proof-1"]]);
 });
+
+// Codex review on #142: a repeated section id does not record which region an element sits in, so its
+// elements' places are not checked against the first region.
+test("elements of a repeated section are not measured against its first region", () => {
+  const region = (y) => ({ id: "card", box: { x: 0, y, width: 400, height: 200 }, pixels: `R${y}`, palette: "fff:100" });
+  const item = (ref, y) => ({ ...el(ref, "h3", ref, "T", "card"), box: { x: 10, y, width: 100, height: 20 } });
+  const before = { refs: [item("card-1", 10), item("card-2", 310)], sections: [region(0), region(300)] };
+  // Content inserted between the two regions pushes the second one down; nothing in either changed.
+  const after = { refs: [item("card-1", 10), item("card-2", 410)], sections: [region(0), region(400)] };
+  assert.deepEqual(compareCaptures(before, after, "card").changes.filter((change) => change.before), []);
+});

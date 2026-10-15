@@ -110,7 +110,9 @@ function compareCaptures(before, after, scope = null) {
     if (id !== null) {
       const was = before.sections.filter(item => item.id === id);
       const now = after.sections.filter(item => item.id === id);
-      [wasRegion, nowRegion] = [was[0], now[0]];
+      // A repeated section id has several regions; an element's own region is not recorded, so places are
+      // checked only for a section that occurs once on both sides.
+      [wasRegion, nowRegion] = was.length === 1 && now.length === 1 ? [was[0], now[0]] : [null, null];
       if (!was.length || !now.length) {
         if (was.length || now.length) {
           changes.push({ change: !was.length ? "added" : "removed", section: id, before: null, after: null });

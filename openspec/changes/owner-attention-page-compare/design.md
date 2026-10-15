@@ -41,8 +41,9 @@ See proposal.md for why. Current code (after `owner-attention-mobile-compare`):
   section, as for references). `palette` is the set of colours (4 bits a channel) covering at least 1% of
   the box, each with its share in 5% steps, so a region that keeps its colours but changes how much of the
   box they cover is still seen.
-- **Places inside a section.** Each paired element inside a section must also keep its offset from the section's
-  box (within 1 px for rounding), so a moved section whose padding, gap or order changed is seen even when every
+- **Places inside a section.** Each paired element inside a section that occurs once on both sides must also
+  keep its offset from the section's box (within 1 px for rounding; a repeated id does not record which of its
+  regions holds an element, so places are not checked there), so a moved section whose padding, gap or order changed is seen even when every
   element looks the same. Outside sections only the look counts, since content above moves them.
 - **Moved sections.** Checked: when content above pushes a section down by a fractional amount, each element
   inside keeps its fingerprint (each is read at its own rounded box) but the section's crop does not, since
@@ -56,6 +57,10 @@ See proposal.md for why. Current code (after `owner-attention-mobile-compare`):
 - **Why in the browser:** the skill has no PNG decoder; the browser that took the screenshot decodes it.
 - **Determinism:** checked in this sandbox: two captures of the same page give identical fingerprints for every
   element and section (motion frozen, media loaded, as 3a requires).
+- **One frame.** A script's own timers are not frozen, so after the numbered screenshot the badges are removed
+  and the page is screenshot again: when it no longer looks exactly like the clean screenshot the fingerprints
+  came from, the capture keeps its numbers but drops its fingerprints (not comparable), rather than bind
+  fingerprints of one frame to a picture of another.
 - **Schema:** the page-refs v1 document gains optional fields. `refsDigest` binds `{refs, sections}` when
   `sections` is present, so an edited section fingerprint makes the capture stale as an edited reference
   does; a capture from before binds `refs` alone and stays current.

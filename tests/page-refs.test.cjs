@@ -427,3 +427,17 @@ test("badges land on their elements when the body is scaled", { skip }, async ()
     await browser.close();
   }
 });
+
+// Codex review on #142: a page a script keeps changing is numbered without fingerprints, since the frame
+// fingerprinted may not be the frame shown.
+test("a page that keeps moving under a script timer is captured without fingerprints", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "page-refs-"));
+  fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><body><section data-section="hero"><h1 id="tick">0</h1></section>
+<script>let n = 0; setInterval(() => { document.getElementById("tick").style.marginLeft = (++n % 50) + "px"; }, 30);</script></body></html>`);
+  const result = refs(dir);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const doc = readRefs(dir);
+  assert.ok(doc.refs.length && doc.refs.every((item) => !("pixels" in item)), "no fingerprints");
+  assert.equal(doc.sections, undefined);
+  fs.rmSync(dir, { recursive: true, force: true });
+});

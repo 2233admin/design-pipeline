@@ -34,6 +34,8 @@
 
 - [x] 6.5 Independent review: inside a moved section each element must keep its place (±1 px), so a layout change that keeps every element's look is seen; a shift under half a pixel counts as a move; a change at one viewport is listed even while another cannot be compared; the reopened ask says whether a capture would lift it; a page too large to fingerprint is captured without fingerprints (not comparable); the current captures are read once per `sectionProgress`; verify in `page-compare` and `workflow-next`.
 
+- [x] 6.6 Codex: fingerprints describe the shown frame only if a clean screenshot after the numbered one matches the one they came from, else the capture drops them; places are checked only for a section id that occurs once; verify with a browser test of a page moved by a timer, and in `page-compare`.
+
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.

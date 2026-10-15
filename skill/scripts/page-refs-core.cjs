@@ -375,10 +375,21 @@ async function captureRefs(projectRoot, options = {}) {
     } finally {
       await blank.close();
     }
-    const refs = pixels ? measured.map((item, index) => ({ ...item, pixels: pixels[index].pixels })) : measured;
-    const sections = pixels ? regions.map((item, index) => ({ ...item, ...pixels[measured.length + index] })) : undefined;
+    let refs = pixels ? measured.map((item, index) => ({ ...item, pixels: pixels[index].pixels })) : measured;
+    let sections = pixels ? regions.map((item, index) => ({ ...item, ...pixels[measured.length + index] })) : undefined;
     if (await page.evaluate(drawBadges, refs) === "root-transformed") fail(SCOPE, "the page transforms or zooms its <html> element, so badges cannot be placed on its elements. Fix: ask the owner to name elements by their text, label or place");
     const png = Buffer.from(await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true }));
+    // The fingerprints describe the frame the owner sees only if the page did not move between the clean
+    // screenshot and the numbered one (a script's own timers are not frozen): without the badges, the page
+    // must look exactly as it did. A page still moving is numbered without fingerprints (not comparable).
+    if (sections) {
+      await page.evaluate(() => document.querySelector("[data-page-refs-layer]")?.remove());
+      const again = await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true, encoding: "base64" });
+      if (again !== clean) {
+        refs = measured;
+        sections = undefined;
+      }
+    }
     const identity = await browserIdentity(browser, executablePath);
     const moved = [...loaded.values()].find((item) => fileHash(item.file) !== item.hash);
     if (moved) fail(SCOPE, `${path.basename(moved.file)}, which the page loaded, changed during the capture. Fix: stop editing the page and its files, then run \`evidence refs\` again`);
