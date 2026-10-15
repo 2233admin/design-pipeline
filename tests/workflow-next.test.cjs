@@ -3846,6 +3846,7 @@ test("an accepted section the comparison finds changed is asked again with the c
   const changed = nextAction(root);
   assert.equal(changed.stage, "build");
   assert.equal(changed.section, "first-screen");
+  assert.match(changed.question, /\(1 of 2\)/, "a reopened first section is the first of two again");
   assert.match(changed.first, /the page changed since, and comparing the captures found these changed in it: first-screen-2 a "Reserve" \(changed\); m:first-screen-2 a "Reserve" \(changed\)/);
   assert.deepEqual(changed.pageChanges.map(item => [item.change, item.after.ref]), [["changed", "first-screen-2"], ["changed", "m:first-screen-2"]]);
   assert.match(changed.first, /\(then\) beside evidence\/refs\.png \(now\)/, "the accepted pictures are shown beside the new ones");

@@ -571,7 +571,8 @@ function sectionProgress(state, root) {
   for (const id of approval.sections) {
     const latest = records.filter(item => item.section === id).at(-1);
     const tier = pageTier(root, latest, current);
-    if (tier) return { approval, accepted: accepted.filter(item => item !== id), current: id, built: true, latest, tier };
+    // Only the sections before it count as accepted: later ones are checked after it.
+    if (tier) return { approval, accepted: approval.sections.slice(0, approval.sections.indexOf(id)), current: id, built: true, latest, tier };
   }
   return { approval, accepted, current: null };
 }
