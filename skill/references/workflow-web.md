@@ -773,11 +773,25 @@ the owner accepted it comes back to this review, and `first` says they accepted 
   to name elements in words; only `--ref` needs a capture. Clicking elements on the page is a
   planned follow-up.
 - **Before and after.** When the owner (or the art director, at a section) records a section or
-  final-review verdict, each numbered screenshot current at that moment is copied to
-  `evidence/reviewed/<sha256>.png` and named on the record (`captures`). When the same section or
-  the final review is asked again and the new screenshot differs, `next` shows the copy (then)
-  beside the new one (now) and says when and how that verdict went. Both are whole-page pictures,
-  not a diff. A self-check keeps nothing; a deleted or edited copy is not shown.
+  final-review verdict, each numbered screenshot current at that moment, and its reference list, is
+  copied to `evidence/reviewed/<sha256>.png|.json` and named on the record (`captures`). When the
+  same section or the final review is asked again and the new screenshot differs, `next` shows the
+  copy (then) beside the new one (now) and says when and how that verdict went. A self-check keeps
+  nothing; a deleted or edited copy is not shown.
+- **What changed.** Each capture also records a fingerprint of the pixels inside every numbered
+  element and every section (from a clean screenshot, before the badges), each section's box and its
+  palette. Comparing two captures pairs elements within each section by tag and text in order, as a
+  text diff pairs lines, so content that moved is still paired: a pair that looks different is
+  changed, an unpaired one added or removed, and a section that looks different with no numbered
+  element changed is listed on its own. A section that moved is compared by its size and palette,
+  since its contents round to new pixels when it moves by a fraction of a pixel.
+- **The page tier.** Once every section is built and accepted, a section the owner (or the art
+  director) accepted with kept captures stays accepted after the page changes only while comparing
+  those captures with current ones finds it unchanged at every kept viewport. Otherwise `next` asks
+  about it again, listing the changed elements (`pageChanges`), or, without a current capture, saying
+  it cannot be compared until the page is captured. Self-checked sections keep the key rule. The
+  final review asked again after the owner's acceptance lists what changed since. The comparison
+  never accepts anything: it only keeps a person's acceptance standing.
 
 ## deliver
 

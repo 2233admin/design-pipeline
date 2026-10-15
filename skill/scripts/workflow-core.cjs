@@ -176,6 +176,7 @@ function nextAction(root) {
       const compare = SUB_WORKFLOWS.web.compareStep(state, root, stage.id === "review" ? "review" : action.section);
       action.first = [action.first, refs.first, compare.first].filter(Boolean).join(" ");
       action.show = [...(action.show || []), ...refs.show, ...compare.show];
+      if (compare.pageChanges && !action.pageChanges) action.pageChanges = compare.pageChanges;
     }
     // Visual picks go to the art director: the concept pick, a sample, a built web section. Final
     // acceptance never does; it stays with the owner.

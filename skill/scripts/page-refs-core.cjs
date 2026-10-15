@@ -162,6 +162,67 @@ function measureRefs(sectionIdSource, textLimit) {
   return found;
 }
 
+// Runs in the page: each `data-section` region with a valid id, in document order, with its box in
+// document coordinates (OpenSpec change owner-attention-page-compare).
+function measureSections(sectionIdSource) {
+  const sectionId = new RegExp(sectionIdSource);
+  return [...document.querySelectorAll("[data-section]")]
+    .filter((element) => sectionId.test(element.getAttribute("data-section")))
+    .map((element) => {
+      const box = element.getBoundingClientRect();
+      return {
+        id: element.getAttribute("data-section"),
+        box: { x: Math.round(box.x + window.scrollX), y: Math.round(box.y + window.scrollY), width: Math.round(box.width), height: Math.round(box.height) },
+      };
+    });
+}
+
+// Runs on a blank page: a fingerprint of the pixels inside each box of the clean (unbadged) full-page
+// screenshot, so a later capture can tell which elements look different wherever they moved. Two
+// 32-bit FNV-1a hashes over the box size and its RGBA bytes; null for a box outside the picture. With
+// it, the box's palette: the colours (4 bits a channel) covering at least 1% of it, each with its share
+// in 5% steps, which a move by a fraction of a pixel does not change, for sections whose contents round
+// to new pixels when they move.
+async function regionPixels(base64, boxes) {
+  const blob = await (await fetch(`data:image/png;base64,${base64}`)).blob();
+  const bitmap = await createImageBitmap(blob);
+  // Read in slices, so a box taller than the browser's largest canvas is still read whole.
+  const SLICE = 2048;
+  const canvas = new OffscreenCanvas(1, 1);
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  return boxes.map((box) => {
+    const x = Math.max(0, box.x);
+    const y = Math.max(0, box.y);
+    const width = Math.min(box.x + box.width, bitmap.width) - x;
+    const height = Math.min(box.y + box.height, bitmap.height) - y;
+    if (width < 1 || height < 1) return { pixels: null, palette: null };
+    const buckets = new Uint32Array(4096);
+    let a = 0x811c9dc5 ^ width;
+    let b = 0x01000193 ^ height;
+    for (let top = 0; top < height; top += SLICE) {
+      const rows = Math.min(SLICE, height - top);
+      if (canvas.width !== width || canvas.height !== rows) {
+        canvas.width = width;
+        canvas.height = rows;
+      }
+      context.clearRect(0, 0, width, rows);
+      context.drawImage(bitmap, x, y + top, width, rows, 0, 0, width, rows);
+      const data = context.getImageData(0, 0, width, rows).data;
+      for (let index = 0; index < data.length; index += 1) {
+        a = Math.imul(a ^ data[index], 0x01000193);
+        b = Math.imul(b ^ data[index], 0x5bd1e995) ^ (b >>> 15);
+      }
+      for (let index = 0; index < data.length; index += 4) buckets[((data[index] >> 4) << 8) | ((data[index + 1] >> 4) << 4) | (data[index + 2] >> 4)] += 1;
+    }
+    const floor = width * height * 0.01;
+    const palette = [];
+    for (let bucket = 0; bucket < buckets.length; bucket += 1) {
+      if (buckets[bucket] >= floor) palette.push(`${bucket.toString(16).padStart(3, "0")}:${Math.round((buckets[bucket] / (width * height)) * 20) * 5}`);
+    }
+    return { pixels: `${width}x${height}:${(a >>> 0).toString(16).padStart(8, "0")}${(b >>> 0).toString(16).padStart(8, "0")}`, palette: palette.join(",") };
+  });
+}
+
 // Runs in the page, after measuring: one absolutely positioned layer in a shadow root, a badge at the
 // top-left of each element in document coordinates. It is added last so no selector depends on it.
 function drawBadges(refs) {
@@ -298,16 +359,44 @@ async function captureRefs(projectRoot, options = {}) {
     await awaitResources(page);
     await freezeMotion(page);
     // The prefix goes on before the badges are drawn, so the picture shows exactly what is cited.
-    const refs = (await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT)).map((item) => ({ ...item, ref: profile.prefix + item.ref }));
+    const measured = (await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT)).map((item) => ({ ...item, ref: profile.prefix + item.ref }));
+    const regions = await page.evaluate(measureSections, SECTION_ID.source);
+    // Each element and section carries a fingerprint of how it looks, taken from a clean screenshot
+    // before any badge is drawn, so two captures can be compared element by element.
+    const clean = await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true, encoding: "base64" });
+    const blank = await browser.newPage();
+    let pixels = null;
+    try {
+      pixels = await blank.evaluate(regionPixels, clean, [...measured, ...regions].map((item) => item.box));
+    } catch {
+      // A page too large to decode still gets its numbers; without fingerprints its captures are not
+      // comparable (no `pixels`, no `sections`), which reopens rather than hides a change.
+      pixels = null;
+    } finally {
+      await blank.close();
+    }
+    let refs = pixels ? measured.map((item, index) => ({ ...item, pixels: pixels[index].pixels })) : measured;
+    let sections = pixels ? regions.map((item, index) => ({ ...item, ...pixels[measured.length + index] })) : undefined;
     if (await page.evaluate(drawBadges, refs) === "root-transformed") fail(SCOPE, "the page transforms or zooms its <html> element, so badges cannot be placed on its elements. Fix: ask the owner to name elements by their text, label or place");
     const png = Buffer.from(await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true }));
+    // The fingerprints describe the frame the owner sees only if the page did not move between the clean
+    // screenshot and the numbered one (a script's own timers are not frozen): without the badges, the page
+    // must look exactly as it did. A page still moving is numbered without fingerprints (not comparable).
+    if (sections) {
+      await page.evaluate(() => document.querySelector("[data-page-refs-layer]")?.remove());
+      const again = await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true, encoding: "base64" });
+      if (again !== clean) {
+        refs = measured;
+        sections = undefined;
+      }
+    }
     const identity = await browserIdentity(browser, executablePath);
     const moved = [...loaded.values()].find((item) => fileHash(item.file) !== item.hash);
     if (moved) fail(SCOPE, `${path.basename(moved.file)}, which the page loaded, changed during the capture. Fix: stop editing the page and its files, then run \`evidence refs\` again`);
     const after = digest(projectRoot);
     if (before !== after) fail(SCOPE, "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again");
     return {
-      doc: { schema: REFS_SCHEMA, page: after, viewport: { width: profile.viewport.width, height: profile.viewport.height, ...(profile.viewport.isMobile ? { mobile: true } : {}) }, browser: identity, capturedAt: new Date().toISOString(), refs },
+      doc: { schema: REFS_SCHEMA, page: after, viewport: { width: profile.viewport.width, height: profile.viewport.height, ...(profile.viewport.isMobile ? { mobile: true } : {}) }, browser: identity, capturedAt: new Date().toISOString(), refs, ...(sections ? { sections } : {}) },
       png,
       loaded: Object.fromEntries([...loaded].filter(([, item]) => item.hash !== undefined).map(([url, item]) => [url, item.hash])),
     };
@@ -316,4 +405,4 @@ async function captureRefs(projectRoot, options = {}) {
   }
 }
 
-module.exports = { PROFILES, REFS_SCHEMA, SECTION_ID, VIEWPORT, awaitResources, captureRefs, freezeMotion, drawBadges, measureRefs, refsPuppeteer, settle };
+module.exports = { PROFILES, REFS_SCHEMA, SECTION_ID, VIEWPORT, awaitResources, captureRefs, freezeMotion, drawBadges, measureRefs, measureSections, refsPuppeteer, regionPixels, settle };

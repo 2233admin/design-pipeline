@@ -953,7 +953,7 @@ function captureViewport(parsed, projectRoot, viewport, rel) {
     lineage[rel(file)] = hash;
   }
   const pngBytes = Buffer.from(kernel.value.png, "base64");
-  return { ...doc, lineage, png: "sha256:" + sha256(pngBytes), refsDigest: "sha256:" + sha256(canonicalJson(doc.refs)), pngBytes };
+  return { ...doc, lineage, png: "sha256:" + sha256(pngBytes), refsDigest: "sha256:" + sha256(canonicalJson(Array.isArray(doc.sections) ? { refs: doc.refs, sections: doc.sections } : doc.refs)), pngBytes };
 }
 
 function evidenceCommand(parsed, root, action) {
