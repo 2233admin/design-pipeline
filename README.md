@@ -113,7 +113,7 @@ CSS 写作和审查内置 [Good CSS](skill/references/good-css.md)：完整保�
 
 ## 从 GitHub Release 安装
 
-如果不想克隆仓库，直接下载最新正式版 `v0.10.0` Release 的资产（预发布版资产在发布后见 Releases 页面）。需要 Node.js 22 或更新版本。
+如果不想克隆仓库，直接下载最新正式版 `v0.12.0` Release 的资产。需要 Node.js 22 或更新版本。
 Release 包的归档根目录是 `design-pipeline/`，包含 `SKILL.md`、`references/`、`scripts/`、
 生成的 `PACKAGE.json` 和安装器；解压后约 **50 MB**。MengTo 与 iart 两个大型上游技能库（约 200 MB）
 不随包发布，首次需要时运行 `designer-pipeline sources fetch --all` 按锁定版本下载并逐文件校验，
@@ -121,14 +121,14 @@ Release 包的归档根目录是 `design-pipeline/`，包含 `SKILL.md`、`refer
 
 可用资产：
 
-- ZIP（Windows PowerShell）：<https://github.com/2233admin/design-pipeline/releases/download/v0.10.0/design-pipeline-skill.zip>
-- TGZ（Git Bash/Unix）：<https://github.com/2233admin/design-pipeline/releases/download/v0.10.0/design-pipeline-skill.tgz>
-- 校验文件：<https://github.com/2233admin/design-pipeline/releases/download/v0.10.0/checksums.txt>
+- ZIP（Windows PowerShell）：<https://github.com/2233admin/design-pipeline/releases/download/v0.12.0/design-pipeline-skill.zip>
+- TGZ（Git Bash/Unix）：<https://github.com/2233admin/design-pipeline/releases/download/v0.12.0/design-pipeline-skill.tgz>
+- 校验文件：<https://github.com/2233admin/design-pipeline/releases/download/v0.12.0/checksums.txt>
 
 ### Windows PowerShell（ZIP）
 
 ```powershell
-$version = "0.10.0"
+$version = "0.12.0"
 $base = "https://github.com/2233admin/design-pipeline/releases/download/v$version"
 $work = Join-Path $env:TEMP "design-pipeline-v$version"
 $archive = Join-Path $work "design-pipeline-skill.zip"
@@ -158,7 +158,7 @@ node $cli route --root . --query "design a settings page" --json
 ### Git Bash / Unix（TGZ）
 
 ```bash
-version=0.10.0
+version=0.12.0
 base="https://github.com/2233admin/design-pipeline/releases/download/v${version}"
 work="${TMPDIR:-/tmp}/design-pipeline-v${version}"
 mkdir -p "$work"
