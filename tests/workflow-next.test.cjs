@@ -4113,8 +4113,8 @@ test("decide --later refuses when nothing is asked of the owner, or with an inva
   assert.match(refusesLater(root, [], "WORKFLOW_NOT_READY").message, /defers a question the owner is asked/);
   const review = atProbe(t);
   passProbe(review);
-  for (const until of ["tomorrow", new Date(Date.now() - 60000).toISOString()]) assert.match(refusesLater(review, ["--until", until], "CONTRACT_INVALID").message, /--until must be a time in the future/);
-  for (const flag of [["--stage", "review"], ["--verdict", "accept"], ["--answer", "later"], ["--by", "owner"]]) assert.match(refusesLater(review, flag, "CONTRACT_INVALID").message, new RegExp(`${flag[0]} cannot go beside it`));
+  for (const until of ["tomorrow", new Date(Date.now() - 60000).toISOString(), "2099-12-31", "2099-12-31T09:00:00"]) assert.match(refusesLater(review, ["--until", until], "CONTRACT_INVALID").message, /--until must be a time in the future/);
+  for (const flag of [["--stage", "review"], ["--verdict", "accept"], ["--answer", "later"], ["--by", "owner"], ["--change-root", review]]) assert.match(refusesLater(review, flag, "CONTRACT_INVALID").message, new RegExp(`${flag[0]} cannot go beside it`));
 });
 
 test("an owner ask catches the owner up on what the agent decided and checked since their last answer", t => {

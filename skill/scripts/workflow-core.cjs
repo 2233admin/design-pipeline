@@ -291,8 +291,10 @@ function deferAsk(root, { until } = {}) {
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
   let time = null;
   if (until !== undefined && until !== null) {
-    const parsed = Date.parse(String(until));
-    if (!Number.isFinite(parsed) || parsed <= Date.now()) fail("workflow", "--until must be a time in the future, such as 2026-10-16T09:00:00+08:00. Fix: give the time the owner named, or drop --until");
+    // A full date and time with its offset: a bare 09:00 would mean the host's zone, not the owner's.
+    const text = String(until).trim();
+    const parsed = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.test(text) ? Date.parse(text) : NaN;
+    if (!Number.isFinite(parsed) || parsed <= Date.now()) fail("workflow", "--until must be a time in the future with its offset, such as 2026-10-16T09:00:00+08:00 (the owner's time zone). Fix: give the time the owner named, or drop --until");
     time = new Date(parsed).toISOString();
   }
   const ask = nextAction(root, { deferral: false });

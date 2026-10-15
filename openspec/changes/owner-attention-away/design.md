@@ -52,7 +52,8 @@
   defers whatever `next` asks now, so it cannot name another ask.
   - It refuses when `next` is not an owner ask: no state, a run, a self-check, a director's pick, blocked
     or done.
-  - It refuses an `--until` that `Date.parse` cannot read or that is not in the future.
+  - It refuses an `--until` that is not a full ISO 8601 date and time with `Z` or an offset, or that is
+    not in the future: a bare `09:00` would mean the host's time zone, not the owner's.
   - `--until` takes an ISO 8601 time (`2026-10-16T09:00:00+08:00`), like Linear's "until a time".
   - The CLI refuses any other decide flag beside `--later` (as for `--page-review`).
 - **What it records.** `state.pending = {ask: {stage, section}, basis, until|null, roles, at}`, where

@@ -31,7 +31,7 @@ offers "review each section with me" as `--keep section`. The diligence statemen
 trade-off you asked beside the owner's answer.
 
 **When the owner says "not now".** Record it with `decide --root <project> --project-root <project>
---later`, adding `--until <ISO time>` when they name one (`2026-10-16T09:00:00+08:00`); nothing else
+--later`, adding `--until <ISO time>` with the offset of the owner's time zone when they name one (`2026-10-16T09:00:00+08:00`); nothing else
 goes beside it. Until then `next` returns `blocked` (kind `owner`, exit 2) with the `deferred`
 question and its `record` command: do not ask again before the time unless the owner writes, and do
 not build on a guess about their answer. `next` asks again once the time passes, once what is asked
