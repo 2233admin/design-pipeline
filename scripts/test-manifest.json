@@ -84,6 +84,7 @@
     "interaction-capture.test.cjs",
     "interaction-cli.test.cjs",
     "interaction-audit.test.cjs",
+    "page-compare.test.cjs",
     "page-refs.test.cjs",
     "workflow-next.test.cjs",
     "product-source-workflow.test.cjs",

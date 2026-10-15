@@ -317,6 +317,33 @@ test("a viewport that cannot publish its files writes neither", { skip }, async 
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+// owner-attention-page-compare: each element and section carries a pixel fingerprint that is stable for
+// an unchanged page and follows content that moved.
+test("fingerprints repeat for an unchanged page and follow content pushed down", { skip }, async () => {
+  const dir = project("sections.html");
+  assert.equal(refs(dir).status, 0);
+  const first = readRefs(dir);
+  assert.ok(first.refs.every((item) => /^\d+x\d+:[0-9a-f]{16}$/.test(item.pixels)), "each reference has a fingerprint");
+  assert.deepEqual(first.sections.map((item) => item.id), ["hero", "proof"]);
+  assert.ok(first.sections.every((item) => /^\d+x\d+:[0-9a-f]{16}$/.test(item.pixels) && item.box.height > 0));
+  fs.rmSync(path.join(dir, "evidence"), { recursive: true });
+  assert.equal(refs(dir).status, 0);
+  const again = readRefs(dir);
+  assert.deepEqual(again.refs.map((item) => item.pixels), first.refs.map((item) => item.pixels), "the same page gives the same fingerprints");
+  assert.deepEqual(again.sections.map((item) => item.pixels), first.sections.map((item) => item.pixels));
+  const html = fs.readFileSync(path.join(dir, "index.html"), "utf8").replace("<h1>Welcome</h1>", "<h1>Welcome</h1>\n  <p style=\"height: 1500px\">A tall new block pushes everything down.</p>\n  <p>And another.</p>");
+  fs.writeFileSync(path.join(dir, "index.html"), html);
+  assert.equal(refs(dir).status, 0);
+  const moved = readRefs(dir);
+  assert.ok(moved.sections[1].box.y > first.sections[1].box.y + 100, "proof moved down");
+  const proof = (doc) => doc.refs.filter((item) => item.section === "proof").map((item) => item.pixels);
+  assert.deepEqual(proof(moved), proof(first), "proof's elements keep their fingerprints");
+  const { compareCaptures } = require("../skill/scripts/workflows/page-compare.cjs");
+  assert.deepEqual(compareCaptures(first, moved, "proof"), { comparable: true, sectionChanged: false, changes: [] }, "the proof section is unchanged");
+  assert.equal(compareCaptures(first, moved, "hero").sectionChanged, true, "hero changed");
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 // CodeRabbit review on #138: the resource wait has one deadline, and its expiry fails the capture.
 test("media that never finishes loading fails the capture at the deadline", { skip }, async () => {
   const { awaitResources } = require("../skill/scripts/page-refs-core.cjs");

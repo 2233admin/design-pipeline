@@ -29,6 +29,7 @@ const rejections = (records, matches = () => true) => records.filter(item => ite
 // Every "no" the owner gives becomes a rule (workflows/rules.cjs): bound to the result under review
 // unless it is about one section; anti-goals are project rules.
 const { addRule, isProject } = require("./rules.cjs");
+const { compareCaptures, describeChanges } = require("./page-compare.cjs");
 
 // A contained project file's bytes, or null when it is missing, outside the project or not a file.
 function projectFile(root, rel) {
@@ -562,7 +563,34 @@ function sectionProgress(state, root) {
     if (!built || latest?.verdict !== "accept" || latest.key !== sectionKey(state, approval, id)) return { approval, accepted, current: id, built, latest };
     accepted.push(id);
   }
+  // The page tier, once every section is built and accepted: a section a person accepted stays accepted
+  // only while it is unchanged. Checked at the end of the build rather than after each edit, so building
+  // a later section does not keep reopening earlier ones.
+  for (const id of approval.sections) {
+    const latest = records.filter(item => item.section === id).at(-1);
+    const tier = pageTier(root, latest);
+    if (tier) return { approval, accepted: accepted.filter(item => item !== id), current: id, built: true, latest, tier };
+  }
   return { approval, accepted, current: null };
+}
+
+// The page tier (owner-attention-page-compare): a section a person accepted with kept captures stays
+// accepted while the page is unchanged since, or while comparing each kept capture with a current one
+// shows the section unchanged. Returns null when it stands, else {status: "changed", changes} or
+// {status: "unknown"} when a comparison cannot be made (no current capture, no kept reference list, or
+// a capture without fingerprints). A section accepted without captures keeps the key rule alone.
+function pageTier(root, record) {
+  if (!record?.captures || typeof record.captures !== "object" || record.pageSha256 === pageDigest(root)) return null;
+  const now = Object.fromEntries(currentCaptures(root).map(({ viewport, doc }) => [viewport, doc]));
+  const changes = [];
+  for (const [viewport, kept] of Object.entries(record.captures)) {
+    const { doc } = keptCapture(root, kept);
+    if (!doc || !now[viewport]) return { status: "unknown" };
+    const result = compareCaptures(doc, now[viewport], record.section);
+    if (!result.comparable) return { status: "unknown" };
+    if (result.sectionChanged) changes.push(...result.changes);
+  }
+  return changes.length ? { status: "changed", changes } : null;
 }
 
 // What the owner looked at: index.html, its manifest and the local files the page names.
@@ -700,36 +728,39 @@ function citedRefs(root, refs, section = null) {
 // beside the new screenshots when the page changed since.
 
 const REVIEWED_DIR = "evidence/reviewed";
-const reviewedFile = hash => `${REVIEWED_DIR}/${String(hash).replace(/^sha256:/, "")}.png`;
+const reviewedFile = (hash, ext = "png") => `${REVIEWED_DIR}/${String(hash).replace(/^sha256:/, "")}.${ext}`;
 
-// The hashes of the screenshots current at a verdict, {viewport: hash}, or null with none. Only named
-// here; decide copies them with storeReviewed after every check, just before it writes state.
+// What a verdict keeps of each screenshot current at that moment: {viewport: {png, refs}}, the hashes of
+// the numbered screenshot and of its reference list (owner-attention-page-compare), or null with none.
+// Only named here; decide copies them with storeReviewed after every check, just before it writes state.
 function reviewedCaptures(root) {
-  const kept = Object.fromEntries(currentCaptures(root).map(({ viewport, doc }) => [viewport, doc.png]));
+  const kept = Object.fromEntries(currentCaptures(root).map(({ viewport, doc }) => [viewport, { png: doc.png, refs: fileSha(root, profiles()[viewport].json) }]));
   return Object.keys(kept).length ? kept : null;
 }
 
-// Copies each named screenshot to evidence/reviewed/<hex>.png (content-addressed, so a picture is stored
-// once and its name proves its bytes). All or nothing: every copy is staged from the bytes that were
-// hashed before any is published, and a failure removes what this call staged or published, so a
-// refused verdict leaves evidence/reviewed/ as it was.
+// Copies each named screenshot and reference list to evidence/reviewed/<hex>.png|.json
+// (content-addressed, so a file is stored once and its name proves its bytes). All or nothing: every
+// copy is staged from the bytes that were hashed before any is published, and a failure puts back what
+// this call overwrote and removes what it added, so a refused verdict leaves evidence/reviewed/ as it was.
 function storeReviewed(root, captures) {
   const staged = [];
   try {
-    for (const [viewport, hash] of Object.entries(captures || {})) {
-      const rel = reviewedFile(hash);
-      // Content-addressed: two viewports with the same bytes share one copy.
-      if (fileSha(root, rel) === hash || staged.some(item => item.hash === hash)) continue;
-      const source = profiles()[viewport].png;
-      const bytes = projectFile(root, source);
-      if (!bytes || "sha256:" + sha256(bytes) !== hash) fail("workflow", `${source} changed while the verdict was recorded. Fix: run next again`, { code: "WORKFLOW_NOT_READY" });
-      const target = resolveInside(root, rel, "reviewed screenshot", { scope: "workflow" });
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      const temp = `${target}.${process.pid}.tmp`;
-      // A copy already there with other bytes (edited by hand) is put back if this call fails.
-      const previous = fs.existsSync(target) && fs.statSync(target).isFile() ? fs.readFileSync(target) : null;
-      staged.push({ hash, temp, target, previous });
-      fs.writeFileSync(temp, bytes);
+    for (const [viewport, kept] of Object.entries(captures || {})) {
+      const profile = profiles()[viewport];
+      for (const [hash, source, ext] of [[kept?.png, profile.png, "png"], [kept?.refs, profile.json, "json"]]) {
+        const rel = reviewedFile(hash, ext);
+        // Content-addressed: two viewports with the same bytes share one copy.
+        if (fileSha(root, rel) === hash || staged.some(item => item.rel === rel)) continue;
+        const bytes = projectFile(root, source);
+        if (!bytes || "sha256:" + sha256(bytes) !== hash) fail("workflow", `${source} changed while the verdict was recorded. Fix: run next again`, { code: "WORKFLOW_NOT_READY" });
+        const target = resolveInside(root, rel, "reviewed capture", { scope: "workflow" });
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        const temp = `${target}.${process.pid}.tmp`;
+        // A copy already there with other bytes (edited by hand) is put back if this call fails.
+        const previous = fs.existsSync(target) && fs.statSync(target).isFile() ? fs.readFileSync(target) : null;
+        staged.push({ rel, temp, target, previous });
+        fs.writeFileSync(temp, bytes);
+      }
     }
     const published = [];
     try {
@@ -749,15 +780,36 @@ function storeReviewed(root, captures) {
   }
 }
 
+// A verdict's kept capture of one viewport: the screenshot's path when its copy still has its bytes, and
+// the reference list when its copy still has its bytes and names that screenshot; null parts otherwise.
+function keptCapture(root, kept) {
+  const png = kept && typeof kept.png === "string" && fileSha(root, reviewedFile(kept.png)) === kept.png ? reviewedFile(kept.png) : null;
+  let doc = null;
+  if (png && typeof kept.refs === "string" && fileSha(root, reviewedFile(kept.refs, "json")) === kept.refs) {
+    try {
+      const parsed = JSON.parse(fileText(root, reviewedFile(kept.refs, "json")));
+      if (parsed?.png === kept.png && Array.isArray(parsed.refs)) doc = parsed;
+    } catch { doc = null; }
+  }
+  return { png, doc };
+}
+
 // The before pictures for a repeated ask at `scope` (a section id, or "review" for the final review).
 function compareStep(state, root, scope) {
   const records = scope === "review" ? history(state, "drafts") : history(state, "sections").filter(item => item.section === scope);
   const latest = records.filter(item => item.captures && typeof item.captures === "object").at(-1);
   if (!latest) return { show: [] };
+  const changes = [];
   const pairs = currentCaptures(root).flatMap(({ viewport, doc }) => {
-    const before = latest.captures[viewport];
-    if (typeof before !== "string" || before === doc.png || fileSha(root, reviewedFile(before)) !== before) return [];
-    return [{ before: reviewedFile(before), now: profiles()[viewport].png }];
+    const kept = latest.captures[viewport];
+    const { png, doc: before } = keptCapture(root, kept);
+    if (!png || kept.png === doc.png) return [];
+    // At the final review, the comparison names what changed on the whole page since that verdict.
+    if (scope === "review" && before) {
+      const result = compareCaptures(before, doc, null);
+      if (result.comparable) changes.push(...result.changes);
+    }
+    return [{ before: png, now: profiles()[viewport].png }];
   });
   if (!pairs.length) return { show: [] };
   const who = latest.by === "agent" ? "the art director" : "the owner";
@@ -765,17 +817,24 @@ function compareStep(state, root, scope) {
   const list = pairs.map(pair => `${pair.before} (then) beside ${pair.now} (now)`).join(", and ");
   const part = scope === "review" ? "" : ` Both show the whole page; look at the ${scope} section.`;
   return {
-    first: `Show ${list}: the earlier picture is the numbered page when ${who} ${how} at ${latest.at}.${part} Let them compare the two before they answer.`,
+    first: `Show ${list}: the earlier picture is the numbered page when ${who} ${how} at ${latest.at}.${part}${changes.length ? ` Comparing the captures found these changed since: ${describeChanges(changes)}.` : ""} Let them compare the two before they answer.`,
+    ...(changes.length ? { pageChanges: changes } : {}),
     show: pairs.map(pair => path.join(path.resolve(root), ...pair.before.split("/"))),
   };
 }
 
-function sectionReview(root, { approval, accepted, current, latest }) {
+function sectionReview(root, { approval, accepted, current, latest, tier }) {
   const unrevised = latest?.verdict === "reject" && latest.pageSha256 === pageDigest(root);
+  const who = latest?.by === "agent" ? "the art director" : "the owner";
+  const reopened = tier?.status === "changed"
+    ? `Section ${current} was accepted by ${who} at ${latest.at}; the page changed since, and comparing the captures found these changed in it: ${describeChanges(tier.changes)}. Show them before and after, then ask:`
+    : tier ? `Section ${current} was accepted by ${who} at ${latest.at} on an earlier page, and it cannot be compared with this one until the page is captured: once it is, a section the comparison finds unchanged keeps its acceptance and next moves on. If the capture cannot be taken, ask:` : null;
   return {
     type: "ask",
     section: current,
     ...(unrevised ? { first: `The owner asked for changes to section ${current} ("${latest.reason || "see the cited runtime-review Feedback"}"); each comment is now a rule. Revise the section, then ask:` } : {}),
+    ...(reopened ? { first: reopened } : {}),
+    ...(tier?.status === "changed" ? { pageChanges: tier.changes } : {}),
     question: `The ${current} section is built (${accepted.length + 1} of ${approval.sections.length}). Look at it in the page: accept it as it is, or tell me what to change, naming each element by its number on the numbered page or by its text, label or where it sits?`,
     show: [path.join(path.resolve(root), "index.html")],
     instruction: `Open index.html at the ${current} section (data-section="${current}") in a real browser and let the owner look and interact. Comments are text: ask them to name each element they comment on by its reference on evidence/refs.png (such as ${current}-2) or by its text, label or place, and do not offer to let them click or pick elements on the page. Record each reference they cite with --ref <reference> beside --answer. If the project already carries runtime-review inputs (references/runtime-review.md), Feedback the owner leaves on its runtime-review page can be recorded with runtime-review record and cited with --evidence. Any change they ask for is a reject: record it, revise the section and ask again; accept only a section they are happy with as it is.`,
@@ -934,4 +993,4 @@ function before(state, current, id) {
 // returned before the record.
 const decisions = { intake: recordIntake, concept: recordConcept, components: recordComponents, description: recordDescription, section: recordSection };
 
-module.exports = { briefSections, citedRefs, compareStep, decisions, pageDigest, refsCapture, refsCurrent, refsStep, reviewedCaptures, stages, storeReviewed };
+module.exports = { briefSections, citedRefs, compareStep, decisions, keptCapture, pageDigest, refsCapture, refsCurrent, refsStep, reviewedCaptures, stages, storeReviewed };

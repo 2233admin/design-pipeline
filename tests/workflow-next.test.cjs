@@ -3533,12 +3533,16 @@ const REFS = [
 const fileHash = (root, rel) => "sha256:" + sha256(fs.readFileSync(path.join(root, rel)));
 // Both viewports by default (owner-attention-mobile-compare): the phone capture prefixes each reference
 // with m:. Each screenshot's bytes name the page version, so a changed page has a different picture.
-function fakeRefs(root, refs = REFS, loaded = ["index.html"], viewports = ["desktop", "mobile"]) {
+// Each element and section carries a pixel fingerprint (owner-attention-page-compare): `pixels` overrides
+// the default per unprefixed ref or section id, to make one look different.
+function fakeRefs(root, refs = REFS, loaded = ["index.html"], viewports = ["desktop", "mobile"], { pixels = {} } = {}) {
+  const sectionIds = [...new Set(refs.map(item => item.section).filter(Boolean))];
   for (const viewport of viewports) {
     const [json, png, prefix, size] = viewport === "mobile" ? ["evidence/refs-mobile.json", "evidence/refs-mobile.png", "m:", { width: 390, height: 844, mobile: true }] : ["evidence/refs.json", "evidence/refs.png", "", { width: 1440, height: 900 }];
-    const list = refs.map(item => ({ ...item, ref: prefix + item.ref }));
+    const list = refs.map(item => ({ ...item, ref: prefix + item.ref, pixels: pixels[item.ref] ?? `px-${viewport}-${item.ref}` }));
+    const sections = sectionIds.map(id => ({ id, box: { x: 0, y: 0, width: 10, height: 10 }, pixels: pixels[id] ?? `px-${viewport}-${id}` }));
     touch(root, png, `${viewport} png of ${pageDigest(root)}`);
-    touch(root, json, JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: size, refs: list, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, png), refsDigest: "sha256:" + sha256(canonicalJson(list)) }));
+    touch(root, json, JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: size, refs: list, sections, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, png), refsDigest: "sha256:" + sha256(canonicalJson(list)) }));
   }
 }
 
@@ -3703,8 +3707,11 @@ test("a section asked again after the owner's no shows the picture they judged b
   decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small", ref: ["first-screen-2"] });
   const record = readState(root).decisions.sections.at(-1);
   assert.deepEqual(Object.keys(record.captures), ["desktop", "mobile"]);
-  assert.deepEqual(reviewedFiles(root), Object.values(record.captures).map(hash => `${hash.slice(7)}.png`).sort(), "content-addressed copies");
-  for (const hash of Object.values(record.captures)) assert.equal(fileHash(root, `evidence/reviewed/${hash.slice(7)}.png`), hash);
+  assert.deepEqual(reviewedFiles(root), Object.values(record.captures).flatMap(kept => [`${kept.png.slice(7)}.png`, `${kept.refs.slice(7)}.json`]).sort(), "content-addressed copies of each screenshot and its reference list");
+  for (const kept of Object.values(record.captures)) {
+    assert.equal(fileHash(root, `evidence/reviewed/${kept.png.slice(7)}.png`), kept.png);
+    assert.equal(fileHash(root, `evidence/reviewed/${kept.refs.slice(7)}.json`), kept.refs);
+  }
   assert.doesNotMatch(nextAction(root).first || "", /\(then\)/, "the unchanged page has nothing to compare");
   buildPage(root, ["first-screen"], "<!-- a larger reserve button -->\n");
   assert.doesNotMatch(nextAction(root).first, /\(then\)/, "no comparison before the new capture");
@@ -3712,10 +3719,10 @@ test("a section asked again after the owner's no shows the picture they judged b
   const again = nextAction(root);
   assert.match(again.first, /evidence\/reviewed\/[0-9a-f]{64}\.png \(then\) beside evidence\/refs\.png \(now\), and evidence\/reviewed\/[0-9a-f]{64}\.png \(then\) beside evidence\/refs-mobile\.png \(now\)/);
   assert.match(again.first, /the numbered page when the owner asked for changes at \S+\. Both show the whole page; look at the first-screen section\./);
-  assert.deepEqual(again.show.filter(file => file.includes(`${path.sep}reviewed${path.sep}`)).map(file => path.basename(file)), [record.captures.desktop, record.captures.mobile].map(hash => `${hash.slice(7)}.png`));
+  assert.deepEqual(again.show.filter(file => file.includes(`${path.sep}reviewed${path.sep}`)).map(file => path.basename(file)), [record.captures.desktop, record.captures.mobile].map(kept => `${kept.png.slice(7)}.png`));
   // A copy that was deleted or no longer has its bytes is not shown.
-  fs.rmSync(path.join(root, "evidence", "reviewed", `${record.captures.mobile.slice(7)}.png`));
-  touch(root, `evidence/reviewed/${record.captures.desktop.slice(7)}.png`, "edited");
+  fs.rmSync(path.join(root, "evidence", "reviewed", `${record.captures.mobile.png.slice(7)}.png`));
+  touch(root, `evidence/reviewed/${record.captures.desktop.png.slice(7)}.png`, "edited");
   const tampered = nextAction(root);
   assert.doesNotMatch(tampered.first, /\(then\)/);
   assert.ok(!tampered.show.some(file => file.includes(`${path.sep}reviewed${path.sep}`)));
@@ -3760,7 +3767,7 @@ test("the final review asked again after the owner's acceptance shows the accept
   assert.match(again.first, /^The owner accepted an earlier version of the page at /);
   assert.match(again.first, /\(then\) beside evidence\/refs\.png \(now\).*the numbered page when the owner accepted it at \S+\. Let them compare/);
   assert.doesNotMatch(again.first, /look at the/);
-  assert.ok(again.show.some(file => file.endsWith(`${accepted.desktop.slice(7)}.png`)));
+  assert.ok(again.show.some(file => file.endsWith(`${accepted.desktop.png.slice(7)}.png`)));
 });
 
 // Codex review on #141: the copies are all or nothing, so a verdict that fails while storing them
@@ -3789,8 +3796,8 @@ test("identical desktop and phone screenshots are kept once", t => {
   touch(root, "evidence/refs-mobile.json", JSON.stringify({ ...phone, png: fileHash(root, "evidence/refs-mobile.png") }));
   decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small" });
   const { captures } = readState(root).decisions.sections.at(-1);
-  assert.equal(captures.desktop, captures.mobile);
-  assert.deepEqual(reviewedFiles(root), [`${captures.desktop.slice(7)}.png`]);
+  assert.equal(captures.desktop.png, captures.mobile.png);
+  assert.deepEqual(reviewedFiles(root).filter(name => name.endsWith(".png")), [`${captures.desktop.png.slice(7)}.png`]);
 });
 
 // Codex review on #141: a capture of one viewport copied under the other's names is not current.
@@ -3803,5 +3810,91 @@ test("a desktop capture copied under the phone names is not taken as the phone's
   assert.match(ask.first, /evidence refs --root /, "the phone capture is taken again");
   assert.deepEqual(ask.show.filter(file => /refs(-mobile)?\.png$/.test(file)).map(file => path.basename(file)), ["refs.png"]);
   assert.match(refuses(root, { stage: "section", choice: "first-screen", verdict: "reject", answer: "The button wraps", ref: ["m:first-screen-2"] }, "WORKFLOW_NOT_READY").message, /refs-mobile\.json was taken from an earlier version/);
+});
+
+// --- element comparison and the page tier (owner-attention-page-compare) ----------------------------
+
+// Both sections built and accepted by the owner, each with a current capture.
+function acceptedWithCaptures(t) {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
+  buildPage(root, ["first-screen", "proof"]);
+  const building = nextAction(root);
+  assert.equal(building.section, "proof", "building the next section leaves the accepted one alone");
+  assert.doesNotMatch(building.first, /cannot be compared/, "and asks for no comparison of it first");
+  fakeRefs(root);
+  decide(root, { by: "owner", stage: "section", choice: "proof", verdict: "accept" });
+  return root;
+}
+
+test("an accepted section stays accepted while the comparison finds it unchanged", t => {
+  const root = acceptedWithCaptures(t);
+  // first-screen was accepted on an earlier page; the capture of this one shows it unchanged.
+  assert.equal(nextAction(root).stage, "probe");
+});
+
+test("an accepted section the comparison finds changed is asked again with the changed elements", t => {
+  const root = acceptedWithCaptures(t);
+  buildPage(root, ["first-screen", "proof"], "<style>a { font-size: 2rem; }</style>\n");
+  const unknown = nextAction(root);
+  assert.equal(unknown.section, "first-screen", "the comparison cannot be made without a capture");
+  assert.match(unknown.first, /accepted by the owner at \S+ on an earlier page, and it cannot be compared with this one until the page is captured/);
+  assert.match(unknown.first, /evidence refs --root /);
+  fakeRefs(root, REFS, ["index.html"], ["desktop", "mobile"], { pixels: { "first-screen-2": "bigger" } });
+  const changed = nextAction(root);
+  assert.equal(changed.stage, "build");
+  assert.equal(changed.section, "first-screen");
+  assert.match(changed.first, /the page changed since, and comparing the captures found these changed in it: first-screen-2 a "Reserve" \(changed\); m:first-screen-2 a "Reserve" \(changed\)/);
+  assert.deepEqual(changed.pageChanges.map(item => [item.change, item.after.ref]), [["changed", "first-screen-2"], ["changed", "m:first-screen-2"]]);
+  assert.match(changed.first, /\(then\) beside evidence\/refs\.png \(now\)/, "the accepted pictures are shown beside the new ones");
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
+  assert.equal(nextAction(root).stage, "probe", "the new acceptance stands");
+});
+
+test("a section changed outside its numbered elements is asked again", t => {
+  const root = acceptedWithCaptures(t);
+  buildPage(root, ["first-screen", "proof"], "<style>[data-section=proof] { background: #eee; }</style>\n");
+  fakeRefs(root, REFS, ["index.html"], ["desktop"], { pixels: { proof: "grey" } });
+  fakeRefs(root, REFS, ["index.html"], ["mobile"], { pixels: { proof: "grey" } });
+  const ask = nextAction(root);
+  assert.equal(ask.section, "proof");
+  assert.match(ask.first, /section proof \(changed, outside its numbered elements\)/);
+});
+
+test("a self-checked section and a section accepted without captures keep the key rule", t => {
+  const root = approved(t, ["first-screen"]);
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  decide(root, { by: "agent", stage: "section", choice: "first-screen", verdict: "accept" });
+  buildPage(root, ["first-screen"], "<style>h2 { color: red; }</style>\n");
+  assert.equal(nextAction(root).stage, "probe", "no capture kept, so no comparison");
+  // A record from phase 3b names its screenshots as plain hashes and kept no reference list.
+  const legacy = approved(t, ["first-screen"], { keep: ["section"] });
+  buildPage(legacy, ["first-screen"]);
+  fakeRefs(legacy);
+  decide(legacy, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
+  const state = readState(legacy);
+  const record = state.decisions.sections.at(-1);
+  record.captures = { desktop: record.captures.desktop.png };
+  touch(legacy, ".design-pipeline/state.json", JSON.stringify(state, null, 2));
+  buildPage(legacy, ["first-screen"], "<!-- edited -->\n");
+  fakeRefs(legacy);
+  assert.match(nextAction(legacy).first || "", /cannot be compared/, "an old record is asked again once");
+});
+
+test("the final review asked again after an acceptance lists what changed since", t => {
+  const root = atProbe(t);
+  passProbe(root);
+  fakeRefs(root);
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "可以" });
+  fs.appendFileSync(path.join(root, "index.html"), "<!-- the footer link reads differently -->\n");
+  passProbe(root);
+  fakeRefs(root, REFS, ["index.html"], ["desktop", "mobile"], { pixels: { 1: "new footer" } });
+  const again = nextAction(root);
+  assert.equal(again.stage, "review");
+  assert.match(again.first, /Comparing the captures found these changed since: 1 a "Home" \(changed\); m:1 a "Home" \(changed\)\./);
+  assert.deepEqual(again.pageChanges.map(item => item.after.ref), ["1", "m:1"]);
 });
 

@@ -158,6 +158,7 @@
     "scripts/workflows/web.cjs",
     "scripts/workflows/roles.cjs",
     "scripts/workflows/rules.cjs",
+    "scripts/workflows/page-compare.cjs",
     "references/workflow-film.md",
     "references/qa-checklist.md",
     "references/animation-thinking.md",
