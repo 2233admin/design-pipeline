@@ -4,7 +4,7 @@
 
 ### Requirement: The owner can answer an ask later
 
-`decide --later [--until <time>]` SHALL record that the owner will answer the current owner ask later. While it holds, `next` SHALL return a `blocked` action of kind `owner` carrying the deferred ask. It SHALL ask again once the time passes, what is asked or the page it is about changes, another ask is current, or the owner's answer is recorded. It SHALL refuse when `next` is not an owner ask.
+`decide --later [--until <time>]` SHALL record that the owner will answer the current owner ask later. While it holds, `next` SHALL return a `blocked` action of kind `owner` carrying the deferred ask. It SHALL ask again once the time passes, what is asked or what it shows changes, another ask is current, or the owner's answer is recorded. It SHALL refuse when `next` is not an owner ask.
 
 #### Scenario: Deferred until a time
 
@@ -13,8 +13,8 @@
 
 #### Scenario: Activity wakes it early
 
-- **WHEN** a review was deferred and the page it is about changes before the time
-- **THEN** `next` SHALL ask the review again.
+- **WHEN** a review was deferred and the page it is about changes before the time, or a variants pick was deferred and the variants page changes
+- **THEN** `next` SHALL ask again.
 
 #### Scenario: Answering ends the deferral
 
@@ -28,7 +28,7 @@
 
 #### Scenario: Invalid deferral
 
-- **WHEN** `--until` is not a time in the future, or `--later` comes with `--stage`, `--verdict`, `--answer` or `--by`
+- **WHEN** `--until` is not a future time with its offset, `--until` comes without `--later`, or `--later` comes with `--stage`, `--verdict`, `--answer` or `--by`
 - **THEN** `decide --later` SHALL exit 1 and record nothing.
 
 #### Scenario: The agent's own records do not end it

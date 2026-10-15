@@ -8,12 +8,12 @@ const { canonicalJson, sha256 } = require("../contract-utils.cjs");
 const { describe } = require("./roles.cjs");
 
 // What an owner ask is and says: its stage, its section at a web section review, and a hash of its own
-// question and first step (before the numbered page and pictures are added), with the page it is about.
-function askKey(stageId, action, page = null) {
+// question and first step (before the numbered page and pictures are added), with what it is about.
+function askKey(stageId, action, subject = null) {
   return {
     stage: stageId,
     section: typeof action.section === "string" ? action.section : null,
-    basis: "sha256:" + sha256(canonicalJson({ question: action.question ?? null, first: action.first ?? null, page })),
+    basis: "sha256:" + sha256(canonicalJson({ question: action.question ?? null, first: action.first ?? null, subject })),
   };
 }
 

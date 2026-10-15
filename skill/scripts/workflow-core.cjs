@@ -156,6 +156,18 @@ function actionLine(action) {
   return action.instruction && action.command ? `${action.instruction} Command: ${action.command}` : action.instruction || action.command;
 }
 
+// What an owner ask is about, so a deferral wakes when it changes: the files the ask shows, the built
+// page at a web section or final review, the checked inputs at a final review, and the cut sample.
+function askSubject(state, root, stageId, action) {
+  const files = [].concat(action.show ?? []).map(file => [path.relative(root, file).split(path.sep).join("/"), fs.existsSync(file) && fs.statSync(file).isFile() ? "sha256:" + sha256(fs.readFileSync(file)) : null]);
+  return {
+    files,
+    page: state.deliverable === "web" && (stageId === "review" || stageId === "build" && action.section) ? SUB_WORKFLOWS.web.pageDigest(root) : null,
+    review: stageId === "review" ? reviewInputHashes(state) : null,
+    sample: stageId === "sample" && SUB_WORKFLOWS.film.sampleBinding ? SUB_WORKFLOWS.film.sampleBinding(root) : null,
+  };
+}
+
 // `deferral: false` returns the owner ask a deferral holds back (decide --later re-defers it).
 function nextAction(root, { deferral = true } = {}) {
   const state = readState(root);
@@ -173,9 +185,7 @@ function nextAction(root, { deferral = true } = {}) {
     // The owner's ask, unless an art director takes it (owner-attention-away): its identity is read before
     // the numbered page is captured, so a deferred next launches no browser.
     const directedAsk = action.type === "ask" && (action.director || state.director && ["concepts", "sample", "build"].includes(stage.id));
-    const key = action.type === "ask" && !directedAsk
-      ? away.askKey(stage.id, action, state.deliverable === "web" && (stage.id === "review" || stage.id === "build" && action.section) ? SUB_WORKFLOWS.web.pageDigest(root) : null)
-      : null;
+    const key = action.type === "ask" && !directedAsk ? away.askKey(stage.id, action, askSubject(state, root, stage.id, action)) : null;
     const position = { stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length };
     if (key && deferral && away.holds(state, key)) {
       const held = away.deferredAction(state, action);

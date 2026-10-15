@@ -40,10 +40,11 @@
   owner's. The `start` ask (no state yet) is not deferrable.
 - Its identity is `{stage, section}`: the `next` stage id, and for a web section review its section id,
   else null.
-- Its `basis` is a hash of what the owner is asked: the stage action's own `question` and `first` (before
-  `next` adds the numbered page and the before/after pictures), plus the page digest for a web section or
-  final review. A redone variants page or a changed sample changes the wording or the page, and so the
-  basis.
+- Its `basis` is a hash of what the owner is asked and what it is about: the stage action's own `question`
+  and `first` (before `next` adds the numbered page and the before/after pictures), the hashes of the files
+  the ask shows (the variants page, the description), the page digest at a web section or final review,
+  the checked inputs at a final review, and the cut sample at a sample ask. A redone variants page, a
+  changed sample or a rerun draft changes the basis.
 
 ### 2. `decide --later [--until <time>]`
 

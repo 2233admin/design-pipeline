@@ -4141,3 +4141,20 @@ test("there is no catch-up before the owner's first recorded answer", t => {
   assert.equal(intake.type, "ask");
   assert.equal(intake.away, undefined);
 });
+
+test("a deferred variants pick wakes when the variants page it shows changes, and --until needs --later", t => {
+  const root = webProject(t);
+  confirmPlayback(root);
+  decide(root, { by: "owner", stage: "reference", answer: "none" });
+  writeVariants(root);
+  assert.equal(nextAction(root).stage, "concepts");
+  assert.equal(laterCli(root).status, 0);
+  assert.equal(nextAction(root).type, "blocked");
+  fs.appendFileSync(path.join(root, "concepts.html"), "<!-- a redone variant -->\n");
+  assert.equal(nextAction(root).type, "ask", "the page the pick is about changed");
+  const before = snapshot(root);
+  const result = runCli("decide", "--root", root, "--project-root", root, "--by", "owner", "--stage", "concept", "--choice", "A", "--until", inAnHour());
+  assert.equal(result.status, 1, result.text);
+  assert.match(result.json.error.message, /--until .* goes only with --later/);
+  assert.deepEqual(snapshot(root), before);
+});

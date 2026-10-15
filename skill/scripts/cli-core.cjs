@@ -2473,6 +2473,7 @@ const COMMANDS = {
         if (conflicting) fail("workflow", `--later defers the current owner ask as it is, so ${conflicting} cannot go beside it. Fix: drop ${conflicting}`);
         return { result: workflow.deferAsk(project, { until: option(parsed, "--until") }), exitCode: 0 };
       }
+      if (option(parsed, "--until") !== null) fail("workflow", "--until is the time a deferred ask waits for, so it goes only with --later. Fix: add --later, or drop --until");
       // A block from the review page decides the stage, verdict, words, references and author itself.
       if (option(parsed, "--page-review")) {
         // Only --promote, --scope and --evidence add to the block; anything else would be dropped or decided by it.
