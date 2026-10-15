@@ -4,6 +4,8 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-15
+
 ### Changed
 
 - The owner can review on the page itself (change `owner-attention-page-review`, phase 3d of `design-owner-attention`). `evidence review-page` writes `evidence/review.html`, a copy of `index.html` with a comment overlay (`index.html` is unchanged): in comment mode the owner clicks numbered elements to comment on them, then submits Request changes or Accept once, as a block to copy or download. `decide --page-review <file>` records that block as the owner's verdict with their words and references, refuses one given on an earlier page version or capture or for another ask, keeps it under `evidence/page-review/`, and marks the record `via` the page ("given on the page" in the statement). Owner-facing section and final-review asks offer it beside the numbered screenshots.
