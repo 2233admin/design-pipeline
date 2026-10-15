@@ -714,14 +714,15 @@ function storeReviewed(root, captures) {
   try {
     for (const [viewport, hash] of Object.entries(captures || {})) {
       const rel = reviewedFile(hash);
-      if (fileSha(root, rel) === hash) continue;
+      // Content-addressed: two viewports with the same bytes share one copy.
+      if (fileSha(root, rel) === hash || staged.some(item => item.hash === hash)) continue;
       const source = profiles()[viewport].png;
       const bytes = projectFile(root, source);
       if (!bytes || "sha256:" + sha256(bytes) !== hash) fail("workflow", `${source} changed while the verdict was recorded. Fix: run next again`, { code: "WORKFLOW_NOT_READY" });
       const target = resolveInside(root, rel, "reviewed screenshot", { scope: "workflow" });
       fs.mkdirSync(path.dirname(target), { recursive: true });
       const temp = `${target}.${process.pid}.tmp`;
-      staged.push({ temp, target });
+      staged.push({ hash, temp, target });
       fs.writeFileSync(temp, bytes);
     }
     const published = [];

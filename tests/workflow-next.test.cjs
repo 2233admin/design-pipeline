@@ -3777,3 +3777,17 @@ test("a verdict whose screenshot copy fails stores no copy and records nothing",
   assert.deepEqual(snapshot(root), before, "no copy, no temp file and no state change");
 });
 
+// Codex review on #141: two viewports whose screenshots have the same bytes share one copy.
+test("identical desktop and phone screenshots are kept once", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  fs.copyFileSync(path.join(root, "evidence", "refs.png"), path.join(root, "evidence", "refs-mobile.png"));
+  const phone = JSON.parse(fs.readFileSync(path.join(root, "evidence", "refs-mobile.json"), "utf8"));
+  touch(root, "evidence/refs-mobile.json", JSON.stringify({ ...phone, png: fileHash(root, "evidence/refs-mobile.png") }));
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small" });
+  const { captures } = readState(root).decisions.sections.at(-1);
+  assert.equal(captures.desktop, captures.mobile);
+  assert.deepEqual(reviewedFiles(root), [`${captures.desktop.slice(7)}.png`]);
+});
+
