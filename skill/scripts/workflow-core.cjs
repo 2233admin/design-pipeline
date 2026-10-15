@@ -168,6 +168,13 @@ function nextAction(root) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
     const action = ownerFacing(withRoles(stage.action(state, root), state), state, stage.id);
+    // A web review that still faces the owner offers the numbered page (owner-attention-page-refs);
+    // a delegated self-check is a run by now, so it launches no browser for no one.
+    if (state.deliverable === "web" && action.type === "ask" && (stage.id === "review" || stage.id === "build" && action.section)) {
+      const refs = SUB_WORKFLOWS.web.refsStep(root, action.director || state.director && stage.id === "build" ? "the art director" : "the owner");
+      action.first = [action.first, refs.first].filter(Boolean).join(" ");
+      action.show = [...(action.show || []), ...refs.show];
+    }
     // Visual picks go to the art director: the concept pick, a sample, a built web section. Final
     // acceptance never does; it stays with the owner.
     const directed = state.director && action.type === "ask" && ["concepts", "sample", "build"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
@@ -265,6 +272,13 @@ function decide(root, options = {}) {
   if ((delegate.length || keep.length) && stage !== "intake") fail("workflow", "--delegate and --keep go on the intake record, where the owner hears what the agent will decide. Fix: follow next.");
   // --revision and --affects belong to a re-approval of the description (change tiers).
   if ((options.revision !== undefined && options.revision !== null || options.affects !== undefined && options.affects !== null) && (stage !== "description" || options.verdict !== "accept")) fail("workflow", "--revision and --affects go only with a re-approval (--verdict accept) of the web description. Fix: drop them");
+  // --ref names the page elements an owner's "no" is about (owner-attention-page-refs).
+  const cites = [].concat(options.ref ?? []);
+  if (cites.length) {
+    if (state.deliverable !== "web" || !["section", "review"].includes(stage)) fail("workflow", "--ref goes only with a web section review or the web final review. Fix: drop --ref");
+    if (options.verdict !== "reject") fail("workflow", "--ref names the elements the owner's \"no\" is about, so it goes only with --verdict reject. Fix: drop --ref");
+    if (!(typeof options.answer === "string" && options.answer.trim())) fail("workflow", "--ref goes with --answer: the owner's words about the elements they cite");
+  }
   const carryForward = stage === "description" && options.verdict === "accept" && options.revision === "bytes";
   const role = roles.recordRole(state, stage, options.by, { carryForward });
   if (role.carriedForward) options = { ...options, carriedForward: true };
@@ -337,15 +351,21 @@ function decide(root, options = {}) {
   } else if (stage === "review") {
     assertEnum(options.verdict, ["accept", "reject"], "verdict", "workflow");
     if (options.verdict === "reject") reason(options.answer, "say in one sentence what is wrong; it becomes a rule");
+    // The owner's web acceptance is their own words from the conversation, never a bare record.
+    if (state.deliverable === "web" && options.verdict === "accept" && role.by === "owner") {
+      reason(options.answer, "quote the owner's words of acceptance from the conversation; record only words they gave");
+      if (/<[^<>]*>/.test(options.answer)) fail("workflow", "--answer still holds the placeholder. Fix: replace it with the owner's own words from the conversation");
+    }
     const next = nextAction(root);
     const rejectCurrent = options.verdict === "reject" && ["deliver", "done"].includes(next.stage) && REVIEW.finished(state);
     if (!stagesFor(state).some(item => item.id === "review") || next.stage !== "review" && !rejectCurrent) {
       fail("workflow", `Cannot record review while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
     }
+    const cited = options.verdict === "reject" ? SUB_WORKFLOWS.web.citedRefs(root, cites) : [];
     const componentDecision = componentDecisionDigest(state);
     state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}) }];
     if (options.verdict === "reject") {
-      rules.addRule(state, options.answer, `draft ${state.decisions.drafts.length}`);
+      rules.addRule(state, options.answer, `draft ${state.decisions.drafts.length}`, cited.length ? { ...rules.RESULT, refs: cited } : rules.RESULT);
       // A rejected draft must be rebuilt and rechecked.
       invalidateCheckedEvidence(state);
     }

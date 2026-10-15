@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Refs fixture</title>
+<style>
+  html, body { margin: 0; font: 16px/1.4 sans-serif; }
+  nav { padding: 12px 24px; }
+  section { min-height: 100vh; padding: 24px; }
+  .wrap { padding: 8px; }
+  .gone { display: none; }
+  .reveal { opacity: 0; transition: opacity 0.1s; }
+  .reveal.in { opacity: 1; }
+  .dot { display: inline-block; width: 40px; height: 40px; background: #888; }
+</style>
+</head>
+<body>
+<nav><a href="#hero" id="nav-link">Home</a></nav>
+<!-- <section data-section="ghost"> a commented-out marker is not an element -->
+<section data-section="hero">
+  <h1>Welcome</h1>
+  <p>Read the <a href="#proof" id="inline-link">proof</a> below.</p>
+  <div class="wrap"></div>
+  <a href="#proof" id="img-link"><img alt="Logo" width="40" height="40" src="data:image/gif;base64,R0lGODlhAQABAAAAACw="></a>
+  <p class="gone" id="hidden-p">Hidden text</p>
+  <p>   Two
+     lines  of   text</p>
+</section>
+<section data-section="proof">
+  <h2 id="proof-title">Proof</h2>
+  <p class="reveal" id="late">Revealed on scroll</p>
+  <button id="cta" aria-label="Reserve now"><svg width="12" height="12" viewBox="0 0 12 12"><rect width="12" height="12"/></svg></button>
+</section>
+<section data-section="Bad_Id"><p id="bad-id">Outside by invalid id</p></section>
+<script>
+  const target = document.getElementById("late");
+  const io = new IntersectionObserver((entries) => {
+    for (const entry of entries) if (entry.isIntersecting) target.classList.add("in");
+  });
+  io.observe(target);
+</script>
+</body>
+</html>

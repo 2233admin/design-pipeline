@@ -1092,6 +1092,8 @@
     "references/prompt-motion/templates.json",
     "tools/prompt-motion/library.cjs",
     "tools/variant-switcher/variant-switcher.js",
-    "tools/variant-switcher/README.md"
+    "tools/variant-switcher/README.md",
+    "scripts/page-refs-core.cjs",
+    "scripts/capture-refs.cjs"
   ]
 }

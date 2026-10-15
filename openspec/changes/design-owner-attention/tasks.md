@@ -12,7 +12,7 @@
 
 - [x] 2.1 Phase 1: ask shape and budget, owner-facing language, feedback scope (`owner-attention-asks`).
 - [x] 2.2 Phase 2: change tiers (`owner-attention-change-tiers`); the page tier moved to phase 3, which brings the per-element comparison it needs.
-- [ ] 2.3 Phase 3: page review lite and owner confirmation provenance.
+- [ ] 2.3 Phase 3: page review lite and owner confirmation provenance; 3a (`owner-attention-page-refs`: numbered references, `--ref`, quoted web acceptance) is in progress, 3b (overlay, comparison, page tier) follows.
 - [ ] 2.4 Phase 4: absence (states, inbox, away summary) and delegation over time.
 
 ## 3. Verification

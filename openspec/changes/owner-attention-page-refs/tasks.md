@@ -1,0 +1,55 @@
+# Tasks
+
+## 1. Planning
+
+- [x] 1.1 Write the proposal, the `web-workflow` delta, the design and these tasks; verify with `npm exec -- openspec validate owner-attention-page-refs --strict`.
+- [x] 1.2 Independent review by an agent that did not write the artifacts, with every finding answered in them; verify by re-running strict validation after the revision.
+
+## 2. Numbered capture (Decisions 1–3)
+
+- [x] 2.1 `page-refs-core.cjs`: settle (scroll through, fonts), the in-page numbering (candidates, visibility, nesting, references inside and outside sections, escaped selector, cleaned text) and the badge layer; verify with a browser test on a fixture page with a nav link outside sections, two sections, a hidden element, a link inside a paragraph, an image inside a link, a wrapper `div` and a scroll-revealed element: references, selectors (each finds its element) and text match; a sectionless page is numbered `1, 2, 3`. The test skips when no browser is found, as `interaction-capture.test.cjs` does.
+- [x] 2.2 `capture-refs.cjs` kernel and `evidence refs` in `evidenceCommand` (help text, contained writes): verify that `index.html` is byte-identical after a capture, that a second run on the same page reports `current` and leaves both files untouched, and that a missing browser exits 1 and writes nothing.
+- [x] 2.3 Export `pageDigest` from `web.cjs`; register the test file in `scripts/test-manifest.json` and both new scripts in `required` of `skill/references/package-resources.json`; verify with `npm test` (package check).
+
+## 3. Feedback by reference (Decision 4)
+
+- [x] 3.1 `--ref` in `REPEATABLE_OPTIONS`, passed to decide, help text; validated for web section and review rejections; verify each refusal with no state change: unknown reference, missing `refs.json`, an old page digest, another section's reference, no `--answer`, an accept, another stage, and the CLI path.
+- [x] 3.2 The answer rule's `object` keeps deduplicated `refs: [{ref, tag, selector, text}]`; `activeRules` and `statementLine` show them; verify in `workflow-next` that `--ref hero-2` is stored, appears in the next action's `rules` and in the statement, and that retiring and promoting the rule still work.
+
+## 4. Quoted web final acceptance (Decisions 5, 6)
+
+- [x] 4.1 A web owner accept at `review` requires `--answer` passing `reason()` and without a placeholder; the web `REVIEW.action` returns the single-placeholder `record` and the instruction; verify the refusals (`no answer`, `"ok"`, placeholder text), that "可以" passes, that film, edit and ui accepts without `--answer` still record, and `tests/workflow-action-commands.test.cjs` (returned commands, the execution test).
+- [x] 4.2 `stampRecord` stores `version` on web review entries; the statement's acceptance line reads the latest owner review entry and shows words and version; `first` says when the owner accepted an earlier version; verify each in `workflow-next`.
+- [x] 4.3 The kept section review and the web final review offer the capture (`first` appended, `show` only with a current capture, text fallback); delegated self-checks do not; verify in `workflow-next`, updating the test that asserts the section instruction text.
+- [x] 4.4 Update the helpers (`tests/helpers/web-flow.cjs`) and every test that records a web review accept without `--answer` (`workflow-next`, `workflow-action-commands`, `workflow-components`, `interaction-audit`, `web-concept-screening`, `product-source-workflow`); verify with each file.
+
+## 5. Docs
+
+- [x] 5.1 `workflow-web.md` (section review, final review, an "Element references" part for `evidence refs`), the CLI reference for `evidence refs` and `--ref`, a CHANGELOG `[Unreleased]` entry; `design-owner-attention`: split phase 3 into 3a (this change) and 3b, and note that G is narrowed here; verify with the guide-section test in `workflow-next` and `npm run specs:check`.
+
+## 6. Integration
+
+- [x] 6.1 `npm test` and `npm run specs:check` pass locally (the ff-tracking-hud ffmpeg sound test fails only in this sandbox); verify both outputs.
+
+## 7. Review follow-up (PR #138)
+
+- [x] 7.1 Codex: the capture binds every local file the browser loaded and its own screenshot (`lineage`, `png`), and is current only while all match; verify with a browser test that a changed CSS-loaded image and a replaced screenshot each need a new capture, and with `workflow-next` that reviews and `--ref` treat them as stale.
+- [x] 7.2 Codex: the settle walk scrolls and waits before re-reading the height; verify with a browser test page that appends content on scroll.
+- [x] 7.3 Codex: a section review routed to the art director offers the numbered page to the director; verify in `workflow-next`.
+- [x] 7.4 CodeRabbit: a blank `--ref` is refused, not dropped; verify in the `--ref` refusal test.
+- [x] 7.5 Codex: a requested local file that does not exist during the capture is bound as absent (`null`), so it appearing later makes the capture stale; verify in the browser lineage test.
+- [x] 7.6 Codex: the kernel hashes each loaded file when the browser requests it and again after the screenshot, and the CLI checks the disk still has those bytes, so a file rewritten during the capture fails it (`PAGE_MOVED`) instead of binding new bytes to an old screenshot; verify that a stable page captures and a re-run is current.
+- [x] 7.7 Codex: the settle walk scrolls instantly whatever `scroll-behavior` the page sets, and waits until each position is reached; verify with `scroll-behavior: smooth` on the browser test page that appends content at the bottom.
+- [x] 7.8 Codex: `refs.json` binds its reference list (`refsDigest`), so an edited mapping is not trusted as the screenshot's; verify in `workflow-next` that an edited list asks for a new capture and refuses `--ref`.
+- [x] 7.9 CodeRabbit: after the walk the capture waits (bounded, 10 s) for network idle and for every image to load and decode, and fails if an image is still loading; verify with a lazy image at the bottom of the browser test page, numbered at its loaded size.
+- [x] 7.10 Codex: the resource wait also covers videos (current data, bounded); verify the browser tests still pass.
+- [x] 7.11 Codex: when only the component decision changed after the owner's accept, the review says so instead of "an earlier version"; verify in `workflow-components`.
+- [x] 7.12 CodeRabbit: one deadline bounds network idle, image load and decode and video readiness, and its expiry fails the capture; verify with a browser test whose image request never completes.
+- [x] 7.13 Codex: the font wait is inside the same deadline as media, and its expiry fails the capture; verify with a browser test whose font request never completes.
+- [x] 7.14 Codex: CSS animations, transitions and Web Animations are paused from measurement through the screenshot (script-driven timers are not); verify with a browser test that an animated link stays where it was measured.
+- [x] 7.15 Codex: the badge layer hangs off `<html>`, outside a scaled, rotated or zoomed `<body>`, and a transformed, scaled, rotated or zoomed `<html>` (including the `scale` and `rotate` properties) refuses the capture; verify with a browser test that a badge sits on its element under a scaled and rotated body, and that a scaled root is refused.
+
+## Workflow follow-up
+
+- Open the PR, address review findings, merge when CI is green.
+- Archive after `adopt-ai-fluency-decision-roles`, `owner-attention-asks` and `owner-attention-change-tiers` archive.
