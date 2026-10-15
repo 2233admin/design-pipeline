@@ -155,7 +155,7 @@ const KNOWN_OPTIONS = new Set([
   "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan", "--bundle",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
-  "--start", "--end", "--fps", "--max-frames", "--by", "--assisted-by", "--tradeoff", "--revision", "--affects",
+  "--start", "--end", "--fps", "--max-frames", "--by", "--page-review", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
@@ -409,6 +409,7 @@ function publicHelp() {
     "  feedback record|prepare|reconcile",
     "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url> [--playwright-module <path>] [--agent-browser <path> [--agent-browser-state <file>]] [--chrome <exe>]",
     "  evidence refs --project-root <dir> [--chrome <exe>] [--puppeteer-module <path>]   (numbers the built index.html's visible elements at 1440x900 and as an emulated 390x844 phone: writes evidence/refs.json and a badged evidence/refs.png, and evidence/refs-mobile.json and refs-mobile.png with m: references; each current capture is kept, never rewritten; index.html is not changed)",
+    "  evidence review-page --project-root <dir>   (writes evidence/review.html: index.html with <base href=\"../\"> and a comment overlay for the owner's current section or final review; needs a current evidence/refs.json; index.html is not changed)",
     "  verify motion|components|audio|composition|interaction|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
     "    verify components --matrix <file> [--evidence-root <dir>] [--require-files]",
     "    verify motion --receipt <file> [--require-lifecycle]",
@@ -430,6 +431,7 @@ function publicHelp() {
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model> --assisted-by <tool-and-model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
     "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|concept|components|description|section|sample|review|deliver --by owner|agent [--delegate <checkpoint> ...] [--keep <checkpoint> ...] [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>] [--tradeoff <text>] [--scope object|project] [--promote <from> ...] [--revision bytes|commitment] [--affects <ids>|all|none] [--ref <reference> ...]",
     "    components requires --choice <project|github|index|discover|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer; discover lets the agent find open-source GitHub repositories and record each with a pinned revision and license evidence; on web, --verdict reject --answer records a decision-round correction as a rule bound to the result under review",
+    "    --page-review <file> records the block the owner submitted on evidence/review.html as their verdict (stage, choice, verdict, words and references come from the block; only --evidence, --scope and --promote may go beside it); refused unless it was given on the current page and capture for the current ask; the block is kept under evidence/page-review/",
     "    --ref <reference> (repeatable, with --answer) cites a numbered element from evidence/refs.json (such as hero-2) or evidence/refs-mobile.json (m:hero-2) on a web section or final-review rejection; it is refused unless the reference is in the current capture",
     "    web: intake records the confirmed playback (--verdict accept), a correction (--verdict reject) or a stated skip (--choice skip), each playback or skip with repeatable --anti-goal <text> rules; concept takes --choice A|B|C, several comma-separated to combine with --answer, or --verdict reject; description takes --verdict accept --choice <the ids of brief.md's ## Sections list, in order> or --verdict reject, and a re-approval of a changed description adds --revision bytes (wording only) or --revision commitment --affects <ids|all|none>; section takes --choice <section id> --verdict accept|reject with --answer and/or repeatable --evidence <runtime-review feedback record>; every web reject becomes a rule bound to its section or to the result under review (--scope project keeps it for the project; --promote <from> on the owner's final review keeps a bound rule); components, description and section are the agent's self-checks by default, and an owner's answer to a trade-off asked during one is recorded --by owner with --tradeoff <what was asked>",
     "    --by owner records the owner's own words; --by agent records what the agent decided where the delegation map hands it the checkpoint (final acceptance and creative intent stay with the owner); --delegate/--keep go on the intake record",
@@ -985,6 +987,10 @@ function evidenceCommand(parsed, root, action) {
     return { result: { status: kernelStatusLabel(kernel.exitCode, "captured"), receipt: kernel.value.receipt }, exitCode: kernel.exitCode };
   }
   if (action === "refs") return evidenceRefsCommand(parsed, root);
+  if (action === "review-page") {
+    const projectRoot = contained(root, option(parsed, "--project-root", root), "--project-root");
+    return { result: require("./workflows/page-review.cjs").buildReviewPage(projectRoot), exitCode: 0 };
+  }
   fail("cli", `unknown evidence action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
@@ -2458,6 +2464,15 @@ const COMMANDS = {
         return { result, exitCode: result.status === "blocked" ? 2 : 0 };
       }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
+      // A block from the review page decides the stage, verdict, words, references and author itself.
+      if (option(parsed, "--page-review")) {
+        // Only --promote, --scope and --evidence add to the block; anything else would be dropped or decided by it.
+        const allowed = new Set(["--root", "--project-root", "--page-review", "--evidence", "--scope", "--promote", "--json"]);
+        const conflicting = [...parsed.options.keys()].find(flag => !allowed.has(flag));
+        if (conflicting) fail("workflow", `--page-review records the block as the owner gave it, so ${conflicting} cannot go beside it. Fix: drop ${conflicting}`);
+        const { pageReviewOptions } = require("./workflows/page-review.cjs");
+        return { result: workflow.decide(project, { ...pageReviewOptions(project, option(parsed, "--page-review")), evidence: optionList(parsed, "--evidence"), scope: option(parsed, "--scope"), promote: optionList(parsed, "--promote") }), exitCode: 0 };
+      }
       return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), evidence: optionList(parsed, "--evidence"), antiGoals: optionList(parsed, "--anti-goal"), by: option(parsed, "--by"), delegate: optionList(parsed, "--delegate"), keep: optionList(parsed, "--keep"), tradeoff: option(parsed, "--tradeoff"), scope: option(parsed, "--scope"), promote: optionList(parsed, "--promote"), revision: option(parsed, "--revision"), affects: option(parsed, "--affects"), ref: optionList(parsed, "--ref") }), exitCode: 0 };
     },
   },

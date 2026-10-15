@@ -187,8 +187,9 @@ Research from official documentation (summarised; sources at the end):
      them beside the new ones.
    - **3c** (`owner-attention-page-compare`): the per-element comparison (pixel fingerprints per element
      and section, paired by content) and the page tier of C for sections a person accepted.
-   - **3d**: the click-to-comment overlay and confirmation through the page review's action, after its own
-     research.
+   - **3d** (`owner-attention-page-review`): `evidence review-page` writes a copy of the page with a
+     click-to-comment overlay; the owner submits one review as a block, and `decide --page-review` records
+     it as their verdict, bound to the page version and capture, keeping the block as provenance (`via`).
 4. **Absence (F) and delegation over time (E).** Also takes what phase 1 deferred: "decide later"
    on an ask, narrowing, superseding or retiring a rule by hand (phase 1 keeps rule history as
    `givenScope` and `promotedAt` only), changing delegation after intake, and routing lasting

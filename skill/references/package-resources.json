@@ -159,6 +159,8 @@
     "scripts/workflows/roles.cjs",
     "scripts/workflows/rules.cjs",
     "scripts/workflows/page-compare.cjs",
+    "scripts/workflows/page-review.cjs",
+    "tools/page-review/overlay.js",
     "references/workflow-film.md",
     "references/qa-checklist.md",
     "references/animation-thinking.md",

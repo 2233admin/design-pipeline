@@ -705,11 +705,15 @@ function refsStep(root, who = "the owner") {
   const current = currentCaptures(root).map(item => item.viewport);
   const show = current.map(viewport => path.join(path.resolve(root), ...profiles()[viewport].png.split("/")));
   const ask = `ask them to name each element they comment on by its reference (such as hero-2, or 3 outside the sections${current.includes("mobile") ? "; m:hero-2 on the phone" : ""}) or in words`;
+  // The owner can also comment on the page itself (owner-attention-page-review); an art director has no page review.
+  const onPage = who === "the owner" && current.includes("desktop")
+    ? ` Or run ${cliCommand()} evidence review-page --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} and let the owner open evidence/review.html where they open index.html, click elements to comment and submit; save the block they send back to a file inside the project and record it with decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --page-review <file> instead of the record below.`
+    : "";
   if (current.length === VIEWPORTS.length) {
-    return { first: `Show ${who} evidence/refs.png and evidence/refs-mobile.png, the page at desktop width and as an emulated phone shows it, with a number on each element, and ${ask}.`, show };
+    return { first: `Show ${who} evidence/refs.png and evidence/refs-mobile.png, the page at desktop width and as an emulated phone shows it, with a number on each element, and ${ask}.${onPage}`, show };
   }
   const run = `Run ${refsCommand(root)} and then next again, to show ${who} the page at desktop width and on a phone with a number on each element`;
-  if (current.length) return { first: `${run}. If a capture fails, show ${profiles()[current[0]].png} and ${ask}.`, show };
+  if (current.length) return { first: `${run}. If a capture fails, show ${profiles()[current[0]].png} and ${ask}.${onPage}`, show };
   return { first: `${run}; if the capture fails, ask them to name each element by its text, label or place.`, show };
 }
 
@@ -856,7 +860,7 @@ function sectionReview(root, { approval, accepted, current, latest, tier }) {
     ...(tier?.status === "changed" ? { pageChanges: tier.changes } : {}),
     question: `The ${current} section is built (${accepted.length + 1} of ${approval.sections.length}). Look at it in the page: accept it as it is, or tell me what to change, naming each element by its number on the numbered page or by its text, label or where it sits?`,
     show: [path.join(path.resolve(root), "index.html")],
-    instruction: `Open index.html at the ${current} section (data-section="${current}") in a real browser and let the owner look and interact. Comments are text: ask them to name each element they comment on by its reference on evidence/refs.png (such as ${current}-2) or by its text, label or place, and do not offer to let them click or pick elements on the page. Record each reference they cite with --ref <reference> beside --answer. If the project already carries runtime-review inputs (references/runtime-review.md), Feedback the owner leaves on its runtime-review page can be recorded with runtime-review record and cited with --evidence. Any change they ask for is a reject: record it, revise the section and ask again; accept only a section they are happy with as it is.`,
+    instruction: `Open index.html at the ${current} section (data-section="${current}") in a real browser and let the owner look and interact. Comments are text: ask them to name each element they comment on by its reference on evidence/refs.png (such as ${current}-2) or by its text, label or place, or let them click elements on the review page when it is offered. Record each reference they cite with --ref <reference> beside --answer. If the project already carries runtime-review inputs (references/runtime-review.md), Feedback the owner leaves on its runtime-review page can be recorded with runtime-review record and cited with --evidence. Any change they ask for is a reject: record it, revise the section and ask again; accept only a section they are happy with as it is.`,
     recommended: "Accept only when nothing in this section needs to change; earlier sections stay accepted unless a new rule changes them.",
     record: `${decideCommand(root, "section")} --choice ${current} --verdict accept|reject [--answer "<the owner's comments>"] [--ref <reference>] [--evidence <runtime-review/feedback/<hash>.json>]`,
     accept: `${decideCommand(root, "section")} --choice ${current} --verdict accept`,

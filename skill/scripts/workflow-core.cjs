@@ -402,6 +402,8 @@ function decide(root, options = {}) {
       const list = state.decisions[key] || [];
       if (list.length > (before[key] ?? 0) && list.at(-1).captures) SUB_WORKFLOWS.web.storeReviewed(root, list.at(-1).captures);
     }
+    // A verdict given on the review page keeps the block the owner submitted (owner-attention-page-review).
+    if (options.pageReview) require("./workflows/page-review.cjs").keepPageReview(root, options.pageReview);
   }
   // The playback card the owner confirms carries the creative intent, so confirming it records that
   // locked checkpoint as the owner's; a stated skip leaves it unstated.
