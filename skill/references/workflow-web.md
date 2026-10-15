@@ -743,7 +743,9 @@ the owner accepted it comes back to this review, and `first` says they accepted 
 
 `evidence refs --root <project> --project-root <project>` numbers the built page for the owner:
 
-- It loads `index.html` at desktop width (1440×900) in the browser the probe uses, scrolls through
+- It loads `index.html` at desktop width (1440×900) and as an emulated phone shows it (390×844, mobile
+  and touch emulation: a page without `<meta name="viewport">` lays out 980 wide, and
+  `(pointer: coarse)` rules apply) in the browser the probe uses, scrolls through
   it so scroll-revealed content settles, and numbers the visible headings, text blocks, list items,
   links, buttons, form controls and media in document order: `<section>-<n>` inside each
   `data-section`, `<n>` outside every section (a page without sections is numbered `1, 2, 3`).
@@ -751,18 +753,31 @@ the owner accepted it comes back to this review, and `first` says they accepted 
   number; a link inside a paragraph gets its own.
 - It writes `evidence/refs.json` (each reference with its selector, tag, text and box; the page
   digest; the hash of every local file the browser loaded, CSS-imported fonts and images included;
-  and the screenshot's own hash) and `evidence/refs.png`, the full page with a badge on each element.
-  The badges exist only in the browser: `index.html` is never changed.
+  and the screenshot's own hash) and `evidence/refs.png`, the full page with a badge on each element,
+  and the phone's `evidence/refs-mobile.json` and `evidence/refs-mobile.png`, whose references carry
+  `m:` (`m:hero-2`). The badges exist only in the browser: `index.html` is never changed. The phone
+  capture is an emulated Chromium phone, not a device check, and differs on purpose from the probe's
+  width-only audit.
 - A capture is current while all of those hashes still match; a current capture is never
-  overwritten (`status: "current"`), so a number the owner has seen keeps its meaning. After the
+  overwritten, so a number the owner has seen keeps its meaning. Each viewport is kept or taken
+  again on its own; the result lists `captures` per viewport, and `status` is `current` only when
+  both were kept. When one viewport fails, the other is still written and the command exits 1
+  naming the failed one. After the
   page or any file it loads changes, run it again and show the new numbers. A section review routed
   to an art director offers the numbered page to the director.
-- `--ref` is checked against this file: the reference must be on the current capture and, at a
-  section review, in that section. The rule keeps the reference with its tag and text, so a later
+- `--ref` is checked against these files: an `m:` reference against the phone capture, any other
+  against the desktop one (case does not matter). The reference must be on the current capture and,
+  at a section review, in that section. The rule keeps the reference with its tag and text, so a later
   renumbering does not change what the comment meant.
 - It needs a browser and `puppeteer-core`, like the probe. When neither is available, ask the owner
-  to name elements in words; only `--ref` needs a capture. Mobile captures and clicking elements on
-  the page are planned follow-ups.
+  to name elements in words; only `--ref` needs a capture. Clicking elements on the page is a
+  planned follow-up.
+- **Before and after.** When the owner (or the art director, at a section) records a section or
+  final-review verdict, each numbered screenshot current at that moment is copied to
+  `evidence/reviewed/<sha256>.png` and named on the record (`captures`). When the same section or
+  the final review is asked again and the new screenshot differs, `next` shows the copy (then)
+  beside the new one (now) and says when and how that verdict went. Both are whole-page pictures,
+  not a diff. A self-check keeps nothing; a deleted or edited copy is not shown.
 
 ## deliver
 

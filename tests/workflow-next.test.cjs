@@ -3531,9 +3531,15 @@ const REFS = [
 // A numbered capture of the current page, as `evidence refs` writes it (the browser test covers the
 // capture): the page digest, every file the browser loaded, and the screenshot's own hash.
 const fileHash = (root, rel) => "sha256:" + sha256(fs.readFileSync(path.join(root, rel)));
-function fakeRefs(root, refs = REFS, loaded = ["index.html"]) {
-  touch(root, "evidence/refs.png", "png");
-  touch(root, "evidence/refs.json", JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: { width: 1440, height: 900 }, refs, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, "evidence/refs.png"), refsDigest: "sha256:" + sha256(canonicalJson(refs)) }));
+// Both viewports by default (owner-attention-mobile-compare): the phone capture prefixes each reference
+// with m:. Each screenshot's bytes name the page version, so a changed page has a different picture.
+function fakeRefs(root, refs = REFS, loaded = ["index.html"], viewports = ["desktop", "mobile"]) {
+  for (const viewport of viewports) {
+    const [json, png, prefix, size] = viewport === "mobile" ? ["evidence/refs-mobile.json", "evidence/refs-mobile.png", "m:", { width: 390, height: 844, mobile: true }] : ["evidence/refs.json", "evidence/refs.png", "", { width: 1440, height: 900 }];
+    const list = refs.map(item => ({ ...item, ref: prefix + item.ref }));
+    touch(root, png, `${viewport} png of ${pageDigest(root)}`);
+    touch(root, json, JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: size, refs: list, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, png), refsDigest: "sha256:" + sha256(canonicalJson(list)) }));
+  }
 }
 
 test("a numbered capture goes stale when a file the page loaded or its screenshot changes", t => {
@@ -3646,3 +3652,114 @@ test("the web final acceptance needs the owner's own words, names the version, a
   assert.deepEqual(readState(root).rules.at(-1).object.refs.map(item => item.ref), ["1"], "the final review takes references outside the sections");
   assert.match(diligence(root).text, /No owner acceptance stands: their latest review \(\S+\) was a rejection/);
 });
+
+// --- the phone capture and before/after (owner-attention-mobile-compare) ----------------------------
+
+const reviewedFiles = root => {
+  try { return fs.readdirSync(path.join(root, "evidence", "reviewed")).sort(); } catch { return []; }
+};
+
+test("a review shows both numbered pictures, and asks for the phone one when only the desktop is current", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root, REFS, ["index.html"], ["desktop"]);
+  const partial = nextAction(root);
+  assert.match(partial.first, /evidence refs --root /, "the missing phone capture is taken first");
+  assert.match(partial.first, /If a capture fails, show evidence\/refs\.png/);
+  assert.deepEqual(partial.show.filter(file => /refs(-mobile)?\.png$/.test(file)).map(file => path.basename(file)), ["refs.png"]);
+  fakeRefs(root);
+  const both = nextAction(root);
+  assert.doesNotMatch(both.first, /evidence refs --root /);
+  assert.match(both.first, /evidence\/refs\.png and evidence\/refs-mobile\.png/);
+  assert.match(both.first, /m:hero-2 on the phone/);
+  assert.deepEqual(both.show.filter(file => /refs(-mobile)?\.png$/.test(file)).map(file => path.basename(file)), ["refs.png", "refs-mobile.png"]);
+});
+
+test("--ref takes phone references from the current phone capture", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  const no = { stage: "section", choice: "first-screen", verdict: "reject", answer: "The button wraps on the phone" };
+  fakeRefs(root, REFS, ["index.html"], ["desktop"]);
+  assert.match(refuses(root, { ...no, ref: ["m:first-screen-2"] }, "WORKFLOW_NOT_READY").message, /evidence\/refs-mobile\.json from a numbered capture/, "no phone capture");
+  fakeRefs(root);
+  touch(root, "evidence/refs-mobile.png", "a phone screenshot from another capture");
+  assert.match(refuses(root, { ...no, ref: ["m:first-screen-2"] }, "WORKFLOW_NOT_READY").message, /evidence\/refs-mobile\.json was taken from an earlier version/, "a stale phone capture");
+  fakeRefs(root);
+  assert.match(refuses(root, { ...no, ref: ["m:proof-1"] }, "CONTRACT_INVALID").message, /in section proof/);
+  assert.match(refuses(root, { ...no, ref: ["m:first-screen-9"] }, "CONTRACT_INVALID").message, /not on the numbered page \(evidence\/refs-mobile\.json\)/);
+  decide(root, { by: "owner", ...no, ref: ["M:First-Screen-2", "first-screen-2"] });
+  assert.deepEqual(readState(root).rules.at(-1).object.refs, [
+    { ref: "m:first-screen-2", tag: "a", selector: REFS[2].selector, text: "Reserve" },
+    { ref: "first-screen-2", tag: "a", selector: REFS[2].selector, text: "Reserve" },
+  ]);
+});
+
+test("a section asked again after the owner's no shows the picture they judged beside the new one", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  // A refused verdict, with current captures, keeps nothing (refuses checks every project file).
+  refuses(root, { stage: "section", choice: "proof", verdict: "accept" }, "WORKFLOW_NOT_READY");
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "reject", answer: "The button is too small", ref: ["first-screen-2"] });
+  const record = readState(root).decisions.sections.at(-1);
+  assert.deepEqual(Object.keys(record.captures), ["desktop", "mobile"]);
+  assert.deepEqual(reviewedFiles(root), Object.values(record.captures).map(hash => `${hash.slice(7)}.png`).sort(), "content-addressed copies");
+  for (const hash of Object.values(record.captures)) assert.equal(fileHash(root, `evidence/reviewed/${hash.slice(7)}.png`), hash);
+  assert.doesNotMatch(nextAction(root).first || "", /\(then\)/, "the unchanged page has nothing to compare");
+  buildPage(root, ["first-screen"], "<!-- a larger reserve button -->\n");
+  assert.doesNotMatch(nextAction(root).first, /\(then\)/, "no comparison before the new capture");
+  fakeRefs(root);
+  const again = nextAction(root);
+  assert.match(again.first, /evidence\/reviewed\/[0-9a-f]{64}\.png \(then\) beside evidence\/refs\.png \(now\), and evidence\/reviewed\/[0-9a-f]{64}\.png \(then\) beside evidence\/refs-mobile\.png \(now\)/);
+  assert.match(again.first, /the numbered page when the owner asked for changes at \S+\. Both show the whole page; look at the first-screen section\./);
+  assert.deepEqual(again.show.filter(file => file.includes(`${path.sep}reviewed${path.sep}`)).map(file => path.basename(file)), [record.captures.desktop, record.captures.mobile].map(hash => `${hash.slice(7)}.png`));
+  // A copy that was deleted or no longer has its bytes is not shown.
+  fs.rmSync(path.join(root, "evidence", "reviewed", `${record.captures.mobile.slice(7)}.png`));
+  touch(root, `evidence/reviewed/${record.captures.desktop.slice(7)}.png`, "edited");
+  const tampered = nextAction(root);
+  assert.doesNotMatch(tampered.first, /\(then\)/);
+  assert.ok(!tampered.show.some(file => file.includes(`${path.sep}reviewed${path.sep}`)));
+});
+
+test("a delegated section self-check keeps no picture, and the art director's verdict does", t => {
+  const self = approved(t, ["first-screen"]);
+  buildPage(self, ["first-screen"]);
+  fakeRefs(self);
+  decide(self, { by: "agent", stage: "section", choice: "first-screen", verdict: "accept" });
+  assert.equal(readState(self).decisions.sections.at(-1).captures, undefined);
+  assert.deepEqual(reviewedFiles(self), []);
+
+  const root = tmp();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  initState(root, { deliverable: "web", tier: "standard", director: "art-model" });
+  toComponents(root);
+  prepareWebComponents(root);
+  toBuild(root, ["first-screen"]);
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  assert.ok(nextAction(root).director, "the section goes to the art director");
+  decide(root, { by: "agent", stage: "section", choice: "first-screen", verdict: "reject", answer: "The heading is too light" });
+  assert.deepEqual(Object.keys(readState(root).decisions.sections.at(-1).captures), ["desktop", "mobile"]);
+  buildPage(root, ["first-screen"], "<!-- a heavier heading -->\n");
+  fakeRefs(root);
+  assert.match(nextAction(root).first, /the numbered page when the art director asked for changes at /);
+});
+
+test("the final review asked again after the owner's acceptance shows the accepted picture", t => {
+  const root = atProbe(t);
+  passProbe(root);
+  fakeRefs(root);
+  decide(root, { by: "owner", stage: "review", verdict: "accept", answer: "可以" });
+  const accepted = readState(root).decisions.drafts.at(-1).captures;
+  assert.deepEqual(Object.keys(accepted), ["desktop", "mobile"]);
+  fs.appendFileSync(path.join(root, "index.html"), "<!-- edited after acceptance -->\n");
+  passProbe(root);
+  fakeRefs(root);
+  const again = nextAction(root);
+  assert.equal(again.stage, "review");
+  assert.match(again.first, /^The owner accepted an earlier version of the page at /);
+  assert.match(again.first, /\(then\) beside evidence\/refs\.png \(now\).*the numbered page when the owner accepted it at \S+\. Let them compare/);
+  assert.doesNotMatch(again.first, /look at the/);
+  assert.ok(again.show.some(file => file.endsWith(`${accepted.desktop.slice(7)}.png`)));
+});
+

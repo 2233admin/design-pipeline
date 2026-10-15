@@ -12,7 +12,7 @@ const { fail, jsonResult } = require("./contract-utils.cjs");
 const SCOPE = "page refs";
 
 function parseArgs(argv) {
-  const allowed = new Set(["--project-root", "--chrome", "--puppeteer-module"]);
+  const allowed = new Set(["--project-root", "--chrome", "--puppeteer-module", "--viewport"]);
   const result = {};
   for (let index = 0; index < argv.length; index += 2) {
     const name = argv[index];
@@ -30,6 +30,7 @@ function parseArgs(argv) {
     const options = parseArgs(process.argv.slice(2));
     const { doc, png, loaded } = await captureRefs(options["--project-root"], {
       digest: pageDigest,
+      viewport: options["--viewport"],
       chrome: options["--chrome"],
       puppeteerModule: options["--puppeteer-module"],
     });

@@ -622,9 +622,13 @@ function buildScope(state, progress) {
 
 const REFS_FILE = "evidence/refs.json";
 const refsCommand = root => `${cliCommand()} evidence refs --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}`;
+// desktop and mobile (owner-attention-mobile-compare): the same capture at two viewports, each with
+// its own files; phone references carry `m:`.
+const profiles = () => require("../page-refs-core.cjs").PROFILES;
+const VIEWPORTS = ["desktop", "mobile"];
 
-function refsCapture(root) {
-  const text = fileText(root, REFS_FILE);
+function refsCapture(root, viewport = "desktop") {
+  const text = fileText(root, profiles()[viewport].json);
   if (!text) return null;
   try {
     const doc = JSON.parse(text);
@@ -634,40 +638,108 @@ function refsCapture(root) {
 
 // A capture is current when the page digest, every local file the browser loaded (CSS-imported fonts
 // and images included) and the numbered screenshot itself still have the hashes it recorded.
-function refsCurrent(root, doc = refsCapture(root)) {
+function refsCurrent(root, doc = refsCapture(root), viewport = "desktop") {
   if (!doc || doc.page !== pageDigest(root) || !doc.lineage || typeof doc.lineage !== "object" || !Object.keys(doc.lineage).length) return false;
-  if (typeof doc.png !== "string" || fileSha(root, "evidence/refs.png") !== doc.png) return false;
+  if (typeof doc.png !== "string" || fileSha(root, profiles()[viewport].png) !== doc.png) return false;
   // The reference list is bound too, so a hand-edited mapping is not trusted as the screenshot's
   // (an integrity check against accidental edits; refs.json is the agent's own evidence, not proof).
   if (doc.refsDigest !== digest(doc.refs)) return false;
   return Object.entries(doc.lineage).every(([rel, hash]) => fileSha(root, rel) === hash);
 }
 
-// What a review that faces a person says about the numbered page: show it when it is current,
-// otherwise take it first. Refs are optional, so a failed capture falls back to text.
+// The viewports whose capture is current, with their capture.
+const currentCaptures = root => VIEWPORTS.map(viewport => ({ viewport, doc: refsCapture(root, viewport) })).filter(({ viewport, doc }) => refsCurrent(root, doc, viewport));
+
+// What a review that faces a person says about the numbered page: show the current captures,
+// otherwise take them first. Refs are optional, so a failed capture falls back to words.
 function refsStep(root, who = "the owner") {
-  if (refsCurrent(root)) {
-    return { first: `Show ${who} evidence/refs.png, the page at desktop width with a number on each element, and ask them to name each element they comment on by its reference (such as hero-2, or 3 outside the sections) or in words.`, show: [path.join(path.resolve(root), "evidence", "refs.png")] };
+  const current = currentCaptures(root).map(item => item.viewport);
+  const show = current.map(viewport => path.join(path.resolve(root), ...profiles()[viewport].png.split("/")));
+  const ask = `ask them to name each element they comment on by its reference (such as hero-2, or 3 outside the sections${current.includes("mobile") ? "; m:hero-2 on the phone" : ""}) or in words`;
+  if (current.length === VIEWPORTS.length) {
+    return { first: `Show ${who} evidence/refs.png and evidence/refs-mobile.png, the page at desktop width and as an emulated phone shows it, with a number on each element, and ${ask}.`, show };
   }
-  return { first: `Run ${refsCommand(root)} and then next again, to show ${who} the page with a number on each element; if the capture fails, ask them to name each element by its text, label or place.`, show: [] };
+  const run = `Run ${refsCommand(root)} and then next again, to show ${who} the page at desktop width and on a phone with a number on each element`;
+  if (current.length) return { first: `${run}. If a capture fails, show ${profiles()[current[0]].png} and ${ask}.`, show };
+  return { first: `${run}; if the capture fails, ask them to name each element by its text, label or place.`, show };
 }
 
-// The references a "no" cites, each checked against the capture of the current page and, at a
-// section, against that section. Returns [{ref, tag, selector, text}] for the rule.
+// The references a "no" cites, each checked against the current capture of its viewport (`m:` is the
+// phone) and, at a section, against that section. Returns [{ref, tag, selector, text}] for the rule.
 function citedRefs(root, refs, section = null) {
-  const given = [].concat(refs ?? []).map(value => String(value ?? "").trim());
+  // Section ids and the phone prefix are lowercase, so a reference is read case-insensitively.
+  const given = [].concat(refs ?? []).map(value => String(value ?? "").trim().toLowerCase());
   if (given.some(value => !value)) fail("workflow", "--ref is empty. Fix: give the reference the owner cited, such as hero-2, or drop the flag");
   const list = [...new Set(given)];
   if (!list.length) return [];
-  const doc = refsCapture(root);
-  if (!doc) fail("workflow", `--ref needs ${REFS_FILE} from a numbered capture of the page. Fix: run ${refsCommand(root)}, show the owner evidence/refs.png and record the references they cite`, { code: "WORKFLOW_NOT_READY" });
-  if (!refsCurrent(root, doc)) fail("workflow", `${REFS_FILE} was taken from an earlier version of the page or its files, so its numbers may point at other elements now. Fix: run ${refsCommand(root)} again and show the owner the new numbers`, { code: "WORKFLOW_NOT_READY" });
+  const docs = {};
+  const capture = viewport => {
+    if (docs[viewport]) return docs[viewport];
+    const { json, png } = profiles()[viewport];
+    const doc = refsCapture(root, viewport);
+    if (!doc) fail("workflow", `--ref needs ${json} from a numbered capture of the page. Fix: run ${refsCommand(root)}, show the owner ${png} and record the references they cite`, { code: "WORKFLOW_NOT_READY" });
+    if (!refsCurrent(root, doc, viewport)) fail("workflow", `${json} was taken from an earlier version of the page or its files, so its numbers may point at other elements now. Fix: run ${refsCommand(root)} again and show the owner the new numbers`, { code: "WORKFLOW_NOT_READY" });
+    return (docs[viewport] = doc);
+  };
   return list.map(ref => {
-    const hit = doc.refs.find(item => item.ref === ref);
-    if (!hit) fail("workflow", `--ref ${ref} is not on the numbered page (${REFS_FILE}). Fix: use a reference shown on evidence/refs.png`);
+    const viewport = ref.startsWith(profiles().mobile.prefix) ? "mobile" : "desktop";
+    const hit = capture(viewport).refs.find(item => item.ref === ref);
+    if (!hit) fail("workflow", `--ref ${ref} is not on the numbered page (${profiles()[viewport].json}). Fix: use a reference shown on ${profiles()[viewport].png}`);
     if (section && hit.section !== section) fail("workflow", `--ref ${ref} is ${hit.section ? `in section ${hit.section}` : "outside the sections"}, not in section ${section}. Fix: cite it at the review of its own section or at the final review`);
     return { ref, tag: String(hit.tag ?? ""), selector: String(hit.selector ?? ""), text: String(hit.text ?? "") };
   });
+}
+
+// --- before and after (owner-attention-mobile-compare) -------------------------------------------------
+// A verdict a person records keeps the numbered screenshots they judged, content-addressed under
+// evidence/reviewed/, and names their hashes on the record; the next ask at the same scope shows them
+// beside the new screenshots when the page changed since.
+
+const REVIEWED_DIR = "evidence/reviewed";
+const reviewedFile = hash => `${REVIEWED_DIR}/${String(hash).replace(/^sha256:/, "")}.png`;
+
+// The hashes of the screenshots current at a verdict, {viewport: hash}, or null with none. Only named
+// here; decide copies them with storeReviewed after every check, just before it writes state.
+function reviewedCaptures(root) {
+  const kept = Object.fromEntries(currentCaptures(root).map(({ viewport, doc }) => [viewport, doc.png]));
+  return Object.keys(kept).length ? kept : null;
+}
+
+// Copies each named screenshot to evidence/reviewed/<hex>.png (content-addressed, so a picture is stored
+// once and its name proves its bytes). A screenshot that no longer has the named bytes fails the call.
+function storeReviewed(root, captures) {
+  for (const [viewport, hash] of Object.entries(captures || {})) {
+    const rel = reviewedFile(hash);
+    if (fileSha(root, rel) === hash) continue;
+    const source = profiles()[viewport].png;
+    if (fileSha(root, source) !== hash) fail("workflow", `${source} changed while the verdict was recorded. Fix: run next again`, { code: "WORKFLOW_NOT_READY" });
+    const target = resolveInside(root, rel, "reviewed screenshot", { scope: "workflow" });
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    const temp = `${target}.${process.pid}.tmp`;
+    fs.copyFileSync(resolveInside(root, source, "numbered screenshot", { scope: "workflow", mustExist: true }), temp);
+    fs.renameSync(temp, target);
+  }
+}
+
+// The before pictures for a repeated ask at `scope` (a section id, or "review" for the final review).
+function compareStep(state, root, scope) {
+  const records = scope === "review" ? history(state, "drafts") : history(state, "sections").filter(item => item.section === scope);
+  const latest = records.filter(item => item.captures && typeof item.captures === "object").at(-1);
+  if (!latest) return { show: [] };
+  const pairs = currentCaptures(root).flatMap(({ viewport, doc }) => {
+    const before = latest.captures[viewport];
+    if (typeof before !== "string" || before === doc.png || fileSha(root, reviewedFile(before)) !== before) return [];
+    return [{ before: reviewedFile(before), now: profiles()[viewport].png }];
+  });
+  if (!pairs.length) return { show: [] };
+  const who = latest.by === "agent" ? "the art director" : "the owner";
+  const how = latest.verdict === "accept" ? "accepted it" : "asked for changes";
+  const list = pairs.map(pair => `${pair.before} (then) beside ${pair.now} (now)`).join(", and ");
+  const part = scope === "review" ? "" : ` Both show the whole page; look at the ${scope} section.`;
+  return {
+    first: `Show ${list}: the earlier picture is the numbered page when ${who} ${how} at ${latest.at}.${part} Let them compare the two before they answer.`,
+    show: pairs.map(pair => path.join(path.resolve(root), ...pair.before.split("/"))),
+  };
 }
 
 function sectionReview(root, { approval, accepted, current, latest }) {
@@ -771,6 +843,10 @@ function recordSection(state, root, options, next) {
     ...(evidence.length ? { evidence: evidence.map(({ path: rel, sha256: hash, objectId, category }) => ({ path: rel, sha256: hash, objectId, category })) } : {}),
     description: approval.id, key: sectionKey(state, approval, id), pageSha256: pageDigest(root), at: new Date().toISOString(),
   }];
+  // A person's verdict keeps the screenshots they judged; the agent's own self-check keeps nothing.
+  // A section --by agent with an art director is the director's verdict (sections are directed).
+  const captures = options.by === "owner" || options.by === "agent" && state.director ? reviewedCaptures(root) : null;
+  if (captures) records.at(-1).captures = captures;
   state.decisions.sections = records;
   if (options.verdict === "reject") {
     const from = `section ${id} ${rejections(records, item => item.section === id)}`;
@@ -830,4 +906,4 @@ function before(state, current, id) {
 // returned before the record.
 const decisions = { intake: recordIntake, concept: recordConcept, components: recordComponents, description: recordDescription, section: recordSection };
 
-module.exports = { briefSections, citedRefs, decisions, pageDigest, refsCurrent, refsStep, stages };
+module.exports = { briefSections, citedRefs, compareStep, decisions, pageDigest, refsCapture, refsCurrent, refsStep, reviewedCaptures, stages, storeReviewed };

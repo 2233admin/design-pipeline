@@ -408,7 +408,7 @@ function publicHelp() {
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
     "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url> [--playwright-module <path>] [--agent-browser <path> [--agent-browser-state <file>]] [--chrome <exe>]",
-    "  evidence refs --project-root <dir> [--chrome <exe>] [--puppeteer-module <path>]   (numbers the built index.html's visible elements at 1440x900: writes evidence/refs.json and a badged evidence/refs.png; a capture of the current page is kept, never rewritten; index.html is not changed)",
+    "  evidence refs --project-root <dir> [--chrome <exe>] [--puppeteer-module <path>]   (numbers the built index.html's visible elements at 1440x900 and as an emulated 390x844 phone: writes evidence/refs.json and a badged evidence/refs.png, and evidence/refs-mobile.json and refs-mobile.png with m: references; each current capture is kept, never rewritten; index.html is not changed)",
     "  verify motion|components|audio|composition|interaction|film-storyboard|film-timeline|film-render | --gate state-coverage|interaction-states|artifact|plan --artifact <file>",
     "    verify components --matrix <file> [--evidence-root <dir>] [--require-files]",
     "    verify motion --receipt <file> [--require-lifecycle]",
@@ -430,7 +430,7 @@ function publicHelp() {
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model> --assisted-by <tool-and-model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
     "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|concept|components|description|section|sample|review|deliver --by owner|agent [--delegate <checkpoint> ...] [--keep <checkpoint> ...] [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>] [--tradeoff <text>] [--scope object|project] [--promote <from> ...] [--revision bytes|commitment] [--affects <ids>|all|none] [--ref <reference> ...]",
     "    components requires --choice <project|github|index|discover|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer; discover lets the agent find open-source GitHub repositories and record each with a pinned revision and license evidence; on web, --verdict reject --answer records a decision-round correction as a rule bound to the result under review",
-    "    --ref <reference> (repeatable, with --answer) cites a numbered element from evidence/refs.json (such as hero-2) on a web section or final-review rejection; it is refused unless the reference is in the current capture",
+    "    --ref <reference> (repeatable, with --answer) cites a numbered element from evidence/refs.json (such as hero-2) or evidence/refs-mobile.json (m:hero-2) on a web section or final-review rejection; it is refused unless the reference is in the current capture",
     "    web: intake records the confirmed playback (--verdict accept), a correction (--verdict reject) or a stated skip (--choice skip), each playback or skip with repeatable --anti-goal <text> rules; concept takes --choice A|B|C, several comma-separated to combine with --answer, or --verdict reject; description takes --verdict accept --choice <the ids of brief.md's ## Sections list, in order> or --verdict reject, and a re-approval of a changed description adds --revision bytes (wording only) or --revision commitment --affects <ids|all|none>; section takes --choice <section id> --verdict accept|reject with --answer and/or repeatable --evidence <runtime-review feedback record>; every web reject becomes a rule bound to its section or to the result under review (--scope project keeps it for the project; --promote <from> on the owner's final review keeps a bound rule); components, description and section are the agent's self-checks by default, and an owner's answer to a trade-off asked during one is recorded --by owner with --tradeoff <what was asked>",
     "    --by owner records the owner's own words; --by agent records what the agent decided where the delegation map hands it the checkpoint (final acceptance and creative intent stay with the owner); --delegate/--keep go on the intake record",
     "  diligence --root <absolute-project-root> --project-root <absolute-project-root> [--write]   (the AI diligence statement rendered from the workflow state; --write saves .design-pipeline/diligence.md)",
@@ -854,24 +854,60 @@ function benchmarkFeedback(root, result) {
   });
 }
 
-// Numbered element references for the built page. The kernel measures and screenshots; this side keeps
-// a capture of the current page as it is, and writes the png before the json so a refs.json on disk is
-// always backed by its picture.
+// Numbered element references for the built page, at desktop and phone width. The kernel measures and
+// screenshots one viewport; this side keeps each capture of the current page as it is, takes each stale
+// one on its own, and writes the png before the json so a refs file on disk is always backed by its
+// picture. A failed viewport writes nothing and fails the command after the others are written.
 function evidenceRefsCommand(parsed, root) {
-  const { pageDigest, refsCurrent } = require("./workflows/web.cjs");
-  const { REFS_SCHEMA } = require("./page-refs-core.cjs");
+  const { pageDigest, refsCurrent, refsCapture } = require("./workflows/web.cjs");
+  const { PROFILES } = require("./page-refs-core.cjs");
   const projectRoot = contained(root, option(parsed, "--project-root", root), "--project-root");
-  const jsonFile = contained(projectRoot, "evidence/refs.json", "evidence/refs.json", false);
-  const pngFile = contained(projectRoot, "evidence/refs.png", "evidence/refs.png", false);
   const rel = (file) => path.relative(projectRoot, file).split(path.sep).join("/");
-  const digest = pageDigest(projectRoot);
-  if (!digest) fail("cli", "index.html not found in --project-root. Fix: build the page before numbering it", { code: "PAGE_MISSING" });
-  let existing = null;
-  try { existing = JSON.parse(fs.readFileSync(jsonFile, "utf8")); } catch { existing = null; }
-  if (existing?.schema === REFS_SCHEMA && Array.isArray(existing.refs) && refsCurrent(projectRoot, existing)) {
-    return { result: { status: "current", refs: existing.refs.length, json: rel(jsonFile), png: rel(pngFile) }, exitCode: 0 };
+  if (!pageDigest(projectRoot)) fail("cli", "index.html not found in --project-root. Fix: build the page before numbering it", { code: "PAGE_MISSING" });
+  const captures = [];
+  const failures = [];
+  for (const [viewport, profile] of Object.entries(PROFILES)) {
+    const jsonFile = contained(projectRoot, profile.json, profile.json, false);
+    const pngFile = contained(projectRoot, profile.png, profile.png, false);
+    const existing = refsCapture(projectRoot, viewport);
+    if (existing && refsCurrent(projectRoot, existing, viewport)) {
+      captures.push({ viewport, status: "current", refs: existing.refs.length, json: rel(jsonFile), png: rel(pngFile) });
+      continue;
+    }
+    try {
+      const record = captureViewport(parsed, projectRoot, viewport, rel);
+      const pngBytes = record.pngBytes;
+      delete record.pngBytes;
+      fs.mkdirSync(path.dirname(jsonFile), { recursive: true });
+      const write = (file, data) => {
+        const temp = `${file}.${process.pid}.tmp`;
+        fs.writeFileSync(temp, data);
+        fs.renameSync(temp, file);
+      };
+      write(pngFile, pngBytes);
+      write(jsonFile, `${JSON.stringify(record, null, 2)}\n`);
+      captures.push({ viewport, status: "captured", refs: record.refs.length, json: rel(jsonFile), png: rel(pngFile) });
+    } catch (error) {
+      failures.push({ viewport, error });
+    }
   }
-  const args = ["--project-root", projectRoot];
+  if (failures.length) {
+    const [first] = failures;
+    const written = captures.length ? ` (${captures.map((item) => `${item.viewport} ${item.status}`).join(", ")})` : "";
+    fail("page refs", `the ${failures.map((item) => item.viewport).join(" and ")} capture failed${written}: ${first.error.message.replace(/^(?:(?:cli|page refs): )+/, "")}`, { code: first.error.code || "KERNEL_FAILED" });
+  }
+  return { result: { status: captures.every((item) => item.status === "current") ? "current" : "captured", captures }, exitCode: 0 };
+}
+
+// One viewport's capture, checked: the page did not move, and every local file the browser loaded inside
+// the project still has the bytes the kernel hashed around the screenshot (null for a requested file
+// that does not exist yet, so its appearing later makes the capture stale, as the probe binds an absent
+// request). Returns the record with its png bytes, written by the caller.
+function captureViewport(parsed, projectRoot, viewport, rel) {
+  const { pageDigest } = require("./workflows/web.cjs");
+  const { REFS_SCHEMA } = require("./page-refs-core.cjs");
+  const digest = pageDigest(projectRoot);
+  const args = ["--project-root", projectRoot, "--viewport", viewport];
   for (const flag of ["--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
   const kernel = runKernel("capture-refs.cjs", args, projectRoot, { timeout: 180000, maxBuffer: 256 * 1024 * 1024 });
   const doc = kernel.value?.capture;
@@ -881,10 +917,6 @@ function evidenceRefsCommand(parsed, root) {
   if (pageDigest(projectRoot) !== digest || doc.page !== digest) {
     fail("page refs", "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again", { code: "PAGE_MOVED" });
   }
-  // The capture binds every local file the browser loaded inside the project, with the bytes the
-  // kernel hashed around the screenshot (null for a requested file that does not exist yet, so its
-  // appearing later makes the capture stale, as the probe binds an absent request), and its own
-  // screenshot. A file that no longer has those bytes moved after the capture.
   const lineage = {};
   const loaded = kernel.value.loaded && typeof kernel.value.loaded === "object" && !Array.isArray(kernel.value.loaded) ? kernel.value.loaded : {};
   for (const [url, hash] of Object.entries(loaded)) {
@@ -897,16 +929,7 @@ function evidenceRefsCommand(parsed, root) {
     lineage[rel(file)] = hash;
   }
   const pngBytes = Buffer.from(kernel.value.png, "base64");
-  const record = { ...doc, lineage, png: "sha256:" + sha256(pngBytes), refsDigest: "sha256:" + sha256(canonicalJson(doc.refs)) };
-  fs.mkdirSync(path.dirname(jsonFile), { recursive: true });
-  const write = (file, data) => {
-    const temp = `${file}.${process.pid}.tmp`;
-    fs.writeFileSync(temp, data);
-    fs.renameSync(temp, file);
-  };
-  write(pngFile, pngBytes);
-  write(jsonFile, `${JSON.stringify(record, null, 2)}\n`);
-  return { result: { status: "captured", refs: record.refs.length, json: rel(jsonFile), png: rel(pngFile) }, exitCode: 0 };
+  return { ...doc, lineage, png: "sha256:" + sha256(pngBytes), refsDigest: "sha256:" + sha256(canonicalJson(doc.refs)), pngBytes };
 }
 
 function evidenceCommand(parsed, root, action) {

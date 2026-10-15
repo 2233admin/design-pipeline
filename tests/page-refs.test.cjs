@@ -49,6 +49,10 @@ function run(args, cwd = repoRoot) {
 }
 
 const refs = (dir, extra = []) => run(["evidence", "refs", "--root", dir, "--project-root", dir, "--puppeteer-module", puppeteerPath(), ...extra]);
+const pngSize = (file) => {
+  const bytes = fs.readFileSync(file);
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+};
 const readRefs = (dir) => JSON.parse(fs.readFileSync(path.join(dir, "evidence", "refs.json"), "utf8"));
 const snapshot = (dir) => ["refs.json", "refs.png"].map((name) => {
   const file = path.join(dir, "evidence", name);
@@ -61,8 +65,10 @@ test("a sectioned page is numbered per section and outside them", { skip }, asyn
   const result = refs(dir);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(result.output.status, "captured");
-  assert.equal(result.output.json, "evidence/refs.json");
-  assert.equal(result.output.png, "evidence/refs.png");
+  assert.deepEqual(result.output.captures.map((item) => [item.viewport, item.status, item.json, item.png]), [
+    ["desktop", "captured", "evidence/refs.json", "evidence/refs.png"],
+    ["mobile", "captured", "evidence/refs-mobile.json", "evidence/refs-mobile.png"],
+  ]);
 
   const doc = readRefs(dir);
   assert.equal(doc.schema, "design-pipeline.page-refs.v1");
@@ -70,7 +76,7 @@ test("a sectioned page is numbered per section and outside them", { skip }, asyn
   assert.deepEqual(doc.viewport, { width: 1440, height: 900 });
   assert.ok(doc.browser.version && doc.browser.executable);
   assert.ok(!Number.isNaN(Date.parse(doc.capturedAt)));
-  assert.equal(result.output.refs, doc.refs.length);
+  assert.equal(result.output.captures[0].refs, doc.refs.length);
 
   const summary = doc.refs.map((item) => [item.ref, item.tag, item.text]);
   assert.deepEqual(summary, [
@@ -96,6 +102,15 @@ test("a sectioned page is numbered per section and outside them", { skip }, asyn
   const proof = doc.refs.find((item) => item.ref === "proof-1");
   assert.ok(proof.box.y >= 900, "boxes are in document coordinates, below the first viewport");
   assert.ok(proof.box.y > hero.box.y);
+
+  // The phone capture numbers the same elements with the m: prefix, laid out at phone width.
+  const phone = JSON.parse(fs.readFileSync(path.join(dir, "evidence", "refs-mobile.json"), "utf8"));
+  assert.deepEqual(phone.viewport, { width: 390, height: 844, mobile: true });
+  assert.deepEqual(phone.refs.map((item) => item.ref), summary.map(([ref]) => `m:${ref}`));
+  assert.deepEqual(phone.refs.map((item) => item.section), doc.refs.map((item) => item.section));
+  // The fixture has no viewport meta, so the phone lays it out at its default 980 px (zoomed out).
+  const phoneWidth = pngSize(path.join(dir, "evidence", "refs-mobile.png")).width;
+  assert.ok(phone.refs.every((item) => item.box.x + item.box.width <= phoneWidth), "phone boxes fit the phone screenshot");
 
   // Each selector finds exactly its element in the page the capture measured.
   const puppeteer = resolvePuppeteer(process.cwd(), PUPPETEER_MODULE);
@@ -230,6 +245,63 @@ test("a capture binds the files the page loaded, so a changed CSS asset or scree
   assert.equal(refs(dir).output.status, "current");
   fs.writeFileSync(path.join(dir, "later.svg"), pixel("#3c3"));
   assert.equal(refs(dir).output.status, "captured", "an absent asset that appears makes the capture stale");
+});
+
+// owner-attention-mobile-compare: the phone capture is what an emulated phone shows, and each viewport's
+// capture is kept or taken on its own.
+
+test("the phone capture applies phone-only rules and a page without a viewport meta", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "page-refs-"));
+  fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><head><style>
+body { margin: 0; font: 16px sans-serif; }
+@media (pointer: coarse) { .hover-hint { display: none; } }
+</style></head><body><section data-section="hero"><h1>Bread</h1><p class="hover-hint">Hover to preview</p><a href="#">Reserve</a></section></body></html>`);
+  const result = refs(dir);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const desktop = readRefs(dir);
+  const phone = JSON.parse(fs.readFileSync(path.join(dir, "evidence", "refs-mobile.json"), "utf8"));
+  assert.ok(desktop.refs.some((item) => item.text === "Hover to preview"), "the desktop has a hover");
+  assert.ok(!phone.refs.some((item) => item.text === "Hover to preview"), "a (pointer: coarse) rule applies on the phone");
+  // Without <meta name="viewport"> a phone lays the page out at its default 980 px and zooms out; the
+  // boxes stay in the screenshot's pixels, so each badge is drawn on its element.
+  const size = pngSize(path.join(dir, "evidence", "refs-mobile.png"));
+  assert.equal(size.width, 980);
+  const heading = phone.refs.find((item) => item.ref === "m:hero-1");
+  assert.equal(heading.box.width, 980);
+  assert.ok(phone.refs.every((item) => item.box.x + item.box.width <= size.width && item.box.y + item.box.height <= size.height));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("each viewport's capture is kept or taken again on its own", { skip }, async () => {
+  const dir = project("plain.html");
+  assert.equal(refs(dir).status, 0);
+  const desktopBytes = () => ["refs.json", "refs.png"].map((name) => fs.readFileSync(path.join(dir, "evidence", name)).toString("base64"));
+  const kept = desktopBytes();
+  fs.writeFileSync(path.join(dir, "evidence", "refs-mobile.png"), "replaced");
+  const again = refs(dir);
+  assert.equal(again.status, 0, again.stderr || again.stdout);
+  assert.deepEqual(again.output.captures.map((item) => [item.viewport, item.status]), [["desktop", "current"], ["mobile", "captured"]]);
+  assert.deepEqual(desktopBytes(), kept, "the current desktop capture is not rewritten");
+  // A project captured before the phone capture existed: the phone files are added, refs.json kept.
+  for (const name of ["refs-mobile.json", "refs-mobile.png"]) fs.rmSync(path.join(dir, "evidence", name));
+  assert.deepEqual(refs(dir).output.captures.map((item) => item.status), ["current", "captured"]);
+  assert.deepEqual(desktopBytes(), kept);
+  assert.equal(refs(dir).output.status, "current");
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("a phone capture that fails keeps the desktop one", { skip }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "page-refs-"));
+  // The root is transformed only on a touch screen, so only the phone capture is refused.
+  fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><head><meta name="viewport" content="width=device-width"><style>
+@media (pointer: coarse) { html { transform: scale(1); } }
+</style></head><body><h1>Bread</h1></body></html>`);
+  const result = refs(dir);
+  assert.equal(result.status, 1);
+  assert.match(result.output?.error?.message || result.stderr, /mobile capture failed \(desktop captured\).*transforms or zooms its <html>/);
+  assert.ok(fs.existsSync(path.join(dir, "evidence", "refs.json")) && fs.existsSync(path.join(dir, "evidence", "refs.png")));
+  assert.ok(!fs.existsSync(path.join(dir, "evidence", "refs-mobile.json")) && !fs.existsSync(path.join(dir, "evidence", "refs-mobile.png")));
+  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 // CodeRabbit review on #138: the resource wait has one deadline, and its expiry fails the capture.
