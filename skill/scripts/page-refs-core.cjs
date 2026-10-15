@@ -180,8 +180,9 @@ function measureSections(sectionIdSource) {
 // Runs on a blank page: a fingerprint of the pixels inside each box of the clean (unbadged) full-page
 // screenshot, so a later capture can tell which elements look different wherever they moved. Two
 // 32-bit FNV-1a hashes over the box size and its RGBA bytes; null for a box outside the picture. With
-// it, the box's palette: the colours (4 bits a channel) covering at least 1% of it, which a move by a
-// fraction of a pixel does not change, for sections whose contents round to new pixels when they move.
+// it, the box's palette: the colours (4 bits a channel) covering at least 1% of it, each with its share
+// in 5% steps, which a move by a fraction of a pixel does not change, for sections whose contents round
+// to new pixels when they move.
 async function regionPixels(base64, boxes) {
   const blob = await (await fetch(`data:image/png;base64,${base64}`)).blob();
   const bitmap = await createImageBitmap(blob);
@@ -215,7 +216,9 @@ async function regionPixels(base64, boxes) {
     }
     const floor = width * height * 0.01;
     const palette = [];
-    for (let bucket = 0; bucket < buckets.length; bucket += 1) if (buckets[bucket] >= floor) palette.push(bucket.toString(16).padStart(3, "0"));
+    for (let bucket = 0; bucket < buckets.length; bucket += 1) {
+      if (buckets[bucket] >= floor) palette.push(`${bucket.toString(16).padStart(3, "0")}:${Math.round((buckets[bucket] / (width * height)) * 20) * 5}`);
+    }
     return { pixels: `${width}x${height}:${(a >>> 0).toString(16).padStart(8, "0")}${(b >>> 0).toString(16).padStart(8, "0")}`, palette: palette.join(",") };
   });
 }

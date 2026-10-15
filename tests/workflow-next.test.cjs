@@ -3542,7 +3542,7 @@ function fakeRefs(root, refs = REFS, loaded = ["index.html"], viewports = ["desk
     const list = refs.map(item => ({ ...item, ref: prefix + item.ref, pixels: pixels[item.ref] ?? `px-${viewport}-${item.ref}` }));
     const sections = sectionIds.map(id => ({ id, box: { x: 0, y: 0, width: 10, height: 10 }, pixels: pixels[id] ?? `px-${viewport}-${id}` }));
     touch(root, png, `${viewport} png of ${pageDigest(root)}`);
-    touch(root, json, JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: size, refs: list, sections, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, png), refsDigest: "sha256:" + sha256(canonicalJson(list)) }));
+    touch(root, json, JSON.stringify({ schema: "design-pipeline.page-refs.v1", page: pageDigest(root), viewport: size, refs: list, sections, lineage: Object.fromEntries(loaded.map(rel => [rel, fileHash(root, rel)])), png: fileHash(root, png), refsDigest: "sha256:" + sha256(canonicalJson({ refs: list, sections })) }));
   }
 }
 
@@ -3915,5 +3915,22 @@ test("an accepted section is compared after a change to a file only its capture 
   assert.match(nextAction(root).first || "", /cannot be compared/, "the page digest is unchanged, the font is not");
   fakeRefs(root, REFS, loaded, ["desktop", "mobile"], { pixels: { "first-screen-1": "new font" } });
   assert.match(nextAction(root).first, /first-screen-1 h1 "Fresh bread" \(changed\)/);
+});
+
+// Codex review on #142: without its kept reference list a capture cannot show its loaded files are
+// unchanged, and the section fingerprints are bound into the capture like its references.
+test("a kept capture without its reference list goes to the comparison, and edited section fingerprints are not current", t => {
+  const root = approved(t, ["first-screen"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  touch(root, "fonts/display.woff2", "font bytes");
+  fakeRefs(root, REFS, ["index.html", "fonts/display.woff2"]);
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
+  const { captures } = readState(root).decisions.sections.at(-1);
+  fs.rmSync(path.join(root, "evidence", "reviewed", `${captures.desktop.refs.slice(7)}.json`));
+  assert.match(nextAction(root).first || "", /cannot be compared/, "the page digest is unchanged, but the kept files cannot be checked");
+  const doc = JSON.parse(fs.readFileSync(path.join(root, "evidence", "refs.json"), "utf8"));
+  doc.sections[0].pixels = "edited";
+  touch(root, "evidence/refs.json", JSON.stringify(doc));
+  assert.match(nextAction(root).first, /evidence refs --root /, "an edited section fingerprint makes the capture stale");
 });
 

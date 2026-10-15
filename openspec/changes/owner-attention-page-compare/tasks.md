@@ -30,6 +30,8 @@
 
 - [x] 6.3 Codex: a section stays accepted without comparison only while both the page digest and every file the kept captures loaded are unchanged, since a font or image named only in CSS is outside the digest; verify in `workflow-next`.
 
+- [x] 6.4 Codex: a kept capture without its reference list fails closed (goes to the comparison); `refsDigest` binds the section fingerprints; the palette carries each colour's share; verify in `workflow-next` and the browser fingerprint test.
+
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.

@@ -584,7 +584,9 @@ function pageTier(root, record) {
   // Unchanged since the verdict: the page digest, and every file the kept captures loaded (a font or
   // image named only in CSS is outside the digest), still have the bytes they had.
   const kept = Object.values(record.captures).map(entry => keptCapture(root, entry).doc);
-  const loadedSame = kept.every(doc => !doc?.lineage || Object.entries(doc.lineage).every(([rel, hash]) => fileSha(root, rel) === hash));
+  // A kept capture whose reference list is gone (or a 3b record that kept none) cannot show its files
+  // are unchanged, so it goes to the comparison, which then cannot be made either.
+  const loadedSame = kept.every(doc => doc?.lineage && typeof doc.lineage === "object" && Object.entries(doc.lineage).every(([rel, hash]) => fileSha(root, rel) === hash));
   if (record.pageSha256 === pageDigest(root) && loadedSame) return null;
   const now = Object.fromEntries(currentCaptures(root).map(({ viewport, doc }) => [viewport, doc]));
   const changes = [];
@@ -680,7 +682,8 @@ function refsCurrent(root, doc = refsCapture(root), viewport = "desktop") {
   if (!doc.refs.every(item => typeof item?.ref === "string" && (profile.prefix ? item.ref.startsWith(profile.prefix) : !item.ref.includes(":")))) return false;
   // The reference list is bound too, so a hand-edited mapping is not trusted as the screenshot's
   // (an integrity check against accidental edits; refs.json is the agent's own evidence, not proof).
-  if (doc.refsDigest !== digest(doc.refs)) return false;
+  // The section fingerprints are bound with them (a capture from before them binds its references alone).
+  if (doc.refsDigest !== digest(Array.isArray(doc.sections) ? { refs: doc.refs, sections: doc.sections } : doc.refs)) return false;
   return Object.entries(doc.lineage).every(([rel, hash]) => fileSha(root, rel) === hash);
 }
 

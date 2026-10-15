@@ -57,5 +57,4 @@ None.
 - Tests: `tests/page-refs.test.cjs`, `tests/workflow-next.test.cjs`, new `tests/page-compare.test.cjs`.
 - No new gate, receipt schema or policy digest; the page-refs v1 document gains fields. **Breaking:** the 3b
   `captures` record value becomes `{png, refs}` per viewport (unreleased). Sections accepted with captures
-  before this change have no kept reference list, so the page tier asks about them again (not comparable) after
-  the page changes; a section whose page did not change needs nothing.
+  before this change have no kept reference list, so the page tier asks about them again once (not comparable).
