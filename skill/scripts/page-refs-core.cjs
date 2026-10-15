@@ -15,6 +15,13 @@ const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
 const SCOPE = "page refs";
 const REFS_SCHEMA = "design-pipeline.page-refs.v1";
 const VIEWPORT = { width: 1440, height: 900 };
+// The viewports the page is numbered at (OpenSpec change owner-attention-mobile-compare). The phone is
+// the probe audit's 390x844 with mobile and touch emulation, so the owner sees what a phone shows (a
+// missing viewport meta, coarse-pointer rules); its references carry `m:`, which no section id can hold.
+const PROFILES = {
+  desktop: { viewport: { ...VIEWPORT, deviceScaleFactor: 1 }, prefix: "", json: "evidence/refs.json", png: "evidence/refs.png" },
+  mobile: { viewport: { width: 390, height: 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true }, prefix: "m:", json: "evidence/refs-mobile.json", png: "evidence/refs-mobile.png" },
+};
 const SECTION_ID = /^[a-z0-9][a-z0-9-]*$/;
 const TEXT_LIMIT = 80;
 const NAVIGATION_TIMEOUT_MS = 30000;
@@ -192,7 +199,7 @@ function drawBadges(refs) {
 // fonts and transitions. Each step scrolls and waits before it re-reads the height, so content that
 // loads or reveals on scroll lengthens the walk (bounded, for pages that grow without end).
 async function settle(page) {
-  const stepPx = VIEWPORT.height;
+  const stepPx = await page.evaluate(() => window.innerHeight);
   // Smooth scrolling would leave each step mid-animation; the capture's own walk is always instant.
   await page.evaluate(() => {
     for (const element of [document.documentElement, document.body]) element?.style.setProperty("scroll-behavior", "auto", "important");
@@ -261,6 +268,8 @@ async function captureRefs(projectRoot, options = {}) {
   const file = path.join(projectRoot, "index.html");
   if (!fs.existsSync(file)) fail(SCOPE, `index.html not found in ${projectRoot}. Fix: build the page before numbering it`);
   const digest = options.digest;
+  const profile = PROFILES[options.viewport || "desktop"];
+  if (!profile) fail(SCOPE, `unknown viewport ${options.viewport}; use one of ${Object.keys(PROFILES).join(", ")}`);
   const before = digest(projectRoot);
   const puppeteer = refsPuppeteer(projectRoot, options.puppeteerModule);
   const executablePath = resolveBrowser(options.chrome);
@@ -271,7 +280,7 @@ async function captureRefs(projectRoot, options = {}) {
   });
   try {
     const page = await browser.newPage();
-    await page.setViewport({ ...VIEWPORT, deviceScaleFactor: 1 });
+    await page.setViewport(profile.viewport);
     // Every local file the page loads, CSS-imported fonts and images included: the capture binds them,
     // so a changed asset makes it stale even when index.html is unchanged.
     // Each file is hashed when the browser requests it and again after the screenshot, so the bytes
@@ -288,7 +297,8 @@ async function captureRefs(projectRoot, options = {}) {
     await settle(page);
     await awaitResources(page);
     await freezeMotion(page);
-    const refs = await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT);
+    // The prefix goes on before the badges are drawn, so the picture shows exactly what is cited.
+    const refs = (await page.evaluate(measureRefs, SECTION_ID.source, TEXT_LIMIT)).map((item) => ({ ...item, ref: profile.prefix + item.ref }));
     if (await page.evaluate(drawBadges, refs) === "root-transformed") fail(SCOPE, "the page transforms or zooms its <html> element, so badges cannot be placed on its elements. Fix: ask the owner to name elements by their text, label or place");
     const png = Buffer.from(await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true }));
     const identity = await browserIdentity(browser, executablePath);
@@ -297,7 +307,7 @@ async function captureRefs(projectRoot, options = {}) {
     const after = digest(projectRoot);
     if (before !== after) fail(SCOPE, "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again");
     return {
-      doc: { schema: REFS_SCHEMA, page: after, viewport: { ...VIEWPORT }, browser: identity, capturedAt: new Date().toISOString(), refs },
+      doc: { schema: REFS_SCHEMA, page: after, viewport: { width: profile.viewport.width, height: profile.viewport.height, ...(profile.viewport.isMobile ? { mobile: true } : {}) }, browser: identity, capturedAt: new Date().toISOString(), refs },
       png,
       loaded: Object.fromEntries([...loaded].filter(([, item]) => item.hash !== undefined).map(([url, item]) => [url, item.hash])),
     };
@@ -306,4 +316,4 @@ async function captureRefs(projectRoot, options = {}) {
   }
 }
 
-module.exports = { REFS_SCHEMA, SECTION_ID, VIEWPORT, awaitResources, captureRefs, freezeMotion, drawBadges, measureRefs, refsPuppeteer, settle };
+module.exports = { PROFILES, REFS_SCHEMA, SECTION_ID, VIEWPORT, awaitResources, captureRefs, freezeMotion, drawBadges, measureRefs, refsPuppeteer, settle };

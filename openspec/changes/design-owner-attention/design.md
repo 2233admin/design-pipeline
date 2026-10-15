@@ -177,13 +177,16 @@ Research from official documentation (summarised; sources at the end):
 1. **Ask shape and budget (A), language (H), feedback scope (D).** This is mostly flow and text,
    and gives the largest drop in asks.
 2. **Change tiers (C).**
-3. **Page review lite (B) and confirmation provenance (G)**, in two steps:
+3. **Page review lite (B) and confirmation provenance (G)**, in three steps:
    - **3a** (`owner-attention-page-refs`): numbered element references the owner cites in chat, `--ref` on a
      rejection, and the owner's own words on the final web acceptance. The owner chose numbers before the
      click-to-comment overlay. G is narrowed there: `--by` stays a claim that the owner's words make
      checkable, and the acceptance binds the probe lineage.
-   - **3b**: the click-to-comment overlay, before/after, the per-element comparison and the page tier of C,
-     a mobile capture, and confirmation through the page review's action.
+   - **3b** (`owner-attention-mobile-compare`): an emulated phone capture with `m:` references, and
+     before/after: a person's verdict keeps the numbered screenshots it judged, and a repeated ask shows
+     them beside the new ones.
+   - **3c**: the click-to-comment overlay, the per-element comparison and the page tier of C, and
+     confirmation through the page review's action, each after its own research.
 4. **Absence (F) and delegation over time (E).** Also takes what phase 1 deferred: "decide later"
    on an ask, narrowing, superseding or retiring a rule by hand (phase 1 keeps rule history as
    `givenScope` and `promotedAt` only), changing delegation after intake, and routing lasting

@@ -172,8 +172,10 @@ function nextAction(root) {
     // a delegated self-check is a run by now, so it launches no browser for no one.
     if (state.deliverable === "web" && action.type === "ask" && (stage.id === "review" || stage.id === "build" && action.section)) {
       const refs = SUB_WORKFLOWS.web.refsStep(root, action.director || state.director && stage.id === "build" ? "the art director" : "the owner");
-      action.first = [action.first, refs.first].filter(Boolean).join(" ");
-      action.show = [...(action.show || []), ...refs.show];
+      // A repeated ask shows the screenshots last judged at this scope beside the new ones.
+      const compare = SUB_WORKFLOWS.web.compareStep(state, root, stage.id === "review" ? "review" : action.section);
+      action.first = [action.first, refs.first, compare.first].filter(Boolean).join(" ");
+      action.show = [...(action.show || []), ...refs.show, ...compare.show];
     }
     // Visual picks go to the art director: the concept pick, a sample, a built web section. Final
     // acceptance never does; it stays with the owner.
@@ -363,7 +365,9 @@ function decide(root, options = {}) {
     }
     const cited = options.verdict === "reject" ? SUB_WORKFLOWS.web.citedRefs(root, cites) : [];
     const componentDecision = componentDecisionDigest(state);
-    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}) }];
+    // The final review is the owner's: a web verdict keeps the numbered screenshots they judged.
+    const captures = state.deliverable === "web" && role.by === "owner" ? SUB_WORKFLOWS.web.reviewedCaptures(root) : null;
+    state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}), ...(captures ? { captures } : {}) }];
     if (options.verdict === "reject") {
       rules.addRule(state, options.answer, `draft ${state.decisions.drafts.length}`, cited.length ? { ...rules.RESULT, refs: cited } : rules.RESULT);
       // A rejected draft must be rebuilt and rechecked.
@@ -390,6 +394,14 @@ function decide(root, options = {}) {
   if (scope === "project") rules.widen(state, rulesBefore);
   rules.promote(state, promoted);
   roles.stampRecord(state, before, stage, role, options);
+  // The screenshots a person's verdict names are copied only now, after every check, so a refused call
+  // writes nothing (owner-attention-mobile-compare).
+  if (state.deliverable === "web") {
+    for (const key of ["sections", "drafts"]) {
+      const list = state.decisions[key] || [];
+      if (list.length > (before[key] ?? 0) && list.at(-1).captures) SUB_WORKFLOWS.web.storeReviewed(root, list.at(-1).captures);
+    }
+  }
   // The playback card the owner confirms carries the creative intent, so confirming it records that
   // locked checkpoint as the owner's; a stated skip leaves it unstated.
   // A card puts each intent line on its own line; a one-paragraph playback records no creative intent.
