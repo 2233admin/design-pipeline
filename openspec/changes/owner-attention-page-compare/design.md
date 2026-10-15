@@ -91,7 +91,8 @@ See proposal.md for why. Current code (after `owner-attention-mobile-compare`):
   later section is being built does not reopen earlier ones (and ask for a capture) on every edit. Sections are
   then checked in order, and the first one the tier reopens is the current section.
 - For each approved section whose latest verdict is an accept with the current key, and which kept `captures`:
-  - page unchanged since (`pageSha256` equals `pageDigest(root)`): accepted, as today;
+  - page unchanged since (`pageSha256` equals `pageDigest(root)` and every file in the kept captures'
+    `lineage` still has its bytes, since a font or image named only in CSS is outside the digest): accepted;
   - otherwise, for each viewport it kept: the kept json and a current capture of that viewport must exist and be
     comparable; if any is missing, the section is reopened as **unknown**; if any viewport shows the section
     changed, it is reopened as **changed** with the changes; if every viewport shows it unchanged, it stays

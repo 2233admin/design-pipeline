@@ -28,6 +28,8 @@
 - [x] 6.1 CodeRabbit: an element outside the picture on both captures (null fingerprint) is unchanged, one that moved in or out is changed (rather than making the whole capture not comparable, which would reopen the section on every change); verify in `page-compare`.
 - [x] 6.2 CodeRabbit: a 3b record's plain-hash screenshot is still shown as the earlier picture; verify in `workflow-next`.
 
+- [x] 6.3 Codex: a section stays accepted without comparison only while both the page digest and every file the kept captures loaded are unchanged, since a font or image named only in CSS is outside the digest; verify in `workflow-next`.
+
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.

@@ -580,7 +580,12 @@ function sectionProgress(state, root) {
 // {status: "unknown"} when a comparison cannot be made (no current capture, no kept reference list, or
 // a capture without fingerprints). A section accepted without captures keeps the key rule alone.
 function pageTier(root, record) {
-  if (!record?.captures || typeof record.captures !== "object" || record.pageSha256 === pageDigest(root)) return null;
+  if (!record?.captures || typeof record.captures !== "object") return null;
+  // Unchanged since the verdict: the page digest, and every file the kept captures loaded (a font or
+  // image named only in CSS is outside the digest), still have the bytes they had.
+  const kept = Object.values(record.captures).map(entry => keptCapture(root, entry).doc);
+  const loadedSame = kept.every(doc => !doc?.lineage || Object.entries(doc.lineage).every(([rel, hash]) => fileSha(root, rel) === hash));
+  if (record.pageSha256 === pageDigest(root) && loadedSame) return null;
   const now = Object.fromEntries(currentCaptures(root).map(({ viewport, doc }) => [viewport, doc]));
   const changes = [];
   for (const [viewport, kept] of Object.entries(record.captures)) {

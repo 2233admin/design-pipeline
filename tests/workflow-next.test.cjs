@@ -3901,3 +3901,19 @@ test("the final review asked again after an acceptance lists what changed since"
   assert.deepEqual(again.pageChanges.map(item => item.after.ref), ["1", "m:1"]);
 });
 
+// Codex review on #142: a font or image named only in CSS is outside the page digest, so a change to it
+// alone must still bring the accepted section to the comparison.
+test("an accepted section is compared after a change to a file only its capture knows it loaded", t => {
+  const root = approved(t, ["first-screen"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  touch(root, "fonts/display.woff2", "font bytes");
+  const loaded = ["index.html", "fonts/display.woff2"];
+  fakeRefs(root, REFS, loaded);
+  decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
+  assert.equal(nextAction(root).stage, "probe");
+  touch(root, "fonts/display.woff2", "another font");
+  assert.match(nextAction(root).first || "", /cannot be compared/, "the page digest is unchanged, the font is not");
+  fakeRefs(root, REFS, loaded, ["desktop", "mobile"], { pixels: { "first-screen-1": "new font" } });
+  assert.match(nextAction(root).first, /first-screen-1 h1 "Fresh bread" \(changed\)/);
+});
+
