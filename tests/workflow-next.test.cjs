@@ -2471,7 +2471,7 @@ test("a section rejection after an accepted section asks that section again and 
 });
 
 // Mechanism check (spec: section comments name elements in text).
-test("the section review asks the owner to name elements in text and never offers to click or pick them", t => {
+test("the section review asks the owner to name elements in text and offers clicking only on the review page", t => {
   const root = approved(t, ["first-screen"], { keep: ["section"] });
   buildPage(root, ["first-screen"]);
   const ask = nextAction(root);
@@ -2479,7 +2479,7 @@ test("the section review asks the owner to name elements in text and never offer
   assert.equal(ask.section, "first-screen");
   for (const [term, what] of [[/\btext\b/i, "text"], [/\blabel\b/i, "label"], [/\bplace\b/i, "place"]]) assert.match(ask.instruction, term, `elements are named by their ${what}`);
   const mentions = [ask.question, ask.instruction, ask.recommended, ask.why].join(" ").split(/(?<=[.?!])\s+/).filter(sentence => /\b(?:click|pick)/i.test(sentence));
-  for (const sentence of mentions) assert.match(sentence, /\b(?:do not|don't|never)\b/i, `only a prohibition mentions clicking or picking: ${sentence}`);
+  for (const sentence of mentions) assert.match(sentence, /review page/i, `clicking is offered only on the review page: ${sentence}`);
 });
 
 test("a data-section marker inside an HTML comment is not a built section", t => {
@@ -3946,3 +3946,96 @@ test("a change at one viewport is listed while the other viewport has no capture
   assert.match(ask.first, /found these changed in it: first-screen-1 h1 "Fresh bread" \(changed\)\./);
 });
 
+
+// --- review on the page itself (owner-attention-page-review) ----------------------------------------
+
+const { buildReviewPage } = require("../skill/scripts/workflows/page-review.cjs");
+// The data the review page embeds, read back from evidence/review.html as the overlay gets it.
+const reviewData = root => JSON.parse(/var DATA = (\{.*?\});\n/.exec(fs.readFileSync(path.join(root, "evidence/review.html"), "utf8"))[1]);
+// The block the overlay gives for the data, saved where the agent saves it.
+function pageBlock(root, fields, file = "page-review-block.json") {
+  const { schema, page, capture, ask } = reviewData(root);
+  touch(root, file, JSON.stringify({ schema, page, capture, ask, verdict: "reject", words: "", comments: [], submittedAt: "2026-10-15T00:00:00.000Z", ...fields }, null, 2));
+  return path.join(root, file);
+}
+const pageReviewCli = (root, file, ...args) => runCli("decide", "--root", root, "--project-root", root, "--page-review", file, ...args);
+function refusesPageReview(root, file, args, code) {
+  const before = snapshot(root);
+  const result = pageReviewCli(root, file, ...args);
+  assert.equal(result.status, 1, result.text);
+  assert.equal(result.json.error.code, code, result.text);
+  assert.deepEqual(snapshot(root), before, "a refused page review changed the project");
+  return result.json.error;
+}
+
+test("the owner's changes requested on the review page are recorded with their references and kept", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  const ask = nextAction(root);
+  assert.match(ask.first, /evidence review-page --root /);
+  assert.match(ask.first, /--page-review <file>/);
+  const page = fs.readFileSync(path.join(root, "index.html"));
+  const written = buildReviewPage(root);
+  assert.deepEqual(written.ask, { stage: "section", choice: "first-screen" });
+  assert.deepEqual(fs.readFileSync(path.join(root, "index.html")), page, "index.html is unchanged");
+  assert.match(fs.readFileSync(path.join(root, "evidence/review.html"), "utf8"), /<base href="\.\.\/">/);
+  const data = reviewData(root);
+  assert.deepEqual(data.refs.desktop.map(item => item.ref), ["first-screen-1", "first-screen-2"], "a section review numbers only its section");
+  assert.deepEqual(data.refs.mobile.map(item => item.ref), ["m:first-screen-1", "m:first-screen-2"]);
+  const file = pageBlock(root, { comments: [{ ref: "first-screen-2", text: "Make the button larger" }, { ref: null, text: "The spacing feels tight" }] });
+  const result = pageReviewCli(root, file);
+  assert.equal(result.status, 0, result.text);
+  const state = readState(root);
+  const rule = state.rules.at(-1);
+  assert.equal(rule.text, "first-screen-2: Make the button larger; The spacing feels tight");
+  assert.deepEqual(rule.object.refs.map(item => item.ref), ["first-screen-2"]);
+  const via = state.decisions.roles.at(-1).via;
+  assert.match(via, /^page-review:sha256:[0-9a-f]{64}$/);
+  assert.equal(state.decisions.roles.at(-1).by, "owner");
+  assert.equal(state.decisions.sections.at(-1).via, via);
+  assert.deepEqual(fs.readFileSync(path.join(root, `evidence/page-review/${via.split(":").at(-1)}.json`)), fs.readFileSync(file), "the block is kept as given");
+  assert.match(diligence(root).text, /Section review: reject first-screen — "first-screen-2: Make the button larger; The spacing feels tight" \(given on the page\)/);
+});
+
+test("the owner's final acceptance on the review page is recorded with their words", t => {
+  const root = atProbe(t);
+  passProbe(root);
+  fakeRefs(root);
+  assert.equal(buildReviewPage(root).ask.stage, "review");
+  assert.ok(reviewData(root).refs.desktop.length === REFS.length, "the final review numbers the whole page");
+  const result = pageReviewCli(root, pageBlock(root, { verdict: "accept", words: "Looks right, ship it" }));
+  assert.equal(result.status, 0, result.text);
+  assert.match(diligence(root).text, /Final acceptance recorded by the owner at \S+ on page version [0-9a-f]{12}, given on the page: "Looks right, ship it"/);
+});
+
+test("a page review from another page, capture or ask, an invalid one, or one with its own flags records nothing", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  const before = snapshot(root);
+  assert.throws(() => buildReviewPage(root), error => error.code === "WORKFLOW_NOT_READY" && /evidence refs/.test(error.message), "no capture");
+  assert.deepEqual(snapshot(root), before, "a refused review page writes nothing");
+  fakeRefs(root);
+  buildReviewPage(root);
+  const no = { comments: [{ ref: "first-screen-2", text: "Make the button larger" }] };
+  for (const flag of [["--verdict", "accept"], ["--answer", "fine"], ["--ref", "first-screen-2"], ["--by", "owner"], ["--stage", "section"]]) {
+    assert.match(refusesPageReview(root, pageBlock(root, no), flag, "CONTRACT_INVALID").message, new RegExp(`${flag[0]} cannot go beside it`));
+  }
+  assert.match(refusesPageReview(root, pageBlock(root, { ...no, ask: { stage: "section", choice: "proof" } }), [], "WORKFLOW_NOT_READY").message, /answers the review of section proof/);
+  assert.match(refusesPageReview(root, pageBlock(root, { ...no, capture: "sha256:" + "0".repeat(64) }), [], "WORKFLOW_NOT_READY").message, /earlier numbered capture/);
+  assert.match(refusesPageReview(root, pageBlock(root, { ...no, schema: "other" }), [], "CONTRACT_INVALID").message, /schema must be/);
+  assert.match(refusesPageReview(root, pageBlock(root, { verdict: "accept", ...no }), [], "CONTRACT_INVALID").message, /acceptance carries no comments/);
+  touch(root, "mangled.json", "“schema”: smart quotes");
+  assert.match(refusesPageReview(root, path.join(root, "mangled.json"), [], "CONTRACT_INVALID").message, /not the block the review page gave/);
+  const file = pageBlock(root, no);
+  fs.appendFileSync(path.join(root, "index.html"), "<!-- edited after the review -->\n");
+  assert.match(refusesPageReview(root, file, [], "WORKFLOW_NOT_READY").message, /earlier version of the page/);
+});
+
+test("a delegated section self-check has no review page", t => {
+  const root = approved(t, ["first-screen"]);
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  assert.doesNotMatch(`${nextAction(root).first || ""} ${nextAction(root).instruction}`, /review-page/);
+  assert.throws(() => buildReviewPage(root), error => error.code === "WORKFLOW_NOT_READY" && /not asking the owner/.test(error.message));
+});

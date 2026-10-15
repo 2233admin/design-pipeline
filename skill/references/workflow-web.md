@@ -393,8 +393,8 @@ screen first, and the owner reviews each section before the next one starts:
    when there is no capture of the current page, then show `evidence/refs.png`. Open `index.html`
    at the section in a real browser and let the owner look and interact. Comments are text: ask
    them to name each element they comment on by its reference (`hero-2`) or by its text, label or
-   place. Do not offer to let them click or pick elements on the page; that is a planned follow-up,
-   not part of this flow. Record `decide --stage section --choice <id> --verdict accept` only when
+   place, or let them click elements on the [review page](#element-references) when `first` offers
+   it. Record `decide --stage section --choice <id> --verdict accept` only when
    nothing in the section needs to change. Any change they ask for is a rejection:
    `decide --stage section --choice <id> --verdict reject --answer "<the owner's comments>" --ref hero-2`,
    with one `--ref` per element they cite. Each comment becomes a rule (`section <id> N`), and a
@@ -770,8 +770,28 @@ the owner accepted it comes back to this review, and `first` says they accepted 
   at a section review, in that section. The rule keeps the reference with its tag and text, so a later
   renumbering does not change what the comment meant.
 - It needs a browser and `puppeteer-core`, like the probe. When neither is available, ask the owner
-  to name elements in words; only `--ref` needs a capture. Clicking elements on the page is a
-  planned follow-up.
+  to name elements in words; only `--ref` needs a capture.
+- **The review page.** With a current desktop capture, an owner's section or final-review ask also
+  offers `evidence review-page --root <project> --project-root <project>`. It writes
+  `evidence/review.html`: a copy of `index.html` with `<base href="../">` (so it loads the page's
+  files from the project; the owner opens it where they open `index.html`) and a comment overlay.
+  `index.html` is never changed. In comment mode the numbered element under the pointer is outlined
+  and a click opens a comment on its reference (`hero-2`, or `m:hero-2` when the window is phone
+  width); at a section review only that section's elements are numbered, and a click elsewhere is a
+  comment on the section. Pending comments survive a reload. The owner submits once: **Request
+  changes** (comments or words, at least two words in all) or **Accept** (no pending comments; words
+  needed at the final review). Submit shows the block to copy and offers it as a download
+  (`page-review-<digest8>.json`); nothing is sent anywhere. Save what they send back to a file inside
+  the project and record it with `decide --root <project> --project-root <project> --page-review
+  <file>` (`--promote`, `--scope` and `--evidence` may go beside it; `--stage`, `--choice`,
+  `--verdict`, `--answer`, `--ref`, `--by` and `--tradeoff` come from the block and are refused). It
+  is recorded as the owner's verdict with their words, then each comment as `<ref>: <text>`, and
+  every cited reference as `--ref`; the block is kept at `evidence/page-review/<sha256>.json`, and
+  the role entry's `via` names it, shown as "given on the page" in the statement. A block from an
+  earlier page version or capture, for another ask, or not valid is refused and records nothing. A
+  directed section review or a delegated self-check has no review page. The block is the owner's
+  submission as the agent received it: evidence bound to the page version, not proof of who
+  clicked.
 - **Before and after.** When the owner (or the art director, at a section) records a section or
   final-review verdict, each numbered screenshot current at that moment, and its reference list, is
   copied to `evidence/reviewed/<sha256>.png|.json` and named on the record (`captures`). When the

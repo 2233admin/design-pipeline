@@ -94,14 +94,16 @@ const reviewedVersion = draft => draft?.inputHashes ? sha256(canonicalJson(draft
 // Stamps the role on what this decide call appended: the last entry of each history that grew, the
 // intake object it wrote, and one entry in state.decisions.roles that the statement reads.
 function stampRecord(state, before, checkpoint, role, options) {
+  // A verdict the owner gave on the review page names the kept block it came from.
+  const stamp = options.via ? { ...role, via: options.via } : role;
   for (const key of HISTORIES) {
     const list = state.decisions[key];
-    if (Array.isArray(list) && list.length > (before[key] ?? 0)) Object.assign(list.at(-1), role);
+    if (Array.isArray(list) && list.length > (before[key] ?? 0)) Object.assign(list.at(-1), stamp);
   }
-  if (checkpoint === "intake" && state.decisions.intake && typeof state.decisions.intake === "object") Object.assign(state.decisions.intake, role);
+  if (checkpoint === "intake" && state.decisions.intake && typeof state.decisions.intake === "object") Object.assign(state.decisions.intake, stamp);
   const answer = typeof options.answer === "string" && options.answer.trim() ? options.answer.trim().slice(0, 400) : null;
   state.decisions.roles = [...(Array.isArray(state.decisions.roles) ? state.decisions.roles : []), {
-    stage: checkpoint, ...role,
+    stage: checkpoint, ...stamp,
     ...(options.verdict ? { verdict: options.verdict } : {}),
     ...(options.choice !== undefined && options.choice !== null ? { choice: String(options.choice) } : {}),
     ...(answer ? { answer } : {}),
@@ -128,7 +130,7 @@ const stateHash = state => {
 
 function describe(entry) {
   const what = [entry.verdict, entry.choice && entry.choice !== "skip" ? entry.choice : null, entry.choice === "skip" ? "skipped the questions" : null].filter(Boolean).join(" ");
-  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.revision ? ` (${entry.revision} revision)` : ""}${entry.answer ? ` — "${entry.answer.replace(/\s*\r?\n\s*/g, " / ")}"` : ""}${entry.tradeoff ? ` (asked about: "${entry.tradeoff}")` : ""}`;
+  return `${LABELS[entry.stage] || entry.stage}${what ? `: ${what}` : ""}${entry.revision ? ` (${entry.revision} revision)` : ""}${entry.answer ? ` — "${entry.answer.replace(/\s*\r?\n\s*/g, " / ")}"` : ""}${entry.tradeoff ? ` (asked about: "${entry.tradeoff}")` : ""}${entry.via ? " (given on the page)" : ""}`;
 }
 
 // Decisions stored as a single value rather than a history: each counts as unauthored when no role
@@ -187,7 +189,7 @@ function renderStatement(state, { delivered = null, deliveryCurrent = false, gat
     list(checks, "none recorded"),
     "",
     "## Owner acceptance",
-    `- ${accepted ? `Final acceptance recorded by the owner at ${accepted.at}${accepted.version ? ` on page version ${accepted.version}` : ""}${accepted.answer ? `: "${accepted.answer}"` : ""}` : reviewed ? `No owner acceptance stands: their latest review (${reviewed.at}) was a rejection` : "No owner acceptance recorded yet"}`,
+    `- ${accepted ? `Final acceptance recorded by the owner at ${accepted.at}${accepted.version ? ` on page version ${accepted.version}` : ""}${accepted.via ? ", given on the page" : ""}${accepted.answer ? `: "${accepted.answer}"` : ""}` : reviewed ? `No owner acceptance stands: their latest review (${reviewed.at}) was a rejection` : "No owner acceptance recorded yet"}`,
     "",
     `Suggested trailer: Assisted-by: ${assisted}`,
     "",

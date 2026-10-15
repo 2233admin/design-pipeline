@@ -86,6 +86,7 @@
     "interaction-audit.test.cjs",
     "page-compare.test.cjs",
     "page-refs.test.cjs",
+    "page-review.test.cjs",
     "workflow-next.test.cjs",
     "product-source-workflow.test.cjs",
     "workflow-action-commands.test.cjs",
