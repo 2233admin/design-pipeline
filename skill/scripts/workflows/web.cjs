@@ -722,17 +722,22 @@ function storeReviewed(root, captures) {
       const target = resolveInside(root, rel, "reviewed screenshot", { scope: "workflow" });
       fs.mkdirSync(path.dirname(target), { recursive: true });
       const temp = `${target}.${process.pid}.tmp`;
-      staged.push({ hash, temp, target });
+      // A copy already there with other bytes (edited by hand) is put back if this call fails.
+      const previous = fs.existsSync(target) && fs.statSync(target).isFile() ? fs.readFileSync(target) : null;
+      staged.push({ hash, temp, target, previous });
       fs.writeFileSync(temp, bytes);
     }
     const published = [];
     try {
       for (const item of staged) {
         fs.renameSync(item.temp, item.target);
-        published.push(item.target);
+        published.push(item);
       }
     } catch (error) {
-      for (const file of published) fs.rmSync(file, { force: true });
+      for (const item of published) {
+        if (item.previous) fs.writeFileSync(item.target, item.previous);
+        else fs.rmSync(item.target, { force: true });
+      }
       throw error;
     }
   } finally {

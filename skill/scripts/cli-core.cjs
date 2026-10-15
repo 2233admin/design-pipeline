@@ -885,8 +885,9 @@ function evidenceRefsCommand(parsed, root) {
     }
   }
   // Each capture checked its own before and after; a page that changed between two of them leaves an
-  // earlier one stale, so every capture written or kept must still be current at the end.
-  if (!failures.length && captures.some((item) => !refsCurrent(projectRoot, refsCapture(projectRoot, item.viewport), item.viewport))) {
+  // earlier one stale, so every capture written or kept must still be current at the end, also when
+  // another viewport failed.
+  if (captures.some((item) => !refsCurrent(projectRoot, refsCapture(projectRoot, item.viewport), item.viewport))) {
     fail("page refs", "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again", { code: "PAGE_MOVED" });
   }
   if (failures.length) {

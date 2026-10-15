@@ -29,9 +29,11 @@
 
 - [x] 6.1 Codex: storing the reviewed copies is all or nothing (staged from the hashed bytes, published together, removed on failure); verify in `workflow-next` that a copy whose name is taken by a directory fails the verdict with no file or state change.
 - [x] 6.2 Codex: a viewport's png and json are staged together and the png is put back when the json cannot be published; verify with a browser test whose phone json path is a directory.
-
 - [x] 6.3 Codex: viewports with identical screenshot bytes share one reviewed copy; verify in `workflow-next`.
 - [x] 6.4 Codex: `evidence refs` checks at the end that every capture it wrote or kept is still current, so a page changed between two viewports fails with `PAGE_MOVED` instead of reporting a stale capture as captured (the stale one is retaken on the next run); verified by the existing per-viewport tests, since the timing cannot be forced from a test.
+
+- [x] 6.5 Codex: a reviewed copy that existed with other bytes is put back when the verdict fails; verify in the `workflow-next` failure test with an edited desktop copy.
+- [x] 6.6 Codex: the end-of-run currentness check also runs when another viewport failed.
 
 ## Workflow follow-up
 
