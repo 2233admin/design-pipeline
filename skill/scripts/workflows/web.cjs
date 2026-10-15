@@ -640,7 +640,11 @@ function refsCapture(root, viewport = "desktop") {
 // and images included) and the numbered screenshot itself still have the hashes it recorded.
 function refsCurrent(root, doc = refsCapture(root), viewport = "desktop") {
   if (!doc || doc.page !== pageDigest(root) || !doc.lineage || typeof doc.lineage !== "object" || !Object.keys(doc.lineage).length) return false;
-  if (typeof doc.png !== "string" || fileSha(root, profiles()[viewport].png) !== doc.png) return false;
+  const profile = profiles()[viewport];
+  if (typeof doc.png !== "string" || fileSha(root, profile.png) !== doc.png) return false;
+  // A capture of the other viewport copied under these names is not this viewport's.
+  if (doc.viewport?.width !== profile.viewport.width || doc.viewport?.height !== profile.viewport.height) return false;
+  if (!doc.refs.every(item => typeof item?.ref === "string" && (profile.prefix ? item.ref.startsWith(profile.prefix) : !item.ref.includes(":")))) return false;
   // The reference list is bound too, so a hand-edited mapping is not trusted as the screenshot's
   // (an integrity check against accidental edits; refs.json is the agent's own evidence, not proof).
   if (doc.refsDigest !== digest(doc.refs)) return false;

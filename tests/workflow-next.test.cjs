@@ -3793,3 +3793,15 @@ test("identical desktop and phone screenshots are kept once", t => {
   assert.deepEqual(reviewedFiles(root), [`${captures.desktop.slice(7)}.png`]);
 });
 
+// Codex review on #141: a capture of one viewport copied under the other's names is not current.
+test("a desktop capture copied under the phone names is not taken as the phone's", t => {
+  const root = approved(t, ["first-screen", "proof"], { keep: ["section"] });
+  buildPage(root, ["first-screen"]);
+  fakeRefs(root);
+  for (const [from, to] of [["refs.png", "refs-mobile.png"], ["refs.json", "refs-mobile.json"]]) fs.copyFileSync(path.join(root, "evidence", from), path.join(root, "evidence", to));
+  const ask = nextAction(root);
+  assert.match(ask.first, /evidence refs --root /, "the phone capture is taken again");
+  assert.deepEqual(ask.show.filter(file => /refs(-mobile)?\.png$/.test(file)).map(file => path.basename(file)), ["refs.png"]);
+  assert.match(refuses(root, { stage: "section", choice: "first-screen", verdict: "reject", answer: "The button wraps", ref: ["m:first-screen-2"] }, "WORKFLOW_NOT_READY").message, /refs-mobile\.json was taken from an earlier version/);
+});
+

@@ -35,6 +35,8 @@
 - [x] 6.5 Codex: a reviewed copy that existed with other bytes is put back when the verdict fails; verify in the `workflow-next` failure test with an edited desktop copy.
 - [x] 6.6 Codex: the end-of-run currentness check also runs when another viewport failed.
 
+- [x] 6.7 Codex: a capture is current only for its own viewport (size and reference prefix), so files copied from the other viewport are retaken; verify in `workflow-next`.
+
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.
