@@ -1,25 +1,32 @@
 // Page review overlay (OpenSpec change owner-attention-page-review). Inlined into evidence/review.html by
 // `evidence review-page`, never into index.html. The build replaces __DATA__ with
-// {schema, page, capture, ask, refs: {desktop: [{ref, selector}], mobile: [...]}}; a section review carries
+// {schema, page, captures: {desktop, mobile}, ask, refs: {desktop: [{ref, selector}], mobile: [...]}}; a section review carries
 // only that section's references. The owner clicks numbered
 // elements, writes comments, and submits one review as a block to copy or download; the agent records it
 // with `decide --page-review <file>`. Nothing is sent anywhere.
 (function () {
   "use strict";
   var DATA = __DATA__;
-  var KEY = "dp-page-review:" + DATA.page;
-  var phone = window.innerWidth <= 600;
-  var refs = (phone ? DATA.refs.mobile : DATA.refs.desktop) || [];
-  if (!refs.length) refs = DATA.refs.desktop || [];
-
-  // The numbered elements on this copy, by the selectors the capture recorded.
+  // Pending comments belong to one page version, pair of captures and ask: a new review page starts empty.
+  var KEY = "dp-page-review:" + JSON.stringify([DATA.page, DATA.captures, DATA.ask]);
+  // The numbered elements on this copy, by the selectors the capture recorded: the phone's at phone
+  // width (the desktop's when there is no phone capture), mapped again when the window is resized.
+  var phone = false;
   var numbered = new Map();
-  refs.forEach(function (item) {
-    try {
-      var element = document.querySelector(item.selector);
-      if (element) numbered.set(element, item.ref);
-    } catch (error) { /* a selector this browser cannot parse names nothing */ }
-  });
+  var mapRefs = function () {
+    phone = window.innerWidth <= 600;
+    var refs = (phone ? DATA.refs.mobile : DATA.refs.desktop) || [];
+    if (!refs.length) refs = DATA.refs.desktop || [];
+    numbered = new Map();
+    refs.forEach(function (item) {
+      try {
+        var element = document.querySelector(item.selector);
+        if (element) numbered.set(element, item.ref);
+      } catch (error) { /* a selector this browser cannot parse names nothing */ }
+    });
+  };
+  mapRefs();
+  window.addEventListener("resize", mapRefs);
   var refOf = function (target) {
     for (var node = target; node && node !== document.documentElement; node = node.parentElement) {
       if (numbered.has(node)) return { ref: numbered.get(node), element: node };
@@ -73,6 +80,8 @@
   var mode = false;
   var target = null;
 
+  // A submitted block stands only for what was pending then: any change hides it until submitted again.
+  var stale = function () { $("[data-out]").hidden = true; $("[data-block]").value = ""; };
   var render = function () {
     var list = $("[data-list]");
     list.innerHTML = "";
@@ -85,7 +94,7 @@
       item.appendChild(document.createTextNode(" " + comment.text + " "));
       var remove = document.createElement("button");
       remove.textContent = "×";
-      remove.addEventListener("click", function () { comments.splice(index, 1); save(); render(); });
+      remove.addEventListener("click", function () { comments.splice(index, 1); save(); render(); stale(); });
       item.appendChild(remove);
       list.appendChild(item);
     });
@@ -139,7 +148,7 @@
     $("[data-problem]").textContent = problem;
     if (problem) return;
     var block = {
-      schema: DATA.schema, page: DATA.page, capture: DATA.capture, ask: DATA.ask, verdict: verdict, words: words,
+      schema: DATA.schema, page: DATA.page, captures: DATA.captures, ask: DATA.ask, verdict: verdict, words: words,
       comments: comments.slice(), submittedAt: new Date().toISOString(),
     };
     $("[data-block]").value = JSON.stringify(block, null, 2);
@@ -160,6 +169,7 @@
       comments.push({ ref: target, text: text });
       save();
       render();
+      stale();
       $("[data-text]").value = "";
       $("[data-compose]").hidden = true;
     } else if (act === "cancel") {
@@ -181,5 +191,6 @@
       link.remove();
     }
   });
+  $("[data-words]").addEventListener("input", stale);
   render();
 })();

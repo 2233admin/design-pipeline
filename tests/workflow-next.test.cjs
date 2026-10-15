@@ -3954,8 +3954,8 @@ const { buildReviewPage } = require("../skill/scripts/workflows/page-review.cjs"
 const reviewData = root => JSON.parse(/var DATA = (\{.*?\});\n/.exec(fs.readFileSync(path.join(root, "evidence/review.html"), "utf8"))[1]);
 // The block the overlay gives for the data, saved where the agent saves it.
 function pageBlock(root, fields, file = "page-review-block.json") {
-  const { schema, page, capture, ask } = reviewData(root);
-  touch(root, file, JSON.stringify({ schema, page, capture, ask, verdict: "reject", words: "", comments: [], submittedAt: "2026-10-15T00:00:00.000Z", ...fields }, null, 2));
+  const { schema, page, captures, ask } = reviewData(root);
+  touch(root, file, JSON.stringify({ schema, page, captures, ask, verdict: "reject", words: "", comments: [], submittedAt: "2026-10-15T00:00:00.000Z", ...fields }, null, 2));
   return path.join(root, file);
 }
 const pageReviewCli = (root, file, ...args) => runCli("decide", "--root", root, "--project-root", root, "--page-review", file, ...args);
@@ -4018,11 +4018,13 @@ test("a page review from another page, capture or ask, an invalid one, or one wi
   fakeRefs(root);
   buildReviewPage(root);
   const no = { comments: [{ ref: "first-screen-2", text: "Make the button larger" }] };
-  for (const flag of [["--verdict", "accept"], ["--answer", "fine"], ["--ref", "first-screen-2"], ["--by", "owner"], ["--stage", "section"]]) {
+  for (const flag of [["--verdict", "accept"], ["--answer", "fine"], ["--ref", "first-screen-2"], ["--by", "owner"], ["--stage", "section"], ["--keep", "section"]]) {
     assert.match(refusesPageReview(root, pageBlock(root, no), flag, "CONTRACT_INVALID").message, new RegExp(`${flag[0]} cannot go beside it`));
   }
   assert.match(refusesPageReview(root, pageBlock(root, { ...no, ask: { stage: "section", choice: "proof" } }), [], "WORKFLOW_NOT_READY").message, /answers the review of section proof/);
-  assert.match(refusesPageReview(root, pageBlock(root, { ...no, capture: "sha256:" + "0".repeat(64) }), [], "WORKFLOW_NOT_READY").message, /earlier numbered capture/);
+  const { captures } = reviewData(root);
+  assert.match(refusesPageReview(root, pageBlock(root, { ...no, captures: { ...captures, desktop: "sha256:" + "0".repeat(64) } }), [], "WORKFLOW_NOT_READY").message, /earlier numbered capture/);
+  assert.match(refusesPageReview(root, pageBlock(root, { ...no, captures: { ...captures, mobile: "sha256:" + "0".repeat(64) } }), [], "WORKFLOW_NOT_READY").message, /earlier numbered capture/, "a phone reference means what the phone capture the owner saw says");
   assert.match(refusesPageReview(root, pageBlock(root, { ...no, schema: "other" }), [], "CONTRACT_INVALID").message, /schema must be/);
   assert.match(refusesPageReview(root, pageBlock(root, { verdict: "accept", ...no }), [], "CONTRACT_INVALID").message, /acceptance carries no comments/);
   touch(root, "mangled.json", "“schema”: smart quotes");

@@ -31,7 +31,8 @@ owner's machine; the recorded verdict is the owner's own submission, bound to th
   owner's section or final-review ask: `next` at `build` with `section` maps to `{stage: "section", choice}`,
   at `review` to `{stage: "review", choice: null}`. A delegated self-check (a run) and a section directed to
   the art director get none. Otherwise it exits 1 naming what to do first.
-- The embedded data: `{schema: "design-pipeline.page-review.v1", page: pageDigest, capture: <desktop png hash>,
+- The embedded data: `{schema: "design-pipeline.page-review.v1", page: pageDigest, captures: {desktop, mobile}
+  (the screenshot hashes; mobile null without a current phone capture),
   ask, refs: {desktop: [{ref, selector}], mobile: [...]}}`. A section ask embeds only that section's references
   (decide refuses a reference outside the section), so a click elsewhere is a comment on the section. The phone
   list is used when the window is at most 600 px wide.
@@ -47,13 +48,13 @@ owner's machine; the recorded verdict is the owner's own submission, bound to th
   click target that one of the references resolves to; a click on nothing numbered is a comment on the ask
   without a reference.
 - **Pending list**: each comment shows its reference and text and can be removed. It is kept in
-  `localStorage` under the page digest (wrapped in try/catch), so a reload keeps it and another page version
+  `localStorage` under the page digest, captures and ask (wrapped in try/catch), so a reload keeps it and another page version
   does not see it.
 - **Submit**: the owner's overall words, then **Request changes** (at least two words across the words and
   comments, the count decide applies) or **Accept** (no pending comments; at least two words at the final
   review). A refusal is shown in the overlay, never as a browser dialog. Submit shows the block in a read-only text area with **Copy** and
   **Download** (`page-review-<digest8>.json`).
-- **The block:** `{schema: "design-pipeline.page-review.v1", page, capture, ask, verdict: "accept"|"reject",
+- **The block:** `{schema: "design-pipeline.page-review.v1", page, captures, ask, verdict: "accept"|"reject",
   words, comments: [{ref|null, text}], submittedAt}`; an acceptance carries no comments.
 - Labels are short and bilingual (English / 中文); the agent speaks the owner's language around it.
 
@@ -65,7 +66,7 @@ owner's machine; the recorded verdict is the owner's own submission, bound to th
 - **Checks, before anything is written:** valid JSON and schema; no `--stage`, `--choice`, `--verdict`,
   `--answer`, `--ref`, `--by` or `--tradeoff` beside it (the block decides them; `--promote`, `--scope` and
   `--evidence` may go beside it); `page` equals `pageDigest(root)` (else "this review was given on an earlier
-  version of the page"); `capture` equals the current desktop capture's screenshot hash, which also binds the
+  version of the page"); `captures` equal the current desktop and phone screenshot hashes, which also bind the
   files only the capture lineage covers (CSS `url()` targets); `ask` equals the ask `review-page` would embed now.
   A block answers only the current ask, so an earlier section is rejected through chat as before.
 - **Mapping:** `stage` and `choice` from `ask`; `verdict`; `by: "owner"`; `ref` = the comments' references;

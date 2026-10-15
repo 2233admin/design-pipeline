@@ -14,7 +14,7 @@ const REVIEW_PAGE = "evidence/review.html";
 const KEPT_DIR = "evidence/page-review";
 const OVERLAY = path.resolve(__dirname, "../../tools/page-review/overlay.js");
 const MAX_BYTES = 256 * 1024;
-const KEYS = ["schema", "page", "capture", "ask", "verdict", "words", "comments", "submittedAt"];
+const KEYS = ["schema", "page", "captures", "ask", "verdict", "words", "comments", "submittedAt"];
 
 // The ask a page review answers: the owner's section review or the final review. A delegated
 // self-check is a run, and a directed section faces the art director, so neither is offered.
@@ -24,6 +24,12 @@ function currentAsk(root) {
   if (next.stage === "review") return { stage: "review", choice: null };
   if (next.stage === "build" && next.section) return { stage: "section", choice: next.section };
   return null;
+}
+
+// The phone capture when it is current, else null.
+function currentMobile(root) {
+  const doc = refsCapture(root, "mobile");
+  return doc && refsCurrent(root, doc, "mobile") ? doc : null;
 }
 
 const askName = ask => ask.stage === "review" ? "the final review" : `the review of section ${ask.choice}`;
@@ -55,12 +61,12 @@ function buildReviewPage(root) {
   const ask = currentAsk(root);
   if (!ask) fail("workflow", "the review page answers the owner's section review or final review, and next is not asking the owner for one. Fix: follow next", { code: "WORKFLOW_NOT_READY" });
   const desktop = desktopCapture(root, "the review page");
-  const mobile = refsCapture(root, "mobile");
+  const mobile = currentMobile(root);
   // A section review numbers only that section's elements: a comment elsewhere is about the section.
   const pick = doc => doc.refs.filter(item => ask.stage === "review" || item.section === ask.choice).map(({ ref, selector }) => ({ ref, selector }));
   const data = {
-    schema: SCHEMA, page, capture: desktop.png, ask,
-    refs: { desktop: pick(desktop), mobile: mobile && refsCurrent(root, mobile, "mobile") ? pick(mobile) : [] },
+    schema: SCHEMA, page, captures: { desktop: desktop.png, mobile: mobile ? mobile.png : null }, ask,
+    refs: { desktop: pick(desktop), mobile: mobile ? pick(mobile) : [] },
   };
   const target = resolveInside(root, REVIEW_PAGE, "review page", { scope: "workflow" });
   fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -98,7 +104,13 @@ function pageReviewOptions(root, file) {
   const ask = block.ask;
   if (!ask || !["section", "review"].includes(ask.stage) || (ask.stage === "section" ? typeof ask.choice !== "string" : ask.choice !== null)) invalid("ask must name a section review or the final review");
   if (block.page !== pageDigest(root)) fail("workflow", "this review was given on an earlier version of the page. Fix: run evidence review-page again and ask the owner to review the current page", { code: "WORKFLOW_NOT_READY" });
-  if (block.capture !== desktopCapture(root, "--page-review").png) fail("workflow", "this review was given on an earlier numbered capture of the page. Fix: run evidence review-page again and ask the owner to review it", { code: "WORKFLOW_NOT_READY" });
+  // Both numbered captures the page was built from must still be the current ones: a phone reference
+  // means what the phone capture the owner saw says it means.
+  const captures = block.captures;
+  const mobile = currentMobile(root);
+  if (!captures || typeof captures !== "object" || captures.desktop !== desktopCapture(root, "--page-review").png || (captures.mobile ?? null) !== (mobile ? mobile.png : null)) {
+    fail("workflow", "this review was given on an earlier numbered capture of the page. Fix: run evidence review-page again and ask the owner to review it", { code: "WORKFLOW_NOT_READY" });
+  }
   const current = currentAsk(root);
   if (!current || current.stage !== ask.stage || current.choice !== ask.choice) {
     fail("workflow", `this review answers ${askName(ask)}, and next ${current ? `asks for ${askName(current)}` : "is not asking the owner for a review"}. Fix: follow next, run evidence review-page and ask the owner again`, { code: "WORKFLOW_NOT_READY" });

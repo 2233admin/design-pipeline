@@ -783,12 +783,12 @@ the owner accepted it comes back to this review, and `first` says they accepted 
   needed at the final review). Submit shows the block to copy and offers it as a download
   (`page-review-<digest8>.json`); nothing is sent anywhere. Save what they send back to a file inside
   the project and record it with `decide --root <project> --project-root <project> --page-review
-  <file>` (`--promote`, `--scope` and `--evidence` may go beside it; `--stage`, `--choice`,
-  `--verdict`, `--answer`, `--ref`, `--by` and `--tradeoff` come from the block and are refused). It
+  <file>` (only `--promote`, `--scope` and `--evidence` may go beside it; the block decides the
+  rest, and any other flag is refused). It
   is recorded as the owner's verdict with their words, then each comment as `<ref>: <text>`, and
   every cited reference as `--ref`; the block is kept at `evidence/page-review/<sha256>.json`, and
   the role entry's `via` names it, shown as "given on the page" in the statement. A block from an
-  earlier page version or capture, for another ask, or not valid is refused and records nothing. A
+  earlier page version or desktop or phone capture, for another ask, or not valid is refused and records nothing. A
   directed section review or a delegated self-check has no review page. The block is the owner's
   submission as the agent received it: evidence bound to the page version, not proof of who
   clicked.

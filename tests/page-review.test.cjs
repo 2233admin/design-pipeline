@@ -30,13 +30,16 @@ const PAGE = `<!doctype html>
 </body></html>
 `;
 const DATA = {
-  schema: SCHEMA, page: "sha256:" + "a".repeat(64), capture: "sha256:" + "b".repeat(64), ask: { stage: "section", choice: "hero" },
+  schema: SCHEMA, page: "sha256:" + "a".repeat(64), captures: { desktop: "sha256:" + "b".repeat(64), mobile: null }, ask: { stage: "section", choice: "hero" },
   refs: {
     desktop: [
       { ref: "hero-1", selector: "[data-section=\"hero\"] > h1:nth-of-type(1)" },
       { ref: "hero-2", selector: "[data-section=\"hero\"] > a:nth-of-type(1)" },
     ],
-    mobile: [],
+    mobile: [
+      { ref: "m:hero-1", selector: "[data-section=\"hero\"] > h1:nth-of-type(1)" },
+      { ref: "m:hero-2", selector: "[data-section=\"hero\"] > a:nth-of-type(1)" },
+    ],
   },
 };
 
@@ -96,12 +99,25 @@ test("a click inside a numbered element comments on its reference, and one submi
   const block = JSON.parse(await shadow(page, "[data-block]"));
   assert.equal(block.schema, SCHEMA);
   assert.equal(block.page, DATA.page);
-  assert.equal(block.capture, DATA.capture);
+  assert.deepEqual(block.captures, DATA.captures);
   assert.deepEqual(block.ask, DATA.ask);
   assert.equal(block.verdict, "reject");
   assert.deepEqual(block.comments, [{ ref: "hero-2", text: "Make the button larger" }, { ref: null, text: "Spacing feels tight" }]);
 
+  // A comment added after submitting hides the block until the review is submitted again.
+  await page.click("h1");
+  await typeInto(page, "[data-text]", "Headline too loud");
+  await act(page, "add");
+  assert.equal(await shadow(page, "[data-out]", "hidden"), true);
+  assert.equal(await shadow(page, "[data-block]"), "");
+
+  // At phone width the same element is numbered as the phone capture numbers it.
+  await page.setViewport({ width: 390, height: 844 });
+  await page.click(".cta span");
+  assert.match(await shadow(page, "[data-target]", "textContent"), /m:hero-2/);
+  await act(page, "cancel");
+
   // The pending comments survive a reload of the same page version.
   await page.reload({ waitUntil: "load" });
-  assert.equal(await page.evaluate(() => document.querySelector("dp-page-review").shadowRoot.querySelectorAll("[data-list] li").length), 2);
+  assert.equal(await page.evaluate(() => document.querySelector("dp-page-review").shadowRoot.querySelectorAll("[data-list] li").length), 3);
 });
