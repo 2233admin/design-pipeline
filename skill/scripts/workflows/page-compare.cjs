@@ -74,8 +74,8 @@ function pairMiddle(before, after) {
 // and palette instead, since its contents round to new pixels when it moves by a fraction of a pixel
 // (each numbered element inside it is still compared by its own fingerprint).
 const sameRegion = (was, now) => {
-  if (was.pixels === null || now.pixels === null) return false;
   if (was.pixels === now.pixels) return true;
+  if (was.pixels === null || now.pixels === null) return false;
   const moved = was.box && now.box && (was.box.x !== now.box.x || was.box.y !== now.box.y);
   return Boolean(moved && was.box.width === now.box.width && was.box.height === now.box.height && typeof was.palette === "string" && was.palette === now.palette);
 };
@@ -106,7 +106,8 @@ function compareCaptures(before, after, scope = null) {
     if (!paired) return { comparable: false, sectionChanged: false, changes: [] };
     const { pairs, added, removed } = paired;
     for (const [was, now] of pairs) {
-      if (was.pixels === null || was.pixels !== now.pixels || was.text !== now.text) found.push({ change: "changed", section: id, before: side(was), after: side(now) });
+      // A box outside the picture on both sides (null) was not seen either time; one side null moved in or out.
+      if (was.pixels !== now.pixels || was.text !== now.text) found.push({ change: "changed", section: id, before: side(was), after: side(now) });
     }
     for (const item of removed) found.push({ change: "removed", section: id, before: side(item), after: null });
     for (const item of added) found.push({ change: "added", section: id, before: null, after: side(item) });

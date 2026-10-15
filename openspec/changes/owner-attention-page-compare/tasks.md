@@ -23,6 +23,11 @@
 
 - [x] 5.1 `workflow-web.md`, CHANGELOG, `design-owner-attention` (3c split into 3c and 3d); `npm test` and `npm run specs:check`.
 
+## 6. Review follow-up (PR #142)
+
+- [x] 6.1 CodeRabbit: an element outside the picture on both captures (null fingerprint) is unchanged, one that moved in or out is changed (rather than making the whole capture not comparable, which would reopen the section on every change); verify in `page-compare`.
+- [x] 6.2 CodeRabbit: a 3b record's plain-hash screenshot is still shown as the earlier picture; verify in `workflow-next`.
+
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.

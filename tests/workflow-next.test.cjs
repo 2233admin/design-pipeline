@@ -3881,7 +3881,10 @@ test("a self-checked section and a section accepted without captures keep the ke
   touch(legacy, ".design-pipeline/state.json", JSON.stringify(state, null, 2));
   buildPage(legacy, ["first-screen"], "<!-- edited -->\n");
   fakeRefs(legacy);
-  assert.match(nextAction(legacy).first || "", /cannot be compared/, "an old record is asked again once");
+  const asked = nextAction(legacy);
+  assert.match(asked.first || "", /cannot be compared/, "an old record is asked again once");
+  // CodeRabbit review on #142: its screenshot is still shown as the earlier picture.
+  assert.match(asked.first, /\(then\) beside evidence\/refs\.png \(now\)/);
 });
 
 test("the final review asked again after an acceptance lists what changed since", t => {

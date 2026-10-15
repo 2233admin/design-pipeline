@@ -74,3 +74,10 @@ test("a section that moved is compared by size and palette, so a new background 
   // Not moved: the fingerprint alone decides.
   assert.equal(compareCaptures(before, { refs: [heading], sections: [section(1000, "P2", "fff,000")] }, "proof").sectionChanged, true);
 });
+
+// CodeRabbit review on #142: a box outside the picture (null) on both sides was not seen either time.
+test("an element outside the picture both times is unchanged; one that moved in or out is changed", () => {
+  const before = doc([el("hero-1", "h1", "Bread", "A"), el("hero-2", "a", "Skip link", null)]);
+  assert.deepEqual(compareCaptures(before, doc([el("hero-1", "h1", "Bread", "A"), el("hero-2", "a", "Skip link", null)]), "hero").changes, []);
+  assert.deepEqual(summary(compareCaptures(before, doc([el("hero-1", "h1", "Bread", "A"), el("hero-2", "a", "Skip link", "V")]), "hero")), [["changed", "hero-2", "hero-2"]]);
+});

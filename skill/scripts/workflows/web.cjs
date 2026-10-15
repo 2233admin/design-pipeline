@@ -782,7 +782,9 @@ function storeReviewed(root, captures) {
 
 // A verdict's kept capture of one viewport: the screenshot's path when its copy still has its bytes, and
 // the reference list when its copy still has its bytes and names that screenshot; null parts otherwise.
-function keptCapture(root, kept) {
+function keptCapture(root, entry) {
+  // A phase 3b record names the screenshot alone, as a plain hash, and kept no reference list.
+  const kept = typeof entry === "string" ? { png: entry } : entry;
   const png = kept && typeof kept.png === "string" && fileSha(root, reviewedFile(kept.png)) === kept.png ? reviewedFile(kept.png) : null;
   let doc = null;
   if (png && typeof kept.refs === "string" && fileSha(root, reviewedFile(kept.refs, "json")) === kept.refs) {
@@ -801,9 +803,8 @@ function compareStep(state, root, scope) {
   if (!latest) return { show: [] };
   const changes = [];
   const pairs = currentCaptures(root).flatMap(({ viewport, doc }) => {
-    const kept = latest.captures[viewport];
-    const { png, doc: before } = keptCapture(root, kept);
-    if (!png || kept.png === doc.png) return [];
+    const { png, doc: before } = keptCapture(root, latest.captures[viewport]);
+    if (!png || png === reviewedFile(doc.png)) return [];
     // At the final review, the comparison names what changed on the whole page since that verdict.
     if (scope === "review" && before) {
       const result = compareCaptures(before, doc, null);
