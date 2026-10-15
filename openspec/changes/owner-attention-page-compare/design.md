@@ -41,6 +41,9 @@ See proposal.md for why. Current code (after `owner-attention-mobile-compare`):
   section, as for references). `palette` is the set of colours (4 bits a channel) covering at least 1% of
   the box, each with its share in 5% steps, so a region that keeps its colours but changes how much of the
   box they cover is still seen.
+- **Places inside a section.** Each paired element inside a section must also keep its offset from the section's
+  box (within 1 px for rounding), so a moved section whose padding, gap or order changed is seen even when every
+  element looks the same. Outside sections only the look counts, since content above moves them.
 - **Moved sections.** Checked: when content above pushes a section down by a fractional amount, each element
   inside keeps its fingerprint (each is read at its own rounded box) but the section's crop does not, since
   its contents round to whole pixels independently. So a section whose box moved is the same when its size and
@@ -121,9 +124,13 @@ See proposal.md for why. Current code (after `owner-attention-mobile-compare`):
   `first`:
   - changed: "Section X was accepted at <at>; the page changed since and the comparison found these changed:
     <list>. Show them before and after and ask again.";
-  - unknown: "Section X was accepted at <at> on an earlier page, and it cannot be compared with this one until
-    the page is captured: once it is, a section the comparison finds unchanged keeps its acceptance. If the
-    capture cannot be taken, ask:" (the capture command itself comes from the 3a step that follows).
+  - unknown, no current capture: "Section X was accepted at <at> on an earlier page, and it cannot be compared
+    with this one until the page is captured: once it is, a section the comparison finds unchanged keeps its
+    acceptance. If the capture cannot be taken, ask:" (the capture command comes from the 3a step that follows);
+  - unknown otherwise (the kept reference list is missing or from 3b, or a capture has no fingerprints or a group
+    too large to pair): the text says a capture will not help and asks for a fresh look.
+  - A change found at one viewport is listed even while another viewport cannot be compared yet.
+  - A page too large to fingerprint is still numbered, without fingerprints, so it is not comparable.
   - A changed section with no changed numbered element is listed as "section X (changed, outside its numbered
     elements)".
   - The action carries `pageChanges` (structured list) for the agent.

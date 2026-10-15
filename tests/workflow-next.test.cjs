@@ -3882,7 +3882,7 @@ test("a self-checked section and a section accepted without captures keep the ke
   buildPage(legacy, ["first-screen"], "<!-- edited -->\n");
   fakeRefs(legacy);
   const asked = nextAction(legacy);
-  assert.match(asked.first || "", /cannot be compared/, "an old record is asked again once");
+  assert.match(asked.first || "", /recorded before comparisons\), so it needs a fresh look/, "an old record is asked again, until it is accepted with new captures");
   // CodeRabbit review on #142: its screenshot is still shown as the earlier picture.
   assert.match(asked.first, /\(then\) beside evidence\/refs\.png \(now\)/);
 });
@@ -3927,10 +3927,21 @@ test("a kept capture without its reference list goes to the comparison, and edit
   decide(root, { by: "owner", stage: "section", choice: "first-screen", verdict: "accept" });
   const { captures } = readState(root).decisions.sections.at(-1);
   fs.rmSync(path.join(root, "evidence", "reviewed", `${captures.desktop.refs.slice(7)}.json`));
-  assert.match(nextAction(root).first || "", /cannot be compared/, "the page digest is unchanged, but the kept files cannot be checked");
+  assert.match(nextAction(root).first || "", /its kept reference list is missing, or it was recorded before comparisons\), so it needs a fresh look/, "the page digest is unchanged, but the kept files cannot be checked, and a capture would not help");
   const doc = JSON.parse(fs.readFileSync(path.join(root, "evidence", "refs.json"), "utf8"));
   doc.sections[0].pixels = "edited";
   touch(root, "evidence/refs.json", JSON.stringify(doc));
   assert.match(nextAction(root).first, /evidence refs --root /, "an edited section fingerprint makes the capture stale");
+});
+
+// Independent review on #142: a change found at one viewport is shown even while the other cannot be
+// compared yet.
+test("a change at one viewport is listed while the other viewport has no capture yet", t => {
+  const root = acceptedWithCaptures(t);
+  buildPage(root, ["first-screen", "proof"], "<style>h1 { color: red; }</style>\n");
+  fakeRefs(root, REFS, ["index.html"], ["desktop"], { pixels: { "first-screen-1": "red" } });
+  const ask = nextAction(root);
+  assert.equal(ask.section, "first-screen");
+  assert.match(ask.first, /found these changed in it: first-screen-1 h1 "Fresh bread" \(changed\)\./);
 });
 

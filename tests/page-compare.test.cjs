@@ -81,3 +81,15 @@ test("an element outside the picture both times is unchanged; one that moved in 
   assert.deepEqual(compareCaptures(before, doc([el("hero-1", "h1", "Bread", "A"), el("hero-2", "a", "Skip link", null)]), "hero").changes, []);
   assert.deepEqual(summary(compareCaptures(before, doc([el("hero-1", "h1", "Bread", "A"), el("hero-2", "a", "Skip link", "V")]), "hero")), [["changed", "hero-2", "hero-2"]]);
 });
+
+// Independent review on #142: a moved section whose elements all look the same but sit elsewhere in it
+// (padding, gap, order) changed its layout.
+test("a moved section whose elements changed place inside it is changed", () => {
+  const section = (y) => ({ id: "proof", box: { x: 0, y, width: 1440, height: 900 }, pixels: `P${y}`, palette: "fff:90,000:10" });
+  const heading = (y) => ({ ...el("proof-1", "h2", "Proof", "H", "proof"), box: { x: 24, y, width: 300, height: 40 } });
+  const before = { refs: [heading(1024)], sections: [section(1000)] };
+  assert.equal(compareCaptures(before, { refs: [heading(1874)], sections: [section(1850)] }, "proof").sectionChanged, false, "moved together");
+  const result = compareCaptures(before, { refs: [heading(1904)], sections: [section(1850)] }, "proof");
+  assert.equal(result.sectionChanged, true, "padding above the heading grew by 30px");
+  assert.deepEqual(summary(result), [["changed", "proof-1", "proof-1"]]);
+});

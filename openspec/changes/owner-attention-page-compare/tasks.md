@@ -32,6 +32,8 @@
 
 - [x] 6.4 Codex: a kept capture without its reference list fails closed (goes to the comparison); `refsDigest` binds the section fingerprints; the palette carries each colour's share; verify in `workflow-next` and the browser fingerprint test.
 
+- [x] 6.5 Independent review: inside a moved section each element must keep its place (±1 px), so a layout change that keeps every element's look is seen; a shift under half a pixel counts as a move; a change at one viewport is listed even while another cannot be compared; the reopened ask says whether a capture would lift it; a page too large to fingerprint is captured without fingerprints (not comparable); the current captures are read once per `sectionProgress`; verify in `page-compare` and `workflow-next`.
+
 ## Workflow follow-up
 
 - Open the PR, address review findings, merge when CI is green.

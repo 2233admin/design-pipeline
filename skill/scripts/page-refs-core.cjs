@@ -365,14 +365,18 @@ async function captureRefs(projectRoot, options = {}) {
     // before any badge is drawn, so two captures can be compared element by element.
     const clean = await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true, encoding: "base64" });
     const blank = await browser.newPage();
-    let pixels;
+    let pixels = null;
     try {
       pixels = await blank.evaluate(regionPixels, clean, [...measured, ...regions].map((item) => item.box));
+    } catch {
+      // A page too large to decode still gets its numbers; without fingerprints its captures are not
+      // comparable (no `pixels`, no `sections`), which reopens rather than hides a change.
+      pixels = null;
     } finally {
       await blank.close();
     }
-    const refs = measured.map((item, index) => ({ ...item, pixels: pixels[index].pixels }));
-    const sections = regions.map((item, index) => ({ ...item, ...pixels[measured.length + index] }));
+    const refs = pixels ? measured.map((item, index) => ({ ...item, pixels: pixels[index].pixels })) : measured;
+    const sections = pixels ? regions.map((item, index) => ({ ...item, ...pixels[measured.length + index] })) : undefined;
     if (await page.evaluate(drawBadges, refs) === "root-transformed") fail(SCOPE, "the page transforms or zooms its <html> element, so badges cannot be placed on its elements. Fix: ask the owner to name elements by their text, label or place");
     const png = Buffer.from(await page.screenshot({ type: "png", fullPage: true, captureBeyondViewport: true }));
     const identity = await browserIdentity(browser, executablePath);
@@ -381,7 +385,7 @@ async function captureRefs(projectRoot, options = {}) {
     const after = digest(projectRoot);
     if (before !== after) fail(SCOPE, "the page changed during the capture. Fix: stop editing index.html and its files, then run `evidence refs` again");
     return {
-      doc: { schema: REFS_SCHEMA, page: after, viewport: { width: profile.viewport.width, height: profile.viewport.height, ...(profile.viewport.isMobile ? { mobile: true } : {}) }, browser: identity, capturedAt: new Date().toISOString(), refs, sections },
+      doc: { schema: REFS_SCHEMA, page: after, viewport: { width: profile.viewport.width, height: profile.viewport.height, ...(profile.viewport.isMobile ? { mobile: true } : {}) }, browser: identity, capturedAt: new Date().toISOString(), refs, ...(sections ? { sections } : {}) },
       png,
       loaded: Object.fromEntries([...loaded].filter(([, item]) => item.hash !== undefined).map(([url, item]) => [url, item.hash])),
     };

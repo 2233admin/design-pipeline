@@ -566,9 +566,11 @@ function sectionProgress(state, root) {
   // The page tier, once every section is built and accepted: a section a person accepted stays accepted
   // only while it is unchanged. Checked at the end of the build rather than after each edit, so building
   // a later section does not keep reopening earlier ones.
+  let captures;
+  const current = () => (captures ??= currentCaptures(root));
   for (const id of approval.sections) {
     const latest = records.filter(item => item.section === id).at(-1);
-    const tier = pageTier(root, latest);
+    const tier = pageTier(root, latest, current);
     if (tier) return { approval, accepted: accepted.filter(item => item !== id), current: id, built: true, latest, tier };
   }
   return { approval, accepted, current: null };
@@ -579,7 +581,7 @@ function sectionProgress(state, root) {
 // shows the section unchanged. Returns null when it stands, else {status: "changed", changes} or
 // {status: "unknown"} when a comparison cannot be made (no current capture, no kept reference list, or
 // a capture without fingerprints). A section accepted without captures keeps the key rule alone.
-function pageTier(root, record) {
+function pageTier(root, record, current = () => currentCaptures(root)) {
   if (!record?.captures || typeof record.captures !== "object") return null;
   // Unchanged since the verdict: the page digest, and every file the kept captures loaded (a font or
   // image named only in CSS is outside the digest), still have the bytes they had.
@@ -588,16 +590,22 @@ function pageTier(root, record) {
   // are unchanged, so it goes to the comparison, which then cannot be made either.
   const loadedSame = kept.every(doc => doc?.lineage && typeof doc.lineage === "object" && Object.entries(doc.lineage).every(([rel, hash]) => fileSha(root, rel) === hash));
   if (record.pageSha256 === pageDigest(root) && loadedSame) return null;
-  const now = Object.fromEntries(currentCaptures(root).map(({ viewport, doc }) => [viewport, doc]));
+  const now = Object.fromEntries(current().map(({ viewport, doc }) => [viewport, doc]));
   const changes = [];
+  const unknown = new Set();
   for (const [viewport, kept] of Object.entries(record.captures)) {
     const { doc } = keptCapture(root, kept);
-    if (!doc || !now[viewport]) return { status: "unknown" };
+    if (!doc) { unknown.add("unrecorded"); continue; }
+    if (!now[viewport]) { unknown.add("uncaptured"); continue; }
     const result = compareCaptures(doc, now[viewport], record.section);
-    if (!result.comparable) return { status: "unknown" };
+    if (!result.comparable) { unknown.add("uncomparable"); continue; }
     if (result.sectionChanged) changes.push(...result.changes);
   }
-  return changes.length ? { status: "changed", changes } : null;
+  // A change found at one viewport is shown even when another cannot be compared yet.
+  if (changes.length) return { status: "changed", changes };
+  if (!unknown.size) return null;
+  // A capture lifts only the missing current capture; a missing kept list or an uncomparable capture stays.
+  return { status: "unknown", reason: unknown.has("unrecorded") ? "unrecorded" : unknown.has("uncomparable") ? "uncomparable" : "uncaptured" };
 }
 
 // What the owner looked at: index.html, its manifest and the local files the page names.
@@ -837,7 +845,8 @@ function sectionReview(root, { approval, accepted, current, latest, tier }) {
   const who = latest?.by === "agent" ? "the art director" : "the owner";
   const reopened = tier?.status === "changed"
     ? `Section ${current} was accepted by ${who} at ${latest.at}; the page changed since, and comparing the captures found these changed in it: ${describeChanges(tier.changes)}. Show them before and after, then ask:`
-    : tier ? `Section ${current} was accepted by ${who} at ${latest.at} on an earlier page, and it cannot be compared with this one until the page is captured: once it is, a section the comparison finds unchanged keeps its acceptance and next moves on. If the capture cannot be taken, ask:` : null;
+    : tier?.reason === "uncaptured" ? `Section ${current} was accepted by ${who} at ${latest.at} on an earlier page, and it cannot be compared with this one until the page is captured: once it is, a section the comparison finds unchanged keeps its acceptance and next moves on. If the capture cannot be taken, ask:`
+    : tier ? `Section ${current} was accepted by ${who} at ${latest.at} on an earlier page, and what was kept of that verdict cannot be compared with this page (${tier.reason === "unrecorded" ? "its kept reference list is missing, or it was recorded before comparisons" : "a capture has no fingerprints, or too many elements to pair"}), so it needs a fresh look. Ask:` : null;
   return {
     type: "ask",
     section: current,
