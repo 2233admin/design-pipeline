@@ -36,6 +36,11 @@ jobs:
           npm exec -- playwright install-deps chromium
           npm run browser:install
 
+      - name: Allow Chrome's sandbox
+        # Same as ci.yml: Ubuntu 23.10+ runners restrict unprivileged user namespaces through AppArmor,
+        # so the headless Chrome the browser tests launch exits with "No usable sandbox!".
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Resolve version
         id: ver
         run: |
@@ -54,9 +59,20 @@ jobs:
         run: npm run specs:check
 
       - name: QA
-        run: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$RUNNER_TEMP/qa.log"
         env:
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
+
+      - name: Annotate QA failures
+        # Same as ci.yml: a failure is readable from the run's annotations without the job log.
+        if: failure()
+        shell: bash
+        run: |
+          grep -E '^FAIL ' "$RUNNER_TEMP/qa.log" | head -20 | while IFS= read -r line; do echo "::error title=QA::$line"; done
+          awk '/^[[:space:]]*not ok /{if(n>0) print block; block=$0; n=25; next} n>0{block=block "%0A" $0; n--; if(n==0){print block}} END{if(n>0) print block}' "$RUNNER_TEMP/qa.log" | head -10 | while IFS= read -r block; do echo "::error title=Failing test::$block"; done
 
       - name: Package
         run: npm run package:skill -- --output-root dist
