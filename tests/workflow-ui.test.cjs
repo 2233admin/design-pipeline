@@ -104,3 +104,33 @@ test("MOTION.md source decisions say which lines are missing", () => {
   const text = "---\nschema: design-pipeline.motion-foundation.v0.1\nname: x\nposture: static\nprimitiveRegistry: design-pipeline.motion-primitives.v1\n---\n\n# x\n\n## Motion Thesis\n\nStill.\n\n## Motion Principles\n\n- Still.\n\n## Motion Vocabulary\n\nNone.\n\n## Procedural Motion\n\nDisabled.\n\n## Runtime Policy\n\nNone.\n\n## Reduced Motion\n\nSubstitute: none. Fallback: identical.\n\n## Source Decisions\n\nWe adopted stillness and rejected motion.\n";
   assert.throws(() => validateMotionFoundationText(text), /line that starts with Adopted:/);
 });
+
+test("under --director the art director records the pick, bound to the saved state", () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), "workflow-ui-director-"));
+  roots.push(parent);
+  const root = path.join(parent, "console");
+  fs.mkdirSync(root);
+  initState(root, { deliverable: "ui", tier: "standard", director: "claude-opus-5-5" });
+  decide(root, { by: "owner", stage: "intake", answer: "default" });
+  writePreview(root);
+  const ask = nextAction(root);
+  assert.match(ask.record, /--by agent/);
+  decide(root, { by: "agent", stage: "concept", choice: "desk", answer: "Dense enough for daily use" });
+  const decision = JSON.parse(fs.readFileSync(path.join(root, "direction-preview.json"), "utf8")).decision;
+  assert.equal(decision.by, "agent");
+  assert.equal(decision.agent, "claude-opus-5-5");
+  assert.equal(decision.delegation.stateSha256, hash(fs.readFileSync(path.join(root, ".design-pipeline", "state.json"))));
+  assert.equal(nextAction(root).stage, "work");
+});
+
+test("a recorded direction reopens when its receipt drifts or disappears", () => {
+  const root = project();
+  decide(root, { by: "owner", stage: "intake", answer: "default" });
+  writePreview(root);
+  decide(root, { by: "owner", stage: "concept", choice: "notebook", answer: "Reads like a lab notebook" });
+  assert.equal(nextAction(root).stage, "work");
+  fs.appendFileSync(path.join(root, "direction-previews", "desk.png"), "changed");
+  assert.equal(nextAction(root).stage, "concepts");
+  fs.rmSync(path.join(root, "direction-preview.json"));
+  assert.match(nextAction(root).instruction, /Stage 0/);
+});
