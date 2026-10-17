@@ -62,6 +62,7 @@
     "mengto-skills.test.cjs",
     "animation-opportunity-reference.test.cjs",
     "design-system-package.test.cjs",
+    "workflow-ui.test.cjs",
     "motion-foundation.test.cjs",
     "motion-verification.test.cjs",
     "film-gates.test.cjs",

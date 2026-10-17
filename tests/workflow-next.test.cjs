@@ -1362,6 +1362,8 @@ test("ui uses OpenSpec only at the full tier", () => {
   const full = tmp();
   initState(full, { deliverable: "ui", tier: "full" });
   decide(full, { by: "owner", stage: "intake", answer: "default" });
+  fs.writeFileSync(path.join(full, "direction-preview.json"), JSON.stringify({ schema: "design-pipeline.direction-preview.v1", changeId: path.basename(full), applicability: { status: "waived", reason: "established-surface" }, comparison: null, directions: [], decision: { status: "waived", selectedDirectionId: null, rationale: "The surface already has its direction." } }));
+  decide(full, { by: "owner", stage: "concept", choice: "waived", answer: "Keep the existing look" });
   assert.match(nextAction(full).instruction, /OpenSpec change/);
 });
 

@@ -6,10 +6,13 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- The `ui` deliverable asks interface questions at intake (the job, devices and sharing, content and states, licensed assets) instead of a film's duration, and at the standard and full tiers runs Stage 0 and a direction preview before the work: the owner's pick from the rendered candidates is written into `direction-preview.json` by `decide --stage concept` (change `fix-ui-workflow-friction`, #147).
+
 - A design-system package beside `DESIGN.md` (change `add-design-system-package`, #147). `design-system/` holds a usage-rule README (content fundamentals, visual foundations, iconography), a list-shaped `tokens.json` with a usage note on every token and declared contrast pairs, `components/bundle.css`, guidelines and a live preview per component, and a cover — the layout of Claude's Design System artifact type, so a host that offers it can publish the folder as-is. `foundation check --kind system` validates it (`--kind all` includes it when present), `design-system design-md-tokens` generates the `DESIGN.md` front-matter tokens from `tokens.json` and the check reports drift, and `design-system compile` writes `tokens.css` and standalone previews for `composition capture`. Design synthesis writes the package for `ui` and `web` products.
 
 ### Changed
 
+- A relative `--project-root` that does not exist now says it was resolved against `--root`; the `MOTION.md` source-decisions error says that `Adopted:` and `Rejected:` must each start a line.
 - The owner can answer later, and is caught up when asked again (change `owner-attention-away`, phase 4a of `design-owner-attention`). `decide --later [--until <time>]` records that the owner will answer the current owner ask later: until the time, a change to what is asked or the page it is about, another current ask, or the owner's next recorded answer, `next` returns `blocked` (kind `owner`, exit 2) with the deferred question, so the agent neither asks again nor builds on a guess. An owner ask now carries `away` when the agent decided anything or a check ran since the owner's last recorded answer, and its `first` tells the agent to say so in a line or two before asking.
 
 ## [0.12.0] - 2026-10-15

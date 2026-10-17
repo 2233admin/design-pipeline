@@ -1100,6 +1100,7 @@
     "scripts/page-refs-core.cjs",
     "scripts/capture-refs.cjs",
     "scripts/design-system-package-core.cjs",
-    "references/design-system-package.md"
+    "references/design-system-package.md",
+    "scripts/workflows/ui.cjs"
   ]
 }
