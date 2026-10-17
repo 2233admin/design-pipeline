@@ -35,6 +35,7 @@ const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, delivery
 const roles = require("./workflows/roles.cjs");
 const rules = require("./workflows/rules.cjs");
 const away = require("./workflows/away.cjs");
+const ui = require("./workflows/ui.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -53,7 +54,11 @@ function codeStages(state) {
   };
   // Every tier ends with the owner's acceptance of the delivered work: visual quality is not
   // something a passing check can accept on the owner's behalf.
-  return [...(tier === "quick" ? [] : [INTAKE]), ...(mode === "replicate" ? [REFERENCE] : []), work, REVIEW];
+  // A ui interface is chosen from a rendered direction preview before it is built; replicate keeps
+  // its reference instead, and quick has no owner stages before the work.
+  const intake = state.deliverable === "ui" ? ui.UI_INTAKE : INTAKE;
+  const direction = state.deliverable === "ui" && tier !== "quick" && mode !== "replicate" ? [ui.DIRECTION] : [];
+  return [...(tier === "quick" ? [] : [intake]), ...(mode === "replicate" ? [REFERENCE] : []), ...direction, work, REVIEW];
 }
 
 function stagesFor(state) {
@@ -339,6 +344,7 @@ function decide(root, options = {}) {
   }
   const carryForward = stage === "description" && options.verdict === "accept" && options.revision === "bytes";
   const role = roles.recordRole(state, stage, options.by, { carryForward });
+  let afterSave = null;
   if (role.carriedForward) options = { ...options, carriedForward: true };
   // A trade-off ask is the owner's answer to a question the agent put to them during a self-check.
   if (options.tradeoff !== undefined && options.tradeoff !== null) {
@@ -388,6 +394,11 @@ function decide(root, options = {}) {
     const answer = options.answer || "none";
     if (answer === "none" && state.mode === "replicate") fail("workflow", "replicate mode cannot skip the reference. Fix: write reference.md from the reference you are reproducing");
     state.decisions.reference = answer;
+  } else if (stage === "concept" && state.deliverable === "ui") {
+    if (!stagesFor(state).some((item) => item.id === "concepts")) fail("workflow", "this ui run has no direction stage (quick tier or replicate mode). Fix: follow next");
+    const next = nextAction(root, ANSWERING);
+    if (next.stage !== "concepts") fail("workflow", `Cannot record the direction while ${next.stage} is unfinished. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    afterSave = ui.decideDirection(state, root, options, role);
   } else if (stage === "concept") {
     if (!options.choice) fail("workflow", "--choice is required: the concept number, or mad/pv for an edit");
     state.decisions.concept = String(options.choice);
@@ -466,6 +477,7 @@ function decide(root, options = {}) {
   const card = String(state.decisions.intake?.answer ?? "").split(/\r?\n/).filter(line => line.trim()).length >= 3;
   if (state.deliverable === "web" && stage === "intake" && options.verdict === "accept" && role.by === "owner" && state.delegation?.["creative-intent"] && card) roles.recordCreativeIntent(state, state.decisions.intake.answer);
   writeState(root, state);
+  if (afterSave) afterSave();
   const next = nextAction(root);
   // Reaching done renders the diligence statement from the state just written.
   if (next.type === "done") {

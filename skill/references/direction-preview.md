@@ -88,6 +88,12 @@ that informed the decision.
 
 6. Only then write the committed direction to `directions.md` and continue to change `design.md`.
 
+For the `ui` deliverable at the standard and full tiers (not in replicate mode), `next` runs this
+contract as its direction stage after intake: write `direction-preview.json` at the project root
+(its `changeId` is the project folder's name), and record the owner's pick with
+`decide --stage concept --by owner --choice <id> --answer "<why>"` (or `--choice waived` for a
+waiver), which writes the selection into the receipt only when the selection check passes.
+
 Do not treat a recommended badge, default card, timeout, or visually emphasized candidate as a
 selection. Do not begin production implementation from an unverified preview.
 

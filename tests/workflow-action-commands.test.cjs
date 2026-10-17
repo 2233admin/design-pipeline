@@ -72,6 +72,7 @@ function walk(deliverable, tier, mode) {
     reference: () => (mode === "replicate" ? touch(dir, "reference.md", "Observed enamel at three angles.") : decide(dir, { by: "owner", stage: "reference", answer: "none" })),
     concepts: () => {
       if (deliverable === "web") return exists("concepts.html") ? pickVariant(dir) : writeVariants(dir);
+      if (deliverable === "ui") return exists("direction-preview.json") ? decide(dir, { by: "owner", stage: "concept", choice: "waived", answer: "Keep the existing look" }) : touch(dir, "direction-preview.json", JSON.stringify({ schema: "design-pipeline.direction-preview.v1", changeId: path.basename(dir), applicability: { status: "waived", reason: "established-surface" }, comparison: null, directions: [], decision: { status: "waived", selectedDirectionId: null, rationale: "The surface already has its direction." } }));
       return exists("concepts.md") ? decide(dir, { by: "owner", stage: "concept", choice: "1" }) : touch(dir, "concepts.md");
     },
     style: () => decide(dir, { by: "owner", stage: "concept", choice: "pv" }),

@@ -408,7 +408,7 @@ function validateMotionSourceDecisions(model) {
         decision.codeCopied === false,
     )
   ) {
-    fail("normalized sourceDecisions must record adopted and rejected properties");
+    fail("MOTION.md Source Decisions needs a line that starts with Adopted: (or 采纳 / 采用) and another that starts with Rejected: (or 拒绝 / 未采用)");
   }
 }
 

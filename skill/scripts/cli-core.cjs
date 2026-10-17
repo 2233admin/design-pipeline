@@ -212,7 +212,16 @@ function rootFrom(parsed) {
 }
 
 function contained(root, raw, label, mustExist = true) {
-  const target = resolveInside(root, raw, label, { scope: "cli", mustExist });
+  let target;
+  try {
+    target = resolveInside(root, raw, label, { scope: "cli", mustExist });
+  } catch (error) {
+    // A relative path is resolved against --root, which surprises a caller who passed both relative.
+    if (typeof raw === "string" && !path.isAbsolute(raw) && path.resolve(root) !== path.resolve(process.cwd())) {
+      fail("cli", `${error.message.replace(/^cli: /, "")}; a relative ${label} is resolved against --root (${root}). Fix: pass it relative to --root, or absolute`, { code: error.code || "CONTRACT_INVALID" });
+    }
+    throw error;
+  }
   if (mustExist) {
     const real = fs.realpathSync(target);
     resolveInside(root, real, label, { scope: "cli" });
