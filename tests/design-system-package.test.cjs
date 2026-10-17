@@ -208,3 +208,38 @@ test("the CLI exposes design-system check, compile and design-md-tokens, and fou
   fs.rmSync(path.join(root, "design-system", "README.md"));
   assert.equal(run("design-system", "check").status, 2);
 });
+
+test("contrast entries are validated, translucent colours refused and hsl measured", () => {
+  const t = tokens();
+  t.color.tokens.push({ name: "ghost", value: "#0000", usage: "Never text." }, { name: "sage", value: "hsl(120, 40%, 25%)", usage: "Supported text on paper." });
+  t.contrast = [{ text: "ghost", on: ["paper"] }, { text: "ink", on: [] }, { text: "ink", on: ["paper"], min: "x" }, { text: "sage", on: ["paper"], min: 4.5 }];
+  const result = checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": JSON.stringify(t) }) });
+  const text = messages(result);
+  assert.match(text, /contrast ghost on paper \(light\): translucent colours cannot be measured/);
+  assert.equal((text.match(/needs a colour token as text, at least one ground/g) || []).length, 2);
+  assert.ok(result.contrast.some((pair) => pair.text === "sage" && pair.ratio > 4.5));
+});
+
+test("a non-object tokens.json is invalid, not ready or a crash", () => {
+  for (const body of ["null", "3", "[]"]) {
+    assert.match(messages(checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": body }) })), /tokens\.json must be a JSON object/);
+  }
+});
+
+test("bundle.css is required", () => {
+  assert.match(messages(checkDesignSystemPackage({ projectRoot: writePackage({ "components/bundle.css": null }) })), /components\/bundle\.css: missing/);
+});
+
+test("typography drift ignores key order", () => {
+  const root = writePackage();
+  const front = designMdTokens(tokens()).replace("    fontWeight: 400\n    lineHeight: 1.6\n", "    lineHeight: 1.6\n    fontWeight: 400\n");
+  fs.writeFileSync(path.join(root, "DESIGN.md"), `---\nname: Ledger\n${front}---\n`);
+  assert.equal(checkDesignSystemPackage({ projectRoot: root }).status, "ready");
+});
+
+test("design-md-tokens stays inside the project", () => {
+  const root = writePackage();
+  const out = spawnSync(process.execPath, [cli, "design-system", "design-md-tokens", "--system-dir", "../outside", "--root", root, "--project-root", root], { encoding: "utf8" });
+  assert.notEqual(out.status, 0);
+  assert.match(out.stdout + out.stderr, /outside --project-root/);
+});

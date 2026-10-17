@@ -68,7 +68,7 @@ const { recordObservation } = require("./record-feedback.cjs");
 const { evaluateIntake, validateDesignToolReceipt, validateRegistry, validateStyleSignals } = require("./adapter-core.cjs");
 const { checkDesignFoundation } = require("./design-synthesis-core.cjs");
 const { checkMotionFoundation } = require("./motion-foundation-core.cjs");
-const { DEFAULT_DIR: DESIGN_SYSTEM_DIR, checkDesignSystemPackage, compileDesignSystemPackage, designMdTokens } = require("./design-system-package-core.cjs");
+const { DEFAULT_DIR: DESIGN_SYSTEM_DIR, checkDesignSystemPackage, compileDesignSystemPackage, designMdTokens, resolveSystemDir } = require("./design-system-package-core.cjs");
 const {
   createSurface,
   resolveSurfaceProfile,
@@ -1475,7 +1475,7 @@ function designSystemCommand(parsed, root, action) {
     if (action === "compile") {
       return { result: compileDesignSystemPackage({ projectRoot, systemDir, output: option(parsed, "--output", ".design-pipeline/design-system") }), exitCode: 0 };
     }
-    const tokens = readJson(path.resolve(projectRoot, systemDir, "tokens.json"), "design-system tokens");
+    const tokens = readJson(path.join(resolveSystemDir(projectRoot, systemDir), "tokens.json"), "design-system tokens");
     return { result: { status: "generated", frontMatter: designMdTokens(tokens) }, exitCode: 0 };
   }
   if (action === "options") {

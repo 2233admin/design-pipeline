@@ -51,15 +51,34 @@ function resolveColor(byName, name, themeId, firstId, seen = new Set()) {
   return HEX.test(value) || COLOR_FUNCTION.test(value) ? value.toLowerCase() : null;
 }
 
-function rgbOf(value) {
-  const hex = value.match(HEX);
-  if (hex) {
+// [r, g, b, alpha] for hex, rgb[a]() and hsl[a](); null for colour spaces this check cannot measure.
+function rgbaOf(value) {
+  if (HEX.test(value)) {
     let h = value.slice(1);
     if (h.length <= 4) h = [...h].map((c) => c + c).join("");
-    return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+    return [r, g, b, h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1];
   }
-  const rgb = value.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i);
-  return rgb ? rgb.slice(1, 4).map(Number) : null;
+  const fn = value.match(/^(rgba?|hsla?)\(\s*([^()]*)\)$/i);
+  if (!fn) return null;
+  const parts = fn[2].split(/[\s,/]+/).filter(Boolean);
+  if (parts.length < 3) return null;
+  const num = (p, scale) => (p.endsWith("%") ? (parseFloat(p) / 100) * scale : parseFloat(p));
+  const alpha = parts[3] === undefined ? 1 : num(parts[3], 1);
+  if (/^rgb/i.test(fn[1])) return [num(parts[0], 255), num(parts[1], 255), num(parts[2], 255), alpha];
+  const hue = (((parseFloat(parts[0]) % 360) + 360) % 360) / 360;
+  const sat = num(parts[1], 1);
+  const light = num(parts[2], 1);
+  const q = light < 0.5 ? light * (1 + sat) : light + sat - light * sat;
+  const p = 2 * light - q;
+  const channel = (t) => {
+    const x = t < 0 ? t + 1 : t > 1 ? t - 1 : t;
+    if (x < 1 / 6) return p + (q - p) * 6 * x;
+    if (x < 1 / 2) return q;
+    if (x < 2 / 3) return p + (q - p) * (2 / 3 - x) * 6;
+    return p;
+  };
+  return [channel(hue + 1 / 3) * 255, channel(hue) * 255, channel(hue - 1 / 3) * 255, alpha];
 }
 
 function luminance([r, g, b]) {
@@ -77,7 +96,10 @@ function contrastRatio(a, b) {
 
 function validateTokens(tokens, findings) {
   const add = (message) => findings.push({ file: "tokens.json", message });
-  if (!tokens || typeof tokens !== "object") return add("tokens.json must be a JSON object");
+  if (!tokens || typeof tokens !== "object" || Array.isArray(tokens)) {
+    add("tokens.json must be a JSON object");
+    return { byName: new Map(), themes: [] };
+  }
   if (typeof tokens.name !== "string" || !tokens.name.trim()) add("tokens.json needs a name");
   const color = tokens.color;
   if (!color || !Array.isArray(color.themes) || !color.themes.length || !isList(color)) {
@@ -139,14 +161,19 @@ function checkContrast(tokens, byName, themes, findings) {
   }
   const results = [];
   for (const pair of pairs) {
-    const min = pair.min === undefined ? 4.5 : Number(pair.min);
-    for (const ground of pair.on || []) {
+    const min = pair && pair.min === undefined ? 4.5 : Number(pair && pair.min);
+    if (!pair || !byName.has(pair.text) || !Array.isArray(pair.on) || !pair.on.length || !Number.isFinite(min) || min <= 1) {
+      add(`contrast entry ${JSON.stringify(pair)} needs a colour token as text, at least one ground in on, and a numeric min above 1`);
+      continue;
+    }
+    for (const ground of pair.on) {
       for (const theme of themes) {
         const fg = resolveColor(byName, pair.text, theme, themes[0]);
         const bg = resolveColor(byName, ground, theme, themes[0]);
-        const a = fg && rgbOf(fg);
-        const b = bg && rgbOf(bg);
-        if (!a || !b) { add(`contrast ${pair.text} on ${ground} (${theme}): both colours must exist and be hex or rgb()`); continue; }
+        const a = fg && rgbaOf(fg);
+        const b = bg && rgbaOf(bg);
+        if (!a || !b) { add(`contrast ${pair.text} on ${ground} (${theme}): both colours must exist and be hex, rgb() or hsl()`); continue; }
+        if (a[3] < 1 || b[3] < 1) { add(`contrast ${pair.text} on ${ground} (${theme}): translucent colours cannot be measured; declare an opaque colour for this pair`); continue; }
         const ratio = Math.round(contrastRatio(a, b) * 100) / 100;
         results.push({ text: pair.text, on: ground, theme, ratio, min });
         if (ratio < min) add(`contrast ${pair.text} on ${ground} (${theme}) is ${ratio}:1, below ${min}:1`);
@@ -197,6 +224,7 @@ function checkComponents(dir, findings) {
     else if (!firstSentence(readText(readme))) findings.push({ file: `${rel}/README.md`, message: "needs a first sentence summarising the component" });
     components.push(entry.name);
   }
+  if (!fs.existsSync(path.join(root, "bundle.css"))) findings.push({ file: "components/bundle.css", message: "missing: the stylesheet the previews and the product share" });
   if (!fs.existsSync(path.join(root, "Cover", "preview.html")) && !findings.some((f) => f.file === "components/Cover")) {
     findings.push({ file: "components/Cover/preview.html", message: "missing: every design system has a cover" });
   }
@@ -302,6 +330,12 @@ function unquote(raw) {
   return value;
 }
 
+// Mapping order has no meaning in YAML, so compare sorted keys.
+function canonical(value) {
+  if (value && typeof value === "object") return JSON.stringify(Object.keys(value).sort().map((k) => [k, String(value[k]).toLowerCase()]));
+  return String(value).toLowerCase();
+}
+
 function checkDesignMdDrift(designText, tokens, findings) {
   const expected = frontMatterGroups(`---\n${designMdTokens(tokens)}---\n`);
   const actual = frontMatterGroups(designText);
@@ -311,8 +345,8 @@ function checkDesignMdDrift(designText, tokens, findings) {
     const have = actual[group] || {};
     for (const [name, value] of Object.entries(want)) {
       if (!(name in have)) { add(`${group}.${name} is in tokens.json but not in DESIGN.md`); continue; }
-      const a = typeof value === "object" ? JSON.stringify(value) : String(value).toLowerCase();
-      const b = typeof have[name] === "object" ? JSON.stringify(have[name]) : String(have[name]).toLowerCase();
+      const a = canonical(value);
+      const b = canonical(have[name]);
       if (a !== b) add(`${group}.${name} differs from tokens.json`);
     }
     for (const name of Object.keys(have)) if (!(name in want)) add(`${group}.${name} is in DESIGN.md but not in tokens.json`);
@@ -340,7 +374,7 @@ function checkDesignSystemPackage(options = {}) {
     findings.push({ file: "tokens.json", message: `not valid JSON: ${error.message}` });
   }
   let contrast = [];
-  if (tokens) {
+  if (tokens !== null || findings.length === 0) {
     const { byName, themes } = validateTokens(tokens, findings);
     if (themes.length) contrast = checkContrast(tokens, byName, themes, findings);
   }
@@ -399,4 +433,5 @@ module.exports = {
   contrastRatio,
   designMdTokens,
   frontMatterGroups,
+  resolveSystemDir,
 };
