@@ -68,6 +68,7 @@ const { recordObservation } = require("./record-feedback.cjs");
 const { evaluateIntake, validateDesignToolReceipt, validateRegistry, validateStyleSignals } = require("./adapter-core.cjs");
 const { checkDesignFoundation } = require("./design-synthesis-core.cjs");
 const { checkMotionFoundation } = require("./motion-foundation-core.cjs");
+const { DEFAULT_DIR: DESIGN_SYSTEM_DIR, checkDesignSystemPackage, compileDesignSystemPackage, designMdTokens, resolveSystemDir } = require("./design-system-package-core.cjs");
 const {
   createSurface,
   resolveSurfaceProfile,
@@ -151,7 +152,7 @@ const KNOWN_OPTIONS = new Set([
   "--action", "--adapter-path", "--api-version", "--artifact", "--answer", "--approval", "--base", "--capability", "--catalog", "--category", "--change-id", "--change-root", "--context", "--expected-sha256", "--failpoint",
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
-  "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--agent-browser", "--agent-browser-state", "--project-root",
+  "--motion-file", "--motion-foundation", "--system-dir", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--agent-browser", "--agent-browser-state", "--project-root",
   "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan", "--bundle",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
@@ -653,10 +654,16 @@ function changeCommand(parsed, root, action) {
 function foundationCommand(parsed, root) {
   const projectRoot = contained(root, option(parsed, "--project-root", root), "--project-root");
   const kind = option(parsed, "--kind", "all");
-  if (!["design", "motion", "all"].includes(kind)) fail("cli", "--kind must be design, motion, or all");
+  if (!["design", "motion", "system", "all"].includes(kind)) fail("cli", "--kind must be design, motion, system, or all");
+  const designFile = option(parsed, "--design-file", "DESIGN.md");
+  const systemDir = option(parsed, "--system-dir", DESIGN_SYSTEM_DIR);
   const result = {};
-  if (["design", "all"].includes(kind)) result.design = checkDesignFoundation({ projectRoot, designFile: option(parsed, "--design-file", "DESIGN.md") });
+  if (["design", "all"].includes(kind)) result.design = checkDesignFoundation({ projectRoot, designFile });
   if (["motion", "all"].includes(kind)) result.motion = checkMotionFoundation({ projectRoot, motionFile: option(parsed, "--motion-file", "MOTION.md") });
+  // `all` checks the design-system package when the project has one; `system` requires it.
+  if (kind === "system" || (kind === "all" && fs.existsSync(path.resolve(projectRoot, systemDir, "tokens.json")))) {
+    result.system = checkDesignSystemPackage({ projectRoot, systemDir, designFile });
+  }
   const blocked = Object.values(result).some((item) => item.status !== "ready");
   return { result: { status: blocked ? "blocked" : "ready", foundations: result }, exitCode: blocked ? 2 : 0 };
 }
@@ -1458,6 +1465,19 @@ function executionCommand(parsed, root, action) {
 }
 
 function designSystemCommand(parsed, root, action) {
+  if (["check", "compile", "design-md-tokens"].includes(action)) {
+    const projectRoot = contained(root, option(parsed, "--project-root", root), "--project-root");
+    const systemDir = option(parsed, "--system-dir", DESIGN_SYSTEM_DIR);
+    if (action === "check") {
+      const result = checkDesignSystemPackage({ projectRoot, systemDir, designFile: option(parsed, "--design-file", "DESIGN.md") });
+      return { result, exitCode: result.status === "ready" ? 0 : 2 };
+    }
+    if (action === "compile") {
+      return { result: compileDesignSystemPackage({ projectRoot, systemDir, output: option(parsed, "--output", ".design-pipeline/design-system") }), exitCode: 0 };
+    }
+    const tokens = readJson(path.join(resolveSystemDir(projectRoot, systemDir), "tokens.json"), "design-system tokens");
+    return { result: { status: "generated", frontMatter: designMdTokens(tokens) }, exitCode: 0 };
+  }
   if (action === "options") {
     const registry = bundledFrontendStackRegistry();
     const skillCatalog = readJson(builtIn("mengto-skills-catalog.json"), "MengTo skill catalog");

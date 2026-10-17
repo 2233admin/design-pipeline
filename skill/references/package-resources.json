@@ -1098,6 +1098,8 @@
     "tools/variant-switcher/variant-switcher.js",
     "tools/variant-switcher/README.md",
     "scripts/page-refs-core.cjs",
-    "scripts/capture-refs.cjs"
+    "scripts/capture-refs.cjs",
+    "scripts/design-system-package-core.cjs",
+    "references/design-system-package.md"
   ]
 }

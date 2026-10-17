@@ -168,8 +168,18 @@ The map clarifies decisions. It does not become a second design source of truth.
 Create 2-3 directions in change `directions.md`, select one, and write:
 
 - change `design.md`: implementation decisions for this change;
-- project `DESIGN.md`: reusable product identity for future coding agents.
+- project `design-system/`: the design-system package — usage-rule README, usage-noted
+  `tokens.json` with contrast pairs, guidelines and a live preview per component, and a cover
+  ([design-system-package.md](design-system-package.md)). A product with its own interface (`ui`,
+  `web`) writes it; a host-rendered surface or a film may omit it and says so in Source Decisions;
+- project `DESIGN.md`: reusable product identity for future coding agents. When the package exists,
+  its front-matter tokens are the `design-system design-md-tokens` output and its prose points at
+  the package instead of repeating the rules;
 - project `MOTION.md`: reusable motion language, or an explicit static posture.
+
+Write the package before `DESIGN.md`, then show the owner the rendered previews (`design-system
+compile`, then `composition capture` per preview): a design system is reviewed by looking at it.
+`foundation check --kind all` validates all three when the package exists.
 
 Use Google's format for the project visual foundation, not the OpenSpec engineering `design.md`.
 Include YAML frontmatter with `name`; when declaring the format version, use `version: alpha`.
