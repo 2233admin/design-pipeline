@@ -61,6 +61,7 @@
     "interoperability.test.cjs",
     "mengto-skills.test.cjs",
     "animation-opportunity-reference.test.cjs",
+    "design-system-package.test.cjs",
     "motion-foundation.test.cjs",
     "motion-verification.test.cjs",
     "film-gates.test.cjs",
