@@ -43,7 +43,9 @@ Source Decisions. Length follows the source; never pad.
 ## tokens.json
 
 Every family except `type` is a list: `{"tokens": [{"name", "value", "usage"}]}`. A name-to-value map
-(DTCG style) is refused. Names match `[A-Za-z0-9][A-Za-z0-9_.-]*` and are unique across families.
+(DTCG style) is refused. Token names match `[A-Za-z0-9][A-Za-z0-9_-]*` and are unique across
+families; type style names start with a letter. Both become CSS names unescaped (`--<token>`,
+`.<style>`), so no dots.
 
 - `color`: `themes` (the first is the default) and one flat `tokens` list. A value is a string (the
   first theme) or an object per theme id; hex, a colour function without nesting, or an alias

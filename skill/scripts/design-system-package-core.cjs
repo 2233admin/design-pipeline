@@ -12,7 +12,8 @@ const { pathIsInside, resolveProjectRoot, sha256Text } = require("./design-synth
 
 const SCHEMA = "design-pipeline.design-system-check.v1";
 const DEFAULT_DIR = "design-system";
-const NAME = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/;
+const NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/; // emitted unescaped as --<name>
+const STYLE_NAME = /^[A-Za-z][A-Za-z0-9_-]{0,63}$/; // emitted unescaped as .<name>
 const README_SECTIONS = [
   ["content fundamentals", /content|内容/i],
   ["visual foundations", /visual|视觉/i],
@@ -95,7 +96,7 @@ function validateTokens(tokens, findings) {
   for (const [key, family] of listed) {
     for (const token of family.tokens) {
       const label = `${key}.${token && token.name}`;
-      if (!token || !NAME.test(String(token.name || ""))) { add(`${label}: invalid token name`); continue; }
+      if (!token || !NAME.test(String(token.name || ""))) { add(`${label}: invalid token name (letters, digits, - or _)`); continue; }
       if (names.has(token.name)) add(`${label}: name used twice (one --name namespace across families)`);
       names.add(token.name);
       if (typeof token.usage !== "string" || !token.usage.trim()) add(`${label}: missing usage note`);
@@ -119,7 +120,7 @@ function validateTokens(tokens, findings) {
     for (const group of type.groups) {
       if (!type.families[group.family]) add(`type group ${group.name}: family ${group.family} is not in type.families`);
       for (const style of group.styles || []) {
-        if (!NAME.test(String(style.name || ""))) add(`type style ${style.name}: invalid name`);
+        if (!STYLE_NAME.test(String(style.name || ""))) add(`type style ${style.name}: invalid name (a letter, then letters, digits, - or _)`);
         if (!LENGTH.test(String(style.fontSize))) add(`type style ${style.name}: fontSize must be a length`);
         if (style.family && !type.families[style.family]) add(`type style ${style.name}: family ${style.family} is not in type.families`);
         if (typeof style.usage !== "string" || !style.usage.trim()) add(`type style ${style.name}: missing usage note`);
@@ -232,7 +233,7 @@ function compileTokensCss(tokens) {
   lines.push(":root {");
   for (const [key, family] of Object.entries(tokens)) {
     if (["name", "version", "color", "type", "contrast", "meta", "shadow"].includes(key) || !isList(family)) continue;
-    for (const token of family.tokens) lines.push(`  --${token.name}: ${typeof token.value === "number" ? `${token.value}px` : token.value};`);
+    for (const token of family.tokens) lines.push(`  --${token.name}: ${cssLength(token.value)};`);
   }
   for (const [key, stack] of Object.entries(tokens.type.families)) lines.push(`  --font-${key}: ${stack};`);
   lines.push("}");
@@ -244,6 +245,10 @@ function compileTokensCss(tokens) {
     lines.push(`.${style.name} { ${decl.join("; ")}; }`);
   }
   return `${lines.join("\n")}\n`;
+}
+
+function cssLength(value) {
+  return typeof value === "number" ? `${value}px` : value;
 }
 
 function quote(value) {
@@ -263,8 +268,8 @@ function designMdTokens(tokens) {
     if (style.lineHeight !== undefined) out.push(`    lineHeight: ${style.lineHeight}`);
     if (style.letterSpacing !== undefined) out.push(`    letterSpacing: ${style.letterSpacing}`);
   }
-  if (isList(tokens.radius)) out.push("rounded:", ...tokens.radius.tokens.map((t) => `  ${t.name}: ${t.value}`));
-  if (isList(tokens.spacing)) out.push("spacing:", ...tokens.spacing.tokens.map((t) => `  ${t.name}: ${t.value}`));
+  if (isList(tokens.radius)) out.push("rounded:", ...tokens.radius.tokens.map((t) => `  ${t.name}: ${cssLength(t.value)}`));
+  if (isList(tokens.spacing)) out.push("spacing:", ...tokens.spacing.tokens.map((t) => `  ${t.name}: ${cssLength(t.value)}`));
   return `${out.join("\n")}\n`;
 }
 

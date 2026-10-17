@@ -661,7 +661,7 @@ function foundationCommand(parsed, root) {
   if (["design", "all"].includes(kind)) result.design = checkDesignFoundation({ projectRoot, designFile });
   if (["motion", "all"].includes(kind)) result.motion = checkMotionFoundation({ projectRoot, motionFile: option(parsed, "--motion-file", "MOTION.md") });
   // `all` checks the design-system package when the project has one; `system` requires it.
-  if (kind === "system" || (kind === "all" && fs.existsSync(path.resolve(projectRoot, systemDir)))) {
+  if (kind === "system" || (kind === "all" && fs.existsSync(path.resolve(projectRoot, systemDir, "tokens.json")))) {
     result.system = checkDesignSystemPackage({ projectRoot, systemDir, designFile });
   }
   const blocked = Object.values(result).some((item) => item.status !== "ready");

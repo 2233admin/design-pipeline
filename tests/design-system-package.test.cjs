@@ -109,6 +109,32 @@ test("contrast is checked in every theme and must be declared", () => {
   assert.match(messages(checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": JSON.stringify(none) }) })), /contrast must list/);
 });
 
+test("names must be valid unescaped CSS names", () => {
+  const bad = tokens();
+  bad.spacing.tokens[0].name = "space.2";
+  bad.type.groups[0].styles[0].name = "2xl";
+  const text = messages(checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": JSON.stringify(bad) }) }));
+  assert.match(text, /spacing\.space\.2: invalid token name/);
+  assert.match(text, /type style 2xl: invalid name/);
+});
+
+test("numeric spacing and radius are written with px in CSS and DESIGN.md", () => {
+  const numeric = tokens();
+  numeric.spacing.tokens[0].value = 8;
+  assert.match(compileTokensCss(numeric), /--space-2: 8px;/);
+  assert.match(designMdTokens(numeric), /space-2: 8px/);
+});
+
+test("--kind all ignores a design-system folder without tokens.json", () => {
+  const root = writePackage({ "tokens.json": null });
+  const sections = ["Overview", "Colors", "Typography", "Layout", "Components", "Do's and Don'ts", "Product Context", "Source Decisions"];
+  fs.writeFileSync(path.join(root, "DESIGN.md"), `---\nname: Ledger\n---\n\n${sections.map((h) => `## ${h}\n\nAdopted ink. Rejected none.\n`).join("\n")}`);
+  const out = spawnSync(process.execPath, [cli, "foundation", "check", "--kind", "design", "--root", root, "--project-root", root], { encoding: "utf8" });
+  assert.equal(JSON.parse(out.stdout).foundations.design.status, "ready", out.stdout);
+  const all = JSON.parse(spawnSync(process.execPath, [cli, "foundation", "check", "--kind", "all", "--root", root, "--project-root", root], { encoding: "utf8" }).stdout);
+  assert.equal(all.foundations.system, undefined);
+});
+
 test("percent lengths are refused because DESIGN.md cannot carry them", () => {
   const pct = tokens();
   pct.radius.tokens[0].value = "50%";
