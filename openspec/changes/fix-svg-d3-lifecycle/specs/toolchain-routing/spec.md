@@ -17,17 +17,29 @@ The existing svg-d3 adapter SHALL define probe, plan, invoke and verify using th
 - **THEN** the existing toolchain probe SHALL remain blocked with the concrete cause
 - **AND** it SHALL NOT install, start a service or modify the target package.json
 
-### Requirement: Toolchain probe runs in a contained project root
+### Requirement: Toolchain plan names a contained target package directory
 
-`toolchain probe` SHALL run its probe commands in `--root` by default and, when `--project-root` is given, in that directory instead. The project root SHALL resolve to an existing directory inside `--root` after following symlinks and junctions; otherwise the command SHALL fail without running a probe. The request, job plan and any `--write` output SHALL stay contained under `--root`, and the probe SHALL stay read-only.
+The toolchain request MAY carry `targetRoot`, the target package directory relative to `--root`, from the stack input, and the toolchain plan SHALL always carry it, as `.` when the request omits it. Request validation SHALL canonicalise it (backslashes become `/`, POSIX normalisation, no trailing `/`) so equivalent spellings produce identical request and plan bytes, and SHALL reject empty values, absolute paths, any `:` and any `..` segment. Because the plan hash covers `targetRoot`, the probe result and every receipt bound by `planSha256` SHALL be bound to that directory. `toolchain resolve` and `toolchain probe` SHALL require `targetRoot` to resolve to an existing directory inside `--root` after following symlinks and junctions, and otherwise SHALL fail without writing output or running a probe. `toolchain probe` SHALL run its command probes in that directory without any directory option, and a failed command probe SHALL name the directory relative to `--root`. The request, job plan and any `--write` output SHALL stay contained under `--root`, and the probe SHALL stay read-only. `toolchain resolve` and `toolchain probe` SHALL reject `--project-root` with `UNKNOWN_OPTION` and a message naming `targetRoot`.
 
 #### Scenario: Package nested below the pipeline root
 
-- **WHEN** the pipeline root holds the toolchain request and job plan but no package.json, and the pinned d3 package lives in its `app` directory
-- **THEN** `toolchain probe --root <pipeline root> --artifact <request> --project-root app` SHALL report ready with `d3=<installed version>`
-- **AND** without `--project-root` the probe SHALL remain blocked because the pipeline root has no package.json
+- **WHEN** the pipeline root holds the job plan but no package.json, the pinned d3 package lives in its `app` directory, and the stack input sets `targetRoot` to `app`
+- **THEN** `toolchain request` and `toolchain resolve` SHALL produce a request and plan with `targetRoot` `app`
+- **AND** `toolchain probe --root <pipeline root> --artifact <request>` SHALL report ready with `d3=<installed version>`
+- **AND** `app/`, `./app` and `app\` SHALL produce the same request and plan bytes and the same plan hash as `app`
 
-#### Scenario: Project root outside the pipeline root
+#### Scenario: Target package is the pipeline root
 
-- **WHEN** `--project-root` is a `..` path, an absolute path outside `--root`, a symlink or junction resolving outside `--root`, a missing path or a file
-- **THEN** `toolchain probe` SHALL fail with a path error and SHALL NOT run a probe in that location
+- **WHEN** the stack input omits `targetRoot`
+- **THEN** the plan SHALL carry `targetRoot` `.` and the probe SHALL run in `--root`
+- **AND** on a pipeline root without package.json the d3 probe SHALL remain blocked with a message naming `(probed in .)`
+
+#### Scenario: Target root outside the pipeline root
+
+- **WHEN** `targetRoot` is empty, absolute, contains `:` or a `..` segment, or names a missing path, a file, or a symlink or junction resolving outside `--root`
+- **THEN** request validation, `toolchain resolve` or `toolchain probe` SHALL fail with a distinct path error and SHALL NOT write output or run a probe in that location
+
+#### Scenario: Stale directory option
+
+- **WHEN** `toolchain resolve` or `toolchain probe` is given `--project-root`
+- **THEN** the command SHALL fail with `UNKNOWN_OPTION` and a message telling the user to set `targetRoot` in the stack input

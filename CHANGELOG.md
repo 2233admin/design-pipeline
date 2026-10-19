@@ -107,11 +107,17 @@ All notable changes to Design Pipeline are documented here.
   `scripts.dev` and an importable local package exporting `select`, and stays blocked with the
   concrete cause otherwise; it never installs or starts the server. The plan invokes `npm run dev`
   and lists DOM, screenshot and accessibility evidence (change `fix-svg-d3-lifecycle`).
-- `toolchain probe` accepts `--project-root <dir>` so a pipeline root whose package sits in a
-  nested directory (for example `--root webui --project-root app`) probes that package while the
-  request, job plan and `--write` output stay under `--root`. The directory must resolve inside
-  `--root`; `..`, absolute paths outside it, escaping symlinks or junctions and non-directories are
-  rejected. Without the option the probe still runs in `--root` (change `fix-svg-d3-lifecycle`).
+- The toolchain request and plan carry `targetRoot`, the target package directory relative to
+  `--root` (default `.`), so a pipeline root whose package sits in a nested directory (for example
+  `"targetRoot": "app"` in the stack input with `--root webui`) probes that package while the
+  request, job plan and `--write` output stay under `--root`. The value is canonicalised (`app/`,
+  `./app` and `app\` all become `app`) and covered by the plan hash, so probe results and receipts
+  are bound to the directory. `..` segments, absolute paths and `:` are rejected in the request;
+  `toolchain resolve` and `toolchain probe` reject a missing directory, a file, and symlinks or
+  junctions that resolve outside `--root`. A failed probe names the directory it ran in. Both
+  commands reject `--project-root` and point to `targetRoot` instead. `jobPlanPath` uses the same
+  path normaliser, so a path with any `..` segment, such as `a/../job-plan.json`, is now rejected
+  (change `fix-svg-d3-lifecycle`).
 - The UI craft audit now checks positioned host-descendant paint over in-flow generated text on
   its own fill, not only absolutely positioned text. Covered text is `indeterminate`; uncovered
   controls remain measurable (change `fix-generated-text-descendant-occlusion`).
