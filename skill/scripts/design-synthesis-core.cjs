@@ -341,6 +341,36 @@ function validateSourceDecisions(text) {
   }
 }
 
+// --- real brands (OpenSpec change brand-facts-first) ---------------------------------------------------
+// Product Context declares which real brands the project uses; the brand evidence itself (colour tokens,
+// logos) lives in the design-system package and is checked there (design-system-package-core.cjs).
+
+const BRAND_LINE = /^\s*(?:[-*]\s*)?(?:\*\*)?(?:real brands?|真实品牌)(?:\*\*)?\s*[:：]\s*(.+?)\s*$/im;
+const FACTS_LINE = /^\s*(?:[-*]\s*)?(?:\*\*)?(?:brand facts|品牌事实)(?:\*\*)?\s*[:：]\s*`?([^`\s]+)`?\s*$/im;
+const NO_BRAND = /^(?:none|n\/a|无|没有)\.?$/i;
+
+function sectionText(text, aliases) {
+  const headings = [...text.matchAll(/^##\s+(.+?)\s*$/gm)];
+  const at = headings.findIndex((match) => aliases.includes(normalizedHeading(match[1])));
+  if (at < 0) return "";
+  const start = headings[at].index + headings[at][0].length;
+  return text.slice(start, headings[at + 1] ? headings[at + 1].index : text.length);
+}
+
+// A brand name compared by equality only: trimmed, whitespace collapsed, case-insensitive.
+const brandKey = (name) => String(name).normalize("NFKC").replace(/\s+/g, " ").trim().toLowerCase();
+
+// `{ brands: [names], factsPath }` from Product Context, or null when no real brand is declared
+// (no line, `none`, `无`): the project's own made-up brand is never checked.
+function declaredBrands(text) {
+  const context = sectionText(text, ["product context"]);
+  const declared = (context.match(BRAND_LINE) || [])[1];
+  if (!declared || NO_BRAND.test(declared.trim())) return null;
+  const brands = declared.split(/[,，、;；]/).map((name) => name.trim()).filter(Boolean);
+  if (!brands.length) return null;
+  return { brands, factsPath: (context.match(FACTS_LINE) || [])[1] || null };
+}
+
 function validateActiveChange(text, activeChangeId) {
   if (!activeChangeId) return;
   const escaped = activeChangeId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -401,6 +431,8 @@ module.exports = {
   HANDOFF_END,
   HANDOFF_START,
   appendEvent,
+  brandKey,
+  declaredBrands,
   checkDesignFoundation,
   fail,
   findArtifactRoot,

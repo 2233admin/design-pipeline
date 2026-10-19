@@ -8,7 +8,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { pathIsInside, resolveProjectRoot, sha256Text } = require("./design-synthesis-core.cjs");
+const { brandKey, declaredBrands, pathIsInside, resolveProjectRoot, sha256Text } = require("./design-synthesis-core.cjs");
 
 const SCHEMA = "design-pipeline.design-system-check.v1";
 const DEFAULT_DIR = "design-system";
@@ -111,7 +111,7 @@ function validateTokens(tokens, findings) {
   const names = new Set();
   const listed = [["color", color]];
   for (const [key, family] of Object.entries(tokens)) {
-    if (["name", "version", "color", "type", "contrast", "meta"].includes(key)) continue;
+    if (["name", "version", "color", "type", "contrast", "meta", "brands"].includes(key)) continue;
     if (!isList(family)) add(`${key} must be {"tokens": [...]}, a list of {name, value, usage}; a name-to-value map is not read`);
     else listed.push([key, family]);
   }
@@ -129,8 +129,12 @@ function validateTokens(tokens, findings) {
     }
   }
   const byName = new Map(color.tokens.filter((t) => t && t.name).map((t) => [t.name, t]));
+  validateBrands(tokens, add);
   for (const token of color.tokens) {
     if (!token || !token.name) continue;
+    for (const field of ["brand", "source"]) {
+      if (token[field] !== undefined && (typeof token[field] !== "string" || !token[field].trim())) add(`color.${token.name}: ${field} must be a non-empty string`);
+    }
     for (const theme of themes) {
       if (!resolveColor(byName, token.name, theme, firstId)) add(`color.${token.name}: no valid colour for theme ${theme} (hex, a colour function without nesting, or an alias of an existing colour)`);
     }
@@ -353,6 +357,146 @@ function checkDesignMdDrift(designText, tokens, findings) {
   }
 }
 
+// ---- real brands: brand colour tokens, logos and the facts file -------------------------------------
+// Triggered only by DESIGN.md Product Context `Real brands: A, B`. A brand colour is an ordinary colour
+// token that also carries `brand` and `source`; a brand that uses none of its colours says so in
+// tokens.json `brands`, which also holds its one logo.
+
+const HTTPS_URL = /^https:\/\/[^\s]+$/i;
+const OWNER_SOURCE = /^owner$/i;
+const TEXT_ASSET = /\.(?:svg|css|html?|json|txt|md)$/i;
+const LOGO_FILE = /\.(?:svg|png|webp|jpe?g)$/i;
+const FACT_SOURCE = /https:\/\/[^\s)]+|\bsource:\s*owner\b|所有者|用户提供/i;
+
+function validateBrands(tokens, add) {
+  if (tokens.brands === undefined) return;
+  const brands = tokens.brands;
+  if (!brands || typeof brands !== "object" || Array.isArray(brands)) return add('brands must be an object keyed by brand name: {"<Brand>": {"colours": "none", "logo": {"path", "source"}}}');
+  for (const [name, entry] of Object.entries(brands)) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) { add(`brands.${name} must be an object`); continue; }
+    for (const key of Object.keys(entry)) if (!["colours", "logo"].includes(key)) add(`brands.${name}.${key} is not read (use colours or logo)`);
+    if (entry.colours !== undefined && entry.colours !== "none") add(`brands.${name}.colours can only be "none" (the page uses none of the brand's colours); brand colours are colour tokens with brand and source`);
+    if (entry.colours === "none" && tokens.color.tokens.some((t) => t && typeof t.brand === "string" && brandKey(t.brand) === brandKey(name))) {
+      add(`brands.${name}.colours is "none" but a colour token carries brand ${name}; keep one of the two`);
+    }
+  }
+}
+
+function sourceProblem(projectRoot, source) {
+  if (typeof source !== "string" || !source.trim()) return "has no source";
+  const value = source.trim();
+  if (HTTPS_URL.test(value) || OWNER_SOURCE.test(value)) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return `source ${value} must be an https URL, owner, or a project file`;
+  const file = path.resolve(projectRoot, value);
+  if (!pathIsInside(projectRoot, file) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return `source ${value} is not an existing file inside the project`;
+  return null;
+}
+
+function hexPresent(body, hex) {
+  const six = hex.slice(1, 7).toLowerCase();
+  const text = body.toLowerCase();
+  if (text.includes(`#${six}`)) return true;
+  return six[0] === six[1] && six[2] === six[3] && six[4] === six[5] && text.includes(`#${six[0]}${six[2]}${six[4]}`);
+}
+
+// Facts file: `## <Brand>` headings (compared exactly) over list items; every item ends with an https
+// source or owner; every declared brand has a heading with at least one item.
+function factsFindings(projectRoot, declared, add) {
+  const rel = declared.factsPath;
+  const file = rel ? path.resolve(projectRoot, rel) : null;
+  if (!file || !pathIsInside(projectRoot, file) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+    add("brand-facts-missing", `Product Context declares real brands (${declared.brands.join(", ")}) but its Brand facts line does not name an existing file${rel ? ` (${rel})` : ""}.`,
+      "Verify each brand and product (official site, release information) into a facts file, a `## <Brand>` heading per brand with one `- <fact> (source: <https url>)` line per fact, and add `Brand facts: <path>` under Product Context.");
+    return;
+  }
+  const covered = new Set();
+  let heading = null;
+  for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
+    const h = line.match(/^#{2,4}\s+(.+?)\s*$/);
+    if (h) { heading = brandKey(h[1]); continue; }
+    if (!/^\s*[-*]\s+/.test(line)) continue;
+    if (!FACT_SOURCE.test(line)) {
+      add("brand-fact-unsourced", `Fact without a source in ${rel}: "${line.trim().slice(0, 80)}".`, "Add the official page it came from as `(source: <https url>)`, or `(source: owner)` if the owner stated it, or delete the fact.");
+    } else if (heading) covered.add(heading);
+  }
+  for (const brand of declared.brands.filter((name) => !covered.has(brandKey(name)))) {
+    add("brand-facts-uncovered", `${rel} has no sourced facts under a \`## ${brand}\` heading.`, `Verify ${brand} (whether the product exists, which release, its specs) from its official site and record the facts with sources under \`## ${brand}\`.`);
+  }
+}
+
+// Findings `{file, code, severity, message, fix}` for the real brands DESIGN.md declares. `tokens` is the
+// parsed tokens.json, or null when the package is missing or unreadable.
+function brandFindings({ projectRoot, systemDir = DEFAULT_DIR, designText, tokens }) {
+  const declared = designText ? declaredBrands(designText) : null;
+  if (!declared) return [];
+  const out = [];
+  const add = (code, message, fix) => out.push({ file: "tokens.json", code, severity: "error", message, fix });
+  factsFindings(projectRoot, declared, add);
+  if (!tokens || !tokens.color || !Array.isArray(tokens.color.tokens)) {
+    add("brand-package-missing", `Product Context declares real brands (${declared.brands.join(", ")}) but there is no readable ${systemDir}/tokens.json.`,
+      "Write the design-system package (references/design-system-package.md) with each brand's colour tokens (brand and source) and its logo under assets/logos/; get the assets from the owner or the brand's official page, never from memory.");
+    return out;
+  }
+  const protocol = "ask the owner for the asset, else download it from the brand's official or press page into the project; never fill a value in from memory";
+  const logoDir = `${systemDir}/assets/logos/`;
+  const entries = Object.entries(tokens.brands && typeof tokens.brands === "object" ? tokens.brands : {});
+  for (const brand of declared.brands) {
+    const key = brandKey(brand);
+    const mine = tokens.color.tokens.filter((t) => t && typeof t.brand === "string" && brandKey(t.brand) === key);
+    const entry = entries.filter(([name]) => brandKey(name) === key);
+    const none = entry.some(([, value]) => value && value.colours === "none");
+    if (!mine.length && !none) {
+      add("brand-colour-missing", `tokens.json has no colour token for ${brand}, and brands.${brand}.colours is not "none".`,
+        `Take the colours from the official assets (${protocol}) and add colour tokens with "brand": "${brand}" and a "source"; or set brands.${brand}.colours to "none" if the page uses none of its colours.`);
+    }
+    for (const token of mine) {
+      const problem = sourceProblem(projectRoot, token.source);
+      if (problem) {
+        add("brand-colour-unsourced", `color.${token.name} (${brand}) ${problem}.`, "Set source to the official https URL, owner (the owner supplied it), or the downloaded asset file in the project; never keep a colour recalled from memory.");
+        continue;
+      }
+      if (HTTPS_URL.test(token.source.trim()) || OWNER_SOURCE.test(token.source.trim()) || !TEXT_ASSET.test(token.source.trim())) continue;
+      // A cited project text asset must hold the value, an empty one included; a binary image cannot be read.
+      const first = tokens.color.themes[0].id;
+      const value = resolveColor(new Map(tokens.color.tokens.map((t) => [t.name, t])), token.name, first, first);
+      if (!value || !HEX.test(value)) {
+        add("brand-colour-not-in-source", `color.${token.name} (${brand}) is not a hex value, so it cannot be matched against ${token.source}.`, "Write the brand colour as hex, exactly as the cited asset gives it.");
+      } else if (!hexPresent(readText(path.resolve(projectRoot, token.source.trim())), value)) {
+        add("brand-colour-not-in-source", `color.${token.name} ${value} does not appear in ${token.source}${readText(path.resolve(projectRoot, token.source.trim())).trim() ? "" : " (the file is empty)"}.`, "Read the value from the cited asset (grep its hex codes) and correct the token, or cite the asset that holds it.");
+      }
+    }
+    const logos = entry.flatMap(([, value]) => (value && value.logo !== undefined ? (Array.isArray(value.logo) ? value.logo : [value.logo]) : []));
+    if (!logos.length) {
+      add("brand-logo-missing", `brands.${brand}.logo is missing.`, `Get the official logo (${protocol}) into ${logoDir}, then declare brands.${brand}.logo as {"path": "${logoDir}<file>", "source": "<https url or owner>"}. If no official logo can be found, stop and ask the owner; do not draw one.`);
+      continue;
+    }
+    if (logos.length > 1) add("brand-logo-multiple", `${brand} has ${logos.length} logos declared.`, `Keep one official logo per brand: leave a single object in brands.${brand}.logo.`);
+    for (const logo of logos) {
+      const rel = logo && typeof logo.path === "string" ? logo.path.trim() : "";
+      const file = rel ? path.resolve(projectRoot, rel) : null;
+      if (!file || !pathIsInside(projectRoot, file) || !fs.existsSync(file) || !fs.statSync(file).isFile() || !LOGO_FILE.test(rel) || !pathIsInside(path.resolve(projectRoot, logoDir), file)) {
+        add("brand-logo-invalid", `The ${brand} logo ${rel ? `path ${rel}` : "has no path"} is not an existing svg, png, webp or jpg file under ${logoDir} inside the project.`, `Download the official logo into ${logoDir} and set brands.${brand}.logo.path to it; the page references that file and never redraws the mark.`);
+      }
+      const problem = sourceProblem(projectRoot, logo && logo.source);
+      if (problem) add("brand-logo-invalid", `The ${brand} logo ${problem}.`, "Set the logo's source to the official https URL, or owner if the owner supplied the file.");
+    }
+  }
+  return out;
+}
+
+// The same findings for a project on disk, for callers that do not run the whole package check
+// (the web build step).
+function projectBrandFindings(projectRoot, options = {}) {
+  const designFile = path.resolve(projectRoot, options.designFile || "DESIGN.md");
+  if (!fs.existsSync(designFile) || !fs.statSync(designFile).isFile()) return [];
+  const systemDir = path.relative(projectRoot, resolveSystemDir(projectRoot, options.systemDir)).split(path.sep).join("/") || DEFAULT_DIR;
+  let tokens = null;
+  try {
+    tokens = JSON.parse(readText(path.join(projectRoot, systemDir, "tokens.json")));
+  } catch { /* missing or unreadable: reported as a missing package */ }
+  return brandFindings({ projectRoot, systemDir, designText: readText(designFile), tokens });
+}
+
 function resolveSystemDir(projectRoot, raw) {
   const dir = path.resolve(projectRoot, raw || DEFAULT_DIR);
   if (!pathIsInside(projectRoot, dir)) throw new Error("--system-dir resolves outside --project-root");
@@ -363,8 +507,11 @@ function checkDesignSystemPackage(options = {}) {
   const projectRoot = resolveProjectRoot(options.projectRoot);
   const dir = resolveSystemDir(projectRoot, options.systemDir);
   const rel = path.relative(projectRoot, dir).split(path.sep).join("/") || ".";
+  const designFile = path.resolve(projectRoot, options.designFile || "DESIGN.md");
   if (!fs.existsSync(path.join(dir, "tokens.json"))) {
-    return { schema: SCHEMA, status: "synthesis-required", projectRoot, systemDir: rel, findings: [{ file: "tokens.json", message: "no design-system package; write it during design synthesis (references/design-system-package.md)" }] };
+    const designText = fs.existsSync(designFile) ? readText(designFile) : "";
+    const missing = [{ file: "tokens.json", message: "no design-system package; write it during design synthesis (references/design-system-package.md)" }];
+    return { schema: SCHEMA, status: "synthesis-required", projectRoot, systemDir: rel, findings: [...missing, ...brandFindings({ projectRoot, systemDir: rel, designText, tokens: null })] };
   }
   const findings = [];
   let tokens = null;
@@ -380,10 +527,10 @@ function checkDesignSystemPackage(options = {}) {
   }
   checkReadme(dir, findings);
   const components = checkComponents(dir, findings);
-  const designFile = path.resolve(projectRoot, options.designFile || "DESIGN.md");
   if (tokens && !findings.some((f) => f.file === "tokens.json") && fs.existsSync(designFile)) {
     checkDesignMdDrift(readText(designFile), tokens, findings);
   }
+  if (fs.existsSync(designFile)) findings.push(...brandFindings({ projectRoot, systemDir: rel, designText: readText(designFile), tokens }));
   return {
     schema: SCHEMA,
     status: findings.length ? "invalid" : "ready",
@@ -433,5 +580,6 @@ module.exports = {
   contrastRatio,
   designMdTokens,
   frontMatterGroups,
+  projectBrandFindings,
   resolveSystemDir,
 };

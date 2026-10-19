@@ -98,6 +98,7 @@
     "returned-shell-paths.test.cjs",
     "returned-command-audit.test.cjs",
     "web-concept-screening.test.cjs",
+    "brand-facts-first.test.cjs",
     "directions-three-sources.test.cjs",
     "palette-foundation.test.cjs",
     "package-release.test.cjs",

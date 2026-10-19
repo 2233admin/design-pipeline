@@ -13,10 +13,13 @@ Adoption into the workflow happens through separate changes: #155 (direction sou
 its guide says so; for anything not yet adopted, read and borrow from the library.
 
 Adopted: #155 and #154, the ui and web direction stage (six cards from three sources, the thumbnail
-board, three full versions and the appearance ledger; `direction-preview.md`). #157: the critique guide's dimensions, level criteria, concept veto and three-part
-output (Keep, Fix, Quick Wins) are folded into `web-direction.md#critique-on-request` and mapped to
-the W1 to W7 review rules. It runs only when the owner asks for a critique, is guidance with no code
-check, and a critique score is never Visual Acceptance.
+board, three full versions and the appearance ledger; `direction-preview.md`). #156: the brand-asset
+protocol is rewritten in [brand-facts.md](brand-facts.md) and enforced by the design-system package
+check and the web build step when DESIGN.md declares real brands. #157: the critique guide's
+dimensions, level criteria, concept veto and three-part output (Keep, Fix, Quick Wins) are folded
+into `web-direction.md#critique-on-request` and mapped to the W1 to W7 review rules. It runs only
+when the owner asks for a critique, is guidance with no code check, and a critique score is never
+Visual Acceptance.
 
 ## Where it is
 

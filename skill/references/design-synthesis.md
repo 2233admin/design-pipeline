@@ -201,7 +201,10 @@ The existing pipeline foundation check also requires `Product Context` and `Sour
 append these as local provenance extensions after the visual sections. It requires Overview,
 Colors, Typography, Layout, Components and Do's and Don'ts even for host-rendered surfaces;
 explain inheritance there when tokens are omitted. `Source Decisions` identifies adopted and
-rejected source properties and links the active change id or artifact path.
+rejected source properties and links the active change id or artifact path. When the brief names a
+real brand or product, Product Context declares `Real brands: <names>` and `Brand facts: <path>`;
+the brand colours (tokens with `brand` and `source`) and logos then live in the `design-system/`
+package, and the package check stops without them (`brand-facts.md`).
 
 Keep Components about visual elements and their states. Put workflow stages, receipts, installation
 details and verification reports in their own guides or change artifacts. The local foundation

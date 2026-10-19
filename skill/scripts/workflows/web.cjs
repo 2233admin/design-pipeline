@@ -17,6 +17,7 @@ const path = require("node:path");
 const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
 const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, extractionDigest, gateStatus, invalidateCheckedEvidence, reason, reference, statement } = require("./shared.cjs");
+const { projectBrandFindings } = require("../design-system-package-core.cjs");
 const replicate = require("./replicate.cjs");
 const { CLOSING_LINE, RECEIPT, directionAction, pickedIds, pickedMix } = require("./directions.cjs");
 
@@ -507,8 +508,16 @@ function recordDescription(state, root, options, next) {
   }
 }
 
+// Real brands declared in DESIGN.md owe sourced brand colour tokens and a logo in the design-system
+// package; the build step shows the package check's brand findings first.
+function brandFindings(root) {
+  return projectBrandFindings(path.resolve(root)).map(({ code, severity, message, fix }) => ({ code, severity, message, fix }));
+}
+
 function buildStatus(state, root) {
   if (!COMPONENTS.finished(state)) return { finished: false };
+  const brand = brandFindings(root);
+  if (brand.length) return { finished: false, findings: brand };
   try {
     if (!fs.statSync(path.join(root, "index.html")).isFile()) return { finished: false };
     validateComponentManifest(JSON.parse(fs.readFileSync(path.join(root, "component-manifest.json"), "utf8")), {
