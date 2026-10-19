@@ -92,10 +92,32 @@ function packageMetadata(sourceDateEpoch) {
         packagedAt: new Date(sourceDateEpoch * 1000).toISOString(),
         source: "https://github.com/2233admin/design-pipeline",
         install: [
-          "mkdir -p /tmp/design-pipeline-release && tar -xzf design-pipeline-skill.tgz -C /tmp/design-pipeline-release",
-          "node /tmp/design-pipeline-release/design-pipeline/scripts/install-local.cjs --root ~/.codex/skills --target ~/.codex/skills/design-pipeline --source /tmp/design-pipeline-release/design-pipeline",
-          "node ~/.codex/skills/design-pipeline/scripts/designer-pipeline.cjs doctor --root .",
+          "Claude Code: /plugin marketplace add 2233admin/design-pipeline, then /plugin install design-pipeline@design-pipeline",
+          "Other agents: npx skills add <release archive URL> --skill design-pipeline -a codex -g (docs/install.md lists the size-limit variables)",
+          "Then ask the agent to run: node <skill-root>/scripts/designer-pipeline.cjs doctor",
         ],
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+}
+
+// The archive root doubles as a Claude Code plugin root: the marketplace entry in
+// .claude-plugin/marketplace.json installs this archive, and SKILL.md is the plugin's one skill.
+function pluginManifest() {
+  return Buffer.from(
+    `${JSON.stringify(
+      {
+        name: "design-pipeline",
+        version,
+        description: "Design and film workflow: UI, motion web, product films, PV/MAD edits, with evidence gates.",
+        author: { name: "2233admin", url: "https://github.com/2233admin" },
+        homepage: "https://github.com/2233admin/design-pipeline",
+        repository: "https://github.com/2233admin/design-pipeline",
+        license: "MIT",
+        skills: "./",
       },
       null,
       2,
@@ -163,6 +185,7 @@ function collectArchiveEntries(sourceDateEpoch) {
   }
   const generatedEntries = new Map([
     ["PACKAGE.json", packageMetadata(sourceDateEpoch)],
+    [".claude-plugin/plugin.json", pluginManifest()],
     ["scripts/install-local.cjs", fs.readFileSync(path.join(repoRoot, "scripts/install-local.cjs"))],
   ]);
   for (const generated of resourceManifest.generated) {

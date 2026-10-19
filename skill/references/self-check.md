@@ -2,30 +2,24 @@
 
 `design-pipeline` is intended to be open-source friendly. It must not assume every user has the same companion skills installed.
 
-Run from the target project root:
+Run from the target project root. `<skill-root>` is the directory that holds the loaded `SKILL.md`:
 
 ```bash
-node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
-```
-
-On Windows Git Bash:
-
-```bash
-node "$HOME/.codex/skills/design-pipeline/scripts/check-deps.cjs"
+node "<skill-root>/scripts/check-deps.cjs"
 ```
 
 For CI or machine-readable output:
 
 ```bash
-node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs --json
+node "<skill-root>/scripts/check-deps.cjs" --json
 ```
 
 Dependency self-check and project foundation validation are separate. Before implementation, also
 run:
 
 ```bash
-node ~/.codex/skills/design-pipeline/scripts/check-design-foundation.cjs --project-root . --json
-node ~/.codex/skills/design-pipeline/scripts/check-motion-foundation.cjs --project-root . --json
+node "<skill-root>/scripts/check-design-foundation.cjs" --project-root . --json
+node "<skill-root>/scripts/check-motion-foundation.cjs" --project-root . --json
 ```
 
 Only `ready` from both foundation checks unlocks implementation. `synthesis-required` exits with
@@ -38,20 +32,19 @@ The script checks skills under:
 
 1. `DESIGN_PIPELINE_SKILL_ROOTS`, if set. Use the platform path delimiter for multiple roots (`;` on Windows, `:` on POSIX).
 2. `CODEX_SKILLS_DIR`, if set. It also accepts multiple roots using the platform path delimiter.
-3. `$CODEX_HOME/skills`, if set.
-4. `~/.codex/skills`.
+3. Otherwise the defaults: the directory holding the running copy, `~/.claude/skills`, `~/.agents/skills`, `<project>/.agents/skills`, `<project>/.claude/skills`, then the older `$CODEX_HOME/skills` or `~/.codex/skills`. [Install and upgrade](installation.md) has the details.
 
 Override the skill root for tests or non-standard installs:
 
 ```bash
-CODEX_SKILLS_DIR=/path/to/skills node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs
+CODEX_SKILLS_DIR=/path/to/skills node "<skill-root>/scripts/check-deps.cjs"
 ```
 
 Multiple roots on Windows:
 
 ```powershell
-$env:DESIGN_PIPELINE_SKILL_ROOTS="$HOME\.codex\skills;$HOME\.agents\skills"
-node "$HOME\.codex\skills\design-pipeline\scripts\check-deps.cjs" --json
+$env:DESIGN_PIPELINE_SKILL_ROOTS="$HOME\.claude\skills;$HOME\.agents\skills"
+node "<skill-root>\scripts\check-deps.cjs" --json
 ```
 
 ## Result Meaning
@@ -108,7 +101,7 @@ A profile warning does not fail the pipeline. Read `references/capability-routin
 To write each installed stale profile as a local observation and Issue draft:
 
 ```powershell
-node ~/.codex/skills/design-pipeline/scripts/check-deps.cjs --json --record-feedback
+node "<skill-root>/scripts/check-deps.cjs" --json --record-feedback
 ```
 
 Use `--feedback-root <path>` when the feedback queue should belong to a different target root.
@@ -135,7 +128,7 @@ Missing animation companion skills does not remove the need for motion documenta
 Every project has root `MOTION.md`, including projects with `posture: static`. Validate it with:
 
 ```bash
-node ~/.codex/skills/design-pipeline/scripts/check-motion-foundation.cjs --project-root . --json
+node "<skill-root>/scripts/check-motion-foundation.cjs" --project-root . --json
 ```
 
 Create change-level `motion.md` from `references/motion-spec.md` whenever the change includes:

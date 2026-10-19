@@ -1,75 +1,70 @@
 # Install and upgrade
 
-`design-pipeline` installs as one Codex skill. Its scripts and bundled tools live in the installed
-skill directory; the project you are working on remains a separate directory. The command-line
-entry is a Node.js script, not a standalone binary. Use Node.js 22 or newer.
+`design-pipeline` is one skill. Its scripts and bundled tools live in the installed skill
+directory; the project you are working on is a separate directory. The command-line entry is a
+Node.js script, not a standalone binary. It needs Node.js 22.12 or newer.
 
-## Install the current checkout
+Both install paths below use the GitHub Release package (`design-pipeline-skill.zip`, about 50 MB;
+the large MengTo and iart libraries are downloaded later, see Runtime notes). The step-by-step page
+for people is `docs/install.md` in the repository.
 
-To put the current checkout in the legacy Codex `~/.codex/skills/design-pipeline` location, run
-the repository's local installer from the repository root:
+## Where the skill is installed
+
+| Installed with | Skill directory |
+| --- | --- |
+| Claude Code plugin | `~/.claude/plugins/cache/design-pipeline/design-pipeline/<version>/` |
+| Skills CLI for Codex and other agents (`-g`) | `~/.agents/skills/design-pipeline` |
+| Skills CLI without `-g` | `<project>/.agents/skills/design-pipeline` |
+| `scripts/install-local.cjs` (offline package or checkout) | `~/.agents/skills/design-pipeline` unless `--root` or `--target` say otherwise |
+
+The loaded `SKILL.md` path tells you which copy you are using. Call the CLI by its absolute path:
+`node "<skill-root>/scripts/designer-pipeline.cjs" <command>`, from the project you want to affect
+or with `--root <project>`.
+
+## Install commands
+
+Claude Code (run in a session):
+
+```text
+/plugin marketplace add 2233admin/design-pipeline
+/plugin install design-pipeline@design-pipeline
+```
+
+Codex and other agents (the package is larger than the Skills CLI defaults, so raise its limits):
 
 ```sh
-node scripts/install-local.cjs \
-  --source skill \
-  --root "$HOME/.codex/skills" \
-  --target "$HOME/.codex/skills/design-pipeline"
+SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EXTRACT_MAX_FILES=5000 \
+  npx skills add https://github.com/2233admin/design-pipeline/releases/latest/download/design-pipeline-skill.zip \
+  --skill design-pipeline -a codex -g
 ```
 
-On Windows PowerShell, the same command is:
-
-```powershell
-node scripts/install-local.cjs `
-  --source skill `
-  --root (Join-Path $HOME ".codex/skills") `
-  --target (Join-Path $HOME ".codex/skills/design-pipeline")
-```
-
-The local installer refuses to replace an existing target unless `--replace` is supplied. If an
-older installation contains local changes you need, first preserve it outside Codex skill
-discovery roots. Then run the same command with `--replace` to upgrade the installed copy:
+An installer that is not on this list, or an offline machine, uses the local installer from the
+extracted package or a checkout. It refuses to replace an existing target unless `--replace` is
+given:
 
 ```sh
-node scripts/install-local.cjs \
-  --source skill \
-  --root "$HOME/.codex/skills" \
-  --target "$HOME/.codex/skills/design-pipeline" \
-  --replace
+node scripts/install-local.cjs --source skill            # checkout, to ~/.agents/skills/design-pipeline
+node design-pipeline/scripts/install-local.cjs --replace # extracted Release package, upgrade in place
 ```
 
-The standard [Skills CLI](https://github.com/vercel-labs/skills) can also install just this skill.
-For a project-scoped copy from a local checkout, run this from the project directory and replace
-the source placeholder with the absolute path to the checkout's `skill/` directory:
+Upgrade: `claude plugin update design-pipeline@design-pipeline`, or run the Skills CLI command again.
 
-```sh
-npx skills add "/absolute/path/to/design-pipeline/skill" \
-  --skill design-pipeline --agent codex --copy --yes
-```
+## Check the install
 
-Project-scoped Codex installation uses `.agents/skills/design-pipeline` in the project.
-Add `--global` for a user-level installation under `~/.agents/skills/design-pipeline`.
-Use the actual path from the Skills CLI output or the `SKILL.md` loaded by your agent when
-calling scripts; the repository's local installer uses the legacy `~/.codex/skills` destination.
-
-The project also documents the portable skill-manager command for a pushed repository version:
-
-```sh
-npx skills add 2233admin/design-pipeline --skill design-pipeline --agent codex --global
-```
-
-That remote form installs the version already pushed to the repository. For changes still in a
-local checkout, use the local installer or the local source path so the installed copy includes
-those changes.
+Run `node "<skill-root>/scripts/designer-pipeline.cjs" doctor`. It prints where the skill is
+installed, which agents it found, and three tiers: required (Node.js 22.12+, skill files; a missing
+item exits 2), recommended (a Chromium-based browser for evidence gates) and optional (the MengTo
+and iart libraries, ffmpeg and ffprobe, Blender). Every missing item prints one command to run.
+Missing recommended or optional items exit 0. `doctor --json` prints the machine result. `doctor`
+never installs, replaces or repairs anything; run a printed command only when the task needs that
+tool, and tell the user what you are about to install first.
 
 ## Call a tool from a project
 
-Call the installed CLI by its absolute path, run it from the project you want to affect, and pass
-that project's root explicitly. Set `SKILL_ROOT` to the path reported by your installer or agent;
-this example uses the repository installer's legacy destination:
+Run the CLI from the project and pass that project's root explicitly:
 
 ```sh
-SKILL_ROOT="$HOME/.codex/skills/design-pipeline"
-node "$SKILL_ROOT/scripts/designer-pipeline.cjs" \
+node "<skill-root>/scripts/designer-pipeline.cjs" \
   composition scaffold --root "$PWD" --template visual-craft --output "visual-craft-study"
 ```
 
@@ -78,39 +73,35 @@ its license there. It will not replace existing project content and does not ini
 workflow state. Open [the Visual Craft guide](../tools/visual-craft/README.md) for the copied
 files, APIs and a small browser study.
 
-Check the installed copy with `node "<installed-skill-root>/scripts/designer-pipeline.cjs"
-doctor --root <project>`. Ask the agent to load that installation's `design-pipeline` skill;
-the file paths in its loaded instructions identify which copy it is using.
-
-`doctor` diagnoses the installed copy and runtime environment; it does not automatically
-install, replace or repair skills.
-
 ## Self-check discovery roots
 
-Run the installed dependency self-check from the project directory:
+Run the dependency self-check from the project directory:
 
 ```sh
-node "$SKILL_ROOT/scripts/check-deps.cjs" --json
+node "<skill-root>/scripts/check-deps.cjs" --json
 ```
 
 With no nonempty explicit root setting, the self-check searches these directories in order:
 
-1. `<CODEX_HOME>/skills` when `CODEX_HOME` is set, otherwise `~/.codex/skills`.
-2. `~/.agents/skills` for standard Skills CLI user installations.
-3. `<current-working-directory>/.agents/skills` for standard project installations.
+1. The directory that holds the running copy, when that copy sits in a folder named
+   `design-pipeline` (the running copy always counts as the core skill, wherever it is).
+2. `~/.claude/skills`.
+3. `~/.agents/skills`.
+4. `<current-working-directory>/.agents/skills`.
+5. `<current-working-directory>/.claude/skills`.
+6. `<CODEX_HOME>/skills` when `CODEX_HOME` is set, otherwise `~/.codex/skills` (older installs).
 
-Default directories are resolved to absolute paths and de-duplicated in first-seen order.
-`CODEX_HOME` changes only the legacy candidate, not the user or project `.agents` roots.
-Run from the intended project: the project root is the current working directory, not the
-installed script's directory. The legacy root remains first when multiple copies are available.
+Default directories are resolved to absolute paths and de-duplicated in first-seen order. Run from
+the intended project: the project root is the current working directory, not the script's
+directory.
 
-For custom locations, set `DESIGN_PIPELINE_SKILL_ROOTS`, or `CODEX_SKILLS_DIR` when the
-former is unset or empty. Each value is a list of skills directories (the parents of
-`design-pipeline` and companion directories), separated by `:` on macOS/Linux or `;` on
-Windows. Entries are resolved relative to the current working directory when not absolute.
-The first nonempty setting wins: `DESIGN_PIPELINE_SKILL_ROOTS` takes precedence over
-`CODEX_SKILLS_DIR`. An explicit list replaces all defaults; no default directory is appended,
-so an invalid configured root still fails even if a complete default installation exists.
+For custom locations, set `DESIGN_PIPELINE_SKILL_ROOTS`, or `CODEX_SKILLS_DIR` when the former is
+unset or empty. Each value is a list of skills directories (the parents of `design-pipeline` and
+companion directories), separated by `:` on macOS/Linux or `;` on Windows. Entries are resolved
+relative to the current working directory when not absolute. The first nonempty setting wins:
+`DESIGN_PIPELINE_SKILL_ROOTS` takes precedence over `CODEX_SKILLS_DIR`. An explicit list replaces
+all defaults, including the running copy, so an invalid configured root still fails even if a
+complete default installation exists.
 
 The JSON report includes searched roots, discovered companions and missing core resources.
 A missing required skill or resource returns `FAIL` and exit 1; a complete core package returns
@@ -119,9 +110,12 @@ does not install or repair anything.
 
 ## Runtime notes
 
-- Most CLI commands and project checks use Node.js 22 or newer.
+- Most CLI commands and project checks use Node.js 22.12 or newer.
 - Video analysis and film rendering need `ffmpeg` and `ffprobe` on `PATH` when those operations
-  are used; a small Canvas study does not.
+  are used; a small Canvas study does not. The error for a missing one names the install command
+  (`brew install ffmpeg`, `winget install Gyan.FFmpeg` or `sudo apt install ffmpeg`).
+- Blender (4.2 LTS or newer) is needed only for the Blender film templates; `BLENDER_PATH` or
+  `--blender` points at an existing install.
 - Visual Craft draws with the browser's native Canvas API and needs no extra rendering engine,
   package installation, remote image or remote font.
 - Art Motion's browser study and Canvas runtime also run without npm dependencies. Use
@@ -138,13 +132,14 @@ does not install or repair anything.
   Motion render) use the project-local `puppeteer-core` and one shared browser resolver. It takes
   `--chrome <path>`, then `PUPPETEER_EXECUTABLE_PATH`, then the HyperFrames headless shell
   (`npx hyperframes browser ensure`, pinned and preferred for comparable renders), then an
-  installed Chrome, Edge or Chromium. A wrong explicit path fails instead of falling back. Art
-  Motion's `render-report.json` and interaction results record the browser and its version. An
-  existing HyperFrames project provides `puppeteer-core`; otherwise install it in the consuming
-  project or pass `--puppeteer-module`. No global npm install is needed.
+  installed Chrome, Edge or Chromium. A wrong explicit path fails instead of falling back. When
+  none is found the error names `npx hyperframes browser ensure`, the same command `doctor`
+  prints. Art Motion's `render-report.json` and interaction results record the browser and its
+  version. An existing HyperFrames project provides `puppeteer-core`; otherwise install it in the
+  consuming project or pass `--puppeteer-module`. No global npm install is needed.
 - Font subsetting alone needs FontTools: invoke its script with scoped
   `uv run --with fonttools python`. For repository tests, run
   `uv run --with fonttools --python 3.14 node scripts/qa.cjs`, then `npm run test:browser`.
   Alternatively set `FONTTOOLS_PYTHON` to an existing Python with FontTools for `npm test`.
-- The global skill installation provides the agent instructions and CLI entry point. It is not an
+- The skill installation provides the agent instructions and CLI entry point. It is not an
   independent executable; invoke the CLI through `node` and the installed absolute path.

@@ -25,6 +25,7 @@ NUL
 !/.gitattributes
 !/.gitignore
 !/.github/
+!/.claude-plugin/
 
 # Local agent installations and generated planning output are not product source.
 # Keep the reviewed official GEPA skill's inert original paths in its source bundle.

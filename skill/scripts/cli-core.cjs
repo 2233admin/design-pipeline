@@ -142,6 +142,7 @@ const {
   verifyPersistedCatalog,
 } = require("./designmd-core.cjs");
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
+const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-report.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
 const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later"]);
@@ -351,7 +352,7 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     iart = { status: "blocked", issues: [error.message] };
     missing.push("vendor/iart-motion-skills/manifest.json");
   }
-  const nodeSupported = Number.parseInt(nodeVersion.split(".")[0], 10) >= 22;
+  const nodeSupported = nodeAtLeast(nodeVersion);
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
       ? null
@@ -395,7 +396,7 @@ function publicHelp() {
     "  template adapt --receipt <file> --context <file> --json",
     "  template review --plan <file> --review <file> --json",
     "  template approve --plan <file> --approval <file> --json",
-    "  doctor | status --change-root <dir>",
+    "  doctor [--json]   (readable install and tool report; --json for machine output) | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
     "  resume --change-root <dir>",
@@ -1800,9 +1801,16 @@ function holostickerCommand(parsed, action) {
   fail("cli", `unknown holosticker action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
-function doctorCommand({ root }) {
-  const result = { ...inspectDoctor(), root };
-  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+// Default output is the readable report; --json keeps the machine result, which gains `environment`.
+// Only a missing required item (Node, package files) blocks; recommended and optional tools never do.
+function doctorCommand({ parsed, root }) {
+  const doctor = { ...inspectDoctor(), root };
+  const result = { ...doctor, environment: inspectEnvironment(doctor) };
+  return {
+    result,
+    exitCode: result.status === "ready" ? 0 : 2,
+    ...(option(parsed, "--json") === true ? {} : { text: renderDoctor(doctor, result.environment) }),
+  };
 }
 
 function tokensCheckCommand({ file }) {
@@ -2618,7 +2626,7 @@ function dispatch(argv) {
 function execute(argv) {
   try {
     const outcome = dispatch(argv);
-    return { output: jsonResult(true, outcome.result), exitCode: outcome.exitCode, json: outcome.json };
+    return { output: jsonResult(true, outcome.result), exitCode: outcome.exitCode, json: outcome.json, text: outcome.text };
   } catch (error) {
     return { output: jsonResult(false, {}, error), exitCode: ["BLOCKED", "STATE_LOCKED"].includes(error?.code) ? 2 : 1, json: argv.includes("--json") };
   }

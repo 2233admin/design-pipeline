@@ -22,13 +22,21 @@ function optionValue(name) {
 const cwd = process.cwd();
 const configuredSkillRoots =
   process.env.DESIGN_PIPELINE_SKILL_ROOTS || process.env.CODEX_SKILLS_DIR;
+// The running copy is the one that is installed: its parent directory comes first, and a copy whose
+// directory is not named design-pipeline (a Claude Code plugin cache entry is named by version, a
+// checkout by "skill") still counts as the core skill. Explicit roots replace all of this.
+const selfSkillRoot = path.resolve(__dirname, "..");
+const selfParent = path.basename(selfSkillRoot) === "design-pipeline" ? path.dirname(selfSkillRoot) : null;
 const skillRoots = configuredSkillRoots
   ? configuredSkillRoots.split(path.delimiter).filter(Boolean).map((root) => path.resolve(root))
   : [...new Set([
-    path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills"),
+    selfParent,
+    path.join(os.homedir(), ".claude", "skills"),
     path.join(os.homedir(), ".agents", "skills"),
     path.join(cwd, ".agents", "skills"),
-  ].map((root) => path.resolve(root)))];
+    path.join(cwd, ".claude", "skills"),
+    path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills"),
+  ].filter(Boolean).map((root) => path.resolve(root)))];
 const skillRoot = skillRoots[0];
 
 const registryPath = path.join(__dirname, "..", "references", "companion-capabilities.json");
@@ -111,6 +119,10 @@ function findSkill(name) {
     const skillPath = path.join(root, name, "SKILL.md");
     if (exists(skillPath)) return { root, path: skillPath };
   }
+  const own = path.join(selfSkillRoot, "SKILL.md");
+  if (!configuredSkillRoots && name === "design-pipeline" && exists(own)) {
+    return { root: path.dirname(selfSkillRoot), path: own };
+  }
   return null;
 }
 
@@ -119,7 +131,8 @@ function skillExists(name) {
 }
 
 function resourceExists(name) {
-  return skillRoots.some((root) => exists(path.join(root, name)));
+  if (skillRoots.some((root) => exists(path.join(root, name)))) return true;
+  return !configuredSkillRoots && name.startsWith("design-pipeline/") && exists(path.join(selfSkillRoot, name.slice("design-pipeline/".length)));
 }
 
 function groupResources(group) {

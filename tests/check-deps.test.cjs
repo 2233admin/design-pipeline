@@ -57,6 +57,10 @@ test("installed self-check discovers standard defaults and keeps explicit roots 
   const legacyRoot = path.join(home, ".codex", "skills");
   const globalRoot = path.join(home, ".agents", "skills");
   const projectRoot = path.join(project, ".agents", "skills");
+  const claudeUserRoot = path.join(home, ".claude", "skills");
+  const projectClaudeRoot = path.join(project, ".claude", "skills");
+  // The running copy's directory, then the standard roots, then the legacy Codex root; each once.
+  const defaultRoots = (runningRoot, legacy) => [...new Set([runningRoot, claudeUserRoot, globalRoot, projectRoot, projectClaudeRoot, legacy])];
   const isolatedEnv = { HOME: home, USERPROFILE: home, CODEX_HOME: "" };
   const missingResource = "design-pipeline/scripts/designer-pipeline.cjs";
 
@@ -96,6 +100,8 @@ test("installed self-check discovers standard defaults and keeps explicit roots 
 
     for (const scenario of [
       { name: "global .agents", root: globalRoot },
+      { name: "user .claude", root: claudeUserRoot },
+      { name: "project .claude", root: projectClaudeRoot },
       { name: "project .agents", root: projectRoot },
       { name: "legacy .codex", root: legacyRoot },
       { name: "relative CODEX_HOME", root: path.join(codexHome, "skills"), codexHome: path.relative(project, codexHome) },
@@ -110,11 +116,7 @@ test("installed self-check discovers standard defaults and keeps explicit roots 
         };
         try {
           const report = assertComplete(runCheckRaw([], options));
-          assert.deepEqual(report.skillRoots, [
-            scenario.codexHome ? path.join(codexHome, "skills") : legacyRoot,
-            globalRoot,
-            projectRoot,
-          ]);
+          assert.deepEqual(report.skillRoots, defaultRoots(scenario.root, scenario.codexHome ? path.join(codexHome, "skills") : legacyRoot));
           assert.equal(report.skillRoot, report.skillRoots[0]);
           assert.equal(report.projectRoot, project);
 
@@ -164,6 +166,42 @@ test("installed self-check discovers standard defaults and keeps explicit roots 
       });
     }
 
+    await t.test("a Claude Code plugin copy named by version is the core skill", () => {
+      const pluginCopy = path.join(home, ".claude", "plugins", "cache", "design-pipeline", "design-pipeline", "0.12.0");
+      fs.mkdirSync(path.dirname(pluginCopy), { recursive: true });
+      fs.renameSync(path.join(fixtureRoot, "design-pipeline"), pluginCopy);
+      try {
+        const options = {
+          cwd: project,
+          script: path.join(pluginCopy, "scripts", "check-deps.cjs"),
+          env: isolatedEnv,
+        };
+        const result = runCheckRaw([], options);
+        assert.equal(result.status, 0, result.stderr || result.stdout);
+        const report = JSON.parse(result.stdout);
+        assert.deepEqual(report.skillRoots, defaultRoots(null, legacyRoot).filter(Boolean));
+        const core = report.groups.find((item) => item.name === "Core pipeline");
+        assert.equal(report.result, "OK");
+        assert.deepEqual(core.installed, ["design-pipeline"]);
+        assert.deepEqual(core.missingResources, []);
+        assert.ok(core.installedResources.includes(missingResource));
+
+        // The same copy missing a file still fails, and explicit roots do not borrow the running copy.
+        const held = path.join(workspace, "held-plugin-cli.cjs");
+        fs.renameSync(path.join(pluginCopy, "scripts", "designer-pipeline.cjs"), held);
+        try {
+          const incomplete = runCheckRaw([], options);
+          assert.equal(incomplete.status, 1);
+          assert.deepEqual(JSON.parse(incomplete.stdout).groups.find((item) => item.name === "Core pipeline").missingResources, [missingResource]);
+        } finally {
+          fs.renameSync(held, path.join(pluginCopy, "scripts", "designer-pipeline.cjs"));
+        }
+        assertExplicitFailure(runCheckRaw([], { ...options, env: { ...isolatedEnv, DESIGN_PIPELINE_SKILL_ROOTS: badRoot } }));
+      } finally {
+        fs.renameSync(pluginCopy, path.join(fixtureRoot, "design-pipeline"));
+      }
+    });
+
     await t.test("resolved default roots are de-duplicated in first-seen order", () => {
       fs.renameSync(fixtureRoot, globalRoot);
       try {
@@ -172,7 +210,7 @@ test("installed self-check discovers standard defaults and keeps explicit roots 
           script: path.join(globalRoot, "design-pipeline", "scripts", "check-deps.cjs"),
           env: { ...isolatedEnv, CODEX_HOME: `${home}${path.sep}.agents${path.sep}..${path.sep}.agents` },
         }));
-        assert.deepEqual(report.skillRoots, [globalRoot]);
+        assert.deepEqual(report.skillRoots, [globalRoot, claudeUserRoot]);
         assert.equal(report.skillRoot, globalRoot);
         assert.equal(report.projectRoot, home);
       } finally {

@@ -84,3 +84,21 @@ test("a packaged installer defaults its source to the extracted package root", (
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(fs.readFileSync(path.join(target, "version.txt"), "utf8"), "packaged\n");
 });
+
+test("with no location given the skill installs to ~/.agents/skills and ignores the Codex variables", () => {
+  const item = fixture();
+  const home = path.join(item.root, "home");
+  const elsewhere = path.join(item.root, "elsewhere");
+  fs.mkdirSync(home, { recursive: true });
+  const result = spawnSync(process.execPath, [installer, "--source", item.source], {
+    encoding: "utf8",
+    windowsHide: true,
+    env: { ...process.env, HOME: home, USERPROFILE: home, CODEX_HOME: elsewhere, CODEX_SKILLS_DIR: elsewhere },
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const installed = path.join(home, ".agents", "skills", "design-pipeline");
+  assert.equal(fs.readFileSync(path.join(installed, "version.txt"), "utf8"), "new\n");
+  assert.equal(JSON.parse(result.stdout).target, installed);
+  assert.equal(fs.existsSync(elsewhere), false);
+  assert.equal(fs.existsSync(path.join(home, ".codex")), false);
+});

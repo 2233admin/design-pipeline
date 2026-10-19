@@ -10,6 +10,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { assertEnum, fail } = require("./contract-utils.cjs");
+const { installCommand } = require("./install-hints.cjs");
 const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 
 const SCHEMA = "design-pipeline.audio-check.v1";
@@ -44,14 +45,14 @@ function hint(code, values = {}) {
 
 function run(tools, args, binary = false) {
   const result = spawnSync(tools.ffmpeg, args, { encoding: binary ? "buffer" : "utf8", maxBuffer: 1 << 30, windowsHide: true });
-  if (result.error) fail(SCOPE, `ffmpeg unavailable: ${result.error.message}. Fix: install ffmpeg and put it on PATH`, { code: "TOOL_MISSING" });
+  if (result.error) fail(SCOPE, `ffmpeg unavailable: ${result.error.message}. Fix: run \`${installCommand("ffmpeg")}\` and keep ffmpeg on PATH`, { code: "TOOL_MISSING" });
   if (result.status !== 0) fail(SCOPE, `ffmpeg exited ${result.status}: ${String(result.stderr).trim().split("\n").slice(-1)[0]}`, { code: "TOOL_FAILED" });
   return result;
 }
 
 function hasAudio(file, tools) {
   const result = spawnSync(tools.ffprobe, ["-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", file], { encoding: "utf8", windowsHide: true });
-  if (result.error) fail(SCOPE, `ffprobe unavailable: ${result.error.message}`, { code: "TOOL_MISSING" });
+  if (result.error) fail(SCOPE, `ffprobe unavailable: ${result.error.message}. Fix: run \`${installCommand("ffmpeg")}\` (it installs ffprobe too)`, { code: "TOOL_MISSING" });
   return result.status === 0 && result.stdout.trim().length > 0;
 }
 

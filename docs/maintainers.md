@@ -75,10 +75,10 @@ pixelmatch 已升级到 8.0.0，新比较报告记录版本、OKLab/HyAB 算法�
 
 ## 反馈和贡献
 
-记录管线或 companion 发现：
+记录管线或 companion 发现（`<skill-root>` 是已安装 skill 的目录）：
 
 ```bash
-node ~/.codex/skills/design-pipeline/scripts/record-feedback.cjs \
+node "<skill-root>/scripts/record-feedback.cjs" \
   --kind capability-gap \
   --source runtime \
   --skill animejs \
