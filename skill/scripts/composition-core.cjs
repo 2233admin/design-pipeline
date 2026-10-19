@@ -268,6 +268,15 @@ function checkElements(elements, add) {
   return { texts: texts.length, blocks: blocks.length, nearMisses: nearMisses.length };
 }
 
+// The text findings of a capture's elements.json alone (contrast and off-canvas), for callers with no image.
+function checkTextLegibility(elements) {
+  const findings = [];
+  checkElements(elements, (code, message, severity, target) => {
+    if (code === "text-contrast" || code === "text-off-canvas") findings.push({ code, severity, message, fix: FIX[code], ...(target ? { target } : {}) });
+  });
+  return findings;
+}
+
 function checkComposition(image, options = {}) {
   if (!image || !(image.width > 0) || !Buffer.isBuffer(image.data)) fail(SCOPE, "image must be a decoded RGBA image");
   const profileName = options.profile || "ui";
@@ -458,4 +467,4 @@ function checkFilmLayout(layout, options = {}) {
   return { status: findings.some((finding) => finding.severity === "error") ? "failed" : "passed", findings, allowed, samples: samples.length };
 }
 
-module.exports = { SCHEMA, FIX, PROFILES, checkComposition, checkFilmLayout, contrastRatio, measure };
+module.exports = { SCHEMA, FIX, PROFILES, checkComposition, checkFilmLayout, checkTextLegibility, contrastRatio, measure };

@@ -209,51 +209,48 @@ extraction asks for them again. Final acceptance stays with the owner.
 
 ## concepts
 
-Write `concepts.md` with three cards, `A`, `B` and `C`, with genuinely different first-screen
-structures: vary the layout skeleton, focal element, type position and image role (including no
-image), not just copy, colour or styling. Each card starts with its central idea as one sentence
-about the page and a one-line `Skeleton:` declaration naming those four choices. Then record the
-section arc (one line per section: what it is for and its dominant element), what carries the eye
-down the page, the look, tools in one line, and any missing license.
+At `standard` and `full` in brief mode the concepts stage makes real directions from three sources
+and shows the owner three of them; it replaces writing two to four candidates yourself. Follow
+[direction-preview.md](direction-preview.md) and the library guide
+[design-direction-library.md](design-direction-library.md). The playback that precedes this stage
+ends with "I'll make several real directions for you to see"; do not ask the owner to name a style.
 
-Then build `concepts.html`, the variants page: one self-contained page with the three first screens
-as real markup, each in an element marked `data-variant="A"`, `"B"` or `"C"` (with a short
-`data-variant-name`), one shown at a time by `?variant=A|B|C`. Inline the packaged switcher,
-`tools/variant-switcher/variant-switcher.js` ([how to use it](../tools/variant-switcher/README.md)):
-it adds a floating bar with left and right arrows around the variant label, and the ← → keys do the
-same; hidden variants stay hidden whatever the page's own `display` rules say. Until the page marks
-all three variants and contains the switcher (`data-variant-switcher`), `next` returns a run with
-the finding `variants-incomplete` or `variant-switcher-missing` and its fix. Markers inside HTML
-comments do not count.
+1. Run `direction draw --root <root> --medium web`. It prints the roulette for the current second
+   (`S % 20 + 1` in the web catalog, `S % 12 + 1` in east), already past the last three deliveries
+   in the appearance ledger. If the owner named a style or a brand, all six cards interpret that
+   context, record it as `context`, and draw only compatible styles with `--pool` and `--east-pool`.
+2. Write six cards into `direction-preview.json` `cards`, two per logic: the best designers for
+   this need; real work in the same medium (capture it with `composition capture`, otherwise set
+   `seen` to false with the reason); and the two roulette styles, with section, number, style,
+   specimen and fidelity (say what degrades under 70%). Every card has six columns: logic and source,
+   what is borrowed, hero, skeleton, boldness and the form taken from the content.
+3. Build `direction-previews/thumbs.html`, six cells of about 480 by 300, and capture it to a PNG.
+4. Pick three cards and build them as full first-screen versions `dir-1.html` to `dir-3.html`,
+   named `a`, `b` and `c` in the receipt. Record why each is good alone, why the three are distinct,
+   why they do not collide with the ledger, and which is overdone (at most one).
+5. Run `direction check`. While anything fails, `next` returns a `run` with `findings`, each with its
+   fix. The check is preparation for the owner's pick, not Visual Acceptance.
 
-Before asking the owner, pre-screen the three variants: render each first viewport at the same size
-and combine them into one contact sheet. Check it for structural divergence, a clear focal point and
-readable hierarchy. Redo any same-skeleton, common-template or collapsed-hierarchy variant, rerender
-and compare again without showing failed variants to the owner (`web-direction.md`). This
-pre-screen is not Visual Acceptance and adds no gate or schema; only the owner picks a direction.
+Then `next` asks the owner, showing the thumbnail board and the three captures with their card
+summaries; the other three cards are alternates the owner may promote. Record:
 
-Then ask the owner to open `concepts.html`, flip through A, B and C with the arrows or the ← → keys,
-and say which first screen to build or what to combine from them (for example B's header with C's
-layout). Recommend the variant whose structure best serves what the visitor should do first, and
-say why. Record:
+- a pick: `decide --stage concept --by owner --choice b --answer "<the owner's words>"`;
+- a mix: `--choice b,c --mix layout=b --mix colour=c --answer "<the owner's words>"`, kept as
+  `decisions.conceptMix` and `decisions.conceptNotes`;
+- a rejection: `--verdict reject --answer "<what is wrong>"`. It becomes a rule (`variants N`) and
+  reopens the stage until the receipt changes;
+- an explicit taste statement: `--taste "<as said>"`, added to the rules as `direction taste`; add
+  `--scope project` when the owner said it applies beyond this page.
 
-- a pick: `decide --stage concept --choice B`;
-- a mix: `decide --stage concept --choice B,C --answer "<what to take from each, in the owner's words>"`.
-  Combining requires the answer, kept as `decisions.conceptNotes`;
-- a rejection: `decide --stage concept --verdict reject --answer "<what is wrong, in the owner's words>"`.
-  It becomes a rule (`variants N`) and reopens the stage. While `concepts.html` is
-  unchanged, `next` tells you to redo what the rule rules out and pre-screen again before asking.
+Ids are lowercase `a`, `b` and `c`; numbers are refused. A pick is refused (`WORKFLOW_NOT_READY`)
+until `next` has reached the ask. `decisions.concept` holds the pick (`b` or `b,c`) and
+`decisions.variants` the history. `quick` and replicate have no concepts stage and refuse concept
+records.
 
-Letters are case-insensitive; numbers are refused. A pick is refused (`WORKFLOW_NOT_READY`) until
-`next` has reached the variants ask. `decisions.concept` holds the pick (`B` or `B,C`) and
-`decisions.variants` the history.
-`quick` and replicate have no concepts stage and refuse concept records.
-
-The variants are throwaway prototypes. Fold the chosen variant, and anything combined from the
-others, into the real page, rewritten properly; the switcher never ships in `index.html` in any
-form ([build](#build)). The first build step extends the chosen card with `## Treatment`
-(`web-direction.md`); for a combination, extend the first card named and say what it takes from
-the others.
+The versions are prototypes. Fold the chosen one, and anything mixed in from the others, into the
+real page, rewritten properly. The first build step extends the chosen card with `## Treatment`
+(`web-direction.md`). Delivery records the page's appearance and sources in the user-level
+appearance ledger so the next project's directions avoid them.
 
 When a Taste method is selected, record its exact entry, brief/dial read and adapted decisions in
 these cards. For an explicitly requested web concept-image set, produce separate readable
@@ -272,7 +269,7 @@ A numbered round of concrete decisions, each with your recommended answer. At `s
 are:
 
 - `sections` (`standard` and `full` only): which sections the page should have, in build order,
-  starting with the first screen. Recommend the chosen variant's section arc from `concepts.md`, or
+  starting with the first screen. Recommend the chosen variant's section arc from its card, or
   in replicate mode the reference's sections in its order. The sections the owner settles go into
   the description.
 - `components`: where the components should come from. Its `options` are `{choice, label}` pairs;
@@ -616,15 +613,8 @@ the answer language (including `从零写`) does not determine scratch status. F
 set, `fromScratch: true` is forbidden and `entries` must be nonempty. These rules use the explicit
 source set, not inferred library names or phrases in the answer.
 
-Build finishes only when `index.html` and a valid manifest both exist, `index.html` does not carry
-the variant switcher in any form and, at `standard` and `full`, every approved section is accepted
-under the current description approval. At every tier, build stays open with the error finding
-`variant-switcher-shipped` ("index.html ships part of the prototype variant switcher: <what>.")
-while `index.html`, with its HTML comments removed, carries `data-variant` or `data-variant-name`
-panels, any `variant-switcher` text (`data-variant-switcher` markup, an inline script, or a
-`<script src>` naming it, local or remote), or a local `<script src>` file whose content contains
-`variant-switcher` (a renamed copy). Remove the switcher, its script and the panels; at `standard`
-and `full` outside replicate they belong only in `concepts.html`. Invalid evidence returns
+Build finishes only when `index.html` and a valid manifest both exist and, at `standard` and `full`,
+every approved section is accepted under the current description approval. Invalid evidence returns
 the build instructions with the validator message and an existing finding whose `code` is
 `CONTRACT_INVALID`, `severity` is `error`, `message` is that validator message, and `fix` gives
 remediation. Repair the reported manifest/source-set, source identity, license declaration or

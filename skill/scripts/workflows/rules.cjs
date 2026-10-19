@@ -57,10 +57,10 @@ function candidates(state) {
   return (state.rules || []).filter(rule => !isProject(rule)).map(rule => ({ from: rule.from, object: label(rule) || "the result", text: rule.text, active: !retired(rule, roles) }));
 }
 
-function checkScope(scope, verdict) {
+function checkScope(scope, verdict, taste = false) {
   if (scope === undefined || scope === null) return null;
   if (!SCOPES.includes(scope)) fail("workflow", `--scope must be ${SCOPES.join(" or ")}: object (the default) binds a "no" to what it was about, project keeps it for the rest of the project`);
-  if (verdict !== "reject") fail("workflow", "--scope goes with a record that holds the owner's \"no\" (--verdict reject). Fix: drop --scope, or add it to the owner's rejection");
+  if (verdict !== "reject" && !taste) fail("workflow", "--scope goes with a record that holds the owner's \"no\" (--verdict reject). Fix: drop --scope, or add it to the owner's rejection");
   return scope;
 }
 

@@ -34,6 +34,12 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | Installation, upgrade and skill location | `references/installation.md` | |
 | Route, CLI, gate and receipt contracts | `references/pipeline-reference.md` | `designer-pipeline --help` |
 
+Left alone, the model's default aesthetic is a warm cream background, a serif headline and a
+terracotta accent. The direction stage exists to get past it: it makes real directions from designers,
+real work and a style roulette, and checks them against the user's recent deliveries
+([design-direction-library.md](references/design-direction-library.md)). That look is not banned;
+it must be chosen, not defaulted to.
+
 ## Follow `next` for a complete deliverable
 
 Start with `designer-pipeline next --project-root <project>`. It returns one action at a time: do

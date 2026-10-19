@@ -13,6 +13,9 @@ const { buildComponentFitMatrix, createDirectionLock } = require("../skill/scrip
 const { normalizeSnapshot } = require("../skill/scripts/design-system-catalog-core.cjs");
 const { canonicalJson } = require("../skill/scripts/contract-utils.cjs");
 const { pngBytes } = require("./helpers/reference-fixtures.cjs");
+const { isolate, writeDirectionSet } = require("./helpers/direction-fixture.cjs");
+const directionEnv = isolate();
+test.after(directionEnv.restore);
 const repoRoot = path.resolve(__dirname, "..");
 const componentCatalog = normalizeSnapshot(JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/component-source-catalog.json"), "utf8")));
 const catalog = JSON.parse(fs.readFileSync(path.join(repoRoot, "skill/references/region-template-catalog.json"), "utf8"));
@@ -121,20 +124,9 @@ function makeDirectionPreview(root = null) {
     };
   }
   const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
-  const write = (relative, value) => {
-    const file = path.join(root, relative);
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, value);
-    return { path: relative, sha256: hash(value) };
-  };
-  artifact.comparison.brief = write("brief.md", "# Guided selection\n");
-  artifact.comparison.index = write("index.html", '<main data-direction-preview><section data-direction-id="quiet"></section><section data-direction-id="signal"></section></main>');
-  artifact.directions = artifact.directions.map((direction) => ({
-    ...direction,
-    screenshot: write(direction.screenshot.path, pngBytes({ width: 1440, height: 900 })),
-  }));
-  const artifactBytes = Buffer.from(JSON.stringify(artifact));
-  fs.writeFileSync(path.join(root, "direction-preview.json"), artifactBytes);
+  const written = writeDirectionSet(root, { ids: ["quiet", "signal", "field"], decision: artifact.decision });
+  Object.assign(artifact, written);
+  const artifactBytes = fs.readFileSync(path.join(root, "direction-preview.json"));
   const artifactSha256 = hash(artifactBytes);
   return { artifact, artifactSha256, contentHash: hash(canonicalJson(artifact)), directionLockSnapshot: makeDirectionLock(artifactSha256), changeRoot: root };
 }

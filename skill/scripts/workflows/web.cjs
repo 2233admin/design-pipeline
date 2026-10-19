@@ -4,7 +4,8 @@
 // Guide: references/workflow-web.md (one section per stage id).
 //
 // Standard and full work talks before it builds: an opening with a skip line and one open question,
-// a playback the owner confirms, three switchable first-screen variants, one round of concrete
+// a playback the owner confirms, three real first-screen directions drawn from three sources (a
+// designer, a real work, a catalog style; workflows/directions.cjs), one round of concrete
 // decisions with recommended answers, and a one-page description the owner approves. Only then is
 // the page built, one section at a time, each reviewed by the owner, before the final review. Every
 // "no" the owner gives on the way, and every anti-goal of the confirmed playback, becomes a project
@@ -17,6 +18,7 @@ const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-util
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
 const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, extractionDigest, gateStatus, invalidateCheckedEvidence, reason, reference, statement } = require("./shared.cjs");
 const replicate = require("./replicate.cjs");
+const { CLOSING_LINE, RECEIPT, directionAction, pickedIds, pickedMix } = require("./directions.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -53,6 +55,7 @@ const OPENING = {
   page: "What site have you seen recently that felt the way this page should, and what about it?",
   replicate: "What must stay exactly as it is in the page you want reproduced?",
 };
+const RESTATE = ` The card also restates the scene the page is used in, its tone and the expectations the owner left unsaid (marked as your guesses), and its last line is: "${CLOSING_LINE}" Do not ask the owner to name or pick a style in words: they choose among rendered directions next.`;
 const CONVERSATION = "Facts are your job: before asking, take what you can from the conversation and the project's files (README, existing pages, DESIGN.md, brand assets; in an existing project run project inspect), and never ask the owner for something you can look up. Send the opening question as its own message, as it is: the skip line, then one open question. Then ask one open question per message, with no list of example answers unless they are stuck: anchor on real specifics (a site they saw, the moment a visitor arrives), ask what would make them wince and what they have seen elsewhere and loved or hated. When you can describe the page, play it back as a short card, one line each: three intent lines (what the page expresses, who it connects with and how, what makes it unlike other pages), then the uncertainties still open, then one line on what you will decide and what stays theirs; mark what they said as theirs and what you guessed as your guess, and end by asking what is wrong or missing. The confirmed card, recorded with its line breaks, is the project's creative intent. Record each correction with the correction command (it becomes a rule) and play back again until they confirm; then record the confirmed playback, adding each anti-goal they named (what the page must never be or do) to the record command as its own --anti-goal \"<text>\", which becomes a project rule too. If they say to just start, tell them in one line what you decided on their behalf and record that line with the skip command, with any anti-goal they named added the same way.";
 
 // Intake ends with a confirmed playback or a stated skip, and a later correction reopens it.
@@ -72,7 +75,7 @@ const INTAKE = {
       // `first` is always a step for the agent before it asks; the opening question carries the skip line.
       ...(corrected ? { first: `The owner corrected the playback ("${latest.reason}"); each correction is now a rule. Play it back again with the corrections applied, then ask:` } : {}),
       question: corrected ? "What is wrong or missing in this?" : `${SKIP_LINE} ${OPENING[state.mode === "replicate" ? "replicate" : "page"]}`,
-      instruction: CONVERSATION,
+      instruction: state.mode === "replicate" ? CONVERSATION : CONVERSATION + RESTATE,
       record: `${decideCommand(root, "intake")} --verdict accept --answer "<the playback the owner confirmed>"${ANTI_GOALS}`,
       correction: `${decideCommand(root, "intake")} --verdict reject --answer "<what the owner said is wrong or missing>"`,
       skip: `${decideCommand(root, "intake")} --choice skip --answer "<the line telling the owner what you decided on their behalf>"${ANTI_GOALS}`,
@@ -128,78 +131,65 @@ function recordIntake(state, _root, options) {
   }
 }
 
-// --- concepts: three structurally different first screens on one switchable page -----------------
+// --- concepts: directions from three sources, three full first screens ---------------------------------
 
-const VARIANT_KEYS = ["A", "B", "C"];
-const VARIANTS_PAGE = "concepts.html";
-const SWITCHER = "data-variant-switcher";
-const SWITCHER_SCRIPT = path.resolve(__dirname, "../../tools/variant-switcher/variant-switcher.js").split(path.sep).join("/");
-const PRESCREEN = "Before asking the user, agent-pre-screen the three variants: render each first viewport at the same size and combine them into one contact sheet. Require genuinely different layout skeletons, focal elements, type positions and image roles, each declared in a one-line skeleton. Redo any variant with the same skeleton, a common template or hierarchy that collapses, rerender and compare without showing failed variants to the user. A pre-screen is not Visual Acceptance; the user selects the direction.";
+const VERSION_IDS = ["a", "b", "c"];
 
-// Markup the checks read: a marker or switcher inside an HTML comment is not on the page.
+// Markup the checks read: a marker inside an HTML comment is not on the page.
 const markup = html => html.replace(/<!--[\s\S]*?-->/g, "");
 
-function variantFindings(root) {
-  const html = markup(fileText(root, VARIANTS_PAGE) ?? "");
-  const missing = VARIANT_KEYS.filter(key => !new RegExp(`data-variant\\s*=\\s*["']${key}["']`, "i").test(html));
-  return [
-    ...(missing.length ? [{ code: "variants-incomplete", severity: "error", message: `${VARIANTS_PAGE} marks no first screen data-variant="${missing.join("\", \"")}".`, fix: `Put each of the three first screens in an element marked data-variant="A", "B" or "C" in ${VARIANTS_PAGE}.` }] : []),
-    ...(html.includes(SWITCHER) ? [] : [{ code: "variant-switcher-missing", severity: "error", message: `${VARIANTS_PAGE} has no variant switcher (${SWITCHER}).`, fix: `Inline ${SWITCHER_SCRIPT} in ${VARIANTS_PAGE}; it adds the switcher.` }]),
-  ];
-}
-
-// A pick closes the stage and a later rejection reopens it.
-function conceptChosen(state) {
-  return history(state, "variants").at(-1)?.verdict === "pick" && Boolean(state.decisions?.concept);
+// A pick closes the stage and a later rejection reopens it; so does a receipt edited or deleted after
+// the pick, since what the owner reviewed is no longer what later stages read.
+function conceptChosen(state, root) {
+  const latest = history(state, "variants").at(-1);
+  if (latest?.verdict !== "pick" || !state.decisions?.concept) return false;
+  return !root || latest.sha256 === fileSha(root, RECEIPT);
 }
 
 const CONCEPTS = {
   id: "concepts",
   finished: conceptChosen,
   action: (state, root) => {
-    if (!exists(root, "concepts.md") || !exists(root, VARIANTS_PAGE)) return { type: "run", instruction: `Write concepts.md: three cards, A, B and C, with genuinely different first-screen structures (layout skeleton, focal element, type position and image role, including no image), not just copy or colour. Each card starts with its central idea in one sentence and a one-line skeleton declaring those choices, then the section arc in one line per section (what it is for and its dominant element), what carries the eye down the page, look, tools (one line), and any missing license. Then build ${VARIANTS_PAGE}: one self-contained page with the three first screens as real markup, each in an element marked data-variant="A", "B" or "C" (with data-variant-name), one shown at a time by ?variant=A|B|C, and the floating switcher: inline ${SWITCHER_SCRIPT} (left and right arrows around a label, the ← → keys, visibly not part of the design). The variants are throwaway prototypes: neither the switcher nor the data-variant panels ever go into index.html. ${PRESCREEN} After the pick, extend the chosen card with \`## Treatment\` (references/web-direction.md).`, why: "Structural divergence the owner can flip through before convergence; only the owner picks a direction." };
-    const findings = variantFindings(root);
-    if (findings.length) return { type: "run", instruction: `${findings.map(item => `${item.message} Fix: ${item.fix}`).join(" ")} Then run next again.`, findings, why: "The owner flips between real first screens on one page, so every variant and the switcher must be there." };
+    const record = `${decideCommand(root, "concept")} --choice <a|b|c, or several comma-separated to combine> --answer "<the owner's exact words>" [--mix <part>=<id> ...] [--taste "<an explicit taste statement, in their words>" ...] [--scope project]`;
+    const action = directionAction(state, root, { stage0: false, waiver: false, decide: decideCommand(root, "concept"), record, correction: `${decideCommand(root, "concept")} --verdict reject --answer "<what is wrong, in the owner's words>"` });
+    if (action.type !== "ask") return action;
+    const ids = action.directions.map(direction => direction.id).sort().join(",");
+    if (ids !== VERSION_IDS.join(",")) {
+      return { type: "run", instruction: `Name the three full versions in ${RECEIPT} a, b and c (their direction ids), so the owner can pick by letter, then run next again.`, findings: [{ code: "web-version-ids", severity: "error", message: `The full versions are named ${ids}, not a, b and c.`, fix: "Rename the direction ids to a, b and c in direction-preview.json." }], why: "The owner picks a web first screen by letter." };
+    }
     const latest = history(state, "variants").at(-1);
-    const rejected = latest?.verdict === "reject" && latest.sha256 === fileSha(root, VARIANTS_PAGE);
-    return {
-      type: "ask",
-      ...(rejected ? { first: `The owner rejected these variants ("${latest.reason}"); the reason is now a rule. Redo what it rules out in ${VARIANTS_PAGE} and pre-screen again, then ask:` } : {}),
-      question: `Open ${VARIANTS_PAGE} and flip through A, B and C with the arrows or the ← → keys. Which first screen should I build, or what should I combine from them (for example B's header with C's layout)?`,
-      show: [VARIANTS_PAGE, "concepts.md"].map(rel => path.join(path.resolve(root), rel)),
-      recommended: "Recommend the variant whose structure best serves what the visitor should do first, and say why.",
-      record: `${decideCommand(root, "concept")} --choice <A|B|C, or several comma-separated to combine> [--answer "<what to take from each, in the owner's words>"]`,
-      correction: `${decideCommand(root, "concept")} --verdict reject --answer "<what is wrong, in the owner's words>"`,
-      why: `${PRESCREEN} Each rejection becomes a rule.`,
-    };
+    const rejected = latest?.verdict === "reject" && latest.sha256 === fileSha(root, RECEIPT);
+    return rejected ? { ...action, first: `The owner rejected these directions ("${latest.reason}"); the reason is now a rule. Redo what it rules out (another card for a version, or a new draw) and run the check again, then ask:` } : action;
   },
 };
 
 function recordConcept(state, root, options, next) {
-  if (!stages(state).some(stage => stage.id === "concepts")) fail("workflow", `${state.tier === "quick" ? "the quick tier" : "replicate mode, which keeps its reference,"} has no variants to pick or reject. Fix: follow next`);
+  if (!stages(state).some(stage => stage.id === "concepts")) fail("workflow", `${state.tier === "quick" ? "the quick tier" : "replicate mode, which keeps its reference,"} has no directions to pick or reject. Fix: follow next`);
   if (options.verdict && !["accept", "reject"].includes(options.verdict)) fail("workflow", "--verdict must be reject, or omitted when --choice records the pick");
   const variants = history(state, "variants");
-  const page = fileSha(root, VARIANTS_PAGE);
+  const page = fileSha(root, RECEIPT);
   const at = new Date().toISOString();
-  // Variants are picked or rejected only once the owner has been shown them (or later, to reopen).
+  // Directions are picked or rejected only once the owner has been shown them (or later, to reopen).
   const action = next();
-  if (before(state, action.stage, "concepts") || action.stage === "concepts" && action.type !== "ask") fail("workflow", `Cannot record a variant ${options.verdict === "reject" ? "rejection" : "pick"} while ${action.stage === "concepts" ? `${VARIANTS_PAGE} is not ready` : `${action.stage} is unfinished`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+  if (before(state, action.stage, "concepts") || action.stage === "concepts" && action.type !== "ask") fail("workflow", `Cannot record a variant ${options.verdict === "reject" ? "rejection" : "pick"} while ${action.stage === "concepts" ? `${RECEIPT} does not pass its check` : `${action.stage} is unfinished`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
   if (options.verdict === "reject") {
-    if (!page) fail("workflow", `there is no ${VARIANTS_PAGE} to reject. Fix: follow next`, { code: "WORKFLOW_NOT_READY" });
+    if (!page) fail("workflow", `there is no ${RECEIPT} to reject. Fix: follow next`, { code: "WORKFLOW_NOT_READY" });
     const text = reason(options.answer, "say in one sentence what the owner rejected in the variants and why; it becomes a rule");
     state.decisions.variants = [...variants, { verdict: "reject", reason: text, sha256: page, at }];
     addRule(state, text, `variants ${rejections(state.decisions.variants)}`);
     return;
   }
-  const choices = String(options.choice ?? "").split(",").map(value => value.trim().toUpperCase()).filter(Boolean);
-  if (!choices.length || choices.some(value => !VARIANT_KEYS.includes(value)) || new Set(choices).size !== choices.length) fail("workflow", `--choice must be A, B or C, or several of them comma-separated to combine (the variant keys in ${VARIANTS_PAGE})`);
-  const notes = choices.length > 1
-    ? reason(options.answer, "say what to take from each combined variant, in the owner's words")
-    : typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
+  const choices = pickedIds(String(options.choice ?? "").toLowerCase());
+  if (choices.some(value => !VERSION_IDS.includes(value))) fail("workflow", `--choice must be a, b or c, or several of them comma-separated to combine (the three full versions in ${RECEIPT})`);
+  const mix = pickedMix(options.mix);
+  if (Object.keys(mix).length && choices.length < 2) fail("workflow", "--mix combines parts of several versions, so --choice names each version it takes from. Fix: for example --choice a,c --mix layout=a --mix colour=c");
+  if (Object.values(mix).some(id => !choices.includes(id))) fail("workflow", "--mix may take parts only from the versions --choice names");
+  const notes = reason(options.answer, choices.length > 1 ? "say what to take from each combined variant, in the owner's words" : "record the exact words behind the pick (the owner's, or the art director's reason when delegated)");
   state.decisions.concept = choices.join(",");
-  if (notes) state.decisions.conceptNotes = notes;
-  else delete state.decisions.conceptNotes;
-  state.decisions.variants = [...variants, { verdict: "pick", choice: state.decisions.concept, ...(page ? { sha256: page } : {}), at }];
+  state.decisions.conceptNotes = notes;
+  if (Object.keys(mix).length) state.decisions.conceptMix = mix;
+  else delete state.decisions.conceptMix;
+  state.decisions.variants = [...variants, { verdict: "pick", choice: state.decisions.concept, ...(page ? { sha256: page } : {}), ...(Object.keys(mix).length ? { mix } : {}), at }];
 }
 
 // --- components: rounds of concrete decisions, each with a recommended answer ----------------------
@@ -298,7 +288,7 @@ function approvalInputs(state, root) {
     brief: fileSha(root, file),
     sections: briefSections(fileText(root, file) ?? "") ?? [],
     playback: digest(state.decisions?.intake?.answer ?? null),
-    direction: digest({ concept: state.decisions?.concept ?? null, conceptNotes: state.decisions?.conceptNotes ?? null }),
+    direction: digest({ concept: state.decisions?.concept ?? null, conceptNotes: state.decisions?.conceptNotes ?? null, conceptMix: state.decisions?.conceptMix ?? null }),
     components: componentDecisionDigest(state) ?? null,
     // A replicate approval also binds the confirmed extraction (DESIGN.md, MOTION.md, reference.md, reference evidence).
     ...(state.mode === "replicate" ? { extraction: extractionDigest(state) } : {}),
@@ -391,7 +381,7 @@ function briefSections(text) {
 }
 
 function descriptionContent(state) {
-  const direction = state.mode === "replicate" ? "what is reproduced, its invariants and what changes" : "the chosen first screen (the variant and anything combined from the others)";
+  const direction = state.mode === "replicate" ? "what is reproduced, its invariants and what changes" : "the chosen first screen (the direction and anything combined from the others)";
   return `one page in plain words that a builder could work from without asking again: what the page is and why; who it is for and the one thing a visitor should do; how it should feel, in the owner's words; goals, non-goals and anti-goals (what would make the owner wince); ${direction}; a \`## Sections\` list of the sections in build order, first screen first, one top-level list item per section that starts with its id (lowercase letters, digits and hyphens; not all or none) and gives one line on its job, such as \`- hero: today's bakes and the reserve button\`; where the components come from; constraints such as devices, assets and their licenses; and which choices are the owner's and which are your calls, marked as yours. Do not copy the rules into it: they stay in state.rules and come back with every action, so a rule recorded later needs no edit here. Keep any brief the owner supplied and extend it rather than replacing their words.`;
 }
 
@@ -517,18 +507,6 @@ function recordDescription(state, root, options, next) {
   }
 }
 
-// The variant switcher and its panels are prototype tools, so the built page may carry none of them:
-// no data-variant panels, no switcher markup or script inline, and no loaded local script that
-// carries the switcher under another name. Returns what was found, or null.
-function shippedSwitcher(root, html) {
-  const page = markup(html);
-  if (/\sdata-variant(?:-name)?(?=\s*=|[\s/>])/i.test(page)) return "data-variant panels";
-  if (/variant-switcher/i.test(page)) return "the switcher's markup or script";
-  const loaded = [...page.matchAll(/<script\b[^>]*?\ssrc\s*=\s*["']([^"'#?]+)/gi)].map(match => match[1].trim())
-    .find(ref => ref && !/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(ref) && /variant-switcher/i.test(fileText(root, ref) ?? ""));
-  return loaded ? `the script ${loaded}, which carries the switcher` : null;
-}
-
 function buildStatus(state, root) {
   if (!COMPONENTS.finished(state)) return { finished: false };
   try {
@@ -536,11 +514,6 @@ function buildStatus(state, root) {
     validateComponentManifest(JSON.parse(fs.readFileSync(path.join(root, "component-manifest.json"), "utf8")), {
       root, decision: state.decisions.components, componentSources: state.decisions.componentSources,
     });
-    const shipped = shippedSwitcher(root, fs.readFileSync(path.join(root, "index.html"), "utf8"));
-    if (shipped) return { finished: false, findings: [{
-      code: "variant-switcher-shipped", severity: "error", message: `index.html ships part of the prototype variant switcher: ${shipped}.`,
-      fix: `Remove it from index.html: the variant switcher, its script and the data-variant panels never ship${stages(state).some(stage => stage.id === "concepts") ? `; they stay in ${VARIANTS_PAGE}` : ""}.`,
-    }] };
     return { finished: true };
   } catch (error) {
     if (error.code === "CONTRACT_INVALID" || error instanceof SyntaxError) {
@@ -669,8 +642,8 @@ function buildScope(state, progress) {
   if (!current) return `Repair index.html and component-manifest.json without changing what the owner accepted (sections ${accepted.join(", ")}).`;
   const place = `into index.html inside an element marked data-section="${current}"`;
   if (accepted.length) return `Build the next section, \`${current}\`, from its section brief ${place} (accepted so far: ${accepted.join(", ")}). Keep the accepted sections as the owner accepted them unless a rule requires a change, and add every component it uses to component-manifest.json.`;
-  const treatment = replicate ? "" : "Extend the chosen card in concepts.md (for a combination, the first card named, saying what it takes from the others) with `## Treatment`; its section arc lists exactly the sections of the approved description's ## Sections list, in that order, and a different arc goes back to the owner as a description correction before anything is built. Write the section briefs (references/web-direction.md). ";
-  return `${openSpec}${treatment}Build only the first screen, section \`${current}\`, from ${replicate ? "the reference and its invariants" : "the chosen variant and the approved description"} ${place}; the other sections follow one at a time after the owner reviews it.`;
+  const treatment = replicate ? "" : "Write concepts.md from the chosen version's card in direction-preview.json (for a combination, the first version named, saying what it takes from the others, as the owner mixed them) and extend it with `## Treatment`; its section arc lists exactly the sections of the approved description's ## Sections list, in that order, and a different arc goes back to the owner as a description correction before anything is built. Write the section briefs (references/web-direction.md). ";
+  return `${openSpec}${treatment}Build only the first screen, section \`${current}\`, from ${replicate ? "the reference and its invariants" : "the chosen direction and the approved description"} ${place}; the other sections follow one at a time after the owner reviews it.`;
 }
 
 // --- element references (OpenSpec change owner-attention-page-refs) ----------------------------------

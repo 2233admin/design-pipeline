@@ -20,7 +20,9 @@ const { buildComponentFitMatrix, createDirectionLock } = require("../skill/scrip
 const { normalizeSnapshot } = require("../skill/scripts/design-system-catalog-core.cjs");
 const componentCatalog = normalizeSnapshot(JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/component-source-catalog.json"), "utf8")));
 const regionCatalog = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/region-template-catalog.json"), "utf8"));
-const { pngBytes } = require("./helpers/reference-fixtures.cjs");
+const { isolate, writeDirectionSet } = require("./helpers/direction-fixture.cjs");
+const directionEnv = isolate();
+test.after(directionEnv.restore);
 const directPreviewRoot = fs.mkdtempSync(path.join(require("node:os").tmpdir(), "surface-artifacts-preview-"));
 
 function directionLock(previewArtifactSha256 = "b".repeat(64)) {
@@ -35,28 +37,7 @@ function directionLock(previewArtifactSha256 = "b".repeat(64)) {
 
 function directionPreview() {
   const hashBytes = (value) => crypto.createHash("sha256").update(value).digest("hex");
-  const write = (relative, value) => {
-    const file = path.join(directPreviewRoot, relative);
-    fs.writeFileSync(file, value);
-    return { path: relative, sha256: hashBytes(value) };
-  };
-  const artifact = {
-    schema: "design-pipeline.direction-preview.v1",
-    changeId: path.basename(directPreviewRoot),
-    applicability: { status: "required", reason: "visual-redesign" },
-    comparison: {
-      brief: write("brief.md", "# Direct selection\n"),
-      index: write("index.html", '<main data-direction-preview><section data-direction-id="quiet"></section><section data-direction-id="signal"></section></main>'),
-      viewport: { width: 1440, height: 900 },
-      contentFixtureSha256: "c".repeat(64),
-      stateCoverage: ["default", "error"],
-    },
-    directions: [
-      { id: "quiet", name: "Quiet", thesis: "Quiet thesis", signature: "Quiet signature", axes: { luminance: "light", typeFamily: "serif", color: "monochrome", layout: "editorial", density: "airy", era: "classic", material: "paper" }, screenshot: write("quiet.png", pngBytes({ width: 1440, height: 900 })) },
-      { id: "signal", name: "Signal", thesis: "Signal thesis", signature: "Signal signature", axes: { luminance: "dark", typeFamily: "sans", color: "duotone", layout: "grid", density: "dense", era: "futurist", material: "glass" }, screenshot: write("signal.png", pngBytes({ width: 1440, height: 900 })) },
-    ],
-    decision: { status: "selected", selectedDirectionId: "signal", rationale: "Signal is selected.", by: "owner" },
-  };
+  const artifact = writeDirectionSet(directPreviewRoot, { ids: ["quiet", "signal", "field"], decision: { status: "selected", selectedDirectionId: "signal", rationale: "Signal is selected.", by: "owner" } });
   const bytes = Buffer.from(JSON.stringify(artifact));
   const artifactFile = path.join(directPreviewRoot, "direction-preview.json");
   fs.writeFileSync(artifactFile, bytes);

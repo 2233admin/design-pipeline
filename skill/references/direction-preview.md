@@ -12,7 +12,7 @@ one only after recording the same preview evidence and an explicit rationale.
 
 ## Applicability
 
-Write `direction-preview.json` for every change before Stage 2 selects a direction.
+Write `direction-preview.json` for every change before Stage 2 selects a direction. The sets of two to four candidates below apply outside the `ui` and `web` brief flow described next.
 
 - `required`: an open whole-surface request, a material visual redesign, or an explicit request to
   compare styles.
@@ -39,6 +39,59 @@ Candidates must be different systems, not recolors:
 - each candidate names its visual thesis and one product-specific signature;
 - use the same real content fixture, state coverage, and viewport for every candidate;
 - use scoped styles so one candidate cannot leak into another.
+
+## Directions From Three Sources
+
+For `ui` and `web` at the `standard` and `full` tiers in brief mode, the candidate set is not the
+model's own idea of two to four styles. It is made from three sources, two cards each, using the
+library described in [design-direction-library.md](design-direction-library.md):
+
+1. **Best designer**: the designers who would do this best for this need, with what each is known for.
+2. **Same-medium real work**: real work of the same medium, found and captured with `composition
+   capture` (an existing browser tool, no Python). When the work cannot be captured the card says
+   `seen: false` with the reason; it never pretends to have seen it.
+3. **Style roulette**: two draws from the 84-style catalog by the current second `S`:
+   `S % sectionCount + 1` in the medium's section and `S % 12 + 1` in east. Print both with
+   `direction draw --medium <web|ppt|info|app> [--second S]`. The draw skips past styles the
+   [appearance ledger](#appearance-ledger) shows in the user's last three deliveries and records what
+   it skipped. A style under 70% fidelity says what degrades.
+
+If the owner named a style or brand, the flow is unchanged: all six cards interpret that context,
+the receipt records it as `context`, and the roulette draws only compatible styles (`--pool`,
+`--east-pool`).
+
+Each card carries six columns: logic and source, what is borrowed, hero, skeleton, boldness and the
+form taken from the content. They go in `direction-preview.json` `cards`, with the roulette's
+section, number, style, specimen path and fidelity in the card's `source`.
+
+Then build `direction-previews/thumbs.html`, six cells of about 480 by 300 (one `data-card-id` each),
+and capture it to `direction-previews/thumbs/screenshot.png`. Pick three cards and build them as full
+versions `direction-previews/dir-1.html` to `dir-3.html`, each with its `card`, a capture, and four
+recorded reasons: `alone` (good by itself), `distinct` (different from the other two), `ledger` (not
+colliding with the ledger) and `restraint` (not overdone; at most one version is marked `overdone`).
+
+`direction check --stage preview` checks all of it: six cards with required fields and evidence, the
+roulette arithmetic against the catalog, the thumbnail board and capture, exactly three versions
+with captures, the four-axis distinctness, the ledger, and the readability and contrast of each
+capture where a browser measured it. Every finding carries its fix. The owner is shown the three
+captures with their card summaries and the thumbnail board; the other three cards are alternates
+the owner may promote. `decide --by owner` keeps the exact words, the chosen ids and any mix
+(`--mix part=id`) as structured fields; an explicit taste statement (`--taste "<as said>"`) becomes a
+rule scoped as the owner said it.
+
+The `ui` standard and full flow opens with a playback that restates the need, audience, scene, tone
+and what the owner did not say, and ends with "I'll make several real directions for you to see".
+`quick`, replicate and the narrow-repair waiver keep their current behaviour.
+
+## Appearance Ledger
+
+`~/.design-pipeline/ledger.json` (override with `DESIGN_PIPELINE_LEDGER`) is user level and records
+appearance and reference sources only, never project content. An entry is the project hash, the date,
+the appearance (palette lightness and hues, fonts, layout skeleton, motion posture) and the sources
+(`designer:<name>`, `reference:<url>`, `style:<section>/NN`). Delivery writes it (ui `deliver` and
+review accept, web `deliver`); the direction stage reads the last three deliveries to keep the
+roulette and the three versions from repeating them. A failed or empty measurement records nothing
+and never blocks delivery.
 
 ## Preview Surface
 
@@ -104,7 +157,7 @@ selection. Do not begin production implementation from an unverified preview.
 - `changeId`;
 - `applicability.status` and `applicability.reason`;
 - `comparison.brief`, `comparison.index`, viewport, content-fixture hash, and shared state coverage;
-- two to four candidate records with axes and hash-bound screenshots;
+- two to four candidate records with axes and hash-bound screenshots; in the three-sources flow exactly three versions, plus `medium`, `context`, six `cards` and `thumbs`;
 - `decision.status`, `selectedDirectionId`, rationale, and for a selection `by` (`owner|agent`);
   an agent selection adds `agent` and `delegation` (`workflow-state` with `stateSha256`, verified
   with `direction check --project-root`, or `owner-instruction` with a quote of at least six words).

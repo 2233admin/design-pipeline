@@ -10,6 +10,7 @@ const test = require("node:test");
 const { checkDirectionPreview } = require("../skill/scripts/direction-preview-core.cjs");
 const { execute } = require("../skill/scripts/cli-core.cjs");
 const { pngBytes } = require("./helpers/reference-fixtures.cjs");
+const { isolate, writeDirectionSet } = require("./helpers/direction-fixture.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
@@ -21,62 +22,15 @@ function write(root, relative, content) {
   return { path: relative.replaceAll("\\", "/"), sha256: hash(content) };
 }
 
-function candidate(id, name, axes, screenshot) {
-  return {
-    id,
-    name,
-    thesis: `${name} visual thesis`,
-    signature: `${name} product signature`,
-    axes,
-    screenshot,
-  };
-}
+const directionEnv = isolate();
+test.after(directionEnv.restore);
 
 function requiredFixture(t) {
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), "direction-preview-"));
   const root = path.join(parent, "compare-settings");
   fs.mkdirSync(root);
   t.after(() => fs.rmSync(parent, { recursive: true, force: true }));
-
-  const brief = write(root, "brief.md", "# Settings redesign\n");
-  const html = Buffer.from(
-    '<!doctype html><main data-direction-preview><section data-direction-id="quiet"></section>'
-    + '<section data-direction-id="signal"></section><section data-direction-id="editorial"></section></main>',
-  );
-  const index = write(root, "direction-previews/index.html", html);
-  const screenshot = (id) => write(root, `direction-previews/${id}.png`, Buffer.concat([
-    pngBytes({ width: 1440, height: 900 }),
-    Buffer.from(id),
-  ]));
-  const directions = [
-    candidate("quiet", "Quiet Grid", {
-      luminance: "light", typeFamily: "serif", color: "monochrome", layout: "editorial",
-      density: "airy", era: "classic", material: "paper",
-    }, screenshot("quiet")),
-    candidate("signal", "Signal Console", {
-      luminance: "dark", typeFamily: "sans", color: "duotone", layout: "grid",
-      density: "dense", era: "futurist", material: "glass",
-    }, screenshot("signal")),
-    candidate("editorial", "Field Notes", {
-      luminance: "light", typeFamily: "monospace", color: "multicolor", layout: "asymmetric",
-      density: "balanced", era: "industrial", material: "flat",
-    }, screenshot("editorial")),
-  ];
-  const receipt = {
-    schema: "design-pipeline.direction-preview.v1",
-    changeId: "compare-settings",
-    applicability: { status: "required", reason: "visual-redesign" },
-    comparison: {
-      brief,
-      index,
-      viewport: { width: 1440, height: 900 },
-      contentFixtureSha256: hash("settings-real-copy-v1"),
-      stateCoverage: ["default", "validation-error"],
-    },
-    directions,
-    decision: { status: "pending", selectedDirectionId: null, rationale: null },
-  };
-  fs.writeFileSync(path.join(root, "direction-preview.json"), `${JSON.stringify(receipt, null, 2)}\n`);
+  const receipt = writeDirectionSet(root, { ids: ["quiet", "signal", "editorial"], names: { quiet: "Quiet Grid", signal: "Signal Console", editorial: "Field Notes" } });
   return { root, receipt };
 }
 
@@ -104,7 +58,7 @@ test("checks preview evidence before accepting a selected direction", (t) => {
 
 test("blocks screenshot drift and missing comparison stages", (t) => {
   const { root } = requiredFixture(t);
-  fs.appendFileSync(path.join(root, "direction-previews/quiet.png"), "changed");
+  fs.appendFileSync(path.join(root, "direction-previews/dir-1/screenshot.png"), "changed");
   const drift = checkDirectionPreview(root);
   assert.equal(drift.status, "blocked");
   assert.ok(drift.reasons.includes("direction-preview-hash-mismatch"));
@@ -113,7 +67,7 @@ test("blocks screenshot drift and missing comparison stages", (t) => {
   const html = Buffer.from('<main data-direction-preview><section data-direction-id="quiet"></section></main>');
   fs.writeFileSync(path.join(root, "direction-previews/index.html"), html);
   receipt.comparison.index.sha256 = hash(html);
-  receipt.directions[0].screenshot.sha256 = hash(fs.readFileSync(path.join(root, "direction-previews/quiet.png")));
+  receipt.directions[0].screenshot.sha256 = hash(fs.readFileSync(path.join(root, "direction-previews/dir-1/screenshot.png")));
   fs.writeFileSync(path.join(root, "direction-preview.json"), `${JSON.stringify(receipt, null, 2)}\n`);
   const missing = checkDirectionPreview(root);
   assert.equal(missing.status, "blocked");
@@ -122,7 +76,7 @@ test("blocks screenshot drift and missing comparison stages", (t) => {
 
 test("blocks malformed screenshots and viewport mismatches", (t) => {
   const { root, receipt } = requiredFixture(t);
-  const screenshot = path.join(root, "direction-previews/quiet.png");
+  const screenshot = path.join(root, "direction-previews/dir-1/screenshot.png");
   const signatureOnly = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   fs.writeFileSync(screenshot, signatureOnly);
   receipt.directions[0].screenshot.sha256 = hash(signatureOnly);
@@ -144,7 +98,11 @@ test("rejects recolors presented as distinct directions", (t) => {
     material: "glass",
   };
   fs.writeFileSync(path.join(root, "direction-preview.json"), `${JSON.stringify(receipt, null, 2)}\n`);
-  assert.throws(() => checkDirectionPreview(root), /differ on at least four axes/);
+  const collided = checkDirectionPreview(root);
+  assert.equal(collided.status, "blocked");
+  const finding = collided.findings.find((item) => item.code === "versions-collide");
+  assert.match(finding.message, /differ on/);
+  assert.match(finding.fix, /alternate card|skeleton/);
 });
 
 test("accepts an explicit supported waiver", (t) => {
@@ -175,6 +133,8 @@ test("publishes the CJK and preview contracts as package resources", () => {
     "references/cjk-typography.md",
     "references/direction-preview.md",
     "scripts/direction-preview-core.cjs",
+    "scripts/directions-core.cjs",
+    "scripts/appearance-ledger-core.cjs",
   ]) assert.ok(resources.required.includes(resource), resource);
 
   const pipeline = require("./helpers/skill-surface.cjs").readSkillSurface();

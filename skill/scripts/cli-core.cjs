@@ -25,6 +25,8 @@ const { checkReferenceEvidence, resolveReferenceSource } = require("./reference-
 const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
+const { MEDIA, draw: drawStyle, loadCatalog: loadStyleCatalog } = require("./directions-core.cjs");
+const { RECENT, ledgerPath, projectId: ledgerProjectId, recentEntries: recentLedgerEntries, recentSources: ledgerSources } = require("./appearance-ledger-core.cjs");
 const { checkPlayground } = require("./playground-core.cjs");
 const { buildRuntimeReview, inspectRuntimeReview, recordRuntimeReviewFeedback } = require("./runtime-review-core.cjs");
 const {
@@ -147,7 +149,7 @@ const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-repo
 
 const referencesRoot = path.resolve(__dirname, "../references");
 const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later"]);
-const REPEATABLE_OPTIONS = new Set(["--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
+const REPEATABLE_OPTIONS = new Set(["--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
@@ -159,7 +161,7 @@ const KNOWN_OPTIONS = new Set([
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
-  "--spec", "--stills", "--ffmpeg", "--ffprobe",
+  "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
 function parseArgs(argv) {
@@ -416,7 +418,7 @@ function publicHelp() {
     "  package --change-root <dir> --output <file>",
     "  route --query [--write --output]",
     "  change init|resume|advance|migrate|repair",
-    "  foundation check [--kind design|motion|all] | direction check | playground check | reference check|resolve | reconstruction check | scene check",
+    "  foundation check [--kind design|motion|all] | direction check | direction draw --medium web|ppt|info|app [--second 0-59] [--pool <numbers>] [--east-pool <numbers>]   (the roulette: S % count + 1 in the medium's section and S % 12 + 1 in east, past styles the ledger's last three deliveries used) | playground check | reference check|resolve | reconstruction check | scene check",
     "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400] [--study]   (decoded timed windows; observations pending; --study adds study.json with audio and cut-grid candidates)",
     "  project inspect [--project-root <dir>] [--scope <relative-dir>] [--query <brief>] [--write --output project-analysis.json]   (read-only source evidence)",
     "  runtime-review build --change-root <dir> --manifest <file> [--root <workspace>] [--json]",
@@ -450,7 +452,7 @@ function publicHelp() {
     "  film templates [--query <terms> | --template <id>] [--all]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate --director <model> --assisted-by <tool-and-model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
-    "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|extract|concept|components|description|section|sample|review|deliver --by owner|agent [--delegate <checkpoint> ...] [--keep <checkpoint> ...] [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>] [--tradeoff <text>] [--scope object|project] [--promote <from> ...] [--revision bytes|commitment] [--affects <ids>|all|none] [--ref <reference> ...]",
+    "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|extract|concept|components|description|section|sample|review|deliver --by owner|agent [--delegate <checkpoint> ...] [--keep <checkpoint> ...] [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>] [--tradeoff <text>] [--scope object|project] [--promote <from> ...] [--revision bytes|commitment] [--affects <ids>|all|none] [--ref <reference> ...] [--mix <part>=<id> ...] [--taste <the owner's taste statement> ...]",
     "    components requires --choice <project|github|index|discover|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer; discover lets the agent find open-source GitHub repositories and record each with a pinned revision and license evidence; on web, --verdict reject --answer records a decision-round correction as a rule bound to the result under review",
     "    --later [--until <ISO time with offset, e.g. 2026-10-16T09:00:00+08:00>] records that the owner will answer the current owner ask later (no other decide flag beside it): until then next returns blocked (kind owner, exit 2) with the deferred ask; it asks again after the time, when what is asked or the page it is about changes, when another ask is current, or once the owner's answer is recorded",
     "    --page-review <file> records the block the owner submitted on evidence/review.html as their verdict (stage, choice, verdict, words and references come from the block; only --evidence, --scope and --promote may go beside it); refused unless it was given on the current page and capture for the current ask; the block is kept under evidence/page-review/",
@@ -707,6 +709,33 @@ function directionCommand(parsed, root) {
     projectRoot: option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : undefined,
   });
   return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
+// The roulette draw, so the second-to-style arithmetic and the ledger skip are not done by hand.
+function directionDrawCommand(parsed) {
+  const catalog = loadStyleCatalog();
+  if (!catalog) fail("direction", "the design direction library is not installed, so there is no catalog to draw from. Fix: install it (references/design-direction-library.md)", { code: "TOOL_MISSING" });
+  const medium = option(parsed, "--medium");
+  if (!MEDIA.includes(medium)) fail("direction", `--medium must be one of ${MEDIA.join(", ")}: the brief's output form`, { code: "OPTION_REQUIRED" });
+  const second = option(parsed, "--second") === null ? new Date().getSeconds() : Number(option(parsed, "--second"));
+  if (!Number.isInteger(second) || second < 0 || second > 59) fail("direction", "--second must be an integer from 0 to 59");
+  const pool = (name) => {
+    const value = option(parsed, name);
+    if (value === null) return undefined;
+    const numbers = String(value).split(",").map((item) => Number(item.trim()));
+    if (!numbers.length || numbers.some((number) => !Number.isInteger(number) || number < 1)) fail("direction", `${name} is a comma-separated list of catalog numbers`);
+    return numbers;
+  };
+  // The project's own earlier delivery is not a repeat to avoid, as in `direction check`.
+  const own = option(parsed, "--root") ? ledgerProjectId(option(parsed, "--root")) : null;
+  const avoid = ledgerSources(recentLedgerEntries(RECENT).filter((entry) => entry.project !== own));
+  let draws;
+  try {
+    draws = [drawStyle(catalog, medium, second, { pool: pool("--pool"), avoid }), drawStyle(catalog, "east", second, { pool: pool("--east-pool"), avoid })];
+  } catch (error) {
+    fail("direction", `${error.message}. Fix: list catalog numbers of that section in --pool / --east-pool`);
+  }
+  return { result: { status: "drawn", second, draws, ledger: ledgerPath() }, exitCode: 0 };
 }
 
 function playgroundCommand(parsed, root) {
@@ -2293,7 +2322,7 @@ const COMMANDS = {
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
   adaptation: { run: ({ parsed, root, action }) => adaptationCommand(parsed, root, action) },
   foundation: { actions: { check: { run: ({ parsed, root }) => foundationCommand(parsed, root) } } },
-  direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) } } },
+  direction: { actions: { check: { run: ({ parsed, root }) => directionCommand(parsed, root) }, draw: { run: ({ parsed }) => directionDrawCommand(parsed) } } },
   playground: { actions: { check: { run: ({ parsed, root }) => playgroundCommand(parsed, root) } } },
   "runtime-review": {
     actions: {
@@ -2518,7 +2547,7 @@ const COMMANDS = {
         const { pageReviewOptions } = require("./workflows/page-review.cjs");
         return { result: workflow.decide(project, { ...pageReviewOptions(project, option(parsed, "--page-review")), evidence: optionList(parsed, "--evidence"), scope: option(parsed, "--scope"), promote: optionList(parsed, "--promote") }), exitCode: 0 };
       }
-      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), evidence: optionList(parsed, "--evidence"), antiGoals: optionList(parsed, "--anti-goal"), by: option(parsed, "--by"), delegate: optionList(parsed, "--delegate"), keep: optionList(parsed, "--keep"), tradeoff: option(parsed, "--tradeoff"), scope: option(parsed, "--scope"), promote: optionList(parsed, "--promote"), revision: option(parsed, "--revision"), affects: option(parsed, "--affects"), ref: optionList(parsed, "--ref") }), exitCode: 0 };
+      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), evidence: optionList(parsed, "--evidence"), antiGoals: optionList(parsed, "--anti-goal"), by: option(parsed, "--by"), delegate: optionList(parsed, "--delegate"), keep: optionList(parsed, "--keep"), tradeoff: option(parsed, "--tradeoff"), scope: option(parsed, "--scope"), promote: optionList(parsed, "--promote"), revision: option(parsed, "--revision"), affects: option(parsed, "--affects"), ref: optionList(parsed, "--ref"), mix: optionList(parsed, "--mix"), taste: optionList(parsed, "--taste") }), exitCode: 0 };
     },
   },
   diligence: {

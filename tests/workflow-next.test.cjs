@@ -14,7 +14,7 @@ const { analyzeVideo } = require("../skill/scripts/reference-video-core.cjs");
 const { stages: webStages } = require("../skill/scripts/workflows/web.cjs");
 const { validateShape } = require("../skill/scripts/runtime-review-core.cjs");
 const { extractReplicate } = require("./helpers/replicate-flow.cjs");
-const { PLAYBACK, SECTIONS, STATED, acceptSections, approveDescription, confirmPlayback, pickVariant, statedSkip, toBuild, toComponents, variantsPage, writeDescription, writeVariants } = require("./helpers/web-flow.cjs");
+const { PLAYBACK, SECTIONS, STATED, acceptSections, approveDescription, confirmPlayback, pickVariant, statedSkip, toBuild, toComponents, writeDescription, writeVariants } = require("./helpers/web-flow.cjs");
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "workflow-"));
 const cli = path.join(__dirname, "../skill/scripts/designer-pipeline.cjs");
@@ -1363,6 +1363,7 @@ test("ui uses OpenSpec only at the full tier", () => {
   const full = tmp();
   initState(full, { deliverable: "ui", tier: "full" });
   decide(full, { by: "owner", stage: "intake", answer: "default" });
+  decide(full, { by: "owner", stage: "intake", verdict: "accept", answer: "Need: a settings page.\nAudience: admins.\nScene: desktop.\nTone: calm.\nUnstated: nothing risky.\nI'll make several real directions for you to see." });
   fs.writeFileSync(path.join(full, "direction-preview.json"), JSON.stringify({ schema: "design-pipeline.direction-preview.v1", changeId: path.basename(full), applicability: { status: "waived", reason: "established-surface" }, comparison: null, directions: [], decision: { status: "waived", selectedDirectionId: null, rationale: "The surface already has its direction." } }));
   decide(full, { by: "owner", stage: "concept", choice: "waived", answer: "Keep the existing look" });
   assert.match(nextAction(full).instruction, /OpenSpec change/);
@@ -2004,7 +2005,7 @@ test("a rejected web draft returns to build until the page changes, then probe",
   assert.equal(nextAction(dir).stage, "probe", "the repaired page is probed again");
 });
 
-test("web concepts asks for a switchable variants page and a treatment before the choice", () => {
+test("web concepts makes six cards, a thumbnail board and three full versions before the choice", () => {
   const dir = tmp();
   try {
     initState(dir, { deliverable: "web", tier: "standard" });
@@ -2013,27 +2014,16 @@ test("web concepts asks for a switchable variants page and a treatment before th
     const write = nextAction(dir);
     assert.equal(write.stage, "concepts");
     assert.equal(write.type, "run");
-    assert.match(write.instruction, /concepts\.html/);
-    assert.match(write.instruction, /\?variant=/);
-    assert.match(write.instruction, /switcher/);
-    assert.match(write.instruction, /section/i);
-    assert.match(write.instruction, /## Treatment/);
-    assert.doesNotMatch(write.instruction, /between beats|the picture/i);
-    touch(dir, "concepts.md");
-    assert.equal(nextAction(dir).type, "run", "concepts.md alone is not the variants page");
-    const findings = () => {
-      const action = nextAction(dir);
-      assert.equal(action.type, "run");
-      return action.findings.map(item => item.code);
-    };
-    touch(dir, "concepts.html", '<section data-variant="A"></section><section data-variant="B"></section><section data-variant="C"></section>');
-    assert.deepEqual(findings(), ["variant-switcher-missing"], "the owner flips between the variants with the switcher");
-    touch(dir, "concepts.html", variantsPage(["A", "B"]));
-    assert.deepEqual(findings(), ["variants-incomplete"], "all three first screens are on the page");
-    touch(dir, "concepts.html", variantsPage());
+    assert.match(write.instruction, /direction draw/);
+    assert.match(write.instruction, /thumbs\.html/);
+    assert.match(write.instruction, /dir-1\.html/);
+    assert.doesNotMatch(write.instruction, /concepts\.html|switcher/);
+    writeVariants(dir);
     const choose = nextAction(dir);
     assert.equal(choose.type, "ask");
-    assert.ok(choose.show.includes(path.join(dir, "concepts.html")), "the owner opens the variants page");
+    assert.deepEqual(choose.directions.map(item => item.id), ["a", "b", "c"]);
+    assert.ok(choose.show.includes(path.join(dir, "direction-previews", "thumbs", "screenshot.png")), "the owner sees the thumbnail board");
+    assert.match(choose.record, /--choice <a\|b\|c/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -2949,7 +2939,7 @@ test("records carry who decided, agent records name the agent, and returned comm
   confirmPlayback(root);
   decide(root, { by: "agent", stage: "reference", answer: "none" });
   writeVariants(root);
-  decide(root, { by: "agent", stage: "concept", choice: "B" });
+  decide(root, { by: "agent", stage: "concept", choice: "B", answer: "B fits the brief best" });
   const state = readState(root);
   assert.equal(state.decisions.variants.at(-1).by, "agent");
   assert.equal(state.decisions.variants.at(-1).agent, "art-model", "a directed pick names the art director");
@@ -3155,13 +3145,14 @@ test("a kept section is asked, an art director keeps the routed ask, and a deleg
   const concepts = nextAction(picked);
   assert.equal(concepts.type, "ask", "a delegated concept pick keeps its ask");
   assert.match(concepts.record, / --by agent --stage concept /);
-  decide(picked, { by: "agent", stage: "concept", choice: "B" });
+  decide(picked, { by: "agent", stage: "concept", choice: "B", answer: "B fits the brief best" });
   assert.equal(nextAction(picked).stage, "components");
 });
 
 test("a section with build findings is not a self-check and cannot be accepted", t => {
   const root = approved(t, ["first-screen"]);
-  buildPage(root, ["first-screen"], '<div data-variant="A"></div>\n');
+  buildPage(root, ["first-screen"]);
+  fs.writeFileSync(path.join(root, "component-manifest.json"), "{");
   const run = nextAction(root);
   assert.equal(run.type, "run");
   assert.equal(run.section, "first-screen");
@@ -4146,7 +4137,7 @@ test("there is no catch-up before the owner's first recorded answer", t => {
   assert.equal(intake.away, undefined);
 });
 
-test("a deferred variants pick wakes when the variants page it shows changes, and --until needs --later", t => {
+test("a deferred direction pick wakes when the board it shows changes, and --until needs --later", t => {
   const root = webProject(t);
   confirmPlayback(root);
   decide(root, { by: "owner", stage: "reference", answer: "none" });
@@ -4154,8 +4145,8 @@ test("a deferred variants pick wakes when the variants page it shows changes, an
   assert.equal(nextAction(root).stage, "concepts");
   assert.equal(laterCli(root).status, 0);
   assert.equal(nextAction(root).type, "blocked");
-  fs.appendFileSync(path.join(root, "concepts.html"), "<!-- a redone variant -->\n");
-  assert.equal(nextAction(root).type, "ask", "the page the pick is about changed");
+  require("./helpers/direction-fixture.cjs").writeDirectionSet(root, { ids: ["a", "b", "c"], second: 38 });
+  assert.equal(nextAction(root).type, "ask", "the board the pick is about changed");
   const before = snapshot(root);
   const result = runCli("decide", "--root", root, "--project-root", root, "--by", "owner", "--stage", "concept", "--choice", "A", "--until", inAnHour());
   assert.equal(result.status, 1, result.text);
