@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Contributing guide
-    url: https://github.com/2233admin/design-pipeline/blob/main/CONTRIBUTING.md
+    url: https://github.com/2233admin/design-pipeline/blob/main/.github/CONTRIBUTING.md
     about: Record a local dpf-* draft with record-feedback.cjs before filing. Do not paste private paths or credentials.
   - name: Public CLI help
     url: https://github.com/2233admin/design-pipeline/blob/main/README.md

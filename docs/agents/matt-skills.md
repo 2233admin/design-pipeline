@@ -17,7 +17,7 @@ v1.3 把 `implement-spec`、`pr`、`retro` 纳入正式工程技能，统一 `GL
 | 配置 | 本仓库选择 |
 | --- | --- |
 | Agent 入口 | `AGENTS.md`，按主机策略选用 |
-| 执行任务 | [Multica 与授权边界](issue-tracker.md) |
+| 执行任务 | [GitHub issue 与 PR](issue-tracker.md) |
 | 分类与分诊 | [现有角色映射](triage-labels.md) |
 | 领域布局 | 一个产品领域；私有维护 workspaces 不构成多个领域 |
 | 术语 | [docs/GLOSSARY.md](../GLOSSARY.md) |
@@ -25,7 +25,7 @@ v1.3 把 `implement-spec`、`pr`、`retro` 纳入正式工程技能，统一 `GL
 
 本仓库没有根目录 `CONTEXT.md`；迁移的是已有 `docs/glossary.md`。不要另建根目录 `GLOSSARY.md`。上游技能使用默认文件名时应遵循 [domain 配置](domain.md) 指向的实际路径。历史变更中的旧名保留用于追溯。
 
-当前 setup 新增的 GitHub/GitLab 标签创建规则不适用于本仓库的 Multica 配置。重跑 setup 只用于用户选择更换配置时，更新现有段落并保留周围内容。
+本仓库用 GitHub 已有的标签（见[分诊角色](triage-labels.md)），setup 不再另建标签。重跑 setup 只用于用户选择更换配置时，更新现有段落并保留周围内容。
 
 ## 同名和旧版的区别
 

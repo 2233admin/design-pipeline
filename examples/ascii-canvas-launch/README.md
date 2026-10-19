@@ -8,7 +8,7 @@ reference materials and finished imagery. Features are grounded in SeedControlle
 README and domain context. The interface is an illustrative composition, not a screen recording.
 
 ```sh
-node experiments/ascii-canvas-launch/server.cjs
+node examples/ascii-canvas-launch/server.cjs
 ```
 
 Open http://127.0.0.1:4174. Pause, drag the timeline, or choose a chapter. Space toggles playback

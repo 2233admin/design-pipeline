@@ -7,7 +7,7 @@
   "assets": [
     {
       "sourceUrl": "https://stencil.so/fonts/InstrumentSans.woff2",
-      "destination": "D:/projects/design-pipeline/experiments/prewalk-pipeline/assets/vendor/0-InstrumentSans.woff2",
+      "destination": "D:/projects/design-pipeline/examples/prewalk-pipeline/assets/vendor/0-InstrumentSans.woff2",
       "type": "stylesheet-dependency",
       "bytes": 30092,
       "sha256": "2ee17598a98d8a59e4df8152d015bec9ab8e4d5672cc0ab42bef806b568e3971",
@@ -15,7 +15,7 @@
     },
     {
       "sourceUrl": "https://stencil.so/fonts/Inter.woff2",
-      "destination": "D:/projects/design-pipeline/experiments/prewalk-pipeline/assets/vendor/1-Inter.woff2",
+      "destination": "D:/projects/design-pipeline/examples/prewalk-pipeline/assets/vendor/1-Inter.woff2",
       "type": "stylesheet-dependency",
       "bytes": 55488,
       "sha256": "71d03efd642950bca9d4591e463f46b4c3d17fe08925a93245b316b7931b1db8",
@@ -23,7 +23,7 @@
     },
     {
       "sourceUrl": "https://stencil.so/fonts/BerkeleyMono-Regular.woff2",
-      "destination": "D:/projects/design-pipeline/experiments/prewalk-pipeline/assets/vendor/2-BerkeleyMono-Regular.woff2",
+      "destination": "D:/projects/design-pipeline/examples/prewalk-pipeline/assets/vendor/2-BerkeleyMono-Regular.woff2",
       "type": "stylesheet-dependency",
       "bytes": 32824,
       "sha256": "883cd3ca82d0fb8251f3e1d78c6eebc311fa88231f22d43e19945c3fb6844115",
@@ -31,7 +31,7 @@
     },
     {
       "sourceUrl": "https://stencil.so/fonts/BerkeleyMono-Medium.woff2",
-      "destination": "D:/projects/design-pipeline/experiments/prewalk-pipeline/assets/vendor/3-BerkeleyMono-Medium.woff2",
+      "destination": "D:/projects/design-pipeline/examples/prewalk-pipeline/assets/vendor/3-BerkeleyMono-Medium.woff2",
       "type": "stylesheet-dependency",
       "bytes": 33496,
       "sha256": "3d889002a0a079ceaa6a88b06f3e50fb2c2c8cd51ddbf5bece5626361d1dd760",
@@ -39,7 +39,7 @@
     },
     {
       "sourceUrl": "https://stencil.so/fonts/Twemoji.woff2",
-      "destination": "D:/projects/design-pipeline/experiments/prewalk-pipeline/assets/vendor/4-Twemoji.woff2",
+      "destination": "D:/projects/design-pipeline/examples/prewalk-pipeline/assets/vendor/4-Twemoji.woff2",
       "type": "stylesheet-dependency",
       "bytes": 3392,
       "sha256": "f9d4e13d59af9aaf3a35881eeeed4f98b97d78dff7e5e9577aca56195d3fbb90",
@@ -55,7 +55,7 @@
     },
     {
       "sourceUrl": "https://stencil.so/_build/assets/dither-limb-BeAgeYtb.png",
-      "destination": "D:/projects/design-pipeline/experiments/prewalk-pipeline/assets/vendor/0-dither-limb-BeAgeYtb.png",
+      "destination": "D:/projects/design-pipeline/examples/prewalk-pipeline/assets/vendor/0-dither-limb-BeAgeYtb.png",
       "type": "stylesheet-dependency",
       "bytes": 23621,
       "sha256": "46078ae0ec2793bb1de089ab57cf4360a7cc48cb8f63070263ecb490241d1c6a",
@@ -71,7 +71,7 @@
     },
     {
       "sourceUrl": "https://stencil.so/authors/can.webp",
-      "destination": "D:/projects/design-pipeline/experiments/prewalk-pipeline/assets/can.webp",
+      "destination": "D:/projects/design-pipeline/examples/prewalk-pipeline/assets/can.webp",
       "type": "author-image",
       "bytes": 1970,
       "sha256": "eca947a7bdccbdf3ed66618b5cbd86a95b1f862bdca4e25d5c96ddf6c02c1130",
@@ -79,7 +79,7 @@
     },
     {
       "sourceUrl": "https://stencil.so/og/prewalk.png",
-      "destination": "D:/projects/design-pipeline/experiments/prewalk-pipeline/assets/og-prewalk.png",
+      "destination": "D:/projects/design-pipeline/examples/prewalk-pipeline/assets/og-prewalk.png",
       "type": "share-preview-image",
       "bytes": 49333,
       "sha256": "035332cf97fc04094463a7b14f746a63f019d2224ec40b2093b6738d0a173a61",

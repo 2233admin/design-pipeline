@@ -6,7 +6,7 @@ scroll-revealed poster with mouse-responsive depth. No build or dependency insta
 Open `index.html` in a browser, or run:
 
 ```sh
-node experiments/motion-showcase/server.cjs
+node examples/motion-showcase/server.cjs
 ```
 
 Then visit http://127.0.0.1:4173. The preview server binds only to loopback.

@@ -709,7 +709,7 @@ manifest 哈希伪造更新。当前运行时固定 GSAP 3.15.0、HyperFrames 0.
 pixelmatch 已升级到 8.0.0，新比较报告记录版本、OKLab/HyAB 算法与实际选项；旧数值与新算法之间
 需重新校准，旧黄金 HTML 和视频不因工具链刷新而重写或重新审批。命令清单以根
 `package.json` 为准；OpenSpec CLI 也由 workspace 固定，通过 `npm exec -- openspec ...` 调用。
-完整维护流程见 [贡献指南](CONTRIBUTING.md)。
+完整维护流程见 [贡献指南](.github/CONTRIBUTING.md)。
 
 ## 反馈和贡献
 
