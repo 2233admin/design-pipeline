@@ -14,20 +14,14 @@ from the library; do not treat it as a required step.
 
 ## Where it is
 
-The bundle lives under `vendor/` in the package, in the folder whose `manifest.json` has
-`"bundle": "design-direction-library"`. Do not construct the path; ask the doctor:
+The shipped tree is `vendor/design-direction-library/upstream/` in the skill (from this guide:
+`../vendor/design-direction-library/upstream/`); `manifest.json` beside it records every file with
+its Git blob id, size and SHA-256 and lists the 84 specimens (`specimens[]`: `id`, `family`,
+`title`, `path`, `preview`). Binaries live in the cache after the fetch below;
+`designer-pipeline doctor --json` reports both roots as `directionLibrary.shipped.root` and
+`directionLibrary.fetched.root`. Paths in the tables are relative to those roots.
 
-```bash
-designer-pipeline doctor --json
-```
-
-`directionLibrary.shipped.root` is the tree that ships in the package (text, HTML, inert scripts).
-`directionLibrary.fetched.root` is the cache directory for the binaries, which exists only after
-the fetch below. Paths in this guide are relative to those two roots. `manifest.json`, beside the
-shipped root, records every file with its Git blob id, size and SHA-256, and lists the 84
-specimens (`specimens[]`: `id`, `family`, `title`, `path`, `preview`).
-
-## Shipped with the package (relative to the shipped root)
+## Shipped with the package (relative to `vendor/design-direction-library/upstream/`)
 
 | Path | What it is |
 | --- | --- |

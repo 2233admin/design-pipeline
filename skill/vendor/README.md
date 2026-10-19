@@ -27,6 +27,7 @@ links: an upstream link to `SKILL.md` means the `UPSTREAM-SKILL.md` in the same 
 | `shadcn/` | [shadcn/ui component workflow](../references/ui-craft-sources.md#shadcn) | `manifest.json`, scoped snapshot hash |
 | `playwright-cli/` | [Exploratory browser driving](../references/ui-craft-sources.md#playwright-cli) | `manifest.json`, scoped snapshot hash |
 | `taste-skill/` | [Visual direction and interface recipes](../references/taste-skill.md) | `manifest.json`, source Git tree and snapshot hashes |
+| `design-direction-library/` | [Style specimens, directions, brand protocol, critique](../references/design-direction-library.md) | `manifest.json`, pinned Git tree; binaries fetched by `sources fetch --bundle design-direction-library` |
 | `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
 | `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `product-film-skill/` | [Product film methods](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |

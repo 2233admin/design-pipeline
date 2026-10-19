@@ -16,7 +16,7 @@ const path = require("node:path");
 const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const { copyTrackedFiles, fail, inspectCheckout } = require("./git-tree-snapshot.cjs");
 
-const destination = path.resolve(__dirname, "../skill/vendor/huashu-design");
+const destination = path.resolve(__dirname, "../skill/vendor/design-direction-library");
 const repository = "https://github.com/alchaincyf/huashu-design";
 const copyright = "Copyright (c) 2026 alchaincyf (花叔 · 花生)";
 const reviewed = {

@@ -31,12 +31,12 @@ function repository(t, files) {
 }
 
 test("the name is allowed inside its vendored folder, the notices and the importer only", (t) => {
-  assert.equal(allowedFolder, `skill/vendor/${name}-design/`);
+  assert.equal(allowedFolder, "skill/vendor/design-direction-library/");
   assert.deepEqual([...allowedFiles].sort(), ["THIRD_PARTY_NOTICES.md", "scripts/import-design-direction-library.cjs"]);
   const dir = repository(t, {
-    [`skill/vendor/${name}-design/manifest.json`]: `{"source":"${name}-design"}\n`,
-    [`skill/vendor/${name}-design/upstream/${name}.md`]: `${name}\n`,
-    [`skill/vendor/${name}-design/upstream/${spaced} notes.md`]: `${underscored}\n`,
+    ["skill/vendor/design-direction-library/manifest.json"]: `{"source":"${name}-design"}\n`,
+    [`skill/vendor/design-direction-library/upstream/${name}.md`]: `${name}\n`,
+    [`skill/vendor/design-direction-library/upstream/${spaced} notes.md`]: `${underscored}\n`,
     "THIRD_PARTY_NOTICES.md": `${name}-design\n`,
     "scripts/import-design-direction-library.cjs": `"https://github.com/x/${name}-design"\n`,
     "skill/SKILL.md": "neutral\n",
@@ -54,7 +54,8 @@ test("every other tracked path or content still fails, including look-alike loca
     "tests/other.test.cjs": `${underscored}\n`,
     "scripts/import-other.cjs": `${name}\n`,
     "scripts/import-design-direction-library.cjs.bak": `${name}\n`,
-    [`skill/vendor/${name}-designs/x.md`]: "clean\n",
+    [`skill/vendor/${name}-design/x.md`]: "clean\n",
+    ["skill/vendor/design-direction-library-extra/x.md"]: `${name}\n`,
     [`skill/vendor/${name}-design.md`]: "clean\n",
     [`skill/vendor/other/${name}-design/x.md`]: "clean\n",
     [`docs/${name}-notes.md`]: "clean\n",
@@ -70,8 +71,9 @@ test("every other tracked path or content still fails, including look-alike loca
 
 test("a repository with no match passes, and the rule lives in the shared checker used by QA", (t) => {
   assert.deepEqual(formerNameHits(repository(t, { "README.md": "plain\n" })), { ok: true, hits: [] });
-  assert.equal(isAllowed(`skill/vendor/${name}-design/upstream/x`), true);
-  assert.equal(isAllowed(`skill/vendor/${name}-design`), false);
+  assert.equal(isAllowed("skill/vendor/design-direction-library/upstream/x"), true);
+  assert.equal(isAllowed("skill/vendor/design-direction-library"), false);
+  assert.equal(isAllowed(`skill/vendor/${name}-design/upstream/x`), false);
   assert.equal(isAllowed("skill/SKILL.md"), false);
   const qa = fs.readFileSync(path.join(repoRoot, "scripts/qa.cjs"), "utf8");
   assert.match(qa, /require\("\.\/reference-name-scope\.cjs"\)/);

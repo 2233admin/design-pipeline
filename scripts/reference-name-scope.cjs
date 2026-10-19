@@ -11,7 +11,7 @@ const { spawnSync } = require("node:child_process");
 const upstream = ["hua", "shu"].join("");
 const pathPattern = new RegExp(`${upstream.slice(0, 3)}[\\s_.-]*${upstream.slice(3)}`, "i");
 const contentPattern = `${upstream.slice(0, 3)}[[:space:]_.-]*${upstream.slice(3)}`;
-const allowedFolder = `skill/vendor/${upstream}-design/`;
+const allowedFolder = "skill/vendor/design-direction-library/";
 const allowedFiles = new Set(["THIRD_PARTY_NOTICES.md", "scripts/import-design-direction-library.cjs"]);
 
 const isAllowed = (file) => file.startsWith(allowedFolder) || allowedFiles.has(file);
