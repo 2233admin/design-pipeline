@@ -313,3 +313,71 @@ test("both native Three.js routes probe only the pinned target runtime without i
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("React with SVG/D3 resolves ready and probes only the pinned target d3 without invoking its server", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "toolchain-d3-"));
+  const local = path.join(root, "node_modules/d3");
+  fs.mkdirSync(path.join(local, "src"), { recursive: true });
+  const installed = { name: "d3", version: "7.9.0", type: "module", main: "src/index.js", exports: { umd: "./dist/d3.min.js", default: "./src/index.js" } };
+  const pkg = { type: "module", dependencies: { d3: "7.9.0" }, scripts: { dev: "node -e \"throw new Error('probe must not start the server')\"" } };
+  const write = (name, value) => fs.writeFileSync(path.join(root, name), JSON.stringify(value));
+  const entry = (source) => fs.writeFileSync(path.join(local, "src/index.js"), source);
+  const brief = "Build a React analytics dashboard with D3 SVG charts";
+  const jobPlan = buildJobPlan(routeJob({ query: brief }));
+  try {
+    const plan = resolveToolchain(request({
+      brief, framework: "react", requested: { styling: "none", uiLibrary: "none" },
+      graphics: { adapter: "svg-d3" },
+    }), sources, { jobPlan });
+    assert.equal(plan.status, "ready");
+    assert.deepEqual(plan.blockers, []);
+    assert.equal(plan.graphics.id, "svg-d3");
+    assert.equal(plan.graphics.guide, "references/graphics-runtime-routing.md#svg-d3-project-lifecycle");
+    assert.deepEqual(plan.probes.find(({ toolId }) => toolId === "svg-d3").command.slice(0, 2), ["node", "-e"]);
+    assert.deepEqual(plan.invocations.find(({ toolId }) => toolId === "svg-d3").command, ["npm", "run", "dev"]);
+    assert.deepEqual(plan.verification.find(({ toolId }) => toolId === "svg-d3").evidenceTypes, ["dom", "screenshot", "accessibility"]);
+
+    const missing = probeToolchain(plan, { projectRoot: root });
+    assert.equal(missing.status, "blocked");
+    assert.match(missing.blockers[0], /^svg-d3: Cannot read the target project package\.json/);
+
+    write("package.json", pkg);
+    const withoutPackage = probeToolchain(plan, { projectRoot: root });
+    assert.equal(withoutPackage.status, "blocked");
+    assert.match(withoutPackage.blockers[0], /^svg-d3: Cannot resolve the d3 package of the target project at node_modules\/d3/);
+
+    write("node_modules/d3/package.json", installed);
+    entry("export function select() {}\n");
+    const before = fs.readFileSync(path.join(root, "package.json"), "utf8");
+    const result = probeToolchain(plan, { projectRoot: root });
+    assert.deepEqual(result.blockers, []);
+    assert.equal(result.status, "ready");
+    assert.equal(result.results.find(({ toolId }) => toolId === "svg-d3").version, "d3=7.9.0");
+    assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), before);
+    for (const [target, cause] of [
+      [{ ...pkg, dependencies: {} }, /exact d3 version/],
+      [{ ...pkg, dependencies: { d3: "^7.9.0" } }, /exact d3 version/],
+      [{ ...pkg, dependencies: { d3: "7.8.5" } }, /d3 version mismatch: declared 7\.8\.5, installed 7\.9\.0/],
+      [{ ...pkg, scripts: {} }, /scripts\.dev/],
+      [{ ...pkg, scripts: { dev: "  " } }, /scripts\.dev/],
+    ]) {
+      write("package.json", target);
+      const failed = probeToolchain(plan, { projectRoot: root });
+      assert.equal(failed.status, "blocked");
+      assert.match(failed.blockers[0], cause);
+      assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), JSON.stringify(target));
+    }
+    write("package.json", { devDependencies: pkg.dependencies, scripts: pkg.scripts });
+    assert.equal(probeToolchain(plan, { projectRoot: root }).status, "ready");
+    entry("export const scaleLinear = () => {};\n");
+    assert.match(probeToolchain(plan, { projectRoot: root }).blockers[0], /does not export select/);
+    entry("throw new Error('local package import failed');\n");
+    assert.match(probeToolchain(plan, { projectRoot: root }).blockers[0], /local package import failed/);
+    write("node_modules/d3/package.json", { ...installed, name: "not-d3" });
+    assert.equal(probeToolchain(plan, { projectRoot: root }).status, "blocked");
+  } finally {
+    const relative = path.relative(fs.realpathSync(os.tmpdir()), fs.realpathSync(root));
+    assert.ok(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

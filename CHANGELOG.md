@@ -101,6 +101,20 @@ All notable changes to Design Pipeline are documented here.
   `.agents/skills` installations by default, while preserving legacy Codex roots and exclusive
   explicit root overrides (change `fix-standard-skills-install-discovery`).
 
+- `toolchain resolve` no longer blocks every React + D3 project with
+  `svg-d3 has no probe/plan/invoke/verify lifecycle`. `svg-d3` now has the project-owned lifecycle
+  Three.js uses: the probe requires an exact `d3` pin matching `node_modules/d3`, a nonempty
+  `scripts.dev` and an importable local package exporting `select`, and stays blocked with the
+  concrete cause otherwise; it never installs or starts the server. The plan invokes `npm run dev`
+  and lists DOM, screenshot and accessibility evidence (change `fix-svg-d3-lifecycle`).
+- The UI craft audit now checks positioned host-descendant paint over in-flow generated text on
+  its own fill, not only absolutely positioned text. Covered text is `indeterminate`; uncovered
+  controls remain measurable (change `fix-generated-text-descendant-occlusion`).
+- The film structure-cut detector now enforces both strict correlation bounds for `r² < 0.5`,
+  rejecting preserved contrast inversions and exact-boundary correlations. The tracking HUD
+  alignment followup explicitly keeps camera-stage marker/glyph acceptance separate from reported
+  LED/full-lens centroid shifts, while retaining full-lens determinism checks
+  (change `fix-film-alignment-and-correlation-contracts`).
 - The UI craft audit no longer passes generated text under other paint, a link standing alone
   after a `<br>` or block box, or a target widened by an over-constrained `::before` or `::after`
   (change `fix-audit-coderabbit-limits`). Generated text on its own fill is checked for paint over

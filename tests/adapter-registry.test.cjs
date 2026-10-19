@@ -18,6 +18,9 @@ test("adapter registry is authoritative for support, provenance, license, securi
   const xy = registry.adapters.find((adapter) => adapter.id === "reflex-xy");
   assert.deepEqual(Object.keys(xy.lifecycle), ["probe", "plan", "invoke", "verify"]);
   assert.equal(xy.lifecycle.verify.receiptSchema, "design-pipeline.toolchain-receipt.v1");
+  const d3 = registry.adapters.find((adapter) => adapter.id === "svg-d3");
+  assert.deepEqual(Object.keys(d3.lifecycle || {}), ["probe", "plan", "invoke", "verify"]);
+  assert.deepEqual(d3.lifecycle.verify.evidenceTypes, d3.evidenceTypes);
 });
 
 test("catalog route drift and duplicated ids fail", () => {
