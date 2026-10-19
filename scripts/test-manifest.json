@@ -25,7 +25,6 @@
     "component-first-boundaries.test.cjs",
     "component-first-gates.test.cjs",
     "component-first.test.cjs",
-    "component-first-v2.test.cjs",
     "design-skill-layer.test.cjs",
     "component-source-routing.test.cjs",
     "component-source-completeness.test.cjs",

@@ -10,6 +10,6 @@
     "status": { "const": "ready-for-explicit-target-write" },
     "targetWrite": { "const": "blocked-until-explicit-executor" },
     "selectionReceiptHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "promotionReceipt": { "$ref": "component-first-artifact-v2.schema.json#/$defs/promotion" }
+    "promotionReceipt": { "$ref": "component-first-gate.schema.json#/$defs/promotion" }
   }
 }

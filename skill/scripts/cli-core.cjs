@@ -27,13 +27,13 @@ const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
 const { checkPlayground } = require("./playground-core.cjs");
 const { buildRuntimeReview, inspectRuntimeReview, recordRuntimeReviewFeedback } = require("./runtime-review-core.cjs");
-const { checkComponentFirstGate, checkComponentFirstStage } = require("./component-first-core.cjs");
 const {
-  checkV2Artifact,
-  migrateV1ToV2,
+  checkComponentFirstGate,
+  checkComponentFirstStage,
   promotionReceipt,
   selectionReceipt,
-} = require("./component-first-v2-core.cjs");
+  verifyComponentFirstArtifact,
+} = require("./component-first-core.cjs");
 const {
   manifests: designSkillManifests,
   promotePrototype,
@@ -411,9 +411,7 @@ function publicHelp() {
     "  runtime-review record --change-root <dir> --artifact <review.json> --observation <feedback.json> [--root <workspace>] [--json]",
     "    file flags are change-relative; captured review is not live verification; record is not resolved",
     "    --help/-h shows public help; built/matched/recorded exit 0, stale/blocked exit 2",
-    "  component-first check|stack|components|playground|page",
-    "  high-fidelity check",
-    "  component-first-v2 check|migrate|select|promote",
+    "  component-first check|stack|components|playground|page|verify|select|promote",
     "  design-skill route|manifest|run|select|promote",
     "  reconciliation check",
     "  feedback record|prepare|reconcile",
@@ -1832,15 +1830,7 @@ function styleSignalsCheckCommand({ file }) {
 
 function componentFirstCliResult(result) {
   const { schema, ...value } = result;
-  return { resultSchema: schema, ...value };
-}
-
-function componentFirstCommand(parsed, root, action) {
-  const input = readJson(artifact(parsed, root, "--artifact"), "component-first gate");
-  const result = action === "check"
-    ? checkComponentFirstGate(input, { projectRoot: root })
-    : checkComponentFirstStage(action, input, { projectRoot: root });
-  return { result: componentFirstCliResult(result), exitCode: componentFirstExitCode(result.status) };
+  return { resultSchema: schema || result.receipt.schema, ...value };
 }
 
 function writeOptionalJson(parsed, root, value) {
@@ -1848,16 +1838,19 @@ function writeOptionalJson(parsed, root, value) {
   return atomicWriteProviderJson(root, requireOption(parsed, "--output"), value);
 }
 
-function componentFirstV2Command(parsed, root, action) {
-  if (action === "migrate") {
-    const input = readJson(artifact(parsed, root, "--artifact"), "component-first v1 artifact");
-    const result = migrateV1ToV2(input, { snapshotDigest: requireOption(parsed, "--snapshot") });
-    const output = writeOptionalJson(parsed, root, result);
-    return { result: { status: "migrated", artifact: result, ...(output ? { output } : {}) }, exitCode: 0 };
+function componentFirstCommand(parsed, root, action) {
+  if (["check", "stack", "components", "playground", "page"].includes(action)) {
+    const request = readJson(artifact(parsed, root, "--artifact"), "component-first request");
+    const result = action === "check"
+      ? checkComponentFirstGate(request, { projectRoot: root })
+      : checkComponentFirstStage(action, request, { projectRoot: root });
+    const { status, reasonCodes, findings, ...written } = result;
+    const output = action === "check" ? writeOptionalJson(parsed, root, written) : null;
+    return { result: { ...componentFirstCliResult(result), ...(output ? { output } : {}) }, exitCode: componentFirstExitCode(result.status) };
   }
-  const input = readJson(artifact(parsed, root, "--artifact"), "component-first v2 artifact");
-  if (action === "check") {
-    const result = checkV2Artifact(input, { projectRoot: root });
+  const input = readJson(artifact(parsed, root, "--artifact"), "component-first artifact");
+  if (action === "verify") {
+    const result = verifyComponentFirstArtifact(input, { projectRoot: root });
     return { result, exitCode: result.status === "passed" ? 0 : 2 };
   }
   if (action === "select") {
@@ -1878,7 +1871,7 @@ function componentFirstV2Command(parsed, root, action) {
   }
   if (action === "promote") {
     if (option(parsed, "--approve") !== true || !option(parsed, "--approval")) fail("cli", "promotion requires --approve and --approval", { code: "APPROVAL_REQUIRED" });
-    const conformance = checkV2Artifact(input, { projectRoot: root });
+    const conformance = verifyComponentFirstArtifact(input, { projectRoot: root });
     if (conformance.status !== "passed") return { result: { status: "blocked", reason: "component conformance must pass before promotion", conformance }, exitCode: 2 };
     if (!input.selection?.prototypeSetSnapshot) return { result: { status: "blocked", reason: "promotion requires filesystem-backed prototype set provenance" }, exitCode: 2 };
     try {
@@ -1903,7 +1896,7 @@ function componentFirstV2Command(parsed, root, action) {
     const output = writeOptionalJson(parsed, root, result);
     return { result: { status: "promoted", artifact: result, promotion, ...(output ? { output } : {}) }, exitCode: 0 };
   }
-  fail("cli", `unknown component-first-v2 action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+  fail("cli", `unknown component-first action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
 }
 
 function designSkillCommand(parsed, root, action) {
@@ -1927,19 +1920,14 @@ function designSkillCommand(parsed, root, action) {
     return { result: { status: "selected", ...selection, ...(output ? { output } : {}) }, exitCode: 0 };
   }
   if (action === "promote") {
-    const v2 = readJson(artifact(parsed, root, "--artifact"), "component-first v2 artifact");
+    const cfArtifact = readJson(artifact(parsed, root, "--artifact"), "component-first artifact");
     const selection = readJson(artifact(parsed, root, "--selection"), "prototype selection");
     const input = readJson(artifact(parsed, root, "--promotion"), "promotion input");
-    const handoff = promotePrototype(v2, selection, { ...input, selectionReceiptHash: selection.receiptHash || selection.selectionReceipt?.receiptHash, options: { projectRoot: root } });
+    const handoff = promotePrototype(cfArtifact, selection, { ...input, selectionReceiptHash: selection.receiptHash || selection.selectionReceipt?.receiptHash, options: { projectRoot: root } });
     const output = writeOptionalJson(parsed, root, handoff);
     return { result: { status: handoff.status, handoff, ...(output ? { output } : {}) }, exitCode: 0 };
   }
   fail("cli", `unknown design-skill action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
-}
-
-function highFidelityCommand(parsed, root, action) {
-  if (action !== "check") fail("cli", `unknown high-fidelity action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
-  return componentFirstCommand(parsed, root, "check");
 }
 
 function surfaceCommand(parsed, root) {
@@ -2272,9 +2260,7 @@ const COMMANDS = {
   "design-system": { run: ({ parsed, root, action }) => designSystemCommand(parsed, root, action) },
   component: { run: ({ parsed, root, action }) => componentCommand(parsed, root, action) },
   "component-first": { run: ({ parsed, root, action }) => componentFirstCommand(parsed, root, action) },
-  "component-first-v2": { run: ({ parsed, root, action }) => componentFirstV2Command(parsed, root, action) },
   "design-skill": { run: ({ parsed, root, action }) => designSkillCommand(parsed, root, action) },
-  "high-fidelity": { run: ({ parsed, root, action }) => highFidelityCommand(parsed, root, action) },
   mengto: { run: ({ parsed, action }) => mengToCommand(parsed, action) },
   shadcnio: { run: ({ parsed, action }) => shadcnioCommand(parsed, action) },
   prism: { run: ({ parsed, action }) => prismCommand(parsed, action) },

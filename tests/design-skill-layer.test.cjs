@@ -7,8 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
-const { checkComponentFirstGate } = require("../skill/scripts/component-first-core.cjs");
-const { migrateV1ToV2, policyDigest, targetDigest } = require("../skill/scripts/component-first-v2-core.cjs");
+const { checkComponentFirstGate, policyDigest, targetDigest } = require("../skill/scripts/component-first-core.cjs");
 const { createComponentFirstFixture, sha256 } = require("./fixtures/component-first-fixture.cjs");
 const { pngBytes } = require("./helpers/reference-fixtures.cjs");
 const { canonicalJson } = require("../skill/scripts/contract-utils.cjs");
@@ -134,12 +133,11 @@ test("prototype route does not turn a waived preview into an empty selection", (
 
 test("selection is hash-bound and promotion returns a target-write handoff", (t) => {
   const fixture = createComponentFirstFixture(t);
-  const v1 = checkComponentFirstGate(fixture.input, { projectRoot: fixture.projectRoot });
-  const v2 = migrateV1ToV2(v1, { snapshotDigest: `sha256:${sha256("skill-layer")}` });
+  const artifact = checkComponentFirstGate(fixture.input, { projectRoot: fixture.projectRoot });
   const previewRoot = writePreviewFixture(t);
-  const prototypeSet = runDesignSkill("design.prototype", { changeRoot: previewRoot, target: { ...v2.target }, policy: { ...v1.policy } }, { projectRoot: path.dirname(previewRoot) }).result;
-  const selection = selectPrototype(prototypeSet, { selectedPrototypeId: "signal", targetIdentityDigest: v2.target.targetIdentityDigest, snapshotDigest: v2.target.snapshotDigest, policyDigest: v2.policy.digest, approvedBy: "reviewer" }, { projectRoot: path.dirname(previewRoot) });
-  const handoff = promotePrototype(v2, selection, { selectionReceiptHash: selection.receiptHash, sourceKind: "prototype", targetKind: "production", approvedBy: "reviewer", options: { projectRoot: path.dirname(previewRoot) } });
+  const prototypeSet = runDesignSkill("design.prototype", { changeRoot: previewRoot, target: { ...artifact.target }, policy: { ...artifact.policy } }, { projectRoot: path.dirname(previewRoot) }).result;
+  const selection = selectPrototype(prototypeSet, { selectedPrototypeId: "signal", targetIdentityDigest: artifact.target.targetIdentityDigest, snapshotDigest: artifact.target.snapshotDigest, policyDigest: artifact.policy.digest, approvedBy: "reviewer" }, { projectRoot: path.dirname(previewRoot) });
+  const handoff = promotePrototype(artifact, selection, { selectionReceiptHash: selection.receiptHash, sourceKind: "prototype", targetKind: "production", approvedBy: "reviewer", options: { projectRoot: path.dirname(previewRoot) } });
   assert.equal(handoff.schema, "design-promotion-handoff.v1");
   assert.equal(handoff.targetWrite, "blocked-until-explicit-executor");
   assert.equal(handoff.promotionReceipt.componentConformanceStatus, "passed");
@@ -158,7 +156,7 @@ test("selection is hash-bound and promotion returns a target-write handoff", (t)
   delete forged.prototypeSetHash;
   forged.prototypeSetHash = sha256(canonicalJson(forged));
   assert.throws(
-    () => selectPrototype(forged, { selectedPrototypeId: "signal", targetIdentityDigest: v2.target.targetIdentityDigest, snapshotDigest: v2.target.snapshotDigest, policyDigest: v2.policy.digest, approvedBy: "reviewer" }, { projectRoot: path.dirname(previewRoot) }),
+    () => selectPrototype(forged, { selectedPrototypeId: "signal", targetIdentityDigest: artifact.target.targetIdentityDigest, snapshotDigest: artifact.target.snapshotDigest, policyDigest: artifact.policy.digest, approvedBy: "reviewer" }, { projectRoot: path.dirname(previewRoot) }),
     /directions do not match the verified direction preview/,
   );
   assert.throws(() => selectPrototype({ ...prototypeSet, schema: "wrong" }, { selectedPrototypeId: "signal" }), /schema/);

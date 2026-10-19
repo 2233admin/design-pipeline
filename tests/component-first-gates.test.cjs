@@ -106,7 +106,6 @@ function adapterSet(overrides = {}) {
 function orchestrationInput() {
   const context = passingContext();
   return {
-    schema: "component-first-gate.v1",
     target: context.target,
     policy: { id: "component-first-default", version: 1, pageRequirements: { "/dashboard": ["action"] } },
     stack: {}, components: {}, playground: {}, pageUsage: context.pageUsage, evidence: {},
