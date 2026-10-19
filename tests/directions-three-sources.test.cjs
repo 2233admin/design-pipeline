@@ -104,6 +104,14 @@ test("direction draw prints both draws for the second and honours the ledger", (
   const bad = execute(["direction", "draw", "--medium", "poster", "--json"]);
   assert.equal(bad.exitCode, 1);
   assert.match(bad.output.error.message, /medium/);
+  const outside = execute(["direction", "draw", "--medium", "web", "--second", "37", "--pool", "4,99", "--json"]);
+  assert.equal(outside.exitCode, 1);
+  assert.match(outside.output.error.message, /no style 99/);
+  // The project's own earlier delivery is not a repeat: the draw skips nothing for it.
+  const root = project();
+  ledger.recordEntry({ project: ledger.projectId(root), date: "2026-10-02", appearance: { lightness: "dark", hues: [], fonts: [], skeleton: "unmeasured", motion: "none" }, sources: ["style:web/18"] });
+  const own = execute(["direction", "draw", "--root", root, "--medium", "web", "--second", "37", "--json"]);
+  assert.deepEqual([own.output.draws[0].number, own.output.draws[0].skipped], [18, []]);
   reset();
 });
 

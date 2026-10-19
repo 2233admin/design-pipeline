@@ -26,7 +26,7 @@ const { checkReconstruction } = require("./reconstruction-core.cjs");
 const { checkSpecReconciliation } = require("./check-spec-reconciliation.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
 const { MEDIA, draw: drawStyle, loadCatalog: loadStyleCatalog } = require("./directions-core.cjs");
-const { RECENT, ledgerPath, recentEntries: recentLedgerEntries, recentSources: ledgerSources } = require("./appearance-ledger-core.cjs");
+const { RECENT, ledgerPath, projectId: ledgerProjectId, recentEntries: recentLedgerEntries, recentSources: ledgerSources } = require("./appearance-ledger-core.cjs");
 const { checkPlayground } = require("./playground-core.cjs");
 const { buildRuntimeReview, inspectRuntimeReview, recordRuntimeReviewFeedback } = require("./runtime-review-core.cjs");
 const {
@@ -726,8 +726,15 @@ function directionDrawCommand(parsed) {
     if (!numbers.length || numbers.some((number) => !Number.isInteger(number) || number < 1)) fail("direction", `${name} is a comma-separated list of catalog numbers`);
     return numbers;
   };
-  const avoid = ledgerSources(recentLedgerEntries(RECENT));
-  const draws = [drawStyle(catalog, medium, second, { pool: pool("--pool"), avoid }), drawStyle(catalog, "east", second, { pool: pool("--east-pool"), avoid })];
+  // The project's own earlier delivery is not a repeat to avoid, as in `direction check`.
+  const own = option(parsed, "--root") ? ledgerProjectId(option(parsed, "--root")) : null;
+  const avoid = ledgerSources(recentLedgerEntries(RECENT).filter((entry) => entry.project !== own));
+  let draws;
+  try {
+    draws = [drawStyle(catalog, medium, second, { pool: pool("--pool"), avoid }), drawStyle(catalog, "east", second, { pool: pool("--east-pool"), avoid })];
+  } catch (error) {
+    fail("direction", `${error.message}. Fix: list catalog numbers of that section in --pool / --east-pool`);
+  }
   return { result: { status: "drawn", second, draws, ledger: ledgerPath() }, exitCode: 0 };
 }
 

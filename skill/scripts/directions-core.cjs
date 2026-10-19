@@ -83,6 +83,8 @@ function loadCatalog(root = libraryRoot()) {
 // deliveries used. A context-compatible pool replaces the section's whole numbering.
 function draw(catalog, section, second, { pool, avoid = new Set() } = {}) {
   const entries = catalog[section];
+  const unknown = (pool || []).filter((number) => !entries.some((entry) => entry.number === number));
+  if (unknown.length) throw new Error(`section ${section} has no style ${unknown.join(", ")}; it numbers 1 to ${entries.length}`);
   const numbers = pool?.length ? pool : entries.map((entry) => entry.number);
   const start = second % numbers.length;
   const skipped = [];
