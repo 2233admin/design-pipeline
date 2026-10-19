@@ -315,3 +315,12 @@ test("the package carries the shipped text and none of the fetched binaries", (t
   assert.deepEqual(entries.filter((entry) => path.posix.basename(entry) === "SKILL.md"), ["design-pipeline/SKILL.md"]);
   assert.ok(entries.includes("design-pipeline/references/design-direction-library.md"));
 });
+
+test("partial bundle discovery tolerates a corrupt manifest so doctor can report it", (t) => {
+  const vendor = path.join(temporary(t), "vendor");
+  fs.mkdirSync(path.join(vendor, "broken-library"), { recursive: true });
+  fs.writeFileSync(path.join(vendor, "broken-library", "manifest.json"), `{"schema":"${manifest.schema}","bundle":`);
+  const [found] = partialBundles(vendor);
+  assert.equal(found.bundle, "broken-library");
+  assert.equal(found.directory, "broken-library");
+});

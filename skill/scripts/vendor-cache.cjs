@@ -63,9 +63,14 @@ function partialBundles(vendorDirectory = VENDOR) {
     const read = fs.readSync(descriptor, head, 0, head.length, 0);
     fs.closeSync(descriptor);
     if (!head.subarray(0, read).toString("utf8").includes(PARTIAL_SCHEMA)) continue;
-    const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
-    if (!/^[a-z][a-z0-9-]*$/.test(manifest.bundle || "")) throw new Error(`${manifestFile} needs a lowercase bundle id`);
-    found.push({ bundle: manifest.bundle, directory: entry.name, manifestFile });
+    // Module load must not throw: a corrupt manifest registers under its folder name and the
+    // verifier (which doctor wraps) reports it with reinstall guidance.
+    let bundle;
+    try {
+      bundle = JSON.parse(fs.readFileSync(manifestFile, "utf8")).bundle;
+    } catch {}
+    if (!/^[a-z][a-z0-9-]*$/.test(bundle || "")) bundle = entry.name;
+    found.push({ bundle, directory: entry.name, manifestFile });
   }
   return found;
 }
