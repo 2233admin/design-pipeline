@@ -124,6 +124,7 @@ const {
 } = require("./component-capability-core.cjs");
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
 const { BUNDLES: FETCHABLE_BUNDLES } = require("./vendor-cache.cjs");
+const { findManifest: findDirectionLibraryManifest, verifyDirectionLibrary } = require("./design-direction-library-core.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
 const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
 const { buildJobPlan, routeJob } = require("./job-route-core.cjs");
@@ -352,6 +353,16 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     iart = { status: "blocked", issues: [error.message] };
     missing.push("vendor/iart-motion-skills/manifest.json");
   }
+  let directionLibrary = null;
+  try {
+    const libraryManifest = findDirectionLibraryManifest(skillRoot);
+    directionLibrary = verifyDirectionLibrary(libraryManifest);
+    if (directionLibrary.status === "missing") downloads.push({ bundle: "design-direction-library", fetch: directionLibrary.fetch });
+    else if (directionLibrary.status !== "ready") missing.push(libraryManifest ? `vendor/${path.basename(path.dirname(libraryManifest))}/upstream/**` : "vendor/design-direction-library/manifest.json");
+  } catch (error) {
+    directionLibrary = { status: "blocked", issues: [error.message] };
+    missing.push("vendor/design-direction-library/manifest.json");
+  }
   const nodeSupported = nodeAtLeast(nodeVersion);
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
@@ -377,6 +388,7 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     holosticker,
     designMdSource,
     iart,
+    directionLibrary,
     registry,
   };
 }
@@ -464,7 +476,7 @@ function publicHelp() {
     "  holosticker inspect|verify",
     "  designmd sync|search|inspect|verify",
     "  iart search|route|verify",
-    "  sources fetch --bundle mengto-skills|iart-motion-skills | --all   (download a bundle at its pinned revision into the user cache; DESIGN_PIPELINE_CACHE overrides the location)",
+    "  sources fetch --bundle mengto-skills|iart-motion-skills|design-direction-library | --all   (download a bundle at its pinned revision into the user cache; DESIGN_PIPELINE_CACHE overrides the location)",
     "  toolchain request --plan <job-plan.json> --artifact <stack-input.json> [--write --output <toolchain-request.json>]",
     "  toolchain resolve|probe|receipt-check",
     "  execution route|prepare|finalize",

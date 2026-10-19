@@ -795,6 +795,8 @@
     "vendor/good-css/upstream/skills/good-css/UPSTREAM-SKILL.md",
     "vendor/good-css/upstream/vercel.json",
     "vendor/good-css/upstream/vite.config.js",
+    "references/design-direction-library.md",
+    "scripts/design-direction-library-core.cjs",
     "references/taste-skill.md",
     "vendor/taste-skill/manifest.json",
     "vendor/taste-skill/upstream/.claude-plugin/marketplace.json",
@@ -1100,6 +1102,9 @@
     "scripts/capture-refs.cjs",
     "scripts/design-system-package-core.cjs",
     "references/design-system-package.md",
-    "scripts/workflows/ui.cjs"
+    "scripts/workflows/ui.cjs",
+    "vendor/design-direction-library/manifest.json",
+    "vendor/design-direction-library/upstream/references/design-styles.md",
+    "vendor/design-direction-library/upstream/references/directions.md"
   ]
 }

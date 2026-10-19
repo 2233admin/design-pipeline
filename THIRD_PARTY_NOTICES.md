@@ -743,3 +743,49 @@ product or service whose value derives entirely or substantially from the softwa
 This package bundles none of its files. `skill/references/react-doctor.md` is a project-written,
 reference-only record of a pinned revision; an optional run of the public CLI is a user-approved
 action in the user's own project.
+
+## alchaincyf/huashu-design (design direction library)
+
+The byte-preserved text and HTML under `skill/vendor/huashu-design/upstream/` are from
+https://github.com/alchaincyf/huashu-design at reviewed commit
+`798c4235ebff03d5c45e3c8affdf5e9d18f9dfa7` (reviewed 2026-10-19), Git tree
+`cf7e7baaf14ed1331ee1bb06cff2bc8e1af344de`. 181 of the 389 tracked files ship in the package:
+the license, READMEs, the project `SKILL.md` (stored as `UPSTREAM-SKILL.md`), `references/`, the
+84 HTML style specimens, small text assets and `scripts/` as inert reference material. The other
+208 files (specimen images, music and sound effects, showcase and demo pages and images, package
+metadata) are not distributed in the package or in this repository: `sources fetch --bundle
+design-direction-library` downloads them from the pinned commit and checks each against the
+SHA-256 in `skill/vendor/huashu-design/manifest.json`.
+
+The upstream project is MIT. Its complete license text follows; it is also retained at
+`skill/vendor/huashu-design/upstream/LICENSE`.
+
+```text
+MIT License
+
+Copyright (c) 2026 alchaincyf (花叔 · 花生)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+Upstream brand names, artwork and showcase images remain source context; they grant no trademark
+rights and are not this project's default assets. Referenced web fonts are loaded from their own
+hosts by the specimens and are not distributed. The package does not run upstream scripts, install
+its dependencies or activate any hook. `skill/references/design-direction-library.md` describes
+the bundle neutrally; the project's workflow does not change.

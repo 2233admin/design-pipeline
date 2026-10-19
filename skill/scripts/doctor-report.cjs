@@ -90,7 +90,7 @@ function inspectEnvironment(doctor, options = {}) {
   const fetchables = doctor.downloads || [];
   const libraries = item(
     "sources",
-    "MengTo and iart skill libraries (about 200 MB, downloaded once)",
+    "MengTo, iart and design direction source libraries (about 240 MB, downloaded once)",
     fetchables.length === 0,
     fetchables.length ? `not downloaded: ${fetchables.map((entry) => entry.bundle).join(", ")}` : "downloaded",
     fetchCommand(cli, fetchables.length === 1 ? fetchables[0].bundle : undefined),
