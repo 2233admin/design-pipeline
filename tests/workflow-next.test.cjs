@@ -13,6 +13,7 @@ const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs")
 const { analyzeVideo } = require("../skill/scripts/reference-video-core.cjs");
 const { stages: webStages } = require("../skill/scripts/workflows/web.cjs");
 const { validateShape } = require("../skill/scripts/runtime-review-core.cjs");
+const { extractReplicate } = require("./helpers/replicate-flow.cjs");
 const { PLAYBACK, SECTIONS, STATED, acceptSections, approveDescription, confirmPlayback, pickVariant, statedSkip, toBuild, toComponents, variantsPage, writeDescription, writeVariants } = require("./helpers/web-flow.cjs");
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "workflow-"));
@@ -1815,12 +1816,14 @@ test("quick frontend replication observes the reference before existing output a
       assert.equal(observed.stage, "reference", `${deliverable} must observe before continuing existing output`);
       assert.equal(observed.then, undefined);
       assert.match(observed.instruction, /reference-spec\.md/);
-      assert.match(observed.instruction, /reconstruction-spec\.md/);
-      assert.match(observed.instruction, /bounded graybox/);
-      assert.match(observed.instruction, /document delivery.*not.*verified observation/);
+      assert.match(observed.instruction, /reference-evidence\.json/);
+      assert.match(observed.instruction, /primary-target/);
+      assert.doesNotMatch(observed.instruction, /timed frames|bounded graybox/, "a web or ui reference is not studied like a film");
       assert.throws(() => decide(dir, { by: "owner", stage: "reference", answer: "none" }), /replicate mode cannot skip/);
       touch(dir, "reference.md", "Observed structure and motion; measurements remain to be checked.");
       recordGate(dir, "reference", "failed");
+      assert.equal(nextAction(dir).stage, "extract", "the reference is extracted before anything is built");
+      extractReplicate(dir);
       assert.equal(nextAction(dir).stage, deliverable === "web" ? "components" : "work", "aggregate checks must not deadlock observation before graybox exists");
       if (deliverable === "web") {
         prepareWebComponents(dir);
@@ -1840,6 +1843,8 @@ test("frontend replication uses the reference at every tier without replacement 
         else if (tier !== "quick") decide(dir, { by: "owner", stage: "intake", answer: "default" });
         assert.equal(nextAction(dir).stage, "reference");
         touch(dir, "reference.md");
+        assert.equal(nextAction(dir).stage, "extract");
+        extractReplicate(dir);
         if (deliverable === "web") {
           assert.equal(nextAction(dir).stage, "components");
           prepareWebComponents(dir);
@@ -1861,11 +1866,9 @@ test("frontend actions define bounded visual tasks and keep polish dependent on 
     const dir = tmp();
     try {
       initState(dir, { deliverable, tier: "quick", mode: "replicate" });
-      touch(dir, "reference.md");
-      if (deliverable === "web") {
-        statedSkip(dir);
-        prepareWebComponents(dir);
-      }
+      if (deliverable === "web") statedSkip(dir);
+      extractReplicate(dir);
+      if (deliverable === "web") prepareWebComponents(dir);
       const build = nextAction(dir);
       assert.match(build.instruction, /tasks\.md/);
       for (const field of ["reference region", "scene node", "goal", "invariants", "inputs", "literal modification scope", "outputs", "runtime", "comparison", "failure return"]) {
@@ -1879,8 +1882,8 @@ test("frontend actions define bounded visual tasks and keep polish dependent on 
   }
 });
 
-test("brief and freeform frontend work preserve their quick and concept workflows", () => {
-  for (const mode of ["brief", "freeform"]) {
+test("brief frontend work preserves its quick and concept workflows", () => {
+  for (const mode of ["brief"]) {
     for (const deliverable of ["web", "ui"]) {
       const dir = tmp();
       try {
@@ -2036,17 +2039,17 @@ test("web concepts asks for a switchable variants page and a treatment before th
 
 test("web stage ids per tier and mode keep their order", () => {
   assert.deepEqual(webStages({ tier: "quick" }).map((stage) => stage.id), ["intake", "components", "build", "probe", "review"]);
-  assert.deepEqual(webStages({ tier: "quick", mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "components", "build", "probe", "review"]);
+  assert.deepEqual(webStages({ tier: "quick", mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "extract", "components", "build", "probe", "review"]);
   for (const tier of ["standard", "full"]) {
     assert.deepEqual(webStages({ tier }).map((stage) => stage.id), ["intake", "reference", "concepts", "components", "description", "build", "probe", "review", "deliver"], tier);
-    assert.deepEqual(webStages({ tier, mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "components", "description", "build", "probe", "review", "deliver"], `${tier} replicate`);
+    assert.deepEqual(webStages({ tier, mode: "replicate" }).map((stage) => stage.id), ["intake", "reference", "extract", "components", "description", "build", "probe", "review", "deliver"], `${tier} replicate`);
   }
 });
 
 // The first build step names only the first section: after the treatment and the section briefs
 // outside replicate, inside an OpenSpec change at full. Quick builds the whole page (below).
 test("web build names only the first section first, extends the chosen card with a treatment outside replicate and opens OpenSpec at full", t => {
-  for (const [tier, mode] of [["standard", "brief"], ["full", "freeform"], ["standard", "replicate"], ["full", "replicate"]]) {
+  for (const [tier, mode] of [["standard", "brief"], ["full", "brief"], ["standard", "replicate"], ["full", "replicate"]]) {
     const label = `${tier}/${mode}`;
     const build = nextAction(approved(t, ["first-screen", "pickup"], { tier, mode }));
     assert.equal(build.stage, "build", label);
@@ -2084,7 +2087,7 @@ test("an existing index.html whose first section is not marked gets the full fir
 
 test("standard and full web intake opens with one open question and a skip command, never a list", t => {
   const openings = {};
-  for (const tier of ["standard", "full"]) for (const mode of ["brief", "freeform", "replicate"]) {
+  for (const tier of ["standard", "full"]) for (const mode of ["brief", "replicate"]) {
     const label = `${tier}/${mode}`;
     const root = webProject(t, { tier, mode });
     const before = snapshot(root);
@@ -2104,7 +2107,6 @@ test("standard and full web intake opens with one open question and a skip comma
     openings[label] = ask.question;
   }
   for (const tier of ["standard", "full"]) {
-    assert.equal(openings[`${tier}/freeform`], openings[`${tier}/brief`], `${tier}: freeform opens like brief`);
     assert.notEqual(openings[`${tier}/replicate`], openings[`${tier}/brief`], `${tier}: replicate opens on the page being reproduced`);
   }
 });

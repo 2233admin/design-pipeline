@@ -55,7 +55,7 @@ function toComponents(root, { keep = [] } = {}) {
   const { tier, mode } = readState(root);
   if (tier === "quick") statedSkip(root);
   else confirmPlayback(root, PLAYBACK, keep);
-  if (mode === "replicate") writeReference(root);
+  if (mode === "replicate") require("./replicate-flow.cjs").extractReplicate(root);
   else if (tier !== "quick") decide(root, { by: "owner", stage: "reference", answer: "none" });
   if (tier !== "quick" && mode !== "replicate") {
     writeVariants(root);

@@ -11,7 +11,7 @@ const { validateComponentManifest } = require("../skill/scripts/design-system-ca
 const { acceptSections, approveDescription, toBuild, toComponents } = require("./helpers/web-flow.cjs");
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const tiers = ["quick", "standard", "full"];
-const modes = ["brief", "freeform", "replicate"];
+const modes = ["brief", "replicate"];
 
 function fixture(t, tier = "quick", mode = "brief") {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "web-components-"));

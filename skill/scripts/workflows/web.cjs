@@ -15,7 +15,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
-const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, reason, reference, statement } = require("./shared.cjs");
+const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, extractionDigest, gateStatus, invalidateCheckedEvidence, reason, reference, statement } = require("./shared.cjs");
+const replicate = require("./replicate.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -75,7 +76,8 @@ const INTAKE = {
       record: `${decideCommand(root, "intake")} --verdict accept --answer "<the playback the owner confirmed>"${ANTI_GOALS}`,
       correction: `${decideCommand(root, "intake")} --verdict reject --answer "<what the owner said is wrong or missing>"`,
       skip: `${decideCommand(root, "intake")} --choice skip --answer "<the line telling the owner what you decided on their behalf>"${ANTI_GOALS}`,
-      why: "Intent and taste come from the owner's own words and facts from looking; a skip still states every decision made for them.",
+      default: `${decideCommand(root, "intake")} --answer default`,
+      why: "Intent and taste come from the owner's own words and facts from looking; a skip still states every decision made for them. If the owner answers \"default\", they accept every recommendation: record it with the default command.",
     };
   },
 };
@@ -95,6 +97,13 @@ const QUICK_INTAKE = {
 function recordIntake(state, _root, options) {
   const playbacks = history(state, "playbacks");
   const at = new Date().toISOString();
+  // "default" accepts every recommendation, as it does for ui and film; a quick piece still states its decisions.
+  const bare = value => value === undefined || value === null;
+  if (typeof options.answer === "string" && options.answer.trim().toLowerCase() === "default" && bare(options.choice) && bare(options.verdict) && state.tier !== "quick") {
+    state.decisions.intake = { answer: "default", defaulted: true };
+    state.decisions.playbacks = [...playbacks, { verdict: "default", at }];
+    return;
+  }
   const antiGoals = [].concat(options.antiGoals ?? []).map(goal => reason(goal, "say in one sentence what the owner ruled out; it becomes a project rule", "--anti-goal"));
   if (options.choice !== undefined && options.choice !== null) {
     if (options.choice !== "skip") fail("workflow", "web intake --choice accepts only skip: the owner asked you to start without questions");
@@ -291,6 +300,8 @@ function approvalInputs(state, root) {
     playback: digest(state.decisions?.intake?.answer ?? null),
     direction: digest({ concept: state.decisions?.concept ?? null, conceptNotes: state.decisions?.conceptNotes ?? null }),
     components: componentDecisionDigest(state) ?? null,
+    // A replicate approval also binds the confirmed extraction (DESIGN.md, MOTION.md, reference.md, reference evidence).
+    ...(state.mode === "replicate" ? { extraction: extractionDigest(state) } : {}),
   };
 }
 const approvalId = record => digest(record.inputs);
@@ -318,10 +329,11 @@ function diffInputs(before, after) {
     playback: before.playback !== after.playback,
     direction: before.direction !== after.direction,
     components: before.components !== after.components,
+    extraction: (before.extraction ?? null) !== (after.extraction ?? null),
   };
   const kept = ids(after.sections).filter(id => was.has(id));
   diff.reordered = kept.join(",") !== ids(before.sections).filter(id => kept.includes(id)).join(",");
-  diff.structural = Boolean(diff.added.length || diff.removed.length || diff.reordered || diff.jobs.length || diff.playback || diff.direction || diff.components);
+  diff.structural = Boolean(diff.added.length || diff.removed.length || diff.reordered || diff.jobs.length || diff.playback || diff.direction || diff.components || diff.extraction);
   return diff;
 }
 
@@ -335,6 +347,7 @@ function describeDiff(diff) {
     diff.playback ? "the confirmed playback" : null,
     diff.direction ? "the variant pick or its combine notes" : null,
     diff.components ? "the component decision" : null,
+    diff.extraction ? "the confirmed extraction (DESIGN.md, MOTION.md or the reference)" : null,
     diff.brief && !diff.structural ? "only the wording of the brief" : null,
   ].filter(Boolean).join("; ");
 }
@@ -978,21 +991,23 @@ function declaresAudit(root) {
 }
 
 // Probe finishes only with a passed gate over a probe file that audits the page, at every tier.
+// A replicate probe also binds the reference files and, with a website-clone manifest, needs its fidelity verdict.
 const PROBE = {
   id: "probe",
-  finished: (_state, root) => declaresAudit(root) === true,
-  gate: { name: "interaction", inputs: () => ["interaction.json", "index.html"] },
-  action: (_state, root) => {
+  finished: (state, root) => declaresAudit(root) === true && replicate.cloneComplete(state, root),
+  gate: { name: "interaction", inputs: (state, root) => ["interaction.json", "index.html", ...replicate.boundReferenceFiles(state, root)] },
+  action: (state, root) => {
     if (!exists(root, "interaction.json")) return { type: "run", instruction: "Write interaction.json: one probe per key interaction plus one audit probe (\"kind\": \"audit\") that measures the local index.html at a desktop and a mobile viewport, with thresholds copied from DESIGN.md, the font families required (schema in references/workflow-web.md#probe)", why: "Every key interaction and the page's measurable craft are verified against the real page, not eyeballed." };
     if (declaresAudit(root) === false) return { type: "run", instruction: "Add an audit probe to interaction.json: one probes entry with \"kind\": \"audit\", a desktop and a mobile viewport, thresholds copied from DESIGN.md with the required font families, and the selectors to declare (references/workflow-web.md#probe); then run next again", why: "The probe stage passes only with a page audit at every tier; without one the verify command cannot finish this stage." };
+    if (!replicate.cloneComplete(state, root) && gateStatus(state, root, "interaction", PROBE.gate.inputs(state, root)).status === "passed") return replicate.cloneAction(state, root);
     return { type: "run", command: `${cliCommand()} verify interaction --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --probe interaction.json`, why: "Apply each finding's fix, then run next again." };
   },
 };
 
 const DELIVER = {
   id: "deliver",
-  finished: deliveryRecorded,
-  action: (_state, root) => ({ type: "run", command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
+  finished: (state, root) => deliveryRecorded(state, root) && replicate.cloneComplete(state, root),
+  action: (state, root) => !replicate.cloneComplete(state, root) ? replicate.cloneAction(state, root) : ({ type: "run", command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <url or path>`, why: "Record where the page is delivered." }),
 };
 
 // Quick: a stated decision, components, build, probe and the owner's final review. Standard and full: the conversation, the
@@ -1000,8 +1015,8 @@ const DELIVER = {
 // description, the section-by-section build, probe, final review and delivery.
 function stages(state) {
   if (state.mode === "replicate") return state.tier === "quick"
-    ? [QUICK_INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE, REVIEW]
-    : [INTAKE, REFERENCE, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
+    ? [QUICK_INTAKE, replicate.REFERENCE, replicate.EXTRACT, COMPONENTS, BUILD, PROBE, REVIEW]
+    : [INTAKE, replicate.REFERENCE, replicate.EXTRACT, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
   if (state.tier === "quick") return [QUICK_INTAKE, COMPONENTS, BUILD, PROBE, REVIEW];
   return [INTAKE, REFERENCE, CONCEPTS, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
 }

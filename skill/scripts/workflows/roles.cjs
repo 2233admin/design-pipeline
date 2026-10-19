@@ -14,14 +14,14 @@ const { canonicalJson, fail, sha256 } = require("../contract-utils.cjs");
 const { statementLine } = require("./rules.cjs");
 
 const ROLES = ["owner", "agent"];
-const LOCKED = new Set(["review", "creative-intent"]);
+const LOCKED = new Set(["review", "creative-intent", "extract"]);
 // Visual picks an art director may make under --director; final acceptance is never one of them.
 const DIRECTED = new Set(["concept", "section", "sample"]);
 // The stage ids each deliverable's stages use, mapped to the decide checkpoint that finishes them.
-const CHECKPOINT_OF_STAGE = { intake: "intake", reference: "reference", concepts: "concept", style: "concept", components: "components", description: "description", sample: "sample", review: "review", deliver: "deliver", work: "deliver" };
-const LABELS = { intake: "Intake", "creative-intent": "Creative intent", reference: "Reference", concept: "Direction", components: "Component sources", description: "Description", section: "Section review", sample: "Sample", review: "Final acceptance", deliver: "Delivery" };
+const CHECKPOINT_OF_STAGE = { intake: "intake", reference: "reference", extract: "extract", concepts: "concept", style: "concept", components: "components", description: "description", sample: "sample", review: "review", deliver: "deliver", work: "deliver" };
+const LABELS = { intake: "Intake", "creative-intent": "Creative intent", reference: "Reference", extract: "Extraction", concept: "Direction", components: "Component sources", description: "Description", section: "Section review", sample: "Sample", review: "Final acceptance", deliver: "Delivery" };
 // History arrays whose entries carry `by`; a record in one of them without `by` predates decision roles.
-const HISTORIES = ["playbacks", "variants", "rounds", "descriptions", "sections", "samples", "drafts"];
+const HISTORIES = ["playbacks", "variants", "rounds", "descriptions", "sections", "samples", "drafts", "extractions"];
 const STATEMENT = path.join(".design-pipeline", "diligence.md");
 
 // Web review checkpoints the agent self-checks by default (OpenSpec change owner-attention-asks): the
