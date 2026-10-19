@@ -17,6 +17,7 @@ const path = require("node:path");
 const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
 const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, extractionDigest, gateStatus, invalidateCheckedEvidence, reason, reference, statement } = require("./shared.cjs");
+const { brandFactFindings } = require("../design-synthesis-core.cjs");
 const replicate = require("./replicate.cjs");
 const { CLOSING_LINE, RECEIPT, directionAction, pickedIds, pickedMix } = require("./directions.cjs");
 
@@ -507,8 +508,21 @@ function recordDescription(state, root, options, next) {
   }
 }
 
+// Real brands declared in DESIGN.md owe sourced facts, a real logo and a sourced colour before the page
+// is built: the existing foundation check's brand findings, shown first by the build step.
+function brandFindings(root) {
+  try {
+    return brandFactFindings(fs.readFileSync(path.join(root, "DESIGN.md"), "utf8"), path.resolve(root));
+  } catch (error) {
+    if (["ENOENT", "ENOTDIR", "EISDIR"].includes(error.code)) return [];
+    throw error;
+  }
+}
+
 function buildStatus(state, root) {
   if (!COMPONENTS.finished(state)) return { finished: false };
+  const brand = brandFindings(root);
+  if (brand.length) return { finished: false, findings: brand };
   try {
     if (!fs.statSync(path.join(root, "index.html")).isFile()) return { finished: false };
     validateComponentManifest(JSON.parse(fs.readFileSync(path.join(root, "component-manifest.json"), "utf8")), {

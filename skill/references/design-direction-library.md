@@ -8,9 +8,12 @@ change any stage, gate or `next` action in this skill, and its own workflow text
 the project's `DESIGN.md`, `MOTION.md`, owner decisions or the pipeline's gates. Most of the text
 is Chinese; keep the user's language when you quote or adapt it.
 
-Adoption into the workflow happens through separate changes: #155 (direction sources), #154
-(appearance ledger), #156 (brand and facts) and #157 (critique). Until those land, read and borrow
-from the library; do not treat it as a required step.
+Adoption into the workflow happens through separate changes: #155 (direction sources) and #154
+(appearance ledger) are adopted in the direction stage, and #156 (brand and facts) is adopted in
+[brand-facts.md](brand-facts.md): its brand-asset protocol is rewritten there and enforced by the
+design foundation check and the web build step when DESIGN.md declares real brands. #157 (critique)
+has not landed; until it does, read and borrow from the library for that; do not treat it as a
+required step.
 
 ## Where it is
 

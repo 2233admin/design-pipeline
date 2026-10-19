@@ -341,6 +341,114 @@ function validateSourceDecisions(text) {
   }
 }
 
+// --- brand facts first (OpenSpec change brand-facts-first) -------------------------------------------
+// Triggered only when Product Context declares `Real brands: <names>` (`none`, or no line: the project's
+// own made-up brand, never blocked). Declared brands owe a sourced facts file, one real logo file and a
+// sourced brand colour line each in Source Decisions. Findings are `{code, severity, message, fix}`.
+
+const BRAND_LINE = /^\s*(?:[-*]\s*)?(?:\*\*)?(?:real brands?|真实品牌)(?:\*\*)?\s*[:：]\s*(.+?)\s*$/im;
+const FACTS_LINE = /^\s*(?:[-*]\s*)?(?:\*\*)?(?:brand facts|品牌事实)(?:\*\*)?\s*[:：]\s*`?([^`\s]+)`?\s*$/im;
+const LOGO_LINE = /^\s*(?:[-*]\s*)?(?:\*\*)?(?:logo|标志)\b/i;
+const COLOUR_LINE = /^\s*(?:[-*]\s*)?(?:\*\*)?(?:brand colou?rs?|品牌色)\b/i;
+const NO_BRAND = /^(?:none|n\/a|无|没有)\.?$/i;
+const OWNER_SOURCE = /\bowner\b|所有者|用户提供/i;
+const TEXT_ASSET = /\.(?:svg|css|html?|json|txt|md)$/i;
+const LOGO_FILE = /\.(?:svg|png|webp|jpe?g)$/i;
+
+function sectionText(text, aliases) {
+  const headings = [...text.matchAll(/^##\s+(.+?)\s*$/gm)];
+  const at = headings.findIndex((match) => aliases.includes(normalizedHeading(match[1])));
+  if (at < 0) return "";
+  const start = headings[at].index + headings[at][0].length;
+  return text.slice(start, headings[at + 1] ? headings[at + 1].index : text.length);
+}
+
+// Project files a line cites: tokens that resolve to an existing file inside the project.
+function citedFiles(line, projectRoot) {
+  return line.split(/[\s()（）,，;；`]+/).filter((token) => /[./]/.test(token) && !/^https?:/i.test(token)).map((token) => {
+    const absolute = path.resolve(projectRoot, token);
+    return pathIsInside(projectRoot, absolute) && fs.existsSync(absolute) && fs.statSync(absolute).isFile() ? absolute : null;
+  }).filter(Boolean);
+}
+
+const hasUrl = (line) => /https?:\/\/[^\s)]+/i.test(line);
+const hasSource = (line) => hasUrl(line) || OWNER_SOURCE.test(line);
+
+function brandFactFindings(text, projectRoot) {
+  const context = sectionText(text, ["product context"]);
+  const declared = (context.match(BRAND_LINE) || [])[1];
+  if (!declared || NO_BRAND.test(declared.trim())) return [];
+  const brands = declared.split(/[,，、;；]/).map((name) => name.trim()).filter(Boolean);
+  const out = [];
+  const add = (code, message, fix) => out.push({ code, severity: "error", message, fix });
+  const protocol = "ask the owner for the asset, else find the official brand or press page and download the file into the project; never fill a value in from memory";
+
+  // The facts file: every fact carries its source and every brand has a fact.
+  const factsRel = (context.match(FACTS_LINE) || [])[1];
+  const factsFile = factsRel ? path.resolve(projectRoot, factsRel) : null;
+  if (!factsFile || !pathIsInside(projectRoot, factsFile) || !fs.existsSync(factsFile) || !fs.statSync(factsFile).isFile()) {
+    add("brand-facts-missing", `Product Context declares real brands (${brands.join(", ")}) but its Brand facts line does not name an existing file${factsRel ? ` (${factsRel})` : ""}.`,
+      "Verify each brand and product (official site, release information) into a facts file in the change directory, one `- <fact> (source: <https url>)` line per fact, and add `Brand facts: <path>` under Product Context.");
+  } else {
+    const facts = fs.readFileSync(factsFile, "utf8").split(/\r?\n/).filter((line) => /^\s*[-*]\s+/.test(line));
+    for (const line of facts.filter((item) => !hasSource(item))) {
+      add("brand-fact-unsourced", `Fact without a source in ${factsRel}: "${line.trim().slice(0, 80)}".`, "Add the official page it came from as `(source: <https url>)`, or `(source: owner)` if the owner stated it, or delete the fact.");
+    }
+    for (const brand of brands.filter((name) => !facts.some((line) => line.toLowerCase().includes(name.toLowerCase())))) {
+      add("brand-facts-uncovered", `${factsRel} holds no fact about ${brand}.`, `Verify ${brand} (whether the product exists, which release, its specs) from its official site and record the facts with sources.`);
+    }
+  }
+
+  // The brand spec in Source Decisions: one real logo and a sourced colour line per brand.
+  const lines = sectionText(text, ["source decisions", "evidence and adaptation"]).split(/\r?\n/);
+  for (const brand of brands) {
+    const mine = (pattern) => lines.filter((line) => pattern.test(line) && line.toLowerCase().includes(brand.toLowerCase()));
+    const logos = mine(LOGO_LINE);
+    if (!logos.length) {
+      add("brand-logo-missing", `Source Decisions has no Logo line for ${brand}.`, `Get the official logo (${protocol}), then add \`Logo - ${brand}: <project file> (source: <https url>)\`. If no official logo can be found, stop and ask the owner; do not draw one.`);
+    }
+    if (logos.length > 1) {
+      add("brand-logo-multiple", `Source Decisions lists ${logos.length} logos for ${brand}.`, `Keep one official logo per product on the page: delete all but one Logo line for ${brand}.`);
+    }
+    for (const line of logos) {
+      if (!citedFiles(line, projectRoot).some((file) => LOGO_FILE.test(file))) {
+        add("brand-logo-file-missing", `The ${brand} Logo line names no existing logo file (svg, png, webp or jpg) inside the project.`, "Download the official logo into the project and name its path on the line; the page references that file and never redraws the mark.");
+      }
+      if (!hasSource(line)) add("brand-logo-unsourced", `The ${brand} Logo line has no source.`, "Add `(source: <official https url>)`, or `(source: owner)` if the owner supplied the file.");
+    }
+    const colours = mine(COLOUR_LINE);
+    if (!colours.length) {
+      add("brand-colour-missing", `Source Decisions has no Brand colour line for ${brand}.`, `Take the colours from the official assets (${protocol}) and add \`Brand colour - ${brand}: #RRGGBB (source: <https url or downloaded file>)\`, or \`Brand colour - ${brand}: none\` if the page uses none of its colours.`);
+    }
+    for (const line of colours) {
+      const hexes = line.match(/#[0-9a-f]{6}(?:[0-9a-f]{2})?\b/gi) || [];
+      if (!hexes.length) {
+        if (!/\bnone\b|无/i.test(line)) add("brand-colour-unsourced", `The ${brand} Brand colour line holds no colour value and does not say none.`, "Write the hex values taken from the official assets, or `none`.");
+        continue;
+      }
+      if (hasSource(line)) continue;
+      const cited = citedFiles(line, projectRoot);
+      if (!cited.length) {
+        add("brand-colour-unsourced", `The ${brand} Brand colour line gives ${hexes.join(", ")} with no source.`, "Add `(source: <official https url or downloaded asset file>)`; never keep a colour recalled from memory.");
+        continue;
+      }
+      // A cited text asset (svg, css, html) must hold the value; a binary image cannot be searched.
+      const body = cited.filter((file) => TEXT_ASSET.test(file)).map((file) => fs.readFileSync(file, "utf8").toLowerCase()).join("\n");
+      if (body) {
+        for (const hex of hexes.filter((value) => !body.includes(value.toLowerCase()))) {
+          add("brand-colour-not-in-source", `${hex} does not appear in the asset the ${brand} Brand colour line cites.`, "Read the value from the cited asset (grep its hex codes) and correct the line, or cite the asset that holds it.");
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function validateBrandFacts(text, projectRoot) {
+  const findings = brandFactFindings(text, projectRoot);
+  if (findings.length) fail(`DESIGN.md brand facts are unverified: ${findings.map((item) => `${item.message} Fix: ${item.fix}`).join(" ")}`);
+}
+
 function validateActiveChange(text, activeChangeId) {
   if (!activeChangeId) return;
   const escaped = activeChangeId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -383,7 +491,9 @@ function checkDesignFoundation(options = {}) {
   if (!pathIsInside(projectRoot, realFile)) {
     fail("--design-file resolves outside --project-root");
   }
-  const validated = validateDesignFoundationText(fs.readFileSync(realFile, "utf8"));
+  const designText = fs.readFileSync(realFile, "utf8");
+  const validated = validateDesignFoundationText(designText);
+  validateBrandFacts(designText, projectRoot);
   return {
     schema: "design-pipeline.foundation-check.v1",
     status: "ready",
@@ -401,6 +511,7 @@ module.exports = {
   HANDOFF_END,
   HANDOFF_START,
   appendEvent,
+  brandFactFindings,
   checkDesignFoundation,
   fail,
   findArtifactRoot,
