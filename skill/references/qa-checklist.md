@@ -186,6 +186,10 @@ treatment. Rules and evidence: `references/web-direction.md` (Review rules W1 to
 
 Agents never record Visual Acceptance. Gate findings remain Conformance findings with their existing meaning.
 
+Only when the owner asks for a critique: add a `Critique` heading beside this block with the scores,
+Keep, Fix (fatal, important, polish) and Quick Wins from `web-direction.md#critique-on-request`. Its
+score is not Visual Acceptance.
+
 ## Plain-Language Checks
 
 Complete for user-facing interface copy and artifacts that ask a person to decide or act.
