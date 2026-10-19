@@ -119,6 +119,9 @@ screenshots show state, not pacing.
 Run this only when the owner asks for a critique, a score or "how good is this". It is not part of
 delivery, `review` or any gate, and `next` never schedules it. It reads W1 to W7 as evidence and
 changes none of them. It applies to any visual output (page, deck, infographic, app screen, cover).
+W2 to W5 and the motion part of W6 describe a scrolling page; for a static or slide output mark them
+n/a and score those dimensions from the screenshot alone. A dimension is never scored down for
+behaviour the output cannot have.
 
 ### Dimensions
 

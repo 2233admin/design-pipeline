@@ -9,10 +9,11 @@ the project's `DESIGN.md`, `MOTION.md`, owner decisions or the pipeline's gates.
 is Chinese; keep the user's language when you quote or adapt it.
 
 Adoption into the workflow happens through separate changes: #155 (direction sources), #154
-(appearance ledger), #156 (brand and facts) and #157 (critique). Until those land, read and borrow
-from the library; do not treat it as a required step.
+(appearance ledger), #156 (brand and facts) and #157 (critique). What is adopted is required where
+its guide says so; for anything not yet adopted, read and borrow from the library.
 
-Adopted so far: #157. The critique guide's dimensions, level criteria, concept veto and three-part
+Adopted: #155 and #154, the ui and web direction stage (six cards from three sources, the thumbnail
+board, three full versions and the appearance ledger; `direction-preview.md`). #157: the critique guide's dimensions, level criteria, concept veto and three-part
 output (Keep, Fix, Quick Wins) are folded into `web-direction.md#critique-on-request` and mapped to
 the W1 to W7 review rules. It runs only when the owner asks for a critique, is guidance with no code
 check, and a critique score is never Visual Acceptance.
