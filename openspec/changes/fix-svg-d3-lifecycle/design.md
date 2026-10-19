@@ -6,8 +6,9 @@
 `lifecycle`. `validateLifecycle` in `skill/scripts/adapter-core.cjs` and
 `adapter-registry.schema.json` fix its shape: a `command` probe with a 100..30000 ms timeout, a plan
 guide with dependencies and requirements, an invocation and a verification receipt schema with
-evidence types. `probeToolchain` runs the probe in the `--root` directory with a bounded
-environment; exit 0 reports stdout as the version, any other exit blocks with the last stderr line.
+evidence types. `probeToolchain` runs the probe with its `projectRoot` option as working directory
+and a bounded environment; the CLI passes `--root`. Exit 0 reports stdout as the version, any
+other exit blocks with the last stderr line.
 `toolchain resolve` does not run probes.
 
 The registry declares `svg-d3` as `native`, `project-installed-only`, `project-pinned`, network
@@ -34,10 +35,19 @@ SVG or semantic table. The lifecycle must express exactly these facts.
    Yarn projects alike. Verification uses the adapter's own evidence types for the existing
    toolchain receipt. Package import proves availability only, not chart rendering, accessibility
    or visual acceptance.
+5. **Probe a nested package through `--project-root`.** `toolchain probe` resolves
+   `--project-root` with the `contained()` check the other `--project-root` commands use: the
+   path is resolved against `--root`, its real path must stay inside `--root` (so `..`, outside
+   absolute paths and escaping symlinks or junctions fail), and it must be an existing
+   directory. `probeToolchain` already takes `projectRoot` as the child `cwd`, so the probe
+   command itself is unchanged. The request, job plan and `--write` output still resolve against
+   `--root`. Containment is deliberate: a pipeline run probes only packages it owns. Without the
+   option the probe runs in `--root`. `toolchain resolve` runs no probe and does not read the
+   option. Nothing detects a nested `package.json` automatically; the caller names it.
 
 ## Risks
 
 - A project that keeps `d3` in a version range is blocked until it pins an exact version, as
   Three.js projects are.
-- `toolchain probe` uses `--root` both for the request artifacts and as the probe directory, so a
-  project whose `package.json` sits below the OpenSpec root must be probed from that directory.
+- A package outside the pipeline root (for example a sibling directory) cannot be probed from that
+  root; its pipeline root must contain it.

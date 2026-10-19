@@ -103,9 +103,11 @@ workflow (`next --deliverable film --job-plan`), which has no stack choices to m
   descriptors. Do not infer a library from taste alone. A blocked plan stops the run. The older
   `design-system resolve-stack` command remains a narrower compatibility surface.
 - Run `designer-pipeline toolchain probe --artifact toolchain-request.json` before invoking a
-  selected external runtime. Probes are read-only and registry-owned; they never install or update
-  a package. Record every invocation as `design-pipeline.toolchain-receipt.v1`, binding the plan
-  hash, actual tool version, command, exit code, artifacts, hashes, and linked evidence receipts.
+  selected external runtime. Probes run in `--root`; when the target package sits in a nested
+  directory, pass `--project-root <dir>`, which must stay inside `--root`. Probes are read-only
+  and registry-owned; they never install or update a package. Record every invocation as
+  `design-pipeline.toolchain-receipt.v1`, binding the plan hash, actual tool version, command,
+  exit code, artifacts, hashes, and linked evidence receipts.
 - Before BuilderPort work, write `execution-request.json` with the toolchain plan hash, the same
   `jobPlanSha256` as the toolchain plan, plus explicit slice owner and literal project-relative
   scope, then run `designer-pipeline execution route` and

@@ -44,7 +44,8 @@ component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decid
 design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide
 mengto search|verify|shadcnio search|verify|prism search|route|verify|holosticker inspect|verify
 designmd sync|search|inspect|verify|iart search|route|verify
-toolchain resolve|probe|receipt-check
+toolchain resolve|receipt-check
+toolchain probe --artifact <toolchain-request.json> [--project-root <package dir inside --root>]
 execution route|prepare|finalize
 benchmark brief|evaluate
 film methods --project-root <existing-film-dir> --input <method-plan.json> [--write] [--replace]

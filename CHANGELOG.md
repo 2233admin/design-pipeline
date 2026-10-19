@@ -107,6 +107,11 @@ All notable changes to Design Pipeline are documented here.
   `scripts.dev` and an importable local package exporting `select`, and stays blocked with the
   concrete cause otherwise; it never installs or starts the server. The plan invokes `npm run dev`
   and lists DOM, screenshot and accessibility evidence (change `fix-svg-d3-lifecycle`).
+- `toolchain probe` accepts `--project-root <dir>` so a pipeline root whose package sits in a
+  nested directory (for example `--root webui --project-root app`) probes that package while the
+  request, job plan and `--write` output stay under `--root`. The directory must resolve inside
+  `--root`; `..`, absolute paths outside it, escaping symlinks or junctions and non-directories are
+  rejected. Without the option the probe still runs in `--root` (change `fix-svg-d3-lifecycle`).
 - The UI craft audit now checks positioned host-descendant paint over in-flow generated text on
   its own fill, not only absolutely positioned text. Covered text is `indeterminate`; uncovered
   controls remain measurable (change `fix-generated-text-descendant-occlusion`).

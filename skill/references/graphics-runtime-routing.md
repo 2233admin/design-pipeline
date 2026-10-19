@@ -94,11 +94,16 @@ update/removal policy, and score provenance. A registry change requires determin
 
 `svg-d3` uses the target project's installed D3. Declare an exact version in
 `dependencies.d3` or `devDependencies.d3` and provide a nonempty `package.json#scripts.dev` for
-that project's development server. Run the toolchain probe with `--root` at the directory that
-holds this `package.json`. The probe reads `node_modules/d3/package.json`, checks that the package
-is `d3` and that the declared and installed versions match, resolves the package entry from the
-project root, requires it to stay inside that `node_modules/d3`, imports it and requires its
-`select` export. It never installs a package, searches global modules or starts the server.
+that project's development server. The toolchain probe runs in the directory that holds this
+`package.json`: `--root` by default, or `--project-root <dir>` when the package sits below the
+pipeline root, as in `toolchain probe --root <pipeline root> --artifact <request> --project-root
+app`. `--project-root` must resolve to an existing directory inside `--root`; a `..` path, an
+absolute path outside it, or a symlink or junction that resolves outside it is rejected. This
+containment is deliberate: the request, job plan and any `--write` output stay under `--root`.
+The probe reads `node_modules/d3/package.json`, checks that the package is `d3` and that the
+declared and installed versions match, resolves the package entry from the project root, requires
+it to stay inside that `node_modules/d3`, imports it and requires its `select` export. It never
+installs a package, searches global modules or starts the server.
 Missing dependencies, version ranges, mismatches, missing dev scripts and import errors remain
 blocked with their concrete cause.
 

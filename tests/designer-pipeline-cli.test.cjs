@@ -258,6 +258,56 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.equal(decision.output.decision.projectAuthority.id, "project-design");
 });
 
+test("toolchain probe runs in a nested --project-root inside --root and rejects escapes", (t) => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), "toolchain-probe-root-"));
+  t.after(() => fs.rmSync(parent, { recursive: true, force: true }));
+  const root = path.join(parent, "pipeline");
+  const outside = path.join(parent, "outside");
+  const writePackage = (directory) => {
+    writeJson(path.join(directory, "package.json"), { type: "module", dependencies: { d3: "7.9.0" }, scripts: { dev: "node -e \"throw new Error('probe must not start the server')\"" } });
+    writeJson(path.join(directory, "node_modules/d3/package.json"), { name: "d3", version: "7.9.0", type: "module", main: "src/index.js", module: "src/index.js", exports: { umd: "./dist/d3.min.js", default: "./src/index.js" } });
+    fs.mkdirSync(path.join(directory, "node_modules/d3/src"), { recursive: true });
+    fs.writeFileSync(path.join(directory, "node_modules/d3/src/index.js"), "export function select() {}\n");
+  };
+  fs.mkdirSync(root);
+  writePackage(path.join(root, "app"));
+  writePackage(outside);
+  const route = run(["route", "--root", root, "--query", "Build a React analytics dashboard with D3 SVG charts", "--write", "--output", "job-plan.json"]);
+  assert.equal(route.status, 0, route.stderr || route.stdout);
+  const jobPlan = JSON.parse(fs.readFileSync(path.join(root, "job-plan.json"), "utf8"));
+  writeJson(path.join(root, "toolchain-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "react", brief: jobPlan.query, jobId: jobPlan.jobId, jobPlanSha256: jobPlan.planSha256, jobPlanPath: "job-plan.json", deliverableForm: jobPlan.deliverableForm, requested: { styling: "none", uiLibrary: "none" }, graphics: { adapter: "svg-d3" } });
+  const probe = (...extra) => run(["toolchain", "probe", "--root", root, "--artifact", "toolchain-request.json", ...extra]);
+  const d3 = (result) => result.output.probe.results.find(({ toolId }) => toolId === "svg-d3");
+
+  const atRoot = probe();
+  assert.equal(atRoot.status, 2, atRoot.stderr || atRoot.stdout);
+  assert.equal(atRoot.output.probe.status, "blocked");
+  assert.match(d3(atRoot).message, /Cannot read the target project package\.json/);
+
+  const appPackage = fs.readFileSync(path.join(root, "app/package.json"), "utf8");
+  for (const projectRoot of ["app", path.join(root, "app")]) {
+    const nested = probe("--project-root", projectRoot);
+    assert.equal(nested.status, 0, nested.stderr || nested.stdout);
+    assert.equal(nested.output.probe.status, "ready");
+    assert.deepEqual(nested.output.probe.blockers, []);
+    assert.equal(d3(nested).version, "d3=7.9.0");
+  }
+  const written = probe("--project-root", "app", "--write", "--output", "toolchain-probe.json");
+  assert.equal(written.status, 0, written.stderr || written.stdout);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root, "toolchain-probe.json"), "utf8")).status, "ready");
+  assert.equal(fs.readFileSync(path.join(root, "app/package.json"), "utf8"), appPackage);
+  assert.deepEqual(fs.readdirSync(path.join(root, "app")).sort(), ["node_modules", "package.json"]);
+
+  fs.symlinkSync(outside, path.join(root, "link"), process.platform === "win32" ? "junction" : "dir");
+  for (const [projectRoot, message] of [["../outside", /stay inside/], [outside, /stay inside/], ["link", /resolves outside/], ["missing", /does not exist/], ["app/package.json", /must be a directory/]]) {
+    const escaped = probe("--project-root", projectRoot);
+    assert.equal(escaped.status, 1, `${projectRoot}: ${escaped.stdout}`);
+    assert.equal(escaped.output.ok, false);
+    assert.match(escaped.output.error.message, message, projectRoot);
+  }
+  assert.deepEqual(fs.readdirSync(outside).sort(), ["node_modules", "package.json"]);
+});
+
 test("component route selects platform-specific sources without copying remote code", () => {
   const web = run(["design-system", "route", "--root", repoRoot, "--query", "depth carousel", "--platform", "web"]);
   assert.equal(web.status, 0, web.stderr || web.stdout);

@@ -16,3 +16,18 @@ The existing svg-d3 adapter SHALL define probe, plan, invoke and verify using th
 - **WHEN** the target lacks package.json or node_modules/d3, declares a version range or a mismatched version, lacks scripts.dev, or its local package is not d3, lacks select or fails to import
 - **THEN** the existing toolchain probe SHALL remain blocked with the concrete cause
 - **AND** it SHALL NOT install, start a service or modify the target package.json
+
+### Requirement: Toolchain probe runs in a contained project root
+
+`toolchain probe` SHALL run its probe commands in `--root` by default and, when `--project-root` is given, in that directory instead. The project root SHALL resolve to an existing directory inside `--root` after following symlinks and junctions; otherwise the command SHALL fail without running a probe. The request, job plan and any `--write` output SHALL stay contained under `--root`, and the probe SHALL stay read-only.
+
+#### Scenario: Package nested below the pipeline root
+
+- **WHEN** the pipeline root holds the toolchain request and job plan but no package.json, and the pinned d3 package lives in its `app` directory
+- **THEN** `toolchain probe --root <pipeline root> --artifact <request> --project-root app` SHALL report ready with `d3=<installed version>`
+- **AND** without `--project-root` the probe SHALL remain blocked because the pipeline root has no package.json
+
+#### Scenario: Project root outside the pipeline root
+
+- **WHEN** `--project-root` is a `..` path, an absolute path outside `--root`, a symlink or junction resolving outside `--root`, a missing path or a file
+- **THEN** `toolchain probe` SHALL fail with a path error and SHALL NOT run a probe in that location
