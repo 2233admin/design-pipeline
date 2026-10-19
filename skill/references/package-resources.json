@@ -795,6 +795,8 @@
     "vendor/good-css/upstream/skills/good-css/UPSTREAM-SKILL.md",
     "vendor/good-css/upstream/vercel.json",
     "vendor/good-css/upstream/vite.config.js",
+    "references/design-direction-library.md",
+    "scripts/design-direction-library-core.cjs",
     "references/taste-skill.md",
     "vendor/taste-skill/manifest.json",
     "vendor/taste-skill/upstream/.claude-plugin/marketplace.json",

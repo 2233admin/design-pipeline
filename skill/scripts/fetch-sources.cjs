@@ -7,8 +7,11 @@
 const { BUNDLES, fetchBundle } = require("./vendor-cache.cjs");
 const { verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
 const { verifyIartSnapshot } = require("./iart-motion-skills-core.cjs");
+const { partialBundles } = require("./vendor-cache.cjs");
+const { verifyDirectionLibrary } = require("./design-direction-library-core.cjs");
 
 const VERIFY = { "mengto-skills": verifyMengToSnapshot, "iart-motion-skills": verifyIartSnapshot };
+for (const { bundle } of partialBundles()) VERIFY[bundle] = verifyDirectionLibrary;
 
 (async () => {
   const bundles = process.argv.slice(2);

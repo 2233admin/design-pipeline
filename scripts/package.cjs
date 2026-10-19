@@ -11,7 +11,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
-const { BUNDLES: FETCHABLE_BUNDLES } = require("../skill/scripts/vendor-cache.cjs");
+const { WHOLE_BUNDLES: FETCHABLE_BUNDLES } = require("../skill/scripts/vendor-cache.cjs");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 const { validateReleaseContract, formatReleaseContractResult } = require("./release-contract.cjs");
@@ -144,7 +144,7 @@ function collectArchiveEntries(sourceDateEpoch) {
   const entries = [];
 
   // MengTo and iart upstream trees are downloaded on demand (skill/scripts/vendor-cache.cjs); the
-  // package carries their manifests only.
+  // package carries their manifests only. The design direction library is partial: its text ships.
   const onDemand = new Set(FETCHABLE_BUNDLES.map((bundle) => path.join("vendor", bundle, "upstream")));
 
   function visit(absolutePath, relativePath) {

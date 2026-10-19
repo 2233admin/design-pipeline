@@ -128,6 +128,10 @@ does not install or repair anything.
   `~/Library/Caches/design-pipeline`, `%LOCALAPPDATA%\design-pipeline\Cache`, or
   `DESIGN_PIPELINE_CACHE`). `doctor` lists bundles still to fetch; an offline machine can receive a
   copy of that cache directory.
+- The design direction library ships its text and HTML specimens in the package; its specimen
+  images and audio (about 40 MB) are fetched the same way with
+  `designer-pipeline sources fetch --bundle design-direction-library`. Without them the library's
+  text still works.
 - Browser-backed commands (film and composition capture, score render, interaction probes, Art
   Motion render) use the project-local `puppeteer-core` and one shared browser resolver. It takes
   `--chrome <path>`, then `PUPPETEER_EXECUTABLE_PATH`, then the HyperFrames headless shell

@@ -145,6 +145,8 @@
     "prompt-motion-library.test.cjs",
     "upstream-path.test.cjs",
     "browser-locate.test.cjs",
-    "vendor-cache.test.cjs"
+    "vendor-cache.test.cjs",
+    "design-direction-library.test.cjs",
+    "reference-name-scope.test.cjs"
   ]
 }

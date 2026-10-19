@@ -33,6 +33,10 @@ function independentSources() {
   assert.ok(manifests.length >= 13, "all thirteen original vendor bundles must contribute to coverage");
   for (const filename of manifests) {
     const manifest = readJson(filename);
+    // The design direction library is reference material, not a component source. It is routed by
+    // a neutral guide, and the QA former-name rule keeps its upstream name (and so its repository
+    // URL) out of this catalog; tests/design-direction-library.test.cjs covers its provenance.
+    if (manifest.schema === "design-pipeline.direction-library-source.v1") continue;
     if (Array.isArray(manifest.packs)) {
       const excluded = new Set((manifest.excluded || []).map(({ id }) => id));
       const packs = manifest.packs.filter(({ id }) => !excluded.has(id));

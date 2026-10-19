@@ -1,0 +1,3371 @@
+{
+  "schema": "design-pipeline.direction-library-source.v1",
+  "bundle": "design-direction-library",
+  "source": {
+    "repository": "https://github.com/alchaincyf/huashu-design",
+    "revision": "798c4235ebff03d5c45e3c8affdf5e9d18f9dfa7",
+    "gitTree": "cf7e7baaf14ed1331ee1bb06cff2bc8e1af344de",
+    "committedAt": "2026-10-17T19:39:33+08:00",
+    "license": "MIT",
+    "reviewedAt": "2026-10-19",
+    "scope": [
+      "**"
+    ]
+  },
+  "licenses": [
+    {
+      "path": "upstream/LICENSE",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 alchaincyf (花叔 · 花生)"
+    }
+  ],
+  "snapshot": {
+    "root": "upstream",
+    "fileCount": 181,
+    "byteCount": 1594218,
+    "treeSha256": "00f8af6104de1fed3f732dab5cda61fa60acd6e052490fdb6e169e9912c63542",
+    "executableFiles": [
+      "scripts/add-music.sh",
+      "scripts/cloud/tts-doubao.mjs",
+      "scripts/convert-formats.sh",
+      "scripts/design-gate-hook.sh",
+      "scripts/mix-voiceover.sh",
+      "scripts/narrate-pipeline.mjs",
+      "scripts/render-narration.sh",
+      "scripts/render-video.js",
+      "scripts/sfx-cues.sh",
+      "scripts/verify-video.sh"
+    ],
+    "objects": [
+      {
+        "path": "assets/android_frame.jsx",
+        "mode": "100644",
+        "oid": "86071b3ccc8f19bf0d2e8683cd2fedea6b186955",
+        "size": 4506,
+        "sha256": "8c1c951518e5f0d39c07212d0bb9e8f1b5363b4ad4d1f903dca26d6a485e08bf"
+      },
+      {
+        "path": "assets/animations.jsx",
+        "mode": "100644",
+        "oid": "e48a3becbf22f5fd484a8bdf8447c3c9402e25d6",
+        "size": 10528,
+        "sha256": "5cbb50b6d0c78af36678d13e47df363aec6c6e7d011131f503c1f99d45158b9d"
+      },
+      {
+        "path": "assets/banner.svg",
+        "mode": "100644",
+        "oid": "65f68dee7f5326ab71ae3099352f063f97e9b4ad",
+        "size": 9502,
+        "sha256": "d8660a8e0cd300a773b21308b651ffdd4258ecdc723505724216e47425016b05"
+      },
+      {
+        "path": "assets/browser_window.jsx",
+        "mode": "100644",
+        "oid": "19c1034666ef2a33e732ec1146b0e063a692d16b",
+        "size": 3975,
+        "sha256": "59e412322a5ca34d68716978b4e1147efc95ba65f6fd4d4a99abcc96909f7d55"
+      },
+      {
+        "path": "assets/cursor.jsx",
+        "mode": "100644",
+        "oid": "768df32cdb5af95aabb2bf6eb3282cf59b9d02d8",
+        "size": 14408,
+        "sha256": "6321767cf44d7b95aeb2eeef756fc45d44e53985dc060f8e1c8805bb5f8e45a4"
+      },
+      {
+        "path": "assets/deck_index.html",
+        "mode": "100644",
+        "oid": "62e4773738ff16393a2a50f55b5e0da844b38ca9",
+        "size": 21320,
+        "sha256": "83d63a9ed531fb4f4a7b47c23c13024cb0b1831ab4883fc902bda351724c6820"
+      },
+      {
+        "path": "assets/deck_stage.js",
+        "mode": "100644",
+        "oid": "916790dc566eafb473791ac4f9facb42c2c00a20",
+        "size": 11678,
+        "sha256": "a7a2af14c2f8001d2c7e2590dacbf8110b38b37da7b82cbce12382286e8ed6cf"
+      },
+      {
+        "path": "assets/design_canvas.jsx",
+        "mode": "100644",
+        "oid": "9b9140e304367eb52939b6ac420114698ffdc5d2",
+        "size": 5195,
+        "sha256": "5376c8ebdc59ec8b969161cb815d9455ccd233e6d6baa0d49f8af337883ed3d6"
+      },
+      {
+        "path": "assets/director-notes-samples/launch-film-30s-sample.md",
+        "mode": "100644",
+        "oid": "f45b546a56453d8c35ac6b27ac94725722b885f2",
+        "size": 80207,
+        "sha256": "92929cba00fee525a70cbe3cd3f6e7b4d2ca7afb9a91a707721cfce9b34b92cd"
+      },
+      {
+        "path": "assets/ios_frame.jsx",
+        "mode": "100644",
+        "oid": "eb0160e489e2a5112a35b716af710c11f9200485",
+        "size": 4753,
+        "sha256": "e19b4dd028aed54f8c20cea8b070c349e89f2ebcb9ff6b29fd37a9b2381789bd"
+      },
+      {
+        "path": "assets/macos_window.jsx",
+        "mode": "100644",
+        "oid": "7155b98254780b2336cb90ab0db9dd3fc6e10882",
+        "size": 2536,
+        "sha256": "ebe16aea22d9421dc64b649c4c6f985545abf976fdcd525f16dc010235c87b96"
+      },
+      {
+        "path": "assets/narration_stage.jsx",
+        "mode": "100644",
+        "oid": "ac5e56d8e60a8236d22150b389e4c5b908923d2a",
+        "size": 20715,
+        "sha256": "a60a6421e26ca6b6d20feed7233873e1c19dea47bb00e60be3c686c3fa596bef"
+      },
+      {
+        "path": "assets/personal-asset-index.example.json",
+        "mode": "100644",
+        "oid": "dd4b0d6e64e1fdea2213e1f75804637e3885d4fc",
+        "size": 1826,
+        "sha256": "b35ca20aa41f6a52ad7248969a25eadaf607d3379f79fd1f4cb841fca423886c"
+      },
+      {
+        "path": "assets/showcases/INDEX.md",
+        "mode": "100644",
+        "oid": "5a89e42ccf9379b1a98db40a0439eeadc8e6f192",
+        "size": 5538,
+        "sha256": "576c8c1c6ca508e074337a9bcc001615c72ab7bf13611421ff2b13007fd970f9"
+      },
+      {
+        "path": "assets/style-specimens/app/01-hardware-panel.html",
+        "mode": "100644",
+        "oid": "97d1e8f8390dc38b750b78c07ca6599bf7d4a7a7",
+        "size": 7283,
+        "sha256": "d5e4e7d6dcf9363131f4792a7bdccf582b0b29953f20d9c27c63cea60dd15e9e"
+      },
+      {
+        "path": "assets/style-specimens/app/02-liquid-glass.html",
+        "mode": "100644",
+        "oid": "a21fe9f71cc18ef629d6fa5a808e425fc4172964",
+        "size": 6962,
+        "sha256": "9e0af28bb1d37de3a7067f9b03c2fc32fe2eaf0106775f3a74e9c8b61b574a86"
+      },
+      {
+        "path": "assets/style-specimens/app/03-playful-3d.html",
+        "mode": "100644",
+        "oid": "2ade7af0fdc07ceebe76907a28bc0175c1683922",
+        "size": 5753,
+        "sha256": "a84cca82724b5bd75a7d3e75329285214bcf452b1cc3fdb4832d7c51b4651065"
+      },
+      {
+        "path": "assets/style-specimens/app/04-friendly-fintech.html",
+        "mode": "100644",
+        "oid": "beea5583fc75ac147fddca6215893c9f804f63c2",
+        "size": 6381,
+        "sha256": "b5248496d8256f9b928127e47ee97d0e5d94b7c74708e6b8b1c5462167376eee"
+      },
+      {
+        "path": "assets/style-specimens/app/05-pro-camera.html",
+        "mode": "100644",
+        "oid": "8e2b6d410ee0c1759228f95952f6f1c3c4926e8c",
+        "size": 7254,
+        "sha256": "3bd9e62b49fa54ce4ff9529612637c9d1858663fdac6e980fededa449f77b12f"
+      },
+      {
+        "path": "assets/style-specimens/app/06-topo-outdoor.html",
+        "mode": "100644",
+        "oid": "b935ab6b23d86a812f3b1b1c237116ef710a3705",
+        "size": 9151,
+        "sha256": "0baceb953f5bcaf279a55e7104142089eabec72af00be63de9907643ff512595"
+      },
+      {
+        "path": "assets/style-specimens/app/07-feed-waterfall.html",
+        "mode": "100644",
+        "oid": "3cff14eaf5c7af96807a5c4c0c4c5c2374c51315",
+        "size": 7716,
+        "sha256": "c65f0a8fa9296b3845d0d6269bdcd8272af55a9e308e9f24c847a7df51514f2c"
+      },
+      {
+        "path": "assets/style-specimens/app/08-command-palette.html",
+        "mode": "100644",
+        "oid": "a85024fdbd5b5d275cf338424c560bcd0a7860fc",
+        "size": 6505,
+        "sha256": "d4b1e0c12b3cd2c99c04c71f9eb439e8a0e28e626c338ad35169bd1ebcb4f120"
+      },
+      {
+        "path": "assets/style-specimens/app/09-health-color-code.html",
+        "mode": "100644",
+        "oid": "2dade3b128a3785ffb0651e662fb169f66d8f87e",
+        "size": 7485,
+        "sha256": "6856f15940eb62559034d2bf455e21205c811dc1cf93aa903c49abe9d3797fe0"
+      },
+      {
+        "path": "assets/style-specimens/app/10-native-polish.html",
+        "mode": "100644",
+        "oid": "7972002aab7ec5d3fff3d077b0dd68f01a5e143a",
+        "size": 6513,
+        "sha256": "37ab518616a0286ca72900d617978d0a5ab44f7cb41b1ac8af4db8fa2bb555be"
+      },
+      {
+        "path": "assets/style-specimens/app/11-gentle-encouraging.html",
+        "mode": "100644",
+        "oid": "65dadf4c961f5a41e1794b3d0a75fa4111c85b92",
+        "size": 6438,
+        "sha256": "4ea3caa190edd364af6b76161354777981511a39c6c9d4ee325c0c6ef7c9c84e"
+      },
+      {
+        "path": "assets/style-specimens/app/12-editorial-reader.html",
+        "mode": "100644",
+        "oid": "1925329a51bd47e15e63d57a53b1e942b4c153f4",
+        "size": 6078,
+        "sha256": "3feb16f7afb1763bdb0a7af7e0ddb9cad62d4380b1512093511298324f97e718"
+      },
+      {
+        "path": "assets/style-specimens/east/01-lu-jingren-bookcraft.html",
+        "mode": "100644",
+        "oid": "6d2d6491d5a0c83b37a2f18d826b4f95c5221f17",
+        "size": 4128,
+        "sha256": "88b5a1c89af9d789112212da0f2c1f232d4d408a023f87b56028eb8014d2e59d"
+      },
+      {
+        "path": "assets/style-specimens/east/02-song-block-print.html",
+        "mode": "100644",
+        "oid": "2f748563ff6085a32fb3760fbedcd75b668d591b",
+        "size": 4835,
+        "sha256": "e68fac02350c6ddc913f0ecec20737b4421c72165809e75f5fb51572bde7e408"
+      },
+      {
+        "path": "assets/style-specimens/east/03-republic-book-jacket.html",
+        "mode": "100644",
+        "oid": "150694186537f8bb42a7eb9dc205f8ab54d49904",
+        "size": 4717,
+        "sha256": "f16a55e5766604f29de568b25d2a90319d03ec2aaa78641b4c75b31f6591c6cf"
+      },
+      {
+        "path": "assets/style-specimens/east/04-shanghai-deco-calendar.html",
+        "mode": "100644",
+        "oid": "531b96ca1ccb34f9a06d29aa9a0a9f6869b6b0d2",
+        "size": 5104,
+        "sha256": "34745cfa8a07298375ba7cbdb5882a7b72d400974d395b1dab43e8d59639e8cf"
+      },
+      {
+        "path": "assets/style-specimens/east/05-hanzi-experimental-poster.html",
+        "mode": "100644",
+        "oid": "e7841ff479d8f22a266894fd5a0cba29d30e49c0",
+        "size": 5087,
+        "sha256": "7022996f64ff7a1f56754b599d43ebc3d55708baab18028d08f770aee8d2c3f5"
+      },
+      {
+        "path": "assets/style-specimens/east/06-hk-street-signs.html",
+        "mode": "100644",
+        "oid": "9ce835ffd622787733701f52fcf6a1bdc9b6f449",
+        "size": 4496,
+        "sha256": "e6c3c5f54c5164485cb5363c78474974fd3f07eecdcc8a987aa2c1e1cfc27079"
+      },
+      {
+        "path": "assets/style-specimens/east/07-traditional-colors-solar-terms.html",
+        "mode": "100644",
+        "oid": "ecc7ea4fdf1d983ce6c1676e44303c2095544976",
+        "size": 6097,
+        "sha256": "ea7951d9e6b978ff49220046df8601aa72c5fe9c6a31688bd2f5f8aa790a7217"
+      },
+      {
+        "path": "assets/style-specimens/east/08-sugiura-info-mandala.html",
+        "mode": "100644",
+        "oid": "3bfb514104d65463b12e5cd5cd791df19e5b5c7c",
+        "size": 28521,
+        "sha256": "700d7770b16cb425721676d10f88945ff675ef9fe8a779f0da65ec1602807370"
+      },
+      {
+        "path": "assets/style-specimens/east/09-tanaka-geometric-poster.html",
+        "mode": "100644",
+        "oid": "bb9af5407a5172d6089bd5ef884ed101639c881b",
+        "size": 3179,
+        "sha256": "b738974d0826eddbdbd5f46c92528cd1816476e2a28d55320f9b4a968bac0e3f"
+      },
+      {
+        "path": "assets/style-specimens/east/10-hattori-playful-offset.html",
+        "mode": "100644",
+        "oid": "3f75de5419c5992519661770442c568c1413cf9c",
+        "size": 2990,
+        "sha256": "17b02b67a43c6d15a795857f7c473b4f5700f4e825e253def716935804bda48a"
+      },
+      {
+        "path": "assets/style-specimens/east/11-sato-minimal-symbol.html",
+        "mode": "100644",
+        "oid": "b702564209c26afc5516e2524342f4f62cfef701",
+        "size": 2827,
+        "sha256": "10896e14e1fe1290446a93bb38f69f926babf81e4375842ee5c6313032e8e258"
+      },
+      {
+        "path": "assets/style-specimens/east/12-japan-magazine-dense.html",
+        "mode": "100644",
+        "oid": "13899906132de7b2e0fcf8988b7255fef5078013",
+        "size": 14513,
+        "sha256": "65643f8d9cfec47ab6301105a2c53dc39a847241a7017beef2bdce2b8a20a159"
+      },
+      {
+        "path": "assets/style-specimens/info/01-personal-annual-report.html",
+        "mode": "100644",
+        "oid": "7bc0de1b2139522f48783681114f90e4ae2bb3aa",
+        "size": 9510,
+        "sha256": "cc2e35e924d1a93f7a2bc59ef2235bacf2a8189a9bae2666d6e35ff32039909d"
+      },
+      {
+        "path": "assets/style-specimens/info/02-explanation-graphics.html",
+        "mode": "100644",
+        "oid": "0754f760bb94658c0cb6e67af5d3ec0084a96ba9",
+        "size": 5055,
+        "sha256": "81c91e42ea6cf9401c1490a2f2ea0dfdc74b12626df88a748fc34adf57dec420"
+      },
+      {
+        "path": "assets/style-specimens/info/03-cross-section-epic.html",
+        "mode": "100644",
+        "oid": "39dd5cdaaae86250b055acb75cff023c01b2de88",
+        "size": 7255,
+        "sha256": "2d55c50e7f31607d260769439d221d698c6e6039dc8200e2576a454f34422611"
+      },
+      {
+        "path": "assets/style-specimens/info/04-magazine-pop-data.html",
+        "mode": "100644",
+        "oid": "f49f020777b5da29b0ba058ab2b3fd92c7387a8c",
+        "size": 3682,
+        "sha256": "b460783b39e0625881b6a7c050ee044f71f46de1cde34db6a390eda0dac141b3"
+      },
+      {
+        "path": "assets/style-specimens/info/05-isotype.html",
+        "mode": "100644",
+        "oid": "4c4829dda91d731184d03ab293e2178a1e12373b",
+        "size": 4001,
+        "sha256": "fc8f3f52b9100f73013f78fe84e05064a37bcaad3f10deaf6b86e1915d969301"
+      },
+      {
+        "path": "assets/style-specimens/info/06-data-humanism.html",
+        "mode": "100644",
+        "oid": "4c9f265e141b6210d984149e7272aff67a44ba6b",
+        "size": 6064,
+        "sha256": "482fe2a2c3556803974840181908624d608c2ed93943b8d7289322e2ad880864"
+      },
+      {
+        "path": "assets/style-specimens/info/07-scrollytelling.html",
+        "mode": "100644",
+        "oid": "8adf1765e9121782be237785f7056a0612e9a14a",
+        "size": 5031,
+        "sha256": "f78938a03ef01b196164a9305e7e840fc6f7d1d5ec83036825c5695c7c98fba9"
+      },
+      {
+        "path": "assets/style-specimens/info/08-cartographic-lead.html",
+        "mode": "100644",
+        "oid": "de1ea3c6f66c448562a2835627c472191217ef88",
+        "size": 4747,
+        "sha256": "d68e13f51a35ea273c9cc359b063375d55f3e5cb848b681f29a9394b7029b3b2"
+      },
+      {
+        "path": "assets/style-specimens/info/09-newsroom-chart.html",
+        "mode": "100644",
+        "oid": "33d14f8a8e52de00bbbb5b39cfb8611a3659bc11",
+        "size": 5185,
+        "sha256": "89ffd58e6a8e1a4f3d0d869e9846c5087367b5812b6f37efdb3bd51c26126d45"
+      },
+      {
+        "path": "assets/style-specimens/info/10-computational-portrait.html",
+        "mode": "100644",
+        "oid": "9531e64200c71042882efb1705a12952fa74e10d",
+        "size": 4471,
+        "sha256": "a86d723d0b1a1c8ff6ace7f77225cfbd45c90ac55307343eb1250d7d3d5949b2"
+      },
+      {
+        "path": "assets/style-specimens/info/11-beautiful-information.html",
+        "mode": "100644",
+        "oid": "a934c9da2044e6138028d5a0b374e8700dca3820",
+        "size": 4309,
+        "sha256": "127068a30a630025a544d175149ceebe14fc578bba03980c4368d57c16fcd8c4"
+      },
+      {
+        "path": "assets/style-specimens/info/12-open-research-data.html",
+        "mode": "100644",
+        "oid": "63347cb250284a10ed140acf3c2dccfd4b14731f",
+        "size": 3497,
+        "sha256": "3e7e3337fe6858334dffd7327916e9bcd65cc9e646889c33278fd6eb497df53c"
+      },
+      {
+        "path": "assets/style-specimens/info/13-speculative-tech-diagram.html",
+        "mode": "100644",
+        "oid": "e7f649d59959e62dd52beb4501eb228e016e82dc",
+        "size": 4103,
+        "sha256": "12e5204aab8b2e99acc7961523ec5306755c504d2f0ceaa2a5bb889f25ccaae9"
+      },
+      {
+        "path": "assets/style-specimens/info/14-pictogram-system.html",
+        "mode": "100644",
+        "oid": "d59c2d35fcc78ae1c04feeaed2f82102adc2695d",
+        "size": 4402,
+        "sha256": "40d611d0a4ecf35b3dafc12819164bf3a08f64e8f1cfa9f1cb2bc38871f0fc8b"
+      },
+      {
+        "path": "assets/style-specimens/info/15-small-multiples.html",
+        "mode": "100644",
+        "oid": "3c9f67ab3cb6b6a8920f1b6de41d35b88aa99d17",
+        "size": 3028,
+        "sha256": "d833bc247900a2458348af449bb40480a8a60e04db305bf896112ae93db0338c"
+      },
+      {
+        "path": "assets/style-specimens/info/16-topological-transit-map.html",
+        "mode": "100644",
+        "oid": "f3d9f2ecc19b8748bbec3c1ee38070c704c8550a",
+        "size": 3662,
+        "sha256": "ae3d5e5af17ddc6d37de07ff4e50c5b69d15ce5b97d047b7c7380352ed642f59"
+      },
+      {
+        "path": "assets/style-specimens/info/17-ma-emptiness.html",
+        "mode": "100644",
+        "oid": "59344e672d5658ebdb428d83c10f744ca1ab460e",
+        "size": 2035,
+        "sha256": "d66a9d1d8acfb94f50dc424c2a5cddf71a6b86c4fbb5063f2103d9f4cfafc120"
+      },
+      {
+        "path": "assets/style-specimens/info/18-bookcraft-data.html",
+        "mode": "100644",
+        "oid": "0c403204e234eb199de28ca64cd3940429780c1f",
+        "size": 3087,
+        "sha256": "fe67bc3766136121a0b3dbba0fb0d2aca0743cc2da4da54a6eecab667b87e9ab"
+      },
+      {
+        "path": "assets/style-specimens/info/19-scientific-figure-plate.html",
+        "mode": "100644",
+        "oid": "ac979a7c8e4616ad5bc21d68f12b54464b2a0dbe",
+        "size": 5291,
+        "sha256": "c9211878ed04097cbe9c950d7022b5ff6ecddab22590af721c3f7ed1c4a58c23"
+      },
+      {
+        "path": "assets/style-specimens/info/20-swiss-grid-report.html",
+        "mode": "100644",
+        "oid": "2cba994048610fc965dc93dcb56b4cc542dbfc60",
+        "size": 3271,
+        "sha256": "3c359424e539394a0e4d9cf4b66cd77945e7f8dd5c491490e10860f2127cea0e"
+      },
+      {
+        "path": "assets/style-specimens/ppt/01-neo-swiss-billboard.html",
+        "mode": "100644",
+        "oid": "8d3cb36fdc9e0281a7f5bbb0b77cb46adac48bf1",
+        "size": 2642,
+        "sha256": "49d739d24466d9e2bd4c89b1ca486c3cfe5bb06f5a6e606573df865196ddbe6f"
+      },
+      {
+        "path": "assets/style-specimens/ppt/02-black-big-number-stage.html",
+        "mode": "100644",
+        "oid": "0a3aaefb7d2743b4f67fd11c367bb74e833d1b22",
+        "size": 1297,
+        "sha256": "a0139a0822c08c806e46aaf78883b26c4205a7f4e6d797ecc022fef6757b1167"
+      },
+      {
+        "path": "assets/style-specimens/ppt/03-mono-brand-type-hero.html",
+        "mode": "100644",
+        "oid": "588ae38008bed33bae12d30e1a40f5735cea2bd5",
+        "size": 1633,
+        "sha256": "2ecb0639539c3d8ba255ed5f29c36ae295a0be6c1ce3ac0622d3a02834cb5454"
+      },
+      {
+        "path": "assets/style-specimens/ppt/04-full-bleed-gradient-manifesto.html",
+        "mode": "100644",
+        "oid": "2f71fca5dca4d681298f6b79153acd14f7b4d20e",
+        "size": 1488,
+        "sha256": "f7f89a68831e71348309207a2f0e3e2a0ca6e98a4d076310251d3dcbd4ab535a"
+      },
+      {
+        "path": "assets/style-specimens/ppt/05-candy-lecture-stage.html",
+        "mode": "100644",
+        "oid": "c211034f4e590120b1878b0bf2715b27c38a255d",
+        "size": 1573,
+        "sha256": "00c86946634f5728251c4f9ad47de2e8ce46cac0b98b9bb6d3bcd6ff3a68dc48"
+      },
+      {
+        "path": "assets/style-specimens/ppt/06-playful-collins-editorial.html",
+        "mode": "100644",
+        "oid": "8cf65ad48de5f0f1fed2887f2d1ca2f7cb4e5fb2",
+        "size": 2455,
+        "sha256": "e68f65cfcb13362c6f5af41017bc1f099cd7cb214e6fe82b9d04693ed6a1fcfd"
+      },
+      {
+        "path": "assets/style-specimens/ppt/07-irreverent-pop.html",
+        "mode": "100644",
+        "oid": "38b3a5239420aa0ab87059743bed4826da2f999c",
+        "size": 2877,
+        "sha256": "10c8d55a8f09b195330377d58b0549b75fdccbb4d643aa964c677e033f1aef4c"
+      },
+      {
+        "path": "assets/style-specimens/ppt/08-y2k-inflated-wrapped.html",
+        "mode": "100644",
+        "oid": "99aa4199df0a78c6220aa3a1e615b354d0dfd7fc",
+        "size": 2434,
+        "sha256": "8ef6bd944fbd1f222ddfb1e7dfffdd1e0bda8ebe6390499584e7ae2c4e3a5580"
+      },
+      {
+        "path": "assets/style-specimens/ppt/09-bento-grid.html",
+        "mode": "100644",
+        "oid": "a9531cfc8a8781b34a747ac56b03cb957826f23f",
+        "size": 4237,
+        "sha256": "405d02432275be8b64eba1770bf17297f61910d1af0a7bdff7a80c7a3924f25d"
+      },
+      {
+        "path": "assets/style-specimens/ppt/10-dark-hairline-terminal.html",
+        "mode": "100644",
+        "oid": "9f1f7e97db1b8bbd8596ed5530231b15243a97b1",
+        "size": 2790,
+        "sha256": "d730a3a8ba6645d2e6a3ae0c062cc8e741600256994a0fb3c5e494119ec298a0"
+      },
+      {
+        "path": "assets/style-specimens/ppt/11-two-font-consulting.html",
+        "mode": "100644",
+        "oid": "6af2caa30e6b426d8a3f0696d3382d7923e4cb55",
+        "size": 3821,
+        "sha256": "c7ab93e9666f0e6a1d426c574fd102566ac0bf1c4fb9823a131e370bd63d8e09"
+      },
+      {
+        "path": "assets/style-specimens/ppt/12-diagram-isotype.html",
+        "mode": "100644",
+        "oid": "86157af6d13ffe3fabfd9ed08284f15800d425e4",
+        "size": 5300,
+        "sha256": "9a47fef22c1d21cca139e115a7f39fa00e3919f2128f23ba4cdfed5a5498de4b"
+      },
+      {
+        "path": "assets/style-specimens/ppt/13-diagrammatic-minimalism.html",
+        "mode": "100644",
+        "oid": "df9d317727b76ebd6cae8f0f358b1f8b74926c6f",
+        "size": 3054,
+        "sha256": "b92e7681c6fe9d27ee4546956f4e0d8cead7258e4e83c2565216a6802d220df0"
+      },
+      {
+        "path": "assets/style-specimens/ppt/14-narrative-sparkline.html",
+        "mode": "100644",
+        "oid": "3fe8fd3cd08753af76b388fc9b93cb3e8fba49e0",
+        "size": 3755,
+        "sha256": "45b047d5258367c4406ed2b955cd74bad23a7601c8ba8175c139418c866d2079"
+      },
+      {
+        "path": "assets/style-specimens/ppt/15-assertion-evidence.html",
+        "mode": "100644",
+        "oid": "6653edad404241c242850fb6fcdb725f3a34d5c4",
+        "size": 3295,
+        "sha256": "9ffc87de6a4664860963516aca4d9d6bdfd06bbff2e2a7007fb35294286ae349"
+      },
+      {
+        "path": "assets/style-specimens/ppt/16-institutional-swiss.html",
+        "mode": "100644",
+        "oid": "c02b024111c7ebd847ba94671a467d9325cbfb51",
+        "size": 2651,
+        "sha256": "9cb0fe718d1c5f12e77158055e7bc255d176c57dbe1d00e2937e9334f1891170"
+      },
+      {
+        "path": "assets/style-specimens/ppt/17-editorial-longform.html",
+        "mode": "100644",
+        "oid": "72f9173fe22b37f65562fa01828b81d0b57a27a3",
+        "size": 3985,
+        "sha256": "d419e5701e6b009cb0a7553f5fd482bc7c9a9d08f3b1e71730cb110291722faa"
+      },
+      {
+        "path": "assets/style-specimens/ppt/18-humanist-rounded-cards.html",
+        "mode": "100644",
+        "oid": "4150e0d188b267c11129665a859ca709d638d21b",
+        "size": 4190,
+        "sha256": "f2276487b8200ba34025610258d38e43f21e8272af53b4415adde3354468b98d"
+      },
+      {
+        "path": "assets/style-specimens/ppt/19-dense-research-report.html",
+        "mode": "100644",
+        "oid": "fef78ee93d3bc892ab61d77ae7ff004cb6de0d7d",
+        "size": 5263,
+        "sha256": "417b352d07f8ceb28552d74f259439261a00ed9a26d65fba809ed9aed2c8a1e6"
+      },
+      {
+        "path": "assets/style-specimens/ppt/20-all-text-manifesto.html",
+        "mode": "100644",
+        "oid": "1127b155abc01bcf6636fa05e40646e7ae33d22a",
+        "size": 1612,
+        "sha256": "64eff20afc3a4e297ea15dce0e0cba56c385ca91595a431f06fa6a14965486d7"
+      },
+      {
+        "path": "assets/style-specimens/web/01-editorial-brutalism.html",
+        "mode": "100644",
+        "oid": "f0d39c0616c76974d2829bd0d868b9f85cae0faa",
+        "size": 4348,
+        "sha256": "4c49116ec0ef45202727f9545e51518162714f9fc2e680fb2c2a3a0b167881f7"
+      },
+      {
+        "path": "assets/style-specimens/web/02-neo-brutalism.html",
+        "mode": "100644",
+        "oid": "54207210203946c8f889db3e405a71197862c09a",
+        "size": 4334,
+        "sha256": "9d9dbfbad5d86383c6e4f2a87b566cd1b548c0dd94588a00d08d10e259e3dd46"
+      },
+      {
+        "path": "assets/style-specimens/web/03-memphis-maximalism.html",
+        "mode": "100644",
+        "oid": "896d3ac0c291e07291a21950d2fd7779170e868c",
+        "size": 4868,
+        "sha256": "c0a6c05cca835af676890b1dbc5cd14cfc64eb30824090c7cf47cdda51390429"
+      },
+      {
+        "path": "assets/style-specimens/web/04-friendly-candy.html",
+        "mode": "100644",
+        "oid": "f0a86999f1bc2b61d7ad5ef547c9624686f31fb8",
+        "size": 4946,
+        "sha256": "915740a37779ce5f5df0c0b6b16f99d1ef5507f7a4753e2291cbd8cfb4e167fc"
+      },
+      {
+        "path": "assets/style-specimens/web/05-pure-css-art.html",
+        "mode": "100644",
+        "oid": "1c48a978508094493b35032ca975aaa83f4a1c7c",
+        "size": 5501,
+        "sha256": "58bc8e95d2de0224119a1209f971e258d73c19165189e44a992f850fd8a50117"
+      },
+      {
+        "path": "assets/style-specimens/web/06-bold-big-type.html",
+        "mode": "100644",
+        "oid": "0bdd7d1712f6cf958c3c184f328216a9d7c7f2e3",
+        "size": 2594,
+        "sha256": "a057d7c38954333987ca97507d7710984070de73acbc62c9103cea0d691ebb3d"
+      },
+      {
+        "path": "assets/style-specimens/web/07-cosmic-retro-futurism.html",
+        "mode": "100644",
+        "oid": "7b7d9d6594a26c6398d7317592e119ae2e2d2a6b",
+        "size": 4124,
+        "sha256": "7bad5b4137696a86b49a6fd49511e1c0ed8436d83b6341e07400394bc81d0942"
+      },
+      {
+        "path": "assets/style-specimens/web/08-cinematic-sound-viz.html",
+        "mode": "100644",
+        "oid": "7bd1aabbd73a2c5128475f011763aa65a1c10e99",
+        "size": 12474,
+        "sha256": "e951e44bc6e0c7137bd9068142d4c8b356c5d8311db1f7528ae200a8efebf4f9"
+      },
+      {
+        "path": "assets/style-specimens/web/09-pixel-side-scroller.html",
+        "mode": "100644",
+        "oid": "4c7fbe746acf7b9d5639ad4fe77083687a050405",
+        "size": 14976,
+        "sha256": "a119feff61af79b876018d44ff2fcf556ce32dad3f543307ed78545e6ff65a37"
+      },
+      {
+        "path": "assets/style-specimens/web/10-bauhaus-geometric.html",
+        "mode": "100644",
+        "oid": "ac22e4c8197dba046bd3c0d52450dfe5175fea76",
+        "size": 4955,
+        "sha256": "685664fb0b7b770ac3c82298adf19666d92876b721a549879df97d8284e74b88"
+      },
+      {
+        "path": "assets/style-specimens/web/11-dark-editorial.html",
+        "mode": "100644",
+        "oid": "adf8b37014f63cbabbaf08d62973b29017b8dab7",
+        "size": 4452,
+        "sha256": "e389f9eae9f15031bb214f6fcbcc049b08560c183ca5ce63eca2ff777d5c250d"
+      },
+      {
+        "path": "assets/style-specimens/web/12-warm-editorial.html",
+        "mode": "100644",
+        "oid": "d1796228bcf30d15eeff84a47ba54acbc0dafce8",
+        "size": 3922,
+        "sha256": "1ea4568d632006069eafcb9a6f45d24b49f1a1fe22f5c33f5c1244ba2489250f"
+      },
+      {
+        "path": "assets/style-specimens/web/13-glassmorphism-bento.html",
+        "mode": "100644",
+        "oid": "d631a8b504a5344c32ccac4525f15a00d19222f6",
+        "size": 5807,
+        "sha256": "3dd9bcde77c62c49177094069409df40efee58febf391881391ef56eacf3916a"
+      },
+      {
+        "path": "assets/style-specimens/web/14-angled-fluid-gradient.html",
+        "mode": "100644",
+        "oid": "cb4828a6eed619a00482761fa5015032f5dcfe6b",
+        "size": 4064,
+        "sha256": "d0a574946b3699c8d58f776df6789024243d70adb493d47eea6834c4601dbb00"
+      },
+      {
+        "path": "assets/style-specimens/web/15-utility-colorful-docs.html",
+        "mode": "100644",
+        "oid": "0262bfbf6dce03952077f920829e73b516f296bc",
+        "size": 5911,
+        "sha256": "8ba86721b3fcc443dde736562154dce5d027b25685e9dbf10607cbb676bec528"
+      },
+      {
+        "path": "assets/style-specimens/web/16-terminal-core.html",
+        "mode": "100644",
+        "oid": "ded2a16f056f7883337b646a498ee80a79fd6647",
+        "size": 5068,
+        "sha256": "d0c8bc0fc56b6dfd19a86be2bc7c6dbddea5ac13dce38e9e0626fa682a7c069c"
+      },
+      {
+        "path": "assets/style-specimens/web/17-functional-brutalism.html",
+        "mode": "100644",
+        "oid": "7bf99e91c3feb49f7450bbe9492bc4b85f9bd64c",
+        "size": 5608,
+        "sha256": "ef6eea5bda776402ec920459e4254ac300774150d78cc56009a9af6ddc445aef"
+      },
+      {
+        "path": "assets/style-specimens/web/18-gallery-dark.html",
+        "mode": "100644",
+        "oid": "b4a66752afa201384d22cd5d3225407ac7827915",
+        "size": 5021,
+        "sha256": "22136de8ed2bf4321bd1d3f0395bec7a86a9bb2a96575cc9f17c050bc96a88e1"
+      },
+      {
+        "path": "assets/style-specimens/web/19-swiss-monochrome.html",
+        "mode": "100644",
+        "oid": "5cf2a244b920f5f1043767d42218005edda40d12",
+        "size": 3363,
+        "sha256": "40c4cab166cbee428bcbc276a038361f619862e1fc4ca7d333c9e7650c443ef1"
+      },
+      {
+        "path": "assets/style-specimens/web/20-kenya-hara-white-gallery.html",
+        "mode": "100644",
+        "oid": "630c796ba92202f895a217e467929480b590521b",
+        "size": 3263,
+        "sha256": "4d5bab9d1b3a33baba2c09fd9e8be704191925db5e6eb8558b92bc76abb1a3f9"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "oid": "ed67368a2a79ed7be97b2a4852330cdac5b8b12a",
+        "size": 1086,
+        "sha256": "6d6a2a9caf2e6d2b76974050427053b2892d8aa4c33fd168ce63a537fcee9d96"
+      },
+      {
+        "path": "README.en.md",
+        "mode": "100644",
+        "oid": "37ef4f46e771fc1888899176fa9c5335d1d5aac4",
+        "size": 23679,
+        "sha256": "e4e967278fc309e8c3b6282fc76b85cf8bde72c7ed22a90f9a7ebb190047f354"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "oid": "7f1323864202f6cba87cb6d281a292f6baf01f6b",
+        "size": 24055,
+        "sha256": "a7d19cd385154fb81c953a2ff0dfe682d3dbde2bf849c408c6b9797c056e7208"
+      },
+      {
+        "path": "references/about-author.md",
+        "mode": "100644",
+        "oid": "171ab35fc0ae4c8aa42248416168106b8892c71c",
+        "size": 9941,
+        "sha256": "4bb3dd5b67560d039762abf695b92701348fbdfd488f4f5428cd8383b2c107c5"
+      },
+      {
+        "path": "references/ai-video-review.md",
+        "mode": "100644",
+        "oid": "a4f80a1f9f45e04cf0f20736b4176a4c89ac716e",
+        "size": 4037,
+        "sha256": "25475265cb8af01c38778f771db2b11199bc50c2dca8d58e7372ab555ad77809"
+      },
+      {
+        "path": "references/animation-best-practices.md",
+        "mode": "100644",
+        "oid": "49f3e0c04403d5b7fdcafdfcf579766d0ab7a7c7",
+        "size": 22500,
+        "sha256": "5b135596a6b8da215e30747b68c706fda3f760f3f17204f94edb8e625f898d93"
+      },
+      {
+        "path": "references/animation-pitfalls.md",
+        "mode": "100644",
+        "oid": "e669ccbae05af0507ccb0a35ca4901e956718ae7",
+        "size": 30806,
+        "sha256": "7a1a6a6f9e545ebfde4921899c8f05a5477c6f31125e0656724a32de18ccd604"
+      },
+      {
+        "path": "references/animations.md",
+        "mode": "100644",
+        "oid": "80200adfe1d6bd1820eab3632cfee406a89b9170",
+        "size": 7762,
+        "sha256": "58f056917e469fe4b9e3d6422721ba80e68c980e5e30b17297f1bef2bcfca9c0"
+      },
+      {
+        "path": "references/app-prototype.md",
+        "mode": "100644",
+        "oid": "0f4289f76c9aad16832e1641de31eea9f87f71cf",
+        "size": 11895,
+        "sha256": "a00aab7726c72960e4859c0ee0df2ac1cb58ea3a42e55462f0373bea42428984"
+      },
+      {
+        "path": "references/apple-gallery-showcase.md",
+        "mode": "100644",
+        "oid": "63346e819343afaf2a975e1860e460924673a874",
+        "size": 11568,
+        "sha256": "ac969d1a9a1b29bd84a00c0a787f7bee97cb70051ecda4e966c7656c67de312d"
+      },
+      {
+        "path": "references/audio-design-rules.md",
+        "mode": "100644",
+        "oid": "0144248e4f828a17649ed68a790ba3b0b310ceb0",
+        "size": 9613,
+        "sha256": "aa8c76e64100507b7f264a78b9408028935b2bdafe2bbde695ed4a49555a75a0"
+      },
+      {
+        "path": "references/brand-asset-protocol.md",
+        "mode": "100644",
+        "oid": "f17e9e7e889270b009294ec4aa89e7535577bcd1",
+        "size": 15424,
+        "sha256": "932c64e46fc60e3aff076fde5c98e7609c4365b7c1e84dd593994471c354cb4a"
+      },
+      {
+        "path": "references/camera-language.md",
+        "mode": "100644",
+        "oid": "04e1769e6355975e87784062c59c6b554b875825",
+        "size": 23221,
+        "sha256": "17d9ec457df9920953588ffdd1fdff92c3679093cebd3b022b48861105563c71"
+      },
+      {
+        "path": "references/cinematic-patterns.md",
+        "mode": "100644",
+        "oid": "b8b1dc9e6a43a53545895385edf8876887eacf7b",
+        "size": 11086,
+        "sha256": "1266cb4feb14e44997b6abcc33091991565402ec6a7b22698628b31a4da472b8"
+      },
+      {
+        "path": "references/content-guidelines.md",
+        "mode": "100644",
+        "oid": "c1fa2f871924bb5fa612daa58d31901f7ab7160b",
+        "size": 11791,
+        "sha256": "d9e1f08740bc6a1327b9bedaafad37b9791a1640a3b13b686b53f4a9483414e2"
+      },
+      {
+        "path": "references/critique-guide.md",
+        "mode": "100644",
+        "oid": "8eb55ce9eea9bcf089c828ff5b9d021cd850da50",
+        "size": 9022,
+        "sha256": "3636ed8422bb88a11bc3e1db00b252b707f20cf83f6ec900077abb020ff7a8ce"
+      },
+      {
+        "path": "references/design-context.md",
+        "mode": "100644",
+        "oid": "12adeb06d8834e0c9ba934a62b95330c39d33cd2",
+        "size": 6704,
+        "sha256": "93a7e6be5f6cb29076d3651747d5033701362ddd03283b1ddf11b105757430b6"
+      },
+      {
+        "path": "references/design-styles.md",
+        "mode": "100644",
+        "oid": "26e72717ef666655e47ec214a2863734602566bf",
+        "size": 101285,
+        "sha256": "4bcf890ee28415684ad889a53cac1d6fcd8c2f09b460dad9069edc73b3a2a23a"
+      },
+      {
+        "path": "references/directions.md",
+        "mode": "100644",
+        "oid": "aaca083c13ee9ba311a0af8c0b8b84deeea78b19",
+        "size": 12670,
+        "sha256": "78ad5a0df1536ad19cb9049f1a90d027c6c30a4a44acde657a0d4b410ad8efa7"
+      },
+      {
+        "path": "references/editable-pptx.md",
+        "mode": "100644",
+        "oid": "7c3dfbfb73c575d7d52c3206b2b619380056874d",
+        "size": 18570,
+        "sha256": "cc76f248d3f22f6c2b42b9b02acc95a1b278f2e57bfcc22120d6fa0b09a285ad"
+      },
+      {
+        "path": "references/evolution.md",
+        "mode": "100644",
+        "oid": "e93358674822d7a6c1c92dba4e883d9937086dbb",
+        "size": 7242,
+        "sha256": "28b87ec9305191a644af332bdc8b911c30d0bb0381d71df2c4832bc9afb6fabc"
+      },
+      {
+        "path": "references/experience.md",
+        "mode": "100644",
+        "oid": "8441153803b099fe9b1f38e231711d2d5a541f88",
+        "size": 5220,
+        "sha256": "06ce6c443967b06f1d53f500b5b9a65dc7262bdf93d4e116396af4a9cd99a5aa"
+      },
+      {
+        "path": "references/gsap-recipes.md",
+        "mode": "100644",
+        "oid": "67749c62de86b425dd9d813a260d0442b3377e61",
+        "size": 35591,
+        "sha256": "374f346aeab61192f497130f933424bd3a3850e2f68e03f73cd3fa81e058a33a"
+      },
+      {
+        "path": "references/hero-animation-case-study.md",
+        "mode": "100644",
+        "oid": "24abb0f7401a0a9de628c80d835681727707c996",
+        "size": 11570,
+        "sha256": "631fdd9de016da9fc012fde754b1b81f02c2fbf60b69836aeb62d1fbfcfd8d44"
+      },
+      {
+        "path": "references/hyperframes-backend.md",
+        "mode": "100644",
+        "oid": "39f3d8b9ba13e14713ae0089401e45cdaae07787",
+        "size": 7480,
+        "sha256": "aad0356ea5f1c98c5ad11e7ef238b8e56d357165de7117d6702a946e69d79bdc"
+      },
+      {
+        "path": "references/launch-film-director-notes.md",
+        "mode": "100644",
+        "oid": "8813b3a411312c49a2bbe904da5c3d812a531ddb",
+        "size": 14886,
+        "sha256": "1cc8c18d693231c3b2438057a1fc43fd72edbf7f2a60eec548dad6903cd13338"
+      },
+      {
+        "path": "references/materials.md",
+        "mode": "100644",
+        "oid": "8ddd904734d4f18645b12145106a4886655f42f1",
+        "size": 5679,
+        "sha256": "3ed5df12fcd628bfc145f70b251c2f0837bfd6b196c3a7930a6039f8c7405bf8"
+      },
+      {
+        "path": "references/modules/deck.md",
+        "mode": "100644",
+        "oid": "d22e65f74392b5f1ccc0c1cadeb06dc33069b579",
+        "size": 4394,
+        "sha256": "40841180c49b73230261c1f9ad53f2cb273c553bab1879d5abecf0914996c5fd"
+      },
+      {
+        "path": "references/modules/infographic.md",
+        "mode": "100644",
+        "oid": "f5f997bf8878b732c2b8257bf537ee0a6a91dfff",
+        "size": 2459,
+        "sha256": "714ca08b997f1a50daec10e5f4f8b1d63833ac111a096f87358c6bf77904f33f"
+      },
+      {
+        "path": "references/modules/motion.md",
+        "mode": "100644",
+        "oid": "1b98fd2ff3a27a42845f65293d4c2cea809f553e",
+        "size": 6470,
+        "sha256": "319da10cda9b7b293b3e60315c3ef0eb29eea32adb72f4818bad701f5ff032d8"
+      },
+      {
+        "path": "references/modules/web.md",
+        "mode": "100644",
+        "oid": "960e5c7095b034ce2fa4fe9990ed4cdb6eb15cc7",
+        "size": 2467,
+        "sha256": "73733f02f6fa3c19ed56e1949f4f0c5511a09a5f45a98c8298a1222ddc9c3591"
+      },
+      {
+        "path": "references/multi-perspective-parallel-case-study.md",
+        "mode": "100644",
+        "oid": "2271954c38b9f8935da76c4af753d32e178b0f2a",
+        "size": 11093,
+        "sha256": "e1f80cc2e3e12d04405f897f3da49b371dbc7782c5ba23152a956c2780e738da"
+      },
+      {
+        "path": "references/pptx-from-rendered-html.md",
+        "mode": "100644",
+        "oid": "4dd19b3865f676996b7a3b95840e4cbb8d446820",
+        "size": 10415,
+        "sha256": "19d51068ca2377eec60b7261cbc450c98cce51f1584f0a1c7857575c1fed1b0d"
+      },
+      {
+        "path": "references/react-setup.md",
+        "mode": "100644",
+        "oid": "e2f56a9eb5638b612cd91dcc5d4a46b29025701e",
+        "size": 9682,
+        "sha256": "97dfcbbea673131b9d10c5fe0c553fe489d3c2e583381de72e8c1b3c5eed5346"
+      },
+      {
+        "path": "references/scene-templates.md",
+        "mode": "100644",
+        "oid": "d6fe18d60989a839a9d1b9953a870017bc2e27a5",
+        "size": 7144,
+        "sha256": "c91852062d923787896076368fff883bed2eb8b53087f1efdc2f81ed3014a314"
+      },
+      {
+        "path": "references/sfx-library.md",
+        "mode": "100644",
+        "oid": "50b23696160b98bf051d5986e83a0cbb7a3e8a28",
+        "size": 9762,
+        "sha256": "43e5e00a23e72b78b1872fbf88c38f829a2d3feb5cc5dc49260cdeb98f1958f9"
+      },
+      {
+        "path": "references/slide-decks.md",
+        "mode": "100644",
+        "oid": "c0c5d9b993e3cdd2dbb294f054619f293e4e98af",
+        "size": 36181,
+        "sha256": "f7c67305f9f169c6ce86bb35ddf5fd0b95bd543822f7aa0e27f0f66bbd95ac05"
+      },
+      {
+        "path": "references/storyboard-basics.md",
+        "mode": "100644",
+        "oid": "56a5f03b13e46f233605c7c16de7f5a06d633edf",
+        "size": 23987,
+        "sha256": "b8775952ae96bbe3e99f080520896fa9d853d324733c771da5f45da865b6f884"
+      },
+      {
+        "path": "references/tweaks-system.md",
+        "mode": "100644",
+        "oid": "02062c97f9cfc6bbba1285fd32b6641a6822e8df",
+        "size": 9015,
+        "sha256": "d3ec4727ae9d677ee7ade220180b803064310ef7e730436da4d66367362ec5d2"
+      },
+      {
+        "path": "references/typography.md",
+        "mode": "100644",
+        "oid": "476e0bc3254a7add1328a9d571e3d94d570e90d3",
+        "size": 18751,
+        "sha256": "4aae63d6bc39a0f67a05398b11bc381b7190f51bb7cd83f1a933f2e7551984cb"
+      },
+      {
+        "path": "references/ui-demo-animation.md",
+        "mode": "100644",
+        "oid": "30c0d8061f205a6f98400b9db343ce106e965a25",
+        "size": 29109,
+        "sha256": "38a2b52ad03d97442757016f1ef2c4c439d4f3e9f234cdce81cacc6fb60a894c"
+      },
+      {
+        "path": "references/verification.md",
+        "mode": "100644",
+        "oid": "377e0eadcfdf2e57a02b79825f47ef80c57ef4dc",
+        "size": 6998,
+        "sha256": "2481be020d5253efebcc6dd1a3bea80db25c1d03ce92d5a0347124c7407b366c"
+      },
+      {
+        "path": "references/video-export.md",
+        "mode": "100644",
+        "oid": "5e2717dbb214a6c153fcb91c7861f28538dc363a",
+        "size": 11527,
+        "sha256": "7ed97faa22b49f407c61a482eddb3b30a7463c3e5e491e5a4b2bcb48ad7929f6"
+      },
+      {
+        "path": "references/voiceover-pipeline.md",
+        "mode": "100644",
+        "oid": "c11c9978199428f8dc96d87ec2c7f784c908ab56",
+        "size": 20121,
+        "sha256": "c8e992779eb3de74b7c46c195a46dd716ee922def7ea5f9e19beef814834e756"
+      },
+      {
+        "path": "references/workflow.md",
+        "mode": "100644",
+        "oid": "b437756ce839891f98b05642babe93f8da2e3882",
+        "size": 10921,
+        "sha256": "b10d3e6702deffef717fbfc10851e9517fa274d4179967f60fc6ca0c0203648e"
+      },
+      {
+        "path": "scripts/add-music.sh",
+        "mode": "100755",
+        "oid": "1a267f125c0fdd210c2edcd5fef5f46e1fab6563",
+        "size": 4150,
+        "sha256": "d3d07de431975f15c05e04826e5df588f4a4eebecd70fa55b51bc79af7658a1b"
+      },
+      {
+        "path": "scripts/build_specimens.py",
+        "mode": "100644",
+        "oid": "7fc288db3126ef353fca4a5b8486a22647168a67",
+        "size": 4456,
+        "sha256": "a1fb2a4cbe295b4350c5ec429d41b50056b4018c3d2dfb5d641ad80d393b0728"
+      },
+      {
+        "path": "scripts/capabilities.py",
+        "mode": "100644",
+        "oid": "62efd70b904e377c4c1d6196e6beb648ff06fc3e",
+        "size": 3888,
+        "sha256": "6ed98cb8fee5c00d103e1ebab60350ceea2a58e8e08799082d8056d94fb7266f"
+      },
+      {
+        "path": "scripts/cloud/ai-review-video.py",
+        "mode": "100644",
+        "oid": "333752d0306961d7f586991e97dfe68ce6e7c40c",
+        "size": 20433,
+        "sha256": "c882682ab99a3d61b1955240b2d386363893a0cc65e4c6930bc27857d33d2560"
+      },
+      {
+        "path": "scripts/cloud/tts-doubao.mjs",
+        "mode": "100755",
+        "oid": "ce898309c6edbd0b1436e5e823282a30764fc2f6",
+        "size": 10071,
+        "sha256": "8ddc9980b76a60deaf057b732d80d187382ddd9188d9d673ebd9e35c461a0015"
+      },
+      {
+        "path": "scripts/convert-formats.sh",
+        "mode": "100755",
+        "oid": "7a8ed71a4741fab34518c5a7b17659a4d3b322c0",
+        "size": 3000,
+        "sha256": "4fdf469a1f1c44b40858cea8484d92fcae48096de1dedc3d4b9d640b5026277b"
+      },
+      {
+        "path": "scripts/design_lint.py",
+        "mode": "100644",
+        "oid": "d995433dcc8cc9da766d7597e481ac3bf99a14d1",
+        "size": 28396,
+        "sha256": "46d649cd5a655a6f97dba3d8d5837ac8461bed7b3bfca8a5eb0c634917b3c3b2"
+      },
+      {
+        "path": "scripts/design-gate-hook.sh",
+        "mode": "100755",
+        "oid": "0925cfdde06dc1cca13a86d4b9ff4673f2ee5b78",
+        "size": 3459,
+        "sha256": "e8f255791e1475202f84aa6ac9589cf5790aa3cb0afe6f294237099583a8c42b"
+      },
+      {
+        "path": "scripts/export_deck_pdf.mjs",
+        "mode": "100644",
+        "oid": "af4fbb2e94b6727172f805e59ee09ad331ef65dc",
+        "size": 3209,
+        "sha256": "323f3d5963e8b9245d468f051d4b676e67d9b97cc73b62d98239a13c65d8cc31"
+      },
+      {
+        "path": "scripts/export_deck_pptx.mjs",
+        "mode": "100644",
+        "oid": "2754768d34187af590b2935156afde96b9f83a6b",
+        "size": 3800,
+        "sha256": "c44ec586b3a059f00cd4d1a214973a73cbb89765f8359286990536840857e0ad"
+      },
+      {
+        "path": "scripts/export_deck_stage_pdf.mjs",
+        "mode": "100644",
+        "oid": "a5526b8080e5634540bc5a9b99a171a0706dece6",
+        "size": 4781,
+        "sha256": "d024a6b5fa84c1d25caf4c1acf47ca24a5c9e8c7ed3c45befa9fabac82765b04"
+      },
+      {
+        "path": "scripts/fetch_images.py",
+        "mode": "100644",
+        "oid": "e913b82ea65e1d1d8b0449f9a86ad260cb5b1ae2",
+        "size": 4442,
+        "sha256": "6bb273e785513c965a14445a2daaabbf9afc38f1dd93802c28a35374c53def89"
+      },
+      {
+        "path": "scripts/gen_deck_thumbs.mjs",
+        "mode": "100644",
+        "oid": "4ef73d0387704118eb9bdbe154598e7474bda3e2",
+        "size": 3037,
+        "sha256": "7a6ec5c4351e36aaeeec66f5488a3ef12574bb994b3f81c4b35fd33144066e33"
+      },
+      {
+        "path": "scripts/html2pptx.js",
+        "mode": "100644",
+        "oid": "f794cf17c2eab52eaa63d2fc526588ab12e1d00a",
+        "size": 34510,
+        "sha256": "79bd2df2c0aed3548ba78d88f7bf2906c2fbdef6bcf9dce8ee4a83013c6563ac"
+      },
+      {
+        "path": "scripts/learn.py",
+        "mode": "100644",
+        "oid": "41e34e51f3a1ed4a2d46c0e6851d3f8769f4d3a5",
+        "size": 10510,
+        "sha256": "e4b01cc8c3d64bb7e83087a0ee646c142462e287e211b6d94388af1ff15e3bf9"
+      },
+      {
+        "path": "scripts/mix-voiceover.sh",
+        "mode": "100755",
+        "oid": "ab1da5de64d2e78adf45821147f6eb8c02e7b37b",
+        "size": 4461,
+        "sha256": "cae4cfdfabbf918a6bd9fa7a2cac63e463903b348461360a19ca163d98b960ed"
+      },
+      {
+        "path": "scripts/narrate-pipeline.mjs",
+        "mode": "100755",
+        "oid": "f7b92c1950a51b4a9de1c706e2e42fbf71c5374c",
+        "size": 12530,
+        "sha256": "5b387544314c9f6374de7399a23b6692b77333e53a8fb4e2d892e2ae6e836a14"
+      },
+      {
+        "path": "scripts/pptx_from_rendered.py",
+        "mode": "100644",
+        "oid": "f6f082995a96b0173f95442e7f8b5d8366650aba",
+        "size": 29541,
+        "sha256": "e8c4dcdc712ad8cbe6e9cd17e8c454ecb2edea7e22e77ca4246578c86f6a0a00"
+      },
+      {
+        "path": "scripts/ref_board.py",
+        "mode": "100644",
+        "oid": "0035efd486e2bb9548f04aa19634b1e6266f1a85",
+        "size": 6865,
+        "sha256": "a6365647e91de2ef9c3802d3d043ba5974f533673678dd6c5b6e654909a85f67"
+      },
+      {
+        "path": "scripts/render-narration.sh",
+        "mode": "100755",
+        "oid": "9c44d8a1b164ce52864d681f377f4d69b08de1c1",
+        "size": 5425,
+        "sha256": "30703fff8de2f7d94ceb0714dd8ce3c712ff1b7f5dd9803d41bcdc1c6a0330b2"
+      },
+      {
+        "path": "scripts/render-video-seek.js",
+        "mode": "100644",
+        "oid": "94b18369806ed5930ce0f5c814a1d434c91fc847",
+        "size": 9778,
+        "sha256": "c6b68e89fc4f1709baf2b8a5e7910dfad5716aeb6bc40fb6aa4daaf92c7e9abb"
+      },
+      {
+        "path": "scripts/render-video.js",
+        "mode": "100755",
+        "oid": "36ea3819a0bb882345dfb49811d440511450e72c",
+        "size": 12293,
+        "sha256": "2c56bba90d045a3108651e4602617466f839adb36a29a0576019f9884f5b2a36"
+      },
+      {
+        "path": "scripts/sfx-cues.sh",
+        "mode": "100755",
+        "oid": "7fc71d58cfced9e5832330bd1525d10c5f209c94",
+        "size": 1628,
+        "sha256": "842cda4237dd88d84b4de634bf23507ec01aacb621ce5f6ac17e2a1c60857244"
+      },
+      {
+        "path": "scripts/tests/fixtures/lint_broken.html",
+        "mode": "100644",
+        "oid": "25e4fd020579de9546fad51b214c0c8e040671d9",
+        "size": 391,
+        "sha256": "71e32ad3a9059201faef0e9915a98c14c0586390fe82bf90026d69bdde485f12"
+      },
+      {
+        "path": "scripts/tests/fixtures/lint_clean.html",
+        "mode": "100644",
+        "oid": "5595f4b7aef324b971f42b3df4abed63f38da4c2",
+        "size": 778,
+        "sha256": "a9549087308a305d0ce2ff727ef204d1a579b82268a3e1d6d22f085e1ddf2bde"
+      },
+      {
+        "path": "scripts/tests/fixtures/lint_offline.html",
+        "mode": "100644",
+        "oid": "c7f48e9d67196937b1603faf0709e540ae77b127",
+        "size": 302,
+        "sha256": "c61756f15b30c57d233cabf94c06f9c3c7fe68b6d95f26a06436494d6d5934be"
+      },
+      {
+        "path": "scripts/tests/fixtures/lint_reskin.html",
+        "mode": "100644",
+        "oid": "ea78b410e9af43f8a9b995af1200e6a51f75c3a8",
+        "size": 1749,
+        "sha256": "e49bf584d93596b891517bcdfc1e2c719d150ddbe2c8e771b6a54496c8d1516a"
+      },
+      {
+        "path": "scripts/tests/fixtures/lint_slop.html",
+        "mode": "100644",
+        "oid": "676e7bf96dbb3c1e12fcebe6f05b22061e8cfd85",
+        "size": 1742,
+        "sha256": "facad17c3839d0319b1b899fb9503b188ae819605778a5b968cfc5adcc764fc3"
+      },
+      {
+        "path": "scripts/tests/fixtures/lint_tricky_bad.html",
+        "mode": "100644",
+        "oid": "24ccb9753c7ea68ee412f584e8d9efb429b30930",
+        "size": 633,
+        "sha256": "48bb2e71b5e350b36a0eed369d4f3cc32bbc3d8a09e73d5ca83d35d576fd4007"
+      },
+      {
+        "path": "scripts/tests/fixtures/lint_tricky_ok.html",
+        "mode": "100644",
+        "oid": "6c4ba38b680422dfc9eb1a9f2d2643d9083bb417",
+        "size": 1347,
+        "sha256": "b006ed1f1b36e62b6ae21f20f86e609424f93338fa4e3cb1b585b9688bb56608"
+      },
+      {
+        "path": "scripts/tests/fixtures/mixed_text.html",
+        "mode": "100644",
+        "oid": "c8b50a35d9d2f48f3d23b6072a40a91a74738f79",
+        "size": 1091,
+        "sha256": "1d74749163760e65f138d77443f81a7adf7326348c22eb187ec631ec13e513f3"
+      },
+      {
+        "path": "scripts/tests/test_design_lint.py",
+        "mode": "100644",
+        "oid": "530b4279d9d974381071e3e56f0e9518b0a23329",
+        "size": 8606,
+        "sha256": "220d4ddf35fabe9d720dd999017733563bcaf0fd5d93ab5325243cfc9c2e4f41"
+      },
+      {
+        "path": "scripts/tests/test_pptx_from_rendered.py",
+        "mode": "100644",
+        "oid": "2f94a17d0874c87badc3506800fe01beac249afd",
+        "size": 3213,
+        "sha256": "eeefcc7e1a58ccb21c1da7974ca945057691911f6ea0be30893fff64045ee6d0"
+      },
+      {
+        "path": "scripts/verify-video.sh",
+        "mode": "100755",
+        "oid": "e3541df119634f30754acc8e06d210c7d983e603",
+        "size": 4996,
+        "sha256": "cd7cf69f282f19dede1cd5aeae9c829a44b587f86f9518a51343dba264a81d85"
+      },
+      {
+        "path": "scripts/verify.py",
+        "mode": "100644",
+        "oid": "6becf2b8e1e121f4b14e1784aa6d9b8b8c8ff25a",
+        "size": 5451,
+        "sha256": "7a0a3243f51a1c816944a948a5caba239c63c9890327a60d80934d493153e9e4"
+      },
+      {
+        "path": "SECURITY.md",
+        "mode": "100644",
+        "oid": "63bdc478d1f579b9a455127c26894101a60cf122",
+        "size": 7396,
+        "sha256": "ff44af3fb26a8411bf94bd4d0704bc6aa2c205256f7c636bf7a2ce28e5ca4bdb"
+      },
+      {
+        "path": "SKILL.md",
+        "mode": "100644",
+        "oid": "9d12d2702091ac5f8bda1464cb4146724c83930f",
+        "size": 15558,
+        "sha256": "63cbc2ffcfd99f7b8acb6ff92adbbbba4bfaeec84373703d81df6a6fc6055a23"
+      },
+      {
+        "path": "test-prompts.json",
+        "mode": "100644",
+        "oid": "00c50e904e13a804c883b831d243ac78deaf523f",
+        "size": 3086,
+        "sha256": "25294eef2e98b7013caa28c0e3bae077e9fac2a4c24ee43bf095da136d776536"
+      }
+    ]
+  },
+  "fetched": {
+    "root": "fetched",
+    "fileCount": 208,
+    "byteCount": 40136313,
+    "treeSha256": "94c0ed573aea3620ecba6d304c9fcfa2a38cdd4a24c1301f8973055fef74b573",
+    "executableFiles": [],
+    "objects": [
+      {
+        "path": ".env.example",
+        "mode": "100644",
+        "oid": "7208e80bb0ff6131eaa96bf0c00c67877ba57114",
+        "size": 463,
+        "sha256": "ee04a1e71a37d698b68cda506eba579c47d7559b345ae90a350e890130cfafb4"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "oid": "0aabc32f42f162dbec312c778ddfaf424b5960bc",
+        "size": 844,
+        "sha256": "c263d044826b41803d8fe9f04ec74b6d43dfed469fa1a5cd51131cffa157292e"
+      },
+      {
+        "path": "assets/bgm-ad.mp3",
+        "mode": "100644",
+        "oid": "8bb7a9b17aa468e294f5a9b6b91429278e24fbe8",
+        "size": 4950071,
+        "sha256": "538e4dbf911afd6c6502e8ea008e994f2f6c5219cd498dbda4053f02f0b7dd95"
+      },
+      {
+        "path": "assets/bgm-educational-alt.mp3",
+        "mode": "100644",
+        "oid": "86f51e73896b3fcf858d64b34244ab8f63770611",
+        "size": 4468765,
+        "sha256": "e100757b60afa69ffd6200012dcaba3d7c2c55e8f543cc25c1765ce59e795f46"
+      },
+      {
+        "path": "assets/bgm-educational.mp3",
+        "mode": "100644",
+        "oid": "1ec9434058121ecc3752d9a1a4302d159f77c71d",
+        "size": 4047162,
+        "sha256": "f4d7fa4d6f612c92bbac39706757b331a333dc5ca125aff5f8d3c36b5903ebd3"
+      },
+      {
+        "path": "assets/bgm-tech.mp3",
+        "mode": "100644",
+        "oid": "3747c14099d4e1cb341015995b9e3da9ad4221d8",
+        "size": 4818429,
+        "sha256": "37f55c71ef0aea6312efb8c735ecbf028b06219b42cc265bddc482d7b4adc2e9"
+      },
+      {
+        "path": "assets/bgm-tutorial-alt.mp3",
+        "mode": "100644",
+        "oid": "bfba196abc7339181c9cf99a47b7dba08d30c2dd",
+        "size": 3937926,
+        "sha256": "ead7cefd527b3fee1ef4c83c82b284690717c89b6aeb4ece4b91603059a7bd3c"
+      },
+      {
+        "path": "assets/bgm-tutorial.mp3",
+        "mode": "100644",
+        "oid": "d251dd24556e3052a90d627911db5b884fa81957",
+        "size": 5542744,
+        "sha256": "2a49275922e2e197109d5c9969e6832e09f4c140da1edde22aa508fcddb9a46b"
+      },
+      {
+        "path": "assets/sfx/container/card-flip.mp3",
+        "mode": "100644",
+        "oid": "ebfb492352f785852357ddf2794966bb9c3caa18",
+        "size": 12164,
+        "sha256": "346cc1953650959216780ba6e167ce5819f9cf87fa6e01c170249f2f941d5b59"
+      },
+      {
+        "path": "assets/sfx/container/card-snap.mp3",
+        "mode": "100644",
+        "oid": "16b99d40d18ed5f4ab2703b022dd91505a608bd9",
+        "size": 8821,
+        "sha256": "0870f1b9c0e1d7457f12a9204d627b8e1755b449d6299022edc304f3feb60b7b"
+      },
+      {
+        "path": "assets/sfx/container/modal-open.mp3",
+        "mode": "100644",
+        "oid": "a7f96f744cca08fe438e43516f3df1f8897a5511",
+        "size": 10493,
+        "sha256": "5a493c07db344478e1c69821bacabdc9fe3ed1e9743afc2c7c4a1ead328f7cdd"
+      },
+      {
+        "path": "assets/sfx/container/stack-collapse.mp3",
+        "mode": "100644",
+        "oid": "3bac6f730492f021932493526bf37828dba1ffa9",
+        "size": 13836,
+        "sha256": "69f5f5764251c5e08c2700561caf5df668aead8d411375e13a6a072b631692df"
+      },
+      {
+        "path": "assets/sfx/feedback/achievement.mp3",
+        "mode": "100644",
+        "oid": "21536ea3226987fffcef0905f6323ca040ea9196",
+        "size": 24703,
+        "sha256": "b8fb9d8806d6bde21c8a2a9d78f751fa79ddfb82fe09a5e5c49e069c14cdc754"
+      },
+      {
+        "path": "assets/sfx/feedback/error-tone.mp3",
+        "mode": "100644",
+        "oid": "1e3079c92b972cb152aedb06c6d3392e6780e8a3",
+        "size": 12164,
+        "sha256": "a85727f1afe67c948e5246e17ebfb5c144db9d5ccb414e4fa1011563230541c6"
+      },
+      {
+        "path": "assets/sfx/feedback/notification-pop.mp3",
+        "mode": "100644",
+        "oid": "3f181b87dec8498a7b9ba2b9a0769df59a246da4",
+        "size": 10493,
+        "sha256": "e455a187df06e7e0b9b51d1722ddcf225abaa704cb0d0b7fd2d56eb7d0b3ace5"
+      },
+      {
+        "path": "assets/sfx/feedback/success-chime.mp3",
+        "mode": "100644",
+        "oid": "ffebf28f206facf953cc9bead2d1d0400c1d3d02",
+        "size": 17180,
+        "sha256": "95a1aa98d046f08d412e59d50ea00d955f486964ea4368537e2754eb2313502c"
+      },
+      {
+        "path": "assets/sfx/impact/brand-stamp.mp3",
+        "mode": "100644",
+        "oid": "e5320c04f5cb2d51e51383a25838d877e50f47fe",
+        "size": 17180,
+        "sha256": "2fd4d6fe3df413d6c19dbd3da93f39df93b30c31eb106dc000a36f7dc6737ab7"
+      },
+      {
+        "path": "assets/sfx/impact/drop-thud.mp3",
+        "mode": "100644",
+        "oid": "7857e3744fd2ab7d01fb6c50356c32cccc9c08e9",
+        "size": 12164,
+        "sha256": "57ba7f12272a258e02280ec6839c00980ebe6b7e800080c899c9c03787bffc40"
+      },
+      {
+        "path": "assets/sfx/impact/logo-reveal-v2.mp3",
+        "mode": "100644",
+        "oid": "bf596ee2ce1247e550e37bf10382140294144400",
+        "size": 24703,
+        "sha256": "7fe974ee3267ff30071dfa03722da448600e4834d79a5451377b187ecf88241b"
+      },
+      {
+        "path": "assets/sfx/impact/logo-reveal.mp3",
+        "mode": "100644",
+        "oid": "bf596ee2ce1247e550e37bf10382140294144400",
+        "size": 24703,
+        "sha256": "7fe974ee3267ff30071dfa03722da448600e4834d79a5451377b187ecf88241b"
+      },
+      {
+        "path": "assets/sfx/keyboard/delete-key.mp3",
+        "mode": "100644",
+        "oid": "b4f80589c4a378f5ab8d16bb73a84cad49ae3d04",
+        "size": 8821,
+        "sha256": "a554ca3a23535ea62da265b35ec9542299aafaa1c0334adf432b02b40a67e0da"
+      },
+      {
+        "path": "assets/sfx/keyboard/enter.mp3",
+        "mode": "100644",
+        "oid": "3262addb0e159f0376cd3edd00f7ec1228f75be2",
+        "size": 8821,
+        "sha256": "f97e86cfb43f04900e43c771dee38f777e48ddd86a00389e3dd1e4d98c7f496b"
+      },
+      {
+        "path": "assets/sfx/keyboard/space-tap.mp3",
+        "mode": "100644",
+        "oid": "f3cce57f90009e5c021c8f0ef6216b1de6ba597f",
+        "size": 8821,
+        "sha256": "b138014934488629241fb7132e99ea850c34b1865d712bc3c67de5962e6fc411"
+      },
+      {
+        "path": "assets/sfx/keyboard/type-fast.mp3",
+        "mode": "100644",
+        "oid": "a40d64dd5def3d0c38ed3598defd673f31517edb",
+        "size": 24703,
+        "sha256": "bc2dcab144e81b08f4b6e1a0d482f2497d2da4d9975d6e354e8396c02ae9cc8d"
+      },
+      {
+        "path": "assets/sfx/keyboard/type.mp3",
+        "mode": "100644",
+        "oid": "94fb8fc4f6465d0c8b68883fb2390b3ecfd15c42",
+        "size": 13836,
+        "sha256": "5a5850c157fd7b7ab54c722399a3e1c3d3214667bdb68ba40003aa036adcb879"
+      },
+      {
+        "path": "assets/sfx/magic/ai-process.mp3",
+        "mode": "100644",
+        "oid": "1b28d7efbd8d16d20dad2ee75dfb1a4ef9e43ab1",
+        "size": 20106,
+        "sha256": "600d06dcaa8eeb18226bbd37bb354c8ea323debc5d9edc021137533f29847901"
+      },
+      {
+        "path": "assets/sfx/magic/sparkle.mp3",
+        "mode": "100644",
+        "oid": "51400dc211a252238f1b8c64cb50d4d857ecf936",
+        "size": 13836,
+        "sha256": "e2a23a322d5e1d973f1e5df406ec754c1543a53b1ea1ce3ec54b632b254e0743"
+      },
+      {
+        "path": "assets/sfx/magic/transform.mp3",
+        "mode": "100644",
+        "oid": "c7094374e8e538dfb39e6414417723e896c1b254",
+        "size": 17180,
+        "sha256": "835c037a1390b18118e04d4915256958b2bf8bf8196a726aea9ec81fbf629a04"
+      },
+      {
+        "path": "assets/sfx/progress/complete-done.mp3",
+        "mode": "100644",
+        "oid": "fb0a856b47bea510b637fcc1b42f95fcb37de133",
+        "size": 13836,
+        "sha256": "1e43d66e8c9da873e942f5f71d4eebce3decf71a581c17be12c4997ec6434c0d"
+      },
+      {
+        "path": "assets/sfx/progress/generate-start.mp3",
+        "mode": "100644",
+        "oid": "ff9bc7361ef65b6f03aed6817357d90223c654da",
+        "size": 13836,
+        "sha256": "88b9599e41334ec21e1cc8ceb89f2b7209a2526bc81cd891f0c49a64301379d2"
+      },
+      {
+        "path": "assets/sfx/progress/loading-tick.mp3",
+        "mode": "100644",
+        "oid": "4bc31af565bf323f14ca376a9e9cd18aa4f13701",
+        "size": 8821,
+        "sha256": "72dba49889cbe89903865502476d19abf0a6b51b9b6c21eabc62bc1a278e0a46"
+      },
+      {
+        "path": "assets/sfx/terminal/command-execute.mp3",
+        "mode": "100644",
+        "oid": "17be9e304727545ee6dfbaddc13f6645e29e55af",
+        "size": 8821,
+        "sha256": "d47b1cb64682b7e6fe005ed87a65f454948f4a7e6d4d4acd848a5b8d7a5a3cf1"
+      },
+      {
+        "path": "assets/sfx/terminal/cursor-blink.mp3",
+        "mode": "100644",
+        "oid": "6685098e2e2c9dfcddf6144e14f71e1a19611178",
+        "size": 8821,
+        "sha256": "bb0d13bdf7bc476e9e9ba20afb6643e7b868bbe41c7b82a670f6133e5ab91b66"
+      },
+      {
+        "path": "assets/sfx/terminal/output-appear.mp3",
+        "mode": "100644",
+        "oid": "71be2b1c0071470d49bf1239b754be04ba7142dd",
+        "size": 10493,
+        "sha256": "c55596314afe8130a9e06a9698fbea2db4c66052a3608e75d2a6b9da53bb3637"
+      },
+      {
+        "path": "assets/sfx/transition/dissolve.mp3",
+        "mode": "100644",
+        "oid": "a0abc5ab7aec25aece953b6e90cc21e8daa6873d",
+        "size": 13836,
+        "sha256": "39e8c79015f98aa3c3b251fa289d0d154cf9264d8edcc16d323a02912c9a2e72"
+      },
+      {
+        "path": "assets/sfx/transition/slide-in.mp3",
+        "mode": "100644",
+        "oid": "c84811f4356ea60f92aaf80ae25ea6a0ca106cc3",
+        "size": 10493,
+        "sha256": "f0050b0c649306fd900fd4fd90db0472f0fc58e250821fd6ed877a6cea0f8dc8"
+      },
+      {
+        "path": "assets/sfx/transition/swipe-horizontal.mp3",
+        "mode": "100644",
+        "oid": "22beaf728832ad84d7fec4f7a01ff31c7c17c759",
+        "size": 12164,
+        "sha256": "b8da68f93a57e8cc27bf62ec796991d3c459d09a2c8cf342755bb97bfb143eff"
+      },
+      {
+        "path": "assets/sfx/transition/whoosh-fast.mp3",
+        "mode": "100644",
+        "oid": "6b05a2362189684411d5d4a1b65e136d127cce3f",
+        "size": 8821,
+        "sha256": "941f258f25c3dd7bd9d381e65d8ece7556eb4b666360c99f7adb4ccd0c15637e"
+      },
+      {
+        "path": "assets/sfx/transition/whoosh.mp3",
+        "mode": "100644",
+        "oid": "a85fd428a4642ef0ddfd18d82118e47b9de41e2f",
+        "size": 10493,
+        "sha256": "6a665acf18881c9b70288676929491584a0b99471fbebb1962cf91925daded43"
+      },
+      {
+        "path": "assets/sfx/ui/click-soft.mp3",
+        "mode": "100644",
+        "oid": "6729756298e7d6a0350cb37fffc0d8abe85f86a7",
+        "size": 8821,
+        "sha256": "48ab6362e64156c8a907b7705608eaa484494e878eaa4fae77ad32f703990bf3"
+      },
+      {
+        "path": "assets/sfx/ui/click.mp3",
+        "mode": "100644",
+        "oid": "b0770670ac20985b66a3cd1fff55e09e5c7e21c5",
+        "size": 8821,
+        "sha256": "c3acef5b24b47c6895bf4d74c3b47d9b25cf3b63e0db81303dcd6fe9d7bb9560"
+      },
+      {
+        "path": "assets/sfx/ui/focus.mp3",
+        "mode": "100644",
+        "oid": "2b2ef15ff8d65dc204e81a8c5231d30ff60ed076",
+        "size": 8821,
+        "sha256": "6c395c13bbf4eaa99d6434c3cb96622990e840d3cebe7c539626117aba74b936"
+      },
+      {
+        "path": "assets/sfx/ui/hover-subtle.mp3",
+        "mode": "100644",
+        "oid": "fb919e298dab89641056e72b1c6cff152f76f73b",
+        "size": 8821,
+        "sha256": "565ef4d0d8dfcdc6696ef57ec142fffb90ef980f24af753cbe3a1f8ca807e57a"
+      },
+      {
+        "path": "assets/sfx/ui/tap-finger.mp3",
+        "mode": "100644",
+        "oid": "bb688e795c3d63e1a4304b0e24a248d33491a4e6",
+        "size": 8821,
+        "sha256": "abe259fac618b97e28463122cda1ffc739649815da346b5ed279fd617f28a3c3"
+      },
+      {
+        "path": "assets/sfx/ui/toggle-on.mp3",
+        "mode": "100644",
+        "oid": "7b2203ec2d47cdb0128550ff71a984f8fa81f679",
+        "size": 8821,
+        "sha256": "5cb28331ecc00dc18386808ad3502f712af2b617ac7fec1748674209c98c5c7c"
+      },
+      {
+        "path": "assets/showcases/cover/cover-build.html",
+        "mode": "100644",
+        "oid": "25380833bdcabc776aa1efc278f1bb606c7fdb13",
+        "size": 5664,
+        "sha256": "9d35f6687f3cac442dd5d8e2e5ed431d7d3d70b17b60dc44eefecdb3f4d84cd9"
+      },
+      {
+        "path": "assets/showcases/cover/cover-build.png",
+        "mode": "100644",
+        "oid": "27a5667ea12674739cc423931a429e82c2d035ec",
+        "size": 116336,
+        "sha256": "a5494a78ae0e6b7553a961fcd830a817cc75c6d9c85e5f5a714b42f74b587824"
+      },
+      {
+        "path": "assets/showcases/cover/cover-pentagram.html",
+        "mode": "100644",
+        "oid": "fb54bda2e777205c50a78beb875c597e99e70aed",
+        "size": 4914,
+        "sha256": "8480a08fe2231822e6236c0aad41741faece30a5bf0059f9fece76ef0190dfec"
+      },
+      {
+        "path": "assets/showcases/cover/cover-pentagram.png",
+        "mode": "100644",
+        "oid": "251eaddf75f6b5288551e72dd8b375b766656b92",
+        "size": 36047,
+        "sha256": "d8482c018e4bb15957f95eb0d5f349a318fbd223d5e62d728f667351244bae92"
+      },
+      {
+        "path": "assets/showcases/cover/cover-takram.html",
+        "mode": "100644",
+        "oid": "20b7a18992078b92baffc71b58dcdd1c140e392a",
+        "size": 11823,
+        "sha256": "c8436fb562d34a76931bc936bcbd907be2d29ea33b476d306b3a80b5c9594b1b"
+      },
+      {
+        "path": "assets/showcases/cover/cover-takram.png",
+        "mode": "100644",
+        "oid": "751973ffc4d11509135184f3a11c77af3fe6efb5",
+        "size": 155362,
+        "sha256": "8aa520e057fd5acf7030db6568dd10b493c898f175d7f7d71836b66e30ca6817"
+      },
+      {
+        "path": "assets/showcases/infographic/infographic-build.html",
+        "mode": "100644",
+        "oid": "325c2fa5edcfb841c2796980d28ef8904986ce90",
+        "size": 11696,
+        "sha256": "b69e1cad7ca1db69c0b2498ceec55ef4746fc23c4288169a41c497dbc1321234"
+      },
+      {
+        "path": "assets/showcases/infographic/infographic-build.png",
+        "mode": "100644",
+        "oid": "e947be8f6f6a21638cab5d6036a56b1d2a0d335a",
+        "size": 108710,
+        "sha256": "fa9afbfdf559ed0c541f8dc77aedd3796a7a98dcbb75ad2c6e2ac0121f0c0c1b"
+      },
+      {
+        "path": "assets/showcases/infographic/infographic-pentagram.html",
+        "mode": "100644",
+        "oid": "8e9fdb889b48ffc92ad28a7bbaa4d4568924fc3d",
+        "size": 13911,
+        "sha256": "c427b9c5fd351463caac85445c0bef83d702ab39e54407bc6ae6a3f93c04b632"
+      },
+      {
+        "path": "assets/showcases/infographic/infographic-pentagram.png",
+        "mode": "100644",
+        "oid": "994840c4c7ad0e5c04dc34e9cd7923260f0b6dd0",
+        "size": 159021,
+        "sha256": "15692b204e9f7ead259983441476e69a12a8f65aa81f72d9ec0619b5cbeccc17"
+      },
+      {
+        "path": "assets/showcases/infographic/infographic-takram.html",
+        "mode": "100644",
+        "oid": "e55520204bdc95f48a2680f4696c4227beb161dd",
+        "size": 22396,
+        "sha256": "3a6f65940c847186f881101b6958d822880bdad81a39c8121653c756cc37b8ee"
+      },
+      {
+        "path": "assets/showcases/infographic/infographic-takram.png",
+        "mode": "100644",
+        "oid": "1ea03e40bb064294dcf771eba5988bcdbc67cb09",
+        "size": 162976,
+        "sha256": "5eba3094dd2a860083c150665772c7d96a5bf93a47f3cfbe5d797f51989ae3ea"
+      },
+      {
+        "path": "assets/showcases/ppt/ppt-build.html",
+        "mode": "100644",
+        "oid": "be2cbb711f897e767d344a557476c89909782a69",
+        "size": 9083,
+        "sha256": "8140f3860e039ea18f090c53b32b2bebcd926de56a6e099250d4aced66ef45f8"
+      },
+      {
+        "path": "assets/showcases/ppt/ppt-build.png",
+        "mode": "100644",
+        "oid": "fa414414976150edb6c129b7eba5efb8df8c4e20",
+        "size": 84423,
+        "sha256": "6aa21e66a1077e24521939dd3bfbf907a7ed6266a40870cd925ee1a03e2b3c69"
+      },
+      {
+        "path": "assets/showcases/ppt/ppt-pentagram.html",
+        "mode": "100644",
+        "oid": "cd10597135acdea9795e3e2e5efce439555a19fa",
+        "size": 11955,
+        "sha256": "a4b9461533cdd58e339235f4dad9396a47a389f84f1f19a72d230409d1ef8b1a"
+      },
+      {
+        "path": "assets/showcases/ppt/ppt-pentagram.png",
+        "mode": "100644",
+        "oid": "823fdac4d8bf375728616f2db848c18dcff9f10a",
+        "size": 101335,
+        "sha256": "e426bd70703fd6557772006c8db84a6230eab154d1ec6730b9069a327547c7bf"
+      },
+      {
+        "path": "assets/showcases/ppt/ppt-takram.html",
+        "mode": "100644",
+        "oid": "d859cbd5a9c3344ccabdc1cbf179b2f17366356a",
+        "size": 15656,
+        "sha256": "77273fcb09a128d9fe9ef41ba38ee90ae3474640614c591ac645b5ba83812ff6"
+      },
+      {
+        "path": "assets/showcases/ppt/ppt-takram.png",
+        "mode": "100644",
+        "oid": "7fc4ba632a554a65d75e44cdde16edd28712987d",
+        "size": 467187,
+        "sha256": "88bc00e535912eb9bd7d22dc50c9b737704ae81a257af0d3d9273847f3816a2c"
+      },
+      {
+        "path": "assets/showcases/website-ai-nav/ainav-build.html",
+        "mode": "100644",
+        "oid": "2d9060e6954ba4a0f081be39bb75b26c1f6d2555",
+        "size": 9621,
+        "sha256": "9ad1fe678e9ba0fcc6fb7753d07f141b17e9fd27c72225b59521f63e841c9fed"
+      },
+      {
+        "path": "assets/showcases/website-ai-nav/ainav-build.png",
+        "mode": "100644",
+        "oid": "bd9cf08aff601df7dc3e6c205868a8daaeda2d03",
+        "size": 85064,
+        "sha256": "a1f380d9aa9dbb891c73682b0d9627760e2c1e39370ed29338cb4372da3f861c"
+      },
+      {
+        "path": "assets/showcases/website-ai-nav/ainav-pentagram.html",
+        "mode": "100644",
+        "oid": "1bec4d244d7ac71e4c96aa5a5cab408645197208",
+        "size": 10553,
+        "sha256": "d729fbbc6dcf067c8bf97eb654e4c6063908e89d09f91e769a73fca990038d70"
+      },
+      {
+        "path": "assets/showcases/website-ai-nav/ainav-pentagram.png",
+        "mode": "100644",
+        "oid": "57a4bf6d7fca9cfadfaf0f4cfd1b303f9b9ca6f8",
+        "size": 105575,
+        "sha256": "04b65a201170453d4f4261f9fed835b3e516b2ecbeb528560991c33d0a582dd0"
+      },
+      {
+        "path": "assets/showcases/website-ai-nav/ainav-takram.html",
+        "mode": "100644",
+        "oid": "1f7581d4734b8f4ce84d068d41cb6f579d26267b",
+        "size": 12747,
+        "sha256": "f553f875fe60498e177e5c99c0444895b444fe37c5969364f7f6af53c909e42f"
+      },
+      {
+        "path": "assets/showcases/website-ai-nav/ainav-takram.png",
+        "mode": "100644",
+        "oid": "f19ef9e8d486c749164215050e7cfd359e48e845",
+        "size": 121675,
+        "sha256": "8c16c90993f499aadd35d8a597d9793824181c17e7e5ed29a17f4f4b53958400"
+      },
+      {
+        "path": "assets/showcases/website-ai-writing/aiwriting-build.html",
+        "mode": "100644",
+        "oid": "908967bdc56d60104058647bb58a0a36528c1a88",
+        "size": 14066,
+        "sha256": "9f35620be810d44ce44e5828684efb5d31c68f6a4ae6dfd77947e800236f786b"
+      },
+      {
+        "path": "assets/showcases/website-ai-writing/aiwriting-build.png",
+        "mode": "100644",
+        "oid": "5a04d55c854197c37cb6ee485bb661a480d1c7d8",
+        "size": 130604,
+        "sha256": "171556a04eb950ae17469a0f040d64b6ee145324f43d76f1d6a8b551582f85d1"
+      },
+      {
+        "path": "assets/showcases/website-ai-writing/aiwriting-pentagram.html",
+        "mode": "100644",
+        "oid": "38f702df3b70c9babfa652d7c3b68eaacb435f38",
+        "size": 14226,
+        "sha256": "15a913d13ebfceb4631931e0a5aa0d616b42854b4fafe76ccdf50fd11c67e352"
+      },
+      {
+        "path": "assets/showcases/website-ai-writing/aiwriting-pentagram.png",
+        "mode": "100644",
+        "oid": "cda81e9c25b0c61240eb3102ed53a32e0442662c",
+        "size": 150195,
+        "sha256": "c7eba9cf29218c5a0896d594791c7f1540c37e12855c0969d10b19ba0c2ec71d"
+      },
+      {
+        "path": "assets/showcases/website-ai-writing/aiwriting-takram.html",
+        "mode": "100644",
+        "oid": "c3fc6b3a687118ded5f918be8fd3aab4080f310f",
+        "size": 18003,
+        "sha256": "d038d88ffed699a8f7867737731d175484c97552c32bdeb5d6ba18e90bbb59f3"
+      },
+      {
+        "path": "assets/showcases/website-ai-writing/aiwriting-takram.png",
+        "mode": "100644",
+        "oid": "31d740566e529057aadd929a6ed53b4e1e121628",
+        "size": 157158,
+        "sha256": "3c18cc8997f817cba5b4363edb5b7687ee564740f63511ce7d8535d49688704e"
+      },
+      {
+        "path": "assets/showcases/website-devdocs/devdocs-build.html",
+        "mode": "100644",
+        "oid": "2c37afda67b91a269ed8bcec3eb914ff342bc2d1",
+        "size": 9928,
+        "sha256": "772b8a0de4be25b310c412398d9392da31947e1a97cb4ea5213fe001157acd81"
+      },
+      {
+        "path": "assets/showcases/website-devdocs/devdocs-build.png",
+        "mode": "100644",
+        "oid": "bbca28e8b3b005a1980dab0752866150c35aa1fb",
+        "size": 68230,
+        "sha256": "9d5f29a7c6985ac923217f5d1b3f829f254fde237f7726ef6d8f01ef18c1ac1f"
+      },
+      {
+        "path": "assets/showcases/website-devdocs/devdocs-pentagram.html",
+        "mode": "100644",
+        "oid": "f05ec3a7890fa64fe5d71e5ab8ff83c702d9268b",
+        "size": 12801,
+        "sha256": "d2486d80dc12b0930a757f294f5679c2877ff0233ee016d90921b7eb8306ec32"
+      },
+      {
+        "path": "assets/showcases/website-devdocs/devdocs-pentagram.png",
+        "mode": "100644",
+        "oid": "345c3169054364f80d70aaced43cec707975188b",
+        "size": 117051,
+        "sha256": "a40c2b6b029110a79a81ccfaebcfd02f2c9dee3f0eaec333483c13bbdb2afa1b"
+      },
+      {
+        "path": "assets/showcases/website-devdocs/devdocs-takram.html",
+        "mode": "100644",
+        "oid": "206f3b754820ab0332248d8c411b0c8fcf0ef486",
+        "size": 13106,
+        "sha256": "c0e0f30700539996f21261f6d2ae13cb097d0ae1698d9b39742b818def2752b9"
+      },
+      {
+        "path": "assets/showcases/website-devdocs/devdocs-takram.png",
+        "mode": "100644",
+        "oid": "7f147267b5753e10d8c39c1d202b27aec86ab4a8",
+        "size": 111854,
+        "sha256": "40ac110037d94c5caf3e7210e66cd1fc1909b754ed21a4ae0191cf6150374549"
+      },
+      {
+        "path": "assets/showcases/website-homepage/homepage-build.html",
+        "mode": "100644",
+        "oid": "2bfef3a43f33521201732ba71fc1f7ee1dc950fd",
+        "size": 8314,
+        "sha256": "4c207d33dca1cb0d9a5eb4cf63583d30aa2d88b4576668881bd8437f68539090"
+      },
+      {
+        "path": "assets/showcases/website-homepage/homepage-build.png",
+        "mode": "100644",
+        "oid": "ef37605b5581c9c748a5cfb18be6f256769b0e01",
+        "size": 61708,
+        "sha256": "2be9f198345749735b403e364e7835d30fbd4521d455c817caab5db023282146"
+      },
+      {
+        "path": "assets/showcases/website-homepage/homepage-pentagram.html",
+        "mode": "100644",
+        "oid": "2f7580f12258b87101a463cd7006fae7650f5a3f",
+        "size": 8491,
+        "sha256": "315dc0a438dce2668dde109f97ecaec6ac9e6f49d99aad1f69cd95dcf26c7738"
+      },
+      {
+        "path": "assets/showcases/website-homepage/homepage-pentagram.png",
+        "mode": "100644",
+        "oid": "1af6f7936a2d2fd8081348b6e034fd23300a06e2",
+        "size": 57093,
+        "sha256": "5199e4d1d26e0d333a74a2e54b793ff29dccf6c88e577f9c8efd42ad18d2e485"
+      },
+      {
+        "path": "assets/showcases/website-homepage/homepage-takram.html",
+        "mode": "100644",
+        "oid": "7ae174a50a1d7134c3aa4c03b7759e27d5e96c4c",
+        "size": 10543,
+        "sha256": "08f0f7625edbc91733979de526d5a2a270b02f84089aa15b27cc9cd47bbc8a04"
+      },
+      {
+        "path": "assets/showcases/website-homepage/homepage-takram.png",
+        "mode": "100644",
+        "oid": "3fb8de921a02ae6e8118a4317c0ec14673d2e898",
+        "size": 127610,
+        "sha256": "daaf7e9f1f99bc8dd8ee81fe5dcca3b6f37493c0afbce097b247a834c26b7e78"
+      },
+      {
+        "path": "assets/showcases/website-saas/saas-build.html",
+        "mode": "100644",
+        "oid": "f5d56036587933b6d797a8781687d6012b14fad6",
+        "size": 12901,
+        "sha256": "dcaade14100656640375cd86409af3298077a16dc34ce880f2bf630f6a6fa059"
+      },
+      {
+        "path": "assets/showcases/website-saas/saas-build.png",
+        "mode": "100644",
+        "oid": "f7510932718e1d9ef2217b2017bfdfb0223479ce",
+        "size": 99745,
+        "sha256": "ac0158d2581567d755dd8fd759d0b453b30fdef189f926efe8662c70f3fb41aa"
+      },
+      {
+        "path": "assets/showcases/website-saas/saas-pentagram.html",
+        "mode": "100644",
+        "oid": "ccf397b9b4e0a1557ef4565c1b6d43e77370a543",
+        "size": 15050,
+        "sha256": "7de234517804ffe59698f1b74eed296fc926296bb996c1718e32be0299e90c73"
+      },
+      {
+        "path": "assets/showcases/website-saas/saas-pentagram.png",
+        "mode": "100644",
+        "oid": "07e2ca18f1dcc146fe83a6e4732793738aeb8caf",
+        "size": 96559,
+        "sha256": "6017150ea044cbcb00f121f549b0e9cffce583c2a06063b0a6479b18793fbf72"
+      },
+      {
+        "path": "assets/showcases/website-saas/saas-takram.html",
+        "mode": "100644",
+        "oid": "d35c6a622f7ac7fa6c740b528aeb856e961ca1a8",
+        "size": 18209,
+        "sha256": "122f274623e47b33516caabcc57648a98fb4512d8ca27f6f145c16feec63c08c"
+      },
+      {
+        "path": "assets/showcases/website-saas/saas-takram.png",
+        "mode": "100644",
+        "oid": "6122fda9fe5b2e1ece10f9ff82c5a0b63153858c",
+        "size": 123532,
+        "sha256": "5f877b12ca5fb876a92f8b44f1f7968de4366dd30c88479e7bf3f361dd2df455"
+      },
+      {
+        "path": "assets/style-specimens/app/01-hardware-panel.jpg",
+        "mode": "100644",
+        "oid": "66e217d43d651b24bc8dfcc3c0f140e41eda58c3",
+        "size": 75421,
+        "sha256": "17baae2788df3f48a7aceb65a9e1e929932a51f1154da6b9546343825453a6e9"
+      },
+      {
+        "path": "assets/style-specimens/app/02-liquid-glass.jpg",
+        "mode": "100644",
+        "oid": "5c25a5160a664877e0ec90d10e45b0cc7d613600",
+        "size": 90008,
+        "sha256": "1052b50f7ad652bd2d671b117da359543b3ae87f7aae64c554288838b327d1d6"
+      },
+      {
+        "path": "assets/style-specimens/app/03-playful-3d.jpg",
+        "mode": "100644",
+        "oid": "8cdc359051abc2f776a78b50b8472de204579ed3",
+        "size": 94978,
+        "sha256": "bd79f2fa5b86b9a5aff59060043f33c2950267038d4be0ca617f5ec826fedf8c"
+      },
+      {
+        "path": "assets/style-specimens/app/04-friendly-fintech.jpg",
+        "mode": "100644",
+        "oid": "83618198c085f427d2dc026230ba3687c8ba70ec",
+        "size": 93529,
+        "sha256": "1de1ee8a5d485c338a6d5ef96a4bd16e2ec4a527db6e4dac639db0759c4c0414"
+      },
+      {
+        "path": "assets/style-specimens/app/05-pro-camera.jpg",
+        "mode": "100644",
+        "oid": "4fc797771d50798857b377778ad96a74204c2d9f",
+        "size": 76334,
+        "sha256": "f3edb0ff5d65e920b14475096ff4d7feae2dbe02c174ef2f0166c6cb152ecd82"
+      },
+      {
+        "path": "assets/style-specimens/app/06-topo-outdoor.jpg",
+        "mode": "100644",
+        "oid": "1751d739bc807a076736d76b114b6b1f2aa09098",
+        "size": 92581,
+        "sha256": "daab07d59c5d5c9708ff6fb335caeb1376df960ccb466f44b2aa07742f73286c"
+      },
+      {
+        "path": "assets/style-specimens/app/07-feed-waterfall.jpg",
+        "mode": "100644",
+        "oid": "4d7563409e5cb1cb60b299fc516835b4c4bc5c94",
+        "size": 83495,
+        "sha256": "01995163559aaa994bbd3389f8b4d994c51c2159e2bd9312c6d1160983589a9a"
+      },
+      {
+        "path": "assets/style-specimens/app/08-command-palette.jpg",
+        "mode": "100644",
+        "oid": "3558bef40b288ff4916f4ee3199cb35cd6fdb5fb",
+        "size": 56758,
+        "sha256": "94dfaa2adb3f182a0bf8f6a8e1999e635a7a65ba68632b0c239b79bdbf9a4d80"
+      },
+      {
+        "path": "assets/style-specimens/app/09-health-color-code.jpg",
+        "mode": "100644",
+        "oid": "b6e8917f163bd41490fc491245080f148b145b14",
+        "size": 75935,
+        "sha256": "6e39a9b9a9474261ce32d8abc908480246dcb6ddd379d11fa45983bc8d7c5b25"
+      },
+      {
+        "path": "assets/style-specimens/app/10-native-polish.jpg",
+        "mode": "100644",
+        "oid": "e72a0ee8048aa8051bbc67b1c0ba4a752eb81999",
+        "size": 76319,
+        "sha256": "738a4783963c2f684df4247fb01475704edfdae3e2ad6c16fd55241268bb3fc4"
+      },
+      {
+        "path": "assets/style-specimens/app/11-gentle-encouraging.jpg",
+        "mode": "100644",
+        "oid": "74bfa7503e8325dce4762f024f65a4f4b7998cfe",
+        "size": 81985,
+        "sha256": "03f37da5e77b8086f5c8cb0daf9ebda8750c33a6a61987fe2dc8ae8ae5df04d1"
+      },
+      {
+        "path": "assets/style-specimens/app/12-editorial-reader.jpg",
+        "mode": "100644",
+        "oid": "a057b5904a290d69c5c5183df6003bcc79f8316b",
+        "size": 116882,
+        "sha256": "e6368309e162ef14a8a111f56eb82fba47d332ac19deda2407af9f000f0d752a"
+      },
+      {
+        "path": "assets/style-specimens/east/01-lu-jingren-bookcraft.jpg",
+        "mode": "100644",
+        "oid": "380aed2534cd89a48f95b3fc84cceccc0dc3ada7",
+        "size": 70152,
+        "sha256": "a18a4224002862a1052ef5c97bbcb04768cc4ee7276b8af94b924a1e20030851"
+      },
+      {
+        "path": "assets/style-specimens/east/02-song-block-print.jpg",
+        "mode": "100644",
+        "oid": "e90742f05237a414b496db0c8f4389337f513cc3",
+        "size": 149839,
+        "sha256": "ae3d457ad80fb11217daf2800f27cee6018cb5bebba49ff06ae3dc993e3ba295"
+      },
+      {
+        "path": "assets/style-specimens/east/03-republic-book-jacket.jpg",
+        "mode": "100644",
+        "oid": "349e3adf6da1bcfbbc09e5d4686e61c549f76f27",
+        "size": 59094,
+        "sha256": "180e9beddd9104ef52ff613aa9357d3638fb2ee633b01d6ef00c0cb704fcd9ea"
+      },
+      {
+        "path": "assets/style-specimens/east/04-shanghai-deco-calendar.jpg",
+        "mode": "100644",
+        "oid": "be0ef8461a303b8f4e5a6520379f1af329e3286d",
+        "size": 78134,
+        "sha256": "cff470c256366f06e56a20872ce1d0036d5216df5b7f4ce6323c95a653b8e79e"
+      },
+      {
+        "path": "assets/style-specimens/east/05-hanzi-experimental-poster.jpg",
+        "mode": "100644",
+        "oid": "ed036fc6a36953dbaf36a1e4cb1ff50fc6479212",
+        "size": 55436,
+        "sha256": "93401c18c734872d702d8c70ec2ed053b6be67a7e73e09e501e6a098abe57795"
+      },
+      {
+        "path": "assets/style-specimens/east/06-hk-street-signs.jpg",
+        "mode": "100644",
+        "oid": "e4fa23549f94da7b47f4f50b1febb0e3454733a3",
+        "size": 118281,
+        "sha256": "a24288318c1d1065b0dd631b72197724bdc53e21f64920cf6b72cabc00e33c00"
+      },
+      {
+        "path": "assets/style-specimens/east/07-traditional-colors-solar-terms.jpg",
+        "mode": "100644",
+        "oid": "9fda948ae7f52d07a578ed2af885201f64a8a983",
+        "size": 81663,
+        "sha256": "e6f8e1753e9a3071b2dced70e7f2981cc0459b1698d5aba82c685297a0d1e514"
+      },
+      {
+        "path": "assets/style-specimens/east/08-sugiura-info-mandala.jpg",
+        "mode": "100644",
+        "oid": "9afd319e5a2f9398035ea9bda1d726d2814e74b1",
+        "size": 130342,
+        "sha256": "ba5054c1e6c7b8adc438d2d03198d112e827fc10b3a75feef8771f927e38b27d"
+      },
+      {
+        "path": "assets/style-specimens/east/09-tanaka-geometric-poster.jpg",
+        "mode": "100644",
+        "oid": "93277bbe3afa33b41935894409967322cc2ad035",
+        "size": 54851,
+        "sha256": "47266f3a69e54d4e4683c2367ba4e44fa7509ed7d9126e0d99495cab0c3a1b8d"
+      },
+      {
+        "path": "assets/style-specimens/east/10-hattori-playful-offset.jpg",
+        "mode": "100644",
+        "oid": "cddc3377fb9b01b9d09056baa89df2cb5a60a6ca",
+        "size": 91746,
+        "sha256": "d046c05e1ab331fe54a6d633904a6cf5327eeadfa949895da91481bfecb2af2c"
+      },
+      {
+        "path": "assets/style-specimens/east/11-sato-minimal-symbol.jpg",
+        "mode": "100644",
+        "oid": "15b6487a2f890d710a13438e4ced2bd40aca4721",
+        "size": 46514,
+        "sha256": "c2cd9dcc545c3c89d4124a37b4403f54a24205f778820ec2f2d5253dacd17e81"
+      },
+      {
+        "path": "assets/style-specimens/east/12-japan-magazine-dense.jpg",
+        "mode": "100644",
+        "oid": "e9d4f82de1758fb386976735e7a90ffeb569e4fd",
+        "size": 125558,
+        "sha256": "27c3002c9f4b9cc551cc6a59920a5512e5a1e44a1df077ed4d4f7cf13202d02b"
+      },
+      {
+        "path": "assets/style-specimens/info/01-personal-annual-report.jpg",
+        "mode": "100644",
+        "oid": "598f79f6cffdc8b95a1ac673da4c0a6dfa51972a",
+        "size": 124360,
+        "sha256": "d0683fe42d498828e178cd59cf2f84f1cf541f7c58df8783bb576f44b6634e03"
+      },
+      {
+        "path": "assets/style-specimens/info/02-explanation-graphics.jpg",
+        "mode": "100644",
+        "oid": "102e892ad167e6903183a2e202ddb09f39278f08",
+        "size": 112423,
+        "sha256": "cea60ba8740409b39b1ff891e15c8396e1a727aba333cb99d89841bcface0ae4"
+      },
+      {
+        "path": "assets/style-specimens/info/03-cross-section-epic.jpg",
+        "mode": "100644",
+        "oid": "f42ef3d40adafea385c5378d334114e5094b8d86",
+        "size": 153950,
+        "sha256": "dd12e567da01086b96f9aceff66a48d6cf7d1854562cc0c5222f49ea1d872111"
+      },
+      {
+        "path": "assets/style-specimens/info/04-magazine-pop-data.jpg",
+        "mode": "100644",
+        "oid": "37107de469a8afd1f71b423566fe8e431a1d5a05",
+        "size": 86801,
+        "sha256": "71fd894c2342c2e31073612d37114d9b0a552579f0ed5944a1efcba299a41e18"
+      },
+      {
+        "path": "assets/style-specimens/info/05-isotype.jpg",
+        "mode": "100644",
+        "oid": "7e6c6a546231dadc91651897571e97acf70d8889",
+        "size": 123494,
+        "sha256": "7afe3cba97941bbd7904a0c8f00ed557188bb085344af21d218439d7563fac74"
+      },
+      {
+        "path": "assets/style-specimens/info/06-data-humanism.jpg",
+        "mode": "100644",
+        "oid": "f0ed2da6e89793a0d107deb75846f485dbb4b68a",
+        "size": 87739,
+        "sha256": "d3867b5667bc18b4506425b00778f4864e76918496faaba4b107ac20e1201d5c"
+      },
+      {
+        "path": "assets/style-specimens/info/07-scrollytelling.jpg",
+        "mode": "100644",
+        "oid": "8e036dc70ace6efe3dd7dc330d2cc7c162d84d49",
+        "size": 71448,
+        "sha256": "41abff0a3eb941b7e865c58eeb33940f96ff5886f163cc5dd4214257fde8f5f6"
+      },
+      {
+        "path": "assets/style-specimens/info/08-cartographic-lead.jpg",
+        "mode": "100644",
+        "oid": "7f640a79c9d1e60ead96ba55a4e2c9820eb6ae14",
+        "size": 85839,
+        "sha256": "4c73b0ab08b40387539bf092369ec9236ba009fc5ec19f6084b26f89a172bb4e"
+      },
+      {
+        "path": "assets/style-specimens/info/09-newsroom-chart.jpg",
+        "mode": "100644",
+        "oid": "35b99d3228f8e1989c014f7efcd918070827d176",
+        "size": 65398,
+        "sha256": "483d39f9628df5a059646f930210c4a5e472a38c3312a06e30a852f594ed2c60"
+      },
+      {
+        "path": "assets/style-specimens/info/10-computational-portrait.jpg",
+        "mode": "100644",
+        "oid": "7aed9ae7533fc6de9615712d7a471899ca9b69a0",
+        "size": 150930,
+        "sha256": "9872cdc6ef5c3be1f140c4546b000706f6dd1e1c70a10f7d8613b9297197870f"
+      },
+      {
+        "path": "assets/style-specimens/info/11-beautiful-information.jpg",
+        "mode": "100644",
+        "oid": "73a93f348f33095f564f5e3d52f90b7c294ef8e1",
+        "size": 94419,
+        "sha256": "f3980defee4b1bb3085eab17d132d1077526379e5a1622bc0368d39e0f3536e9"
+      },
+      {
+        "path": "assets/style-specimens/info/12-open-research-data.jpg",
+        "mode": "100644",
+        "oid": "19d9c77c6f2c92459e1bde1d3406a98ce7493c5d",
+        "size": 86806,
+        "sha256": "dccb6ddf86aef0805e6a0bb2704051a247ab57185184ae13976ac3c88bfe5c99"
+      },
+      {
+        "path": "assets/style-specimens/info/13-speculative-tech-diagram.jpg",
+        "mode": "100644",
+        "oid": "d0c714cc9493b92193985915776fd5326e726335",
+        "size": 50160,
+        "sha256": "c29e907095988a0750cebea76613ab651fb4211bd56ec6a2eb534557743f5911"
+      },
+      {
+        "path": "assets/style-specimens/info/14-pictogram-system.jpg",
+        "mode": "100644",
+        "oid": "1c692dfd40ec4957f5604164859247fc76f5b23a",
+        "size": 81737,
+        "sha256": "22cd68b1c0a080cbddbe2a29db845a0d6e21732be5e006de3c0ba86a89b9b59b"
+      },
+      {
+        "path": "assets/style-specimens/info/15-small-multiples.jpg",
+        "mode": "100644",
+        "oid": "42809370cd1b347292f53e94d70f8ff6deca0786",
+        "size": 70229,
+        "sha256": "9bc2e0e57d6d832c480b23634ea0907c5d69cdeb525683afe36b334294548a3a"
+      },
+      {
+        "path": "assets/style-specimens/info/16-topological-transit-map.jpg",
+        "mode": "100644",
+        "oid": "440161fd77ed4e7f51a1b36c555eed34b84d7a2e",
+        "size": 64615,
+        "sha256": "7730317c9e42bf5c30022cff515ff19af81b863cab05d642ce6b1d6e077452af"
+      },
+      {
+        "path": "assets/style-specimens/info/17-ma-emptiness.jpg",
+        "mode": "100644",
+        "oid": "0035840a277a89568cf42d14e898bbd7b90b73bb",
+        "size": 21024,
+        "sha256": "acc39ebfaed91a54ae1e15b441e432bf05fd434b607e0c6f2837dcc818d1e462"
+      },
+      {
+        "path": "assets/style-specimens/info/18-bookcraft-data.jpg",
+        "mode": "100644",
+        "oid": "3aa6f58a409ddd955db2dc2a998f8f3d49881af6",
+        "size": 99155,
+        "sha256": "4820a9fb03a2057cf498dcf2e459e251a40c86b9f651ef267708b26603676f34"
+      },
+      {
+        "path": "assets/style-specimens/info/19-scientific-figure-plate.jpg",
+        "mode": "100644",
+        "oid": "179b28c349d67900094c85fca0849189a5d9f5ce",
+        "size": 82562,
+        "sha256": "b4f143d737d3a837756ce9432c55b9dc86be1ba8b0499b04946a8a2f33966625"
+      },
+      {
+        "path": "assets/style-specimens/info/20-swiss-grid-report.jpg",
+        "mode": "100644",
+        "oid": "18e535b1dbc6b191904fcddadcbd0b246bfa3947",
+        "size": 70845,
+        "sha256": "1df972f662d7c4f2aff7bb2e5dd824f2a0a898dec5d0eda78ac36cb05bdefd01"
+      },
+      {
+        "path": "assets/style-specimens/ppt/01-neo-swiss-billboard.jpg",
+        "mode": "100644",
+        "oid": "45a4f8422029195aab56cd9d3cc84c5d7df67eb8",
+        "size": 69373,
+        "sha256": "3f8381294c83f814128740aa890c4a6d0098799ab66ab2570c42ad1822f79634"
+      },
+      {
+        "path": "assets/style-specimens/ppt/02-black-big-number-stage.jpg",
+        "mode": "100644",
+        "oid": "d87171e0ee833f308281f93af7ac335d5d694d9d",
+        "size": 29916,
+        "sha256": "c0e23767d35937522f46fc4aa5d22f9459a4cd5b1bc466e0ad8685edb3ad67a7"
+      },
+      {
+        "path": "assets/style-specimens/ppt/03-mono-brand-type-hero.jpg",
+        "mode": "100644",
+        "oid": "ece74b82d4aa307d3ecc14d7e04ade9017ef2f88",
+        "size": 51475,
+        "sha256": "d826de5001a9630b5d5c6d457026dfecdb21197ae209a75497446b33bdac5f0b"
+      },
+      {
+        "path": "assets/style-specimens/ppt/04-full-bleed-gradient-manifesto.jpg",
+        "mode": "100644",
+        "oid": "239d5ea0f81c5fbe40798665ac60e2bdd46656d7",
+        "size": 77190,
+        "sha256": "72dedc5717e4390dbea9335751d645bb90cab38b30a517c84288f1dc86528b5c"
+      },
+      {
+        "path": "assets/style-specimens/ppt/05-candy-lecture-stage.jpg",
+        "mode": "100644",
+        "oid": "20c36b2982fa39b3d98e3f5c4e404ccc2ce5dfd1",
+        "size": 35181,
+        "sha256": "4502460b3363aa3259c72928a632ce3d5b81f0679a04d0fd41d7387b4b82af66"
+      },
+      {
+        "path": "assets/style-specimens/ppt/06-playful-collins-editorial.jpg",
+        "mode": "100644",
+        "oid": "0ef03a58c9d37c45246544421855ffe0b6ae9d47",
+        "size": 83057,
+        "sha256": "9b6b08760dabd3f6ec1f86a609ad7ef75ff238190a71f4677630eb903ab47e9d"
+      },
+      {
+        "path": "assets/style-specimens/ppt/07-irreverent-pop.jpg",
+        "mode": "100644",
+        "oid": "bbd2f7d5bca2bbe07f6f51c81c9a69847e8334dd",
+        "size": 87248,
+        "sha256": "d4043c3954b29882eef4e1533f17ecb2fbbd2bac1ada6242c9e12ac7352208e3"
+      },
+      {
+        "path": "assets/style-specimens/ppt/08-y2k-inflated-wrapped.jpg",
+        "mode": "100644",
+        "oid": "9030c1a2f1b587ab907efaf69929e82b42b7f586",
+        "size": 76749,
+        "sha256": "48fb317f52eb73ad656f59db4c2ec989809e9a341ef8ee3c211724755e8e4df6"
+      },
+      {
+        "path": "assets/style-specimens/ppt/09-bento-grid.jpg",
+        "mode": "100644",
+        "oid": "7d7f626fb9c14a7522e5c393a59ce7c2b7b7e495",
+        "size": 69785,
+        "sha256": "90d78334ae11ff9b22b0ea06be121a5833ac6826638857d4983313db76e3eb75"
+      },
+      {
+        "path": "assets/style-specimens/ppt/10-dark-hairline-terminal.jpg",
+        "mode": "100644",
+        "oid": "7edb353bf47aec0455027ea7a247e43ad12a61a2",
+        "size": 56116,
+        "sha256": "1f03761282e9d64528e7685dc62a52591cf23fdac63cb146a7fb1d793849cd94"
+      },
+      {
+        "path": "assets/style-specimens/ppt/11-two-font-consulting.jpg",
+        "mode": "100644",
+        "oid": "0e42d36500763aa0a851e2c6d7ebff4509dc4442",
+        "size": 94912,
+        "sha256": "acc405fa6573376009ccf50d8345f1d5a270b87ab75ca97b293f3909f6a1af23"
+      },
+      {
+        "path": "assets/style-specimens/ppt/12-diagram-isotype.jpg",
+        "mode": "100644",
+        "oid": "eb07875378c2021018808b32f5b9fda9ef67cfef",
+        "size": 96851,
+        "sha256": "ef1493cfc4901b80d63a31f9c7cff6f1580a58e8aa8f66fefc8914d0ff87dcc5"
+      },
+      {
+        "path": "assets/style-specimens/ppt/13-diagrammatic-minimalism.jpg",
+        "mode": "100644",
+        "oid": "21d900aad18ce25c5b8362f16d56fdf66aa93e3b",
+        "size": 77262,
+        "sha256": "9f4c83788bd492adecbd52a1fe4140512366d14d7e66860d0d04d170bcd082bb"
+      },
+      {
+        "path": "assets/style-specimens/ppt/14-narrative-sparkline.jpg",
+        "mode": "100644",
+        "oid": "7a1fc73f27b29412be9635bb648c3545b072eb6f",
+        "size": 67301,
+        "sha256": "f6ff43699ed0efb8eed96470b37de886f7190138b217ec7b6dd8d679384b6b3d"
+      },
+      {
+        "path": "assets/style-specimens/ppt/15-assertion-evidence.jpg",
+        "mode": "100644",
+        "oid": "5f8b46be49387c275f57321dc86af1233a87367b",
+        "size": 61037,
+        "sha256": "7f2dcc5b38338bb796af00c4f454a81e8817bea92582fc68b6deab190fc0e40b"
+      },
+      {
+        "path": "assets/style-specimens/ppt/16-institutional-swiss.jpg",
+        "mode": "100644",
+        "oid": "ca315fb0220b8af53306b5758c29f2bc70747491",
+        "size": 76585,
+        "sha256": "6b873145d2e56d111c3c0dd6e74ef77dab4ed5bbcc38df0eb15f29c55227be2a"
+      },
+      {
+        "path": "assets/style-specimens/ppt/17-editorial-longform.jpg",
+        "mode": "100644",
+        "oid": "c69402e0e7f5724812a6345df54c6d38bd30517b",
+        "size": 107466,
+        "sha256": "b1f4906eb0272b2d1ecdf3765ab8e201da4bc793377b20c8ce467277e1501012"
+      },
+      {
+        "path": "assets/style-specimens/ppt/18-humanist-rounded-cards.jpg",
+        "mode": "100644",
+        "oid": "8ff05518e4d89d67e3c0ee343314eca9ae05894c",
+        "size": 84719,
+        "sha256": "2fb1ec3b71316923b27eab8cbab0ee57c7ff3cb71f57da46c9ca06fa376beb6a"
+      },
+      {
+        "path": "assets/style-specimens/ppt/19-dense-research-report.jpg",
+        "mode": "100644",
+        "oid": "4d8e474f4b47f2c902925589dcb15e4d68cd448d",
+        "size": 94418,
+        "sha256": "ffea87ec45533c704fcedfb6c3648f774210f85c55f754d400bccf9a4d4bd614"
+      },
+      {
+        "path": "assets/style-specimens/ppt/20-all-text-manifesto.jpg",
+        "mode": "100644",
+        "oid": "f6977133178b9974f3f1b41632e1f27112cecd42",
+        "size": 67491,
+        "sha256": "ddf14da94bd6bf8cd52c0aa027dd6826559ad9a8d0d6cd0b51a028b82eda4ff3"
+      },
+      {
+        "path": "assets/style-specimens/sheet-app.jpg",
+        "mode": "100644",
+        "oid": "01d023d0a38fa5d7e7a8d46f4505256ca29ca380",
+        "size": 148578,
+        "sha256": "6968748b54bc587e08d36635024d54cbecb164313246180a8d78e315fa2210c5"
+      },
+      {
+        "path": "assets/style-specimens/sheet-east.jpg",
+        "mode": "100644",
+        "oid": "08e3f02ab7fe5c4c86981f7ef1ec987f773ef59f",
+        "size": 159571,
+        "sha256": "22586e2ae6a34a52ee1d29c4bc8ef7893e1a8e335435d548ab11721fb6e7265e"
+      },
+      {
+        "path": "assets/style-specimens/sheet-info.jpg",
+        "mode": "100644",
+        "oid": "d712e9745465bf0dd147efb310b66ce8a6ec4b90",
+        "size": 236666,
+        "sha256": "d09eff02d9bff67f158aebe5eff35dce3a57fbf30041a3663dc655cbeb244355"
+      },
+      {
+        "path": "assets/style-specimens/sheet-ppt.jpg",
+        "mode": "100644",
+        "oid": "713ceba002c559e2c84aa2a8eb63279bb3080788",
+        "size": 235020,
+        "sha256": "3aae03870a686a3a0ff87a5eda1f3d89d945c9ce7b919a63f1ec7eb8f3ad8128"
+      },
+      {
+        "path": "assets/style-specimens/sheet-web.jpg",
+        "mode": "100644",
+        "oid": "9bde5d974066a6e0cc9b8a7f5ecacbdcc9c152ea",
+        "size": 240289,
+        "sha256": "08f51463f68aacb88e1b4db44fce17cbe03bdb336bc75a169eade13f2618535e"
+      },
+      {
+        "path": "assets/style-specimens/web/01-editorial-brutalism.jpg",
+        "mode": "100644",
+        "oid": "804c81c21b59bce6996dfd87f0512f3f3717bcc2",
+        "size": 106477,
+        "sha256": "1a70e829303e58d3cf67b6e9f0c1b617a7b81411887b9e3d9e8758f5e1125f8e"
+      },
+      {
+        "path": "assets/style-specimens/web/02-neo-brutalism.jpg",
+        "mode": "100644",
+        "oid": "2ed2614124e1f5e1a742cff27d63a3448c3ac357",
+        "size": 116438,
+        "sha256": "f9ba3be4c448ef11b7d2c9d8c22cfb03f6f917377daa445653c54c131506291c"
+      },
+      {
+        "path": "assets/style-specimens/web/03-memphis-maximalism.jpg",
+        "mode": "100644",
+        "oid": "fe79a22114cfd8c257faf60fb1d9f9f954b7babc",
+        "size": 170654,
+        "sha256": "69640e0b4f733cbdab5a301738ffeda19c399135bb4ff04f84a84dae613f5852"
+      },
+      {
+        "path": "assets/style-specimens/web/04-friendly-candy.jpg",
+        "mode": "100644",
+        "oid": "2bec8a3df9512c176ee9d9c10162807f20d32279",
+        "size": 65788,
+        "sha256": "67699fbda4dd15bf3fc446f2e4d8768e4bf8db7e173e373d9747a8b87116155e"
+      },
+      {
+        "path": "assets/style-specimens/web/05-pure-css-art.jpg",
+        "mode": "100644",
+        "oid": "464ef4b5341aae53fc8d583befe0b297d263f998",
+        "size": 74833,
+        "sha256": "0df99ce1a3252897ac7b3a92832da2670e073a067ae473900b0be0c578002b04"
+      },
+      {
+        "path": "assets/style-specimens/web/06-bold-big-type.jpg",
+        "mode": "100644",
+        "oid": "a6094a0041069597c65d94908f9b130d21ab4775",
+        "size": 68854,
+        "sha256": "1b19fd1e4df6e29683b3437e578a1faa27a27e114648597a35e279e4c251d324"
+      },
+      {
+        "path": "assets/style-specimens/web/07-cosmic-retro-futurism.jpg",
+        "mode": "100644",
+        "oid": "9d58a35e48fa7ef1781321f5ba7ae0a92b5247b4",
+        "size": 85819,
+        "sha256": "0cdfb491a5abbc5f35b9d20eeaf5efec34c5179f638378d79520afce0a2c0c90"
+      },
+      {
+        "path": "assets/style-specimens/web/08-cinematic-sound-viz.jpg",
+        "mode": "100644",
+        "oid": "2c924fb89f43d9b5c0d3534148a9dfb2055c214d",
+        "size": 89936,
+        "sha256": "e147bc5a692b832d3e1c70a5364d04ede600a917f37729d0404177fba8cbf6c9"
+      },
+      {
+        "path": "assets/style-specimens/web/09-pixel-side-scroller.jpg",
+        "mode": "100644",
+        "oid": "5a3906439ab50f5ee78ac08b90ef5e2b68bc306c",
+        "size": 60901,
+        "sha256": "2d363ed56b943b9234e5bceca3682900cddbbd68a0e89b31fe0eb3862ce34e37"
+      },
+      {
+        "path": "assets/style-specimens/web/10-bauhaus-geometric.jpg",
+        "mode": "100644",
+        "oid": "02c02ba10c3116ec32ec59ec9e9dbc7b153ba929",
+        "size": 70772,
+        "sha256": "68c714cc3bdae6ca9850ae345b8b4a5bd03f9ea5cccd94fcbdeb4810127140f5"
+      },
+      {
+        "path": "assets/style-specimens/web/11-dark-editorial.jpg",
+        "mode": "100644",
+        "oid": "5f4e0536ae47511b47779dd5db3a30cb9348db69",
+        "size": 58035,
+        "sha256": "9a08db764f3fc67e36e253a4340e77385df80a8e91b9961ad2b2b421d9aef8e8"
+      },
+      {
+        "path": "assets/style-specimens/web/12-warm-editorial.jpg",
+        "mode": "100644",
+        "oid": "96a278c0691f94458fa803262f1d41d278cc74be",
+        "size": 77516,
+        "sha256": "074ad8e7194ed9526d6dc055b42a388fb1213498131e8813e83d44c7f4e04eb1"
+      },
+      {
+        "path": "assets/style-specimens/web/13-glassmorphism-bento.jpg",
+        "mode": "100644",
+        "oid": "d2c6c5e28ca6a2a401e5e89976fe9e74bab884af",
+        "size": 73854,
+        "sha256": "3f01e24b49a3095bfcf2ca32fa4926ed8fc108ab51a20f5d88420426ca0cced2"
+      },
+      {
+        "path": "assets/style-specimens/web/14-angled-fluid-gradient.jpg",
+        "mode": "100644",
+        "oid": "aa39e90e55b8df83aa34bf0b49f286113dec92c7",
+        "size": 87254,
+        "sha256": "0634346b71bb0c57fe8d116368c5404b878b3eb470cc117eee3b2175d8e5cbdb"
+      },
+      {
+        "path": "assets/style-specimens/web/15-utility-colorful-docs.jpg",
+        "mode": "100644",
+        "oid": "158636eee7a32d1088298a8288d967e08a8b74b8",
+        "size": 67154,
+        "sha256": "9829ee9a9bac99668964381a9a652c93c5405642dd391055f4d4c9650fad2c4f"
+      },
+      {
+        "path": "assets/style-specimens/web/16-terminal-core.jpg",
+        "mode": "100644",
+        "oid": "3824fc3be9f2dc03d7cd46059a5277bb85522c1b",
+        "size": 64169,
+        "sha256": "467bea81d4fcadfc07843deb595dbcb66d3e066adf914f2b880b9fff977713b7"
+      },
+      {
+        "path": "assets/style-specimens/web/17-functional-brutalism.jpg",
+        "mode": "100644",
+        "oid": "c8a78f23934d578b8b4134fd6bc5cd82d9751f2f",
+        "size": 119761,
+        "sha256": "800bb9957bce73490abbbf3049b1047ebe915df14232e33e3ee67734af33b974"
+      },
+      {
+        "path": "assets/style-specimens/web/18-gallery-dark.jpg",
+        "mode": "100644",
+        "oid": "0e1164a1b12630b781e40f86e69e33af83d9438a",
+        "size": 23228,
+        "sha256": "8336268b8078a95c779ca052aa45e3ba180ed7410f0209007735babf53759425"
+      },
+      {
+        "path": "assets/style-specimens/web/19-swiss-monochrome.jpg",
+        "mode": "100644",
+        "oid": "b834e0237f5a5e31d9c549ab6b1911a1630d0eee",
+        "size": 68812,
+        "sha256": "63deec444647a10bfe5a4fae314889548c5cbc021ecb965c369eec63e5c4219d"
+      },
+      {
+        "path": "assets/style-specimens/web/20-kenya-hara-white-gallery.jpg",
+        "mode": "100644",
+        "oid": "a53edfb911d7008ab5b94ebe5fe9edd8f88539df",
+        "size": 35039,
+        "sha256": "ce229d702a9674a48bba239aaa862ba01cd6e0bf18f674a742b1924b323136f0"
+      },
+      {
+        "path": "demos/c1-ios-prototype-en.html",
+        "mode": "100644",
+        "oid": "df3a605ac96cf881f016e821e0f67b4fd07486f2",
+        "size": 35163,
+        "sha256": "b615044b51a62785f09e429c03ccc0b9ed64575d216e856eb9de73735250ad5a"
+      },
+      {
+        "path": "demos/c1-ios-prototype.html",
+        "mode": "100644",
+        "oid": "fecc506f0039785b668dcf006534a722d99d1e89",
+        "size": 35149,
+        "sha256": "205f37f5953f493e0d64b182be38e2c8e72c75852d3f0802c1335dbf11e095b2"
+      },
+      {
+        "path": "demos/c2-slides-pptx-en.html",
+        "mode": "100644",
+        "oid": "b4035749422fc01a7fe72969dc7239f29f45df8c",
+        "size": 32906,
+        "sha256": "ff1f2710f601cc86811339eacd5e735bd7bfe88b94c4e8f9aee0b5bff6dd45e5"
+      },
+      {
+        "path": "demos/c2-slides-pptx.html",
+        "mode": "100644",
+        "oid": "05e7b4ffd416d2df2a9786eacaa8dff417290104",
+        "size": 32975,
+        "sha256": "7008af7701cf515b681dff9b0d0141564cc72b1c7791f16d0b83f0268ba473c0"
+      },
+      {
+        "path": "demos/c3-motion-design-en.html",
+        "mode": "100644",
+        "oid": "ef44882fd45d0f737ec1afdf0c2f38b70424bca1",
+        "size": 37031,
+        "sha256": "3bc25588bcd75bc8e2fd695844301d68288012ae7a5e7b32bffe2eaeed476282"
+      },
+      {
+        "path": "demos/c3-motion-design.html",
+        "mode": "100644",
+        "oid": "79f106e448de4d358746d397932c05e735c9c03c",
+        "size": 37048,
+        "sha256": "e772e754e72b7a51894416703b56802df3d5dec76f0f23619825d23fddfc6608"
+      },
+      {
+        "path": "demos/c4-tweaks-en.html",
+        "mode": "100644",
+        "oid": "284e47d3b86d53998326b93236b076438c873a4d",
+        "size": 31102,
+        "sha256": "a483395b34252310f1222c7b1a5836fa296c0ca7746c0d1a356111af879bd698"
+      },
+      {
+        "path": "demos/c4-tweaks.html",
+        "mode": "100644",
+        "oid": "640c41a623217cc35c6465fb89ea21dd050b1021",
+        "size": 31150,
+        "sha256": "578fbbff7b635f8e5f1212a5cb9900135fb105cac4779c27d7359698ecdc79a0"
+      },
+      {
+        "path": "demos/c5-infographic-en.html",
+        "mode": "100644",
+        "oid": "c01667909f031ae829e5df8d97617fded7a4da27",
+        "size": 24941,
+        "sha256": "c3db171ef0dd9475717569e10cd3cba54ea92893a38c1199a104768499015bec"
+      },
+      {
+        "path": "demos/c5-infographic.html",
+        "mode": "100644",
+        "oid": "619e4198552aaa263515152b9d860409cd99f74e",
+        "size": 24823,
+        "sha256": "9c48e3b670a6a3fab8c216e652b4906564c5663d39415e970305a18820b94ebb"
+      },
+      {
+        "path": "demos/c6-expert-review-en.html",
+        "mode": "100644",
+        "oid": "6471b2f5b6409c1813485ebb0475665eb951339e",
+        "size": 26382,
+        "sha256": "161a47b07ad00e5cea652ca1142a95a5cf175c2c5ab8adc609726a74f5edd745"
+      },
+      {
+        "path": "demos/c6-expert-review.html",
+        "mode": "100644",
+        "oid": "ab3489dc84266b2394ea2c7ea858ddeb005fdd51",
+        "size": 26822,
+        "sha256": "800cbf45ec3aebee7fb077dc7b9b2c7d871072fb5651cd534fed91d7a860188b"
+      },
+      {
+        "path": "demos/hero-animation-v10-en.html",
+        "mode": "100644",
+        "oid": "be8b9254db51c8000448c5c38241a970fa14f2b2",
+        "size": 48712,
+        "sha256": "87d2f21994f2eb04981ef062f6cc21b0aa0e4bf4df565055166a1a1614414450"
+      },
+      {
+        "path": "demos/md-html-narration/md-html-demo.html",
+        "mode": "100644",
+        "oid": "6e6c6832b86891e02456dc4f48548300554949a3",
+        "size": 37926,
+        "sha256": "345ca77334f1d92f8a30a0ae4906a0719152138b14746695a91a59564fc04a46"
+      },
+      {
+        "path": "demos/md-html-narration/script.md",
+        "mode": "100644",
+        "oid": "0286852edb9396de67c205cfb35aec7db348b07d",
+        "size": 3452,
+        "sha256": "2e368457a248cf4ac1c03bbfe7ccb088097222b7528fd526e892579b478c5354"
+      },
+      {
+        "path": "demos/voiceover-demo/script.md",
+        "mode": "100644",
+        "oid": "defb9d67074cb64059391b1ca537a4c1a2c7053a",
+        "size": 589,
+        "sha256": "99245dbda4b4d09716ae14aa6a8cea45865035d45b88d2c6519723f3f26cb7fa"
+      },
+      {
+        "path": "demos/voiceover-demo/什么是token.html",
+        "mode": "100644",
+        "oid": "ae8785fadc6c15e0a069d54e7b8c0a4b3c31aaaa",
+        "size": 11988,
+        "sha256": "f7efee54f6f8230718e5c0fa362ce3e9f717ddce6c248ad6301d9242c1e8b522"
+      },
+      {
+        "path": "demos/w1-brand-protocol-en.html",
+        "mode": "100644",
+        "oid": "2eb967bbcddcf6be322a5cf4ecb9bc01a3da3873",
+        "size": 20572,
+        "sha256": "9a1dffe8eed97be95330ef1cdff39c91580448866ed3b318d06c11c70d69cb38"
+      },
+      {
+        "path": "demos/w1-brand-protocol.html",
+        "mode": "100644",
+        "oid": "dc38e4d540a716cf0c73e870699de51d55c445f6",
+        "size": 20905,
+        "sha256": "782fb54e99e80ec5e8d6fd151a8041520a1755e97cfe1675e566922391b47858"
+      },
+      {
+        "path": "demos/w2-junior-designer-en.html",
+        "mode": "100644",
+        "oid": "88438f8d50742b640696b216d5ba96c898f163ab",
+        "size": 31305,
+        "sha256": "a559552ab5409879a35f71cf1dfe2c456f0527a50ba202fd0fd06f708fb04f5e"
+      },
+      {
+        "path": "demos/w2-junior-designer.html",
+        "mode": "100644",
+        "oid": "097bbb75cf68d40443adc684605f7316bf84af07",
+        "size": 31764,
+        "sha256": "5d1639ddc29834181fcd4336d80534b9977c7e955a5f43bb85f6ed2674044a1b"
+      },
+      {
+        "path": "demos/w3-fallback-advisor-en.html",
+        "mode": "100644",
+        "oid": "b3363c2569002cb2b997e550df2d15b898e11c30",
+        "size": 23901,
+        "sha256": "17ff8414f7e58923e91ade4161325f143788ca1baf29a1bce05864d7ff2ff29d"
+      },
+      {
+        "path": "demos/w3-fallback-advisor.html",
+        "mode": "100644",
+        "oid": "43ce90bdb820fd93358f3571c84287e032dea007",
+        "size": 26413,
+        "sha256": "2ec9e8ed6c897d7e196dca3d6820cf92f1bb9408ad80bc4b964d746102d4b09d"
+      },
+      {
+        "path": "package-lock.json",
+        "mode": "100644",
+        "oid": "f72209ec95bc5ed12900d891eaf5dba7f497c35c",
+        "size": 28566,
+        "sha256": "0c334005bfe0da4ad5fa1ea805a1d99d3290f636add29faa861c841ddaac6a69"
+      },
+      {
+        "path": "package.json",
+        "mode": "100644",
+        "oid": "baadd4585c57c4aab62be54b0b37bdd7c4746a6b",
+        "size": 133,
+        "sha256": "144b28fbf3911f2969589bbddb3208bb02e98bfb33988723d33d3a724ad3b7d5"
+      },
+      {
+        "path": "scripts/tests/fixtures/assets/logo.png",
+        "mode": "100644",
+        "oid": "037b272d233b1d764c763ba49c41a912c05643d2",
+        "size": 76,
+        "sha256": "cb2e77c9e8f959033fce306468281a1c2c3fb66c8529e7a3d858da602fee75ae"
+      }
+    ]
+  },
+  "specimens": [
+    {
+      "id": "app/01-hardware-panel",
+      "family": "app",
+      "title": "01 硬件面板",
+      "path": "upstream/assets/style-specimens/app/01-hardware-panel.html",
+      "preview": "assets/style-specimens/app/01-hardware-panel.jpg"
+    },
+    {
+      "id": "app/02-liquid-glass",
+      "family": "app",
+      "title": "02 液态玻璃",
+      "path": "upstream/assets/style-specimens/app/02-liquid-glass.html",
+      "preview": "assets/style-specimens/app/02-liquid-glass.jpg"
+    },
+    {
+      "id": "app/03-playful-3d",
+      "family": "app",
+      "title": "03 玩味 3D 材质",
+      "path": "upstream/assets/style-specimens/app/03-playful-3d.html",
+      "preview": "assets/style-specimens/app/03-playful-3d.jpg"
+    },
+    {
+      "id": "app/04-friendly-fintech",
+      "family": "app",
+      "title": "04 友好金融",
+      "path": "upstream/assets/style-specimens/app/04-friendly-fintech.html",
+      "preview": "assets/style-specimens/app/04-friendly-fintech.jpg"
+    },
+    {
+      "id": "app/05-pro-camera",
+      "family": "app",
+      "title": "05 专业相机工具",
+      "path": "upstream/assets/style-specimens/app/05-pro-camera.html",
+      "preview": "assets/style-specimens/app/05-pro-camera.jpg"
+    },
+    {
+      "id": "app/06-topo-outdoor",
+      "family": "app",
+      "title": "06 户外地形工具",
+      "path": "upstream/assets/style-specimens/app/06-topo-outdoor.html",
+      "preview": "assets/style-specimens/app/06-topo-outdoor.jpg"
+    },
+    {
+      "id": "app/07-feed-waterfall",
+      "family": "app",
+      "title": "07 中文内容瀑布流",
+      "path": "upstream/assets/style-specimens/app/07-feed-waterfall.html",
+      "preview": "assets/style-specimens/app/07-feed-waterfall.jpg"
+    },
+    {
+      "id": "app/08-command-palette",
+      "family": "app",
+      "title": "08 键盘优先命令面板",
+      "path": "upstream/assets/style-specimens/app/08-command-palette.html",
+      "preview": "assets/style-specimens/app/08-command-palette.jpg"
+    },
+    {
+      "id": "app/09-health-color-code",
+      "family": "app",
+      "title": "09 健康数据颜色编码",
+      "path": "upstream/assets/style-specimens/app/09-health-color-code.html",
+      "preview": "assets/style-specimens/app/09-health-color-code.jpg"
+    },
+    {
+      "id": "app/10-native-polish",
+      "family": "app",
+      "title": "10 原生精修",
+      "path": "upstream/assets/style-specimens/app/10-native-polish.html",
+      "preview": "assets/style-specimens/app/10-native-polish.jpg"
+    },
+    {
+      "id": "app/11-gentle-encouraging",
+      "family": "app",
+      "title": "11 柔和暗色鼓励式",
+      "path": "upstream/assets/style-specimens/app/11-gentle-encouraging.html",
+      "preview": "assets/style-specimens/app/11-gentle-encouraging.jpg"
+    },
+    {
+      "id": "app/12-editorial-reader",
+      "family": "app",
+      "title": "12 编辑式阅读",
+      "path": "upstream/assets/style-specimens/app/12-editorial-reader.html",
+      "preview": "assets/style-specimens/app/12-editorial-reader.jpg"
+    },
+    {
+      "id": "east/01-lu-jingren-bookcraft",
+      "family": "east",
+      "title": "01 吕敬人书籍设计",
+      "path": "upstream/assets/style-specimens/east/01-lu-jingren-bookcraft.html",
+      "preview": "assets/style-specimens/east/01-lu-jingren-bookcraft.jpg"
+    },
+    {
+      "id": "east/02-song-block-print",
+      "family": "east",
+      "title": "02 宋刻本版式",
+      "path": "upstream/assets/style-specimens/east/02-song-block-print.html",
+      "preview": "assets/style-specimens/east/02-song-block-print.jpg"
+    },
+    {
+      "id": "east/03-republic-book-jacket",
+      "family": "east",
+      "title": "03 民国书衣",
+      "path": "upstream/assets/style-specimens/east/03-republic-book-jacket.html",
+      "preview": "assets/style-specimens/east/03-republic-book-jacket.jpg"
+    },
+    {
+      "id": "east/04-shanghai-deco-calendar",
+      "family": "east",
+      "title": "04 上海摩登装饰艺术",
+      "path": "upstream/assets/style-specimens/east/04-shanghai-deco-calendar.html",
+      "preview": "assets/style-specimens/east/04-shanghai-deco-calendar.jpg"
+    },
+    {
+      "id": "east/05-hanzi-experimental-poster",
+      "family": "east",
+      "title": "05 中文实验字体海报",
+      "path": "upstream/assets/style-specimens/east/05-hanzi-experimental-poster.html",
+      "preview": "assets/style-specimens/east/05-hanzi-experimental-poster.jpg"
+    },
+    {
+      "id": "east/06-hk-street-signs",
+      "family": "east",
+      "title": "06 香港街招与招牌",
+      "path": "upstream/assets/style-specimens/east/06-hk-street-signs.html",
+      "preview": "assets/style-specimens/east/06-hk-street-signs.jpg"
+    },
+    {
+      "id": "east/07-traditional-colors-solar-terms",
+      "family": "east",
+      "title": "07 中国传统色·节气色谱",
+      "path": "upstream/assets/style-specimens/east/07-traditional-colors-solar-terms.html",
+      "preview": "assets/style-specimens/east/07-traditional-colors-solar-terms.jpg"
+    },
+    {
+      "id": "east/08-sugiura-info-mandala",
+      "family": "east",
+      "title": "08 杉浦康平信息曼荼罗",
+      "path": "upstream/assets/style-specimens/east/08-sugiura-info-mandala.html",
+      "preview": "assets/style-specimens/east/08-sugiura-info-mandala.jpg"
+    },
+    {
+      "id": "east/09-tanaka-geometric-poster",
+      "family": "east",
+      "title": "09 田中一光几何平面构成",
+      "path": "upstream/assets/style-specimens/east/09-tanaka-geometric-poster.html",
+      "preview": "assets/style-specimens/east/09-tanaka-geometric-poster.jpg"
+    },
+    {
+      "id": "east/10-hattori-playful-offset",
+      "family": "east",
+      "title": "10 服部一成玩味错位",
+      "path": "upstream/assets/style-specimens/east/10-hattori-playful-offset.html",
+      "preview": "assets/style-specimens/east/10-hattori-playful-offset.jpg"
+    },
+    {
+      "id": "east/11-sato-minimal-symbol",
+      "family": "east",
+      "title": "11 佐藤可士和极简符号",
+      "path": "upstream/assets/style-specimens/east/11-sato-minimal-symbol.html",
+      "preview": "assets/style-specimens/east/11-sato-minimal-symbol.jpg"
+    },
+    {
+      "id": "east/12-japan-magazine-dense",
+      "family": "east",
+      "title": "12 日式生活杂志密排",
+      "path": "upstream/assets/style-specimens/east/12-japan-magazine-dense.html",
+      "preview": "assets/style-specimens/east/12-japan-magazine-dense.jpg"
+    },
+    {
+      "id": "info/01-personal-annual-report",
+      "family": "info",
+      "title": "01 个人数据印刷年报",
+      "path": "upstream/assets/style-specimens/info/01-personal-annual-report.html",
+      "preview": "assets/style-specimens/info/01-personal-annual-report.jpg"
+    },
+    {
+      "id": "info/02-explanation-graphics",
+      "family": "info",
+      "title": "02 解释性图解",
+      "path": "upstream/assets/style-specimens/info/02-explanation-graphics.html",
+      "preview": "assets/style-specimens/info/02-explanation-graphics.jpg"
+    },
+    {
+      "id": "info/03-cross-section-epic",
+      "family": "info",
+      "title": "03 巨幅剖面手绘",
+      "path": "upstream/assets/style-specimens/info/03-cross-section-epic.html",
+      "preview": "assets/style-specimens/info/03-cross-section-epic.jpg"
+    },
+    {
+      "id": "info/04-magazine-pop-data",
+      "family": "info",
+      "title": "04 杂志撞色数据页",
+      "path": "upstream/assets/style-specimens/info/04-magazine-pop-data.html",
+      "preview": "assets/style-specimens/info/04-magazine-pop-data.jpg"
+    },
+    {
+      "id": "info/05-isotype",
+      "family": "info",
+      "title": "05 ISOTYPE图形统计",
+      "path": "upstream/assets/style-specimens/info/05-isotype.html",
+      "preview": "assets/style-specimens/info/05-isotype.jpg"
+    },
+    {
+      "id": "info/06-data-humanism",
+      "family": "info",
+      "title": "06 数据人文主义手绘图谱",
+      "path": "upstream/assets/style-specimens/info/06-data-humanism.html",
+      "preview": "assets/style-specimens/info/06-data-humanism.jpg"
+    },
+    {
+      "id": "info/07-scrollytelling",
+      "family": "info",
+      "title": "07 滚动叙事数据长卷",
+      "path": "upstream/assets/style-specimens/info/07-scrollytelling.html",
+      "preview": "assets/style-specimens/info/07-scrollytelling.jpg"
+    },
+    {
+      "id": "info/08-cartographic-lead",
+      "family": "info",
+      "title": "08 地图即主角",
+      "path": "upstream/assets/style-specimens/info/08-cartographic-lead.html",
+      "preview": "assets/style-specimens/info/08-cartographic-lead.jpg"
+    },
+    {
+      "id": "info/09-newsroom-chart",
+      "family": "info",
+      "title": "09 数据新闻图表规范",
+      "path": "upstream/assets/style-specimens/info/09-newsroom-chart.html",
+      "preview": "assets/style-specimens/info/09-newsroom-chart.jpg"
+    },
+    {
+      "id": "info/10-computational-portrait",
+      "family": "info",
+      "title": "10 计算式数据肖像",
+      "path": "upstream/assets/style-specimens/info/10-computational-portrait.html",
+      "preview": "assets/style-specimens/info/10-computational-portrait.jpg"
+    },
+    {
+      "id": "info/11-beautiful-information",
+      "family": "info",
+      "title": "11 美丽信息",
+      "path": "upstream/assets/style-specimens/info/11-beautiful-information.html",
+      "preview": "assets/style-specimens/info/11-beautiful-information.jpg"
+    },
+    {
+      "id": "info/12-open-research-data",
+      "family": "info",
+      "title": "12 学术开放数据",
+      "path": "upstream/assets/style-specimens/info/12-open-research-data.html",
+      "preview": "assets/style-specimens/info/12-open-research-data.jpg"
+    },
+    {
+      "id": "info/13-speculative-tech-diagram",
+      "family": "info",
+      "title": "13 东方思辨科技图",
+      "path": "upstream/assets/style-specimens/info/13-speculative-tech-diagram.html",
+      "preview": "assets/style-specimens/info/13-speculative-tech-diagram.jpg"
+    },
+    {
+      "id": "info/14-pictogram-system",
+      "family": "info",
+      "title": "14 系统图标化图解",
+      "path": "upstream/assets/style-specimens/info/14-pictogram-system.html",
+      "preview": "assets/style-specimens/info/14-pictogram-system.jpg"
+    },
+    {
+      "id": "info/15-small-multiples",
+      "family": "info",
+      "title": "15 Tufte小倍数矩阵",
+      "path": "upstream/assets/style-specimens/info/15-small-multiples.html",
+      "preview": "assets/style-specimens/info/15-small-multiples.jpg"
+    },
+    {
+      "id": "info/16-topological-transit-map",
+      "family": "info",
+      "title": "16 拓扑简化路网图",
+      "path": "upstream/assets/style-specimens/info/16-topological-transit-map.html",
+      "preview": "assets/style-specimens/info/16-topological-transit-map.jpg"
+    },
+    {
+      "id": "info/17-ma-emptiness",
+      "family": "info",
+      "title": "17 白之留白信息图",
+      "path": "upstream/assets/style-specimens/info/17-ma-emptiness.html",
+      "preview": "assets/style-specimens/info/17-ma-emptiness.jpg"
+    },
+    {
+      "id": "info/18-bookcraft-data",
+      "family": "info",
+      "title": "18 书籍级信息排印",
+      "path": "upstream/assets/style-specimens/info/18-bookcraft-data.html",
+      "preview": "assets/style-specimens/info/18-bookcraft-data.jpg"
+    },
+    {
+      "id": "info/19-scientific-figure-plate",
+      "family": "info",
+      "title": "19 科学期刊图版",
+      "path": "upstream/assets/style-specimens/info/19-scientific-figure-plate.html",
+      "preview": "assets/style-specimens/info/19-scientific-figure-plate.jpg"
+    },
+    {
+      "id": "info/20-swiss-grid-report",
+      "family": "info",
+      "title": "20 瑞士网格年报",
+      "path": "upstream/assets/style-specimens/info/20-swiss-grid-report.html",
+      "preview": "assets/style-specimens/info/20-swiss-grid-report.jpg"
+    },
+    {
+      "id": "ppt/01-neo-swiss-billboard",
+      "family": "ppt",
+      "title": "01 新瑞士大字报",
+      "path": "upstream/assets/style-specimens/ppt/01-neo-swiss-billboard.html",
+      "preview": "assets/style-specimens/ppt/01-neo-swiss-billboard.jpg"
+    },
+    {
+      "id": "ppt/02-black-big-number-stage",
+      "family": "ppt",
+      "title": "02 黑底巨型数字剧场",
+      "path": "upstream/assets/style-specimens/ppt/02-black-big-number-stage.html",
+      "preview": "assets/style-specimens/ppt/02-black-big-number-stage.jpg"
+    },
+    {
+      "id": "ppt/03-mono-brand-type-hero",
+      "family": "ppt",
+      "title": "03 高饱和单色品牌撞色海报",
+      "path": "upstream/assets/style-specimens/ppt/03-mono-brand-type-hero.html",
+      "preview": "assets/style-specimens/ppt/03-mono-brand-type-hero.jpg"
+    },
+    {
+      "id": "ppt/04-full-bleed-gradient-manifesto",
+      "family": "ppt",
+      "title": "04 全幅渐变宣言版式",
+      "path": "upstream/assets/style-specimens/ppt/04-full-bleed-gradient-manifesto.html",
+      "preview": "assets/style-specimens/ppt/04-full-bleed-gradient-manifesto.jpg"
+    },
+    {
+      "id": "ppt/05-candy-lecture-stage",
+      "family": "ppt",
+      "title": "05 CS50单概念糖果舞台",
+      "path": "upstream/assets/style-specimens/ppt/05-candy-lecture-stage.html",
+      "preview": "assets/style-specimens/ppt/05-candy-lecture-stage.jpg"
+    },
+    {
+      "id": "ppt/06-playful-collins-editorial",
+      "family": "ppt",
+      "title": "06 玩味手绘极简",
+      "path": "upstream/assets/style-specimens/ppt/06-playful-collins-editorial.html",
+      "preview": "assets/style-specimens/ppt/06-playful-collins-editorial.jpg"
+    },
+    {
+      "id": "ppt/07-irreverent-pop",
+      "family": "ppt",
+      "title": "07 不羁玩梗流行版",
+      "path": "upstream/assets/style-specimens/ppt/07-irreverent-pop.html",
+      "preview": "assets/style-specimens/ppt/07-irreverent-pop.jpg"
+    },
+    {
+      "id": "ppt/08-y2k-inflated-wrapped",
+      "family": "ppt",
+      "title": "08 Y2K膨胀大字",
+      "path": "upstream/assets/style-specimens/ppt/08-y2k-inflated-wrapped.html",
+      "preview": "assets/style-specimens/ppt/08-y2k-inflated-wrapped.jpg"
+    },
+    {
+      "id": "ppt/09-bento-grid",
+      "family": "ppt",
+      "title": "09 Bento便当格模块网格",
+      "path": "upstream/assets/style-specimens/ppt/09-bento-grid.html",
+      "preview": "assets/style-specimens/ppt/09-bento-grid.jpg"
+    },
+    {
+      "id": "ppt/10-dark-hairline-terminal",
+      "family": "ppt",
+      "title": "10 Neo-Swiss暗色终端美学",
+      "path": "upstream/assets/style-specimens/ppt/10-dark-hairline-terminal.html",
+      "preview": "assets/style-specimens/ppt/10-dark-hairline-terminal.jpg"
+    },
+    {
+      "id": "ppt/11-two-font-consulting",
+      "family": "ppt",
+      "title": "11 双字体咨询版",
+      "path": "upstream/assets/style-specimens/ppt/11-two-font-consulting.html",
+      "preview": "assets/style-specimens/ppt/11-two-font-consulting.jpg"
+    },
+    {
+      "id": "ppt/12-diagram-isotype",
+      "family": "ppt",
+      "title": "12 图谱箭头企业版",
+      "path": "upstream/assets/style-specimens/ppt/12-diagram-isotype.html",
+      "preview": "assets/style-specimens/ppt/12-diagram-isotype.jpg"
+    },
+    {
+      "id": "ppt/13-diagrammatic-minimalism",
+      "family": "ppt",
+      "title": "13 单图母图概念图解",
+      "path": "upstream/assets/style-specimens/ppt/13-diagrammatic-minimalism.html",
+      "preview": "assets/style-specimens/ppt/13-diagrammatic-minimalism.jpg"
+    },
+    {
+      "id": "ppt/14-narrative-sparkline",
+      "family": "ppt",
+      "title": "14 Sparkline叙事波形",
+      "path": "upstream/assets/style-specimens/ppt/14-narrative-sparkline.html",
+      "preview": "assets/style-specimens/ppt/14-narrative-sparkline.jpg"
+    },
+    {
+      "id": "ppt/15-assertion-evidence",
+      "family": "ppt",
+      "title": "15 断言-证据 Tufte信息设计",
+      "path": "upstream/assets/style-specimens/ppt/15-assertion-evidence.html",
+      "preview": "assets/style-specimens/ppt/15-assertion-evidence.jpg"
+    },
+    {
+      "id": "ppt/16-institutional-swiss",
+      "family": "ppt",
+      "title": "16 瑞士机构极简",
+      "path": "upstream/assets/style-specimens/ppt/16-institutional-swiss.html",
+      "preview": "assets/style-specimens/ppt/16-institutional-swiss.jpg"
+    },
+    {
+      "id": "ppt/17-editorial-longform",
+      "family": "ppt",
+      "title": "17 杂志编辑长文流",
+      "path": "upstream/assets/style-specimens/ppt/17-editorial-longform.html",
+      "preview": "assets/style-specimens/ppt/17-editorial-longform.jpg"
+    },
+    {
+      "id": "ppt/18-humanist-rounded-cards",
+      "family": "ppt",
+      "title": "18 人文圆角卡片",
+      "path": "upstream/assets/style-specimens/ppt/18-humanist-rounded-cards.html",
+      "preview": "assets/style-specimens/ppt/18-humanist-rounded-cards.jpg"
+    },
+    {
+      "id": "ppt/19-dense-research-report",
+      "family": "ppt",
+      "title": "19 研报密集图表",
+      "path": "upstream/assets/style-specimens/ppt/19-dense-research-report.html",
+      "preview": "assets/style-specimens/ppt/19-dense-research-report.jpg"
+    },
+    {
+      "id": "ppt/20-all-text-manifesto",
+      "family": "ppt",
+      "title": "20 纯文字宣言备忘录",
+      "path": "upstream/assets/style-specimens/ppt/20-all-text-manifesto.html",
+      "preview": "assets/style-specimens/ppt/20-all-text-manifesto.jpg"
+    },
+    {
+      "id": "web/01-editorial-brutalism",
+      "family": "web",
+      "title": "01 媒体级粗野主义",
+      "path": "upstream/assets/style-specimens/web/01-editorial-brutalism.html",
+      "preview": "assets/style-specimens/web/01-editorial-brutalism.jpg"
+    },
+    {
+      "id": "web/02-neo-brutalism",
+      "family": "web",
+      "title": "02 新粗野主义撞色信息流",
+      "path": "upstream/assets/style-specimens/web/02-neo-brutalism.html",
+      "preview": "assets/style-specimens/web/02-neo-brutalism.jpg"
+    },
+    {
+      "id": "web/03-memphis-maximalism",
+      "family": "web",
+      "title": "03 孟菲斯复古拼贴最大化",
+      "path": "upstream/assets/style-specimens/web/03-memphis-maximalism.html",
+      "preview": "assets/style-specimens/web/03-memphis-maximalism.jpg"
+    },
+    {
+      "id": "web/04-friendly-candy",
+      "family": "web",
+      "title": "04 糖果色凸起立体按钮游戏化",
+      "path": "upstream/assets/style-specimens/web/04-friendly-candy.html",
+      "preview": "assets/style-specimens/web/04-friendly-candy.jpg"
+    },
+    {
+      "id": "web/05-pure-css-art",
+      "family": "web",
+      "title": "05 纯CSS几何插画与响应式变形",
+      "path": "upstream/assets/style-specimens/web/05-pure-css-art.html",
+      "preview": "assets/style-specimens/web/05-pure-css-art.jpg"
+    },
+    {
+      "id": "web/06-bold-big-type",
+      "family": "web",
+      "title": "06 巨型字黑白时装大字报",
+      "path": "upstream/assets/style-specimens/web/06-bold-big-type.html",
+      "preview": "assets/style-specimens/web/06-bold-big-type.jpg"
+    },
+    {
+      "id": "web/07-cosmic-retro-futurism",
+      "family": "web",
+      "title": "07 复古未来太空图录",
+      "path": "upstream/assets/style-specimens/web/07-cosmic-retro-futurism.html",
+      "preview": "assets/style-specimens/web/07-cosmic-retro-futurism.jpg"
+    },
+    {
+      "id": "web/08-cinematic-sound-viz",
+      "family": "web",
+      "title": "08 电影感声波可视化",
+      "path": "upstream/assets/style-specimens/web/08-cinematic-sound-viz.html",
+      "preview": "assets/style-specimens/web/08-cinematic-sound-viz.jpg"
+    },
+    {
+      "id": "web/09-pixel-side-scroller",
+      "family": "web",
+      "title": "09 像素游戏横版叙事",
+      "path": "upstream/assets/style-specimens/web/09-pixel-side-scroller.html",
+      "preview": "assets/style-specimens/web/09-pixel-side-scroller.jpg"
+    },
+    {
+      "id": "web/10-bauhaus-geometric",
+      "family": "web",
+      "title": "10 包豪斯几何标志与扁平插画",
+      "path": "upstream/assets/style-specimens/web/10-bauhaus-geometric.html",
+      "preview": "assets/style-specimens/web/10-bauhaus-geometric.jpg"
+    },
+    {
+      "id": "web/11-dark-editorial",
+      "family": "web",
+      "title": "11 暗色双色侧栏开发者作品集",
+      "path": "upstream/assets/style-specimens/web/11-dark-editorial.html",
+      "preview": "assets/style-specimens/web/11-dark-editorial.jpg"
+    },
+    {
+      "id": "web/12-warm-editorial",
+      "family": "web",
+      "title": "12 暖色出版物",
+      "path": "upstream/assets/style-specimens/web/12-warm-editorial.html",
+      "preview": "assets/style-specimens/web/12-warm-editorial.jpg"
+    },
+    {
+      "id": "web/13-glassmorphism-bento",
+      "family": "web",
+      "title": "13 Linear暗色发光Bento网格",
+      "path": "upstream/assets/style-specimens/web/13-glassmorphism-bento.html",
+      "preview": "assets/style-specimens/web/13-glassmorphism-bento.jpg"
+    },
+    {
+      "id": "web/14-angled-fluid-gradient",
+      "family": "web",
+      "title": "14 斜切流体渐变带",
+      "path": "upstream/assets/style-specimens/web/14-angled-fluid-gradient.html",
+      "preview": "assets/style-specimens/web/14-angled-fluid-gradient.jpg"
+    },
+    {
+      "id": "web/15-utility-colorful-docs",
+      "family": "web",
+      "title": "15 实用主义彩虹分类文档",
+      "path": "upstream/assets/style-specimens/web/15-utility-colorful-docs.html",
+      "preview": "assets/style-specimens/web/15-utility-colorful-docs.jpg"
+    },
+    {
+      "id": "web/16-terminal-core",
+      "family": "web",
+      "title": "16 终端核软未来",
+      "path": "upstream/assets/style-specimens/web/16-terminal-core.html",
+      "preview": "assets/style-specimens/web/16-terminal-core.jpg"
+    },
+    {
+      "id": "web/17-functional-brutalism",
+      "family": "web",
+      "title": "17 功能主义网格社区",
+      "path": "upstream/assets/style-specimens/web/17-functional-brutalism.html",
+      "preview": "assets/style-specimens/web/17-functional-brutalism.jpg"
+    },
+    {
+      "id": "web/18-gallery-dark",
+      "family": "web",
+      "title": "18 深色画廊裱框",
+      "path": "upstream/assets/style-specimens/web/18-gallery-dark.html",
+      "preview": "assets/style-specimens/web/18-gallery-dark.jpg"
+    },
+    {
+      "id": "web/19-swiss-monochrome",
+      "family": "web",
+      "title": "19 Swiss极致黑白",
+      "path": "upstream/assets/style-specimens/web/19-swiss-monochrome.html",
+      "preview": "assets/style-specimens/web/19-swiss-monochrome.jpg"
+    },
+    {
+      "id": "web/20-kenya-hara-white-gallery",
+      "family": "web",
+      "title": "20 日式留白白盒画廊",
+      "path": "upstream/assets/style-specimens/web/20-kenya-hara-white-gallery.html",
+      "preview": "assets/style-specimens/web/20-kenya-hara-white-gallery.jpg"
+    }
+  ],
+  "boundary": {
+    "mode": "reference-material",
+    "inertScripts": "upstream/scripts/**",
+    "installsUpstreamDependencies": false,
+    "executesUpstreamScripts": false,
+    "changesProjectRuntime": false
+  }
+}
