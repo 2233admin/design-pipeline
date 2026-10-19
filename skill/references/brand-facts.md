@@ -8,7 +8,7 @@ written down with where they came from, and the page references those files.
 
 ## The trigger
 
-The gate is scoped by one declaration. In DESIGN.md `## Product Context` write
+The check is scoped by one declaration. In DESIGN.md `## Product Context` write
 
 ```
 Real brands: Stripe, DJI Pocket 4
@@ -16,22 +16,26 @@ Brand facts: openspec/changes/<change-id>/brand-facts.md
 ```
 
 or `Real brands: none` when the project's brand is its own invention. No declaration, or `none`,
-means the gate does not apply; a made-up brand is never blocked. Declare the brands while the brief
-is taken, before design starts: the check cannot tell that a brief names a brand you left out.
+means nothing is checked; a made-up brand is never blocked. Declare the brands while the brief is
+taken, before design starts: the check cannot tell that a brief names a brand you left out. Names
+are compared exactly (case-insensitive equality, never a substring): `Meta` is not `Meta Quest 3`,
+so declare and record each one under its own name.
 
 ## 1. Verify the facts
 
 Before designing, confirm each brand and product exists and what state it is in (released or
 announced, version, the specs you will state). Use the official site, release notes or a press
-page, not memory. Write one line per fact to the facts file (in the change directory when there is
-one, otherwise the project root):
+page, not memory. Write the facts file (in the change directory when there is one, otherwise the project root): a
+`## <Brand>` heading per declared brand, then one line per fact:
 
 ```
-- <Product> is released, version <x> (source: https://<brand>.com/<product>)
-- <Brand> publishes brand assets for press use (source: https://<brand>.com/press)
+## DJI Pocket 4
+
+- DJI Pocket 4 is released, version <x> (source: https://www.dji.com/<product>)
+- DJI publishes brand assets for press use (source: https://www.dji.com/press)
 ```
 
-Every fact line ends with an `https://` source, or `(source: owner)` when the owner told you. A
+Every fact line carries an `https://` source, or `(source: owner)` when the owner told you. A
 fact you cannot source is deleted or asked about, not kept.
 
 ## 2. Get the assets, in this order
@@ -60,25 +64,53 @@ fact you cannot source is deleted or asked about, not kept.
 Colour and font are supporting evidence; the logo, the product image or the interface is what
 makes a page recognisably the brand.
 
-## 3. Fix it as the brand spec in DESIGN.md Source Decisions
+## 3. Put the brand in the design-system package
 
-Record, for each declared brand, in `## Source Decisions`:
+The brand is not described in prose. Its values live in `design-system/tokens.json`
+([design-system-package.md](design-system-package.md)), the single source `DESIGN.md` is generated
+from, so a brand colour cannot drift between the two.
 
-```
-- Logo - Stripe: assets/stripe/logo.svg (source: https://stripe.com/newsroom/brand-assets)
-- Brand colour - Stripe: #635BFF (source: assets/stripe/logo.svg)
-```
+- Colours: each brand colour is an ordinary colour token that also carries `brand` and `source`:
 
-Use `Brand colour - <brand>: none` when the page uses none of the brand's colours. Then take the
-colours into the page's tokens from that line: a colour added later goes through DESIGN.md first.
+  ```json
+  { "name": "stripe-purple", "value": "#635bff", "usage": "The Stripe accent, on paper only.",
+    "brand": "Stripe", "source": "design-system/assets/logos/stripe.svg" }
+  ```
+
+  `source` is an `https://` URL, `owner` (the owner supplied it) or a downloaded file in the project.
+  When it is a text file (svg, css, html, json, txt, md) the token's hex must appear in it; an empty
+  file fails. Use hex for brand colours. A brand whose colours the page does not use says so instead:
+  `"brands": { "Stripe": { "colours": "none" } }`.
+- Logo: the official file goes to `design-system/assets/logos/` (svg, png, webp or jpg) and is
+  declared once per brand, with where it came from:
+
+  ```json
+  "brands": { "Stripe": { "logo": { "path": "design-system/assets/logos/stripe.svg",
+                                    "source": "https://stripe.com/newsroom/brand-assets" } } }
+  ```
+
+  The README Iconography section states how the product uses it. Then regenerate the `DESIGN.md`
+  `colors` group (`design-system design-md-tokens`): the brand values arrive there from the tokens.
 
 ## What the check stops
 
-`designer-pipeline foundation check` (the DESIGN.md foundation gate, which `next` runs for
-replicate and stages.md requires before implementation) and the web build step stop, each finding
-with its fix, when a declared brand has: no existing facts file; a fact with no source; no fact
-naming the brand; no Logo line, a Logo line with no existing logo file or no source, or more than
-one Logo line; no Brand colour line; a colour with no source or, when it cites a text asset, a
-value that asset does not contain. A cited URL is recorded, not fetched: the check confirms the
-evidence is written down and the files exist, not that a link is official. It never claims the
-page looks right; Visual Acceptance stays with the owner.
+`designer-pipeline design-system check`, `foundation check --kind system` and `--kind all` (it runs
+the package check whenever real brands are declared), and the web build step, which shows the same
+findings first. Each finding is `{code, severity, message, fix}`:
+
+| Code | Stops when |
+| --- | --- |
+| `brand-package-missing` | brands are declared and there is no readable `design-system/tokens.json` |
+| `brand-facts-missing` | `Brand facts:` names no existing file inside the project |
+| `brand-fact-unsourced` | a fact line has neither an `https://` URL nor `source: owner` |
+| `brand-facts-uncovered` | a declared brand has no sourced fact under its own `## <Brand>` heading |
+| `brand-colour-missing` | no colour token has that `brand`, and `brands.<Brand>.colours` is not `none` |
+| `brand-colour-unsourced` | a brand token has no `source`, or one that is not an https URL, owner or an existing project file |
+| `brand-colour-not-in-source` | the cited text asset does not hold the token's hex (or is empty), or the token is not hex |
+| `brand-logo-missing` | `brands.<Brand>.logo` is absent |
+| `brand-logo-multiple` | more than one logo is declared for a brand |
+| `brand-logo-invalid` | the logo path is not an existing svg, png, webp or jpg under `design-system/assets/logos/` inside the project, or its source is missing |
+
+A cited URL is recorded, not fetched: the check confirms the evidence is written down and the files
+exist, not that a link is official. It never claims the page looks right; Visual Acceptance stays
+with the owner.

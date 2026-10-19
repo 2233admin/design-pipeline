@@ -23,7 +23,7 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | Workflow stages, UI, references, implementation and review | `references/stages.md` | the stage the task is in |
 | New website, redesign, visual critique, style, image-to-code, brand board | `references/taste-skill.md` | the selected original source |
 | No direction yet: style library with rendered specimens, three-direction method, brand-asset protocol, critique guide | `references/design-direction-library.md` | the style entry or handbook it names (reference only) |
-| The brief names a real brand or product (logo, colours, product facts) | `references/brand-facts.md` | `DESIGN.md` Product Context and Source Decisions |
+| The brief names a real brand or product (logo, colours, product facts) | `references/brand-facts.md` | `DESIGN.md` Product Context and `design-system/tokens.json` |
 | CSS authoring or review in any stack | `references/good-css.md` | its matched source entries |
 | UI polish, accessibility, motion principles, shadcn/ui, browser driving | `references/ui-craft-sources.md` | a source only when a rule needs it |
 | Web treatment, section briefs, review rules W1-W7 | `references/web-direction.md` | `references/workflow-web.md` |

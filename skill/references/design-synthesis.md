@@ -202,9 +202,9 @@ append these as local provenance extensions after the visual sections. It requir
 Colors, Typography, Layout, Components and Do's and Don'ts even for host-rendered surfaces;
 explain inheritance there when tokens are omitted. `Source Decisions` identifies adopted and
 rejected source properties and links the active change id or artifact path. When the brief names a
-real brand or product, Product Context declares `Real brands: <names>` and `Brand facts: <path>`,
-and Source Decisions carries each brand's `Logo` and `Brand colour` lines with their sources; the
-foundation check stops without them (`brand-facts.md`).
+real brand or product, Product Context declares `Real brands: <names>` and `Brand facts: <path>`;
+the brand colours (tokens with `brand` and `source`) and logos then live in the `design-system/`
+package, and the package check stops without them (`brand-facts.md`).
 
 Keep Components about visual elements and their states. Put workflow stages, receipts, installation
 details and verification reports in their own guides or change artifacts. The local foundation

@@ -169,8 +169,9 @@ workflow (`next --deliverable film --job-plan`), which has no stack choices to m
   foundation unless that workflow explicitly returns the synthesis action.
 - Run `node <design-pipeline>/scripts/check-design-foundation.cjs --project-root . --json`.
   Status `synthesis-required` is the mandatory route into synthesis; only `ready` unlocks
-  implementation. When DESIGN.md declares `Real brands:`, the same check also requires the sourced
-  facts file, one real logo file and a sourced colour per brand (`references/brand-facts.md`).
+  implementation. When DESIGN.md declares `Real brands:`, also run `foundation check --kind system`: it
+  requires the sourced facts file and, in the design-system package, sourced brand colour tokens
+  and one real logo per brand (`references/brand-facts.md`).
 - Check for project `MOTION.md`. In the standard tier, if it is missing or incompatible with the
   requested interaction language, synthesize it from product requirements and
   `references/motion-foundation.md`. In other tiers, follow `next` and the required foundation

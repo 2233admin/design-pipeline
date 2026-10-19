@@ -70,7 +70,7 @@ const { recordObservation } = require("./record-feedback.cjs");
 const { evaluateIntake, validateDesignToolReceipt, validateRegistry, validateStyleSignals } = require("./adapter-core.cjs");
 const { checkDesignFoundation } = require("./design-synthesis-core.cjs");
 const { checkMotionFoundation } = require("./motion-foundation-core.cjs");
-const { DEFAULT_DIR: DESIGN_SYSTEM_DIR, checkDesignSystemPackage, compileDesignSystemPackage, designMdTokens, resolveSystemDir } = require("./design-system-package-core.cjs");
+const { DEFAULT_DIR: DESIGN_SYSTEM_DIR, checkDesignSystemPackage, compileDesignSystemPackage, designMdTokens, projectBrandFindings, resolveSystemDir } = require("./design-system-package-core.cjs");
 const {
   createSurface,
   resolveSurfaceProfile,
@@ -682,8 +682,9 @@ function foundationCommand(parsed, root) {
   const result = {};
   if (["design", "all"].includes(kind)) result.design = checkDesignFoundation({ projectRoot, designFile });
   if (["motion", "all"].includes(kind)) result.motion = checkMotionFoundation({ projectRoot, motionFile: option(parsed, "--motion-file", "MOTION.md") });
-  // `all` checks the design-system package when the project has one; `system` requires it.
-  if (kind === "system" || (kind === "all" && fs.existsSync(path.resolve(projectRoot, systemDir, "tokens.json")))) {
+  // `all` checks the design-system package when the project has one or declares real brands (their
+  // colour tokens and logos live in it); `system` requires it.
+  if (kind === "system" || (kind === "all" && (fs.existsSync(path.resolve(projectRoot, systemDir, "tokens.json")) || projectBrandFindings(projectRoot, { designFile, systemDir }).length))) {
     result.system = checkDesignSystemPackage({ projectRoot, systemDir, designFile });
   }
   const blocked = Object.values(result).some((item) => item.status !== "ready");

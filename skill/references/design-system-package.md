@@ -18,6 +18,7 @@ not depend on that host.
 design-system/
   README.md                       usage rules (no title: the system's name is in tokens.json)
   tokens.json                     every token, with a usage note; contrast pairs
+  assets/logos/<file>             official brand logos, when real brands are declared
   components/bundle.css           the stylesheet the previews and the product share
   components/<Comp>/README.md     guidelines for one component
   components/<Comp>/preview.html  a live preview of that component
@@ -35,7 +36,8 @@ Write imperative rules for the next agent, naming tokens, styles and components:
   numbers and units, quoted real copy.
 - **Visual foundations** — colour, type, spacing, layout, borders and radii, depth, states (hover,
   focus, disabled), motion, responsive behaviour.
-- **Iconography** — the icon set and format, or the glyphs used instead; logo handling.
+- **Iconography** — the icon set and format, or the glyphs used instead; logo handling: which file
+  under `assets/logos/` the product uses, where, at what size and on which grounds, never redrawn.
 
 Keep provenance, build notes and next steps out of it: they belong in the change and `DESIGN.md`
 Source Decisions. Length follows the source; never pad.
@@ -60,6 +62,18 @@ families; type style names start with a letter. Both become CSS names unescaped 
   and up); focus rings, borders and marks that carry meaning need 3:1. Pairs are checked in every
   theme.
 - A `usage` note on every token and style: where it is used, and for a text colour which grounds.
+
+- Brand colours (only when `DESIGN.md` Product Context declares `Real brands:`): a brand colour is a
+  normal colour token that also carries `brand` (the brand's name, as declared) and `source` (an
+  `https://` URL, `owner`, or a project-relative file such as the downloaded logo). When the source
+  is a project text asset (svg, css, html, json, txt, md) the token's hex must appear in it.
+  Because brand colours are colour tokens, the generated `DESIGN.md` `colors` group carries them.
+- `brands`: an object keyed by brand name. `{"<Brand>": {"colours": "none"}}` states that the page
+  uses none of the brand's colours (the alternative to brand colour tokens);
+  `{"<Brand>": {"logo": {"path": "design-system/assets/logos/<file>", "source": "<https url or owner>"}}}`
+  declares the brand's one logo, a svg, png, webp or jpg that exists under `assets/logos/` inside the
+  project. Every declared real brand needs a logo and either brand colour tokens or `colours: none`;
+  [brand-facts.md](brand-facts.md) lists the findings.
 
 When a project needs a `primary` colour for tools that require one, add it as an alias token with a
 usage note; otherwise the generator writes the first colour as `primary`.

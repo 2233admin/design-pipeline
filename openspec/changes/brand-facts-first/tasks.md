@@ -7,10 +7,11 @@
 
 ## 2. Behaviour
 
-- [x] 2.1 `brandFactFindings` in `design-synthesis-core.cjs`, called by `checkDesignFoundation`.
-- [x] 2.2 The web build step shows the findings and stays unfinished until they clear.
+- [x] 2.1 `declaredBrands` in `design-synthesis-core.cjs`; brand validation and findings in `design-system-package-core.cjs`.
+- [x] 2.2 `foundation check --kind all` runs the package check when brands are declared.
+- [x] 2.3 The web build step shows the findings and stays unfinished until they clear.
 
 ## 3. Documentation and tests
 
-- [x] 3.1 `references/brand-facts.md`; SKILL.md row, `stages.md`, `design-synthesis.md`, and the adoption note in `design-direction-library.md`.
+- [x] 3.1 `references/brand-facts.md`; `design-system-package.md`, SKILL.md row, `stages.md`, `design-synthesis.md`, and the adoption note in `design-direction-library.md`.
 - [x] 3.2 `tests/brand-facts-first.test.cjs` registered in the manifest; package resources and CHANGELOG.
