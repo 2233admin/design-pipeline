@@ -394,14 +394,16 @@ Vuetify0、React Aria 和 Ark UI 是首批可替换 Provider；项目自有 DOM 
 
 ### Component-first 一致性 Gate
 
-`component-first-gate.v1` 把明确 target、stack request/decision、组件 resolution/verification、
+`component-first check` 把明确 target、stack request/decision、组件 resolution/verification、
 组件声明、Playground、页面使用和外部截图证据组合成一个只读一致性检查。它复用上面的
 stack、component capability 和通用 Playground 内核；不会启动浏览器、运行目标项目或安装依赖。
 
 ```bash
-# 聚合检查；0=passed，1=invalid，2=blocked
+# 聚合检查；0=passed，1=invalid，2=blocked。request 的 target 必须带 snapshotDigest
+# 返回的 artifact 把同一个 target、snapshot、policy 和五个阶段 receipt 串起来
 node skill/scripts/designer-pipeline.cjs component-first check \
-  --root ../my-project --artifact component-first.json --json
+  --root ../my-project --artifact component-first.json \
+  --write --output component-first-gate.json --json
 
 # 只运行一个 stage 及必要的上下文解析
 node skill/scripts/designer-pipeline.cjs component-first stack --root ../my-project --artifact component-first.json --json
@@ -409,31 +411,20 @@ node skill/scripts/designer-pipeline.cjs component-first components --root ../my
 node skill/scripts/designer-pipeline.cjs component-first playground --root ../my-project --artifact component-first.json --json
 node skill/scripts/designer-pipeline.cjs component-first page --root ../my-project --artifact component-first.json --json
 
-# v1 兼容别名；这里只委托组件一致性，不代表视觉验收通过
-node skill/scripts/designer-pipeline.cjs high-fidelity check \
-  --root ../my-project --artifact component-first.json --json
+# 检查 receipt 链；上游、target 或 policy 变化会返回 blocked/stale。不代表视觉验收通过
+node skill/scripts/designer-pipeline.cjs component-first verify \
+  --root ../my-project --artifact component-first-gate.json --json
 ```
 
 项目自有组件使用 `componentOrigin: "project-owned"`，不能把 `project-owned` 写成 runtime
 stack；它仍需源码、symbol、contract、token、键盘、焦点、状态、Playground 与页面实际使用证据。
 `page-ready` 同时声明 `scope: prototype | production`，prototype 证据不能满足 production target。
 截图必须是能完整解码且实际字节 hash 匹配的 PNG。普通 hash binding 只能发现 artifact 不匹配、
-过期或串用，不能证明 receipt 没有人为伪造；可信 producer、签名和 CI attestation 留给 artifact v2。
+过期或串用，不能证明 receipt 没有人为伪造；可信 producer、签名和 CI attestation 尚未提供。
 
-### Component-first Artifact V2 与 Design Skill layer
-
-v1 Gate 通过后，可以用 v2 artifact 把同一个 target、snapshot、policy 和五个阶段 receipt 串起来：
+### Design Skill layer
 
 ```bash
-# 从 v1 aggregate 迁移；必须显式提供 target snapshot digest
-node skill/scripts/designer-pipeline.cjs component-first-v2 migrate \
-  --root ../my-project --artifact component-first.json \
-  --snapshot sha256:<64-hex> --json
-
-# 检查 receipt 链；上游、target 或 policy 变化会返回 blocked/stale
-node skill/scripts/designer-pipeline.cjs component-first-v2 check \
-  --root ../my-project --artifact component-first-v2.json --json
-
 # 路由和读取单一 Design Skill manifest
 node skill/scripts/designer-pipeline.cjs design-skill route \
   --root . --query "make three prototype directions" --json

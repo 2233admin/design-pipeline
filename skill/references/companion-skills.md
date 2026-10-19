@@ -184,7 +184,7 @@ guidance availability, not a bundled image model or automatic Visual Acceptance.
 | --- | --- | --- |
 | `ui-ux-pro-max` | `nextlevelbuilder/ui-ux-pro-max-skill` | Main UX, style, color, typography, and product design system guidance |
 | `ui-ux-design` | `nextlevelbuilder/ui-ux-pro-max-skill` | Comprehensive design asset and presentation workflow, renamed locally to avoid conflict with OMX `design` |
-| `ui-styling` | `nextlevelbuilder/ui-ux-pro-max-skill` | Visual styling, fonts, high-fidelity UI appearance |
+| `ui-styling` | `nextlevelbuilder/ui-ux-pro-max-skill` | Visual styling, fonts, polished UI appearance |
 | `design-system` | `nextlevelbuilder/ui-ux-pro-max-skill` | Token architecture, component tokens, state variants, Tailwind integration |
 | `brand` | `nextlevelbuilder/ui-ux-pro-max-skill` | Brand guidelines, assets, messaging, color, typography |
 | `banner-design` | `nextlevelbuilder/ui-ux-pro-max-skill` | Banner and ad layout design |

@@ -207,25 +207,25 @@ try {
   const componentFirstSmokeRoot = path.join(tempRoot, "component-first-smoke");
   fs.mkdirSync(componentFirstSmokeRoot, { recursive: true });
   fs.writeFileSync(path.join(componentFirstSmokeRoot, "component-first.json"), `${JSON.stringify({
-    schema: "component-first-gate.v1",
-    target: { id: "smoke-target", root: ".", kind: "prototype", entrypoints: [], routes: [], snapshotDigest: null },
+    target: { id: "smoke-target", root: ".", kind: "prototype", entrypoints: [], routes: [], snapshotDigest: `sha256:${"0".repeat(64)}` },
     policy: { id: "component-first-default", version: 1 },
     stack: {}, components: {}, playground: {}, pageUsage: {}, evidence: {},
   }, null, 2)}\n`);
   const installedComponentFirst = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "component-first", "stack", "--root", componentFirstSmokeRoot, "--artifact", "component-first.json", "--json"], { echo: false, env: hermeticEnv });
   let installedComponentFirstResult = null; try { installedComponentFirstResult = JSON.parse(installedComponentFirst.stdout); } catch {}
-  report(installedComponentFirst.status === 2 && installedComponentFirstResult?.ok === true && installedComponentFirstResult?.resultSchema === "component-first-stage-result.v1", "installed component-first facade and stage CLI smoke");
+  report(installedComponentFirst.status === 2 && installedComponentFirstResult?.ok === true && installedComponentFirstResult?.resultSchema === "component-first-stage-receipt.v2", "installed component-first facade and stage CLI smoke");
   const passingComponentFirst = createComponentFirstFixture(null);
   try {
     for (const action of ["check", "stack", "components", "playground", "page"]) {
       const result = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "component-first", action, "--root", passingComponentFirst.projectRoot, "--artifact", passingComponentFirst.artifact, "--json"], { echo: false, env: hermeticEnv });
       let payload = null; try { payload = JSON.parse(result.stdout); } catch {}
-      const expectedSchema = action === "check" ? "component-first-gate.v1" : "component-first-stage-result.v1";
+      const expectedSchema = action === "check" ? "component-first-gate.v2" : "component-first-stage-receipt.v2";
       report(result.status === 0 && payload?.ok === true && payload?.status === "passed" && payload?.resultSchema === expectedSchema, `installed component-first passing ${action} journey`);
     }
-    const alias = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "high-fidelity", "check", "--root", passingComponentFirst.projectRoot, "--artifact", passingComponentFirst.artifact, "--json"], { echo: false, env: hermeticEnv });
-    let aliasPayload = null; try { aliasPayload = JSON.parse(alias.stdout); } catch {}
-    report(alias.status === 0 && aliasPayload?.ok === true && aliasPayload?.status === "passed" && aliasPayload?.resultSchema === "component-first-gate.v1", "installed high-fidelity compatibility alias passing journey");
+    const written = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "component-first", "check", "--root", passingComponentFirst.projectRoot, "--artifact", passingComponentFirst.artifact, "--write", "--output", "component-first-gate.json", "--json"], { echo: false, env: hermeticEnv });
+    const verified = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "component-first", "verify", "--root", passingComponentFirst.projectRoot, "--artifact", "component-first-gate.json", "--json"], { echo: false, env: hermeticEnv });
+    let verifiedPayload = null; try { verifiedPayload = JSON.parse(verified.stdout); } catch {}
+    report(written.status === 0 && verified.status === 0 && verifiedPayload?.ok === true && verifiedPayload?.status === "passed", "installed component-first write and verify journey");
   } finally {
     fs.rmSync(path.dirname(passingComponentFirst.projectRoot), { recursive: true, force: true });
   }

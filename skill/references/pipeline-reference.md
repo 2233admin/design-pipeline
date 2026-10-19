@@ -187,17 +187,19 @@ Resolve reusable component behavior before selecting a library:
   project reuse, emit framework binding plans without source generation, and record `reuse`,
   `adopt`, `substitute`, or `custom` per capability.
 
-Run component conformance through the layered v1 gate after those artifacts exist:
+Run component conformance through the layered gate after those artifacts exist:
 
-- `component-first check --artifact component-first.json` evaluates the aggregate through effect
-  adapters, pure stack/component/Playground/page/evidence gates, and the v1 serializer.
+- `component-first check --artifact component-first.json` evaluates the request through effect
+  adapters and pure stack/component/Playground/page/evidence gates, and returns one receipt-chain
+  artifact (`component-first-gate.v2`) bound to the request's `target.snapshotDigest`
+  (`sha256:<hex>`, required), the policy digest and per-stage receipts. `--write --output <file>`
+  stores the artifact.
 - `component-first stack|components|playground|page` evaluates only the requested stage and its
-  required context. Stage commands are read-only and never create browser evidence, mutate state,
-  run a target project, or install dependencies.
-- `high-fidelity check` is a v1 delegation alias. A passing component-first result is not a
-  visual-acceptance result.
-- `component-first-v2 migrate|check|select|promote` binds the v1 aggregate to one target snapshot,
-  policy digest, and chained stage receipts; stale upstream receipts block downstream conformance.
+  required context and returns that stage's receipt and findings. Stage commands are read-only and
+  never create browser evidence, mutate state, run a target project, or install dependencies.
+- `component-first verify|select|promote` checks the receipt chain (stale upstream receipts block
+  downstream conformance), records a hash-bound prototype selection, and records an approved
+  promotion. A passing result is not a visual-acceptance result.
 - `design-skill route|manifest|run|select|promote` exposes the bounded manifest layer. Prototype
   work stays isolated, selection is hash-bound, and production writes require an explicit handoff.
 - Model `project-owned` as `componentOrigin`, never as a runtime stack. It still owes source,

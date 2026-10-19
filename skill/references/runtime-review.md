@@ -101,7 +101,7 @@ Record 发布要求反馈目录所在文件系统支持**同目录硬链接（ha
 ## 维护与验证入口
 
 - Core：`runtime-review-core.cjs#buildRuntimeReview` / `inspectRuntimeReview` / `recordRuntimeReviewFeedback`，只有这三个同步 exports。CLI 只接线，不复制业务 schema。
-- 现有 authority：`playground-core.cjs#checkPlayground`、`component-first-v2-core.cjs#checkV2Artifact`、`evidence-core.cjs#validateReceipt`、`interoperability-core.cjs`。不另造 gate、receipt 或 global state。
+- 现有 authority：`playground-core.cjs#checkPlayground`、`component-first-core.cjs#verifyComponentFirstArtifact`、`evidence-core.cjs#validateReceipt`、`interoperability-core.cjs`。不另造 gate、receipt 或 global state。
 - 新永久回归：`tests/runtime-review.test.cjs` 通过 public CLI harness 使用合成输入测试消费者可见负例；不代替真实 browser runtime 观察。
 - 仓库验收入口：`node scripts/qa.cjs`，使用声明 test manifest，不用裸 `node --test` discovery。
 - 真实运行验收由主控在仓库外临时 target 完成：browser capture → 对象选择/copy/export/record → 消费同条 Record 修改 target → 旧 Bundle stale → 重启、新 capture、新 build/check。手写 capture/hash 变化不能冒充这个 smoke。
